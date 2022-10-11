@@ -1,0 +1,18 @@
+## WHY:
+
+Fixes [Issue link]
+
+### What has been changed (if possible, add screenshots, gifs, etc. )
+
+## Check off the following
+
+[ ] I have reviewed the changes myself in this PR. Please check the [self-review document](/contributing/self-review.md)
+[ ] I have added or edited unit tests.
+[ ] I have run the unit tests successfully.
+[ ] I have tested this change on my own device.
+[ ] I have tested this change on other devices (Using Browserstack is recommended).
+[ ] I have tested my changes using the [WAVE extension](https://wave.webaim.org/extension/)
+[ ] I have added documentation where necessary.
+[ ] Is there an existing issue for this PR?
+
+**Clean up your git commit history before submitting the pull request!**
