@@ -1,0 +1,25 @@
+{
+	"kind": "collectionType",
+	"collectionName": "elections",
+	"info": {
+		"singularName": "election",
+		"pluralName": "elections",
+		"displayName": "Election"
+	},
+	"options": {
+		"draftAndPublish": true
+	},
+	"pluginOptions": {},
+	"attributes": {
+		"name": {
+			"type": "string"
+		},
+		"election_date": {
+			"type": "date"
+		},
+		"election_type": {
+			"type": "enumeration",
+			"enum": ["local", "presidential", "congress"]
+		}
+	}
+}
