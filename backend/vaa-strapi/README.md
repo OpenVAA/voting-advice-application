@@ -2,13 +2,18 @@
 
 ## GIP VAA Relevant Documentation
 
-0. You should be running Strapi with Node version 16.18.0. Use of nvm is encouraged.
+0. You should be running Strapi with Node version 16.18.0. Use of nvm is encouraged. **Additionally, you need Docker!**
 1. Install dependencies by running `npm install`
 2. Copy or rename the `.env.example` to `.env` before running any of the commands. You should be able to run the Strapi instance with either `npm run start`or `npm run develop`.
-3. Run `npm run develop` to run the server.
+3. Make sure to run `docker-compose up` to start the Postgres container.
+4. Run `npm run develop` to run the Strapi server.
 
 A base "Election" Content-Type has been created to play around initially. Please feel free to extend/change it or add additional
 Content-Types.
+
+### Re-generating Types
+
+Run `npm run strapi ts:generate-types` to re-generate `schemas.d.ts`.
 
 Below is the official documentation of Strapi.
 
