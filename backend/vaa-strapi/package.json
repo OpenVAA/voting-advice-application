@@ -1,0 +1,31 @@
+{
+	"name": "vaa-strapi",
+	"private": true,
+	"version": "0.1.0",
+	"description": "A Strapi application",
+	"scripts": {
+		"develop": "strapi develop",
+		"start": "strapi start",
+		"build": "strapi build",
+		"strapi": "strapi"
+	},
+	"dependencies": {
+		"@strapi/plugin-documentation": "^4.4.5",
+		"@strapi/plugin-i18n": "4.4.5",
+		"@strapi/plugin-users-permissions": "4.4.5",
+		"@strapi/strapi": "4.4.5",
+		"better-sqlite3": "7.4.6",
+		"pg": "^8.8.0"
+	},
+	"author": {
+		"name": "A Strapi developer"
+	},
+	"strapi": {
+		"uuid": "bf2736db-ee20-4091-9e1e-f02ff08da6dd"
+	},
+	"engines": {
+		"node": ">=14.19.1 <=18.x.x",
+		"npm": ">=6.0.0"
+	},
+	"license": "MIT"
+}
