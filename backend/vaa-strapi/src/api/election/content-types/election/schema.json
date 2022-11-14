@@ -1,25 +1,40 @@
 {
-	"kind": "collectionType",
-	"collectionName": "elections",
-	"info": {
-		"singularName": "election",
-		"pluralName": "elections",
-		"displayName": "Election"
-	},
-	"options": {
-		"draftAndPublish": true
-	},
-	"pluginOptions": {},
-	"attributes": {
-		"name": {
-			"type": "string"
-		},
-		"election_date": {
-			"type": "date"
-		},
-		"election_type": {
-			"type": "enumeration",
-			"enum": ["local", "presidential", "congress"]
-		}
-	}
+  "kind": "collectionType",
+  "collectionName": "elections",
+  "info": {
+    "singularName": "election",
+    "pluralName": "elections",
+    "displayName": "Election",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "election_date": {
+      "type": "date"
+    },
+    "election_type": {
+      "type": "enumeration",
+      "enum": [
+        "local",
+        "presidential",
+        "congress"
+      ]
+    },
+    "candidates": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::candidate.candidate"
+    },
+    "parties": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::party.party"
+    }
+  }
 }

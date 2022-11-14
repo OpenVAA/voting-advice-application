@@ -1,0 +1,68 @@
+{
+  "kind": "collectionType",
+  "collectionName": "candidates",
+  "info": {
+    "singularName": "candidate",
+    "pluralName": "candidates",
+    "displayName": "Candidate",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "firstName": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true
+    },
+    "lastName": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true
+    },
+    "motherTongue": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::language.language"
+    },
+    "otherLanguages": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::language.language"
+    },
+    "politicalExperience": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "text",
+      "required": true
+    },
+    "otherParties": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::party.party"
+    },
+    "mainParty": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::party.party",
+      "inversedBy": "candidates"
+    }
+  }
+}
