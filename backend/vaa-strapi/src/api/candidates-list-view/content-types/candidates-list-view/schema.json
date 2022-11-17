@@ -1,0 +1,28 @@
+{
+  "kind": "singleType",
+  "collectionName": "candidates_list_views",
+  "info": {
+    "singularName": "candidates-list-view",
+    "pluralName": "candidates-list-views",
+    "displayName": "candidatesListView",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "description": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    }
+  }
+}
