@@ -14,3 +14,5 @@ Currently, the labels are divided into three categories:
 
 It is imperative to add labels to the new issues. If you are not sure which labels to add, you can always ask for help 
 from the team.
+
+Additionally, please use Milestones to indicate which release target and scope contribution belongs to (for example: Alpha version, Beta version, Post-launch bugfixing patch, etc).
