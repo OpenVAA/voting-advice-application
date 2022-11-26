@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">voting-advice-application</string>
+    <string name="title_activity_main">voting-advice-application</string>
+    <string name="package_name">com.voting.advice.app</string>
+    <string name="custom_url_scheme">com.voting.advice.app</string>
+</resources>
