@@ -6,4 +6,5 @@ node_modules
 .env
 .env.*
 !.env.example
+coverage
 vite.config.ts.*.mjs
