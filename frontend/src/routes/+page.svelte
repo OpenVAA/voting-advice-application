@@ -1,7 +1,3 @@
-<script>
-	import '../app.css';
-</script>
-
 <div>
 	<h1 class="text-3xl font-medium ml-2.5 mt-14 leading-6 text-gray-500">
 		Welcome to Voting Advice Application!
