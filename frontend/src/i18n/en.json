@@ -5,5 +5,15 @@
   },
   "candidate": {
     "politicalExperience": "Political experience"
+  },
+  "questions": {
+    "scale": {
+      "stronglyDisagree": "Strongly disagree",
+      "disagree": "Disagree",
+      "agree": "Agree",
+      "stronglyAgree": "Strongly agree"
+    },
+    "nextQuestion": "Next question",
+    "goToResults": "Go to results"
   }
 }

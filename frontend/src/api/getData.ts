@@ -14,3 +14,9 @@ export const getData = async (endpoint: string): Promise<any> => {
         console.log("Error: ", err);
     }
 };
+
+export const getAllCandidates = async (): Promise<any> => {
+    return await getData('api/candidates?populate=*').then(result => {
+        return result?.data
+    })
+}
