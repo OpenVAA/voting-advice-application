@@ -1,9 +1,10 @@
 <script>
 	import {getData} from '../../api/getData';
+	import CandidateListing from '../../components/CandidateListing.svelte';
 
 	const fetchDataFromBackend = (async () => {
 		// TODO: Quick test 
-		let data = await getData('api/candidates');
+		let data = await getData('api/candidates?populate=*');
 		return data.data;
 	})();
 </script>
@@ -12,7 +13,7 @@
 	<p>...waiting</p>
 {:then data}
 	{#each data as candidate}
-		<p>Candidate: {candidate.attributes.firstName} {candidate.attributes.lastName}</p>
+		<CandidateListing candidate={candidate.attributes} />
 	{:else}
 		<p>No candidates found</p>
 	{/each}
