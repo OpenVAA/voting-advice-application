@@ -1,10 +1,14 @@
 {
   "candidates": {
     "candidates": "Candidates",
-    "notfound": "No candidates found"
+    "notFound": "No candidates found"
   },
   "candidate": {
     "politicalExperience": "Political experience"
+  },
+  "parties": {
+    "parties": "Parties",
+    "notFound": "No parties found"
   },
   "questions": {
     "scale": {

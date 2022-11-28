@@ -10,5 +10,5 @@
 {#each candidates as candidate}
     <CandidateListing candidate={candidate} />
 {:else}
-    <p>{$_('candidates.notfound')}</p>
+    <p>{$_('candidates.notFound')}</p>
 {/each}
