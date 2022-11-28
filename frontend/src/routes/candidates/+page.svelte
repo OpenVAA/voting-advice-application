@@ -3,7 +3,7 @@
 
 	const fetchDataFromBackend = (async () => {
 		// TODO: Quick test 
-		let data = await getData('http://localhost:1337/api/candidates');
+		let data = await getData('api/candidates');
 		return data.data;
 	})();
 </script>
