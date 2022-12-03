@@ -8,7 +8,11 @@
     "start": "strapi start",
     "build": "strapi build",
     "strapi": "strapi",
-    "test": "jest --forceExit --detectOpenHandles"
+    "lint": "prettier --plugin-search-dir . --check . && eslint .",
+    "test": "jest --forceExit --detectOpenHandles",
+    "prettier": "prettier --write \"**/*.{js,jsx,ts,tsx,css,scss,html,json,md}\"",
+    "prettier:check": "prettier --check \"**/*.{js,jsx,ts,tsx,css,scss,html,json,md}\"",
+    "prepare": "cd ../.. && install backend/vaa-strapi/.husky"
   },
   "dependencies": {
     "@strapi/plugin-documentation": "^4.4.5",
@@ -30,7 +34,13 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "@babel/eslint-parser": "^7.19.1",
+    "@babel/plugin-transform-modules-commonjs": "^7.19.6",
+    "eslint": "^8.29.0",
+    "eslint-config-prettier": "^8.5.0",
     "jest": "^26.6.3",
+    "lint-staged": "^13.0.4",
+    "prettier": "^2.8.0",
     "sqlite3": "^5.1.2",
     "supertest": "^6.3.1"
   }
