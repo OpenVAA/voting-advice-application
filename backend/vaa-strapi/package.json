@@ -51,8 +51,7 @@
     "lint": "prettier --plugin-search-dir . --check . && eslint .",
     "test": "jest --forceExit --detectOpenHandles",
     "prettier": "prettier --write \"**/*.{js,jsx,ts,tsx,css,scss,html,json,md}\"",
-    "prettier:check": "prettier --check \"**/*.{js,jsx,ts,tsx,css,scss,html,json,md}\"",
-    "prepare": "cd ../.. && install backend/vaa-strapi/.husky"
+    "prettier:check": "prettier --check \"**/*.{js,jsx,ts,tsx,css,scss,html,json,md}\""
   },
   "dependencies": {
     "@strapi/plugin-documentation": "^4.4.5",
