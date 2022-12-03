@@ -11,6 +11,7 @@
     "lint": "prettier --plugin-search-dir . --write . && eslint --fix . ",
     "test": "vitest run tests",
     "test:watch": "vitest tests",
+    "coverage": "vitest run tests --coverage",
     "prettier": "prettier --plugin-search-dir . --write .",
     "prettier:check": "prettier --plugin-search-dir . --check .",
     "algorithm-example": "ts-node-esm --experimentalSpecifierResolution node src/matching/examples/example.ts"
