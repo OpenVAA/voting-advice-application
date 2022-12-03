@@ -13,8 +13,7 @@
     "test:watch": "vitest tests",
     "coverage": "vitest run tests --coverage",
     "prettier": "prettier --plugin-search-dir . --write .",
-    "prettier:check": "prettier --plugin-search-dir . --check .",
-    "prepare": "cd .. && install frontend/.husky"
+    "prettier:check": "prettier --plugin-search-dir . --check ."
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "next",
