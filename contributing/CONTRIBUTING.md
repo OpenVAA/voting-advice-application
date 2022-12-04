@@ -7,7 +7,7 @@ merging the PR.
 
 ## New contributor guide
 
-To get an overview of the project, read the [README](README.md).
+To get an overview of the project, read the [README](../README.md).
 
 ## Getting started
 
