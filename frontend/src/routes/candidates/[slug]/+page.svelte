@@ -9,7 +9,7 @@
     <section class="card w-96 bg-base-100 shadow-xl m-8">
         <div class="card-body">
             <h2 class="card-title">{GetFullNameInOrder(data.firstName, data.lastName)}</h2>
-            <h3><a href={`/parties/${party.id}`}>{party.attributes.party}</a></h3>
+            <h3><a href={`/parties/${party?.id}`}>{party?.attributes?.party}</a></h3>
             <p><strong>{$_('candidate.politicalExperience')}:</strong> {data.politicalExperience}</p>
         </div>
     </section>
