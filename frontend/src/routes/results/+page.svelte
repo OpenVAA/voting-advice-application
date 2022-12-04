@@ -11,7 +11,6 @@
         candidateRankingsValues = value;
     })
 
-    let candidate = candidates.find(candidate => candidate.id === 1);
 </script>
 
 <h1>{$_("candidates.candidates")}</h1>

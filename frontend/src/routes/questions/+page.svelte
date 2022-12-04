@@ -40,6 +40,9 @@
 <p>{currentQuestionNumber}/{getNumberOfQuestions()}</p>
 <h2>{currentQuestionText}</h2>
 <br />
+
+<!-- TODO: Don't hardcode number of answer options in the future -->
+
 <button on:click={() => answerQuestion(0)}>{$_("questions.scale.stronglyDisagree")}</button> -
 <button on:click={() => answerQuestion(1)}>{$_("questions.scale.disagree")}</button> -
 <button on:click={() => answerQuestion(2)}>{$_("questions.scale.agree")}</button> -

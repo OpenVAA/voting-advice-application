@@ -2,6 +2,7 @@
     import { _ } from 'svelte-i18n'
 	import CandidateListing from '../../components/CandidateListing.svelte';
 	export let data;
+    // TODO: Define proper candidate data structure
     let candidates = data ? Object.values(data) : null;
 </script>
 
