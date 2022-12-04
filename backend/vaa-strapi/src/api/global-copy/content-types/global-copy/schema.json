@@ -22,15 +22,17 @@
           "localized": true
         }
       },
-      "type": "string"
+      "type": "string",
+      "default": "Start"
     },
-    "next": {
+    "nextQuestion": {
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
       },
-      "type": "string"
+      "type": "string",
+      "default": "Next question"
     },
     "back": {
       "pluginOptions": {
@@ -38,7 +40,8 @@
           "localized": true
         }
       },
-      "type": "string"
+      "type": "string",
+      "default": "Back"
     },
     "percentCompatible": {
       "pluginOptions": {
@@ -47,15 +50,17 @@
         }
       },
       "type": "string",
-      "required": false
+      "required": false,
+      "default": "% compatible"
     },
-    "showResults": {
+    "gotToResults": {
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
       },
-      "type": "string"
+      "type": "string",
+      "default": "Go to results"
     },
     "skip": {
       "pluginOptions": {
@@ -63,7 +68,8 @@
           "localized": true
         }
       },
-      "type": "string"
+      "type": "string",
+      "default": "Skip"
     },
     "viewCandidate": {
       "pluginOptions": {
@@ -71,17 +77,10 @@
           "localized": true
         }
       },
-      "type": "string"
+      "type": "string",
+      "default": "View Candidate"
     },
     "viewParty": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string"
-    },
-    "candidateInfo": {
       "pluginOptions": {
         "i18n": {
           "localized": true
@@ -111,7 +110,8 @@
           "localized": true
         }
       },
-      "type": "string"
+      "type": "string",
+      "default": "You"
     },
     "filter": {
       "pluginOptions": {
@@ -119,15 +119,9 @@
           "localized": true
         }
       },
-      "type": "string"
-    },
-    "close": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string"
+      "type": "string",
+      "default": "Filter",
+      "required": true
     },
     "parties": {
       "pluginOptions": {
@@ -135,7 +129,9 @@
           "localized": true
         }
       },
-      "type": "string"
+      "type": "string",
+      "default": "Parties",
+      "required": true
     },
     "candidates": {
       "pluginOptions": {
@@ -143,7 +139,129 @@
           "localized": true
         }
       },
-      "type": "string"
+      "type": "string",
+      "default": "Candidates",
+      "required": true
+    },
+    "yourConstituency": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true,
+      "default": "Select your constituency"
+    },
+    "skipQuestion": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true,
+      "default": "Skip question"
+    },
+    "mostSuitableParty": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "text",
+      "required": true,
+      "default": "The most suitable party for you according to your answers, is"
+    },
+    "mostSuitableCandidate": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "text",
+      "required": true,
+      "default": "The most suitable candidate for you according to your answers, is"
+    },
+    "otherTopCandidates": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "text",
+      "required": true,
+      "default": "Other top candidates are"
+    },
+    "themeCompatibility": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "text",
+      "required": true,
+      "default": "Compatibility based on themes"
+    },
+    "age": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true,
+      "default": "Age"
+    },
+    "gender": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true,
+      "default": "Gender"
+    },
+    "party": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true,
+      "default": "Party"
+    },
+    "keyIssues": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true,
+      "default": "Key Issues"
+    },
+    "yourTopCandidates": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true,
+      "default": "Your top candidates"
+    },
+    "language": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true,
+      "default": "Language"
     }
   }
 }

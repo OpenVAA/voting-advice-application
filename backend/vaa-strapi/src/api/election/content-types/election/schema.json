@@ -12,13 +12,13 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "name": {
+    "electionName": {
       "type": "string"
     },
-    "election_date": {
+    "electionDate": {
       "type": "date"
     },
-    "election_type": {
+    "electionType": {
       "type": "enumeration",
       "enum": [
         "local",
@@ -26,15 +26,27 @@
         "congress"
       ]
     },
-    "candidates": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::candidate.candidate"
-    },
     "parties": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::party.party"
+    },
+    "electionDescription": {
+      "type": "richtext",
+      "required": true
+    },
+    "appTitle": {
+      "type": "string"
+    },
+    "constituencies": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::constituency.constituency"
+    },
+    "topics": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::topic.topic"
     }
   }
 }

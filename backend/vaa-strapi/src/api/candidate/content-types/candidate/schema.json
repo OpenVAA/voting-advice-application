@@ -63,6 +63,20 @@
       "relation": "manyToOne",
       "target": "api::party.party",
       "inversedBy": "candidates"
+    },
+    "candidateId": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true
+    },
+    "candidateAnswers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::candidate-answer.candidate-answer"
     }
   }
 }

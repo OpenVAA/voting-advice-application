@@ -1,10 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "parties",
+  "collectionName": "topics",
   "info": {
-    "singularName": "party",
-    "pluralName": "parties",
-    "displayName": "Party",
+    "singularName": "topic",
+    "pluralName": "topics",
+    "displayName": "Topic",
     "description": ""
   },
   "options": {
@@ -16,7 +16,7 @@
     }
   },
   "attributes": {
-    "party": {
+    "name": {
       "pluginOptions": {
         "i18n": {
           "localized": true
@@ -25,20 +25,10 @@
       "type": "string",
       "required": true
     },
-    "candidates": {
+    "questions": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::candidate.candidate",
-      "mappedBy": "mainParty"
-    },
-    "partyDescription": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "text",
-      "required": true
+      "target": "api::question.question"
     }
   }
 }
