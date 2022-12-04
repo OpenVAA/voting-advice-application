@@ -23,7 +23,8 @@
         }
       },
       "type": "string",
-      "default": "Start"
+      "default": "Start",
+      "required": true
     },
     "nextQuestion": {
       "pluginOptions": {
@@ -32,7 +33,8 @@
         }
       },
       "type": "string",
-      "default": "Next question"
+      "default": "Next question",
+      "required": true
     },
     "back": {
       "pluginOptions": {
@@ -41,7 +43,8 @@
         }
       },
       "type": "string",
-      "default": "Back"
+      "default": "Back",
+      "required": true
     },
     "percentCompatible": {
       "pluginOptions": {
@@ -50,7 +53,7 @@
         }
       },
       "type": "string",
-      "required": false,
+      "required": true,
       "default": "% compatible"
     },
     "gotToResults": {
@@ -60,7 +63,8 @@
         }
       },
       "type": "string",
-      "default": "Go to results"
+      "default": "Go to results",
+      "required": true
     },
     "skip": {
       "pluginOptions": {
@@ -69,7 +73,8 @@
         }
       },
       "type": "string",
-      "default": "Skip"
+      "default": "Skip",
+      "required": true
     },
     "viewCandidate": {
       "pluginOptions": {
@@ -77,8 +82,9 @@
           "localized": true
         }
       },
-      "type": "string",
-      "default": "View Candidate"
+      "type": "text",
+      "default": "View Candidate",
+      "required": true
     },
     "viewParty": {
       "pluginOptions": {
@@ -86,7 +92,9 @@
           "localized": true
         }
       },
-      "type": "string"
+      "type": "string",
+      "required": true,
+      "default": "View Party"
     },
     "answers": {
       "pluginOptions": {
@@ -94,15 +102,9 @@
           "localized": true
         }
       },
-      "type": "string"
-    },
-    "candidateAnswer": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string"
+      "type": "string",
+      "required": true,
+      "default": "Answers"
     },
     "yourAnswer": {
       "pluginOptions": {
@@ -111,7 +113,8 @@
         }
       },
       "type": "string",
-      "default": "You"
+      "default": "You",
+      "required": true
     },
     "filter": {
       "pluginOptions": {

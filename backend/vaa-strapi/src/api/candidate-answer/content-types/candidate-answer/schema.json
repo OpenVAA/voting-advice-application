@@ -16,11 +16,6 @@
     }
   },
   "attributes": {
-    "question": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::question.question"
-    },
     "answerExplainer": {
       "pluginOptions": {
         "i18n": {
@@ -29,6 +24,11 @@
       },
       "type": "text",
       "required": true
+    },
+    "question": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::question.question"
     }
   }
 }

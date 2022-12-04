@@ -4,7 +4,8 @@
   "info": {
     "singularName": "answer",
     "pluralName": "answers",
-    "displayName": "Answer"
+    "displayName": "answer",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true

@@ -4,7 +4,7 @@
   "info": {
     "singularName": "party",
     "pluralName": "parties",
-    "displayName": "Party",
+    "displayName": "party",
     "description": ""
   },
   "options": {
@@ -38,6 +38,45 @@
         }
       },
       "type": "text",
+      "required": true
+    },
+    "partyAbbreviation": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true
+    },
+    "logo": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    },
+    "mainColor": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "type": "enumeration",
+      "enum": [
+        "Red",
+        "Orange",
+        "Yellow",
+        "Green",
+        "Blue",
+        "Purple"
+      ],
       "required": true
     }
   }

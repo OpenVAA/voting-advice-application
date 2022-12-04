@@ -4,7 +4,7 @@
   "info": {
     "singularName": "candidate",
     "pluralName": "candidates",
-    "displayName": "Candidate",
+    "displayName": "candidate",
     "description": ""
   },
   "options": {
@@ -73,10 +73,18 @@
       "type": "string",
       "required": true
     },
-    "candidateAnswers": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::candidate-answer.candidate-answer"
+    "candidatePhoto": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
     }
   }
 }
