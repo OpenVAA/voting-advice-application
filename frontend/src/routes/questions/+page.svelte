@@ -43,13 +43,13 @@
 
 <!-- TODO: Don't hardcode number of answer options in the future -->
 
-<button on:click={() => answerQuestion(0)}>{$_("questions.scale.stronglyDisagree")}</button> -
-<button on:click={() => answerQuestion(1)}>{$_("questions.scale.disagree")}</button> -
-<button on:click={() => answerQuestion(2)}>{$_("questions.scale.agree")}</button> -
-<button on:click={() => answerQuestion(3)}>{$_("questions.scale.stronglyAgree")}</button>
+<button on:click={() => answerQuestion(0)} aria-label={$_("questions.scale.stronglyDisagree")}>{$_("questions.scale.stronglyDisagree")}</button> -
+<button on:click={() => answerQuestion(1)} aria-label={$_("questions.scale.disagree")}>{$_("questions.scale.disagree")}</button> -
+<button on:click={() => answerQuestion(2)} aria-label={$_("questions.scale.agree")}>{$_("questions.scale.agree")}</button> -
+<button on:click={() => answerQuestion(3)} aria-label={$_("questions.scale.stronglyAgree")}>{$_("questions.scale.stronglyAgree")}</button>
 
 <hr />
 <br />
-<button on:click={() => nextQuestion()}>{$_("questions.nextQuestion")}</button>
+<button on:click={() => nextQuestion()} aria-label={$_("questions.nextQuestion")}>{$_("questions.nextQuestion")}</button>
 <br />
 <a href="/results">{$_("questions.goToResults")}</a>
