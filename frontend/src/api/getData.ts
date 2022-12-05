@@ -12,7 +12,7 @@ export const getData = async (endpoint: string): Promise<any> => {
         })
     }
     catch(err){
-        console.log("Error: ", err);
+        console.error("Error: ", err);
     }
 };
 
