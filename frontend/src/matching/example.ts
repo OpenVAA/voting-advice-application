@@ -9,36 +9,54 @@ import {
     MissingValueDistanceMethod,
 } from ".";
 
-
+/**
+ * Simple example.
+ * Run with `ts-node-esm --experimentalSpecifierResolution node example.ts`
+ */
 function main(): void {
-    const numCandidates = 10;
-    const numQuestions = 10;
+    const numCandidates = 5;
+    const numQuestions = 5;
     const likertScale = 5;
+    const voterAnswer = 2;
+    const numMissing = 1;
 
-    const questions = Array(numQuestions).map(() => MultipleChoiceQuestion.fromLikertScale(likertScale));
+    const questions = Array.from({length: numQuestions}, (_, i) => MultipleChoiceQuestion.fromLikertScale(likertScale));
 
-    const candidates = Array(numCandidates).map(i => new Candidate(`Candidate ${i}`, createAnswers(questions, (i % likertScale) + 1)));
+    const candidates = Array.from({length: numCandidates}, (_, i) => new Candidate(`Candidate ${i} - answers ${(i % likertScale) + 1}`, createAnswers(questions, (i % likertScale) + 1, numMissing)));
 
-    const voter = new Candidate("Voter", createAnswers(questions, 3));
+    const voter = new Candidate("Voter", createAnswers(questions, voterAnswer));
 
-    const algorithm = new MatchingAlgorithmBase({
+    const manhattan = new MatchingAlgorithmBase({
         distanceMetric: DistanceMetric.Manhattan,
-        missingValueMethod: MissingValueDistanceMethod.RelativeMaximum
+        missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
     });
 
-    const matches = algorithm.match(voter, candidates);
+    const directional = new MatchingAlgorithmBase({
+        distanceMetric: DistanceMetric.Directional,
+        missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+    });
 
-    let output = "";
-    for (const match of matches) {
-        output += `${match.entity}: ${match}\n`;
+    const manhattanMatches = manhattan.match(voter, candidates);
+    const directionalMatches = directional.match(voter, candidates);
+
+    let output = `Voter answer: ${voterAnswer}\n\n`;
+    for (let i = 0; i < candidates.length; i++) {
+        output += `${manhattanMatches[i].entity}: Manh: ${manhattanMatches[i]} • Dir: ${directionalMatches[i]}\n`;
     }
 
     console.log(output);
 }
 
 
-function createAnswers(questions: MatchableQuestion[], answerValue: number):  MatchableAnswer[] {
-    return questions.map(o => ({question: o, value: answerValue}));
+function createAnswers(questions: MatchableQuestion[], answerValue: number, missing = 0):  MatchableAnswer[] {
+    const answers: MatchableAnswer[] = [];
+    for (let i = 0; i < questions.length; i++) {
+        answers.push({
+            question: questions[i],
+            value: i < missing ? MISSING_VALUE : answerValue
+        })
+    }
+    return answers;
 }
 
 class Candidate implements HasMatchableAnswers {
