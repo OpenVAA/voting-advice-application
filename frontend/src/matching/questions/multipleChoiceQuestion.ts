@@ -1,6 +1,5 @@
 import { MISSING_VALUE, NORMALIZED_DISTANCE_EXTENT,
-    MatchableValue, NonmissingValue, MatchingSpaceCoordinate } from "..";
-import { MatchableQuestion } from ".";
+    MatchableQuestion, MatchableValue, NonmissingValue, SignedNormalizedCoordinate } from "..";
 
 /**
  * A value option in a matchable multiple choice question
@@ -52,10 +51,10 @@ export class MultipleChoiceQuestion extends MatchableQuestion {
      * @param value A question's native value
      * @returns The value in the signed normalized range (e.g. [-.5, .5])
      */
-    normalizeValue(value: MatchableValue): MatchingSpaceCoordinate {
+    normalizeValue(value: MatchableValue): SignedNormalizedCoordinate {
         if (value === MISSING_VALUE) 
             return value;
-        return NORMALIZED_DISTANCE_EXTENT * ((value - this.minValue) / this.valueRange - 0.5);
+        return (value - this.minValue) / this.valueRange - NORMALIZED_DISTANCE_EXTENT / 2;
     }
 
     /**
@@ -64,7 +63,7 @@ export class MultipleChoiceQuestion extends MatchableQuestion {
      * @returns A MultipleChoiceQuestion object
      */
     static fromLikertScale(scale: number): MultipleChoiceQuestion {
-        const values: MultipleChoiceOption[] = Array.from({length: scale}, (_, i) => ({value: i + 1}));
+        const values: MultipleChoiceOption[] = Array(scale).map(i => ({value: i + 1}));
         return new MultipleChoiceQuestion({values});
     }
 }
