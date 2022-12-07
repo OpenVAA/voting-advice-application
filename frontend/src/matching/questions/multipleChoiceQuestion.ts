@@ -54,7 +54,7 @@ export class MultipleChoiceQuestion extends MatchableQuestion {
     normalizeValue(value: MatchableValue): SignedNormalizedCoordinate {
         if (value === MISSING_VALUE) 
             return value;
-        return (value - this.minValue) / this.valueRange - NORMALIZED_DISTANCE_EXTENT / 2;
+        return NORMALIZED_DISTANCE_EXTENT * ((value - this.minValue) / this.valueRange - 0.5);
     }
 
     /**
@@ -63,7 +63,7 @@ export class MultipleChoiceQuestion extends MatchableQuestion {
      * @returns A MultipleChoiceQuestion object
      */
     static fromLikertScale(scale: number): MultipleChoiceQuestion {
-        const values: MultipleChoiceOption[] = Array(scale).map(i => ({value: i + 1}));
+        const values: MultipleChoiceOption[] = Array.from({length: scale}, (_, i) => ({value: i + 1}));
         return new MultipleChoiceQuestion({values});
     }
 }

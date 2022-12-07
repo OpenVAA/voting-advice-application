@@ -1,5 +1,5 @@
 import { MISSING_VALUE, NORMALIZED_DISTANCE_EXTENT, imputeMissingValues, MatchingSpacePosition, 
-    UnsignedNormalizedDistance } from "..";
+    SignedNormalizedPosition, UnsignedNormalizedDistance } from "..";
 
 /**
  * Available distance measurement metrics
@@ -58,15 +58,15 @@ export function measureDistance(
     b: MatchingSpacePosition, 
     options: DistanceMeasurementOptions
 ): UnsignedNormalizedDistance {
-    if (a.length === 0) throw new Error(`a doesn't have any elements!`);
-    if (a.length !== b.length) throw new Error(`a and b have different number of elements!`);
+    if (a.dimensions === 0) throw new Error(`a doesn't have any elements!`);
+    if (a.dimensions !== b.dimensions) throw new Error(`a and b have different number of elements!`);
     const space = a.space;
-    if (space && space.length !== a.length) throw new Error(`a and space have different number of dimensions!`);
+    if (space && space.dimensions !== a.dimensions) throw new Error(`a and space have different number of dimensions!`);
     let sum = 0;
-    for (let i = 0; i < a.length; i++) {
+    for (let i = 0; i < a.dimensions; i++) {
         // We might have to alter these values, if there are missing ones, hence the vars
-        let valA = a[i], 
-            valB = b[i];
+        let valA = a.coordinates[i], 
+            valB = b.coordinates[i];
         // First, handle missing values
         if (valA === MISSING_VALUE) throw new Error("The first position cannot contain missing values!");
         if (valB === MISSING_VALUE) {
@@ -79,8 +79,7 @@ export function measureDistance(
                 dist = Math.abs(valA - valB);
                 break;
             case DistanceMetric.Directional:
-                const maxAbsDist = NORMALIZED_DISTANCE_EXTENT / 2;
-                dist = (1 - valA / maxAbsDist * valB / maxAbsDist) * NORMALIZED_DISTANCE_EXTENT;
+                dist = NORMALIZED_DISTANCE_EXTENT * 0.5 * (1 - (valA * valB) / ((NORMALIZED_DISTANCE_EXTENT / 2) ** 2));
                 break;
             default:
                 throw new Error(`Unknown distance metric: ${options.metric}`);
@@ -92,6 +91,6 @@ export function measureDistance(
         sum += dist;
     }
     // Normalize total distance
-    return sum / (space ? space.maxDistance : a.length);
+    return sum / (space ? space.maxDistance : a.dimensions);
 }
 

@@ -1,22 +1,5 @@
 import { SignedNormalizedPosition } from "..";
 
-/**
- * For dimensionality calculation
- */
-export interface HasLength {
-    length: number;
-}
-
-/**
- * Assert that all of the objects have the same number of dimensions
- * @param objects Positions or vectors
- */
-export function assertSameDimensions(...objects: HasLength[]): void {
-    const dims = objects[0].length;
-    for (let i = 1; i < objects.length; i++) {
-        if (objects[i].length !== dims) throw new Error(`Objects have different number of dimensions!`);
-    }
-}
 
 /**
  * A space wherein the matching distances are measured.
@@ -26,7 +9,7 @@ export class MatchingSpace {
         if (weights.length === 0) throw new Error("Weights cannot be empty!");
     }
 
-    get length(): number {
+    get dimensions(): number {
         return this.weights.length;
     }
 
@@ -43,11 +26,11 @@ export class MatchingSpacePosition {
         public coordinates: SignedNormalizedPosition,
         public readonly space?: MatchingSpace
     ) {
-        if (space) 
-            assertSameDimensions(coordinates, space);
+        if (space && space.dimensions !== coordinates.length)
+            throw new Error(`The dimensions of coordinates ${coordinates.length} and space ${space.dimensions} do not match!`);
     }
 
-    get length(): number {
+    get dimensions(): number {
         return this.coordinates.length;
     }
 }

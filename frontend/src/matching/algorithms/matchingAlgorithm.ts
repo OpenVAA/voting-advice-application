@@ -122,7 +122,7 @@ export class MatchingAlgorithmBase implements MatchingAlgorithm {
         const dimensionWeights: number[] = [];
         for (const question of questionList) {
             const dims = question.normalizedDimensions;
-            dimensionWeights.push(...Array(dims).map(() => 1 / dims));
+            dimensionWeights.push(...Array.from({length: dims}, () => 1 / dims));
         }
         const space = new MatchingSpace(dimensionWeights);
         // Create positions

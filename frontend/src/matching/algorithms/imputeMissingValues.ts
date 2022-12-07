@@ -35,7 +35,7 @@ export function imputeMissingValues(
             // Treat value b as the opposite extreme of value a, i.e. on a 5-point scale
             // b is 5 if a is 1 or 2; 1 if a is 4 or 5; for 3, bias defines the direction
             if (referenceValue == 0)
-                referenceValue = bias === MissingValueBias.Positive ? maxAbsDistance : -maxAbsDistance;
+                missingValue = bias === MissingValueBias.Positive ? maxAbsDistance : -maxAbsDistance;
             else
                 missingValue = referenceValue < 0 ? maxAbsDistance : -maxAbsDistance;
             break;
