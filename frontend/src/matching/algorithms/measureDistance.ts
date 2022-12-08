@@ -1,11 +1,26 @@
 import { MISSING_VALUE, NORMALIZED_DISTANCE_EXTENT, imputeMissingValues, MatchingSpacePosition, 
-    SignedNormalizedPosition, UnsignedNormalizedDistance } from "..";
+    MissingValueBias, MissingValueDistanceMethod, UnsignedNormalizedDistance } from "..";
 
 /**
  * Available distance measurement metrics
  */
 export enum DistanceMetric {
+    /** Sum of the distances in each dimension */
     Manhattan,
+    /** Sum of the products of the distances in each dimension. Note that
+     *  this method assumes a neutral stance semantically means being
+     *  unsure about the statement. Thus, if either of the positions being
+     *  compared has a neutral stance on an issue, agreement for that will
+     *  be 50%.
+     *  
+     *  Furthermore, the maximum available agreement will be less than
+     *  100% in all cases where the reference entity has any other answers
+     *  than those at the extremes (i.e. 1 or 5 on a 5-pt Likert scale).
+     * 
+     *  More confusingly, this means that if both the voter's and the
+     *  candidate's answer to a statement is, e.g., 2/5, their agreement
+     *  will be 25%, not 100% even though their answer are identical. 
+     */
     Directional,
     // MendezHybrid,
     // Euclidean,
@@ -13,45 +28,26 @@ export enum DistanceMetric {
 }
 
 /**
- * The penalty applied to missing values
- * Neutral imputes the neutral, i.e., middle answer
- * RelativeMaximum imputes the furthest possible answer from the reference, 
- *     i.e., voter answer
- * AbsoluteMaximum treats both the reference value and the missing one as
- *     being at the opposite ends of the range
- */
-export enum MissingValueDistanceMethod {
-    Neutral,
-    RelativeMaximum,
-    AbsoluteMaximum
-}
-
-/**
- * The direction into which the missing value is biased when the reference
- * value is neutral. I.e. if we use the RelativeMaximum method and the 
- * reference value is neutral (3 on a 5-pt Likert scale) and the bias is
- * Positive, we impute the maximum value (5) for the missing value.
- */
-export enum MissingValueBias {
-    Positive,
-    Negative
-}
-
-/**
  * Options passed to measureDistance.
  */
 export interface DistanceMeasurementOptions {
+    /** The distance metric to use. */
     metric: DistanceMetric;
+    /** The method used for calculating penalties for missing values. */
     missingValueMethod: MissingValueDistanceMethod;
+    /** The direction of the bias used in imputing missing values,
+     * when the reference value is neutral. */
     missingValueBias?: MissingValueBias;
 }
 
 /**
- * Measure the distance between to positions in a MatchingSpace.
+ * Measure the distance between to positions in a `MatchingSpace`.
+ * 
  * @param a The reference position to measure against (cannot be missing)
  * @param b The other position
- * @param options Options, see the interface DistanceMeasurementOptions
- * @returns An unsigned normalized distance, e.g. [0, 1]
+ * @param options See the interface `DistanceMeasurementOptions`
+ * @returns An unsigned normalized distance, e.g. [0, 1] (the range is defined
+ * by `NORMALIZED_DISTANCE_EXTENT`).
  */
 export function measureDistance(
     a: MatchingSpacePosition, 

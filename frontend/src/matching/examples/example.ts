@@ -7,7 +7,7 @@ import {
     MultipleChoiceQuestion,
     DistanceMetric,
     MissingValueDistanceMethod,
-} from ".";
+} from "..";
 
 /**
  * Simple example.

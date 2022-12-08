@@ -6,6 +6,14 @@ import { DistanceMetric, HasMatchableAnswers, Match, MatchableQuestion, Matching
  * The generic interface for matching algorithms
  */
 export interface MatchingAlgorithm {
+    /**
+     * Calculate matches between the referenceEntity and the other entities.
+     * 
+     * @param referenceEntity The entity to match against, e.g. voter
+     * @param entities The entities to match with, e.g. candidates
+     * @param options Matching options
+     * @returns An array of Match objects
+     */
     match: (referenceEntity: HasMatchableAnswers, entities: readonly HasMatchableAnswers[],
         options?: MatchingOptions) => Match[]
 }
@@ -14,9 +22,15 @@ export interface MatchingAlgorithm {
  * Constructor options passed to a matching algorithm
  */
 export interface MatchingAlgorithmOptions {
+    /** The distance metric to use. */
     distanceMetric: DistanceMetric;
+    /** The method used for calculating penalties for missing values. */
     missingValueMethod: MissingValueDistanceMethod;
+    /** The direction of the bias used in imputing missing values,
+     * when the reference value is neutral. */
     missingValueBias?: MissingValueBias;
+    /** A possible projector that will convert the results from one
+     *  matching space to another, usually lower-dimensional, one. */
     projector?: MatchingSpaceProjector;
 }
 
@@ -24,6 +38,9 @@ export interface MatchingAlgorithmOptions {
  * Options passed to the match method of a MatchingAlgorithm
  */
 export interface MatchingOptions {
+    /** A list of questions that will be used in matching. If this is
+     *  not specified, the referenceEntity's answers will be used to
+     *  define the list of questions. */
     questionList?: readonly MatchableQuestion[];
 }
 
@@ -31,8 +48,11 @@ export interface MatchingOptions {
  * Options passed to the project method of a MatchingAlgorithm
  */
 export type ProjectionOptions = {
+    /** The entity whose answers will be used to define the list 
+     *  of questions used in the projection. */
     referenceEntity: HasMatchableAnswers, 
 } | {
+    /** A list of questions that will be used in the projection. */
     questionList: readonly MatchableQuestion[],
 }
 
@@ -42,14 +62,21 @@ export type ProjectionOptions = {
  * 
  * The matching logic is as follows:
  * 1. Project all the answers into a normalized MatchingSpace where all
- *    dimensions range from [-.5, .5] (defined by NORMALIZED_DISTANCE_EXTENT)
+ *    dimensions range from [-.5, .5] (the range is defined by 
+ *    NORMALIZED_DISTANCE_EXTENT and centered around zero)
  * 2. Possibly reproject the positions to a low-dimensional space
  * 3. Measure distances in this space using measureDistance
  */
 export class MatchingAlgorithmBase implements MatchingAlgorithm {
+    /** The distance metric to use. */
     distanceMetric: DistanceMetric;
+    /** The direction of the bias used in imputing missing values,
+     * when the reference value is neutral. */
     missingValueBias?: MissingValueBias;
+    /** The method used for calculating penalties for missing values. */
     missingValueMethod: MissingValueDistanceMethod;
+    /** A possible projector that will convert the results from one
+     *  matching space to another, usually lower-dimensional, one. */
     projector?: MatchingSpaceProjector;
 
     constructor(
@@ -62,11 +89,12 @@ export class MatchingAlgorithmBase implements MatchingAlgorithm {
     }
 
     /**
-     * Generates an array of matches between the referenceEntity and other entities.
-     * @param referenceEntity The entity to match against, usually the voter
-     * @param entities The entities to match with, usually the candidates
-     * @param options Matching options, see the interface
-     * @returns Array of Match objects
+     * Calculate matches between the referenceEntity and the other entities.
+     * 
+     * @param referenceEntity The entity to match against, e.g. voter
+     * @param entities The entities to match with, e.g. candidates
+     * @param options Matching options
+     * @returns An array of Match objects
      */
     match(
         referenceEntity: HasMatchableAnswers, 
@@ -102,9 +130,10 @@ export class MatchingAlgorithmBase implements MatchingAlgorithm {
 
     /**
      * Project entities into a normalized MatchingSpace, where distances can be calculated.
+     * 
      * @param entities The entities to project
      * @param questionListOrEntity A question list or a reference entity whose answers are
-     *     used to define the question list
+     * used to define the question list
      * @returns An array of positions in the normalized MatchingSpace
      */
     projectToNormalizedSpace(
