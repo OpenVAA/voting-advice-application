@@ -13,41 +13,57 @@ import {
  * Simple example.
  * Run with `ts-node-esm --experimentalSpecifierResolution node example.ts`
  */
-function main(): void {
-    const numCandidates = 5;
-    const numQuestions = 5;
-    const likertScale = 5;
-    const voterAnswer = 2;
-    const numMissing = 1;
+function main(
+    numCandidates = 5,
+    numQuestions = 5,
+    likertScale = 5,
+    voterAnswer = 2,
+    numMissing = 1
+): void {
 
+    // Create dummy questions
     const questions = Array.from({length: numQuestions}, (_, i) => MultipleChoiceQuestion.fromLikertScale(likertScale));
 
-    const candidates = Array.from({length: numCandidates}, (_, i) => new Candidate(`Candidate ${i} - answers ${(i % likertScale) + 1}`, createAnswers(questions, (i % likertScale) + 1, numMissing)));
+    // Create dummy candidates with dummy answers
+    const candidates = Array.from({length: numCandidates}, (_, i) => new Candidate(`Candidate ${i} - answers ${(i % likertScale) + 1} to all`, createAnswers(questions, (i % likertScale) + 1, numMissing)));
 
+    // Create a Candidate to represent the voter
     const voter = new Candidate("Voter", createAnswers(questions, voterAnswer));
 
+    // Manhattan matching algorithm
     const manhattan = new MatchingAlgorithmBase({
         distanceMetric: DistanceMetric.Manhattan,
         missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
     });
 
+    // Directional matching algorithm
     const directional = new MatchingAlgorithmBase({
         distanceMetric: DistanceMetric.Directional,
         missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
     });
 
+    // Get matches for both methods
     const manhattanMatches = manhattan.match(voter, candidates);
     const directionalMatches = directional.match(voter, candidates);
 
-    let output = `Voter answer: ${voterAnswer}\n\n`;
+    // Generate output string
+    let output = `Questions: ${numQuestions} • Likert scale ${likertScale} • Cand's have ${numMissing} missing answers\n`;
+    output += `The voter answers ${voterAnswer} to all\n`;
     for (let i = 0; i < candidates.length; i++) {
-        output += `${manhattanMatches[i].entity}: Manh: ${manhattanMatches[i]} • Dir: ${directionalMatches[i]}\n`;
+        output += `${manhattanMatches[i].entity} • Matches: Manhattan ${manhattanMatches[i]} • Directional ${directionalMatches[i]}\n`;
     }
 
     console.log(output);
 }
 
-
+/**
+ * Create dummy answers.
+ * 
+ * @param questions Question list
+ * @param answerValue The same value for all
+ * @param missing Number of missing answers
+ * @returns Array of answers
+ */
 function createAnswers(questions: MatchableQuestion[], answerValue: number, missing = 0):  MatchableAnswer[] {
     const answers: MatchableAnswer[] = [];
     for (let i = 0; i < questions.length; i++) {
@@ -59,6 +75,9 @@ function createAnswers(questions: MatchableQuestion[], answerValue: number, miss
     return answers;
 }
 
+/**
+ * A dummy candidate object for matching.
+ */
 class Candidate implements HasMatchableAnswers {
     constructor(
         public readonly name: string,
@@ -83,3 +102,4 @@ class Candidate implements HasMatchableAnswers {
 }
 
 main();
+main(4, 4, 4, 2, 1);
