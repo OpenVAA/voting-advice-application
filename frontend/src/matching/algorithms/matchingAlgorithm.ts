@@ -1,6 +1,6 @@
 import { DistanceMetric, HasMatchableAnswers, Match, MatchableQuestion, MatchingSpace, 
     MatchingSpacePosition, MatchingSpaceProjector, measureDistance, MissingValueBias, 
-    MissingValueDistanceMethod, SignedNormalizedCoordinate } from "..";
+    MissingValueDistanceMethod, MatchingSpaceCoordinate } from "..";
 
 /**
  * The generic interface for matching algorithms
@@ -157,7 +157,7 @@ export class MatchingAlgorithmBase implements MatchingAlgorithm {
         // Create positions
         const positions: MatchingSpacePosition[] = [];
         for (const entity of entities) {
-            const coords: SignedNormalizedCoordinate[] = [];
+            const coords: MatchingSpaceCoordinate[] = [];
             for (const question of questionList) {
                 const value = question.normalizeValue(entity.getMatchableAnswer(question).value);
                 // We need this check for preference order questions, which return a list of subdimension distances

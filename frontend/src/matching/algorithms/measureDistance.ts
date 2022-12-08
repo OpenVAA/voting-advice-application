@@ -1,5 +1,31 @@
 import { MISSING_VALUE, NORMALIZED_DISTANCE_EXTENT, imputeMissingValues, MatchingSpacePosition, 
-    MissingValueBias, MissingValueDistanceMethod, UnsignedNormalizedDistance } from "..";
+    MissingValueBias, MissingValueDistanceMethod, SignedNormalizedDistance, 
+    UnsignedNormalizedDistance } from "..";
+
+
+/**
+ * Calculate the Manhattan distance between two distances.
+ * 
+ * @param a Signed distance
+ * @param b Signed distance
+ * @returns Unsigned distance
+ */
+export function manhattanDistance(a: SignedNormalizedDistance, b: SignedNormalizedDistance
+): UnsignedNormalizedDistance {
+    return Math.abs(a - b);
+}
+
+/**
+ * Calculate the directional distance between two positions.
+ * 
+ * @param a Signed distance
+ * @param b Signed distance
+ * @returns Unsigned distance
+ */
+export function directionalDistance(a: SignedNormalizedDistance, b: SignedNormalizedDistance
+): UnsignedNormalizedDistance {
+    return 0.5 * NORMALIZED_DISTANCE_EXTENT - 2 * a * b / NORMALIZED_DISTANCE_EXTENT;
+}
 
 /**
  * Available distance measurement metrics
@@ -7,8 +33,9 @@ import { MISSING_VALUE, NORMALIZED_DISTANCE_EXTENT, imputeMissingValues, Matchin
 export enum DistanceMetric {
     /** Sum of the distances in each dimension */
     Manhattan,
-    /** Sum of the products of the distances in each dimension. Note that
-     *  this method assumes a neutral stance semantically means being
+    /** 
+     *  Sum of the products of the distances in each dimension. Note that
+     *  this method assumes a neutral stance semantically meaning being
      *  unsure about the statement. Thus, if either of the positions being
      *  compared has a neutral stance on an issue, agreement for that will
      *  be 50%.
@@ -22,7 +49,8 @@ export enum DistanceMetric {
      *  will be 25%, not 100% even though their answer are identical. 
      */
     Directional,
-    // MendezHybrid,
+    // MendezHybrid, // This should be easy to implement, just take a 50/50 
+                     // average of Manhattan and Directional
     // Euclidean,
     // Mahalonobis
 }
@@ -65,17 +93,16 @@ export function measureDistance(
             valB = b.coordinates[i];
         // First, handle missing values
         if (valA === MISSING_VALUE) throw new Error("The first position cannot contain missing values!");
-        if (valB === MISSING_VALUE) {
+        if (valB === MISSING_VALUE)
             [valA, valB] = imputeMissingValues(valA, options);
-        }
         // Calculate distance
         let dist: number;
         switch (options.metric) {
             case DistanceMetric.Manhattan:
-                dist = Math.abs(valA - valB);
+                dist = manhattanDistance(valA, valB);
                 break;
             case DistanceMetric.Directional:
-                dist = NORMALIZED_DISTANCE_EXTENT * 0.5 * (1 - (valA * valB) / ((NORMALIZED_DISTANCE_EXTENT / 2) ** 2));
+                dist = directionalDistance(valA, valB);
                 break;
             default:
                 throw new Error(`Unknown distance metric: ${options.metric}`);
@@ -89,4 +116,3 @@ export function measureDistance(
     // Normalize total distance
     return sum / (space ? space.maxDistance : a.dimensions);
 }
-

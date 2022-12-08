@@ -1,5 +1,5 @@
 import { MISSING_VALUE, NORMALIZED_DISTANCE_EXTENT,
-    MatchableQuestion, MatchableValue, NonmissingValue, SignedNormalizedCoordinate } from "..";
+    MatchableQuestion, MatchableValue, NonmissingValue, MatchingSpaceCoordinate } from "..";
 
 /**
  * A value option in a matchable multiple choice question
@@ -51,7 +51,7 @@ export class MultipleChoiceQuestion extends MatchableQuestion {
      * @param value A question's native value
      * @returns The value in the signed normalized range (e.g. [-.5, .5])
      */
-    normalizeValue(value: MatchableValue): SignedNormalizedCoordinate {
+    normalizeValue(value: MatchableValue): MatchingSpaceCoordinate {
         if (value === MISSING_VALUE) 
             return value;
         return NORMALIZED_DISTANCE_EXTENT * ((value - this.minValue) / this.valueRange - 0.5);
