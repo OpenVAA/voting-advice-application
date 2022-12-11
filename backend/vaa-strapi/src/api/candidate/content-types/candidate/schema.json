@@ -34,9 +34,9 @@
       "type": "string",
       "required": true
     },
-    "motherTongue": {
+    "motherTongues": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "oneToMany",
       "target": "api::language.language"
     },
     "otherLanguages": {
@@ -57,12 +57,6 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::party.party"
-    },
-    "mainParty": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::party.party",
-      "inversedBy": "candidates"
     },
     "candidateId": {
       "pluginOptions": {
@@ -85,6 +79,17 @@
           "localized": false
         }
       }
+    },
+    "party": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::party.party"
+    },
+    "elections": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::election.election",
+      "mappedBy": "candidates"
     }
   }
 }

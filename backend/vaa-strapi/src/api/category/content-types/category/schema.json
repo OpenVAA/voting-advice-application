@@ -1,11 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "topics",
+  "collectionName": "categories",
   "info": {
-    "singularName": "topic",
-    "pluralName": "topics",
-    "displayName": "topic",
-    "description": ""
+    "singularName": "category",
+    "pluralName": "categories",
+    "displayName": "category"
   },
   "options": {
     "draftAndPublish": true
@@ -22,8 +21,7 @@
           "localized": true
         }
       },
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "questions": {
       "type": "relation",

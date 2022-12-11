@@ -43,10 +43,16 @@
       "relation": "oneToMany",
       "target": "api::constituency.constituency"
     },
-    "topics": {
+    "candidates": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::candidate.candidate",
+      "inversedBy": "elections"
+    },
+    "categories": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::topic.topic"
+      "target": "api::category.category"
     }
   }
 }

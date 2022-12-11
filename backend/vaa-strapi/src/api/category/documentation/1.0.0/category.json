@@ -1,5 +1,5 @@
 {
-  "/topics": {
+  "/categories": {
     "get": {
       "responses": {
         "200": {
@@ -7,7 +7,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TopicListResponse"
+                "$ref": "#/components/schemas/CategoryListResponse"
               }
             }
           }
@@ -64,7 +64,7 @@
         }
       },
       "tags": [
-        "Topic"
+        "Category"
       ],
       "parameters": [
         {
@@ -159,7 +159,7 @@
           "style": "deepObject"
         }
       ],
-      "operationId": "get/topics"
+      "operationId": "get/categories"
     },
     "post": {
       "responses": {
@@ -168,7 +168,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TopicResponse"
+                "$ref": "#/components/schemas/CategoryResponse"
               }
             }
           }
@@ -225,23 +225,23 @@
         }
       },
       "tags": [
-        "Topic"
+        "Category"
       ],
       "parameters": [],
-      "operationId": "post/topics",
+      "operationId": "post/categories",
       "requestBody": {
         "required": true,
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/TopicRequest"
+              "$ref": "#/components/schemas/CategoryRequest"
             }
           }
         }
       }
     }
   },
-  "/topics/{id}": {
+  "/categories/{id}": {
     "get": {
       "responses": {
         "200": {
@@ -249,7 +249,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TopicResponse"
+                "$ref": "#/components/schemas/CategoryResponse"
               }
             }
           }
@@ -306,7 +306,7 @@
         }
       },
       "tags": [
-        "Topic"
+        "Category"
       ],
       "parameters": [
         {
@@ -320,7 +320,7 @@
           }
         }
       ],
-      "operationId": "get/topics/{id}"
+      "operationId": "get/categories/{id}"
     },
     "put": {
       "responses": {
@@ -329,7 +329,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TopicResponse"
+                "$ref": "#/components/schemas/CategoryResponse"
               }
             }
           }
@@ -386,7 +386,7 @@
         }
       },
       "tags": [
-        "Topic"
+        "Category"
       ],
       "parameters": [
         {
@@ -400,13 +400,13 @@
           }
         }
       ],
-      "operationId": "put/topics/{id}",
+      "operationId": "put/categories/{id}",
       "requestBody": {
         "required": true,
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/TopicRequest"
+              "$ref": "#/components/schemas/CategoryRequest"
             }
           }
         }
@@ -477,7 +477,7 @@
         }
       },
       "tags": [
-        "Topic"
+        "Category"
       ],
       "parameters": [
         {
@@ -491,10 +491,10 @@
           }
         }
       ],
-      "operationId": "delete/topics/{id}"
+      "operationId": "delete/categories/{id}"
     }
   },
-  "/topics/{id}/localizations": {
+  "/categories/{id}/localizations": {
     "post": {
       "responses": {
         "200": {
@@ -502,7 +502,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TopicLocalizationResponse"
+                "$ref": "#/components/schemas/CategoryLocalizationResponse"
               }
             }
           }
@@ -559,7 +559,7 @@
         }
       },
       "tags": [
-        "Topic"
+        "Category"
       ],
       "parameters": [
         {
@@ -573,13 +573,13 @@
           }
         }
       ],
-      "operationId": "post/topics/{id}/localizations",
+      "operationId": "post/categories/{id}/localizations",
       "requestBody": {
         "required": true,
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/TopicLocalizationRequest"
+              "$ref": "#/components/schemas/CategoryLocalizationRequest"
             }
           }
         }
