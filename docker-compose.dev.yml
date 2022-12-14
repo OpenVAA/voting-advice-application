@@ -1,0 +1,15 @@
+version: "3.4"
+
+services:
+  frontend:
+    extends:
+      file: ./frontend/docker-compose.dev.yml
+      service: frontend
+  postgres:
+    extends:
+      file: ./backend/vaa-strapi/docker-compose.yml
+      service: postgres
+  adminer:
+    extends:
+      file: ./backend/vaa-strapi/docker-compose.yml
+      service: adminer

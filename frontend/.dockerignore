@@ -1,0 +1,6 @@
+.svelte-kit/
+.vite/
+android/
+ios/
+node_modules/
+build/
