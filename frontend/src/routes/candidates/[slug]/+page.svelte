@@ -2,7 +2,7 @@
     import { _ } from 'svelte-i18n'
     import {GetFullNameInOrder} from "../../../utils/internationalisation";
     export let data;
-    let party = data?.mainParty?.data;
+    let party = data?.party?.data;
 </script>
 
 {#if data}

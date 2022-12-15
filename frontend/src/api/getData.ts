@@ -5,15 +5,10 @@ import {constants} from "../utils/constants";
 
 // TODO: Define what type of data this returns instead of just any
 export const getData = async (endpoint: string): Promise<any> => {
-    try{
-        const url = `${constants.BACKEND_URL}/${endpoint}`;
-        return await fetch(url).then(response => {
-            return response.json();
-        })
-    }
-    catch(err){
-        console.error("Error: ", err);
-    }
+    const url = `${constants.BACKEND_URL}/${endpoint}`;
+    return await fetch(url).then(response => {
+        return response.json();
+    }).catch(error => console.error("Error in getting data from backend: ", error))
 };
 
 // TODO: Define what type of data this returns instead of just any

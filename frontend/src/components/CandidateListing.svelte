@@ -3,7 +3,7 @@
     export let candidate;
     let id = candidate?.id;
     let attributes = candidate?.attributes;
-    let party = attributes?.mainParty?.data?.attributes?.party;
+    let party = attributes?.party?.data?.attributes?.party;
 </script>
 
 <section class="card w-96 bg-base-100 shadow-xl m-8">
