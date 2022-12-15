@@ -1,25 +1,58 @@
 {
-	"kind": "collectionType",
-	"collectionName": "elections",
-	"info": {
-		"singularName": "election",
-		"pluralName": "elections",
-		"displayName": "Election"
-	},
-	"options": {
-		"draftAndPublish": true
-	},
-	"pluginOptions": {},
-	"attributes": {
-		"name": {
-			"type": "string"
-		},
-		"election_date": {
-			"type": "date"
-		},
-		"election_type": {
-			"type": "enumeration",
-			"enum": ["local", "presidential", "congress"]
-		}
-	}
+  "kind": "collectionType",
+  "collectionName": "elections",
+  "info": {
+    "singularName": "election",
+    "pluralName": "elections",
+    "displayName": "election",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "electionName": {
+      "type": "string"
+    },
+    "electionDate": {
+      "type": "date"
+    },
+    "electionType": {
+      "type": "enumeration",
+      "enum": [
+        "local",
+        "presidential",
+        "congress"
+      ]
+    },
+    "parties": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::party.party"
+    },
+    "electionDescription": {
+      "type": "richtext",
+      "required": true
+    },
+    "appTitle": {
+      "type": "string"
+    },
+    "constituencies": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::constituency.constituency"
+    },
+    "candidates": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::candidate.candidate",
+      "inversedBy": "elections"
+    },
+    "categories": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::category.category"
+    }
+  }
 }
