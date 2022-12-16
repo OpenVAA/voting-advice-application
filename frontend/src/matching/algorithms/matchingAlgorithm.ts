@@ -94,13 +94,11 @@ export class MatchingAlgorithmBase implements MatchingAlgorithm {
      * 
      * @param referenceEntity The entity to match against, e.g. voter
      * @param entities The entities to match with, e.g. candidates
-     * @param options Matching options
      * @returns An array of Match objects
      */
     match(
         referenceEntity: HasMatchableAnswers, 
-        entities: readonly HasMatchableAnswers[],
-        options: MatchingOptions = {}
+        entities: readonly HasMatchableAnswers[]
     ): Match[] {
         if (entities.length === 0) throw new Error("Entities must not be empty");
         // NB. we add the referenceEntity to the entities to project as well as in the options
