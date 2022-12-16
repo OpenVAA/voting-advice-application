@@ -1,6 +1,6 @@
-import { MISSING_VALUE, NORMALIZED_DISTANCE_EXTENT, imputeMissingValues, MatchingSpacePosition, 
-    MissingValueBias, MissingValueDistanceMethod, SignedNormalizedDistance, 
+import { MISSING_VALUE, NORMALIZED_DISTANCE_EXTENT, MatchingSpacePosition, SignedNormalizedDistance, 
     UnsignedNormalizedDistance } from "..";
+import { imputeMissingValues, MissingValueBias, MissingValueDistanceMethod } from ".";
 
 
 /**

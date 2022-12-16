@@ -1,6 +1,7 @@
-import { DistanceMetric, HasMatchableAnswers, Match, MatchableQuestion, MatchingSpace, 
-    MatchingSpacePosition, MatchingSpaceProjector, measureDistance, MissingValueBias, 
-    MissingValueDistanceMethod, MatchingSpaceCoordinate } from "..";
+import { HasMatchableAnswers, MatchableQuestion, MatchingSpace, 
+    MatchingSpacePosition, MatchingSpaceCoordinate } from "..";
+import { DistanceMetric, Match, MatchingSpaceProjector, measureDistance, MissingValueBias, 
+    MissingValueDistanceMethod } from ".";
 
 /**
  * The generic interface for matching algorithms

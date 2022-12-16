@@ -1,4 +1,6 @@
-import { MatchableValue, MatchableQuestion } from "..";
+import { MatchableQuestion } from "..";
+import { MatchableValue } from ".";
+
 
 /**
  * Entities to be matched must implement this interface.

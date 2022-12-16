@@ -1,5 +1,4 @@
-import { MISSING_VALUE, MatchingSpace, SignedNormalizedDistance } from "..";
-
+import { MISSING_VALUE, MatchingSpace, SignedNormalizedDistance } from ".";
 
 /**
  * A coordinate in a space defined by SignedNormalizedDistances that may be missing

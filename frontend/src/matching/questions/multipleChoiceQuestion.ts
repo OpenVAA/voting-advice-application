@@ -1,5 +1,6 @@
 import { MISSING_VALUE, NORMALIZED_DISTANCE_EXTENT,
-    MatchableQuestion, MatchableValue, NonmissingValue, MatchingSpaceCoordinate } from "..";
+    MatchableValue, NonmissingValue, MatchingSpaceCoordinate } from "..";
+import { MatchableQuestion } from ".";
 
 /**
  * A value option in a matchable multiple choice question
