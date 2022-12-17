@@ -2,7 +2,9 @@ version: "3.4"
 
 services:
   frontend:
-    build: ./
+    build:
+      context: .
+      target: development
     volumes:
       # Creating this volume will make Docker update changes from local automatically
       - ./:/usr/src/app
@@ -14,4 +16,4 @@ services:
       - /usr/src/app/ios
     ports:
       - 5173:5173
-    command: npm run dev -- --host
+    restart: always
