@@ -3,7 +3,7 @@ version: "3.4"
 services:
   frontend:
     extends:
-      file: ./frontend/docker-compose.dev.yml
+      file: ./frontend/docker-compose.yml
       service: frontend
     depends_on:
       - "strapi"
@@ -11,7 +11,7 @@ services:
       - VITE_BACKEND_URL=host:docker:internal:1337
   strapi:
     extends:
-      file: ./backend/vaa-strapi/docker-compose.dev.yml
+      file: ./backend/vaa-strapi/docker-compose.yml
       service: strapi
     environment:
       HOST: ${HOST}
@@ -29,7 +29,7 @@ services:
       DATABASE_SSL_SELF: ${DATABASE_SSL_SELF}
   postgres:
     extends:
-      file: ./backend/vaa-strapi/docker-compose.dev.yml
+      file: ./backend/vaa-strapi/docker-compose.yml
       service: postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
