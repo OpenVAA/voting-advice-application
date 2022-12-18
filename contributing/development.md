@@ -4,7 +4,9 @@ This document describes the process for running this application on your local c
 
 ## Web
 
-Once you've cloned the project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Once you've cloned the project, install dependencies with `npm install` (or `pnpm install` or `yarn`). Then copy `.env.example`, rename it as `.env` and fill required environment variables there.
+
+After installation & setting up environment variables, start a development server:
 
 ```bash
 npm run dev

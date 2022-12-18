@@ -1,0 +1,23 @@
+{
+  "candidates": {
+    "candidates": "Candidates",
+    "notFound": "No candidates found"
+  },
+  "candidate": {
+    "politicalExperience": "Political experience"
+  },
+  "parties": {
+    "parties": "Parties",
+    "notFound": "No parties found"
+  },
+  "questions": {
+    "scale": {
+      "stronglyDisagree": "Strongly disagree",
+      "disagree": "Disagree",
+      "agree": "Agree",
+      "stronglyAgree": "Strongly agree"
+    },
+    "nextQuestion": "Next question",
+    "goToResults": "Go to results"
+  }
+}
