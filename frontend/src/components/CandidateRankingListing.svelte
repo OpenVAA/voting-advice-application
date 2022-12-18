@@ -7,5 +7,5 @@
 <section class="card w-256 bg-base-100 shadow-xl m-8">
     <p>{ranking.id}.</p>
     <p>Compatibility: {ranking.score}</p>
-    <CandidateListing candidate={candidate} />
+    <CandidateListing id={candidate?.id} candidate={candidate?.attributes} />
 </section>
