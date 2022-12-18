@@ -23,7 +23,9 @@ export class Match {
     constructor (
         distance: UnsignedNormalizedDistance,
         public entity: HasMatchableAnswers
-    ) {}
+    ) {
+        this.distance = distance;
+    }
 
     /**
      * Get the match distance as an unsigned normalized distance.
