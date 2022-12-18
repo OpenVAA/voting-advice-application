@@ -1,5 +1,4 @@
-import { NORMALIZED_DISTANCE_EXTENT, SignedNormalizedDistance } from "..";
-
+import { NORMALIZED_DISTANCE_EXTENT, assertSignedNormalized, SignedNormalizedDistance } from "..";
 
 /**
  * Method for calculating the penalty applied to missing values by imputing
@@ -56,6 +55,8 @@ export function imputeMissingValues(
     referenceValue: SignedNormalizedDistance, 
     options: MissingValueImputationOptions
 ): [SignedNormalizedDistance, SignedNormalizedDistance] {
+    // To be sure
+    assertSignedNormalized(referenceValue);
     // For convenience
     const maxAbsDistance = NORMALIZED_DISTANCE_EXTENT / 2;
     const bias = options.missingValueBias ?? MissingValueBias.Positive;
@@ -81,7 +82,7 @@ export function imputeMissingValues(
             if (referenceValue == 0)
                 referenceValue = bias === MissingValueBias.Positive ? -maxAbsDistance : maxAbsDistance;
             else
-                referenceValue = referenceValue < 0? -maxAbsDistance : maxAbsDistance;
+                referenceValue = referenceValue < 0 ? -maxAbsDistance : maxAbsDistance;
             missingValue = -referenceValue;
             break;
         default:

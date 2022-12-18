@@ -1,9 +1,12 @@
-import { NORMALIZED_DISTANCE_EXTENT, HasMatchableAnswers, UnsignedNormalizedDistance } from "..";
+import { assertUnsignedNormalized, HasMatchableAnswers, NORMALIZED_DISTANCE_EXTENT, 
+    UnsignedNormalizedDistance } from "..";
 
 /**
  * The base class for a matching result
  */
 export class Match {
+    /** Used for to get/set `distance`. */
+    private _distance: UnsignedNormalizedDistance;
     /** Used in converting the distance to a string representation. */
     protected static multiplier = 100;
     /** Used in converting the distance to a string representation. */
@@ -18,9 +21,28 @@ export class Match {
      * @param entity The entity to which the match belongs.
      */
     constructor (
-        public distance: UnsignedNormalizedDistance,
+        distance: UnsignedNormalizedDistance,
         public entity: HasMatchableAnswers
     ) {}
+
+    /**
+     * Get the match distance as an unsigned normalized distance.
+     */
+    get distance(): UnsignedNormalizedDistance {
+        return this._distance;
+    }
+
+    /**
+     * Set the match distance as an unsigned normalized distance.
+     * 
+     * @param value The match distance as an unsigned normalized distance,
+     * e.g. [0, 1] (the range is defined by `NORMALIZED_DISTANCE_EXTENT`).
+     * Note that 1 means a bad match and 0 a perfect one.
+     */
+    set distance(value: UnsignedNormalizedDistance) {
+        assertUnsignedNormalized(value);
+        this._distance = value;
+    }
 
     /**
      * Convert the distance to a fraction [0, 1], regardless of the value of
