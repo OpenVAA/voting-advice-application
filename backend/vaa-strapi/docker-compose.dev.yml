@@ -1,18 +1,13 @@
-version: "3.4"
+version: '3.1'
 
 services:
-  frontend:
-    extends:
-      file: ./frontend/docker-compose.dev.yml
-      service: frontend
-    depends_on:
-      - "strapi"
-    environment:
-      - VITE_BACKEND_URL=host:docker:internal:1337
   strapi:
-    extends:
-      file: ./backend/vaa-strapi/docker-compose.dev.yml
-      service: strapi
+    build:
+      context: .
+      target: development
+    ports:
+      - 1337:1337
+    restart: always
     environment:
       HOST: ${HOST}
       PORT: ${PORT}
@@ -27,11 +22,22 @@ services:
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       DATABASE_SCHEMA: ${DATABASE_SCHEMA}
       DATABASE_SSL_SELF: ${DATABASE_SSL_SELF}
+    depends_on:
+      - "postgres"
   postgres:
-    extends:
-      file: ./backend/vaa-strapi/docker-compose.dev.yml
-      service: postgres
+    image: postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: strapi
+      POSTGRES_USER: strapi
+      POSTGRES_PASSWORD: strapi
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    restart: always
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 4567:8080
