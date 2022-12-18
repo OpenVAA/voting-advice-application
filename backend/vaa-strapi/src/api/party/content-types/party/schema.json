@@ -72,6 +72,12 @@
         "Purple"
       ],
       "required": true
+    },
+    "candidates": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::candidate.candidate",
+      "mappedBy": "party"
     }
   }
 }

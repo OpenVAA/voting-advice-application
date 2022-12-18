@@ -82,8 +82,9 @@
     },
     "party": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::party.party"
+      "relation": "manyToOne",
+      "target": "api::party.party",
+      "inversedBy": "candidates"
     },
     "elections": {
       "type": "relation",
