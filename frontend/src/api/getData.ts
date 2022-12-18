@@ -6,7 +6,11 @@ import {constants} from "../utils/constants";
 // TODO: Define what type of data this returns instead of just any
 export const getData = async (endpoint: string): Promise<any> => {
     const url = `${constants.BACKEND_URL}/${endpoint}`;
-    return await fetch(url).then(response => {
+    return await fetch(url, {
+        headers: {
+            'Authorization': `Bearer ${constants.STRAPI_TOKEN}`
+        }
+    }).then(response => {
         return response.json();
     }).catch(error => console.error("Error in getting data from backend: ", error))
 };
