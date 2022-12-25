@@ -8,7 +8,8 @@ services:
     depends_on:
       - "strapi"
     environment:
-      - VITE_BACKEND_URL=host:docker:internal:1337
+      - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+      - VITE_STRAPI_TOKEN=${VITE_STRAPI_TOKEN}
   strapi:
     extends:
       file: ./backend/vaa-strapi/docker-compose.dev.yml

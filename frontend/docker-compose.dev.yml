@@ -16,4 +16,4 @@ services:
       - /usr/src/app/ios
     ports:
       - 5173:5173
-    restart: always
+    restart: on-failure
