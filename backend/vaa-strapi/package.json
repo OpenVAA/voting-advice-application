@@ -48,7 +48,7 @@
     "start": "strapi start",
     "build": "strapi build",
     "strapi": "strapi",
-    "lint": "prettier --plugin-search-dir . --check . && eslint .",
+    "lint": "eslint .",
     "test": "jest --forceExit --detectOpenHandles",
     "prettier": "prettier --write \"**/*.{js,jsx,ts,tsx,css,scss,html,json,md}\"",
     "prettier:check": "prettier --check \"**/*.{js,jsx,ts,tsx,css,scss,html,json,md}\""
