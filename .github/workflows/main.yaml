@@ -1,0 +1,67 @@
+mame: MAIN CI
+
+on:
+  push:
+  pull_request:
+    types: [opened, edited, reopened]
+    branches: [main]
+
+  workflow_dispatch:
+
+jobs:
+  frontend-validation:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "./frontend"
+
+    steps:
+      - name: "Checkout Frontend source code"
+        uses: actions/checkout@v2
+
+      - name: "Install Frontend npm dependencies"
+        run: |
+          npm install
+
+      - name: "Run Prettier check on frontend"
+        run: |
+          npm run prettier:check
+
+      - name: "Run eslint check on frontend"
+        run: |
+          npm run lint
+
+      # - name: "Run Frontend tests"
+      #   run: |
+      #     npm run test
+
+  backend-validation:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: "./backend/vaa-strapi"
+
+    steps:
+      - name: "Checkout Backend source code"
+        uses: actions/checkout@v2
+
+      - name: "Start Docker containers"
+        run: |
+          cp .env.example .env
+          docker-compose up -d
+
+      - name: "Install Backend npm dependencies"
+        run: |
+          npm install
+
+      - name: "Run Prettier check on Backend"
+        run: |
+          npm run prettier:check
+
+      # - name: "Run Backend tests"
+      #   run: |
+      #     npm run test
+
+      - name: "Stop Docker containers"
+        run: |
+          docker-compose down
