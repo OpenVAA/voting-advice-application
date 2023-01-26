@@ -23,7 +23,7 @@ services:
       DATABASE_SCHEMA: ${DATABASE_SCHEMA}
       DATABASE_SSL_SELF: ${DATABASE_SSL_SELF}
     depends_on:
-      - "postgres"
+      - 'postgres'
   postgres:
     image: postgres
     environment:

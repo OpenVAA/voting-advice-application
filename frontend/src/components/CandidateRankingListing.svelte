@@ -1,11 +1,11 @@
 <script>
-    import CandidateListing from "./CandidateListing.svelte";
-    export let ranking;
-    export let candidate;
+  import CandidateListing from './CandidateListing.svelte';
+  export let ranking;
+  export let candidate;
 </script>
 
-<section class="card w-256 bg-base-100 shadow-xl m-8">
-    <p>{ranking.id}.</p>
-    <p>Compatibility: {ranking.score}</p>
-    <CandidateListing id={candidate?.id} candidate={candidate?.attributes} />
+<section class="w-256 card m-8 bg-base-100 shadow-xl">
+  <p>{ranking.id}.</p>
+  <p>Compatibility: {ranking.score}</p>
+  <CandidateListing id={candidate?.id} candidate={candidate?.attributes} />
 </section>
