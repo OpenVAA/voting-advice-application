@@ -1,25 +1,23 @@
 <script>
-    import { _ } from 'svelte-i18n'
-    import {candidateRankings} from "../../utils/stores";
-    import CandidateRankingListing from "../../components/CandidateRankingListing.svelte";
-    export let data;
-    let candidates = data ? Object.values(data) : [];
+  import {_} from 'svelte-i18n';
+  import {candidateRankings} from '../../utils/stores';
+  import CandidateRankingListing from '../../components/CandidateRankingListing.svelte';
+  export let data;
+  let candidates = data ? Object.values(data) : [];
 
-    let candidateRankingsValues;
+  let candidateRankingsValues;
 
-    candidateRankings.subscribe((value) => {
-        candidateRankingsValues = value;
-    })
-
+  candidateRankings.subscribe((value) => {
+    candidateRankingsValues = value;
+  });
 </script>
 
-<h1>{$_("candidates.candidates")}</h1>
+<h1>{$_('candidates.candidates')}</h1>
 
 {#each candidateRankingsValues as ranking}
-<!--    The idea is that ranking algorithm will return a candidate id with a score-->
-<!--    We should map the candidate id to the actual candidate data from backend here-->
-    <CandidateRankingListing
-            ranking={ranking}
-            candidate={candidates.find(candidate => candidate.id === ranking.id)}
-    />
+  <!--    The idea is that ranking algorithm will return a candidate id with a score-->
+  <!--    We should map the candidate id to the actual candidate data from backend here-->
+  <CandidateRankingListing
+    {ranking}
+    candidate={candidates.find((candidate) => candidate.id === ranking.id)} />
 {/each}
