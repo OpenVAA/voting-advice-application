@@ -1,8 +1,8 @@
-# Development
+# Getting Started with Svelte
 
 This document describes the process for running this application on your local computer.
 
-## Web
+## Run The Application Locally
 
 Once you've cloned the project, install dependencies with `npm install` (or `pnpm install` or `yarn`). Then copy `.env.example`, rename it as `.env` and fill required environment variables there.
 
@@ -46,3 +46,8 @@ Same as Dev, but run `npx cap sync android` after each build to get the most rec
 ### Build
 
 Same as Dev, but run `npx cap sync ios` after each build to get the most recent project build version.
+
+## 📚 Learn more
+
+- [Svelte](https://svelte.dev/) - Svelte is a radical new approach to building user interfaces.
+- [SvelteKit](https://kit.svelte.dev/) - SvelteKit is a framework for building web applications of all sizes, with a beautiful development experience and flexible, low-level APIs.

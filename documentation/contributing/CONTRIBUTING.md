@@ -7,7 +7,7 @@ merging the PR.
 
 ## New contributor guide
 
-To get an overview of the project, read the [README](../README.md).
+To get an overview of the project, read the [README](/README.md).
 
 ## Getting started
 
@@ -22,7 +22,7 @@ following these steps.
 1. Add a descriptive title.
 2. Add a descriptive description.
 3. Assign the issue to the Voting Advice Application project.
-4. [Add labels](/contributing/how-to-use-labels.md). At least the following types of labels should be added
+4. [Add labels](how-to-use-labels.md). At least the following types of labels should be added
    - persona: [WHO]
    - task: [INVOLVES]
    - type: [TYPE OF ISSUE] (👁 this is optional, depending on the type of issue)
@@ -32,13 +32,13 @@ following these steps.
 #### Search for an issue
 
 Scan through our [existing issues](https://github.com/Good-Impact-Program/voting-advice-application/issues). You can
-narrow down the search using `labels` as filters. See [Labels](/contributing/how-to-use-labels.md) for more information.
+narrow down the search using `labels` as filters. See [Labels](how-to-use-labels.md) for more information.
 If you find an issue to work on, you are welcome to open a PR with a fix.
 
 ### Contribute
 
 The first step you must follow to develop new features for this project is to know how to set up your development
-environment. See [Development](/contributing/development.md) for more information.
+environment. See [Development](../development.md) for more information.
 
 If you want to make changes to the project, you must follow the following steps.
 
@@ -61,7 +61,7 @@ On top of that, the commit message should follow the following rules:
 - The body copy must be wrapped at 72 columns
 - The body copy must only explain _what_ and _why_, never _how_. The latter belongs in documentation and implementation.
 
-Once your changes are ready, don't forget to [self-review](/contributing/self-review.md) to speed up the review
+Once your changes are ready, don't forget to [self-review](self-review.md) to speed up the review
 process.
 
 ### Pull Request
