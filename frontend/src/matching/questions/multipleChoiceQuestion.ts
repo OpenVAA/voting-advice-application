@@ -64,6 +64,8 @@ export class MultipleChoiceQuestion extends MatchableQuestion {
      * @returns A MultipleChoiceQuestion object
      */
     static fromLikertScale(scale: number): MultipleChoiceQuestion {
+        if (!Number.isSafeInteger(scale))
+            throw new Error("Scale must be an integer.");
         const values: MultipleChoiceOption[] = Array.from({length: scale}, (_, i) => ({value: i + 1}));
         return new MultipleChoiceQuestion({values});
     }
