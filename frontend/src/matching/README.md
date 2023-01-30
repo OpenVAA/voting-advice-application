@@ -4,7 +4,7 @@
 
 See `examples/example.ts`.
 
-Run with `ts-node-esm --experimentalSpecifierResolution node example.ts`.
+Run with `ts-node-esm --experimentalSpecifierResolution node examples/example.ts`.
 
 ## Steps
 
