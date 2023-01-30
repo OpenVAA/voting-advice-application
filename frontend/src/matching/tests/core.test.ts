@@ -1,6 +1,8 @@
-import { expect, test } from 'vitest'
-import { MatchingSpace, MatchingSpaceCoordinate, MatchingSpacePosition, MISSING_VALUE, 
-    NORMALIZED_DISTANCE_EXTENT, SignedNormalizedDistance } from '.';
+import {expect, test} from "vitest";
+import {NORMALIZED_DISTANCE_EXTENT, SignedNormalizedDistance} from "../core/distances";
+import {MISSING_VALUE} from "../core/matchableValue";
+import {MatchingSpace} from "../core/matchingSpace";
+import {MatchingSpaceCoordinate, MatchingSpacePosition} from "../core/matchingSpacePosition";
 
 // For convenience
 const maxDist = NORMALIZED_DISTANCE_EXTENT;

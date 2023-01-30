@@ -1,10 +1,18 @@
-import { describe, expect, test } from 'vitest'
-import { HasMatchableAnswers, MatchableAnswer, MatchableQuestion, MatchableValue, MatchingSpace, 
-    MatchingSpacePosition, MISSING_VALUE, MultipleChoiceQuestion, NORMALIZED_DISTANCE_EXTENT,
-    SignedNormalizedDistance, UnsignedNormalizedDistance } from "..";
-import { directionalDistance, DistanceMeasurementOptions, DistanceMetric, imputeMissingValues,
-    manhattanDistance, Match, MatchingAlgorithmBase, measureDistance,  MissingValueBias,
-    MissingValueDistanceMethod } from ".";
+import {describe, expect, test} from "vitest";
+import {imputeMissingValues, MissingValueBias, MissingValueDistanceMethod
+    } from "../algorithms/imputeMissingValues";
+import {Match} from "../algorithms/match";
+import {MatchingAlgorithmBase} from "../algorithms/matchingAlgorithm";
+import {directionalDistance, DistanceMeasurementOptions, DistanceMetric, manhattanDistance, measureDistance
+    } from "../algorithms/measureDistance";
+import {NORMALIZED_DISTANCE_EXTENT, SignedNormalizedDistance, UnsignedNormalizedDistance
+    } from "../core/distances";
+import {HasMatchableAnswers, MatchableAnswer} from "../core/hasMatchableAnswers";
+import {MatchableValue, MISSING_VALUE} from "../core/matchableValue";
+import {MatchingSpace} from "../core/matchingSpace";
+import {MatchingSpacePosition} from "../core/matchingSpacePosition";
+import {MatchableQuestion} from "../questions/matchableQuestion";
+import {MultipleChoiceQuestion} from "../questions/multipleChoiceQuestion";
 
 // For convenience
 const maxDist = NORMALIZED_DISTANCE_EXTENT;

@@ -1,5 +1,5 @@
-import { assertUnsignedNormalized, HasMatchableAnswers, NORMALIZED_DISTANCE_EXTENT, 
-    UnsignedNormalizedDistance } from "..";
+import {assertUnsignedNormalized, NORMALIZED_DISTANCE_EXTENT, UnsignedNormalizedDistance} from "../core/distances";
+import {HasMatchableAnswers} from "../core/hasMatchableAnswers";
 
 /**
  * The base class for a matching result

@@ -1,6 +1,7 @@
-import { MISSING_VALUE, NORMALIZED_DISTANCE_EXTENT,
-    MatchableValue, NonmissingValue, MatchingSpaceCoordinate } from "..";
-import { MatchableQuestion } from ".";
+import {NORMALIZED_DISTANCE_EXTENT} from "../core/distances";
+import {MISSING_VALUE, MatchableValue, NonmissingValue} from "../core/matchableValue";
+import {MatchingSpaceCoordinate} from "../core/matchingSpacePosition";
+import {MatchableQuestion} from "./matchableQuestion";
 
 /**
  * A value option in a matchable multiple choice question

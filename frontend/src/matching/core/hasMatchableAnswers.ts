@@ -1,5 +1,5 @@
-import { MatchableQuestion } from "..";
-import { MatchableValue } from ".";
+import {MatchableQuestion} from "../questions/matchableQuestion";
+import {MatchableValue} from "./matchableValue";
 
 
 /**
