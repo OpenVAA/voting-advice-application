@@ -1,4 +1,5 @@
-export * from "./distancesAndCoordinates";
+export * from "./distances";
 export * from "./hasMatchableAnswers";
 export * from "./matchableValue";
-export * from "./matchingSpacesAndPositions";
+export * from "./matchingSpacePosition";
+export * from "./matchingSpace";

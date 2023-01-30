@@ -1,4 +1,4 @@
-import { MatchableValue, SignedNormalizedCoordinate } from "..";
+import { MatchableValue, MatchingSpaceCoordinate } from "..";
 
 /**
  * The base class for all question used for matching.
@@ -13,5 +13,5 @@ export abstract class MatchableQuestion {
     /**
      * Preference order questions return a list of distances, but Likert questions just one number
      */
-    abstract normalizeValue(value: MatchableValue): SignedNormalizedCoordinate | SignedNormalizedCoordinate[]
+    abstract normalizeValue(value: MatchableValue): MatchingSpaceCoordinate | MatchingSpaceCoordinate[];
 }

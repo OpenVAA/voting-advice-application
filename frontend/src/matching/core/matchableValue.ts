@@ -3,7 +3,7 @@
  * It is also used for normalized distances derived from such answers.
  * We do not allow for implicitly missing values, such as null.
  */
-export const MISSING_VALUE = "<MISSING>";
+export const MISSING_VALUE = "**MISSING**";
 
 /**
  * A value that can be used in matching can be either specified or missing.

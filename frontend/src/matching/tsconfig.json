@@ -6,6 +6,6 @@
         "target": "ES6",
         "moduleResolution": "node",
         "lib": ["es2016", "esnext", "dom"],
-        "esModuleInterop": true, 
+        "esModuleInterop": true,
     }
 }
