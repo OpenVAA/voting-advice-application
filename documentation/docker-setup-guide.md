@@ -24,6 +24,9 @@ Once the backend is set up run `npm run dev` again in the project root and the f
 
 Development Docker images will listen to changes in the files and allow hot reloading, meaning the Docker images don't need to be re-generated after making changes to the codebase.
 
+## Stop The Containers
+
+To stop the containers, run `npm run down:dev` in the project root folder. This will stop all services associated with a Docker Compose configuration.
 # Creating a production build using Docker
 
 TBD
