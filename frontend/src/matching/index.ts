@@ -5,14 +5,17 @@
 
 export {imputeMissingValues, MissingValueBias, MissingValueDistanceMethod} from "./algorithms/imputeMissingValues";
 export {Match} from "./algorithms/match";
-export {MatchingAlgorithm, MatchingAlgorithmBase} from "./algorithms/matchingAlgorithm";
-export {MatchingSpaceProjector} from "./algorithms/matchingSpaceProjector";
+export {MatchingAlgorithmBase} from "./algorithms/matchingAlgorithm";
+export type { MatchingAlgorithm } from "./algorithms/matchingAlgorithm";
+export type {MatchingSpaceProjector} from "./algorithms/matchingSpaceProjector";
 export {DistanceMetric, measureDistance} from "./algorithms/measureDistance";
-export {assertUnsignedNormalized, assertSignedNormalized, NORMALIZED_DISTANCE_EXTENT,
-    UnsignedNormalizedDistance, SignedNormalizedDistance} from "./core/distances";
-export {HasMatchableAnswers, MatchableAnswer} from "./core/hasMatchableAnswers";
-export {MatchableValue, MissingValue, MISSING_VALUE, NonmissingValue} from "./core/matchableValue";
+export {assertUnsignedNormalized, assertSignedNormalized, NORMALIZED_DISTANCE_EXTENT} from "./core/distances";
+export type { UnsignedNormalizedDistance, SignedNormalizedDistance } from "./core/distances";
+export type {HasMatchableAnswers, MatchableAnswer} from "./core/hasMatchableAnswers";
+export {MISSING_VALUE} from "./core/matchableValue";
+export type { MatchableValue, MissingValue, NonmissingValue } from "./core/matchableValue";
 export {MatchingSpace} from "./core/matchingSpace";
-export {MatchingSpaceCoordinate, MatchingSpacePosition} from "./core/matchingSpacePosition";
+export {MatchingSpacePosition} from "./core/matchingSpacePosition";
+export type { MatchingSpaceCoordinate } from "./core/matchingSpacePosition";
 export {MatchableQuestion} from "./questions/matchableQuestion";
 export {MultipleChoiceQuestion} from "./questions/multipleChoiceQuestion";

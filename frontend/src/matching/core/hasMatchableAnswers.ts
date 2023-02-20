@@ -1,6 +1,5 @@
-import {MatchableQuestion} from "../questions/matchableQuestion";
-import {MatchableValue} from "./matchableValue";
-
+import type {MatchableQuestion} from "../questions/matchableQuestion";
+import type {MatchableValue} from "./matchableValue";
 
 /**
  * Entities to be matched must implement this interface.

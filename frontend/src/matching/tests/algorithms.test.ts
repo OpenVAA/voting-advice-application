@@ -1,17 +1,23 @@
 import {describe, expect, test} from "vitest";
 import {imputeMissingValues, MissingValueBias, MissingValueDistanceMethod
     } from "../algorithms/imputeMissingValues";
-import {Match} from "../algorithms/match";
+import type {Match} from "../algorithms/match";
 import {MatchingAlgorithmBase} from "../algorithms/matchingAlgorithm";
-import {directionalDistance, DistanceMeasurementOptions, DistanceMetric, manhattanDistance, measureDistance
+import {directionalDistance, DistanceMetric, manhattanDistance, measureDistance
     } from "../algorithms/measureDistance";
-import {NORMALIZED_DISTANCE_EXTENT, SignedNormalizedDistance, UnsignedNormalizedDistance
+import type { DistanceMeasurementOptions,
+} from "../algorithms/measureDistance";
+import {NORMALIZED_DISTANCE_EXTENT,
     } from "../core/distances";
-import {HasMatchableAnswers, MatchableAnswer} from "../core/hasMatchableAnswers";
-import {MatchableValue, MISSING_VALUE} from "../core/matchableValue";
+import type { SignedNormalizedDistance, UnsignedNormalizedDistance
+} from "../core/distances";
+import type {HasMatchableAnswers, MatchableAnswer} from "../core/hasMatchableAnswers";
+import {MISSING_VALUE} from "../core/matchableValue";
+import type {MatchableValue} from "../core/matchableValue";
+
 import {MatchingSpace} from "../core/matchingSpace";
 import {MatchingSpacePosition} from "../core/matchingSpacePosition";
-import {MatchableQuestion} from "../questions/matchableQuestion";
+import type {MatchableQuestion} from "../questions/matchableQuestion";
 import {MultipleChoiceQuestion} from "../questions/multipleChoiceQuestion";
 
 // For convenience

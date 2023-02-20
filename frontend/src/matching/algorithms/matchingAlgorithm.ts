@@ -1,10 +1,11 @@
-import {HasMatchableAnswers} from "../core/hasMatchableAnswers";
+import type {HasMatchableAnswers} from "../core/hasMatchableAnswers";
 import {MatchingSpace} from "../core/matchingSpace";
-import {MatchingSpacePosition, MatchingSpaceCoordinate} from "../core/matchingSpacePosition";
-import {MatchableQuestion} from "../questions/matchableQuestion";
-import {MissingValueBias, MissingValueDistanceMethod} from "./imputeMissingValues";
+import {MatchingSpacePosition} from "../core/matchingSpacePosition";
+import type {MatchingSpaceCoordinate} from "../core/matchingSpacePosition";
+import type {MatchableQuestion} from "../questions/matchableQuestion";
+import type {MissingValueBias, MissingValueDistanceMethod} from "./imputeMissingValues";
 import {Match} from "./match";
-import {MatchingSpaceProjector} from "./matchingSpaceProjector";
+import type {MatchingSpaceProjector} from "./matchingSpaceProjector";
 import {measureDistance, DistanceMetric} from "./measureDistance";
 
 /**
@@ -119,8 +120,12 @@ export class MatchingAlgorithmBase implements MatchingAlgorithm {
         };
         const matches: Match[] = [];
         for (let i = 0; i < entities.length; i++) {
-            const distance = measureDistance(referencePosition, positions[i], measurementOptions);
-            matches.push(new Match(distance, entities[i]));
+            if(referencePosition){
+                const distance = measureDistance(referencePosition, positions[i], measurementOptions);
+                matches.push(new Match(distance, entities[i]));
+            } else {
+                throw new Error("Error! Referenceposition is undefined!")
+            }
         }
         return matches;
     }

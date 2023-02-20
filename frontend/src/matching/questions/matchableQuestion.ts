@@ -1,5 +1,5 @@
-import {MatchableValue} from "../core/matchableValue";
-import {MatchingSpaceCoordinate} from "../core/matchingSpacePosition";
+import type {MatchableValue} from "../core/matchableValue";
+import type {MatchingSpaceCoordinate} from "../core/matchingSpacePosition";
 
 /**
  * The base class for all question used for matching.
