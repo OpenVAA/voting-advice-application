@@ -1,12 +1,14 @@
-import {assertUnsignedNormalized, NORMALIZED_DISTANCE_EXTENT, UnsignedNormalizedDistance} from "../core/distances";
-import {HasMatchableAnswers} from "../core/hasMatchableAnswers";
+import {assertUnsignedNormalized, NORMALIZED_DISTANCE_EXTENT} from "../core/distances";
+import type { UnsignedNormalizedDistance} from "../core/distances";
+
+import type {HasMatchableAnswers} from "../core/hasMatchableAnswers";
 
 /**
  * The base class for a matching result
  */
 export class Match {
     /** Used for to get/set `distance`. */
-    private _distance: UnsignedNormalizedDistance;
+    private _distance: UnsignedNormalizedDistance = 0;
     /** Used in converting the distance to a string representation. */
     protected static multiplier = 100;
     /** Used in converting the distance to a string representation. */

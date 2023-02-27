@@ -1,6 +1,7 @@
-import {NORMALIZED_DISTANCE_EXTENT, SignedNormalizedDistance, UnsignedNormalizedDistance} from "../core/distances"
+import type { SignedNormalizedDistance, UnsignedNormalizedDistance} from "../core/distances"
+import {NORMALIZED_DISTANCE_EXTENT} from "../core/distances"
 import {MISSING_VALUE} from "../core/matchableValue";
-import {MatchingSpacePosition} from "../core/matchingSpacePosition"
+import type {MatchingSpacePosition} from "../core/matchingSpacePosition"
 import {imputeMissingValues, MissingValueBias, MissingValueDistanceMethod} from "./imputeMissingValues";
 
 

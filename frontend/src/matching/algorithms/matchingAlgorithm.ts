@@ -1,10 +1,11 @@
-import {HasMatchableAnswers} from "../core/hasMatchableAnswers";
+import type {HasMatchableAnswers} from "../core/hasMatchableAnswers";
 import {MatchingSpace} from "../core/matchingSpace";
-import {MatchingSpacePosition, MatchingSpaceCoordinate} from "../core/matchingSpacePosition";
-import {MatchableQuestion} from "../questions/matchableQuestion";
-import {MissingValueBias, MissingValueDistanceMethod} from "./imputeMissingValues";
+import {MatchingSpacePosition} from "../core/matchingSpacePosition";
+import type {MatchingSpaceCoordinate} from "../core/matchingSpacePosition";
+import type {MatchableQuestion} from "../questions/matchableQuestion";
+import type {MissingValueBias, MissingValueDistanceMethod} from "./imputeMissingValues";
 import {Match} from "./match";
-import {MatchingSpaceProjector} from "./matchingSpaceProjector";
+import type {MatchingSpaceProjector} from "./matchingSpaceProjector";
 import {measureDistance, DistanceMetric} from "./measureDistance";
 
 /**
@@ -111,6 +112,9 @@ export class MatchingAlgorithmBase implements MatchingAlgorithm {
         if (this.projector) positions = this.projector.project(positions);
         // We need the referencePosition and space for distance measurement
         const referencePosition = positions.shift();
+        if(!referencePosition){
+            throw new Error("Error! Referenceposition is undefined!")
+        }
         // Calculate matches
         const measurementOptions = {
             metric: this.distanceMetric,

@@ -1,6 +1,7 @@
 import {NORMALIZED_DISTANCE_EXTENT} from "../core/distances";
-import {MISSING_VALUE, MatchableValue, NonmissingValue} from "../core/matchableValue";
-import {MatchingSpaceCoordinate} from "../core/matchingSpacePosition";
+import {MISSING_VALUE} from "../core/matchableValue";
+import type { MatchableValue, NonmissingValue} from "../core/matchableValue";
+import type {MatchingSpaceCoordinate} from "../core/matchingSpacePosition";
 import {MatchableQuestion} from "./matchableQuestion";
 
 /**

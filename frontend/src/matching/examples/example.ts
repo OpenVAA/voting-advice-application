@@ -1,7 +1,10 @@
-import {
+import type {
     HasMatchableAnswers,
-    MatchingAlgorithmBase,
     MatchableAnswer,
+} from "..";
+
+import {
+    MatchingAlgorithmBase,
     MatchableQuestion,
     MISSING_VALUE,
     MultipleChoiceQuestion,

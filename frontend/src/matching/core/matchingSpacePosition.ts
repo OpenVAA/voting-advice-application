@@ -1,6 +1,6 @@
-import {SignedNormalizedDistance} from "./distances";
-import {MISSING_VALUE} from "./matchableValue";
-import {MatchingSpace} from "./matchingSpace";
+import type {SignedNormalizedDistance} from "./distances";
+import type {MISSING_VALUE} from "./matchableValue";
+import type {MatchingSpace} from "./matchingSpace";
 
 /**
  * A coordinate in a space defined by SignedNormalizedDistances that may be missing

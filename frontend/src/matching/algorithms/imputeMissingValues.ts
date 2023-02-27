@@ -1,4 +1,5 @@
-import {NORMALIZED_DISTANCE_EXTENT, assertSignedNormalized, SignedNormalizedDistance} from "../core/distances";
+import {NORMALIZED_DISTANCE_EXTENT, assertSignedNormalized} from "../core/distances";
+import type { SignedNormalizedDistance} from "../core/distances";
 
 /**
  * Method for calculating the penalty applied to missing values by imputing
