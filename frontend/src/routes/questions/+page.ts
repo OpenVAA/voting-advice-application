@@ -1,3 +1,3 @@
-export async function load(){
-	// TODO: Load questions from backend
+export async function load() {
+  // TODO: Load questions from backend
 }

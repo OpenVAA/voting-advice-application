@@ -1,0 +1,19 @@
+version: '3.4'
+
+services:
+  frontend:
+    build:
+      context: .
+      target: development
+    volumes:
+      # Creating this volume will make Docker update changes from local automatically
+      - ./:/usr/src/app
+      # Mark these as volumes so they get ignored
+      - /usr/src/app/node_modules
+      - /usr/src/app/.svelte-kit
+      - /usr/src/app/.vite
+      - /usr/src/app/android
+      - /usr/src/app/ios
+    ports:
+      - 5173:5173
+    restart: on-failure

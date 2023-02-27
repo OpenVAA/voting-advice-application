@@ -1,0 +1,38 @@
+version: "3.4"
+
+services:
+  frontend:
+    extends:
+      file: ./frontend/docker-compose.yml
+      service: frontend
+    depends_on:
+      - "strapi"
+    environment:
+      - VITE_BACKEND_URL=${VITE_BACKEND_URL}
+      - VITE_STRAPI_TOKEN=${VITE_STRAPI_TOKEN}
+  strapi:
+    extends:
+      file: ./backend/vaa-strapi/docker-compose.yml
+      service: strapi
+    environment:
+      HOST: ${HOST}
+      PORT: ${PORT}
+      APP_KEYS: ${APP_KEYS}
+      API_TOKEN_SALT: ${API_TOKEN_SALT}
+      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+      DATABASE_HOST: postgres
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_SCHEMA: ${DATABASE_SCHEMA}
+      DATABASE_SSL_SELF: ${DATABASE_SSL_SELF}
+  postgres:
+    extends:
+      file: ./backend/vaa-strapi/docker-compose.yml
+      service: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

@@ -4,7 +4,7 @@
 
 0. You should be running Strapi with Node version 16.18.0. Use of nvm is encouraged. **Additionally, you need Docker!**
 1. Install dependencies by running `npm install`
-2. Copy or rename the `.env.example` to `.env` before running any of the commands. You should be able to run the Strapi instance with either `npm run start`or `npm run develop`.
+2. Copy or rename the `.env.example` to `.env` before running any of the commands. You should be able to run the Strapi instance with either `npm run start` or `npm run develop`.
 3. Make sure to run `docker-compose up` to start the Postgres container.
 4. Run `npm run develop` to run the Strapi server.
 
@@ -21,9 +21,9 @@ Below is the official documentation of Strapi.
 
 Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/developer-docs/latest/developer-resources/cli/CLI.html) (CLI) which lets you scaffold and manage your project in seconds.
 
-### `develop`
+### Develop
 
-Start your Strapi application with autoReload enabled. [Learn more](https://docs.strapi.io/developer-docs/latest/developer-resources/cli/CLI.html#strapi-develop)
+Start your Strapi application with auto-reload enabled. [Learn more](https://docs.strapi.io/developer-docs/latest/developer-resources/cli/CLI.html#strapi-develop)
 
 ```
 npm run develop
@@ -31,9 +31,9 @@ npm run develop
 yarn develop
 ```
 
-### `start`
+### Start
 
-Start your Strapi application with autoReload disabled. [Learn more](https://docs.strapi.io/developer-docs/latest/developer-resources/cli/CLI.html#strapi-start)
+Start your Strapi application with auto-reload disabled. [Learn more](https://docs.strapi.io/developer-docs/latest/developer-resources/cli/CLI.html#strapi-start)
 
 ```
 npm run start
@@ -41,7 +41,7 @@ npm run start
 yarn start
 ```
 
-### `build`
+### Build
 
 Build your admin panel. [Learn more](https://docs.strapi.io/developer-docs/latest/developer-resources/cli/CLI.html#strapi-build)
 
@@ -53,7 +53,7 @@ yarn build
 
 ## ⚙️ Deployment
 
-Strapi gives you many possible deployment options for your project. Find the one that suits you on the [deployment section of the documentation](https://docs.strapi.io/developer-docs/latest/setup-deployment-guides/deployment.html).
+Strapi gives you many possible deployment options for your project. Find the one that suits you in the [deployment section of the documentation](https://docs.strapi.io/developer-docs/latest/setup-deployment-guides/deployment.html).
 
 ## 📚 Learn more
 
