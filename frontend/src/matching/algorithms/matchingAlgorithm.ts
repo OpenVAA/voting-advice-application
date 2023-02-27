@@ -112,6 +112,9 @@ export class MatchingAlgorithmBase implements MatchingAlgorithm {
         if (this.projector) positions = this.projector.project(positions);
         // We need the referencePosition and space for distance measurement
         const referencePosition = positions.shift();
+        if(!referencePosition){
+            throw new Error("Error! Referenceposition is undefined!")
+        }
         // Calculate matches
         const measurementOptions = {
             metric: this.distanceMetric,
@@ -120,12 +123,8 @@ export class MatchingAlgorithmBase implements MatchingAlgorithm {
         };
         const matches: Match[] = [];
         for (let i = 0; i < entities.length; i++) {
-            if(referencePosition){
-                const distance = measureDistance(referencePosition, positions[i], measurementOptions);
-                matches.push(new Match(distance, entities[i]));
-            } else {
-                throw new Error("Error! Referenceposition is undefined!")
-            }
+            const distance = measureDistance(referencePosition, positions[i], measurementOptions);
+            matches.push(new Match(distance, entities[i]));
         }
         return matches;
     }
