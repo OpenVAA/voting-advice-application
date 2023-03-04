@@ -9,8 +9,11 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "prettier --plugin-search-dir . --write . && eslint --fix . ",
+    "test": "vitest run tests",
+    "test:watch": "vitest tests",
     "prettier": "prettier --plugin-search-dir . --write .",
-    "prettier:check": "prettier --plugin-search-dir . --check ."
+    "prettier:check": "prettier --plugin-search-dir . --check .",
+    "algorithm-example": "ts-node-esm --experimentalSpecifierResolution node src/matching/examples/example.ts"
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "next",
@@ -34,9 +37,11 @@
     "svelte-check": "^2.7.1",
     "svelte-preprocess": "^4.10.7",
     "tailwindcss": "^3.2.4",
+    "ts-node": "^10.9.1",
     "tslib": "^2.3.1",
     "typescript": "^4.7.4",
-    "vite": "^3.2.4"
+    "vite": "^3.2.4",
+    "vitest": "^0.29.2"
   },
   "type": "module",
   "dependencies": {
