@@ -23,7 +23,7 @@
   "rules": {
     "indent": ["error", 2, {"SwitchCase": 1}],
     "linebreak-style": ["error", "unix"],
-    "no-console": 0,
+    "no-console": ["error", {"allow": ["warn", "error"]}],
     "quotes": ["error", "single"],
     "semi": ["error", "always"]
   }
