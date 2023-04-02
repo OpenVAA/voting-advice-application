@@ -15,4 +15,7 @@
   legend {
     @apply w-full;
   }
+  :root {
+    --primary-color: #000000;
+  }
 }
