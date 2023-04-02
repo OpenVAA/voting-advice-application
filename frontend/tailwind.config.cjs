@@ -30,7 +30,9 @@ module.exports = {
           ...require('daisyui/src/colors/themes')['[data-theme=light]'],
           '--btn-text-case': 'unset',
           primary: '#2546A8',
-          secondary: '#505050'
+          secondary: '#505050',
+          '--progress-color': 'hsl(var(--n))',
+          '--progress-label-color': 'hsl(var(--n))',
         }
       }
     ]
