@@ -22,8 +22,15 @@ services:
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       DATABASE_SCHEMA: ${DATABASE_SCHEMA}
       DATABASE_SSL_SELF: ${DATABASE_SSL_SELF}
+      GENERATE_MOCK_DATA_ON_INITIALISE: ${GENERATE_MOCK_DATA_ON_INITIALISE}
+      GENERATE_MOCK_DATA_ON_RESTART: ${GENERATE_MOCK_DATA_ON_RESTART}
     depends_on:
       - 'postgres'
+    volumes:
+      # Creating this volume will make Docker update changes from local automatically
+      - ./:/opt
+      # Mark these as volumes so they get ignored
+      - /opt/node_modules
   postgres:
     image: postgres
     environment:
