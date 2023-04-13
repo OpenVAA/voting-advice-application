@@ -4,31 +4,84 @@
  * NODE_ENV is development
  */
 
-import {faker} from "@faker-js/faker";
+import {faker} from '@faker-js/faker';
+import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
 
 export const generateMockData = async () => {
-  const isGenerateData = process.env.GENERATE_MOCK_DATA;
-  const nodeEnv = process.env.NODE_ENV;
-  if (isGenerateData !== 'true' && nodeEnv !== 'development') return;
+  console.log('Generate mock data on restart? ', generateMockDataOnRestart);
+  console.log('Generate mock data on init? ', generateMockDataOnInitialise);
 
-  console.log('#######################################')
-  await dropCollections();
-  console.log('dropped collections')
-  console.log('#######################################')
+  const nodeEnv = process.env.NODE_ENV;
+  if (!(generateMockDataOnRestart || generateMockDataOnInitialise) || nodeEnv !== 'development')
+    return;
+
+  try {
+    if (generateMockDataOnInitialise) {
+      let countOfObjects = 0;
+      countOfObjects += await strapi.db
+        .query('api::candidate.candidate')
+        .count({})
+        .then((number) => number);
+      countOfObjects += await strapi.db
+        .query('api::candidate-answer.candidate-answer')
+        .count({})
+        .then((number) => number);
+      countOfObjects += await strapi.db
+        .query('api::constituency.constituency')
+        .count({})
+        .then((number) => number);
+      countOfObjects += await strapi.db
+        .query('api::election.election')
+        .count({})
+        .then((number) => number);
+      countOfObjects += await strapi.db
+        .query('api::language.language')
+        .count({})
+        .then((number) => number);
+      countOfObjects += await strapi.db
+        .query('api::party.party')
+        .count({})
+        .then((number) => number);
+      countOfObjects += await strapi.db
+        .query('api::question.question')
+        .count({})
+        .then((number) => number);
+
+      if (countOfObjects > 0) {
+        console.error(
+          'Database is not empty and mock data generation is set to be only on initialisation - skipping mock data generation for now.'
+        );
+        return;
+      }
+    }
+  } catch (error) {
+    console.error(
+      'Error while checking if database is empty for mock data generation. Skipping mock data generation for now.'
+    );
+    console.error('Source error: ', error);
+    return;
+  }
+
+  if (generateMockDataOnRestart) {
+    console.log('#######################################');
+    await dropCollections();
+    console.log('dropped collections');
+  }
+
+  console.log('#######################################');
   const languages = await createLanguages();
-  console.log('inserted languages')
-  console.log('#######################################')
-  const parties = await createParties(10)
-  console.log('inserted parties')
-  console.log('#######################################')
-  const candidates = await createCandidates(languages, parties, 25)
-  console.log('inserted candidates')
-  console.log('#######################################')
+  console.log('inserted languages');
+  console.log('#######################################');
+  const parties = await createParties(10);
+  console.log('inserted parties');
+  console.log('#######################################');
+  await createCandidates(languages, parties, 25);
+  console.log('inserted candidates');
+  console.log('#######################################');
 
   // await strapi.entityService.create('api:')
-
   return '';
-}
+};
 
 /**
  * Drops all data in the collections
@@ -42,7 +95,7 @@ const dropCollections = async () => {
   await strapi.db.query('api::party.party').deleteMany({});
   await strapi.db.query('api::question.question').deleteMany({});
   // await strapi.db.query('api::topic.topic').deleteMany({});
-}
+};
 
 const createLanguages = async (): Promise<any[]> => {
   await strapi.db.query('api::language.language').createMany({
@@ -59,23 +112,32 @@ const createLanguages = async (): Promise<any[]> => {
   });
 
   return await strapi.entityService.findMany('api::language.language', {});
-}
+};
 
 const createParties = async (length: number): Promise<any[]> => {
   let parties: Object[] = [];
   for (let i = 0; i <= length; i++) {
-    const party = `${capitaliseFirstLetter(faker.word.adjective())} ${capitaliseFirstLetter(faker.word.noun())} ${capitaliseFirstLetter(faker.word.noun())}`
+    const party = `${capitaliseFirstLetter(faker.word.adjective())} ${capitaliseFirstLetter(
+      faker.word.noun()
+    )} ${capitaliseFirstLetter(faker.word.noun())}`;
     const matches = party.match(/\b(\w)/g);
-    const partyAbbreviation =  matches.join('')
-    const mainColor = faker.helpers.arrayElement(['Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple'])
-    const partyDescription = faker.lorem.sentences(3)
+    const partyAbbreviation = matches.join('');
+    const mainColor = faker.helpers.arrayElement([
+      'Red',
+      'Orange',
+      'Yellow',
+      'Green',
+      'Blue',
+      'Purple'
+    ]);
+    const partyDescription = faker.lorem.sentences(3);
     const partyObj = {
       party,
       partyAbbreviation,
       mainColor,
       partyDescription,
       locale: 'en'
-    }
+    };
     parties.push(partyObj);
   }
   await strapi.db.query('api::party.party').createMany({
@@ -83,7 +145,7 @@ const createParties = async (length: number): Promise<any[]> => {
   });
 
   return await strapi.entityService.findMany('api::party.party', {});
-}
+};
 
 const createCandidates = async (languages: any[], parties: any[], length: number) => {
   for (let i = 0; i <= length; i++) {
@@ -91,9 +153,9 @@ const createCandidates = async (languages: any[], parties: any[], length: number
     const lastName = faker.name.lastName();
     const politicalExperience = faker.lorem.paragraph(3);
     const candidateId = faker.random.alphaNumeric(10);
-    const motherTongue = faker.helpers.arrayElement(languages).id
-    const otherLanguages = [faker.helpers.arrayElement(languages).id]
-    const mainParty = faker.helpers.arrayElement(parties).id
+    const motherTongue = faker.helpers.arrayElement(languages).id;
+    const otherLanguages = [faker.helpers.arrayElement(languages).id];
+    const mainParty = faker.helpers.arrayElement(parties).id;
 
     const candidateObj = {
       firstName,
@@ -104,15 +166,15 @@ const createCandidates = async (languages: any[], parties: any[], length: number
       otherLanguages,
       mainParty,
       locale: 'en'
-    }
+    };
 
     // Need to insert candidates one by one as the bulk insert does not support relations
     await strapi.entityService.create('api::candidate.candidate', {
       data: candidateObj
     });
   }
-}
+};
 
 const capitaliseFirstLetter = (word: string) => {
   return word.charAt(0).toUpperCase() + word.slice(1);
-}
+};
