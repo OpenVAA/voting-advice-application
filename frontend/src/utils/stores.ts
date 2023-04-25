@@ -29,6 +29,6 @@ function createStoreValueAndSubscribeToLocalStorage(
 }
 
 // Create the actual Svelte store values
-export const currentQuestion = createStoreValueAndSubscribeToLocalStorage('currentQuestion', 1);
+export const currentQuestionId = createStoreValueAndSubscribeToLocalStorage('currentQuestionId', 1);
 export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage('answeredQuestions', 1);
 export const candidateRankings = createStoreValueAndSubscribeToLocalStorage('candidateRankings', 1);
