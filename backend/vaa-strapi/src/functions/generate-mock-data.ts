@@ -75,9 +75,6 @@ export async function generateMockData() {
   await createCandidates(languages, parties, 25);
   console.info('inserted candidates');
   console.info('#######################################');
-
-  // await strapi.entityService.create('api:')
-  return '';
 }
 
 /**
@@ -91,7 +88,6 @@ async function dropCollections() {
   await strapi.db.query('api::language.language').deleteMany({});
   await strapi.db.query('api::party.party').deleteMany({});
   await strapi.db.query('api::question.question').deleteMany({});
-  // await strapi.db.query('api::topic.topic').deleteMany({});
 }
 
 async function createLanguages(): Promise<any[]> {
