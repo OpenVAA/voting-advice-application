@@ -18,6 +18,7 @@
       "stronglyAgree": "Strongly agree"
     },
     "nextQuestion": "Next question",
-    "goToResults": "Go to results"
+    "goToResults": "Go to results",
+    "noQuestionsFound": "No questions were found."
   }
 }
