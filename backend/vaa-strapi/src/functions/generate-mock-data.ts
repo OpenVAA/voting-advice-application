@@ -8,9 +8,6 @@ import {faker} from '@faker-js/faker';
 import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
 
 export const generateMockData = async () => {
-  console.log('Generate mock data on restart? ', generateMockDataOnRestart);
-  console.log('Generate mock data on init? ', generateMockDataOnInitialise);
-
   const nodeEnv = process.env.NODE_ENV;
   if (!(generateMockDataOnRestart || generateMockDataOnInitialise) || nodeEnv !== 'development')
     return;
@@ -63,21 +60,21 @@ export const generateMockData = async () => {
   }
 
   if (generateMockDataOnRestart) {
-    console.log('#######################################');
+    console.info('#######################################');
     await dropCollections();
-    console.log('dropped collections');
+    console.info('dropped collections');
   }
 
-  console.log('#######################################');
+  console.info('#######################################');
   const languages = await createLanguages();
-  console.log('inserted languages');
-  console.log('#######################################');
+  console.info('inserted languages');
+  console.info('#######################################');
   const parties = await createParties(10);
-  console.log('inserted parties');
-  console.log('#######################################');
+  console.info('inserted parties');
+  console.info('#######################################');
   await createCandidates(languages, parties, 25);
-  console.log('inserted candidates');
-  console.log('#######################################');
+  console.info('inserted candidates');
+  console.info('#######################################');
 
   // await strapi.entityService.create('api:')
   return '';
