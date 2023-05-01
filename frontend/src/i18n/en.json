@@ -19,6 +19,7 @@
     },
     "nextQuestion": "Next question",
     "goToResults": "Go to results",
-    "noQuestionsFound": "No questions were found."
+    "noQuestionsFound": "Could not find any questions.",
+    "errorInGettingQuestions": "There was an error getting the question."
   }
 }

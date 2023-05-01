@@ -1,13 +1,31 @@
 <script>
   import {_} from 'svelte-i18n';
   import {goto} from '$app/navigation';
-  import {currentQuestionId, answeredQuestions} from '../../utils/stores';
+  import {
+    currentQuestionId,
+    answeredQuestions,
+    errorInGettingQuestion,
+    questionsLoaded
+  } from '../../utils/stores';
   import {calculateCandidateCompatibilities} from '../../candidateRanking/calculateCompatibility';
   import {getQuestion} from './getQuestion';
+  import {logDebugError} from '../../utils/logger';
+  import Spinner from '../../components/Spinner.svelte';
   export let data;
 
   let currentQuestionObject = data?.firstQuestion;
   let currentQuestionNumber = 1;
+
+  let questionsLoadedForPage;
+  let errorHappened;
+
+  errorInGettingQuestion.subscribe((value) => {
+    errorHappened = value;
+  });
+
+  questionsLoaded.subscribe((value) => {
+    questionsLoadedForPage = value;
+  });
 
   // Null values
   currentQuestionId.update((n) => 1);
@@ -21,9 +39,16 @@
   async function nextQuestion() {
     if (currentQuestionNumber < data.numberOfQuestions) {
       currentQuestionId.update((n) => n + 1);
-      currentQuestionObject = await getQuestion(currentQuestionNumber).then((result) => {
-        return result;
-      });
+      currentQuestionObject = await getQuestion(currentQuestionNumber)
+        .then((result) => {
+          if (result) {
+            return result;
+          }
+        })
+        .catch((error) => {
+          logDebugError(error);
+          errorInGettingQuestion.set(true);
+        });
     } else {
       calculateCandidateCompatibilities().then(() => {
         goto('/results');
@@ -41,42 +66,50 @@
   }
 </script>
 
-{#if data.numberOfQuestions > 0}
-  {#if currentQuestionObject}
-    <p>{currentQuestionNumber}/{data.numberOfQuestions}</p>
-    <br />
-    <h2 class="text-xl font-bold">{currentQuestionObject?.question}</h2>
-    {#if currentQuestionObject?.questionDescription}
-      <i>{currentQuestionObject?.questionDescription}</i>
+{#if questionsLoadedForPage}
+  {#if !errorHappened}
+    {#if data.numberOfQuestions > 0}
+      {#if currentQuestionObject}
+        <p>{currentQuestionNumber}/{data.numberOfQuestions}</p>
+        <br />
+        <h2 class="text-xl font-bold">{currentQuestionObject?.question}</h2>
+        {#if currentQuestionObject?.questionDescription}
+          <i>{currentQuestionObject?.questionDescription}</i>
+        {/if}
+        <br />
+        <br />
+        <!-- TODO: Don't hardcode number of answer options in the future -->
+
+        <button
+          on:click={() => answerQuestion(0)}
+          aria-label={$_('questions.scale.stronglyDisagree')}
+          >{$_('questions.scale.stronglyDisagree')}</button>
+        -
+        <button on:click={() => answerQuestion(1)} aria-label={$_('questions.scale.disagree')}
+          >{$_('questions.scale.disagree')}</button>
+        -
+        <button on:click={() => answerQuestion(2)} aria-label={$_('questions.scale.agree')}
+          >{$_('questions.scale.agree')}</button>
+        -
+        <button on:click={() => answerQuestion(3)} aria-label={$_('questions.scale.stronglyAgree')}
+          >{$_('questions.scale.stronglyAgree')}</button>
+
+        <hr />
+        <br />
+        <button
+          on:click={() => nextQuestion()}
+          aria-label={$_('questions.nextQuestion')}
+          class="font-semibold">
+          {$_('questions.nextQuestion')}</button>
+        <br />
+        <a href="/results" class="font-semibold">{$_('questions.goToResults')}</a>
+      {/if}
+    {:else}
+      <p>{$_('questions.noQuestionsFound')}</p>
     {/if}
-    <br />
-    <br />
-    <!-- TODO: Don't hardcode number of answer options in the future -->
-
-    <button on:click={() => answerQuestion(0)} aria-label={$_('questions.scale.stronglyDisagree')}
-      >{$_('questions.scale.stronglyDisagree')}</button>
-    -
-    <button on:click={() => answerQuestion(1)} aria-label={$_('questions.scale.disagree')}
-      >{$_('questions.scale.disagree')}</button>
-    -
-    <button on:click={() => answerQuestion(2)} aria-label={$_('questions.scale.agree')}
-      >{$_('questions.scale.agree')}</button>
-    -
-    <button on:click={() => answerQuestion(3)} aria-label={$_('questions.scale.stronglyAgree')}
-      >{$_('questions.scale.stronglyAgree')}</button>
-
-    <hr />
-    <br />
-    <button
-      on:click={() => nextQuestion()}
-      aria-label={$_('questions.nextQuestion')}
-      class="font-semibold">
-      {$_('questions.nextQuestion')}</button>
-    <br />
-    <a href="/results" class="font-semibold">{$_('questions.goToResults')}</a>
   {:else}
-    <p>Question loading</p>
+    <p>{$_('questions.errorInGettingQuestions')}</p>
   {/if}
 {:else}
-  <p>{$_('questions.noQuestionsFound')}</p>
+  <Spinner />
 {/if}
