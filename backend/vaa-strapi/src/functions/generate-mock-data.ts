@@ -11,7 +11,6 @@ export async function generateMockData() {
   if (!(generateMockDataOnInitialise || generateMockDataOnRestart)) {
     return;
   }
-
   try {
     // Give warning if database is not empty and restart mock data is not enabled
     if (generateMockDataOnInitialise && !generateMockDataOnRestart) {
@@ -72,7 +71,6 @@ export async function generateMockData() {
   console.info('#######################################');
   const election = await createElection();
   console.info('inserted election');
-  console.info('election: ', election);
   console.info('#######################################');
   const parties = await createParties(10);
   console.info('inserted parties');
@@ -166,6 +164,31 @@ async function createParties(length: number): Promise<any[]> {
     data: parties
   });
 
+  // Create translations
+  let partiesFi = [];
+  parties.forEach((party) => {
+    const partyFiObj = {
+      ...party,
+      partyDescription: faker.lorem.sentences(3),
+      locale: 'fi',
+      publishedAt: new Date()
+    };
+    partiesFi.push(partyFiObj);
+  });
+
+  await strapi.db.query('api::party.party').createMany({
+    data: partiesFi
+  });
+
+  const publishedPartiesEn = await strapi.entityService.findMany('api::party.party', {});
+  const publishedPartiesFi = await strapi.entityService.findMany('api::party.party', {
+    locale: 'fi'
+  });
+
+  publishedPartiesFi.forEach((party, index) => {
+    createRelationsForLocales('api::party.party', publishedPartiesEn[index], party);
+  });
+
   return await strapi.entityService.findMany('api::party.party', {});
 }
 
@@ -193,15 +216,52 @@ async function createCandidates(languages: any[], parties: any[], election: any,
     };
 
     // Need to insert candidates one by one as the bulk insert does not support relations
-    await strapi.entityService.create('api::candidate.candidate', {
+    const candidateEn = await strapi.entityService.create('api::candidate.candidate', {
       data: {
         ...candidateObj,
+        locale: 'en',
         publishedAt: new Date()
       }
     });
+
+    // Create Finnish localisation as an example
+    const candidateFi = await strapi.entityService.create('api::candidate.candidate', {
+      data: {
+        ...candidateObj,
+        // Insert some new lorem ipsum to make it look like translated
+        politicalExperience: faker.lorem.paragraph(3),
+        locale: 'fi',
+        publishedAt: new Date()
+      }
+    });
+
+    // Update localisation relations
+    await createRelationsForLocales('api::candidate.candidate', candidateEn, candidateFi);
   }
 }
 
 function capitaliseFirstLetter(word: string) {
   return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
+// Creates relations between original entity and its translation
+async function createRelationsForLocales(
+  query: string,
+  originalObject: any,
+  translatedObject: any
+) {
+  // Update localisation relations
+  await strapi.query(query).update({
+    where: {id: originalObject.id},
+    data: {
+      localizations: [translatedObject]
+    }
+  });
+
+  await strapi.query(query).update({
+    where: {id: translatedObject.id},
+    data: {
+      localizations: [originalObject]
+    }
+  });
 }
