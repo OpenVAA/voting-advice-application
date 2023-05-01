@@ -21,47 +21,59 @@ describe('Test getting data from backend', () => {
       return response;
     });
 
-    expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/candidates?populate=*`, {
-      headers: {
-        Authorization: `Bearer ${constants.STRAPI_TOKEN}`
+    expect(fetch).toHaveBeenCalledWith(
+      `${constants.BACKEND_URL}/api/candidates?locale=en&populate=*`,
+      {
+        headers: {
+          Authorization: `Bearer ${constants.STRAPI_TOKEN}`
+        }
       }
-    });
+    );
     expect(response).toStrictEqual(candidates.data);
   });
 
   test('Test requesting all parties', async () => {
     (fetch as Mock).mockResolvedValue(createFetchResponse(parties));
-    const response = await getData('api/parties');
+    const response = await getData('parties');
 
-    expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/parties`, {
-      headers: {
-        Authorization: `Bearer ${constants.STRAPI_TOKEN}`
+    expect(fetch).toHaveBeenCalledWith(
+      `${constants.BACKEND_URL}/api/parties?locale=en&populate=*`,
+      {
+        headers: {
+          Authorization: `Bearer ${constants.STRAPI_TOKEN}`
+        }
       }
-    });
+    );
     expect(response).toStrictEqual(parties);
   });
 
   test('Test requesting individual candidate', async () => {
     (fetch as Mock).mockResolvedValue(createFetchResponse(singleCandidate));
-    const response = await getData('api/candidates/1?populate=*');
+    const response = await getData('candidates/1');
 
-    expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/candidates/1?populate=*`, {
-      headers: {
-        Authorization: `Bearer ${constants.STRAPI_TOKEN}`
+    expect(fetch).toHaveBeenCalledWith(
+      `${constants.BACKEND_URL}/api/candidates/1?locale=en&populate=*`,
+      {
+        headers: {
+          Authorization: `Bearer ${constants.STRAPI_TOKEN}`
+        }
       }
-    });
+    );
     expect(response).toStrictEqual(singleCandidate);
   });
 
   test('Test requesting individual party', async () => {
     (fetch as Mock).mockResolvedValue(createFetchResponse(singleParty));
-    const response = await getData('api/candidates/1?populate=*');
+    const response = await getData('parties/1');
 
-    expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/candidates/1?populate=*`, {
-      headers: {
-        Authorization: `Bearer ${constants.STRAPI_TOKEN}`
+    expect(fetch).toHaveBeenCalledWith(
+      `${constants.BACKEND_URL}/api/parties/1?locale=en&populate=*`,
+      {
+        headers: {
+          Authorization: `Bearer ${constants.STRAPI_TOKEN}`
+        }
       }
-    });
+    );
     expect(response).toStrictEqual(singleParty);
   });
 });
