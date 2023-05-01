@@ -10,8 +10,8 @@
   let currentQuestionText = getQuestion(currentQuestionNumber);
 
   // Null values
-  currentQuestion.update((n) => 1);
-  answeredQuestions.update((n) => []);
+  currentQuestion.update(() => 1);
+  answeredQuestions.update(() => []);
 
   currentQuestion.subscribe((value) => {
     currentQuestionNumber = value;

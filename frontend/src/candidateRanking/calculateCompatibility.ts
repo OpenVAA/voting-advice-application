@@ -3,8 +3,8 @@ import {answeredQuestions, candidateRankings} from '../utils/stores';
 //  Function which will get questions from frontend (via store),
 //  call the calculation function
 // and finally return an array of candidates with their comapatibility scores
-export function calculateCandidateCompatibilities(): Promise<any> {
-  return new Promise((resolve, reject) => {
+export function calculateCandidateCompatibilities(): Promise<unknown> {
+  return new Promise((resolve) => {
     // Get answers from store
     let answeredQuestionsValues;
     answeredQuestions.subscribe((value) => {
@@ -12,7 +12,7 @@ export function calculateCandidateCompatibilities(): Promise<any> {
     });
 
     // TODO: Do some stuff in here in calculating the actual score based on the answers
-    console.log('Got answers from user: ', answeredQuestionsValues);
+    console.info('Got answers from user: ', answeredQuestionsValues);
 
     // TODO: Return meaningful data back instead of dummy data
     const rankedCandidates = [
@@ -20,7 +20,7 @@ export function calculateCandidateCompatibilities(): Promise<any> {
       {id: 2, score: 37}
     ];
 
-    candidateRankings.update((rankings) => rankedCandidates);
+    candidateRankings.update(() => rankedCandidates);
 
     resolve(rankedCandidates);
   });

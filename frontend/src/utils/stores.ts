@@ -4,7 +4,7 @@ import {browser} from '$app/environment';
 
 // Store values in local storage to prevent them from disappearing in refresh
 // Here we check if item already exists on a refresh event
-function getItemFromLocalStorage(key: string): any {
+function getItemFromLocalStorage(key: string): unknown {
   let item = null;
   if (browser && localStorage) {
     const itemInLocalStorage = localStorage.getItem(key);
@@ -13,13 +13,16 @@ function getItemFromLocalStorage(key: string): any {
   return item;
 }
 
-function subscribeToLocalStorage(item: Writable<any>, key: string): void {
+function subscribeToLocalStorage(item: Writable<unknown>, key: string): void {
   if (browser && localStorage) {
     item.subscribe((value) => localStorage.setItem(key, JSON.stringify(value)));
   }
 }
 
-function createStoreValueAndSubscribeToLocalStorage(key: string, defaultValue: any): Writable<any> {
+function createStoreValueAndSubscribeToLocalStorage(
+  key: string,
+  defaultValue: unknown
+): Writable<unknown> {
   const storeValue = writable(getItemFromLocalStorage(key) || defaultValue);
   subscribeToLocalStorage(storeValue, key);
   return storeValue;
