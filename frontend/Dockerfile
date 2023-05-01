@@ -5,7 +5,7 @@ WORKDIR /usr/src/app
 # Install packages and cache the results
 # so we don't have to install everything when source code changes
 COPY package*.json .
-RUN npm install
+RUN yarn install
 
 # Copy files from project root to Docker image
 COPY . .
@@ -13,10 +13,10 @@ COPY . .
 FROM base as development
 EXPOSE 5173
 
-CMD npm run dev -- --host
+CMD yarn dev -- --host
 
 FROM base as build
-RUN npm run build
+RUN yarn build
 
 # --- Run built site in nginx ---
 FROM nginx as production
