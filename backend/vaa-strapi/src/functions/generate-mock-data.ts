@@ -70,10 +70,14 @@ export async function generateMockData() {
   const languages = await createLanguages();
   console.info('inserted languages');
   console.info('#######################################');
+  const election = await createElection();
+  console.info('inserted election');
+  console.info('election: ', election);
+  console.info('#######################################');
   const parties = await createParties(10);
   console.info('inserted parties');
   console.info('#######################################');
-  await createCandidates(languages, parties, 25);
+  await createCandidates(languages, parties, election, 25);
   console.info('inserted candidates');
   console.info('#######################################');
 }
@@ -106,6 +110,29 @@ async function createLanguages(): Promise<any[]> {
   });
 
   return await strapi.entityService.findMany('api::language.language', {});
+}
+
+async function createElection() {
+  const date = faker.date.future();
+  const types = ['local', 'presidential', 'congress'];
+  const electionType = types[Math.floor(Math.random() * types.length)];
+  const electionName = `${date.getFullYear()}  ${faker.address.country()} ${electionType} election`;
+  const electionDescription = faker.lorem.paragraph(3);
+  const electionDate = date.toISOString().split('T')[0];
+  const electionObject = {
+    electionName,
+    electionDate,
+    electionType,
+    electionDescription,
+    locale: 'en'
+  };
+
+  return await strapi.entityService.create('api::election.election', {
+    data: {
+      ...electionObject,
+      publishedAt: new Date()
+    }
+  });
 }
 
 async function createParties(length: number): Promise<any[]> {
@@ -142,24 +169,26 @@ async function createParties(length: number): Promise<any[]> {
   return await strapi.entityService.findMany('api::party.party', {});
 }
 
-async function createCandidates(languages: any[], parties: any[], length: number) {
+async function createCandidates(languages: any[], parties: any[], election: any, length: number) {
   for (let i = 0; i <= length; i++) {
     const firstName = faker.name.firstName();
     const lastName = faker.name.lastName();
     const politicalExperience = faker.lorem.paragraph(3);
     const candidateId = faker.random.alphaNumeric(10);
-    const motherTongue = faker.helpers.arrayElement(languages).id;
+    const motherTongues = [faker.helpers.arrayElement(languages).id];
     const otherLanguages = [faker.helpers.arrayElement(languages).id];
     const party = faker.helpers.arrayElement(parties).id;
+    const elections = [election.id];
 
     const candidateObj = {
       firstName,
       lastName,
       politicalExperience,
       candidateId,
-      motherTongue,
+      motherTongues,
       otherLanguages,
       party,
+      elections,
       locale: 'en'
     };
 
