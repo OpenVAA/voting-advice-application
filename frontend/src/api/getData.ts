@@ -20,6 +20,6 @@ export const getData = async (endpoint: string): Promise<any> => {
 // TODO: Define what type of data this returns instead of just any
 export const getAllCandidates = async (): Promise<any> => {
   return await getData('api/candidates?populate=*').then((result) => {
-    return result?.data;
+    if (result && result.data) return result?.data;
   });
 };
