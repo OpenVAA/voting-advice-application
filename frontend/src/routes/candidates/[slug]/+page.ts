@@ -6,7 +6,7 @@ export async function load({params}: LoadEvent) {
   //TODO: Check if we use Svelte object id or some predefined schema for getting candidate from the backend
   const id = Number(params.slug);
   if (!isNaN(id)) {
-    return await getData(`api/candidates/${id}?populate=*`).then((result) => {
+    return await getData(`candidates/${id}`).then((result) => {
       if (result?.data?.attributes) return result.data.attributes;
       if (result?.error?.status === 404) {
         throw error(404, 'Candidate not found');
