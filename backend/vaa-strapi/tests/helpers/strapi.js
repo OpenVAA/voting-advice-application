@@ -14,7 +14,7 @@ async function setupStrapi() {
 }
 
 async function cleanupStrapi() {
-  const dbSettings = strapi.config.get("database.connection");
+  const dbSettings = strapi.config.get('database.connection');
 
   //close server to release the db-file
   await strapi.server.httpServer.close();
