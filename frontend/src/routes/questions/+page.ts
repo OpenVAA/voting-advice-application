@@ -2,7 +2,7 @@ import {getQuestion} from './getQuestion';
 import {getData} from '../../api/getData';
 
 async function getNumberOfQuestions(): Promise<number> {
-  return await getData('api/questions')
+  return await getData('questions')
     .then((result: any) => {
       if (result) {
         return result.data.length;

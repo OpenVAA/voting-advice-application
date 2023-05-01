@@ -44,9 +44,10 @@
 {#if data.numberOfQuestions > 0}
   {#if currentQuestionObject}
     <p>{currentQuestionNumber}/{data.numberOfQuestions}</p>
-    <h2>{currentQuestionObject?.attributes?.question}</h2>
-    {#if currentQuestionObject?.attributes?.questionDescription}
-      <i>{currentQuestionObject?.attributes?.questionDescription}</i>
+    <br />
+    <h2 class="text-xl font-bold">{currentQuestionObject?.question}</h2>
+    {#if currentQuestionObject?.questionDescription}
+      <i>{currentQuestionObject?.questionDescription}</i>
     {/if}
     <br />
     <br />
@@ -66,10 +67,13 @@
 
     <hr />
     <br />
-    <button on:click={() => nextQuestion()} aria-label={$_('questions.nextQuestion')}
-      >{$_('questions.nextQuestion')}</button>
+    <button
+      on:click={() => nextQuestion()}
+      aria-label={$_('questions.nextQuestion')}
+      class="font-semibold">
+      {$_('questions.nextQuestion')}</button>
     <br />
-    <a href="/results">{$_('questions.goToResults')}</a>
+    <a href="/results" class="font-semibold">{$_('questions.goToResults')}</a>
   {:else}
     <p>Question loading</p>
   {/if}
