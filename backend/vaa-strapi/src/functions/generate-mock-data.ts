@@ -8,12 +8,13 @@ import {faker} from '@faker-js/faker';
 import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
 
 export async function generateMockData() {
-  const nodeEnv = process.env.NODE_ENV;
-  if (!(generateMockDataOnRestart || generateMockDataOnInitialise) || nodeEnv !== 'development')
+  if (!(generateMockDataOnInitialise || generateMockDataOnRestart)) {
     return;
+  }
 
   try {
-    if (generateMockDataOnInitialise) {
+    // Give warning if database is not empty and restart mock data is not enabled
+    if (generateMockDataOnInitialise && !generateMockDataOnRestart) {
       let countOfObjects = 0;
       countOfObjects += await strapi.db
         .query('api::candidate.candidate')

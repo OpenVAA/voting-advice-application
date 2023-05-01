@@ -28,8 +28,8 @@ services:
       - 'postgres'
     volumes:
       # Creating this volume will make Docker update changes from local automatically
-      # Comment if you want to prevent hot reloading
-      - ./:/opt
+      # Uncomment if you want to enable hot reloading
+      # - ./:/opt
       # Mark these as volumes so they get ignored
       - /opt/node_modules
   postgres:

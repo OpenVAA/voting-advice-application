@@ -1,6 +1,4 @@
-# 🚀 Getting started with Strapi
-
-## GIP VAA Relevant Documentation
+# VAA Strapi Backend
 
 0. You should be running Strapi with Node version 16.18.0. Use of nvm is encouraged. **Additionally, you need Docker!**
 1. Install dependencies by running `npm install`
@@ -11,13 +9,19 @@
 A base "Election" Content-Type has been created to play around initially. Please feel free to extend/change it or add additional
 Content-Types.
 
-### Re-generating Types
+## Re-generating Types
 
 Run `npm run strapi ts:generate-types` to re-generate `schemas.d.ts`.
 
-Below is the official documentation of Strapi.
+## Mock data
+
+The app allows for fake data to be generated to Strapi using Faker.js. Enabling mock data generation in the environment variables will generate mock data
+to the database whenever the app is initialised or restarting. Mock data contains example profiles for candidates and parties and is useful for developing frontend features
+and testing the capabilities of the backend. Mock data gets published automatically and is thus always ready to be used without requiring any user input.
 
 ---
+
+## Official documentaiton from Strapi
 
 Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/developer-docs/latest/developer-resources/cli/CLI.html) (CLI) which lets you scaffold and manage your project in seconds.
 
