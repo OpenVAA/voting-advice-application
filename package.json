@@ -2,7 +2,6 @@
     "scripts": {
         "dev":"docker compose -f docker-compose.dev.yml up -d --build",
         "down:dev": "docker compose -f docker-compose.dev.yml down",
-        "install": "cd ./backend/vaa-strapi && npm i  && cd ../../frontend && npm i",
         "prepare":"husky install"
     },
     "devDependencies": {
