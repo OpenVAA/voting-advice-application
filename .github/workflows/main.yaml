@@ -1,54 +1,67 @@
-mame: MAIN CI
+name: Main tests & validation
 
 on:
   push:
   pull_request:
-    types: [opened, edited, reopened]
-    branches: [main]
-
-  workflow_dispatch:
+    types:
+      - opened
+      - edited
+      - reopened
+    branches:
+      - main
 
 jobs:
   frontend-validation:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: "./frontend"
 
     steps:
       - name: "Checkout Frontend source code"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          dir: "frontend"
 
       - name: "Install Frontend npm dependencies"
-        run: |
-          npm install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install # will run `yarn install` command
+          dir: "frontend"
 
       - name: "Run Prettier check on frontend"
-        run: |
-          npm run prettier:check
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: prettier:check
+          dir: "frontend"
 
       - name: "Run eslint check on frontend"
-        run: |
-          npm run lint
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: lint
+          dir: "frontend"
 
-      # - name: "Run Frontend tests"
-      #   run: |
-      #     npm run test
+      - name: "Run Frontend tests"
+        uses: borales/actions-yarn@v4
+        with:
+         cmd: test
+         dir: "frontend"
 
   backend-validation:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: "./backend/vaa-strapi"
+        working-directory: backend/vaa-strapi
 
     steps:
       - name: "Checkout Backend source code"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: "Start Docker containers"
-        run: |
-          cp .env.example .env
-          docker-compose up -d
+      - name: Setup Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
 
       - name: "Install Backend npm dependencies"
         run: |
@@ -58,10 +71,10 @@ jobs:
         run: |
           npm run prettier:check
 
-      # - name: "Run Backend tests"
-      #   run: |
-      #     npm run test
-
-      - name: "Stop Docker containers"
+      - name: "Run ESLINT on backend"
         run: |
-          docker-compose down
+          npm run lint
+
+#      - name: "Run Backend tests"
+#        run: |
+#         npm run test
