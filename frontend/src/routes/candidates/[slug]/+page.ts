@@ -8,7 +8,8 @@ export async function load({fetch, params}: LoadEvent) {
   if (!isNaN(id)) {
     return await getData(`candidates/${id}`, fetch).then((result) => {
       if (result?.data?.attributes) return result.data.attributes;
-      if (result?.error?.status === 404) {
+      // Error 403 is given additionally if trying to access an unpublished draft
+      if (result?.error?.status === 403 || result?.error?.status === 404) {
         throw error(404, 'Candidate not found');
       }
     });
