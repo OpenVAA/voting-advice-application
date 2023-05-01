@@ -28,8 +28,9 @@ services:
       - 'postgres'
     volumes:
       # Creating this volume will make Docker update changes from local automatically
-      # Uncomment if you want to enable hot reloading
-      # - ./:/opt
+      # Uncomment if you want to enable mounting Strapi to disk / hot reloading
+      # Uncommenting is required if you update content model and want to sync changes to Git
+      #- ./:/opt
       # Mark these as volumes so they get ignored
       - /opt/node_modules
   postgres:

@@ -38,6 +38,17 @@
       },
       "type": "text",
       "required": true
+    },
+    "questionOrder": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "integer",
+      "unique": true,
+      "required": true,
+      "min": 1
     }
   }
 }

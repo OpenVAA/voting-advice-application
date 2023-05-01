@@ -10,6 +10,11 @@
 A base "Election" Content-Type has been created to play around initially. Please feel free to extend/change it or add
 additional Content-Types.
 
+## Updating content models
+
+If the app is run inside Docker and you want to update content models inside Strapi, please make sure you have mounted Strapi as a volume in `docker-compose-dev.yml`.
+This allows the content model JSON files to be synced with host OS and will show as changed in Git repository.
+
 ## Re-generating Types
 
 Run `npm run strapi ts:generate-types` to re-generate `schemas.d.ts`.
