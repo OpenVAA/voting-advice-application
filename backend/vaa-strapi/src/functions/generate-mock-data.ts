@@ -8,6 +8,9 @@ import {faker} from '@faker-js/faker';
 import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
 import mockQuestions from './mockQuestions.json';
 
+let mainLocale = 'en';
+let secondLocale;
+
 export async function generateMockData() {
   if (!(generateMockDataOnInitialise || generateMockDataOnRestart)) {
     return;
@@ -66,6 +69,12 @@ export async function generateMockData() {
     console.info('dropped collections');
   }
 
+  const locales = await strapi.plugins.i18n.services.locales.find();
+  if (locales.length > 1) {
+    mainLocale = locales[0].code; // If main locale is not English, change it here
+    secondLocale = locales[1].code;
+  }
+
   console.info('#######################################');
   const languages = await createLanguages();
   console.info('inserted languages');
@@ -102,11 +111,11 @@ async function createLanguages(): Promise<any[]> {
     data: [
       {
         language: 'en',
-        locale: 'en'
+        locale: mainLocale
       },
       {
         language: 'es',
-        locale: 'en'
+        locale: mainLocale
       }
     ]
   });
@@ -126,7 +135,7 @@ async function createElection() {
     electionDate,
     electionType,
     electionDescription,
-    locale: 'en'
+    locale: mainLocale
   };
 
   return await strapi.entityService.create('api::election.election', {
@@ -139,7 +148,7 @@ async function createElection() {
 
 async function createParties(length: number): Promise<any[]> {
   let parties: Object[] = [];
-  let partiesFi: Object[] = [];
+  let partiesSecondLocale: Object[] = [];
 
   for (let i = 0; i <= length; i++) {
     const party = `${capitaliseFirstLetter(faker.word.adjective())} ${capitaliseFirstLetter(
@@ -161,7 +170,7 @@ async function createParties(length: number): Promise<any[]> {
       partyAbbreviation,
       mainColor,
       partyDescription,
-      locale: 'en',
+      locale: mainLocale,
       publishedAt: new Date()
     };
     parties.push(partyObj);
@@ -172,25 +181,25 @@ async function createParties(length: number): Promise<any[]> {
 
   //Create translations
   parties.forEach((party) => {
-    const partyFiObj = {
+    const partySecondLocaleObj = {
       ...party,
       partyDescription: faker.lorem.sentences(3),
-      locale: 'fi',
+      locale: secondLocale,
       publishedAt: new Date()
     };
-    partiesFi.push(partyFiObj);
+    partiesSecondLocale.push(partySecondLocaleObj);
   });
 
   await strapi.db.query('api::party.party').createMany({
-    data: partiesFi
+    data: partiesSecondLocale
   });
 
   const publishedPartiesEn = await strapi.entityService.findMany('api::party.party', {});
-  const publishedPartiesFi = await strapi.entityService.findMany('api::party.party', {
-    locale: 'fi'
+  const publishedPartiesSecondLocale = await strapi.entityService.findMany('api::party.party', {
+    locale: secondLocale
   });
 
-  await publishedPartiesFi.forEach(async (party, index) => {
+  await publishedPartiesSecondLocale.forEach(async (party, index) => {
     await createRelationsForLocales('api::party.party', publishedPartiesEn[index], party);
   });
 
@@ -217,31 +226,37 @@ async function createCandidates(languages: any[], parties: any[], election: any,
       otherLanguages,
       party,
       elections,
-      locale: 'en'
+      locale: mainLocale
     };
 
     // Need to insert candidates one by one as the bulk insert does not support relations
-    const candidateEn = await strapi.entityService.create('api::candidate.candidate', {
+    const candidateMainLocale = await strapi.entityService.create('api::candidate.candidate', {
       data: {
         ...candidateObj,
-        locale: 'en',
+        locale: mainLocale,
         publishedAt: new Date()
       }
     });
 
-    // Create Finnish localisation as an example
-    const candidateFi = await strapi.entityService.create('api::candidate.candidate', {
-      data: {
-        ...candidateObj,
-        // Insert some new lorem ipsum to make it look like translated
-        politicalExperience: faker.lorem.paragraph(3),
-        locale: 'fi',
-        publishedAt: new Date()
-      }
-    });
+    if (secondLocale) {
+      // Create second localisation as an example
+      const candidateSecondLocale = await strapi.entityService.create('api::candidate.candidate', {
+        data: {
+          ...candidateObj,
+          // Insert some new lorem ipsum to make it look like translated
+          politicalExperience: faker.lorem.paragraph(3),
+          locale: secondLocale,
+          publishedAt: new Date()
+        }
+      });
 
-    // Update localisation relations
-    await createRelationsForLocales('api::candidate.candidate', candidateEn, candidateFi);
+      // Update localisation relations
+      await createRelationsForLocales(
+        'api::candidate.candidate',
+        candidateMainLocale,
+        candidateSecondLocale
+      );
+    }
   }
 }
 
@@ -249,42 +264,46 @@ async function createQuestions() {
   // Example questions sourced from Yle 2023 Election Compass
 
   let questions = [];
-  let questionsFi = [];
+  let questionsSecondLocale = [];
 
   mockQuestions.forEach((question, index) => {
     const questionObj = {
       question: mockQuestions[index].en,
       questionDescription: faker.lorem.sentences(3),
-      locale: 'en',
+      locale: mainLocale,
       publishedAt: new Date()
     };
     questions.push(questionObj);
 
-    const questionFiObj = {
-      question: mockQuestions[index].fi,
-      questionDescription: faker.lorem.sentences(3),
-      locale: 'fi',
-      publishedAt: new Date()
-    };
-    questionsFi.push(questionFiObj);
+    if (secondLocale) {
+      const questionFiObj = {
+        question: mockQuestions[index].fi,
+        questionDescription: faker.lorem.sentences(3),
+        locale: secondLocale,
+        publishedAt: new Date()
+      };
+      questionsSecondLocale.push(questionFiObj);
+    }
   });
 
   await strapi.db.query('api::question.question').createMany({
     data: questions
   });
 
-  await strapi.db.query('api::question.question').createMany({
-    data: questionsFi
-  });
+  if (secondLocale) {
+    await strapi.db.query('api::question.question').createMany({
+      data: questionsSecondLocale
+    });
 
-  const publishedQuestionsEn = await strapi.entityService.findMany('api::question.question', {});
-  const publishedQuestionsFi = await strapi.entityService.findMany('api::question.question', {
-    locale: 'fi'
-  });
+    const publishedQuestionsEn = await strapi.entityService.findMany('api::question.question', {});
+    const publishedQuestionsFi = await strapi.entityService.findMany('api::question.question', {
+      locale: secondLocale
+    });
 
-  await publishedQuestionsFi.forEach(async (party, index) => {
-    await createRelationsForLocales('api::question.question', publishedQuestionsEn[index], party);
-  });
+    await publishedQuestionsFi.forEach(async (party, index) => {
+      await createRelationsForLocales('api::question.question', publishedQuestionsEn[index], party);
+    });
+  }
 }
 
 function capitaliseFirstLetter(word: string) {
