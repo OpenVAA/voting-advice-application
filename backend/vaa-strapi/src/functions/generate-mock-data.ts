@@ -6,6 +6,7 @@
 
 import {faker} from '@faker-js/faker';
 import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
+import mockQuestions from './mockQuestions.json';
 
 export async function generateMockData() {
   if (!(generateMockDataOnInitialise || generateMockDataOnRestart)) {
@@ -78,6 +79,9 @@ export async function generateMockData() {
   await createCandidates(languages, parties, election, 25);
   console.info('inserted candidates');
   console.info('#######################################');
+  await createQuestions();
+  console.info('inserted questions');
+  console.info('#######################################');
 }
 
 /**
@@ -135,6 +139,8 @@ async function createElection() {
 
 async function createParties(length: number): Promise<any[]> {
   let parties: Object[] = [];
+  let partiesFi: Object[] = [];
+
   for (let i = 0; i <= length; i++) {
     const party = `${capitaliseFirstLetter(faker.word.adjective())} ${capitaliseFirstLetter(
       faker.word.noun()
@@ -164,8 +170,7 @@ async function createParties(length: number): Promise<any[]> {
     data: parties
   });
 
-  // Create translations
-  let partiesFi = [];
+  //Create translations
   parties.forEach((party) => {
     const partyFiObj = {
       ...party,
@@ -185,8 +190,8 @@ async function createParties(length: number): Promise<any[]> {
     locale: 'fi'
   });
 
-  publishedPartiesFi.forEach((party, index) => {
-    createRelationsForLocales('api::party.party', publishedPartiesEn[index], party);
+  await publishedPartiesFi.forEach(async (party, index) => {
+    await createRelationsForLocales('api::party.party', publishedPartiesEn[index], party);
   });
 
   return await strapi.entityService.findMany('api::party.party', {});
@@ -238,6 +243,48 @@ async function createCandidates(languages: any[], parties: any[], election: any,
     // Update localisation relations
     await createRelationsForLocales('api::candidate.candidate', candidateEn, candidateFi);
   }
+}
+
+async function createQuestions() {
+  // Example questions sourced from Yle 2023 Election Compass
+
+  let questions = [];
+  let questionsFi = [];
+
+  mockQuestions.forEach((question, index) => {
+    const questionObj = {
+      question: mockQuestions[index].en,
+      questionDescription: faker.lorem.sentences(3),
+      locale: 'en',
+      publishedAt: new Date()
+    };
+    questions.push(questionObj);
+
+    const questionFiObj = {
+      question: mockQuestions[index].fi,
+      questionDescription: faker.lorem.sentences(3),
+      locale: 'fi',
+      publishedAt: new Date()
+    };
+    questionsFi.push(questionFiObj);
+  });
+
+  await strapi.db.query('api::question.question').createMany({
+    data: questions
+  });
+
+  await strapi.db.query('api::question.question').createMany({
+    data: questionsFi
+  });
+
+  const publishedQuestionsEn = await strapi.entityService.findMany('api::question.question', {});
+  const publishedQuestionsFi = await strapi.entityService.findMany('api::question.question', {
+    locale: 'fi'
+  });
+
+  await publishedQuestionsFi.forEach(async (party, index) => {
+    await createRelationsForLocales('api::question.question', publishedQuestionsEn[index], party);
+  });
 }
 
 function capitaliseFirstLetter(word: string) {
