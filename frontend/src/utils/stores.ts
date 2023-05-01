@@ -28,7 +28,11 @@ function createStoreValueAndSubscribeToLocalStorage(
   return storeValue;
 }
 
-// Create the actual Svelte store values
+// ----- Actual Svelte Store values below -----
+
+// Values for Questions
 export const currentQuestionId = createStoreValueAndSubscribeToLocalStorage('currentQuestionId', 1);
 export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage('answeredQuestions', 1);
 export const candidateRankings = createStoreValueAndSubscribeToLocalStorage('candidateRankings', 1);
+export const questionsLoaded = writable(false);
+export const errorInGettingQuestion = writable(false);

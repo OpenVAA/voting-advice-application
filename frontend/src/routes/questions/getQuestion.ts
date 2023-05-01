@@ -7,10 +7,12 @@ export async function getQuestion(number: number): Promise<any> {
       'filters[questionOrder]': number.toString()
     })
   ).then((result: any) => {
-    if (result?.data) {
-      return result.data[0].attributes;
-    } else {
-      console.error('Fetching question failed.');
+    if (result) {
+      if (result.data[0]) {
+        return result.data[0].attributes;
+      } else {
+        throw new Error('Fetching question failed.');
+      }
     }
   });
 }
