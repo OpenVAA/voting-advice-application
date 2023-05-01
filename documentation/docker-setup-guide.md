@@ -7,10 +7,16 @@ Using Docker is the simplest way to set up the application for local development
 - Docker
 - Node.js (version 16.18.0 is recommended)
 - Ports 1337, 5173 and 5432 should be free for the application if using default settings
+  -  These ports can be changed in the `.env` file if desired.
 
 ## Getting started
 
-To build the development Docker image, go to the project root folder copy `.env.example` file, rename the copy as `.env` and run `npm run dev` in the project root folder. This will create a Docker image that has the frontend, the backend and a database.
+To build the development Docker image, go to the project root folder copy `.env.example` file and rename the copy as `.env`. Then run `npm install` and `npm run dev`
+in the project root folder. These commands will install required depencies create a Docker image that has the frontend, the backend and a database in a single bundle.
+
+If you'd like to have the Strapi backend to be filled with mock data for e.g. previewing app functionality or frontend development, set the `GENERATE_MOCK_DATA_ON_INITIALISE`variable as true.
+- You can optionally set `GENERATE_MOCK_DATA_ON_RESTART` to true. This will generate new mock data on every time the Strapi instance is restarted.
+- You can find more detailed info about the mock data at the [backend Readme file](../backend/vaa-strapi/README.md).
 
 ### Setting up the backend
 
