@@ -23,7 +23,6 @@
     "linebreak-style": ["error", "unix"],
     "no-console": ["error", {"allow": ["warn", "error", "info"]}],
     "quotes": ["error", "single"],
-    "semi": ["error", "always"],
-    "no-target-blank": "error"
+    "semi": ["error", "always"]
   }
 }
