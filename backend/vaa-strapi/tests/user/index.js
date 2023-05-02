@@ -2,29 +2,29 @@ const request = require('supertest');
 
 // user mock data
 const mockUserData = {
-  username: "tester",
-  email: "tester@strapi.com",
-  provider: "local",
-  password: "1234abc",
+  username: 'tester',
+  email: 'tester@strapi.com',
+  provider: 'local',
+  password: '1234abc',
   confirmed: true,
-  blocked: null,
+  blocked: null
 };
 
-it("should login user and return jwt token", async () => {
+it('should login user and return jwt token', async () => {
   /** Creates a new user and save it to the database */
-  await strapi.plugins["users-permissions"].services.user.add({
-    ...mockUserData,
+  await strapi.plugins['users-permissions'].services.user.add({
+    ...mockUserData
   });
 
   await request(strapi.server.httpServer) // app server is an instance of Class: http.Server
-    .post("/api/auth/local")
-    .set("accept", "application/json")
-    .set("Content-Type", "application/json")
+    .post('/api/auth/local')
+    .set('accept', 'application/json')
+    .set('Content-Type', 'application/json')
     .send({
       identifier: mockUserData.email,
-      password: mockUserData.password,
+      password: mockUserData.password
     })
-    .expect("Content-Type", /json/)
+    .expect('Content-Type', /json/)
     .expect(200)
     .then((data) => {
       expect(data.body.jwt).toBeDefined();
@@ -42,11 +42,11 @@ it('should return users data for authenticated user', async () => {
     ...mockUserData,
     username: 'tester2',
     email: 'tester2@strapi.com',
-    role,
+    role
   });
 
   const jwt = strapi.plugins['users-permissions'].services.jwt.issue({
-    id: user.id,
+    id: user.id
   });
 
   await request(strapi.server.httpServer) // app server is an instance of Class: http.Server
@@ -56,7 +56,7 @@ it('should return users data for authenticated user', async () => {
     .set('Authorization', 'Bearer ' + jwt)
     .expect('Content-Type', /json/)
     .expect(200)
-    .then(data => {
+    .then((data) => {
       expect(data.body).toBeDefined();
       expect(data.body.id).toBe(user.id);
       expect(data.body.username).toBe(user.username);

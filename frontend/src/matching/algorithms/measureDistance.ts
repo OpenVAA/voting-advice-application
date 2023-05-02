@@ -91,7 +91,7 @@ export function measureDistance(
   b: MatchingSpacePosition,
   options: DistanceMeasurementOptions
 ): UnsignedNormalizedDistance {
-  if (a.dimensions === 0) throw new Error('a doesn\'t have any elements!');
+  if (a.dimensions === 0) throw new Error("a doesn't have any elements!");
   if (a.dimensions !== b.dimensions) throw new Error('a and b have different number of elements!');
   const space = a.space;
   if (space && space.dimensions !== a.dimensions)
