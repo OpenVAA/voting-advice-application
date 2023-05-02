@@ -5,14 +5,18 @@ on:
   pull_request:
     types:
       - opened
-      - edited
+      - synchronize
       - reopened
+      - ready_for_review
     branches:
       - qa
 
 jobs:
   frontend-validation:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 'frontend'
 
     steps:
       - name: "Checkout Frontend source code"
@@ -22,37 +26,26 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
-          dir: "frontend"
+          cache: 'yarn'
+          cache-dependency-path: ./frontend/yarn.lock
 
-      - name: "Install Frontend npm dependencies"
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: install # will run `yarn install` command
-          dir: "frontend"
+      - name: "Install Frontend dependencies"
+        run: yarn install
 
       - name: "Run Prettier check on frontend"
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: prettier:check
-          dir: "frontend"
+        run: yarn prettier:check
 
-      - name: "Run eslint check on frontend"
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: lint
-          dir: "frontend"
+      - name: "Run ESlint check on frontend"
+        run: yarn lint
 
       - name: "Run Frontend tests"
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: test
-          dir: "frontend"
+        run: yarn test
 
   backend-validation:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend/vaa-strapi
+        working-directory: backend/vaa-strapi
 
     steps:
       - name: "Checkout Backend source code"
@@ -62,6 +55,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16.x
+          cache: "npm"
+          cache-dependency-path: ./backend/vaa-strapi/package-lock.json
 
       - name: "Install Backend npm dependencies"
         run: |
@@ -70,6 +65,10 @@ jobs:
       - name: "Run Prettier check on Backend"
         run: |
           npm run prettier:check
+
+      - name: "Run ESLINT on backend"
+        run: |
+          npm run lint
 
 #      - name: "Run Backend tests"
 #        run: |
