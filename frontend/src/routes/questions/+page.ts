@@ -27,13 +27,13 @@ export async function load() {
   const firstQuestion =
     numberOfQuestions > 0
       ? await getQuestion(1)
-        .then((result) => {
-          return result;
-        })
-        .catch((error) => {
-          errorInGettingQuestion.set(true);
-          logDebugError(error);
-        })
+          .then((result) => {
+            return result;
+          })
+          .catch((error) => {
+            errorInGettingQuestion.set(true);
+            logDebugError(error);
+          })
       : null;
   return {
     firstQuestion,
