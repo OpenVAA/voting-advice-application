@@ -15,5 +15,5 @@ services:
       - /usr/src/app/android
       - /usr/src/app/ios
     ports:
-      - 5173:5173
+      - '5173:5173'
     restart: on-failure
