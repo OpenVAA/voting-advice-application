@@ -2,6 +2,8 @@ name: Main tests & validation
 
 on:
   push:
+    branches:
+      - main
   pull_request:
     types:
       - opened
