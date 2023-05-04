@@ -1,0 +1,40 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+
+version: 2
+updates:
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/backend/vaa-strapi" # Location of package manifests
+    schedule:
+      interval: "monthly"
+    target-branch: "main"
+    labels:
+      - "npm dependencies"
+      - "backend"
+    # Create PRs for security updates only
+    open-pull-requests-limit: 0
+
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/frontend" # Location of package manifests
+    schedule:
+      interval: "monthly"
+    target-branch: "main"
+    labels:
+      - "yarn dependencies"
+      - "frontend"
+    # Create PRs for security updates only
+    open-pull-requests-limit: 0
+      
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    target-branch: "main"
+    labels:
+      - "Github Actions"
+    # Create PRs for security updates only
+    open-pull-requests-limit: 0
+
