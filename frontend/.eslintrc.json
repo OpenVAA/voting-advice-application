@@ -19,7 +19,7 @@
     "jest": true
   },
   "rules": {
-    "indent": ["error", 2, {"SwitchCase": 1}],
+    "indent": ["off"],
     "linebreak-style": ["error", "unix"],
     "no-console": ["error", {"allow": ["warn", "error", "info"]}],
     "quotes": ["error", "single", {"avoidEscape": true}],
