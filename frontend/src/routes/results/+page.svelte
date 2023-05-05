@@ -3,7 +3,7 @@
   import {candidateRankings} from '../../utils/stores';
   import CandidateRankingListing from '../../components/CandidateRankingListing.svelte';
   export let data;
-  let candidates = data ? Object.values(data) : [];
+  let candidates = data.results ? Object.values(data.results) : [];
 
   let candidateRankingsValues;
 
