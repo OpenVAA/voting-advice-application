@@ -31,7 +31,7 @@ following these steps.
 
 #### Search for an issue
 
-Scan through our [existing issues](https://github.com/Good-Impact-Program/voting-advice-application/issues). You can
+Scan through our [existing issues](https://github.com/OpenVAA/voting-advice-application/issues). You can
 narrow down the search using `labels` as filters. See [Labels](how-to-use-labels.md) for more information.
 If you find an issue to work on, you are welcome to open a PR with a fix.
 
