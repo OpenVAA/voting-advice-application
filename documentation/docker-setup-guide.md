@@ -5,7 +5,7 @@ Using Docker is the simplest way to set up the application for local development
 ## Requirements
 
 - Docker
-- Node.js (version 16.18.0 is recommended)
+- Node.js (if running the app outside of Docker; version 16.18.0 is recommended)
 - Ports 1337, 5173 and 5432 should be free for the application if using default settings
 
 ## Getting started
