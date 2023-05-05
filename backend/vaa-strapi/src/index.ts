@@ -1,5 +1,7 @@
 'use strict';
-/* import {Strapi} from '@strapi/strapi'; */
+import {setFrontendPermissions} from './functions/set-frontend-permissions';
+import {generateFrontendToken} from './functions/generate-frontend-token';
+import {Strapi} from '@strapi/strapi';
 
 module.exports = {
   /**
@@ -8,7 +10,8 @@ module.exports = {
    *
    * This gives you an opportunity to extend code.
    */
-  register(/*{strapi}: {strapi: Strapi}*/) {
+  // eslint-disable-next-line no-empty-pattern
+  register({strapi}: {strapi: Strapi}) {
     // ...
   },
 
@@ -19,5 +22,8 @@ module.exports = {
    * This gives you an opportunity to set up your data model,
    * run jobs, or perform some special logic.
    */
-  bootstrap(/*{ strapi }*/) {}
+  bootstrap() {
+    generateFrontendToken(strapi)
+    setFrontendPermissions();
+  }
 };
