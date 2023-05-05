@@ -1,22 +1,22 @@
 # Getting Started with Svelte
 
-This document describes the process for running this application on your local computer.
+This document describes the process for running the frontend separately on your local machine without Docker. You can find [instructions on running the project with Docker here](../documentation/docker-setup-guide.md).
 
-## Run The Application Locally
+## Run The Frontend
 
-Once you've cloned the project, install dependencies with `npm install` (or `pnpm install` or `yarn`). Then copy `.env.example`, rename it as `.env` and fill required environment variables there.
+Once you've cloned the project, install dependencies with `yarn install`. Then copy `.env.example`, rename it as `.env` and fill required environment variables there.
 
 After installation & setting up environment variables, start a development server:
 
 ```bash
-npm run dev
+yarn dev
 
 # or start the server and open the app in a new browser tab
-npm run dev -- --open
+yarn dev -- --open
 
 # to make the dev project accessible through the ip, add host flag to the commamd
 # it is required for iOS development via Xcode
-npm run dev -- --host
+yarn dev -- --host
 ```
 
 ## Android
