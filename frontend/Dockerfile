@@ -4,7 +4,8 @@ WORKDIR /usr/src/app
 
 # Install packages and cache the results
 # so we don't have to install everything when source code changes
-COPY package*.json .
+COPY package.json .
+COPY yarn.lock .
 RUN yarn install
 
 # Copy files from project root to Docker image
