@@ -10,6 +10,15 @@ import singleParty from './data/singleParty.json';
 
 global.fetch = vi.fn();
 
+// Mock getting current locale as i18n can't be used in the testing environment
+vi.mock('../src/utils/i18n', () => {
+  const getCurrentLocale = vi.fn();
+  getCurrentLocale.mockReturnValue('en');
+  return {
+    getCurrentLocale
+  };
+});
+
 function createFetchResponse(data: any) {
   return {json: () => new Promise((resolve) => resolve(data))};
 }
