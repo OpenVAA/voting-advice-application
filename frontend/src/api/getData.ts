@@ -1,5 +1,8 @@
+// Quick test function to get data from Strapi
+// To be refactored (GraphQL in the future?)
+
 import {constants} from '../utils/constants';
-import {getCurrentLocale} from '../utils/i18n';
+import {getCurrentLocaleForBackendQuery} from '../utils/i18n';
 import {logDebugError} from '../utils/logger';
 
 /**
@@ -15,7 +18,7 @@ export async function getData(
   fetchFunction: any = null,
   params: URLSearchParams = new URLSearchParams({})
 ): Promise<any> {
-  params.append('locale', getCurrentLocale());
+  params.append('locale', getCurrentLocaleForBackendQuery());
   params.append('populate', '*');
 
   const url = `${constants.BACKEND_URL}/api/${route}?${params}`;

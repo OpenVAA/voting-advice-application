@@ -4,33 +4,60 @@ import {logDebugError} from './logger';
 
 const frontendSupportedLocales = ['en'];
 const strapiSupportedLocales: string[] = [];
+const defaultLocale = 'en';
+let currentLocale = defaultLocale;
 
+/**
+ * Finds a language match from two strings.
+ * Used to compare locales with potential country codes, as Strapi locales
+ * might be either 'en' or 'en-GB' for example.
+ * The function returns if a match can be found regardless of country code,
+ * so frontend supporting 'en' will return true for 'en-GB', 'en-US', 'en-AU' etc.
+ * @param locale1 Locale to match without the country code (usually frontend supported language)
+ * @param locale2 Locale to compare, either with or without country code
+ */
+function findMatchingLanguage(locale1: string, locale2: string) {
+  return new RegExp(`\\b${locale1}\\b`).test(locale2);
+}
+
+/**
+ * Compares languages supported by both Strapi and frontend, and returns a list
+ * of the supported languages the app can use.
+ */
 function getSupportedLanguages() {
-  const supportedLanguages = frontendSupportedLocales.filter((value) =>
-    strapiSupportedLocales.includes(value)
-  );
+  const supportedLanguages: string[] = [];
 
-  // Compare languages that don't have mutual support
-  const arrayDifference = [];
-  arrayDifference.push(
-    frontendSupportedLocales.filter((value) => !strapiSupportedLocales.includes(value))
-  );
-  arrayDifference.push(
-    strapiSupportedLocales.filter((value) => !frontendSupportedLocales.includes(value))
-  );
+  strapiSupportedLocales.forEach((locale) => {
+    frontendSupportedLocales.forEach((feLocale) => {
+      const support = findMatchingLanguage(feLocale, locale);
+      if (support && !supportedLanguages.includes(feLocale)) supportedLanguages.push(feLocale);
+    });
+  });
 
-  if (arrayDifference.length > 0) {
-    logDebugError('Number of languages supported by frontend and Strapi are different.');
-    logDebugError('Languages supported by frontend: ', frontendSupportedLocales);
-    logDebugError('Languages supported by Strapi: ', strapiSupportedLocales);
-  }
+  frontendSupportedLocales.forEach((locale) => {
+    strapiSupportedLocales.forEach((feLocale) => {
+      const support = findMatchingLanguage(feLocale, locale);
+      if (support && !supportedLanguages.includes(feLocale)) supportedLanguages.push(feLocale);
+    });
+  });
+
   return supportedLanguages;
 }
 
-export const defaultLocale = 'en';
-let currentLocale = defaultLocale;
-export function getCurrentLocale() {
-  return currentLocale;
+/**
+ * Gets the current locale to use for Strapi API connections, potentially including country code.
+ */
+export function getCurrentLocaleForBackendQuery() {
+  let localeToReturn = defaultLocale;
+
+  // Strapi supported language might be "en-US" for example, so check correct locale to use here
+  strapiSupportedLocales.forEach((strapiLocale) => {
+    if (findMatchingLanguage(currentLocale, strapiLocale)) {
+      localeToReturn = strapiLocale;
+    }
+  });
+
+  return localeToReturn;
 }
 
 /**
@@ -65,6 +92,7 @@ function setInitialLocale() {
 }
 
 function setNewLocale(newLocale: string) {
+  // TODO: Currently only used for setting on app loads, but could be triggered through GUI
   if (getSupportedLanguages().includes(newLocale)) {
     currentLocale = newLocale;
   } else {
