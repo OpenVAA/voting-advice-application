@@ -12,6 +12,7 @@ ARG NODE_ENV=development
 ENV NODE_ENV=${NODE_ENV}
 
 EXPOSE 1337
+RUN npm run build
 CMD npm run dev
 
 FROM base as production
