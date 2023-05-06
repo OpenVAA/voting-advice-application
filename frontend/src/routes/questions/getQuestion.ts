@@ -1,8 +1,9 @@
 import {getData} from '../../api/getData';
 
-export async function getQuestion(number: number): Promise<any> {
+export async function getQuestion(number: number, fetch: any = null): Promise<any> {
   return await getData(
     'questions',
+    fetch,
     new URLSearchParams({
       'filters[questionOrder]': number.toString()
     })

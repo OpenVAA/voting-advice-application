@@ -42,11 +42,11 @@
     "questionOrder": {
       "pluginOptions": {
         "i18n": {
-          "localized": true
+          "localized": false
         }
       },
       "type": "integer",
-      "unique": true,
+      "unique": false,
       "required": true,
       "min": 1
     }

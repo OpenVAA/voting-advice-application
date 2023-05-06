@@ -1,0 +1,43 @@
+{
+  "data": [
+    {
+      "id": 3112,
+      "attributes": {
+        "question": "The state should preferably take on more debt rather than cut services.",
+        "questionDescription": "Qui repellendus animi recusandae rem quas. Aliquam vero corrupti dignissimos possimus aliquam voluptates cum in nobis. Ducimus perspiciatis incidunt perferendis ab voluptatibus sed id odit at.",
+        "createdAt": "2023-05-06T13:49:26.332Z",
+        "updatedAt": "2023-05-06T13:49:26.345Z",
+        "publishedAt": "2023-05-06T13:49:26.330Z",
+        "locale": "en",
+        "questionOrder": 1,
+        "answers": {
+          "data": []
+        },
+        "localizations": {
+          "data": [
+            {
+              "id": 3126,
+              "attributes": {
+                "questionOrder": null,
+                "question": "Valtion on mieluummin otettava lisää velkaa kuin vähennettävä palveluita.",
+                "questionDescription": "Possimus velit aliquid aut nisi eaque recusandae. Voluptate sint consequuntur occaecati dolor inventore delectus commodi corrupti. Iste sit necessitatibus praesentium.",
+                "createdAt": "2023-05-06T13:49:26.337Z",
+                "updatedAt": "2023-05-06T13:49:26.394Z",
+                "publishedAt": "2023-05-06T13:49:26.330Z",
+                "locale": "fi-FI"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 25,
+      "pageCount": 1,
+      "total": 1
+    }
+  }
+}

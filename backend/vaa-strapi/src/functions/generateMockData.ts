@@ -336,6 +336,7 @@ async function createQuestions() {
     const questionObj = {
       question: getSingleQuestion(index, mainLocale),
       questionDescription: faker.lorem.sentences(3),
+      questionOrder: index + 1,
       locale: mainLocale,
       publishedAt: new Date()
     };
@@ -345,6 +346,7 @@ async function createQuestions() {
       const questionFiObj = {
         question: getSingleQuestion(index, secondLocale),
         questionDescription: faker.lorem.sentences(3),
+        questionOrder: index + 1,
         locale: secondLocale,
         publishedAt: new Date()
       };
