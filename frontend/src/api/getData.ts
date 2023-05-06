@@ -21,5 +21,6 @@ export const getData = async (endpoint: string): Promise<any> => {
 export const getAllCandidates = async (): Promise<any> => {
   return await getData('api/candidates?populate=*').then((result) => {
     if (result && result.data) return result?.data;
+    else console.error('Could not retrieve result for all candidates');
   });
 };

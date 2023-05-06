@@ -1,0 +1,382 @@
+{
+  "data": [
+    {
+      "id": 7548,
+      "attributes": {
+        "firstName": "Garth",
+        "lastName": "Collier",
+        "politicalExperience": "Tempore pariatur consequatur ipsum ipsam minus nihil id. Quae eum numquam rerum voluptatum sunt repellat. Aliquam placeat assumenda veniam.",
+        "candidateId": "mi3lqiggrm",
+        "createdAt": "2023-05-06T09:38:08.951Z",
+        "updatedAt": "2023-05-06T09:38:08.964Z",
+        "publishedAt": "2023-05-06T09:38:08.949Z",
+        "locale": "en",
+        "motherTongues": {
+          "data": []
+        },
+        "otherLanguages": {
+          "data": []
+        },
+        "otherParties": {
+          "data": []
+        },
+        "candidatePhoto": {
+          "data": null
+        },
+        "party": {
+          "data": {
+            "id": 3378,
+            "attributes": {
+              "party": "Coarse Warrant Spelling",
+              "partyDescription": "Quod fugiat non dolore est. Quisquam ipsam necessitatibus corporis repellendus quo maiores quia. Similique illo expedita occaecati dolorum labore commodi.",
+              "partyAbbreviation": "CWS",
+              "mainColor": "Orange",
+              "createdAt": "2023-05-06T09:38:08.841Z",
+              "updatedAt": "2023-05-06T09:38:08.862Z",
+              "publishedAt": "2023-05-06T09:38:08.841Z",
+              "locale": "en"
+            }
+          }
+        },
+        "elections": {
+          "data": [
+            {
+              "id": 115,
+              "attributes": {
+                "electionDate": "2023-11-05",
+                "electionType": "presidential",
+                "createdAt": "2023-05-06T09:38:08.827Z",
+                "updatedAt": "2023-05-06T09:38:08.827Z",
+                "publishedAt": "2023-05-06T09:38:08.824Z",
+                "electionName": "2023  Niger presidential election",
+                "electionDescription": "Quisquam esse quis architecto inventore hic laudantium est. Assumenda debitis iure nihil dicta iste fuga dicta. Autem accusantium omnis sed harum sunt officiis deserunt exercitationem.",
+                "appTitle": null
+              }
+            }
+          ]
+        },
+        "localizations": {
+          "data": [
+            {
+              "id": 7549,
+              "attributes": {
+                "firstName": "Garth",
+                "lastName": "Collier",
+                "politicalExperience": "Omnis quo commodi qui odit laborum numquam. Odit dolores officiis repellat eaque voluptates eum. Quo unde eos.",
+                "candidateId": "7548",
+                "createdAt": "2023-05-06T09:38:08.958Z",
+                "updatedAt": "2023-05-06T09:38:08.967Z",
+                "publishedAt": "2023-05-06T09:38:08.956Z",
+                "locale": "fi-FI"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 7550,
+      "attributes": {
+        "firstName": "Randal",
+        "lastName": "Steuber",
+        "politicalExperience": "Atque earum aspernatur aut at iure iusto sint facere. Aperiam aperiam corporis. Voluptatum aspernatur repudiandae possimus sint officiis aliquid ea. Rem cupiditate eius nam doloremque fugit ex officiis. Ab quas itaque commodi molestiae molestiae molestiae fugiat quae tenetur.",
+        "candidateId": "nzn58n3sk2",
+        "createdAt": "2023-05-06T09:38:08.972Z",
+        "updatedAt": "2023-05-06T09:38:08.985Z",
+        "publishedAt": "2023-05-06T09:38:08.970Z",
+        "locale": "en",
+        "motherTongues": {
+          "data": []
+        },
+        "otherLanguages": {
+          "data": []
+        },
+        "otherParties": {
+          "data": []
+        },
+        "candidatePhoto": {
+          "data": null
+        },
+        "party": {
+          "data": {
+            "id": 3376,
+            "attributes": {
+              "party": "Starry Foray Instrument",
+              "partyDescription": "Hic repellat officia itaque repellendus sit vel. Tenetur corrupti esse reiciendis officiis maxime saepe accusantium illo. Aut quaerat hic.",
+              "partyAbbreviation": "SFI",
+              "mainColor": "Blue",
+              "createdAt": "2023-05-06T09:38:08.841Z",
+              "updatedAt": "2023-05-06T09:38:08.862Z",
+              "publishedAt": "2023-05-06T09:38:08.840Z",
+              "locale": "en"
+            }
+          }
+        },
+        "elections": {
+          "data": [
+            {
+              "id": 115,
+              "attributes": {
+                "electionDate": "2023-11-05",
+                "electionType": "presidential",
+                "createdAt": "2023-05-06T09:38:08.827Z",
+                "updatedAt": "2023-05-06T09:38:08.827Z",
+                "publishedAt": "2023-05-06T09:38:08.824Z",
+                "electionName": "2023  Niger presidential election",
+                "electionDescription": "Quisquam esse quis architecto inventore hic laudantium est. Assumenda debitis iure nihil dicta iste fuga dicta. Autem accusantium omnis sed harum sunt officiis deserunt exercitationem.",
+                "appTitle": null
+              }
+            }
+          ]
+        },
+        "localizations": {
+          "data": [
+            {
+              "id": 7551,
+              "attributes": {
+                "firstName": "Randal",
+                "lastName": "Steuber",
+                "politicalExperience": "Quo mollitia officiis quos quaerat quia. Vero eum eius autem repudiandae aspernatur. Asperiores quod quas soluta iusto nam dolor id.",
+                "candidateId": "7550",
+                "createdAt": "2023-05-06T09:38:08.979Z",
+                "updatedAt": "2023-05-06T09:38:08.988Z",
+                "publishedAt": "2023-05-06T09:38:08.977Z",
+                "locale": "fi-FI"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 7552,
+      "attributes": {
+        "firstName": "Hiram",
+        "lastName": "Satterfield",
+        "politicalExperience": "Ipsum nobis quae tenetur fuga. Doloremque accusantium porro veritatis. Fuga modi neque ducimus nobis quam quae. Dolor molestias tenetur necessitatibus accusantium. Voluptate illum ipsam placeat unde porro.",
+        "candidateId": "p5qlu5xeon",
+        "createdAt": "2023-05-06T09:38:08.993Z",
+        "updatedAt": "2023-05-06T09:38:09.004Z",
+        "publishedAt": "2023-05-06T09:38:08.991Z",
+        "locale": "en",
+        "motherTongues": {
+          "data": []
+        },
+        "otherLanguages": {
+          "data": []
+        },
+        "otherParties": {
+          "data": []
+        },
+        "candidatePhoto": {
+          "data": null
+        },
+        "party": {
+          "data": {
+            "id": 3378,
+            "attributes": {
+              "party": "Coarse Warrant Spelling",
+              "partyDescription": "Quod fugiat non dolore est. Quisquam ipsam necessitatibus corporis repellendus quo maiores quia. Similique illo expedita occaecati dolorum labore commodi.",
+              "partyAbbreviation": "CWS",
+              "mainColor": "Orange",
+              "createdAt": "2023-05-06T09:38:08.841Z",
+              "updatedAt": "2023-05-06T09:38:08.862Z",
+              "publishedAt": "2023-05-06T09:38:08.841Z",
+              "locale": "en"
+            }
+          }
+        },
+        "elections": {
+          "data": [
+            {
+              "id": 115,
+              "attributes": {
+                "electionDate": "2023-11-05",
+                "electionType": "presidential",
+                "createdAt": "2023-05-06T09:38:08.827Z",
+                "updatedAt": "2023-05-06T09:38:08.827Z",
+                "publishedAt": "2023-05-06T09:38:08.824Z",
+                "electionName": "2023  Niger presidential election",
+                "electionDescription": "Quisquam esse quis architecto inventore hic laudantium est. Assumenda debitis iure nihil dicta iste fuga dicta. Autem accusantium omnis sed harum sunt officiis deserunt exercitationem.",
+                "appTitle": null
+              }
+            }
+          ]
+        },
+        "localizations": {
+          "data": [
+            {
+              "id": 7553,
+              "attributes": {
+                "firstName": "Hiram",
+                "lastName": "Satterfield",
+                "politicalExperience": "Tempore cupiditate praesentium quae pariatur reprehenderit sed quod sunt. Alias dolorem asperiores sed laudantium officia distinctio debitis aliquid doloribus. Facilis voluptates corrupti illum voluptatum quasi temporibus voluptatibus fugit natus. Rerum unde perspiciatis tenetur voluptatibus.",
+                "candidateId": "7552",
+                "createdAt": "2023-05-06T09:38:09.000Z",
+                "updatedAt": "2023-05-06T09:38:09.007Z",
+                "publishedAt": "2023-05-06T09:38:08.998Z",
+                "locale": "fi-FI"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 7554,
+      "attributes": {
+        "firstName": "Tyreek",
+        "lastName": "Klein",
+        "politicalExperience": "Itaque ab provident a debitis officia. Corporis quo necessitatibus architecto sequi consectetur. Officia nesciunt doloremque minus explicabo id.",
+        "candidateId": "n9u37yl4cs",
+        "createdAt": "2023-05-06T09:38:09.013Z",
+        "updatedAt": "2023-05-06T09:38:09.028Z",
+        "publishedAt": "2023-05-06T09:38:09.010Z",
+        "locale": "en",
+        "motherTongues": {
+          "data": []
+        },
+        "otherLanguages": {
+          "data": []
+        },
+        "otherParties": {
+          "data": []
+        },
+        "candidatePhoto": {
+          "data": null
+        },
+        "party": {
+          "data": {
+            "id": 3376,
+            "attributes": {
+              "party": "Starry Foray Instrument",
+              "partyDescription": "Hic repellat officia itaque repellendus sit vel. Tenetur corrupti esse reiciendis officiis maxime saepe accusantium illo. Aut quaerat hic.",
+              "partyAbbreviation": "SFI",
+              "mainColor": "Blue",
+              "createdAt": "2023-05-06T09:38:08.841Z",
+              "updatedAt": "2023-05-06T09:38:08.862Z",
+              "publishedAt": "2023-05-06T09:38:08.840Z",
+              "locale": "en"
+            }
+          }
+        },
+        "elections": {
+          "data": [
+            {
+              "id": 115,
+              "attributes": {
+                "electionDate": "2023-11-05",
+                "electionType": "presidential",
+                "createdAt": "2023-05-06T09:38:08.827Z",
+                "updatedAt": "2023-05-06T09:38:08.827Z",
+                "publishedAt": "2023-05-06T09:38:08.824Z",
+                "electionName": "2023  Niger presidential election",
+                "electionDescription": "Quisquam esse quis architecto inventore hic laudantium est. Assumenda debitis iure nihil dicta iste fuga dicta. Autem accusantium omnis sed harum sunt officiis deserunt exercitationem.",
+                "appTitle": null
+              }
+            }
+          ]
+        },
+        "localizations": {
+          "data": [
+            {
+              "id": 7555,
+              "attributes": {
+                "firstName": "Tyreek",
+                "lastName": "Klein",
+                "politicalExperience": "Vero consectetur quasi ea dolorem enim fuga explicabo accusamus. Quae numquam earum consequuntur consequuntur excepturi a laboriosam adipisci. Eius facilis excepturi nesciunt error reprehenderit eaque quia beatae.",
+                "candidateId": "7554",
+                "createdAt": "2023-05-06T09:38:09.023Z",
+                "updatedAt": "2023-05-06T09:38:09.030Z",
+                "publishedAt": "2023-05-06T09:38:09.019Z",
+                "locale": "fi-FI"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 7556,
+      "attributes": {
+        "firstName": "Jena",
+        "lastName": "Howe",
+        "politicalExperience": "Corrupti facilis veniam quod quas velit vitae occaecati. Dolorum optio fugit facere blanditiis officia quaerat excepturi deleniti dolorum. Veniam quibusdam sit deleniti optio ea cum beatae dolor. Excepturi consequatur praesentium repellendus labore fugiat architecto. Consequuntur nemo cupiditate aliquid repellat officia cum sit aliquid. Delectus vero consectetur repellendus numquam praesentium quaerat tempore voluptatem sint.",
+        "candidateId": "0k1sagoypa",
+        "createdAt": "2023-05-06T09:38:09.036Z",
+        "updatedAt": "2023-05-06T09:38:09.049Z",
+        "publishedAt": "2023-05-06T09:38:09.034Z",
+        "locale": "en",
+        "motherTongues": {
+          "data": []
+        },
+        "otherLanguages": {
+          "data": []
+        },
+        "otherParties": {
+          "data": []
+        },
+        "candidatePhoto": {
+          "data": null
+        },
+        "party": {
+          "data": {
+            "id": 3370,
+            "attributes": {
+              "party": "Mature Configuration Somewhere",
+              "partyDescription": "Officia ratione quas. Blanditiis doloremque voluptatibus nobis. Rem at atque corporis ipsam nihil aspernatur optio id.",
+              "partyAbbreviation": "MCS",
+              "mainColor": "Green",
+              "createdAt": "2023-05-06T09:38:08.841Z",
+              "updatedAt": "2023-05-06T09:38:08.862Z",
+              "publishedAt": "2023-05-06T09:38:08.838Z",
+              "locale": "en"
+            }
+          }
+        },
+        "elections": {
+          "data": [
+            {
+              "id": 115,
+              "attributes": {
+                "electionDate": "2023-11-05",
+                "electionType": "presidential",
+                "createdAt": "2023-05-06T09:38:08.827Z",
+                "updatedAt": "2023-05-06T09:38:08.827Z",
+                "publishedAt": "2023-05-06T09:38:08.824Z",
+                "electionName": "2023  Niger presidential election",
+                "electionDescription": "Quisquam esse quis architecto inventore hic laudantium est. Assumenda debitis iure nihil dicta iste fuga dicta. Autem accusantium omnis sed harum sunt officiis deserunt exercitationem.",
+                "appTitle": null
+              }
+            }
+          ]
+        },
+        "localizations": {
+          "data": [
+            {
+              "id": 7557,
+              "attributes": {
+                "firstName": "Jena",
+                "lastName": "Howe",
+                "politicalExperience": "Nemo repellendus minima dignissimos. Sapiente eum pariatur. Blanditiis tenetur nemo id rem corrupti architecto iure vero. Nisi porro necessitatibus. Sit dolorem excepturi quam quo eos id quibusdam placeat necessitatibus.",
+                "candidateId": "7556",
+                "createdAt": "2023-05-06T09:38:09.043Z",
+                "updatedAt": "2023-05-06T09:38:09.052Z",
+                "publishedAt": "2023-05-06T09:38:09.041Z",
+                "locale": "fi-FI"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "pageSize": 5,
+      "pageCount": 6,
+      "total": 26
+    }
+  }
+}
