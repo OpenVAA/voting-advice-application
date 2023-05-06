@@ -7,6 +7,8 @@ import candidates from './data/candidates.json';
 import parties from './data/parties.json';
 import singleCandidate from './data/singleCandidate.json';
 import singleParty from './data/singleParty.json';
+import singleQuestion from './data/singleQuestion.json';
+import {getQuestion} from '../src/routes/questions/getQuestion';
 
 global.fetch = vi.fn();
 
@@ -84,5 +86,22 @@ describe('Test getting data from backend', () => {
       }
     );
     expect(response).toStrictEqual(singleParty);
+  });
+
+  test('Test requesting single question', async () => {
+    (fetch as Mock).mockResolvedValue(createFetchResponse(singleQuestion));
+    const response = await getQuestion(1).then((response) => {
+      return response;
+    });
+
+    expect(fetch).toHaveBeenCalledWith(
+      `${constants.BACKEND_URL}/api/parties/1?locale=en&populate=*`,
+      {
+        headers: {
+          Authorization: `Bearer ${constants.STRAPI_TOKEN}`
+        }
+      }
+    );
+    expect(response).toStrictEqual(singleQuestion.data[0].attributes);
   });
 });

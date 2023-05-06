@@ -2,10 +2,11 @@ import {getQuestion} from './getQuestion';
 import {getData} from '../../api/getData';
 import {errorInGettingQuestion, questionsLoaded} from '../../utils/stores';
 import {logDebugError} from '../../utils/logger';
+import type {LoadEvent} from '@sveltejs/kit';
 
-async function getNumberOfQuestions(): Promise<number> {
+async function getNumberOfQuestions(fetch: any): Promise<number> {
   questionsLoaded.set(false);
-  return await getData('questions')
+  return await getData('questions', fetch)
     .then((result: any) => {
       if (result) {
         questionsLoaded.set(true);
@@ -20,13 +21,13 @@ async function getNumberOfQuestions(): Promise<number> {
     });
 }
 
-export async function load() {
-  const numberOfQuestions = await getNumberOfQuestions().then((result) => {
+export async function load({fetch}: LoadEvent) {
+  const numberOfQuestions = await getNumberOfQuestions(fetch).then((result) => {
     return result;
   });
   const firstQuestion =
     numberOfQuestions > 0
-      ? await getQuestion(1)
+      ? await getQuestion(1, fetch)
           .then((result) => {
             return result;
           })
