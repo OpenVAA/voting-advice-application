@@ -40,6 +40,9 @@ jobs:
       - name: "Run ESlint check on frontend"
         run: yarn lint
 
+      - name: "Build frontend"
+        run: yarn build
+
       - name: "Run Frontend tests"
         run: yarn test
 
@@ -71,6 +74,10 @@ jobs:
       - name: "Run ESLINT on backend"
         run: |
           npm run lint
+
+      - name: "Build backend"
+        run: |
+          npm run build
 
 #      - name: "Run Backend tests"
 #        run: |
