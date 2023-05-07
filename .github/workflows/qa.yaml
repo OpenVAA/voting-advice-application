@@ -39,12 +39,13 @@ jobs:
 
       - name: "Run ESlint check on frontend"
         run: yarn lint
-
+        
+      - name: "Run Frontend tests"
+        run: yarn test
+        
       - name: "Build frontend"
         run: yarn build
 
-      - name: "Run Frontend tests"
-        run: yarn test
 
   backend-validation:
     runs-on: ubuntu-latest
@@ -75,10 +76,10 @@ jobs:
         run: |
           npm run lint
 
-      - name: "Build backend"
-        run: |
-          npm run build
-
 #      - name: "Run Backend tests"
 #        run: |
 #         npm run test
+
+      - name: "Build backend"
+        run: |
+          npm run build
