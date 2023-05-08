@@ -29,9 +29,9 @@ yarn dev -- --host
 
 1. Install Android Studio for the best dev experience.
 2. Open `capacitor.config.js` file and change `server.url` value to your public IP address.
-3. Not mandatory, but run the command `npx cap sync android` for the better flow experience.
+3. Not mandatory, but run the command `npx cap sync android` for a better flow experience.
 4. Run the command `npx cap open android` with Android Studio installed to open the app.
-5. Click `Run app` button or `^R` in order to run emulator and see the project.
+5. Click `Run app` button or `^R` in order to run the emulator and see the project.
 
 #### Build
 
@@ -43,9 +43,9 @@ Same as Dev, but run `npx cap sync android` after each build to get the most rec
 
 1. Install Xcode for the best dev experience.
 2. Open `capacitor.config.js` file and change `server.url` value to your public IP address.
-3. Not mandatory, but run the command `npx cap sync ios` for the better flow experience.
+3. Not mandatory, but run the command `npx cap sync ios` for a better flow experience.
 4. Run the command `npx cap open ios` with Xcode installed to open the app.
-5. Click `Build` button in order to run emulator and see the project.
+5. Click `Build` button in order to run the emulator and see the project.
 
 #### Build
 
