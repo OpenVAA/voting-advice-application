@@ -24,9 +24,12 @@ Mock data gets published automatically and is thus always ready to be used witho
 To enable mock data generation, set the `GENERATE_MOCK_DATA_ON_INITIALISE` variable as true. This will create mock data if the database is empty,
 and give a warning if database is not empty and thus mock data could not be generated.
 
+**Development builds only:**
+
 You can optionally set `GENERATE_MOCK_DATA_ON_RESTART` to true. This will generate new mock data on every time the Strapi instance is restarted.
 This feature is only enabled in development builds and is mostly intended to assist with development of mock data.
 **Please keep in mind that setting this variable as true will clear the database contents of existing candidates, parties, elections, and so on and should only be used for debugging purposes.**
+Setting `GENERATE_MOCK_DATA_ON_RESTART` as true will override `GENERATE_MOCK_DATA_ON_INITIALISE` setting.
 
 ---
 
