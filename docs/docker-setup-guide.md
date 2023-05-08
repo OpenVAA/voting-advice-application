@@ -1,6 +1,7 @@
 # Setting up the application for local development using Docker
 
-Using Docker is the simplest way to set up the application for local development, as it combines the frontend and backend into a single image that can be built with just a few commands.
+Using Docker is the simplest way to set up the application for local development, as it combines the frontend and 
+backend into a single image that can be built with just a few commands.
 
 ## Requirements
 
@@ -11,29 +12,41 @@ Using Docker is the simplest way to set up the application for local development
 
 ## Getting started
 
-To build the development Docker image, go to the project root folder copy `.env.example` file and rename the copy as `.env`. Then run `npm install` and `npm run dev`
-in the project root folder. These commands will install required depencies create a Docker image that has the frontend, the backend and a database in a single bundle.
+To build the development Docker image, go to the project root folder make a copy of the `.env.example` file and rename 
+the copy as `.env`. Then run `yarn install` and `yarn dev` or `npm install` and `npm run dev` in the project root folder. 
+These commands will create a Docker image that has the frontend, the backend and a database in a single bundle.
 
-If you'd like to have the Strapi backend to be filled with mock data for e.g. previewing app functionality or frontend development, set the `GENERATE_MOCK_DATA_ON_INITIALISE`variable as true.
-- You can optionally set `GENERATE_MOCK_DATA_ON_RESTART` to true. This will generate new mock data on every time the Strapi instance is restarted.
-This feature is only enabled in development builds.
-- You can find more detailed info about the mock data at the [backend Readme file](../backend/vaa-strapi/README.md).
+If you'd like to have the Strapi backend to be filled with mock data e.g. previewing app functionality or frontend 
+development, set the `GENERATE_MOCK_DATA_ON_INITIALISE` variable as true.
+- You can optionally set `GENERATE_MOCK_DATA_ON_RESTART` to true. This will generate new mock data on every time the 
+Strapi instance is restarted. This feature is only enabled in development builds.
+- You can find more detailed info about the mock data in the [backend](../backend/vaa-strapi/README.md)
 
 ### Setting up the backend
 
-After the build is successful, go to the backend URL (`http://localhost:1337` by default) in your browser. The **page will take a while to load as Strapi is building its codebase**. When it's loaded, go to Strapi admin panel, register there and [create an access token](https://www.youtube.com/watch?v=dVQKqZYWyv4) with read permissions (remember to click i18n permissions manually). After creating the access token, copy and paste it to the new `.env` file and save it.
+After the build is successful, go to the backend URL (`http://localhost:1337` by default) in your browser. The 
+**page will take a while to load as Strapi is building its codebase**. When it's loaded, go to the Strapi admin panel, 
+register there and [create an access token](https://www.youtube.com/watch?v=dVQKqZYWyv4) with read permissions 
+(remember to click i18n permissions manually). After creating the access token, copy and paste it to the new `.env` file 
+ßand save it.
 
 ### Setting up the frontend
 
-Once the backend is set up run `npm run dev` again in the project root and the frontend will now be regenerated with permissions to make calls to the backend. You can access the frontend at the following URL `http://localhost:5173`.
+Once the backend is set up, you may need to [stop the containers](#stop-the-containers). Once the containers are stopped
+you must run `yarn dev` or `npm run dev` again in the project root and the frontend will now be regenerated with
+permissions to make calls to the backend. You can access the frontend at the following URL `http://localhost:5173`.
 
 ### Hot reloading
 
-Development Docker images will listen to changes in the files and allow hot reloading, meaning the Docker images don't need to be re-generated after making changes to the codebase.
+Development Docker images will listen to changes in the files and allow hot reloading, meaning the Docker images don't 
+need to be re-generated after making changes to the codebase.
 
 ## Stop The Containers
 
-To stop the containers, run `npm run down:dev` in the project root folder. This will stop all services associated with a Docker Compose configuration.
+To stop the containers, you can either go back to the terminal where you ran the `yarn dev` or `npm run dev` command and
+press <kbd>command</kbd> + <kbd>c</kbd>. Another option is to open a new terminal and run `yarn dev:down` or 
+`npm run dev:down` in the project root folder. This will stop all services associated with a Docker Compose configuration.
+
 # Creating a production build using Docker
 
 TBD
