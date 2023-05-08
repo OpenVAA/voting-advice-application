@@ -16,8 +16,17 @@ Run `npm run strapi ts:generate-types` to re-generate `schemas.d.ts`.
 ## Mock data
 
 The app allows for fake data to be generated to Strapi using Faker.js. Enabling mock data generation in the environment variables will generate mock data
-to the database whenever the app is initialised or restarting. Mock data contains example profiles for candidates and parties and is useful for developing frontend features
-and testing the capabilities of the backend. Mock data gets published automatically and is thus always ready to be used without requiring any user input.
+to the database whenever the app is initialised or restarting.
+
+Mock data contains example profiles for candidates, parties, questions an elections and is useful as an example of application usage as well as frontend development and testing backend capabilities.
+Mock data gets published automatically and is thus always ready to be used without requiring any user input.
+
+To enable mock data generation, set the `GENERATE_MOCK_DATA_ON_INITIALISE` variable as true. This will create mock data if the database is empty,
+and give a warning if database is not empty and thus mock data could not be generated.
+
+You can optionally set `GENERATE_MOCK_DATA_ON_RESTART` to true. This will generate new mock data on every time the Strapi instance is restarted.
+This feature is only enabled in development builds and is mostly intended to assist with development of mock data.
+**Please keep in mind that setting this variable as true will clear the database contents of existing candidates, parties, elections, and so on and should only be used for debugging purposes.**
 
 ---
 
