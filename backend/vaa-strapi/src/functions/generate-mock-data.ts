@@ -68,11 +68,22 @@ export async function generateMockData() {
     await dropCollections();
     console.info('dropped collections');
   }
-
   const locales = await strapi.plugins.i18n.services.locales.find();
+  const findEnglishLocaleFromStrapi = locales.find((locale) => locale.name.includes('English'));
+
+  if (findEnglishLocaleFromStrapi) {
+    mainLocale = findEnglishLocaleFromStrapi.code;
+  } else {
+    console.warn('No English locale found');
+    mainLocale = locales[0].code;
+  }
+
   if (locales.length > 1) {
-    mainLocale = locales[0].code; // If main locale is not English, change it here
-    secondLocale = locales[1].code;
+    if (findEnglishLocaleFromStrapi) {
+      secondLocale = locales.find((locale) => !locale.name.includes('English')).code;
+    } else {
+      secondLocale = locales[1].code;
+    }
   }
 
   console.info('#######################################');
@@ -296,15 +307,30 @@ async function createCandidates(languages: any[], parties: any[], election: any,
   }
 }
 
-async function createQuestions() {
-  // Example questions sourced from Yle 2023 Election Compass
+/**
+ * Returns a single question in the correct requested language.
+ * If no language match is found generates a lipsum sentence.
+ * @param index
+ * @param locale
+ */
+function getSingleQuestion(index: number, locale: string) {
+  if (locale.includes('en')) {
+    return mockQuestions[index].en;
+  } else if (locale.includes('fi')) {
+    return mockQuestions[index].fi;
+  } else {
+    return faker.lorem.sentence();
+  }
+}
 
+async function createQuestions() {
   let questions = [];
   let questionsSecondLocale = [];
 
+  // Example questions sourced from Yle 2023 Election Compass
   mockQuestions.forEach((question, index) => {
     const questionObj = {
-      question: mockQuestions[index].en,
+      question: getSingleQuestion(index, mainLocale),
       questionDescription: faker.lorem.sentences(3),
       locale: mainLocale,
       publishedAt: new Date()
@@ -313,7 +339,7 @@ async function createQuestions() {
 
     if (secondLocale) {
       const questionFiObj = {
-        question: mockQuestions[index].fi,
+        question: getSingleQuestion(index, secondLocale),
         questionDescription: faker.lorem.sentences(3),
         locale: secondLocale,
         publishedAt: new Date()
