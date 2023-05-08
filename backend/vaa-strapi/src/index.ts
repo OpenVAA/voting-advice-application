@@ -1,6 +1,6 @@
 'use strict';
 import {Strapi} from '@strapi/strapi';
-import {generateMockData} from './functions/generate-mock-data';
+import {generateMockData} from './functions/generateMockData';
 
 module.exports = {
   /**

@@ -167,7 +167,9 @@ async function createLanguages(): Promise<any[]> {
     });
   }
 
-  return await strapi.entityService.findMany('api::language.language', {});
+  return await strapi.entityService.findMany('api::language.language', {
+    locale: mainLocale
+  });
 }
 
 async function createElection() {
