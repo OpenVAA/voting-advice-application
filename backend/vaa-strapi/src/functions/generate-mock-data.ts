@@ -111,14 +111,48 @@ async function createLanguages(): Promise<any[]> {
     data: [
       {
         language: 'en',
-        locale: mainLocale
+        locale: mainLocale,
+        publishedAt: new Date()
       },
       {
         language: 'es',
-        locale: mainLocale
+        locale: mainLocale,
+        publishedAt: new Date()
       }
     ]
   });
+
+  if (secondLocale) {
+    await strapi.db.query('api::language.language').createMany({
+      data: [
+        {
+          language: 'en',
+          locale: secondLocale,
+          publishedAt: new Date()
+        },
+        {
+          language: 'es',
+          locale: secondLocale,
+          publishedAt: new Date()
+        }
+      ]
+    });
+
+    const languagesMainLocale = await strapi.entityService.findMany('api::language.language', {
+      locale: mainLocale
+    });
+    const languagesSecondLocale = await strapi.entityService.findMany('api::language.language', {
+      locale: secondLocale
+    });
+
+    languagesMainLocale.forEach(async (language, index) => {
+      await createRelationsForLocales(
+        'api::language.language',
+        languagesSecondLocale[index],
+        language
+      );
+    });
+  }
 
   return await strapi.entityService.findMany('api::language.language', {});
 }
@@ -194,7 +228,9 @@ async function createParties(length: number): Promise<any[]> {
     data: partiesSecondLocale
   });
 
-  const publishedPartiesEn = await strapi.entityService.findMany('api::party.party', {});
+  const publishedPartiesEn = await strapi.entityService.findMany('api::party.party', {
+    locale: mainLocale
+  });
   const publishedPartiesSecondLocale = await strapi.entityService.findMany('api::party.party', {
     locale: secondLocale
   });
@@ -295,13 +331,18 @@ async function createQuestions() {
       data: questionsSecondLocale
     });
 
-    const publishedQuestionsEn = await strapi.entityService.findMany('api::question.question', {});
-    const publishedQuestionsFi = await strapi.entityService.findMany('api::question.question', {
-      locale: secondLocale
+    const publishedQuestions = await strapi.entityService.findMany('api::question.question', {
+      locale: mainLocale
     });
+    const publishedQuestionsSecondLocale = await strapi.entityService.findMany(
+      'api::question.question',
+      {
+        locale: secondLocale
+      }
+    );
 
-    await publishedQuestionsFi.forEach(async (party, index) => {
-      await createRelationsForLocales('api::question.question', publishedQuestionsEn[index], party);
+    await publishedQuestionsSecondLocale.forEach(async (party, index) => {
+      await createRelationsForLocales('api::question.question', publishedQuestions[index], party);
     });
   }
 }
