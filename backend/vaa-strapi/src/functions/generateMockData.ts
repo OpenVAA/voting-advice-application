@@ -1,7 +1,9 @@
 /**
- * Generate mock data using faker
- * Will only run if env variable GENERATE_MOCK_DATA=true is set and
- * NODE_ENV is development
+ * Generate mock data using faker.js
+ *
+ * Fake data can be generated if env variable GENERATE_MOCK_DATA_ON_INITIALISE=true is set.
+ * Additionally, GENERATE_MOCK_DATA_ON_RESTART can be used in dev environment for
+ * debugging & developing mock data generation functionality.
  */
 
 import {faker} from '@faker-js/faker';
