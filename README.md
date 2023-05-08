@@ -4,7 +4,7 @@ A platform for creating voting advice applications. This repository is a monorep
 ## Getting started
 You can run the whole application in a single Docker image, or run the frontend or backend separately depending on your preferences. Using the Docker image is recommended and quickest way to set up the application.
 
-- See [the Docker setup guide](documentation/docker-setup-guide.md) for running the whole application.
+- See [the Docker setup guide](docs/docker-setup-guide.md) for running the whole application.
 - See [the frontend Readme](frontend/README.md) for instructions on running the frontend invidually.
 - See [the backend Readme](backend/vaa-strapi/README.md) for instructions on running the backend invidually.
 
