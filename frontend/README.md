@@ -1,7 +1,7 @@
 # Getting Started with Svelte
 
 This document describes the process for running the frontend separately on your local machine without Docker. You can
-find [instructions on running the project with Docker here](../documentation/docker-setup-guide.md).
+find [instructions on running the project with Docker here](../docs/docker-setup-guide.md).
 
 ## Run The Frontend
 

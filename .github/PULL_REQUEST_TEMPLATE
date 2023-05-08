@@ -6,7 +6,7 @@ Fixes [Issue link]
 
 ## Check off each of the following tasks as they are completed
 
-- [ ] I have reviewed the changes myself in this PR. Please check the [self-review document](https://github.com/OpenVAA/voting-advice-application/blob/main/documentation/contributing/self-review.md)
+- [ ] I have reviewed the changes myself in this PR. Please check the [self-review document](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/contributing/self-review.md)
 - [ ] I have added or edited unit tests.
 - [ ] I have run the unit tests successfully.
 - [ ] I have tested this change on my own device.
