@@ -1,32 +1,46 @@
-// Quick test function to get data from Strapi
-// To be refactored (GraphQL in the future?)
-
 import {constants} from '../utils/constants';
 import {getCurrentLocale} from '../utils/i18n';
+import {logDebugError} from '../utils/logger';
 
-// TODO: Define what type of data this returns instead of just any
-export const getData = async (
-  endpoint: string,
+/**
+ * Makes a request to Strapi backend and returns the data.
+ * TODO: Define return data type instead of "any"
+ * @param route Backend api route to use without the server address or /api/
+ * @param params Optional parameters to use on the request
+ * @param fetchFunction Optional Svelte fetch function to use on load.
+ * It is preferred to use fetch passed by Svelte on page load over Node.js native fetch.
+ */
+export async function getData(
+  route: string,
+  fetchFunction: any = null,
   params: URLSearchParams = new URLSearchParams({})
-): Promise<any> => {
+): Promise<any> {
   params.append('locale', getCurrentLocale());
   params.append('populate', '*');
 
-  const url = `${constants.BACKEND_URL}/api/${endpoint}?${params}`;
-  return await fetch(url, {
+  const url = `${constants.BACKEND_URL}/api/${route}?${params}`;
+
+  if (!fetchFunction) {
+    logDebugError(
+      'Svelte fetch() was not defined for getData, and reverting back to native fetch()'
+    );
+    fetchFunction = fetch;
+  }
+
+  return await fetchFunction(url, {
     headers: {
       Authorization: `Bearer ${constants.STRAPI_TOKEN}`
     }
   })
-    .then((response) => {
+    .then((response: any) => {
       return response.json();
     })
-    .catch((error) => console.error('Error in getting data from backend: ', error));
-};
+    .catch((error: any) => console.error('Error in getting data from backend: ', error));
+}
 
 // TODO: Define what type of data this returns instead of just any
-export const getAllCandidates = async (): Promise<any> => {
-  return await getData('candidates').then((result) => {
+export const getAllCandidates = async (fetchFunction: any = null): Promise<any> => {
+  return await getData('candidates', fetchFunction).then((result) => {
     if (result && result.data) return result?.data;
     else console.error('Could not retrieve result for all candidates');
   });
