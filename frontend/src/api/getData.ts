@@ -2,8 +2,8 @@
 // To be refactored (GraphQL in the future?)
 
 import {constants} from '../utils/constants';
-import {getCurrentLocaleForBackendQuery} from '../utils/i18n';
-import {logDebugError} from '../utils/logger';
+import {getCurrentLocale} from '../utils/i18n';
+import {logDebugError, logDebugInfo} from '../utils/logger';
 
 /**
  * Makes a request to Strapi backend and returns the data.
@@ -18,10 +18,11 @@ export async function getData(
   fetchFunction: any = null,
   params: URLSearchParams = new URLSearchParams({})
 ): Promise<any> {
-  params.append('locale', getCurrentLocaleForBackendQuery());
+  params.append('locale', getCurrentLocale());
   params.append('populate', '*');
 
   const url = `${constants.BACKEND_URL}/api/${route}?${params}`;
+  logDebugInfo('Making a request to ', url);
 
   if (!fetchFunction) {
     logDebugError(

@@ -1,8 +1,8 @@
 import {getQuestion} from './getQuestion';
 import {getData} from '../../api/getData';
-import {errorInGettingQuestion, questionsLoaded} from '../../utils/stores';
 import {logDebugError} from '../../utils/logger';
 import type {LoadEvent} from '@sveltejs/kit';
+import {errorInGettingQuestion, questionsLoaded} from '../../stores';
 
 async function getNumberOfQuestions(fetch: any): Promise<number> {
   questionsLoaded.set(false);

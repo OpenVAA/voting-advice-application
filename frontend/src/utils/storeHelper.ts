@@ -2,8 +2,11 @@ import {writable} from 'svelte/store';
 import type {Writable} from 'svelte/store';
 import {browser} from '$app/environment';
 
-// Store values in local storage to prevent them from disappearing in refresh
-// Here we check if item already exists on a refresh event
+/**
+ * Store values in local storage to prevent them from disappearing in refresh
+ * Here we check if item already exists on a refresh event
+ * @param key
+ */
 function getItemFromLocalStorage(key: string): unknown {
   let item = null;
   if (browser && localStorage) {
@@ -19,7 +22,12 @@ function subscribeToLocalStorage(item: Writable<unknown>, key: string): void {
   }
 }
 
-function createStoreValueAndSubscribeToLocalStorage(
+/**
+ * Creates a svelte Writable object and stores it in local storage to prevent values from disappearing on refresh
+ * @param key
+ * @param defaultValue
+ */
+export function createStoreValueAndSubscribeToLocalStorage(
   key: string,
   defaultValue: unknown
 ): Writable<unknown> {
@@ -27,12 +35,3 @@ function createStoreValueAndSubscribeToLocalStorage(
   subscribeToLocalStorage(storeValue, key);
   return storeValue;
 }
-
-// ----- Actual Svelte Store values below -----
-
-// Values for Questions
-export const currentQuestionId = createStoreValueAndSubscribeToLocalStorage('currentQuestionId', 1);
-export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage('answeredQuestions', 1);
-export const candidateRankings = createStoreValueAndSubscribeToLocalStorage('candidateRankings', 1);
-export const questionsLoaded = writable(false);
-export const errorInGettingQuestion = writable(false);

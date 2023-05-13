@@ -6,7 +6,7 @@
     answeredQuestions,
     errorInGettingQuestion,
     questionsLoaded
-  } from '../../utils/stores';
+  } from '../../stores';
   import {calculateCandidateCompatibilities} from '../../candidateRanking/calculateCompatibility';
   import {getQuestion} from './getQuestion';
   import {logDebugError} from '../../utils/logger';

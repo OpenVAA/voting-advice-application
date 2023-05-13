@@ -9,16 +9,16 @@ import singleCandidate from './data/singleCandidate.json';
 import singleParty from './data/singleParty.json';
 import singleQuestion from './data/singleQuestion.json';
 import {getQuestion} from '../src/routes/questions/getQuestion';
-import {getCurrentLocaleForBackendQuery} from '../src/utils/i18n';
+import {getCurrentLocale} from '../src/utils/i18n';
 
 global.fetch = vi.fn();
 
 // Mock getting current locale as i18n can't be used in the testing environment
 vi.mock('../src/utils/i18n', () => {
-  const getCurrentLocaleForBackendQuery = vi.fn();
-  getCurrentLocaleForBackendQuery.mockReturnValue('en');
+  const getCurrentLocale = vi.fn();
+  getCurrentLocale.mockReturnValue('en');
   return {
-    getCurrentLocaleForBackendQuery
+    getCurrentLocale
   };
 });
 
