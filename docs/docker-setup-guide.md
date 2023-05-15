@@ -16,6 +16,9 @@ To build the development Docker image, go to the project root folder make a copy
 the copy as `.env`. Then run `yarn install` and `yarn dev` or `npm install` and `npm run dev` in the project root folder. 
 These commands will create a Docker image that has the frontend, the backend and a database in a single bundle.
 
+**When running the project in Docker, only use the `.env` file in project root. You usually
+don't have to touch the separate .env files for frontend and backend.**
+
 If you'd like to have the Strapi backend to be filled with mock data e.g. previewing app functionality or frontend 
 development, set the `GENERATE_MOCK_DATA_ON_INITIALISE` variable as true.
 - You can optionally set `GENERATE_MOCK_DATA_ON_RESTART` to true. This will generate new mock data on every time the 
