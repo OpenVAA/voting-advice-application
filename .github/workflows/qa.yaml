@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - qa
+    paths-ignore:
+      - '**.md'
+      - '**/*/.env.example'
   pull_request:
     types:
       - opened
@@ -12,6 +15,9 @@ on:
       - ready_for_review
     branches:
       - qa
+    paths-ignore:
+      - '**.md'
+      - '**/*/.env.example'
 
 jobs:
   frontend-validation:

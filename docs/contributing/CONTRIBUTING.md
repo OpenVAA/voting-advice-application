@@ -64,6 +64,12 @@ On top of that, the commit message should follow the following rules:
 Once your changes are ready, don't forget to [self-review](self-review.md) to speed up the review
 process.
 
+### Workflows
+The project uses GitHub Actions to verify each commit passes unit tests, is able to 
+build the app successfully and adheres to the [coding conventions used by the project](style-guides.md).
+If a commit fails the verification, please check your changes from the logs and fix changes before
+submitting a review request.
+
 ### Pull Request
 
 When you're done with the changes, create a pull request known as a PR.
@@ -76,6 +82,7 @@ When you're done with the changes, create a pull request known as a PR.
   your PR. Either using [suggested changes](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/incorporating-feedback-in-your-pull-request)
   or pull request comments.
 - As you update your PR and apply changes, mark each conversation as [resolved](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/commenting-on-a-pull-request#resolving-conversations).
+- Make sure that your commits pass the validation workflows, are able to run tests & build the application.
 
 ### Your PR is merged!
 
