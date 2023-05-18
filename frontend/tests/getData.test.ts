@@ -22,7 +22,7 @@ describe('Test getting data from backend', () => {
     });
 
     expect(fetch).toHaveBeenCalledWith(
-      `${constants.BACKEND_URL}/api/candidates?locale=en&populate=*`,
+      `${constants.BACKEND_URL}/api/candidates?populate=*&locale=en`,
       {
         headers: {
           Authorization: `Bearer ${constants.STRAPI_TOKEN}`
@@ -36,14 +36,11 @@ describe('Test getting data from backend', () => {
     (fetch as Mock).mockResolvedValue(createFetchResponse(parties));
     const response = await getData('parties');
 
-    expect(fetch).toHaveBeenCalledWith(
-      `${constants.BACKEND_URL}/api/parties?locale=en&populate=*`,
-      {
-        headers: {
-          Authorization: `Bearer ${constants.STRAPI_TOKEN}`
-        }
+    expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/parties?locale=en`, {
+      headers: {
+        Authorization: `Bearer ${constants.STRAPI_TOKEN}`
       }
-    );
+    });
     expect(response).toStrictEqual(parties);
   });
 
@@ -51,14 +48,11 @@ describe('Test getting data from backend', () => {
     (fetch as Mock).mockResolvedValue(createFetchResponse(singleCandidate));
     const response = await getData('candidates/1');
 
-    expect(fetch).toHaveBeenCalledWith(
-      `${constants.BACKEND_URL}/api/candidates/1?locale=en&populate=*`,
-      {
-        headers: {
-          Authorization: `Bearer ${constants.STRAPI_TOKEN}`
-        }
+    expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/candidates/1?locale=en`, {
+      headers: {
+        Authorization: `Bearer ${constants.STRAPI_TOKEN}`
       }
-    );
+    });
     expect(response).toStrictEqual(singleCandidate);
   });
 
@@ -66,14 +60,11 @@ describe('Test getting data from backend', () => {
     (fetch as Mock).mockResolvedValue(createFetchResponse(singleParty));
     const response = await getData('parties/1');
 
-    expect(fetch).toHaveBeenCalledWith(
-      `${constants.BACKEND_URL}/api/parties/1?locale=en&populate=*`,
-      {
-        headers: {
-          Authorization: `Bearer ${constants.STRAPI_TOKEN}`
-        }
+    expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/parties/1?locale=en`, {
+      headers: {
+        Authorization: `Bearer ${constants.STRAPI_TOKEN}`
       }
-    );
+    });
     expect(response).toStrictEqual(singleParty);
   });
 });

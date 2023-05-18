@@ -16,7 +16,6 @@ export async function getData(
   params: URLSearchParams = new URLSearchParams({})
 ): Promise<any> {
   params.append('locale', getCurrentLocale());
-  params.append('populate', '*');
 
   const url = `${constants.BACKEND_URL}/api/${route}?${params}`;
 
@@ -40,7 +39,13 @@ export async function getData(
 
 // TODO: Define what type of data this returns instead of just any
 export const getAllCandidates = async (fetchFunction: any = null): Promise<any> => {
-  return await getData('candidates', fetchFunction).then((result) => {
+  return await getData(
+    'candidates',
+    fetchFunction,
+    new URLSearchParams({
+      populate: '*'
+    })
+  ).then((result) => {
     if (result && result.data) return result?.data;
     else console.error('Could not retrieve result for all candidates');
   });
