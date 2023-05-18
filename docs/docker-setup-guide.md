@@ -31,7 +31,7 @@ After the build is successful, go to the backend URL (`http://localhost:1337` by
 **page will take a while to load as Strapi is building its codebase**. When it's loaded, go to the Strapi admin panel, 
 register there and [create an access token](https://www.youtube.com/watch?v=dVQKqZYWyv4) with read permissions 
 (remember to click i18n permissions manually). After creating the access token, copy and paste it to the new `.env` file 
-ßand save it.
+and save it.
 
 ### Setting up the frontend
 
