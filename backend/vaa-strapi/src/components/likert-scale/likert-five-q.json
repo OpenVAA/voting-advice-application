@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_likert_scale_likert_five_qs",
+  "info": {
+    "displayName": "LikertFiveQ",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "answer": {
+      "type": "enumeration",
+      "enum": ["Fully disagree", "Disagree", "Neutral", "Agree", "Fully agree"],
+      "required": true,
+      "default": "Neutral"
+    },
+    "question": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::question.question"
+    },
+    "answerExplanation": {
+      "type": "text"
+    }
+  }
+}

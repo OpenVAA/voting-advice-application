@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_drag_to_reorder_drag_to_reorder_qs",
+  "info": {
+    "displayName": "DragToReorderQ",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "question": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::question.question"
+    },
+    "answers": {
+      "displayName": "DragToReorderA",
+      "type": "component",
+      "repeatable": true,
+      "component": "drag-to-reorder.drag-to-reorder-a"
+    },
+    "answerExplanation": {
+      "type": "text"
+    }
+  }
+}

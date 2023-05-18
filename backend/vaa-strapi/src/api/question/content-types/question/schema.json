@@ -25,11 +25,6 @@
       "type": "text",
       "required": true
     },
-    "answers": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::answer.answer"
-    },
     "questionDescription": {
       "pluginOptions": {
         "i18n": {
@@ -38,6 +33,11 @@
       },
       "type": "text",
       "required": true
+    },
+    "category": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::category.category"
     }
   }
 }

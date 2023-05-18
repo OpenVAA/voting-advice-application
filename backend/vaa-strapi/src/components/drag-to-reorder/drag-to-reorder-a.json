@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_drag_to_reorder_drag_to_reorder_as",
+  "info": {
+    "displayName": "DragToReorderA"
+  },
+  "options": {},
+  "attributes": {
+    "answer": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

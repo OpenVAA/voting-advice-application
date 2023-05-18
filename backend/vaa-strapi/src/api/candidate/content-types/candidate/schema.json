@@ -91,6 +91,20 @@
       "relation": "manyToMany",
       "target": "api::election.election",
       "mappedBy": "candidates"
+    },
+    "answeredQuestions": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "dynamiczone",
+      "components": [
+        "drag-to-reorder.drag-to-reorder-q",
+        "likert-scale.likert-five-q",
+        "likert-scale.likert-four-q"
+      ],
+      "required": true
     }
   }
 }

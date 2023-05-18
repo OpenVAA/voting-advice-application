@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_likert_scale_likert_four_qs",
+  "info": {
+    "displayName": "LikertFourQ",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "question": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::question.question"
+    },
+    "answer": {
+      "type": "enumeration",
+      "enum": ["Fully disagree", "Disagree", "Agree", "Fully agree"],
+      "required": true
+    },
+    "answerExplanation": {
+      "type": "text"
+    }
+  }
+}
