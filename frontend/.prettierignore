@@ -12,3 +12,6 @@ coverage
 pnpm-lock.yaml
 package-lock.json
 yarn.lock
+
+# Ignore some problematic Svelte files
+**/hooks.server.ts
