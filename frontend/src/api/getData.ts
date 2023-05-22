@@ -2,10 +2,12 @@
 // To be refactored (GraphQL in the future?)
 
 import {constants} from '../utils/constants';
+import {browser} from '$app/environment';
 
 // TODO: Define what type of data this returns instead of just any
 export const getData = async (endpoint: string): Promise<any> => {
   const url = `${constants.BACKEND_URL}/${endpoint}`;
+
   return await fetch(url, {
     headers: {
       Authorization: `Bearer ${constants.STRAPI_TOKEN}`
@@ -15,6 +17,20 @@ export const getData = async (endpoint: string): Promise<any> => {
       return response.json();
     })
     .catch((error) => console.error('Error in getting data from backend: ', error));
+};
+
+export const getSingleTypeData = async ({fetch, params, route, url, endpoint}): Promise<any> => {
+  const backendUrl = `${constants.BACKEND_URL}/${endpoint}`;
+
+  return await fetch(backendUrl, {
+    headers: {
+      Authorization: `Bearer ${constants.STRAPI_TOKEN}`
+    }
+  })
+    .then((response: {json: () => any}) => {
+      return response.json();
+    })
+    .catch((error: any) => console.error('Error fetching dta from Strapi', error));
 };
 
 // TODO: Define what type of data this returns instead of just any
