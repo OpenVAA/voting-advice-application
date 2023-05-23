@@ -105,6 +105,11 @@
         "likert-scale.likert-four-q"
       ],
       "required": true
+    },
+    "election": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::election.election"
     }
   }
 }

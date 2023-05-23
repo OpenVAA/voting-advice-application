@@ -1,7 +1,7 @@
 {
   "collectionName": "components_likert_scale_likert_five_qs",
   "info": {
-    "displayName": "LikertFiveQ",
+    "displayName": "LikertFive",
     "description": ""
   },
   "options": {},
@@ -12,10 +12,10 @@
       "required": true,
       "default": "Neutral"
     },
-    "question": {
+    "likert5Q": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::question.question"
+      "target": "api::likert-five-q.likert-five-q"
     },
     "answerExplanation": {
       "type": "text"

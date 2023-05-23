@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "drag_to_reorder_answers",
+  "info": {
+    "singularName": "drag-to-reorder-answer",
+    "pluralName": "drag-to-reorder-answers",
+    "displayName": "dragToReorderAnswer",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "answer": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string"
+    }
+  }
+}

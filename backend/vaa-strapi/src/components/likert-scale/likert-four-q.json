@@ -1,15 +1,15 @@
 {
   "collectionName": "components_likert_scale_likert_four_qs",
   "info": {
-    "displayName": "LikertFourQ",
+    "displayName": "LikertFour",
     "description": ""
   },
   "options": {},
   "attributes": {
-    "question": {
+    "likert4Q": {
       "type": "relation",
       "relation": "oneToOne",
-      "target": "api::question.question"
+      "target": "api::likert-four-q.likert-four-q"
     },
     "answer": {
       "type": "enumeration",

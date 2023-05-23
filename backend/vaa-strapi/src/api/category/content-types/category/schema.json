@@ -4,7 +4,8 @@
   "info": {
     "singularName": "category",
     "pluralName": "categories",
-    "displayName": "category"
+    "displayName": "category",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -23,10 +24,23 @@
       },
       "type": "string"
     },
-    "questions": {
+    "drag_to_reorder_questions": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::question.question"
+      "target": "api::question.question",
+      "mappedBy": "category"
+    },
+    "likert_five_questions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::likert-five-q.likert-five-q",
+      "mappedBy": "category"
+    },
+    "likert_four_questions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::likert-four-q.likert-four-q",
+      "mappedBy": "category"
     }
   }
 }

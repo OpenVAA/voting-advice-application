@@ -1,10 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "questions",
+  "collectionName": "likert_five_qs",
   "info": {
-    "singularName": "question",
-    "pluralName": "questions",
-    "displayName": "dragToReorderQuestion",
+    "singularName": "likert-five-q",
+    "pluralName": "likert-five-qs",
+    "displayName": "likertFiveQuestion",
     "description": ""
   },
   "options": {
@@ -22,8 +22,7 @@
           "localized": true
         }
       },
-      "type": "text",
-      "required": true
+      "type": "string"
     },
     "questionDescription": {
       "pluginOptions": {
@@ -31,19 +30,13 @@
           "localized": true
         }
       },
-      "type": "text",
-      "required": true
+      "type": "text"
     },
     "category": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::category.category",
-      "inversedBy": "drag_to_reorder_questions"
-    },
-    "drag_to_reorder_answers": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::drag-to-reorder-answer.drag-to-reorder-answer"
+      "inversedBy": "likert_five_questions"
     }
   }
 }
