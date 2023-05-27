@@ -26,10 +26,6 @@ export async function generateMockData() {
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
-        .query('api::candidate-answer.candidate-answer')
-        .count({})
-        .then((number) => number);
-      countOfObjects += await strapi.db
         .query('api::constituency.constituency')
         .count({})
         .then((number) => number);
