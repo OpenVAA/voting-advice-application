@@ -107,7 +107,6 @@ export async function generateMockData() {
  */
 async function dropCollections() {
   await strapi.db.query('api::candidate.candidate').deleteMany({});
-  await strapi.db.query('api::candidate-answer.candidate-answer').deleteMany({});
   await strapi.db.query('api::constituency.constituency').deleteMany({});
   await strapi.db.query('api::election.election').deleteMany({});
   await strapi.db.query('api::language.language').deleteMany({});
@@ -263,6 +262,7 @@ async function createCandidates(languages: any[], parties: any[], election: any,
     const otherLanguages = [faker.helpers.arrayElement(languages).id];
     const party = faker.helpers.arrayElement(parties).id;
     const elections = [election.id];
+    const answeredQuestions = [];
 
     const candidateObj = {
       firstName,
@@ -273,7 +273,8 @@ async function createCandidates(languages: any[], parties: any[], election: any,
       otherLanguages,
       party,
       elections,
-      locale: mainLocale
+      locale: mainLocale,
+      answeredQuestions
     };
 
     // Need to insert candidates one by one as the bulk insert does not support relations
