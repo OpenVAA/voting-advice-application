@@ -1,9 +1,9 @@
 {
   "kind": "collectionType",
-  "collectionName": "drag_to_reorder_answers",
+  "collectionName": "drag_to_reorder_as",
   "info": {
-    "singularName": "drag-to-reorder-answer",
-    "pluralName": "drag-to-reorder-answers",
+    "singularName": "drag-to-reorder-a",
+    "pluralName": "drag-to-reorder-as",
     "displayName": "dragToReorderAnswer",
     "description": ""
   },
@@ -17,12 +17,13 @@
   },
   "attributes": {
     "answer": {
+      "type": "text",
+      "required": true,
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      },
-      "type": "string"
+      }
     }
   }
 }

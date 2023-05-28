@@ -1,5 +1,5 @@
 {
-  "/questions": {
+  "/drag-to-reorder-qs": {
     "get": {
       "responses": {
         "200": {
@@ -7,7 +7,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/QuestionListResponse"
+                "$ref": "#/components/schemas/DragToReorderQListResponse"
               }
             }
           }
@@ -64,7 +64,7 @@
         }
       },
       "tags": [
-        "Question"
+        "Drag-to-reorder-q"
       ],
       "parameters": [
         {
@@ -169,7 +169,7 @@
           }
         }
       ],
-      "operationId": "get/questions"
+      "operationId": "get/drag-to-reorder-qs"
     },
     "post": {
       "responses": {
@@ -178,7 +178,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/QuestionResponse"
+                "$ref": "#/components/schemas/DragToReorderQResponse"
               }
             }
           }
@@ -235,23 +235,23 @@
         }
       },
       "tags": [
-        "Question"
+        "Drag-to-reorder-q"
       ],
       "parameters": [],
-      "operationId": "post/questions",
+      "operationId": "post/drag-to-reorder-qs",
       "requestBody": {
         "required": true,
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/QuestionRequest"
+              "$ref": "#/components/schemas/DragToReorderQRequest"
             }
           }
         }
       }
     }
   },
-  "/questions/{id}": {
+  "/drag-to-reorder-qs/{id}": {
     "get": {
       "responses": {
         "200": {
@@ -259,7 +259,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/QuestionResponse"
+                "$ref": "#/components/schemas/DragToReorderQResponse"
               }
             }
           }
@@ -316,7 +316,7 @@
         }
       },
       "tags": [
-        "Question"
+        "Drag-to-reorder-q"
       ],
       "parameters": [
         {
@@ -330,7 +330,7 @@
           }
         }
       ],
-      "operationId": "get/questions/{id}"
+      "operationId": "get/drag-to-reorder-qs/{id}"
     },
     "put": {
       "responses": {
@@ -339,7 +339,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/QuestionResponse"
+                "$ref": "#/components/schemas/DragToReorderQResponse"
               }
             }
           }
@@ -396,7 +396,7 @@
         }
       },
       "tags": [
-        "Question"
+        "Drag-to-reorder-q"
       ],
       "parameters": [
         {
@@ -410,13 +410,13 @@
           }
         }
       ],
-      "operationId": "put/questions/{id}",
+      "operationId": "put/drag-to-reorder-qs/{id}",
       "requestBody": {
         "required": true,
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/QuestionRequest"
+              "$ref": "#/components/schemas/DragToReorderQRequest"
             }
           }
         }
@@ -487,7 +487,7 @@
         }
       },
       "tags": [
-        "Question"
+        "Drag-to-reorder-q"
       ],
       "parameters": [
         {
@@ -501,10 +501,10 @@
           }
         }
       ],
-      "operationId": "delete/questions/{id}"
+      "operationId": "delete/drag-to-reorder-qs/{id}"
     }
   },
-  "/questions/{id}/localizations": {
+  "/drag-to-reorder-qs/{id}/localizations": {
     "post": {
       "responses": {
         "200": {
@@ -512,7 +512,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/QuestionLocalizationResponse"
+                "$ref": "#/components/schemas/DragToReorderQLocalizationResponse"
               }
             }
           }
@@ -569,7 +569,7 @@
         }
       },
       "tags": [
-        "Question"
+        "Drag-to-reorder-q"
       ],
       "parameters": [
         {
@@ -583,13 +583,13 @@
           }
         }
       ],
-      "operationId": "post/questions/{id}/localizations",
+      "operationId": "post/drag-to-reorder-qs/{id}/localizations",
       "requestBody": {
         "required": true,
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/QuestionLocalizationRequest"
+              "$ref": "#/components/schemas/DragToReorderQLocalizationRequest"
             }
           }
         }

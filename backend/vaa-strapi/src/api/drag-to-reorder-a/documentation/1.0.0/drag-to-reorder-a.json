@@ -1,5 +1,5 @@
 {
-  "/drag-to-reorder-answers": {
+  "/drag-to-reorder-as": {
     "get": {
       "responses": {
         "200": {
@@ -7,7 +7,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DragToReorderAnswerListResponse"
+                "$ref": "#/components/schemas/DragToReorderAListResponse"
               }
             }
           }
@@ -64,7 +64,7 @@
         }
       },
       "tags": [
-        "Drag-to-reorder-answer"
+        "Drag-to-reorder-a"
       ],
       "parameters": [
         {
@@ -169,7 +169,7 @@
           }
         }
       ],
-      "operationId": "get/drag-to-reorder-answers"
+      "operationId": "get/drag-to-reorder-as"
     },
     "post": {
       "responses": {
@@ -178,7 +178,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DragToReorderAnswerResponse"
+                "$ref": "#/components/schemas/DragToReorderAResponse"
               }
             }
           }
@@ -235,23 +235,23 @@
         }
       },
       "tags": [
-        "Drag-to-reorder-answer"
+        "Drag-to-reorder-a"
       ],
       "parameters": [],
-      "operationId": "post/drag-to-reorder-answers",
+      "operationId": "post/drag-to-reorder-as",
       "requestBody": {
         "required": true,
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/DragToReorderAnswerRequest"
+              "$ref": "#/components/schemas/DragToReorderARequest"
             }
           }
         }
       }
     }
   },
-  "/drag-to-reorder-answers/{id}": {
+  "/drag-to-reorder-as/{id}": {
     "get": {
       "responses": {
         "200": {
@@ -259,7 +259,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DragToReorderAnswerResponse"
+                "$ref": "#/components/schemas/DragToReorderAResponse"
               }
             }
           }
@@ -316,7 +316,7 @@
         }
       },
       "tags": [
-        "Drag-to-reorder-answer"
+        "Drag-to-reorder-a"
       ],
       "parameters": [
         {
@@ -330,7 +330,7 @@
           }
         }
       ],
-      "operationId": "get/drag-to-reorder-answers/{id}"
+      "operationId": "get/drag-to-reorder-as/{id}"
     },
     "put": {
       "responses": {
@@ -339,7 +339,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DragToReorderAnswerResponse"
+                "$ref": "#/components/schemas/DragToReorderAResponse"
               }
             }
           }
@@ -396,7 +396,7 @@
         }
       },
       "tags": [
-        "Drag-to-reorder-answer"
+        "Drag-to-reorder-a"
       ],
       "parameters": [
         {
@@ -410,13 +410,13 @@
           }
         }
       ],
-      "operationId": "put/drag-to-reorder-answers/{id}",
+      "operationId": "put/drag-to-reorder-as/{id}",
       "requestBody": {
         "required": true,
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/DragToReorderAnswerRequest"
+              "$ref": "#/components/schemas/DragToReorderARequest"
             }
           }
         }
@@ -487,7 +487,7 @@
         }
       },
       "tags": [
-        "Drag-to-reorder-answer"
+        "Drag-to-reorder-a"
       ],
       "parameters": [
         {
@@ -501,10 +501,10 @@
           }
         }
       ],
-      "operationId": "delete/drag-to-reorder-answers/{id}"
+      "operationId": "delete/drag-to-reorder-as/{id}"
     }
   },
-  "/drag-to-reorder-answers/{id}/localizations": {
+  "/drag-to-reorder-as/{id}/localizations": {
     "post": {
       "responses": {
         "200": {
@@ -512,7 +512,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DragToReorderAnswerLocalizationResponse"
+                "$ref": "#/components/schemas/DragToReorderALocalizationResponse"
               }
             }
           }
@@ -569,7 +569,7 @@
         }
       },
       "tags": [
-        "Drag-to-reorder-answer"
+        "Drag-to-reorder-a"
       ],
       "parameters": [
         {
@@ -583,13 +583,13 @@
           }
         }
       ],
-      "operationId": "post/drag-to-reorder-answers/{id}/localizations",
+      "operationId": "post/drag-to-reorder-as/{id}/localizations",
       "requestBody": {
         "required": true,
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/DragToReorderAnswerLocalizationRequest"
+              "$ref": "#/components/schemas/DragToReorderALocalizationRequest"
             }
           }
         }

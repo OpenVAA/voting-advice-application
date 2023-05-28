@@ -1,23 +1,13 @@
 {
   "collectionName": "components_drag_to_reorder_drag_to_reorder_qs",
   "info": {
-    "displayName": "DragToReorder",
+    "displayName": "dragToReorder",
     "description": ""
   },
   "options": {},
   "attributes": {
     "answerExplanation": {
       "type": "text"
-    },
-    "d2rQ": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::question.question"
-    },
-    "d2ra": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::drag-to-reorder-answer.drag-to-reorder-answer"
     }
   }
 }

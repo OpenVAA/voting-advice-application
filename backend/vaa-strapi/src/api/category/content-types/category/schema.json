@@ -24,12 +24,6 @@
       },
       "type": "string"
     },
-    "drag_to_reorder_questions": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::question.question",
-      "mappedBy": "category"
-    },
     "likert_five_questions": {
       "type": "relation",
       "relation": "oneToMany",

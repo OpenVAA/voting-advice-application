@@ -1,16 +1,11 @@
 {
   "collectionName": "components_likert_scale_likert_four_qs",
   "info": {
-    "displayName": "LikertFour",
+    "displayName": "likertFour",
     "description": ""
   },
   "options": {},
   "attributes": {
-    "likert4Q": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::likert-four-q.likert-four-q"
-    },
     "answer": {
       "type": "enumeration",
       "enum": ["Fully disagree", "Disagree", "Agree", "Fully agree"],
@@ -18,6 +13,11 @@
     },
     "answerExplanation": {
       "type": "text"
+    },
+    "likert5Q": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::likert-four-q.likert-four-q"
     }
   }
 }
