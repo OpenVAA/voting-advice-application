@@ -24,6 +24,14 @@
       },
       "type": "string",
       "required": true
+    },
+    "languageAbbreviation": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string"
     }
   }
 }

@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "drag_to_reorder_answers",
+  "info": {
+    "singularName": "drag-to-reorder-answer",
+    "pluralName": "drag-to-reorder-answers",
+    "displayName": "dragToReorderAnswer",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "drag_to_reorder_options": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::drag-to-reorder-option.drag-to-reorder-option"
+    },
+    "candidate": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::candidate.candidate",
+      "inversedBy": "drag_to_reorder_answers"
+    },
+    "question": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::question.question",
+      "inversedBy": "drag_to_reorder_answers"
+    },
+    "answerExplanation": {
+      "type": "text",
+      "required": false,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
+    }
+  }
+}

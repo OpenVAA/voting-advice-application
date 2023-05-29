@@ -22,7 +22,8 @@
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "required": true
     },
     "electionDate": {
       "type": "date",
@@ -30,7 +31,8 @@
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "required": true
     },
     "electionType": {
       "type": "enumeration",
@@ -43,7 +45,8 @@
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "required": false
     },
     "parties": {
       "type": "relation",
@@ -74,6 +77,12 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::category.category"
+    },
+    "questions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::question.question",
+      "mappedBy": "election"
     }
   }
 }

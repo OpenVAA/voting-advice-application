@@ -1,11 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "categories",
+  "collectionName": "drag_to_reorder_options",
   "info": {
-    "singularName": "category",
-    "pluralName": "categories",
-    "displayName": "category",
-    "description": ""
+    "singularName": "drag-to-reorder-option",
+    "pluralName": "drag-to-reorder-options",
+    "displayName": "dragToReorderOption"
   },
   "options": {
     "draftAndPublish": true
@@ -16,20 +15,20 @@
     }
   },
   "attributes": {
-    "name": {
+    "optionText": {
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
       },
-      "type": "string",
+      "type": "text",
       "required": true
     },
-    "questions": {
+    "question": {
       "type": "relation",
-      "relation": "oneToMany",
+      "relation": "manyToOne",
       "target": "api::question.question",
-      "mappedBy": "category"
+      "inversedBy": "drag_to_reorder_options"
     }
   }
 }

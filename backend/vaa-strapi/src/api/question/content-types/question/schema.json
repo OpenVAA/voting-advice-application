@@ -1,0 +1,80 @@
+{
+  "kind": "collectionType",
+  "collectionName": "questions",
+  "info": {
+    "singularName": "question",
+    "pluralName": "questions",
+    "displayName": "question",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "question": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "text",
+      "required": true
+    },
+    "questionType": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "type": "enumeration",
+      "enum": [
+        "Likert",
+        "Drag to reorder"
+      ],
+      "required": true
+    },
+    "questionDescription": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "text"
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::category.category",
+      "inversedBy": "questions"
+    },
+    "likert_answers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::likert-answer.likert-answer",
+      "mappedBy": "question"
+    },
+    "drag_to_reorder_options": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::drag-to-reorder-option.drag-to-reorder-option",
+      "mappedBy": "question"
+    },
+    "election": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::election.election",
+      "inversedBy": "questions"
+    },
+    "drag_to_reorder_answers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::drag-to-reorder-answer.drag-to-reorder-answer",
+      "mappedBy": "question"
+    }
+  }
+}
