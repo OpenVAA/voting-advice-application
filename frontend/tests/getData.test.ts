@@ -7,6 +7,15 @@ import candidates from './data/candidates.json';
 import parties from './data/parties.json';
 import singleCandidate from './data/singleCandidate.json';
 import singleParty from './data/singleParty.json';
+import * as environment from '$app/environment';
+
+// Mock SvelteKit runtime module $app/environment
+vi.mock('$app/environment', (): typeof environment => ({
+  browser: false,
+  dev: true,
+  building: false,
+  version: 'any'
+}));
 
 global.fetch = vi.fn();
 
