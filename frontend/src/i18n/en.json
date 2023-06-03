@@ -4,7 +4,16 @@
     "notFound": "No candidates found"
   },
   "candidate": {
-    "politicalExperience": "Political experience"
+    "tabs": {
+      "basicInfo": "Basic Info",
+      "opinions": "Opinions"
+    },
+    "politicalExperience": "Political experience",
+    "age": "age",
+    "gender": "gender",
+    "list": "list",
+    "motherTongue": "Mother Tongue",
+    "themes": "Themes"
   },
   "parties": {
     "parties": "Parties",
