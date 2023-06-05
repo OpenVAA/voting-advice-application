@@ -15,12 +15,12 @@ export async function load({params}: LoadEvent) {
     const themes = await getData('api/categories?populate=*').then((result) => {
       if (result?.data) return result.data;
       if (result?.error?.status === 404) {
-        throw error(404, 'Candidate not found');
+        throw error(404, 'Themes not found');
       }
     });
     candidates.themes = themes;
     return candidates;
   } else {
-    throw error(404, 'Candidate not found');
+    throw error(404, 'There is some error fetching candidates or themes');
   }
 }
