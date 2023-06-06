@@ -1,5 +1,6 @@
 import {browser} from '$app/environment';
 import {error} from '@sveltejs/kit';
+import '$lib/i18n';
 import {locale, waitLocale} from 'svelte-i18n';
 import type {LayoutLoad} from './$types';
 import {getSingleTypeData} from '../api/getData';
