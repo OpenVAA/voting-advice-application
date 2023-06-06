@@ -49,6 +49,10 @@ export async function generateMockData() {
         .query('api::question.question')
         .count({})
         .then((number) => number);
+      countOfObjects += await strapi.db
+        .query('api::layout.layout')
+        .count({})
+        .then((number) => number);
 
       if (countOfObjects > 0) {
         console.error(
@@ -104,6 +108,9 @@ export async function generateMockData() {
   await createQuestions();
   console.info('inserted questions');
   console.info('#######################################');
+  await createLayout();
+  console.info('inserted layout');
+  console.info('#######################################');
 }
 
 /**
@@ -117,18 +124,19 @@ async function dropCollections() {
   await strapi.db.query('api::language.language').deleteMany({});
   await strapi.db.query('api::party.party').deleteMany({});
   await strapi.db.query('api::question.question').deleteMany({});
+  await strapi.db.query('api::layout.layout').deleteMany({});
 }
 
 async function createLanguages(): Promise<any[]> {
   await strapi.db.query('api::language.language').createMany({
     data: [
       {
-        language: 'en',
+        language: 'English',
         locale: mainLocale,
         publishedAt: new Date()
       },
       {
-        language: 'es',
+        language: 'Spanish',
         locale: mainLocale,
         publishedAt: new Date()
       }
@@ -139,12 +147,12 @@ async function createLanguages(): Promise<any[]> {
     await strapi.db.query('api::language.language').createMany({
       data: [
         {
-          language: 'en',
+          language: 'Ingles',
           locale: secondLocale,
           publishedAt: new Date()
         },
         {
-          language: 'es',
+          language: 'Español',
           locale: secondLocale,
           publishedAt: new Date()
         }
@@ -375,6 +383,39 @@ async function createQuestions() {
       await createRelationsForLocales('api::question.question', publishedQuestions[index], party);
     });
   }
+}
+
+async function createLayout() {
+  const appName = 'OpenVAA';
+  const tip =
+    'Tip: If you don’t care about a single issue or a category of them, you can skip it later.';
+  const publisher = 'Open VAA';
+  const madeWith = 'Made with GIPVAA';
+  const header = {
+    login: 'Login',
+    back: 'Back to',
+    help: 'Help',
+    skipQuestion: 'Skip'
+  };
+  const footer = {
+    goTo: 'Jump to results'
+  };
+  const layoutObject = {
+    appName,
+    header,
+    footer,
+    tip,
+    publisher,
+    madeWith,
+    locale: mainLocale
+  };
+
+  return await strapi.entityService.create('api::layout.layout', {
+    data: {
+      ...layoutObject,
+      publishedAt: new Date()
+    }
+  });
 }
 
 function capitaliseFirstLetter(word: string) {
