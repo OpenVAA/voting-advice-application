@@ -2,7 +2,8 @@
 import {browser} from '$app/environment';
 import {constants} from './utils/constants';
 import type {Handle, HandleFetch} from '@sveltejs/kit';
-import {locale} from 'svelte-i18n';
+import type {HandleServerError} from '@sveltejs/kit';
+import {locale, _} from 'svelte-i18n';
 
 export const handle: Handle = (async ({event, resolve}) => {
   const lang = event.request.headers.get('accept-language')?.split(',')[0];
@@ -21,3 +22,10 @@ export const handleFetch: HandleFetch = (async ({request, fetch}) => {
   }
   return fetch(request);
 }) satisfies HandleFetch;
+
+export const handleError = (async ({error}) => {
+  console.error('Handled error: ', error);
+  return {
+    message: 'Internal Error'
+  };
+}) satisfies HandleServerError;

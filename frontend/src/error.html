@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>%sveltekit.error.message%</title>
+    <link rel="icon" href="%sveltekit.assets%/favicon.png" />
+  </head>
+  <style>
+    .flex {
+      display: flex;
+    }
+
+    .flex-col {
+      flex-direction: column;
+    }
+
+    .justify-center {
+      justify-content: center;
+    }
+
+    .justify-items-center {
+      align-items: center;
+    }
+
+    .h-screen {
+      height: 100vh;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .text-2xl {
+      font-size: 1.5rem;
+    }
+  </style>
+
+  <body>
+    <div class="flex h-screen flex-col justify-center justify-items-center">
+      <h1>Status: %sveltekit.status%</h1>
+      <p>Message: %sveltekit.error.message%</p>
+    </div>
+  </body>
+</html>
