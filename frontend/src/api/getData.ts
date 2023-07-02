@@ -5,8 +5,11 @@ import {constants} from '../utils/constants';
 import {browser} from '$app/environment';
 
 // TODO: Define what type of data this returns instead of just any
-export const getData = async (endpoint: string): Promise<any> => {
-  const url = `${constants.BACKEND_URL}/${endpoint}`;
+export const getData = async (
+  endpoint: string,
+  params: URLSearchParams = new URLSearchParams({})
+): Promise<any> => {
+  const url = `${constants.BACKEND_URL}/${endpoint}?${params}`;
 
   return await fetch(url, {
     headers: {
@@ -35,7 +38,7 @@ export const getSingleTypeData = async ({fetch, params, route, url, endpoint}): 
 
 // TODO: Define what type of data this returns instead of just any
 export const getAllCandidates = async (): Promise<any> => {
-  return await getData('api/candidates?populate=*').then((result) => {
+  return await getData('api/candidates', new URLSearchParams({populate: '*'})).then((result) => {
     if (result && result.data) return result?.data;
     else console.error('Could not retrieve result for all candidates');
   });
