@@ -30,6 +30,7 @@ function createStoreValueAndSubscribeToLocalStorage<T>(key: string, defaultValue
 }
 
 // Create the actual Svelte store values
+// TODO: Use proper types for these when these have been defined
 export const currentQuestion = createStoreValueAndSubscribeToLocalStorage('currentQuestion', 1);
 export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage(
   'answeredQuestions',

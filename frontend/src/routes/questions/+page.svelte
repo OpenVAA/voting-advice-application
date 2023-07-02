@@ -11,6 +11,14 @@
 
   let currentQuestionNumber = 1;
   let currentQuestionText = getQuestion(currentQuestionNumber);
+  // TODO: Get these from the Question object
+  let currentQuestionOptions = [
+    {value: 1, label: $_('questions.scale.fullyDisagree')},
+    {value: 2, label: $_('questions.scale.disagree')},
+    {value: 3, label: $_('questions.scale.neutral')},
+    {value: 4, label: $_('questions.scale.agree')},
+    {value: 5, label: $_('questions.scale.fullyAgree')}
+  ];
 
   // Null values
   currentQuestion.update(() => 1);
@@ -22,10 +30,10 @@
 
   // Store question number and answer value in a store
   // TODO: define the details type in the Likert component and import here
-  function answerQuestion(answer: number) {
+  function answerQuestion(details: any) {
     answeredQuestions.update((questions) => [
       ...questions,
-      {question: currentQuestionNumber, answer}
+      {question: currentQuestionNumber, answer: details.value as number}
     ]);
     // TODO: Placeholder for testing, remove when we have radio buttons
     if (currentQuestionNumber < getNumberOfQuestions()) {
@@ -61,7 +69,10 @@
       </div>
       <div class="flex justify-center pb-8">
         <!--        TODO: Check question type here-->
-        <LikertScaleAnsweringButtons onClick={answerQuestion} />
+        <LikertScaleAnsweringButtons
+          name={'question-' + currentQuestionNumber}
+          options={currentQuestionOptions}
+          on:change={answerQuestion} />
       </div>
       <div class="flex justify-center font-semibold text-primary">
         <a href="#1">Read More About This Issue</a>
