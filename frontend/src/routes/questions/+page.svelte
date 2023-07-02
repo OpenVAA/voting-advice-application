@@ -1,6 +1,8 @@
-<script>
+<script lang="ts">
   import {_} from 'svelte-i18n';
   import {goto} from '$app/navigation';
+  import type {Answer} from '../../types/answer.type';
+
   import {currentQuestion, answeredQuestions} from '../../utils/stores';
   import {getQuestion, getNumberOfQuestions} from '../../api/getQuestion';
   import {calculateCandidateCompatibilities} from '../../candidateRanking/calculateCompatibility';
@@ -12,17 +14,18 @@
 
   // Null values
   currentQuestion.update(() => 1);
-  answeredQuestions.update(() => []);
+  answeredQuestions.update(() => [] as Answer[]);
 
   currentQuestion.subscribe((value) => {
     currentQuestionNumber = value;
   });
 
   // Store question number and answer value in a store
-  function answerQuestion(answer) {
+  // TODO: define the details type in the Likert component and import here
+  function answerQuestion(answer: number) {
     answeredQuestions.update((questions) => [
       ...questions,
-      {question: currentQuestionNumber, answer: answer}
+      {question: currentQuestionNumber, answer}
     ]);
     // TODO: Placeholder for testing, remove when we have radio buttons
     if (currentQuestionNumber < getNumberOfQuestions()) {
@@ -39,11 +42,11 @@
 <section class="flex h-screen flex-col">
   <section class="bg-secondary pb-3 pt-3 max-md:px-3 md:px-10">
     <div class="flex pb-3">
-      <a class="text-primary">{$_('questions.previous')}</a>
+      <a href="#1" class="text-primary">{$_('questions.previous')}</a>
       <div class="flex-auto">
         <h2 class="flex justify-center text-xl font-bold max-md:hidden">Your opinions</h2>
       </div>
-      <a class="text-primary">{$_('questions.skip')}</a>
+      <a href="#1" class="text-primary">{$_('questions.skip')}</a>
     </div>
     <div class="flex justify-center">
       Sample theme 1 | Sample theme 2 | Sample theme 3 | Sample theme 4
@@ -61,7 +64,7 @@
         <LikertScaleAnsweringButtons onClick={answerQuestion} />
       </div>
       <div class="flex justify-center font-semibold text-primary">
-        <a>Read More About This Issue</a>
+        <a href="#1">Read More About This Issue</a>
       </div>
     </div>
   </section>

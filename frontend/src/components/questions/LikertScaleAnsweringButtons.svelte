@@ -1,8 +1,8 @@
-<script>
+<script lang="ts">
   import {_} from 'svelte-i18n';
   import LikertScaleAnsweringButton from './LikertScaleAnsweringButton.svelte';
-  export let use5pointScale;
-  export let onClick;
+  export let use5pointScale = false;
+  export let onClick: (value: number) => void;
 </script>
 
 <section class="flex items-center justify-center">
