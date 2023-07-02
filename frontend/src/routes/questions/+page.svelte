@@ -6,7 +6,7 @@
   import {currentQuestion, answeredQuestions} from '../../utils/stores';
   import {getQuestion, getNumberOfQuestions} from '../../api/getQuestion';
   import {calculateCandidateCompatibilities} from '../../candidateRanking/calculateCompatibility';
-  import LikertScaleAnsweringButtons from '../../components/questions/LikertScaleAnsweringButtons.svelte';
+  import Question from '../../components/questions/Question.svelte';
   export let data;
 
   let currentQuestionNumber = 1;
@@ -29,11 +29,11 @@
   });
 
   // Store question number and answer value in a store
-  // TODO: define the details type in the Likert component and import here
-  function answerQuestion(details: any) {
+  // TODO: define the detail type in the Likert component and import here
+  function answerQuestion(event: CustomEvent) {
     answeredQuestions.update((questions) => [
       ...questions,
-      {question: currentQuestionNumber, answer: details.value as number}
+      {question: event.detail.number, answer: event.detail.value}
     ]);
     // TODO: Placeholder for testing, remove when we have radio buttons
     if (currentQuestionNumber < getNumberOfQuestions()) {
@@ -61,24 +61,11 @@
     </div>
   </section>
 
-  <section class="grid flex-1 content-center px-3">
-    <div class="flex-auto">
-      <div class="flex justify-center pb-3">Example theme</div>
-      <div class="flex justify-center pb-8 text-center text-2xl font-bold">
-        {currentQuestionText}
-      </div>
-      <div class="flex justify-center pb-8">
-        <!--        TODO: Check question type here-->
-        <LikertScaleAnsweringButtons
-          name={'question-' + currentQuestionNumber}
-          options={currentQuestionOptions}
-          on:change={answerQuestion} />
-      </div>
-      <div class="flex justify-center font-semibold text-primary">
-        <a href="#1">Read More About This Issue</a>
-      </div>
-    </div>
-  </section>
+  <Question
+    number={currentQuestionNumber}
+    text={currentQuestionText}
+    options={currentQuestionOptions}
+    on:change={answerQuestion} />
 
   <section>
     <div

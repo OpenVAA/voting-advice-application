@@ -9,7 +9,7 @@
   let selected: number;
 
   function onChange(event: Event) {
-    dispatch('change', {value: selected, event});
+    dispatch('change', {value: selected, originalEvent: event});
   }
 </script>
 
