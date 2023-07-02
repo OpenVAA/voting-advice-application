@@ -3,7 +3,6 @@
 
 import {constants} from '../utils/constants';
 import {browser} from '$app/environment';
-import {getCurrentLocale} from '$lib/i18n';
 
 // TODO: Define what type of data this returns instead of just any
 export const getData = async (
@@ -11,7 +10,6 @@ export const getData = async (
   params: URLSearchParams = new URLSearchParams({})
 ): Promise<any> => {
   const url = `${constants.BACKEND_URL}/${endpoint}?${params}`;
-  params.append('locale', getCurrentLocale());
 
   return await fetch(url, {
     headers: {

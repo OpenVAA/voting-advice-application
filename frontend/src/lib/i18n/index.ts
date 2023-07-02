@@ -1,4 +1,5 @@
 import {getLocaleFromNavigator, init, register} from 'svelte-i18n';
+import {logDebugError} from '../utils/logger';
 
 const supportedLanguages = ['en'];
 export const defaultLocale = 'en';
@@ -21,7 +22,7 @@ function setNewLocale(newLocale: string) {
   if (supportedLanguages.includes(newLocale)) {
     currentLocale = newLocale;
   } else {
-    console.error('Requested locale is not supported, falling back to default');
+    logDebugError('Requested locale is not supported, falling back to default');
     currentLocale = defaultLocale;
   }
 }
