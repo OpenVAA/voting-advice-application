@@ -33,7 +33,10 @@ export const getSingleTypeData = async ({fetch, params, route, url, endpoint}): 
     .then((response: {json: () => any}) => {
       return response.json();
     })
-    .catch((error: any) => console.error('Error fetching dta from Strapi', error));
+    .catch((error: any) =>
+      console.error(`Error fetching data from Strapi: ${error} - 
+      URL: ${backendUrl}`)
+    );
 };
 
 // TODO: Define what type of data this returns instead of just any
