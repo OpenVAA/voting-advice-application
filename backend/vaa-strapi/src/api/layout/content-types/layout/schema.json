@@ -26,16 +26,6 @@
       "required": true,
       "default": "OpenVAA"
     },
-    "footer": {
-      "type": "component",
-      "repeatable": false,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "component": "layout.footer"
-    },
     "appIcon": {
       "type": "media",
       "multiple": false,
@@ -48,16 +38,6 @@
           "localized": false
         }
       }
-    },
-    "header": {
-      "type": "component",
-      "repeatable": false,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "component": "layout.header"
     },
     "tip": {
       "pluginOptions": {
