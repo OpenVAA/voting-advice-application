@@ -13,13 +13,23 @@
   }
 </script>
 
-<section class="flex items-center justify-center">
-  <div class="grid grid-cols-{options.length}">
-    {#each options as { value, label }}
-      <label>
-        <input type="radio" {name} {value} bind:group={selected} on:change={onChange} />
-        {label}
-      </label>
-    {/each}
-  </div>
-</section>
+<div class="relative grid auto-cols-fr grid-flow-col gap-3">
+  {#each options as { value, label }}
+    <label class="grid grid-flow-row auto-rows-max justify-items-center gap-1">
+      <input
+        type="radio"
+        class="radio-primary radio min-h-[2.5rem] min-w-[2.5rem] rounded-full border-4 border-solid border-white bg-secondary hover:bg-primary"
+        {name}
+        {value}
+        bind:group={selected}
+        on:change={onChange} />
+      <div class="text-center text-xs uppercase text-secondary">{label}</div>
+    </label>
+  {/each}
+  <!-- The line behind the options -->
+  <div
+    aria-hidden="true"
+    class="absolute top-[1.25rem] -z-50 h-0.5 -translate-y-1/2 bg-secondary"
+    style="width: calc(100% / {options.length} * {options.length -
+      1}); left: calc(50% / {options.length})" />
+</div>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {_} from 'svelte-i18n';
   import {createEventDispatcher} from 'svelte';
   import LikertScaleAnsweringButtons from './LikertScaleAnsweringButtons.svelte';
 
@@ -9,6 +10,8 @@
   export let text!: string;
   export let number!: number;
   export let options!: {value: number; label: string}[];
+  export let topic: string | null = null;
+  export let info: string | null = null;
 
   $: name = `question-${number}`;
 
@@ -19,21 +22,30 @@
   }
 </script>
 
-<section>
+<section class="flex-auto">
   <fieldset>
     <legend>
       <hgroup>
-        <p>Example theme</p>
+        {#if topic && topic !== ''}
+          <!-- TODO: Set color based on topic -->
+          <p class="text-secondary">{topic}</p>
+        {/if}
         <h1>{text}</h1>
       </hgroup>
     </legend>
-    <div class="options">
+    {#if info && info !== ''}
+      <div class="flex items-center justify-center">
+        <!-- TODO: Convert to Expander component -->
+        <button class="btn-ghost btn text-primary">{$_('questions.readMore')}</button>
+      </div>
+    {/if}
+    <div class="mb-3 mt-5 flex items-center justify-center">
       <!-- TODO: Check question type here -->
       <LikertScaleAnsweringButtons {name} {options} on:change={onChange} />
     </div>
-    <div class="info">
-      <!-- TODO: Convert to Expander component -->
-      <a href="#1">Read More About This Issue</a>
+    <div class="flex items-center justify-center">
+      <!-- TODO: Add action and an icon -->
+      <button class="btn-ghost btn text-secondary">{$_('questions.skip')}</button>
     </div>
   </fieldset>
 </section>

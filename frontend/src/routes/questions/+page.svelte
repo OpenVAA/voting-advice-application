@@ -1,24 +1,28 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {goto} from '$app/navigation';
-  import type {Answer} from '../../types/answer.type';
 
+  import type {Answer} from '../../types/answer.type';
   import {currentQuestion, answeredQuestions} from '../../utils/stores';
   import {getQuestion, getNumberOfQuestions} from '../../api/getQuestion';
   import {calculateCandidateCompatibilities} from '../../candidateRanking/calculateCompatibility';
   import Question from '../../components/questions/Question.svelte';
+
   export let data;
 
   let currentQuestionNumber = 1;
+  // TODO: Get all of these from the Question object
   let currentQuestionText = getQuestion(currentQuestionNumber);
-  // TODO: Get these from the Question object
   let currentQuestionOptions = [
     {value: 1, label: $_('questions.scale.fullyDisagree')},
     {value: 2, label: $_('questions.scale.disagree')},
-    {value: 3, label: $_('questions.scale.neutral')},
+    // {value: 3, label: $_('questions.scale.neutral')},
     {value: 4, label: $_('questions.scale.agree')},
     {value: 5, label: $_('questions.scale.fullyAgree')}
   ];
+  let currentQuestionTopic = 'Environment';
+  let currentQuestionInfo =
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incidid.';
 
   // Null values
   currentQuestion.update(() => 1);
@@ -54,18 +58,22 @@
       <div class="flex-auto">
         <h2 class="flex justify-center text-xl font-bold max-md:hidden">Your opinions</h2>
       </div>
-      <a href="#1" class="text-primary">{$_('questions.skip')}</a>
+      <!-- <a href="#1" class="text-primary">{$_('questions.skip')}</a> -->
     </div>
     <div class="flex justify-center">
       Sample theme 1 | Sample theme 2 | Sample theme 3 | Sample theme 4
     </div>
   </section>
 
-  <Question
-    number={currentQuestionNumber}
-    text={currentQuestionText}
-    options={currentQuestionOptions}
-    on:change={answerQuestion} />
+  <section class="grid flex-1 content-center px-3">
+    <Question
+      number={currentQuestionNumber}
+      text={currentQuestionText}
+      options={currentQuestionOptions}
+      topic={currentQuestionTopic}
+      info={currentQuestionInfo}
+      on:change={answerQuestion} />
+  </section>
 
   <section>
     <div
