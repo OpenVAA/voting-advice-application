@@ -51,21 +51,27 @@
   }
 </script>
 
+<svelte:head>
+  <title>{$_('questions.questionsTitle')}</title>
+</svelte:head>
+
 <section class="flex h-screen flex-col">
-  <section class="bg-secondary pb-3 pt-3 max-md:px-3 md:px-10">
+  <header class="bg-secondary pb-3 pt-3 max-md:px-3 md:px-10">
     <div class="flex pb-3">
       <a href="#1" class="text-primary">{$_('questions.previous')}</a>
       <div class="flex-auto">
-        <h2 class="flex justify-center text-xl font-bold max-md:hidden">Your opinions</h2>
+        <h2 class="flex justify-center text-xl font-bold max-md:hidden">
+          {$_('questions.questionsTitle')}
+        </h2>
       </div>
       <!-- <a href="#1" class="text-primary">{$_('questions.skip')}</a> -->
     </div>
     <div class="flex justify-center">
       Sample theme 1 | Sample theme 2 | Sample theme 3 | Sample theme 4
     </div>
-  </section>
+  </header>
 
-  <section class="grid flex-1 content-center px-3">
+  <main class="grid flex-1 content-center px-3">
     <Question
       number={currentQuestionNumber}
       text={currentQuestionText}
@@ -73,9 +79,9 @@
       topic={currentQuestionTopic}
       info={currentQuestionInfo}
       on:change={answerQuestion} />
-  </section>
+  </main>
 
-  <section>
+  <footer>
     <div
       class="bg-secondary md:card md:float-right md:my-8 md:mr-8 md:w-96 md:overflow-clip md:drop-shadow-xl">
       <div class="w-full rounded-full">
@@ -88,5 +94,5 @@
         <a href="/results" class="font-semibold text-primary">{$_('questions.jumpToResults')}</a>
       </div>
     </div>
-  </section>
+  </footer>
 </section>

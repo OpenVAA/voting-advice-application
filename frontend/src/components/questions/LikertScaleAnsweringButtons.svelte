@@ -15,10 +15,10 @@
 
 <div class="relative grid auto-cols-fr grid-flow-col gap-3">
   {#each options as { value, label }}
-    <label class="grid grid-flow-row auto-rows-max justify-items-center gap-1">
+    <label class="grid grid-flow-row auto-rows-max justify-items-center gap-2">
       <input
         type="radio"
-        class="radio-primary radio min-h-[2.5rem] min-w-[2.5rem] rounded-full border-4 border-solid border-white bg-secondary hover:bg-primary"
+        class="radio-primary radio min-h-[2.5rem] min-w-[2.5rem] border-2 bg-base-100 ring-4 ring-base-100"
         {name}
         {value}
         bind:group={selected}

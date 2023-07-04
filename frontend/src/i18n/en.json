@@ -20,6 +20,7 @@
     "notFound": "No parties found"
   },
   "questions": {
+    "questionsTitle": "Your Opinions",
     "scale": {
       "fullyDisagree": "Fully disagree",
       "disagree": "Disagree",
