@@ -2,23 +2,27 @@ import {getData} from '../../../api/getData';
 import {error} from '@sveltejs/kit';
 import type {LoadEvent} from '@sveltejs/kit';
 
-export async function load({params}: LoadEvent) {
+export async function load({fetch, params}: LoadEvent) {
   //TODO: Check if we use Svelte object id or some predefined schema for getting party from the backend
   const id = Number(params.slug);
   if (!isNaN(id)) {
-    const partyData = await getData(`api/parties/${id}`).then((result) => {
+    const partyData = await getData({
+      fetch,
+      endpoint: `api/parties/${id}`
+    }).then((result) => {
       if (result?.data?.attributes) return result.data.attributes;
       if (result?.error?.status === 404) {
         throw error(404, 'Party not found');
       }
     });
 
-    const candidates = await getData(
-      'api/candidates',
-      new URLSearchParams({
+    const candidates = await getData({
+      fetch,
+      endpoint: 'api/candidates',
+      params: new URLSearchParams({
         'filters[party][id]': id.toString()
       })
-    ).then((result) => {
+    }).then((result) => {
       if (result?.data) {
         return result.data;
       } else {
