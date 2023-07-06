@@ -5,13 +5,12 @@ import {constants} from '../utils/constants';
 import {browser} from '$app/environment';
 
 // TODO: Define what type of data this returns instead of just any
-export const getData = async (
-  endpoint: string,
-  params: URLSearchParams = new URLSearchParams({})
-): Promise<any> => {
-  const url = `${constants.BACKEND_URL}/${endpoint}?${params}`;
+export const getData = async ({fetch, params, route, url, endpoint}): Promise<any> => {
+  const strapiParams = new URLSearchParams({populate: '*'});
 
-  return await fetch(url, {
+  const backendURL = `${constants.BACKEND_URL}/${endpoint}?${strapiParams}`;
+
+  return await fetch(backendURL, {
     headers: {
       Authorization: `Bearer ${constants.STRAPI_TOKEN}`
     }
@@ -40,8 +39,8 @@ export const getSingleTypeData = async ({fetch, params, route, url, endpoint}): 
 };
 
 // TODO: Define what type of data this returns instead of just any
-export const getAllCandidates = async (): Promise<any> => {
-  return await getData('api/candidates', new URLSearchParams({populate: '*'})).then((result) => {
+export const getAllCandidates = async ({fetch}): Promise<any> => {
+  return await getData({fetch, endpoint: 'api/candidates'}).then((result) => {
     if (result && result.data) return result?.data;
     else console.error('Could not retrieve result for all candidates');
   });
