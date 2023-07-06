@@ -1,6 +1,7 @@
 import {getAllCandidates} from '../../api/getData';
+import type {PageLoad} from './$types';
 
-export async function load() {
-  const results = await getAllCandidates();
+export const load = (async ({fetch, params, url, route}) => {
+  const results = await getAllCandidates({fetch});
   return {results: results};
-}
+}) satisfies PageLoad;
