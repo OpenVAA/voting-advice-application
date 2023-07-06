@@ -1,8 +1,9 @@
 import {getData} from '../../api/getData';
+import type {PageLoad} from './$types';
 
-export async function load() {
-  const parties = await getData('api/parties').then((result) => {
+export const load = (async ({fetch}) => {
+  const parties = await getData({fetch, endpoint: 'api/parties'}).then((result) => {
     return result?.data;
   });
   return {parties: parties};
-}
+}) satisfies PageLoad;
