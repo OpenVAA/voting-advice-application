@@ -3,9 +3,6 @@
 @tailwind utilities;
 
 @layer base {
-  h1 {
-    @apply mb-1 mt-1 w-full text-center text-2xl font-bold leading-tight;
-  }
   hgroup {
     @apply w-full;
   }
@@ -15,7 +12,22 @@
   legend {
     @apply w-full;
   }
-  :root {
-    --primary-color: #000000;
+  h1 {
+    @apply mb-1 mt-1 w-full text-center text-2xl font-bold leading-tight;
+  }
+  h2 {
+    @apply text-h2;
+  }
+  h3 {
+    @apply text-h3;
+  }
+  h4 {
+    @apply text-h4;
+  }
+  p {
+    @apply text-p;
+  }
+  a {
+    @apply text-primary;
   }
 }
