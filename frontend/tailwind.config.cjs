@@ -21,7 +21,9 @@ module.exports = {
         h1: '2.5rem',
         h2: '2rem',
         h3: '1.75rem',
-        h4: '1.5rem'
+        h4: '1.5rem',
+        p: '1rem',
+        'app-title': '1.5rem',
       }
     }
   },
