@@ -3,7 +3,7 @@ import {error} from '@sveltejs/kit';
 import '$lib/i18n';
 import {locale, waitLocale} from 'svelte-i18n';
 import type {LayoutLoad} from './$types';
-import {getSingleTypeData} from '../api/getData';
+import {getData} from '../api/getData';
 
 export const load: LayoutLoad = (async ({fetch, params, route, url}) => {
   if (browser) {
@@ -11,18 +11,45 @@ export const load: LayoutLoad = (async ({fetch, params, route, url}) => {
   }
 
   await waitLocale();
-  const layoutSingleType = await getSingleTypeData({url, fetch, endpoint: 'api/layout?populate=*'})
+  //TODO: Add filter to get the right election
+  const election = await getData(
+    'api/elections',
+    new URLSearchParams({populate: 'electionAppLabel'})
+  ).then((result) => {
+    if (result?.data[0]?.attributes) {
+      return result.data[0].attributes;
+    }
+    if (result?.error?.status === 404) {
+      throw error(404, 'election not found');
+    }
+  });
+
+  const appLabelId = election?.electionAppLabel?.data?.id;
+
+  // //TODO add filter to get the labels for the correct election
+  const appLabels = await getData(
+    'api/election-app-labels',
+    new URLSearchParams({
+      'filters[id][$eq]': appLabelId,
+      populate: '*'
+    })
+  )
     .then((result) => {
-      return result;
+      if (result?.data[0]?.attributes) {
+        return result.data[0].attributes;
+      }
+      if (result?.error?.status === 404) {
+        throw error(404, 'election not found');
+      }
     })
     .catch((error) => {
       console.error('Error in getting layout data from Strapi: ', ' - - - ', error);
     });
 
-  if (layoutSingleType.error) {
-    console.error('layoutSingleType error', layoutSingleType.error);
-    throw error(layoutSingleType.error.status, {message: layoutSingleType.error.message});
+  if (appLabels?.error) {
+    console.error('appLabels error', appLabels.error);
+    throw error(appLabels.error.status, {message: appLabels.error.message});
   }
 
-  return layoutSingleType.data;
+  return appLabels;
 }) satisfies LayoutLoad;

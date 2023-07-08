@@ -27,7 +27,7 @@
   });
 </script>
 
-{#if data?.attributes}
+{#if data}
   <header class="sticky left-0 right-0 top-0 z-50">
     <nav class="bg-secondary p-4">
       <ul class="flex items-center justify-between">
@@ -42,11 +42,11 @@
               <path
                 d="M11.67 1.8701L9.9 0.100098L0 10.0001L9.9 19.9001L11.67 18.1301L3.54 10.0001L11.67 1.8701Z" />
             </svg>
-            {data?.attributes?.header?.back}</a>
+            {data?.actionLabels?.previous}</a>
         </li>
         <li class="mr-6">
           <a class="text-primary hover:text-secondary" href="/help"
-            >{data?.attributes?.header?.help}
+            >{data?.actionLabels?.help}
             <svg
               width="22"
               height="22"
@@ -78,15 +78,15 @@
       <div class="mb-4 flex flex-col items-center justify-between gap-3 text-secondary">
         <p class="text-center text-sm">
           <img class="inline w-6" src="/icons/tip.svg" alt="" srcset="" />
-          {data?.attributes?.tip}
+          {data?.viewTexts?.questionsTip}
         </p>
         <p class="text-center text-xs">
-          {data?.attributes?.publisher}
+          {data?.viewTexts?.publishedBy.replace('{{0}}', '')}
           <img
             class="inline w-6"
             src={'/icons/publisher.svg'}
             alt="governmental"
-            srcset="" />institution • {data?.attributes?.madeWith}
+            srcset="" />institution • {data?.viewTexts?.madeWith.replace('{{0}}', '')}
           <img class="inline w-6" src="/icons/vote.svg" alt="" srcset="" />GIPVAA
         </p>
       </div>
@@ -102,12 +102,16 @@
           </li>
           <li class="mr-6">
             <a class="text-primary hover:text-secondary" href="/results"
-              >{data?.attributes?.footer?.goTo}</a>
+              >{data?.actionLabels?.results}</a>
           </li>
         </ul>
       </nav>
     {/if}
   </footer>
+{:else}
+  <main>
+    <slot />
+  </main>
 {/if}
 
 <style>
