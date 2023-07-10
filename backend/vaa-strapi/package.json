@@ -14,6 +14,12 @@
     "prettier": "prettier --write \"**/*.{js,jsx,ts,tsx,css,scss,html,json,md}\"",
     "prettier:check": "prettier --check \"**/*.{js,jsx,ts,tsx,css,scss,html,json,md}\""
   },
+  "lint-staged": {
+    "**/*.{svelte,css,html,js,json,md,ts,xml,yaml,yml}": [
+      "prettier --write",
+      "eslint"
+    ]
+  },
   "dependencies": {
     "@strapi/plugin-documentation": "^4.4.5",
     "@strapi/plugin-i18n": "4.10.2",

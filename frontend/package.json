@@ -18,6 +18,12 @@
     "prettier:check": "prettier --plugin-search-dir . --check .",
     "algorithm-example": "ts-node-esm --experimentalSpecifierResolution node src/matching/examples/example.ts"
   },
+  "lint-staged": {
+    "**/*.{svelte,css,html,js,json,md,ts,xml,yaml,yml}": [
+      "prettier --write",
+      "eslint"
+    ]
+  },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^2.0.1",
     "@sveltejs/adapter-node": "^1.2.4",
