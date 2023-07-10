@@ -1,6 +1,6 @@
 {
   "kind": "collectionType",
-  "collectionName": "election_app_configuration",
+  "collectionName": "election_app_label",
   "info": {
     "singularName": "election-app-label",
     "pluralName": "election-app-labels",
