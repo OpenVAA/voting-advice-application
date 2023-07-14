@@ -1,8 +1,8 @@
 import {error} from '@sveltejs/kit';
-import type {LayoutLoad} from './$types';
-import {getData, getSingleTypeData} from '../api/getData';
+import type {LayoutServerLoad} from './$types';
+import {getData} from '../api/getData';
 
-export const load: LayoutLoad = (async ({fetch, params, route, url}) => {
+export const load: LayoutServerLoad = (async () => {
   //TODO: Add filter to get the right election
   const election = await getData(
     'api/elections',
@@ -44,4 +44,4 @@ export const load: LayoutLoad = (async ({fetch, params, route, url}) => {
   }
 
   return appLabels;
-}) satisfies LayoutLoad;
+}) satisfies LayoutServerLoad;
