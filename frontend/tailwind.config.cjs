@@ -31,8 +31,8 @@ module.exports = {
           '--btn-text-case': 'unset',
           primary: '#2546A8',
           secondary: '#505050'
-        },
-      },
+        }
+      }
     ]
   }
 };
