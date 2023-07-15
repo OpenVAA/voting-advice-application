@@ -25,6 +25,7 @@
     "linebreak-style": ["error", "unix"],
     "no-console": ["error", {"allow": ["info", "warn", "error"]}],
     "quotes": ["error", "single"],
-    "semi": ["error", "always"]
+    "semi": ["error", "always"],
+    "no-unused-vars": "warn"
   }
 }

@@ -1,4 +1,13 @@
 {
+  "header": {
+    "title": "Elections",
+    "back": "Back",
+    "help": "Help"
+  },
+  "footer": {
+    "goTo": "Jump to results"
+  },
+  "loading": "Loading...",
   "candidates": {
     "candidates": "Candidates",
     "notFound": "No candidates found"

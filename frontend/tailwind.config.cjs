@@ -3,8 +3,12 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        primary: '#D1EBEE',
         secondary: '#D1EBEE',
-        'default-party': '#BE8E55'
+        neutral: '#FFFFFF',
+        link: '#2546A8',
+        'default-party': '#BE8E55',
+        'link-hover': '#808080'
       },
       textColor: {
         primary: '#2546A8',
