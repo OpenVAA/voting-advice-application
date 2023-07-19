@@ -56,18 +56,12 @@
 </svelte:head>
 
 <section class="flex h-screen flex-col">
-  <header class="bg-secondary pb-3 pt-3 max-md:px-3 md:px-10">
-    <div class="flex pb-3">
-      <a href="#1" class="text-primary">{$_('questions.previous')}</a>
-      <div class="flex-auto">
-        <h2 class="flex justify-center text-xl font-bold max-md:hidden">
-          {$_('questions.questionsTitle')}
-        </h2>
-      </div>
-      <!-- <a href="#1" class="text-primary">{$_('questions.skip')}</a> -->
-    </div>
-    <div class="flex justify-center">
-      Sample theme 1 | Sample theme 2 | Sample theme 3 | Sample theme 4
+  <header
+    class="fixed flex w-full items-center justify-between bg-secondary pb-3 pl-4 pt-3 max-md:px-3 md:pr-10">
+    <div>{currentQuestionNumber - 1}/{getNumberOfQuestions()} statements answered</div>
+    <div>Sample theme 1 | Sample theme 2 | Sample theme 3 | Sample theme 4</div>
+    <div>
+      <a href="/results" class="font-semibold text-primary">{$_('questions.jumpToResults')}</a>
     </div>
   </header>
 

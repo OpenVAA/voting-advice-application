@@ -44,6 +44,11 @@
             </svg>
             {data?.actionLabels?.previous}</a>
         </li>
+        {#if $page.route.id === '/questions'}
+          <h2 class="flex justify-center text-xl font-bold max-md:hidden">
+            {$_('questions.questionsTitle')}
+          </h2>
+        {/if}
         <li class="mr-6">
           <a class="text-primary hover:text-secondary" href="/help"
             >{data?.actionLabels?.help}
