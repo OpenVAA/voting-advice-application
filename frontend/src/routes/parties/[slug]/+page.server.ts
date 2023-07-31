@@ -1,8 +1,9 @@
 import {getData} from '../../../api/getData';
 import {error} from '@sveltejs/kit';
-import type {LoadEvent} from '@sveltejs/kit';
+import type {ServerLoadEvent} from '@sveltejs/kit';
+import type {PageServerLoad} from './$types';
 
-export async function load({params}: LoadEvent) {
+export const load = (async ({params}: ServerLoadEvent) => {
   //TODO: Check if we use Svelte object id or some predefined schema for getting party from the backend
   const id = Number(params.slug);
   if (!isNaN(id)) {
@@ -34,4 +35,4 @@ export async function load({params}: LoadEvent) {
   } else {
     throw error(404, 'Party not found');
   }
-}
+}) satisfies PageServerLoad;
