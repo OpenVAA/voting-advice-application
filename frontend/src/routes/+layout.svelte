@@ -44,6 +44,11 @@
             </svg>
             {data?.actionLabels?.previous}</a>
         </li>
+        {#if $page.route.id === '/questions'}
+          <h2 class="flex justify-center text-xl font-bold max-md:hidden">
+            {$_('questions.questionsTitle')}
+          </h2>
+        {/if}
         <li class="mr-6">
           <a class="text-primary hover:text-secondary" href="/help"
             >{data?.actionLabels?.help}
@@ -90,7 +95,7 @@
           <img class="inline w-6" src="/icons/vote.svg" alt="" srcset="" />GIPVAA
         </p>
       </div>
-    {:else}
+    {:else if $page?.route.id !== '/questions'}
       <nav class="bg-secondary p-4">
         <ul class="flex items-center justify-between">
           <li class="mr-6">

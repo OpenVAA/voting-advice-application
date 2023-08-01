@@ -29,13 +29,18 @@
     "notFound": "No parties found"
   },
   "questions": {
+    "questionsTitle": "Your Opinions",
     "scale": {
-      "stronglyDisagree": "Strongly disagree",
+      "fullyDisagree": "Fully disagree",
       "disagree": "Disagree",
+      "neutral": "Neutral",
       "agree": "Agree",
-      "stronglyAgree": "Strongly agree"
+      "fullyAgree": "Fully agree"
     },
     "nextQuestion": "Next question",
-    "goToResults": "Go to results"
+    "jumpToResults": "Jump to results",
+    "previous": "Previous",
+    "skip": "Skip",
+    "readMore": "Read More"
   }
 }

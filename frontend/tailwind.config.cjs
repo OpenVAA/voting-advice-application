@@ -12,7 +12,7 @@ module.exports = {
       },
       textColor: {
         primary: '#2546A8',
-        secondary: '#808080'
+        secondary: '#505050'
       },
       fontSize: {
         h1: '2.5rem',
@@ -24,6 +24,15 @@ module.exports = {
   },
   plugins: [require('daisyui')],
   daisyui: {
-    themes: ['light']
+    themes: [
+      {
+        light: {
+          ...require('daisyui/src/colors/themes')['[data-theme=light]'],
+          '--btn-text-case': 'unset',
+          primary: '#2546A8',
+          secondary: '#505050'
+        }
+      }
+    ]
   }
 };
