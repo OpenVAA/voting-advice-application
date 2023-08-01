@@ -56,37 +56,15 @@
 </svelte:head>
 
 <section class="flex h-screen flex-col">
-  <header
-    class="fixed flex w-full items-center justify-between bg-secondary pb-3 pl-4 pt-3 max-md:px-3 md:pr-10">
-    <div>{currentQuestionNumber - 1}/{getNumberOfQuestions()} statements answered</div>
-    <div>Sample theme 1 | Sample theme 2 | Sample theme 3 | Sample theme 4</div>
-    <div>
-      <a href="/results" class="font-semibold text-primary">{$_('questions.jumpToResults')}</a>
-    </div>
-  </header>
-
   <main class="grid flex-1 content-center px-3">
-    <Question
-      number={currentQuestionNumber}
-      text={currentQuestionText}
-      options={currentQuestionOptions}
-      topic={currentQuestionTopic}
-      info={currentQuestionInfo}
-      on:change={answerQuestion} />
+    {#key currentQuestionNumber}
+      <Question
+        number={currentQuestionNumber}
+        text={currentQuestionText}
+        options={currentQuestionOptions}
+        topic={currentQuestionTopic}
+        info={currentQuestionInfo}
+        on:change={answerQuestion} />
+    {/key}
   </main>
-
-  <footer>
-    <div
-      class="bg-secondary md:card md:float-right md:my-8 md:mr-8 md:w-96 md:overflow-clip md:drop-shadow-xl">
-      <div class="w-full rounded-full">
-        <div
-          class="rounded-full bg-primary p-0.5 leading-none"
-          style="width: {((currentQuestionNumber - 1) / getNumberOfQuestions()) * 100}%" />
-      </div>
-      <div class="card-body items-center text-center">
-        {currentQuestionNumber - 1}/{getNumberOfQuestions()} statements answered <br />
-        <a href="/results" class="font-semibold text-primary">{$_('questions.jumpToResults')}</a>
-      </div>
-    </div>
-  </footer>
 </section>

@@ -95,7 +95,7 @@
           <img class="inline w-6" src="/icons/vote.svg" alt="" srcset="" />GIPVAA
         </p>
       </div>
-    {:else}
+    {:else if $page?.route.id !== '/questions'}
       <nav class="bg-secondary p-4">
         <ul class="flex items-center justify-between">
           <li class="mr-6">
