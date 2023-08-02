@@ -2,6 +2,7 @@
   import Tabs from '$lib/shared/Tabs.svelte';
   import CandidateBasicInfo from '$lib/components/CandidateBasicInfo.svelte';
   import CandidateOpinions from '$lib/components/CandidateOpinions.svelte';
+  import ScoreGauge, {ScoreGaugeType} from '$lib/components/scoreGauge';
   export let candidate;
 
   let tabs = ['Basic info', 'Opinions'];
