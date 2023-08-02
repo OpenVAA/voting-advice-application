@@ -14,8 +14,8 @@ module.exports = {
         'link-hover': '#808080'
       },
       textColor: {
-        primary: '#2546A8',
-        secondary: '#505050'
+        primary: 'var(--primary-text-color)',
+        secondary: 'var(--secondary-text-color)',
       },
       fontSize: {
         h1: '2.5rem',
