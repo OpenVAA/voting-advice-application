@@ -1,4 +1,4 @@
-import {getAllCandidates} from '../../api/getData';
+import {getAllCandidates} from '$lib/api/getData';
 import type {PageServerLoad} from './$types';
 
 export const load = (async () => {

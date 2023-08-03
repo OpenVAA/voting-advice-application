@@ -1,6 +1,6 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
-  import {GetFullNameInOrder} from '../../../utils/internationalisation';
+  import {GetFullNameInOrder} from '$lib/utils/internationalisation';
   import CandidateDetailsCard from '$lib/components/CandidateDetailsCard.svelte';
 
   export let data;

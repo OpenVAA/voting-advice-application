@@ -1,5 +1,5 @@
 <script>
-  import CandidateListing from './CandidateListing.svelte';
+  import CandidateListing from '$lib/components/CandidateListing.svelte';
   export let ranking;
   export let candidate;
 </script>

@@ -1,6 +1,6 @@
 <script>
   import {_} from 'svelte-i18n';
-  import {GetFullNameInOrder} from '../../../utils/internationalisation';
+  import {GetFullNameInOrder} from '$lib/utils/internationalisation';
   export let data;
 </script>
 

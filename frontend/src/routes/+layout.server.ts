@@ -1,6 +1,6 @@
 import {error} from '@sveltejs/kit';
 import type {LayoutServerLoad} from './$types';
-import {getData} from '../api/getData';
+import {getData} from '$lib/api/getData';
 
 export const load: LayoutServerLoad = (async () => {
   //TODO: Add filter to get the right election

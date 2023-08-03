@@ -1,5 +1,5 @@
 import {getLocaleFromNavigator, init, register} from 'svelte-i18n';
-import {logDebugError} from '../utils/logger';
+import {logDebugError} from '$lib/utils/logger';
 
 const supportedLanguages = ['en'];
 export const defaultLocale = 'en';

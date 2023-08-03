@@ -1,6 +1,6 @@
 <script>
   import {_} from 'svelte-i18n';
-  import CandidateListing from '../../components/CandidateListing.svelte';
+  import CandidateListing from '$lib/components/CandidateListing.svelte';
   export let data;
   // TODO: Define proper candidate data structure
   let candidates;

@@ -1,7 +1,7 @@
 // Quick test function to get data from Strapi
 // To be refactored (GraphQL in the future?)
 
-import {constants} from '../utils/constants';
+import {constants} from '$lib/utils/constants';
 import {browser} from '$app/environment';
 
 // TODO: Define what type of data this returns instead of just any

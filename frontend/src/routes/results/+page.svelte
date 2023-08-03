@@ -1,7 +1,7 @@
 <script>
   import {_} from 'svelte-i18n';
-  import {candidateRankings} from '../../utils/stores';
-  import CandidateRankingListing from '../../components/CandidateRankingListing.svelte';
+  import {candidateRankings} from '$lib/utils/stores';
+  import CandidateRankingListing from '$lib/components/CandidateRankingListing.svelte';
   export let data;
   let candidates = data.results ? Object.values(data.results) : [];
 
