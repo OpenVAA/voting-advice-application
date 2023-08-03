@@ -23,7 +23,7 @@
           </p>
         </div>
       </div>
-      <img class="h-16 w-16" src="/images/candidate-photo.png" alt="Candidate Photo" />
+      <img class="h-16 w-16" src="/images/candidate-photo.png" alt="Candidate" />
     </div>
     <div class="divider my-5 h-px" />
     <div>
