@@ -1,8 +1,8 @@
 import {writable} from 'svelte/store';
 import type {Writable} from 'svelte/store';
 import {browser} from '$app/environment';
-import type {Answer} from '../../types/answer.type';
-import type {CandidateRank} from '../../types/candidateRank.type';
+import type {Answer} from '$types/answer.type';
+import type {CandidateRank} from '$types/candidateRank.type';
 
 // Store values in local storage to prevent them from disappearing in refresh
 // Here we check if item already exists on a refresh event

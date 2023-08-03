@@ -2,7 +2,7 @@
   import {_} from 'svelte-i18n';
   import {goto} from '$app/navigation';
 
-  import type {Answer} from '../../types/answer.type';
+  import type {Answer} from '$types/answer.type';
   import {currentQuestion, answeredQuestions} from '$lib/utils/stores';
   import {getQuestion, getNumberOfQuestions} from '$lib/api/getQuestion';
   import {calculateCandidateCompatibilities} from '$lib/algorithms/calculateCompability';
