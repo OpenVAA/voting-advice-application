@@ -6,7 +6,8 @@ export default defineConfig({
   plugins: [svelte({hot: !process.env.VITEST})],
   resolve: {
     alias: {
-      $lib: path.join(__dirname, './src/lib')
+      $lib: path.join(__dirname, './src/lib'),
+      $types: path.join(__dirname, './src/lib/types')
     }
   },
   test: {
