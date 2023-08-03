@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import CandidateListing from '$lib/components/CandidateListing.svelte';
   export let ranking;
   export let candidate;

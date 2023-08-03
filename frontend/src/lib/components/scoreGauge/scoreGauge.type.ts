@@ -1,5 +1,5 @@
-import type {HTMLProgressAttributes} from 'svelte/elements';
-export interface ScoreGaugeProps extends HTMLProgressAttributes {
+import type {HTMLAttributes} from 'svelte/elements';
+export interface ScoreGaugeProps extends HTMLAttributes<HTMLElement> {
   score: number;
   label?: string;
   shape?: 'linear' | 'radial';

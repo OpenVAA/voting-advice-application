@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import {_} from 'svelte-i18n';
   import CandidateListing from '$lib/components/CandidateListing.svelte';
   export let data;
