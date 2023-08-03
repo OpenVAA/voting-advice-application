@@ -1,8 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import {describe, test, expect, vi, Mock} from 'vitest';
-import {getAllCandidates, getData} from '../src/api/getData';
-import {constants} from '../src/utils/constants';
+import {getAllCandidates, getData} from '$lib/api/getData';
+import {constants} from '$lib/utils/constants';
 import candidates from './data/candidates.json';
 import parties from './data/parties.json';
 import singleCandidate from './data/singleCandidate.json';

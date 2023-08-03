@@ -1,5 +1,5 @@
 <script>
-  import {GetFullNameInOrder} from '../utils/internationalisation';
+  import {GetFullNameInOrder} from '$lib/utils/internationalisation';
   export let id;
   export let candidate;
   let party = candidate?.party?.data?.attributes?.party;

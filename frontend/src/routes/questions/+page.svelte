@@ -3,10 +3,10 @@
   import {goto} from '$app/navigation';
 
   import type {Answer} from '../../types/answer.type';
-  import {currentQuestion, answeredQuestions} from '../../utils/stores';
-  import {getQuestion, getNumberOfQuestions} from '../../api/getQuestion';
-  import {calculateCandidateCompatibilities} from '../../candidateRanking/calculateCompatibility';
-  import Question from '../../components/questions/Question.svelte';
+  import {currentQuestion, answeredQuestions} from '$lib/utils/stores';
+  import {getQuestion, getNumberOfQuestions} from '$lib/api/getQuestion';
+  import {calculateCandidateCompatibilities} from '$lib/algorithms/calculateCompability';
+  import Question from '$lib/components/questions/Question.svelte';
 
   export let data;
 

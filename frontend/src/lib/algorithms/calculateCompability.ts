@@ -1,4 +1,4 @@
-import {answeredQuestions, candidateRankings} from '../utils/stores';
+import {answeredQuestions, candidateRankings} from '$lib/utils/stores';
 
 //  Function which will get questions from frontend (via store),
 //  call the calculation function
