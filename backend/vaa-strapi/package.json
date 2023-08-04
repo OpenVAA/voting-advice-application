@@ -14,11 +14,17 @@
     "prettier": "prettier --write \"**/*.{js,jsx,ts,tsx,css,scss,html,json,md}\"",
     "prettier:check": "prettier --check \"**/*.{js,jsx,ts,tsx,css,scss,html,json,md}\""
   },
+  "lint-staged": {
+    "**/*.{svelte,css,html,js,json,md,ts,xml,yaml,yml}": [
+      "prettier --write",
+      "eslint"
+    ]
+  },
   "dependencies": {
-    "@strapi/plugin-documentation": "^4.4.5",
-    "@strapi/plugin-i18n": "4.10.2",
-    "@strapi/plugin-users-permissions": "4.10.2",
-    "@strapi/strapi": "4.10.2",
+    "@strapi/plugin-documentation": "^4.11.7",
+    "@strapi/plugin-i18n": "4.11.7",
+    "@strapi/plugin-users-permissions": "4.11.7",
+    "@strapi/strapi": "4.11.7",
     "better-sqlite3": "7.4.6",
     "pg": "^8.8.0"
   },

@@ -38,6 +38,10 @@ export async function generateMockData() {
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
+        .query('api::election-app-label.election-app-label')
+        .count({})
+        .then((number) => number);
+      countOfObjects += await strapi.db
         .query('api::language.language')
         .count({})
         .then((number) => number);
@@ -92,8 +96,11 @@ export async function generateMockData() {
   const languages = await createLanguages();
   console.info('inserted languages');
   console.info('#######################################');
-  const election = await createElection();
-  console.info('inserted election');
+  const electionAppLabel = await createElectionAppLabel();
+  console.info('inserted election app labels');
+  console.info('#######################################');
+  const election = await createElection(electionAppLabel);
+  console.info('inserted elections');
   console.info('#######################################');
   const parties = await createParties(10);
   console.info('inserted parties');
@@ -113,6 +120,7 @@ async function dropCollections() {
   await strapi.db.query('api::candidate.candidate').deleteMany({});
   await strapi.db.query('api::candidate-answer.candidate-answer').deleteMany({});
   await strapi.db.query('api::constituency.constituency').deleteMany({});
+  await strapi.db.query('api::election-app-label.election-app-label').deleteMany({});
   await strapi.db.query('api::election.election').deleteMany({});
   await strapi.db.query('api::language.language').deleteMany({});
   await strapi.db.query('api::party.party').deleteMany({});
@@ -123,12 +131,12 @@ async function createLanguages(): Promise<any[]> {
   await strapi.db.query('api::language.language').createMany({
     data: [
       {
-        language: 'en',
+        language: 'English',
         locale: mainLocale,
         publishedAt: new Date()
       },
       {
-        language: 'es',
+        language: 'Spanish',
         locale: mainLocale,
         publishedAt: new Date()
       }
@@ -139,12 +147,12 @@ async function createLanguages(): Promise<any[]> {
     await strapi.db.query('api::language.language').createMany({
       data: [
         {
-          language: 'en',
+          language: 'Ingles',
           locale: secondLocale,
           publishedAt: new Date()
         },
         {
-          language: 'es',
+          language: 'Español',
           locale: secondLocale,
           publishedAt: new Date()
         }
@@ -172,7 +180,51 @@ async function createLanguages(): Promise<any[]> {
   });
 }
 
-async function createElection() {
+async function createElectionAppLabel() {
+  const name = faker.database.engine();
+  const appTitle = 'Election App';
+  const actionLabels = {
+    startButton: 'Start Finding The Best Candidates!',
+    electionInfo: 'Information about the elections',
+    howItWorks: 'How does this app work?',
+    help: 'Help',
+    searchMunicipality: 'Your Municipality or Town',
+    startQuestions: 'Start the Questionnaire',
+    selectCategories: 'Select Categories',
+    previous: 'Previous',
+    answerCategoryQuestions: 'Answer {{NUMBERQUESTIONS}} Questions',
+    readMore: 'Read More',
+    skip: 'Skip',
+    filter: 'Filter Results',
+    alphaOrder: 'A-Z',
+    bestMatchOrder: 'Best Match',
+    addToList: 'Add to List',
+    candidateBasicInfo: 'Basic Info',
+    candidateOpinions: 'Opinions',
+    home: 'home',
+    constituency: 'Constituency',
+    opinions: 'Opinions',
+    results: 'Results',
+    yourList: 'Your List'
+  };
+  const viewTexts = {};
+  const electionAppLabelObject = {
+    name,
+    appTitle,
+    actionLabels,
+    viewTexts,
+    locale: mainLocale
+  };
+
+  return await strapi.entityService.create('api::election-app-label.election-app-label', {
+    data: {
+      ...electionAppLabelObject,
+      publishedAt: new Date()
+    }
+  });
+}
+
+async function createElection(AppLabel: any) {
   const date = faker.date.future();
   const types = ['local', 'presidential', 'congress'];
   const electionType = types[Math.floor(Math.random() * types.length)];
@@ -184,7 +236,8 @@ async function createElection() {
     electionDate,
     electionType,
     electionDescription,
-    locale: mainLocale
+    locale: mainLocale,
+    electionAppLabel: AppLabel.id
   };
 
   return await strapi.entityService.create('api::election.election', {

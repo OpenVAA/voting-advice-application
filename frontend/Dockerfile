@@ -19,9 +19,16 @@ CMD yarn dev -- --host
 FROM base as build
 RUN yarn build
 
-# --- Run built site in nginx ---
-FROM nginx as production
-WORKDIR /usr/share/nginx/html
+FROM node:18-alpine as production
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+WORKDIR /usr/src/app
 
+COPY --from=build ./usr/src/app/package.json .
+COPY --from=build ./usr/src/app/yarn.lock .
 COPY --from=build ./usr/src/app/build .
-EXPOSE 80
+
+RUN yarn install --production
+
+EXPOSE 3000
+CMD node index.js

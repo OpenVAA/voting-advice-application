@@ -1,0 +1,79 @@
+{
+  "collectionName": "components_labels_view_texts",
+  "info": {
+    "displayName": "ViewTexts",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "toolTitle": {
+      "type": "string",
+      "default": "Election Compass",
+      "required": true
+    },
+    "toolDescription": {
+      "type": "text",
+      "default": "With this application you can compare candidates in the elections on {{0}} based on their opinions, parties and other data.",
+      "required": true
+    },
+    "publishedBy": {
+      "type": "string",
+      "required": true,
+      "default": "Published by {{0}}"
+    },
+    "madeWith": {
+      "type": "string",
+      "required": true,
+      "default": "Made with {{0}}"
+    },
+    "selectMunicipalityTitle": {
+      "type": "string",
+      "default": "Select Your Municipality",
+      "required": true
+    },
+    "selectMunicipalityDescription": {
+      "type": "text",
+      "default": "In these elections, you can only vote for candidates in your own constituency. Select your municipality and the app will find it for you.",
+      "required": true
+    },
+    "yourConstituency": {
+      "type": "string",
+      "default": "Your constituency is {{0}}",
+      "required": true
+    },
+    "yourOpinionsTitle": {
+      "type": "string",
+      "default": "Tell Your Opinions",
+      "required": true
+    },
+    "yourOpinionsDescription": {
+      "type": "text",
+      "required": true,
+      "default": "Next, the app will ask your opinions on {{0}} statements about political issues and values, which the candidates have also answered. After you've answered them, the app will find the candidates that best agree with your opinions. The statements are grouped into {{1}} categories. You can answer all of them or only select those you find important."
+    },
+    "questionsTip": {
+      "type": "string",
+      "default": "Tip: If you don’t care about a single issue or a category of them, you can skip it later."
+    },
+    "yourCandidatesTitle": {
+      "type": "string",
+      "required": true,
+      "default": "Your Candidates"
+    },
+    "yourCandidatesDescription": {
+      "type": "text",
+      "default": "These are the candidates in your constituency. The best matches are first on the list. You can also see which {{0}} best match your opinions. To narrow down the results, you can also use {{1}}.",
+      "required": true
+    },
+    "yourPartiesTitle": {
+      "type": "string",
+      "required": true,
+      "default": "Your Parties"
+    },
+    "yourPartiesDescription": {
+      "type": "text",
+      "default": "These are the parties in your constituency. The best matches are first on the list. You can also see which individual {{0}} best match your opinions. To narrow down the results, you can also use {{1}}.",
+      "required": true
+    }
+  }
+}

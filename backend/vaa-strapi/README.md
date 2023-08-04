@@ -1,5 +1,7 @@
 # VAA Strapi Backend
 
+## Running the backend separately
+
 0. You should be running Strapi with Node version 16.18.0. Use of nvm is encouraged. **Additionally, you need Docker!**
 1. Install dependencies by running `yarn install` or `npm install`
 2. Copy or rename the `.env.example` to `.env` before running any of the commands. You should be able to run the Strapi
@@ -36,6 +38,9 @@ You can optionally set `GENERATE_MOCK_DATA_ON_RESTART` to true. This will genera
 This feature is only enabled in development builds and is mostly intended to assist with development of mock data.
 **Please keep in mind that setting this variable as true will clear the database contents of existing candidates, parties, elections, and so on and should only be used for debugging purposes.**
 Setting `GENERATE_MOCK_DATA_ON_RESTART` as true will override `GENERATE_MOCK_DATA_ON_INITIALISE` setting.
+
+**Note: if you're running the whole project in Docker, change these values in the `.env` file
+in the project root, not in the `backend/vaa-strapi` folder.**
 
 ---
 

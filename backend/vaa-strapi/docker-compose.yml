@@ -6,7 +6,7 @@ services:
       context: .
       target: production
     ports:
-      - 1337:1337
+      - '1337:1337'
     restart: always
     environment:
       HOST: ${HOST}
@@ -34,11 +34,11 @@ services:
     volumes:
       - ./data:/var/lib/postgresql/data
     ports:
-      - 5432:5432
+      - '5432:5432'
     restart: always
 
   adminer:
     image: adminer
     restart: always
     ports:
-      - 4567:8080
+      - '4567:8080'

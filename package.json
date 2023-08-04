@@ -2,8 +2,9 @@
     "scripts": {
         "dev":"docker compose -f docker-compose.dev.yml up -d --build",
         "dev:attach":"docker compose -f docker-compose.dev.yml up --build",
-        "dev:down": "docker compose -f docker-compose.dev.yml down",
-        "prepare":"husky install"
+        "dev:down": "docker compose -f docker-compose.dev.yml down -v --remove-orphans",
+        "prepare":"husky install",
+        "prod": "docker compose -f docker-compose.yml -p vaa-prod up -d --build"
     },
     "devDependencies": {
         "husky": "^8.0.2"

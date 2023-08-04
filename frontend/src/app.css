@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  h1 {
+    @apply mb-1 mt-1 w-full text-center text-2xl font-bold leading-tight;
+  }
+  hgroup {
+    @apply w-full;
+  }
+  hgroup p {
+    @apply mx-auto my-3 w-full text-center first:my-0;
+  }
+  legend {
+    @apply w-full;
+  }
+}

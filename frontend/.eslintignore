@@ -14,3 +14,4 @@ yarn.lock
 
 # Ignore files for Svelte
 src/app.html
+src/error.html

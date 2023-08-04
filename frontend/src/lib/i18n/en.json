@@ -1,0 +1,48 @@
+{
+  "header": {
+    "title": "Elections",
+    "back": "Back",
+    "help": "Help"
+  },
+  "footer": {
+    "goTo": "Jump to results"
+  },
+  "loading": "Loading...",
+  "candidates": {
+    "candidates": "Candidates",
+    "notFound": "No candidates found"
+  },
+  "candidate": {
+    "tabs": {
+      "basicInfo": "Basic Info",
+      "opinions": "Opinions"
+    },
+    "politicalExperience": "Political experience",
+    "age": "age",
+    "gender": "gender",
+    "list": "list",
+    "motherTongue": "Mother Tongue",
+    "themes": "Themes"
+  },
+  "parties": {
+    "parties": "Parties",
+    "notFound": "No parties found"
+  },
+  "questions": {
+    "questionsTitle": "Your Opinions",
+    "scale": {
+      "fullyDisagree": "Fully disagree",
+      "disagree": "Disagree",
+      "neutral": "Neutral",
+      "agree": "Agree",
+      "fullyAgree": "Fully agree"
+    },
+    "nextQuestion": "Next question",
+    "jumpToResults": "Jump to results",
+    "previous": "Previous",
+    "skip": "Skip",
+    "readMore": "Read More",
+    "noQuestionsFound": "Could not find any questions.",
+    "errorInGettingQuestions": "There was an error getting the question."
+  }
+}
