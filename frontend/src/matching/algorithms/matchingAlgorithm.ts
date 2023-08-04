@@ -2,11 +2,13 @@ import type {HasMatchableAnswers} from '../core/hasMatchableAnswers';
 import {MatchingSpace} from '../core/matchingSpace';
 import {MatchingSpacePosition} from '../core/matchingSpacePosition';
 import type {MatchingSpaceCoordinate} from '../core/matchingSpacePosition';
-import type {MatchableQuestion} from '../questions/matchableQuestion';
-import type {MissingValueBias, MissingValueDistanceMethod} from './imputeMissingValues';
-import {Match} from './match';
+import {createSubspace} from './createSubspace';
+import type {MissingValueImputationOptions} from './imputeMissingValues';
+import {Match, SubMatch} from './match';
 import type {MatchingSpaceProjector} from './matchingSpaceProjector';
 import {measureDistance, DistanceMetric} from './measureDistance';
+import type {MatchableQuestion} from '../questions/matchableQuestion';
+import type {HasMatchableQuestions} from '../questions/hasMatchableQuestions';
 
 /**
  * The generic interface for matching algorithms
@@ -33,11 +35,8 @@ export interface MatchingAlgorithm {
 export interface MatchingAlgorithmOptions {
   /** The distance metric to use. */
   distanceMetric: DistanceMetric;
-  /** The method used for calculating penalties for missing values. */
-  missingValueMethod: MissingValueDistanceMethod;
-  /** The direction of the bias used in imputing missing values,
-   * when the reference value is neutral. */
-  missingValueBias?: MissingValueBias;
+  /** Options passed to imputeMissingValues */
+  missingValueOptions: MissingValueImputationOptions;
   /** A possible projector that will convert the results from one
    *  matching space to another, usually lower-dimensional, one. */
   projector?: MatchingSpaceProjector;
@@ -47,10 +46,12 @@ export interface MatchingAlgorithmOptions {
  * Options passed to the match method of a MatchingAlgorithm
  */
 export interface MatchingOptions {
-  /** A list of questions that will be used in matching. If this is
-   *  not specified, the referenceEntity's answers will be used to
-   *  define the list of questions. */
-  questionList?: readonly MatchableQuestion[];
+  /** A list of question subgroups or categories in which distances are also
+   * measured. Note that if these subgroups have no overlap with the the
+   * `referenceEntity`'s question (or `questionList`) passed to `match`,
+   * the `SubMatches` for them will have a score of zero but no error will
+   * be thrown. */
+  subQuestionGroups?: HasMatchableQuestions[];
 }
 
 /**
@@ -81,24 +82,15 @@ export type ProjectionOptions =
 export class MatchingAlgorithmBase implements MatchingAlgorithm {
   /** The distance metric to use. */
   distanceMetric: DistanceMetric;
-  /** The direction of the bias used in imputing missing values,
-   * when the reference value is neutral. */
-  missingValueBias?: MissingValueBias;
-  /** The method used for calculating penalties for missing values. */
-  missingValueMethod: MissingValueDistanceMethod;
+  /** Options passed to imputeMissingValues */
+  missingValueOptions: MissingValueImputationOptions;
   /** A possible projector that will convert the results from one
    *  matching space to another, usually lower-dimensional, one. */
   projector?: MatchingSpaceProjector;
 
-  constructor({
-    distanceMetric,
-    missingValueMethod,
-    missingValueBias,
-    projector
-  }: MatchingAlgorithmOptions) {
+  constructor({distanceMetric, missingValueOptions, projector}: MatchingAlgorithmOptions) {
     this.distanceMetric = distanceMetric;
-    this.missingValueMethod = missingValueMethod;
-    this.missingValueBias = missingValueBias;
+    this.missingValueOptions = missingValueOptions;
     this.projector = projector;
   }
 
@@ -107,9 +99,14 @@ export class MatchingAlgorithmBase implements MatchingAlgorithm {
    *
    * @param referenceEntity The entity to match against, e.g. voter
    * @param entities The entities to match with, e.g. candidates
+   * @options Matching options, see. `MatchingOptions`.
    * @returns An array of Match objects
    */
-  match(referenceEntity: HasMatchableAnswers, entities: readonly HasMatchableAnswers[]): Match[] {
+  match(
+    referenceEntity: HasMatchableAnswers,
+    entities: readonly HasMatchableAnswers[],
+    options: MatchingOptions = {}
+  ): Match[] {
     if (entities.length === 0) throw new Error('Entities must not be empty');
     // NB. we add the referenceEntity to the entities to project as well as in the options
     let positions = this.projectToNormalizedSpace([referenceEntity, ...entities], referenceEntity);
@@ -118,18 +115,42 @@ export class MatchingAlgorithmBase implements MatchingAlgorithm {
     // We need the referencePosition and space for distance measurement
     const referencePosition = positions.shift();
     if (!referencePosition) {
-      throw new Error('Error! Referenceposition is undefined!');
+      throw new Error('Error! Reference position is undefined!');
+    }
+    // Create possible matching subspaces for, e.g., category matches
+    let subspaces: MatchingSpace[] = [];
+    if (options.subQuestionGroups) {
+      const allQuestions = referenceEntity.matchableAnswers.map((a) => a.question);
+      subspaces = options.subQuestionGroups.map((g) =>
+        createSubspace(allQuestions, g.matchableQuestions)
+      );
     }
     // Calculate matches
     const measurementOptions = {
       metric: this.distanceMetric,
-      missingValueMethod: this.missingValueMethod,
-      missingValueBias: this.missingValueBias
+      missingValueOptions: this.missingValueOptions
     };
     const matches: Match[] = [];
     for (let i = 0; i < entities.length; i++) {
-      const distance = measureDistance(referencePosition, positions[i], measurementOptions);
-      matches.push(new Match(distance, entities[i]));
+      if (options.subQuestionGroups) {
+        const distances = measureDistance(
+          referencePosition,
+          positions[i],
+          measurementOptions,
+          subspaces
+        );
+        const submatches = distances.subspaces.map((dist, k) => {
+          if (options.subQuestionGroups?.[k] == null)
+            throw new Error(
+              "Distances returned by measureDistance don't match the number of subQuestionGroups!"
+            );
+          return new SubMatch(dist, options.subQuestionGroups[k]);
+        });
+        matches.push(new Match(distances.global, entities[i], submatches));
+      } else {
+        const distance = measureDistance(referencePosition, positions[i], measurementOptions);
+        matches.push(new Match(distance, entities[i]));
+      }
     }
     return matches;
   }
@@ -159,8 +180,8 @@ export class MatchingAlgorithmBase implements MatchingAlgorithm {
     if (entities.length === 0) throw new Error('Entities must not be empty');
     // Define question list
     const questionList =
-      'getMatchableAnswers' in questionListOrEntity
-        ? questionListOrEntity.getMatchableAnswers().map((o) => o.question)
+      'matchableAnswers' in questionListOrEntity
+        ? questionListOrEntity.matchableAnswers.map((o) => o.question)
         : questionListOrEntity;
     if (questionList.length === 0)
       throw new Error('A non-empty questionList or referenceEntity has to be provided!');

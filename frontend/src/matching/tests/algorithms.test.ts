@@ -1,4 +1,5 @@
 import {describe, expect, test} from 'vitest';
+import {createSubspace} from '../algorithms/createSubspace';
 import {
   imputeMissingValues,
   MissingValueBias,
@@ -21,7 +22,7 @@ import type {MatchableValue} from '../core/matchableValue';
 
 import {MatchingSpace} from '../core/matchingSpace';
 import {MatchingSpacePosition} from '../core/matchingSpacePosition';
-import type {MatchableQuestion} from '../questions/matchableQuestion';
+import {MatchableQuestion} from '../questions/matchableQuestion';
 import {MultipleChoiceQuestion} from '../questions/multipleChoiceQuestion';
 
 // For convenience
@@ -29,7 +30,7 @@ const maxDist = NORMALIZED_DISTANCE_EXTENT;
 const maxVal: SignedNormalizedDistance = NORMALIZED_DISTANCE_EXTENT / 2;
 const minVal: SignedNormalizedDistance = -maxVal;
 
-describe('Single coordinate distance measurements', () => {
+describe('single coordinate distance measurements', () => {
   test('manhattanDistance', () => {
     expect(manhattanDistance(maxVal, minVal), 'Commutatibility').toBeCloseTo(
       manhattanDistance(minVal, maxVal)
@@ -143,11 +144,15 @@ describe('measureDistance', () => {
   const mdOpts: DistanceMeasurementOptions[] = [
     {
       metric: DistanceMetric.Directional,
-      missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+      missingValueOptions: {
+        missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+      }
     },
     {
       metric: DistanceMetric.Manhattan,
-      missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+      missingValueOptions: {
+        missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+      }
     }
   ];
   describe('Extreme distances', () => {
@@ -179,7 +184,9 @@ describe('measureDistance', () => {
   test('DistanceMetric.Manhattan', () => {
     const opts: DistanceMeasurementOptions = {
       metric: DistanceMetric.Manhattan,
-      missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+      missingValueOptions: {
+        missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+      }
     };
     const posA = new MatchingSpacePosition([minVal, minVal, minVal], ms);
     const posB = new MatchingSpacePosition([minVal, 0, maxVal], ms);
@@ -191,7 +198,9 @@ describe('measureDistance', () => {
   test('DistanceMetric.Directional', () => {
     const opts: DistanceMeasurementOptions = {
       metric: DistanceMetric.Directional,
-      missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+      missingValueOptions: {
+        missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+      }
     };
     const f = 0.5;
     const posA = new MatchingSpacePosition([f * minVal, minVal, minVal]);
@@ -221,7 +230,9 @@ describe('measureDistance', () => {
     test('MissingValueDistanceMethod.Neutral', () => {
       const opts: DistanceMeasurementOptions = {
         metric: DistanceMetric.Manhattan,
-        missingValueMethod: MissingValueDistanceMethod.Neutral
+        missingValueOptions: {
+          missingValueMethod: MissingValueDistanceMethod.Neutral
+        }
       };
       expect(measureDistance(posMin, posMissing, opts)).toBeCloseTo(0.5 * maxDist);
       expect(measureDistance(posFract, posMissing, opts)).toBeCloseTo(0.5 * f * maxDist);
@@ -229,7 +240,9 @@ describe('measureDistance', () => {
     test('MissingValueDistanceMethod.RelativeMaximum', () => {
       const opts: DistanceMeasurementOptions = {
         metric: DistanceMetric.Manhattan,
-        missingValueMethod: MissingValueDistanceMethod.RelativeMaximum
+        missingValueOptions: {
+          missingValueMethod: MissingValueDistanceMethod.RelativeMaximum
+        }
       };
       expect(measureDistance(posMin, posMissing, opts)).toBeCloseTo(maxDist);
       expect(measureDistance(posFract, posMissing, opts)).toBeCloseTo(0.5 * (1 + f) * maxDist);
@@ -237,7 +250,9 @@ describe('measureDistance', () => {
     test('MissingValueDistanceMethod.AbsoluteMaximum', () => {
       const opts: DistanceMeasurementOptions = {
         metric: DistanceMetric.Manhattan,
-        missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+        missingValueOptions: {
+          missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+        }
       };
       expect(measureDistance(posMin, posMissing, opts)).toBeCloseTo(maxDist);
       expect(measureDistance(posFract, posMissing, opts)).toBeCloseTo(maxDist);
@@ -245,7 +260,9 @@ describe('measureDistance', () => {
     test('No missing values for ref value', () => {
       const opts: DistanceMeasurementOptions = {
         metric: DistanceMetric.Manhattan,
-        missingValueMethod: MissingValueDistanceMethod.Neutral
+        missingValueOptions: {
+          missingValueMethod: MissingValueDistanceMethod.Neutral
+        }
       };
       expect(() => measureDistance(posMissing, posMin, opts)).toThrow();
     });
@@ -345,6 +362,57 @@ describe('matchingAlgorithm', () => {
       expect(algorithm.match(voter, candidates)[0].distance).toBeCloseTo(dist);
     });
   });
+  describe('submatches', () => {
+    describe('createSubspaces', () => {
+      const numQuestions = 5;
+      const numSubset = 3;
+      const questions = createQuestions(numQuestions, 5);
+      const otherQuestions = createQuestions(numQuestions, 5);
+      const subsetA = questions.slice(0, numSubset);
+      const subsetB = [...subsetA, ...otherQuestions.slice(2)];
+      expect(
+        createSubspace(questions, questions.slice()).maxDistance,
+        'subset is fully included'
+      ).toBeCloseTo(numQuestions);
+      expect(
+        createSubspace(questions, otherQuestions).maxDistance,
+        'subset is fully excluded'
+      ).toBeCloseTo(0);
+      expect(
+        createSubspace(questions, subsetA).maxDistance,
+        'subset is partly included'
+      ).toBeCloseTo(numSubset);
+      expect(
+        createSubspace(questions, subsetB).maxDistance,
+        'subset is partly included and partly excluded'
+      ).toBeCloseTo(numSubset);
+    });
+    describe('match with subQuestionGroups', () => {
+      const likertScale = 5;
+      const voterValues = [0, 0, 0, 0, 0.5];
+      const candValues = [0, 0, 1, 1, 1];
+      const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+        createLikertScaleValues(likertScale, voterValues),
+        [createLikertScaleValues(likertScale, candValues)],
+        likertScale,
+        DistanceMetric.Manhattan,
+        MissingValueDistanceMethod.Neutral
+      );
+      const subsetA = {matchableQuestions: questions.slice(0, 1)};
+      const subsetADist = 0;
+      const subsetB = {matchableQuestions: questions.slice(2, 3)};
+      const subsetBDist = maxDist;
+      const subsetC = {matchableQuestions: questions.slice(0, 4)};
+      const subsetCDist = maxDist * (1 - 0.5);
+      const subQuestionGroups = [subsetA, subsetB, subsetC];
+      const match = algorithm.match(voter, candidates, {subQuestionGroups})[0];
+      expect(match.subMatches?.length).toBeCloseTo(subQuestionGroups.length);
+      expect(match.subMatches?.[0].distance).toBeCloseTo(subsetADist);
+      expect(match.subMatches?.[0].questionGroup).toBe(subsetA);
+      expect(match.subMatches?.[1].distance).toBeCloseTo(subsetBDist);
+      expect(match.subMatches?.[2].distance).toBeCloseTo(subsetCDist);
+    });
+  });
 });
 
 /**********************************************************************
@@ -382,7 +450,10 @@ function createMatchesAndEntities(
   // Create dummy candidates
   const candidates = createCandidates(questions, candidateAnswers);
   // Matching algorithm
-  const algorithm = new MatchingAlgorithmBase({distanceMetric, missingValueMethod});
+  const algorithm = new MatchingAlgorithmBase({
+    distanceMetric,
+    missingValueOptions: {missingValueMethod}
+  });
   // Get matches
   const matches = algorithm.match(voter, candidates);
   return {
@@ -407,7 +478,7 @@ class Candidate implements HasMatchableAnswers {
     return {question, value: MISSING_VALUE};
   }
 
-  getMatchableAnswers(): MatchableAnswer[] {
+  get matchableAnswers(): MatchableAnswer[] {
     return this.answers;
   }
 }
