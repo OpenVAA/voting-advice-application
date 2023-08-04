@@ -1,12 +1,10 @@
 import type {SignedNormalizedDistance, UnsignedNormalizedDistance} from '../core/distances';
 import {NORMALIZED_DISTANCE_EXTENT} from '../core/distances';
 import {MISSING_VALUE} from '../core/matchableValue';
+import type {MatchingSpace} from '../core/matchingSpace';
 import type {MatchingSpacePosition} from '../core/matchingSpacePosition';
-import {
-  imputeMissingValues,
-  MissingValueBias,
-  MissingValueDistanceMethod
-} from './imputeMissingValues';
+import {imputeMissingValues} from './imputeMissingValues';
+import type {MissingValueImputationOptions} from './imputeMissingValues';
 
 /**
  * Calculate the Manhattan distance between two distances.
@@ -70,12 +68,27 @@ export enum DistanceMetric {
 export interface DistanceMeasurementOptions {
   /** The distance metric to use. */
   metric: DistanceMetric;
-  /** The method used for calculating penalties for missing values. */
-  missingValueMethod: MissingValueDistanceMethod;
-  /** The direction of the bias used in imputing missing values,
-   * when the reference value is neutral. */
-  missingValueBias?: MissingValueBias;
+  /** Options passed to imputeMissingValues */
+  missingValueOptions: MissingValueImputationOptions;
 }
+
+export type GlobalAndSubspaceDistances = {
+  global: UnsignedNormalizedDistance;
+  subspaces: UnsignedNormalizedDistance[];
+};
+
+export function measureDistance(
+  a: MatchingSpacePosition,
+  b: MatchingSpacePosition,
+  options: DistanceMeasurementOptions
+): UnsignedNormalizedDistance;
+
+export function measureDistance(
+  a: MatchingSpacePosition,
+  b: MatchingSpacePosition,
+  options: DistanceMeasurementOptions,
+  subspaces: MatchingSpace[]
+): GlobalAndSubspaceDistances;
 
 /**
  * Measure the distance between to positions in a `MatchingSpace`.
@@ -83,20 +96,37 @@ export interface DistanceMeasurementOptions {
  * @param a The reference position to measure against (cannot be missing)
  * @param b The other position
  * @param options See the interface `DistanceMeasurementOptions`
+ * @param subspaces A list of subspaces in which distances are also measured.
+ * Used to compute, e.g., matches within question categories, in which case
+ * pass a llist of `MatchingSpaces`, where the weights of irrelevant questions
+ * are zero. It's a bit clunky to deal with subspaces here and not on a higher
+ * level, but this way we can avoid duplicate missing value imputations and
+ * distance calculations.
  * @returns An unsigned normalized distance, e.g. [0, 1] (the range is defined
- * by `NORMALIZED_DISTANCE_EXTENT`).
+ * by `NORMALIZED_DISTANCE_EXTENT`) or a list of such distances if `subspaces`
+ * is provided.
  */
 export function measureDistance(
   a: MatchingSpacePosition,
   b: MatchingSpacePosition,
-  options: DistanceMeasurementOptions
-): UnsignedNormalizedDistance {
+  options: DistanceMeasurementOptions,
+  subspaces?: MatchingSpace[]
+): UnsignedNormalizedDistance | GlobalAndSubspaceDistances {
   if (a.dimensions === 0) throw new Error("a doesn't have any elements!");
   if (a.dimensions !== b.dimensions) throw new Error('a and b have different number of elements!');
   const space = a.space;
   if (space && space.dimensions !== a.dimensions)
     throw new Error('a and space have different number of dimensions!');
-  let sum = 0;
+  if (subspaces) {
+    for (const subspace of subspaces) {
+      if (subspace.dimensions !== a.dimensions)
+        throw new Error('a and at least one subspace have different number of dimensions!');
+    }
+  }
+  const sums = {
+    global: 0,
+    subspaces: subspaces == null ? [] : subspaces.map(() => 0)
+  };
   for (let i = 0; i < a.dimensions; i++) {
     // We might have to alter these values, if there are missing ones, hence the vars
     let valA = a.coordinates[i],
@@ -104,7 +134,8 @@ export function measureDistance(
     // First, handle missing values
     if (valA === MISSING_VALUE)
       throw new Error('The first position cannot contain missing values!');
-    if (valB === MISSING_VALUE) [valA, valB] = imputeMissingValues(valA, options);
+    if (valB === MISSING_VALUE)
+      [valA, valB] = imputeMissingValues(valA, options.missingValueOptions);
     // Calculate distance
     let dist: number;
     switch (options.metric) {
@@ -117,11 +148,16 @@ export function measureDistance(
       default:
         throw new Error(`Unknown distance metric: ${options.metric}`);
     }
-    // Apply possible weights
-    if (space) dist *= space.weights[i];
-    // Add to total
-    sum += dist;
+    // Apply to totals
+    sums.global += dist * (space ? space.weights[i] : 1);
+    if (subspaces) {
+      subspaces.forEach((subspace, k) => (sums.subspaces[k] += dist * subspace.weights[i]));
+    }
   }
-  // Normalize total distance
-  return sum / (space ? space.maxDistance : a.dimensions);
+  // Normalize total distances
+  sums.global /= space ? space.maxDistance : a.dimensions;
+  if (subspaces) {
+    subspaces.forEach((subspace, k) => (sums.subspaces[k] /= subspace.maxDistance));
+  }
+  return subspaces == null ? sums.global : sums;
 }
