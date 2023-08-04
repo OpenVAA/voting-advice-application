@@ -8,7 +8,7 @@ import type {MatchableValue} from './matchableValue';
  */
 export interface HasMatchableAnswers {
   getMatchableAnswer: (question: MatchableQuestion) => MatchableAnswer;
-  getMatchableAnswers: () => MatchableAnswer[];
+  matchableAnswers: MatchableAnswer[];
 }
 
 /**
