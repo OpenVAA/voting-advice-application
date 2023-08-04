@@ -22,7 +22,7 @@ import type {MatchableValue} from '../core/matchableValue';
 
 import {MatchingSpace} from '../core/matchingSpace';
 import {MatchingSpacePosition} from '../core/matchingSpacePosition';
-import {MatchableQuestion} from '../questions/matchableQuestion';
+import type {MatchableQuestion} from '../questions/matchableQuestion';
 import {MultipleChoiceQuestion} from '../questions/multipleChoiceQuestion';
 
 // For convenience
@@ -363,7 +363,7 @@ describe('matchingAlgorithm', () => {
     });
   });
   describe('submatches', () => {
-    describe('createSubspaces', () => {
+    test('createSubspaces', () => {
       const numQuestions = 5;
       const numSubset = 3;
       const questions = createQuestions(numQuestions, 5);
@@ -387,7 +387,7 @@ describe('matchingAlgorithm', () => {
         'subset is partly included and partly excluded'
       ).toBeCloseTo(numSubset);
     });
-    describe('match with subQuestionGroups', () => {
+    test('match with subQuestionGroups', () => {
       const likertScale = 5;
       const voterValues = [0, 0, 0, 0, 0.5];
       const candValues = [0, 0, 1, 1, 1];
