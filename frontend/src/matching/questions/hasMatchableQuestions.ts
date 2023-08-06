@@ -1,4 +1,4 @@
-import {MatchableQuestion} from './matchableQuestion';
+import type {MatchableQuestion} from './matchableQuestion';
 
 /**
  * Question groups used in SubMatches must implement this interface.
