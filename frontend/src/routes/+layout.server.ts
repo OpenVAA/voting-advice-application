@@ -1,47 +1,36 @@
-import {error} from '@sveltejs/kit';
-import type {LayoutServerLoad} from './$types';
-import {getData} from '../api/getData';
+/*
+ * In this and other +layout.server.ts files, we handle the data api calls
+ * and pass their results to the relevant +layout.svelte files, which then
+ * update the client-side stores with the data.
+ *
+ * Now, each level of calls is separated into a separate, nested layout
+ * file pair, due to parameter passing. Another, perhaps more elegant,
+ * options would be to have a single layout file pair that handles all of
+ * the data calls based on which params are present. The params might be:
+ *
+ * 1. Query params instead of route params
+ * 2. The layout file might be at the very bottom of an optional route
+ *    hierarchy, such as
+ *    ([[electionIds]]/[[constituencyIds]]/[[questionCategoryIds]]/)
+ * 3. The params might be passed in a cookie
+ * 4. The params might be stored on the server
+ *
+ * The issue, however, is how to avoid unnecessary reloading of data, such
+ * as AppLabels.
+ */
+
+import type {LayoutData, LayoutServerLoad} from './$types';
+import {getDataProvider, appSettings} from '$lib/config';
 
 export const load: LayoutServerLoad = (async () => {
-  //TODO: Add filter to get the right election
-  const election = await getData(
-    'api/elections',
-    new URLSearchParams({populate: 'electionAppLabel'})
-  ).then((result) => {
-    if (result?.data[0]?.attributes) {
-      return result.data[0].attributes;
-    }
-    if (result?.error?.status === 404) {
-      throw error(404, 'election not found');
-    }
-  });
-
-  const appLabelId = election?.electionAppLabel?.data?.id;
-
-  // //TODO add filter to get the labels for the correct election
-  const appLabels = await getData(
-    'api/election-app-labels',
-    new URLSearchParams({
-      'filters[id][$eq]': appLabelId,
-      populate: '*'
-    })
-  )
-    .then((result) => {
-      if (result?.data[0]?.attributes) {
-        return result.data[0].attributes;
-      }
-      if (result?.error?.status === 404) {
-        throw error(404, 'election not found');
-      }
-    })
-    .catch((error) => {
-      console.error('Error in getting layout data from Strapi: ', ' - - - ', error);
-    });
-
-  if (appLabels?.error) {
-    console.error('appLabels error', appLabels.error);
-    throw error(appLabels.error.status, {message: appLabels.error.message});
-  }
-
-  return appLabels;
+  // Get data provider
+  const dataProvider = getDataProvider();
+  // Load data
+  const appLabels = await dataProvider.getAppLabels();
+  const electionsData = await dataProvider.getElectionsData();
+  return {
+    appLabels,
+    appSettings,
+    electionsData
+  } as LayoutData;
 }) satisfies LayoutServerLoad;
