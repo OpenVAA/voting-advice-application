@@ -5,9 +5,6 @@
   let selectedElectionId: string | string[];
 
   function gotoConstituencies() {
-    // TO DO: Make sure ids never contain commas, equal signs, slashes or question marks
-    // TO DO: Make path parts consts or define a global function for goto that takes
-    // electionIds etc. as arguments
     let root = $page.url.pathname.replace(/\/$/, '');
     const electionIds = Array.isArray(selectedElectionId)
       ? selectedElectionId.join(',')

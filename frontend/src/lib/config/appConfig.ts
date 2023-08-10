@@ -6,8 +6,10 @@
  * on the server and doesn't store sensitive data. However, if it were
  * to crash, that might be a problem.
  *
- * TO DO: Define a proper interface for AppConfig and export just that
- * object from here.
+ * TO DO: Define a proper interface for an AppConfig and export just
+ * that object from here. It should contain getDataProvider and
+ * appSettings within it and might already merge appSettings with
+ * DEFAULT_SETTINGS.
  */
 
 import type {DataProvider} from '$lib/api/dataProvider';

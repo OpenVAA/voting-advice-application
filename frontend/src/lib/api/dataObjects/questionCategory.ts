@@ -54,17 +54,16 @@ export class QuestionCategory {
   /**
    * A utility method to supply Question objects.
    *
-   * TO DO: allowLess is quite hacky; rethink
+   * TO DO: Remove this and supply QuestionData as part of constructor
+   * data the same way as in ConstituencyCategory.
    *
    * @param questionsData All availale data which are then filtered
-   * @param allowLess Set true if setting effective questions which might
-   * be filtered
    */
-  supplyQuestionsData(questionsData: QuestionData[], allowLess = false) {
+  supplyQuestionsData(questionsData: QuestionData[]) {
     this.questions = questionsData
       .filter((q) => this.questionIds.includes(q.id))
       .map((q) => new Question(q, this));
-    if (!allowLess && this.questions.length !== this.questionIds.length) {
+    if (this.questions.length !== this.questionIds.length) {
       throw new Error(
         `Not enough Questions supplied: ${this.questions.length} of ${this.questionIds.length}.`
       );

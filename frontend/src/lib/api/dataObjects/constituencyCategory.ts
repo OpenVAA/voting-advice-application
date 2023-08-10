@@ -1,9 +1,6 @@
 /*
  * Contains both the data type and the final object class for a
  * constituency category.
- *
- * TO DO: Maybe use the same paradigm as in other these classes that
- * constituencies are supplied as ids instead of objects.
  */
 
 import type {HasId, RichText} from '../dataProvider.types';

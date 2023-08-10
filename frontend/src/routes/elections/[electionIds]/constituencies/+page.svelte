@@ -1,4 +1,13 @@
 <script lang="ts">
+  // TO DO:
+  // * Disallow selecting a constituency from multiple categories for the same election:
+  //   make an expander or a radio selection?
+  //   Now, we just pick the last changed one but that should not be so
+  // * We should take into accont the nested structure of constituencies and only display
+  //   the leaf nodes (and use a searchable select)
+  // * Handle overlapping constituency categories: both identical categories and those
+  //   that are subsets of others
+
   import {page} from '$app/stores';
   import {goto} from '$app/navigation';
   import {appLabels, availableConstituencyCategories} from '$lib/stores/stores';
@@ -6,9 +15,6 @@
   const selectedConstituencyIds: string[] = [];
 
   function gotoQuestionCategories() {
-    // TO DO: Make sure ids never contain commas, slashes or question marks
-    // TO DO: Make path parts consts or define a global function for goto that takes
-    // electionIds etc. as arguments
     let root = $page.url.pathname.replace(/\/$/, '');
     const constituencyIds = Object.values(selectedConstituencyIds).join(',');
     goto(`${root}/${constituencyIds}/questions`);
@@ -22,15 +28,6 @@
   $: submittable =
     selectedConstituencyIds.length > 0 &&
     selectedConstituencyIds.filter((id) => id == null || id == '').length === 0;
-
-  // TO DO:
-  // * Disallow selecting a constituency from multiple categories for the same election:
-  //   make an expander or a radio selection?
-  //   Now, we just pick the last changed one but that should not be so
-  // * We should take into accont the nested structure of constituencies and only display
-  //   the leaf nodes (and use a searchable select)
-  // * Handle overlapping constituency categories: both identical categories and those
-  //   that are subsets of others
 </script>
 
 <h1>

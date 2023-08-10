@@ -263,7 +263,7 @@ Now, let's start decoding the route.
   2. Convert all data object arrays into `ObjectList` objects, which provide utility getters or methods in addition to an `items` getter. These may include such as `class ObjectList<T>: ... get groupedByElection<T>(): {election: Election, items: T[]}[]` or `find(queryOption: {election?: Election | Election[], ...}): T[]`, which will filter `items` using a generic query filter.
 - Figure out a way to organise candidates and other entities:
   - Possibly as `Nomination` objects in the `DataRoot` implementing `{election: Election, constituency: Constituency, entity: Entity, children?: Nomination[]}` (with enforcement of proper entity relationships so that the allowed lineage is `ElectoralAlliance` > `PoliticalOrganisation` (i.e. party) > `Faction` > `Candidate`)
-- Extend the current single `electionId`- and `constituencyId`-based filtering paradigm to multiple such ids and include or exclude, e.g. for `Question` add `electionId?: {in?: string[], notIn?: string[]}`. Perhaps there is an pre-existing utility for this?
+- Extend the current single `electionId`- and `constituencyId`-based filtering paradigm to multiple such ids and include or exclude, e.g. for `Question` add `electionId?: {in?: string[], notIn?: string[]}`. Perhaps there is an pre-existing utility for this, although we need only very basic tests?
 - Create a store and nice data model for results (extending or containing the algorithm's `Match` objects) and `visibleResults`
   - Also define basics for `Filter` and `Sorter` objects, which may or may not be available already on the `DataObject` level
 - Create api endpoints that expose the `DataProvider` calls if we need to load something from the client side

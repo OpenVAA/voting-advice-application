@@ -74,6 +74,7 @@ export abstract class DataProvider {
    * TO DO: Make checking for a empty filter value more formal
    * TO DO: Enable multiple values for item[key], such as constituencyId: ['a', 'b']
    *        Or includedConstituencyIds: ['a', 'b'] and excludedConstituencyIds: ['c', 'd']
+   *        See README for more details
    * TO DO: Add support for lazy subobject loading
    *
    * @param filter Object containing keys with single of lists of values to match in data

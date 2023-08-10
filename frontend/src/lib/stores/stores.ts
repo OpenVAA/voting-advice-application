@@ -3,8 +3,11 @@
  * Also contains derived stores based on these.
  *
  * TO DO: The filtering logic for effective elections etc. might be best
- * kept separate so that we don't reduplicate it, as we sometimes do the
- * same filtering in SSR. However, we might also just not do that in SSR...
+ * kept separate and implemented already in the DataObjects so that we
+ * don't reduplicate it, as we sometimes do the same filtering in SSR.
+ * The principle could be that availableStores would rely on that logic
+ * and only the visibleStores would possibly have some Svelte- and UI-
+ * specific filtering logic.
  */
 
 import {derived, writable} from 'svelte/store';
@@ -80,7 +83,7 @@ export const questionsData = writable<QuestionData[]>([]);
 ////////////////////////////////////////////////////////////////
 
 // TO DO: Check if we should split this into substores to avoid unnecessary derived calls below
-// Remove funny indices from names, but we need these to reset the stores
+// TO DO: Remove funny indices from names, but we need these to reset the stores
 export const userData = createStoreValueAndSubscribeToLocalStorage('userData_1', {
   settings: {},
   customData: {}
@@ -94,7 +97,6 @@ export const sessionData = createStoreValueAndSubscribeToLocalStorage('sessionDa
 export const effectiveSettings = derived(
   [appSettings, userData, sessionData],
   ([$appSettings, $userData, $sessionData]) => {
-    // TO DO: Create a appSettings store that works like appLabels and apply its settings here
     logDebugError('Updating effectiveSettings from [$appSettings, $userData, $sessionData]');
     return {
       ...DEFAULT_SETTINGS,
@@ -199,6 +201,7 @@ export const availableConstituencies = derived(
     );
     // TO DO: Apply sorting
     // TO DO: Handle recursive constituencies and pick the effective ones for each election
+
     // We filter to find the user-specified constituency ids and return arrays
     // although there should always be either 0 or 1 of matches
     return $availableConstituencyCategories.mapContents((constCats) =>
@@ -339,8 +342,3 @@ export const currentQuestionIndex = derived(
     return qsts.indexOf(current[0]);
   }
 );
-
-// TO DO
-// Strangely the const below will always be true, but the error below will always be thrown!
-// export const wasBrowser = browser === true;
-// if (!wasBrowser) throw new Error();

@@ -6,7 +6,6 @@
   export let data: LayoutData;
 
   // Update the global stores
-  // TO DO: Check if we should make this reactive
   if (data) {
     $appLabels = data.appLabels;
     $appSettings = data.appSettings;
