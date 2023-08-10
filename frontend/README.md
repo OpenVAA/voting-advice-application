@@ -75,6 +75,26 @@ you develop a new component, be sure to comply with the [Accessibility Guideline
 
 # WIP: Frontend app structure / state management
 
+## Getting started
+
+To see the thing in action, just fire up `/frontend/yarn dev` and open the root in the browser.
+
+What's demonstrated currently is the route: start ➡️ election selection ➡️ constituency selection ➡️ question category selection ➡️ questions.
+
+## Guiding principles
+
+Some principles behind this draft are:
+
+1. Single soure of truth.
+2. Abstract matching logic and data model so that they are specific neither to the database nor the frontend framework.
+3. Basic data object filtering can be implemented either already in the database calls or in the frontend. To this effect, the data object model contains implementations for all basic filtering methods.
+4. Avoid loading unnecessary data (to a reasonable extent).
+5. All database operations can be done on the server-side.
+6. Make the model so generic it supports different electoral systems and, importantly, multiple simultaneous elections.
+7. All data (both raw and filtered) is accessible app-wide and reactively (using Svelte stores).
+8. Refreshing the browser perfectly maintains app state.
+9. Prefer verbosity over possibility for confusions.
+
 ## Relevat files
 
 - `$lib/api`
@@ -95,6 +115,8 @@ you develop a new component, be sure to comply with the [Accessibility Guideline
 ### Data object stores (for `Elections`, `Questions` etc.)
 
 For each data object type, there is a cascade of refined and filterd versions, which become available as the user proceeds. The general idea is that these differ on where they are processed and stored and what kinds of implications on other such stores.
+
+**Update!** We can get rid of `OrganizedContents`s with a bit of refactoring. See To do at the end of the page.
 
 | Store               | Type                                      | Process                                                                                                                                                                                                                                                                                                                     | Dependencies                                        | Notes                                                                                                                                                                                                                                                                                                                                                                        | Example                                                                                                                                                                                                                                                                                         |
 | ------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -233,13 +255,18 @@ Now, let's start decoding the route.
 
 ## To do
 
-- Combine Questions and QuestionCategories so that Questions cannot exist without a category OR make a default category
-- Create a base class for DataObjects with id
+- Combine `Questions` and `QuestionCategories` so that `Questions` cannot exist without a category
+- Create a base class for `DataObjects` implementing basic methods
+- Collect all DataObjects under DataRoot and provide utility getters/methods for the root and subobjects, such as `DataRoot -> Election -> constituencyCategories -> constituency -> questionCategories` which will only return those question categories that are relevant for the ancestor `Election` and that `Constituency`. In fact, this will just call `DataRoot -> getQuestionCategories(queryOptions: {election?: Election, constituency?: Constituency})`.
+- Get rid of `OrganizedContent`:
+  1. Add the relevant `Election`s as a property (or getter) to each object needing that information.
+  2. Convert all data object arrays into `ObjectList` objects, which provide utility getters or methods in addition to an `items` getter. These may include such as `class ObjectList<T>: ... get groupedByElection<T>(): {election: Election, items: T[]}[]` or `find(queryOption: {election?: Election | Election[], ...}): T[]`, which will filter `items` using a generic query filter.
 - Figure out a way to organise candidates and other entities:
-  - They should be separated by Election and Constituency
-  - We need further substores for Results (although these are Match objects) and visibleResults
-- Create an internal api that exposes the DataProviders calls if we need to load something from the client side
-- Instead of gotoXXX functions, just update the relevant stores and add a derived store or subscriber that calls goto when the state changes
+  - Possibly as `Nomination` objects in the `DataRoot` implementing `{election: Election, constituency: Constituency, entity: Entity, children?: Nomination[]}` (with enforcement of proper entity relationships so that the allowed lineage is `ElectoralAlliance` > `PoliticalOrganisation` (i.e. party) > `Faction` > `Candidate`)
+- Extend the current single `electionId`- and `constituencyId`-based filtering paradigm to multiple such ids and include or exclude, e.g. for `Question` add `electionId?: {in?: string[], notIn?: string[]}`. Perhaps there is an pre-existing utility for this?
+- Create a store and nice data model for results (extending or containing the algorithm's `Match` objects) and `visibleResults`
+  - Also define basics for `Filter` and `Sorter` objects, which may or may not be available already on the `DataObject` level
+- Create api endpoints that expose the `DataProvider` calls if we need to load something from the client side
+- Instead of `gotoXXX` functions, just update the relevant stores and add a derived store or subscriber that calls goto when the state changes OR at least define a generic `goto` function as an utility
 - Constituency hierarchies: Allow user to select any constituency level and assume the effective one is the top-level specified by the category
 - See all file-specific TO DO's
-- Allow multiple constituencyIds and include/exclude for Questions and QuestionCategories
