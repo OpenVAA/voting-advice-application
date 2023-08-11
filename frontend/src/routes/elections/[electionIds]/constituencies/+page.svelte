@@ -10,7 +10,7 @@
 
   import {page} from '$app/stores';
   import {goto} from '$app/navigation';
-  import {appLabels, availableConstituencyCategories} from '$lib/stores/stores';
+  import {appLabels, visibleElections} from '$lib/stores/stores';
 
   const selectedConstituencyIds: string[] = [];
 
@@ -21,7 +21,7 @@
   }
 
   let singleElection: boolean;
-  $: singleElection = Object.keys($availableConstituencyCategories.byElection).length === 1;
+  $: singleElection = $visibleElections.length === 1;
 
   // In order to continue, we need one value for each election
   let submittable = false;
@@ -34,17 +34,17 @@
   {$appLabels?.constituenciesTitle ?? 'Title Not Found'}
 </h1>
 
-{#if $availableConstituencyCategories?.nonEmpty}
-  {#each $availableConstituencyCategories?.byElection as [election, categories], elIndex}
+{#if $visibleElections.length}
+  {#each $visibleElections as election, elIndex}
     {#if !singleElection}
       <h2>
         {election.name}
       </h2>
     {/if}
-    {#if categories.length > 1}
+    {#if election.constituencyCategories.length > 1}
       <p>Select a constituency from one of the categories below for this election.</p>
     {/if}
-    {#each categories as category, catIndex}
+    {#each election.constituencyCategories as category, catIndex}
       <label class="block">
         <select name={category.id} class="select" bind:value={selectedConstituencyIds[elIndex]}>
           <option disabled selected value="">{category.name}</option>
