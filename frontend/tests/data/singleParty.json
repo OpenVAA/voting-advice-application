@@ -2,9 +2,9 @@
   "data": {
     "id": 3370,
     "attributes": {
-      "party": "Mature Configuration Somewhere",
-      "partyDescription": "Officia ratione quas. Blanditiis doloremque voluptatibus nobis. Rem at atque corporis ipsam nihil aspernatur optio id.",
-      "partyAbbreviation": "MCS",
+      "name": "Mature Configuration Somewhere",
+      "info": "Officia ratione quas. Blanditiis doloremque voluptatibus nobis. Rem at atque corporis ipsam nihil aspernatur optio id.",
+      "shortName": "MCS",
       "mainColor": "Green",
       "createdAt": "2023-05-06T09:38:08.841Z",
       "updatedAt": "2023-05-06T09:38:08.862Z",
@@ -18,9 +18,9 @@
           {
             "id": 3381,
             "attributes": {
-              "party": "Mature Configuration Somewhere",
-              "partyDescription": "Minus facere rerum fugiat exercitationem tenetur iusto. Facilis quibusdam distinctio alias incidunt soluta. Corrupti eos accusantium atque eius.",
-              "partyAbbreviation": "MCS",
+              "name": "Mature Configuration Somewhere",
+              "info": "Minus facere rerum fugiat exercitationem tenetur iusto. Facilis quibusdam distinctio alias incidunt soluta. Corrupti eos accusantium atque eius.",
+              "shortName": "MCS",
               "mainColor": "Green",
               "createdAt": "2023-05-06T09:38:08.841Z",
               "updatedAt": "2023-05-06T09:38:08.906Z",
