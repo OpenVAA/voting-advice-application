@@ -30,7 +30,7 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::election.election",
-      "mappedBy": "election_app_label"
+      "mappedBy": "electionAppLabel"
     },
     "appTitle": {
       "pluginOptions": {

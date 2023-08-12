@@ -16,7 +16,7 @@
     }
   },
   "attributes": {
-    "electionName": {
+    "name": {
       "type": "string",
       "pluginOptions": {
         "i18n": {
@@ -24,13 +24,31 @@
         }
       }
     },
+    "organiser": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string"
+    },
+    "electionStartDate": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "date",
+      "required": true
+    },
     "electionDate": {
       "type": "date",
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
-      }
+      },
+      "required": true
     },
     "electionType": {
       "type": "enumeration",
@@ -45,12 +63,7 @@
         }
       }
     },
-    "parties": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::party.party"
-    },
-    "electionDescription": {
+    "description": {
       "type": "richtext",
       "required": true,
       "pluginOptions": {
@@ -59,18 +72,11 @@
         }
       }
     },
-    "appTitle": {
-      "type": "string",
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      }
-    },
-    "constituencies": {
+    "parties": {
       "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::constituency.constituency"
+      "relation": "manyToMany",
+      "target": "api::party.party",
+      "mappedBy": "elections"
     },
     "candidates": {
       "type": "relation",
@@ -78,16 +84,29 @@
       "target": "api::candidate.candidate",
       "inversedBy": "elections"
     },
-    "categories": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::category.category"
-    },
     "electionAppLabel": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::election-app-label.election-app-label",
       "inversedBy": "elections"
+    },
+    "categories": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::category.category",
+      "inversedBy": "elections"
+    },
+    "constituencies": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::constituency.constituency",
+      "inversedBy": "elections"
+    },
+    "questions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::question.question",
+      "mappedBy": "election"
     }
   }
 }
