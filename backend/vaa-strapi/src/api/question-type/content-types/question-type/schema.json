@@ -33,7 +33,7 @@
       },
       "type": "json"
     },
-    "description": {
+    "info": {
       "pluginOptions": {
         "i18n": {
           "localized": true
