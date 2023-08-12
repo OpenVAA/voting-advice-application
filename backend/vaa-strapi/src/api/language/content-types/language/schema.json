@@ -16,7 +16,16 @@
     }
   },
   "attributes": {
-    "language": {
+    "name": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true
+    },
+    "localisationCode": {
       "pluginOptions": {
         "i18n": {
           "localized": true
