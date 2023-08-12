@@ -63,7 +63,7 @@
         }
       }
     },
-    "description": {
+    "info": {
       "type": "richtext",
       "required": true,
       "pluginOptions": {
