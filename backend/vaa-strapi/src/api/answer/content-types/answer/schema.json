@@ -16,14 +16,40 @@
     }
   },
   "attributes": {
+    "candidate": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::candidate.candidate",
+      "inversedBy": "answers"
+    },
+    "party": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::party.party",
+      "inversedBy": "answers"
+    },
     "answer": {
       "pluginOptions": {
         "i18n": {
           "localized": true
         }
       },
-      "type": "text",
+      "type": "json",
       "required": true
+    },
+    "question": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::question.question",
+      "inversedBy": "answers"
+    },
+    "openAnswer": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "text"
     }
   }
 }
