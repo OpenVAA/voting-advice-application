@@ -852,7 +852,7 @@ export interface ApiElectionElection extends CollectionTypeSchema {
         };
       }>;
     parties: RelationAttribute<'api::election.election', 'oneToMany', 'api::party.party'>;
-    electionDescription: RichTextAttribute &
+    description: RichTextAttribute &
       RequiredAttribute &
       SetPluginOptions<{
         i18n: {
@@ -1176,7 +1176,7 @@ export interface LabelsViewTexts extends ComponentSchema {
     yourOpinionsTitle: StringAttribute & RequiredAttribute & DefaultTo<'Tell Your Opinions'>;
     yourOpinionsDescription: TextAttribute &
       RequiredAttribute &
-      DefaultTo<"Next, the app will ask your opinions on {{0}} statements about political issues and values, which the candidates have also answered. After you've answered them, the app will find the candidates that best agree with your opinions. The statements are grouped into {{1}} categories. You can answer all of them or only select those you find important.">;
+      DefaultTo<'Next, the app will ask your opinions on {{0}} statements about political issues and values, which the candidates have also answered. After you\'ve answered them, the app will find the candidates that best agree with your opinions. The statements are grouped into {{1}} categories. You can answer all of them or only select those you find important.'>;
     questionsTip: StringAttribute &
       DefaultTo<'Tip: If you don\u2019t care about a single issue or a category of them, you can skip it later.'>;
     yourCandidatesTitle: StringAttribute & RequiredAttribute & DefaultTo<'Your Candidates'>;
