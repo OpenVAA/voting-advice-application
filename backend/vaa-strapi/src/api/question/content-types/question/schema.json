@@ -16,7 +16,7 @@
     }
   },
   "attributes": {
-    "question": {
+    "text": {
       "pluginOptions": {
         "i18n": {
           "localized": true
@@ -24,20 +24,38 @@
       },
       "type": "text",
       "required": true
+    },
+    "info": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "richtext"
+    },
+    "questionType": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::question-type.question-type",
+      "inversedBy": "questions"
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::category.category",
+      "inversedBy": "questions"
+    },
+    "election": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::election.election",
+      "inversedBy": "questions"
     },
     "answers": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::answer.answer"
-    },
-    "questionDescription": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "text",
-      "required": true
+      "target": "api::answer.answer",
+      "mappedBy": "question"
     }
   }
 }
