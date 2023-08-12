@@ -1,0 +1,100 @@
+{
+  "data": {
+    "id": 1,
+    "attributes": {
+      "appName": "OpenVAA",
+      "tip": "Tip: If you don’t care about a single issue or a category of them, you can skip it later.",
+      "createdAt": "2023-05-21T19:42:33.555Z",
+      "updatedAt": "2023-05-21T20:08:48.676Z",
+      "publishedAt": "2023-05-21T19:42:42.553Z",
+      "locale": "en",
+      "publisher": "Published By",
+      "madeWith": "Made with",
+      "footer": {
+        "id": 8,
+        "goTo": "Go to results"
+      },
+      "appIcon": {
+        "data": null
+      },
+      "header": {
+        "id": 3,
+        "login": "Login",
+        "backTo": "Back"
+      },
+      "tipIcon": {
+        "data": {
+          "id": 5,
+          "attributes": {
+            "name": "Icon Tip (1).svg",
+            "alternativeText": null,
+            "caption": null,
+            "width": 24,
+            "height": 24,
+            "formats": null,
+            "hash": "Icon_Tip_1_75aa410f09",
+            "ext": ".svg",
+            "mime": "image/svg+xml",
+            "size": 0.61,
+            "url": "/uploads/Icon_Tip_1_75aa410f09.svg",
+            "previewUrl": null,
+            "provider": "local",
+            "provider_metadata": null,
+            "createdAt": "2023-05-21T20:01:36.506Z",
+            "updatedAt": "2023-05-21T20:01:36.506Z"
+          }
+        }
+      },
+      "publisherIcon": {
+        "data": {
+          "id": 4,
+          "attributes": {
+            "name": "Logo Placeholder Publisher.svg",
+            "alternativeText": null,
+            "caption": null,
+            "width": 24,
+            "height": 24,
+            "formats": null,
+            "hash": "Logo_Placeholder_Publisher_b502c668ea",
+            "ext": ".svg",
+            "mime": "image/svg+xml",
+            "size": 0.49,
+            "url": "/uploads/Logo_Placeholder_Publisher_b502c668ea.svg",
+            "previewUrl": null,
+            "provider": "local",
+            "provider_metadata": null,
+            "createdAt": "2023-05-21T20:01:12.987Z",
+            "updatedAt": "2023-05-21T20:01:12.987Z"
+          }
+        }
+      },
+      "madeWithIcon": {
+        "data": {
+          "id": 6,
+          "attributes": {
+            "name": "Logo Placeholder App.svg",
+            "alternativeText": null,
+            "caption": null,
+            "width": 24,
+            "height": 24,
+            "formats": null,
+            "hash": "Logo_Placeholder_App_f284395e03",
+            "ext": ".svg",
+            "mime": "image/svg+xml",
+            "size": 0.68,
+            "url": "/uploads/Logo_Placeholder_App_f284395e03.svg",
+            "previewUrl": null,
+            "provider": "local",
+            "provider_metadata": null,
+            "createdAt": "2023-05-21T20:07:47.251Z",
+            "updatedAt": "2023-05-21T20:07:47.251Z"
+          }
+        }
+      },
+      "localizations": {
+        "data": []
+      }
+    }
+  },
+  "meta": {}
+}

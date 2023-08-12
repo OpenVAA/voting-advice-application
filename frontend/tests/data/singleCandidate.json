@@ -5,7 +5,7 @@
       "firstName": "Vivienne",
       "lastName": "Batz",
       "politicalExperience": "Et eos nostrum autem non numquam repellendus. At enim eligendi qui dolore. Asperiores vero vitae. Occaecati rerum totam quidem officiis itaque reiciendis nemo dicta.",
-      "candidateId": "u67xcgmgi3",
+      "candidateNumber": "u67xcgmgi3",
       "createdAt": "2023-05-06T09:38:09.479Z",
       "updatedAt": "2023-05-06T09:38:09.495Z",
       "publishedAt": "2023-05-06T09:38:09.477Z",
@@ -41,16 +41,16 @@
       "otherParties": {
         "data": []
       },
-      "candidatePhoto": {
+      "photo": {
         "data": null
       },
       "party": {
         "data": {
           "id": 3377,
           "attributes": {
-            "party": "Complete Care Manipulation",
-            "partyDescription": "Libero tempore saepe sequi eum aliquid magnam error sed. Perspiciatis animi alias nisi natus nostrum eaque voluptatibus natus. Ipsa dolor quam minima.",
-            "partyAbbreviation": "CCM",
+            "name": "Complete Care Manipulation",
+            "info": "Libero tempore saepe sequi eum aliquid magnam error sed. Perspiciatis animi alias nisi natus nostrum eaque voluptatibus natus. Ipsa dolor quam minima.",
+            "shortName": "CCM",
             "mainColor": "Yellow",
             "createdAt": "2023-05-06T09:38:08.841Z",
             "updatedAt": "2023-05-06T09:38:08.862Z",
@@ -64,14 +64,14 @@
           {
             "id": 115,
             "attributes": {
+              "startDate": "2023-05-05",
               "electionDate": "2023-11-05",
               "electionType": "presidential",
               "createdAt": "2023-05-06T09:38:08.827Z",
               "updatedAt": "2023-05-06T09:38:08.827Z",
               "publishedAt": "2023-05-06T09:38:08.824Z",
               "electionName": "2023  Niger presidential election",
-              "electionDescription": "Quisquam esse quis architecto inventore hic laudantium est. Assumenda debitis iure nihil dicta iste fuga dicta. Autem accusantium omnis sed harum sunt officiis deserunt exercitationem.",
-              "appTitle": null
+              "info": "Quisquam esse quis architecto inventore hic laudantium est. Assumenda debitis iure nihil dicta iste fuga dicta. Autem accusantium omnis sed harum sunt officiis deserunt exercitationem."
             }
           }
         ]
@@ -84,7 +84,7 @@
               "firstName": "Vivienne",
               "lastName": "Batz",
               "politicalExperience": "Quasi soluta expedita at consequatur vero voluptates harum. Similique eligendi laudantium ex ratione quia. Et corrupti temporibus. Dolore mollitia minima. Et blanditiis est dolor.",
-              "candidateId": "7596",
+              "candidateNumber": "7596",
               "createdAt": "2023-05-06T09:38:09.486Z",
               "updatedAt": "2023-05-06T09:38:09.498Z",
               "publishedAt": "2023-05-06T09:38:09.484Z",
