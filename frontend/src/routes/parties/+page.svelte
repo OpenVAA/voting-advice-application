@@ -10,7 +10,7 @@
   {#each parties as party}
     <section class="w-256 card m-8 bg-base-100 shadow-xl">
       <a href={`/parties/${party.id}`}>
-        <h1>{party.attributes.party}</h1>
+        <h1>{party.attributes.name}</h1>
       </a>
     </section>
   {/each}

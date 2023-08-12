@@ -1,5 +1,5 @@
 export interface CompatibilityScore {
-  candidateId: number;
+  candidateNumber: number;
   score: number;
   policyTopics?: [{name: string; score: number}];
 }
