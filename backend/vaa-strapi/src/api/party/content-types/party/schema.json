@@ -16,7 +16,7 @@
     }
   },
   "attributes": {
-    "party": {
+    "name": {
       "pluginOptions": {
         "i18n": {
           "localized": true
@@ -77,6 +77,18 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::candidate.candidate",
+      "mappedBy": "party"
+    },
+    "elections": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::election.election",
+      "inversedBy": "parties"
+    },
+    "answers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::answer.answer",
       "mappedBy": "party"
     }
   }
