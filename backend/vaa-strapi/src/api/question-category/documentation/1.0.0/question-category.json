@@ -1,5 +1,5 @@
 {
-  "/categories": {
+  "/question-categories": {
     "get": {
       "responses": {
         "200": {
@@ -7,7 +7,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CategoryListResponse"
+                "$ref": "#/components/schemas/QuestionCategoryListResponse"
               }
             }
           }
@@ -64,7 +64,7 @@
         }
       },
       "tags": [
-        "Category"
+        "Question-category"
       ],
       "parameters": [
         {
@@ -169,7 +169,7 @@
           }
         }
       ],
-      "operationId": "get/categories"
+      "operationId": "get/question-categories"
     },
     "post": {
       "responses": {
@@ -178,7 +178,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CategoryResponse"
+                "$ref": "#/components/schemas/QuestionCategoryResponse"
               }
             }
           }
@@ -235,23 +235,23 @@
         }
       },
       "tags": [
-        "Category"
+        "Question-category"
       ],
       "parameters": [],
-      "operationId": "post/categories",
+      "operationId": "post/question-categories",
       "requestBody": {
         "required": true,
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/CategoryRequest"
+              "$ref": "#/components/schemas/QuestionCategoryRequest"
             }
           }
         }
       }
     }
   },
-  "/categories/{id}": {
+  "/question-categories/{id}": {
     "get": {
       "responses": {
         "200": {
@@ -259,7 +259,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CategoryResponse"
+                "$ref": "#/components/schemas/QuestionCategoryResponse"
               }
             }
           }
@@ -316,7 +316,7 @@
         }
       },
       "tags": [
-        "Category"
+        "Question-category"
       ],
       "parameters": [
         {
@@ -330,7 +330,7 @@
           }
         }
       ],
-      "operationId": "get/categories/{id}"
+      "operationId": "get/question-categories/{id}"
     },
     "put": {
       "responses": {
@@ -339,7 +339,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CategoryResponse"
+                "$ref": "#/components/schemas/QuestionCategoryResponse"
               }
             }
           }
@@ -396,7 +396,7 @@
         }
       },
       "tags": [
-        "Category"
+        "Question-category"
       ],
       "parameters": [
         {
@@ -410,13 +410,13 @@
           }
         }
       ],
-      "operationId": "put/categories/{id}",
+      "operationId": "put/question-categories/{id}",
       "requestBody": {
         "required": true,
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/CategoryRequest"
+              "$ref": "#/components/schemas/QuestionCategoryRequest"
             }
           }
         }
@@ -487,7 +487,7 @@
         }
       },
       "tags": [
-        "Category"
+        "Question-category"
       ],
       "parameters": [
         {
@@ -501,10 +501,10 @@
           }
         }
       ],
-      "operationId": "delete/categories/{id}"
+      "operationId": "delete/question-categories/{id}"
     }
   },
-  "/categories/{id}/localizations": {
+  "/question-categories/{id}/localizations": {
     "post": {
       "responses": {
         "200": {
@@ -512,7 +512,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CategoryLocalizationResponse"
+                "$ref": "#/components/schemas/QuestionCategoryLocalizationResponse"
               }
             }
           }
@@ -569,7 +569,7 @@
         }
       },
       "tags": [
-        "Category"
+        "Question-category"
       ],
       "parameters": [
         {
@@ -583,13 +583,13 @@
           }
         }
       ],
-      "operationId": "post/categories/{id}/localizations",
+      "operationId": "post/question-categories/{id}/localizations",
       "requestBody": {
         "required": true,
         "content": {
           "application/json": {
             "schema": {
-              "$ref": "#/components/schemas/CategoryLocalizationRequest"
+              "$ref": "#/components/schemas/QuestionCategoryLocalizationRequest"
             }
           }
         }
