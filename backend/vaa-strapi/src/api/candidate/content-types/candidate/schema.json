@@ -34,6 +34,28 @@
       "type": "string",
       "required": true
     },
+    "photo": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ],
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      }
+    },
+    "candidateNumber": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true
+    },
     "motherTongues": {
       "type": "relation",
       "relation": "oneToMany",
@@ -58,28 +80,6 @@
       "relation": "oneToMany",
       "target": "api::party.party"
     },
-    "candidateId": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string",
-      "required": true
-    },
-    "candidatePhoto": {
-      "type": "media",
-      "multiple": false,
-      "required": true,
-      "allowedTypes": [
-        "images"
-      ],
-      "pluginOptions": {
-        "i18n": {
-          "localized": false
-        }
-      }
-    },
     "party": {
       "type": "relation",
       "relation": "manyToOne",
@@ -91,6 +91,12 @@
       "relation": "manyToMany",
       "target": "api::election.election",
       "mappedBy": "candidates"
+    },
+    "answers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::answer.answer",
+      "mappedBy": "candidate"
     }
   }
 }
