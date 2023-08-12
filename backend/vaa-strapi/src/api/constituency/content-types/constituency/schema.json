@@ -24,6 +24,42 @@
       },
       "type": "string",
       "required": true
+    },
+    "shortName": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true
+    },
+    "type": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "enumeration",
+      "enum": [
+        "geographic",
+        "ethnic"
+      ],
+      "required": true
+    },
+    "info": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "richtext"
+    },
+    "elections": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::election.election",
+      "mappedBy": "constituencies"
     }
   }
 }
