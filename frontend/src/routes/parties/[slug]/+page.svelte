@@ -7,8 +7,8 @@
 {#if data}
   <section class="card m-8 w-96 bg-base-100 shadow-xl">
     <div class="card-body">
-      <h2 class="card-title">{data.party}</h2>
-      <h3>{data.partyDescription}</h3>
+      <h2 class="card-title">{data.name}</h2>
+      <h3>{data.info}</h3>
       <p><strong>{$_('candidates.candidates')}:</strong></p>
       <ul>
         {#each data.candidates || [] as candidate}

@@ -15,9 +15,9 @@
     id: data.id,
     age: 35,
     name: GetFullNameInOrder(data.firstName, data.lastName),
-    electionListShort: party.attributes.partyAbbreviation,
+    partyShortName: party.attributes.shortName,
     gender: '—',
-    list: party.attributes.party,
+    list: party.attributes.name,
     motherTongues: data?.motherTongues?.data.map((item) => item.attributes.language),
     themes: data?.themes.map((item) => item.attributes.name)
   };

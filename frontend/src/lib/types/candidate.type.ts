@@ -1,5 +1,5 @@
 export type Candidate = {
-  candidateId: string;
+  candidateNumber: string;
   party: {data: {attributes: {party: unknown}}};
   candidatePhoto: {data: {attributes: {formats: {thumbnail: {url: string}}}}};
   firstName: string;

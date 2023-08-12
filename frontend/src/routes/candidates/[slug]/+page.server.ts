@@ -16,14 +16,15 @@ export const load = (async ({params}: ServerLoadEvent) => {
         throw error(404, 'Candidate not found');
       }
     });
-    const themes = await getData('api/categories', new URLSearchParams({populate: '*'})).then(
-      (result) => {
-        if (result?.data) return result.data;
-        if (result?.error?.status === 404) {
-          throw error(404, 'Themes not found');
-        }
+    const themes = await getData(
+      'api/question-categories',
+      new URLSearchParams({populate: '*'})
+    ).then((result) => {
+      if (result?.data) return result.data;
+      if (result?.error?.status === 404) {
+        throw error(404, 'Themes not found');
       }
-    );
+    });
     candidates.themes = themes;
     return candidates;
   } else {
