@@ -16,7 +16,7 @@
     }
   },
   "attributes": {
-    "party": {
+    "name": {
       "pluginOptions": {
         "i18n": {
           "localized": true
@@ -25,7 +25,7 @@
       "type": "string",
       "required": true
     },
-    "partyDescription": {
+    "info": {
       "pluginOptions": {
         "i18n": {
           "localized": true
@@ -34,7 +34,7 @@
       "type": "text",
       "required": true
     },
-    "partyAbbreviation": {
+    "shortName": {
       "pluginOptions": {
         "i18n": {
           "localized": true
@@ -46,7 +46,7 @@
     "logo": {
       "type": "media",
       "multiple": false,
-      "required": true,
+      "required": false,
       "allowedTypes": [
         "images"
       ],
@@ -56,28 +56,31 @@
         }
       }
     },
-    "mainColor": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": false
-        }
-      },
-      "type": "enumeration",
-      "enum": [
-        "Red",
-        "Orange",
-        "Yellow",
-        "Green",
-        "Blue",
-        "Purple"
-      ],
-      "required": true
-    },
     "candidates": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::candidate.candidate",
       "mappedBy": "party"
+    },
+    "answers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::answer.answer",
+      "mappedBy": "party"
+    },
+    "nominations": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::nomination.nomination",
+      "mappedBy": "party"
+    },
+    "partyColor": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "type": "string"
     }
   }
 }
