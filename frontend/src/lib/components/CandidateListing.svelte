@@ -2,7 +2,7 @@
   import {GetFullNameInOrder} from '$lib/utils/internationalisation';
   export let id;
   export let candidate;
-  let party = candidate?.party?.data?.attributes?.party;
+  let party = candidate?.party?.data?.attributes?.name;
 </script>
 
 <section class="card m-8 w-96 bg-base-100 shadow-xl">

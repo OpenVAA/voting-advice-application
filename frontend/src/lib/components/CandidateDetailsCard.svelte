@@ -21,7 +21,7 @@
   <div class="mb-4 ml-4">
     <h1 class="text-h1">{candidate.name}</h1>
     <p>
-      <span class="badge-lg bg-default-party p-1 text-white">{candidate.electionListShort}</span>
+      <span class="badge-lg bg-default-party p-1 text-white">{candidate.partyShortName}</span>
     </p>
   </div>
   <!-- {#} -->
