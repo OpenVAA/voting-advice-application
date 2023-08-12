@@ -1,0 +1,67 @@
+{
+  "kind": "collectionType",
+  "collectionName": "question_categories",
+  "info": {
+    "singularName": "question-category",
+    "pluralName": "question-categories",
+    "displayName": "Question Categories",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
+  "attributes": {
+    "name": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true
+    },
+    "shortName": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string"
+    },
+    "order": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "integer",
+      "min": 0,
+      "required": true
+    },
+    "info": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "richtext"
+    },
+    "elections": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::election.election",
+      "inversedBy": "question_categories"
+    },
+    "questions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::question.question",
+      "mappedBy": "questionCategory"
+    }
+  }
+}
