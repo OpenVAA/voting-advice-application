@@ -25,7 +25,7 @@
       "type": "string",
       "required": true
     },
-    "partyDescription": {
+    "info": {
       "pluginOptions": {
         "i18n": {
           "localized": true
@@ -34,7 +34,7 @@
       "type": "text",
       "required": true
     },
-    "partyAbbreviation": {
+    "shortName": {
       "pluginOptions": {
         "i18n": {
           "localized": true
