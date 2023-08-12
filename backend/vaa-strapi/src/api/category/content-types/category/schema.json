@@ -4,7 +4,8 @@
   "info": {
     "singularName": "category",
     "pluralName": "categories",
-    "displayName": "Categories"
+    "displayName": "Categories",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -23,10 +24,44 @@
       },
       "type": "string"
     },
+    "shortName": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": true
+    },
+    "order": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "integer",
+      "required": true,
+      "min": 0
+    },
+    "info": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "richtext"
+    },
+    "elections": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::election.election",
+      "mappedBy": "categories"
+    },
     "questions": {
       "type": "relation",
       "relation": "oneToMany",
-      "target": "api::question.question"
+      "target": "api::question.question",
+      "mappedBy": "category"
     }
   }
 }
