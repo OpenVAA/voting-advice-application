@@ -75,6 +75,8 @@ you develop a new component, be sure to comply with the [Accessibility Guideline
 
 # WIP: Frontend app structure / state management
 
+# HOX! THIS IS NOT YET UPDATED AFTER THE REFACTOR
+
 ## Getting started
 
 To see the thing in action, just fire up `/frontend/yarn dev` and open the root in the browser.
@@ -261,7 +263,7 @@ Now, let's start decoding the route.
 
 Later:
 
-1. Change matching: interfaces: MatchQu, HasMatchAnsw, default for dims in the algo, MatchQuest class as only an example as well as MultiChoiceQ
+1. Change matching: interfaces: MatchQu, HasMatchAnsw, default for dims in the algo, MatchQuest class as only an example as well as MultiChoiceQ; getMatchableAnswerValue
 2. Make a global goto function and combine that with SSR param checks with redirects (e.g. at .../questions/+layout.server.ts)
 3. Handle overlapping Constituency categories and test fragments!
 4. Extend filterItems to use ancestor props, such as, Election.id

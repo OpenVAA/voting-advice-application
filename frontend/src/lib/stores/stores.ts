@@ -312,14 +312,14 @@ export const availableMatchableQuestions = derived(
 );
 
 export const availableMatchableQuestionCategories = derived(
-  [availableMatchableQuestions],
-  ([$qsts]) => {
+  [availableMatchableQuestions, availableConstituencies],
+  ([$qsts, $consts]) => {
     logDebugError(
-      `Getting availableMatchableQuestionCategories from [$availableMatchableQuestions ${$qsts.length}]`
+      `Getting availableMatchableQuestionCategories from [$availableMatchableQuestions ${$qsts.length}, availableConstituencies]`
     );
     // NB! The categories' question properties may contain questions that are not applicable
     // because of constituencyId
-    return $qsts.mapAsList((q) => q.parent);
+    return $qsts.mapAsList((q) => q.parent).filterAsList({constituencyId: $consts.ids});
   }
 );
 
@@ -335,14 +335,14 @@ export const availableNonMatchableQuestions = derived(
 );
 
 export const availableNonMatchableQuestionCategories = derived(
-  [availableNonMatchableQuestions],
-  ([$qsts]) => {
+  [availableNonMatchableQuestions, availableConstituencies],
+  ([$qsts, $consts]) => {
     logDebugError(
-      `Getting availableNonMatchableQuestionCategories from [$availableNonMatchableQuestions ${$qsts.length}]`
+      `Getting availableNonMatchableQuestionCategories from [$availableNonMatchableQuestions ${$qsts.length}, availableConstituencies]`
     );
     // NB! The categories' question properties may contain questions that are not applicable
     // because of constituencyId
-    return $qsts.mapAsList((q) => q.parent);
+    return $qsts.mapAsList((q) => q.parent).filterAsList({constituencyId: $consts.ids});
   }
 );
 
