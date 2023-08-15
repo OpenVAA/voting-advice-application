@@ -3,12 +3,7 @@
  */
 
 import {MISSING_VALUE, NORMALIZED_DISTANCE_EXTENT} from '$lib/vaa-matching';
-import type {
-  MatchingSpaceCoordinate,
-  MatchableValue,
-  NonmissingValue,
-  MatchableQuestion
-} from '$lib/vaa-matching';
+import type {MatchingSpaceCoordinate, MatchableValue, NonmissingValue} from '$lib/vaa-matching';
 
 import type {QuestionCategory} from '../questionCategory';
 import {MatchableQuestionBase} from './matchableQuestionBase';
@@ -35,11 +30,11 @@ export class OrdinalQuestion extends MatchableQuestionBase {
   }
 
   get maxValue(): NonmissingValue {
-    return this.values[this.values.length - 1].value;
+    return this.values[this.values.length - 1].key;
   }
 
   get minValue(): NonmissingValue {
-    return this.values[0].value;
+    return this.values[0].key;
   }
 
   get valueRange() {
