@@ -29,15 +29,11 @@ export class DataObjectCollection<T extends DataObject> {
   protected _items: Record<Id, T> = {};
 
   constructor(items: T[]) {
-    this.items = items;
+    this._items = Object.fromEntries(this.setItemsCallback(items).map((item) => [item.id, item]));
   }
 
   get items() {
     return sortItems(Object.values(this._items));
-  }
-
-  set items(items: T[]) {
-    this._items = Object.fromEntries(this.setItemsCallback(items).map((item) => [item.id, item]));
   }
 
   /**
@@ -128,12 +124,12 @@ export class DataObjectCollection<T extends DataObject> {
 
   /**
    * Override this method in subclasses to add checks when extending
-   * the _items array.
+   * the _items array. By default we disallow overwriting existing items.
    * @param items Items passed to extend
    * @returns Items that were not filtered out
    */
   protected extendCallback(items: T[]): T[] {
-    return items;
+    return items.filter((item) => !(item.id in this._items));
   }
 
   /**
