@@ -27,9 +27,13 @@ export class DataObjectCollection<T extends DataObject> {
   // It's a bit of a hack that we use a different kind of store than in
   // the base class, but we want more convenient access to id'd items
   protected _items: Record<Id, T> = {};
+  protected _loaded = false;
 
   constructor(items: T[]) {
     this._items = Object.fromEntries(this.setItemsCallback(items).map((item) => [item.id, item]));
+    if (items.length > 0) {
+      this._loaded = true;
+    }
   }
 
   get items() {
@@ -52,6 +56,14 @@ export class DataObjectCollection<T extends DataObject> {
 
   get nonEmpty() {
     return this.items.length > 0;
+  }
+
+  /**
+   * Whether this has been extended or initialized with a non-empty list of
+   * items. The collection may be empty even if it is loaded.
+   */
+  get loaded() {
+    return this._loaded;
   }
 
   /**
@@ -119,6 +131,7 @@ export class DataObjectCollection<T extends DataObject> {
    */
   extend(items: T[]) {
     this.extendCallback(items).forEach((item) => (this._items[item.id] = item));
+    this._loaded = true;
     return this;
   }
 
