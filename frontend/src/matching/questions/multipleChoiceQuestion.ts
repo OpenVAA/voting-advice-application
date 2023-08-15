@@ -2,7 +2,7 @@ import {NORMALIZED_DISTANCE_EXTENT} from '../core/distances';
 import {MISSING_VALUE} from '../core/matchableValue';
 import type {MatchableValue, NonmissingValue} from '../core/matchableValue';
 import type {MatchingSpaceCoordinate} from '../core/matchingSpacePosition';
-import {MatchableQuestion} from './matchableQuestion';
+import type {MatchableQuestion} from './matchableQuestion';
 
 /**
  * A value option in a matchable multiple choice question
@@ -15,18 +15,20 @@ export interface MultipleChoiceOption {
  * Consructor options for MultipleChoiceQuestion
  */
 export interface MultipleChoiceQuestionOptions {
+  id: string;
   values: readonly MultipleChoiceOption[];
 }
 
 /**
- * A class for multiple choice questions, including Likert-scale ones
+ * An example class for multiple choice questions, including Likert-scale ones
  */
-export class MultipleChoiceQuestion extends MatchableQuestion {
-  public readonly values: readonly MultipleChoiceOption[];
+export class MultipleChoiceQuestion implements MatchableQuestion {
+  readonly id: string;
+  readonly normalizedDimensions = 1;
+  readonly values: readonly MultipleChoiceOption[];
 
-  // TODO: We might want to remove this for easier multi-class inheritance
-  constructor({values}: MultipleChoiceQuestionOptions) {
-    super();
+  constructor({id, values}: MultipleChoiceQuestionOptions) {
+    this.id = id;
     this.values = values;
   }
 
@@ -62,9 +64,9 @@ export class MultipleChoiceQuestion extends MatchableQuestion {
    * @param scale The number of options for the Likert scale
    * @returns A MultipleChoiceQuestion object
    */
-  static fromLikertScale(scale: number): MultipleChoiceQuestion {
+  static fromLikertScale(id: string, scale: number): MultipleChoiceQuestion {
     if (!Number.isSafeInteger(scale)) throw new Error('Scale must be an integer.');
     const values: MultipleChoiceOption[] = Array.from({length: scale}, (_, i) => ({value: i + 1}));
-    return new MultipleChoiceQuestion({values});
+    return new MultipleChoiceQuestion({id, values});
   }
 }

@@ -15,7 +15,7 @@ import type {MatchableQuestion} from '../questions/matchableQuestion';
 export function createSubspace(allQuestions: MatchableQuestion[], subset: MatchableQuestion[]) {
   const dimensionWeights: number[] = [];
   for (const question of allQuestions) {
-    const dims = question.normalizedDimensions;
+    const dims = question.normalizedDimensions ?? 1;
     const included = subset.indexOf(question) > -1;
     dimensionWeights.push(...Array.from({length: dims}, () => (included ? 1 / dims : 0)));
   }
