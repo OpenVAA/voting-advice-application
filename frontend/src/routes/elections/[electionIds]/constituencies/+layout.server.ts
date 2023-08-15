@@ -1,15 +1,16 @@
 import type {LayoutServerLoad} from './$types';
-import {getDataProvider} from '$lib/config';
+import type {QueryFilter} from '$lib/vaa-data';
+import {getDataProvider} from '$lib/server/config';
 
 export const load: LayoutServerLoad = (async ({params}) => {
   // Get params
   const electionIds = params.electionIds.split(',');
   // Get data provider
   const dataProvider = getDataProvider();
-  // Load data. NB. We don't filter it bc it will be done by the derived store
-  const constituencyCategoriesData = await dataProvider.getConstituencyCategoriesData();
+  // Load data
+  const filter: QueryFilter = {electionId: electionIds};
   return {
-    constituencyCategoriesData,
+    constituencyCategoryData: await dataProvider.getConstituencyCategoryData(filter),
     selectedElectionIds: electionIds
   };
 }) satisfies LayoutServerLoad;

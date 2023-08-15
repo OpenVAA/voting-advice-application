@@ -10,7 +10,12 @@
 
   import {page} from '$app/stores';
   import {goto} from '$app/navigation';
-  import {appLabels, visibleElections} from '$lib/stores/stores';
+  import {
+    appLabels,
+    isSingleElection,
+    visibleElections,
+    allConstituencyCategories
+  } from '$lib/stores/stores';
 
   const selectedConstituencyIds: string[] = [];
 
@@ -19,9 +24,6 @@
     const constituencyIds = Object.values(selectedConstituencyIds).join(',');
     goto(`${root}/${constituencyIds}/questions`);
   }
-
-  let singleElection: boolean;
-  $: singleElection = $visibleElections.length === 1;
 
   // In order to continue, we need one value for each election
   let submittable = false;
@@ -32,11 +34,12 @@
 
 <h1>
   {$appLabels?.constituenciesTitle ?? 'Title Not Found'}
+  {$allConstituencyCategories}
 </h1>
 
 {#if $visibleElections.length}
-  {#each $visibleElections as election, elIndex}
-    {#if !singleElection}
+  {#each $visibleElections.items as election, elIndex}
+    {#if !isSingleElection}
       <h2>
         {election.name}
       </h2>
@@ -44,11 +47,11 @@
     {#if election.constituencyCategories.length > 1}
       <p>Select a constituency from one of the categories below for this election.</p>
     {/if}
-    {#each election.constituencyCategories as category, catIndex}
+    {#each election.constituencyCategories.items as category, catIndex}
       <label class="block">
         <select name={category.id} class="select" bind:value={selectedConstituencyIds[elIndex]}>
           <option disabled selected value="">{category.name}</option>
-          {#each category.constituencies as constituency}
+          {#each category.constituencies.items as constituency}
             <option value={constituency.id}>{constituency.name}</option>
           {:else}
             <option disabled>No constituencies found in the group! This should not happen</option>

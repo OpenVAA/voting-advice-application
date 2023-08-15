@@ -1,7 +1,7 @@
 <script lang="ts">
   import '../app.css';
   import type {LayoutData} from './$types';
-  import {appLabels, appSettings, electionsData} from '$lib/stores';
+  import {appLabels, appSettings, electionData} from '$lib/stores';
 
   export let data: LayoutData;
 
@@ -9,14 +9,14 @@
   if (data) {
     $appLabels = data.appLabels;
     $appSettings = data.appSettings;
-    $electionsData = data.electionsData;
+    $electionData = data.electionData;
   } else {
     throw new Error('No data');
   }
 </script>
 
 <main>
-  {#if data?.appLabels}
+  {#if $appLabels}
     <slot />
   {:else}
     <!-- TO DO: Add a loading component that can be used on other pages and

@@ -1,31 +1,33 @@
 <script lang="ts">
   import {page} from '$app/stores';
   import {goto} from '$app/navigation';
-  import {currentQuestionIndex, visibleQuestions} from '$lib/stores/stores';
-  import type {Question} from '$lib/api/dataObjects';
-
-  let currentQuestion: Question;
-  $: if ($visibleQuestions.nonEmpty && $currentQuestionIndex != null) {
-    currentQuestion = $visibleQuestions.all[$currentQuestionIndex];
-  }
+  import {currentQuestion, nextQuestion} from '$lib/stores';
+  import {QuestionType} from '$lib/vaa-data';
 
   function gotoNextQuestion() {
-    if (!($visibleQuestions?.nonEmpty && $currentQuestionIndex != null)) {
-      throw new Error('Cannot call gotoNextQuestion before stores are loaded!');
+    if (!$currentQuestion) {
+      throw new Error('Cannot call gotoNextQuestion before $currentQuestion is loaded!');
     }
-    const root = $page.url.pathname.replace(/(\/question)\/.*$/, '$1');
-    const nextIndex = $currentQuestionIndex + 1;
-    if (nextIndex >= $visibleQuestions.all.length) {
-      alert('Congrats! This is the last question!');
+    if ($nextQuestion == null) {
+      const resRoot = $page.url.pathname.replace(/\/questions\/.*$/, '');
+      goto(`${resRoot}/results`);
+    } else {
+      const root = $page.url.pathname.replace(/(\/question)\/.*$/, '$1');
+      goto(`${root}/${$nextQuestion.id}`);
     }
-    const nextId = $visibleQuestions.all[nextIndex].id;
-    goto(`${root}/${nextId}`);
   }
+
+  const qst = currentQuestion;
 </script>
 
-{#if currentQuestion}
-  <h1>Question: {currentQuestion.text}</h1>
+{#if $qst}
+  <h1>Question: {$qst.text}</h1>
   <button on:click={gotoNextQuestion} class="btn">Continue to Next Question</button>
+  {#if $qst.type === QuestionType.Likert}
+    {#each $qst.values as value}
+      <div>{value.key}: {value.label}</div>
+    {/each}
+  {/if}
 {:else}
   <!-- TO DO: <Loading /> -->
   <h1>Loading...</h1>

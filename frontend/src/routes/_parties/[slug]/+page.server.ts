@@ -1,4 +1,4 @@
-import {getData} from '../../../lib/api/_getData';
+import {getData} from '../../../lib/vaa-data/_getData';
 import {error} from '@sveltejs/kit';
 import type {ServerLoadEvent} from '@sveltejs/kit';
 import type {PageServerLoad} from './$types';

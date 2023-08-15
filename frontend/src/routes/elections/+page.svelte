@@ -4,6 +4,7 @@
   import {appLabels, availableElections, effectiveSettings} from '$lib/stores/stores';
   let selectedElectionId: string | string[];
 
+  // TO DO: Move to global goto function
   function gotoConstituencies() {
     let root = $page.url.pathname.replace(/\/$/, '');
     const electionIds = Array.isArray(selectedElectionId)
@@ -21,7 +22,7 @@
 </h1>
 
 {#if $availableElections?.length && $effectiveSettings}
-  {#each $availableElections as election, index}
+  {#each $availableElections.items as election, index}
     <label class="block">
       {#if allowMultiple}
         <input

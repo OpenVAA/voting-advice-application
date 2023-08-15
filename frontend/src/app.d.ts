@@ -2,22 +2,22 @@
 // for information about these interfaces
 // and what to do when importing types
 
-import type {AppLabels} from '$lib/api/dataProvider.types';
+import type {AppLabels} from '$lib/vaa-data/data.types';
 import type {
   ElectionData,
   ConstituencyCategoryData,
   QuestionCategoryData,
   QuestionData
-} from '$lib/api/dataObjects';
+} from '$lib/vaa-data/dataObjects';
 
 declare namespace App {
   interface PageData {
     appLabels?: AppLabels;
     appSettings?: AppSettings;
-    electionsData?: ElectionData[];
-    constituencyCategoriesData?: ConstituencyCategoryData[];
-    questionCategoriesData?: QuestionCategoryData[];
-    questionsData?: QuestionData[];
+    electionData?: ElectionData[];
+    constituencyCategoryData?: ConstituencyCategoryData[];
+    questionCategoryData?: QuestionCategoryData[];
+    questionData?: QuestionData[];
     selectedElectionIds?: string[];
     selectedConstituencyIds?: string[];
     selectedQuestionCategoryIds?: string[];

@@ -1,4 +1,4 @@
-import {getData} from '../../lib/api/_getData';
+import {getData} from '../../lib/vaa-data/_getData';
 import type {PageServerLoad} from './$types';
 
 export const load = (async () => {

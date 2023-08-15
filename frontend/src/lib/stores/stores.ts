@@ -11,23 +11,27 @@
  */
 
 import {derived, writable} from 'svelte/store';
-import type {Writable} from 'svelte/store';
+import type {Unsubscriber, Writable} from 'svelte/store';
 import {page} from '$app/stores';
 import {browser} from '$app/environment';
 
 import {logDebugError} from '$lib/utils/logger';
 
-import type {AppLabels} from '$lib/api/dataProvider.types';
-import {Election, ConstituencyCategory, QuestionCategory, Question} from '$lib/api/dataObjects';
+import type {AppLabels} from '$lib/types';
+import {DataRoot} from '$lib/vaa-data';
 import type {
   ElectionData,
-  ConstituencyCategoryData,
   QuestionCategoryData,
-  QuestionData
-} from '$lib/api/dataObjects';
-import {DEFAULT_SETTINGS, OrganizedContents} from './stores.types';
+  QuestionData,
+  AnyConstituencyCategoryData,
+  PersonData,
+  NominationData,
+  EntityData,
+  FullySpecifiedAnswerData,
+  QuestionTemplateData
+} from '$lib/vaa-data';
+import {DEFAULT_SETTINGS} from './stores.types';
 import type {Settings, SessionData, UserData} from './stores.types';
-import {removeDuplicates} from './utils';
 
 ////////////////////////////////////////////////////////////////
 // UTILITY FUNCTIONS
@@ -58,6 +62,47 @@ function createStoreValueAndSubscribeToLocalStorage<T>(key: string, defaultValue
   return storeValue;
 }
 
+/**
+ * This will house the unsubscriber functions needed by createConnectedStore and
+ * unsubscribeAll
+ */
+const subscriptions: Unsubscriber[] = [];
+
+function unsubscribeAll() {
+  logDebugError('Clearing all manual store subscriptions');
+  subscriptions.forEach((unsubscribe) => unsubscribe());
+}
+
+/**
+ * A utility for creating data stores that are connected to the dataRoot.
+ * @param callback The function to be called when the data value changes.
+ * @returns The store
+ */
+function createConnectedStore<T>(callback: (data: T[]) => void): Writable<T[]> {
+  logDebugError(`Creating connected store (${callback})`);
+  const store = writable<T[]>([] as T[], () => unsubscribeAll);
+  subscriptions.push(
+    store.subscribe((data) => {
+      if (!(data?.length > 0)) {
+        return;
+      }
+      logDebugError('Manual data store subscription activated.');
+      callback(data);
+    })
+  );
+  return store;
+}
+
+////////////////////////////////////////////////////////////////
+// DATA ROOT
+////////////////////////////////////////////////////////////////
+
+// DataRoot will contain the full DataObject hierarchy that
+// the all-type derived stores create. They always provide the
+// data to the dataRoot object using dataRoot.provideSomeData.
+
+const dataRoot = new DataRoot();
+
 ////////////////////////////////////////////////////////////////
 // STORES
 ////////////////////////////////////////////////////////////////
@@ -72,10 +117,35 @@ function createStoreValueAndSubscribeToLocalStorage<T>(key: string, defaultValue
 // Transient stores (lost upon page refresh)
 export const appLabels = writable<AppLabels>({});
 export const appSettings = writable<Settings>({});
-export const electionsData = writable<ElectionData[]>([]);
-export const constituencyCategoriesData = writable<ConstituencyCategoryData[]>([]);
-export const questionCategoriesData = writable<QuestionCategoryData[]>([]);
-export const questionsData = writable<QuestionData[]>([]);
+
+export const electionData = createConnectedStore((data: ElectionData[]) =>
+  dataRoot.provideElectionData(data)
+);
+export const constituencyCategoryData = createConnectedStore(
+  (data: AnyConstituencyCategoryData[]) => dataRoot.provideConstituencyCategoryData(data)
+);
+export const questionTemplateData = createConnectedStore((data: QuestionTemplateData[]) =>
+  dataRoot.provideQuestionTemplateData(data)
+);
+export const questionCategoryData = createConnectedStore((data: QuestionCategoryData[]) =>
+  dataRoot.provideQuestionCategoryData(data)
+);
+export const questionData = createConnectedStore((data: QuestionData[]) =>
+  dataRoot.provideQuestionData(data)
+);
+export const personData = createConnectedStore((data: PersonData[]) =>
+  dataRoot.providePersonData(data)
+);
+export const organizationData = createConnectedStore((data: EntityData[]) =>
+  dataRoot.provideOrganizationData(data)
+);
+export const nominationData = createConnectedStore((data: NominationData[]) =>
+  dataRoot.provideNominationData(data)
+);
+export const answerData = createConnectedStore((data: FullySpecifiedAnswerData[]) =>
+  dataRoot.provideAnswerData(data)
+);
+
 // TO DO: Add entity data and derived stores
 
 ////////////////////////////////////////////////////////////////
@@ -110,67 +180,99 @@ export const effectiveSettings = derived(
 export const effectiveTemporaryChoices = derived([sessionData, page], ([$sessionData, $page]) => {
   // Get current question id from route params
   logDebugError('Updating effectiveTemporaryChoices from [$sessionData, $page]');
-  const questionId = $page.params.questionId;
+  const questionId = $page.params.questionId ?? '';
+  const personNominationId = $page.params.personNominationId ?? '';
   const choices = $sessionData.temporaryChoices ?? {};
-  return questionId != null ? {...choices, currentQuestionId: questionId} : choices;
+  return questionId != null
+    ? {...choices, currentQuestionId: questionId, currentPersonNominationId: personNominationId}
+    : choices;
 });
 
 ////////////////////////////////////////////////////////////////
 // TRANSIENT, DERIVED STORES FOR DATA OBJECTS BEFORE FILTERING
 ////////////////////////////////////////////////////////////////
 
-export const allConstituencyCategories = derived(
-  constituencyCategoriesData,
-  ($constituencyCategoriesData) => {
-    logDebugError(
-      'Creating allConstituencyCategories constituencyCategoriesData: len ' +
-        $constituencyCategoriesData.length
-    );
-    return $constituencyCategoriesData.map((d) => new ConstituencyCategory(d));
-  }
-);
+// NB. These are bit superfluous because we've already supplied
+// the data to dataRoot with the manual subscriptions above. We
+// can't rely on these derived stores to do that updating,
+// however, because the derived stores will only be updated when
+// them or their descendant stores are used in the frontend!
+// Thus, if, for example, we updated the dataRoot's constituency
+// categories in the derived store allConstituencyCategories,
+// but iterated over $allElections in the frontend, the Election
+// objects returned would not have their constituecyCategories
+// properties updated with the data (constituencyCategoryData).
 
-export const allElections = derived(
-  [electionsData, allConstituencyCategories],
-  ([$electionsData, $allConstituencyCategories]) => {
-    logDebugError('Creating allElections from [$electionsData, $allConstituencyCategories]');
-    const elections = $electionsData.map((d) => new Election(d));
-    if ($allConstituencyCategories?.length) {
-      elections.forEach((e) => e.supplyConstituencyCategories($allConstituencyCategories));
-    }
-    return elections;
-  }
-);
+export const allTemplates = derived(questionTemplateData, ($data) => {
+  logDebugError(`Reflecting allTemplates from [questionTemplateData (len ${$data.length})]`);
+  return dataRoot.questionTemplates;
+});
 
-export const allQuestionCategories = derived(
-  [questionCategoriesData, questionsData],
-  ([$questionCategoriesData, $questionsData]) => {
-    logDebugError(
-      'Creating allQuestionCategories from [$questionCategoriesData, $questionsData]: $questionCategoriesData.length ' +
-        $questionCategoriesData.length
-    );
-    const questionCategories = $questionCategoriesData.map((d) => new QuestionCategory(d));
-    // TO DO: Include Questions data in questionCategories data so that they cannot
-    // exist separately
-    if ($questionsData?.length) {
-      questionCategories.forEach((e) => e.supplyQuestionsData($questionsData));
-    }
-    return questionCategories;
-  }
-);
+export const allElections = derived(electionData, ($data) => {
+  logDebugError(`Reflecting allElections from [electionData (len ${$data.length})]`);
+  return dataRoot.elections;
+});
 
-export const allQuestions = derived([allQuestionCategories], ([$allQuestionCategories]) => {
+export const allConstituencyCategories = derived(constituencyCategoryData, ($data) => {
   logDebugError(
-    'Creating allQuestions from [$allQuestionCategories (length ${$allQuestionCategories.length})]'
+    `Reflecting allConstituencyCategories constituencyCategoryData: len ${$data.length}`
   );
-  return removeDuplicates($allQuestionCategories.map((c) => c.questions).flat());
+  return dataRoot.constituencyCategories;
+});
+
+// export const allQuestions = derived([allQuestionCategories], ([$data]) => {
+//   logDebugError(`Creating allQuestions from [$allQuestionCategories (length ${$data.length})]`);
+//   return dataRoot.questions;
+// });
+
+export const allMatchableQuestions = derived([questionData], ([$data]) => {
+  logDebugError(`Reflecting allMatchableQuestions from [$questionData (length ${$data.length})]`);
+  return dataRoot.matchableQuestions;
+});
+
+export const allMatchableQuestionCategories = derived([allMatchableQuestions], ([$qsts]) => {
+  logDebugError(
+    `Reflecting allMatchableQuestionCategories from [$allMatchableQuestions ${$qsts.length}]`
+  );
+  return $qsts.mapAsList((q) => q.parent);
+});
+
+export const allNonMatchableQuestions = derived([questionData], ([$data]) => {
+  logDebugError(
+    `Reflecting allNonMatchableQuestions from [$questionData (length ${$data.length})]`
+  );
+  return dataRoot.nonMatchableQuestions;
+});
+
+export const allNonMatchableQuestionCategories = derived([allNonMatchableQuestions], ([$qsts]) => {
+  logDebugError(
+    `Reflecting allNonMatchableQuestionCategories from [$allNonMatchableQuestions ${$qsts.length}]`
+  );
+  return $qsts.mapAsList((q) => q.parent);
+});
+
+export const allPersons = derived([personData], ([$data]) => {
+  logDebugError(`Reflecting allPersons from [$personData (length ${$data.length})]`);
+  return dataRoot.entities.persons;
+});
+
+export const allCandidates = derived([nominationData], ([$data]) => {
+  logDebugError(`Reflecting allCandidates from [$nominationData (length ${$data.length})]`);
+  return dataRoot.elections.mapAsList((e) => e.nominations.persons.items);
+});
+
+export const allOrganizations = derived([organizationData], ([$data]) => {
+  logDebugError(`Reflecting allPersons from [$organizationData (length ${$data.length})]`);
+  return dataRoot.entities.organizations;
+});
+
+export const allPersonNominations = derived([nominationData], ([$data]) => {
+  logDebugError(`Reflecting allNominations from [$nominationData (length ${$data.length})]`);
+  return dataRoot.elections.mapAsList((e) => e.nominations.persons.items);
 });
 
 ////////////////////////////////////////////////////////////////
 // TRANSIENT, DERIVED STORES FOR AVAILABLE DATA OBJECTS
-// ********************************
-// NB! From this on, the stores return OrganisedStores except
-// the Elections stores
 ////////////////////////////////////////////////////////////////
 
 // These are based on allElections etc. stores and contain only
@@ -179,77 +281,78 @@ export const allQuestions = derived([allQuestionCategories], ([$allQuestionCateg
 // userData.constituencyId
 
 // For convenience, and this might change in the future
-export const availableElections = derived(allElections, ($allElections) => $allElections);
+export const availableElections = derived(allElections, ($els) => $els);
 
-export const availableConstituencyCategories = derived(
-  availableElections,
-  ($availableElections) => {
-    logDebugError(
-      'Getting availableConstituencyCategories from $availableElections ' +
-        $availableElections.length
-    );
-    // TO DO: Apply sorting
-    return new OrganizedContents($availableElections.map((e) => [e, e.constituencyCategories]));
-  }
-);
+export const availableConstituencyCategories = derived(availableElections, ($els) => {
+  logDebugError(`Getting availableConstituencyCategories from $availableElections ${$els.length}`);
+  return $els.mapAsList((e) => e.constituencyCategories.items);
+});
 
 export const availableConstituencies = derived(
   [availableConstituencyCategories, userData],
-  ([$availableConstituencyCategories, $userData]) => {
+  ([$cats, $user]) => {
     logDebugError(
-      'Getting availableConstituencies from [$availableConstituencyCategories, $userData]'
+      `Getting availableConstituencies from [$availableConstituencyCategories (${$cats.length}), $userData]`
     );
-    // TO DO: Apply sorting
-    // TO DO: Handle recursive constituencies and pick the effective ones for each election
-
     // We filter to find the user-specified constituency ids and return arrays
     // although there should always be either 0 or 1 of matches
-    return $availableConstituencyCategories.mapContents((constCats) =>
-      constCats
-        .map((c) => c.constituencies)
-        .flat()
-        .filter((c) => $userData.constituencyIds?.includes(c.id))
-    );
+    return $cats.mapAsList((cat) => cat.constituencies.filter({id: $user.constituencyIds}));
   }
 );
 
-export const availableQuestions = derived(
-  [allQuestions, availableConstituencies],
-  ([$allQuestions, $availableConstituencies]) => {
+export const availableMatchableQuestions = derived(
+  [allMatchableQuestions, availableConstituencies],
+  ([$qsts, $consts]) => {
     logDebugError(
-      'Getting availableQuestions from [$allQuestions, $availableConstituencies]: $allQuestions.length ' +
-        $allQuestions.length
+      `Getting availableMatchableQuestions from [$allMatchableQuestions ${$qsts.length}]`
     );
-    return $availableConstituencies.mapContents((consts) => {
-      // Get ids
-      const ids = consts.map((c) => c.id);
-      if (ids.length === 0) {
-        return [];
-      }
-      // Filter questions based on their own constituencyId limits or that of their category's
-      // TO DO: Make this check a method of Question
-      const qsts = $allQuestions.filter(
-        (q) =>
-          (q.constituencyId === '' || ids.includes(q.constituencyId)) &&
-          (!q.category ||
-            q.category.constituencyId === '' ||
-            ids.includes(q.category.constituencyId))
-      );
-      return qsts;
-    });
+    // The filter also applies to any questions within categries restricted by constituencyId
+    return $qsts.filterAsList({constituencyId: $consts.ids});
   }
 );
 
-export const availableQuestionCategories = derived(
-  [availableQuestions],
-  ([$availableQuestions]) => {
+export const availableMatchableQuestionCategories = derived(
+  [availableMatchableQuestions],
+  ([$qsts]) => {
     logDebugError(
-      `Getting availableQuestionCategories from [$availableQuestions]: all.length ${$availableQuestions.all.length}`
+      `Getting availableMatchableQuestionCategories from [$availableMatchableQuestions ${$qsts.length}]`
     );
-    // TO DO: Apply sorting
     // NB! The categories' question properties may contain questions that are not applicable
     // because of constituencyId
-    return $availableQuestions.mapContents((qsts) => removeDuplicates(qsts.map((q) => q.category)));
+    return $qsts.mapAsList((q) => q.parent);
+  }
+);
+
+export const availableNonMatchableQuestions = derived(
+  [allNonMatchableQuestions, availableConstituencies],
+  ([$qsts, $consts]) => {
+    logDebugError(
+      `Getting availableNonMatchableQuestions from [$allNonMatchableQuestions ${$qsts.length}]`
+    );
+    // The filter also applies to any questions within categries restricted by constituencyId
+    return $qsts.filterAsList({constituencyId: $consts.ids});
+  }
+);
+
+export const availableNonMatchableQuestionCategories = derived(
+  [availableNonMatchableQuestions],
+  ([$qsts]) => {
+    logDebugError(
+      `Getting availableNonMatchableQuestionCategories from [$availableNonMatchableQuestions ${$qsts.length}]`
+    );
+    // NB! The categories' question properties may contain questions that are not applicable
+    // because of constituencyId
+    return $qsts.mapAsList((q) => q.parent);
+  }
+);
+
+export const availablePersonNominations = derived(
+  [allPersonNominations, availableConstituencies],
+  ([$prsns, $cnsts]) => {
+    logDebugError(
+      `Getting availablePersons from [$allPersonNominations ${$prsns.length}, $availableConstituencies]`
+    );
+    return $prsns.filterAsList({constituencyId: $cnsts.ids});
   }
 );
 
@@ -271,74 +374,91 @@ export const visibleElections = derived(
     );
     const ids = $effectiveTemporaryChoices?.selectedElectionIds;
     return ids?.length && $availableElections
-      ? $availableElections.filter((e) => ids.includes(e.id))
+      ? $availableElections.filterAsList({id: ids})
       : $availableElections;
   }
 );
 
-// For convenience
+// // For convenience
 export const visibleConstituencyCategories = derived(
   availableConstituencyCategories,
-  ($availableConstituencyCategories) => $availableConstituencyCategories
+  ($cats) => $cats
 );
 
-// For convenience
-export const visibleConstituencies = derived(
-  availableConstituencies,
-  ($availableConstituencies) => $availableConstituencies
-);
+// // For convenience
+export const visibleConstituencies = derived(availableConstituencies, ($consts) => $consts);
 
-export const visibleQuestions = derived(
-  [availableQuestions, effectiveTemporaryChoices],
-  ([$availableQuestions, $effectiveTemporaryChoices]) => {
+export const visibleMatchableQuestions = derived(
+  [availableMatchableQuestions, effectiveTemporaryChoices],
+  ([$qsts, $choices]) => {
     logDebugError(
-      `Getting visibleQuestions from [$availableQuestions (length ${$availableQuestions.all.length}), $effectiveTemporaryChoices (selectedQuestionCategoryIds ${$effectiveTemporaryChoices.selectedQuestionCategoryIds})]`
+      `Getting visibleMatchableQuestions from [$availableMatchableQuestions (length ${$qsts.length}), $effectiveTemporaryChoices (selectedQuestionCategoryIds ${$choices.selectedQuestionCategoryIds})]`
     );
-    // TO DO: Apply sorting
-    // Now we need to filter out duplicates already from the byElectionId questions list
-    const seen = new Set<Question>();
-    return $availableQuestions.mapContents((qsts) => {
-      const filtered = qsts.filter(
-        (q) =>
-          !seen.has(q) &&
-          q.category?.id != null &&
-          $effectiveTemporaryChoices.selectedQuestionCategoryIds?.includes(q.category?.id)
-      );
-      filtered.forEach((q) => seen.add(q));
-      return filtered;
-    });
+    const catIds = $choices.selectedQuestionCategoryIds ?? [];
+    return $qsts.filterAsList({questionCategoryId: catIds});
   }
 );
 
-export const visibleQuestionCategories = derived([visibleQuestions], ([$visibleQuestions]) => {
-  logDebugError(
-    `Getting visibleQuestionCategories from visibleQuestions: all.len ${$visibleQuestions.all.length}`
-  );
-  // TO DO: Apply sorting
-  // NB! The categories' question properties may contain questions that are not applicable
-  // because of constituencyId
-  return $visibleQuestions.mapContents((qsts) => removeDuplicates(qsts.map((q) => q.category)));
-});
-
-////////////////////////////////////////////////////////////////
-// ADDITIONAL, TRANSIENT UTILITY STORES
-////////////////////////////////////////////////////////////////
-
-export const currentQuestionIndex = derived(
-  [visibleQuestions, effectiveTemporaryChoices],
-  ([$visibleQuestions, $effectiveTemporaryChoices]) => {
+export const visibleMatchableQuestionCategories = derived(
+  [visibleMatchableQuestions],
+  ([$qsts]) => {
     logDebugError(
-      'Getting currentQuestionIndex from [$visibleQuestions, $effectiveTemporaryChoices]'
+      `Getting visibleMatchableQuestionCategories from visibleMatchableQuestions: ${$qsts.length}`
     );
-    const qsts = $visibleQuestions?.all;
-    const id = $effectiveTemporaryChoices?.currentQuestionId;
-    if (!qsts?.length || id == null) {
+    // NB! The categories' question properties may contain questions that are not applicable
+    // because of constituencyId
+    return $qsts.mapAsList((q) => q.parent);
+  }
+);
+
+// TO DO Name into visibleResults
+//
+// export const visiblePersonNominations = derived([availablePersonNominations, effectiveTemporaryChoices],
+//   ([$prsns, $choices]) => {
+//     logDebugError(
+//       `Getting visiblePersonNominations from [availablePersonNominations (${$prsns.length}), effectiveTemporaryChoices (${$choices})]`
+//     );
+//     // TO DO: Apply any filters here
+//     return $prsns;
+//   }
+// );
+
+// ////////////////////////////////////////////////////////////////
+// // ADDITIONAL, TRANSIENT UTILITY STORES
+// ////////////////////////////////////////////////////////////////
+
+export const isSingleElection = derived(visibleElections, ($els) => $els.length === 1);
+
+export const currentQuestion = derived(
+  [visibleMatchableQuestions, effectiveTemporaryChoices],
+  ([$qsts, $choices]) => {
+    logDebugError(
+      'Getting currentQuestion from [$visibleMatchableQuestions, $effectiveTemporaryChoices]'
+    );
+    const id = $choices.currentQuestionId;
+    return id == null ? undefined : $qsts.byId(id);
+  }
+);
+
+export const nextQuestion = derived(
+  [visibleMatchableQuestions, currentQuestion],
+  ([$qsts, $current]) => {
+    logDebugError('Getting prevQuestion from [$visibleMatchableQuestions, $currentQuestion]');
+    if ($current == null) {
       return undefined;
     }
-    const current = qsts.filter((q) => q.id === id);
-    if (current.length > 1) {
-      throw new Error(`More than one question with id ${id} found!`);
-    }
-    return qsts.indexOf(current[0]);
+    const idx = $qsts.items.indexOf($current) + 1;
+    return idx >= $qsts.length ? undefined : $qsts.items[idx];
+  }
+);
+
+export const currentPersonNomination = derived(
+  [availablePersonNominations, effectiveTemporaryChoices],
+  ([$noms, $choices]) => {
+    logDebugError(
+      'Getting currentPersonNomination from [$availablePersonNominations, $effectiveTemporaryChoices]'
+    );
+    const id = $choices.currentPersonNominationId;
+    return id == null ? undefined : $noms.byId(id);
   }
 );

@@ -110,6 +110,10 @@ Some principles behind this draft are:
 - `routes`
   - See further below
 
+## Process
+
+TO DO: Copy from the [Google Sheet](https://docs.google.com/spreadsheets/d/1sOYZBj1TCM78r7PW-CKHwW2G5H3hB0x2zZte62SSFHQ/edit?usp=sharing).
+
 ## Stores (`$lib/stores`)
 
 ### Data object stores (for `Elections`, `Questions` etc.)
@@ -254,6 +258,32 @@ Now, let's start decoding the route.
 13. `/elections/e1/constituencies/cg1-c2,cg2-c1/questions/qc2/question/q4/+page.svelte` finally shows the current question `q4` using `$lib/stores/visibleQuestions`. Hurrah!
 
 ## To do
+
+Later:
+
+1. Change matching: interfaces: MatchQu, HasMatchAnsw, default for dims in the algo, MatchQuest class as only an example as well as MultiChoiceQ
+2. Make a global goto function and combine that with SSR param checks with redirects (e.g. at .../questions/+layout.server.ts)
+3. Handle overlapping Constituency categories and test fragments!
+4. Extend filterItems to use ancestor props, such as, Election.id
+5. Maybe change QuestionCategoryData to contain Questions within just as with ConstituencyCategoryData
+6. Add clear to localStorage and automatically clear sessionData after a timeout
+7. Answer data may be skipped if it was already provided with the candidates
+8. Add optional checkId(id: Id) to dataRoot that check Ids are valid and unique for each object type
+9. Add a way to remove items from DataObjectList
+10. Figure out a way to remove the Nomination.id confusion
+11. Enable simple lists of names for OrganizationNominations if they use closed lists
+12. Enable setting of Nomination Data before Entities, maybe add a cacheble entity-getter in Nomination and remove Entity from constructor params?
+13. Add a warning if selected constituency and election do not overlap
+14. Filter is problematic now, bc the logic is iffy with empty values. This should be made more explicit.
+15. Add simplified schemata for DataProvider, where Nomination may omit electionId and constituencyId
+16. Check for name order in Person.name getter
+17. Add a r2d utility to DataProvider that converts {id, data}[] to {[id]: data} for flexible data supply
+18. Add a loaded property to DataObjectList or DataObject that checks whether its children are loaded (and their length matches the length of ids)
+19. In the future, DataObjectList could also return a Promise if data is lazily loaded
+20. Defined module structure: vaa-matching, vaa-datamodel, vaa-svelte, vaa-backend, vaa-candapp
+21. How to make vaa-datamodel such that it does not depend on vaa-matching?
+
+Old stash:
 
 - Combine `Questions` and `QuestionCategories` so that `Questions` cannot exist without a category
 - Create a base class for `DataObjects` implementing basic methods

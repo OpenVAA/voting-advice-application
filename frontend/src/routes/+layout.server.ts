@@ -20,17 +20,15 @@
  */
 
 import type {LayoutData, LayoutServerLoad} from './$types';
-import {getDataProvider, appSettings} from '$lib/config';
+import {getAppLabels, getDataProvider, getAppSettings} from '$lib/server/config';
 
 export const load: LayoutServerLoad = (async () => {
   // Get data provider
   const dataProvider = getDataProvider();
   // Load data
-  const appLabels = await dataProvider.getAppLabels();
-  const electionsData = await dataProvider.getElectionsData();
   return {
-    appLabels,
-    appSettings,
-    electionsData
+    appLabels: await getAppLabels(),
+    appSettings: await getAppSettings(),
+    electionData: await dataProvider.getElectionData()
   } as LayoutData;
 }) satisfies LayoutServerLoad;

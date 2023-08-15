@@ -2,11 +2,8 @@
   import {page} from '$app/stores';
   import {goto} from '$app/navigation';
   import {
-    appLabels,
-    availableQuestionCategories,
-    availableQuestions,
-    userData,
-    sessionData
+    availableMatchableQuestionCategories,
+    availableMatchableQuestions
   } from '$lib/stores/stores';
 
   let selectedQuestionCategoryIds: string[] = [];
@@ -14,8 +11,8 @@
   function gotoQuestions() {
     let root = $page.url.pathname.replace(/\/$/, '');
     const categoryIds = selectedQuestionCategoryIds.join(',');
-    const firstQuestionId = $availableQuestions.all.filter((q) =>
-      categoryIds.includes(q.category.id)
+    const firstQuestionId = $availableMatchableQuestions.items.filter((q) =>
+      categoryIds.includes(q.parent.id)
     )[0]?.id;
     if (firstQuestionId == null) {
       throw new Error('First question must have an id');
@@ -26,8 +23,8 @@
 
 <h1>Select Question Categories</h1>
 
-{#if $availableQuestionCategories?.nonEmpty}
-  {#each $availableQuestionCategories.allAsTuples as [elections, category]}
+{#if $availableMatchableQuestionCategories?.nonEmpty}
+  {#each $availableMatchableQuestionCategories.items as category}
     <label class="block">
       <input
         type="checkbox"
@@ -35,7 +32,10 @@
         name="questionCategoryId"
         value={category.id}
         bind:group={selectedQuestionCategoryIds} />
-      {category.name} (for {elections.map((e) => e.shortName).join(', ')})
+      {category.name}
+      <!-- {#if !$isSingleElection}
+        (for {category.elections.items.map((e) => e.shortName).join(', ')})
+      {/if} -->
     </label>
   {:else}
     <p>No availableQuestionCategories found! This should not happen</p>
