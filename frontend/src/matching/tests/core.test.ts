@@ -7,7 +7,6 @@ import {MatchingSpacePosition} from '../core/matchingSpacePosition';
 import type {MatchingSpaceCoordinate} from '../core/matchingSpacePosition';
 
 // For convenience
-const maxDist = NORMALIZED_DISTANCE_EXTENT;
 const maxVal: SignedNormalizedDistance = NORMALIZED_DISTANCE_EXTENT / 2;
 const minVal: SignedNormalizedDistance = -maxVal;
 const weights = [1, 2, 3];

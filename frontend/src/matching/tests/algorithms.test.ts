@@ -471,11 +471,11 @@ function createMatchesAndEntities(
 class Candidate implements HasMatchableAnswers {
   constructor(public answers: MatchableAnswer[]) {}
 
-  getMatchableAnswer(question: MatchableQuestion): MatchableAnswer {
+  getMatchableAnswerValue(question: MatchableQuestion): MatchableValue {
     for (const answer of this.answers) {
-      if (answer.question === question) return answer;
+      if (answer.question === question) return answer.value;
     }
-    return {question, value: MISSING_VALUE};
+    return MISSING_VALUE;
   }
 
   get matchableAnswers(): MatchableAnswer[] {
@@ -527,7 +527,7 @@ function createAnswers(
  */
 function createQuestions(numQuestions: number, likertScale: number): MultipleChoiceQuestion[] {
   return Array.from({length: numQuestions}, (_, i) =>
-    MultipleChoiceQuestion.fromLikertScale(likertScale)
+    MultipleChoiceQuestion.fromLikertScale(`qst${i}`, likertScale)
   );
 }
 
