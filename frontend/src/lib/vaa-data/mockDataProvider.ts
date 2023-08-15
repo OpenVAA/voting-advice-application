@@ -34,6 +34,9 @@ export class MockDataProvider implements DataProvider {
           constituencyCategoryIds: ['cg2']
         }
       ];
+      // We apply the filter here for debugging purposes, but really the data should be filtered
+      // already in the API call. We can return more data than needed, so this kind of post-hoc
+      // filtering is not necessary.
       resolve(filter ? filterItems(data, filter) : data);
     });
   }
@@ -78,6 +81,9 @@ export class MockDataProvider implements DataProvider {
           ]
         }
       ];
+      // We apply the filter here for debugging purposes, but really the data should be filtered
+      // already in the API call. We can return more data than needed, so this kind of post-hoc
+      // filtering is not necessary.
       resolve(filter ? filterItems(data, filter) : data);
     });
   }
@@ -108,6 +114,9 @@ export class MockDataProvider implements DataProvider {
           ]
         }
       ] as QuestionTemplateData[];
+      // We apply the filter here for debugging purposes, but really the data should be filtered
+      // already in the API call. We can return more data than needed, so this kind of post-hoc
+      // filtering is not necessary.
       resolve(filter ? filterItems(data, filter) : data);
     });
   }
@@ -127,6 +136,9 @@ export class MockDataProvider implements DataProvider {
           questionIds: ['q4', 'q5', 'q6']
         }
       ];
+      // We apply the filter here for debugging purposes, but really the data should be filtered
+      // already in the API call. We can return more data than needed, so this kind of post-hoc
+      // filtering is not necessary.
       resolve(filter ? filterItems(data, filter) : data);
     });
   }
@@ -166,11 +178,18 @@ export class MockDataProvider implements DataProvider {
           templateId: 'qt1'
         }
       ];
+      // We apply the filter here for debugging purposes, but really the data should be filtered
+      // already in the API call. We can return more data than needed, so this kind of post-hoc
+      // filtering is not necessary.
       resolve(filter ? filterItems(data, filter) : data);
     });
   }
 
   getNominationData(filter?: ConstituencyIdFilter): Promise<NominationData[]> {
+    // Nomination data is currently expected in a redundant array format.
+    // If it's easy to return a electionId.constituencyId.entityType.id:
+    // {entityId, electionSymbol?, personNominationIds?} tree, changing
+    // DataRoot to accept that is very easy.
     return new Promise<NominationData[]>((resolve) => {
       const data = [
         {
@@ -220,6 +239,9 @@ export class MockDataProvider implements DataProvider {
           personNominationIds: ['n3']
         }
       ];
+      // We apply the filter here for debugging purposes, but really the data should be filtered
+      // already in the API call. We can return more data than needed, so this kind of post-hoc
+      // filtering is not necessary.
       resolve(filter ? filterItems(data, filter) : data);
     });
   }
@@ -260,6 +282,9 @@ export class MockDataProvider implements DataProvider {
           organizationId: 'prt2'
         }
       ];
+      // We apply the filter here for debugging purposes, but really the data should be filtered
+      // already in the API call. We can return more data than needed, so this kind of post-hoc
+      // filtering is not necessary.
       resolve(filter ? filterItems(data, filter) : data);
     });
   }
@@ -284,11 +309,17 @@ export class MockDataProvider implements DataProvider {
           type: 'constituency association'
         }
       ];
+      // We apply the filter here for debugging purposes, but really the data should be filtered
+      // already in the API call. We can return more data than needed, so this kind of post-hoc
+      // filtering is not necessary.
       resolve(filter ? filterItems(data, filter) : data);
     });
   }
 
   getAnswerData(filter?: AnswerFilter): Promise<FullySpecifiedAnswerData[]> {
+    // Answer data is currently expected in a redundant array format.
+    // If it's easy to return a entityType.entityId.questionId: {value, info}
+    // tree, changing DataRoot to accept that is very easy.
     return new Promise<FullySpecifiedAnswerData[]>((resolve) => {
       const data = [
         {
@@ -357,6 +388,9 @@ export class MockDataProvider implements DataProvider {
           value: 'This is my text answer'
         }
       ];
+      // We apply the filter here for debugging purposes, but really the data should be filtered
+      // already in the API call. We can return more data than needed, so this kind of post-hoc
+      // filtering is not necessary.
       resolve(filter ? filterItems(data, filter) : data);
     });
   }

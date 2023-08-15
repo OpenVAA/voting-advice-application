@@ -75,63 +75,58 @@ you develop a new component, be sure to comply with the [Accessibility Guideline
 
 # WIP: Frontend app structure / state management
 
-# HOX! THIS IS NOT YET UPDATED AFTER THE REFACTOR
-
 ## Getting started
 
 To see the thing in action, just fire up `/frontend/yarn dev` and open the root in the browser.
 
-What's demonstrated currently is the route: start ➡️ election selection ➡️ constituency selection ➡️ question category selection ➡️ questions.
+What's demonstrated currently is the route: start ➡️ election selection ➡️ constituency selection ➡️ question category selection ➡️ questions (no answering, though) ➡️ candidate results ➡️ candidate details.
+
+To figure out how to proffer data, go to `$lib/vaa-data/MockDataProvider.ts`.
 
 ## Guiding principles
 
 Some principles behind this draft are:
 
 1. Single soure of truth.
-2. Abstract matching logic and data model so that they are specific neither to the database nor the frontend framework.
-3. Basic data object filtering can be implemented either already in the database calls or in the frontend. To this effect, the data object model contains implementations for all basic filtering methods.
+2. Matching logic and data model are abstracted to `vaa-matching` and `vaa-data` modules, which depend on neither the backend nor the frontend.
+3. Basic data object filtering can be implemented either already in the database calls or in the frontend. To this effect, the data object model contains implementations for basic filtering methods.
 4. Avoid loading unnecessary data (to a reasonable extent).
 5. All database operations can be done on the server-side.
 6. Make the model so generic it supports different electoral systems and, importantly, multiple simultaneous elections.
 7. All data (both raw and filtered) is accessible app-wide and reactively (using Svelte stores).
 8. Refreshing the browser perfectly maintains app state.
 9. Prefer verbosity over possibility for confusions.
+10. Offer default values for all objects' properties so that we need not check for `object.prop == null`. Currently empty (string) properties always return the empty string ''.
 
 ## Relevat files
 
-- `$lib/api`
+- `$lib/vaa-data`
   - Datbase API and data objects, such as `Election` and `Question`
   - no Svelte-speficic dependies (now contains a Strapi Adapter, which might be moved somewhere)
-- `./matching`
+- `$lib/vaa-matching`
   - Matching algorithms
-  - no Svelte-spefic dependies (should be in `$lib`)
-- `$lib/config`
+  - no Svelte-spefic dependies
+- `$lib/server/config`
   - Instance-specific settings, including database connection config
 - `$lib/stores`
   - App-wide stores (see below)
 - `routes`
   - See further below
 
-## Process
-
-TO DO: Copy from the [Google Sheet](https://docs.google.com/spreadsheets/d/1sOYZBj1TCM78r7PW-CKHwW2G5H3hB0x2zZte62SSFHQ/edit?usp=sharing).
-
 ## Stores (`$lib/stores`)
 
 ### Data object stores (for `Elections`, `Questions` etc.)
 
-For each data object type, there is a cascade of refined and filterd versions, which become available as the user proceeds. The general idea is that these differ on where they are processed and stored and what kinds of implications on other such stores.
+For each data object type, there is a cascade of refined and filtered versions, which become available as the user proceeds. The general idea is that these differ on where they are processed and stored and what kinds of implications on other such stores.
 
 **Update!** We can get rid of `OrganizedContents`s with a bit of refactoring. See To do at the end of the page.
 
-| Store               | Type                                      | Process                                                                                                                                                                                                                                                                                                                     | Dependencies                                        | Notes                                                                                                                                                                                                                                                                                                                                                                        | Example                                                                                                                                                                                                                                                                                         |
-| ------------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `exampleData`       | `Writable<ExampleData[]>`                 | 1. Raw data loaded by the relevant route-level's `+layout.server.ts` (`return { exampleData: getDataProvider().getExampleData(exampleQueryOptions) }`). <br>2. Passed in `LayoutData` to `+layout.svelte`. <br>3. This then sets the store `$exampleData = $page.data.exampleData`, thus triggering the cascade down below. | Route parameters and possibly `config.appSettings`. | The data must be JSON-serializable literals because it's serialized before being passed to the layout.                                                                                                                                                                                                                                                                       | `questionCategoriesData`: The literal question categories data loaded from the database API.                                                                                                                                                                                                    |
-| `allExamples`       | `Readable<Example[]>`                     | This derived store merely converts the `ExampleData` literals into `Example` objects, which have methods and defaults that are useful in the UI.                                                                                                                                                                            | `exampleData`                                       | Contains all loaded data as proper objects.                                                                                                                                                                                                                                                                                                                                  | `allQuestionCategories`: An array of `QuestionCategory` objects with their contained `Question` objects included.                                                                                                                                                                               |
-| `availableExamples` |  `Readable<OrganizedContents<Example[]>>` | 1. This derived store filters the objects based on the effective app state. <br>2. From now on, the objects are also a bit clunkily contained in an `OrganizedContents` object, which allows to easy access (with `{#each}`) to all of them or grouped by election\*.                                                       | `allExamples`, `effectiveSettings`                  | Contains the subset of all objects that can be shown to the user for selection in a format that pairs the objets with the relevant election.\*                                                                                                                                                                                                                               | `availableQuestionCategories`: An `OrganizedContents` object listing all question categories (per election) that can be shown to the user for selection. At this point any filtering by the user's selected constituency is done and categories with no questions after filtering are excluded. |
-| `visibleExamples`   | `Readable<OrganizedContents<Example[]>>`  | This derived store filters the available objects based on transient app state.                                                                                                                                                                                                                                              | `availableExamples`, `effectiveTemporaryChoices`    | Contains the objects that are actually shown in the UI to the user, based on their selections. The main difference between this and `availableExamples` is that anything that depend on `visibleExamples` should not incur further (SSR) data loading. Also, this store is immediately dependent only on `effectiveTemporaryChoices`, which do not persist between sessions. | `visibileQuestionCategories`: The question catetgories the user has selected to answer from the available ones.                                                                                                                                                                                 |
-
-\* This is necessary due to the fact that VAAs often need to contain data for multiple simultaneous elections, which complicates things quite a lot.
+| Store               | Type                                       | Process                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Dependencies                                        | Notes                                                                                                                                                                                                                                                                                                                                                                        | Example                                                                                                                                                                                                                                                                      |
+| ------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `exampleData`       | `Writable<ExampleData[]>`                  | 1. Raw data loaded by the relevant route-level's `+layout.server.ts` (`return { exampleData: getDataProvider().getExampleData(exampleQueryOptions) }`). <br>2. Passed in `LayoutData` to `+layout.svelte`. <br>3. This then sets the store `$exampleData = $page.data.exampleData`.<br>4. This store has a manually added subscriber that passes the data to a `DataRoot` object using `dataRoot.provideExampleData(data)`. The `dataRoot` is a variable in `stores` but not exported because it's not a store. It does, however, contain the realtime data hierarchy, and derived stores below make use of it.<br>5. Changes in `$exampleData` also trigger the cascade below. | Route parameters and possibly `config.appSettings`. | The data must be JSON-serializable literals because it's serialized before being passed to the layout.                                                                                                                                                                                                                                                                       | `questionCategoriesData`: The literal question categories data loaded from the database API.                                                                                                                                                                                 |
+| `allExamples`       | `Readable<Example[]>`                      | This derived store merely returns `dataRoot.examples` containing `Example` objects, which were just created as a result of `dataRoot.provideExampleData`. The `Example` objects have methods and defaults that are useful in the UI. Here we listen to changes in `exampleData` even though we don't actually do anything with it...                                                                                                                                                                                                                                                                                                                                            | `exampleData`                                       | Contains all loaded data as proper objects.                                                                                                                                                                                                                                                                                                                                  | `allQuestionCategories`: An array of `QuestionCategory` objects with their contained `Question` objects included.                                                                                                                                                            |
+| `availableExamples` |  `Readable<DataObjectCollection<Example>>` | 1. This derived store filters the objects based on the effective app state. <br>2. From now on, the objects are also a bit clunkily contained in a `DataObjectCollection`, which allows to easy access (with `{#each $availableExamples.items}`) and other helpful methods.                                                                                                                                                                                                                                                                                                                                                                                                     | `allExamples`, `effectiveSettings`                  | Contains the subset of all objects that can be shown to the user for selection. These are usually filtered based on selected `constituencyIds` and `electionIds`.                                                                                                                                                                                                            | `availableQuestionCategories`: A `DataObjectCollection` with all the question categories that can be shown to the user for selection. At this point any filtering by the user's selected constituency is done and categories with no questions after filtering are excluded. |
+| `visibleExamples`   | `Readable<DataObjectCollection<Example>>`  | This derived store filters the available objects based on transient app state.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | `availableExamples`, `effectiveTemporaryChoices`    | Contains the objects that are actually shown in the UI to the user, based on their selections. The main difference between this and `availableExamples` is that anything that depend on `visibleExamples` should not incur further (SSR) data loading. Also, this store is immediately dependent only on `effectiveTemporaryChoices`, which do not persist between sessions. | `visibileQuestionCategories`: The question categories the user has selected to answer from the available ones.                                                                                                                                                               |
 
 In addition to these, we may also provide a `currentExample: Readable<Example>` store, which contains the currently visible one, such as the candidate or question currently shown.
 
@@ -197,11 +192,7 @@ Now, let's start decoding the route.
   $electionsData = data.electionsData;
 ```
 
-3. `/+page.svelte` just shows a button to proceed to election selection.
-
-4. `/elections/+page.svelte` shows all available elections (`$lib/stores/availableElections`) for selection. Depending on `$lib/stores/effectiveSettings.electionsAllowSelectMultiple`, one or multiple elections can be selected.
-
-5. `/elections/e1/constituencies/+layout.server.ts` loads the constituency categories data and also adds the route param to the page data. **NB.** We might already pass the electionIds to the data provider call to not load unnecessary constituency categories. Also, the route params could be accessed in the svelte files as well.
+3. `/elections/e1/constituencies/+layout.server.ts` loads the constituency categories data and also adds the route param to the page data. **NB.** We might already pass the electionIds to the data provider call to not load unnecessary constituency categories. Also, the route params could be accessed in the svelte files as well.
 
 ```
   return {
@@ -210,40 +201,39 @@ Now, let's start decoding the route.
   };
 ```
 
-6. `/elections/e1/constituencies/+layout.svelte` updates the relevant stores.
+4. `/elections/e1/constituencies/+layout.svelte` updates the relevant stores.
 
 ```
   $constituencyCategoriesData = data.constituencyCategoriesData;
   $sessionData.temporaryChoices.selectedElectionIds = data.selectedElectionIds;
 ```
 
-7. `/elections/e1/constituencies/+page.svelte` shows the constituency selection for the selected election (`e1`). If there were multiple elections, selections for all of them would be shown. Uses `$lib/stores/availableConstituencyCategories`.
-
-8. `/elections/e1/constituencies/cg1-c2,cg2-c1/questions/+layout.server.ts` loads the necessary question categories and questions data as well as passes the selected constituency ids (`cg1-c2,cg2-c1`) in the data. **NB.** We might include the questions in the question categories load, there isn't much point in getting them seprarately. Also, the route params could be accessed in the svelte files as well.
+5. `/elections/e1/constituencies/cg1-c2,cg2-c1/questions/+layout.server.ts` loads the necessary question templates, question categories and questions data as well as passes the selected constituency ids (`cg1-c2,cg2-c1`) in the data. **NB.** We might include the questions in the question categories load, there isn't much point in getting them seprarately. Also, the route params could be accessed in the svelte files as well.
 
 ```
   const constituencyIds = params.constituencyIds.split(',');
+  const questionTemplatesData = await dataProvider.getQuestionTemplatesData();
   const questionCategoriesData = await dataProvider.getQuestionCategoriesData({constituencyId: constituencyIds});
   const questionIds = questionCategoriesData.map(c => c.questionIds ?? []).flat();
   const questionsData = await dataProvider.getQuestionsData({id: questionIds});
   return {
+    questionTemplatesData,
     questionCategoriesData,
     questionsData,
     selectedConstituencyIds: constituencyIds,
   };
 ```
 
-9. `/elections/e1/constituencies/cg1-c2,cg2-c1/questions/+layout.svelte` updates the relevant stores.
+6. `/elections/e1/constituencies/cg1-c2,cg2-c1/questions/+layout.svelte` updates the relevant stores.
 
 ```
+  $questionTemplatesData = data.questionTemplatesData;
   $questionCategoriesData = data.questionCategoriesData;
   $questionsData = data.questionsData;
   $userData.constituencyIds = data.selectedConstituencyIds;
 ```
 
-10. `/elections/e1/constituencies/cg1-c2,cg2-c1/questions/+page.svelte` shows the available question categories for selection. Uses `$lib/stores/availableQuestionCategories`.
-
-11. `/elections/e1/constituencies/cg1-c2,cg2-c1/questions/qc2/question/+layout.ts` just adds the selected question category ids to page data.
+7.  `/elections/e1/constituencies/cg1-c2,cg2-c1/questions/qc2/question/+layout.ts` just adds the selected question category ids to page data.
 
 ```
   return {
@@ -251,54 +241,48 @@ Now, let's start decoding the route.
   }
 ```
 
-12. `/elections/e1/constituencies/cg1-c2,cg2-c1/questions/qc2/question/+layout.svelte` just updates the relevant store.
+8. `/elections/e1/constituencies/cg1-c2,cg2-c1/questions/qc2/question/+layout.svelte` just updates the relevant store.
 
 ```
   $sessionData.temporaryChoices.selectedQuestionCategoryIds = data.selectedQuestionCategoryIds;
 ```
 
-13. `/elections/e1/constituencies/cg1-c2,cg2-c1/questions/qc2/question/q4/+page.svelte` finally shows the current question `q4` using `$lib/stores/visibleQuestions`. Hurrah!
+9. `/elections/e1/constituencies/cg1-c2,cg2-c1/questions/qc2/question/q4/+page.svelte` finally shows the current question `q4` using `$lib/stores/visibleQuestions`. Hurrah!
 
 ## To do
 
-Later:
-
-1. Change matching: interfaces: MatchQu, HasMatchAnsw, default for dims in the algo, MatchQuest class as only an example as well as MultiChoiceQ; getMatchableAnswerValue
-2. Make a global goto function and combine that with SSR param checks with redirects (e.g. at .../questions/+layout.server.ts)
+1. Make a global goto function and combine that with SSR param checks with redirects (e.g. at .../questions/+layout.server.ts)
+2. Add a Voter object to DataRoot
 3. Handle overlapping Constituency categories and test fragments!
 4. Extend filterItems to use ancestor props, such as, Election.id
 5. Maybe change QuestionCategoryData to contain Questions within just as with ConstituencyCategoryData
-6. Add clear to localStorage and automatically clear sessionData after a timeout
-7. Answer data may be skipped if it was already provided with the candidates
-8. Add optional checkId(id: Id) to dataRoot that check Ids are valid and unique for each object type
-9. Add a way to remove items from DataObjectList
-10. Figure out a way to remove the Nomination.id confusion
-11. Enable simple lists of names for OrganizationNominations if they use closed lists
-12. Enable setting of Nomination Data before Entities, maybe add a cacheble entity-getter in Nomination and remove Entity from constructor params?
-13. Add a warning if selected constituency and election do not overlap
-14. Filter is problematic now, bc the logic is iffy with empty values. This should be made more explicit.
-15. Add simplified schemata for DataProvider, where Nomination may omit electionId and constituencyId
-16. Check for name order in Person.name getter
-17. Add a r2d utility to DataProvider that converts {id, data}[] to {[id]: data} for flexible data supply
-18. Add a loaded property to DataObjectList or DataObject that checks whether its children are loaded (and their length matches the length of ids)
-19. In the future, DataObjectList could also return a Promise if data is lazily loaded
-20. Defined module structure: vaa-matching, vaa-datamodel, vaa-svelte, vaa-backend, vaa-candapp
-21. How to make vaa-datamodel such that it does not depend on vaa-matching?
+6. Enable tree-type provision of Answer and Nomination data
+7. Handle recursive Constituencies
+8. Tests!!!
+9. Move 'available' filtering to DataRoot, possibly providing an auto-filter that uses electionIds and constituencyIds stored in the root
+10. Add clear to localStorage and automatically clear sessionData after a timeout
+11. Docs: Answer data may be skipped if it was already provided with the candidates
+12. Add a way to remove items from DataObjectList
+13. Figure out a way to remove the Nomination.id confusion
+14. Enable simple lists of names for OrganizationNominations if they use closed lists
+15. Enable setting of Nomination Data before Entities, maybe add a cacheble entity-getter in Nomination and remove Entity from constructor params? Maybe store all objects as dicts in the DataRoot and always use id-based getters for linked objects
+16. Add a warning if selected constituency and election do not overlap
+17. Filter is problematic now, bc the logic is iffy with empty values. This should be made more explicit.
+    - The default rule translates now to `inOrEmpty`. We could add a fully-specified format thusly and just use union over the different rules to compute the result.
 
-Old stash:
+```
+type FilterValue<T> = T | T[] |
+{
+  inOrEmpty?: T[],
+  in?: T[],
+  notIn?: T[],
+  notEmpty?: boolean
+}
+```
 
-- Combine `Questions` and `QuestionCategories` so that `Questions` cannot exist without a category
-- Create a base class for `DataObjects` implementing basic methods
-- Collect all DataObjects under DataRoot and provide utility getters/methods for the root and subobjects, such as `DataRoot -> Election -> constituencyCategories -> constituency -> questionCategories` which will only return those question categories that are relevant for the ancestor `Election` and that `Constituency`. In fact, this will just call `DataRoot -> getQuestionCategories(queryOptions: {election?: Election, constituency?: Constituency})`.
-- Get rid of `OrganizedContent`:
-  1. Add the relevant `Election`s as a property (or getter) to each object needing that information.
-  2. Convert all data object arrays into `ObjectList` objects, which provide utility getters or methods in addition to an `items` getter. These may include such as `class ObjectList<T>: ... get groupedByElection<T>(): {election: Election, items: T[]}[]` or `find(queryOption: {election?: Election | Election[], ...}): T[]`, which will filter `items` using a generic query filter.
-- Figure out a way to organise candidates and other entities:
-  - Possibly as `Nomination` objects in the `DataRoot` implementing `{election: Election, constituency: Constituency, entity: Entity, children?: Nomination[]}` (with enforcement of proper entity relationships so that the allowed lineage is `ElectoralAlliance` > `PoliticalOrganisation` (i.e. party) > `Faction` > `Candidate`)
-- Extend the current single `electionId`- and `constituencyId`-based filtering paradigm to multiple such ids and include or exclude, e.g. for `Question` add `electionId?: {in?: string[], notIn?: string[]}`. Perhaps there is an pre-existing utility for this, although we need only very basic tests?
-- Create a store and nice data model for results (extending or containing the algorithm's `Match` objects) and `visibleResults`
-  - Also define basics for `Filter` and `Sorter` objects, which may or may not be available already on the `DataObject` level
-- Create api endpoints that expose the `DataProvider` calls if we need to load something from the client side
-- Instead of `gotoXXX` functions, just update the relevant stores and add a derived store or subscriber that calls goto when the state changes OR at least define a generic `goto` function as an utility
-- Constituency hierarchies: Allow user to select any constituency level and assume the effective one is the top-level specified by the category
-- See all file-specific TO DO's
+13. Add simplified schema for DataProvider, where Nomination may omit electionId and constituencyId. Maybe automatically figure this out in the DataRoot based on the number of elections etc.
+14. Check for name order in Person.name getter
+15. In the future, DataObjectList could also return a Promise if data is lazily loaded
+16. Defined module structure: vaa-matching, vaa-data, vaa-svelte, vaa-backend, vaa-candapp
+17. How to make vaa-data such that it does not depend on vaa-matching?
+18. Create api endpoints that expose the `DataProvider` calls if we need to load something from the client side
