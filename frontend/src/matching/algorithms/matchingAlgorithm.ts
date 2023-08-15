@@ -188,7 +188,7 @@ export class MatchingAlgorithmBase implements MatchingAlgorithm {
     // Create MatchingSpace
     const dimensionWeights: number[] = [];
     for (const question of questionList) {
-      const dims = question.normalizedDimensions;
+      const dims = question.normalizedDimensions ?? 1;
       dimensionWeights.push(...Array.from({length: dims}, () => 1 / dims));
     }
     const space = new MatchingSpace(dimensionWeights);
@@ -197,7 +197,7 @@ export class MatchingAlgorithmBase implements MatchingAlgorithm {
     for (const entity of entities) {
       const coords: MatchingSpaceCoordinate[] = [];
       for (const question of questionList) {
-        const value = question.normalizeValue(entity.getMatchableAnswer(question).value);
+        const value = question.normalizeValue(entity.getMatchableAnswerValue(question));
         // We need this check for preference order questions, which return a list of subdimension distances
         if (Array.isArray(value)) coords.push(...value);
         else coords.push(value);
