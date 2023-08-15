@@ -3,8 +3,8 @@
  * Strapi.
  */
 
-import {error} from '@sveltejs/kit';
-import type {DataProvider} from './dataProvider';
+// import {error} from '@sveltejs/kit';
+// import type {DataProvider} from './dataProvider';
 
 export interface StrapiDataProviderOptions {
   backendUrl: string;
