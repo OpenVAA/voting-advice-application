@@ -1,5 +1,8 @@
 /*
  * A utility to build routes urls.
+ *
+ * TO DO: Separate url building into another function so that we can
+ * use it in server.ts redirects.
  */
 
 import {goto} from '$app/navigation';
@@ -32,6 +35,10 @@ export function gotoRoute(params: GotoRouteParams) {
     url += 'elections';
   } else if (params.page === PageType.SelectConstituencies) {
     url += `elections/${combineIds(params.electionIds)}/constituencies`;
+  } else if (params.page === PageType.SelectQuetionCategories) {
+    url += `elections/${combineIds(params.electionIds)}/constituencies/${combineIds(
+      params.constituencyIds
+    )}/questions`;
   }
   goto(url);
 }
