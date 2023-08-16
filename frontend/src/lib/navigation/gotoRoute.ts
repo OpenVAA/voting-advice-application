@@ -1,9 +1,7 @@
 /*
  * A utility to build routes urls.
  *
- * TO DO: Reduce redundancy.
- * TO DO: Separate url building into another function so that we can
- * use it in server.ts redirects.
+ * TO DO: Use createRoute in server.ts redirects.
  */
 
 import {goto} from '$app/navigation';
@@ -29,7 +27,11 @@ export type GotoRouteParams = {
   currentUrl?: string;
 };
 
-export function gotoRoute({
+export function gotoRoute(params: GotoRouteParams) {
+  goto(createRoute(params));
+}
+
+export function createRoute({
   page,
   electionIds,
   constituencyIds,
@@ -37,38 +39,50 @@ export function gotoRoute({
   questionId,
   candidateId,
   currentUrl
-}: GotoRouteParams) {
+}: GotoRouteParams): string {
   let url = '/';
-  if (page === PageType.FrontPage) {
-    url += '';
-  } else if (page === PageType.SelectElections) {
-    url += 'elections';
-  } else if (page === PageType.SelectConstituencies) {
-    url += `elections/${combineIds(electionIds)}/constituencies`;
-  } else if (page === PageType.SelectQuestionCategories) {
-    const eidsString = electionIds
-      ? combineIds(electionIds)
-      : extractIdsString('elections', currentUrl);
-    const cidsString = constituencyIds
-      ? combineIds(constituencyIds)
-      : extractIdsString('constituencies', currentUrl);
-    url += `elections/${eidsString}/constituencies/${cidsString}/questions`;
-  } else if (page === PageType.ShowQuestion) {
-    const eidsString = electionIds
-      ? combineIds(electionIds)
-      : extractIdsString('elections', currentUrl);
-    const cidsString = constituencyIds
-      ? combineIds(constituencyIds)
-      : extractIdsString('constituencies', currentUrl);
+  if (page === PageType.FrontPage) return url;
+
+  url += 'elections';
+  if (page === PageType.SelectElections) return url;
+
+  const eidsString = electionIds
+    ? combineIds(electionIds)
+    : extractIdsString('elections', currentUrl);
+  url += `/${eidsString}/constituencies`;
+  if (page === PageType.SelectConstituencies) return url;
+
+  const cidsString = constituencyIds
+    ? combineIds(constituencyIds)
+    : extractIdsString('constituencies', currentUrl);
+  url += `/${cidsString}`;
+
+  if ([PageType.SelectQuestionCategories, PageType.ShowQuestion].includes(page)) {
+    url += '/questions';
+    if (page === PageType.SelectQuestionCategories) return url;
+    // ShowQuestion
     const qcidsString = questionCategoryIds
       ? combineIds(questionCategoryIds)
       : extractIdsString('questions', currentUrl);
     if (questionId == undefined || questionId == '') {
       throw new Error('This route must have a questionId');
     }
-    url += `elections/${eidsString}/constituencies/${cidsString}/questions/${qcidsString}/question/${questionId}`;
+    url += `/${qcidsString}/question/${questionId}`;
+    return url;
   }
-  goto(url);
+
+  if ([PageType.ShowResults, PageType.ShowCandidate].includes(page)) {
+    url += '/results';
+    if (page === PageType.ShowResults) return url;
+    // ShowCandidate
+    if (candidateId == undefined || candidateId == '') {
+      throw new Error('This route must have a candidateId');
+    }
+    url += `/${candidateId}`;
+    return url;
+  }
+
+  throw new Error(`Unknown page type: ${page}`);
 }
 
 function extractIdsString(after: string, url = '', throwOnEmpty = true): string {
