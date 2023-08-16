@@ -17,9 +17,9 @@ export enum PageType {
 
 export type GotoRouteParams = {
   page: PageType;
-  electionIds?: Id[];
-  constituencyIds?: Id[];
-  questionCategoryIds?: Id[];
+  electionIds?: Id | Id[] | undefined;
+  constituencyIds?: Id | Id[] | undefined;
+  questionCategoryIds?: Id | Id[] | undefined;
   questionId?: Id;
   candidateId?: Id;
 };
@@ -30,6 +30,21 @@ export function gotoRoute(params: GotoRouteParams) {
     url += '';
   } else if (params.page === PageType.SelectElections) {
     url += 'elections';
+  } else if (params.page === PageType.SelectConstituencies) {
+    url += `elections/${combineIds(params.electionIds)}/constituencies`;
   }
   goto(url);
+}
+
+function combineIds(ids: Id | Id[] | undefined, throwOnEmpty = true) {
+  if (ids == null || ids.length === 0) {
+    if (throwOnEmpty) {
+      throw new Error('This route must have ids');
+    }
+    return '';
+  }
+  if (Array.isArray(ids)) {
+    return ids.join(',');
+  }
+  return ids;
 }
