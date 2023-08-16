@@ -94,11 +94,11 @@ export default {
   getAppLabels(): Promise<AppLabels> {
     return new Promise<AppLabels>((resolve) => {
       resolve({
-        appTitle: 'Mock Voting Advice Application',
-        electionsTitle: 'Choose Elections',
-        constituenciesTitle: 'Choose Your Constituency',
         viewTexts: {
-          questionsTip: 'Question Tip'
+          questionsTip: 'Question Tip',
+          appTitle: 'Mock Voting Advice Application',
+          electionsTitle: 'Choose Elections',
+          constituenciesTitle: 'Choose Your Constituency'
         },
         actionLabels: {
           results: 'Go to results'
