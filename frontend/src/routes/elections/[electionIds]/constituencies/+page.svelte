@@ -1,4 +1,9 @@
 <script lang="ts">
+  import {page} from '$app/stores';
+  import LoadingIndicator from '$lib/components/LoadingIndicator.svelte';
+  import {gotoRoute, PageType} from '$lib/navigation';
+  import {isSingleElection, visibleElections, effectiveTemporaryChoices} from '$lib/stores/stores';
+
   // TO DO:
   // * Disallow selecting a constituency from multiple categories for the same election:
   //   make an expander or a radio selection?
@@ -7,10 +12,6 @@
   //   the leaf nodes (and use a searchable select)
   // * Handle overlapping constituency categories: both identical categories and those
   //   that are subsets of others
-
-  import LoadingIndicator from '$lib/components/LoadingIndicator.svelte';
-  import {gotoRoute, PageType} from '$lib/navigation';
-  import {isSingleElection, visibleElections, effectiveTemporaryChoices} from '$lib/stores/stores';
 
   const selectedConstituencyIds: string[] = [];
 
@@ -25,9 +26,9 @@
       return;
     }
     gotoRoute({
-      page: PageType.SelectQuetionCategories,
+      page: PageType.SelectQuestionCategories,
       constituencyIds: selectedConstituencyIds,
-      electionIds: $effectiveTemporaryChoices.selectedElectionIds
+      currentUrl: $page.url.pathname
     });
   }
 </script>
