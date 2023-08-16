@@ -1,19 +1,23 @@
-<script>
-  import {GetFullNameInOrder} from '$lib/utils/internationalisation';
-  export let id;
-  export let candidate;
-  let party = candidate?.party?.data?.attributes?.party;
+<script lang="ts">
+  import {_} from 'svelte-i18n';
+  import type {PersonNomination} from '$lib/vaa-data';
+  import {createEventDispatcher} from 'svelte';
+
+  // TO DO
+
+  // TO DO: Convert to sparse interface with necessary props only
+  export let candidate: PersonNomination;
+
+  const dispatch = createEventDispatcher();
+
+  function onSelect() {
+    dispatch('select', {candidate});
+  }
 </script>
 
 <section class="card m-8 w-96 bg-base-100 shadow-xl">
-  {#if candidate && id}
-    <a href={`/candidates/${id}`}>
-      <div class="card-body">
-        <h2 class="card-title">{GetFullNameInOrder(candidate.firstName, candidate.lastName)}</h2>
-        <h3>{party}</h3>
-      </div>
-    </a>
-  {:else}
-    <p>Error displaying candidate info</p>
-  {/if}
+  <div class="card-body cursor-pointer" on:click={onSelect} on:keydown={onSelect}>
+    <h2 class="card-title">{candidate.name}</h2>
+    <h3>{candidate.organization ? candidate.organization.name : $_('candidate.independent')}</h3>
+  </div>
 </section>
