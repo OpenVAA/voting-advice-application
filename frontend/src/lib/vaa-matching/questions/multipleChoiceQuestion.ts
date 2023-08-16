@@ -1,0 +1,76 @@
+import {NORMALIZED_DISTANCE_EXTENT} from '../core/distances';
+import {MISSING_VALUE} from '../core/matchableValue';
+import type {MatchableValue, NonmissingValue} from '../core/matchableValue';
+import type {MatchingSpaceCoordinate} from '../core/matchingSpacePosition';
+import type {MatchableQuestion} from './matchableQuestion';
+
+/**
+ * A value option in a matchable multiple choice question
+ */
+export interface MultipleChoiceOption {
+  value: NonmissingValue;
+}
+
+/**
+ * Consructor options for MultipleChoiceQuestion
+ */
+export interface MultipleChoiceQuestionOptions {
+  values: readonly MultipleChoiceOption[];
+}
+
+/**
+ * A class for multiple choice questions, including Likert-scale ones
+ */
+export class MultipleChoiceQuestion implements MatchableQuestion {
+  id = '';
+  /**
+   * Set this to more than 1 for questions, such as preference order,
+   * that produce multidimensional normalized values
+   */
+  normalizedDimensions = 1;
+
+  public readonly values: readonly MultipleChoiceOption[];
+
+  // TODO: We might want to remove this for easier multi-class inheritance
+  constructor({values}: MultipleChoiceQuestionOptions) {
+    this.values = values;
+  }
+
+  get neutralValue(): NonmissingValue {
+    return this.minValue + this.valueRange / 2;
+  }
+
+  get maxValue(): NonmissingValue {
+    return this.values[this.values.length - 1].value;
+  }
+
+  get minValue(): NonmissingValue {
+    return this.values[0].value;
+  }
+
+  get valueRange(): number {
+    return this.maxValue - this.minValue;
+  }
+
+  /**
+   * Used to convert a question's values into normalized distances for used
+   * in matching.
+   * @param value A question's native value
+   * @returns The value in the signed normalized range (e.g. [-.5, .5])
+   */
+  normalizeValue(value: MatchableValue): MatchingSpaceCoordinate {
+    if (value === MISSING_VALUE) return value;
+    return NORMALIZED_DISTANCE_EXTENT * ((value - this.minValue) / this.valueRange - 0.5);
+  }
+
+  /**
+   * Utitility for creating Likert scale questions.
+   * @param scale The number of options for the Likert scale
+   * @returns A MultipleChoiceQuestion object
+   */
+  static fromLikertScale(scale: number): MultipleChoiceQuestion {
+    if (!Number.isSafeInteger(scale)) throw new Error('Scale must be an integer.');
+    const values: MultipleChoiceOption[] = Array.from({length: scale}, (_, i) => ({value: i + 1}));
+    return new MultipleChoiceQuestion({values});
+  }
+}
