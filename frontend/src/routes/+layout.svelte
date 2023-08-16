@@ -4,8 +4,19 @@
   import {beforeNavigate} from '$app/navigation';
   import type {LayoutData} from './$types';
   import {_} from 'svelte-i18n';
+  import LoadingIndicator from '$lib/components/LoadingIndicator.svelte';
+  import {appLabels, appSettings, electionData} from '$lib/stores';
 
   export let data: LayoutData;
+
+  // Update the global stores
+  if (data) {
+    $appLabels = data.appLabels;
+    $appSettings = data.appSettings;
+    $electionData = data.electionData;
+  } else {
+    throw new Error('No data');
+  }
 
   // TODO: This navigation system may be obsolete. Most of the navigation in mobile
   // devices is done by using the back button. We need to analize if having this navigation menu is
@@ -27,7 +38,7 @@
   });
 </script>
 
-{#if data}
+{#if $appLabels}
   <header class="sticky left-0 right-0 top-0 z-50">
     <nav class="bg-secondary p-4">
       <ul class="flex items-center justify-between">
@@ -42,7 +53,7 @@
               <path
                 d="M11.67 1.8701L9.9 0.100098L0 10.0001L9.9 19.9001L11.67 18.1301L3.54 10.0001L11.67 1.8701Z" />
             </svg>
-            {data?.actionLabels?.previous}</a>
+            {$appLabels.actionLabels?.['previous']}</a>
         </li>
         {#if $page.route.id === '/questions'}
           <h2 class="flex justify-center text-xl font-bold max-md:hidden">
@@ -51,7 +62,7 @@
         {/if}
         <li class="mr-6">
           <a class="text-primary hover:text-secondary" href="/help"
-            >{data?.actionLabels?.help}
+            >{$appLabels.actionLabels?.help}
             <svg
               width="22"
               height="22"
@@ -83,15 +94,15 @@
       <div class="mb-4 flex flex-col items-center justify-between gap-3 text-secondary">
         <p class="text-center text-sm">
           <img class="inline w-6" src="/icons/tip.svg" alt="" srcset="" />
-          {data?.viewTexts?.questionsTip}
+          {$appLabels.viewTexts?.questionsTip}
         </p>
         <p class="text-center text-xs">
-          {data?.viewTexts?.publishedBy.replace('{{0}}', '')}
+          {($appLabels.viewTexts?.publishedBy ?? '').replace('{{0}}', '')}
           <img
             class="inline w-6"
             src={'/icons/publisher.svg'}
             alt="governmental"
-            srcset="" />institution • {data?.viewTexts?.madeWith.replace('{{0}}', '')}
+            srcset="" />institution • {($appLabels.viewTexts?.madeWith ?? '').replace('{{0}}', '')}
           <img class="inline w-6" src="/icons/vote.svg" alt="" srcset="" />GIPVAA
         </p>
       </div>
@@ -107,16 +118,14 @@
           </li>
           <li class="mr-6">
             <a class="text-primary hover:text-secondary" href="/results"
-              >{data?.actionLabels?.results}</a>
+              >{$appLabels.actionLabels?.results}</a>
           </li>
         </ul>
       </nav>
     {/if}
   </footer>
 {:else}
-  <main>
-    <slot />
-  </main>
+  <LoadingIndicator />
 {/if}
 
 <style>
