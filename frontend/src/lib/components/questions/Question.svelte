@@ -23,6 +23,10 @@
   function onChange(event: CustomEvent) {
     dispatch('change', {question, ...event.detail});
   }
+
+  function onSkip() {
+    dispatch('skip', {question});
+  }
 </script>
 
 <section class="flex-auto">
@@ -48,7 +52,7 @@
     </div>
     <div class="flex items-center justify-center">
       <!-- TODO: Add action and an icon -->
-      <button class="btn-ghost btn text-secondary">{$_('questions.skip')}</button>
+      <button on:click={onSkip} class="btn-ghost btn text-secondary">{$_('questions.skip')}</button>
     </div>
   </fieldset>
 </section>

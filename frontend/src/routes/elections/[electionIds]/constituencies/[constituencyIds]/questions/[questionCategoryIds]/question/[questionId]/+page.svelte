@@ -15,6 +15,10 @@
     }
     // Set answer
     $userData.answers[question.id] = key;
+    gotoNext();
+  }
+
+  function gotoNext() {
     // Select where to go next
     if ($nextQuestion == null) {
       gotoRoute({
@@ -41,7 +45,11 @@
     <main class="grid flex-1 content-center px-3">
       {#key $currentQuestion}
         {#if $currentQuestion instanceof LikertQuestion}
-          <Question question={$currentQuestion} {selectedKey} on:change={answerQuestion} />
+          <Question
+            question={$currentQuestion}
+            {selectedKey}
+            on:change={answerQuestion}
+            on:skip={gotoNext} />
         {:else}
           Cannot currently display non-Likert questions: {$currentQuestion.type}
         {/if}
