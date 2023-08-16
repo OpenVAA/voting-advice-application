@@ -37,7 +37,14 @@ export class DataObjectCollection<T extends DataObject> {
   }
 
   get items() {
-    return sortItems(Object.values(this._items));
+    return Object.values(this._items);
+  }
+
+  /**
+   * Get the items sorted by a default sorter: see sortItems
+   */
+  get sorted() {
+    return sortItems(this.items);
   }
 
   /**

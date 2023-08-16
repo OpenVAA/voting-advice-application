@@ -447,8 +447,9 @@ export const nextQuestion = derived(
     if ($current == null) {
       return undefined;
     }
-    const idx = $qsts.items.indexOf($current) + 1;
-    return idx >= $qsts.length ? undefined : $qsts.items[idx];
+    const sortedQsts = $qsts.sorted;
+    const idx = sortedQsts.indexOf($current) + 1;
+    return idx >= sortedQsts.length ? undefined : sortedQsts[idx];
   }
 );
 

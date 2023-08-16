@@ -13,11 +13,11 @@
 <h1>Results</h1>
 
 {#if $visibleElections}
-  {#each $visibleElections.items as election}
+  {#each $visibleElections.sorted as election}
     {#if !$isSingleElection}
       <h2>Results for {election.name}</h2>
     {/if}
-    {#each election.nominations.persons.filter( {constituencyId: $visibleConstituencies.items.map((c) => c.id)} ) as { nominationId, name, shortName, initials, electionSymbol, isIndependent, memberOfNominatingOrganization, organization, organizationNominations }}
+    {#each election.nominations.persons.filter( {constituencyId: $visibleConstituencies.sorted.map((c) => c.id)} ) as { nominationId, name, shortName, initials, electionSymbol, isIndependent, memberOfNominatingOrganization, organization, organizationNominations }}
       <div class="my-4">
         <h2>{name} (a.k.a. {shortName} or {initials})</h2>
         {#if electionSymbol != ''}

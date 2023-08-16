@@ -22,7 +22,7 @@
 </h1>
 
 {#if $availableElections?.length && $effectiveSettings}
-  {#each $availableElections.items as election, index}
+  {#each $availableElections.sorted as election, index}
     <label class="block">
       {#if allowMultiple}
         <input

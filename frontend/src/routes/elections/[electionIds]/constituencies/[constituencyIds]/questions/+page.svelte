@@ -11,7 +11,7 @@
   function gotoQuestions() {
     let root = $page.url.pathname.replace(/\/$/, '');
     const categoryIds = selectedQuestionCategoryIds.join(',');
-    const firstQuestionId = $availableMatchableQuestions.items.filter((q) =>
+    const firstQuestionId = $availableMatchableQuestions.sorted.filter((q) =>
       categoryIds.includes(q.parent.id)
     )[0]?.id;
     if (firstQuestionId == null) {
@@ -24,7 +24,7 @@
 <h1>Select Question Categories</h1>
 
 {#if $availableMatchableQuestionCategories?.nonEmpty}
-  {#each $availableMatchableQuestionCategories.items as category}
+  {#each $availableMatchableQuestionCategories.sorted as category}
     <label class="block">
       <input
         type="checkbox"
@@ -34,7 +34,7 @@
         bind:group={selectedQuestionCategoryIds} />
       {category.name}
       <!-- {#if !$isSingleElection}
-        (for {category.elections.items.map((e) => e.shortName).join(', ')})
+        (for {category.elections.sorted.map((e) => e.shortName).join(', ')})
       {/if} -->
     </label>
   {:else}

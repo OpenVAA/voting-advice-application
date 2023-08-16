@@ -38,7 +38,7 @@
 </h1>
 
 {#if $visibleElections.length}
-  {#each $visibleElections.items as election, elIndex}
+  {#each $visibleElections.sorted as election, elIndex}
     {#if !isSingleElection}
       <h2>
         {election.name}
@@ -47,11 +47,11 @@
     {#if election.constituencyCategories.length > 1}
       <p>Select a constituency from one of the categories below for this election.</p>
     {/if}
-    {#each election.constituencyCategories.items as category, catIndex}
+    {#each election.constituencyCategories.sorted as category, catIndex}
       <label class="block">
         <select name={category.id} class="select" bind:value={selectedConstituencyIds[elIndex]}>
           <option disabled selected value="">{category.name}</option>
-          {#each category.constituencies.items as constituency}
+          {#each category.constituencies.sorted as constituency}
             <option value={constituency.id}>{constituency.name}</option>
           {:else}
             <option disabled>No constituencies found in the group! This should not happen</option>
