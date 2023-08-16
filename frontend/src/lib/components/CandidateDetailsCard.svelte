@@ -1,7 +1,7 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import type {CompatibilityScore} from '$lib/types/compatibilityScore.type';
-  import Tabs from '$lib/shared/Tabs.svelte';
+  import Tabs from '$lib/components/Tabs.svelte';
   import CandidateBasicInfo from '$lib/components/CandidateBasicInfo.svelte';
   import CandidateOpinions from '$lib/components/CandidateOpinions.svelte';
   import {ScoreGauge} from '$lib/components/scoreGauge/index';
