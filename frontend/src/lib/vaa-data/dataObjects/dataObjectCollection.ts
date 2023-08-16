@@ -11,7 +11,7 @@ import type {DataObject} from './dataObject';
  * For convenience we can pass a regular filter predicate to
  * DataObjectList.filter
  */
-export type FilterFunc = Parameters<typeof Array.prototype.filter>;
+export type FilterFuncParams = Parameters<typeof Array.prototype.filter>;
 
 /**
  * A tuple of an object's property and an array of such objects.
@@ -104,7 +104,7 @@ export class DataObjectCollection<T extends DataObject> {
    * @param filter Optional filter or filter function
    * @returns The contained DataObjects as an array
    */
-  filter(filter?: QueryFilter | FilterFunc) {
+  filter(filter?: QueryFilter | FilterFuncParams) {
     return filter
       ? Array.isArray(filter)
         ? this.items.filter(...filter)
@@ -117,7 +117,7 @@ export class DataObjectCollection<T extends DataObject> {
    * @param filter Optional filter for items
    * @returns The contained DataObjects as a new DataObjectCollection
    */
-  filterAsList(filter?: QueryFilter | FilterFunc) {
+  filterAsList(filter?: QueryFilter | FilterFuncParams) {
     return filter ? new DataObjectCollection<T>(this.filter(filter)) : this;
   }
 
