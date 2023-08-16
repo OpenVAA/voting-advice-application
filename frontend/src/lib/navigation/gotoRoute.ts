@@ -14,7 +14,7 @@ export enum PageType {
   SelectQuestionCategories,
   ShowQuestion,
   ShowResults,
-  ShowCandidate
+  ShowPerson
 }
 
 export type GotoRouteParams = {
@@ -23,7 +23,7 @@ export type GotoRouteParams = {
   constituencyIds?: Id | Id[] | undefined;
   questionCategoryIds?: Id | Id[] | undefined;
   questionId?: Id;
-  candidateId?: Id;
+  personNominationId?: Id;
   currentUrl?: string;
 };
 
@@ -37,7 +37,7 @@ export function createRoute({
   constituencyIds,
   questionCategoryIds,
   questionId,
-  candidateId,
+  personNominationId,
   currentUrl
 }: GotoRouteParams): string {
   let url = '/';
@@ -71,14 +71,14 @@ export function createRoute({
     return url;
   }
 
-  if ([PageType.ShowResults, PageType.ShowCandidate].includes(page)) {
+  if ([PageType.ShowResults, PageType.ShowPerson].includes(page)) {
     url += '/results';
     if (page === PageType.ShowResults) return url;
     // ShowCandidate
-    if (candidateId == undefined || candidateId == '') {
+    if (personNominationId == undefined || personNominationId == '') {
       throw new Error('This route must have a candidateId');
     }
-    url += `/${candidateId}`;
+    url += `/person/${personNominationId}`;
     return url;
   }
 
