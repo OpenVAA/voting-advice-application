@@ -17,14 +17,78 @@ import type {Settings} from '$lib/stores';
 import type {AppLabels} from '$types';
 import type {AppConfig} from './appConfig.type';
 
+import {constants} from './constants';
+import {error} from '@sveltejs/kit';
+
+// STASHED: These are needed for a StrapiDataProvider implementation.
 // import {StrapiDataProvider} from './strapiDataProvider';
 // import type {StrapiDataProviderOptions} from './strapiDataProvider';
-// import {constants} from '../utils/constants';
-
 // const dpOptions: StrapiDataProviderOptions = {
 //   backendUrl: constants.BACKEND_URL,
 //   strapiToken: constants.STRAPI_TOKEN,
 // };
+
+// STASHED: This is the old getData stuff for getting the appLabels from
+// Strapi.
+
+// const getData = async (
+//   endpoint: string,
+//   params: URLSearchParams = new URLSearchParams({})
+// ): Promise<any> => {
+//   const url = `${constants.BACKEND_URL}/${endpoint}?${params}`;
+
+//   return await fetch(url, {
+//     headers: {
+//       Authorization: `Bearer ${constants.STRAPI_TOKEN}`
+//     }
+//   })
+//     .then((response) => {
+//       return response.json();
+//     })
+//     .catch((error) => console.error('Error in getting data from backend: ', error));
+// };
+
+// //TODO: Add filter to get the right election
+// const election = await getData(
+//   'api/elections',
+//   new URLSearchParams({populate: 'electionAppLabel'})
+// ).then((result) => {
+//   if (result?.data[0]?.attributes) {
+//     return result.data[0].attributes;
+//   }
+//   if (result?.error?.status === 404) {
+//     throw error(404, 'election not found');
+//   }
+// });
+
+// const appLabelId = election?.electionAppLabel?.data?.id;
+
+// // //TODO add filter to get the labels for the correct election
+// const appLabels = await getData(
+//   'api/election-app-labels',
+//   new URLSearchParams({
+//     'filters[id][$eq]': appLabelId,
+//     populate: '*'
+//   })
+// )
+//   .then((result) => {
+//     if (result?.data[0]?.attributes) {
+//       return result.data[0].attributes;
+//     }
+//     if (result?.error?.status === 404) {
+//       throw error(404, 'election not found');
+//     }
+//   })
+//   .catch((error) => {
+//     console.error('Error in getting layout data from Strapi: ', ' - - - ', error);
+//   });
+
+// if (appLabels?.error) {
+//   console.error('appLabels error', appLabels.error);
+//   throw error(appLabels.error.status, {message: appLabels.error.message});
+// }
+
+// return appLabels;
 
 export default {
   getAppLabels(): Promise<AppLabels> {
@@ -32,7 +96,13 @@ export default {
       resolve({
         appTitle: 'Mock Voting Advice Application',
         electionsTitle: 'Choose Elections',
-        constituenciesTitle: 'Choose Your Constituency'
+        constituenciesTitle: 'Choose Your Constituency',
+        viewTexts: {
+          questionsTip: 'Question Tip'
+        },
+        actionLabels: {
+          results: 'Go to results'
+        }
       });
     });
   },
@@ -46,7 +116,9 @@ export default {
   },
 
   getDataProvider(): DataProvider {
-    return new MockDataProvider();
+    // TO DO: Change to StrapiDataProvider and implement everything
+    // in MockDataProvider for it.
     // return new StrapiDataProvider(dpOptions);
+    return new MockDataProvider();
   }
 } as AppConfig;
