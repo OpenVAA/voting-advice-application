@@ -46,28 +46,32 @@ export function gotoRoute({
   } else if (page === PageType.SelectConstituencies) {
     url += `elections/${combineIds(electionIds)}/constituencies`;
   } else if (page === PageType.SelectQuestionCategories) {
-    const eidsString = currentUrl
-      ? extractIdsString(currentUrl, 'elections')
-      : combineIds(electionIds);
-    url += `elections/${eidsString}/constituencies/${combineIds(constituencyIds)}/questions`;
+    const eidsString = electionIds
+      ? combineIds(electionIds)
+      : extractIdsString('elections', currentUrl);
+    const cidsString = constituencyIds
+      ? combineIds(constituencyIds)
+      : extractIdsString('constituencies', currentUrl);
+    url += `elections/${eidsString}/constituencies/${cidsString}/questions`;
   } else if (page === PageType.ShowQuestion) {
-    const eidsString = currentUrl
-      ? extractIdsString(currentUrl, 'elections')
-      : combineIds(electionIds);
-    const cidsString = currentUrl
-      ? extractIdsString(currentUrl, 'constituencies')
-      : combineIds(constituencyIds);
+    const eidsString = electionIds
+      ? combineIds(electionIds)
+      : extractIdsString('elections', currentUrl);
+    const cidsString = constituencyIds
+      ? combineIds(constituencyIds)
+      : extractIdsString('constituencies', currentUrl);
+    const qcidsString = questionCategoryIds
+      ? combineIds(questionCategoryIds)
+      : extractIdsString('questions', currentUrl);
     if (questionId == undefined || questionId == '') {
       throw new Error('This route must have a questionId');
     }
-    url += `elections/${eidsString}/constituencies/${cidsString}/questions/${combineIds(
-      questionCategoryIds
-    )}/question/${questionId}`;
+    url += `elections/${eidsString}/constituencies/${cidsString}/questions/${qcidsString}/question/${questionId}`;
   }
   goto(url);
 }
 
-function extractIdsString(url: string, after: string, throwOnEmpty = true): string {
+function extractIdsString(after: string, url = '', throwOnEmpty = true): string {
   const match = url.match(new RegExp(`(?<=/${after}/)[^/]+`));
   if (!match && throwOnEmpty) {
     throw new Error('This route must have ids');

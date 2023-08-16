@@ -56,8 +56,8 @@ export interface UserData {
   /**
    * The user's answers to MatchableQuestions
    */
-  answers?: {
-    [key: Id]: SerializableValue;
+  answers: {
+    [questionId: Id]: SerializableValue;
   };
   /**
    * Possibly save some persistent user settings

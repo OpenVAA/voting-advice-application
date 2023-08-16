@@ -158,11 +158,12 @@ export const answerData = createConnectedStore((data: FullySpecifiedAnswerData[]
 
 // TO DO: Check if we should split this into substores to avoid unnecessary derived calls below
 // TO DO: Remove funny indices from names, but we need these to reset the stores
-export const userData = createStoreValueAndSubscribeToLocalStorage('userData_1', {
+export const userData = createStoreValueAndSubscribeToLocalStorage('userData_4', {
+  answers: {},
   settings: {},
   customData: {}
 } as UserData);
-export const sessionData = createStoreValueAndSubscribeToLocalStorage('sessionData_1', {
+export const sessionData = createStoreValueAndSubscribeToLocalStorage('sessionData_4', {
   settings: {},
   temporaryChoices: {},
   customData: {}
