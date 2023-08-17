@@ -3,7 +3,9 @@ import type {MatchableQuestion} from '../questions/matchableQuestion';
 
 /**
  * A utility function to create a subspace for a subset of questions
- * that can be passed to `measureDistance`.
+ * that can be passed to `measureDistance`. The main intended use is
+ * in computing submatches for question categories, such as,
+ * 'Economy' or 'The Environment'.
  *
  * @param allQuestions The full set of questions
  * @param subset The subset of questions for which the subspace is
