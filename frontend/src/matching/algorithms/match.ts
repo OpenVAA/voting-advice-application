@@ -10,10 +10,18 @@ import type {HasMatchableQuestions} from '../questions/hasMatchableQuestions';
 export class MatchBase {
   /** Used for to get/set `distance`. */
   private _distance: UnsignedNormalizedDistance = 0;
-  /** Used in converting the distance to a string representation. */
-  protected static multiplier = 100;
-  /** Used in converting the distance to a string representation. */
-  protected static unitString = '%'; // "&#8201;%";
+  /**
+   * Used in converting the distance to a score value, typically
+   * between 0 and 100. This is a static value of the class, so
+   * change with `MatchBase.multiplier = numberVal`.
+   * */
+  static multiplier = 100;
+  /**
+   * Used in converting the score to a string representation with
+   * toString(). This is a static value of the class, so change
+   * with `MatchBase.unitString = stringVal`.
+   */
+  static unitString = '%'; // "&#8201;%";
 
   /**
    * Create a new MatchBase.
