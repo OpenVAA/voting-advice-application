@@ -58,7 +58,7 @@ export class MatchBase {
    * `NORMALIZED_DISTANCE_EXTENT`. Note that 0 means a bad match and 100 a perfect one.
    */
   get score(): number {
-    return Math.round(this.matchFraction * Match.multiplier);
+    return Math.round(this.matchFraction * MatchBase.multiplier);
   }
 
   /**
@@ -66,7 +66,7 @@ export class MatchBase {
    * Override in subclasses.
    */
   toString(): string {
-    return `${this.score}${Match.unitString}`;
+    return `${this.score}${MatchBase.unitString}`;
   }
 }
 
