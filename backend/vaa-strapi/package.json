@@ -15,7 +15,7 @@
     "prettier:check": "prettier --check \"**/*.{js,jsx,ts,tsx,css,scss,html,json,md}\""
   },
   "lint-staged": {
-    "**/*.{svelte,css,html,js,json,md,ts,xml,yaml,yml}": [
+    "**/*.{css,html,js,json,md,ts,xml,yaml,yml}": [
       "prettier --write",
       "eslint"
     ]
