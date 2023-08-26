@@ -2,12 +2,13 @@ import type {
   HasMatchableAnswers,
   HasMatchableQuestions,
   MatchableAnswer,
+  MatchableValue,
   MatchingOptions
 } from '..';
 
 import {
   MatchingAlgorithmBase,
-  MatchableQuestion,
+  type MatchableQuestion,
   MISSING_VALUE,
   MultipleChoiceQuestion,
   DistanceMetric,
@@ -28,8 +29,8 @@ function main(
   subGroup = 0
 ): void {
   // Create dummy questions
-  const questions = Array.from({length: numQuestions}, () =>
-    MultipleChoiceQuestion.fromLikertScale(likertScale)
+  const questions = Array.from({length: numQuestions}, (i: number) =>
+    MultipleChoiceQuestion.fromLikertScale(`q${i}`, likertScale)
   );
 
   // Create answer subgroup
@@ -125,11 +126,11 @@ function createAnswers(
 class Candidate implements HasMatchableAnswers {
   constructor(public readonly name: string, public answers: MatchableAnswer[]) {}
 
-  getMatchableAnswer(question: MatchableQuestion): MatchableAnswer {
+  getMatchableAnswerValue(question: MatchableQuestion): MatchableValue {
     for (const answer of this.answers) {
-      if (answer.question === question) return answer;
+      if (answer.question === question) return answer.value;
     }
-    return {question, value: MISSING_VALUE};
+    return MISSING_VALUE;
   }
 
   get matchableAnswers(): MatchableAnswer[] {
