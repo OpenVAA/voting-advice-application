@@ -1,9 +1,10 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
   import {_} from 'svelte-i18n';
+  import type {QuestionProps} from './Question.type';
 
-  export let name!: string;
-  export let options!: {value: number; label: string}[];
+  export let name: QuestionProps['id'];
+  export let options: QuestionProps['options'];
 
   const dispatch = createEventDispatcher();
   let selected: number;
