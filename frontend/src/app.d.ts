@@ -1,3 +1,4 @@
+import type {CandidateProps} from '$lib/components/CandidateDetailsCard.type';
 import type {QuestionProps} from '$lib/components/questions';
 
 // See https://kit.svelte.dev/docs/types#app
@@ -6,6 +7,7 @@ import type {QuestionProps} from '$lib/components/questions';
 declare namespace App {
   // interface Locals {}
   interface PageData {
+    candidates?: CandidateProps[];
     questions?: QuestionProps[];
   }
   // interface Error {}
