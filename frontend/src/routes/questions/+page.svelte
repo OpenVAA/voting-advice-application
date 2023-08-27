@@ -1,53 +1,52 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {goto} from '$app/navigation';
-
-  import type {Answer} from '$types/answer.type';
-  import {currentQuestion, answeredQuestions} from '$lib/utils/stores';
-  import {getQuestion, getNumberOfQuestions} from '$lib/api/getQuestion';
+  import type {PageData} from './$types';
+  import {allQuestions, currentQuestionIndex, answeredQuestions} from '$lib/utils/stores';
   import {calculateCandidateCompatibilities} from '$lib/algorithms/calculateCompability';
-  import Question from '$lib/components/questions/Question.svelte';
+  import {Question, type OnChangeEventDetail, type QuestionProps} from '$lib/components/questions';
 
-  export let data;
+  export let data: PageData;
+  /**
+   * A small delay before moving to the next question.
+   * TODO: Make this a global variable used throughout the app.
+   */
+  const DELAY_M_MS = 350;
 
-  let currentQuestionNumber = 1;
-  // TODO: Get all of these from the Question object
-  let currentQuestionText = getQuestion(currentQuestionNumber);
-  let currentQuestionOptions = [
-    {value: 1, label: $_('questions.scale.fullyDisagree')},
-    {value: 2, label: $_('questions.scale.disagree')},
-    // {value: 3, label: $_('questions.scale.neutral')},
-    {value: 4, label: $_('questions.scale.agree')},
-    {value: 5, label: $_('questions.scale.fullyAgree')}
-  ];
-  let currentQuestionTopic = 'Environment';
-  let currentQuestionInfo =
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incidid.';
+  if (data?.questions) {
+    $allQuestions = data.questions;
+  } else {
+    throw new Error('Could not load data!');
+  }
 
-  // Null values
-  currentQuestion.update(() => 1);
-  answeredQuestions.update(() => [] as Answer[]);
+  let currentQuestion: QuestionProps;
+  $: currentQuestion = $allQuestions[$currentQuestionIndex];
 
-  currentQuestion.subscribe((value) => {
-    currentQuestionNumber = value;
-  });
-
-  // Store question number and answer value in a store
-  // TODO: define the detail type in the Likert component and import here
+  // Store question id and answer value in a store
   function answerQuestion(event: CustomEvent) {
-    answeredQuestions.update((questions) => [
-      ...questions,
-      {question: event.detail.number, answer: event.detail.value}
+    const detail = event.detail as OnChangeEventDetail;
+    answeredQuestions.update((answers) => [
+      ...answers,
+      {questionId: detail.id, answer: detail.value}
     ]);
-    // TODO: Placeholder for testing, remove when we have radio buttons
-    if (currentQuestionNumber < getNumberOfQuestions()) {
-      currentQuestion.update((n) => n + 1);
-      currentQuestionText = getQuestion(currentQuestionNumber);
-    } else {
-      calculateCandidateCompatibilities().then(() => {
-        goto('/results');
-      });
-    }
+    gotoNextQuestion();
+  }
+
+  // Skip to next question
+  function skipQuestion() {
+    gotoNextQuestion();
+  }
+
+  function gotoNextQuestion() {
+    setTimeout(() => {
+      if ($currentQuestionIndex < $allQuestions.length - 1) {
+        $currentQuestionIndex += 1;
+      } else {
+        calculateCandidateCompatibilities().then(() => {
+          goto('/results');
+        });
+      }
+    }, DELAY_M_MS);
   }
 </script>
 
@@ -57,14 +56,15 @@
 
 <section class="flex h-screen flex-col">
   <main class="grid flex-1 content-center px-3">
-    {#key currentQuestionNumber}
+    {#key currentQuestion}
       <Question
-        number={currentQuestionNumber}
-        text={currentQuestionText}
-        options={currentQuestionOptions}
-        topic={currentQuestionTopic}
-        info={currentQuestionInfo}
-        on:change={answerQuestion} />
+        id={currentQuestion.id}
+        text={currentQuestion.text}
+        options={currentQuestion.options}
+        category={currentQuestion.category}
+        info={currentQuestion.info}
+        on:change={answerQuestion}
+        on:skip={skipQuestion} />
     {/key}
   </main>
 </section>

@@ -3,6 +3,7 @@ import type {Writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import type {VoterAnswer} from '$types/index';
 import type {CandidateRank} from '$types/candidateRank.type';
+import type {QuestionProps} from '$lib/components/questions';
 
 // Store values in local storage to prevent them from disappearing in refresh
 // Here we check if item already exists on a refresh event
@@ -31,7 +32,10 @@ function createStoreValueAndSubscribeToLocalStorage<T>(key: string, defaultValue
 
 // Create the actual Svelte store values
 // TODO: Use proper types for these when these have been defined
-export const currentQuestion = createStoreValueAndSubscribeToLocalStorage('currentQuestion', 1);
+export const currentQuestionIndex = createStoreValueAndSubscribeToLocalStorage(
+  'currentQuestion',
+  0
+);
 export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage(
   'answeredQuestions',
   [] as VoterAnswer[]
@@ -40,3 +44,6 @@ export const candidateRankings = createStoreValueAndSubscribeToLocalStorage(
   'candidateRankings',
   [] as CandidateRank[]
 );
+
+// Stores that are not locally stored
+export const allQuestions = writable<QuestionProps[]>();
