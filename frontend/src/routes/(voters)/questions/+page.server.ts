@@ -1,5 +1,8 @@
 import type {PageServerLoad} from './$types';
+import {getAllQuestions} from '$lib/api/getData';
 
 export const load = (async () => {
-  // TODO: Add things here later on
+  return {
+    questions: await getAllQuestions() // getAllQuestions(),
+  };
 }) satisfies PageServerLoad;
