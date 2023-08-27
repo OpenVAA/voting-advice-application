@@ -5,10 +5,13 @@
   import CandidateBasicInfo from '$lib/components/CandidateBasicInfo.svelte';
   import CandidateOpinions from '$lib/components/CandidateOpinions.svelte';
   import {ScoreGauge} from '$lib/components/scoreGauge/index';
-  export let candidateDetails;
-  export let compatibilityScore: CompatibilityScore = {};
+  import type {CandidateProps} from './CandidateDetailsCard.type';
 
-  let tabs = [$_('candidate.tabs.basicInfo'), $_('candidate.tabs.opinions')];
+  export let candidate: CandidateProps;
+  export let compatibilityScore: CompatibilityScore;
+
+  // Tabs
+  let tabs = ['Basic info', 'Opinions'];
   let activeItem = tabs[0];
   const handleChangeTab = (e) => {
     activeItem = e.detail;
@@ -19,10 +22,9 @@
 <section class="mt-4">
   <!-- TODO: replace the following div tag with the EntityCard component -->
   <div class="mb-4 ml-4">
-    <h1 class="text-h1">{candidateDetails.name}</h1>
+    <h1 class="text-h1">{candidate.firstName} {candidate.lastName}</h1>
     <p>
-      <span class="badge-lg bg-default-party p-1 text-white"
-        >{candidateDetails.partyShortName}</span>
+      <span class="badge-lg bg-default-party p-1 text-white">{candidate.party.shortName}</span>
     </p>
   </div>
   <!-- {#} -->
@@ -37,8 +39,8 @@
   {/if}
   <Tabs on:changeTab={handleChangeTab} {tabs} {activeItem} />
   {#if tabs[0] === activeItem}
-    <CandidateBasicInfo {candidateDetails} />
+    <CandidateBasicInfo {candidate} />
   {:else if tabs[1] === activeItem}
-    <CandidateOpinions />
+    <CandidateOpinions {candidate} />
   {/if}
 </section>
