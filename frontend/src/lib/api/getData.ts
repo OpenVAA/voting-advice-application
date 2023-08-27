@@ -23,22 +23,23 @@ export const getData = async (
     .catch((error) => console.error('Error in getting data from backend: ', error));
 };
 
-export const getSingleTypeData = async ({fetch, params, route, url, endpoint}): Promise<any> => {
-  const backendUrl = `${constants.BACKEND_URL}/${endpoint}`;
+// NOT USED
+// export const getSingleTypeData = async ({fetch, params, route, url, endpoint}): Promise<any> => {
+//   const backendUrl = `${constants.BACKEND_URL}/${endpoint}`;
 
-  return await fetch(backendUrl, {
-    headers: {
-      Authorization: `Bearer ${constants.STRAPI_TOKEN}`
-    }
-  })
-    .then((response: {json: () => any}) => {
-      return response.json();
-    })
-    .catch((error: any) =>
-      console.error(`Error fetching data from Strapi: ${error} - 
-      URL: ${backendUrl}`)
-    );
-};
+//   return await fetch(backendUrl, {
+//     headers: {
+//       Authorization: `Bearer ${constants.STRAPI_TOKEN}`
+//     }
+//   })
+//     .then((response: {json: () => any}) => {
+//       return response.json();
+//     })
+//     .catch((error: any) =>
+//       console.error(`Error fetching data from Strapi: ${error} -
+//       URL: ${backendUrl}`)
+//     );
+// };
 
 // TODO: Define what type of data this returns instead of just any
 export const getAllCandidates = async (): Promise<any> => {
