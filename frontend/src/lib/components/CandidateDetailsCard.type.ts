@@ -6,6 +6,7 @@ export interface CandidateProps {
   }[];
   candidateNumber: string | number;
   firstName: string;
+  id: string;
   lastName: string;
   motherTongues: string[];
   otherLanguages: string[];
