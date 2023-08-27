@@ -1,7 +1,7 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {createEventDispatcher} from 'svelte';
-  import type {QuestionProps} from './Question.type';
+  import type {OnChangeEventDetail, OnSkipEventDetail, QuestionProps} from './Question.type';
   import LikertScaleAnsweringButtons from './LikertScaleAnsweringButtons.svelte';
 
   // TODO: Only expose an attribute taking in a Question object, bc there are so
@@ -17,11 +17,11 @@
   const dispatch = createEventDispatcher();
 
   function onChange(event: CustomEvent) {
-    dispatch('change', {id, ...event.detail} as {
-      id: string;
-      value: number;
-      originalEvent: Event;
-    });
+    dispatch('change', {id, ...event.detail} as OnChangeEventDetail);
+  }
+
+  function onSkip(event: MouseEvent) {
+    dispatch('skip', {id, originalEvent: event} as OnSkipEventDetail);
   }
 </script>
 
@@ -48,7 +48,7 @@
     </div>
     <div class="flex items-center justify-center">
       <!-- TODO: Add action and an icon -->
-      <button class="btn-ghost btn text-secondary">{$_('questions.skip')}</button>
+      <button on:click={onSkip} class="btn-ghost btn text-secondary">{$_('questions.skip')}</button>
     </div>
   </fieldset>
 </section>
