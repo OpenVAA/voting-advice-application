@@ -1,7 +1,7 @@
 import {writable} from 'svelte/store';
 import type {Writable} from 'svelte/store';
 import {browser} from '$app/environment';
-import type {Answer} from '$types/answer.type';
+import type {VoterAnswer} from '$types/index';
 import type {CandidateRank} from '$types/candidateRank.type';
 import type {QuestionProps} from '$lib/components/questions';
 
@@ -38,7 +38,7 @@ export const currentQuestionIndex = createStoreValueAndSubscribeToLocalStorage(
 );
 export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage(
   'answeredQuestions',
-  [] as Answer[]
+  [] as VoterAnswer[]
 );
 export const candidateRankings = createStoreValueAndSubscribeToLocalStorage(
   'candidateRankings',
