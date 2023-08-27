@@ -17,7 +17,11 @@
   const dispatch = createEventDispatcher();
 
   function onChange(event: CustomEvent) {
-    dispatch('change', {id, ...event.detail});
+    dispatch('change', {id, ...event.detail} as {
+      id: string;
+      value: number;
+      originalEvent: Event;
+    });
   }
 </script>
 
