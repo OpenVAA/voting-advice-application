@@ -1,7 +1,7 @@
 import {writable} from 'svelte/store';
 import type {Writable} from 'svelte/store';
 import {browser} from '$app/environment';
-import type {Answer} from '$types/answer.type';
+import type {VoterAnswer} from '$types/index';
 import type {CandidateRank} from '$types/candidateRank.type';
 
 // Store values in local storage to prevent them from disappearing in refresh
@@ -34,7 +34,7 @@ function createStoreValueAndSubscribeToLocalStorage<T>(key: string, defaultValue
 export const currentQuestion = createStoreValueAndSubscribeToLocalStorage('currentQuestion', 1);
 export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage(
   'answeredQuestions',
-  [] as Answer[]
+  [] as VoterAnswer[]
 );
 export const candidateRankings = createStoreValueAndSubscribeToLocalStorage(
   'candidateRankings',
