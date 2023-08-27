@@ -11,7 +11,7 @@
   export let id: QuestionProps['id'];
   export let text: QuestionProps['text'];
   export let options: QuestionProps['options'];
-  export let topic: QuestionProps['topic'] = '';
+  export let category: QuestionProps['category'] = '';
   export let info: QuestionProps['info'] = '';
 
   const dispatch = createEventDispatcher();
@@ -25,9 +25,9 @@
   <fieldset>
     <legend>
       <hgroup>
-        {#if topic && topic !== ''}
-          <!-- TODO: Set color based on topic -->
-          <p class="text-secondary">{topic}</p>
+        {#if category && category !== ''}
+          <!-- TODO: Set color based on category -->
+          <p class="text-secondary">{category}</p>
         {/if}
         <h1>{text}</h1>
       </hgroup>

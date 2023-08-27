@@ -15,13 +15,13 @@
 </script>
 
 <div class="relative grid auto-cols-fr grid-flow-col gap-3">
-  {#each options as { value, label }}
+  {#each options as { key, label }}
     <label class="grid grid-flow-row auto-rows-max justify-items-center gap-2">
       <input
         type="radio"
         class="radio-primary radio min-h-[2.5rem] min-w-[2.5rem] border-2 bg-base-100 ring-4 ring-base-100"
         {name}
-        {value}
+        value={key}
         bind:group={selected}
         on:change={onChange} />
       <div class="text-center text-xs uppercase text-secondary">{label}</div>

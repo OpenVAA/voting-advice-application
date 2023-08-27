@@ -1,7 +1,7 @@
 export interface QuestionProps {
   id: string;
   text: string;
-  options: {value: number; label: string}[];
-  topic?: string;
+  options: {key: number; label: string}[];
+  category?: string;
   info?: string;
 }
