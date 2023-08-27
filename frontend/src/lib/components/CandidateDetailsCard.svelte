@@ -1,5 +1,6 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
+  import {GetFullNameInOrder} from '$lib/utils/internationalisation';
   import type {CompatibilityScore} from '$lib/types/compatibilityScore.type';
   import Tabs from '$lib/shared/Tabs.svelte';
   import CandidateBasicInfo from '$lib/components/CandidateBasicInfo.svelte';
@@ -22,7 +23,7 @@
 <section class="mt-4">
   <!-- TODO: replace the following div tag with the EntityCard component -->
   <div class="mb-4 ml-4">
-    <h1 class="text-h1">{candidate.firstName} {candidate.lastName}</h1>
+    <h1 class="text-h1">{GetFullNameInOrder(candidate.firstName, candidate.lastName)}</h1>
     <p>
       <span class="badge-lg bg-default-party p-1 text-white">{candidate.party.shortName}</span>
     </p>
