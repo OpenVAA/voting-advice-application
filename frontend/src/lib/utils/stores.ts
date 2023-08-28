@@ -1,12 +1,12 @@
-import {writable} from 'svelte/store';
-import type {Writable} from 'svelte/store';
+import {derived, writable} from 'svelte/store';
+import type {Readable, Writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import type {VoterAnswer} from '$types/index';
-import type {CandidateRank} from '$types/candidateRank.type';
 import {logDebugError} from './logger';
 import type {QuestionProps} from '$lib/components/questions';
-import type {CandidateProps} from '$lib/components/CandidateDetailsCard.type';
+import type {CandidateProps, RankingProps} from '$lib/components/candidates';
 import type {Match} from '$lib/vaa-matching';
+import {matchCandidates} from '$lib/utils/matching';
 
 // Store values in local storage to prevent them from disappearing in refresh
 // Here we check if item already exists on a refresh event
@@ -43,10 +43,6 @@ export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage(
   'answeredQuestions',
   [] as VoterAnswer[]
 );
-export const candidateRankings = createStoreValueAndSubscribeToLocalStorage(
-  'candidateRankings',
-  [] as CandidateRank[]
-);
 
 /**
  * Reset the local storage values
@@ -55,10 +51,8 @@ export function resetLocalStorage(): void {
   if (browser && localStorage) {
     localStorage.removeItem('currentQuestion');
     localStorage.removeItem('answeredQuestions');
-    localStorage.removeItem('candidateRankings');
     currentQuestionIndex.set(0);
     answeredQuestions.set([]);
-    candidateRankings.set([]);
     logDebugError('Local storage has been reset');
   }
 }
@@ -67,3 +61,32 @@ export function resetLocalStorage(): void {
 export const allQuestions = writable<QuestionProps[]>([]);
 export const allCandidates = writable<CandidateProps[]>([]);
 export const candidateMatches = writable<Match[]>([]);
+
+// Currently, it's quite silly that we need to separate matches and candidates, but when the
+// vaa-data model integration is complete, the proper Candidate object will be
+// contained in the Match objects themselves.
+export const candidateRankings: Readable<{match: RankingProps; candidate: CandidateProps}[]> =
+  derived(
+    [allQuestions, answeredQuestions, allCandidates],
+    ([$allQuestions, $answeredQuestions, $allCandidates]) => {
+      if (
+        $answeredQuestions.length === 0 ||
+        $allCandidates.length === 0 ||
+        $allQuestions.length === 0
+      ) {
+        return [];
+      }
+      const matches = matchCandidates($allQuestions, $answeredQuestions, $allCandidates);
+      const rankings = [];
+      for (const match of matches) {
+        const candidate = $allCandidates.find(
+          (c) => 'id' in match.entity && c.id === match.entity.id
+        );
+        if (candidate) {
+          rankings.push({match: match as RankingProps, candidate});
+        }
+      }
+      return rankings;
+    },
+    []
+  );
