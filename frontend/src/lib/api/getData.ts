@@ -63,6 +63,7 @@ export const getAllCandidates = async (): Promise<CandidateProps[]> => {
   ).then((result) => {
     if (result?.data) {
       return result.data.map((d: StrapiCandidateData) => {
+        const id = d.id;
         const attr = d.attributes;
         const answers = attr.answers.data.map((a: StrapiAnswerData) => ({
           questionId: a.attributes.question.data.id,
@@ -83,6 +84,7 @@ export const getAllCandidates = async (): Promise<CandidateProps[]> => {
           answers,
           candidateNumber: attr.candidateNumber,
           firstName: attr.firstName,
+          id,
           lastName: attr.lastName,
           motherTongues,
           otherLanguages,
