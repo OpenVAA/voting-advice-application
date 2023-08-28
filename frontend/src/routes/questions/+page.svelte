@@ -3,7 +3,7 @@
   import {goto} from '$app/navigation';
   import type {PageData} from './$types';
   import {allQuestions, currentQuestionIndex, answeredQuestions} from '$lib/utils/stores';
-  import {calculateCandidateCompatibilities} from '$lib/algorithms/calculateCompability';
+  import {logDebugError} from '$lib/utils/logger';
   import {Question, type OnChangeEventDetail, type QuestionProps} from '$lib/components/questions';
 
   export let data: PageData;
@@ -29,6 +29,9 @@
       ...answers,
       {questionId: detail.id, answer: detail.value}
     ]);
+    logDebugError(
+      `Answered question ${detail.id} with value ${detail.value}. Store length: ${$answeredQuestions.length}.`
+    );
     gotoNextQuestion();
   }
 
@@ -42,9 +45,7 @@
       if ($currentQuestionIndex < $allQuestions.length - 1) {
         $currentQuestionIndex += 1;
       } else {
-        calculateCandidateCompatibilities().then(() => {
-          goto('/results');
-        });
+        goto('/results');
       }
     }, DELAY_M_MS);
   }
