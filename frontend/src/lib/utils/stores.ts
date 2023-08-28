@@ -3,6 +3,7 @@ import type {Writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import type {VoterAnswer} from '$types/index';
 import type {CandidateRank} from '$types/candidateRank.type';
+import {logDebugError} from './logger';
 import type {QuestionProps} from '$lib/components/questions';
 import type {CandidateProps} from '$lib/components/CandidateDetailsCard.type';
 import type {Match} from '$lib/vaa-matching';
@@ -46,6 +47,21 @@ export const candidateRankings = createStoreValueAndSubscribeToLocalStorage(
   'candidateRankings',
   [] as CandidateRank[]
 );
+
+/**
+ * Reset the local storage values
+ */
+export function resetLocalStorage(): void {
+  if (browser && localStorage) {
+    localStorage.removeItem('currentQuestion');
+    localStorage.removeItem('answeredQuestions');
+    localStorage.removeItem('candidateRankings');
+    currentQuestionIndex.set(0);
+    answeredQuestions.set([]);
+    candidateRankings.set([]);
+    logDebugError('Local storage has been reset');
+  }
+}
 
 // Stores that are not locally stored
 export const allQuestions = writable<QuestionProps[]>([]);
