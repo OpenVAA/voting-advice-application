@@ -27,7 +27,7 @@ import {MatchingSpace} from './core/matchingSpace';
 import {MatchingSpacePosition} from './core/matchingSpacePosition';
 import type {MatchingSpaceCoordinate} from './core/matchingSpacePosition';
 import type {HasMatchableQuestions} from './questions/hasMatchableQuestions';
-import {MatchableQuestion} from './questions/matchableQuestion';
+import type {MatchableQuestion} from './questions/matchableQuestion';
 import {MultipleChoiceQuestion} from './questions/multipleChoiceQuestion';
 
 export {
