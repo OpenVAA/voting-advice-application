@@ -4,6 +4,8 @@ import {browser} from '$app/environment';
 import type {VoterAnswer} from '$types/index';
 import type {CandidateRank} from '$types/candidateRank.type';
 import type {QuestionProps} from '$lib/components/questions';
+import type {CandidateProps} from '$lib/components/CandidateDetailsCard.type';
+import type {Match} from '$lib/vaa-matching';
 
 // Store values in local storage to prevent them from disappearing in refresh
 // Here we check if item already exists on a refresh event
@@ -46,4 +48,6 @@ export const candidateRankings = createStoreValueAndSubscribeToLocalStorage(
 );
 
 // Stores that are not locally stored
-export const allQuestions = writable<QuestionProps[]>();
+export const allQuestions = writable<QuestionProps[]>([]);
+export const allCandidates = writable<CandidateProps[]>([]);
+export const candidateMatches = writable<Match[]>([]);
