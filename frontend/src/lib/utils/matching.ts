@@ -1,0 +1,117 @@
+import {
+  type HasMatchableAnswers,
+  type HasMatchableQuestions,
+  type Match,
+  type MatchableAnswer,
+  type MatchableValue,
+  type MatchingOptions,
+  MatchingAlgorithmBase,
+  type MatchableQuestion,
+  MISSING_VALUE,
+  MultipleChoiceQuestion,
+  DistanceMetric,
+  MissingValueDistanceMethod
+} from '$lib/vaa-matching';
+import type {MultipleChoiceQuestionOptions} from '$lib/vaa-matching/questions/multipleChoiceQuestion';
+import type {CandidateProps} from '$lib/components/CandidateDetailsCard.type';
+import type {QuestionProps} from '$lib/components/questions';
+import type {VoterAnswer} from '$types';
+
+/**
+ * Perform the candidate matching. NB. We can't use the stores directly, because they
+ * will not be reliably updated when called from within a module.
+ * This is a placeholder for demo purposes. In the proper app, all of the
+ * objects in the stores will be in a form consumed by the matching algorithm
+ * by default.
+ */
+export const matchCandidates = function matchCandidates(
+  allQuestions: QuestionProps[],
+  answeredQuestions: VoterAnswer[],
+  allCandidates: CandidateProps[]
+): Match[] {
+  // Create the algorithm instance
+  const algorithm = new MatchingAlgorithmBase({
+    distanceMetric: DistanceMetric.Manhattan,
+    missingValueOptions: {
+      missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+    }
+  });
+
+  // Convert question data into proper question objects
+  const questions: Record<string, LikertQuestion> = {};
+  allQuestions.forEach((q) => {
+    questions[q.id] = new LikertQuestion({
+      id: q.id,
+      values: q.options.map((o) => ({value: o.key})),
+      category: q.category
+    });
+  });
+
+  // Create voter object
+  const voter = new Person(
+    '',
+    answeredQuestions.map((a) => ({question: questions[a.questionId], value: a.answer}))
+  );
+
+  // Create candidate objects
+  const candidates: Record<string, Person> = {};
+  allCandidates.forEach((c) => {
+    candidates[c.id] = new Person(
+      c.id,
+      c.answers.map((a) => ({question: questions[a.questionId], value: a.answer}))
+    );
+  });
+
+  // Create answer subgroups
+  const categories = [...new Set(Object.values(questions).map((q) => q.category))];
+  const matchingOptions: MatchingOptions = {
+    subQuestionGroups: categories.map(
+      (c) =>
+        ({
+          label: c,
+          matchableQuestions: Object.values(questions).filter((q) => q.category === c)
+        } as HasMatchableQuestions)
+    )
+  };
+
+  // Get matches
+  const matches = algorithm.match(voter, Object.values(candidates), matchingOptions);
+  matches.sort((a, b) => a.distance - b.distance);
+  return matches;
+};
+
+/**
+ * Options for a dummy question object for matching.
+ */
+interface LikertQuestionOptions extends MultipleChoiceQuestionOptions {
+  category?: string;
+}
+
+/**
+ * A dummy question object for matching.
+ */
+class LikertQuestion extends MultipleChoiceQuestion {
+  public readonly category: string;
+  constructor({id, values, category}: LikertQuestionOptions) {
+    super({id, values});
+    this.category = category ?? '';
+  }
+}
+
+/**
+ * A dummy candidate object for matching.
+ */
+class Person implements HasMatchableAnswers {
+  constructor(public readonly id: string, public answers: MatchableAnswer[] = []) {}
+
+  getMatchableAnswerValue(question: MatchableQuestion): MatchableValue {
+    for (const answer of this.answers) {
+      if (answer.question === question) return answer.value;
+    }
+    return MISSING_VALUE;
+  }
+
+  get matchableAnswers(): MatchableAnswer[] {
+    return this.answers;
+  }
+}
