@@ -1,6 +1,6 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
-  import type {CandidateProps} from './CandidateDetailsCard.type';
+  import type {CandidateProps} from './CandidateProps.type';
 
   export let candidate: CandidateProps;
 </script>

@@ -1,12 +1,11 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
   import {GetFullNameInOrder} from '$lib/utils/internationalisation';
   import type {CompatibilityScore} from '$lib/types/compatibilityScore.type';
   import Tabs from '$lib/shared/Tabs.svelte';
-  import CandidateBasicInfo from '$lib/components/CandidateBasicInfo.svelte';
-  import CandidateOpinions from '$lib/components/CandidateOpinions.svelte';
+  import CandidateBasicInfo from './CandidateBasicInfo.svelte';
+  import CandidateOpinions from './CandidateOpinions.svelte';
   import {ScoreGauge} from '$lib/components/scoreGauge/index';
-  import type {CandidateProps} from './CandidateDetailsCard.type';
+  import type {CandidateProps} from './CandidateProps.type';
 
   export let candidate: CandidateProps;
   export let compatibilityScore: CompatibilityScore;
@@ -14,10 +13,9 @@
   // Tabs
   let tabs = ['Basic info', 'Opinions'];
   let activeItem = tabs[0];
-  const handleChangeTab = (e) => {
+  const handleChangeTab = (e: CustomEvent) => {
     activeItem = e.detail;
   };
-  let current = 'basic-info';
 </script>
 
 <section class="mt-4">
