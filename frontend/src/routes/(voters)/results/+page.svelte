@@ -1,16 +1,20 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
-  import {candidateRankings} from '$lib/utils/stores';
-  import {CandidateRankingListing} from '$lib/components/candidates';
+  import {allCandidates, candidateRankings} from '$lib/utils/stores';
+  import {CandidateListing, CandidateRankingListing} from '$lib/components/candidates';
 
   const urlRoot = $page.url.pathname.replace(/\/$/, '');
 </script>
 
 <h1>{$_('candidates.candidates')}</h1>
 
-{#each $candidateRankings as { match, candidate }}
-  <CandidateRankingListing ranking={match} {candidate} href={`${urlRoot}/${candidate.id}`} />
+{#if $candidateRankings.length > 0}
+  {#each $candidateRankings as { match, candidate }}
+    <CandidateRankingListing ranking={match} {candidate} href={`${urlRoot}/${candidate.id}`} />
+  {/each}
 {:else}
-  {$_('candidates.notFound')}
-{/each}
+  {#each $allCandidates as candidate}
+    <CandidateListing {candidate} href={`${urlRoot}/${candidate.id}`} />
+  {/each}
+{/if}
