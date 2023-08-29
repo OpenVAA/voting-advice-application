@@ -50,8 +50,15 @@ export const matchCandidates = function matchCandidates(
   // Create voter object
   const voter = new Person(
     '',
-    answeredQuestions.map((a) => ({question: questions[a.questionId], value: a.answer}))
+    answeredQuestions
+      .filter((a) => a.questionId in questions)
+      .map((a) => ({question: questions[a.questionId], value: a.answer}))
   );
+
+  // Check that we still have some answers
+  if (voter.answers.length === 0) {
+    return [];
+  }
 
   // Create candidate objects
   const candidates: Record<string, Person> = {};
