@@ -1,6 +1,6 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
-  import type {CandidateProps} from './CandidateDetailsCard.type';
+  import type {CandidateProps} from './CandidateProps.type';
 
   export let candidate: CandidateProps;
 </script>
@@ -15,6 +15,7 @@
             <img class="mr-2" src="/icons/party-icon.svg" alt="Party Icon" />
             {candidate.party.shortName}
       <img class="h-16 w-16" src="/images/candidate-photo.png" alt="Candidate" />
+    </div>
     <div class="divider my-5 h-px" />
     <div>
       <div class="mb-3.5 flex items-start">
