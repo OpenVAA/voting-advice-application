@@ -1,27 +1,13 @@
-<script>
+<script lang="ts">
   import {_} from 'svelte-i18n';
   import {candidateRankings} from '$lib/utils/stores';
   import CandidateRankingListing from '$lib/components/CandidateRankingListing.svelte';
-  export let data;
-  let candidates = data.results ? Object.values(data.results) : [];
-
-  let candidateRankingsValues;
-
-  candidateRankings.subscribe((value) => {
-    candidateRankingsValues = value;
-  });
 </script>
 
-<div class="flex h-full flex-col items-center justify-center">
-  <div class="max-w-xl">
-    <h1>{$_('candidates.candidates')}</h1>
+<h1>{$_('candidates.candidates')}</h1>
 
-    {#each candidateRankingsValues as ranking}
-      <!--    The idea is that ranking algorithm will return a candidate id with a score-->
-      <!--    We should map the candidate id to the actual candidate data from backend here-->
-      <CandidateRankingListing
-        {ranking}
-        candidate={candidates.find((candidate) => candidate.id === ranking.id)} />
-    {/each}
-  </div>
-</div>
+{#each $candidateRankings as { match, candidate }}
+  <CandidateRankingListing ranking={match} {candidate} />
+{:else}
+  {$_('candidates.notFound')}
+{/each}

@@ -1,5 +1,5 @@
 import {getAllCandidates, getAllQuestions} from '$lib/api/getData';
-import type {PageServerLoad} from './$types';
+import type {LayoutServerLoad} from './$types';
 
 export const load = (async () => {
   return {
@@ -8,4 +8,4 @@ export const load = (async () => {
     // we'll have lost the question data store
     questions: await getAllQuestions()
   };
-}) satisfies PageServerLoad;
+}) satisfies LayoutServerLoad;
