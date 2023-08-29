@@ -34,11 +34,6 @@ function createStoreValueAndSubscribeToLocalStorage<T>(key: string, defaultValue
 }
 
 // Create the actual Svelte store values
-// TODO: Use proper types for these when these have been defined
-export const currentQuestionIndex = createStoreValueAndSubscribeToLocalStorage(
-  'currentQuestion',
-  0
-);
 export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage(
   'answeredQuestions',
   [] as VoterAnswer[]
@@ -49,9 +44,7 @@ export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage(
  */
 export function resetLocalStorage(): void {
   if (browser && localStorage) {
-    localStorage.removeItem('currentQuestion');
     localStorage.removeItem('answeredQuestions');
-    currentQuestionIndex.set(0);
     answeredQuestions.set([]);
     logDebugError('Local storage has been reset');
   }
