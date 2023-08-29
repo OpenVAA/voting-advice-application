@@ -13,7 +13,7 @@
       <ul>
         {#each data.candidates || [] as candidate}
           <li>
-            <a href={`/candidates/${candidate.id}`}>
+            <a href={`/results/${candidate.id}`}>
               {GetFullNameInOrder(candidate.attributes.firstName, candidate.attributes.lastName)}
             </a>
           </li>
