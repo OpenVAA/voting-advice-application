@@ -1,6 +1,6 @@
 <script lang="ts">
   import {GetFullNameInOrder} from '$lib/utils/internationalisation';
-  import type {CandidateProps} from './CandidateDetailsCard.type';
+  import type {CandidateProps} from './CandidateProps.type';
   export let candidate: CandidateProps;
 </script>
 
