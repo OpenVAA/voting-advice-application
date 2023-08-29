@@ -13,7 +13,7 @@ import {
   MissingValueDistanceMethod
 } from '$lib/vaa-matching';
 import type {MultipleChoiceQuestionOptions} from '$lib/vaa-matching/questions/multipleChoiceQuestion';
-import type {CandidateProps} from '$lib/components/CandidateDetailsCard.type';
+import type {CandidateProps} from '$lib/components/candidates';
 import type {QuestionProps} from '$lib/components/questions';
 import type {VoterAnswer} from '$types';
 

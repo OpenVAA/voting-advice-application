@@ -2,13 +2,11 @@ import {derived, writable} from 'svelte/store';
 import type {Readable, Writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import type {VoterAnswer} from '$types/index';
-import type {CandidateRank} from '$types/candidateRank.type';
 import {logDebugError} from './logger';
 import type {QuestionProps} from '$lib/components/questions';
-import type {CandidateProps} from '$lib/components/CandidateDetailsCard.type';
+import type {CandidateProps, RankingProps} from '$lib/components/candidates';
 import type {Match} from '$lib/vaa-matching';
 import {matchCandidates} from '$lib/utils/matching';
-import type {RankingProps} from '$lib/components/CandidateRanking.type';
 
 // Store values in local storage to prevent them from disappearing in refresh
 // Here we check if item already exists on a refresh event
