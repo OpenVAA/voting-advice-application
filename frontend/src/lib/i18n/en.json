@@ -47,9 +47,7 @@
     "jumpToResults": "Jump to results",
     "previous": "Previous",
     "skip": "Skip",
-    "readMore": "Read More"
-  },
-  "error": {
-    "noQuestionCategories": "No question categories"
+    "readMore": "Read More",
+    "notFound": "Question not found"
   }
 }
