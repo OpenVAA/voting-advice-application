@@ -41,6 +41,7 @@
     "jumpToResults": "Jump to results",
     "previous": "Previous",
     "skip": "Skip",
-    "readMore": "Read More"
+    "readMore": "Read More",
+    "notFound": "Question not found"
   }
 }
