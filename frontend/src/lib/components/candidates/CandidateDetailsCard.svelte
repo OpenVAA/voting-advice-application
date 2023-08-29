@@ -1,15 +1,15 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {GetFullNameInOrder} from '$lib/utils/internationalisation';
-  import type {CompatibilityScore} from '$lib/types/compatibilityScore.type';
   import Tabs from '$lib/shared/Tabs.svelte';
+  import {ScoreGauge} from '$lib/components/scoreGauge/index';
   import CandidateBasicInfo from './CandidateBasicInfo.svelte';
   import CandidateOpinions from './CandidateOpinions.svelte';
-  import {ScoreGauge} from '$lib/components/scoreGauge/index';
   import type {CandidateProps} from './CandidateProps.type';
+  import type {RankingProps} from './CandidateRanking.type';
 
   export let candidate: CandidateProps;
-  export let compatibilityScore: CompatibilityScore;
+  export let ranking: RankingProps | undefined;
 
   // Tabs
   let tabs = [$_('candidate.tabs.basicInfo'), $_('candidate.tabs.opinions')];
@@ -28,12 +28,15 @@
     </p>
   </div>
   <!-- {#} -->
-  {#if compatibilityScore?.policyTopics}
+  {#if ranking?.subMatches && ranking.subMatches.length > 0}
     <div
       class="mx-4 mb-6 grid grid-flow-row grid-cols-2 gap-x-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-      {#each compatibilityScore.policyTopics as policyTopic}
+      {#each ranking.subMatches as subMatch}
         <!-- TODO: replace the progressBarColor color with the color of the party -->
-        <ScoreGauge score={policyTopic.score} shape="radial" label={policyTopic.name} />
+        <ScoreGauge
+          score={subMatch.score}
+          label={subMatch.questionGroup.label ?? ''}
+          shape="radial" />
       {/each}
     </div>
   {/if}
