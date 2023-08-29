@@ -70,7 +70,15 @@ export const matchCandidates = function matchCandidates(
   });
 
   // Create answer subgroups
-  const categories = [...new Set(Object.values(questions).map((q) => q.category))];
+  // We only consider those subgroups that the voter has answered
+  const answeredIds = new Set(answeredQuestions.map((a) => a.questionId));
+  const categories = [
+    ...new Set(
+      Object.values(questions)
+        .filter((q) => answeredIds.has(q.id))
+        .map((q) => q.category)
+    )
+  ];
   const matchingOptions: MatchingOptions = {
     subQuestionGroups: categories.map(
       (c) =>
