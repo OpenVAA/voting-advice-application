@@ -8,4 +8,6 @@
 
 {#each $candidateRankings as { match, candidate }}
   <CandidateRankingListing ranking={match} {candidate} />
+{:else}
+  {$_('candidates.notFound')}
 {/each}
