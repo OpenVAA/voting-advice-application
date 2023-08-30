@@ -3,6 +3,7 @@
         "dev":"docker compose -f docker-compose.dev.yml up -d --build",
         "dev:attach":"docker compose -f docker-compose.dev.yml up --build",
         "dev:down": "docker compose -f docker-compose.dev.yml down -v --remove-orphans",
+        "dev:stop": "docker compose -f docker-compose.dev.yml stop",
         "prepare":"husky install",
         "prod": "docker compose -f docker-compose.yml -p vaa-prod up -d --build"
     },
