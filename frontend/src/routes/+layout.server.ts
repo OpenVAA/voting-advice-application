@@ -1,7 +1,7 @@
 import type {LayoutServerLoad} from './$types';
 import {getAppLabels} from '$lib/api/getData';
 
-export const load: LayoutServerLoad = (async () => {
+export const load = (async () => {
   return {
     appLabels: await getAppLabels()
   };
