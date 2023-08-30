@@ -1,6 +1,33 @@
 import type {QuestionType} from '$lib/components/questions';
 
 /**
+ * Non-exhaustive specification of the data returned by the Strapi endpoint `election`.
+ * Currently we're only interested in the appLabels id.
+ */
+export interface StrapiElectionData {
+  id: string;
+  attributes: {
+    name: string;
+    electionAppLabel: {
+      data: StrapiAppLabelsData;
+    };
+  };
+}
+
+/**
+ * Non-exhaustive specification of the app labels
+ */
+export interface StrapiAppLabelsData {
+  id: string;
+  attributes: {
+    name: string;
+    appTitle: string;
+    actionLabels: Record<string, string>;
+    viewTexts: Record<string, string>;
+  };
+}
+
+/**
  * Non-exhaustive specification of the data returned by the Strapi endpoint `question-type`.
  */
 export interface StrapiQuestionTypeData {

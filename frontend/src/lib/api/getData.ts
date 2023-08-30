@@ -3,7 +3,9 @@
 
 import type {
   StrapiAnswerData,
+  StrapiAppLabelsData,
   StrapiCandidateData,
+  StrapiElectionData,
   StrapiLanguageData,
   StrapiQuestionData,
   StrapiQuestionTypeData
@@ -11,6 +13,7 @@ import type {
 import {constants} from '$lib/utils/constants';
 import type {QuestionProps} from '$lib/components/questions';
 import type {CandidateProps} from '$lib/components/candidates';
+import type {AppLabels} from '$types';
 
 // TODO: Use locale (now defaults to en)
 export const getData = async <T>(
@@ -50,7 +53,30 @@ export const getSingleTypeData = async ({fetch, params, route, url, endpoint}): 
     );
 };
 
-// TODO: Define what type of data this returns instead of just any
+/**
+ * Get app labels data from Strapi
+ */
+export const getAppLabels = (): Promise<AppLabels> => {
+  return getData<StrapiElectionData[]>(
+    'api/elections',
+    new URLSearchParams({
+      // We need a specific calls to populate relations, * only goes one-level deep
+      'populate[electionAppLabel][populate][0]': 'actionLabels',
+      'populate[electionAppLabel][populate][1]': 'viewTexts'
+    })
+  ).then((result) => {
+    if (result) {
+      return result.data[0].attributes.electionAppLabel.data.attributes;
+    } else {
+      throw new Error('Could not retrieve app labels');
+    }
+  });
+};
+
+/**
+ * Get data for all candidates from Strapi. NB. This does not currently
+ * filter them by constituency or election!
+ */
 export const getAllCandidates = (): Promise<CandidateProps[]> => {
   return getData<StrapiCandidateData[]>(
     'api/candidates',
