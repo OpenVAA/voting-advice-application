@@ -107,21 +107,22 @@ export const getAllQuestions = async (): Promise<QuestionProps[]> => {
     'api/question-types',
     new URLSearchParams({
       // We need a specific call to populate the category relations, * only goes one-level deep
-      'populate[questions][populate][0]': 'category'
+      'populate[questions][populate][0]': 'questionCategory'
     })
   ).then((result) => {
     if (result?.data) {
       const questions: QuestionProps[] = [];
       for (const qType of result.data as StrapiQuestionTypeData[]) {
         // Get the value options for the question
-        // TODO: Change to match new specs {type: string, values: [{key: number, label: string}]}
-        const options = qType.attributes.settings.data;
+        const options = qType.attributes.settings.values;
+        const typeName = qType.attributes.settings.type;
         // Create the individual question objects
         qType.attributes.questions.data.forEach((d: StrapiQuestionData) =>
           questions.push({
             id: '' + d.id,
             text: d.attributes.text,
-            category: d.attributes.category.data.attributes.name ?? '',
+            type: typeName,
+            category: d.attributes.questionCategory.data.attributes.name ?? '',
             info: d.attributes.info,
             options
           })

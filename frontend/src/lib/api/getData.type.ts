@@ -1,3 +1,5 @@
+import type {QuestionType} from '$lib/components/questions';
+
 /**
  * Non-exhaustive specification of the data returned by the Strapi endpoint `question-type`.
  */
@@ -10,9 +12,9 @@ export interface StrapiQuestionTypeData {
       // To get StrapiQuestionData.category property populated, we need a more specific call
       data: StrapiQuestionData[];
     };
-    // TODO: Change to match new specs {type: string, values: [{key: number, label: string}]}
     settings: {
-      data: {
+      type: QuestionType;
+      values: {
         key: number;
         label: string;
       }[];
@@ -28,7 +30,7 @@ export interface StrapiQuestionData {
   attributes: {
     text: string;
     info: string;
-    category: {
+    questionCategory: {
       data: {
         attributes: {
           name: string;
