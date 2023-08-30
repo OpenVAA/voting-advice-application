@@ -48,11 +48,6 @@
       },
       "type": "string"
     },
-    "children": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::nomination.nomination"
-    },
     "electionSymbol": {
       "pluginOptions": {
         "i18n": {
