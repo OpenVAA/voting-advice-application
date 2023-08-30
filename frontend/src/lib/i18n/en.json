@@ -7,6 +7,7 @@
   "footer": {
     "goTo": "Jump to results"
   },
+  "error": "Something went wrong",
   "loading": "Loading...",
   "components": {
     "card": {
