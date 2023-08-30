@@ -14,7 +14,7 @@ additional Content-Types.
 
 ## Re-generating Types
 
-Run `npm run strapi ts:generate-types` to re-generate `schemas.d.ts`.
+Run `npm run strapi ts:generate-types` to re-generate `types` folder.
 
 ## Mock data
 
