@@ -73,10 +73,7 @@ export interface StrapiAnswerData {
   id: number | string;
   attributes: {
     answer: {
-      // TODO: Change to match new specs {type: string, values: [{key: number, label: string}]}
-      data: {
-        key: number;
-      };
+      key: number;
     };
     question: {
       data: {

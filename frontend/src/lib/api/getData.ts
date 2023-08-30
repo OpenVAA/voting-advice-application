@@ -66,7 +66,7 @@ export const getAllCandidates = async (): Promise<CandidateProps[]> => {
         const attr = d.attributes;
         const answers = attr.answers.data.map((a: StrapiAnswerData) => ({
           questionId: a.attributes.question.data.id,
-          answer: a.attributes.answer.data.key
+          answer: a.attributes.answer.key
           // openAnswer?: string;
         }));
         const motherTongues = attr.motherTongues.data.map(
