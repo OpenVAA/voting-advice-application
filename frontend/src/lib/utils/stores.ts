@@ -1,7 +1,7 @@
 import {derived, writable} from 'svelte/store';
 import type {Readable, Writable} from 'svelte/store';
 import {browser} from '$app/environment';
-import type {VoterAnswer} from '$types/index';
+import type {AppLabels, VoterAnswer} from '$types';
 import {logDebugError} from './logger';
 import type {QuestionProps} from '$lib/components/questions';
 import type {CandidateProps, RankingProps} from '$lib/components/candidates';
@@ -51,6 +51,7 @@ export function resetLocalStorage(): void {
 }
 
 // Stores that are not locally stored
+export const appLabels = writable<AppLabels>();
 export const allQuestions = writable<QuestionProps[]>([]);
 export const allCandidates = writable<CandidateProps[]>([]);
 export const candidateMatches = writable<Match[]>([]);
