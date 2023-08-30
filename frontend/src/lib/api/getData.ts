@@ -12,11 +12,11 @@ import {constants} from '$lib/utils/constants';
 import type {QuestionProps} from '$lib/components/questions';
 import type {CandidateProps} from '$lib/components/candidates';
 
-// TODO: Define what type of data this returns instead of just any
-export const getData = async (
+// TODO: Use locale (now defaults to en)
+export const getData = async <T>(
   endpoint: string,
   params: URLSearchParams = new URLSearchParams({})
-): Promise<any> => {
+): Promise<{data: T} | undefined> => {
   const url = `${constants.BACKEND_URL}/${endpoint}?${params}`;
 
   return await fetch(url, {
@@ -25,9 +25,12 @@ export const getData = async (
     }
   })
     .then((response) => {
-      return response.json();
+      return response.json() as Promise<{data: T} | undefined>;
     })
-    .catch((error) => console.error('Error in getting data from backend: ', error));
+    .catch((error) => {
+      console.error('Error in getting data from backend: ', error);
+      return undefined;
+    });
 };
 
 export const getSingleTypeData = async ({fetch, params, route, url, endpoint}): Promise<any> => {
@@ -48,8 +51,8 @@ export const getSingleTypeData = async ({fetch, params, route, url, endpoint}): 
 };
 
 // TODO: Define what type of data this returns instead of just any
-export const getAllCandidates = async (): Promise<CandidateProps[]> => {
-  return await getData(
+export const getAllCandidates = (): Promise<CandidateProps[]> => {
+  return getData<StrapiCandidateData[]>(
     'api/candidates',
     new URLSearchParams({
       // We need a specific calls to populate relations, * only goes one-level deep
@@ -60,8 +63,8 @@ export const getAllCandidates = async (): Promise<CandidateProps[]> => {
       'populate[answers][populate][0]': 'question'
     })
   ).then((result) => {
-    if (result?.data) {
-      return result.data.map((d: StrapiCandidateData) => {
+    if (result) {
+      return result.data.map((d) => {
         const id = d.id;
         const attr = d.attributes;
         const answers = attr.answers.data.map((a: StrapiAnswerData) => ({
@@ -89,7 +92,7 @@ export const getAllCandidates = async (): Promise<CandidateProps[]> => {
           otherLanguages,
           party,
           politicalExperience: attr.politicalExperience
-        };
+        } as CandidateProps;
       });
     } else {
       throw new Error('Could not retrieve result for all candidates');
@@ -100,19 +103,19 @@ export const getAllCandidates = async (): Promise<CandidateProps[]> => {
 /**
  * Get all question data from the database and convert them to a nicer format.
  */
-export const getAllQuestions = async (): Promise<QuestionProps[]> => {
+export const getAllQuestions = (): Promise<QuestionProps[]> => {
   // The questions are contained in the data returned by the question-types
   // endpoint
-  return await getData(
+  return getData<StrapiQuestionTypeData[]>(
     'api/question-types',
     new URLSearchParams({
       // We need a specific call to populate the category relations, * only goes one-level deep
       'populate[questions][populate][0]': 'questionCategory'
     })
   ).then((result) => {
-    if (result?.data) {
+    if (result) {
       const questions: QuestionProps[] = [];
-      for (const qType of result.data as StrapiQuestionTypeData[]) {
+      for (const qType of result.data) {
         // Get the value options for the question
         const options = qType.attributes.settings.values;
         const typeName = qType.attributes.settings.type;
