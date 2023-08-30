@@ -1,9 +1,9 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
-  import type {LayoutData} from './$types';
+  import type {LayoutServerData} from './$types';
   import {allQuestions} from '$lib/utils/stores';
 
-  export let data: LayoutData;
+  export let data: LayoutServerData;
 
   if (data?.questions) {
     $allQuestions = data.questions;
