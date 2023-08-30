@@ -1,7 +1,12 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {createEventDispatcher} from 'svelte';
-  import type {OnChangeEventDetail, OnSkipEventDetail, QuestionProps} from './Question.type';
+  import {
+    type OnChangeEventDetail,
+    type OnSkipEventDetail,
+    type QuestionProps,
+    QuestionType
+  } from './Question.type';
   import LikertScaleAnsweringButtons from './LikertScaleAnsweringButtons.svelte';
 
   // TODO: Only expose an attribute taking in a Question object, bc there are so
@@ -10,6 +15,7 @@
   // candidate details and elsewhere.
   export let id: QuestionProps['id'];
   export let text: QuestionProps['text'];
+  export let type: QuestionProps['type'];
   export let options: QuestionProps['options'];
   export let category: QuestionProps['category'] = '';
   export let info: QuestionProps['info'] = '';
@@ -43,8 +49,11 @@
       </div>
     {/if}
     <div class="mb-3 mt-5 flex items-center justify-center">
-      <!-- TODO: Check question type here -->
-      <LikertScaleAnsweringButtons name={id} {options} on:change={onChange} />
+      {#if type === QuestionType.Likert}
+        <LikertScaleAnsweringButtons name={id} {options} on:change={onChange} />
+      {:else}
+        {$_('error')}
+      {/if}
     </div>
     <div class="flex items-center justify-center">
       <!-- TODO: Add action and an icon -->

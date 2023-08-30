@@ -64,6 +64,7 @@
     <Question
       id={currentQuestion.id}
       text={currentQuestion.text}
+      type={currentQuestion.type}
       options={currentQuestion.options}
       category={currentQuestion.category}
       info={currentQuestion.info}
