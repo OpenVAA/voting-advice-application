@@ -1,5 +1,3 @@
-import type {QuestionType} from '$lib/components/questions';
-
 /**
  * Non-exhaustive specification of the data returned by the Strapi endpoint `election`.
  * Currently we're only interested in the appLabels id.
@@ -36,11 +34,14 @@ export interface StrapiQuestionTypeData {
     name: string;
     info: string;
     questions: {
-      // To get StrapiQuestionData.category property populated, we need a more specific call
       data: StrapiQuestionData[];
     };
     settings: {
-      type: QuestionType;
+      /**
+       * Currently the only question type supported. Should match `QuestionType` in
+       * `$lib/components/questions/Question.type`
+       */
+      type: 'Likert';
       values: {
         key: number;
         label: string;

@@ -3,7 +3,6 @@
 
 import type {
   StrapiAnswerData,
-  StrapiAppLabelsData,
   StrapiCandidateData,
   StrapiElectionData,
   StrapiLanguageData,
@@ -11,7 +10,7 @@ import type {
   StrapiQuestionTypeData
 } from './getData.type';
 import {constants} from '$lib/utils/constants';
-import type {QuestionProps} from '$lib/components/questions';
+import type {QuestionProps, QuestionType} from '$lib/components/questions';
 import type {CandidateProps} from '$lib/components/candidates';
 import type {AppLabels} from '$types';
 
@@ -150,7 +149,7 @@ export const getAllQuestions = (): Promise<QuestionProps[]> => {
           questions.push({
             id: '' + d.id,
             text: d.attributes.text,
-            type: typeName,
+            type: typeName as QuestionType,
             category: d.attributes.questionCategory.data.attributes.name ?? '',
             info: d.attributes.info,
             options
