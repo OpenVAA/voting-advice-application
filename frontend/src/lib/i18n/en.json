@@ -8,6 +8,12 @@
     "goTo": "Jump to results"
   },
   "loading": "Loading...",
+  "components": {
+    "card": {
+      "errorDisplaying": "Error displaying card",
+      "matchLabel": "match"
+    }
+  },
   "candidates": {
     "candidates": "Candidates",
     "notFound": "No candidates found"
