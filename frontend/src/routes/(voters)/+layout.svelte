@@ -28,7 +28,7 @@
 </script>
 
 {#if data}
-  <header class="sticky left-0 right-0 top-0 z-50">
+  <header class="fixed left-0 right-0 top-0 z-50">
     <nav class="bg-secondary p-4">
       <ul class="flex items-center justify-between">
         <li class="mr-6">
@@ -74,7 +74,7 @@
     </nav>
   </header>
 
-  <main>
+  <main class="h-full pt-14">
     <slot />
   </main>
 
