@@ -88,7 +88,7 @@ export const getAllCandidates = (): Promise<CandidateProps[]> => {
       'populate[answers][populate][0]': 'question'
     })
   ).then((result) => {
-    if (result) {
+    if (result?.data != null) {
       return result.data.map((d) => {
         const id = d.id;
         const attr = d.attributes;
@@ -138,7 +138,7 @@ export const getAllQuestions = (): Promise<QuestionProps[]> => {
       'populate[questions][populate][0]': 'questionCategory'
     })
   ).then((result) => {
-    if (result) {
+    if (result?.data != null) {
       const questions: QuestionProps[] = [];
       for (const qType of result.data) {
         // Get the value options for the question
