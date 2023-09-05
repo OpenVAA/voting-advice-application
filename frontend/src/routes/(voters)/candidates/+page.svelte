@@ -10,14 +10,18 @@
   }
 </script>
 
-<h1 class="ml-2.5 mt-14 text-3xl font-medium leading-6 text-gray-500">
-  {$_('candidates.candidates')}
-</h1>
+<div class="flex flex-col items-center">
+  <div class="max-w-xl">
+    <h1 class="ml-2.5 mt-14 text-3xl font-medium leading-6 text-gray-500">
+      {$_('candidates.candidates')}
+    </h1>
 
-{#if candidates}
-  {#each candidates as candidate}
-    <CandidateListing id={candidate.id} candidate={candidate.attributes} />
-  {/each}
-{:else}
-  <p>{$_('candidates.notFound')}</p>
-{/if}
+    {#if candidates}
+      {#each candidates as candidate}
+        <CandidateListing id={candidate.id} candidate={candidate.attributes} />
+      {/each}
+    {:else}
+      <p>{$_('candidates.notFound')}</p>
+    {/if}
+  </div>
+</div>
