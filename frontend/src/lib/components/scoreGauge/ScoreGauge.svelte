@@ -54,7 +54,7 @@
       max="100" />
   {/if}
   {#if label}
-    <label class="truncate text-left text-neutral" id={labelId}>{label}</label>
+    <label class="truncate text-left text-neutral" id={labelId} aria-hidden="true">{label}</label>
   {/if}
 </div>
 
