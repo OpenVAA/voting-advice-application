@@ -9,7 +9,7 @@
   import type {RankingProps} from './CandidateRanking.type';
 
   export let candidate: CandidateProps;
-  export let ranking: RankingProps | undefined;
+  export let ranking: RankingProps | undefined = undefined;
 
   // Tabs
   let tabs = [$_('candidate.tabs.basicInfo'), $_('candidate.tabs.opinions')];
