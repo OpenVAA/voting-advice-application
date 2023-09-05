@@ -5,6 +5,9 @@
   import {CandidateListing, CandidateRankingListing} from '$lib/components/candidates';
 
   const urlRoot = $page.url.pathname.replace(/\/$/, '');
+
+  // TODO: Check onMount if $candidateRankings.length > 0 and if not redirect to
+  // frontpage or /questions
 </script>
 
 <h1>{$_('candidates.candidates')}</h1>
