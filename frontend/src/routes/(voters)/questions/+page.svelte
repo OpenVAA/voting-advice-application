@@ -55,8 +55,8 @@
   <title>{$_('questions.questionsTitle')}</title>
 </svelte:head>
 
-<section class="flex h-screen flex-col">
-  <main class="grid flex-1 content-center px-3">
+<div class="flex h-full flex-col items-center justify-center">
+  <div class="max-w-xl">
     {#key currentQuestionNumber}
       <Question
         number={currentQuestionNumber}
@@ -66,5 +66,5 @@
         info={currentQuestionInfo}
         on:change={answerQuestion} />
     {/key}
-  </main>
-</section>
+  </div>
+</div>
