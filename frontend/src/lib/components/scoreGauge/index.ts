@@ -1,2 +1,2 @@
-export {default as ScoreGauge} from './scoreGauge.svelte';
-export * from './scoreGauge.type';
+export {default as ScoreGauge} from './ScoreGauge.svelte';
+export * from './ScoreGauge.type';
