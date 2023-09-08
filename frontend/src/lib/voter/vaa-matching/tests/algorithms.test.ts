@@ -1,29 +1,24 @@
-import {describe, expect, test} from 'vitest';
-import {createSubspace} from '../algorithms/createSubspace';
-import {
-  imputeMissingValues,
-  MissingValueBias,
-  MissingValueDistanceMethod
-} from '../algorithms/imputeMissingValues';
-import type {Match} from '../algorithms/match';
-import {MatchingAlgorithmBase} from '../algorithms/matchingAlgorithm';
+import {MatchingAlgorithm} from '../src/algorithms';
+import type {HasMatchableAnswers, MatchableAnswer} from '../src/answer';
 import {
   directionalDistance,
+  type DistanceMeasurementOptions,
   DistanceMetric,
   manhattanDistance,
-  measureDistance
-} from '../algorithms/measureDistance';
-import type {DistanceMeasurementOptions} from '../algorithms/measureDistance';
-import {NORMALIZED_DISTANCE_EXTENT} from '../core/distances';
-import type {SignedNormalizedDistance, UnsignedNormalizedDistance} from '../core/distances';
-import type {HasMatchableAnswers, MatchableAnswer} from '../core/hasMatchableAnswers';
-import {MISSING_VALUE} from '../core/matchableValue';
-import type {MatchableValue} from '../core/matchableValue';
-
-import {MatchingSpace} from '../core/matchingSpace';
-import {MatchingSpacePosition} from '../core/matchingSpacePosition';
-import type {MatchableQuestion} from '../questions/matchableQuestion';
-import {MultipleChoiceQuestion} from '../questions/multipleChoiceQuestion';
+  measureDistance,
+  NORMALIZED_DISTANCE_EXTENT,
+  type SignedNormalizedDistance, 
+  type UnsignedNormalizedDistance,
+} from '../src/distance';
+import type {Match} from '../src/match';
+import {
+  imputeMissingValues,
+  MISSING_VALUE,
+  MissingValueBias,
+  MissingValueDistanceMethod
+} from '../src/missingValue';
+import {type MatchableQuestion, MultipleChoiceQuestion} from '../src/question';
+import {createSubspace, MatchingSpace, MatchingSpacePosition} from '../src/space';
 
 // For convenience
 const maxDist = NORMALIZED_DISTANCE_EXTENT;
@@ -274,10 +269,16 @@ describe('matchingAlgorithm', () => {
     const likertScale = 5;
     const values = [0, 0.5, 1];
     const coords = values.map((v) => v * maxDist - maxVal);
+<<<<<<< HEAD:frontend/src/lib/voter/vaa-matching/tests/algorithms.test.ts
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {questions, voter, candidates, algorithm, matches} = createMatchesAndEntities(
       createLikertScaleValues(likertScale, values),
       [createLikertScaleValues(likertScale, values)],
+=======
+    const {questions, candidates, algorithm} = createMatchesAndEntities(
+      createLikertValues(likertScale, values),
+      [createLikertValues(likertScale, values)],
+>>>>>>> ac547a4 (refactor!: refactor matching algorithm):frontend/src/lib/vaa-matching/tests/algorithms.test.ts
       likertScale,
       DistanceMetric.Manhattan,
       MissingValueDistanceMethod.Neutral
@@ -293,12 +294,17 @@ describe('matchingAlgorithm', () => {
   describe('match with missing values', () => {
     const likertScale = 5;
     const values = [0.25, 0.5, 1];
-    const valuesMissing: MatchableValue[] = [MISSING_VALUE, MISSING_VALUE, MISSING_VALUE];
+    const valuesMissing = [MISSING_VALUE, MISSING_VALUE, MISSING_VALUE];
     test('MissingValueDistanceMethod.Neutral', () => {
       const dist = (maxDist * (0.25 + 0 + 0.5)) / 3;
+<<<<<<< HEAD:frontend/src/lib/voter/vaa-matching/tests/algorithms.test.ts
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {questions, voter, candidates, algorithm, matches} = createMatchesAndEntities(
         createLikertScaleValues(likertScale, values),
+=======
+      const {voter, candidates, algorithm} = createMatchesAndEntities(
+        createLikertValues(likertScale, values),
+>>>>>>> ac547a4 (refactor!: refactor matching algorithm):frontend/src/lib/vaa-matching/tests/algorithms.test.ts
         [valuesMissing],
         likertScale,
         DistanceMetric.Manhattan,
@@ -308,9 +314,14 @@ describe('matchingAlgorithm', () => {
     });
     test('MissingValueDistanceMethod.Neutral', () => {
       const dist = (maxDist * (0.75 + 0.5 + 1)) / 3;
+<<<<<<< HEAD:frontend/src/lib/voter/vaa-matching/tests/algorithms.test.ts
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {questions, voter, candidates, algorithm, matches} = createMatchesAndEntities(
         createLikertScaleValues(likertScale, values),
+=======
+      const {voter, candidates, algorithm} = createMatchesAndEntities(
+        createLikertValues(likertScale, values),
+>>>>>>> ac547a4 (refactor!: refactor matching algorithm):frontend/src/lib/vaa-matching/tests/algorithms.test.ts
         [valuesMissing],
         likertScale,
         DistanceMetric.Manhattan,
@@ -320,9 +331,14 @@ describe('matchingAlgorithm', () => {
     });
     test('MissingValueDistanceMethod.AbsoluteMaximum', () => {
       const dist = maxDist;
+<<<<<<< HEAD:frontend/src/lib/voter/vaa-matching/tests/algorithms.test.ts
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {questions, voter, candidates, algorithm, matches} = createMatchesAndEntities(
         createLikertScaleValues(likertScale, values),
+=======
+      const {voter, candidates, algorithm} = createMatchesAndEntities(
+        createLikertValues(likertScale, values),
+>>>>>>> ac547a4 (refactor!: refactor matching algorithm):frontend/src/lib/vaa-matching/tests/algorithms.test.ts
         [valuesMissing],
         likertScale,
         DistanceMetric.Manhattan,
@@ -337,10 +353,16 @@ describe('matchingAlgorithm', () => {
       const voterValues = [0.5, 1, 0];
       const candValues = [0, 0.5, 1];
       const dist = (maxDist * (0.5 + 0.5 + 1)) / 3;
+<<<<<<< HEAD:frontend/src/lib/voter/vaa-matching/tests/algorithms.test.ts
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {questions, voter, candidates, algorithm, matches} = createMatchesAndEntities(
         createLikertScaleValues(likertScale, voterValues),
         [createLikertScaleValues(likertScale, candValues)],
+=======
+      const {voter, candidates, algorithm} = createMatchesAndEntities(
+        createLikertValues(likertScale, voterValues),
+        [createLikertValues(likertScale, candValues)],
+>>>>>>> ac547a4 (refactor!: refactor matching algorithm):frontend/src/lib/vaa-matching/tests/algorithms.test.ts
         likertScale,
         DistanceMetric.Manhattan,
         MissingValueDistanceMethod.Neutral
@@ -357,10 +379,16 @@ describe('matchingAlgorithm', () => {
       factors = factors.map((v) => ((1 - v) / 2) * maxDist);
       // Add up and divide by dims
       const dist = factors.reduce((a, b) => a + b, 0) / 3;
+<<<<<<< HEAD:frontend/src/lib/voter/vaa-matching/tests/algorithms.test.ts
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {questions, voter, candidates, algorithm, matches} = createMatchesAndEntities(
         createLikertScaleValues(likertScale, voterValues),
         [createLikertScaleValues(likertScale, candValues)],
+=======
+      const {voter, candidates, algorithm} = createMatchesAndEntities(
+        createLikertValues(likertScale, voterValues),
+        [createLikertValues(likertScale, candValues)],
+>>>>>>> ac547a4 (refactor!: refactor matching algorithm):frontend/src/lib/vaa-matching/tests/algorithms.test.ts
         likertScale,
         DistanceMetric.Directional,
         MissingValueDistanceMethod.Neutral
@@ -399,8 +427,8 @@ describe('matchingAlgorithm', () => {
       const candValues = [0, 0, 1, 1, 1];
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
-        createLikertScaleValues(likertScale, voterValues),
-        [createLikertScaleValues(likertScale, candValues)],
+        createLikertValues(likertScale, voterValues),
+        [createLikertValues(likertScale, candValues)],
         likertScale,
         DistanceMetric.Manhattan,
         MissingValueDistanceMethod.Neutral
@@ -411,9 +439,9 @@ describe('matchingAlgorithm', () => {
       const subsetBDist = maxDist;
       const subsetC = {matchableQuestions: questions.slice(0, 4)};
       const subsetCDist = maxDist * (1 - 0.5);
-      const subQuestionGroups = [subsetA, subsetB, subsetC];
-      const match = algorithm.match(voter, candidates, {subQuestionGroups})[0];
-      expect(match.subMatches?.length).toBeCloseTo(subQuestionGroups.length);
+      const questionGroups = [subsetA, subsetB, subsetC];
+      const match = algorithm.match(voter, candidates, {questionGroups})[0];
+      expect(match.subMatches?.length).toBeCloseTo(questionGroups.length);
       expect(match.subMatches?.[0].distance).toBeCloseTo(subsetADist);
       expect(match.subMatches?.[0].questionGroup).toBe(subsetA);
       expect(match.subMatches?.[1].distance).toBeCloseTo(subsetBDist);
@@ -437,8 +465,8 @@ describe('matchingAlgorithm', () => {
  * @returns A dict of all generated objects
  */
 function createMatchesAndEntities(
-  voterAnswers: MatchableValue[],
-  candidateAnswers: MatchableValue[][],
+  voterAnswers: (number | undefined)[],
+  candidateAnswers: (number | undefined)[][],
   likertScale: number,
   distanceMetric: DistanceMetric,
   missingValueMethod: MissingValueDistanceMethod
@@ -446,7 +474,7 @@ function createMatchesAndEntities(
   questions: MultipleChoiceQuestion[];
   voter: Candidate;
   candidates: Candidate[];
-  algorithm: MatchingAlgorithmBase;
+  algorithm: MatchingAlgorithm;
   matches: Match[];
 } {
   const numQuestions = voterAnswers.length;
@@ -457,7 +485,7 @@ function createMatchesAndEntities(
   // Create dummy candidates
   const candidates = createCandidates(questions, candidateAnswers);
   // Matching algorithm
-  const algorithm = new MatchingAlgorithmBase({
+  const algorithm = new MatchingAlgorithm({
     distanceMetric,
     missingValueOptions: {missingValueMethod}
   });
@@ -478,7 +506,7 @@ function createMatchesAndEntities(
 class Candidate implements HasMatchableAnswers {
   constructor(public answers: MatchableAnswer[]) {}
 
-  getMatchableAnswerValue(question: MatchableQuestion): MatchableValue {
+  getAnswerValue(question: MatchableQuestion) {
     for (const answer of this.answers) {
       if (answer.question === question) return answer.value;
     }
@@ -493,15 +521,15 @@ class Candidate implements HasMatchableAnswers {
 /**
  * Convert normalized values to Likert-scale values.
  *
- * @param likertScale The likert scale, e.g. 5
+ * @param scale The likert scale, e.g. 5
  * @param values The normalised values
  * @returns Array of values
  */
-function createLikertScaleValues(
-  likertScale: number,
+function createLikertValues(
+  scale: number,
   values: UnsignedNormalizedDistance[]
-): MatchableValue[] {
-  return values.map((v) => 1 + v * (likertScale - 1));
+) {
+  return values.map((v) => 1 + v * (scale - 1));
 }
 
 /**
@@ -513,7 +541,7 @@ function createLikertScaleValues(
  */
 function createAnswers(
   questions: MatchableQuestion[],
-  answerValues: MatchableValue[]
+  answerValues: (number | undefined)[]
 ): MatchableAnswer[] {
   const answers: MatchableAnswer[] = [];
   for (let i = 0; i < questions.length; i++) {
@@ -534,7 +562,7 @@ function createAnswers(
  */
 function createQuestions(numQuestions: number, likertScale: number): MultipleChoiceQuestion[] {
   return Array.from({length: numQuestions}, (_, i) =>
-    MultipleChoiceQuestion.fromLikertScale(`qst${i}`, likertScale)
+    MultipleChoiceQuestion.fromLikert(`qst${i}`, likertScale)
   );
 }
 
@@ -547,7 +575,7 @@ function createQuestions(numQuestions: number, likertScale: number): MultipleCho
  */
 function createCandidates(
   questions: MultipleChoiceQuestion[],
-  candidateAnswers: MatchableValue[][]
+  candidateAnswers: (number | undefined)[][]
 ): Candidate[] {
   return candidateAnswers.map((o) => new Candidate(createAnswers(questions, o)));
 }
@@ -560,7 +588,7 @@ function createCandidates(
  */
 function createVoter(
   questions: MultipleChoiceQuestion[],
-  voterAnswers: MatchableValue[]
+  voterAnswers: (number | undefined)[]
 ): Candidate {
   return new Candidate(createAnswers(questions, voterAnswers));
 }

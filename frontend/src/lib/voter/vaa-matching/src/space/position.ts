@@ -1,5 +1,5 @@
-import type {SignedNormalizedDistance} from './distances';
-import type {MISSING_VALUE} from './matchableValue';
+import type {SignedNormalizedDistance} from '../distance';
+import type { MISSING_VALUE } from '../missingValue';
 import type {MatchingSpace} from './matchingSpace';
 
 /**

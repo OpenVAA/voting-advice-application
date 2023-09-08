@@ -1,10 +1,12 @@
-import type {MatchableValue} from '../core/matchableValue';
-import type {MatchingSpaceCoordinate} from '../core/matchingSpacePosition';
+import type {MatchingSpaceCoordinate} from '../space';
 
 /**
  * The interface for all question used for matching.
  */
 export interface MatchableQuestion {
+  /**
+   * The entities' answers to questions are matched using the question id
+   */
   id: string;
   /**
    * Set this to more than 1 for questions, such as preference order,
@@ -14,5 +16,5 @@ export interface MatchableQuestion {
   /**
    * Preference order questions return a list of distances, but Likert questions just one number
    */
-  normalizeValue(value: MatchableValue): MatchingSpaceCoordinate | MatchingSpaceCoordinate[];
+  normalizeValue(value: unknown): MatchingSpaceCoordinate | MatchingSpaceCoordinate[];
 }
