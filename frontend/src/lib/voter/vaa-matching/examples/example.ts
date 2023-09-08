@@ -1,19 +1,14 @@
-import type {
-  HasMatchableAnswers,
-  HasMatchableQuestions,
-  MatchableAnswer,
-  MatchableValue,
-  MatchingOptions
-} from '..';
-
 import {
-  MatchingAlgorithmBase,
-  type MatchableQuestion,
-  MISSING_VALUE,
-  MultipleChoiceQuestion,
   DistanceMetric,
-  MissingValueDistanceMethod
+  MatchingAlgorithm,
+  MissingValueDistanceMethod,
+  MultipleChoiceQuestion,
+  type HasMatchableAnswers,
+  type MatchableQuestion,
+  type MatchableQuestionGroup,
+  type MatchingOptions
 } from '..';
+import type {AnswerDict} from '../src/entity/hasMatchableAnswers';
 
 /**
  * Simple example.
@@ -30,18 +25,18 @@ function main(
 ): void {
   // Create dummy questions
   const questions = Array.from({length: numQuestions}, (i: number) =>
-    MultipleChoiceQuestion.fromLikertScale(`q${i}`, likertScale)
+    MultipleChoiceQuestion.fromLikert(`q${i}`, likertScale)
   );
 
   // Create answer subgroup
-  const matchingOptions: MatchingOptions = {};
+  const matchingOptions: MatchingOptions<MatchableQuestionGroup & {label: string}> = {};
   if (subGroup > 0) {
     if (subGroup > numQuestions) throw new Error("subGroup can't be larger than numQuestions!");
-    matchingOptions.subQuestionGroups = [
+    matchingOptions.questionGroups = [
       {
         label: `Questions 1 to ${subGroup}`,
         matchableQuestions: questions.slice(0, subGroup)
-      } as HasMatchableQuestions
+      }
     ];
   }
 
@@ -51,17 +46,14 @@ function main(
       ? () => Math.floor(Math.random() * likertScale) + 1
       : (i % likertScale) + 1;
     const answers = createAnswers(questions, value, numMissing);
-    return new Candidate(
-      `Candidate ${i} - Answers ${answers.map((a) => a.value).join(', ')}`,
-      answers
-    );
+    return new Candidate(`Candidate ${i} - Answers ${Object.values(answers).join(', ')}`, answers);
   });
 
   // Create a Candidate to represent the voter
   const voter = new Candidate('Voter', createAnswers(questions, voterAnswer));
 
   // Manhattan matching algorithm
-  const manhattan = new MatchingAlgorithmBase({
+  const manhattan = new MatchingAlgorithm({
     distanceMetric: DistanceMetric.Manhattan,
     missingValueOptions: {
       missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
@@ -69,7 +61,7 @@ function main(
   });
 
   // Directional matching algorithm
-  const directional = new MatchingAlgorithmBase({
+  const directional = new MatchingAlgorithm({
     distanceMetric: DistanceMetric.Directional,
     missingValueOptions: {
       missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
@@ -77,8 +69,8 @@ function main(
   });
 
   // Get matches for both methods
-  const manhattanMatches = manhattan.match(voter, candidates, matchingOptions);
-  const directionalMatches = directional.match(voter, candidates, matchingOptions);
+  const manhattanMatches = manhattan.match(questions, voter, candidates, matchingOptions);
+  const directionalMatches = directional.match(questions, voter, candidates, matchingOptions);
 
   // Generate output string
   let output = `Questions: ${numQuestions} • Likert scale ${likertScale}\n`;
@@ -86,7 +78,11 @@ function main(
   for (let i = 0; i < candidates.length; i++) {
     output += `${manhattanMatches[i].entity} • Matches: Manhattan ${manhattanMatches[i]} • Directional ${directionalMatches[i]}\n`;
     if (subGroup > 0)
-      output += `  Submatches ${manhattanMatches[i].subMatches?.[0]?.questionGroup?.label}: Manhattan ${manhattanMatches[i].subMatches?.[0]} • Directional ${directionalMatches[i].subMatches?.[0]}\n`;
+      output += `  Submatches ${
+        manhattanMatches[i].subMatches?.[0]?.questionGroup?.label
+      }: Manhattan ${manhattanMatches[i].subMatches?.[0]} • Directional ${
+        directionalMatches[i].subMatches?.[0]
+      }\n`;
   }
 
   console.info(output);
@@ -98,20 +94,19 @@ function main(
  * @param questions Question list
  * @param answerValue The same value for all or a function to generate on
  * @param missing Number of missing answers
- * @returns Array of answers
+ * @returns Answer dict
  */
 function createAnswers(
   questions: MatchableQuestion[],
   answerValue: number | ((index: number) => number),
   missing = 0
-): MatchableAnswer[] {
-  const answers: MatchableAnswer[] = [];
+): AnswerDict {
+  const answers = {} as AnswerDict;
   for (let i = 0; i < questions.length; i++) {
-    answers.push({
-      question: questions[i],
+    answers[questions[i].id] = {
       value:
-        i < missing ? MISSING_VALUE : typeof answerValue === 'number' ? answerValue : answerValue(i)
-    });
+        i < missing ? undefined : typeof answerValue === 'number' ? answerValue : answerValue(i)
+    };
   }
   return answers;
 }
@@ -122,19 +117,8 @@ function createAnswers(
 class Candidate implements HasMatchableAnswers {
   constructor(
     public readonly name: string,
-    public answers: MatchableAnswer[]
+    public answers: AnswerDict
   ) {}
-
-  getMatchableAnswerValue(question: MatchableQuestion): MatchableValue {
-    for (const answer of this.answers) {
-      if (answer.question === question) return answer.value;
-    }
-    return MISSING_VALUE;
-  }
-
-  get matchableAnswers(): MatchableAnswer[] {
-    return this.answers;
-  }
 
   toString(): string {
     return this.name;

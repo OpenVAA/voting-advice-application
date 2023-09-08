@@ -1,5 +1,5 @@
-import {MatchingSpace} from '../core/matchingSpace';
-import type {MatchableQuestion} from '../questions/matchableQuestion';
+import {MatchingSpace} from './matchingSpace';
+import type {MatchableQuestion} from '../question';
 
 /**
  * A utility function to create a subspace for a subset of questions

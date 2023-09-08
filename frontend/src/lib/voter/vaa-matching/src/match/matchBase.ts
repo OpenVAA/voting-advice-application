@@ -1,15 +1,14 @@
-import {assertUnsignedNormalized, NORMALIZED_DISTANCE_EXTENT} from '../core/distances';
-import type {UnsignedNormalizedDistance} from '../core/distances';
-import type {HasMatchableAnswers} from '../core/hasMatchableAnswers';
-import type {HasMatchableQuestions} from '../questions/hasMatchableQuestions';
+import {
+  assertUnsignedNormalized, 
+  NORMALIZED_DISTANCE_EXTENT, 
+  type UnsignedNormalizedDistance
+} from '../distance';
 
 /**
  * The base class for a matching result. In most cases, the subclass
  * Match will be used.
  */
 export class MatchBase {
-  /** Used for to get/set `distance`. */
-  private _distance: UnsignedNormalizedDistance = 0;
   /**
    * Used in converting the distance to a score value, typically
    * between 0 and 100. This is a static value of the class, so
@@ -22,6 +21,9 @@ export class MatchBase {
    * with `MatchBase.unitString = stringVal`.
    */
   static unitString = '%'; // "&#8201;%";
+
+  /** Used for to get/set `distance`. */
+  private _distance: UnsignedNormalizedDistance = 0;
 
   /**
    * Create a new MatchBase.
@@ -75,48 +77,5 @@ export class MatchBase {
    */
   toString(): string {
     return `${this.score}${MatchBase.unitString}`;
-  }
-}
-
-/**
- * The class for question-group-specific submatches within a Match.
- */
-export class SubMatch extends MatchBase {
-  /**
-   * Create a new SubMatch.
-   *
-   * @param distance The match distance as an unsigned normalized distance,
-   * e.g. [0, 1] (the range is defined by `NORMALIZED_DISTANCE_EXTENT`).
-   * Note that 1 means a bad match and 0 a perfect one.
-   * @param questionGroup The subgroup of questions for which the match is
-   * computed.
-   */
-  constructor(
-    distance: UnsignedNormalizedDistance,
-    public questionGroup: HasMatchableQuestions
-  ) {
-    super(distance);
-  }
-}
-
-/**
- * The class for an entity's matching result
- */
-export class Match extends MatchBase {
-  /**
-   * Create a new Match.
-   *
-   * @param distance The match distance as an unsigned normalized distance,
-   * e.g. [0, 1] (the range is defined by `NORMALIZED_DISTANCE_EXTENT`).
-   * Note that 1 means a bad match and 0 a perfect one.
-   * @param entity The entity to which the match belongs.
-   * @param subMatches Possible submatches for the entity.
-   */
-  constructor(
-    distance: UnsignedNormalizedDistance,
-    public entity: HasMatchableAnswers,
-    public subMatches?: SubMatch[]
-  ) {
-    super(distance);
   }
 }

@@ -1,4 +1,4 @@
-import type {MatchingSpacePosition} from '../core/matchingSpacePosition';
+import type {MatchingSpacePosition} from '../space';
 
 /**
  * For future implementation.
