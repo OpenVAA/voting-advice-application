@@ -1,10 +1,6 @@
-import {expect, test} from 'vitest';
-import {NORMALIZED_DISTANCE_EXTENT} from '../core/distances';
-import type {SignedNormalizedDistance} from '../core/distances';
-import {MISSING_VALUE} from '../core/matchableValue';
-import {MatchingSpace} from '../core/matchingSpace';
-import {MatchingSpacePosition} from '../core/matchingSpacePosition';
-import type {MatchingSpaceCoordinate} from '../core/matchingSpacePosition';
+import {NORMALIZED_DISTANCE_EXTENT, type SignedNormalizedDistance} from '../src/distance/';
+import {MISSING_VALUE} from '../src/missingValue';
+import {MatchingSpace, MatchingSpacePosition, type MatchingSpaceCoordinate} from '../src/space';
 
 // For convenience
 const maxVal: SignedNormalizedDistance = NORMALIZED_DISTANCE_EXTENT / 2;

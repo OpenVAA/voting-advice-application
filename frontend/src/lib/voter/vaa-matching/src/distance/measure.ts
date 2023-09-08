@@ -1,81 +1,9 @@
-import type {SignedNormalizedDistance, UnsignedNormalizedDistance} from '../core/distances';
-import {NORMALIZED_DISTANCE_EXTENT} from '../core/distances';
-import {MISSING_VALUE} from '../core/matchableValue';
-import type {MatchingSpace} from '../core/matchingSpace';
-import type {MatchingSpacePosition} from '../core/matchingSpacePosition';
-import {imputeMissingValues} from './imputeMissingValues';
-import type {MissingValueImputationOptions} from './imputeMissingValues';
-
-/**
- * Calculate the Manhattan distance between two distances.
- *
- * @param a Signed distance
- * @param b Signed distance
- * @returns Unsigned distance
- */
-export function manhattanDistance(
-  a: SignedNormalizedDistance,
-  b: SignedNormalizedDistance
-): UnsignedNormalizedDistance {
-  return Math.abs(a - b);
-}
-
-/**
- * Calculate the directional distance between two positions.
- *
- * @param a Signed distance
- * @param b Signed distance
- * @returns Unsigned distance
- */
-export function directionalDistance(
-  a: SignedNormalizedDistance,
-  b: SignedNormalizedDistance
-): UnsignedNormalizedDistance {
-  return 0.5 * NORMALIZED_DISTANCE_EXTENT - (2 * a * b) / NORMALIZED_DISTANCE_EXTENT;
-}
-
-/**
- * Available distance measurement metrics
- */
-export enum DistanceMetric {
-  /** Sum of the distances in each dimension */
-  Manhattan,
-  /**
-   *  Sum of the products of the distances in each dimension. Note that
-   *  this method assumes a neutral stance semantically meaning being
-   *  unsure about the statement. Thus, if either of the positions being
-   *  compared has a neutral stance on an issue, agreement for that will
-   *  be 50%.
-   *
-   *  Furthermore, the maximum available agreement will be less than
-   *  100% in all cases where the reference entity has any other answers
-   *  than those at the extremes (i.e. 1 or 5 on a 5-pt Likert scale).
-   *
-   *  More confusingly, this means that if both the voter's and the
-   *  candidate's answer to a statement is, e.g., 2/5, their agreement
-   *  will be 25%, not 100% even though their answer are identical.
-   */
-  Directional
-  // MendezHybrid, // This should be easy to implement, just take a 50/50
-  // average of Manhattan and Directional
-  // Euclidean,
-  // Mahalonobis
-}
-
-/**
- * Options passed to measureDistance.
- */
-export interface DistanceMeasurementOptions {
-  /** The distance metric to use. */
-  metric: DistanceMetric;
-  /** Options passed to imputeMissingValues */
-  missingValueOptions: MissingValueImputationOptions;
-}
-
-export type GlobalAndSubspaceDistances = {
-  global: UnsignedNormalizedDistance;
-  subspaces: UnsignedNormalizedDistance[];
-};
+import {imputeMissingValues, MISSING_VALUE} from '../missingValue';
+import type {MatchingSpace} from '../space/matchingSpace';
+import type {MatchingSpacePosition} from '../space/position';
+import type {UnsignedNormalizedDistance} from './distance';
+import { DistanceMetric, directionalDistance, manhattanDistance } from './metric';
+import type { DistanceMeasurementOptions, GlobalAndSubspaceDistances } from './measure.type';
 
 export function measureDistance(
   a: MatchingSpacePosition,
@@ -131,10 +59,10 @@ export function measureDistance(
     // We might have to alter these values, if there are missing ones, hence the vars
     let valA = a.coordinates[i],
       valB = b.coordinates[i];
-    // First, handle missing values
-    if (valA === MISSING_VALUE)
+    // First, handle missing values (we use == to allow undefined | null just in case)
+    if (valA == MISSING_VALUE)
       throw new Error('The first position cannot contain missing values!');
-    if (valB === MISSING_VALUE)
+    if (valB == MISSING_VALUE)
       [valA, valB] = imputeMissingValues(valA, options.missingValueOptions);
     // Calculate distance
     let dist: number;
