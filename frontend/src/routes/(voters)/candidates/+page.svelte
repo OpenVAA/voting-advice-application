@@ -1,6 +1,7 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
+  import {ScoreGauge} from '$lib/components/scoreGauge/index';
   import {GetFullNameInOrder} from '$lib/utils/internationalisation';
   import {EntityCard} from '$lib/components/entityCard';
   import {goto} from '$app/navigation';
@@ -11,6 +12,15 @@
   if (data?.candidates) {
     candidates = data.candidates ? Object.values(data.candidates) : null;
   }
+
+  // TODO: Fetch themes/category from Strapi
+  let categories: any[] = [
+    {label: 'Housing Policies'},
+    {label: 'Immigration'},
+    {label: 'Security'},
+    {label: 'EU Policies'},
+    {label: 'War'}
+  ];
 </script>
 
 <div class="bg-primary">
@@ -30,7 +40,24 @@
         photoSrc="/images/candidate-photo.png"
         id={candidate.id}
         listText={candidate?.attributes?.party?.data?.attributes.shortName}
-        electionSymbol={Math.floor(Math.random() * 1000).toString()} />
+        electionSymbol={Math.floor(Math.random() * 1000).toString()}
+        summaryMatch={Math.floor(Math.random() * 100) + 1 + '%'}>
+        <svelte:fragment slot="card-footer">
+          {#if categories.length > 0}
+            <div
+              class="grid grid-flow-row grid-cols-2 gap-x-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+              {#each categories as category}
+                <!-- TODO: Add the real results -->
+                <ScoreGauge
+                  score={Math.floor(Math.random() * 100) + 1}
+                  label={category?.label}
+                  shape="radial"
+                  unit="%" />
+              {/each}
+            </div>
+          {/if}
+        </svelte:fragment>
+      </EntityCard>
     {:else}
       <p>{$_('candidates.notFound')}</p>
     {/each}
