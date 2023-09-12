@@ -4,5 +4,5 @@
 cd frontend
 npx lint-staged
 
-cd ../backend/
+cd ../backend/vaa-strapi
 npx lint-staged
