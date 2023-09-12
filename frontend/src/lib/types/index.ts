@@ -1,8 +1,7 @@
-import type {AppLabels} from './appLabels.type';
-import type {Candidate} from './candidate.type';
-import type {CandidateRank} from './candidateRank.type';
-import type {CompatibilityScore} from './compatibilityScore.type';
+import type {Candidate} from './candidate.type'; // Not used, see comment in file
+import type {CandidateRank} from './candidateRank.type'; // Not used, see comment in file
+import type {CompatibilityScore} from './compatibilityScore.type'; // Not used, see comment in file
 import type {VoterAnswer} from './voterAnswer.type';
 import type {VoterQuestion} from './voterQuestion.type';
 
-export {AppLabels, VoterAnswer, Candidate, CandidateRank, CompatibilityScore, VoterQuestion};
+export {VoterAnswer, Candidate, CandidateRank, CompatibilityScore, VoterQuestion};

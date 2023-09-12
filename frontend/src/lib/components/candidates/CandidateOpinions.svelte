@@ -1,8 +1,6 @@
 <script lang="ts">
   import {page} from '$app/stores';
 
-  import type {CandidateProps} from './CandidateProps.type';
-
   export let candidate: CandidateProps;
 </script>
 

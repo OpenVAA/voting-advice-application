@@ -1,7 +1,5 @@
 <script lang="ts">
   import CandidateListing from './CandidateListing.svelte';
-  import type {CandidateProps} from './CandidateProps.type';
-  import type {RankingProps} from './CandidateRanking.type';
   export let ranking: RankingProps;
   export let candidate: CandidateProps;
   export let href: string;
