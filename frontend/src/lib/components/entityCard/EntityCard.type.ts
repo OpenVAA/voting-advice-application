@@ -4,10 +4,10 @@ export interface EntityCardProps extends HTMLAttributes<HTMLElement> {
   electionSymbol?: string;
   listText?: string;
   summaryMatch?: string;
-  photoSrc?: string;
-  photoAlt?: string;
-  photoWidth?: number;
-  photoHeight?: number;
+  imgSrc?: string;
+  imgAlt?: string;
+  imgWidth?: number;
+  imgHeight?: number;
 
   // Accessibility properties exposed for the entity card
   ariaDescribedby?: string | undefined | null;

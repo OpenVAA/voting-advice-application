@@ -10,8 +10,10 @@
   export let electionSymbol: $$Props['electionSymbol'] = '';
   export let listText: $$Props['listText'] = '';
   export let summaryMatch: $$Props['summaryMatch'] = '';
-  export let photoSrc: $$Props['photoSrc'] = undefined;
-  export let photoAlt: $$Props['photoAlt'] = undefined;
+  export let imgSrc: $$Props['imgSrc'] = undefined;
+  export let imgAlt: $$Props['imgAlt'] = undefined;
+  export let imgWidth: $$Props['imgWidth'] = undefined;
+  export let imgHeight: $$Props['imgHeight'] = undefined;
 
   // Accessibility props (optional)
   export let ariaDescribedby: $$Props['aria-describedby'] = undefined;
@@ -20,10 +22,6 @@
   export let tabindex: $$Props['tabindex'] = undefined;
 
   const labelId = getUUID();
-
-  if (ariaPosinset && ariaPosinset > 0 && !ariaSetsize) {
-    ariaSetsize = -1;
-  }
 </script>
 
 {#if title}
@@ -37,8 +35,8 @@
     aria-posinset={ariaPosinset}
     aria-setsize={ariaSetsize}>
     <svelte:fragment slot="card-media">
-      {#if photoSrc}
-        <img src={photoSrc} alt={photoAlt} />
+      {#if imgSrc}
+        <img src={imgSrc} alt={imgAlt} width={imgWidth} height={imgHeight} />
       {:else}
         <div class="placeholder avatar">
           <div class="w-16 rounded-full bg-neutral-focus text-neutral-content">
@@ -80,8 +78,8 @@
     {tabindex}
     aria-posinset={ariaPosinset}
     aria-setsize={ariaSetsize}>
-    <svelte:fragment slot="body-title">
-      <h2 class="text-2xl">{$_('components.card.errorDisplaying')}</h2>
-    </svelte:fragment>
+    <h2 slot="body-title" class="text-2xl text-error" id={labelId}>
+      {$_('components.card.errorDisplaying')}
+    </h2>
   </Card>
 {/if}
