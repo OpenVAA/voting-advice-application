@@ -25,8 +25,10 @@ export const load = (async ({params}: ServerLoadEvent) => {
         throw error(404, 'Themes not found');
       }
     });
-    candidates.themes = themes;
-    return candidates;
+    return {
+      themes,
+      candidates
+    };
   } else {
     throw error(404, 'There is some error fetching candidates or themes');
   }
