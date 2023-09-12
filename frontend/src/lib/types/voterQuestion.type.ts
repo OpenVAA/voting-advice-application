@@ -1,4 +1,3 @@
-import type {QuestionProps} from '$lib/components/questions/Question.type';
 import type {MatchableValue, MatchingSpaceCoordinate} from '$lib/vaa-matching';
 
 /**

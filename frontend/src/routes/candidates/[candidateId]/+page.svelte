@@ -2,7 +2,7 @@
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
   import {allCandidates} from '$lib/utils/stores';
-  import {CandidateDetailsCard, type CandidateProps} from '$lib/components/candidates';
+  import {CandidateDetailsCard} from '$lib/components/candidates';
 
   let candidate: CandidateProps | undefined;
 

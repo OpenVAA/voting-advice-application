@@ -1,5 +1,12 @@
 {
   "root": true,
+  "globals": {
+    "ElectionProps": "writable",
+    "PartyProps": "writable",
+    "CandidateProps": "writable",
+    "QuestionProps": "writable",
+    "RankingProps": "writable"
+  },
   "parser": "@typescript-eslint/parser",
   "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
   "plugins": ["svelte3", "@typescript-eslint"],
@@ -22,6 +29,7 @@
     "indent": ["error", 2, {"SwitchCase": 1}],
     "linebreak-style": ["error", "unix"],
     "no-console": ["error", {"allow": ["warn", "error", "info"]}],
+    "no-undef": "off",
     "quotes": ["error", "single", {"avoidEscape": true}],
     "semi": ["error", "always"]
   }

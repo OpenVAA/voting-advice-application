@@ -1,10 +1,8 @@
 import {derived, writable} from 'svelte/store';
 import type {Readable, Writable} from 'svelte/store';
 import {browser} from '$app/environment';
-import type {AppLabels, VoterAnswer} from '$types';
+import type {VoterAnswer} from '$types';
 import {logDebugError} from './logger';
-import type {QuestionProps} from '$lib/components/questions';
-import type {CandidateProps, RankingProps} from '$lib/components/candidates';
 import type {Match} from '$lib/vaa-matching';
 import {matchCandidates} from '$lib/utils/matching';
 

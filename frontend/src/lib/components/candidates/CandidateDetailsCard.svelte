@@ -5,8 +5,6 @@
   import {ScoreGauge} from '$lib/components/scoreGauge/index';
   import CandidateBasicInfo from './CandidateBasicInfo.svelte';
   import CandidateOpinions from './CandidateOpinions.svelte';
-  import type {CandidateProps} from './CandidateProps.type';
-  import type {RankingProps} from './CandidateRanking.type';
 
   export let candidate: CandidateProps;
   export let ranking: RankingProps | undefined = undefined;

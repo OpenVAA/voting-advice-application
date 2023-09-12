@@ -10,9 +10,6 @@ import type {
   StrapiQuestionTypeData
 } from './getData.type';
 import {constants} from '$lib/utils/constants';
-import type {QuestionProps, QuestionType} from '$lib/components/questions';
-import type {CandidateProps} from '$lib/components/candidates';
-import type {AppLabels} from '$types';
 
 // TODO: Use locale (now defaults to en)
 export const getData = async <T>(

@@ -5,7 +5,7 @@
   import {page} from '$app/stores';
   import {allQuestions, answeredQuestions} from '$lib/utils/stores';
   import {logDebugError} from '$lib/utils/logger';
-  import {Question, type OnChangeEventDetail, type QuestionProps} from '$lib/components/questions';
+  import {Question, type OnChangeEventDetail} from '$lib/components/questions';
 
   /**
    * A small delay before moving to the next question.
