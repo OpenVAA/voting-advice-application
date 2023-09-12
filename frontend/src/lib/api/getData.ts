@@ -35,23 +35,6 @@ export const getData = async <T>(
     });
 };
 
-export const getSingleTypeData = async ({fetch, params, route, url, endpoint}): Promise<any> => {
-  const backendUrl = `${constants.BACKEND_URL}/${endpoint}`;
-
-  return await fetch(backendUrl, {
-    headers: {
-      Authorization: `Bearer ${constants.STRAPI_TOKEN}`
-    }
-  })
-    .then((response: {json: () => any}) => {
-      return response.json();
-    })
-    .catch((error: any) =>
-      console.error(`Error fetching data from Strapi: ${error} - 
-      URL: ${backendUrl}`)
-    );
-};
-
 /**
  * Get app labels data from Strapi
  */
