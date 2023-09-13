@@ -25,6 +25,8 @@ declare global {
       openAnswer?: string;
     }[];
     candidateNumber: string | number;
+    electionRound: number;
+    electionSymbol: string;
     firstName: string;
     id: string;
     lastName: string;

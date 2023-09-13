@@ -1,11 +1,12 @@
 // Quick test function to get data from Strapi
 // To be refactored (GraphQL in the future?)
+// To build REST queries, one can use https://docs.strapi.io/dev-docs/api/rest/interactive-query-builder
 
 import type {
   StrapiAnswerData,
-  StrapiCandidateData,
   StrapiElectionData,
   StrapiLanguageData,
+  StrapiNominationData,
   StrapiQuestionData,
   StrapiQuestionTypeData
 } from './getData.type';
@@ -34,17 +35,19 @@ export const getData = async <T>(
 
 /**
  * Get app labels data from Strapi
+ * @param electionId The id of the Election the labels are used for
  */
-export const getAppLabels = (): Promise<AppLabels> => {
-  return getData<StrapiElectionData[]>(
-    'api/elections',
-    new URLSearchParams({
-      // We need a specific calls to populate relations, * only goes one-level deep
-      'populate[electionAppLabel][populate][0]': 'actionLabels',
-      'populate[electionAppLabel][populate][1]': 'viewTexts'
-    })
-  ).then((result) => {
-    if (result) {
+export const getAppLabels = ({electionId}: {electionId?: string} = {}): Promise<AppLabels> => {
+  const params = new URLSearchParams({
+    // We need a specific calls to populate relations, * only goes one-level deep
+    'populate[electionAppLabel][populate][0]': 'actionLabels',
+    'populate[electionAppLabel][populate][1]': 'viewTexts'
+  });
+  if (electionId != null) {
+    params.set('filters[id][$eq]', electionId);
+  }
+  return getData<StrapiElectionData[]>('api/elections', params).then((result) => {
+    if (result?.data?.length) {
       return result.data[0].attributes.electionAppLabel.data.attributes;
     } else {
       throw new Error('Could not retrieve app labels');
@@ -53,25 +56,37 @@ export const getAppLabels = (): Promise<AppLabels> => {
 };
 
 /**
- * Get data for all candidates from Strapi. NB. This does not currently
- * filter them by constituency or election!
+ * Get data for all candidates from Strapi.
+ * @param electionId The id of the Election the Candidates are nominated for
+ * @param constituencyId The id of the Constituency the Candidates are nominated in
  */
-export const getAllCandidates = (): Promise<CandidateProps[]> => {
-  return getData<StrapiCandidateData[]>(
-    'api/candidates',
-    new URLSearchParams({
-      // We need a specific calls to populate relations, * only goes one-level deep
-      // NB. We cannot mix populate[0]=motherTongues with the deeper population def for answers!
-      'populate[motherTongues]': 'true',
-      'populate[otherLanguages]': 'true',
-      'populate[party]': 'true',
-      'populate[answers][populate][0]': 'question'
-    })
-  ).then((result) => {
-    if (result?.data != null) {
-      return result.data.map((d) => {
-        const id = d.id;
-        const attr = d.attributes;
+export const getAllCandidates = ({
+  electionId,
+  constituencyId
+}: {electionId?: string; constituencyId?: string} = {}): Promise<CandidateProps[]> => {
+  const params = new URLSearchParams({
+    // We need a specific calls to populate relations, * only goes one-level deep
+    'populate[election]': 'true',
+    'populate[constituency]': 'true',
+    'populate[party]': 'true',
+    'populate[candidate][populate][party]': 'true',
+    'populate[candidate][populate][motherTongues]': 'true',
+    'populate[candidate][populate][otherLanguages]': 'true',
+    'populate[candidate][populate][answers][populate][question]': 'true',
+    'filters[candidate][id][$notNull]': 'true' // We need to apply $notNull to id, not the candidate relation
+  });
+  if (constituencyId != null) {
+    params.set('filters[constituency][id][$eq]', constituencyId);
+  }
+  if (electionId != null) {
+    params.set('filters[election][id][$eq]', electionId);
+  }
+  return getData<StrapiNominationData[]>('api/nominations', params).then((result) => {
+    if (result?.data?.length) {
+      return result.data.map((nom) => {
+        const cnd = nom.attributes.candidate.data;
+        const id = cnd.id;
+        const attr = cnd.attributes;
         const answers = attr.answers.data.map((a: StrapiAnswerData) => ({
           questionId: a.attributes.question.data.id,
           answer: a.attributes.answer.key
@@ -83,13 +98,14 @@ export const getAllCandidates = (): Promise<CandidateProps[]> => {
         const otherLanguages = attr.otherLanguages.data.map(
           (l: StrapiLanguageData) => l.attributes.name
         );
+        // We use the party on whose list the candidate is
         const party = {
-          name: attr.party.data.attributes.name,
-          shortName: attr.party.data.attributes.shortName
+          name: nom.attributes.party.data.attributes.name,
+          shortName: nom.attributes.party.data.attributes.shortName
         };
         return {
           answers,
-          candidateNumber: attr.candidateNumber,
+          electionSymbol: nom.attributes.electionSymbol,
           firstName: attr.firstName,
           id,
           lastName: attr.lastName,
@@ -118,7 +134,7 @@ export const getAllQuestions = (): Promise<QuestionProps[]> => {
       'populate[questions][populate][0]': 'questionCategory'
     })
   ).then((result) => {
-    if (result?.data != null) {
+    if (result?.data?.length) {
       const questions: QuestionProps[] = [];
       for (const qType of result.data) {
         // Get the value options for the question

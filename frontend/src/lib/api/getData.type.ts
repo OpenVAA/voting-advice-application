@@ -69,6 +69,40 @@ export interface StrapiQuestionData {
 }
 
 /**
+ * Non-exhaustive specification of the data returned by the Strapi endpoint `nomination`.
+ */
+export interface StrapiNominationData {
+  id: number | string;
+  attributes: {
+    electionSymbol: string;
+    electionRound: number;
+    type?: string;
+    candidate: {
+      data: StrapiCandidateData;
+    };
+    constituency: {
+      data: StrapiConstituencyData;
+    };
+    election: {
+      data: StrapiElectionData;
+    };
+    party: {
+      data: StrapiPartyData;
+    };
+  };
+}
+
+/**
+ * Non-exhaustive specification of the data returned by the Strapi endpoint `constitucency`.
+ */
+export interface StrapiConstituencyData {
+  id: number | string;
+  attributes: {
+    name: string;
+  };
+}
+
+/**
  * Non-exhaustive specification of the data returned by the Strapi endpoint `candidate`.
  */
 export interface StrapiCandidateData {
