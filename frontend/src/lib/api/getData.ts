@@ -40,8 +40,8 @@ export const getData = async <T>(
 export const getAppLabels = ({electionId}: {electionId?: string} = {}): Promise<AppLabels> => {
   const params = new URLSearchParams({
     // We need a specific calls to populate relations, * only goes one-level deep
-    'populate[electionAppLabel][populate][0]': 'actionLabels',
-    'populate[electionAppLabel][populate][1]': 'viewTexts'
+    'populate[electionAppLabel][populate][actionLabels]': 'true',
+    'populate[electionAppLabel][populate][viewTexts]': 'true'
   });
   if (electionId != null) {
     params.set('filters[id][$eq]', electionId);
@@ -131,7 +131,7 @@ export const getAllQuestions = (): Promise<QuestionProps[]> => {
     'api/question-types',
     new URLSearchParams({
       // We need a specific call to populate the category relations, * only goes one-level deep
-      'populate[questions][populate][0]': 'questionCategory'
+      'populate[questions][populate][questionCategory]': 'true'
     })
   ).then((result) => {
     if (result?.data?.length) {
