@@ -9,8 +9,49 @@ declare global {
   interface AppLabels {
     name: string;
     appTitle: string;
-    actionLabels: Record<string, string>;
-    viewTexts: Record<string, string>;
+    locale: string;
+    actionLabels: {
+      id: string;
+      startButton: string;
+      electionInfo: string;
+      howItWorks: string;
+      help: string;
+      searchMunicipality: string;
+      startQuestions: string;
+      selectCategories: string;
+      previous: string;
+      answerCategoryQuestions: string;
+      readMore: string;
+      skip: string;
+      filter: string;
+      alphaOrder: string;
+      bestMatchOrder: string;
+      addToList: string;
+      candidateBasicInfo: string;
+      candidateOpinions: string;
+      home: string;
+      constituency: string;
+      opinions: string;
+      results: string;
+      yourList: string;
+    };
+    viewTexts: {
+      id: string;
+      toolTitle: string;
+      toolDescription: string;
+      publishedBy: string;
+      madeWith: string;
+      selectMunicipalityTitle: string;
+      selectMunicipalityDescription: string;
+      yourConstituency: string;
+      yourOpinionsTitle: string;
+      yourOpinionsDescription: string;
+      questionsTip: string;
+      yourCandidatesTitle: string;
+      yourCandidatesDescription: string;
+      yourPartiesTitle: string;
+      yourPartiesDescription: string;
+    };
   }
 
   /**
@@ -38,6 +79,18 @@ declare global {
     };
     // photo
     politicalExperience: string;
+  }
+
+  /**
+   * The properties of an Election object
+   */
+  interface ElectionProps {
+    electionDate: string;
+    id: string;
+    locale: string;
+    name: string;
+    shortName: string;
+    type: string;
   }
 
   /**

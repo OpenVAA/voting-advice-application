@@ -5,7 +5,7 @@
   import {page} from '$app/stores';
   import {beforeNavigate} from '$app/navigation';
   import type {LayoutServerData} from './$types';
-  import {appLabels} from '$lib/utils/stores';
+  import {appLabels, election} from '$lib/utils/stores';
 
   export let data: LayoutServerData;
 
@@ -14,8 +14,9 @@
   // a bit of investigation.
   // TODO: Investigate what'd be the proper way to handle data updates.
   onMount(() => {
-    if (data.appLabels) {
+    if (data.appLabels && data.election) {
       $appLabels = data.appLabels;
+      $election = data.election;
     } else {
       throw new Error('appLabels not found');
     }

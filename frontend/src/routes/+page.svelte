@@ -1,16 +1,42 @@
 <script lang="ts">
-  import {resetLocalStorage} from '$lib/utils/stores';
+  import {locale} from 'svelte-i18n';
+  import {appLabels, election} from '$lib/utils/stores';
+
+  let electionDateString = '';
+  let appDescription = '';
+  $: if ($appLabels && $election) {
+    electionDateString = new Date($election.electionDate).toLocaleDateString(
+      $election.locale ?? $locale ?? undefined,
+      {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }
+    );
+    appDescription = $appLabels.viewTexts.toolDescription.replace('{{0}}', electionDateString);
+  }
 </script>
 
-<div>
-  <h1 class="ml-2.5 mt-14 text-3xl font-medium leading-6 text-gray-500">
-    Welcome to Voting Advice Application!
-  </h1>
-  <a href="/questions"><span class="badge ml-4 mt-4">Answer questions</span></a> <br />
-  <a href="/candidates"><span class="badge ml-4 mt-4">View candidates</span></a> <br />
-  <a href="/parties"><span class="badge ml-4 mt-4">View parties</span></a>
-  <div>
-    <button on:click={resetLocalStorage} class="text-warn btn-ghost btn"
-      >Reset local storage</button>
+{#if $appLabels && $election}
+  <div class="min-h-screen bg-secondary">
+    <div class="hero bg-[#d4dbef]">
+      <img
+        class="max-h-72 w-full max-w-screen-md bg-white object-cover"
+        src="/images/hero.png"
+        alt=""
+        srcset="" />
+    </div>
+    <div class="flex flex-col items-center">
+      <div class="flex max-w-xl flex-col flex-nowrap items-center gap-y-3 p-6">
+        <h1 class="text-center text-app-title">{$appLabels.appTitle}</h1>
+        <h2 class="text-center">{$election.name}</h2>
+        <p class="text-center">
+          {appDescription}
+        </p>
+        <a href="/navigation" class="btn-primary btn">{$appLabels.actionLabels.startButton}</a>
+        <a href="/information" class="btn-ghost btn">{$appLabels.actionLabels.electionInfo}</a>
+        <a href="/about" class="btn-ghost btn">{$appLabels.actionLabels.howItWorks}</a>
+      </div>
+    </div>
   </div>
-</div>
+{/if}
