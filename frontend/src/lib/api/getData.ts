@@ -34,6 +34,34 @@ export const getData = async <T>(
 };
 
 /**
+ * Get election data from Strapi
+ * @param electionId The id of the Election the labels are used for
+ */
+export const getElection = ({electionId}: {electionId?: string} = {}): Promise<ElectionProps> => {
+  const params = new URLSearchParams({
+    // 'populate': '*'
+  });
+  if (electionId != null) {
+    params.set('filters[id][$eq]', electionId);
+  }
+  return getData<StrapiElectionData[]>('api/elections', params).then((result) => {
+    if (result?.data?.length) {
+      const el = result.data[0];
+      return {
+        electionDate: el.attributes.electionDate,
+        id: el.id,
+        locale: el.locale,
+        name: el.attributes.name,
+        shortName: el.attributes.shortName ?? '',
+        type: el.attributes.type ?? ''
+      };
+    } else {
+      throw new Error('Could not retrieve election data');
+    }
+  });
+};
+
+/**
  * Get app labels data from Strapi
  * @param electionId The id of the Election the labels are used for
  */
@@ -48,6 +76,7 @@ export const getAppLabels = ({electionId}: {electionId?: string} = {}): Promise<
   }
   return getData<StrapiElectionData[]>('api/elections', params).then((result) => {
     if (result?.data?.length) {
+      console.error(result.data[0].attributes.electionAppLabel.data.attributes);
       return result.data[0].attributes.electionAppLabel.data.attributes;
     } else {
       throw new Error('Could not retrieve app labels');

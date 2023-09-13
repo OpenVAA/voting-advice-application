@@ -53,6 +53,7 @@ export const appLabels = writable<AppLabels>();
 export const allQuestions = writable<QuestionProps[]>([]);
 export const allCandidates = writable<CandidateProps[]>([]);
 export const candidateMatches = writable<Match[]>([]);
+export const election = writable<ElectionProps>();
 
 // Currently, it's quite silly that we need to separate matches and candidates, but when the
 // vaa-data model integration is complete, the proper Candidate object will be

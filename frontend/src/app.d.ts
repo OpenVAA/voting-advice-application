@@ -6,6 +6,7 @@ declare namespace App {
   interface PageData {
     appLabels?: AppLabels;
     candidates?: CandidateProps[];
+    election?: ElectionProps;
     questions?: QuestionProps[];
   }
   // interface Error {}
