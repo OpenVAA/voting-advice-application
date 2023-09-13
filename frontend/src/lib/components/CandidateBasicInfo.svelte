@@ -1,6 +1,10 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
-  export let candidate;
+
+  export let candidateDetails;
+
+  const questionCategories = candidateDetails.questionCategories ?? [];
+  const motherTongues = candidateDetails.motherTongues ?? [];
 </script>
 
 <section class="mt-4">
@@ -9,17 +13,17 @@
       <div class="flex-col">
         <div class="mb-3.5 flex items-center">
           <p class="mr-1.5 w-16 text-xs uppercase text-secondary">Age</p>
-          <p class="text-sm">{candidate.age} yrs.</p>
+          <p class="text-sm">{candidateDetails.age} yrs.</p>
         </div>
         <div class="mb-3.5 flex items-center">
           <p class="mr-1.5 w-16 text-xs uppercase text-secondary">Gender</p>
-          <p class="text-sm">{candidate.gender}</p>
+          <p class="text-sm">{candidateDetails.gender}</p>
         </div>
         <div class="flex items-center">
           <p class="mr-1.5 w-16 text-xs uppercase text-secondary">List</p>
           <p class="flex text-sm">
             <img class="mr-2" src="/icons/party-icon.svg" alt="Party Icon" />
-            {candidate.list}
+            {candidateDetails.list}
           </p>
         </div>
       </div>
@@ -30,7 +34,7 @@
       <div class="mb-3.5 flex items-start">
         <p class="mr-1.5 w-16 text-xs uppercase text-secondary">Mother Tongue</p>
         <ul class="-mt-0.5 ml-5 list-disc text-sm">
-          {#each candidate.motherTongues as motherTongue}
+          {#each motherTongues as motherTongue}
             <li>{motherTongue}</li>
           {/each}
         </ul>
@@ -38,8 +42,10 @@
       <div class="mb-3.5 flex items-start">
         <p class="mr-1.5 w-16 text-xs uppercase text-secondary">Themes</p>
         <ul class="-mt-0.5 ml-5 list-disc text-sm">
-          {#each candidate.themes as theme}
-            <li>{theme}</li>
+          {#each questionCategories as questionCategory}
+            <li>{questionCategory}</li>
+          {:else}
+            <li class="text-error">{$_('error.noQuestionCategories')}</li>
           {/each}
         </ul>
       </div>

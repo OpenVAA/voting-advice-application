@@ -42,5 +42,8 @@
     "previous": "Previous",
     "skip": "Skip",
     "readMore": "Read More"
+  },
+  "error": {
+    "noQuestionCategories": "No question categories"
   }
 }
