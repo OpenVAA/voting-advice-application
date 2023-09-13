@@ -7,26 +7,27 @@
 
   export let data;
 
-  let party = data?.party?.data;
+  let candidate = data?.candidate?.attributes;
+  let party = candidate?.party?.data;
   let compatibilityScore: CompatibilityScore;
 
   // TODO: create a more dynamic way to create the candidate object
-  const candidate = {
-    id: data.id,
+  const candidateDetails = {
+    id: data.candidate.id,
     age: 35,
-    name: GetFullNameInOrder(data.firstName, data.lastName),
+    name: GetFullNameInOrder(candidate.firstName, candidate.lastName),
     partyShortName: party.attributes.shortName,
     gender: '—',
     list: party.attributes.name,
-    motherTongues: data?.motherTongues?.data.map((item) => item.attributes.language),
-    themes: data?.themes.map((item) => item.attributes.name)
+    motherTongues: candidate?.motherTongues?.data.map((item) => item.attributes.language),
+    questionCategories: data.questionCategories.map((item) => item.attributes.name)
   };
 
   candidateRankings.subscribe((value) => {
-    compatibilityScore = value.find((score) => score.id === candidate.id);
+    compatibilityScore = value.find((score) => score.id === candidateDetails.id);
   });
 </script>
 
 {#if data}
-  <CandidateDetailsCard {candidate} {compatibilityScore} />
+  <CandidateDetailsCard {candidateDetails} {compatibilityScore} />
 {/if}
