@@ -1014,11 +1014,11 @@ async function createQuestionTypes() {
             label: 'Agree'
           },
           {
-            key: 4,
+            key: 5,
             label: 'Agree strongly'
           },
           {
-            key: 5,
+            key: 6,
             label: 'Agree very strongly'
           }
         ]
