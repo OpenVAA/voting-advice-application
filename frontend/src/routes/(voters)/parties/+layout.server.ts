@@ -3,6 +3,6 @@ import type {LayoutServerLoad} from './$types';
 
 export const load = (async () => {
   return {
-    parties: await getNominatingParties({constituencyId: '490'})
+    parties: await getNominatingParties()
   };
 }) satisfies LayoutServerLoad;
