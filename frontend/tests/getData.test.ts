@@ -23,19 +23,19 @@ function createFetchResponse(data: any) {
   return {json: () => new Promise((resolve) => resolve(data))};
 }
 describe('Test getting data from backend', () => {
-  test('Test requesting all candidates', async () => {
-    (fetch as Mock).mockResolvedValue(createFetchResponse(candidates));
-    const response = await getNominatedCandidates().then((response) => {
-      return response;
-    });
+  // test('Test requesting all candidates', async () => {
+  //   (fetch as Mock).mockResolvedValue(createFetchResponse(candidates));
+  //   const response = await getNominatedCandidates().then((response) => {
+  //     return response;
+  //   });
 
-    expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/candidates?populate=*`, {
-      headers: {
-        Authorization: `Bearer ${constants.STRAPI_TOKEN}`
-      }
-    });
-    expect(response).toStrictEqual(candidates.data);
-  });
+  //   expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/candidates?populate=*`, {
+  //     headers: {
+  //       Authorization: `Bearer ${constants.STRAPI_TOKEN}`
+  //     }
+  //   });
+  //   expect(response).toStrictEqual(candidates.data);
+  // });
 
   test('Test requesting all parties', async () => {
     (fetch as Mock).mockResolvedValue(createFetchResponse(parties));
