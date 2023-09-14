@@ -1,10 +1,9 @@
-<script>
-  import {goto} from '$app/navigation';
-  import {page} from '$app/stores';
-  import {EntityCard} from '$lib/components/entityCard';
+<script lang="ts">
   import {_} from 'svelte-i18n';
-  export let data;
-  let parties = data.parties ? Object.values(data.parties) : [];
+  import {page} from '$app/stores';
+  import {allParties} from '$lib/utils/stores';
+
+  const urlRoot = $page.url.pathname.replace(/\/$/, '');
 </script>
 
 <div class="bg-primary">
@@ -12,18 +11,14 @@
     <h1 class="ml-2.5 mt-14 text-center text-3xl font-medium leading-6 text-gray-500">
       {$_('parties.parties')}
     </h1>
-    <div role="feed" class="grid grid-cols-1 gap-4" aria-label={$_('candidates.candidates')}>
-      {#each parties as party, i}
-        <EntityCard
-          on:click={() => goto(`${$page.url.pathname}/${party.id}`)}
-          ariaPosinset={i + 1}
-          ariaSetsize={parties.length}
-          title={party.attributes.name}
-          id={party.id}
-          listText={party.attributes.shortName} />
-      {:else}
-        <p>{$_('parties.notFound')}</p>
-      {/each}
-    </div>
+    {#each $allParties as party}
+      <section class="w-256 card m-8 bg-base-100 shadow-xl">
+        <a href={`${urlRoot}/${party.id}`}>
+          <h1>{party.name}</h1>
+        </a>
+      </section>
+    {:else}
+      <p>{$_('parties.notFound')}</p>
+    {/each}
   </div>
 </div>
