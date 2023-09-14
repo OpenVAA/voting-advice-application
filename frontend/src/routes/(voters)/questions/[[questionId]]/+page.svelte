@@ -3,7 +3,7 @@
   import {onMount} from 'svelte';
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
-  import {allQuestions, answeredQuestions} from '$lib/utils/stores';
+  import {questions, answeredQuestions} from '$lib/utils/stores';
   import {logDebugError} from '$lib/utils/logger';
   import {Question, type OnChangeEventDetail} from '$lib/components/questions';
 
@@ -16,14 +16,14 @@
   let currentQuestion: QuestionProps | undefined;
   $: if ($page.params.questionId) {
     const id = '' + $page.params.questionId;
-    currentQuestion = $allQuestions.find((q) => '' + q.id === id);
+    currentQuestion = $questions.find((q) => '' + q.id === id);
   }
 
   // This is a bit hacky, but here we check if we arrived without a questionId route param.
   // We need to wait for onMount for the $page store to be populated.
   onMount(() => {
     if (!$page.params.questionId) {
-      currentQuestion = $allQuestions[0];
+      currentQuestion = $questions[0];
     }
   });
 
@@ -49,9 +49,9 @@
     if (!currentQuestion) {
       return;
     }
-    const currentIndex = $allQuestions.indexOf(currentQuestion);
-    if (currentIndex < $allQuestions.length - 1) {
-      const nextId = $allQuestions[currentIndex + 1].id;
+    const currentIndex = $questions.indexOf(currentQuestion);
+    if (currentIndex < $questions.length - 1) {
+      const nextId = $questions[currentIndex + 1].id;
       setTimeout(() => goto(`/questions/${nextId}`), DELAY_M_MS);
     } else {
       setTimeout(() => goto('/results'), DELAY_M_MS);

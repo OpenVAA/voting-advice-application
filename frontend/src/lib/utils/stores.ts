@@ -50,9 +50,9 @@ export function resetLocalStorage(): void {
 
 // Stores that are not locally stored
 export const appLabels = writable<AppLabels>();
-export const allQuestions = writable<QuestionProps[]>([]);
-export const allCandidates = writable<CandidateProps[]>([]);
-export const allParties = writable<PartyProps[]>([]);
+export const questions = writable<QuestionProps[]>([]);
+export const candidates = writable<CandidateProps[]>([]);
+export const parties = writable<PartyProps[]>([]);
 export const candidateMatches = writable<Match[]>([]);
 export const election = writable<ElectionProps>();
 
@@ -61,21 +61,15 @@ export const election = writable<ElectionProps>();
 // contained in the Match objects themselves.
 export const candidateRankings: Readable<{match: RankingProps; candidate: CandidateProps}[]> =
   derived(
-    [allQuestions, answeredQuestions, allCandidates],
-    ([$allQuestions, $answeredQuestions, $allCandidates]) => {
-      if (
-        $answeredQuestions.length === 0 ||
-        $allCandidates.length === 0 ||
-        $allQuestions.length === 0
-      ) {
+    [questions, answeredQuestions, candidates],
+    ([$questions, $answeredQuestions, $candidates]) => {
+      if ($answeredQuestions.length === 0 || $candidates.length === 0 || $questions.length === 0) {
         return [];
       }
-      const matches = matchCandidates($allQuestions, $answeredQuestions, $allCandidates);
+      const matches = matchCandidates($questions, $answeredQuestions, $candidates);
       const rankings = [];
       for (const match of matches) {
-        const candidate = $allCandidates.find(
-          (c) => 'id' in match.entity && c.id === match.entity.id
-        );
+        const candidate = $candidates.find((c) => 'id' in match.entity && c.id === match.entity.id);
         if (candidate) {
           rankings.push({match: match as RankingProps, candidate});
         }

@@ -1,7 +1,7 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
-  import {allParties} from '$lib/utils/stores';
+  import {parties} from '$lib/utils/stores';
 
   const urlRoot = $page.url.pathname.replace(/\/$/, '');
 </script>
@@ -11,7 +11,7 @@
     <h1 class="ml-2.5 mt-14 text-center text-3xl font-medium leading-6 text-gray-500">
       {$_('parties.parties')}
     </h1>
-    {#each $allParties as party}
+    {#each $parties as party}
       <section class="w-256 card m-8 bg-base-100 shadow-xl">
         <a href={`${urlRoot}/${party.id}`}>
           <h1>{party.name}</h1>

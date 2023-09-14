@@ -1,7 +1,7 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
-  import {allCandidates, candidateRankings} from '$lib/utils/stores';
+  import {candidates, candidateRankings} from '$lib/utils/stores';
   import {CandidateDetailsCard} from '$lib/components/candidates';
 
   let candidate: CandidateProps | undefined;
@@ -20,7 +20,7 @@
     }
     // If not, try to find the candidate
     if (!candidate) {
-      candidate = $allCandidates.find((c) => '' + c.id === id);
+      candidate = $candidates.find((c) => '' + c.id === id);
     }
   }
 </script>

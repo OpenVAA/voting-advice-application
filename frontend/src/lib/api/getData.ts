@@ -92,7 +92,7 @@ export const getAppLabels = ({electionId}: {electionId?: string} = {}): Promise<
  * @param memberOfPartyId The id of the Party the Candidates are members of
  * @param nominatingPartyId The id of the Party the Candidates are nominated by
  */
-export const getAllCandidates = ({
+export const getNominatedCandidates = ({
   electionId,
   constituencyId,
   memberOfPartyId,
@@ -257,7 +257,7 @@ export const getNominatingParties = ({
 /**
  * Get all question data from the database and convert them to a nicer format.
  */
-export const getAllQuestions = (): Promise<QuestionProps[]> => {
+export const getQuestions = (): Promise<QuestionProps[]> => {
   // The questions are contained in the data returned by the question-types
   // endpoint
   return getData<StrapiQuestionTypeData[]>(
