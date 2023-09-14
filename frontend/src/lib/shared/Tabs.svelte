@@ -7,7 +7,7 @@
   const dispatch = createEventDispatcher();
 </script>
 
-<div class="flex items-center justify-center bg-secondary px-5 py-1">
+<div class="flex items-center justify-center bg-primary px-5 py-1">
   <ul>
     {#each tabs as tab}
       <li

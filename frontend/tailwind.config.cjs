@@ -6,17 +6,19 @@ module.exports = {
         'xs': '320px',
       },
       colors: {
-        primary: '#D1EBEE',
-        secondary: '#D1EBEE',
-        neutral: '#FFFFFF',
+        primary: '#2546A8',
+        secondary: '#808080',
+        neutral: '#333333',
         link: '#2546A8',
         'default-party': '#BE8E55',
-        'link-hover': '#808080'
+        'link-hover': '#808080',
+        error: '#A82525'
       },
-      textColor: {
-        primary: 'var(--primary-text-color)',
-        secondary: 'var(--secondary-text-color)',
+      backgroundColor: {
+        primary: '#D1EBEE',
+        secondary: '#808080',
       },
+      textColor: ({ theme }) => theme('colors'),
       fontSize: {
         h1: '2.5rem',
         h2: '2rem',

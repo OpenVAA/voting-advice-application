@@ -13,19 +13,19 @@
     @apply w-full;
   }
   h1 {
-    @apply mb-1 mt-1 w-full text-center text-2xl font-bold leading-tight;
+    @apply mb-1 mt-1 w-full text-center text-2xl font-bold leading-tight text-neutral;
   }
   h2 {
-    @apply text-h2;
+    @apply text-h2 text-neutral;
   }
   h3 {
-    @apply text-h3;
+    @apply text-h3 text-neutral;
   }
   h4 {
-    @apply text-h4;
+    @apply text-h4 text-neutral;
   }
   p {
-    @apply text-p;
+    @apply text-p text-neutral;
   }
   a {
     @apply text-primary;

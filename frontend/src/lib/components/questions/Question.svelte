@@ -36,7 +36,7 @@
     {#if info && info !== ''}
       <div class="flex items-center justify-center">
         <!-- TODO: Convert to Expander component -->
-        <button class="btn-ghost btn text-primary">{$_('questions.readMore')}</button>
+        <button class="btn-ghost btn text-neutral">{$_('questions.readMore')}</button>
       </div>
     {/if}
     <div class="mb-3 mt-5 flex items-center justify-center">

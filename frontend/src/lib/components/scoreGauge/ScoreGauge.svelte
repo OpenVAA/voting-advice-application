@@ -42,7 +42,7 @@
   {:else if shape === 'linear'}
     {#if showUnit}
       <div class="mb-1 flex justify-center">
-        <span class="text-sm text-primary" aria-hidden="true">{score}{unit}</span>
+        <span class="text-sm text-neutral" aria-hidden="true">{score}{unit}</span>
       </div>
     {/if}
     <progress
@@ -54,7 +54,7 @@
       max="100" />
   {/if}
   {#if label}
-    <label class="truncate text-left text-primary" id={labelId}>{label}</label>
+    <label class="truncate text-left text-neutral" id={labelId}>{label}</label>
   {/if}
 </div>
 
@@ -83,7 +83,7 @@
     --size: 3.5rem;
   }
 
-  .text-primary {
+  .text-neutral {
     color: var(--progress-label-color);
   }
 
