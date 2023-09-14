@@ -13,8 +13,6 @@ import {
   MissingValueDistanceMethod
 } from '$lib/vaa-matching';
 import type {MultipleChoiceQuestionOptions} from '$lib/vaa-matching/questions/multipleChoiceQuestion';
-import type {CandidateProps} from '$lib/components/candidates';
-import type {QuestionProps} from '$lib/components/questions';
 import type {VoterAnswer} from '$types';
 
 /**
@@ -65,7 +63,7 @@ export const matchCandidates = function matchCandidates(
   allCandidates.forEach((c) => {
     candidates[c.id] = new Person(
       c.id,
-      c.answers.map((a) => ({question: questions[a.questionId], value: a.answer}))
+      c.answers ? c.answers.map((a) => ({question: questions[a.questionId], value: a.answer})) : []
     );
   });
 
