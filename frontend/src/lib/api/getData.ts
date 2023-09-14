@@ -76,7 +76,6 @@ export const getAppLabels = ({electionId}: {electionId?: string} = {}): Promise<
   }
   return getData<StrapiElectionData[]>('api/elections', params).then((result) => {
     if (result?.data?.length) {
-      console.error(result.data[0].attributes.electionAppLabel.data.attributes);
       return result.data[0].attributes.electionAppLabel.data.attributes;
     } else {
       throw new Error('Could not retrieve app labels');
