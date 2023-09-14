@@ -1,8 +1,8 @@
 import type {LayoutServerLoad} from './$types';
-import {getAllQuestions} from '$lib/api/getData';
+import {getQuestions} from '$lib/api/getData';
 
 export const load = (async () => {
   return {
-    questions: await getAllQuestions()
+    questions: await getQuestions()
   };
 }) satisfies LayoutServerLoad;

@@ -1,4 +1,4 @@
-import {getAllCandidates} from '$lib/api/getData';
+import {getNominatedCandidates} from '$lib/api/getData';
 import {error} from '@sveltejs/kit';
 import type {ServerLoadEvent} from '@sveltejs/kit';
 import type {PageServerLoad} from './$types';
@@ -9,7 +9,7 @@ export const load = (async ({params, parent}: ServerLoadEvent) => {
   if (id == null || id === '') {
     throw error(404, 'Party not found (invalid id)');
   }
-  const candidates = await getAllCandidates({nominatingPartyId: id});
+  const candidates = await getNominatedCandidates({nominatingPartyId: id});
   const {parties} = await parent();
   const party = (parties as PartyProps[]).find((p) => p.id === id);
   if (!party) {

@@ -1,7 +1,7 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
-  import {allCandidates, candidateRankings} from '$lib/utils/stores';
+  import {candidates, candidateRankings} from '$lib/utils/stores';
   import {CandidateListing, CandidateRankingListing} from '$lib/components/candidates';
 
   const urlRoot = $page.url.pathname.replace(/\/$/, '');
@@ -18,7 +18,7 @@
         <CandidateRankingListing ranking={match} {candidate} href={`${urlRoot}/${candidate.id}`} />
       {/each}
     {:else}
-      {#each $allCandidates as candidate}
+      {#each $candidates as candidate}
         <CandidateListing {candidate} href={`${urlRoot}/${candidate.id}`} />
       {/each}
     {/if}
