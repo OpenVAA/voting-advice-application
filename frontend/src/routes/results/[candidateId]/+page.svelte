@@ -9,7 +9,8 @@
 
   $: if ($page.params.candidateId) {
     const id = '' + $page.params.candidateId;
-    // First, check if we have a ranking for the candidate
+    // First, check if we have a ranking for the candidate,
+    // which contains the Candidate object
     if ($candidateRankings.length > 0) {
       const result = $candidateRankings.find((r) => '' + r.candidate.id === id);
       if (result) {

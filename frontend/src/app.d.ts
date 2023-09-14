@@ -7,6 +7,7 @@ declare namespace App {
     appLabels?: AppLabels;
     candidates?: CandidateProps[];
     election?: ElectionProps;
+    parties?: PartyProps[];
     questions?: QuestionProps[];
   }
   // interface Error {}
