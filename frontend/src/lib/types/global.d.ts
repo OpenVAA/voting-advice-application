@@ -2,6 +2,15 @@ export {};
 
 declare global {
   /**
+   * Properties of a Candidate's or Party's answer to a question.
+   */
+  interface AnswerProps {
+    questionId: string;
+    answer: number;
+    openAnswer?: string;
+  }
+
+  /**
    * Non-exhaustive specification of the app labels.
    * TODO: Comletely specify available labels here and convert all $_
    * calls that depend on i18n/en.json to using AppLabels instead.
@@ -60,11 +69,7 @@ declare global {
    * TODO: This may be deprecated later by the `vaa-data` module.
    */
   interface CandidateProps {
-    answers: {
-      questionId: string;
-      answer: number;
-      openAnswer?: string;
-    }[];
+    answers: AnswerProps[];
     candidateNumber: string | number;
     electionRound: number;
     electionSymbol: string;
@@ -91,6 +96,24 @@ declare global {
     name: string;
     shortName: string;
     type: string;
+  }
+
+  /**
+   * The properties of a Party object that can be passed onto the
+   * related components.
+   * TODO: This may be deprecated later by the `vaa-data` module.
+   */
+  interface PartyProps {
+    answers?: AnswerProps[];
+    electionRound: number;
+    id: string;
+    info: string;
+    name: string;
+    shortName: string;
+    memberCandidateIds: string[];
+    memberCandidates?: CandidateProps[];
+    nominatedCandidateIds: string[];
+    nominatedCandidates?: CandidateProps[];
   }
 
   /**
