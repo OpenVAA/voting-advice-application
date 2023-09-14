@@ -52,6 +52,7 @@ export function resetLocalStorage(): void {
 export const appLabels = writable<AppLabels>();
 export const allQuestions = writable<QuestionProps[]>([]);
 export const allCandidates = writable<CandidateProps[]>([]);
+export const allParties = writable<PartyProps[]>([]);
 export const candidateMatches = writable<Match[]>([]);
 export const election = writable<ElectionProps>();
 

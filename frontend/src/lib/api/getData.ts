@@ -7,6 +7,7 @@ import type {
   StrapiElectionData,
   StrapiLanguageData,
   StrapiNominationData,
+  StrapiPartyData,
   StrapiQuestionData,
   StrapiQuestionTypeData
 } from './getData.type';
@@ -49,7 +50,7 @@ export const getElection = ({electionId}: {electionId?: string} = {}): Promise<E
       const el = result.data[0];
       return {
         electionDate: el.attributes.electionDate,
-        id: el.id,
+        id: '' + el.id,
         locale: el.locale,
         name: el.attributes.name,
         shortName: el.attributes.shortName ?? '',
@@ -84,14 +85,24 @@ export const getAppLabels = ({electionId}: {electionId?: string} = {}): Promise<
 };
 
 /**
- * Get data for all candidates from Strapi.
+ * Get data for all candidates from Strapi. NB. This only includes Candidates that
+ * are nominated in some Election.
  * @param electionId The id of the Election the Candidates are nominated for
  * @param constituencyId The id of the Constituency the Candidates are nominated in
+ * @param memberOfPartyId The id of the Party the Candidates are members of
+ * @param nominatingPartyId The id of the Party the Candidates are nominated by
  */
 export const getAllCandidates = ({
   electionId,
-  constituencyId
-}: {electionId?: string; constituencyId?: string} = {}): Promise<CandidateProps[]> => {
+  constituencyId,
+  memberOfPartyId,
+  nominatingPartyId
+}: {
+  electionId?: string;
+  constituencyId?: string;
+  memberOfPartyId?: string;
+  nominatingPartyId?: string;
+} = {}): Promise<CandidateProps[]> => {
   const params = new URLSearchParams({
     // We need a specific calls to populate relations, * only goes one-level deep
     'populate[election]': 'true',
@@ -109,11 +120,17 @@ export const getAllCandidates = ({
   if (electionId != null) {
     params.set('filters[election][id][$eq]', electionId);
   }
+  if (memberOfPartyId != null) {
+    params.set('filters[candidate][party][id][$eq]', memberOfPartyId);
+  }
+  if (nominatingPartyId != null) {
+    params.set('filters[party][id][$eq]', nominatingPartyId);
+  }
   return getData<StrapiNominationData[]>('api/nominations', params).then((result) => {
     if (result?.data?.length) {
       return result.data.map((nom) => {
         const cnd = nom.attributes.candidate.data;
-        const id = cnd.id;
+        const id = '' + cnd.id;
         const attr = cnd.attributes;
         const answers = attr.answers.data.map((a: StrapiAnswerData) => ({
           questionId: a.attributes.question.data.id,
@@ -146,6 +163,94 @@ export const getAllCandidates = ({
     } else {
       throw new Error('Could not retrieve result for all candidates');
     }
+  });
+};
+
+/**
+ * Get data for all parties from Strapi.
+ */
+export const getAllParties = (): Promise<PartyProps[]> => {
+  const params = new URLSearchParams({
+    // We need a specific calls to populate relations, * only goes one-level deep
+    'populate[candidates]': 'true',
+    'populate[answers][populate][question]': 'true'
+  });
+  return getData<StrapiPartyData[]>('api/parties', params).then((result) => {
+    if (result?.data?.length) {
+      return result.data.map((prt) => {
+        const id = '' + prt.id;
+        const attr = prt.attributes;
+        const answers = attr.answers.data.map((a) => ({
+          questionId: a.attributes.question.data.id,
+          answer: a.attributes.answer.key
+          // openAnswer?: string;
+        }));
+        const memberCandidateIds = attr.candidates.data.map((c) => c.id);
+        return {
+          answers,
+          electionRound: 0, // We use a default here
+          id,
+          info: attr.info ?? '',
+          memberCandidateIds,
+          nominatedCandidateIds: [],
+          name: attr.name,
+          shortName: attr.shortName ?? ''
+        } as PartyProps;
+      });
+    } else {
+      throw new Error('Could not retrieve result for all parties');
+    }
+  });
+};
+
+/**
+ * Get data for all parties from Strapi that have nominations in some Election.
+ * @param electionId The id of the Election the Parties are nominated for
+ * @param constituencyId The id of the Constituency the Parties are nominated in
+ */
+export const getNominatingParties = ({
+  electionId,
+  constituencyId
+}: {electionId?: string; constituencyId?: string} = {}): Promise<PartyProps[]> => {
+  // We first get all available parties and then fetch the nominated candidates for them
+  return getAllParties().then((parties) => {
+    const params = new URLSearchParams({
+      populate: '*',
+      'filters[party][id][$notNull]': 'true' // We need to apply $notNull to id, not the candidate relation
+    });
+    if (constituencyId != null) {
+      params.set('filters[constituency][id][$eq]', constituencyId);
+    }
+    if (electionId != null) {
+      params.set('filters[election][id][$eq]', electionId);
+    }
+    return getData<StrapiNominationData[]>('api/nominations', params).then((result) => {
+      if (result?.data?.length) {
+        // For easier access by id
+        const partyMap = new Map(parties.map((p) => [p.id, p]));
+        // We collect the ids of the parties in these nominations here
+        const partyIds = new Set<string>();
+        // Get the nominated candidates for each party
+        result.data.map((nom) => {
+          const partyId = nom.attributes.party.data.id + '';
+          partyIds.add(partyId);
+          const party = partyMap.get(partyId);
+          if (!party) {
+            throw new Error(
+              `Could not retrieve result for nominating parties: party with id '${partyId}' not found`
+            );
+          }
+          const candId = nom.attributes.candidate.data?.id;
+          if (candId != null) {
+            party.nominatedCandidateIds.push(candId + '');
+          }
+        });
+        // Only return those parties that were found in the nominations
+        return Array.from(partyIds).map((id) => partyMap.get(id) as PartyProps);
+      } else {
+        throw new Error('Could not retrieve result for nominating parties');
+      }
+    });
   });
 };
 

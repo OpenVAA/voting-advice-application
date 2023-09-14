@@ -208,5 +208,14 @@ export interface StrapiPartyData {
     info: string;
     name: string;
     shortName: string;
+    answers: {
+      data: StrapiAnswerData[];
+    };
+    candidates: {
+      data: StrapiCandidateData[];
+    };
+    photo: {
+      data?: string;
+    };
   };
 }
