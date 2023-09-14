@@ -20,7 +20,7 @@
 </script>
 
 {#if Object.keys(data).length > 0}
-  <div class="min-h-screen bg-secondary">
+  <div class="min-h-screen bg-primary">
     <div class="hero bg-[#d4dbef]">
       <img
         class="max-h-72 w-full max-w-screen-md bg-white object-cover"

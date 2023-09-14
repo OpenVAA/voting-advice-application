@@ -29,7 +29,7 @@
   <!-- The line behind the options -->
   <div
     aria-hidden="true"
-    class="absolute top-[1.25rem] -z-50 h-0.5 -translate-y-1/2 bg-secondary"
+    class="absolute top-[1.25rem] -z-50 h-0.5 -translate-y-1/2 bg-primary"
     style="width: calc(100% / {options.length} * {options.length -
       1}); left: calc(50% / {options.length})" />
 </div>

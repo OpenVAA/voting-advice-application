@@ -29,7 +29,7 @@
 
 {#if data}
   <header class="fixed left-0 right-0 top-0 z-50">
-    <nav class="bg-secondary p-4">
+    <nav class="bg-primary p-4">
       <ul class="flex items-center justify-between">
         <li class="mr-6">
           <a class="text-primary hover:text-secondary" href={from}>
@@ -96,7 +96,7 @@
         </p>
       </div>
     {:else if $page?.route.id !== '/questions'}
-      <nav class="bg-secondary p-4">
+      <nav class="bg-primary p-4">
         <ul class="flex items-center justify-between">
           <li class="mr-6">
             {#if $page.route.id === '/questions'}
