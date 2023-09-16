@@ -4,7 +4,6 @@
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
   import {candidates, candidateRankings} from '$lib/utils/stores';
-  import {CandidateListing, CandidateRankingListing} from '$lib/components/candidates';
   import {logDebugError} from '$lib/utils/logger';
   import {GetFullNameInOrder} from '$lib/utils/internationalisation';
   import {EntityCard} from '$lib/components/entityCard';
