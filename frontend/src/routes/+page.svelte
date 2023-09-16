@@ -1,6 +1,7 @@
 <script lang="ts">
   import {locale} from 'svelte-i18n';
-  import {appLabels, election} from '$lib/utils/stores';
+  import {goto} from '$app/navigation';
+  import {appLabels, election, resetLocalStorage} from '$lib/utils/stores';
 
   let electionDateString = '';
   let appDescription = '';
@@ -14,6 +15,13 @@
       }
     );
     appDescription = $appLabels.viewTexts.toolDescription.replace('{{0}}', electionDateString);
+  }
+
+  function gotoNavigation() {
+    // We should reset the stored voter answers at some point, so we do it here
+    // TODO: Change this to work more rationally, perhaps based on a unique version id of the db
+    resetLocalStorage();
+    goto('/navigation');
   }
 </script>
 
@@ -33,7 +41,8 @@
         <p class="text-center">
           {appDescription}
         </p>
-        <a href="/navigation" class="btn-primary btn">{$appLabels.actionLabels.startButton}</a>
+        <button on:click={gotoNavigation} class="btn-primary btn"
+          >{$appLabels.actionLabels.startButton}</button>
         <a href="/information" class="btn-ghost btn">{$appLabels.actionLabels.electionInfo}</a>
         <a href="/about" class="btn-ghost btn">{$appLabels.actionLabels.howItWorks}</a>
       </div>
