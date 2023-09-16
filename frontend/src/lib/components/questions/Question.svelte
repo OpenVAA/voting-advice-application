@@ -47,7 +47,7 @@
       {#if type === 'Likert'}
         <LikertScaleAnsweringButtons name={id} {options} on:change={onChange} />
       {:else}
-        {$_('error')}
+        {$_('error.general')}
       {/if}
     </div>
     <div class="flex items-center justify-center">
