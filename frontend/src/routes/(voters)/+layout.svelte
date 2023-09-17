@@ -40,7 +40,7 @@
           </svg>
           {$appLabels.actionLabels.previous}</a>
       </li>
-      {#if $page.route.id === '/questions'}
+      {#if $page.url.pathname === '/questions'}
         <h2 class="flex justify-center text-xl font-bold max-md:hidden">
           {$_('questions.questionsTitle')}
         </h2>
@@ -75,7 +75,7 @@
 </main>
 
 <footer class="fixed bottom-0 w-full">
-  {#if $page?.route.id === '/'}
+  {#if $page.url.pathname === '/'}
     <div class="mb-4 flex flex-col items-center justify-between gap-3 text-secondary">
       <p class="text-center text-sm">
         <img class="inline w-6" src="/icons/tip.svg" alt="" srcset="" />
@@ -91,11 +91,11 @@
         <img class="inline w-6" src="/icons/vote.svg" alt="" srcset="" />GIPVAA
       </p>
     </div>
-  {:else if $page?.route.id !== '/questions'}
-    <nav class="bg-secondary p-4">
+  {:else if $page.url.pathname !== '/questions'}
+    <nav class="bg-primary p-4">
       <ul class="flex items-center justify-between">
         <li class="mr-6">
-          {#if $page.route.id === '/questions'}
+          {#if $page.url.pathname === '/questions'}
             <p>
               {$page.params.slug ? `${$page.params.slug} statements answered` : ''}
             </p>
