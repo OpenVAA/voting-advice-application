@@ -1,6 +1,5 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
-  import {onMount} from 'svelte';
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
   import {questions, answeredQuestions} from '$lib/utils/stores';
@@ -14,18 +13,7 @@
   const DELAY_M_MS = 350;
 
   let currentQuestion: QuestionProps | undefined;
-  $: if ($page.params.questionId) {
-    const id = '' + $page.params.questionId;
-    currentQuestion = $questions.find((q) => '' + q.id === id);
-  }
-
-  // This is a bit hacky, but here we check if we arrived without a questionId route param.
-  // We need to wait for onMount for the $page store to be populated.
-  onMount(() => {
-    if (!$page.params.questionId) {
-      currentQuestion = $questions[0];
-    }
-  });
+  $: currentQuestion = $questions.find((q) => '' + q.id === '' + $page.params.questionId);
 
   // Store question id and answer value in a store
   function answerQuestion(event: CustomEvent) {

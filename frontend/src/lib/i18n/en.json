@@ -37,6 +37,7 @@
   },
   "questions": {
     "questionsTitle": "Your Opinions",
+    "questionsIntro": "You'll next be presented with statements about political issues. When you have answered them, you'll see the candidates and parties that best agree with you.",
     "scale": {
       "fullyDisagree": "Fully disagree",
       "disagree": "Disagree",
@@ -44,6 +45,7 @@
       "agree": "Agree",
       "fullyAgree": "Fully agree"
     },
+    "startAnswering": "Start answering",
     "nextQuestion": "Next question",
     "jumpToResults": "Jump to results",
     "previous": "Previous",
