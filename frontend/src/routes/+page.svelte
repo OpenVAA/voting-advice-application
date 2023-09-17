@@ -3,19 +3,15 @@
   import {goto} from '$app/navigation';
   import {appLabels, election, resetLocalStorage} from '$lib/utils/stores';
 
-  let electionDateString = '';
-  let appDescription = '';
-  $: if ($appLabels && $election) {
-    electionDateString = new Date($election.electionDate).toLocaleDateString(
-      $election.locale ?? $locale ?? undefined,
-      {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      }
-    );
-    appDescription = $appLabels.viewTexts.toolDescription.replace('{{0}}', electionDateString);
-  }
+  const electionDateString = new Date($election.electionDate).toLocaleDateString(
+    $election.locale ?? $locale ?? undefined,
+    {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }
+  );
+  const appDescription = $appLabels.viewTexts.toolDescription.replace('{{0}}', electionDateString);
 
   function gotoNavigation() {
     // We should reset the stored voter answers at some point, so we do it here
