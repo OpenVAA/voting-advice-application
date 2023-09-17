@@ -2,7 +2,7 @@
   import {_} from 'svelte-i18n';
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
-  import {questions, answeredQuestions} from '$lib/utils/stores';
+  import {answeredQuestions} from '$lib/utils/stores';
   import {logDebugError} from '$lib/utils/logger';
   import {Question, type OnChangeEventDetail} from '$lib/components/questions';
 
@@ -13,7 +13,7 @@
   const DELAY_M_MS = 350;
 
   let currentQuestion: QuestionProps | undefined;
-  $: currentQuestion = $questions.find((q) => '' + q.id === '' + $page.params.questionId);
+  $: currentQuestion = $page.data.questions.find((q) => '' + q.id === '' + $page.params.questionId);
 
   // Store question id and answer value in a store
   function answerQuestion(event: CustomEvent) {
@@ -37,9 +37,9 @@
     if (!currentQuestion) {
       return;
     }
-    const currentIndex = $questions.indexOf(currentQuestion);
-    if (currentIndex < $questions.length - 1) {
-      const nextId = $questions[currentIndex + 1].id;
+    const currentIndex = $page.data.questions.indexOf(currentQuestion);
+    if (currentIndex < $page.data.questions.length - 1) {
+      const nextId = $page.data.questions[currentIndex + 1].id;
       setTimeout(() => goto(`/questions/${nextId}`), DELAY_M_MS);
     } else {
       setTimeout(() => goto('/results'), DELAY_M_MS);
