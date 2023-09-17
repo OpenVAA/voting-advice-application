@@ -2,7 +2,6 @@
   import {page} from '$app/stores';
   import {beforeNavigate} from '$app/navigation';
   import {_} from 'svelte-i18n';
-  import {appLabels} from '$lib/utils/stores';
 
   // TODO: This navigation system may be obsolete. Most of the navigation in mobile
   // devices is done by using the back button. We need to analize if having this navigation menu is
@@ -38,7 +37,7 @@
             <path
               d="M11.67 1.8701L9.9 0.100098L0 10.0001L9.9 19.9001L11.67 18.1301L3.54 10.0001L11.67 1.8701Z" />
           </svg>
-          {$appLabels.actionLabels.previous}</a>
+          {$page.data.appLabels.actionLabels.previous}</a>
       </li>
       {#if $page.url.pathname === '/questions'}
         <h2 class="flex justify-center text-xl font-bold max-md:hidden">
@@ -47,7 +46,7 @@
       {/if}
       <li class="mr-6">
         <a class="text-primary hover:text-secondary" href="/help"
-          >{$appLabels.actionLabels.help}
+          >{$page.data.appLabels.actionLabels.help}
           <svg
             width="22"
             height="22"
@@ -70,7 +69,7 @@
   </nav>
 </header>
 
-<main class="h-full pt-14">
+<main class="h-full pb-20 pt-14">
   <slot />
 </main>
 
@@ -79,15 +78,15 @@
     <div class="mb-4 flex flex-col items-center justify-between gap-3 text-secondary">
       <p class="text-center text-sm">
         <img class="inline w-6" src="/icons/tip.svg" alt="" srcset="" />
-        {$appLabels.viewTexts.questionsTip}
+        {$page.data.appLabels.viewTexts.questionsTip}
       </p>
       <p class="text-center text-xs">
-        {$appLabels.viewTexts.publishedBy.replace('{{0}}', '')}
+        {$page.data.appLabels.viewTexts.publishedBy.replace('{{0}}', '')}
         <img
           class="inline w-6"
           src={'/icons/publisher.svg'}
           alt="governmental"
-          srcset="" />institution • {$appLabels.viewTexts.madeWith.replace('{{0}}', '')}
+          srcset="" />institution • {$page.data.appLabels.viewTexts.madeWith.replace('{{0}}', '')}
         <img class="inline w-6" src="/icons/vote.svg" alt="" srcset="" />GIPVAA
       </p>
     </div>
@@ -103,7 +102,7 @@
         </li>
         <li class="mr-6">
           <a class="text-primary hover:text-secondary" href="/results"
-            >{$appLabels.actionLabels.results}</a>
+            >{$page.data.appLabels.actionLabels.results}</a>
         </li>
       </ul>
     </nav>

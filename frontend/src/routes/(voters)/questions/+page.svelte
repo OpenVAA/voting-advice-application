@@ -1,9 +1,8 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
-  import {questions} from '$lib/utils/stores';
 
-  const firstQuestionUrl = `${$page.url.pathname.replace(/\/$/, '')}/${$questions[0].id}`;
+  const firstQuestionUrl = `${$page.url.pathname.replace(/\/$/, '')}/${$page.data.questions[0].id}`;
 </script>
 
 <div class="flex flex-col items-center gap-4 p-4">

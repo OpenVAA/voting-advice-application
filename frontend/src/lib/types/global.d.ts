@@ -69,10 +69,9 @@ declare global {
    * TODO: This may be deprecated later by the `vaa-data` module.
    */
   interface CandidateProps {
-    answers: AnswerProps[];
-    candidateNumber: string | number;
+    answers?: AnswerProps[];
     electionRound: number;
-    electionSymbol: string;
+    electionSymbol?: string;
     firstName: string;
     id: string;
     lastName: string;
@@ -110,9 +109,9 @@ declare global {
     info: string;
     name: string;
     shortName: string;
-    memberCandidateIds: string[];
+    memberCandidateIds?: string[];
     memberCandidates?: CandidateProps[];
-    nominatedCandidateIds: string[];
+    nominatedCandidateIds?: string[];
     nominatedCandidates?: CandidateProps[];
   }
 

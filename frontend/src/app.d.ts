@@ -4,11 +4,16 @@
 declare namespace App {
   // interface Locals {}
   interface PageData {
-    appLabels?: AppLabels;
-    candidates?: CandidateProps[];
-    election?: ElectionProps;
-    parties?: PartyProps[];
-    questions?: QuestionProps[];
+    // Most of these properties are required so we don't need unnecessary
+    // null checks every time we use them. We'll initiliaze the Array types
+    // as empty arrays in the global data load /+layout.server.ts
+    appLabels: AppLabels;
+    candidate?: CandidateProps | undefined;
+    candidates: CandidateProps[];
+    election: ElectionProps;
+    parties: PartyProps[];
+    party?: PartyProps | undefined;
+    questions: QuestionProps[];
   }
   // interface Error {}
   // interface Platform {}

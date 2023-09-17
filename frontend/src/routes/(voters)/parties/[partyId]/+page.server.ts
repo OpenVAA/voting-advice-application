@@ -1,20 +1,18 @@
-import {getNominatedCandidates} from '$lib/api/getData';
+import {getNominatedCandidates, getNominatingParties} from '$lib/api/getData';
 import {error} from '@sveltejs/kit';
-import type {ServerLoadEvent} from '@sveltejs/kit';
 import type {PageServerLoad} from './$types';
 
-export const load = (async ({params, parent}: ServerLoadEvent) => {
-  //TODO: Check if we use Svelte object id or some predefined schema for getting party from the backend
+export const load = (async ({params}) => {
   const id = params.partyId;
-  if (id == null || id === '') {
-    throw error(404, 'Party not found (invalid id)');
+  if (!id) {
+    throw error(404, 'Invalid party id');
   }
   const candidates = await getNominatedCandidates({nominatingPartyId: id});
-  const {parties} = await parent();
-  const party = (parties as PartyProps[]).find((p) => p.id === id);
-  if (!party) {
+  const results = await getNominatingParties({id, loadAnswers: true});
+  if (results.length === 0) {
     throw error(404, 'Party not found');
   }
+  const party = results[0];
   party.nominatedCandidates = candidates;
   return {party};
 }) satisfies PageServerLoad;

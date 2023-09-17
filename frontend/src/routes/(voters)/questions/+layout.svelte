@@ -1,13 +1,10 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import type {LayoutServerData} from './$types';
-  import {questions} from '$lib/utils/stores';
 
   export let data: LayoutServerData;
 
-  if (data?.questions) {
-    $questions = data.questions;
-  } else {
+  if (!data?.questions) {
     throw new Error('Could not load data!');
   }
 </script>

@@ -39,9 +39,7 @@ export const getData = async <T>(
  * @param electionId The id of the Election the labels are used for
  */
 export const getElection = ({electionId}: {electionId?: string} = {}): Promise<ElectionProps> => {
-  const params = new URLSearchParams({
-    // 'populate': '*'
-  });
+  const params = new URLSearchParams({});
   if (electionId != null) {
     params.set('filters[id][$eq]', electionId);
   }
@@ -87,21 +85,28 @@ export const getAppLabels = ({electionId}: {electionId?: string} = {}): Promise<
 /**
  * Get data for all candidates from Strapi. NB. This only includes Candidates that
  * are nominated in some Election.
+ * @param id The id of the Candidate
  * @param electionId The id of the Election the Candidates are nominated for
  * @param constituencyId The id of the Constituency the Candidates are nominated in
  * @param memberOfPartyId The id of the Party the Candidates are members of
  * @param nominatingPartyId The id of the Party the Candidates are nominated by
+ * @param loadAnswers If true, the Candidates' Answers will also be loaded
+ * @returns An Array of matching Candidates, which may be empty
  */
 export const getNominatedCandidates = ({
+  id,
   electionId,
   constituencyId,
   memberOfPartyId,
-  nominatingPartyId
+  nominatingPartyId,
+  loadAnswers
 }: {
+  id?: string;
   electionId?: string;
   constituencyId?: string;
   memberOfPartyId?: string;
   nominatingPartyId?: string;
+  loadAnswers?: boolean;
 } = {}): Promise<CandidateProps[]> => {
   const params = new URLSearchParams({
     // We need a specific calls to populate relations, * only goes one-level deep
@@ -111,9 +116,12 @@ export const getNominatedCandidates = ({
     'populate[candidate][populate][party]': 'true',
     'populate[candidate][populate][motherTongues]': 'true',
     'populate[candidate][populate][otherLanguages]': 'true',
-    'populate[candidate][populate][answers][populate][question]': 'true',
+    'populate[candidate][populate][answers][populate][question]': loadAnswers ? 'true' : 'false',
     'filters[candidate][id][$notNull]': 'true' // We need to apply $notNull to id, not the candidate relation
   });
+  if (id != null) {
+    params.set('filters[candidate][id][$eq]', id);
+  }
   if (constituencyId != null) {
     params.set('filters[constituency][id][$eq]', constituencyId);
   }
@@ -127,75 +135,82 @@ export const getNominatedCandidates = ({
     params.set('filters[party][id][$eq]', nominatingPartyId);
   }
   return getData<StrapiNominationData[]>('api/nominations', params).then((result) => {
-    if (result?.data?.length) {
+    if (result?.data) {
       return result.data.map((nom) => {
         const cnd = nom.attributes.candidate.data;
         const id = '' + cnd.id;
         const attr = cnd.attributes;
-        const answers = attr.answers.data.map((a: StrapiAnswerData) => ({
-          questionId: a.attributes.question.data.id,
-          answer: a.attributes.answer.key
-          // openAnswer?: string;
-        }));
-        const motherTongues = attr.motherTongues.data.map(
-          (l: StrapiLanguageData) => l.attributes.name
-        );
-        const otherLanguages = attr.otherLanguages.data.map(
-          (l: StrapiLanguageData) => l.attributes.name
-        );
-        // We use the party on whose list the candidate is
-        const party = {
-          name: nom.attributes.party.data.attributes.name,
-          shortName: nom.attributes.party.data.attributes.shortName
-        };
-        return {
-          answers,
+        const props: CandidateProps = {
+          electionRound: nom.attributes.electionRound,
           electionSymbol: nom.attributes.electionSymbol,
           firstName: attr.firstName,
           id,
           lastName: attr.lastName,
-          motherTongues,
-          otherLanguages,
-          party,
+          motherTongues: attr.motherTongues.data.map((l: StrapiLanguageData) => l.attributes.name),
+          otherLanguages: attr.otherLanguages.data.map(
+            (l: StrapiLanguageData) => l.attributes.name
+          ),
+          party: {
+            name: nom.attributes.party.data.attributes.name,
+            shortName: nom.attributes.party.data.attributes.shortName
+          },
           politicalExperience: attr.politicalExperience
-        } as CandidateProps;
+        };
+        if (loadAnswers) {
+          props['answers'] = attr.answers.data.map((a: StrapiAnswerData) => ({
+            questionId: '' + a.attributes.question.data.id,
+            answer: a.attributes.answer.key
+            // openAnswer?: string;
+          }));
+        }
+        return props;
       });
     } else {
-      throw new Error('Could not retrieve result for all candidates');
+      throw new Error('Could not retrieve result for nominated candidates');
     }
   });
 };
 
 /**
  * Get data for all parties from Strapi.
+ * @param loadAnswers If true, the Parties' Answers will also be loaded
+ * @param loadMembers If true, the Parties' member Candidates will also be loaded
  */
-export const getAllParties = (): Promise<PartyProps[]> => {
+export const getAllParties = ({
+  loadAnswers,
+  loadMembers
+}: {
+  loadAnswers?: boolean;
+  loadMembers?: boolean;
+} = {}): Promise<PartyProps[]> => {
   const params = new URLSearchParams({
     // We need a specific calls to populate relations, * only goes one-level deep
-    'populate[candidates]': 'true',
-    'populate[answers][populate][question]': 'true'
+    'populate[candidates]': loadMembers ? 'true' : 'false',
+    'populate[answers][populate][question]': loadAnswers ? 'true' : 'false'
   });
   return getData<StrapiPartyData[]>('api/parties', params).then((result) => {
     if (result?.data?.length) {
       return result.data.map((prt) => {
         const id = '' + prt.id;
         const attr = prt.attributes;
-        const answers = attr.answers.data.map((a) => ({
-          questionId: a.attributes.question.data.id,
-          answer: a.attributes.answer.key
-          // openAnswer?: string;
-        }));
-        const memberCandidateIds = attr.candidates.data.map((c) => c.id);
-        return {
-          answers,
+        const props: PartyProps = {
           electionRound: 0, // We use a default here
           id,
           info: attr.info ?? '',
-          memberCandidateIds,
-          nominatedCandidateIds: [],
           name: attr.name,
           shortName: attr.shortName ?? ''
-        } as PartyProps;
+        };
+        if (loadAnswers) {
+          props.answers = attr.answers.data.map((a) => ({
+            questionId: '' + a.attributes.question.data.id,
+            answer: a.attributes.answer.key
+            // openAnswer?: string;
+          }));
+        }
+        if (loadMembers) {
+          props.memberCandidateIds = attr.candidates.data.map((c) => '' + c.id);
+        }
+        return props;
       });
     } else {
       throw new Error('Could not retrieve result for all parties');
@@ -205,19 +220,41 @@ export const getAllParties = (): Promise<PartyProps[]> => {
 
 /**
  * Get data for all parties from Strapi that have nominations in some Election.
+ * @param id The id of the Party
  * @param electionId The id of the Election the Parties are nominated for
  * @param constituencyId The id of the Constituency the Parties are nominated in
+ * @param loadAnswers If true, the Parties' Answers will also be loaded
+ * @param loadMembers If true, the Parties' member Candidates will also be loaded
+ * @param loadNominations If true, the Parties' nominated Candidates will also be loaded
+ * @returns An Array of matching Parties, which may be empty
  */
 export const getNominatingParties = ({
+  id,
   electionId,
-  constituencyId
-}: {electionId?: string; constituencyId?: string} = {}): Promise<PartyProps[]> => {
+  constituencyId,
+  loadAnswers,
+  loadMembers,
+  loadNominations
+}: {
+  id?: string;
+  electionId?: string;
+  constituencyId?: string;
+  loadAnswers?: boolean;
+  loadMembers?: boolean;
+  loadNominations?: boolean;
+} = {}): Promise<PartyProps[]> => {
   // We first get all available parties and then fetch the nominated candidates for them
-  return getAllParties().then((parties) => {
+  // The reason we do this, is that we don't want to populate the parties deeply within
+  // the Nominations, because they would be reduplicated for each candidate Nomination
+  return getAllParties({loadAnswers, loadMembers}).then((parties) => {
     const params = new URLSearchParams({
-      populate: '*',
-      'filters[party][id][$notNull]': 'true' // We need to apply $notNull to id, not the candidate relation
+      'populate[party]': 'true',
+      'populate[candidate]': loadNominations ? 'true' : 'false',
+      'filters[party][id][$notNull]': 'true' // We need to apply $notNull to the id, not the relation
     });
+    if (id != null) {
+      params.set('filters[party][id][$eq]', id);
+    }
     if (constituencyId != null) {
       params.set('filters[constituency][id][$eq]', constituencyId);
     }
@@ -225,7 +262,7 @@ export const getNominatingParties = ({
       params.set('filters[election][id][$eq]', electionId);
     }
     return getData<StrapiNominationData[]>('api/nominations', params).then((result) => {
-      if (result?.data?.length) {
+      if (result?.data) {
         // For easier access by id
         const partyMap = new Map(parties.map((p) => [p.id, p]));
         // We collect the ids of the parties in these nominations here
@@ -240,9 +277,14 @@ export const getNominatingParties = ({
               `Could not retrieve result for nominating parties: party with id '${partyId}' not found`
             );
           }
-          const candId = nom.attributes.candidate.data?.id;
-          if (candId != null) {
-            party.nominatedCandidateIds.push(candId + '');
+          if (loadNominations) {
+            const candId = nom.attributes.candidate.data?.id;
+            if (candId != null) {
+              if (!party.nominatedCandidateIds) {
+                party.nominatedCandidateIds = [];
+              }
+              party.nominatedCandidateIds.push(candId + '');
+            }
           }
         });
         // Only return those parties that were found in the nominations

@@ -3,7 +3,7 @@
   import {onMount} from 'svelte';
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
-  import {candidates, candidateRankings} from '$lib/utils/stores';
+  import {candidateRankings} from '$lib/utils/stores';
   import {logDebugError} from '$lib/utils/logger';
   import {GetFullNameInOrder} from '$lib/utils/internationalisation';
   import {EntityCard} from '$lib/components/entityCard';
@@ -11,6 +11,7 @@
 
   const urlRoot = $page.url.pathname.replace(/\/$/, '');
 
+  // This has to be done onMount, because goto may otherwise be called on the server
   onMount(() => {
     if ($candidateRankings?.length === 0) {
       logDebugError('No candidate rankings found. Redirecting to questions');
@@ -27,7 +28,7 @@
         <EntityCard
           on:click={() => goto(`${urlRoot}/${candidate.id}`)}
           ariaPosinset={i + 1}
-          ariaSetsize={$candidates.length}
+          ariaSetsize={$page.data.candidates.length}
           title={GetFullNameInOrder(candidate.firstName, candidate.lastName)}
           imgSrc="/images/candidate-photo.png"
           id={candidate.id}
