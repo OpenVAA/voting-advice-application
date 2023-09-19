@@ -49,7 +49,7 @@
     <div class="flex flex-row items-center justify-normal gap-x-2" slot="body-content">
       {#if listText}
         <!-- svelte-ignore a11y-missing-attribute -->
-        <img src="/icons/election-list.png" role="presentation" />
+        <img src="/icons/list.svg" role="presentation" />
         <span class="text-m text-center font-extrabold">
           {listText}
         </span>
