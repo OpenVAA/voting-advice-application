@@ -20,9 +20,12 @@
 <section class="mt-4">
   <!-- TODO: replace the following div tag with the EntityCard component -->
   <div class="mb-4 ml-4">
-    <h1 class="text-h1">{GetFullNameInOrder(candidate.firstName, candidate.lastName)}</h1>
+    <h1 class="text-h1">
+      {GetFullNameInOrder(candidate.firstName, candidate.lastName)}
+    </h1>
     <p>
       <span class="badge-lg bg-default-party p-1 text-white">{candidate.party.shortName}</span>
+      {#if ranking}<span class="px-3 text-xl">{ranking}</span>{/if}
     </p>
   </div>
   <!-- {#} -->
