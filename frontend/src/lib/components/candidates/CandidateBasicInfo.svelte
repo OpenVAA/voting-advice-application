@@ -11,7 +11,7 @@
         <div class="mb-3.5 flex items-start">
           <p class="mr-1.5 w-16 text-xs uppercase text-secondary">{$_('candidate.list')}</p>
           <p class="flex text-sm">
-            <img class="mr-2" src="/icons/party-icon.svg" alt="Party Icon" />
+            <img class="mr-2" src="/icons/list.svg" alt="List Icon" />
             {candidate.party.name} ({candidate.party.shortName})
           </p>
         </div>
