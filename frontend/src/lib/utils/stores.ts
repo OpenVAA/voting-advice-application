@@ -4,7 +4,6 @@ import {browser} from '$app/environment';
 import {page} from '$app/stores';
 import type {VoterAnswer} from '$types';
 import {logDebugError} from './logger';
-import type {Match} from '$lib/vaa-matching';
 import {matchCandidates} from '$lib/utils/matching';
 
 // Store values in local storage to prevent them from disappearing in refresh
@@ -48,9 +47,6 @@ export function resetLocalStorage(): void {
     logDebugError('Local storage has been reset');
   }
 }
-
-// Stores that are not locally stored
-export const candidateMatches = writable<Match[]>([]);
 
 // Currently, it's quite silly that we need to separate matches and candidates, but when the
 // vaa-data model integration is complete, the proper Candidate object will be
