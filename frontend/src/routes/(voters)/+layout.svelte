@@ -69,17 +69,13 @@
   </nav>
 </header>
 
-<main class="h-full pb-20 pt-14">
+<main class="h-full pb-14 pt-14">
   <slot />
 </main>
 
 <footer class="fixed bottom-0 w-full">
   {#if $page.url.pathname === '/'}
     <div class="mb-4 flex flex-col items-center justify-between gap-3 text-secondary">
-      <p class="text-center text-sm">
-        <img class="inline w-6" src="/icons/tip.svg" alt="" srcset="" />
-        {$page.data.appLabels.viewTexts.questionsTip}
-      </p>
       <p class="text-center text-xs">
         {$page.data.appLabels.viewTexts.publishedBy.replace('{{0}}', '')}
         <img
@@ -90,23 +86,31 @@
         <img class="inline w-6" src="/icons/vote.svg" alt="" srcset="" />GIPVAA
       </p>
     </div>
-  {:else if $page.url.pathname !== '/questions'}
-    <nav class="bg-primary p-4">
-      <ul class="flex items-center justify-between">
-        <li class="mr-6">
-          {#if $page.url.pathname === '/questions'}
-            <p>
-              {$page.params.slug ? `${$page.params.slug} statements answered` : ''}
-            </p>
-          {/if}
-        </li>
-        <li class="mr-6">
+  {:else if $page.url.pathname === '/questions'}
+    <div class="mb-4 flex flex-col items-center justify-between gap-3 text-secondary">
+      <p class="text-center text-sm">
+        <img class="inline w-6" src="/icons/tip.svg" alt="" srcset="" />
+        {$page.data.appLabels.viewTexts.questionsTip}
+      </p>
+    </div>
+  {/if}
+  <nav class="bg-primary p-4">
+    <ul class="flex items-center justify-between">
+      <li class="mr-6">
+        <p>
+          {$page.params.slug ? `${$page.params.slug} statements answered` : ''}
+        </p>
+      </li>
+      <li class="mr-6">
+        {#if $page.url.pathname === '/results'}
+          <a class="text-primary hover:text-secondary" href="/questions">Questions</a>
+        {:else}
           <a class="text-primary hover:text-secondary" href="/results"
             >{$page.data.appLabels.actionLabels.results}</a>
-        </li>
-      </ul>
-    </nav>
-  {/if}
+        {/if}
+      </li>
+    </ul>
+  </nav>
 </footer>
 
 <style>
