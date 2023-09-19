@@ -7,10 +7,11 @@
 
 <div class="flex flex-col items-center gap-4 p-4">
   <h1 class="text-3xl font-medium leading-6 text-gray-500">
-    {$_('questions.questionsTitle')}
+    {$page.data.appLabels.viewTexts.yourOpinionsTitle}
   </h1>
   <div class="my-2">
-    <p>{$_('questions.questionsIntro')}</p>
+    <p>{$page.data.appLabels.viewTexts.yourOpinionsDescription}</p>
   </div>
-  <a href={firstQuestionUrl} class="btn-primary btn">{$_('questions.startAnswering')}</a>
+  <a href={firstQuestionUrl} class="btn-primary btn"
+    >{$page.data.appLabels.actionLabels.startQuestions}</a>
 </div>
