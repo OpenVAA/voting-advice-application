@@ -16,8 +16,7 @@
   $: currentQuestion = $page.data.questions.find((q) => '' + q.id === '' + $page.params.questionId);
 
   // Store question id and answer value in a store
-  function answerQuestion(event: CustomEvent) {
-    const detail = event.detail as OnChangeEventDetail;
+  function answerQuestion({detail}: CustomEvent) {
     answeredQuestions.update((answers) => [
       ...answers,
       {questionId: detail.id, answer: detail.value}
@@ -29,6 +28,8 @@
   }
 
   // Skip to next question
+  // TODO: Later we might want to add an explicit note that this question was skipped
+  // TODO: This needs to take into account as well whether the question is already answered
   function skipQuestion() {
     gotoNextQuestion();
   }
