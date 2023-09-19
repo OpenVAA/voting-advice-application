@@ -27,8 +27,10 @@
     "politicalExperience": "Political experience",
     "age": "age",
     "gender": "gender",
+    "electionSymbol": "Election Number",
     "list": "list",
     "motherTongue": "Mother Tongue",
+    "otherLanguages": "Other Languages",
     "themes": "Themes"
   },
   "parties": {
