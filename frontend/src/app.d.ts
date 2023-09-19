@@ -8,11 +8,11 @@ declare namespace App {
     // null checks every time we use them. We'll initiliaze the Array types
     // as empty arrays in the global data load /+layout.server.ts
     appLabels: AppLabels;
-    candidate?: CandidateProps | undefined;
+    candidate?: CandidateProps;
     candidates: CandidateProps[];
     election: ElectionProps;
     parties: PartyProps[];
-    party?: PartyProps | undefined;
+    party?: PartyProps;
     questions: QuestionProps[];
   }
   // interface Error {}
