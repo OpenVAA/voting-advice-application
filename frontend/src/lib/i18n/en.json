@@ -54,5 +54,10 @@
     "skip": "Skip",
     "readMore": "Read More",
     "notFound": "Question not found"
+  },
+  "error": {
+    "general": "Something went wrong",
+    "noQuestions": "There are no questions yet",
+    "noQuestionCategories": "No question categories"
   }
 }
