@@ -20,7 +20,7 @@
   });
 </script>
 
-<div class="flex h-full flex-col items-center justify-center bg-primary">
+<div class="flex h-full flex-col items-center justify-center bg-primary pb-12 pt-8">
   <div class="max-w-xl">
     <h1>{$_('candidates.candidates')}</h1>
     <div role="feed" class="grid grid-cols-1 gap-4" aria-label={$_('candidates.candidates')}>
@@ -33,7 +33,8 @@
           imgSrc="/images/candidate-photo.png"
           id={candidate.id}
           listText={candidate.party?.shortName ?? ''}
-          electionSymbol={candidate.electionSymbol}>
+          electionSymbol={candidate.electionSymbol}
+          summaryMatch={match.toString()}>
           <div slot="card-footer">
             {#if match.subMatches && match.subMatches.length > 0}
               <div
