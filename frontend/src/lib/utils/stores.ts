@@ -2,9 +2,10 @@ import {derived, writable} from 'svelte/store';
 import type {Readable, Writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import {page} from '$app/stores';
-import type {VoterAnswer} from '$types';
+import type {VoterAnswers} from '$types';
 import {logDebugError} from './logger';
 import {matchCandidates} from '$lib/utils/matching';
+import type {MatchableValue} from '$lib/vaa-matching';
 
 // Store values in local storage to prevent them from disappearing in refresh
 // Here we check if item already exists on a refresh event
@@ -34,7 +35,7 @@ function createStoreValueAndSubscribeToLocalStorage<T>(key: string, defaultValue
 // Create the actual Svelte store values
 export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage(
   'answeredQuestions',
-  [] as VoterAnswer[]
+  {} as VoterAnswers
 );
 
 /**
@@ -43,7 +44,7 @@ export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage(
 export function resetLocalStorage(): void {
   if (browser && localStorage) {
     localStorage.removeItem('answeredQuestions');
-    answeredQuestions.set([]);
+    answeredQuestions.set({});
     logDebugError('Local storage has been reset');
   }
 }
@@ -56,7 +57,7 @@ export const candidateRankings: Readable<{match: RankingProps; candidate: Candid
     [page, answeredQuestions],
     ([$page, $answeredQuestions]) => {
       if (
-        $answeredQuestions.length === 0 ||
+        Object.values($answeredQuestions).length === 0 ||
         $page.data.candidates.length === 0 ||
         $page.data.questions.length === 0
       ) {

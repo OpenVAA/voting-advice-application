@@ -4,7 +4,7 @@
   import {page} from '$app/stores';
   import {answeredQuestions} from '$lib/utils/stores';
   import {logDebugError} from '$lib/utils/logger';
-  import {Question, type OnChangeEventDetail} from '$lib/components/questions';
+  import {Question} from '$lib/components/questions';
 
   /**
    * A small delay before moving to the next question.
@@ -17,12 +17,11 @@
 
   // Store question id and answer value in a store
   function answerQuestion({detail}: CustomEvent) {
-    answeredQuestions.update((answers) => [
-      ...answers,
-      {questionId: detail.id, answer: detail.value}
-    ]);
+    $answeredQuestions[detail.id] = detail.value;
     logDebugError(
-      `Answered question ${detail.id} with value ${detail.value}. Store length: ${$answeredQuestions.length}.`
+      `Answered question ${detail.id} with value ${detail.value}. Store length: ${
+        Object.values($answeredQuestions).length
+      }.`
     );
     gotoNextQuestion();
   }
