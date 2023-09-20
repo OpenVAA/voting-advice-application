@@ -13,7 +13,7 @@ import {
   MissingValueDistanceMethod
 } from '$lib/vaa-matching';
 import type {MultipleChoiceQuestionOptions} from '$lib/vaa-matching/questions/multipleChoiceQuestion';
-import type {VoterAnswer} from '$types';
+import type {VoterAnswers} from '$types';
 
 /**
  * Perform the candidate matching. NB. We can't use the stores directly, because they
@@ -24,7 +24,7 @@ import type {VoterAnswer} from '$types';
  */
 export const matchCandidates = function matchCandidates(
   allQuestions: QuestionProps[],
-  answeredQuestions: VoterAnswer[],
+  answeredQuestions: VoterAnswers,
   allCandidates: CandidateProps[]
 ): Match[] {
   // Create the algorithm instance
@@ -48,9 +48,9 @@ export const matchCandidates = function matchCandidates(
   // Create voter object
   const voter = new Person(
     '',
-    answeredQuestions
-      .filter((a) => a.questionId in questions)
-      .map((a) => ({question: questions[a.questionId], value: a.answer}))
+    Object.entries(answeredQuestions)
+      .filter(([id]) => id in questions)
+      .map(([id, value]) => ({question: questions[id], value}))
   );
 
   // Check that we still have some answers
@@ -69,7 +69,7 @@ export const matchCandidates = function matchCandidates(
 
   // Create answer subgroups
   // We only consider those subgroups that the voter has answered
-  const answeredIds = new Set(answeredQuestions.map((a) => a.questionId));
+  const answeredIds = new Set(voter.answers.map((a) => a.question.id));
   const categories = [
     ...new Set(
       Object.values(questions)
