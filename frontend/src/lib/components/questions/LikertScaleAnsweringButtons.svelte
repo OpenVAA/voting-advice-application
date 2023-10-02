@@ -13,23 +13,23 @@
   }
 </script>
 
-<div class="relative grid auto-cols-fr grid-flow-col gap-3">
+<div class="relative grid w-full auto-cols-fr grid-flow-col gap-0">
   {#each options as { key, label }}
-    <label class="grid grid-flow-row auto-rows-max justify-items-center gap-2">
+    <label class="grid grid-flow-row auto-rows-max justify-items-center gap-md">
       <input
         type="radio"
-        class="radio-primary radio min-h-[2.5rem] min-w-[2.5rem] border-2 bg-base-100 ring-4 ring-base-100"
+        class="radio-primary radio z-10 h-32 w-32 border-lg bg-base-100 ring-4 ring-base-100"
         {name}
         value={key}
         bind:group={selected}
         on:change={onChange} />
-      <div class="text-center text-xs uppercase text-secondary">{label}</div>
+      <div class="small-label text-center">{label}</div>
     </label>
   {/each}
   <!-- The line behind the options -->
   <div
     aria-hidden="true"
-    class="absolute top-[1.25rem] -z-50 h-0.5 -translate-y-1/2 bg-primary"
+    class="absolute top-16 z-0 h-4 -translate-y-1/2 bg-base-300"
     style="width: calc(100% / {options.length} * {options.length -
       1}); left: calc(50% / {options.length})" />
 </div>
