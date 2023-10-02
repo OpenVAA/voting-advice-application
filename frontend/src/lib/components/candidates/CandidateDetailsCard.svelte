@@ -17,34 +17,34 @@
   };
 </script>
 
-<section class="mt-4">
+<article>
   <!-- TODO: replace the following div tag with the EntityCard component -->
-  <div class="mb-4 ml-4">
-    <h1 class="text-h1">
+  <header class="p-lg">
+    <h1>
       {GetFullNameInOrder(candidate.firstName, candidate.lastName)}
     </h1>
-    <p>
-      <span class="badge-lg bg-default-party p-1 text-white">{candidate.party.shortName}</span>
-      {#if ranking}<span class="px-3 text-xl">{ranking}</span>{/if}
+    <p class="text-center">
+      <span class="p-1 badge-md rounded-sm bg-secondary text-white"
+        >{candidate.party.shortName}</span>
+      {#if ranking}<span class="px-3 text-lg">{ranking}</span>{/if}
     </p>
-  </div>
+    {#if ranking?.subMatches && ranking.subMatches.length > 0}
+      <div class="mt-md grid grid-flow-row grid-cols-3 gap-x-lg gap-y-14 py-sm lg:grid-cols-4">
+        {#each ranking.subMatches as subMatch}
+          <!-- TODO: replace the progressBarColor color with the color of the party -->
+          <ScoreGauge
+            score={subMatch.score}
+            label={subMatch.questionGroup.label ?? ''}
+            shape="linear" />
+        {/each}
+      </div>
+    {/if}
+  </header>
   <!-- {#} -->
-  {#if ranking?.subMatches && ranking.subMatches.length > 0}
-    <div
-      class="mx-4 mb-6 grid grid-flow-row grid-cols-2 gap-x-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-      {#each ranking.subMatches as subMatch}
-        <!-- TODO: replace the progressBarColor color with the color of the party -->
-        <ScoreGauge
-          score={subMatch.score}
-          label={subMatch.questionGroup.label ?? ''}
-          shape="radial" />
-      {/each}
-    </div>
-  {/if}
   <Tabs on:changeTab={handleChangeTab} {tabs} {activeItem} />
   {#if tabs[0] === activeItem}
     <CandidateBasicInfo {candidate} />
   {:else if tabs[1] === activeItem}
     <CandidateOpinions {candidate} />
   {/if}
-</section>
+</article>
