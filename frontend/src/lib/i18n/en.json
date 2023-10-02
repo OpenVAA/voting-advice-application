@@ -2,12 +2,14 @@
   "header": {
     "title": "Elections",
     "back": "Back",
-    "help": "Help"
+    "help": "Help",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "goHome": "Return to home page"
   },
   "footer": {
     "goTo": "Jump to results"
   },
-  "error": "Something went wrong",
   "loading": "Loading...",
   "components": {
     "card": {
