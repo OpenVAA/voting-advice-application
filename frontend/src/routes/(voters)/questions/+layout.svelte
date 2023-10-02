@@ -9,12 +9,8 @@
   <title>{$_('questions.questionsTitle')}</title>
 </svelte:head>
 
-<div class="flex h-full flex-col items-center justify-center">
-  <div class="max-w-xl">
-    {#if !data.questions.length}
-      <p>{$_('error.noQuestions')}</p>
-    {:else}
-      <slot />
-    {/if}
-  </div>
-</div>
+{#if !data.questions.length}
+  <p>{$_('error.noQuestions')}</p>
+{:else}
+  <slot />
+{/if}

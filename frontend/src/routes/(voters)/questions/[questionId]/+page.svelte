@@ -47,18 +47,20 @@
   }
 </script>
 
-{#if currentQuestion}
-  {#key currentQuestion}
-    <Question
-      id={currentQuestion.id}
-      text={currentQuestion.text}
-      type={currentQuestion.type}
-      options={currentQuestion.options}
-      category={currentQuestion.category}
-      info={currentQuestion.info}
-      on:change={answerQuestion}
-      on:skip={skipQuestion} />
-  {/key}
-{:else}
-  {$_('question.notFound')}
-{/if}
+<div class="flex max-w-xl flex-grow flex-col justify-center p-lg">
+  {#if currentQuestion}
+    {#key currentQuestion}
+      <Question
+        id={currentQuestion.id}
+        text={currentQuestion.text}
+        type={currentQuestion.type}
+        options={currentQuestion.options}
+        category={currentQuestion.category}
+        info={currentQuestion.info}
+        on:change={answerQuestion}
+        on:skip={skipQuestion} />
+    {/key}
+  {:else}
+    {$_('question.notFound')}
+  {/if}
+</div>

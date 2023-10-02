@@ -5,13 +5,15 @@
   const firstQuestionUrl = `${$page.url.pathname.replace(/\/$/, '')}/${$page.data.questions[0].id}`;
 </script>
 
-<div class="flex flex-col items-center gap-4 p-4">
-  <h1 class="text-3xl font-medium leading-6 text-gray-500">
+<div class="flex max-w-xl flex-grow flex-col justify-center p-lg">
+  <h1 class="my-lg">
     {$page.data.appLabels.viewTexts.yourOpinionsTitle}
   </h1>
-  <div class="my-2">
-    <p>{$page.data.appLabels.viewTexts.yourOpinionsDescription}</p>
-  </div>
+  <p class="text-center">{$page.data.appLabels.viewTexts.yourOpinionsDescription}</p>
   <a href={firstQuestionUrl} class="btn-primary btn"
     >{$page.data.appLabels.actionLabels.startQuestions}</a>
+</div>
+<div class="mb-60 p-lg text-center text-sm text-secondary">
+  <img class="inline w-14" src="/icons/tip.svg" alt="" srcset="" />
+  {$page.data.appLabels.viewTexts.questionsTip}
 </div>
