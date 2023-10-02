@@ -3,10 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%sveltekit.assets%/favicon.png" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#d1ebee" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1f2324" media="(prefers-color-scheme: dark)" />
     %sveltekit.head%
   </head>
   <body>
-    <div class="grid-cols grid h-screen">%sveltekit.body%</div>
+    <div class="flex min-h-screen flex-col items-center">%sveltekit.body%</div>
   </body>
 </html>
