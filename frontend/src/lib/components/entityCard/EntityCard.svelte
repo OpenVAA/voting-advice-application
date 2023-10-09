@@ -36,33 +36,40 @@
     aria-setsize={ariaSetsize}>
     <svelte:fragment slot="card-media">
       {#if imgSrc}
-        <img src={imgSrc} alt={imgAlt} width={imgWidth} height={imgHeight} />
+        <img class="rounded-sm" src={imgSrc} alt={imgAlt} width={imgWidth} height={imgHeight} />
       {:else}
         <div class="placeholder avatar">
-          <div class="w-16 rounded-full bg-neutral-focus text-neutral-content">
+          <div class="w-[3.125rem] rounded-full bg-base-300">
             <span class="text-2xl">{title.charAt(0)}</span>
           </div>
         </div>
       {/if}
     </svelte:fragment>
-    <h2 slot="body-title" class="text-2xl" id={labelId}>{title}</h2>
-    <div class="flex flex-row items-center justify-normal gap-x-2" slot="body-content">
+    <h3 slot="body-title" id={labelId}>{title}</h3>
+    <div class="flex flex-row items-center gap-md" slot="body-content">
       {#if listText}
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <img src="/icons/list.svg" role="presentation" />
-        <span class="text-m text-center font-extrabold">
-          {listText}
-        </span>
+        <!-- TODO: Convert to <PartyTag> component -->
+        <div class="flex flex-row gap-sm">
+          <!-- svelte-ignore a11y-missing-attribute -->
+          <img src="/icons/list.svg" role="presentation" />
+          <span class="font-bold">
+            {listText}
+          </span>
+        </div>
       {/if}
       {#if electionSymbol}
-        <span class="border-3 text-m ml-6 border px-3 py-1 font-bold">{electionSymbol}</span>
+        <!-- TODO: Convert to <ElectionSymbol> component -->
+        <span
+          class="border-sm border-color-[var(--line-color)] rounded-sm border px-8 py-4 font-bold"
+          >{electionSymbol}</span>
       {/if}
     </div>
     <svelte:fragment slot="body-match">
       {#if summaryMatch}
-        <div class="flex flex-col">
-          <span class="text-h3">{summaryMatch}</span>
-          <span>{$_('components.card.matchLabel')}</span>
+        <!-- TODO: Convert to <MatchScore> component -->
+        <div class="flex min-w-[3.125rem] flex-col items-center">
+          <span class="text-lg font-bold">{summaryMatch}</span>
+          <span class="text-xs text-secondary">{$_('components.card.matchLabel')}</span>
         </div>
       {/if}
     </svelte:fragment>
@@ -78,7 +85,7 @@
     {tabindex}
     aria-posinset={ariaPosinset}
     aria-setsize={ariaSetsize}>
-    <h2 slot="body-title" class="text-2xl text-error" id={labelId}>
+    <h2 slot="body-title" class="text-error" id={labelId}>
       {$_('components.card.errorDisplaying')}
     </h2>
   </Card>
