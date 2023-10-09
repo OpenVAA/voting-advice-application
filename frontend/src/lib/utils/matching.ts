@@ -11,8 +11,8 @@ import {
   MultipleChoiceQuestion,
   DistanceMetric,
   MissingValueDistanceMethod
-} from '$lib/vaa-matching';
-import type {MultipleChoiceQuestionOptions} from '$lib/vaa-matching/questions/multipleChoiceQuestion';
+} from '$voter/vaa-matching';
+import type {MultipleChoiceQuestionOptions} from '$lib/voter/vaa-matching/questions/multipleChoiceQuestion';
 import type {VoterAnswers} from '$types';
 
 /**

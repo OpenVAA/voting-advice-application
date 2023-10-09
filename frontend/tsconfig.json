@@ -9,7 +9,15 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "paths": {
+      "$lib": ["./src/lib"],
+      "$lib/*": ["./src/lib/*"],
+      "$voter": ["./src/lib/voter"],
+      "$voter/*": ["./src/lib/voter/*"],
+      "$candidate": ["./src/lib/candidate"],
+      "$candidate/*": ["./src/lib/candidate/*"]
+    }
   }
   // Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
   //

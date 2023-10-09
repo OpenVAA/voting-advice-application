@@ -1,3 +1,3 @@
-import type {MatchableValue} from '$lib/vaa-matching';
+import type {MatchableValue} from '$voter/vaa-matching';
 
 export type VoterAnswers = Record<string, MatchableValue>;
