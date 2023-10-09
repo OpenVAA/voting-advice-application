@@ -20,10 +20,15 @@
   });
 </script>
 
-<div class="flex h-full flex-col items-center justify-center bg-primary pb-12 pt-8">
-  <div class="max-w-xl">
-    <h1>{$_('candidates.candidates')}</h1>
-    <div role="feed" class="grid grid-cols-1 gap-4" aria-label={$_('candidates.candidates')}>
+<div class="flex w-full flex-grow flex-col items-center justify-start bg-base-300 p-lg pb-[3.5rem]">
+  <div class="w-full max-w-xl">
+    <h1 class="my-lg">{$_('candidates.candidates')}</h1>
+    <!-- The -mx-md below is there to extend the cards a bit over the normal padding,
+         match-w-xl:mx-0 cancels this on screens where the max-width comes into effect. -->
+    <div
+      role="feed"
+      class="-mx-md grid grid-cols-1 gap-md match-w-xl:mx-0"
+      aria-label={$_('candidates.candidates')}>
       {#each $candidateRankings as { match, candidate }, i}
         <EntityCard
           on:click={() => goto(`${urlRoot}/${candidate.id}`)}
@@ -38,10 +43,11 @@
           <div slot="card-footer">
             {#if match.subMatches && match.subMatches.length > 0}
               <div
-                class="mx-4 mb-6 grid grid-flow-row grid-cols-2 gap-x-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                class="mt-md grid grid-flow-row grid-cols-3 gap-x-lg gap-y-14 py-sm lg:grid-cols-4">
                 {#each match.subMatches as subMatch}
                   <!-- TODO: replace the progressBarColor color with the color of the category -->
                   <ScoreGauge
+                    showUnit={true}
                     score={subMatch.score}
                     label={subMatch.questionGroup.label ?? ''}
                     shape="linear" />

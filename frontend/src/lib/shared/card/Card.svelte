@@ -2,20 +2,22 @@
   import type {CardProps} from './Card.type';
 
   type $$Props = CardProps;
+  // TODO: Only apply the cursor-pointer hover:shadow-xl classes if the on:click
+  // prop is set. But how to check for this? It's not listed in $$props...
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <article
-  class="relative flex flex-col rounded-2xl bg-base-100 p-6 transition-shadow duration-300 ease-in-out hover:shadow-xl"
+  class="duration-300 relative flex cursor-pointer flex-col rounded-md bg-base-100 p-md transition-shadow ease-in-out hover:shadow-xl"
   {...$$props}
   on:click
   on:keypress>
-  <div class="flex justify-stretch gap-4">
+  <div class="flex justify-stretch gap-md">
     <figure>
       <slot name="card-media" />
     </figure>
     <div class="flex w-full flex-row items-center justify-between">
-      <div class="flex flex-col items-start justify-evenly">
+      <div class="flex flex-col items-start gap-6">
         <slot name="body-title" />
         <slot name="body-content" />
       </div>
@@ -24,7 +26,7 @@
       </div>
     </div>
   </div>
-  <div class="p-1">
+  <div>
     <slot name="card-footer" />
   </div>
 </article>

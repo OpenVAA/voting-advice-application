@@ -11,14 +11,15 @@
   const urlRoot = $page.url.pathname.replace(/\/$/, '');
 </script>
 
-<div class="flex h-full flex-col items-center justify-center bg-primary pb-12">
-  <div class="max-w-xl">
-    <div class="p-5">
-      <h1 class="ml-2.5 mt-14 text-center text-3xl font-medium leading-6 text-gray-500">
-        {$_('candidates.candidates')}
-      </h1>
-    </div>
-    <div role="feed" class="grid grid-cols-1 gap-4" aria-label={$_('candidates.candidates')}>
+<div class="flex w-full flex-grow flex-col items-center justify-start bg-base-300 p-lg pb-[3.5rem]">
+  <div class="w-full max-w-xl">
+    <h1 class="my-lg">{$_('candidates.candidates')}</h1>
+    <!-- The -mx-md below is there to extend the cards a bit over the normal padding,
+         match-w-xl:mx-0 cancels this on screens where the max-width comes into effect. -->
+    <div
+      role="feed"
+      class="-mx-md grid grid-cols-1 gap-md match-w-xl:mx-0"
+      aria-label={$_('candidates.candidates')}>
       {#each data.candidates as { id, firstName, lastName, party, electionSymbol }, i}
         <EntityCard
           on:click={() => goto(`${urlRoot}/${id}`)}

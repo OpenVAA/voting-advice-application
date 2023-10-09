@@ -10,8 +10,8 @@
   export let unit: $$Props['unit'] = '%';
   export let shape: $$Props['shape'] = 'linear';
   export let label: $$Props['label'] = '';
-  export let labelColor: $$Props['labelColor'] = 'inherit';
-  export let meterColor: $$Props['meterColor'] = 'inherit';
+  export let labelColor: $$Props['labelColor'] = 'hsl(var(--s))';
+  export let meterColor: $$Props['meterColor'] = 'hsl(var(--n))';
 
   const labelId = getUUID();
 
@@ -20,7 +20,7 @@
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <div
-  class="my-1.5 grid gap-x-4"
+  class="grid gap-4"
   class:grid-cols-1={shape === 'linear'}
   class:justify-items-center={shape === 'linear'}
   class:grid-col-2-fit={shape === 'radial'}
@@ -30,31 +30,31 @@
     <div
       tabindex="0"
       role="meter"
-      aria-valuemax="100"
+      aria-valuemax={100}
       aria-valuenow={score}
       aria-labelledby={labelId}
-      class="radial-progress self-center xs:text-sm lg:text-base"
+      class="radial-progress self-center"
       style={`--value:${score};`}>
       {#if showUnit}
-        <span class="text-sm" aria-hidden="true">{score}{unit}</span>
+        <span class="text-sm text-secondary" aria-hidden="true">{score}{unit}</span>
       {/if}
     </div>
   {:else if shape === 'linear'}
     {#if showUnit}
-      <div class="mb-1 flex justify-center">
-        <span class="text-sm text-neutral" aria-hidden="true">{score}{unit}</span>
+      <div class="text-sm text-secondary" aria-hidden="true">
+        {score}{unit}
       </div>
     {/if}
     <progress
       tabindex="0"
       aria-labelledby={labelId}
-      class="progress-color progress xs:text-sm lg:text-base"
+      class="progress-color progress"
       aria-valuenow={score}
       value={score}
       max="100" />
   {/if}
   {#if label}
-    <label class="truncate text-left text-neutral" id={labelId} aria-hidden="true">{label}</label>
+    <label class="truncate text-sm text-secondary" id={labelId} aria-hidden="true">{label}</label>
   {/if}
 </div>
 
@@ -75,25 +75,17 @@
   progress {
     color: var(--progress-color);
   }
-  /* For IE10 */
+
+  /* TODO: Find a way to use Tailwind utility classes here */
 
   .radial-progress {
-    margin: 10px;
     color: var(--progress-color);
-    --size: 3.5rem;
-  }
-
-  .text-neutral {
-    color: var(--progress-label-color);
-  }
-
-  .radial-progress > :first-child {
-    color: var(--progress-label-color);
+    --size: 2.5rem;
   }
 
   @media (min-width: 1024px) {
     .radial-progress {
-      --size: 4.5rem;
+      --size: 3.5rem;
     }
   }
 
