@@ -13,8 +13,7 @@
 import {el, faker, fakerES, fakerFI} from '@faker-js/faker';
 import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
 import mockQuestions from './mockQuestions.json';
-import {join} from 'path';
-import {statSync} from 'fs';
+import mockCategories from './mockCategories.json';
 
 const ELECTION_API = 'api::election.election';
 const ELECTION_APP_LABEL_API = 'api::election-app-label.election-app-label';
@@ -181,7 +180,7 @@ export async function generateMockData() {
   console.info('Done!');
   console.info('#######################################');
   console.info('inserting question categories');
-  await createQuestionCategories(6);
+  await createQuestionCategories();
   console.info('Done!');
   console.info('#######################################');
   console.info('inserting question types');
@@ -881,7 +880,7 @@ async function createPartyNominations(length: number) {
   }
 }
 
-async function createQuestionCategories(numberOfCategories: number) {
+async function createQuestionCategories() {
   const electionsMainLocale = await strapi.entityService.findMany(ELECTION_API, {
     filters: {
       locale: mainLocale.code
@@ -889,8 +888,11 @@ async function createQuestionCategories(numberOfCategories: number) {
     populate: ['localizations']
   });
 
-  for (let i = 0; i <= numberOfCategories; i++) {
-    const name = faker.word.sample(15);
+  let numberOfCategories = mockCategories.length;
+  for (let i = 0; i < numberOfCategories; i++) {
+    const name = mockCategories[i][mainLocale.code]
+      ? mockCategories[i][mainLocale.code]
+      : faker.word.sample(15);
     const shortName = name.substring(0, 3);
     const order = i;
     const info = faker.lorem.paragraph(3);
@@ -907,9 +909,14 @@ async function createQuestionCategories(numberOfCategories: number) {
 
     const electionLocalizations = electionsMainLocale[0].localizations;
 
+    const secondLocaleCategoryName = mockCategories[i][secondLocale.code]
+      ? mockCategories[i][secondLocale.code]
+      : faker.word.sample(15);
     const questionCategorySecondLocale = await strapi.entityService.create(QUESTION_CATEGORY_API, {
       data: {
         ...categoryObj,
+        name: secondLocaleCategoryName,
+        shortName: secondLocaleCategoryName.substring(0, 3),
         elections: [
           electionLocalizations.find((localization) => localization.locale === secondLocale.code).id
         ],
@@ -917,9 +924,14 @@ async function createQuestionCategories(numberOfCategories: number) {
         publishedAt: new Date()
       }
     });
+    const thirdLocaleCategoryName = mockCategories[i][thirdLocale.code]
+      ? mockCategories[i][thirdLocale.code]
+      : faker.word.sample(15);
     const questionCategoryThirdLocale = await strapi.entityService.create(QUESTION_CATEGORY_API, {
       data: {
         ...categoryObj,
+        name: thirdLocaleCategoryName,
+        shortName: thirdLocaleCategoryName.substring(0, 3),
         elections: [
           electionLocalizations.find((localization) => localization.locale === thirdLocale.code).id
         ],
