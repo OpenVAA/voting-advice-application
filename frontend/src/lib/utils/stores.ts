@@ -5,7 +5,6 @@ import {page} from '$app/stores';
 import type {VoterAnswers} from '$types';
 import {logDebugError} from './logger';
 import {matchCandidates} from '$lib/utils/matching';
-import type {MatchableValue} from '$lib/vaa-matching';
 
 // Store values in local storage to prevent them from disappearing in refresh
 // Here we check if item already exists on a refresh event
