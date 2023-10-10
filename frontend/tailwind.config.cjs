@@ -151,20 +151,20 @@ module.exports = {
       {
         light: {
           // DaisyUI colors: https://daisyui.com/docs/colors/
-          'primary':   '#2546a8',
-          'secondary': '#757575',
-          'accent':    '#0d827c',
+          'primary':   '#2546a8', // = success
+          'secondary': '#666666',
+          'accent':    '#0d827c', // = info
           'neutral':   '#333333',
           'base-100':  '#ffffff',
           'base-200':  '#e5e5e5',
           'base-300':  '#d1ebee', // Remember to match this with the theme-color in app.html
-          'info':      '#11a8a0', // = accent (var() cannot be used in these)
+          'info':      '#0d827c', // = accent (var() cannot be used in these)
           'success':   '#2546a8', // = primary
-          'warning':   '#a82525', 
+          'warning':   '#a82525', // = error
           'error':     '#a82525', // = warning
           'base-content':      '#333333', // = neutral
           'primary-content':   '#ffffff', // = base-100
-          'secondary-content': '#000000',
+          'secondary-content': '#ffffff', // = base-100
           'accent-content':    '#ffffff', // = base-100
           'info-content':      '#ffffff', // = base-100
           'success-content':   '#ffffff', // = base-100
@@ -181,23 +181,23 @@ module.exports = {
         },
         dark: {
           // DaisyUI colors: https://daisyui.com/docs/colors/
-          'primary':   '#305ad9',
-          'secondary': '#858585',
-          'accent':    '#11a8a0',
+          'primary':   '#6887e3', // = success
+          'secondary': '#8c8c8c',
+          'accent':    '#11a8a0', // = info
           'neutral':   '#cccccc',
           'base-100':  '#000000',
           'base-200':  '#1a1a1a',
           'base-300':  '#1f2324', // Remember to match this with the theme-color in app.html
           'info':      '#11a8a0', // = accent (var() cannot be used in these)
-          'success':   '#305ad9', // = primary
-          'warning':   '#d72f2f', 
+          'success':   '#6887e3', // = primary
+          'warning':   '#d72f2f', // = error
           'error':     '#d72f2f', // = warning
           'base-content':      '#cccccc', // = neutral
-          'primary-content':   '#ffffff',
+          'primary-content':   '#000000',
           'secondary-content': '#000000',
-          'accent-content':    '#ffffff',
-          'info-content':      '#ffffff', // = accent-content
-          'success-content':   '#ffffff', // = primary-content
+          'accent-content':    '#000000',
+          'info-content':      '#000000', // = accent-content
+          'success-content':   '#000000', // = primary-content
           'warning-content':   '#ffffff',
           'error-content':     '#ffffff', // = warning-content
 
