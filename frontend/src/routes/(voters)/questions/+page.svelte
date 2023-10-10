@@ -4,7 +4,9 @@
   const firstQuestionUrl = `${$page.url.pathname.replace(/\/$/, '')}/${$page.data.questions[0].id}`;
 
   const questionCategories = new Set<string>();
-  $page.data.questions.forEach((question: any) => questionCategories.add(question?.category));
+  $page.data.questions.forEach((question) => {
+    if (question.category) questionCategories.add(question.category);
+  });
 
   const opinionsDescriptionText = $page.data.appLabels.viewTexts.yourOpinionsDescription
     .replace('{{0}}', $page.data.questions.length.toString())
