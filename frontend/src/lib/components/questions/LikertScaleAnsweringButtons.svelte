@@ -18,7 +18,7 @@
     <label class="grid grid-flow-row auto-rows-max justify-items-center gap-md">
       <input
         type="radio"
-        class="radio-primary radio z-10 h-32 w-32 border-lg bg-base-100 ring-4 ring-base-100"
+        class="radio radio-primary z-10 h-32 w-32 border-lg bg-base-100 ring-4 ring-base-100"
         {name}
         value={key}
         bind:group={selected}
