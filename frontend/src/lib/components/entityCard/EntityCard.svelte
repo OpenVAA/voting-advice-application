@@ -1,6 +1,6 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
-  import {Card} from '$lib/shared/card/index';
+  import {Card} from '$lib/components/shared/card/index';
   import {getUUID} from '$lib/utils/components';
   import type {EntityCardProps} from './EntityCard.type';
 
@@ -14,7 +14,6 @@
   export let imgAlt: $$Props['imgAlt'] = undefined;
   export let imgWidth: $$Props['imgWidth'] = undefined;
   export let imgHeight: $$Props['imgHeight'] = undefined;
-
   // Accessibility props (optional)
   export let ariaDescribedby: $$Props['aria-describedby'] = undefined;
   export let ariaPosinset: $$Props['aria-posinset'] = undefined;
@@ -38,7 +37,7 @@
       {#if imgSrc}
         <img class="rounded-sm" src={imgSrc} alt={imgAlt} width={imgWidth} height={imgHeight} />
       {:else}
-        <div class="placeholder avatar">
+        <div class="avatar placeholder">
           <div class="w-[3.125rem] rounded-full bg-base-300">
             <span class="text-2xl">{title.charAt(0)}</span>
           </div>

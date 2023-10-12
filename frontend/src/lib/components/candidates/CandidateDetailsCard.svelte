@@ -1,7 +1,7 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {GetFullNameInOrder} from '$lib/utils/internationalisation';
-  import Tabs from '$lib/shared/Tabs.svelte';
+  import Tabs from '$lib/components/shared/Tabs.svelte';
   import {ScoreGauge} from '$lib/components/scoreGauge/index';
   import CandidateBasicInfo from './CandidateBasicInfo.svelte';
   import CandidateOpinions from './CandidateOpinions.svelte';
