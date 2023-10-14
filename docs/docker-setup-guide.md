@@ -42,7 +42,10 @@ permissions to make calls to the backend. You can access the frontend at the fol
 ### Hot reloading
 
 Development Docker images will listen to changes in the files and allow hot reloading, meaning the Docker images don't 
-need to be re-generated after making changes to the codebase.
+need to be re-generated after making changes to the codebase. Hot reloading is enabled by default in the frontend, but for backend
+this can be enabled by adding the volume `- ./:/opt` as a mounted point in [docker-compose.dev.yml](../backend/vaa-strapi/docker-compose.dev.yml)
+and re-building the Docker container. However, this can make the development process slow at times, so it is not recommended to keep that on
+unless doing direct development on the backend source code.
 
 ## Stop The Containers
 
