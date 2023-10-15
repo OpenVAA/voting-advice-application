@@ -3,7 +3,9 @@
 
   type $$Props = CardProps;
   // TODO: Only apply the cursor-pointer hover:shadow-xl classes if the on:click
-  // prop is set. But how to check for this? It's not listed in $$props...
+  // prop is set. It cannot be read from Card, so an alternative would be to add
+  // a interactive (default true) prop to Card which can be set to false if the
+  // card is not clickable.
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->

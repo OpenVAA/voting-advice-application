@@ -8,6 +8,10 @@
   import {GetFullNameInOrder} from '$lib/utils/internationalisation';
   import {EntityCard} from '$lib/components/entityCard';
   import {ScoreGauge} from '$lib/components/scoreGauge';
+  import {BasicPage} from '$lib/components/basicPage';
+  import {HelpIcon, ListIcon} from '$lib/components/icons';
+  import {IconButton} from '$lib/components/iconButton';
+  import {HeroEmoji} from '$lib/components/heroEmoji';
 
   const urlRoot = $page.url.pathname.replace(/\/$/, '');
 
@@ -20,15 +24,27 @@
   });
 </script>
 
-<div class="flex w-full flex-grow flex-col items-center justify-start bg-base-300 p-lg pb-[3.5rem]">
-  <div class="w-full max-w-xl">
-    <h1 class="my-lg">{$_('candidates.candidates')}</h1>
-    <!-- The -mx-md below is there to extend the cards a bit over the normal padding,
-         match-w-xl:mx-0 cancels this on screens where the max-width comes into effect. -->
+<BasicPage title={$page.data.appLabels.viewTexts.yourCandidatesTitle}>
+  <HeroEmoji slot="hero">🎊</HeroEmoji>
+
+  <svelte:fragment slot="secondaryActions">
+    <IconButton href="/list" aria-label={$page.data.appLabels.actionLabels.yourList}>
+      <ListIcon />
+    </IconButton>
+    <IconButton href="/help" aria-label={$page.data.appLabels.actionLabels.help}>
+      <HelpIcon />
+    </IconButton>
+  </svelte:fragment>
+
+  <p class="text-center">{$page.data.appLabels.viewTexts.yourCandidatesDescription}</p>
+
+  <!-- TODO: Create a utility class to handle these full-width views -->
+  <div
+    class="-mx-lg -mb-safelgb flex w-screen flex-col items-center bg-base-300 px-md py-lg pb-safelgb">
     <div
       role="feed"
-      class="-mx-md grid grid-cols-1 gap-md match-w-xl:mx-0"
-      aria-label={$_('candidates.candidates')}>
+      class="grid w-full max-w-xl grid-cols-1 gap-md"
+      aria-label={$page.data.appLabels.viewTexts.yourCandidatesTitle}>
       {#each $candidateRankings as { match, candidate }, i}
         <EntityCard
           on:click={() => goto(`${urlRoot}/${candidate.id}`)}
@@ -61,4 +77,4 @@
       {/each}
     </div>
   </div>
-</div>
+</BasicPage>

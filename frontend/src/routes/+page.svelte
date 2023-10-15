@@ -1,8 +1,8 @@
 <script lang="ts">
   import {locale} from 'svelte-i18n';
-  import {goto} from '$app/navigation';
   import {page} from '$app/stores';
   import {resetLocalStorage} from '$lib/utils/stores';
+  import {FrontPage} from '$lib/components/frontPage';
 
   // TODO: Maybe change the locale here to appLabels.locale so it matches the rest of the string
   // We also need to include the locale property in the appLabels store
@@ -20,42 +20,35 @@
   );
 </script>
 
-<div class="flex w-full flex-grow flex-col items-center bg-base-300">
-  <figure class="hero bg-[#d4dbef]">
-    <img
-      class="max-h-[30vh] w-full max-w-lg bg-white object-cover"
-      src="/images/hero.png"
-      alt=""
-      srcset="" />
-  </figure>
+<FrontPage
+  title={$page.data.election.name}
+  headerClass="bg-transparent absolute"
+  class="bg-base-300">
+  <svelte:fragment slot="heading">
+    <p class="text-2xl font-bold text-primary">{$page.data.appLabels.appTitle}</p>
+    <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
+  </svelte:fragment>
 
-  <main class="flex-grow">
-    <div class="flex max-w-xl flex-col items-center p-lg pl-safelgl pr-safelgr">
-      <div class="flex flex-col flex-nowrap items-center">
-        <hgroup class="py-lg">
-          <p class="text-2xl font-bold text-primary">{$page.data.appLabels.appTitle}</p>
-          <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
-        </hgroup>
-        <p class="text-center">
-          {appDescription}
-        </p>
-        <a
-          href="/navigation"
-          on:click={resetLocalStorage}
-          class="btn btn-primary mb-md w-full max-w-md"
-          >{$page.data.appLabels.actionLabels.startButton}</a>
-        <a href="/information" class="btn btn-ghost w-full max-w-md"
-          >{$page.data.appLabels.actionLabels.electionInfo}</a>
-        <a href="/about" class="btn btn-ghost w-full max-w-md"
-          >{$page.data.appLabels.actionLabels.howItWorks}</a>
-      </div>
-    </div>
-  </main>
+  <img
+    slot="hero"
+    class="h-[30vh] w-full max-w-lg bg-white object-cover"
+    src="/images/hero.png"
+    alt="" />
 
-  <footer class="p-lg text-center text-sm text-secondary">
+  <p class="text-center">
+    {appDescription}
+  </p>
+  <a href="/intro" on:click={resetLocalStorage} class="btn-primary btn mb-md w-full max-w-md"
+    >{$page.data.appLabels.actionLabels.startButton}</a>
+  <a href="/information" class="btn-ghost btn w-full max-w-md"
+    >{$page.data.appLabels.actionLabels.electionInfo}</a>
+  <a href="/about" class="btn-ghost btn w-full max-w-md"
+    >{$page.data.appLabels.actionLabels.howItWorks}</a>
+
+  <svelte:fragment slot="footer">
     {$page.data.appLabels.viewTexts.publishedBy.replace('{{0}}', '')}
     <img class="inline w-14" src={'/icons/publisher.svg'} alt="governmental" srcset="" />
     Institution • {$page.data.appLabels.viewTexts.madeWith.replace('{{0}}', '')}
     <img class="inline w-14" src="/icons/vote.svg" alt="" srcset="" /> OpenVAA
-  </footer>
-</div>
+  </svelte:fragment>
+</FrontPage>

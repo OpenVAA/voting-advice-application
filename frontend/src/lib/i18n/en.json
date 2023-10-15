@@ -5,8 +5,14 @@
     "help": "Help",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
-    "goHome": "Return to home page"
+    "toggleMenu": "Open or close the menu",
+    "goHome": "Return to home page",
+    "navLabel": "Main navigation",
+    "skipToMain": "Skip to main content",
+    "logoAlt": "OpenVAA logo",
+    "progressTitle": "Your progress"
   },
+  "primaryActionsLabel": "Main function for this page",
   "footer": {
     "goTo": "Jump to results"
   },
@@ -17,9 +23,19 @@
       "matchLabel": "match"
     }
   },
+  "intro": {
+    "title": "Let's start!",
+    "ingress": "This is a general introduction to what the user can expect happening next. This screen may be disabled by the administrator",
+    "listItemOpinions": "Tell your opinions",
+    "listItemResults": "View best matching candidates",
+    "listItemDetails": "See their details and save on a list",
+    "continue": "Continue"
+  },
   "candidates": {
     "candidates": "Candidates",
-    "notFound": "No candidates found"
+    "viewAllCandidates": "View all candidates",
+    "notFound": "No candidates found",
+    "allCandidatesDescription": "These are all the candidates taking part in these elections."
   },
   "candidate": {
     "tabs": {
@@ -37,7 +53,9 @@
   },
   "parties": {
     "parties": "Parties",
-    "notFound": "No parties found"
+    "viewAllParties": "View all parties",
+    "notFound": "No parties found",
+    "allPartiesDescription": "These are all the parties taking part in these elections."
   },
   "questions": {
     "questionsTitle": "Your Opinions",
@@ -55,7 +73,39 @@
     "previous": "Previous",
     "skip": "Skip",
     "readMore": "Read More",
-    "notFound": "Question not found"
+    "notFound": "Question not found",
+    "noCandidateAnswer": "The candidate has not answered this question"
+  },
+  "icons": {
+    "addToList": "Add to list",
+    "alliance": "Alliance",
+    "candidate": "Candidate",
+    "candidates": "Candidates",
+    "check": "Check mark",
+    "close": "Close",
+    "collapse": "Collapse",
+    "constituency": "Constituency",
+    "download": "Download",
+    "election": "Election",
+    "expand": "Expand",
+    "feedback": "Feedback",
+    "filter": "Filter",
+    "help": "Help",
+    "home": "Home",
+    "important": "Important",
+    "info": "Information",
+    "list": "List",
+    "menu": "Menu",
+    "next": "Next",
+    "opinion": "Opinion",
+    "party": "Party",
+    "previous": "Previous",
+    "results": "Results",
+    "removeFromList": "Remove from list",
+    "search": "Search",
+    "skip": "Skip",
+    "sort": "Sort",
+    "tip": "Tip"
   },
   "error": {
     "general": "Something went wrong",

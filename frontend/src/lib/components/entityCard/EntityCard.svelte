@@ -37,7 +37,7 @@
       {#if imgSrc}
         <img class="rounded-sm" src={imgSrc} alt={imgAlt} width={imgWidth} height={imgHeight} />
       {:else}
-        <div class="avatar placeholder">
+        <div class="placeholder avatar">
           <div class="w-[3.125rem] rounded-full bg-base-300">
             <span class="text-2xl">{title.charAt(0)}</span>
           </div>

@@ -182,6 +182,7 @@ export interface StrapiAnswerData {
     answer: {
       key: number;
     };
+    openAnswer?: string;
     question: {
       data: {
         // There are more properties here, but not relations unless they are explicitly populated

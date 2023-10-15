@@ -1,12 +1,36 @@
 <script lang="ts">
-  import {CandidateDetailsCard} from '$lib/components/candidates';
+  import {_} from 'svelte-i18n';
+  import {page} from '$app/stores';
   import type {PageServerData} from './$types';
+  import {GetFullNameInOrder} from '$lib/utils/internationalisation';
+  import {SingleCardPage} from '$lib/components/singleCardPage';
+  import {AddToListIcon, HelpIcon} from '$lib/components/icons';
+  import {IconButton} from '$lib/components/iconButton';
+  import {CandidateDetailsCard} from '$lib/components/candidates';
 
   export let data: PageServerData;
+
+  const {candidate, questions} = data;
+
+  // TODO: Create an error page and use it if there's an error
+  const title = candidate
+    ? GetFullNameInOrder(candidate.firstName, candidate.lastName)
+    : $_('candidates.notFound');
 </script>
 
-<div class="flex w-full flex-grow flex-col items-center bg-base-300 lg:p-md lg:pb-0">
-  <div class="w-full max-w-xl flex-grow rounded-t-lg bg-base-100 pb-[3.5rem] lg:shadow-xl">
-    <CandidateDetailsCard candidate={data.candidate} />
-  </div>
-</div>
+<SingleCardPage {title}>
+  <svelte:fragment slot="secondaryActions">
+    <IconButton href="/list" aria-label={$page.data.appLabels.actionLabels.addToList}>
+      <AddToListIcon />
+    </IconButton>
+    <IconButton href="/help" aria-label={$page.data.appLabels.actionLabels.help}>
+      <HelpIcon />
+    </IconButton>
+  </svelte:fragment>
+
+  {#if candidate}
+    <CandidateDetailsCard {candidate} {questions} />
+  {:else}
+    {$_('candidates.notFound')}
+  {/if}
+</SingleCardPage>

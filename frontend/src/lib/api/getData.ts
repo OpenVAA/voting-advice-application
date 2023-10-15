@@ -159,8 +159,8 @@ export const getNominatedCandidates = ({
         if (loadAnswers) {
           props['answers'] = attr.answers.data.map((a: StrapiAnswerData) => ({
             questionId: '' + a.attributes.question.data.id,
-            answer: a.attributes.answer.key
-            // openAnswer?: string;
+            answer: a.attributes.answer.key,
+            openAnswer: a.attributes.openAnswer ?? ''
           }));
         }
         return props;

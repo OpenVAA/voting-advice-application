@@ -17,6 +17,12 @@ const themeCSSVars = {
 // This can be removed when Tailwind changes it's default behaviour to match this.
 const fixedScreenHeight = ['100vh', '-webkit-fill-available', '100dvh'];
 
+// This defines the minimum touch target size
+const touchTargetSize = `${44/16}rem`;
+
+// This defines the default header height which is needed in calculations (icon h + 2 * padding)
+const headerHeight = `${(24 + 2 * 16)/16}rem`;
+
 module.exports = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   theme: {
@@ -82,16 +88,20 @@ module.exports = {
       60:  `${60/16}rem`,
       xxl: `${60/16}rem`,  // Portrait height
       100: `${100/16}rem`,
+      // Minimum touch target size
+      touch: touchTargetSize,
+      // Default height for the header
+      header: headerHeight,
       // We might want to use the plugin https://github.com/mvllow/tailwindcss-safe-area
       safel: 'env(safe-area-inset-left, 0px)',
       safer: 'env(safe-area-inset-right, 0px)',
       safet: 'env(safe-area-inset-top, 0px)',
-      safeb: 'env(safe-area-inset-bottom, 0px)', 
-      'safelgl': `calc(env(safe-area-inset-left, 0px) + ${20/16}rem)`,
-      'safelgr': `calc(env(safe-area-inset-right, 0px) + ${20/16}rem)`,
-      'safelgt': `calc(env(safe-area-inset-top, 0px) + ${20/16}rem)`,
-      'safelgb': `calc(env(safe-area-inset-bottom, 0px) + ${20/16}rem)`,
-      'safenavt': `calc(env(safe-area-inset-top, 0px) + ${16/16}rem)`, // For the top nav
+      safeb: 'env(safe-area-inset-bottom, 0px)',
+      safelgl: `calc(env(safe-area-inset-left, 0px) + ${20/16}rem)`,
+      safelgr: `calc(env(safe-area-inset-right, 0px) + ${20/16}rem)`,
+      safelgt: `calc(env(safe-area-inset-top, 0px) + ${20/16}rem)`,
+      safelgb: `calc(env(safe-area-inset-bottom, 0px) + ${20/16}rem)`,
+      safenavt: `calc(env(safe-area-inset-top, 0px) + ${16/16}rem)`, // For the top nav
     },
     transitionDuration: {
       none:    '0s',
@@ -130,10 +140,16 @@ module.exports = {
         screen: fixedScreenHeight,
       },
       maxHeight: {
+        header: headerHeight,
         screen: fixedScreenHeight,
       },
       minHeight: {
+        header: headerHeight,
         screen: fixedScreenHeight,
+        touch: touchTargetSize,
+      },
+      minWidth: {
+        touch: touchTargetSize,
       },
       screens: {
         xs: '320px',

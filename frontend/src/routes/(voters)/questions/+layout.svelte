@@ -5,10 +5,6 @@
   export let data: LayoutServerData;
 </script>
 
-<svelte:head>
-  <title>{$_('questions.questionsTitle')}</title>
-</svelte:head>
-
 {#if !data.questions.length}
   <p>{$_('error.noQuestions')}</p>
 {:else}

@@ -42,21 +42,15 @@
   a[onclick]:not(.btn) {
     @apply text-primary;
   }
-  /* TODO: Remove when we start usin the Icon component */
-  a:link svg,
-  a:active svg,
-  a:visited svg,
-  a:hover svg,
-  a[onclick] svg {
-    @apply fill-primary;
-  }
   [onclick] {
     @apply cursor-pointer;
   }
 }
 
 @layer components {
-  /* Override DaisyUI components here */
+  /***********************************
+   * Override DaisyUI components here 
+   ***********************************/
 
   /* Reset font sizes to base */
   .btn,
@@ -68,7 +62,7 @@
 
   /* Style buttons */
   .btn {
-    @apply font-normal;
+    @apply min-h-touch min-w-touch border-none font-normal;
   }
   .btn-ghost {
     @apply text-primary;
@@ -80,7 +74,9 @@
     @apply h-screen;
   }
 
-  /* Custom styles */
+  /***********************************
+   * Custom styles
+   ***********************************/
 
   /**
    * Small text in all caps used for, e.g., Likert button labels and data labels in entity details
