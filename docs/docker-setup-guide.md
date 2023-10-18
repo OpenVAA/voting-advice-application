@@ -23,7 +23,7 @@ If you'd like to have the Strapi backend to be filled with mock data e.g. previe
 development, set the `GENERATE_MOCK_DATA_ON_INITIALISE` variable as true.
 - You can optionally set `GENERATE_MOCK_DATA_ON_RESTART` to true. This will generate new mock data on every time the 
 Strapi instance is restarted. This feature is only enabled in development builds.
-- You can find more detailed info about the mock data in the [backend](../backend/vaa-strapi/README.md)
+- You can find more detailed info about the mock data in the [backend](../backend/vaa-strapi/README.md).
 
 ### Setting up the backend
 
