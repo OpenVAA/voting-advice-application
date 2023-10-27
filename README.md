@@ -13,3 +13,7 @@ See [the contribution guide](docs/contributing/CONTRIBUTING.md) for info about c
 
 ## Maintaining dependencies
 The project uses [Dependabot](https://github.com/dependabot) to maintain security updates for its dependencies. Dependabot will create automated pull requests monthly to fix potential known security issues in application dependencies.
+
+## Troubleshooting
+
+See [Troubleshooting](docs/troubleshooting.md) for solutions to some common issues.
