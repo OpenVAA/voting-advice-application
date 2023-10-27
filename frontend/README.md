@@ -57,8 +57,9 @@ Same as Dev, but run `npx cap sync ios` after each build to get the most recent 
 
 To facilitate the development of front-end components we have included the Tailwind library in our project.
 Additionally, we have included the DaisyUI plugin to speed up the development of the front-end components. You can find
-more information about the Tailwind library in the [Tailwind official documentation](https://tailwindcss.com/docs/installation)
-and the [DaisyUI official documentation](https://daisyui.com/components/).
+more information about the Tailwind library in the [Tailwind official documentation](https://tailwindcss.com/docs/installation) and the [DaisyUI official documentation](https://daisyui.com/components/).
+
+See the [styling guide](../docs/frontend/styling.md) for using Tailwind and DaisyUI classes.
 
 ## Accessibility
 
