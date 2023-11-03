@@ -1,3 +1,4 @@
 {
-  "appName": "Candidate App"
+  "appName": "Candidate App",
+  "candidateAppRoute": "/candidate"
 }

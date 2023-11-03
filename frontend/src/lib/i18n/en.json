@@ -61,5 +61,18 @@
     "general": "Something went wrong",
     "noQuestions": "There are no questions yet",
     "noQuestionCategories": "No question categories"
+  },
+  "candidateApp": {
+    "navbar": {
+      "start": "Start",
+      "basicInfo": "Basic Info",
+      "yourOpinions": "Your Opinions",
+      "settings": "Settings",
+      "preview": "Preview",
+      "help": "Help",
+      "feedback": "Send feedback",
+      "electionInformation": "Information About the Elections",
+      "useInformation": "How Does This App Work?"
+    }
   }
 }
