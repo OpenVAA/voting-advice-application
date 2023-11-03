@@ -72,7 +72,9 @@
       "help": "Help",
       "feedback": "Send feedback",
       "electionInformation": "Information About the Elections",
-      "useInformation": "How Does This App Work?"
+      "useInformation": "How Does This App Work?",
+      "logOut": "Log out",
+      "close": "Close"
     }
   }
 }
