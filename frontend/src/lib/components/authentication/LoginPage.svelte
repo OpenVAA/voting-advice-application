@@ -1,5 +1,17 @@
 <script lang="ts">
   import {page} from '$app/stores';
+  import {getContext} from 'svelte';
+  import type {AuthContext} from './authenticationStore';
+
+  const authContext = getContext<AuthContext>('auth');
+
+  let password = '';
+  let wrongPassword = false;
+  const onLogin = async () => {
+    if (!(await authContext?.logIn(password))) {
+      wrongPassword = true;
+    }
+  };
 </script>
 
 <div class="flex w-full flex-grow flex-col items-center bg-base-300">
@@ -25,10 +37,15 @@
           type="password"
           name="passkey"
           id="passkey"
-          class="input mb-md"
+          class="input mb-md w-full max-w-md"
           placeholder="E.g. CP23-174a-f4%&-aHAB"
+          bind:value={password}
+          on:change={onLogin}
           required />
-        <button on:click={() => {}} class="btn-primary btn mb-md w-full max-w-md">Sign in</button>
+        {#if wrongPassword}
+          <p class="text-center text-error">Wrong passkey</p>
+        {/if}
+        <button on:click={onLogin} class="btn-primary btn mb-md w-full max-w-md">Sign in</button>
         <!-- TODO: locale, login functionality -->
         <a href="/help" class="btn-ghost btn w-full max-w-md">Contact Support</a>
         <!-- TODO: locale, link -->
