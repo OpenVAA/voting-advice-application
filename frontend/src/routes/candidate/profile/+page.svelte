@@ -65,10 +65,11 @@
 
   <FieldGroup let:field customStyle="height: 60px">
     <div class="flex h-full items-center justify-between px-4">
-      <label for="portrait" class={labelClass}>
-        {$_(`candidateApp.basicInfo.fields.portrait`)}
-      </label>
-      <label for="portrait" class="mr-20 text-indigo-700">Tap to add photo</label>
+      <span class={labelClass}>
+        {$_('candidateApp.basicInfo.fields.portrait')}
+      </span>
+      <label for="portrait" class="mr-20 cursor-pointer text-indigo-700"
+        >{$_('candidateApp.basicInfo.tapToAddPhoto')}</label>
       <input type="file" id="portrait" placeholder="PLACEHOLDER" class="hidden" />
     </div>
   </FieldGroup>
@@ -76,12 +77,18 @@
   <FieldGroup let:field>
     <div class="flex items-center justify-between px-4">
       <label for="portrait" class={labelClass}>
-        {$_(`candidateApp.basicInfo.fields.unaffiliated`)}
+        {$_('candidateApp.basicInfo.fields.unaffiliated')}
       </label>
       <input type="checkbox" class="toggle-primary toggle mr-8" checked />
     </div>
     <p class={disclaimerClass} slot="footer">
       {$_('candidateApp.basicInfo.unaffiliatedDescription')}
     </p>
+  </FieldGroup>
+  <FieldGroup>
+    <p class={disclaimerClass} slot="header">
+      {$_('candidateApp.basicInfo.electionManifesto')}
+    </p>
+    <textarea id="message" rows="4" class="w-full resize-none bg-base-300 p-6 !outline-none" />
   </FieldGroup>
 </div>

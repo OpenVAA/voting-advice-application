@@ -89,7 +89,9 @@
         "portrait": "Portrait",
         "unaffiliated": "Unaffiliated"
       },
-      "unaffiliatedDescription": "Set this on if you're not a member of the party on whose list you are."
+      "unaffiliatedDescription": "Set this on if you're not a member of the party on whose list you are.",
+      "electionManifesto": "Election Manifesto",
+      "tapToAddPhoto": "Tap to add photo"
     },
     "genders": {
       "male": "Male",
