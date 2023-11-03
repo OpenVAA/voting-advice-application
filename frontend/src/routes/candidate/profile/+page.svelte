@@ -15,6 +15,7 @@
   ]);
 
   const labelClass = 'label-sm label mx-6 my-2';
+  const disclaimerClass = 'm-0 p-0 text-sm text-secondary';
 </script>
 
 <div class="mx-40 my-20 flex flex-col items-center gap-20">
@@ -35,7 +36,7 @@
         placeholder="PLACEHOLDER"
         class="input-ghost input input-sm w-6/12 text-right" />
     </div>
-    <p class="m-0 p-0 text-sm text-secondary" slot="footer">
+    <p class={disclaimerClass} slot="footer">
       {$_('candidateApp.basicInfo.disclaimer')}
     </p>
   </FieldGroup>
@@ -70,5 +71,17 @@
       <label for="portrait" class="mr-20 text-indigo-700">Tap to add photo</label>
       <input type="file" id="portrait" placeholder="PLACEHOLDER" class="hidden" />
     </div>
+  </FieldGroup>
+
+  <FieldGroup let:field>
+    <div class="flex items-center justify-between px-4">
+      <label for="portrait" class={labelClass}>
+        {$_(`candidateApp.basicInfo.fields.unaffiliated`)}
+      </label>
+      <input type="checkbox" class="toggle-primary toggle mr-8" checked />
+    </div>
+    <p class={disclaimerClass} slot="footer">
+      {$_('candidateApp.basicInfo.unaffiliatedDescription')}
+    </p>
   </FieldGroup>
 </div>

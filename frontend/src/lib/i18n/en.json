@@ -86,8 +86,10 @@
         "gender": "Gender",
         "motherTongue": "Mother Tongue",
         "age": "Age",
-        "portrait": "Portrait"
-      }
+        "portrait": "Portrait",
+        "unaffiliated": "Unaffiliated"
+      },
+      "unaffiliatedDescription": "Set this on if you're not a member of the party on whose list you are."
     },
     "genders": {
       "male": "Male",
