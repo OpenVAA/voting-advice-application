@@ -42,6 +42,9 @@
   a[onclick]:not(.btn) {
     @apply text-primary;
   }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
 }
 
 @layer components {
