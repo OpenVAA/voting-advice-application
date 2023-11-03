@@ -1,10 +1,14 @@
-<script>
-  import LoignPage from './LoignPage.svelte';
+<script lang="ts">
+  import LoignPage from './LoginPage.svelte';
+  import {setContext} from 'svelte';
+  import {authContext} from '$lib/components/authentication/authenticationStore';
 
-  export let loggedIn = false;
+  setContext('auth', authContext);
+
+  const user = authContext.user;
 </script>
 
-{#if loggedIn}
+{#if $user}
   <slot />
 {:else}
   <LoignPage />
