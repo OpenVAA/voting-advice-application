@@ -73,6 +73,27 @@
       "feedback": "Send feedback",
       "electionInformation": "Information About the Elections",
       "useInformation": "How Does This App Work?"
+    },
+    "basicInfo": {
+      "instructions": "Fill in first your basic details and upload a photo. You'll be asked for your political opinions thereafter.",
+      "title": "Basic Information",
+      "disclaimer": "Your name and some other details are prefilled and cannot be changed. If there are any errors in them, please contact your party. If your Election Number is not visible, it will be automatically set after the candidate registration period ends on Oct 29.",
+      "fields": {
+        "firstName": "First Name",
+        "lastName": "Surname",
+        "electionList": "Election List",
+        "electionNumber": "Election Number",
+        "gender": "Gender",
+        "motherTongue": "Mother Tongue",
+        "age": "Age"
+      }
+    },
+    "genders": {
+      "male": "Male",
+      "female": "Female",
+      "nonBinary": "Non-binary",
+      "other": "Other",
+      "preferNotToSay": "Prefer not to say"
     }
   }
 }
