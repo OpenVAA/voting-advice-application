@@ -61,4 +61,14 @@
       {/if}
     </div>
   </FieldGroup>
+
+  <FieldGroup let:field customStyle="height: 60px">
+    <div class="flex h-full items-center justify-between px-4">
+      <label for="portrait" class={labelClass}>
+        {$_(`candidateApp.basicInfo.fields.portrait`)}
+      </label>
+      <label for="portrait" class="mr-20 text-indigo-700">Tap to add photo</label>
+      <input type="file" id="portrait" placeholder="PLACEHOLDER" class="hidden" />
+    </div>
+  </FieldGroup>
 </div>
