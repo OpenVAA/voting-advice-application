@@ -70,6 +70,12 @@
       "configurable": false,
       "private": true,
       "searchable": false
+    },
+    "candidate": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::candidate.candidate",
+      "configurable": false
     }
   },
   "config": {
