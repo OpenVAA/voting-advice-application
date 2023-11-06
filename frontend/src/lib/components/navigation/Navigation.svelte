@@ -1,13 +1,18 @@
 <script>
   import {_} from 'svelte-i18n';
   import {candidateAppRoute} from '$candidate/placeholder.json';
+
+  let checked = false;
+  function handleClick() {
+    checked = !checked;
+  }
 </script>
 
 <!-- TODO: Replace with the proper Navigation component when it is available.
     This is a temporary solution to navigation to help with the development.
 -->
 <div class="drawer">
-  <input id="sidebar" type="checkbox" class="drawer-toggle" />
+  <input id="sidebar" type="checkbox" class="drawer-toggle" bind:checked />
   <div class="drawer-content flex flex-col">
     <!-- Navbar -->
     <div class="navbar w-full bg-base-300">
@@ -23,11 +28,8 @@
         </label>
       </div>
       <div class="mx-2 flex-1 px-2">PubLogo</div>
-      <div class="hidden flex-none md:block">
-        <ul class="menu menu-horizontal">
-          <!-- Navbar menu content here -->
-          <li>Logout here</li>
-        </ul>
+      <div class="flex-none">
+        <h3>Logout</h3>
       </div>
     </div>
     <!-- Page content here -->
@@ -54,7 +56,7 @@
 
       <!-- TODO: Replace with a NavigationItem component and use Icon component for the icons. -->
       <li>
-        <a href={candidateAppRoute}>
+        <a href={candidateAppRoute} on:click={handleClick}>
           <svg
             width="24"
             height="24"
@@ -70,7 +72,7 @@
       </li>
 
       <li>
-        <a href={`${candidateAppRoute}/profile`}>
+        <a href={`${candidateAppRoute}/profile`} on:click={handleClick}>
           <svg
             width="24"
             height="24"
@@ -94,7 +96,7 @@
       </li>
 
       <li>
-        <a href={`${candidateAppRoute}/opinions`}>
+        <a href={`${candidateAppRoute}/opinions`} on:click={handleClick}>
           <svg
             width="24"
             height="24"
@@ -118,7 +120,7 @@
       </li>
 
       <li>
-        <a href={`${candidateAppRoute}/settings`}>
+        <a href={`${candidateAppRoute}/settings`} on:click={handleClick}>
           <svg
             width="24"
             height="24"
@@ -141,7 +143,7 @@
       </li>
 
       <li>
-        <a href={`${candidateAppRoute}/preview`}>
+        <a href={`${candidateAppRoute}/preview`} on:click={handleClick}>
           <svg
             width="24"
             height="24"
@@ -164,7 +166,7 @@
       </li>
 
       <li>
-        <a href={`${candidateAppRoute}/help`}>
+        <a href={`${candidateAppRoute}/help`} on:click={handleClick}>
           <svg
             width="24"
             height="24"
@@ -189,7 +191,7 @@
       <hr class="my-8 h-px border-0 bg-secondary" />
 
       <li>
-        <a href={`${candidateAppRoute}/electioninfo`}>
+        <a href={`${candidateAppRoute}/electioninfo`} on:click={handleClick}>
           <svg
             width="24"
             height="24"
@@ -213,7 +215,7 @@
       </li>
 
       <li>
-        <a href={`${candidateAppRoute}/faq`}>
+        <a href={`${candidateAppRoute}/faq`} on:click={handleClick}>
           <svg
             width="24"
             height="24"
@@ -238,7 +240,7 @@
       <hr class="border-1 my-8 h-px bg-secondary" />
 
       <li>
-        <a href={`${candidateAppRoute}/feedback`}>
+        <a href={`${candidateAppRoute}/feedback`} on:click={handleClick}>
           <svg
             width="24"
             height="24"
