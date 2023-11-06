@@ -7,7 +7,9 @@
   // TODO: add proper check of unfilled data
   let unfilledData = true;
   let isOpen = false; // variable bound to Modal
-  let isPopupVisible = false; //variable for popup
+  let isPopupVisible = false; // variable for popup
+  const logoutModalTimer = 30; // time until automatic logout for modal
+  let timerInSeconds = logoutModalTimer;
 
   const triggerLogout = () => {
     // TODO: check if candidate has filler all the data
@@ -21,7 +23,6 @@
   const logout = () => {
     // TODO check when login functionality is ready
     localStorage.removeItem('jwt');
-    isOpen = false;
     togglePopup();
     // TODO: redirect to login page
     goto(candidateAppRoute);
@@ -45,15 +46,22 @@
 <button class="btn-error btn" on:click={triggerLogout}>{$_('candidateApp.navbar.logOut')}</button>
 
 <div>
-  <Modal bind:isOpen onClick={logout} buttonText={$_('candidateApp.navbar.logOut')}>
-    <div class="notification">Unfilled data is there!!!! 😱</div>
+  <Modal
+    bind:isOpen
+    bind:timerInSeconds
+    onClick={logout}
+    timerDuration={logoutModalTimer}
+    buttonText={$_('candidateApp.navbar.logOut')}>
+    <div class="notification">
+      You will be automatically logged out after {timerInSeconds} seconds.
+    </div>
   </Modal>
 </div>
 
 <style>
   .notification {
-    width: 200px;
-    height: 200px;
+    width: 20em;
+    height: 10em;
     color: black;
   }
 </style>

@@ -74,7 +74,8 @@
       "electionInformation": "Information About the Elections",
       "useInformation": "How Does This App Work?",
       "logOut": "Log out",
-      "close": "Close"
+      "close": "Close",
+      "cancel": "Cancel"
     }
   }
 }
