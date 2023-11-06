@@ -1,6 +1,38 @@
 <script>
   import {_} from 'svelte-i18n';
   import {candidateAppRoute} from '$candidate/placeholder.json';
+  import Modal from './modal.svelte';
+  import {goto} from '$app/navigation';
+
+  // functions for logout button
+  // TODO: add proper check of unfilled data
+  let unfilledData = true;
+  let isOpen = false; // variable bound to Modal
+  let isAlertVisible = false; //variable for popup
+  const logoutModalTimer = 30; // time until automatic logout for modal
+  let timerInSeconds = logoutModalTimer;
+
+  const triggerLogout = () => {
+    // TODO: check if candidate has filled all the data
+    if (unfilledData) {
+      isOpen = true;
+    } else {
+      logout();
+    }
+  };
+
+  const logout = () => {
+    // TODO check when login functionality is ready
+    localStorage.removeItem('jwt');
+    isAlertVisible = true;
+    setTimeout(hideAlert, 5000); // 5000 milliseconds = 5 seconds
+    // TODO: redirect to login page
+    goto(candidateAppRoute);
+  };
+
+  function hideAlert() {
+    isAlertVisible = false;
+  }
 </script>
 
 <!-- TODO: Replace with the proper Navigation component when it is available.
@@ -23,10 +55,29 @@
         </label>
       </div>
       <div class="mx-2 flex-1 px-2">PubLogo</div>
-      <div class="hidden flex-none md:block">
+      <div class="flex-none">
         <ul class="menu menu-horizontal">
           <!-- Navbar menu content here -->
-          <li>Logout here</li>
+          <li>
+            {#if isAlertVisible}
+              <div
+                class="alert"
+                style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 9999;">
+                <span>You have logged out, congrats </span>
+              </div>
+            {/if}
+            <button on:click={triggerLogout}>{$_('candidateApp.navbar.logOut')}</button>
+            <Modal
+              bind:isOpen
+              bind:timerInSeconds
+              onClick={logout}
+              timerDuration={logoutModalTimer}
+              buttonText={$_('candidateApp.navbar.logOut')}>
+              <div class="notification h-100 text-black">
+                You will be automatically logged out after {timerInSeconds} seconds.
+              </div>
+            </Modal>
+          </li>
         </ul>
       </div>
     </div>
