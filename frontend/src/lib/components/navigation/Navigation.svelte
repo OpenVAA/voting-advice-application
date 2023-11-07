@@ -39,6 +39,16 @@
     This is a temporary solution to navigation to help with the development.
 -->
 <div class="drawer">
+  <Modal
+    bind:isOpen
+    bind:timerInSeconds
+    onClick={logout}
+    timerDuration={logoutModalTimer}
+    buttonText={$_('candidateApp.navbar.logOut')}>
+    <div class="notification h-100 text-black">
+      You will be automatically logged out after {timerInSeconds} seconds.
+    </div>
+  </Modal>
   <input id="sidebar" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content flex flex-col">
     <!-- Navbar -->
@@ -67,16 +77,6 @@
               </div>
             {/if}
             <button on:click={triggerLogout}>{$_('candidateApp.navbar.logOut')}</button>
-            <Modal
-              bind:isOpen
-              bind:timerInSeconds
-              onClick={logout}
-              timerDuration={logoutModalTimer}
-              buttonText={$_('candidateApp.navbar.logOut')}>
-              <div class="notification h-100 text-black">
-                You will be automatically logged out after {timerInSeconds} seconds.
-              </div>
-            </Modal>
           </li>
         </ul>
       </div>
