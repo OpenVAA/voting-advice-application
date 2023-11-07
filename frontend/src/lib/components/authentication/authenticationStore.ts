@@ -6,21 +6,21 @@ export type User = Record<string, string | number | boolean> | null;
 export interface AuthContext {
   user: Writable<User>;
   token: Writable<string | null>;
-  logIn: (password: string) => Promise<boolean>;
+  logIn: (email: string, password: string) => Promise<boolean>;
   logOut: () => Promise<void>;
 }
 
 const userStore = writable<User>(null);
 const tokenStore = writable<string | null>(null);
-export const logIn = async (password: string) => {
-  const response = await authenticate('test', password);
-  if (response.ok) {
-    const data = await response.json();
-    userStore.set(data.user);
-    tokenStore.set(data.jwt);
-    return true;
-  }
-  return false;
+export const logIn = async (email: string, password: string) => {
+  const response = await authenticate(email, password);
+  if (!response.ok) return false;
+
+  const data = await response.json();
+  userStore.set(data.user);
+  tokenStore.set(data.jwt);
+
+  return true;
 };
 
 export const logOut = async () => {
