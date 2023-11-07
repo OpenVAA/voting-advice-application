@@ -1,5 +1,5 @@
-import {authenticate} from '$lib/api/candidate';
-import {writable, type Writable} from 'svelte/store';
+import {authenticate, me} from '$lib/api/candidate';
+import {get, writable, type Writable} from 'svelte/store';
 
 export type User = Record<string, string | number | boolean> | null;
 
@@ -7,6 +7,7 @@ export interface AuthContext {
   user: Writable<User>;
   token: Writable<string | null>;
   logIn: (email: string, password: string) => Promise<boolean>;
+  loadUserData: () => Promise<void>;
   logOut: () => Promise<void>;
 }
 
@@ -19,18 +20,33 @@ export const logIn = async (email: string, password: string) => {
   const data = await response.json();
   userStore.set(data.user);
   tokenStore.set(data.jwt);
+  localStorage.setItem('token', data.jwt);
+
+  await loadUserData();
 
   return true;
+};
+
+export const loadUserData = async () => {
+  const token = get(tokenStore);
+  if (!token) tokenStore.set(localStorage.getItem('token'));
+
+  const user = await me();
+  if (user.error) return;
+
+  userStore.set(user);
 };
 
 export const logOut = async () => {
   userStore.set(null);
   tokenStore.set(null);
+  localStorage.removeItem('token');
 };
 
 export const authContext: AuthContext = {
   user: userStore,
   token: tokenStore,
   logIn,
+  loadUserData,
   logOut
 };
