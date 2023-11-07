@@ -1,15 +1,17 @@
 <script lang="ts">
-  import {page} from '$app/stores';
   import {getContext} from 'svelte';
+  import {_} from 'svelte-i18n';
+  import {page} from '$app/stores';
   import type {AuthContext} from './authenticationStore';
 
   const authContext = getContext<AuthContext>('auth');
 
+  let email = '';
   let password = '';
-  let wrongPassword = false;
+  let wrongCredentials = false;
   const onLogin = async () => {
-    if (!(await authContext?.logIn(password))) {
-      wrongPassword = true;
+    if (!(await authContext?.logIn(email, password))) {
+      wrongCredentials = true;
     }
   };
 </script>
@@ -30,27 +32,33 @@
           <p class="text-2xl font-bold text-primary">{$page.data.appLabels.appTitle}</p>
           <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
         </hgroup>
-        <p class="text-center">
-          Enter the passkey you've received from your party to edit your data and opinions. <!-- TODO: locale -->
-        </p>
-        <input
-          type="password"
-          name="passkey"
-          id="passkey"
-          class="input mb-md w-full max-w-md"
-          placeholder="E.g. CP23-174a-f4%&-aHAB"
-          bind:value={password}
-          on:change={onLogin}
-          required />
-        {#if wrongPassword}
-          <p class="text-center text-error">Wrong passkey</p>
-        {/if}
-        <button on:click={onLogin} class="btn-primary btn mb-md w-full max-w-md">Sign in</button>
-        <!-- TODO: locale, login functionality -->
-        <a href="/help" class="btn-ghost btn w-full max-w-md">Contact Support</a>
-        <!-- TODO: locale, link -->
-        <a href="/candidate" class="btn-ghost btn w-full max-w-md">Election Compass for Voters</a>
-        <!-- TODO: locale, link -->
+        <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onLogin}>
+          <p class="text-center">
+            {$_('candidate.enter_email_and_password')}
+          </p>
+          <input
+            type="email"
+            name="email"
+            id="email"
+            class="input mb-md w-full max-w-md"
+            placeholder={$_('candidate.email_placeholder')}
+            bind:value={email}
+            required />
+          <input
+            type="password"
+            name="passkey"
+            id="passkey"
+            class="input mb-md w-full max-w-md"
+            placeholder={$_('candidate.password_placeholder')}
+            bind:value={password}
+            required />
+          {#if wrongCredentials}
+            <p class="text-center text-error">{$_('candidate.wrong_email_or_password')}</p>
+          {/if}
+          <button type="submit" class="btn-primary btn mb-md w-full max-w-md">{$_('candidate.sign_in')}</button>
+          <a href="/help" class="btn-ghost btn w-full max-w-md">{$_('candidate.contact_support')}</a>
+          <a href="/" class="btn-ghost btn w-full max-w-md">{$_('candidate.election_compass_for_voters')}</a>
+        </form>
       </div>
     </div>
   </main>
