@@ -2,7 +2,7 @@ import {get} from 'svelte/store';
 import {constants} from '$lib/utils/constants';
 import {authContext} from '$lib/components/authentication/authenticationStore';
 
-export const authenticate = async (identifier: string, password: string): Promise<any> => {
+export const authenticate = async (identifier: string, password: string): Promise<Response> => {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
   url.pathname = 'api/auth/local';
 
@@ -16,10 +16,13 @@ export const authenticate = async (identifier: string, password: string): Promis
 };
 
 export const me = async (): Promise<any> => {
-  return request(['api', 'users', 'me'], new URLSearchParams({
-    'populate': '*',
-  }));
-}
+  return request(
+    ['api', 'users', 'me'],
+    new URLSearchParams({
+      populate: '*'
+    })
+  );
+};
 
 export const request = async <T>(
   endpoint: string[],

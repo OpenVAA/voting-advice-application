@@ -10,7 +10,7 @@
  * and also it is not possible to create localizations using the bulk insert.
  */
 
-import {el, faker, fakerES, fakerFI} from '@faker-js/faker';
+import {faker, fakerES, fakerFI} from '@faker-js/faker';
 import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
 import mockQuestions from './mockQuestions.json';
 import mockCategories from './mockCategories.json';
@@ -1338,8 +1338,8 @@ async function createPartyAnswers() {
 async function createCandidateUsers() {
   const authenticated = await strapi.query('plugin::users-permissions.role').findOne({
     where: {
-      type: 'authenticated',
-    },
+      type: 'authenticated'
+    }
   });
   const candidate = await strapi.entityService.findOne(CANDIDATE_API, {});
 
@@ -1352,7 +1352,7 @@ async function createCandidateUsers() {
       confirmed: true,
       blocked: false,
       role: authenticated.id,
-      candidate: candidate.id,
+      candidate: candidate.id
     }
   });
 }
