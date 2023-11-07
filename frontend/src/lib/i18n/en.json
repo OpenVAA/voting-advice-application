@@ -31,6 +31,8 @@
     "viewAllCandidates": "View all candidates"
   },
   "candidate": {
+    "email": "Email",
+    "password": "Password",
     "enter_email_and_password": "Enter the email and password you've received from your party to edit your data and opinions.",
     "email_placeholder": "example@email.com",
     "password_placeholder": "E.g. CP23-174a-f4%&-aHAB",
