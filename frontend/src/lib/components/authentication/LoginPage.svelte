@@ -36,6 +36,7 @@
           <p class="text-center">
             {$_('candidate.enter_email_and_password')}
           </p>
+          <label for="email" class="hidden">{$_('candidate.email')}</label>
           <input
             type="email"
             name="email"
@@ -44,10 +45,11 @@
             placeholder={$_('candidate.email_placeholder')}
             bind:value={email}
             required />
+          <label for="password" class="hidden">{$_('candidate.password')}</label>
           <input
             type="password"
-            name="passkey"
-            id="passkey"
+            name="password"
+            id="password"
             class="input mb-md w-full max-w-md"
             placeholder={$_('candidate.password_placeholder')}
             bind:value={password}
