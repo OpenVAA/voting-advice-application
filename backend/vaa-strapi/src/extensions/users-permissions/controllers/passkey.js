@@ -1,13 +1,14 @@
 'use strict';
 
-const { validateLoginBody } = require('./validation/passkey');
+const {validateLoginBody} = require('./validation/passkey');
 
-const sanitizeUser = (user, ctx) => {
-  const { auth } = ctx.state;
-  const userSchema = strapi.getModel('plugin::users-permissions.user');
-
-  return sanitize.contentAPI.output(user, userSchema, { auth });
-};
+// TODO: To be used for passkey authentication
+// const sanitizeUser = (user, ctx) => {
+//   const {auth} = ctx.state;
+//   const userSchema = strapi.getModel('plugin::users-permissions.user');
+//
+//   return sanitize.contentAPI.output(user, userSchema, {auth});
+// };
 
 module.exports = {
   async callback(ctx) {
@@ -15,7 +16,7 @@ module.exports = {
     await validateLoginBody(params);
 
     return ctx.send({
-        'result': 'hello world',
+      result: 'Success'
     });
-  },
+  }
 };
