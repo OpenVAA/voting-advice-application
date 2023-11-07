@@ -2,13 +2,17 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {tweened} from 'svelte/motion';
-  export let isOpen = true;
   export let onClick: () => void;
   export let buttonText: string;
   export let timerDuration = 30; // logout timer duration in seconds
-  export let timerInSeconds: number = timerDuration;
+  export let timerInSeconds: number = timerDuration; // time left in seconds (int)
 
   let timeLeft = tweened(timerDuration, {duration: 0});
+  let isOpen = false;
+
+  export const toggleModal = () => {
+    isOpen = !isOpen;
+  };
 
   const resetTimer = () => {
     timeLeft = tweened(timerDuration, {
@@ -19,7 +23,7 @@
   };
 
   const resetTimeout = () => {
-    timeLeft.set(timerDuration, {duration: 0});
+    timeLeft.set($timeLeft, {duration: 0});
   };
 
   // function for "accepting" the modal
@@ -27,10 +31,6 @@
     onClick();
     isOpen = false;
     resetTimeout();
-  };
-
-  const closeModal = () => {
-    isOpen = false;
   };
 
   // timeout for triggering onAccept()
@@ -63,32 +63,27 @@
   }
 </script>
 
-<div class:none={!isOpen} class:modal2={isOpen}>
-  <div class="parent relative rounded-lg bg-white pb-20">
-    <div class="p-20">
+<div class:visible={isOpen}>
+  <input type="checkbox" id="modal1" checked={isOpen} class="modal-toggle" />
+  <div class="modal">
+    <div class="modal-box">
       <slot />
-      <div class="float-left">
-        <button class="btn-success btn" on:click={closeModal}
-          >{$_('candidateApp.navbar.cancel')}</button>
-      </div>
-      <div class="float-right">
-        <button class="btn-outline btn-error btn" on:click={onAccept}>{buttonText}</button>
-      </div>
+      <br />
+      <button class="btn-glass btn-primary btn w-full" on:click={toggleModal}
+        >{$_('candidateApp.navbar.cancel')}</button>
+      <div class="h-4" />
+      <button class="btn-outline btn-error btn w-full" on:click={onAccept}>{buttonText}</button>
+      <progress
+        id="modal-progress"
+        class="w-56 progress progress-error absolute bottom-0 left-0 right-0"
+        value={$timeLeft}
+        max={timerDuration} />
     </div>
-    <progress
-      id="modal-progress"
-      class="w-56 progress progress-error absolute bottom-0 left-0 right-0"
-      value={$timeLeft}
-      max={timerDuration} />
   </div>
 </div>
 
 <style>
-  .none {
-    display: none;
-  }
-
-  .modal2 {
+  .visible {
     display: flex;
     position: fixed;
     top: 0;
@@ -96,7 +91,7 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(1px);
     z-index: 999;
     justify-content: center;
     align-items: center;

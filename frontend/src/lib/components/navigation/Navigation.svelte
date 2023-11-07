@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import {_} from 'svelte-i18n';
   import {candidateAppRoute} from '$candidate/placeholder.json';
   import Modal from './modal.svelte';
@@ -7,7 +7,6 @@
   // functions for logout button
   // TODO: add proper check of unfilled data
   let unfilledData = true;
-  let isOpen = false; // variable bound to Modal
   let isAlertVisible = false; //variable for popup
   const logoutModalTimer = 30; // time until automatic logout for modal
   let timerInSeconds = logoutModalTimer;
@@ -15,7 +14,8 @@
   const triggerLogout = () => {
     // TODO: check if candidate has filled all the data
     if (unfilledData) {
-      isOpen = true;
+      // isOpen = true;
+      toggleModal();
     } else {
       logout();
     }
@@ -33,6 +33,8 @@
   function hideAlert() {
     isAlertVisible = false;
   }
+
+  let toggleModal: () => void;
 </script>
 
 <!-- TODO: Replace with the proper Navigation component when it is available.
@@ -40,13 +42,22 @@
 -->
 <div class="drawer">
   <Modal
-    bind:isOpen
     bind:timerInSeconds
+    bind:toggleModal
     onClick={logout}
     timerDuration={logoutModalTimer}
     buttonText={$_('candidateApp.navbar.logOut')}>
-    <div class="notification h-100 text-black">
-      You will be automatically logged out after {timerInSeconds} seconds.
+    <div class="notification text-center text-black">
+      <h1>Some Of Your Data Is Still Missing</h1>
+      <br />
+      <p>
+        There are still 10 items of basic info and 25 opinions to fill. Your data won’t be shown in
+        the Election Compass until you have filled these, but you can login later to continue.
+      </p>
+      <p>
+        Are you sure you want to logout? You will be automatically logged out after {timerInSeconds}
+        seconds.
+      </p>
     </div>
   </Modal>
   <input id="sidebar" type="checkbox" class="drawer-toggle" />
