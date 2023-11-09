@@ -75,7 +75,8 @@
       "useInformation": "How Does This App Work?",
       "logOut": "Log out",
       "close": "Close",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "logOutMessage": "You have logged out, congrats!"
     }
   }
 }

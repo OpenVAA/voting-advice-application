@@ -10,6 +10,7 @@
   let isAlertVisible = false; //variable for popup
   const logoutModalTimer = 30; // time until automatic logout for modal
   let timerInSeconds = logoutModalTimer;
+  let shutAlertTime = 5000; //in ms
 
   const triggerLogout = () => {
     // TODO: check if candidate has filled all the data
@@ -25,7 +26,7 @@
     // TODO check when login functionality is ready
     localStorage.removeItem('jwt');
     isAlertVisible = true;
-    setTimeout(hideAlert, 5000); // 5000 milliseconds = 5 seconds
+    setTimeout(hideAlert, shutAlertTime);
     // TODO: redirect to login page
     goto(candidateAppRoute);
   };
@@ -83,8 +84,8 @@
             {#if isAlertVisible}
               <div
                 class="alert"
-                style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 9999;">
-                <span>You have logged out, congrats </span>
+                style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 9999; height: 80px;">
+                <span> {$_('candidateApp.navbar.logOutMessage')} </span>
               </div>
             {/if}
             <button on:click={triggerLogout}>{$_('candidateApp.navbar.logOut')}</button>
