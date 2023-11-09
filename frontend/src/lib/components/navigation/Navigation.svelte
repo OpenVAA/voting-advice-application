@@ -21,7 +21,6 @@
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
-            color="black"
             viewBox="0 0 24 24"
             class="inline-block h-24 w-24 stroke-current"
             ><path stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
@@ -44,7 +43,6 @@
           xmlns="http://www.w3.org/2000/svg"
           class="h-24 w-24"
           fill="none"
-          color="black"
           viewBox="0 0 24 24"
           stroke="currentColor"
           ><path
