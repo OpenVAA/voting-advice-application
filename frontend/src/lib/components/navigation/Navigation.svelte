@@ -1,23 +1,26 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {candidateAppRoute} from '$candidate/placeholder.json';
-  import Modal from './modal.svelte';
+  import Modal from './TimedModal.svelte';
   import {goto} from '$app/navigation';
   import {authContext} from '../authentication/authenticationStore';
 
   const user = authContext.user;
 
+  const logoutModalTimer = 30; // time until automatic logout for modal
+  // exports from TimedModal
+  let openModal: () => void;
+  let closeModal: () => void;
+  let timeLeftInt = logoutModalTimer;
+
   // functions for logout button
   // TODO: add proper check of unfilled data
   let unfilledData = true;
-  const logoutModalTimer = 30; // time until automatic logout for modal
-  let timerInSeconds = logoutModalTimer;
 
   const triggerLogout = () => {
     // TODO: check if candidate has filled all the data
     if (unfilledData) {
-      // isOpen = true;
-      toggleModal();
+      openModal();
     } else {
       logout();
     }
@@ -26,9 +29,8 @@
   const logout = async () => {
     authContext.logOut();
     await goto(candidateAppRoute);
+    closeModal();
   };
-
-  let toggleModal: () => void;
 </script>
 
 <!-- TODO: Replace with the proper Navigation component when it is available.
@@ -36,11 +38,11 @@
 -->
 <div class="drawer">
   <Modal
-    bind:timerInSeconds
-    bind:toggleModal
-    onClick={logout}
-    timerDuration={logoutModalTimer}
-    buttonText={$_('candidateApp.navbar.logOut')}>
+    bind:timeLeftInt
+    bind:openModal
+    bind:closeModal
+    onTimeout={logout}
+    timerDuration={logoutModalTimer}>
     <div class="notification text-center text-black">
       <h1>Some Of Your Data Is Still Missing</h1>
       <br />
@@ -49,9 +51,15 @@
         the Election Compass until you have filled these, but you can login later to continue.
       </p>
       <p>
-        Are you sure you want to logout? You will be automatically logged out after {timerInSeconds}
+        Are you sure you want to logout? You will be automatically logged out after {timeLeftInt}
         seconds.
       </p>
+      <br />
+      <button class="btn-glass btn-primary btn w-full" on:click={closeModal}
+        >{$_('candidateApp.navbar.continueEnteringData')}</button>
+      <div class="h-4" />
+      <button class="btn-outline btn-error btn w-full" on:click={logout}
+        >{$_('candidateApp.navbar.logOut')}</button>
     </div>
   </Modal>
   <input id="sidebar" type="checkbox" class="drawer-toggle" />

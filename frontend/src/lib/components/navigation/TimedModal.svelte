@@ -1,64 +1,73 @@
-<!-- Modal.svelte -->
+<!-- TimedModal.svelte -->
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {tweened} from 'svelte/motion';
-  export let onClick: () => void;
-  export let buttonText: string;
+  export let onTimeout: () => void;
   export let timerDuration = 30; // logout timer duration in seconds
-  export let timerInSeconds: number = timerDuration; // time left in seconds (int)
+  export let timeLeftInt: number = timerDuration; // time left in seconds (int)
 
-  let timeLeft = tweened(timerDuration, {duration: 0});
-  let isOpen = false;
+  let timeLeft = tweened(timerDuration, {duration: 0}); // used for progress bar animation
+  let isOpen = false; // variable for the modal state
 
-  export const toggleModal = () => {
-    isOpen = !isOpen;
+  export const openModal = () => {
+    if (!isOpen) {
+      isOpen = true;
+    }
   };
 
+  export const closeModal = () => {
+    if (isOpen) {
+      isOpen = false;
+    }
+  };
+
+  // reset timer to timerDuration
   const resetTimer = () => {
     timeLeft = tweened(timerDuration, {
       duration: timerDuration * 1000
     });
-    timerInSeconds = timerDuration;
+    timeLeftInt = timerDuration;
     $timeLeft = 0;
   };
 
-  const resetTimeout = () => {
+  // stop the timer
+  const stopTimer = () => {
     timeLeft.set($timeLeft, {duration: 0});
   };
 
   // function for "accepting" the modal
   const onAccept = () => {
-    onClick();
+    onTimeout();
     isOpen = false;
-    resetTimeout();
+    stopTimer();
   };
 
-  // timeout for triggering onAccept()
-  let timeOut: NodeJS.Timeout | null = null;
-
-  // update timerInSeconds to an integer when timeLeft updates
+  // update timeLeftInt to an integer when timeLeft updates
   $: {
     if (timeLeft) {
       const t = Math.ceil($timeLeft);
-      if (t < timerInSeconds) {
-        timerInSeconds = t;
+      if (t < timeLeftInt) {
+        timeLeftInt = t;
       }
     }
   }
+
+  // timeout for triggering onTimeout()
+  let timeout: NodeJS.Timeout | null = null;
 
   // trigger events if the modal is closed or opened
   $: {
     if (isOpen) {
       // one open, set timeout timer
       resetTimer();
-      timeOut = setTimeout(() => {
+      timeout = setTimeout(() => {
         onAccept();
       }, timerDuration * 1000);
     } else {
       // on close, reset the timer and delete/cancel timeout
-      if (timeOut) clearTimeout(timeOut);
-      timeOut = null;
-      resetTimeout();
+      if (timeout) clearTimeout(timeout);
+      timeout = null;
+      stopTimer();
     }
   }
 </script>
@@ -68,11 +77,6 @@
   <div class="modal">
     <div class="modal-box">
       <slot />
-      <br />
-      <button class="btn-glass btn-primary btn w-full" on:click={toggleModal}
-        >{$_('candidateApp.navbar.cancel')}</button>
-      <div class="h-4" />
-      <button class="btn-outline btn-error btn w-full" on:click={onAccept}>{buttonText}</button>
       <progress
         id="modal-progress"
         class="w-56 progress progress-error absolute bottom-0 left-0 right-0"
