@@ -12,11 +12,6 @@ module.exports = async (plugin) => {
 
     const pluginStore = strapi.store({type: 'plugin', name: 'users-permissions'});
 
-    // TODO: To be used for passkey authentication
-    // const grants = await pluginStore.get({ key: 'grant' });
-    // grants.email.enabled = false;
-    // await pluginStore.set({ key: 'grant', value: grants });
-
     // Disable registration by default
     const advanced = await pluginStore.get({key: 'advanced'});
     advanced.allow_register = false;
@@ -48,18 +43,6 @@ module.exports = async (plugin) => {
 
     return res;
   };
-
-  // TODO: To be used for passkey authentication
-  // plugin.controllers.passkey = require('./controllers/passkey');
-  // plugin.routes['content-api'].routes.push({
-  //   method: 'POST',
-  //   path: '/auth/passkey',
-  //   handler: 'passkey.callback',
-  //   config: {
-  //     middlewares: ['plugin::users-permissions.rateLimit'],
-  //     prefix: '',
-  //   },
-  // });
 
   return plugin;
 };
