@@ -65,12 +65,6 @@
       "inversedBy": "users",
       "configurable": false
     },
-    "passkey": {
-      "type": "password",
-      "configurable": false,
-      "private": true,
-      "searchable": false
-    },
     "candidate": {
       "type": "relation",
       "relation": "oneToOne",
