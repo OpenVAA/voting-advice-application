@@ -22,6 +22,15 @@
     "notFound": "No candidates found"
   },
   "candidate": {
+    "email": "Email",
+    "password": "Password",
+    "enter_email_and_password": "Enter the email and password you've received from your party to edit your data and opinions.",
+    "email_placeholder": "example@email.com",
+    "password_placeholder": "E.g. CP23-174a-f4%&-aHAB",
+    "sign_in": "Sign in",
+    "wrong_email_or_password": "Wrong email or password",
+    "contact_support": "Contact Support",
+    "election_compass_for_voters": "Election Compass for Voters",
     "tabs": {
       "basicInfo": "Basic Info",
       "opinions": "Opinions"
@@ -77,6 +86,32 @@
       "close": "Close",
       "cancel": "Cancel",
       "logOutMessage": "You have logged out, congrats!"
+    },
+    "basicInfo": {
+      "instructions": "Fill in first your basic details and upload a photo. You'll be asked for your political opinions thereafter.",
+      "title": "Basic Information",
+      "disclaimer": "Your name and some other details are prefilled and cannot be changed. If there are any errors in them, please contact your party. If your Election Number is not visible, it will be automatically set after the candidate registration period ends on Oct 29.",
+      "fields": {
+        "firstName": "First Name",
+        "lastName": "Surname",
+        "electionList": "Election List",
+        "electionNumber": "Election Number",
+        "gender": "Gender",
+        "motherTongue": "Mother Tongue",
+        "age": "Age",
+        "portrait": "Portrait",
+        "unaffiliated": "Unaffiliated"
+      },
+      "unaffiliatedDescription": "Set this on if you're not a member of the party on whose list you are.",
+      "electionManifesto": "Election Manifesto",
+      "tapToAddPhoto": "Tap to add photo"
+    },
+    "genders": {
+      "male": "Male",
+      "female": "Female",
+      "nonBinary": "Non-binary",
+      "other": "Other",
+      "preferNotToSay": "Prefer not to say"
     }
   }
 }
