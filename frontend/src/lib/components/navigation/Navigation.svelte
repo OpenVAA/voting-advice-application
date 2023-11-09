@@ -3,14 +3,15 @@
   import {candidateAppRoute} from '$candidate/placeholder.json';
   import Modal from './modal.svelte';
   import {goto} from '$app/navigation';
+  import {authContext} from '../authentication/authenticationStore';
+
+  const user = authContext.user;
 
   // functions for logout button
   // TODO: add proper check of unfilled data
   let unfilledData = true;
-  let isAlertVisible = false; //variable for popup
   const logoutModalTimer = 30; // time until automatic logout for modal
   let timerInSeconds = logoutModalTimer;
-  let shutAlertTime = 5000; //in ms
 
   const triggerLogout = () => {
     // TODO: check if candidate has filled all the data
@@ -22,18 +23,10 @@
     }
   };
 
-  const logout = () => {
-    // TODO check when login functionality is ready
-    localStorage.removeItem('jwt');
-    isAlertVisible = true;
-    setTimeout(hideAlert, shutAlertTime);
-    // TODO: redirect to login page
-    goto(candidateAppRoute);
+  const logout = async () => {
+    authContext.logOut();
+    await goto(candidateAppRoute);
   };
-
-  function hideAlert() {
-    isAlertVisible = false;
-  }
 
   let toggleModal: () => void;
 </script>
@@ -81,14 +74,9 @@
         <ul class="menu menu-horizontal">
           <!-- Navbar menu content here -->
           <li>
-            {#if isAlertVisible}
-              <div
-                class="alert"
-                style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 9999; height: 80px;">
-                <span> {$_('candidateApp.navbar.logOutMessage')} </span>
-              </div>
+            {#if $user}
+              <button on:click={triggerLogout}>{$_('candidateApp.navbar.logOut')}</button>
             {/if}
-            <button on:click={triggerLogout}>{$_('candidateApp.navbar.logOut')}</button>
           </li>
         </ul>
       </div>

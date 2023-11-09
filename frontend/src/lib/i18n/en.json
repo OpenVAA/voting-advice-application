@@ -84,8 +84,7 @@
       "useInformation": "How Does This App Work?",
       "logOut": "Log out",
       "close": "Close",
-      "cancel": "Cancel",
-      "logOutMessage": "You have logged out, congrats!"
+      "cancel": "Cancel"
     },
     "basicInfo": {
       "instructions": "Fill in first your basic details and upload a photo. You'll be asked for your political opinions thereafter.",
