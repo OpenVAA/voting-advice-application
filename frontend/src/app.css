@@ -53,6 +53,9 @@
   [onclick] {
     @apply cursor-pointer;
   }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
 }
 
 @layer components {

@@ -23,15 +23,15 @@ If you'd like to have the Strapi backend to be filled with mock data e.g. previe
 development, set the `GENERATE_MOCK_DATA_ON_INITIALISE` variable as true.
 - You can optionally set `GENERATE_MOCK_DATA_ON_RESTART` to true. This will generate new mock data on every time the 
 Strapi instance is restarted. This feature is only enabled in development builds.
-- You can find more detailed info about the mock data in the [backend](../backend/vaa-strapi/README.md)
+- You can find more detailed info about the mock data in the [backend](../backend/vaa-strapi/README.md).
 
 ### Setting up the backend
 
 After the build is successful, go to the backend URL (`http://localhost:1337` by default) in your browser. The 
 **page will take a while to load as Strapi is building its codebase**. When it's loaded, go to the Strapi admin panel, 
 register there and [create an access token](https://www.youtube.com/watch?v=dVQKqZYWyv4) with read permissions 
-(remember to click i18n permissions manually). After creating the access token, copy and paste it to the new `.env` file 
-and save it.
+(remember to click i18n permissions manually). After creating the access token, copy it, go to the `.env` file 
+in the project root, add the token to the `VITE_STRAPI_TOKEN` environment variable and save the file.
 
 ### Setting up the frontend
 

@@ -10,7 +10,7 @@
  * and also it is not possible to create localizations using the bulk insert.
  */
 
-import {el, faker, fakerES, fakerFI} from '@faker-js/faker';
+import {faker, fakerES, fakerFI} from '@faker-js/faker';
 import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
 import mockQuestions from './mockQuestions.json';
 import mockCategories from './mockCategories.json';
@@ -26,6 +26,7 @@ const QUESTION_API = 'api::question.question';
 const QUESTION_TYPE_API = 'api::question-type.question-type';
 const QUESTION_CATEGORY_API = 'api::question-category.question-category';
 const ANSWER_API = 'api::answer.answer';
+const USER_API = 'plugin::users-permissions.user';
 
 let mainLocale;
 let secondLocale;
@@ -80,6 +81,10 @@ export async function generateMockData() {
         .then((number) => number);
       countOfObjects += await strapi.db
         .query(LANGUAGE_API)
+        .count({})
+        .then((number) => number);
+      countOfObjects += await strapi.db
+        .query(USER_API)
         .count({})
         .then((number) => number);
 
@@ -199,6 +204,10 @@ export async function generateMockData() {
   await createPartyAnswers();
   console.info('Done!');
   console.info('#######################################');
+  console.info('inserting candidate users');
+  await createCandidateUsers();
+  console.info('Done!');
+  console.info('#######################################');
 }
 
 /**
@@ -216,6 +225,7 @@ async function dropCollections() {
   await strapi.db.query(LANGUAGE_API).deleteMany({});
   await strapi.db.query(QUESTION_API).deleteMany({});
   await strapi.db.query(QUESTION_TYPE_API).deleteMany({});
+  await strapi.db.query(USER_API).deleteMany({});
 }
 
 async function createLanguages() {
@@ -1323,6 +1333,28 @@ async function createPartyAnswers() {
       ]);
     }
   }
+}
+
+async function createCandidateUsers() {
+  const authenticated = await strapi.query('plugin::users-permissions.role').findOne({
+    where: {
+      type: 'authenticated'
+    }
+  });
+  const candidate = await strapi.entityService.findOne(CANDIDATE_API, {});
+
+  await strapi.entityService.create(USER_API, {
+    data: {
+      username: 'asd',
+      email: 'asd@asd.asd',
+      password: 'asdasd',
+      provider: 'local',
+      confirmed: true,
+      blocked: false,
+      role: authenticated.id,
+      candidate: candidate.id
+    }
+  });
 }
 
 function capitaliseFirstLetter(word: string) {
