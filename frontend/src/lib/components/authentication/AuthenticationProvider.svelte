@@ -1,16 +1,24 @@
 <script lang="ts">
   import LoginPage from './LoginPage.svelte';
+  import {authContext, loadLocalStorage} from '$lib/components/authentication/authenticationStore';
   import {onMount, setContext} from 'svelte';
-  import {authContext} from '$lib/components/authentication/authenticationStore';
 
   setContext('auth', authContext);
-
   const user = authContext.user;
-  onMount(() => authContext.loadUserData());
+  const token = authContext.token;
+
+  onMount(() => {
+    loadLocalStorage();
+    $token && authContext.loadUserData();
+  });
 </script>
 
 {#if $user}
   <slot />
+{:else if $token === undefined || ($token && !$user)}
+  <div class="mt-100 flex h-screen flex-col items-center">
+    <span class="loading-spinner loading-lg loading" />
+  </div>
 {:else}
   <LoginPage />
 {/if}
