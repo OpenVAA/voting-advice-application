@@ -58,13 +58,16 @@
           {#if wrongCredentials}
             <p class="text-center text-error">{$_('candidate.wrong_email_or_password')}</p>
           {/if}
-          <button type="submit" class="btn-primary btn mb-md w-full max-w-md">{$_('candidate.sign_in')}</button>
-          <a href="/help" class="btn-ghost btn w-full max-w-md">{$_('candidate.contact_support')}</a>
-          <a href="/" class="btn-ghost btn w-full max-w-md">{$_('candidate.election_compass_for_voters')}</a>
+          <button type="submit" class="btn-primary btn mb-md w-full max-w-md"
+            >{$_('candidate.sign_in')}</button>
+          <a href="/help" class="btn-ghost btn w-full max-w-md"
+            >{$_('candidate.contact_support')}</a>
+          <a href="/" class="btn-ghost btn w-full max-w-md"
+            >{$_('candidate.election_compass_for_voters')}</a>
         </form>
       </div>
     </div>
   </main>
 
-  <Footer/>
+  <Footer />
 </div>
