@@ -1,7 +1,7 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {candidateAppRoute} from '$candidate/placeholder.json';
-  import Modal from './TimedModal.svelte';
+  import TimedModal from './TimedModal.svelte';
   import {goto} from '$app/navigation';
   import {authContext} from '../authentication/authenticationStore';
 
@@ -9,8 +9,7 @@
 
   const logoutModalTimer = 30; // time until automatic logout for modal
   // exports from TimedModal
-  let openModal: () => void;
-  let closeModal: () => void;
+  let toggleModal: () => void;
   let timeLeftInt = logoutModalTimer;
 
   // functions for logout button
@@ -20,7 +19,7 @@
   const triggerLogout = () => {
     // TODO: check if candidate has filled all the data
     if (unfilledData) {
-      openModal();
+      toggleModal();
     } else {
       logout();
     }
@@ -29,7 +28,7 @@
   const logout = async () => {
     authContext.logOut();
     await goto(candidateAppRoute);
-    closeModal();
+    toggleModal();
   };
 </script>
 
@@ -37,10 +36,9 @@
     This is a temporary solution to navigation to help with the development.
 -->
 <div class="drawer">
-  <Modal
+  <TimedModal
     bind:timeLeftInt
-    bind:openModal
-    bind:closeModal
+    bind:toggleModal
     onTimeout={logout}
     timerDuration={logoutModalTimer}>
     <div class="notification text-center text-black">
@@ -55,13 +53,13 @@
         seconds.
       </p>
       <br />
-      <button class="btn-glass btn-primary btn w-full" on:click={closeModal}
+      <button class="btn-glass btn-primary btn w-full" on:click={toggleModal}
         >{$_('candidateApp.navbar.continueEnteringData')}</button>
       <div class="h-4" />
       <button class="btn-outline btn-error btn w-full" on:click={logout}
         >{$_('candidateApp.navbar.logOut')}</button>
     </div>
-  </Modal>
+  </TimedModal>
   <input id="sidebar" type="checkbox" class="drawer-toggle" />
   <div class="drawer-content flex flex-col">
     <!-- Navbar -->

@@ -2,6 +2,7 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {tweened} from 'svelte/motion';
+  import {onMount} from 'svelte';
   export let onTimeout: () => void;
   export let timerDuration = 30; // logout timer duration in seconds
   export let timeLeftInt: number = timerDuration; // time left in seconds (int)
@@ -9,17 +10,25 @@
   let timeLeft = tweened(timerDuration, {duration: 0}); // used for progress bar animation
   let isOpen = false; // variable for the modal state
 
-  export const openModal = () => {
-    if (!isOpen) {
-      isOpen = true;
-    }
-  };
+  let modalContainer: HTMLDialogElement | null = null;
 
-  export const closeModal = () => {
-    if (isOpen) {
-      isOpen = false;
+  onMount(() => {
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (isOpen && e.key == 'Escape') {
+      toggleModal();
     }
-  };
+    })
+	});
+
+  export const toggleModal = () => {
+    if (isOpen){
+      modalContainer?.close();
+      isOpen = !isOpen;
+    } else {
+      modalContainer?.showModal();
+      isOpen = !isOpen;
+    }
+  }
 
   // reset timer to timerDuration
   const resetTimer = () => {
@@ -37,8 +46,9 @@
 
   // function for "accepting" the modal
   const onAccept = () => {
-    onTimeout();
     isOpen = false;
+    toggleModal();
+    onTimeout();
     stopTimer();
   };
 
@@ -72,32 +82,12 @@
   }
 </script>
 
-<div class:visible={isOpen}>
-  <input type="checkbox" id="modal1" checked={isOpen} class="modal-toggle" />
-  <div class="modal">
-    <div class="modal-box">
-      <slot />
-      <progress
-        id="modal-progress"
-        class="w-56 progress progress-error absolute bottom-0 left-0 right-0"
-        value={$timeLeft}
-        max={timerDuration} />
-    </div>
-  </div>
-</div>
-
-<style>
-  .visible {
-    display: flex;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(1px);
-    z-index: 999;
-    justify-content: center;
-    align-items: center;
-  }
-</style>
+<dialog bind:this = {modalContainer} class="modal">
+  <div class="modal-box">
+    <slot />
+    <progress
+      id="modal-progress"
+      class="w-56 progress progress-error absolute bottom-0 left-0 right-0"
+      value={$timeLeft}
+      max={timerDuration} />
+</dialog>
