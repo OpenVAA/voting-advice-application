@@ -9,7 +9,8 @@
 
   const logoutModalTimer = 30; // time until automatic logout for modal
   // exports from TimedModal
-  let toggleModal: () => void;
+  let openModal: () => void;
+  let closeModal: () => void;
   let timeLeftInt = logoutModalTimer;
 
   // functions for logout button
@@ -19,7 +20,7 @@
   const triggerLogout = () => {
     // TODO: check if candidate has filled all the data
     if (unfilledData) {
-      toggleModal();
+      openModal();
     } else {
       logout();
     }
@@ -27,8 +28,8 @@
 
   const logout = async () => {
     authContext.logOut();
+    closeModal();
     await goto(candidateAppRoute);
-    toggleModal();
   };
 </script>
 
@@ -38,7 +39,8 @@
 <div class="drawer">
   <TimedModal
     bind:timeLeftInt
-    bind:toggleModal
+    bind:openModal
+    bind:closeModal
     onTimeout={logout}
     timerDuration={logoutModalTimer}>
     <div class="notification text-center text-black">
@@ -53,7 +55,7 @@
         seconds.
       </p>
       <br />
-      <button class="btn-glass btn-primary btn w-full" on:click={toggleModal}
+      <button class="btn-glass btn-primary btn w-full" on:click={closeModal}
         >{$_('candidateApp.navbar.continueEnteringData')}</button>
       <div class="h-4" />
       <button class="btn-outline btn-error btn w-full" on:click={logout}

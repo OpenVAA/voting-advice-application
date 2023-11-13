@@ -15,20 +15,24 @@
   onMount(() => {
     document.addEventListener('keydown', (e: KeyboardEvent) => {
       if (isOpen && e.key == 'Escape') {
-      toggleModal();
-    }
-    })
-	});
+        closeModal();
+      }
+    });
+  });
 
-  export const toggleModal = () => {
-    if (isOpen){
-      modalContainer?.close();
-      isOpen = !isOpen;
-    } else {
+  export const openModal = () => {
+    if (!isOpen) {
       modalContainer?.showModal();
-      isOpen = !isOpen;
+      isOpen = true;
     }
-  }
+  };
+
+  export const closeModal = () => {
+    if (isOpen) {
+      modalContainer?.close();
+      isOpen = false;
+    }
+  };
 
   // reset timer to timerDuration
   const resetTimer = () => {
@@ -46,8 +50,7 @@
 
   // function for "accepting" the modal
   const onAccept = () => {
-    isOpen = false;
-    toggleModal();
+    closeModal();
     onTimeout();
     stopTimer();
   };
@@ -80,9 +83,17 @@
       stopTimer();
     }
   }
+
+  // code used for testing
+  /*
+  setInterval(() => {
+    console.log(timeout);
+    console.log($timeLeft);
+  });
+  */
 </script>
 
-<dialog bind:this = {modalContainer} class="modal">
+<dialog bind:this={modalContainer} class="modal">
   <div class="modal-box">
     <slot />
     <progress
@@ -90,4 +101,5 @@
       class="w-56 progress progress-error absolute bottom-0 left-0 right-0"
       value={$timeLeft}
       max={timerDuration} />
+  </div>
 </dialog>
