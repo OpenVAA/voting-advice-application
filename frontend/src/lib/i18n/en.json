@@ -81,7 +81,11 @@
       "help": "Help",
       "feedback": "Send feedback",
       "electionInformation": "Information About the Elections",
-      "useInformation": "How Does This App Work?"
+      "useInformation": "How Does This App Work?",
+      "logOut": "Logout",
+      "close": "Close",
+      "cancel": "Cancel",
+      "continueEnteringData": "Continue Entering Data"
     },
     "basicInfo": {
       "instructions": "Fill in first your basic details and upload a photo. You'll be asked for your political opinions thereafter.",

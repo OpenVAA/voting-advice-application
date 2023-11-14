@@ -1,6 +1,36 @@
-<script>
+<script lang="ts">
   import {_} from 'svelte-i18n';
   import {candidateAppRoute} from '$candidate/placeholder.json';
+  import TimedModal from './TimedModal.svelte';
+  import {goto} from '$app/navigation';
+  import {authContext} from '../authentication/authenticationStore';
+
+  const user = authContext.user;
+
+  const logoutModalTimer = 30; // time until automatic logout for modal
+  // exports from TimedModal
+  let openModal: () => void;
+  let closeModal: () => void;
+  let timeLeftInt = logoutModalTimer;
+
+  // functions for logout button
+  // TODO: add proper check of unfilled data
+  let unfilledData = true;
+
+  const triggerLogout = () => {
+    // TODO: check if candidate has filled all the data
+    if (unfilledData) {
+      openModal();
+    } else {
+      logout();
+    }
+  };
+
+  const logout = async () => {
+    authContext.logOut();
+    closeModal();
+    await goto(candidateAppRoute);
+  };
 
   let checked = false;
   function handleClick() {
@@ -12,6 +42,31 @@
     This is a temporary solution to navigation to help with the development.
 -->
 <div class="drawer">
+  <TimedModal
+    bind:timeLeftInt
+    bind:openModal
+    bind:closeModal
+    onTimeout={logout}
+    timerDuration={logoutModalTimer}>
+    <div class="notification text-center text-black">
+      <h1>Some Of Your Data Is Still Missing</h1>
+      <br />
+      <p>
+        There are still 10 items of basic info and 25 opinions to fill. Your data won’t be shown in
+        the Election Compass until you have filled these, but you can login later to continue.
+      </p>
+      <p>
+        Are you sure you want to logout? You will be automatically logged out after {timeLeftInt}
+        seconds.
+      </p>
+      <br />
+      <button class="btn-glass btn-primary btn w-full" on:click={closeModal}
+        >{$_('candidateApp.navbar.continueEnteringData')}</button>
+      <div class="h-4" />
+      <button class="btn-outline btn-error btn w-full" on:click={logout}
+        >{$_('candidateApp.navbar.logOut')}</button>
+    </div>
+  </TimedModal>
   <input id="sidebar" type="checkbox" class="drawer-toggle" bind:checked />
   <div class="drawer-content flex flex-col">
     <!-- Navbar -->
@@ -28,7 +83,10 @@
       </div>
       <div class="mx-2 flex-1 px-2">PubLogo</div>
       <div class="flex-none">
-        <h3>Logout</h3>
+        {#if $user}
+          <button class="btn-ghost btn-lg btn" on:click={triggerLogout}
+            >{$_('candidateApp.navbar.logOut')}</button>
+        {/if}
       </div>
     </div>
     <!-- Page content here -->
