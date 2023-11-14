@@ -2,6 +2,7 @@
   import {getContext} from 'svelte';
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
+  import Footer from '$lib/components/footer/Footer.svelte';
   import type {AuthContext} from './authenticationStore';
 
   const authContext = getContext<AuthContext>('auth');
@@ -68,10 +69,5 @@
     </div>
   </main>
 
-  <footer class="p-lg text-center text-sm text-secondary">
-    {$page.data.appLabels.viewTexts.publishedBy.replace('{{0}}', '')}
-    <img class="inline w-14" src={'/icons/publisher.svg'} alt="governmental" srcset="" />
-    Institution • {$page.data.appLabels.viewTexts.madeWith.replace('{{0}}', '')}
-    <img class="inline w-14" src="/icons/vote.svg" alt="" srcset="" /> OpenVAA
-  </footer>
+  <Footer />
 </div>
