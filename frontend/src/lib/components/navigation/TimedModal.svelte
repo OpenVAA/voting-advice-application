@@ -13,6 +13,7 @@
   let modalContainer: HTMLDialogElement | null = null;
 
   onMount(() => {
+    // Stop the timer when the modal is closed with the escape key
     document.addEventListener('keydown', (e: KeyboardEvent) => {
       if (isOpen && e.key == 'Escape') {
         closeModal();
@@ -83,14 +84,6 @@
       stopTimer();
     }
   }
-
-  // code used for testing
-  /*
-  setInterval(() => {
-    console.log(timeout);
-    console.log($timeLeft);
-  });
-  */
 </script>
 
 <dialog bind:this={modalContainer} class="modal">
