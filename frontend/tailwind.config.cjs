@@ -17,8 +17,21 @@ const themeCSSVars = {
 // This can be removed when Tailwind changes it's default behaviour to match this.
 const fixedScreenHeight = ['100vh', '-webkit-fill-available', '100dvh'];
 
+// We'll use this below to generate color classes to safelist
+// Make sure to check that this matches the `Color` type in 
+// `./src/lib/components/color/color.type.ts`
+// as well as the color definitions in the DaisyUI themes futher below.
+const colorNames = ['current', 'primary', 'secondary', 'accent', 'neutral', 'base-100', 'base-200', 'base-300', 
+  'info', 'success', 'warning', 'error', 'base-content', 'primary-content', 'secondary-content', 'accent-content', 
+  'info-content', 'success-content', 'warning-content', 'error-content'];
+
 module.exports = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
+  // We need to safelist these color utility classes so that we can freely use
+  // the DaisyUI color classes as variables like `fill-${color}`. See:
+  // https://tailwindcss.com/docs/content-configuration#dynamic-class-names and
+  // https://tailwindcss.com/docs/content-configuration#safelisting-classes
+  safelist: colorNames.map(c => `fill-${c}`),
   theme: {
     borderRadius: {
       none:    '0px',
