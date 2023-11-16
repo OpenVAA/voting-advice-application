@@ -34,7 +34,7 @@
         type="text"
         id={field}
         placeholder="PLACEHOLDER"
-        class="input-ghost input input-sm w-6/12 text-right" />
+        class="input input-ghost input-sm w-6/12 text-right" />
     </div>
     <p class={disclaimerClass} slot="footer">
       {$_('candidateApp.basicInfo.disclaimer')}
@@ -51,9 +51,9 @@
           type="number"
           id={field}
           placeholder="0"
-          class="input-ghost input input-sm w-6/12 text-right" />
+          class="input input-ghost input-sm w-6/12 text-right" />
       {:else}
-        <select id={field} class="select-bordered select select-sm w-6/12">
+        <select id={field} class="select select-bordered select-sm w-6/12">
           <option value="">{$_(`candidateApp.basicInfo.fields.${field}`)}</option>
           {#each fieldOptions.get(field) ?? [] as option}
             <option value={option}>{option}</option>
@@ -79,7 +79,7 @@
       <label for="portrait" class={labelClass}>
         {$_('candidateApp.basicInfo.fields.unaffiliated')}
       </label>
-      <input type="checkbox" class="toggle-primary toggle mr-8" checked />
+      <input type="checkbox" class="toggle toggle-primary mr-8" checked />
     </div>
     <p class={disclaimerClass} slot="footer">
       {$_('candidateApp.basicInfo.unaffiliatedDescription')}
