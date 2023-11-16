@@ -20,7 +20,7 @@
 <div class="flex w-full flex-grow flex-col items-center bg-base-300">
   <figure class="hero bg-[#d4dbef]">
     <img
-      class="max-h-[30vh] w-full max-w-lg bg-white object-cover"
+      class="h-[30vh] w-full max-w-lg bg-white object-cover"
       src="/images/hero-candidate.png"
       alt=""
       srcset="" />
@@ -45,6 +45,7 @@
             class="input mb-md w-full max-w-md"
             placeholder={$_('candidate.email_placeholder')}
             bind:value={email}
+            autocomplete="email"
             required />
           <label for="password" class="hidden">{$_('candidate.password')}</label>
           <input
@@ -54,15 +55,16 @@
             class="input mb-md w-full max-w-md"
             placeholder={$_('candidate.password_placeholder')}
             bind:value={password}
+            autocomplete="current-password"
             required />
           {#if wrongCredentials}
             <p class="text-center text-error">{$_('candidate.wrong_email_or_password')}</p>
           {/if}
-          <button type="submit" class="btn-primary btn mb-md w-full max-w-md"
+          <button type="submit" class="btn btn-primary mb-md w-full max-w-md"
             >{$_('candidate.sign_in')}</button>
-          <a href="/help" class="btn-ghost btn w-full max-w-md"
+          <a href="/help" class="btn btn-ghost w-full max-w-md"
             >{$_('candidate.contact_support')}</a>
-          <a href="/" class="btn-ghost btn w-full max-w-md"
+          <a href="/" class="btn btn-ghost w-full max-w-md"
             >{$_('candidate.election_compass_for_voters')}</a>
         </form>
       </div>
