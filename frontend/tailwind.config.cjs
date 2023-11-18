@@ -17,6 +17,9 @@ const themeCSSVars = {
 // This can be removed when Tailwind changes it's default behaviour to match this.
 const fixedScreenHeight = ['100vh', '-webkit-fill-available', '100dvh'];
 
+// This defines the minimum touch target size
+const touchTargetSize = `${44/16}rem`;
+
 // We'll use this below to generate color classes to safelist
 // Make sure to check that this matches the `Color` type in 
 // `./src/lib/components/color/color.type.ts`
@@ -147,6 +150,10 @@ module.exports = {
       },
       minHeight: {
         screen: fixedScreenHeight,
+        touch: touchTargetSize,
+      },
+      minWidth: {
+        touch: touchTargetSize,
       },
       screens: {
         xs: '320px',
