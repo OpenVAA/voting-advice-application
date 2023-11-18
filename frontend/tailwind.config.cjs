@@ -34,7 +34,10 @@ module.exports = {
   // the DaisyUI color classes as variables like `fill-${color}`. See:
   // https://tailwindcss.com/docs/content-configuration#dynamic-class-names and
   // https://tailwindcss.com/docs/content-configuration#safelisting-classes
-  safelist: colorNames.map(c => `fill-${c}`),
+  safelist: [
+    ...colorNames.map(c => `fill-${c}`), 
+    ...colorNames.map(c => `text-${c}`)
+  ],
   theme: {
     borderRadius: {
       none:    '0px',
