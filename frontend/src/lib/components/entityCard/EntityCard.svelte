@@ -3,6 +3,7 @@
   import {Card} from '$lib/components/shared/card/index';
   import {getUUID} from '$lib/utils/components';
   import type {EntityCardProps} from './EntityCard.type';
+  import CandidatePhoto from '$lib/components/candidates/CandidatePhoto.svelte';
 
   type $$Props = EntityCardProps;
   export let id: $$Props['id'] = undefined;
@@ -34,15 +35,7 @@
     aria-posinset={ariaPosinset}
     aria-setsize={ariaSetsize}>
     <svelte:fragment slot="card-media">
-      {#if imgSrc}
-        <img class="rounded-sm" src={imgSrc} alt={imgAlt} width={imgWidth} height={imgHeight} />
-      {:else}
-        <div class="avatar placeholder">
-          <div class="w-[3.125rem] rounded-full bg-base-300">
-            <span class="text-2xl">{title.charAt(0)}</span>
-          </div>
-        </div>
-      {/if}
+      <CandidatePhoto photoURL={imgSrc} alt={imgAlt} width={imgWidth} height={imgHeight} {title} />
     </svelte:fragment>
     <h3 slot="body-title" id={labelId}>{title}</h3>
     <div class="flex flex-row items-center gap-md" slot="body-content">

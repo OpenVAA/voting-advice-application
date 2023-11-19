@@ -162,8 +162,13 @@ export const getNominatedCandidates = ({
               shortName: translate(nom.attributes.party.data.attributes.shortName, locale)
             }
           : {name: '', shortName: ''},
-        photo: attr.photo?.data ?? ''
       };
+
+      let photoURL = attr?.photo?.data?.attributes?.url;
+      if (photoURL) {
+        photoURL = constants.PUBLIC_BACKEND_URL + photoURL;
+        props.photoURL = photoURL;
+      }
       if (loadAnswers)
         props['answers'] = attr.answers?.data ? parseAnswers(attr.answers.data, locale) : [];
       return props;
