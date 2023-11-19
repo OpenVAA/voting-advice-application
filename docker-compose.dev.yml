@@ -9,7 +9,7 @@ services:
       - "strapi"
     environment:
       - VITE_BACKEND_URL=${VITE_BACKEND_URL}
-      - VITE_PUBLIC_BACKEND_URL=${VITE_PUBLIC_BACKEND_URL}
+      - PUBLIC_BACKEND_URL=${PUBLIC_BACKEND_URL}
       - VITE_STRAPI_TOKEN=${VITE_STRAPI_TOKEN}
   strapi:
     extends:
