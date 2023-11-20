@@ -3,7 +3,7 @@
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
   import Footer from '$lib/components/footer/Footer.svelte';
-  import type {AuthContext} from './authenticationStore';
+  import type {AuthContext} from '$lib/utils/authenticationStore';
 
   const authContext = getContext<AuthContext>('auth');
 
@@ -16,6 +16,17 @@
     }
   };
 </script>
+
+<!--
+@component
+Candidate login page. This component also takes care of the login process.
+
+### Usage
+
+```tsx
+<LoginPage />
+```
+-->
 
 <div class="flex w-full flex-grow flex-col items-center bg-base-300">
   <figure class="hero bg-[#d4dbef]">
