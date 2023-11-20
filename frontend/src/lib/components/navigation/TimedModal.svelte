@@ -2,88 +2,82 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {tweened} from 'svelte/motion';
-  import {onMount} from 'svelte';
-  export let onTimeout: () => void;
+  import {onDestroy, onMount} from 'svelte';
+
+  export let onTimeout: () => void; // function to be triggered after time runs out
   export let timerDuration = 30; // logout timer duration in seconds
-  export let timeLeftInt: number = timerDuration; // time left in seconds (int)
+  export let timeLeftInt: number = Math.ceil(timerDuration); // time left in seconds (int)
 
-  let timeLeft = tweened(timerDuration, {duration: 0}); // used for progress bar animation
+  let progressBarTimer = tweened(timerDuration, {duration: 0}); // used for progress bar animation
   let isOpen = false; // variable for the modal state
-
-  let modalContainer: HTMLDialogElement | null = null;
-
-  onMount(() => {
-    // Stop the timer when the modal is closed with the escape key
-    document.addEventListener('keydown', (e: KeyboardEvent) => {
-      if (isOpen && e.key == 'Escape') {
-        closeModal();
-      }
-    });
-  });
+  let modalContainer: HTMLDialogElement | null = null; // container element for the modal
+  let timeout: NodeJS.Timeout | null = null; // timeout for triggering onTimeout()
 
   export const openModal = () => {
     if (!isOpen) {
       modalContainer?.showModal();
       isOpen = true;
+      resetProgressBarTimer();
+      resetTimeout();
     }
   };
-
   export const closeModal = () => {
     if (isOpen) {
       modalContainer?.close();
       isOpen = false;
+      stopProgressBarTimer();
     }
   };
 
-  // reset timer to timerDuration
-  const resetTimer = () => {
-    timeLeft = tweened(timerDuration, {
-      duration: timerDuration * 1000
-    });
-    timeLeftInt = timerDuration;
-    $timeLeft = 0;
-  };
-
-  // stop the timer
-  const stopTimer = () => {
-    timeLeft.set($timeLeft, {duration: 0});
-  };
-
-  // function for "accepting" the modal
-  const onAccept = () => {
-    closeModal();
-    onTimeout();
-    stopTimer();
-  };
-
-  // update timeLeftInt to an integer when timeLeft updates
+  // update progressBarTimerInt to an integer when progressBarTimer updates
   $: {
-    if (timeLeft) {
-      const t = Math.ceil($timeLeft);
+    if ($progressBarTimer) {
+      const t = Math.ceil($progressBarTimer);
       if (t < timeLeftInt) {
         timeLeftInt = t;
       }
     }
   }
 
-  // timeout for triggering onTimeout()
-  let timeout: NodeJS.Timeout | null = null;
-
-  // trigger events if the modal is closed or opened
-  $: {
-    if (isOpen) {
-      // one open, set timeout timer
-      resetTimer();
-      timeout = setTimeout(() => {
-        onAccept();
-      }, timerDuration * 1000);
-    } else {
-      // on close, reset the timer and delete/cancel timeout
-      if (timeout) clearTimeout(timeout);
-      timeout = null;
-      stopTimer();
+  // function triggered by pressing the escape button
+  const handleEscape = (e: KeyboardEvent) => {
+    if (isOpen && e.key == 'Escape') {
+      closeModal();
     }
-  }
+  };
+
+  // add and remove event handles on mount and unmount
+  onMount(() => {
+    document.addEventListener('keydown', handleEscape);
+  });
+  onDestroy(() => {
+    document.removeEventListener('keydown', handleEscape);
+  });
+
+  const resetTimeout = () => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      if (isOpen) {
+        closeModal();
+        onTimeout();
+        stopProgressBarTimer();
+      }
+    }, timerDuration * 1000);
+  };
+
+  const resetProgressBarTimer = () => {
+    progressBarTimer = tweened(timerDuration, {
+      duration: timerDuration * 1000
+    });
+    timeLeftInt = timerDuration;
+    $progressBarTimer = 0;
+  };
+
+  const stopProgressBarTimer = () => {
+    progressBarTimer.set($progressBarTimer, {duration: 0});
+    if (timeout) clearTimeout(timeout);
+    timeout = null;
+  };
 </script>
 
 <dialog bind:this={modalContainer} class="modal">
@@ -92,7 +86,7 @@
     <progress
       id="modal-progress"
       class="w-56 progress progress-error absolute bottom-0 left-0 right-0"
-      value={$timeLeft}
+      value={$progressBarTimer}
       max={timerDuration} />
   </div>
 </dialog>
