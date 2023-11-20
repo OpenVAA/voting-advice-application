@@ -36,7 +36,7 @@ services:
       # Mark these as volumes so they get ignored
       - /opt/node_modules
   postgres:
-    image: postgres
+    image: postgres:15
     environment:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${DATABASE_USERNAME}

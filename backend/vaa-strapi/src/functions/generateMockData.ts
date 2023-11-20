@@ -376,9 +376,21 @@ async function createParties(length: number) {
 }
 
 async function createCandidates(length: number) {
-  const parties = await strapi.entityService.findMany(PARTY_API);
   // TODO: Remove languages later
-  const languages = await strapi.entityService.findMany(LANGUAGE_API);
+  const languages = await strapi.db.query(LANGUAGE_API).findMany({
+    filters: {
+      locale: locales[0].code
+    },
+    populate: ['localizations']
+  });
+
+  const parties = await strapi.db.query(PARTY_API).findMany({
+    filters: {
+      locale: locales[0].code
+    },
+    populate: ['localizations']
+  });
+
   for (let i = 0; i <= length; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
@@ -460,7 +472,13 @@ async function createCandidates(length: number) {
 }
 
 async function createConstituencies(numberOfConstituencies: number) {
-  const elections = await strapi.entityService.findMany(ELECTION_API);
+  const elections = await strapi.db.query(ELECTION_API).findMany({
+    filters: {
+      locale: locales[0].code
+    },
+    populate: ['localizations']
+  });
+
   for (let i = 0; i <= numberOfConstituencies; i++) {
     const name = fakeLocalized((faker) => faker.location.state());
     const shortName = fakeLocalized((faker) => faker.location.state({abbreviated: true}));
@@ -481,14 +499,27 @@ async function createConstituencies(numberOfConstituencies: number) {
 }
 
 async function createCandidateNominations(length: number) {
-  const elections: HasId[] = await strapi.entityService.findMany(ELECTION_API);
-  const constituencies: HasId[] = await strapi.entityService.findMany(CONSTITUENCY_API);
-  const candidates: {id: string | number; party: HasId}[] = await strapi.entityService.findMany(
-    CANDIDATE_API,
-    {
+  const elections: HasId[] = await strapi.db.query(ELECTION_API).findMany({
+    filters: {
+      locale: locales[0].code
+    },
+    populate: ['localizations']
+  });
+  const constituencies: HasId[] = await strapi.db.query(CONSTITUENCY_API).findMany({
+    filters: {
+      locale: locales[0].code
+    },
+    populate: ['localizations']
+  });
+  const candidates: {id: string | number; party: HasId}[] = await strapi.db
+    .query(CANDIDATE_API)
+    .findMany({
+      filters: {
+        locale: locales[0].code
+      },
       populate: ['party']
-    }
-  );
+    });
+
   for (let i = 0; i <= length; i++) {
     const candidate = faker.helpers.arrayElement(candidates);
     // Remove from list to prevent duplicates
@@ -512,9 +543,25 @@ async function createCandidateNominations(length: number) {
 }
 
 async function createPartyNominations(length: number) {
-  const elections: HasId[] = await strapi.entityService.findMany(ELECTION_API);
-  const constituencies: HasId[] = await strapi.entityService.findMany(CONSTITUENCY_API);
-  const parties: HasId[] = await strapi.entityService.findMany(PARTY_API);
+  const elections: HasId[] = await strapi.db.query(ELECTION_API).findMany({
+    filters: {
+      locale: locales[0].code
+    },
+    populate: ['localizations']
+  });
+  const constituencies: HasId[] = await strapi.db.query(CONSTITUENCY_API).findMany({
+    filters: {
+      locale: locales[0].code
+    },
+    populate: ['localizations']
+  });
+  const parties: HasId[] = await strapi.db.query(PARTY_API).findMany({
+    filters: {
+      locale: locales[0].code
+    },
+    populate: ['localizations']
+  });
+
   for (let i = 0; i <= length; i++) {
     const party = faker.helpers.arrayElement(parties);
     // Remove from list to prevent duplicates
@@ -537,7 +584,12 @@ async function createPartyNominations(length: number) {
 }
 
 async function createQuestionCategories() {
-  const elections: HasId[] = await strapi.entityService.findMany(ELECTION_API);
+  const elections: HasId[] = await strapi.db.query(ELECTION_API).findMany({
+    filters: {
+      locale: locales[0].code
+    },
+    populate: ['localizations']
+  });
   for (const category of mockCategories) {
     const name = fakeLocalized((faker) => faker.word.sample(15).toLocaleUpperCase(), category);
     const shortName = abbreviate(name, {type: 'truncate'});
@@ -756,15 +808,35 @@ async function createQuestionTypes() {
  *   have their `constituency` relation set to a random constituency.
  */
 async function createQuestions(options: {constituencyPctg?: number} = {}) {
-  const questionTypes: (HasId & {name: string; settings: QuestionTypeSettings})[] =
-    await strapi.entityService.findMany(QUESTION_TYPE_API);
+  const questionTypes: (HasId & {name: string; settings: QuestionTypeSettings})[] = await strapi.db
+    .query(QUESTION_TYPE_API)
+    .findMany({
+      filters: {
+        locale: locales[0].code
+      },
+      populate: ['localizations']
+    });
   const likertTypes = questionTypes.filter(
     (questionType) => questionType.settings.type === 'singleChoiceOrdinal'
   );
-  const questionCategories: (HasId & {type: 'opinion' | 'info'})[] =
-    await strapi.entityService.findMany(QUESTION_CATEGORY_API);
+
+  const questionCategories: (HasId & {type: 'opinion' | 'info'})[] = await strapi.db
+    .query(QUESTION_CATEGORY_API)
+    .findMany({
+      filters: {
+        locale: locales[0].code
+      },
+      populate: ['localizations']
+    });
+
   const opinionCategories = questionCategories.filter((cat) => cat.type === 'opinion');
-  const constituencies: HasId[] = await strapi.entityService.findMany(CONSTITUENCY_API);
+  const constituencies: HasId[] = await strapi.db.query(CONSTITUENCY_API).findMany({
+    filters: {
+      locale: locales[0].code
+    },
+    populate: ['localizations']
+  });
+
   const constituencyPctg = options.constituencyPctg ?? 0.1;
   // Create Opinion questions
   for (const question of mockQuestions) {
@@ -834,16 +906,26 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
 }
 
 async function createAnswers(entityType: Omit<EntityType, 'all'>) {
-  const entities: HasId[] = await strapi.entityService.findMany(
-    entityType === 'candidate' ? CANDIDATE_API : PARTY_API
-  );
+  const entities: HasId[] = await strapi.db
+    .query(entityType === 'candidate' ? CANDIDATE_API : PARTY_API)
+    .findMany({
+      filters: {
+        locale: locales[0].code
+      },
+      populate: ['localizations']
+    });
+
   const questions: (HasId & {
     allowOpen: boolean;
     entityType?: EntityType;
     questionType: {settings: QuestionTypeSettings};
-  })[] = await strapi.entityService.findMany(QUESTION_API, {
+  })[] = await strapi.db.query(QUESTION_API).findMany({
+    filters: {
+      locale: locales[0].code
+    },
     populate: ['questionType']
   });
+
   for (const entity of entities) {
     for (const question of questions) {
       if (
@@ -917,8 +999,8 @@ async function createCandidateUsers() {
       type: 'authenticated'
     }
   });
-  const candidate = await strapi.entityService.findOne(CANDIDATE_API, {});
 
+  const candidate = await strapi.db.query(CANDIDATE_API).findOne();
   await strapi.entityService.create(USER_API, {
     data: {
       username: 'first.last',
@@ -946,7 +1028,7 @@ function capitaliseFirstLetter(word: string) {
 }
 
 // Creates relations between original entity and its translations
-async function createRelationsForAvailableLocales(endpoint: string, objects: HasId[]) {
+async function createRelationsForAvailableLocales(endpoint: any, objects: HasId[]) {
   if (objects.length < 2) {
     console.warn(
       `Not enough objects (${objects.length}) passed to createRelationsForAvailableLocales. Skipping localization linking.`

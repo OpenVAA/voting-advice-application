@@ -1,4 +1,4 @@
-FROM node:16-alpine as base
+FROM node:18-alpine3.18 as base
 WORKDIR /opt/
 
 RUN apk add --no-cache python3 make g++
@@ -20,8 +20,8 @@ ARG NODE_ENV=development
 ENV NODE_ENV=${NODE_ENV}
 
 EXPOSE 1337
-RUN npm run build
-CMD npm run dev
+RUN npm run build -- --ignore-prompts
+CMD npm run dev -- --ignore-prompts
 
 FROM base as production
 
@@ -30,5 +30,5 @@ ENV NODE_ENV=${NODE_ENV}
 
 EXPOSE 1337
 
-RUN npm run build
+RUN npm run build -- --ignore-prompts
 CMD npm run start
