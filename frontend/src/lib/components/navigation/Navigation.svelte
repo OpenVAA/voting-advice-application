@@ -4,7 +4,7 @@
   import TimedModal from './TimedModal.svelte';
   import {goto} from '$app/navigation';
   import {authContext} from '$lib/utils/authenticationStore';
-  import RequireLogin from '../authentication/RequireLogin.svelte';
+  import RequireLogin from '$lib/components/authentication/RequireLogin.svelte';
 
   const user = authContext.user;
 
@@ -45,6 +45,7 @@
 
 <RequireLogin>
   <div class="drawer">
+    <!-- Move logout modal logic into its own component -->
     <TimedModal
       bind:timeLeftInt
       bind:openModal
@@ -52,19 +53,17 @@
       onTimeout={logout}
       timerDuration={logoutModalTimer}>
       <div class="notification text-center text-black">
-        <h1>Some Of Your Data Is Still Missing</h1>
+        <h1>{$_('candidateApp.logoutModal.title')}</h1>
         <br />
         <p>
-          There are still 10 items of basic info and 25 opinions to fill. Your data won’t be shown
-          in the Election Compass until you have filled these, but you can login later to continue.
+          {$_('candidateApp.logoutModal.body')}
         </p>
         <p>
-          Are you sure you want to logout? You will be automatically logged out after {timeLeftInt}
-          seconds.
+          {$_('candidateApp.logoutModal.confirmation', {values: {timeLeft: timeLeftInt}})}
         </p>
         <br />
         <button class="btn-glass btn btn-primary w-full" on:click={closeModal}
-          >{$_('candidateApp.navbar.continueEnteringData')}</button>
+          >{$_('candidateApp.logoutModal.continueEnteringData')}</button>
         <div class="h-4" />
         <button class="btn btn-error btn-outline w-full" on:click={logout}
           >{$_('candidateApp.navbar.logOut')}</button>
@@ -84,6 +83,7 @@
               ><path stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
           </button>
         </div>
+        <!-- TODO: Replace with pub logo -->
         <div class="mx-2 flex-1 px-2">PubLogo</div>
         <div class="flex-none">
           {#if $user}
