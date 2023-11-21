@@ -1,1 +1,5 @@
-<h1>Registration page</h1>
+<script>
+  import RegistrationCodePage from './RegistrationCodePage.svelte';
+</script>
+
+<RegistrationCodePage />
