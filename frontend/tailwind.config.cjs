@@ -35,6 +35,7 @@ module.exports = {
   // https://tailwindcss.com/docs/content-configuration#dynamic-class-names and
   // https://tailwindcss.com/docs/content-configuration#safelisting-classes
   safelist: [
+    ...colorNames.map(c => `btn-${c}`), 
     ...colorNames.map(c => `fill-${c}`), 
     ...colorNames.map(c => `text-${c}`)
   ],
