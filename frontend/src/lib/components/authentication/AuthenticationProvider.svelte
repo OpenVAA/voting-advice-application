@@ -15,6 +15,10 @@
 @component
 Authentication provider provides the authentication context to all its children.
 
+### Contexts
+
+- auth: The authentication context
+
 ### Slots
 
 - default: The children of the component

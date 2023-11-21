@@ -15,7 +15,11 @@ export const authenticate = async (identifier: string, password: string): Promis
   });
 };
 
+/**
+ * Get the current user's data, including candidate information
+ */
 export const me = async (): Promise<any> => {
+  // TODO: Replace any
   return request(
     ['api', 'users', 'me'],
     new URLSearchParams({
