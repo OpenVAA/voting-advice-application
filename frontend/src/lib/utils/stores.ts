@@ -80,3 +80,14 @@ export const candidateRankings: Readable<{match: RankingProps; candidate: Candid
     },
     []
   );
+
+/**
+ * This store tells which application we're using. For other app types,
+ * set this to the current type in the layout containing the app.
+ */
+export const appType: Writable<AppType> = writable('voter');
+
+/**
+ * The possible types of the application
+ */
+export type AppType = 'candidate' | 'voter';
