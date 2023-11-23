@@ -63,8 +63,9 @@
       <button class="btn-glass btn-primary btn w-full" on:click={closeModal}
         >{$_('candidateApp.navbar.continueEnteringData')}</button>
       <div class="h-4" />
-      <button class="btn-outline btn-error btn w-full" on:click={logout}
-        >{$_('candidateApp.navbar.logOut')}</button>
+      <button
+        class="btn-outline btn-error btn w-full dark:bg-white dark:bg-opacity-10"
+        on:click={logout}>{$_('candidateApp.navbar.logOut')}</button>
     </div>
   </TimedModal>
   <input id="sidebar" type="checkbox" class="drawer-toggle" bind:checked />
