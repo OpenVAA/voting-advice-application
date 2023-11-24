@@ -1,5 +1,7 @@
 {
   "aria": {
+    "headingGroup": "Heading group",
+    "preHeading": "Pre-title",
     "primaryActionsLabel": "Primary actions",
     "skipToMain": "Skip to main content"
   },
