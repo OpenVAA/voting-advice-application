@@ -1,11 +1,17 @@
 {
+  "aria": {
+    "primaryActionsLabel": "Primary actions",
+    "skipToMain": "Skip to main content"
+  },
   "header": {
     "title": "Elections",
     "back": "Back",
     "help": "Help",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
-    "goHome": "Return to home page"
+    "toggleMenu": "Toggle menu",
+    "goHome": "Return to home page",
+    "progressTitle": "Progress"
   },
   "footer": {
     "goTo": "Jump to results"
@@ -19,7 +25,8 @@
   },
   "candidates": {
     "candidates": "Candidates",
-    "notFound": "No candidates found"
+    "notFound": "No candidates found",
+    "viewAllCandidates": "View all candidates"
   },
   "candidate": {
     "tabs": {
@@ -37,7 +44,8 @@
   },
   "parties": {
     "parties": "Parties",
-    "notFound": "No parties found"
+    "notFound": "No parties found",
+    "viewAllParties": "View all parties"
   },
   "questions": {
     "questionsTitle": "Your Opinions",
