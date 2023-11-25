@@ -1,7 +1,23 @@
 <script lang="ts">
+  import {createEventDispatcher} from 'svelte';
   import type {NavigationProps} from './Navigation.type';
 
   type $$Props = NavigationProps;
+
+  // Dispatch a `navFocusOut` event when the component loses focus
+  // This can be used to automatically close a drawer menu this is
+  // contained in
+  let navElement: HTMLElement;
+  const dispatch = createEventDispatcher();
+  function onFocusOut(event: FocusEvent) {
+    if (
+      event.relatedTarget == null ||
+      !(event.relatedTarget instanceof Node) ||
+      !navElement.contains(event.relatedTarget)
+    ) {
+      dispatch('navFocusOut', {relatedTarget: event.relatedTarget});
+    }
+  }
 </script>
 
 <!--
@@ -17,10 +33,16 @@ Create navigation menus for the application in a predefined style.
 
 - Any valid attributes of a `<nav>` element.
 
+### Events
+
+- `navFocusOut`: Emitted when the component loses focus. This can be used 
+  to automatically close a drawer menu this is contained in. The event
+  `detail` is of type `{relatedTarget: FocusEvent['relatedTarget']}`.
+
 ### Usage
 
 ```tsx
-<Navigation aria-label="Main navigation">
+<Navigation aria-label="Main navigation" on:navFocusOut={closeDrawer}>
   <NavGroup>
     <NavItem href="/info" icon="info">Show info</NavItem>
     <NavItem on:click={(e) => foo(e)}>Do foo</NavItem>
@@ -33,6 +55,6 @@ Create navigation menus for the application in a predefined style.
 ```
 -->
 
-<nav {...$$restProps}>
+<nav bind:this={navElement} on:focusout={onFocusOut} {...$$restProps}>
   <slot />
 </nav>
