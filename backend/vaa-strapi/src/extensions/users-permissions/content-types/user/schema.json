@@ -36,6 +36,12 @@
       "private": true,
       "searchable": false
     },
+    "registrationKey": {
+      "type": "string",
+      "configurable": false,
+      "private": true,
+      "searchable": false
+    },
     "resetPasswordToken": {
       "type": "string",
       "configurable": false,
