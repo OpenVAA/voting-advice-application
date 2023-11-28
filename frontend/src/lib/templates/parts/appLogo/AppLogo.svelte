@@ -1,6 +1,5 @@
 <script lang="ts">
-  import normalLogo from './svg/openvaa-logo-grey.svg';
-  import inverseLogo from './svg/openvaa-logo-white.svg';
+  import {darkMode} from '$lib/utils/darkMode';
   import type {AppLogoProps} from './AppLogo.type';
 
   type $$Props = AppLogoProps;
@@ -26,8 +25,11 @@
   // Merge classes into restProps
   $$restProps.class = `${classes} ${$$restProps.class ?? ''}`;
 
+  // Check dark mode and select logo file
+  let logo: string;
+  $: logo = $darkMode || inverse ? 'openvaa-logo-white' : 'openvaa-logo-grey';
+
   // TODO: Use logo files defined in Strapi.
-  // TODO: Render only one image, see issue #279
 </script>
 
 <!--
@@ -57,6 +59,7 @@ colour changes dynamically based on whether the light or dark mode is active.
 -->
 
 <div {...$$restProps}>
-  <img src={normalLogo} {alt} class="h-full {inverse ? 'hidden dark:block' : 'dark:hidden'}" />
-  <img src={inverseLogo} {alt} class="h-full {inverse ? 'dark:hidden' : 'hidden dark:block'}" />
+  {#await import(`./svg/${logo}.svg`) then logoSrc}
+    <img src={logoSrc.default} {alt} class="h-full" />
+  {/await}
 </div>
