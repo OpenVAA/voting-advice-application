@@ -179,7 +179,7 @@ module.exports = {
           'accent':    '#0d827c', // = info
           'neutral':   '#333333',
           'base-100':  '#ffffff',
-          'base-200':  '#e8f5f6', // 50% tint of base-300 on base-100
+          'base-200':  '#e5e5e5',
           'base-300':  '#d1ebee', // Remember to match this with the theme-color in app.html
           'info':      '#0d827c', // = accent (var() cannot be used in these)
           'success':   '#2546a8', // = primary
@@ -209,7 +209,7 @@ module.exports = {
           'accent':    '#11a8a0', // = info
           'neutral':   '#cccccc',
           'base-100':  '#000000',
-          'base-200':  '#101212', // 50% tint of base-300 on base-100
+          'base-200':  '#1a1a1a',
           'base-300':  '#1f2324', // Remember to match this with the theme-color in app.html
           'info':      '#11a8a0', // = accent (var() cannot be used in these)
           'success':   '#6887e3', // = primary
