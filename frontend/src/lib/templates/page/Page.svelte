@@ -157,7 +157,7 @@ the Drawer component.
         aria-expanded={drawerOpen}
         aria-controls={navId}
         aria-label={drawerOpenLabel}
-        class="btn-ghost drawer-button btn flex cursor-pointer items-center gap-md text-neutral">
+        class="btn-ghost btn drawer-button flex cursor-pointer items-center gap-md text-neutral">
         <slot name="drawerOpenButton">
           <Icon name="menu" />
           <AppLogo aria-hidden="true" alt="" />
