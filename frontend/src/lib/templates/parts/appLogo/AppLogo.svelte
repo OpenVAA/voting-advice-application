@@ -27,7 +27,8 @@
 
   // Check dark mode and select logo file
   let logo: string;
-  $: logo = $darkMode || inverse ? 'openvaa-logo-white' : 'openvaa-logo-grey';
+  $: logo =
+    ($darkMode && !inverse) || (!$darkMode && inverse) ? 'openvaa-logo-white' : 'openvaa-logo-grey';
 
   // TODO: Use logo files defined in Strapi.
 </script>
