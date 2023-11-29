@@ -2,5 +2,7 @@
   import {AppLogo} from '$lib/templates/parts/appLogo';
 </script>
 
-<AppLogo alt="" />
-<a href="/_test/2">asa</a>
+<div class="bg-base-300">
+  Normal: <AppLogo alt="" />
+  Inverse: <AppLogo alt="" inverse />
+</div>
