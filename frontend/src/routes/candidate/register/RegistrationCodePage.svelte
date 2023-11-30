@@ -2,12 +2,15 @@
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
   import Footer from '$lib/components/footer/Footer.svelte';
+  import {goto} from '$app/navigation';
+  import {candidateAppRoute} from '$candidate/placeholder.json';
 
-  let registrationCode = '';
-  let wrongCredentials = false;
+  export let registrationCode = '';
+  export let wrongCode = false;
 
-  const onRegistration = () => {
+  const onRegistration = async () => {
     //TODO add logic
+    await goto(candidateAppRoute + '/register?registrationCode=' + registrationCode);
   };
 </script>
 
@@ -42,7 +45,7 @@
             bind:value={registrationCode}
             aria-label={$_('candidateApp.registation.registrationCode')}
             required />
-          {#if wrongCredentials}
+          {#if wrongCode}
             <p class="text-center text-error">
               {$_('candidateApp.registration.wrongRegistrationCode')}
             </p>
