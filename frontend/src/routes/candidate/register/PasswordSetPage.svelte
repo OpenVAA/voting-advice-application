@@ -2,19 +2,29 @@
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
   import Footer from '$lib/components/footer/Footer.svelte';
+  import PasswordValidator from './PasswordValidator.svelte';
+  import {validatePassword} from './passwordValidation';
 
   export let userName = 'Barnabas'; /** TODO: Ensure name is set correctly */
 
   let password1 = '';
   let password2 = '';
-  let disableSetButton = false; /** TODO: Implement button disabling if requirements are not met */
+  let validPassword = false;
   let passwordsMatch = true;
+
+  $: disableSetButton = validPassword && password2.length > 0;
 
   const onSetButtonPressed = async () => {
     if (password1 != password2) {
-      passwordsMatch = false;
-    } else {
-      passwordsMatch = true;
+      passwordsMatch = false; // Display error message
+      return;
+    }
+
+    passwordsMatch = true;
+
+    // Additional check before backend validation
+    if (!validatePassword(password1, userName)) {
+      return;
     }
   };
 
@@ -52,9 +62,11 @@ Page where candidates can set their password when logging to the app for the fir
         <form
           class="flex flex-col flex-nowrap items-center"
           on:submit|preventDefault={onSetButtonPressed}>
-          <p class="text-center">
+          <p class="m-0 text-center">
             {$_('candidateApp.setPassword.description')}
           </p>
+
+          <PasswordValidator bind:validPassword password={password1} />
 
           <label for="password1" class="hidden">{$_('candidate.password')}</label>
           <input
@@ -85,11 +97,11 @@ Page where candidates can set their password when logging to the app for the fir
 
           <button
             type="submit"
-            disabled={disableSetButton}
-            class="btn-primary btn mb-md w-full max-w-md"
+            disabled={!disableSetButton}
+            class="btn btn-primary mb-md w-full max-w-md"
             >{$_('candidateApp.setPassword.setPassword')}</button>
 
-          <a href="/help" class="btn-ghost btn w-full max-w-md"
+          <a href="/help" class="btn btn-ghost w-full max-w-md"
             >{$_('candidate.contact_support')}</a>
         </form>
       </div>
