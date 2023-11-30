@@ -177,12 +177,12 @@ module.exports = {
           // DaisyUI colors: https://daisyui.com/docs/colors/
           'primary':   '#2546a8', // = success
           'secondary': '#666666',
-          'accent':    '#0d827c', // = info
+          'accent':    '#0a716b', // = info
           'neutral':   '#333333',
           'base-100':  '#ffffff',
           'base-200':  '#e8f5f6', // 50% tint of base-300 on base-100
           'base-300':  '#d1ebee', // Remember to match this with the theme-color in app.html
-          'info':      '#0d827c', // = accent (var() cannot be used in these)
+          'info':      '#0a716b', // = accent (var() cannot be used in these)
           'success':   '#2546a8', // = primary
           'warning':   '#a82525', // = error
           'error':     '#a82525', // = warning
@@ -214,16 +214,16 @@ module.exports = {
           'base-300':  '#1f2324', // Remember to match this with the theme-color in app.html
           'info':      '#11a8a0', // = accent (var() cannot be used in these)
           'success':   '#6887e3', // = primary
-          'warning':   '#d72f2f', // = error
-          'error':     '#d72f2f', // = warning
+          'warning':   '#e16060', // = error
+          'error':     '#e16060', // = warning
           'base-content':      '#cccccc', // = neutral
           'primary-content':   '#000000',
           'secondary-content': '#000000',
           'accent-content':    '#000000',
-          'info-content':      '#000000', // = accent-content
-          'success-content':   '#000000', // = primary-content
-          'warning-content':   '#ffffff',
-          'error-content':     '#ffffff', // = warning-content
+          'info-content':      '#000000',
+          'success-content':   '#000000',
+          'warning-content':   '#000000',
+          'error-content':     '#000000',
 
           // Other DaisyUI variables
           ...themeCSSVars,
