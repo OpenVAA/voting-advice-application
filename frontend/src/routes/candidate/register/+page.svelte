@@ -1,1 +1,5 @@
-<h1>Registration page</h1>
+<script lang="ts">
+  import PasswordSetPage from './PasswordSetPage.svelte';
+</script>
+
+<PasswordSetPage userName={'B Arnabas'} />
