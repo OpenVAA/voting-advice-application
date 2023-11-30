@@ -48,7 +48,7 @@
     bind:closeModal
     onTimeout={logout}
     timerDuration={logoutModalTimer}>
-    <div class="notification text-center text-black">
+    <div class="notification text-center">
       <h1>Some Of Your Data Is Still Missing</h1>
       <br />
       <p>
@@ -60,11 +60,12 @@
         seconds.
       </p>
       <br />
-      <button class="btn-glass btn btn-primary w-full" on:click={closeModal}
+      <button class="btn-glass btn-primary btn w-full" on:click={closeModal}
         >{$_('candidateApp.navbar.continueEnteringData')}</button>
       <div class="h-4" />
-      <button class="btn btn-error btn-outline w-full" on:click={logout}
-        >{$_('candidateApp.navbar.logOut')}</button>
+      <button
+        class="btn-outline btn-error btn w-full dark:bg-white dark:bg-opacity-10"
+        on:click={logout}>{$_('candidateApp.navbar.logOut')}</button>
     </div>
   </TimedModal>
   <input id="sidebar" type="checkbox" class="drawer-toggle" bind:checked />
@@ -72,7 +73,7 @@
     <!-- Navbar -->
     <div class="navbar w-full bg-base-300">
       <div class="flex-none">
-        <button aria-label="open sidebar" class="btn btn-square btn-ghost" on:click={handleClick}>
+        <button aria-label="open sidebar" class="btn-ghost btn-square btn" on:click={handleClick}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -84,7 +85,7 @@
       <div class="mx-2 flex-1 px-2">PubLogo</div>
       <div class="flex-none">
         {#if $user}
-          <button class="btn btn-ghost btn-lg" on:click={triggerLogout}
+          <button class="btn-ghost btn-lg btn" on:click={triggerLogout}
             >{$_('candidateApp.navbar.logOut')}</button>
         {/if}
       </div>
@@ -96,7 +97,7 @@
     <label for="sidebar" aria-label="close sidebar" class="drawer-overlay" />
     <ul class="menu h-full w-fit bg-base-200 p-4">
       <!-- Sidebar content here -->
-      <button aria-label="close sidebar" class="btn btn-square btn-ghost" on:click={handleClick}>
+      <button aria-label="close sidebar" class="btn-ghost btn-square btn" on:click={handleClick}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-24 w-24"
