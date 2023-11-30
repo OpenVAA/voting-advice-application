@@ -57,15 +57,6 @@
       "relation": "oneToMany",
       "target": "api::language.language"
     },
-    "politicalExperience": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "text",
-      "required": true
-    },
     "party": {
       "type": "relation",
       "relation": "manyToOne",

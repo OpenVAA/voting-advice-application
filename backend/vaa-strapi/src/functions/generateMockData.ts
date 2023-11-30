@@ -164,6 +164,18 @@ export async function generateMockData() {
   await createParties(10);
   console.info('Done!');
   console.info('#######################################');
+  console.info('inserting question categories');
+  await createQuestionCategories();
+  console.info('Done!');
+  console.info('#######################################');
+  console.info('inserting question types');
+  await createQuestionTypes();
+  console.info('Done!');
+  console.info('#######################################');
+  console.info('inserting common questions');
+  await createCommonQuestions();
+  console.info('Done!');
+  console.info('#######################################');
   console.info('inserting candidates');
   await createCandidates(25);
   console.info('Done!');
@@ -182,14 +194,6 @@ export async function generateMockData() {
   console.info('#######################################');
   console.info('inserting party nominations');
   await createPartyNominations(2);
-  console.info('Done!');
-  console.info('#######################################');
-  console.info('inserting question categories');
-  await createQuestionCategories();
-  console.info('Done!');
-  console.info('#######################################');
-  console.info('inserting question types');
-  await createQuestionTypes();
   console.info('Done!');
   console.info('#######################################');
   console.info('inserting questions');
@@ -534,6 +538,119 @@ async function createParties(length: number) {
   }
 }
 
+async function createCommonQuestions() {
+  // Political experience
+
+  const textQuestionType = await strapi.entityService.findMany(QUESTION_TYPE_API, {
+    filters: {
+      name: 'Text answer'
+    },
+    populate: ['localizations']
+  });
+
+  const commonQuestionCategory = await strapi.entityService.findMany(QUESTION_CATEGORY_API, {
+    filters: {
+      name: 'Common'
+    },
+    populate: ['localizations']
+  });
+
+  const politicalExperienceQuestion = await strapi.entityService.create(QUESTION_API, {
+    data: {
+      text: 'Political experience',
+      questionType: textQuestionType[0].id,
+      questionCategory: commonQuestionCategory[0].id,
+      locale: mainLocale.code,
+      publishedAt: new Date()
+    }
+  });
+
+  const politicalExperienceQuestionSecondLocale = await strapi.entityService.create(QUESTION_API, {
+    data: {
+      text: 'Poliittinen kokemus',
+      questionType: textQuestionType[0].localizations.find(
+        (localization) => localization.locale === secondLocale.code
+      ).id,
+      questionCategory: commonQuestionCategory[0].localizations.find(
+        (localization) => localization.locale === secondLocale.code
+      ).id,
+      locale: secondLocale.code,
+      publishedAt: new Date()
+    }
+  });
+
+  const politicalExperienceQuestionThirdLocale = await strapi.entityService.create(QUESTION_API, {
+    data: {
+      text: 'Experiencia política',
+      questionType: textQuestionType[0].localizations.find(
+        (localization) => localization.locale === thirdLocale.code
+      ).id,
+      questionCategory: commonQuestionCategory[0].localizations.find(
+        (localization) => localization.locale === thirdLocale.code
+      ).id,
+      locale: thirdLocale.code,
+      publishedAt: new Date()
+    }
+  });
+
+  await createRelationsForAvailableLocales(QUESTION_API, politicalExperienceQuestion, [
+    politicalExperienceQuestionSecondLocale,
+    politicalExperienceQuestionThirdLocale
+  ]);
+
+  // Gender
+
+  const genderQuestionType = await strapi.entityService.findMany(QUESTION_TYPE_API, {
+    filters: {
+      name: 'Gender'
+    },
+    populate: ['localizations']
+  });
+
+  const genderQuestion = await strapi.entityService.create(QUESTION_API, {
+    data: {
+      text: 'Gender',
+      questionType: genderQuestionType[0].id,
+      questionCategory: commonQuestionCategory[0].id,
+      locale: mainLocale.code,
+      publishedAt: new Date()
+    }
+  });
+
+  const genderQuestionSecondLocale = await strapi.entityService.create(QUESTION_API, {
+    data: {
+      text: 'Sukupuoli',
+      questionType: genderQuestionType[0].localizations.find(
+        (localization) => localization.locale === secondLocale.code
+      ).id,
+      questionCategory: commonQuestionCategory[0].localizations.find(
+        (localization) => localization.locale === secondLocale.code
+      ).id,
+      locale: secondLocale.code,
+      publishedAt: new Date()
+    }
+  });
+
+  const genderQuestionThirdLocale = await strapi.entityService.create(QUESTION_API, {
+    data: {
+      text: 'Género',
+      questionType: genderQuestionType[0].localizations.find(
+        (localization) => localization.locale === thirdLocale.code
+      ).id,
+      questionCategory: commonQuestionCategory[0].localizations.find(
+        (localization) => localization.locale === thirdLocale.code
+      ).id,
+      locale: thirdLocale.code,
+      publishedAt: new Date()
+    }
+  });
+
+  await createRelationsForAvailableLocales(QUESTION_API, genderQuestion, [
+    genderQuestionSecondLocale,
+    genderQuestionThirdLocale
+  ]);
+}
+
 async function createCandidates(length: number) {
   const languages = await strapi.entityService.findMany(LANGUAGE_API, {
     filters: {
@@ -560,7 +677,6 @@ async function createCandidates(length: number) {
     const candidateObj = {
       firstName,
       lastName,
-      politicalExperience,
       motherTongues: [motherTongue.id],
       otherLanguages: [otherLanguage.id],
       party: party.id
@@ -586,7 +702,6 @@ async function createCandidates(length: number) {
         lastName: fakerFI.person.lastName(),
         party: partyLocalizations.find((localization) => localization.locale === secondLocale.code)
           .id,
-        politicalExperience: faker.lorem.paragraph(3),
         motherTongues: [
           motherTongueLocalizations.find(
             (localization) => localization.locale === secondLocale.code
@@ -609,7 +724,6 @@ async function createCandidates(length: number) {
         lastName: fakerES.person.lastName(),
         party: partyLocalizations.find((localization) => localization.locale === thirdLocale.code)
           .id,
-        politicalExperience: faker.lorem.paragraph(3),
         motherTongues: [
           motherTongueLocalizations.find((localization) => localization.locale === thirdLocale.code)
             .id
@@ -627,6 +741,60 @@ async function createCandidates(length: number) {
     await createRelationsForAvailableLocales(CANDIDATE_API, candidateMainLocale, [
       candidateSecondLocale,
       candidateThirdLocale
+    ]);
+
+    // Political experience
+
+    const politicalExperienceQuestion = await strapi.db.query(QUESTION_API).findOne({
+      where: {
+        text: 'Political experience'
+      },
+      populate: ['localizations']
+    });
+
+    const politicalExperienceAnswerData = {
+      question: politicalExperienceQuestion.id,
+      candidate: candidateMainLocale.id,
+      answer: politicalExperience,
+      locale: mainLocale.code,
+      publishedAt: new Date()
+    };
+
+    const politicalExperienceLocalizations = politicalExperienceQuestion.localizations;
+
+    const secondLocalePoliticalExperienceQuestion = politicalExperienceLocalizations.find(
+      (localization) => localization.locale === secondLocale.code
+    );
+
+    const thirdLocalePoliticalExperienceQuestion = politicalExperienceLocalizations.find(
+      (localization) => localization.locale === thirdLocale.code
+    );
+
+    const politicalExperienceAnswerMainLocale = await strapi.entityService.create(ANSWER_API, {
+      data: politicalExperienceAnswerData
+    });
+
+    const politicalExperienceAnswerSecondLocale = await strapi.entityService.create(ANSWER_API, {
+      data: {
+        ...politicalExperienceAnswerData,
+        question: secondLocalePoliticalExperienceQuestion.id,
+        candidate: candidateSecondLocale.id,
+        locale: secondLocale.code
+      }
+    });
+
+    const politicalExperienceAnswerThirdLocale = await strapi.entityService.create(ANSWER_API, {
+      data: {
+        ...politicalExperienceAnswerData,
+        question: thirdLocalePoliticalExperienceQuestion.id,
+        candidate: candidateThirdLocale.id,
+        locale: thirdLocale.code
+      }
+    });
+
+    await createRelationsForAvailableLocales(ANSWER_API, politicalExperienceAnswerMainLocale, [
+      politicalExperienceAnswerSecondLocale,
+      politicalExperienceAnswerThirdLocale
     ]);
   }
 }
@@ -1045,6 +1213,42 @@ async function createQuestionTypes() {
           }
         ]
       }
+    },
+    {
+      name: 'Text answer',
+      info: 'Question with a text answer',
+      settings: {
+        type: 'Text'
+      }
+    },
+    {
+      name: 'Gender',
+      info: 'Gender options',
+      settings: {
+        type: 'Gender',
+        values: [
+          {
+            key: 1,
+            label: 'Male'
+          },
+          {
+            key: 2,
+            label: 'Female'
+          },
+          {
+            key: 3,
+            label: 'Transgender'
+          },
+          {
+            key: 4,
+            label: 'Non-binary'
+          },
+          {
+            key: 5,
+            label: 'Prefer not to answer'
+          }
+        ]
+      }
     }
   ];
 
@@ -1101,19 +1305,23 @@ async function createQuestions() {
   let questions = [];
   let questionsSecondLocale = [];
 
-  const questionTypes = await strapi.entityService.findMany(QUESTION_TYPE_API, {
-    filters: {
-      locale: mainLocale.code
-    },
-    populate: ['localizations']
-  });
+  const questionTypes = (
+    await strapi.entityService.findMany(QUESTION_TYPE_API, {
+      filters: {
+        locale: mainLocale.code
+      },
+      populate: ['localizations']
+    })
+  ).filter((type) => type.name != 'Gender');
 
-  const questionCategories = await strapi.entityService.findMany(QUESTION_CATEGORY_API, {
-    filters: {
-      locale: mainLocale.code
-    },
-    populate: ['localizations']
-  });
+  const questionCategories = (
+    await strapi.entityService.findMany(QUESTION_CATEGORY_API, {
+      filters: {
+        locale: mainLocale.code
+      },
+      populate: ['localizations']
+    })
+  ).filter((category) => category.name !== 'Common');
 
   // Example questions sourced from Yle 2023 Election Compass
   for (let index = 0; index < mockQuestions.length; index++) {
@@ -1204,6 +1412,8 @@ async function createCandidateAnswers() {
   for (const candidate of candidates) {
     for (const question of questions) {
       const questionTypeSettings: any[] = question.questionType.settings.values;
+      if (!questionTypeSettings || questionTypeSettings.length === 0) continue;
+
       const answer = {key: faker.helpers.arrayElement(questionTypeSettings).key};
       const openAnswer = faker.lorem.sentence();
 
@@ -1273,12 +1483,19 @@ async function createPartyAnswers() {
     filters: {
       locale: mainLocale.code
     },
-    populate: ['localizations', 'questionType']
+    populate: ['localizations', 'questionType', 'questionCategory']
   });
 
   for (const party of parties) {
     for (const question of questions) {
       const questionTypeSettings: any[] = question.questionType.settings.values;
+      if (
+        !questionTypeSettings ||
+        questionTypeSettings.length === 0 ||
+        question.questionCategory.name === 'Common'
+      )
+        continue;
+
       const answer = {key: faker.helpers.arrayElement(questionTypeSettings).key};
       const openAnswer = faker.lorem.sentence();
 
@@ -1345,9 +1562,9 @@ async function createCandidateUsers() {
 
   await strapi.entityService.create(USER_API, {
     data: {
-      username: 'asd',
-      email: 'asd@asd.asd',
-      password: 'asdasd',
+      username: 'test',
+      email: 'test.test@test.com',
+      password: 'asdfgh',
       provider: 'local',
       confirmed: true,
       blocked: false,
