@@ -106,6 +106,14 @@
       "electionManifesto": "Election Manifesto",
       "tapToAddPhoto": "Tap to add photo"
     },
+    "setPassword": {
+      "greeting": "Hello, ",
+      "description": "Set a secure password according to the requirements below:",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "setPassword": "Set password",
+      "passwordsDontMatch": "Passwords don't match"
+    },
     "genders": {
       "male": "Male",
       "female": "Female",
