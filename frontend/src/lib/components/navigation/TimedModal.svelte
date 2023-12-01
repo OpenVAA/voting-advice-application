@@ -1,4 +1,3 @@
-<!-- TimedModal.svelte -->
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {tweened} from 'svelte/motion';
@@ -79,6 +78,29 @@
     timeout = null;
   };
 </script>
+
+<!--
+@component
+TimedModal is a modal that will automatically close after a set amount of time.
+
+### Slots
+
+- default: The content of the modal.
+
+### Properties
+
+- onTimeout (required): A function that will be called when the modal times out.
+- timerDuration (optional): The duration of the timer in seconds. Default is 30 seconds.
+- timeLeftInt (optional): The time left in seconds. This is used to update the progress bar. Default is timerDuration.
+
+### Usage
+
+```tsx
+<TimedModal onTimeout={() => console.log('Timed out!')}>
+  <p>Example content</p>
+</TimedModal>
+```
+-->
 
 <dialog bind:this={modalContainer} class="modal dark:bg-white dark:bg-opacity-10">
   <div class="modal-box">

@@ -1,8 +1,7 @@
-<script lang="ts">
-  import {appName} from '$candidate/placeholder.json';
+<script>
   import RequireLogin from '$lib/components/authentication/RequireLogin.svelte';
 </script>
 
 <RequireLogin showLogin>
-  <h1>Welcome to the {appName}</h1>
+  <slot />
 </RequireLogin>
