@@ -2,6 +2,8 @@
   import {_} from 'svelte-i18n';
 
   export let candidate: CandidateProps;
+  export let questions: QuestionProps[] = [];
+  const politicalExperience = questions.find((q) => q.text === 'Political experience');
 </script>
 
 <section class="p-lg">
@@ -47,7 +49,8 @@
     <tr>
       <th class="small-label">{$_('candidate.politicalExperience')}</th>
       <td>
-        {candidate.politicalExperience}
+        {candidate.answers?.filter((answer) => answer.questionId === politicalExperience?.id)[0]
+          .openAnswer}
       </td>
     </tr>
   </table>

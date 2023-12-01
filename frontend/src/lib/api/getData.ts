@@ -153,14 +153,13 @@ export const getNominatedCandidates = ({
           party: {
             name: nom.attributes.party.data.attributes.name,
             shortName: nom.attributes.party.data.attributes.shortName
-          },
-          politicalExperience: attr.politicalExperience
+          }
         };
         if (loadAnswers) {
           props['answers'] = attr.answers.data.map((a: StrapiAnswerData) => ({
             questionId: '' + a.attributes.question.data.id,
+            openAnswer: a.attributes.answer as unknown as string,
             answer: a.attributes.answer.key
-            // openAnswer?: string;
           }));
         }
         return props;

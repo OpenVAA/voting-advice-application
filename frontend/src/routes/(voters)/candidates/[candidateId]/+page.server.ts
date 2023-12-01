@@ -1,4 +1,4 @@
-import {getNominatedCandidates} from '$lib/api/getData';
+import {getNominatedCandidates, getQuestions} from '$lib/api/getData';
 import {error} from '@sveltejs/kit';
 import type {PageServerLoad} from './$types';
 
@@ -8,7 +8,12 @@ export const load = (async ({params}) => {
   if (results.length === 0) {
     throw error(404, 'Candidate not found');
   }
+  const questions = await getQuestions();
+  if (questions.length === 0) {
+    throw error(404, 'Questions not found');
+  }
   return {
-    candidate: results[0]
+    candidate: results[0],
+    questions
   };
 }) satisfies PageServerLoad;

@@ -1237,14 +1237,10 @@ async function createQuestionTypes() {
           },
           {
             key: 3,
-            label: 'Transgender'
-          },
-          {
-            key: 4,
             label: 'Non-binary'
           },
           {
-            key: 5,
+            key: 4,
             label: 'Prefer not to answer'
           }
         ]
@@ -1562,9 +1558,9 @@ async function createCandidateUsers() {
 
   await strapi.entityService.create(USER_API, {
     data: {
-      username: 'test',
-      email: 'test.test@test.com',
-      password: 'asdfgh',
+      username: 'asd',
+      email: 'asd@asd.asd',
+      password: 'asdasd',
       provider: 'local',
       confirmed: true,
       blocked: false,

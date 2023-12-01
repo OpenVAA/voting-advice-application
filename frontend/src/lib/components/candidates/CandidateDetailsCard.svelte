@@ -8,6 +8,7 @@
 
   export let candidate: CandidateProps;
   export let ranking: RankingProps | undefined = undefined;
+  export let questions: QuestionProps[] = [];
 
   // Tabs
   let tabs = [$_('candidate.tabs.basicInfo'), $_('candidate.tabs.opinions')];
@@ -43,7 +44,7 @@
   <!-- {#} -->
   <Tabs on:changeTab={handleChangeTab} {tabs} {activeItem} />
   {#if tabs[0] === activeItem}
-    <CandidateBasicInfo {candidate} />
+    <CandidateBasicInfo {candidate} {questions} />
   {:else if tabs[1] === activeItem}
     <CandidateOpinions {candidate} />
   {/if}

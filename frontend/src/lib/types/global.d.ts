@@ -82,7 +82,6 @@ declare global {
       shortName: string;
     };
     // photo
-    politicalExperience: string;
   }
 
   /**
