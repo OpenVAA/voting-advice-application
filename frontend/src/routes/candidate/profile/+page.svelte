@@ -89,9 +89,6 @@
     <FieldGroup>
       <label for="message" class={disclaimerClass} slot="header"
         >{$_('candidateApp.basicInfo.electionManifesto')}</label>
-      <!-- <p class={disclaimerClass} slot="header">
-        {$_('candidateApp.basicInfo.electionManifesto')}
-      </p> -->
       <textarea id="message" rows="4" class="w-full resize-none bg-base-100 p-6 !outline-none" />
     </FieldGroup>
   </div>
