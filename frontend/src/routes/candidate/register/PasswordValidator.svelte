@@ -1,9 +1,14 @@
 <script lang="ts">
   import {tweened} from 'svelte/motion';
   import {cubicOut} from 'svelte/easing';
-  import {type ValidationDetail, validatePasswordDetails} from './passwordValidation';
+  import {_} from 'svelte-i18n';
+  import {
+    type ValidationDetail,
+    validatePasswordDetails,
+    minPasswordLength
+  } from './passwordValidation';
   export let password = '';
-  export let username = '';
+  export let username = 'pekka';
   export let validPassword = false;
 
   // Perform debounced validation, validation status is updated after a delay when the user stops typing
@@ -15,6 +20,13 @@
     timeout = setTimeout(() => {
       const res = validatePasswordDetails(password, username);
       ({details: validationDetails, status: validPassword} = res);
+
+      // Localize validation messages
+      for (const key in validationDetails) {
+        validationDetails[key].message = $_(validationDetails[key].message, {
+          values: {minPasswordLength: minPasswordLength}
+        });
+      }
     }, 200);
   }
 
@@ -87,22 +99,24 @@ Therefore, the validity should be also checked on form submit as well and on the
 
 <div class="m-sm flex w-full flex-col">
   <ul class="m-sm items-start">
+    <!-- Show each validation rule and its state, completed rules are shown in a different color with a checkmark -->
+    {#each Object.values(validationRules) as rule}
+      <li>
+        {#if rule.status}
+          <p class="text-primary">✓ <strong>{rule.message}</strong></p>
+        {:else}
+          <p>{rule.message}</p>
+        {/if}
+      </li>
+    {/each}
+
     <!-- Show negative rules if they are violated -->
     {#each Object.values(negativeEnforcedRules) as rule}
-      <li><p class="text-error">x {rule.message}</p></li>
+      <li><p class="text-error">✘ <strong>{rule.message}</strong></p></li>
     {/each}
 
     {#each Object.values(negativeNonEnforcedRules) as rule}
-      <li><p class="text-error">⚠ {rule.message}</p></li>
-    {/each}
-
-    <!-- Show each validation rule and its state, completed rules are shown in a different color with a checkmark -->
-    {#each Object.values(validationRules) as rule}
-      {#if rule.status}
-        <li><p class="text-primary">✓ <strong>{rule.message}</strong></p></li>
-      {:else}
-        <li><p>{rule.message}</p></li>
-      {/if}
+      <li><p class="text-error">✗ {rule.message}</p></li>
     {/each}
   </ul>
 

@@ -1,17 +1,6 @@
 // Password requirements
-const minPasswordLength = 8;
+export const minPasswordLength = 8;
 const repetitionLimit = 4; // Number of character repetitions not allowed
-const sequenceLimit = 4; // Number of characters in sequence not allowed
-
-// Common patterns and sequences to avoid
-// TODO: Localization
-const avoidablePatterns = [
-  'abcdefghijklmnopqrstuvwxyz', // Alphabetical sequence
-  '01234567890', // Numerical sequence
-  'qwertyuiopå', // Keyboard layout
-  'asdfghjklöä',
-  'zxcvbnm'
-];
 
 export interface ValidationDetail {
   status: boolean; // true if requirement is valid, false if invalid
@@ -39,26 +28,6 @@ function checkRepetition(password: string): boolean {
       return true;
     }
   }
-  return false;
-}
-
-/**
- * Checks if the given password contains any common sequences or keyboard patterns.
- * The patterns are defined in the `avoidablePatterns` array.
- *
- * @param {string} password - The password to check.
- * @returns {boolean} `true` if the password contains common keyboard patterns, `false` otherwise.
- */
-function checkCommonPatterns(password: string): boolean {
-  for (const pattern of avoidablePatterns) {
-    for (let i = 0; i <= pattern.length - sequenceLimit; i++) {
-      const substring = pattern.slice(i, i + sequenceLimit);
-      if (password.includes(substring)) {
-        return true;
-      }
-    }
-  }
-
   return false;
 }
 
@@ -96,38 +65,33 @@ function passwordValidation(password: string, username: string): Record<string, 
   const result: Record<string, ValidationDetail> = {
     length: {
       status: password.length >= minPasswordLength,
-      message: `At least ${minPasswordLength} characters`
+      message: 'candidateApp.passwordValidation.length'
     },
     uppercase: {
       status: containsCharacter(password, (char) => isLetter(char) && char === char.toUpperCase()),
-      message: 'Uppercase letter'
+      message: 'candidateApp.passwordValidation.uppercase'
     },
     lowercase: {
       status: containsCharacter(password, (char) => isLetter(char) && char === char.toLowerCase()),
-      message: 'Lowercase letter'
+      message: 'candidateApp.passwordValidation.lowercase'
     },
     number: {
       status: containsCharacter(password, (char) => !isNaN(Number(char))),
-      message: 'Number'
+      message: 'candidateApp.passwordValidation.number'
     },
     symbol: {
       status: containsCharacter(password, (char) => !isLetter(char) && isNaN(Number(char))),
-      message: 'Symbol'
+      message: 'candidateApp.passwordValidation.symbol'
     },
     username: {
       status: username === '' || !password.toLowerCase().includes(username.toLowerCase()),
-      message: 'Avoid using username in password',
+      message: 'candidateApp.passwordValidation.username',
       negative: true,
       enforced: true
     },
     repetition: {
       status: !checkRepetition(password),
-      message: 'Contains character repetition',
-      negative: true
-    },
-    commonPatterns: {
-      status: !checkCommonPatterns(password),
-      message: 'Contains common sequences or keyboard patterns',
+      message: 'candidateApp.passwordValidation.repetition',
       negative: true
     }
   };
