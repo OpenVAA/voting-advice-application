@@ -102,7 +102,7 @@ TimedModal is a modal that will automatically close after a set amount of time.
 ```
 -->
 
-<dialog bind:this={modalContainer} class="modal">
+<dialog bind:this={modalContainer} class="modal dark:bg-white dark:bg-opacity-10">
   <div class="modal-box">
     <slot />
     <progress
