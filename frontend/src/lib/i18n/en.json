@@ -112,7 +112,9 @@
       "password": "Password",
       "confirmPassword": "Confirm password",
       "setPassword": "Set password",
-      "passwordsDontMatch": "Passwords don't match"
+      "passwordsDontMatch": "Passwords don't match",
+      "passwordNotValid": "Password not valid",
+      "registrationError": "Error registering password"
     },
     "passwordValidation": {
       "length": "At least {minPasswordLength} characters",
