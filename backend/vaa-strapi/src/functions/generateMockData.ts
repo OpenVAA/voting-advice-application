@@ -10,6 +10,7 @@
  * and also it is not possible to create localizations using the bulk insert.
  */
 
+import crypto from 'crypto';
 import {faker, fakerES, fakerFI} from '@faker-js/faker';
 import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
 import mockQuestions from './mockQuestions.json';
@@ -202,10 +203,6 @@ export async function generateMockData() {
   console.info('#######################################');
   console.info('inserting party answers');
   await createPartyAnswers();
-  console.info('Done!');
-  console.info('#######################################');
-  console.info('inserting candidate users');
-  await createCandidateUsers();
   console.info('Done!');
   console.info('#######################################');
 }
@@ -570,6 +567,8 @@ async function createCandidates(length: number) {
     const candidateMainLocale = await strapi.entityService.create(CANDIDATE_API, {
       data: {
         ...candidateObj,
+        email: faker.internet.exampleEmail(),
+        registrationKey: crypto.randomUUID(),
         locale: mainLocale.code,
         publishedAt: new Date()
       }
@@ -1333,28 +1332,6 @@ async function createPartyAnswers() {
       ]);
     }
   }
-}
-
-async function createCandidateUsers() {
-  const authenticated = await strapi.query('plugin::users-permissions.role').findOne({
-    where: {
-      type: 'authenticated'
-    }
-  });
-  const candidate = await strapi.entityService.findOne(CANDIDATE_API, {});
-
-  await strapi.entityService.create(USER_API, {
-    data: {
-      username: 'asd',
-      email: 'asd@asd.asd',
-      password: 'asdasd',
-      provider: 'local',
-      confirmed: true,
-      blocked: false,
-      role: authenticated.id,
-      candidate: candidate.id
-    }
-  });
 }
 
 function capitaliseFirstLetter(word: string) {
