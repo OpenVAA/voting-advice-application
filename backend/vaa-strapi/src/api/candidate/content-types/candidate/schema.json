@@ -83,6 +83,27 @@
       "relation": "oneToMany",
       "target": "api::nomination.nomination",
       "mappedBy": "candidate"
+    },
+    "email": {
+      "type": "string",
+      "configurable": false,
+      "private": true,
+      "searchable": false
+    },
+    "registrationKey": {
+      "type": "string",
+      "configurable": false,
+      "private": true,
+      "searchable": false
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "candidate",
+      "configurable": false,
+      "private": true,
+      "searchable": false
     }
   }
 }
