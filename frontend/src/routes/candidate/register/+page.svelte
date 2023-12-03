@@ -12,7 +12,7 @@
 </script>
 
 {#if registrationCode && checkRegistrationCode(registrationCode)}
-  <PasswordSetPage />
+  <PasswordSetPage userName={'B Arnabas'} />
 {:else if registrationCode}
   <RegistrationCodePage wrongCode={true} {registrationCode} />
 {:else}

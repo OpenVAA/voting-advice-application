@@ -106,6 +106,24 @@
       "electionManifesto": "Election Manifesto",
       "tapToAddPhoto": "Tap to add photo"
     },
+    "setPassword": {
+      "greeting": "Hello, {name}!",
+      "description": "Set a secure password according to the requirements below:",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "setPassword": "Set password",
+      "passwordsDontMatch": "Passwords don't match"
+    },
+    "passwordValidation": {
+      "length": "At least {minPasswordLength} characters",
+      "uppercase": "Uppercase letter",
+      "lowercase": "Lowercase letter",
+      "number": "Number",
+      "symbol": "Symbol",
+      "username": "Avoid using your name in the password",
+      "repetition": "Contains character repetition",
+      "commonPatterns": "Contains common sequences or patterns"
+    },
     "genders": {
       "male": "Male",
       "female": "Female",
