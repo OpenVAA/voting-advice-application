@@ -13,7 +13,7 @@
   let classes: string;
   $: {
     classes =
-      'flex items-center gap-md px-16 py-md min-h-touch min-w-touch w-full !text-neutral hover:bg-base-200 active:bg-base-200';
+      'flex items-center gap-md px-10 py-md min-h-touch min-w-touch w-full !text-neutral hover:bg-base-200 active:bg-base-200';
     if (!icon) {
       // This corresponds to the width of an icon (24/16 rem) and the gap
       // between the icon and the text (md = 10/16 rem)
