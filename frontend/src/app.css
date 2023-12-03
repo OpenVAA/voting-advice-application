@@ -60,7 +60,7 @@
 
   /* Style buttons */
   .btn {
-    @apply font-normal;
+    @apply px-10 font-normal;
   }
   .btn-ghost {
     @apply text-primary;
