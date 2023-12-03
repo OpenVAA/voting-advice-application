@@ -55,7 +55,7 @@ Page where candidates can set their password when logging to the app for the fir
           <p class="text-2xl font-bold text-primary">{$page.data.appLabels.appTitle}</p>
           <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
           <h1 class="my-24 text-2xl font-normal">
-            {$_('candidateApp.setPassword.greeting')}{userName}!
+            {$_('candidateApp.setPassword.greeting', {values: {name: userName}})}
           </h1>
         </hgroup>
 

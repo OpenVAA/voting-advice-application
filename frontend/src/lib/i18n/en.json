@@ -107,7 +107,7 @@
       "tapToAddPhoto": "Tap to add photo"
     },
     "setPassword": {
-      "greeting": "Hello, ",
+      "greeting": "Hello, {name}!",
       "description": "Set a secure password according to the requirements below:",
       "password": "Password",
       "confirmPassword": "Confirm password",
