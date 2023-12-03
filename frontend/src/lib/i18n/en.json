@@ -130,6 +130,13 @@
       "nonBinary": "Non-binary",
       "other": "Other",
       "preferNotToSay": "Prefer not to say"
+    },
+    "registration": {
+      "enterCode": "Enter the passkey you’ve received from your party to edit your data and opinions.",
+      "registrationCode": "registration code",
+      "wrongRegistrationCode": "Wrong registration code",
+      "registerButton": "Login",
+      "submitPlaceholder": "E.g. CP23-174a-f4%&-aHAB"
     }
   }
 }
