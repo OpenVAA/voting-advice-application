@@ -35,6 +35,28 @@ to define some ids, pass Aria labels and show an optional progress bar in the
 header. You can also pass any valid properties of the `<Page>` template this
 is based on.
 
+NB! If you want to pass some slots conditionally, you cannot wrap the slots
+in an `#if` block due to a limitation of Svelte. This may be fixed by 
+https://github.com/sveltejs/svelte/pull/8304 in the future, but until then 
+the following code will not work:
+
+```tsx
+  {#if emoji !== ''}
+    <HeroEmoji slot="hero">{emoji}</HeroEmoji>
+  {/if}
+```
+
+Instead, you have to use a wrapper. Note that this will also always result in
+the rendering of an empty `<figure>` element even if there's no content.
+
+```tsx
+  <svelte:fragment slot="hero">
+    {#if emoji !== ''}
+      <HeroEmoji>{emoji}</HeroEmoji>
+    {/if}
+  </svelte:fragment>
+```
+
 ### Slots
 
 - default: main content of the page
