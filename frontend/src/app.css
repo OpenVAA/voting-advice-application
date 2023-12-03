@@ -65,6 +65,11 @@
   .btn-ghost {
     @apply text-primary;
   }
+  .btn-ghost.btn-disabled,
+  .btn-ghost[disabled],
+  .btn-ghost:disabled {
+    background-color: transparent;
+  }
 
   /* Drawer 
    * Fix screen height on iOS Safari */
