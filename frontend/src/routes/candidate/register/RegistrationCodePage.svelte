@@ -9,10 +9,29 @@
   export let wrongCode = false;
 
   const onRegistration = async () => {
-    //TODO add logic
     await goto(candidateAppRoute + '/register?registrationCode=' + registrationCode);
   };
 </script>
+
+<!--
+@component
+Page where user can input their registration code.
+
+### Properties
+wrongCode
+- If this is `true` the page will display error message.
+- Default value is `false`.
+
+registrationCode
+- This is used as value of the input field.
+- Default value is empty string.
+
+### Usage
+```tsx
+<RegistrationCodePage wrongCode={true} registrationCode={"123-123-123"} />
+```
+  
+-->
 
 <div class="flex w-full flex-grow flex-col items-center bg-base-300">
   <figure class="hero bg-[#d4dbef]">
