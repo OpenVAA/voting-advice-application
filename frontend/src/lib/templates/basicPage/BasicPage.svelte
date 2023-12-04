@@ -42,7 +42,7 @@ the following code will not work:
 
 ```tsx
   {#if emoji !== ''}
-    <HeroEmoji slot="hero">{emoji}</HeroEmoji>
+    <HeroEmoji slot="hero" {emoji}/>
   {/if}
 ```
 
@@ -52,7 +52,7 @@ the rendering of an empty `<figure>` element even if there's no content.
 ```tsx
   <svelte:fragment slot="hero">
     {#if emoji !== ''}
-      <HeroEmoji>{emoji}</HeroEmoji>
+      <HeroEmoji {emoji}/>
     {/if}
   </svelte:fragment>
 ```
@@ -91,7 +91,7 @@ the rendering of an empty `<figure>` element even if there's no content.
       <Button on:click={showInfo} variant="icon" icon="info" text="Show info"/>
     </svelte:fragment>
 
-    <HeroEmoji slot="hero">🚀</HeroEmoji>
+    <HeroEmoji slot="hero" emoji="🚀"/>
 
     <svelte:fragment slot="note">
       <Icon name="check"/> Your constituency is <strong>Loremipsum</strong>

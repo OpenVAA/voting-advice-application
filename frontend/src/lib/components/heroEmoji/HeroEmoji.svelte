@@ -3,13 +3,17 @@
   import type {HeroEmojiProps} from './HeroEmoji.type';
 
   type $$Props = HeroEmojiProps;
+
+  export let emoji: $$Props['emoji'] = undefined;
+
+  $: if (emoji != null && emoji !== '') {
+    emoji = emoji.replace(/\P{Extended_Pictographic}/gu, '');
+  }
 </script>
 
 <!--
 @component
 Used for large emojis acting as decorative illustrations.
-
-The content of the component is the emoji or emojis to be displayed.
 
 The content is hidden from screen readers by default, because the
 intended use is for [decorative purposes](https://www.w3.org/WAI/tutorials/images/decorative/).
@@ -21,28 +25,27 @@ using the `class` attribute, e.g. `class="text-[10rem]"`.
 
 ### Properties
 
+- `emoji`: The emoji to use. Note that all non-emoji characters will be removed. If `undefined` the component will not be rendered at all. @default `undefined`
 - `aria-hidden`: @default `true`
 - `role`: Aria role @default `img`
 - `class`: Additional class string to append to the element's default classes.
 - Any valid attributes of a `<div>` element.
 
-### Slots
-
-- default: the emoji or emojis to be displayed.
-
 ### Usage
 
 ```tsx
-<HeroEmoji>🚀</HeroEmoji>
+<HeroEmoji emoji="🚀"/>
 ```
 -->
 
-<div
-  aria-hidden="true"
-  role="img"
-  {...concatClass(
-    $$restProps,
-    'whitespace-nowrap truncate text-clip text-center font-emoji text-[6.5rem] leading-none'
-  )}>
-  <slot />
-</div>
+{#if emoji != null && emoji !== ''}
+  <div
+    aria-hidden="true"
+    role="img"
+    {...concatClass(
+      $$restProps,
+      'whitespace-nowrap truncate text-clip text-center font-emoji text-[6.5rem] leading-[1.1]'
+    )}>
+    {emoji}
+  </div>
+{/if}
