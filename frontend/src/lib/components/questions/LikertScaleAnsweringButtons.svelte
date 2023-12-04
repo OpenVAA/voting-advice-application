@@ -1,6 +1,5 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
-  import {_} from 'svelte-i18n';
 
   export let name: QuestionProps['id'];
   export let options: QuestionProps['options'];

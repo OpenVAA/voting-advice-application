@@ -1,23 +1,28 @@
 'use strict';
 
-const { yup, validateYupSchema, sanitize, errors: { ValidationError, ApplicationError } } = require('@strapi/utils');
+const {
+  yup,
+  validateYupSchema,
+  sanitize,
+  errors: {ValidationError, ApplicationError}
+} = require('@strapi/utils');
 
 const checkSchema = yup.object({
-  registrationKey: yup.string().required(),
+  registrationKey: yup.string().required()
 });
 const validateCheckBody = validateYupSchema(checkSchema);
 
 const registerSchema = yup.object({
   registrationKey: yup.string().required(),
-  password: yup.string().required(),
+  password: yup.string().required()
 });
 const validateRegisterBody = validateYupSchema(registerSchema);
 
 const sanitizeCandidate = (candidate, ctx) => {
-  const { auth } = ctx.state;
+  const {auth} = ctx.state;
   const candidateSchema = strapi.getModel('api::candidate.candidate');
 
-  return sanitize.contentAPI.output(candidate, candidateSchema, { auth });
+  return sanitize.contentAPI.output(candidate, candidateSchema, {auth});
 };
 
 module.exports = {
@@ -27,7 +32,7 @@ module.exports = {
 
     const candidate = await strapi.query('api::candidate.candidate').findOne({
       populate: ['user'],
-      where: { registrationKey: params.registrationKey },
+      where: {registrationKey: params.registrationKey}
     });
 
     if (!candidate) {
@@ -35,11 +40,13 @@ module.exports = {
     }
 
     if (candidate.user) {
-      throw new ValidationError('The user associated with the registration key is already registered.');
+      throw new ValidationError(
+        'The user associated with the registration key is already registered.'
+      );
     }
 
     return {
-      candidate: await sanitizeCandidate(candidate, ctx),
+      candidate: await sanitizeCandidate(candidate, ctx)
     };
   },
   async register(ctx) {
@@ -49,7 +56,7 @@ module.exports = {
 
     const candidate = await strapi.query('api::candidate.candidate').findOne({
       populate: ['user'],
-      where: { registrationKey: params.registrationKey },
+      where: {registrationKey: params.registrationKey}
     });
 
     if (!candidate) {
@@ -57,14 +64,16 @@ module.exports = {
     }
 
     if (candidate.user) {
-      throw new ValidationError('The user associated with the registration key is already registered.');
+      throw new ValidationError(
+        'The user associated with the registration key is already registered.'
+      );
     }
 
-    const pluginStore = await strapi.store({ type: 'plugin', name: 'users-permissions' });
-    const settings = await pluginStore.get({ key: 'advanced' });
+    const pluginStore = await strapi.store({type: 'plugin', name: 'users-permissions'});
+    const settings = await pluginStore.get({key: 'advanced'});
     const role = await strapi
       .query('plugin::users-permissions.role')
-      .findOne({ where: { type: settings.default_role } });
+      .findOne({where: {type: settings.default_role}});
 
     if (!role) {
       throw new ApplicationError('Impossible to find the default role');
@@ -75,21 +84,21 @@ module.exports = {
       username: candidate.email,
       email: candidate.email,
       password: params.password,
-      confirmed: true,
+      confirmed: true
     });
 
     // TODO: this could be improved, specifically, there exists candidate per locale,
     // so we have to update based on email (unique) compared to relying on the ID
     await strapi.query('api::candidate.candidate').update({
-      where: { email: candidate.email },
+      where: {email: candidate.email},
       data: {
         registrationKey: null,
-        user: user.id,
-      },
+        user: user.id
+      }
     });
 
     return {
-      success: true,
+      success: true
     };
-  },
+  }
 };
