@@ -1308,7 +1308,7 @@ async function createQuestions() {
       },
       populate: ['localizations']
     })
-  ).filter((type) => type.name != 'Gender');
+  ).filter((type) => type.name != 'Gender' && type.name != 'Text answer');
 
   const questionCategories = (
     await strapi.entityService.findMany(QUESTION_CATEGORY_API, {
