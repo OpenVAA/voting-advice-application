@@ -84,7 +84,12 @@
       "useInformation": "How Does This App Work?",
       "logOut": "Logout",
       "close": "Close",
-      "cancel": "Cancel",
+      "cancel": "Cancel"
+    },
+    "logoutModal": {
+      "title": "Some of Your Data Is Still Missing",
+      "body": "There are still 10 items of basic info and 25 opinions to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
+      "confirmation": "Are you sure you want to logout? You will be automatically logged out after {timeLeft} seconds.",
       "continueEnteringData": "Continue Entering Data"
     },
     "basicInfo": {
@@ -112,7 +117,9 @@
       "password": "Password",
       "confirmPassword": "Confirm password",
       "setPassword": "Set password",
-      "passwordsDontMatch": "Passwords don't match"
+      "passwordsDontMatch": "Passwords don't match",
+      "passwordNotValid": "Password not valid",
+      "registrationError": "Error registering password"
     },
     "passwordValidation": {
       "length": "At least {minPasswordLength} characters",

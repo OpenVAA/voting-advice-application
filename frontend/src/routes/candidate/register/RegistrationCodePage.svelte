@@ -30,7 +30,6 @@ registrationCode
 ```tsx
 <RegistrationCodePage wrongCode={true} registrationCode={"123-123-123"} />
 ```
-  
 -->
 
 <div class="flex w-full flex-grow flex-col items-center bg-base-300">

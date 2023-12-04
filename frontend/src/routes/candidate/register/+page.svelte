@@ -26,7 +26,7 @@
 </script>
 
 {#if registrationCode && validRegistrationCode}
-  <PasswordSetPage />
+  <PasswordSetPage {userName} registrationKey={registrationCode} />
 {:else if registrationCode}
   <RegistrationCodePage wrongCode={true} {registrationCode} />
 {:else}

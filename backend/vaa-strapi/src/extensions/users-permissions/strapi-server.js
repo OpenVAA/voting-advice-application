@@ -12,7 +12,7 @@ const defaultPermissions = [
 module.exports = async (plugin) => {
   const origBootstrap = plugin.bootstrap;
   plugin.bootstrap = async (ctx) => {
-    const res = origBootstrap(ctx);
+    const res = await origBootstrap(ctx);
 
     const pluginStore = strapi.store({type: 'plugin', name: 'users-permissions'});
 
