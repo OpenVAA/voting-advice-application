@@ -5,7 +5,7 @@
   import Footer from '$lib/components/footer/Footer.svelte';
   import {register} from '$lib/api/candidate';
   import PasswordValidator from './PasswordValidator.svelte';
-  import {validatePassword} from './passwordValidation';
+  import {validatePassword} from '$lib/utils/passwordValidation';
 
   export let userName: string;
   export let registrationKey: string;

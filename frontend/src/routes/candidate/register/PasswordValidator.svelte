@@ -6,7 +6,7 @@
     type ValidationDetail,
     validatePasswordDetails,
     minPasswordLength
-  } from './passwordValidation';
+  } from '$lib/utils/passwordValidation';
   export let password = '';
   export let username = 'pekka';
   export let validPassword = false;

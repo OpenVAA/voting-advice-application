@@ -131,10 +131,7 @@ export function validatePassword(password: string, username = ''): boolean {
  * @param {string} [username=''] - The username used to check that the password does not contain the username
  * @returns {PasswordValidation} An object containing the validation status and details.
  */
-export function validatePasswordDetails(
-  password: string,
-  username = ''
-): PasswordValidation {
+export function validatePasswordDetails(password: string, username = ''): PasswordValidation {
   const validation = passwordValidation(password, username);
   const result: PasswordValidation = {
     status: isValid(validation),
