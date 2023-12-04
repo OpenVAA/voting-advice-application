@@ -11,6 +11,7 @@
         $_(`candidateApp.genders.${a}`)
       )
     ],
+    // TODO: i18n localization
     ['motherTongue', ['English', 'Suomi', 'Svenska']]
   ]);
 
@@ -35,7 +36,7 @@
           type="text"
           id={field}
           placeholder="PLACEHOLDER"
-          class="input-ghost input input-sm w-6/12 text-right" />
+          class="input input-ghost input-sm w-6/12 text-right" />
       </div>
       <p class={disclaimerClass} slot="footer">
         {$_('candidateApp.basicInfo.disclaimer')}
@@ -52,7 +53,7 @@
             type="number"
             id={field}
             placeholder="0"
-            class="input-ghost input input-sm w-6/12 text-right" />
+            class="input input-ghost input-sm w-6/12 text-right" />
         {:else}
           <select id={field} class="select select-sm w-6/12 text-primary">
             <option disabled selected value style="display: none;" />
@@ -80,7 +81,7 @@
         <label for="unaffiliated" class={labelClass}>
           {$_('candidateApp.basicInfo.fields.unaffiliated')}
         </label>
-        <input id="unaffiliated" type="checkbox" class="toggle-primary toggle mr-8" checked />
+        <input id="unaffiliated" type="checkbox" class="toggle toggle-primary mr-8" checked />
       </div>
       <p class={disclaimerClass} slot="footer">
         {$_('candidateApp.basicInfo.unaffiliatedDescription')}

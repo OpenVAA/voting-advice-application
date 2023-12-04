@@ -15,6 +15,32 @@ export const authenticate = async (identifier: string, password: string): Promis
   });
 };
 
+export const register = async (registrationKey: string, password: string): Promise<Response> => {
+  const url = new URL(constants.PUBLIC_BACKEND_URL);
+  url.pathname = 'api/auth/candidate/register';
+
+  return await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({registrationKey, password})
+  });
+};
+
+export const checkRegistrationKey = async (registrationKey: string): Promise<Response> => {
+  const url = new URL(constants.PUBLIC_BACKEND_URL);
+  url.pathname = 'api/auth/candidate/check';
+
+  return await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({registrationKey})
+  });
+};
+
 /**
  * Get the current user's data, including candidate information
  */
