@@ -10,6 +10,7 @@
  * and also it is not possible to create localizations using the bulk insert.
  */
 
+import crypto from 'crypto';
 import {faker, fakerES, fakerFI} from '@faker-js/faker';
 import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
 import mockQuestions from './mockQuestions.json';
@@ -570,6 +571,8 @@ async function createCandidates(length: number) {
     const candidateMainLocale = await strapi.entityService.create(CANDIDATE_API, {
       data: {
         ...candidateObj,
+        email: faker.internet.exampleEmail(),
+        registrationKey: crypto.randomUUID(),
         locale: mainLocale.code,
         publishedAt: new Date()
       }
@@ -1345,14 +1348,22 @@ async function createCandidateUsers() {
 
   await strapi.entityService.create(USER_API, {
     data: {
-      username: 'asd',
-      email: 'asd@asd.asd',
-      password: 'asdasd',
+      username: 'first.last',
+      email: 'first.last@example.com',
+      password: 'password',
       provider: 'local',
       confirmed: true,
       blocked: false,
       role: authenticated.id,
       candidate: candidate.id
+    }
+  });
+
+  // Disable registration key for the candidate we chose as they're already registered
+  await strapi.query(USER_API).update({
+    where: {id: candidate.id},
+    data: {
+      registrationKey: null
     }
   });
 }

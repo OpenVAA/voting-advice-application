@@ -274,6 +274,7 @@ describe('matchingAlgorithm', () => {
     const likertScale = 5;
     const values = [0, 0.5, 1];
     const coords = values.map((v) => v * maxDist - maxVal);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {questions, voter, candidates, algorithm, matches} = createMatchesAndEntities(
       createLikertScaleValues(likertScale, values),
       [createLikertScaleValues(likertScale, values)],
@@ -295,6 +296,7 @@ describe('matchingAlgorithm', () => {
     const valuesMissing: MatchableValue[] = [MISSING_VALUE, MISSING_VALUE, MISSING_VALUE];
     test('MissingValueDistanceMethod.Neutral', () => {
       const dist = (maxDist * (0.25 + 0 + 0.5)) / 3;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {questions, voter, candidates, algorithm, matches} = createMatchesAndEntities(
         createLikertScaleValues(likertScale, values),
         [valuesMissing],
@@ -306,6 +308,7 @@ describe('matchingAlgorithm', () => {
     });
     test('MissingValueDistanceMethod.Neutral', () => {
       const dist = (maxDist * (0.75 + 0.5 + 1)) / 3;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {questions, voter, candidates, algorithm, matches} = createMatchesAndEntities(
         createLikertScaleValues(likertScale, values),
         [valuesMissing],
@@ -317,6 +320,7 @@ describe('matchingAlgorithm', () => {
     });
     test('MissingValueDistanceMethod.AbsoluteMaximum', () => {
       const dist = maxDist;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {questions, voter, candidates, algorithm, matches} = createMatchesAndEntities(
         createLikertScaleValues(likertScale, values),
         [valuesMissing],
@@ -333,6 +337,7 @@ describe('matchingAlgorithm', () => {
       const voterValues = [0.5, 1, 0];
       const candValues = [0, 0.5, 1];
       const dist = (maxDist * (0.5 + 0.5 + 1)) / 3;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {questions, voter, candidates, algorithm, matches} = createMatchesAndEntities(
         createLikertScaleValues(likertScale, voterValues),
         [createLikertScaleValues(likertScale, candValues)],
@@ -352,6 +357,7 @@ describe('matchingAlgorithm', () => {
       factors = factors.map((v) => ((1 - v) / 2) * maxDist);
       // Add up and divide by dims
       const dist = factors.reduce((a, b) => a + b, 0) / 3;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {questions, voter, candidates, algorithm, matches} = createMatchesAndEntities(
         createLikertScaleValues(likertScale, voterValues),
         [createLikertScaleValues(likertScale, candValues)],
@@ -391,6 +397,7 @@ describe('matchingAlgorithm', () => {
       const likertScale = 5;
       const voterValues = [0, 0, 0, 0, 0.5];
       const candValues = [0, 0, 1, 1, 1];
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
         createLikertScaleValues(likertScale, voterValues),
         [createLikertScaleValues(likertScale, candValues)],
