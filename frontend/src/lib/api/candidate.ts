@@ -1,6 +1,6 @@
 import {get} from 'svelte/store';
 import {constants} from '$lib/utils/constants';
-import {authContext} from '$lib/components/authentication/authenticationStore';
+import {authContext} from '$lib/utils/authenticationStore';
 
 export const authenticate = async (identifier: string, password: string): Promise<Response> => {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
@@ -15,7 +15,11 @@ export const authenticate = async (identifier: string, password: string): Promis
   });
 };
 
+/**
+ * Get the current user's data, including candidate information
+ */
 export const me = async (): Promise<any> => {
+  // TODO: Replace any
   return request(
     ['api', 'users', 'me'],
     new URLSearchParams({
