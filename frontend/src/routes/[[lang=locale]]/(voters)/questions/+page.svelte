@@ -7,8 +7,6 @@
   import {Icon} from '$lib/components/icon';
   import {BasicPage} from '$lib/templates/basicPage';
 
-  const emoji = $t('questions.heroEmoji');
-
   const firstQuestionUrl = getRoute({route: Route.Question, id: $page.data.questions[0].id});
 
   const questionCategories = new Set<string>();
@@ -29,9 +27,7 @@
   </svelte:fragment>
 
   <svelte:fragment slot="hero">
-    {#if emoji}
-      <HeroEmoji>{emoji}</HeroEmoji>
-    {/if}
+    <HeroEmoji emoji={$t('questions.heroEmoji')} />
   </svelte:fragment>
 
   <svelte:fragment slot="banner">
