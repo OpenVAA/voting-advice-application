@@ -1,5 +1,4 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
   import {tweened} from 'svelte/motion';
   import {onDestroy, onMount} from 'svelte';
 

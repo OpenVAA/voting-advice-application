@@ -1,6 +1,5 @@
 <script lang="ts">
   import {locale} from 'svelte-i18n';
-  import {goto} from '$app/navigation';
   import {page} from '$app/stores';
   import {resetLocalStorage} from '$lib/utils/stores';
 

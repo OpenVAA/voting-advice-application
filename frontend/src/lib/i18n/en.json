@@ -111,12 +111,39 @@
       "electionManifesto": "Election Manifesto",
       "tapToAddPhoto": "Tap to add photo"
     },
+    "setPassword": {
+      "greeting": "Hello, {name}!",
+      "description": "Set a secure password according to the requirements below:",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "setPassword": "Set password",
+      "passwordsDontMatch": "Passwords don't match",
+      "passwordNotValid": "Password is not valid",
+      "registrationError": "Registration failed"
+    },
+    "passwordValidation": {
+      "length": "At least {minPasswordLength} characters",
+      "uppercase": "Uppercase letter",
+      "lowercase": "Lowercase letter",
+      "number": "Number",
+      "symbol": "Symbol",
+      "username": "Avoid using your name in the password",
+      "repetition": "Contains character repetition",
+      "commonPatterns": "Contains common sequences or patterns"
+    },
     "genders": {
       "male": "Male",
       "female": "Female",
       "nonBinary": "Non-binary",
       "other": "Other",
       "preferNotToSay": "Prefer not to say"
+    },
+    "registration": {
+      "enterCode": "Enter the registration code that you've received from your party to register your account.",
+      "registrationCode": "registration code",
+      "wrongRegistrationCode": "Wrong registration code",
+      "registerButton": "Register",
+      "submitPlaceholder": "E.g. CP23-174a-f4%&-aHAB"
     }
   }
 }
