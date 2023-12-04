@@ -1,5 +1,8 @@
 'use strict';
 
+// TODO: Use a shared module instead of having a copy of the password validation file
+import {validatePassword} from '../../../util/passwordValidationCopy';
+
 const {
   yup,
   validateYupSchema,
@@ -50,9 +53,17 @@ module.exports = {
     };
   },
   async register(ctx) {
-    const params = ctx.request.body;
+    const params: {
+      registrationKey: string;
+      password: string;
+    } = ctx.request.body;
+
     await validateRegisterBody(params);
-    // TODO: validate password requirements
+
+    const valid = validatePassword(params.password);
+    if (!valid) {
+      throw new ValidationError('Password does not meet requirements');
+    }
 
     const candidate = await strapi.query('api::candidate.candidate').findOne({
       populate: ['user'],
@@ -84,6 +95,7 @@ module.exports = {
       username: candidate.email,
       email: candidate.email,
       password: params.password,
+      provider: 'local',
       confirmed: true
     });
 
