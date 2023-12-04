@@ -31,7 +31,7 @@ A template part that outputs the navigation menu for the Voter App for use in th
 ```
 -->
 
-<Navigation slot="nav" on:navFocusOut {...$$restProps}>
+<Navigation slot="nav" on:keyboardFocusOut {...$$restProps}>
   <slot />
   <NavGroup>
     <NavItem href={getRoute(Route.Home)} icon="home" text={$t('actionLabels.home')} />

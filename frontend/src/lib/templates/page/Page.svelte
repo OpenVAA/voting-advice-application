@@ -190,7 +190,7 @@ the Drawer component.
     <!-- Navigation contents -->
     <svelte:component
       this={$appType === 'candidate' ? CandidateNav : VoterNav}
-      on:navFocusOut={closeDrawer}
+      on:keyboardFocusOut={closeDrawer}
       class="h-full w-4/5 max-w-sm bg-base-100 {drawerOpen ? '' : 'hidden'}"
       id={navId}>
       <NavItem
