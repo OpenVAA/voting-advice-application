@@ -1,6 +1,5 @@
 <script lang="ts">
   import {locale} from 'svelte-i18n';
-  import {goto} from '$app/navigation';
   import {page} from '$app/stores';
   import {resetLocalStorage} from '$lib/utils/stores';
 
@@ -42,11 +41,11 @@
         <a
           href="/navigation"
           on:click={resetLocalStorage}
-          class="btn btn-primary mb-md w-full max-w-md"
+          class="btn-primary btn mb-md w-full max-w-md"
           >{$page.data.appLabels.actionLabels.startButton}</a>
-        <a href="/information" class="btn btn-ghost w-full max-w-md"
+        <a href="/information" class="btn-ghost btn w-full max-w-md"
           >{$page.data.appLabels.actionLabels.electionInfo}</a>
-        <a href="/about" class="btn btn-ghost w-full max-w-md"
+        <a href="/about" class="btn-ghost btn w-full max-w-md"
           >{$page.data.appLabels.actionLabels.howItWorks}</a>
       </div>
     </div>

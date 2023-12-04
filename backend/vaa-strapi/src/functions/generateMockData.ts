@@ -1363,8 +1363,8 @@ async function createCandidateUsers() {
   await strapi.query(USER_API).update({
     where: {id: candidate.id},
     data: {
-      registrationKey: null,
-    },
+      registrationKey: null
+    }
   });
 }
 
