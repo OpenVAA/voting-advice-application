@@ -112,7 +112,7 @@
       "tapToAddPhoto": "Tap to add photo"
     },
     "setPassword": {
-      "greeting": "Hello, ",
+      "greeting": "Hello, {name}!",
       "description": "Set a secure password according to the requirements below:",
       "password": "Password",
       "confirmPassword": "Confirm password",
@@ -137,6 +137,13 @@
       "nonBinary": "Non-binary",
       "other": "Other",
       "preferNotToSay": "Prefer not to say"
+    },
+    "registration": {
+      "enterCode": "Enter the passkey you’ve received from your party to edit your data and opinions.",
+      "registrationCode": "registration code",
+      "wrongRegistrationCode": "Wrong registration code",
+      "registerButton": "Register",
+      "submitPlaceholder": "E.g. CP23-174a-f4%&-aHAB"
     }
   }
 }

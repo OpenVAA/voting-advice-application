@@ -7,8 +7,8 @@
   import PasswordValidator from './PasswordValidator.svelte';
   import {validatePassword} from './passwordValidation';
 
-  export let userName = 'Barnabas'; /** TODO: Ensure name is set correctly */
-  export let registrationKey = ''; // Registration key is given to the component
+  export let userName: string;
+  export let registrationKey: string;
 
   let password1 = '';
   let password2 = '';
@@ -63,7 +63,7 @@ Page where candidates can set their password when logging to the app for the fir
 
   ```tsx
   <PasswordSetPage userName={"Barnabas"} registrationKey={'123-123-123'}/>
-    ```
+  ```
 -->
 
 <div class="flex w-full flex-grow flex-col items-center bg-base-300">
@@ -74,7 +74,7 @@ Page where candidates can set their password when logging to the app for the fir
           <p class="text-2xl font-bold text-primary">{$page.data.appLabels.appTitle}</p>
           <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
           <h1 class="my-24 text-2xl font-normal">
-            {$_('candidateApp.setPassword.greeting')}{userName}!
+            {$_('candidateApp.setPassword.greeting', {values: {name: userName}})}
           </h1>
         </hgroup>
 
