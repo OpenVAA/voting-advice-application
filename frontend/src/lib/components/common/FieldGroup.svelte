@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let fields: any[] = ['default'];
+  export let fields: string[] = ['default'];
   export let customStyle: string | undefined = undefined;
 </script>
 

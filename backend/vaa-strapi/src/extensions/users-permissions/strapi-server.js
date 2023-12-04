@@ -3,10 +3,10 @@
 import candidate from './controllers/candidate';
 
 const defaultPermissions = [
-  { action: 'plugin::users-permissions.candidate.check', roleType: 'public' },
-  { action: 'plugin::users-permissions.candidate.register', roleType: 'public' },
-  { action: 'api::candidate.candidate.findOne', roleType: 'authenticated' },
-  { action: 'api::candidate.candidate.find', roleType: 'authenticated' },
+  {action: 'plugin::users-permissions.candidate.check', roleType: 'public'},
+  {action: 'plugin::users-permissions.candidate.register', roleType: 'public'},
+  {action: 'api::candidate.candidate.findOne', roleType: 'authenticated'},
+  {action: 'api::candidate.candidate.find', roleType: 'authenticated'}
 ];
 
 module.exports = async (plugin) => {
@@ -25,11 +25,13 @@ module.exports = async (plugin) => {
     for (const permission of defaultPermissions) {
       const role = await strapi.query('plugin::users-permissions.role').findOne({
         where: {
-          type: permission.roleType,
-        },
+          type: permission.roleType
+        }
       });
       if (!role) {
-        console.error(`Failed to initialize default permissions due to missing role type: ${permission.roleType}`);
+        console.error(
+          `Failed to initialize default permissions due to missing role type: ${permission.roleType}`
+        );
         continue;
       }
 
@@ -58,20 +60,20 @@ module.exports = async (plugin) => {
     method: 'POST',
     path: '/auth/candidate/check',
     handler: 'candidate.check',
-    config : {
+    config: {
       middlewares: ['plugin::users-permissions.rateLimit'],
-      prefix: '',
-    },
-  })
+      prefix: ''
+    }
+  });
   plugin.routes['content-api'].routes.push({
     method: 'POST',
     path: '/auth/candidate/register',
     handler: 'candidate.register',
-    config : {
+    config: {
       middlewares: ['plugin::users-permissions.rateLimit'],
-      prefix: '',
-    },
-  })
+      prefix: ''
+    }
+  });
 
   return plugin;
 };

@@ -39,7 +39,7 @@
   {#if info && info !== ''}
     <div class="flex items-center justify-center">
       <!-- TODO: Convert to Expander component -->
-      <button class="btn btn-ghost">{$_('questions.readMore')}</button>
+      <button class="btn-ghost btn">{$_('questions.readMore')}</button>
     </div>
   {/if}
   <div class="flex flex-col items-center justify-center gap-md pt-lg">
@@ -50,7 +50,7 @@
     {/if}
     <div>
       <!-- TODO: Add action and an icon -->
-      <button on:click={onSkip} class="btn btn-ghost text-secondary">{$_('questions.skip')}</button>
+      <button on:click={onSkip} class="btn-ghost btn text-secondary">{$_('questions.skip')}</button>
     </div>
   </div>
 </fieldset>

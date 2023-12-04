@@ -17,7 +17,7 @@
   <slot />
 {:else if $token === undefined || ($token && !$user)}
   <div class="mt-100 flex h-screen flex-col items-center">
-    <span class="loading loading-spinner loading-lg" />
+    <span class="loading-spinner loading-lg loading" />
   </div>
 {:else}
   <LoginPage />
