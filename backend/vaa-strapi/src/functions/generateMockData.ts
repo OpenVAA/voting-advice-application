@@ -205,6 +205,10 @@ export async function generateMockData() {
   await createPartyAnswers();
   console.info('Done!');
   console.info('#######################################');
+  console.info('inserting candidate users');
+  await createCandidateUsers();
+  console.info('Done!');
+  console.info('#######################################');
 }
 
 /**
@@ -1332,6 +1336,36 @@ async function createPartyAnswers() {
       ]);
     }
   }
+}
+
+async function createCandidateUsers() {
+  const authenticated = await strapi.query('plugin::users-permissions.role').findOne({
+    where: {
+      type: 'authenticated'
+    }
+  });
+  const candidate = await strapi.entityService.findOne(CANDIDATE_API, {});
+
+  await strapi.entityService.create(USER_API, {
+    data: {
+      username: 'first.last',
+      email: 'first.last@example.com',
+      password: 'password',
+      provider: 'local',
+      confirmed: true,
+      blocked: false,
+      role: authenticated.id,
+      candidate: candidate.id
+    }
+  });
+
+  // Disable registration key for the candidate we chose as they're already registered
+  await strapi.query(USER_API).update({
+    where: {id: candidate.id},
+    data: {
+      registrationKey: null,
+    },
+  });
 }
 
 function capitaliseFirstLetter(word: string) {
