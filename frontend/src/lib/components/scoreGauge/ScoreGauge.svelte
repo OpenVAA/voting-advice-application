@@ -1,7 +1,6 @@
 <script lang="ts">
   import type {ScoreGaugeProps} from './ScoreGauge.type';
   import {getUUID} from '$lib/utils/components';
-  import {_} from 'svelte-i18n';
 
   type $$Props = ScoreGaugeProps;
 

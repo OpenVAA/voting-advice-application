@@ -18,7 +18,7 @@
     {$page.data.appLabels.viewTexts.yourOpinionsTitle}
   </h1>
   <p class="text-center">{opinionsDescriptionText}</p>
-  <a href={firstQuestionUrl} class="btn btn-primary"
+  <a href={firstQuestionUrl} class="btn-primary btn"
     >{$page.data.appLabels.actionLabels.startQuestions}</a>
 </div>
 <div class="mb-60 p-lg text-center text-sm text-secondary">

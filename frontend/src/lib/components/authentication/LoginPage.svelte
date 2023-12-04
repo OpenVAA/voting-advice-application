@@ -71,11 +71,11 @@ Candidate login page. This component also takes care of the login process.
           {#if wrongCredentials}
             <p class="text-center text-error">{$_('candidate.wrong_email_or_password')}</p>
           {/if}
-          <button type="submit" class="btn btn-primary mb-md w-full max-w-md"
+          <button type="submit" class="btn-primary btn mb-md w-full max-w-md"
             >{$_('candidate.sign_in')}</button>
-          <a href="/help" class="btn btn-ghost w-full max-w-md"
+          <a href="/help" class="btn-ghost btn w-full max-w-md"
             >{$_('candidate.contact_support')}</a>
-          <a href="/" class="btn btn-ghost w-full max-w-md"
+          <a href="/" class="btn-ghost btn w-full max-w-md"
             >{$_('candidate.election_compass_for_voters')}</a>
         </form>
       </div>
