@@ -118,8 +118,8 @@
       "confirmPassword": "Confirm password",
       "setPassword": "Set password",
       "passwordsDontMatch": "Passwords don't match",
-      "passwordNotValid": "Password not valid",
-      "registrationError": "Error registering password"
+      "passwordNotValid": "Password is not valid",
+      "registrationError": "Registration failed"
     },
     "passwordValidation": {
       "length": "At least {minPasswordLength} characters",
@@ -139,7 +139,7 @@
       "preferNotToSay": "Prefer not to say"
     },
     "registration": {
-      "enterCode": "Enter the passkey you’ve received from your party to edit your data and opinions.",
+      "enterCode": "Enter the registration code that you've received from your party to register your account.",
       "registrationCode": "registration code",
       "wrongRegistrationCode": "Wrong registration code",
       "registerButton": "Register",

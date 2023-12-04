@@ -1,4 +1,3 @@
-// Password requirements
 export const minPasswordLength = 8;
 const repetitionLimit = 4; // Number of character repetitions not allowed
 
@@ -44,12 +43,7 @@ function isLetter(character: string): boolean {
  * @returns {boolean} `true` if the password contains a character that satisfies the condition, `false` otherwise.
  */
 function containsCharacter(password: string, condition: (char: string) => boolean): boolean {
-  for (const character of password) {
-    if (condition(character)) {
-      return true;
-    }
-  }
-  return false;
+  return password.split('').some(condition);
 }
 
 /**
@@ -61,7 +55,6 @@ function containsCharacter(password: string, condition: (char: string) => boolea
  */
 function passwordValidation(password: string, username: string): Record<string, ValidationDetail> {
   // Construct the validation object with all requirements
-  // TODO: Localization
   const result: Record<string, ValidationDetail> = {
     length: {
       status: password.length >= minPasswordLength,

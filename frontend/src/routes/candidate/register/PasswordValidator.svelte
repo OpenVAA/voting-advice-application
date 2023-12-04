@@ -7,8 +7,9 @@
     validatePasswordDetails,
     minPasswordLength
   } from '$lib/utils/passwordValidation';
+  import {onMount} from 'svelte';
   export let password = '';
-  export let username = 'pekka';
+  export let username = '';
   export let validPassword = false;
 
   // Perform debounced validation, validation status is updated after a delay when the user stops typing
@@ -18,8 +19,9 @@
   $: {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
-      const res = validatePasswordDetails(password, username);
-      ({details: validationDetails, status: validPassword} = res);
+      const {details, status} = validatePasswordDetails(password, username);
+      validationDetails = details;
+      validPassword = status;
 
       // Localize validation messages
       for (const key in validationDetails) {
@@ -29,6 +31,10 @@
       }
     }, 200);
   }
+
+  onMount(() => () => {
+    clearTimeout(timeout);
+  });
 
   // Add animation to the progress bar
   const progress = tweened(0, {

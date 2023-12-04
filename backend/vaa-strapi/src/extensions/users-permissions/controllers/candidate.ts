@@ -1,5 +1,6 @@
 'use strict';
 
+// TODO: Use a shared module instead of having a copy of the password validation file
 import {validatePassword} from '../../../util/passwordValidationCopy';
 
 const {
@@ -58,7 +59,6 @@ module.exports = {
     } = ctx.request.body;
 
     await validateRegisterBody(params);
-    // TODO: validate password requirements
 
     const valid = validatePassword(params.password);
     if (!valid) {

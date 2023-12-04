@@ -9,7 +9,7 @@
   $: registrationCode = $page.url.searchParams.get('registrationCode');
   $: onRegistrationCodeChange(registrationCode);
 
-  const onRegistrationCodeChange = async (registrationCode: string | null) => {
+  const onRegistrationCodeChange = (registrationCode: string | null) => {
     if (!registrationCode) return;
 
     checkRegistrationKey(registrationCode).then(async (response) => {
@@ -26,7 +26,7 @@
 </script>
 
 {#if registrationCode && validRegistrationCode}
-  <PasswordSetPage {userName} registrationKey={registrationCode} />
+  <PasswordSetPage {userName} {registrationCode} />
 {:else if registrationCode}
   <RegistrationCodePage wrongCode={true} {registrationCode} />
 {:else}

@@ -8,7 +8,7 @@
   import {validatePassword} from '$lib/utils/passwordValidation';
 
   export let userName: string;
-  export let registrationKey: string;
+  export let registrationCode: string;
 
   let password1 = '';
   let password2 = '';
@@ -29,7 +29,7 @@
       return;
     }
 
-    const response = await register(registrationKey, password1);
+    const response = await register(registrationCode, password1);
     if (!response.ok) {
       errorMessage = $_('candidateApp.setPassword.registrationError');
       return;

@@ -11,6 +11,7 @@
         $_(`candidateApp.genders.${a}`)
       )
     ],
+    // TODO: i18n localization
     ['motherTongue', ['English', 'Suomi', 'Svenska']]
   ]);
 
