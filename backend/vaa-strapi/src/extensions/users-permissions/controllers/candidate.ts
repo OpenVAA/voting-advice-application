@@ -58,6 +58,7 @@ module.exports = {
     } = ctx.request.body;
 
     await validateRegisterBody(params);
+    // TODO: validate password requirements
 
     const valid = validatePassword(params.password);
     if (!valid) {
