@@ -135,7 +135,7 @@
       "enterCode": "Enter the passkey you’ve received from your party to edit your data and opinions.",
       "registrationCode": "registration code",
       "wrongRegistrationCode": "Wrong registration code",
-      "registerButton": "Login",
+      "registerButton": "Register",
       "submitPlaceholder": "E.g. CP23-174a-f4%&-aHAB"
     }
   }
