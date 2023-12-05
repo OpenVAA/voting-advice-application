@@ -37,20 +37,22 @@ export const matchCandidates = function matchCandidates(
 
   // Convert question data into proper question objects
   const questions: Record<string, LikertQuestion> = {};
-  allQuestions.forEach((q) => {
-    questions[q.id] = new LikertQuestion({
-      id: q.id,
-      values: q.options.map((o) => ({value: o.key})),
-      category: q.category
+  allQuestions
+    .filter((q) => q.options)
+    .forEach((q) => {
+      questions[q.id] = new LikertQuestion({
+        id: q.id,
+        values: q.options.map((o) => ({value: o.key})),
+        category: q.category
+      });
     });
-  });
 
   // Create voter object
   const voter = new Person(
     '',
     Object.entries(answeredQuestions)
       .filter(([id]) => id in questions)
-      .map(([id, value]) => ({question: questions[id], value}))
+      .map(([id, value]) => ({question: questions[id], value})) as MatchableAnswer[]
   );
 
   // Check that we still have some answers
