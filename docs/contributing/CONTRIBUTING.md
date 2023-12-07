@@ -52,6 +52,8 @@ If you want to make changes to the project, you must follow the following steps.
 
 Commit the changes once you are happy with them.
 
+Don't add any editor config files, such as the `.vscode` folder, to your commit. These are not included in the project's `.gitignore` file but you can [add them to a global `.gitignore`](https://blog.martinhujer.cz/dont-put-idea-vscode-directories-to-projects-gitignore/) on your own machine.
+
 The commit message should follow the [conventional commits conventions](https://www.conventionalcommits.org/en/v1.0.0/).
 On top of that, the commit message should follow the following rules:
 
@@ -65,6 +67,7 @@ Once your changes are ready, don't forget to [self-review](self-review.md) to sp
 process.
 
 ### Workflows
+
 The project uses GitHub Actions to verify each commit passes unit tests, is able to 
 build the app successfully and adheres to the [coding conventions used by the project](style-guides.md).
 If a commit fails the verification, please check your changes from the logs and fix changes before

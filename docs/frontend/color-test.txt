@@ -1,0 +1,37 @@
+<script lang="ts">
+  // To test all of the application's colors, copy paste this as a `+page.svelte` file
+  // somewhere, navigate to it and use the Wave browser extension to check the colors.
+  // Remember to do this for both the light and dark modes.
+  //
+  // We need to spell all the complete color names out so that the classes will be compiled.
+  // For that reason this file should not be included in any production build with a suffix
+  // that is included in `tailwind.config.cjs`:
+  //   `content: ['./src/**/*.{html,js,svelte,ts}']`
+  const textColors = ['text-primary', 'text-secondary', 'text-accent', 'text-neutral', 'text-info', 'text-success', 'text-warning', 'text-error'];
+  const bgColors = ['bg-base-100', 'bg-base-200', 'bg-base-300'];
+  const contentColors = ['text-base-content', 'text-primary-content', 'text-secondary-content', 'text-accent-content', 'text-info-content', 'text-success-content', 'text-warning-content', 'text-error-content'];
+  const contentBgs = ['bg-base', 'bg-primary', 'bg-secondary', 'bg-accent', 'bg-info', 'bg-success', 'bg-warning', 'bg-error'];
+  const contentPairs = contentColors.map((c, i) => [contentBgs[i], c]);
+</script>
+
+<h1>Colors and combinations</h1>
+
+{#each bgColors as bgColor}
+  <h2 class="my-lg">Background: {bgColor}</h2>
+  <div class="p-lg {bgColor}">
+    {#each textColors as textColor}
+      <div class="mt-lg first:mt-0 {textColor}">
+        <p>Text: {textColor}</p>
+      </div>
+    {/each}
+  </div>
+{/each}
+
+{#each contentPairs as [bgColor, textColor]}
+  <h2 class="my-lg">Background: {bgColor}</h2>
+  <div class="p-lg {bgColor}">
+    <div class="mt-lg first:mt-0 {textColor}">
+      <p>Text: {textColor}</p>
+    </div>
+  </div>
+{/each}

@@ -17,8 +17,28 @@ const themeCSSVars = {
 // This can be removed when Tailwind changes it's default behaviour to match this.
 const fixedScreenHeight = ['100vh', '-webkit-fill-available', '100dvh'];
 
+// This defines the minimum touch target size
+const touchTargetSize = `${44/16}rem`;
+
+// We'll use this below to generate color classes to safelist
+// Make sure to check that this matches the `Color` type in 
+// `./src/lib/components/color/color.type.ts`
+// as well as the color definitions in the DaisyUI themes futher below.
+const colorNames = ['current', 'primary', 'secondary', 'accent', 'neutral', 'base-100', 'base-200', 'base-300', 
+  'info', 'success', 'warning', 'error', 'base-content', 'primary-content', 'secondary-content', 'accent-content', 
+  'info-content', 'success-content', 'warning-content', 'error-content'];
+
 module.exports = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
+  // We need to safelist these color utility classes so that we can freely use
+  // the DaisyUI color classes as variables like `fill-${color}`. See:
+  // https://tailwindcss.com/docs/content-configuration#dynamic-class-names and
+  // https://tailwindcss.com/docs/content-configuration#safelisting-classes
+  safelist: [
+    ...colorNames.map(c => `btn-${c}`), 
+    ...colorNames.map(c => `fill-${c}`), 
+    ...colorNames.map(c => `text-${c}`)
+  ],
   theme: {
     borderRadius: {
       none:    '0px',
@@ -134,6 +154,10 @@ module.exports = {
       },
       minHeight: {
         screen: fixedScreenHeight,
+        touch: touchTargetSize,
+      },
+      minWidth: {
+        touch: touchTargetSize,
       },
       screens: {
         xs: '320px',
@@ -153,12 +177,12 @@ module.exports = {
           // DaisyUI colors: https://daisyui.com/docs/colors/
           'primary':   '#2546a8', // = success
           'secondary': '#666666',
-          'accent':    '#0d827c', // = info
+          'accent':    '#0a716b', // = info
           'neutral':   '#333333',
           'base-100':  '#ffffff',
-          'base-200':  '#e5e5e5',
+          'base-200':  '#e8f5f6', // 50% tint of base-300 on base-100
           'base-300':  '#d1ebee', // Remember to match this with the theme-color in app.html
-          'info':      '#0d827c', // = accent (var() cannot be used in these)
+          'info':      '#0a716b', // = accent (var() cannot be used in these)
           'success':   '#2546a8', // = primary
           'warning':   '#a82525', // = error
           'error':     '#a82525', // = warning
@@ -186,20 +210,20 @@ module.exports = {
           'accent':    '#11a8a0', // = info
           'neutral':   '#cccccc',
           'base-100':  '#000000',
-          'base-200':  '#1a1a1a',
+          'base-200':  '#101212', // 50% tint of base-300 on base-100
           'base-300':  '#1f2324', // Remember to match this with the theme-color in app.html
           'info':      '#11a8a0', // = accent (var() cannot be used in these)
           'success':   '#6887e3', // = primary
-          'warning':   '#d72f2f', // = error
-          'error':     '#d72f2f', // = warning
+          'warning':   '#e16060', // = error
+          'error':     '#e16060', // = warning
           'base-content':      '#cccccc', // = neutral
           'primary-content':   '#000000',
           'secondary-content': '#000000',
           'accent-content':    '#000000',
-          'info-content':      '#000000', // = accent-content
-          'success-content':   '#000000', // = primary-content
-          'warning-content':   '#ffffff',
-          'error-content':     '#ffffff', // = warning-content
+          'info-content':      '#000000',
+          'success-content':   '#000000',
+          'warning-content':   '#000000',
+          'error-content':     '#000000',
 
           // Other DaisyUI variables
           ...themeCSSVars,

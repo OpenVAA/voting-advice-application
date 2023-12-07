@@ -42,20 +42,6 @@
   a[onclick]:not(.btn) {
     @apply text-primary;
   }
-  /* TODO: Remove when we start usin the Icon component */
-  a:link svg,
-  a:active svg,
-  a:visited svg,
-  a:hover svg,
-  a[onclick] svg {
-    @apply fill-primary;
-  }
-  [onclick] {
-    @apply cursor-pointer;
-  }
-  input[type='number'] {
-    -moz-appearance: textfield;
-  }
 }
 
 @layer components {

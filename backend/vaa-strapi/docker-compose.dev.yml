@@ -39,7 +39,7 @@ services:
       POSTGRES_USER: ${DATABASE_USERNAME}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - postgres:/var/lib/postgresql/data
     ports:
       - '5432:5432'
     restart: always
@@ -49,3 +49,6 @@ services:
     restart: always
     ports:
       - '4567:8080'
+
+volumes:
+  postgres:

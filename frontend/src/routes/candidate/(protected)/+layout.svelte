@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Navigation from '$lib/components/navigation/Navigation.svelte';
+  import Navigation from '$lib/candidate/Navigation.svelte';
   import AuthenticationProvider from '$lib/components/authentication/AuthenticationProvider.svelte';
 </script>
 

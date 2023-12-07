@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - qa
+      - candidate-app
     paths-ignore:
       - '**.md'
       - '**/*/.env.example'
+      - '.env.example'
   pull_request:
     types:
       - opened
@@ -15,9 +17,11 @@ on:
       - ready_for_review
     branches:
       - qa
+      - candidate-app
     paths-ignore:
       - '**.md'
       - '**/*/.env.example'
+      - '.env.example'
 
 jobs:
   frontend-validation:
@@ -45,13 +49,12 @@ jobs:
 
       - name: "Run ESlint check on frontend"
         run: yarn lint
-        
+
       - name: "Run Frontend tests"
         run: yarn test
-        
+
       - name: "Build frontend"
         run: yarn build
-
 
   backend-validation:
     runs-on: ubuntu-latest
@@ -70,6 +73,19 @@ jobs:
           cache: "npm"
           cache-dependency-path: ./backend/vaa-strapi/package-lock.json
 
+      - name: Cache node modules
+        id: cache-npm-backend-main
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: "backend/vaa-strapi/node_modules"
+          key: ${{ runner.os }}-backend-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
       - name: "Install Backend npm dependencies"
         run: |
           npm install
@@ -78,13 +94,13 @@ jobs:
         run: |
           npm run prettier:check
 
-      - name: "Run ESLINT on backend"
+      - name: "Run ESLint on backend"
         run: |
           npm run lint
 
-#      - name: "Run Backend tests"
-#        run: |
-#         npm run test
+      #      - name: "Run Backend tests"
+      #        run: |
+      #         npm run test
 
       - name: "Build backend"
         run: |
