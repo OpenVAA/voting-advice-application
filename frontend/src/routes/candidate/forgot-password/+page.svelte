@@ -7,7 +7,7 @@
   import HeadingGroup from '$lib/components/headingGroup/HeadingGroup.svelte';
   import PreHeading from '$lib/components/headingGroup/PreHeading.svelte';
 
-  let emailSentText = '';
+  let emailSentText = ''; // Text to display when the email has been sent
 
   const onButtonPressed = async () => {
     emailSentText = $_('candidateApp.resetPassword.emailSentText');
@@ -37,6 +37,7 @@
         type="email"
         name="email"
         id="email"
+        aria-label={$_('candidate.email_placeholder')}
         class="input mb-md w-full max-w-md"
         placeholder={$_('candidate.email_placeholder')}
         required />
