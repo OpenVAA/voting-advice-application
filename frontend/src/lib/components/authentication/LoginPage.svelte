@@ -73,6 +73,8 @@ Candidate login page. This component also takes care of the login process.
           {/if}
           <button type="submit" class="btn btn-primary mb-md w-full max-w-md"
             >{$_('candidate.sign_in')}</button>
+          <a href="/candidate/forgot-password" class="btn btn-ghost w-full max-w-md"
+            >{$_('candidate.forgot_password')}</a>
           <a href="/help" class="btn btn-ghost w-full max-w-md"
             >{$_('candidate.contact_support')}</a>
           <a href="/" class="btn btn-ghost w-full max-w-md"

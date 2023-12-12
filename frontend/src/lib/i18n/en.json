@@ -38,6 +38,7 @@
     "password_placeholder": "E.g. CP23-174a-f4%&-aHAB",
     "sign_in": "Sign in",
     "wrong_email_or_password": "Wrong email or password",
+    "forgot_password": "Forgot Password?",
     "contact_support": "Contact Support",
     "election_compass_for_voters": "Election Compass for Voters",
     "tabs": {
@@ -154,6 +155,13 @@
       "wrongRegistrationCode": "Wrong registration code",
       "registerButton": "Register",
       "submitPlaceholder": "E.g. CP23-174a-f4%&-aHAB"
+    },
+    "resetPassword": {
+      "title": "Forgot Password?",
+      "description": "To reset your password, please enter your email address below:",
+      "emailPlaceholder": "Email address",
+      "buttonText": "Send reset link",
+      "emailSentText": "Check your inbox for the password reset link."
     }
   }
 }
