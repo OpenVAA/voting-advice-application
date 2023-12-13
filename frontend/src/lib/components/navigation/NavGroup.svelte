@@ -1,17 +1,13 @@
 <script lang="ts">
+  import {concatClass} from '$lib/utils/components';
   import type {NavGroupProps} from './NavGroup.type';
 
   type $$Props = NavGroupProps;
-
-  // Merge classes into $$restProps
-  $$restProps.class = `before:content-[''] before:mx-16 before:my-md before:block before:border-t-md before:border-t-[var(--line-color)] ${
-    $$restProps.class ?? ''
-  }`;
 </script>
 
 <!--
 @component
-TBA
+Use to group `NavItem` components. Displays a faint line above the group.
 
 ### Slots
 
@@ -20,6 +16,8 @@ TBA
 
 ### Properties
 
+- `role`: Aria role @default `list`
+- `class`: Additional class string to append to the element's default classes.
 - Any valid attributes of a `<section>` element.
 
 ### Usage
@@ -38,6 +36,11 @@ TBA
   invalid content for such an element. See: 
   https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/listitem_role -->
 
-<section role="list" {...$$restProps}>
+<section
+  role="list"
+  {...concatClass(
+    $$restProps,
+    'before:content-[""] before:mx-16 before:my-md before:block before:border-t-md before:border-t-[var(--line-color)]'
+  )}>
   <slot />
 </section>

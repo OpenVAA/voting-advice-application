@@ -4,7 +4,7 @@ import type {IconName} from '$lib/components/icon';
 /**
  * The properties of a navigation item.
  */
-export type NavItemProps = LinkOrButtonProps & {
+export type NavItemProps = LinkOrButtonElementProps & {
   /**
    * The optional name of the icon to use with the navigation item.
    * See the `Icon` component for more details.
@@ -21,9 +21,9 @@ export type NavItemProps = LinkOrButtonProps & {
  * element with the `href` attribute, or a `<button>` element, preferably
  * with the `on:click` event handler.
  */
-type LinkOrButtonProps =
+type LinkOrButtonElementProps =
   | WithRequired<SvelteHTMLElements['a'], 'href'>
-  | SvelteHTMLElements['button'];
+  | (SvelteHTMLElements['button'] & {href?: null});
 
 /**
  * Make specific properties of an interface required. Works the same way as

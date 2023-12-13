@@ -1,24 +1,25 @@
 <script lang="ts">
+  import {concatClass} from '$lib/utils/components';
   import {Icon} from '$lib/components/icon';
   import type {NavItemProps} from './NavItem.type';
 
   type $$Props = NavItemProps;
 
+  export let href: $$Props['href'] = undefined;
   export let icon: $$Props['icon'] = undefined;
   export let text: $$Props['text'];
 
-  // Element type
-  const tagName = $$restProps['href'] ? 'a' : 'button';
-
-  // Merge classes into $$restProps
-  let classes =
-    'flex items-center gap-md px-16 py-md min-h-touch min-w-touch w-full !text-neutral hover:bg-base-200 active:bg-base-200';
-  if (!icon) {
-    // This corresponds to the width of an icon (24/16 rem) and the gap
-    // between the icon and the text (md = 10/16 rem)
-    classes += ' pl-[3.125rem]';
+  // Create classes
+  let classes: string;
+  $: {
+    classes =
+      'flex items-center gap-md px-16 py-md min-h-touch min-w-touch w-full !text-neutral hover:bg-base-200 active:bg-base-200';
+    if (!icon) {
+      // This corresponds to the width of an icon (24/16 rem) and the gap
+      // between the icon and the text (md = 10/16 rem)
+      classes += ' pl-[3.125rem]';
+    }
   }
-  $$restProps.class = `${classes} ${$$restProps.class ?? ''}`;
 </script>
 
 <!--
@@ -37,6 +38,7 @@ handler or other way of making the item interactive.
   interactive.
 - `icon`: An optional `IconName` of the icon to use. @default `undefined`
 - `text`: A required text to display.
+- `class`: Additional class string to append to the element's default classes.
 - Any valid attributes of either an `<a>` or `<button>` element depending
   whether `href` was defined or not, respectively.
 
@@ -53,7 +55,11 @@ handler or other way of making the item interactive.
   because we can't change the role of `<ActionItem>`, which renders as
   an `<a>` or `<button>` and thus already has a defined Aria role. -->
 <div role="listitem">
-  <svelte:element this={tagName} on:click {...$$restProps}>
+  <svelte:element
+    this={href == null ? 'button' : 'a'}
+    {href}
+    on:click
+    {...concatClass($$restProps, classes)}>
     {#if icon}
       <Icon name={icon} />
     {/if}
