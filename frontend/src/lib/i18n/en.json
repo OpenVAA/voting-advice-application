@@ -154,6 +154,10 @@
       "wrongRegistrationCode": "Wrong registration code",
       "registerButton": "Register",
       "submitPlaceholder": "E.g. CP23-174a-f4%&-aHAB"
+    },
+    "resetPassword": {
+      "createNewPassword": "Set a new password",
+      "passwordResetError": "Password reset failed"
     }
   }
 }
