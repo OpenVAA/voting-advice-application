@@ -81,7 +81,7 @@ export type ButtonProps = LinkOrButtonElementProps & {
  */
 type LinkOrButtonElementProps =
   | WithRequired<SvelteHTMLElements['a'], 'href'>
-  | SvelteHTMLElements['button'];
+  | (SvelteHTMLElements['button'] & {href?: null});
 
 /**
  * Make specific properties of an interface required. Works the same way as
