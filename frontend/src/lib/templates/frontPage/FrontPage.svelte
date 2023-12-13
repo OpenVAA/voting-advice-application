@@ -1,15 +1,11 @@
 <script lang="ts">
+  import {concatProps} from '$lib/utils/components';
   import {Page} from '../page';
   import type {FrontPageProps} from './FrontPage.type';
 
   type $$Props = FrontPageProps;
 
   export let title: $$Props['title'];
-
-  // Merge default values to $$restProps
-  $$restProps.class = `bg-base-300 ${$$restProps.class ?? ''}`;
-  $$restProps.headerClass = `!absolute w-full bg-transparent ${$$restProps.headerClass ?? ''}`;
-  $$restProps.mainClass = `!p-0 ${$$restProps.mainClass ?? ''}`;
 </script>
 
 <!--
@@ -31,12 +27,15 @@ is based on.
   side of the `<header>`
 - `hero`: an optional hero image
 - `heading`: optional content for the main title block, defaults to a 
-`<h1>` element containing the required `title` property
-  - `footer`: the footer to display at the bottom of the page
+  `<h1>` element containing the required `title` property
+- `footer`: the footer to display at the bottom of the page
     
 ### Properties
 
 - `title`: The required page `title`.
+- `class`: Additional class string to append to the element's default classes.
+- `headerClass`: Additional class string to append to the `Page` template's `headerClass`.
+- `mainClass`: Additional class string to append to the `Page` template's `mainClass`.
 - Any valid properties of the `Page` template.
 
 ### Usage
@@ -67,7 +66,13 @@ is based on.
 ```
 -->
 
-<Page {title} {...$$restProps}>
+<Page
+  {title}
+  {...concatProps($$restProps, {
+    class: 'bg-base-300',
+    headerClass: '!absolute w-full bg-transparent',
+    mainClass: '!p-0'
+  })}>
   <!-- Header -->
   <slot name="header" slot="banner" />
 

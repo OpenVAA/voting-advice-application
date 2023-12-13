@@ -1,5 +1,6 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
+  import {concatProps} from '$lib/utils/components';
   import {Page} from '../page';
   import type {BasicPageProps} from './BasicPage.type';
 
@@ -9,9 +10,6 @@
   export let noteClass: $$Props['noteClass'] = 'text-secondary text-center';
   export let noteRole: $$Props['noteRole'] = 'note';
   export let primaryActionsLabel: $$Props['primaryActionsLabel'] = $_('aria.primaryActionsLabel');
-
-  // Merge restProps classes
-  $$restProps.mainClass = `gap-y-lg ${$$restProps.mainClass ?? ''}`;
 </script>
 
 <!--
@@ -49,6 +47,7 @@ is based on.
 - `primaryActionsLabel?`: Optional `aria-label` for the section that contains the primary page
   actions.
   @default $_('aria.primaryActionsLabel')
+- `mainClass`: Additional class string to append to the `Page` template's `mainClass`
 - Any valid properties of the `Page` template.
 
 ### Usage
@@ -83,7 +82,7 @@ is based on.
 ```
 -->
 
-<Page {title} {...$$restProps}>
+<Page {title} {...concatProps($$restProps, {mainClass: 'gap-y-lg'})}>
   <!-- Header -->
   <slot name="banner" slot="banner" />
 
