@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {concatClass} from '$lib/utils/components';
   import {Icon} from '$lib/components/icon';
   import type {ButtonProps} from './Button.type';
 
@@ -9,70 +10,63 @@
   export let icon: $$Props['icon'] = null;
   export let iconPos: $$Props['iconPos'] = 'right';
   export let color: $$Props['color'] = 'primary';
+  export let href: $$Props['href'] = undefined;
 
   // Check iconPos
   if (variant === 'main' && (iconPos === 'top' || iconPos === 'bottom')) {
     iconPos = 'right';
   }
 
-  // Set default title and aria-label for icon variant
-  if (variant === 'icon') {
-    $$restProps['aria-label'] ??= text;
-    $$restProps['title'] ??= text;
-  }
-
-  // Element type
-  const tagName = $$restProps['href'] ? 'a' : 'button';
-
-  // Build classes
-  // 1. Base classes
-  let classes =
-    'btn min-h-touch min-w-touch h-auto flex items-center justify-center gap-y-6 gap-x-4';
-
-  // 2. Variant-defined classes
-  classes += variant === 'main' ? ' w-full max-w-md' : ' btn-ghost';
-
-  // 3. Icon position
-  switch (iconPos) {
-    case 'top':
-      classes += ' flex-col';
-      break;
-    case 'bottom':
-      classes += ' flex-col-reverse';
-      break;
-    case 'left':
-      classes += ' flex-row';
-      break;
-    case 'right':
-      classes += ' flex-row-reverse';
-      break;
-  }
-
-  // 4. Set color
-  if (color) {
-    // For the main button type we can use the btn-primary etc. classes,
-    // for the others, we just set the text color
-    classes += ` ${variant === 'main' ? 'btn' : 'text'}-${color}`;
-  }
-
-  // 5. Merge classes into $$restProps
-  $$restProps.class = `${classes} ${$$restProps.class ?? ''}`;
-
-  // 6. Finally, define the class for the text label
+  // Build classes reactively so that we can incorporate any changes
+  // to `icon` and `color` properties
+  let classes: string;
   let labelClass: string;
-  if (variant === 'main') {
-    labelClass = 'flex-grow text-center';
-    if (icon) {
-      // If an icon is used, add left or right margin so that the text is
-      // nicely centered: ml/r is calculated so that it is the sum of the
-      // gap (4) and icon widths (24) = 28/16 rem
-      labelClass += iconPos === 'right' ? ' ml-[1.75rem]' : ' mr-[1.75rem]';
+
+  $: {
+    // 1. Base classes
+    classes = 'btn min-h-touch min-w-touch h-auto flex items-center justify-center gap-y-6 gap-x-4';
+
+    // 2. Variant-defined classes
+    classes += variant === 'main' ? ' w-full max-w-md' : ' btn-ghost';
+
+    // 3. Icon position
+    switch (iconPos) {
+      case 'top':
+        classes += ' flex-col';
+        break;
+      case 'bottom':
+        classes += ' flex-col-reverse';
+        break;
+      case 'left':
+        classes += ' flex-row';
+        break;
+      case 'right':
+        classes += ' flex-row-reverse';
+        break;
     }
-  } else if (icon && (iconPos === 'top' || iconPos === 'bottom')) {
-    // We use the small-label class only in vertical buttons with an icon.
-    // The color needs to be separately applied here, bc small-label sets
-    // the text color to secondary
-    labelClass = `small-label text-${color}`;
+
+    // 4. Set color
+    if (color) {
+      // For the main button type we can use the btn-primary etc. classes,
+      // for the others, we just set the text color
+      classes += ` ${variant === 'main' ? 'btn' : 'text'}-${color}`;
+    }
+
+    // 5. Finally, define the class for the text label
+    if (variant === 'main') {
+      labelClass = 'flex-grow text-center';
+      if (icon) {
+        // If an icon is used, add left or right margin so that the text is
+        // nicely centered: ml/r is calculated so that it is the sum of the
+        // gap (4) and icon widths (24) = 28/16 rem
+        labelClass += iconPos === 'right' ? ' ml-[1.75rem]' : ' mr-[1.75rem]';
+      }
+    } else if (icon && (iconPos === 'top' || iconPos === 'bottom')) {
+      // We use the small-label class only in vertical buttons with an icon.
+      // The color needs to be separately applied here, bc small-label sets
+      // the text color to secondary
+      labelClass = `small-label text-${color}`;
+    }
   }
 </script>
 
@@ -108,8 +102,13 @@ Otherwise a `<button>` element will be used. Be sure to provide an
 - `icon`: The name of the icon to display.
 - `color`: The color of the icon.
 - `iconPos`: The position of the icon relative to the text.
+- `class`: Additional class string to append to the element's default classes.
 - Any valid attributes of either an `<a>` or `<button>` element depending
   whether `href` was defined or not, respectively.
+
+### Reactivity
+
+Reactivity is not supported for the properties: `variant`, `iconPos`.
 
 ### Usage
 
@@ -123,7 +122,13 @@ Otherwise a `<button>` element will be used. Be sure to provide an
 ```
 -->
 
-<svelte:element this={tagName} on:click {...$$restProps}>
+<svelte:element
+  this={href == null ? 'button' : 'a'}
+  on:click
+  {href}
+  aria-label={variant === 'icon' ? text : undefined}
+  title={variant === 'icon' ? text : undefined}
+  {...concatClass($$restProps, classes)}>
   {#if icon}
     <Icon name={icon} />
   {/if}
