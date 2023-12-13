@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {concatClass} from '$lib/utils/components';
   import {Page} from '../page';
   import type {SingleCardPageProps} from './SingleCardPage.type';
 
@@ -6,11 +7,10 @@
 
   export let cardClass: $$Props['cardClass'] = '';
 
-  // Merge restProps classes
-  $$restProps.class = `bg-base-300 ${$$restProps.class ?? ''}`;
-
   // We need this explicit typing to get rid of linter errors below
-  const props = $$restProps as SingleCardPageProps;
+  function _concatClass(props: SvelteRestProps, classes: string) {
+    return concatClass(props, classes) as SingleCardPageProps;
+  }
 </script>
 
 <!--
@@ -36,7 +36,9 @@ is based on.
 - `title`: The required page `title`.
 - `cardClass?`: Optional class string to add to the `<div>` tag that defines the
   card wrapping the `default` slot.
+- `class`: Additional class string to append to the element's default classes.
 - Any valid properties of the `Page` template.
+
 
 ### Usage
 
@@ -53,7 +55,7 @@ is based on.
 ```
 -->
 
-<Page {...props}>
+<Page {..._concatClass($$restProps, 'bg-base-300')}>
   <!-- Header -->
   <slot name="banner" slot="banner" />
 

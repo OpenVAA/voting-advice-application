@@ -1,6 +1,7 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
+  import {concatClass} from '$lib/utils/components';
   import {appType} from '$lib/utils/stores';
   import {Icon} from '$lib/components/icon';
   import {NavItem} from '$lib/components/navigation';
@@ -46,9 +47,6 @@
     drawerOpen = false;
     drawerOpenElement?.focus();
   }
-
-  // Merge the necessary drawer class to possible extra classes defined in the props
-  $$restProps.class = `drawer ${$$restProps.class ?? ''}`;
 
   // TODO: Fix progress bar color on iOS Safari:
   // see https://stackoverflow.com/questions/38622911/styling-meter-bar-for-mozilla-and-safari
@@ -112,6 +110,8 @@ the Drawer component.
   @default 100
 - `progressTitle?`: Optional title for the progress bar.
   @default `$_('header.progressTitle')`
+- `class`: Additional class string to append to the element's default classes.
+- Any valid attributes of a `<div>` element.
 
 ### Usage
 
@@ -135,7 +135,7 @@ the Drawer component.
 <a href="#{mainId}" class="sr-only focus:not-sr-only">{skipLinkLabel}</a>
 
 <!-- Drawer container -->
-<div {...$$restProps}>
+<div {...concatClass($$restProps, 'drawer')}>
   <!-- NB. The Wave ARIA checker will show an error for this, but the use of both the 
     non-hidden labels in aria-labelledby should be okay for screen readers. -->
   <input
@@ -157,7 +157,7 @@ the Drawer component.
         aria-expanded={drawerOpen}
         aria-controls={navId}
         aria-label={drawerOpenLabel}
-        class="btn-ghost drawer-button btn flex cursor-pointer items-center gap-md text-neutral">
+        class="btn-ghost btn drawer-button flex cursor-pointer items-center gap-md text-neutral">
         <slot name="drawerOpenButton">
           <Icon name="menu" />
           <AppLogo aria-hidden="true" alt="" />
