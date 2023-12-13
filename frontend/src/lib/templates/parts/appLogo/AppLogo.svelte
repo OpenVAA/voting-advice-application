@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {concatClass} from '$lib/utils/components';
   import normalLogo from './svg/openvaa-logo-grey.svg';
   import inverseLogo from './svg/openvaa-logo-white.svg';
   import type {AppLogoProps} from './AppLogo.type';
@@ -10,21 +11,19 @@
 
   // Create class names
   let classes: string;
-
-  // Predefined sizes
-  switch (size) {
-    case 'sm':
-      classes = 'h-20 pt-2';
-      break;
-    case 'lg':
-      classes = 'h-32 pt-6';
-      break;
-    default:
-      classes = 'h-24 pt-4';
+  $: {
+    // Predefined sizes
+    switch (size) {
+      case 'sm':
+        classes = 'h-20 pt-2';
+        break;
+      case 'lg':
+        classes = 'h-32 pt-6';
+        break;
+      default:
+        classes = 'h-24 pt-4';
+    }
   }
-
-  // Merge classes into restProps
-  $$restProps.class = `${classes} ${$$restProps.class ?? ''}`;
 
   // TODO: Use logo files defined in Strapi.
   // TODO: Render only one image, see issue #279
@@ -43,6 +42,7 @@ colour changes dynamically based on whether the light or dark mode is active.
 - `size`: The size of the logo as one of the predefined sizes 'sm', 'md' or 'lg'.
   For arbitrary values, you can supply a `class` attribute, such as 
   `class="h-[3.5rem]"`. @default `'md'`
+- `class`: Additional class string to append to the element's default classes.
 - Any valid attributes of the `<div>` element wrapping the light and dark
   `<img>` elements
 
@@ -56,7 +56,7 @@ colour changes dynamically based on whether the light or dark mode is active.
 ```
 -->
 
-<div {...$$restProps}>
+<div {...concatClass($$restProps, classes)}>
   <img src={normalLogo} {alt} class="h-full {inverse ? 'hidden dark:block' : 'dark:hidden'}" />
   <img src={inverseLogo} {alt} class="h-full {inverse ? 'dark:hidden' : 'hidden dark:block'}" />
 </div>
