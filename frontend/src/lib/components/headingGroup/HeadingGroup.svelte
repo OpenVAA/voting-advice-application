@@ -3,9 +3,6 @@
   import type {HeadingGroupProps} from './HeadingGroup.type';
 
   type $$Props = HeadingGroupProps;
-
-  $$restProps['role'] ??= 'group';
-  $$restProps['aria-roledescription'] ??= $_('aria.headingGroup');
 </script>
 
 <!--
@@ -36,6 +33,6 @@ and the main title.
 ```
 -->
 
-<hgroup {...$$restProps}>
+<hgroup aria-roledescription={$_('aria.headingGroup')} role="group" {...$$restProps}>
   <slot />
 </hgroup>

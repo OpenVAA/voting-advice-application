@@ -3,8 +3,6 @@
   import type {PreHeadingProps} from './PreHeading.type';
 
   type $$Props = PreHeadingProps;
-
-  $$restProps['aria-roledescription'] ??= $_('aria.preHeading');
 </script>
 
 <!--
@@ -30,6 +28,6 @@ within a `HeadingGroup`.
 ```
 -->
 
-<p {...$$restProps}>
+<p aria-roledescription={$_('aria.preHeading')} {...$$restProps}>
   <slot />
 </p>

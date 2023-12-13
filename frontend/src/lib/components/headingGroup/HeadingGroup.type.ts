@@ -1,15 +1,2 @@
-import type {AriaRole, SvelteHTMLElements} from 'svelte/elements';
-export type HeadingGroupProps = SvelteHTMLElements['hgroup'] & {
-  /**
-   * The Aria role description of the `<hgroup>` element.
-   *
-   * @default $_('aria.headingGroup')
-   */
-  'aria-roledescription'?: string | null;
-  /**
-   * The Aria role of the `<hgroup>` element.
-   *
-   * @default 'group'
-   */
-  role?: AriaRole | null;
-};
+import type {SvelteHTMLElements} from 'svelte/elements';
+export type HeadingGroupProps = SvelteHTMLElements['hgroup'];
