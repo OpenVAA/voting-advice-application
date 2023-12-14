@@ -7,14 +7,16 @@
   import HeadingGroup from '$lib/components/headingGroup/HeadingGroup.svelte';
   import PreHeading from '$lib/components/headingGroup/PreHeading.svelte';
 
-  let emailSentText = ''; // Text to display when the email has been sent
+  let emailSentText = ''; // Text to display when the reset email has been sent
 
   const onButtonPressed = async () => {
-    emailSentText = $_('candidateApp.resetPassword.emailSentText');
-
     //TODO: backend stuff, send email
+
+    emailSentText = $_('candidateApp.resetPassword.emailSentText');
   };
 </script>
+
+<!-- Page for sending a reset email in case of a forgotten password. -->
 
 <FrontPage title={$_('candidateApp.resetPassword.title')}>
   <HeadingGroup slot="heading">
@@ -23,11 +25,8 @@
     <h1 class="my-24 text-2xl font-normal">{$_('candidateApp.resetPassword.title')}</h1>
   </HeadingGroup>
 
-  {#if emailSentText}
-    <p class="text-center">
-      {emailSentText}
-    </p>
-  {:else}
+  <!-- If email hasn't been sent yet, show form where user can input their email address. -->
+  {#if !emailSentText}
     <form on:submit|preventDefault={onButtonPressed}>
       <p>
         {$_('candidateApp.resetPassword.description')}
@@ -48,6 +47,11 @@
         class="btn btn-primary mb-md w-full max-w-md"
         text={$_('candidateApp.resetPassword.buttonText')} />
     </form>
+  {:else}
+    <!-- If email has been sent, show info text instead of the form. -->
+    <p class="text-center">
+      {emailSentText}
+    </p>
   {/if}
 
   <svelte:fragment slot="footer"><Footer /></svelte:fragment>
