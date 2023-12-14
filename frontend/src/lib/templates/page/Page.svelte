@@ -157,7 +157,7 @@ the Drawer component.
         aria-expanded={drawerOpen}
         aria-controls={navId}
         aria-label={drawerOpenLabel}
-        class="btn-ghost btn drawer-button flex cursor-pointer items-center gap-md text-neutral">
+        class="btn-ghost drawer-button btn flex cursor-pointer items-center gap-md text-neutral">
         <slot name="drawerOpenButton">
           <Icon name="menu" />
           <AppLogo aria-hidden="true" alt="" />
@@ -192,7 +192,7 @@ the Drawer component.
     <svelte:component
       this={$appType === 'candidate' ? CandidateNav : VoterNav}
       on:navFocusOut={closeDrawer}
-      class="menu w-4/5 max-w-sm bg-base-100 {drawerOpen ? '' : 'hidden'}"
+      class="h-full w-4/5 max-w-sm bg-base-100 {drawerOpen ? '' : 'hidden'}"
       id={navId}>
       <NavItem
         on:click={closeDrawer}
