@@ -2,6 +2,7 @@
   import FieldGroup from '$lib/components/common/FieldGroup.svelte';
   import {Page} from '$lib/templates/page';
   import {_} from 'svelte-i18n';
+  import {LogoutButton} from '$candidate/components/logoutButton';
 
   const disabledFields = ['firstName', 'lastName', 'electionList', 'electionNumber'];
   const editableFields = ['gender', 'motherTongue', 'age'];
@@ -21,6 +22,10 @@
 </script>
 
 <Page title={$_('candidateApp.basicInfo.title')} mainClass="bg-base-200">
+  <svelte:fragment slot="banner">
+    <LogoutButton />
+  </svelte:fragment>
+
   <div class="mx-20 my-20 flex flex-col items-center gap-16">
     <h1>{$_('candidateApp.basicInfo.title')}</h1>
 
