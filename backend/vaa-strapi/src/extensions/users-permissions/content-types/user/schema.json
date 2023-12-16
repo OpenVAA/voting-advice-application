@@ -70,9 +70,7 @@
       "relation": "oneToOne",
       "target": "api::candidate.candidate",
       "mappedBy": "user",
-      "configurable": false,
-      "private": true,
-      "searchable": false
+      "configurable": false
     }
   },
   "config": {

@@ -28,6 +28,37 @@ export const register = async (registrationKey: string, password: string): Promi
   });
 };
 
+export const requestForgotPasswordLink = async (email: string): Promise<Response> => {
+  const url = new URL(constants.PUBLIC_BACKEND_URL);
+  url.pathname = 'api/auth/forgot-password';
+
+  return await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({email})
+  });
+};
+
+export const resetPassword = async (code: string, password: string) => {
+  const url = new URL(constants.PUBLIC_BACKEND_URL);
+  url.pathname = 'api/auth/reset-password';
+
+  return await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      code: code,
+      password: password,
+      // We leave it up to the UI to do the validation if the password confirmation is correct
+      passwordConfirmation: password
+    })
+  });
+};
+
 export const checkRegistrationKey = async (registrationKey: string): Promise<Response> => {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
   url.pathname = 'api/auth/candidate/check';
