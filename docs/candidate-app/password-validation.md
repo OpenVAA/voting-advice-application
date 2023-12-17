@@ -27,6 +27,11 @@ The password validation UI provides a variable indicating the password validatio
 
 However, due to the use of debounced validation, the validity of the password is also checked by the password set page itself before sending the request to the backend.
 
+If the validity check passes, a POST request is sent to the backend to either
+
+- `api/auth/candidate/register`
+- `api/auth/reset-password`
+
 ## Backend
 
 Before accepting the password, the backend also validates the password.
@@ -39,20 +44,29 @@ The password requirements are defined in the [`passwordValidation.ts`](/frontend
 
 Each requirement is defined by the `ValidationDetail` interface:
 
-- status: boolean
+```ts
+export interface ValidationDetail {
+  status: boolean;
+  message: string;
+  negative?: boolean;
+  enforced?: boolean;
+}
+```
+
+- status:
   - indicates the state of the requirement, i.e. if it is valid
-- message: string
+- message:
   - describes the requirement
-  - shown to the user on the validation UI
-  - due to localization, the message string contains the key to the `i18n` localization file, where the actual texts are located.
-- negative?: boolean
-  - Requirements are either positive or negative.
-  - Positive rules are the main requirements that are always enforced and must be met for the password to be valid.
-  - Negative rules are rules that are used to prevent bad password practises.
-  - In the validation UI, negative rules are shown if they are violated.
-- enforced?: boolean
-  - Negative rules can be either enforced or non-enforced.
-  - Enforced requirements need to be valid for a password to be valid.
+  - shown to the user in the validation UI
+  - due to localization, the message string contains the key to the `i18n` localization file, where the actual texts are located
+- negative:
+  - requirements are either positive or negative
+  - positive rules are the main requirements that are always enforced and must be met for the password to be valid
+  - negative rules are rules that are used to prevent bad password practises
+  - in the validation UI, negative rules are shown if they are violated
+- enforced:
+  - negative rules can be either enforced or non-enforced
+  - enforced requirements need to be valid for a password to be valid
 
 Currently, all requirements are done without hardcoded lists of allowed characters and support languages that have separate uppercase and lowercase letters. Localization to other languages may need new validation rules.
 
@@ -71,7 +85,7 @@ Positive requirement that checks that the length of the password is at least the
 length: {
   status: password.length >= minPasswordLength,
   message: 'candidateApp.passwordValidation.length'
-},
+}
 ```
 
 Example 2.  
