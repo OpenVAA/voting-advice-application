@@ -6,7 +6,7 @@
   import {FrontPage} from '$lib/templates/frontPage';
   import {candidateAppRoute} from '$candidate/placeholder.json';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {PasswordValidator} from '$lib/components/passwordValidator';
+  import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {validatePassword} from '$lib/utils/passwordValidation';
   import {Button} from '$lib/components/button';
   import Footer from '$lib/components/footer/Footer.svelte';
