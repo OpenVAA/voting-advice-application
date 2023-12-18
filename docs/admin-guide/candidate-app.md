@@ -26,7 +26,7 @@ You can create a new user using the "Create new entry" button. The following fie
 Then, use the "Save" button and you should be able to log in as the candidate at http://localhost:5173/candidate.
 
 ## Resetting Password
-The user gets an email with a link to reset their password using the forgot password functionality on the login page. The frontend URL in the emails is configured with in `.env` with the PUBLIC_FRONTEND_URL variable, and the SMTP can be configured using the following variables:
+The user gets an email with a link to reset their password using the forgot password functionality on the login page. The frontend URL in the emails is configured in `.env` with the PUBLIC_FRONTEND_URL variable, and the SMTP can be configured using the following variables:
 - `SMTP_HOST`: the hostname the SMTP server runs on
 - `SMTP_PORT`: the port of the SMTP server
 - `SMTP_USERNAME`: the username used for authentication
