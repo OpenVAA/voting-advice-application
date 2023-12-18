@@ -18,7 +18,7 @@
   let validPassword = false;
   let errorMessage = '';
 
-  $: disableSetButton = validPassword && passwordConfirmation.length > 0;
+  $: disableSetButton = !validPassword || passwordConfirmation.length === 0;
 
   const onButtonPress = async () => {
     if (password !== passwordConfirmation) {
@@ -67,8 +67,8 @@
     <h1 class="my-24 text-2xl font-normal">{$_('candidateApp.resetPassword.createNewPassword')}</h1>
   </HeadingGroup>
 
-  <form on:submit|preventDefault={onButtonPress}>
-    <p class="m-0 text-center">
+  <form class="flex-nowarp flex flex-col items-center" on:submit|preventDefault={onButtonPress}>
+    <p class="m-0 max-w-md text-center">
       {$_('candidateApp.setPassword.description')}
     </p>
 
@@ -79,7 +79,7 @@
       type="password"
       name="password"
       id="password"
-      class="input mb-md w-full"
+      class="input mb-md w-full max-w-md"
       placeholder={$_('candidateApp.setPassword.password')}
       bind:value={password}
       autocomplete="new-password"
@@ -90,7 +90,7 @@
       type="password"
       name="passwordConfirmation"
       id="passwordConfirmation"
-      class="input mb-md w-full"
+      class="input mb-md w-full max-w-md"
       placeholder={$_('candidateApp.setPassword.confirmPassword')}
       bind:value={passwordConfirmation}
       autocomplete="new-password"
@@ -101,11 +101,13 @@
       </p>
     {/if}
 
-    <button class="btn btn-primary mb-md w-full" type="submit" disabled={!disableSetButton}>
-      {$_('candidateApp.setPassword.setPassword')}
-    </button>
+    <Button
+      type="submit"
+      variant="main"
+      disabled={disableSetButton}
+      text={$_('candidateApp.setPassword.setPassword')} />
 
-    <Button href="/help" variant="normal" text={$_('candidate.contact_support')} />
+    <Button href="/help" text={$_('candidate.contact_support')} />
   </form>
 
   <svelte:fragment slot="footer"><Footer /></svelte:fragment>
