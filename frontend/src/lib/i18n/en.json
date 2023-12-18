@@ -36,7 +36,8 @@
     "enter_email_and_password": "Enter the email and password you've received from your party to edit your data and opinions.",
     "email_placeholder": "example@email.com",
     "password_placeholder": "E.g. CP23-174a-f4%&-aHAB",
-    "sign_in": "Sign in",
+    "sign_in_button": "Sign in",
+    "sign_in_title": "Sign in",
     "wrong_email_or_password": "Wrong email or password",
     "forgot_password": "Forgot Password?",
     "contact_support": "Contact Support",
@@ -154,7 +155,8 @@
       "registrationCode": "registration code",
       "wrongRegistrationCode": "Wrong registration code",
       "registerButton": "Register",
-      "submitPlaceholder": "E.g. CP23-174a-f4%&-aHAB"
+      "submitPlaceholder": "E.g. CP23-174a-f4%&-aHAB",
+      "title": "Registration"
     },
     "resetPassword": {
       "title": "Forgot Password?",

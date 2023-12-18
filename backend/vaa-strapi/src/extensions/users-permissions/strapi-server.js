@@ -16,9 +16,11 @@ module.exports = async (plugin) => {
 
     const pluginStore = strapi.store({type: 'plugin', name: 'users-permissions'});
 
-    // Disable registration by default
     const advanced = await pluginStore.get({key: 'advanced'});
-    advanced.allow_register = false;
+    advanced.allow_register = false; // Disable registration by default
+    const url = new URL(process.env.PUBLIC_FRONTEND_URL ?? 'http://localhost:5173');
+    url.pathname = '/candidate/password-reset';
+    advanced.email_reset_password = url; // Setup correct frontend URL for password resets
     await pluginStore.set({key: 'advanced', value: advanced});
 
     // Setup default permissions
@@ -50,6 +52,18 @@ module.exports = async (plugin) => {
         }
       });
     }
+
+    // Setup email template (left for the future, the default template also does not make the URL clickable)
+    const email = await pluginStore.get({key: 'email'});
+    // All options can be found here:
+    // https://github.com/strapi/strapi/blob/2a2faea1d49c0d84077f66a57b3b73021a4c3ba7/packages/plugins/users-permissions/server/bootstrap/index.js#L41-L79
+    email.reset_password.options.message = `<p>We heard that you lost your password. Sorry about that!</p>
+
+<p>But don’t worry! You can use the following link to reset your password:</p>
+<a href="<%= URL %>?code=<%= TOKEN %>"><%= URL %>?code=<%= TOKEN %></a>
+
+<p>Thanks.</p>`;
+    await pluginStore.set({key: 'email', value: email});
 
     return res;
   };

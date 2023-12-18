@@ -11,8 +11,8 @@ export default ({env}) => ({
         }
       },
       settings: {
-        defaultFrom: 'strapi@example.com',
-        defaultReplyTo: 'strapi@example.com'
+        defaultFrom: env('MAIL_FROM', 'candidate-app@example.com'),
+        defaultReplyTo: env('MAIL_REPLY_TO', 'candidate-app@example.com')
       }
     }
   }
