@@ -34,9 +34,10 @@ If the validity check passes, a POST request is sent to the backend to either
 
 ## Backend
 
-Before accepting the password, the backend also validates the password.
-This is done in the [`candidate.ts`](/backend/vaa-strapi/src/extensions/users-permissions/controllers/candidate.ts) file using the same `validatePassword` function from [`passwordValidationCopy.ts`](/backend/vaa-strapi/src/util/passwordValidationCopy.ts).
-Currently, the backend uses a copy of the original validation file.
+- `/api/auth/candidate/register` endpoint is implemented by [`candidate.ts`](/backend/vaa-strapi/src/extensions/users-permissions/controllers/candidate.ts) using the registration key
+  - the backend also validates the password using the same `validatePassword` function
+  - validation uses a copy of the original validation file, [`passwordValidationCopy.ts`](/backend/vaa-strapi/src/util/passwordValidationCopy.ts)
+- `/api/auth/reset-password` is fully handled by Strapi's users-permissions plugin
 
 ## Password requirements
 
@@ -75,6 +76,9 @@ The file also contains help functions for checking different aspects of the pass
 ### Changing and creating new requirements
 
 All validation rules are defined in the `passwordValidation` function. New requirements can be added and existing ones changed by modifying `ValidationDetail` objects of the result.
+
+It should be noted that both [`passwordValidation.ts`](/frontend/src/lib/utils/passwordValidation.ts) and [`passwordValidationCopy.ts`](/backend/vaa-strapi/src/util/passwordValidationCopy.ts) need to be updated until the files are merged to prevent accidental differences between frontend and backend validation.
+
 The order of one group of requirements (positive, negative enforced, negative non-enforced) is the same order they are shown to the user in the validation UI.
 Below are examples of both types of requirements that can be used as a guide to creating new requirements. If necessary, new help functions can be defined in the file to help with validating a specific aspect of the password.
 
