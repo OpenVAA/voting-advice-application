@@ -26,7 +26,7 @@
 
   // 2. Variant-defined classes
   switch (variant) {
-    case 'readMore':
+    case 'read-more':
       collapseClasses += ' bg-base-200';
       titleClasses += ' bg-base-200 text-primary';
       contentClasses += ' bg-base-200 text-primary';
@@ -58,7 +58,7 @@
       titleClasses += ' display-flex';
       break;
     case 'text':
-      iconClass = ' inline-block whitespace-nowrap';
+      iconClass = 'inline-block whitespace-nowrap';
       break;
   }
 
@@ -76,7 +76,7 @@
     A component for expanders that contain a title and some content. Use the
     `variant` prop to specify the expander type.render
 
-    - 'readMore' expander with base-200 as its base color, and text-primary as the
+    - 'read-more' expander with base-200 as its base color, and text-primary as the
      text color. Used to get more information about an issue when giving your opinion
      in the candidate opinions.
 
@@ -106,7 +106,7 @@
     ### Usage
 
     ```tsx
-    <Expander variant="readMore" title="Example title">
+    <Expander variant="read-more" title="Example title">
     <p> Example content <p/>
     </Expander>
 
@@ -149,8 +149,6 @@
     padding: 0.7rem;
     align-items: center;
     text-align: center;
-    width: 100%;
-    min-height: 0rem;
   }
 
   .display-flex {
@@ -170,9 +168,11 @@
     padding: 0.7rem;
   }
 
+  /* This is needed to remove the excisting
+  min-height definition from daisyui collapse class.
+  Only defining min-height in .collapse-title does not work.*/
   .collapse-title,
   :where(.collapse > input[type='checkbox']) {
-    width: 100%;
     min-height: 0rem;
   }
 </style>

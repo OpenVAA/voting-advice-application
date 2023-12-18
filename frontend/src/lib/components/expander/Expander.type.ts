@@ -29,17 +29,9 @@ export type ExpanderProps = {
    * are in use.
    */
   customizeContent?: string | null;
-} & ( // Types of expanders which define their appearance.
-  | {
-      variant: 'readMore' | null;
-    }
-  | {
-      variant?: 'category' | null;
-    }
-  | {
-      variant?: 'question' | null;
-    }
-  | {
-      variant?: 'unansweared-question' | null;
-    }
-);
+
+  /**
+   * Variable used to define a variant for the expander.
+   */
+  variant: 'read-more' | 'category' | 'question' | 'unansweared-question' | null;
+};
