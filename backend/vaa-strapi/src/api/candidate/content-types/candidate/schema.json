@@ -104,6 +104,12 @@
       "configurable": false,
       "private": true,
       "searchable": false
+    },
+    "candidateAttributes": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::candidate-attribute.candidate-attribute",
+      "mappedBy": "candidate"
     }
   }
 }

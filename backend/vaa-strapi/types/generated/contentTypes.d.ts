@@ -522,7 +522,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
   };
   options: {
     draftAndPublish: false;
-    timestamps: true;
   };
   attributes: {
     username: Attribute.String &
@@ -550,6 +549,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'plugin::users-permissions.user',
       'manyToOne',
       'plugin::users-permissions.role'
+    >;
+    candidate: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToOne',
+      'api::candidate.candidate'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -666,6 +670,19 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
       'oneToMany',
       'api::nomination.nomination'
     >;
+    email: Attribute.String & Attribute.Private;
+    registrationKey: Attribute.String & Attribute.Private;
+    user: Attribute.Relation<
+      'api::candidate.candidate',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    > &
+      Attribute.Private;
+    candidateAttributes: Attribute.Relation<
+      'api::candidate.candidate',
+      'oneToMany',
+      'api::candidate-attribute.candidate-attribute'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -677,6 +694,74 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
       'api::candidate.candidate',
       'oneToMany',
       'api::candidate.candidate'
+    >;
+    locale: Attribute.String;
+  };
+}
+
+export interface ApiCandidateAttributeCandidateAttribute extends Schema.CollectionType {
+  collectionName: 'candidate_attributes';
+  info: {
+    singularName: 'candidate-attribute';
+    pluralName: 'candidate-attributes';
+    displayName: 'Candidate Attributes';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  pluginOptions: {
+    i18n: {
+      localized: true;
+    };
+  };
+  attributes: {
+    displayName: Attribute.String &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    questionType: Attribute.Relation<
+      'api::candidate-attribute.candidate-attribute',
+      'oneToOne',
+      'api::question-type.question-type'
+    >;
+    candidate: Attribute.Relation<
+      'api::candidate-attribute.candidate-attribute',
+      'manyToOne',
+      'api::candidate.candidate'
+    >;
+    key: Attribute.String &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    value: Attribute.String &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::candidate-attribute.candidate-attribute',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::candidate-attribute.candidate-attribute',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    localizations: Attribute.Relation<
+      'api::candidate-attribute.candidate-attribute',
+      'oneToMany',
+      'api::candidate-attribute.candidate-attribute'
     >;
     locale: Attribute.String;
   };
@@ -1317,6 +1402,7 @@ declare module '@strapi/strapi' {
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::answer.answer': ApiAnswerAnswer;
       'api::candidate.candidate': ApiCandidateCandidate;
+      'api::candidate-attribute.candidate-attribute': ApiCandidateAttributeCandidateAttribute;
       'api::constituency.constituency': ApiConstituencyConstituency;
       'api::election.election': ApiElectionElection;
       'api::election-app-label.election-app-label': ApiElectionAppLabelElectionAppLabel;
