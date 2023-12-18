@@ -1,18 +1,23 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
+  import {requestForgotPasswordLink} from '$lib/api/candidate';
   import FrontPage from '$lib/templates/frontPage/FrontPage.svelte';
   import Footer from '$lib/components/footer/Footer.svelte';
   import Button from '$lib/components/button/Button.svelte';
   import HeadingGroup from '$lib/components/headingGroup/HeadingGroup.svelte';
   import PreHeading from '$lib/components/headingGroup/PreHeading.svelte';
 
-  let emailSentText = ''; // Text to display when the reset email has been sent
+  let statusMessage = ''; // Text to display when the send-button has been pressed: either email has been sent or internal error
+  let email = '';
 
   const onButtonPressed = async () => {
-    //TODO: backend stuff, send email
-
-    emailSentText = $_('candidateApp.resetPassword.emailSentText');
+    const response = await requestForgotPasswordLink(email); // Request email to be sent in the backend
+    if (response.ok) {
+      statusMessage = $_('candidateApp.resetPassword.emailSentText');
+    } else {
+      statusMessage = $_('candidateApp.resetPassword.errorText');
+    }
   };
 </script>
 
@@ -26,7 +31,7 @@
   </HeadingGroup>
 
   <!-- If email hasn't been sent yet, show form where user can input their email address. -->
-  {#if !emailSentText}
+  {#if !statusMessage}
     <form on:submit|preventDefault={onButtonPressed}>
       <p>
         {$_('candidateApp.resetPassword.description')}
@@ -39,6 +44,7 @@
         aria-label={$_('candidate.email_placeholder')}
         class="input mb-md w-full max-w-md"
         placeholder={$_('candidate.email_placeholder')}
+        bind:value={email}
         required />
 
       <Button
@@ -50,7 +56,7 @@
   {:else}
     <!-- If email has been sent, show info text instead of the form. -->
     <p class="text-center">
-      {emailSentText}
+      {statusMessage}
     </p>
   {/if}
 

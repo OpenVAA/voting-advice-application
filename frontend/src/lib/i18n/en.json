@@ -161,7 +161,8 @@
       "description": "To reset your password, please enter your email address below:",
       "emailPlaceholder": "Email address",
       "buttonText": "Send reset link",
-      "emailSentText": "Check your inbox for the password reset link."
+      "emailSentText": "A reset password link has been sent to your email. Please check your inbox and click the link to set your new password.",
+      "errorText": "Internal error. Try again later or contact the administrator."
     }
   }
 }
