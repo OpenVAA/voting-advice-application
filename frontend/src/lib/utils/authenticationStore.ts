@@ -1,17 +1,57 @@
 import {authenticate, me} from '$lib/api/candidate';
 import {writable, type Writable} from 'svelte/store';
 
-export type User = Record<string, string | number | boolean> | null;
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  confirmed: boolean;
+  blocked: boolean;
+  candidate?: Candidate;
+}
+
+export interface Candidate {
+  id: number;
+  firstName: string;
+  lastName: string;
+  politicalExperience: string;
+  email: string;
+  nominations: Nomination[];
+  locale: string;
+  party?: Party;
+}
+
+export interface Nomination {
+  id: number;
+  electionSymbol: string;
+  electionRound: number;
+  party: Party;
+  locale: string;
+  constituency?: Constituency;
+}
+
+export interface Party {
+  name: string;
+  shortName: string;
+  info: string;
+  partyColor: string;
+}
+
+export interface Constituency {
+  name: string;
+  shortName: string;
+  type: string;
+}
 
 export interface AuthContext {
-  user: Writable<User>;
+  user: Writable<User | null>;
   token: Writable<string | null | undefined>;
   logIn: (email: string, password: string) => Promise<boolean>;
   loadUserData: () => Promise<void>;
   logOut: () => Promise<void>;
 }
 
-const userStore = writable<User>(null);
+const userStore = writable<User | null>(null);
 const tokenStore = writable<string | null | undefined>(undefined);
 
 export const logIn = async (email: string, password: string) => {
