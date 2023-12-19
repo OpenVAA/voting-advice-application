@@ -7,7 +7,7 @@ import candidates from './data/candidates.json';
 import parties from './data/parties.json';
 import singleCandidate from './data/singleCandidate.json';
 import singleParty from './data/singleParty.json';
-import * as environment from '$app/environment';
+import type * as environment from '$app/environment';
 
 // Mock SvelteKit runtime module $app/environment
 vi.mock('$app/environment', (): typeof environment => ({
@@ -16,6 +16,15 @@ vi.mock('$app/environment', (): typeof environment => ({
   building: false,
   version: 'any'
 }));
+
+vi.mock(
+  '$env/dynamic/public',
+  (): Record<string, object> => ({
+    env: {
+      PUBLIC_BACKEND_URL: 'http://localhost:1337'
+    }
+  })
+);
 
 global.fetch = vi.fn();
 
