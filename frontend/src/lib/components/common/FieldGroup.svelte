@@ -1,4 +1,6 @@
 <script lang="ts">
+  //TODO: add type
+  //eslint-disable-next-line
   export let fields: any[] = ['default'];
   export let customStyle: string | undefined = undefined;
 </script>
