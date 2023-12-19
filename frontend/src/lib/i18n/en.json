@@ -111,6 +111,7 @@
       "fields": {
         "firstName": "First Name",
         "lastName": "Surname",
+        "party": "party",
         "electionList": "Election List",
         "electionNumber": "Election Number",
         "gender": "Gender",
@@ -119,8 +120,11 @@
         "portrait": "Portrait",
         "unaffiliated": "Unaffiliated"
       },
+      "pending": "pending",
       "unaffiliatedDescription": "Set this on if you're not a member of the party on whose list you are.",
-      "electionManifesto": "Election Manifesto",
+      "nominationsDescription": "These are the constituencies where you're nominated along with the election list and possible election symbol. If a nomination is marked 'Pending', your election symbol might not yet be defined.",
+      "electionManifesto": "Election manifesto",
+      "nominations": "Nominations",
       "tapToAddPhoto": "Tap to add photo"
     },
     "setPassword": {
