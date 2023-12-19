@@ -1,4 +1,4 @@
-# Candidate App
+# Candidates
 
 ## Mock Data
 By default, mock data includes the user `first.last@example.com` with the password `password` that can be used to test the candidate app.
@@ -35,3 +35,13 @@ The user gets an email with a link to reset their password using the forgot pass
 - `MAIL_REPLY_TO`: the email address replies should be sent to
 
 In a development environment, there is a local instance of [maildev](https://github.com/maildev/maildev) running so that you do not need to set up SMTP. The development configuration automatically enforces the use of maildev through the `backend/vaa-strapi/config/env/development/plugins.ts` file. The user interface of maildev can be found at [http://localhost:1080](http://localhost:1080), where you'll find any emails sent by Strapi.
+
+## Technical Documentation
+
+The user registration process is primarily handled by the `users-permissions` plugin bundled by Strapi so that we can rely on Strapi's existing security mechanisms (rate-limiting and being battle-tested). The only exception is that the plugin is extended with registration code support (POST /api/auth/local/register endpoint) that is implemented in the [`candidate.ts`](/backend/vaa-strapi/src/extensions/users-permissions/controllers/candidate.ts) file. The user is also not logged in automatically by this endpoint to prevent bypassing 2FA in case we want to implement it in the future, in scenarios where the user already exists but is not explicitly linked to a candidate yet.
+
+The existing content-type of `User` is used to identify the users that can log in, but extended with the `candidate` field so a logged-in user could be associated to a specific candidate. Similarly, the candidate schema also has a belong-to relation back to the user if any exists. This makes it possible to rely on the logic provided by `users-permissions` plugin instead of implementing all the login logic manually. You can find the schema definition for user in the [`schema.json`](/backend/vaa-strapi/src/extensions/users-permissions/content-types/user/schema.json).
+
+See [password-validation.md](./password-validation.md) on additional information on how password validation is handled.
+
+For logging in and logging out, the frontend stores the session JWT token returned by Strapi in the local storage of the browser. The primary logic for this is handled in [`authenticationStore.ts`](/frontend/src/lib/utils/authenticationStore.ts). Log out is handled simply by resetting the state to being logged out and discarding the saved JWT token inside local storage.
