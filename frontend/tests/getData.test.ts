@@ -1,9 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import {describe, test, expect, vi, Mock} from 'vitest';
-import {getNominatedCandidates, getData} from '$lib/api/getData';
+import {getData} from '$lib/api/getData';
 import {constants} from '$lib/utils/constants';
-import candidates from './data/candidates.json';
 import parties from './data/parties.json';
 import singleCandidate from './data/singleCandidate.json';
 import singleParty from './data/singleParty.json';
@@ -28,9 +27,10 @@ vi.mock(
 
 global.fetch = vi.fn();
 
-function createFetchResponse(data: any) {
+function createFetchResponse(data: unknown) {
   return {json: () => new Promise((resolve) => resolve(data))};
 }
+
 describe('Test getting data from backend', () => {
   // test('Test requesting all candidates', async () => {
   //   (fetch as Mock).mockResolvedValue(createFetchResponse(candidates));
