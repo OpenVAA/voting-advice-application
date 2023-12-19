@@ -36,8 +36,10 @@
     "enter_email_and_password": "Enter the email and password you've received from your party to edit your data and opinions.",
     "email_placeholder": "example@email.com",
     "password_placeholder": "E.g. CP23-174a-f4%&-aHAB",
-    "sign_in": "Sign in",
+    "sign_in_button": "Sign in",
+    "sign_in_title": "Sign in",
     "wrong_email_or_password": "Wrong email or password",
+    "forgot_password": "Forgot Password?",
     "contact_support": "Contact Support",
     "election_compass_for_voters": "Election Compass for Voters",
     "tabs": {
@@ -157,7 +159,18 @@
       "registrationCode": "registration code",
       "wrongRegistrationCode": "Wrong registration code",
       "registerButton": "Register",
-      "submitPlaceholder": "E.g. CP23-174a-f4%&-aHAB"
+      "submitPlaceholder": "E.g. CP23-174a-f4%&-aHAB",
+      "title": "Registration"
+    },
+    "resetPassword": {
+      "createNewPassword": "Set a new password",
+      "passwordResetError": "Password reset failed",
+      "title": "Forgot Password?",
+      "description": "To reset your password, please enter your email address below:",
+      "emailPlaceholder": "Email address",
+      "buttonText": "Send reset link",
+      "emailSentText": "A reset password link has been sent to your email. Please check your inbox and click the link to set your new password.",
+      "errorText": "Internal error. Try again later or contact the administrator."
     }
   }
 }

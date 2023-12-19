@@ -4,8 +4,11 @@
   import {goto} from '$app/navigation';
   import Footer from '$lib/components/footer/Footer.svelte';
   import {register} from '$lib/api/candidate';
-  import PasswordValidator from './PasswordValidator.svelte';
+  import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {validatePassword} from '$lib/utils/passwordValidation';
+  import {FrontPage} from '$lib/templates/frontPage';
+  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {Button} from '$lib/components/button';
 
   export let userName: string;
   export let registrationCode: string;
@@ -66,66 +69,59 @@ Page where candidates can set their password when logging to the app for the fir
   ```
 -->
 
-<div class="flex w-full flex-grow flex-col items-center bg-base-300">
-  <main class="flex-grow">
-    <div class="flex max-w-xl flex-col items-center p-lg pl-safelgl pr-safelgr">
-      <div class="flex flex-col flex-nowrap items-center">
-        <hgroup class="py-lg">
-          <p class="text-2xl font-bold text-primary">{$page.data.appLabels.appTitle}</p>
-          <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
-          <h1 class="my-24 text-2xl font-normal">
-            {$_('candidateApp.setPassword.greeting', {values: {name: userName}})}
-          </h1>
-        </hgroup>
+<FrontPage title={$_('candidateApp.registration.title')}>
+  <HeadingGroup slot="heading">
+    <PreHeading class="text-2xl font-bold text-primary">{$page.data.appLabels.appTitle}</PreHeading>
+    <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
+    <h1 class="my-24 text-2xl font-normal">
+      {$_('candidateApp.setPassword.greeting', {values: {name: userName}})}
+    </h1>
+  </HeadingGroup>
 
-        <form
-          class="flex flex-col flex-nowrap items-center"
-          on:submit|preventDefault={onSetButtonPressed}>
-          <p class="m-0 text-center">
-            {$_('candidateApp.setPassword.description')}
-          </p>
+  <form
+    class="flex flex-col flex-nowrap items-center"
+    on:submit|preventDefault={onSetButtonPressed}>
+    <p class="m-0 text-center">
+      {$_('candidateApp.setPassword.description')}
+    </p>
 
-          <PasswordValidator bind:validPassword password={password1} />
+    <PasswordValidator bind:validPassword password={password1} />
 
-          <label for="password1" class="hidden">{$_('candidate.password')}</label>
-          <input
-            type="password"
-            name="password1"
-            id="password1"
-            class="input mb-md w-full max-w-md"
-            placeholder={$_('candidateApp.setPassword.password')}
-            bind:value={password1}
-            autocomplete="new-password"
-            required />
+    <label for="password1" class="hidden">{$_('candidate.password')}</label>
+    <input
+      type="password"
+      name="password1"
+      id="password1"
+      class="input mb-md w-full max-w-md"
+      placeholder={$_('candidateApp.setPassword.password')}
+      bind:value={password1}
+      autocomplete="new-password"
+      required />
 
-          <label for="password2" class="hidden">{$_('candidate.password')}</label>
-          <input
-            type="password"
-            name="password2"
-            id="password2"
-            class="input mb-md w-full max-w-md"
-            placeholder={$_('candidateApp.setPassword.confirmPassword')}
-            bind:value={password2}
-            autocomplete="new-password"
-            required />
-          {#if errorMessage}
-            <p class="text-center text-error">
-              {errorMessage}
-            </p>
-          {/if}
+    <label for="password2" class="hidden">{$_('candidate.password')}</label>
+    <input
+      type="password"
+      name="password2"
+      id="password2"
+      class="input mb-md w-full max-w-md"
+      placeholder={$_('candidateApp.setPassword.confirmPassword')}
+      bind:value={password2}
+      autocomplete="new-password"
+      required />
+    {#if errorMessage}
+      <p class="text-center text-error">
+        {errorMessage}
+      </p>
+    {/if}
 
-          <button
-            type="submit"
-            disabled={!disableSetButton}
-            class="btn btn-primary mb-md w-full max-w-md"
-            >{$_('candidateApp.setPassword.setPassword')}</button>
+    <Button
+      type="submit"
+      disabled={!disableSetButton}
+      variant="main"
+      text={$_('candidateApp.setPassword.setPassword')} />
 
-          <a href="/help" class="btn btn-ghost w-full max-w-md"
-            >{$_('candidate.contact_support')}</a>
-        </form>
-      </div>
-    </div>
-  </main>
+    <Button href="/help" text={$_('candidate.contact_support')} />
+  </form>
 
-  <Footer />
-</div>
+  <Footer slot="footer" />
+</FrontPage>
