@@ -80,7 +80,9 @@ export const me = async (): Promise<unknown> => {
   return request(
     ['api', 'users', 'me'],
     new URLSearchParams({
-      populate: '*'
+      'populate[candidate][populate][nominations][populate][party]': 'true',
+      'populate[candidate][populate][nominations][populate][constituency]': 'true',
+      'populate[candidate][populate][party]': 'true'
     })
   );
 };
