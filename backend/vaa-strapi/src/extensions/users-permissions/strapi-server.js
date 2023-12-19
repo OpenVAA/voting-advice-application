@@ -5,8 +5,8 @@ import candidate from './controllers/candidate';
 const defaultPermissions = [
   {action: 'plugin::users-permissions.candidate.check', roleType: 'public'},
   {action: 'plugin::users-permissions.candidate.register', roleType: 'public'},
-  {action: 'api::candidate.candidate.findOne', roleType: 'authenticated'},
   {action: 'api::candidate.candidate.find', roleType: 'authenticated'},
+  {action: 'api::candidate.candidate.findOne', roleType: 'authenticated'},
   {action: 'api::party.party.find', roleType: 'authenticated'},
   {action: 'api::party.party.findOne', roleType: 'authenticated'},
   {action: 'api::nomination.nomination.find', roleType: 'authenticated'},

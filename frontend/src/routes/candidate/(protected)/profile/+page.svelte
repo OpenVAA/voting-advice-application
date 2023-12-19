@@ -21,7 +21,7 @@
 
   const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
-  const headerClass = 'mx-6 my-0 p-0 text-m text-secondary';
+  const headerClass = 'uppercase mx-6 my-0 p-0 text-m text-secondary';
   const inputClass =
     'input-ghost input input-sm w-full pr-2 text-right disabled:border-none disabled:bg-base-100';
 
@@ -36,11 +36,10 @@
     }
   };
 
+  // TODO: consider refactoring file input to a different component
+
   // add an event listener to the portrait label for keyboard navigation
   onMount(() => {
-    portraitInput = document.getElementById('portrait');
-    portraitLabel = document.getElementById('portraitLabel');
-
     portraitLabel?.addEventListener('keydown', handlePortraitInput);
   });
 
@@ -51,7 +50,7 @@
 
   // get the user from authContext
   const user = get(authContext.user);
-  const nominations = user?.candidate.nominations;
+  const nominations = user?.candidate?.nominations;
 
   // the dot symbol for separating info string
   const dot = '\u22C5';
@@ -59,19 +58,19 @@
   // map nominations into objects
   const nominationFields = nominations?.map((nom) => ({
     nominationID: nom.id,
-    constituency: nom.constituency.name,
+    constituency: nom.constituency?.name,
     party: nom.party.shortName,
     electionSymbol: nom.electionSymbol,
-    fieldText: nom.electionSymbol
-      ? `${nom.constituency.name} ${dot} ${nom.party.shortName} ${dot} ${nom.electionSymbol}`
-      : `${nom.constituency.name} ${dot} ${nom.party.shortName}`
+    fieldText: `${nom.constituency?.name} ${dot} ${nom.party.shortName} ${
+      nom.electionSymbol ? dot + ' ' + nom.electionSymbol : ''
+    }`
   }));
 
   // basic information
   const basicInfoData: Record<string, string | number | undefined> = {
-    firstName: user?.candidate.firstName,
-    lastName: user?.candidate.lastName,
-    party: user?.candidate.party.shortName
+    firstName: user?.candidate?.firstName,
+    lastName: user?.candidate?.lastName,
+    party: user?.candidate?.party?.shortName
   };
 </script>
 
@@ -100,7 +99,7 @@
 
     <FieldGroup fields={nominationFields} let:field>
       <p class={headerClass} slot="header">
-        {$_('candidateApp.basicInfo.nominations').toUpperCase()}
+        {$_('candidateApp.basicInfo.nominations')}
       </p>
 
       <div class="flex items-center justify-between bg-base-100 px-4">
@@ -145,11 +144,21 @@
           {$_('candidateApp.basicInfo.fields.portrait')}
         </span>
         <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-        <label id="portraitLabel" tabindex="0" for="portrait" class="cursor-pointer text-primary"
+        <label
+          bind:this={portraitLabel}
+          id="portraitLabel"
+          tabindex="0"
+          for="portrait"
+          class="cursor-pointer text-primary"
           >{$_('candidateApp.basicInfo.tapToAddPhoto')}
           <Icon name="photo" />
         </label>
-        <input type="file" id="portrait" placeholder="PLACEHOLDER" class="hidden" />
+        <input
+          bind:this={portraitInput}
+          type="file"
+          id="portrait"
+          placeholder="PLACEHOLDER"
+          class="hidden" />
       </div>
     </FieldGroup>
 
@@ -158,7 +167,7 @@
         <label for="unaffiliated" class={labelClass}>
           {$_('candidateApp.basicInfo.fields.unaffiliated')}
         </label>
-        <input id="unaffiliated" type="checkbox" class="toggle-primary toggle mr-8" checked />
+        <input id="unaffiliated" type="checkbox" class="toggle toggle-primary mr-8" checked />
       </div>
       <p class={disclaimerClass} slot="footer">
         {$_('candidateApp.basicInfo.unaffiliatedDescription')}
@@ -166,7 +175,7 @@
     </FieldGroup>
     <FieldGroup>
       <label for="message" class={headerClass} slot="header"
-        >{$_('candidateApp.basicInfo.electionManifesto').toUpperCase()}</label>
+        >{$_('candidateApp.basicInfo.electionManifesto')}</label>
       <textarea id="message" rows="4" class="w-full resize-none bg-base-100 p-6 !outline-none" />
     </FieldGroup>
   </div>

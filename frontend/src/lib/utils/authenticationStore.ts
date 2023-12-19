@@ -7,7 +7,7 @@ export interface User {
   email: string;
   confirmed: boolean;
   blocked: boolean;
-  candidate: Candidate;
+  candidate?: Candidate;
 }
 
 export interface Candidate {
@@ -18,7 +18,7 @@ export interface Candidate {
   email: string;
   nominations: Nomination[];
   locale: string;
-  party: Party;
+  party?: Party;
 }
 
 export interface Nomination {
@@ -27,7 +27,7 @@ export interface Nomination {
   electionRound: number;
   party: Party;
   locale: string;
-  constituency: Constituency;
+  constituency?: Constituency;
 }
 
 export interface Party {
