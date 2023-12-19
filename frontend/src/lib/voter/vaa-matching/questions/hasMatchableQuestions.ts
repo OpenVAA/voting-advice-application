@@ -5,4 +5,5 @@ import type {MatchableQuestion} from './matchableQuestion';
  */
 export interface HasMatchableQuestions {
   matchableQuestions: MatchableQuestion[];
+  label: string;
 }

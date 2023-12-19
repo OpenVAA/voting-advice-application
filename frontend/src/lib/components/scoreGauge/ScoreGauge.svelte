@@ -53,7 +53,8 @@
       max="100" />
   {/if}
   {#if label}
-    <label class="truncate text-sm text-secondary" id={labelId} aria-hidden="true">{label}</label>
+    <label class="truncate text-sm text-secondary" for={labelId} id={labelId} aria-hidden="true"
+      >{label}</label>
   {/if}
 </div>
 

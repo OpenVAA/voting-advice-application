@@ -1,5 +1,6 @@
 <script lang="ts">
-  export let candidate: CandidateProps;
+  // TODO: Implement this component
+  // export let candidate: CandidateProps;
 </script>
 
 <div class="p-lg">

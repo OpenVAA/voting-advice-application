@@ -1,6 +1,6 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
-  export let tabs: any[] = [];
+  export let tabs: unknown[] = [];
   export let activeItem = '';
 
   const dispatch = createEventDispatcher();
@@ -13,7 +13,6 @@
       tabindex="0"
       role="tab"
       on:click={() => dispatch('changeTab', tab)}
-      on:keydown,
       on:keyup={(e) => {
         if (e.key === 'Enter') {
           dispatch('changeTab', tab);

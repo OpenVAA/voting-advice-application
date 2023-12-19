@@ -86,11 +86,7 @@ function main(
   for (let i = 0; i < candidates.length; i++) {
     output += `${manhattanMatches[i].entity} • Matches: Manhattan ${manhattanMatches[i]} • Directional ${directionalMatches[i]}\n`;
     if (subGroup > 0)
-      output += `  Submatches ${
-        (manhattanMatches[i].subMatches?.[0]?.questionGroup as any)?.label
-      }: Manhattan ${manhattanMatches[i].subMatches?.[0]} • Directional ${
-        directionalMatches[i].subMatches?.[0]
-      }\n`;
+      output += `  Submatches ${manhattanMatches[i].subMatches?.[0]?.questionGroup?.label}: Manhattan ${manhattanMatches[i].subMatches?.[0]} • Directional ${directionalMatches[i].subMatches?.[0]}\n`;
   }
 
   console.info(output);
