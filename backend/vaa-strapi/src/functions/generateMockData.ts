@@ -21,6 +21,7 @@ const ELECTION_APP_LABEL_API = 'api::election-app-label.election-app-label';
 const CONSTITUENCY_API = 'api::constituency.constituency';
 const PARTY_API = 'api::party.party';
 const CANDIDATE_API = 'api::candidate.candidate';
+const CANDIDATE_ATTRIBUTE_API = 'api::candidate-attribute.candidate-attribute';
 const NOMINATION_API = 'api::nomination.nomination';
 const LANGUAGE_API = 'api::language.language';
 const QUESTION_API = 'api::question.question';
@@ -158,6 +159,10 @@ export async function generateMockData() {
   console.info('Done!');
   console.info('#######################################');
   console.info('inserting elections');
+  await createQuestionTypes();
+  console.info('Done!');
+  console.info('#######################################');
+  console.info('inserting questions');
   await createElection();
   console.info('Done!');
   console.info('#######################################');
@@ -190,10 +195,6 @@ export async function generateMockData() {
   console.info('Done!');
   console.info('#######################################');
   console.info('inserting question types');
-  await createQuestionTypes();
-  console.info('Done!');
-  console.info('#######################################');
-  console.info('inserting questions');
   await createQuestions();
   console.info('Done!');
   console.info('#######################################');
@@ -631,6 +632,108 @@ async function createCandidates(length: number) {
       candidateSecondLocale,
       candidateThirdLocale
     ]);
+
+    // Political experience attribute
+
+    const textQuestionType = await strapi.db.query(QUESTION_TYPE_API).findOne({
+      where: {
+        name: 'Text answer'
+      }
+    });
+
+    const politicalExperienceData = {
+      displayName: 'Political experience',
+      questionType: textQuestionType.id,
+      candidate: candidateMainLocale.id,
+      locale: mainLocale.code,
+      publishedAt: new Date(),
+      key: 'politicalExperience',
+      value: politicalExperience
+    };
+
+    const politicalExperienceMainLocale = await strapi.entityService.create(
+      CANDIDATE_ATTRIBUTE_API,
+      {
+        data: politicalExperienceData
+      }
+    );
+
+    const politicalExperienceSecondLocale = await strapi.entityService.create(
+      CANDIDATE_ATTRIBUTE_API,
+      {
+        data: {
+          ...politicalExperienceData,
+          locale: secondLocale.code,
+          value: fakerFI.lorem.paragraph(3)
+        }
+      }
+    );
+
+    const politicalExperienceThirdLocale = await strapi.entityService.create(
+      CANDIDATE_ATTRIBUTE_API,
+      {
+        data: {
+          ...politicalExperienceData,
+          locale: thirdLocale.code,
+          value: fakerES.lorem.paragraph(3)
+        }
+      }
+    );
+
+    await createRelationsForAvailableLocales(
+      CANDIDATE_ATTRIBUTE_API,
+      politicalExperienceMainLocale,
+      [politicalExperienceSecondLocale, politicalExperienceThirdLocale]
+    );
+
+    // Gender attribute
+
+    const genderQuestionType = await strapi.db.query(QUESTION_TYPE_API).findOne({
+      where: {
+        name: 'Gender'
+      }
+    });
+
+    const genderTypeValues: {key: number}[] = genderQuestionType.settings.values;
+    const answer = faker.helpers.arrayElement(genderTypeValues).key;
+
+    const genderData = {
+      displayName: 'Gender',
+      questionType: genderQuestionType.id,
+      candidate: candidateMainLocale.id,
+      locale: mainLocale.code,
+      publishedAt: new Date(),
+      key: 'gender',
+      value: answer.toString()
+    };
+
+    /**
+     * TODO: In theory, this doesn't need localization because the label is
+     * obtained from the question type settings. However, for consistency with
+     * other attributes, it is localized.
+     **/
+    const genderMainLocale = await strapi.entityService.create(CANDIDATE_ATTRIBUTE_API, {
+      data: genderData
+    });
+
+    const genderSecondLocale = await strapi.entityService.create(CANDIDATE_ATTRIBUTE_API, {
+      data: {
+        ...genderData,
+        locale: secondLocale.code
+      }
+    });
+
+    const genderThirdLocale = await strapi.entityService.create(CANDIDATE_ATTRIBUTE_API, {
+      data: {
+        ...genderData,
+        locale: thirdLocale.code
+      }
+    });
+
+    await createRelationsForAvailableLocales(CANDIDATE_ATTRIBUTE_API, genderMainLocale, [
+      genderSecondLocale,
+      genderThirdLocale
+    ]);
   }
 }
 
@@ -1048,6 +1151,38 @@ async function createQuestionTypes() {
           }
         ]
       }
+    },
+    {
+      name: 'Text answer',
+      info: 'Question with a text answer',
+      settings: {
+        type: 'Text'
+      }
+    },
+    {
+      name: 'Gender',
+      info: 'Gender options',
+      settings: {
+        type: 'Gender',
+        values: [
+          {
+            key: 1,
+            label: 'Male'
+          },
+          {
+            key: 2,
+            label: 'Female'
+          },
+          {
+            key: 3,
+            label: 'Non-binary'
+          },
+          {
+            key: 4,
+            label: 'Prefer not to answer'
+          }
+        ]
+      }
     }
   ];
 
@@ -1104,12 +1239,14 @@ async function createQuestions() {
   let questions = [];
   let questionsSecondLocale = [];
 
-  const questionTypes = await strapi.entityService.findMany(QUESTION_TYPE_API, {
-    filters: {
-      locale: mainLocale.code
-    },
-    populate: ['localizations']
-  });
+  const questionTypes = (
+    await strapi.entityService.findMany(QUESTION_TYPE_API, {
+      filters: {
+        locale: mainLocale.code
+      },
+      populate: ['localizations']
+    })
+  ).filter((type: any) => type.name != 'Gender' && type.name != 'Text answer');
 
   const questionCategories = await strapi.entityService.findMany(QUESTION_CATEGORY_API, {
     filters: {
@@ -1207,6 +1344,8 @@ async function createCandidateAnswers() {
   for (const candidate of candidates) {
     for (const question of questions) {
       const questionTypeSettings: any[] = question.questionType.settings.values;
+      if (!questionTypeSettings || questionTypeSettings.length === 0) continue;
+
       const answer = {key: faker.helpers.arrayElement(questionTypeSettings).key};
       const openAnswer = faker.lorem.sentence();
 
@@ -1282,6 +1421,8 @@ async function createPartyAnswers() {
   for (const party of parties) {
     for (const question of questions) {
       const questionTypeSettings: any[] = question.questionType.settings.values;
+      if (!questionTypeSettings || questionTypeSettings.length === 0) continue;
+
       const answer = {key: faker.helpers.arrayElement(questionTypeSettings).key};
       const openAnswer = faker.lorem.sentence();
 
