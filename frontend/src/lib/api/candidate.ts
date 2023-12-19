@@ -75,8 +75,8 @@ export const checkRegistrationKey = async (registrationKey: string): Promise<Res
 /**
  * Get the current user's data, including candidate information
  */
-export const me = async (): Promise<any> => {
-  // TODO: Replace any
+export const me = async (): Promise<unknown> => {
+  // TODO: Define proper type
   return request(
     ['api', 'users', 'me'],
     new URLSearchParams({
