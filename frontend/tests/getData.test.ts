@@ -1,13 +1,12 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import {describe, test, expect, vi, Mock} from 'vitest';
-import {getNominatedCandidates, getData} from '$lib/api/getData';
+import {getData} from '$lib/api/getData';
 import {constants} from '$lib/utils/constants';
-import candidates from './data/candidates.json';
 import parties from './data/parties.json';
 import singleCandidate from './data/singleCandidate.json';
 import singleParty from './data/singleParty.json';
-import * as environment from '$app/environment';
+import type * as environment from '$app/environment';
 
 // Mock SvelteKit runtime module $app/environment
 vi.mock('$app/environment', (): typeof environment => ({
@@ -17,11 +16,21 @@ vi.mock('$app/environment', (): typeof environment => ({
   version: 'any'
 }));
 
+vi.mock(
+  '$env/dynamic/public',
+  (): Record<string, object> => ({
+    env: {
+      PUBLIC_BACKEND_URL: 'http://localhost:1337'
+    }
+  })
+);
+
 global.fetch = vi.fn();
 
-function createFetchResponse(data: any) {
+function createFetchResponse(data: unknown) {
   return {json: () => new Promise((resolve) => resolve(data))};
 }
+
 describe('Test getting data from backend', () => {
   // test('Test requesting all candidates', async () => {
   //   (fetch as Mock).mockResolvedValue(createFetchResponse(candidates));
