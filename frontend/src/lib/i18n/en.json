@@ -39,6 +39,7 @@
     "sign_in_button": "Sign in",
     "sign_in_title": "Sign in",
     "wrong_email_or_password": "Wrong email or password",
+    "forgot_password": "Forgot Password?",
     "contact_support": "Contact Support",
     "election_compass_for_voters": "Election Compass for Voters",
     "tabs": {
@@ -156,6 +157,14 @@
       "registerButton": "Register",
       "submitPlaceholder": "E.g. CP23-174a-f4%&-aHAB",
       "title": "Registration"
+    },
+    "resetPassword": {
+      "title": "Forgot Password?",
+      "description": "To reset your password, please enter your email address below:",
+      "emailPlaceholder": "Email address",
+      "buttonText": "Send reset link",
+      "emailSentText": "A reset password link has been sent to your email. Please check your inbox and click the link to set your new password.",
+      "errorText": "Internal error. Try again later or contact the administrator."
     }
   }
 }
