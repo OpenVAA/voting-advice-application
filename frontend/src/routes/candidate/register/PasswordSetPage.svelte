@@ -4,7 +4,7 @@
   import {goto} from '$app/navigation';
   import Footer from '$lib/components/footer/Footer.svelte';
   import {register} from '$lib/api/candidate';
-  import PasswordValidator from './PasswordValidator.svelte';
+  import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {validatePassword} from '$lib/utils/passwordValidation';
   import {FrontPage} from '$lib/templates/frontPage';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';

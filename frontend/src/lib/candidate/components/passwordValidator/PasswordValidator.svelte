@@ -100,7 +100,7 @@ Therefore, the validity should be also checked on form submit as well and on the
   `password` and `username` should be given as props.
   ```tsx
   <PasswordValidator bind:validPassword={validPassword} password={password} username={username} />
-    ```
+  ```
 -->
 
 <div class="m-sm flex w-full flex-col">
