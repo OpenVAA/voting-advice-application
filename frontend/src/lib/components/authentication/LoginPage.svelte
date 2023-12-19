@@ -68,6 +68,7 @@ Candidate login page. This component also takes care of the login process.
     {/if}
 
     <Button type="submit" text={$_('candidate.sign_in_button')} variant="main" />
+    <Button href="/candidate/forgot-password" text={$_('candidate.forgot_password')} />
     <Button href="/help" text={$_('candidate.contact_support')} />
     <Button href="/" text={$_('candidate.election_compass_for_voters')} />
   </form>
