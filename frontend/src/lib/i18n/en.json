@@ -159,6 +159,8 @@
       "title": "Registration"
     },
     "resetPassword": {
+      "createNewPassword": "Set a new password",
+      "passwordResetError": "Password reset failed",
       "title": "Forgot Password?",
       "description": "To reset your password, please enter your email address below:",
       "emailPlaceholder": "Email address",
