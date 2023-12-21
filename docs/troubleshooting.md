@@ -35,3 +35,7 @@ Docker needs to be connected to the internet to load the base Docker images.
 It takes a while for Strapi to kick up even after the Docker container is running, so if you just started it, wait a few minutes.
 
 If that's not the issue, open Docker and check the `frontend` and `strapi` containers' logs for possible clues.
+
+## Strapi's content model is reset after restart
+
+Any changes to the content model are not reflected on local files by default. If you can't see any changes in your local files when editing the content types using Strapi's web UI, check that you have [hot reloading enabled](./docker-setup-guide.md#hot-reloading).
