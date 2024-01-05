@@ -26,11 +26,8 @@
     "jest": true
   },
   "rules": {
-    "indent": ["error", 2, {"SwitchCase": 1}],
-    "linebreak-style": ["error", "unix"],
     "no-console": ["error", {"allow": ["warn", "error", "info"]}],
     "no-undef": "off",
-    "quotes": ["error", "single", {"avoidEscape": true}],
-    "semi": ["error", "always"]
+    "quotes": ["error", "single", {"avoidEscape": true, "allowTemplateLiterals": false}]
   }
 }
