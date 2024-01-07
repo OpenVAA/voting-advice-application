@@ -2,13 +2,14 @@
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
   import {goto} from '$app/navigation';
-  import Footer from '$lib/components/footer/Footer.svelte';
+  import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {register} from '$lib/api/candidate';
   import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {validatePassword} from '$lib/utils/passwordValidation';
   import {FrontPage} from '$lib/templates/frontPage';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {Button} from '$lib/components/button';
+  import {candidateAppRoute} from '$lib/utils/routes';
 
   export let userName: string;
   export let registrationCode: string;
@@ -45,7 +46,7 @@
     }
 
     errorMessage = '';
-    goto('/candidate');
+    goto(candidateAppRoute);
   };
 </script>
 
@@ -120,7 +121,7 @@ Page where candidates can set their password when logging to the app for the fir
       variant="main"
       text={$_('candidateApp.setPassword.setPassword')} />
 
-    <Button href="/help" text={$_('candidate.contact_support')} />
+    <Button href="{candidateAppRoute}/help" text={$_('candidate.contact_support')} />
   </form>
 
   <Footer slot="footer" />

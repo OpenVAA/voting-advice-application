@@ -1,16 +1,25 @@
+// FIXME: This file is a copy of frontend/src/lib/utils/passwordValidation.ts
+
 export const minPasswordLength = 8;
-const repetitionLimit = 4; // Number of character repetitions not allowed
+/** Number of character repetitions not allowed */
+const repetitionLimit = 4;
 
 export interface ValidationDetail {
-  status: boolean; // true if requirement is valid, false if invalid
-  message: string; // message displayed to the user
-  negative?: boolean; // negative requirement, i.e. something that is not allowed in the password
-  enforced?: boolean; // requirement enforcement, only used for negative requirements
+  /** True if requirement is valid. Otherwise false */
+  status: boolean;
+  /** Message displayed to the user */
+  message: string;
+  /** Negative requirement, ie. something that is not allowed in the password */
+  negative?: boolean;
+  /** Requirement enforcement. Only used for negative requirements */
+  enforced?: boolean;
 }
 
 export interface PasswordValidation {
-  status: boolean; // the whole password is valid
-  details: Record<string, ValidationDetail>; // details for each requirement
+  /** The whole password is valid */
+  status: boolean;
+  /** Details for each requirement */
+  details: Record<string, ValidationDetail>;
 }
 
 /**
@@ -69,11 +78,11 @@ function passwordValidation(password: string, username: string): Record<string, 
       message: 'candidateApp.passwordValidation.lowercase'
     },
     number: {
-      status: containsCharacter(password, (char) => !isNaN(Number(char))),
+      status: containsCharacter(password, (char) => /[0-9]/.test(char)),
       message: 'candidateApp.passwordValidation.number'
     },
     symbol: {
-      status: containsCharacter(password, (char) => !isLetter(char) && isNaN(Number(char))),
+      status: containsCharacter(password, (char) => !isLetter(char) && !/[0-9]/.test(char)),
       message: 'candidateApp.passwordValidation.symbol'
     },
     username: {
@@ -126,9 +135,8 @@ export function validatePassword(password: string, username = ''): boolean {
  */
 export function validatePasswordDetails(password: string, username = ''): PasswordValidation {
   const validation = passwordValidation(password, username);
-  const result: PasswordValidation = {
+  return {
     status: isValid(validation),
     details: validation
   };
-  return result;
 }

@@ -3,7 +3,7 @@
   import {page} from '$app/stores';
   import {requestForgotPasswordLink} from '$lib/api/candidate';
   import FrontPage from '$lib/templates/frontPage/FrontPage.svelte';
-  import Footer from '$lib/components/footer/Footer.svelte';
+  import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import Button from '$lib/components/button/Button.svelte';
   import HeadingGroup from '$lib/components/headingGroup/HeadingGroup.svelte';
   import PreHeading from '$lib/components/headingGroup/PreHeading.svelte';
@@ -13,11 +13,9 @@
 
   const onButtonPressed = async () => {
     const response = await requestForgotPasswordLink(email); // Request email to be sent in the backend
-    if (response.ok) {
-      statusMessage = $_('candidateApp.resetPassword.emailSentText');
-    } else {
-      statusMessage = $_('candidateApp.resetPassword.errorText');
-    }
+    statusMessage = response.ok
+      ? $_('candidateApp.resetPassword.emailSentText')
+      : $_('candidateApp.resetPassword.errorText');
   };
 </script>
 
@@ -60,5 +58,5 @@
     </p>
   {/if}
 
-  <svelte:fragment slot="footer"><Footer /></svelte:fragment>
+  <Footer slot="footer" />
 </FrontPage>

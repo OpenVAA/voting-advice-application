@@ -1,6 +1,7 @@
 import {get} from 'svelte/store';
 import {constants} from '$lib/utils/constants';
 import {authContext} from '$lib/utils/authenticationStore';
+import type {User} from '$lib/candidate/types';
 
 export const authenticate = async (identifier: string, password: string): Promise<Response> => {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
@@ -72,13 +73,14 @@ export const checkRegistrationKey = async (registrationKey: string): Promise<Res
   });
 };
 
+type UserData = User & {error: unknown};
+
 /**
  * Get the current user's data, including candidate information
  */
-export const me = async (): Promise<unknown> => {
-  // TODO: Define proper type
-  return request(
-    ['api', 'users', 'me'],
+export const me = async (): Promise<UserData | undefined> => {
+  return request<UserData>(
+    'api/users/me',
     new URLSearchParams({
       'populate[candidate][populate][nominations][populate][party]': 'true',
       'populate[candidate][populate][nominations][populate][constituency]': 'true',
@@ -88,12 +90,12 @@ export const me = async (): Promise<unknown> => {
 };
 
 export const request = async <T>(
-  endpoint: string[],
+  endpoint: string,
   params: URLSearchParams = new URLSearchParams({})
-): Promise<{data: T} | undefined> => {
+): Promise<T | undefined> => {
   const token = authContext.token;
   const url = new URL(constants.PUBLIC_BACKEND_URL);
-  url.pathname = endpoint.join('/');
+  url.pathname = endpoint;
   url.search = params.toString();
 
   return await fetch(url, {
@@ -102,7 +104,7 @@ export const request = async <T>(
     }
   })
     .then((response) => {
-      return response.json() as Promise<{data: T} | undefined>;
+      return response.json() as Promise<T | undefined>;
     })
     .catch((error) => {
       console.error('Error in getting data from backend: ', error);

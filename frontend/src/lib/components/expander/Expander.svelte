@@ -5,16 +5,16 @@
   type $$Props = ExpanderProps;
 
   export let title: $$Props['title'];
-  export let variant: $$Props['variant'] = null;
+  export let variant: $$Props['variant'] = 'read-more';
   export let iconColor: $$Props['iconColor'] = 'primary';
   export let iconPos: $$Props['iconPos'] = 'text';
-  export let customizeTitle: $$Props['customizeTitle'] = '';
-  export let customizeContent: $$Props['customizeContent'] = '';
+  export let titleClass: $$Props['titleClass'] = '';
+  export let contentClass: $$Props['contentClass'] = '';
 
-  let iconIsRotated = false;
+  let expanded = false;
 
-  function rotateText() {
-    iconIsRotated = !iconIsRotated;
+  function toggleExpanded() {
+    expanded = !expanded;
   }
 
   // Build classes
@@ -44,12 +44,6 @@
       contentClasses += ' bg-base-100';
       iconColor = 'secondary';
       break;
-    case 'unansweared-question':
-      collapseClasses += ' bg-base-100';
-      titleClasses += ' bg-base-100 text-warning font-bold';
-      contentClasses += ' bg-base-100';
-      iconColor = 'secondary';
-      break;
   }
 
   // 3. Icon position
@@ -63,11 +57,11 @@
   }
 
   // 4. Set colors for all custom color variables execpt icon, which is defined later
-  if (customizeContent) {
-    contentClasses += ` ${customizeContent}`;
+  if (contentClass) {
+    contentClasses += ` ${contentClass}`;
   }
-  if (customizeTitle) {
-    titleClasses += ` ${customizeTitle}`;
+  if (titleClass) {
+    titleClasses += ` ${titleClass}`;
   }
 </script>
 
@@ -87,9 +81,6 @@
     - 'question' expander with base-100 as its base color. Text is black and bolded.render
      Used to get more info about an already answeared question.render
 
-    - 'unansweared-question' expander with base-100 as its base color. Text is bolded and
-     colored as text-warning. Used to get more info about nonansweared questions.
-
     ### Properties
 
     - 'title': Title used for the expander. This is also used as the aria-label for 
@@ -98,8 +89,8 @@
     - 'iconColor': The color for the icon. Default color is primary.
     - 'iconPos': The position for the icon. Default is text, which means the icon will
         be where the text ends.
-    - 'customizeTitle': Variable to customize title.
-    - 'customizeContent': Variable to customize content.
+    - 'titleClass': Custom class string to add to the `<div>` containing the title.
+    - 'contentClass': Custom class string to add to the `<div>` containing the main content.
 
     You should not try to use a variant and customize at the same time.
 
@@ -118,14 +109,14 @@
    -->
 
 <div class={collapseClasses}>
-  <input type="checkbox" aria-label="open ${title}" on:click={rotateText} />
+  <input type="checkbox" aria-label="open ${title}" on:click={toggleExpanded} />
   <div class={titleClasses}>
     {title}
-    <div class="not-rotated-icon {iconIsRotated ? 'rotated-icon' : ''} ml-[0.4rem] {iconClass}">
-      <Icon name="next" size="sm" color={iconColor} aria-label="expander" />
+    <div class="not-rotated-icon {expanded ? 'rotated-icon' : ''} ml-[0.4rem] {iconClass}">
+      <Icon name="next" size="sm" color={iconColor} />
     </div>
   </div>
-  <div class={`${contentClasses} ${iconIsRotated ? 'visible' : ''}`}>
+  <div class={contentClasses}>
     <slot />
   </div>
 </div>
@@ -141,10 +132,6 @@
     transform: rotate(270deg);
   }
 
-  .collapse {
-    transition: none;
-  }
-
   .collapse-title {
     padding: 0.7rem;
     align-items: center;
@@ -158,10 +145,7 @@
   }
 
   .collapse-content {
-    display: flex;
     text-align: center;
-    align-items: center;
-    justify-content: center;
   }
 
   .collapse-content.visible {
