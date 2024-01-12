@@ -77,9 +77,7 @@
 </script>
 
 <Page title={$_('candidateApp.basicInfo.title')} mainClass="bg-base-200">
-  <svelte:fragment slot="banner">
-    <LogoutButton />
-  </svelte:fragment>
+  <LogoutButton slot="banner" />
 
   <div class="mx-20 my-20 flex flex-col items-center gap-16">
     <h1>{$_('candidateApp.basicInfo.title')}</h1>
@@ -144,7 +142,7 @@
       </div>
     </FieldGroup>
 
-    <FieldGroup let:field customStyle="height: 60px">
+    <FieldGroup let:field>
       <div class="flex h-full items-center justify-between bg-base-100 px-4">
         <span class={labelClass}>
           {$_('candidateApp.basicInfo.fields.portrait')}
@@ -182,7 +180,7 @@
     <FieldGroup>
       <label for="message" class={headerClass} slot="header"
         >{$_('candidateApp.basicInfo.electionManifesto')}</label>
-      <textarea id="message" rows="4" class="w-full resize-none bg-base-100 p-6 !outline-none" />
+      <textarea id="message" rows="4" class="w-full bg-base-100 p-6 !outline-none" />
     </FieldGroup>
   </div>
 </Page>

@@ -2,11 +2,12 @@
   import {getContext} from 'svelte';
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
-  import Footer from '$lib/components/footer/Footer.svelte';
+  import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import type {AuthContext} from '$lib/utils/authenticationStore';
   import {FrontPage} from '$lib/templates/frontPage';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {candidateAppRoute} from '$lib/utils/routes';
 
   const authContext = getContext<AuthContext>('auth');
 
@@ -68,8 +69,8 @@ Candidate login page. This component also takes care of the login process.
     {/if}
 
     <Button type="submit" text={$_('candidate.sign_in_button')} variant="main" />
-    <Button href="/candidate/forgot-password" text={$_('candidate.forgot_password')} />
-    <Button href="/help" text={$_('candidate.contact_support')} />
+    <Button href="{candidateAppRoute}/forgot-password" text={$_('candidate.forgot_password')} />
+    <Button href="{candidateAppRoute}/help" text={$_('candidate.contact_support')} />
     <Button href="/" text={$_('candidate.election_compass_for_voters')} />
   </form>
 

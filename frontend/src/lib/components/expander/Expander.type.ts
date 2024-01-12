@@ -12,26 +12,25 @@ export type ExpanderProps = {
    *
    * @default 'primary'
    */
-  iconColor?: Color | null;
+  iconColor?: Color;
   /**
    * The position of the next-icon that is used in the expander.
    *
    * @default 'text'
    */
-  iconPos?: string | null;
+  iconPos?: string;
   /**
    * Variable with which to configure the expanders title if no variants
    * are in use.
    */
-  customizeTitle?: string | null;
+  titleClass?: string;
   /**
    * Variable with which to configure the expanders content if no variants
    * are in use.
    */
-  customizeContent?: string | null;
-
+  contentClass?: string;
   /**
    * Variable used to define a variant for the expander.
    */
-  variant: 'read-more' | 'category' | 'question' | 'unansweared-question' | null;
+  variant?: 'read-more' | 'category' | 'question';
 };
