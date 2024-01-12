@@ -2,9 +2,12 @@
   import {tweened} from 'svelte/motion';
   import {onDestroy, onMount} from 'svelte';
 
-  export let onTimeout: () => void; // function to be triggered after time runs out
-  export let timerDuration = 30; // logout timer duration in seconds
-  export let timeLeftInt: number = Math.ceil(timerDuration); // time left in seconds (int)
+  /** function to be triggered after time runs out */
+  export let onTimeout: () => void;
+  /** logout timer duration in seconds */
+  export let timerDuration = 30;
+  /** time left in seconds */
+  export let timeLeft = Math.ceil(timerDuration);
 
   let progressBarTimer = tweened(timerDuration, {duration: 0}); // used for progress bar animation
   let isOpen = false; // variable for the modal state
@@ -19,6 +22,7 @@
       resetTimeout();
     }
   };
+
   export const closeModal = () => {
     if (isOpen) {
       modalContainer?.close();
@@ -31,8 +35,8 @@
   $: {
     if ($progressBarTimer) {
       const t = Math.ceil($progressBarTimer);
-      if (t < timeLeftInt) {
-        timeLeftInt = t;
+      if (t < timeLeft) {
+        timeLeft = t;
       }
     }
   }
@@ -67,7 +71,7 @@
     progressBarTimer = tweened(timerDuration, {
       duration: timerDuration * 1000
     });
-    timeLeftInt = timerDuration;
+    timeLeft = timerDuration;
     $progressBarTimer = 0;
   };
 
@@ -86,11 +90,20 @@ TimedModal is a modal that will automatically close after a set amount of time.
 
 - default: The content of the modal.
 
+### Keyboard navigation
+
+The dialog can be closed by pressing the `Escape` key.
+
+### Bindable functions
+
+- `openModal`: Opens the modal
+- `closeModal`: Closes the modal
+
 ### Properties
 
-- onTimeout (required): A function that will be called when the modal times out.
-- timerDuration (optional): The duration of the timer in seconds. Default is 30 seconds.
-- timeLeftInt (optional): The time left in seconds. This is used to update the progress bar. Default is timerDuration.
+- `onTimeout` (required): A function that will be called when the modal times out.
+- `timerDuration` (optional): The duration of the timer in seconds. Default is 30 seconds.
+- `timeLeft` (optional): The time left in seconds. This is used to update the progress bar. Default is timerDuration.
 
 ### Usage
 
@@ -101,7 +114,7 @@ TimedModal is a modal that will automatically close after a set amount of time.
 ```
 -->
 
-<dialog bind:this={modalContainer} class="modal dark:bg-white dark:bg-opacity-10">
+<dialog bind:this={modalContainer} class="modal dark:bg-white dark:bg-opacity-10" aria-modal>
   <div class="modal-box">
     <slot />
     <progress

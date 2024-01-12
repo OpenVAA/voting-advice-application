@@ -4,12 +4,12 @@
   import {goto} from '$app/navigation';
   import {resetPassword} from '$lib/api/candidate';
   import {FrontPage} from '$lib/templates/frontPage';
-  import {candidateAppRoute} from '$candidate/placeholder.json';
+  import {candidateAppRoute} from '$lib/utils/routes';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {validatePassword} from '$lib/utils/passwordValidation';
   import {Button} from '$lib/components/button';
-  import Footer from '$lib/components/footer/Footer.svelte';
+  import Footer from '$lib/templates/parts/footer/Footer.svelte';
 
   export let code: string;
 
@@ -107,7 +107,7 @@
       disabled={disableSetButton}
       text={$_('candidateApp.setPassword.setPassword')} />
 
-    <Button href="/help" text={$_('candidate.contact_support')} />
+    <Button href="{candidateAppRoute}/help" text={$_('candidate.contact_support')} />
   </form>
 
   <svelte:fragment slot="footer"><Footer /></svelte:fragment>

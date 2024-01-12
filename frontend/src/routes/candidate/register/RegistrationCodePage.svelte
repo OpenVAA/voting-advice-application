@@ -1,9 +1,9 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
-  import Footer from '$lib/components/footer/Footer.svelte';
+  import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {goto} from '$app/navigation';
-  import {candidateAppRoute} from '$candidate/placeholder.json';
+  import {candidateAppRoute} from '$lib/utils/routes';
   import {FrontPage} from '$lib/templates/frontPage';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {Button} from '$lib/components/button';
@@ -62,7 +62,7 @@ registrationCode
       </p>
     {/if}
     <Button type="submit" text={$_('candidateApp.registration.registerButton')} variant="main" />
-    <Button href="/help" text={$_('candidate.contact_support')} />
+    <Button href="{candidateAppRoute}/help" text={$_('candidate.contact_support')} />
     <Button href="/" text={$_('candidate.election_compass_for_voters')} />
   </form>
 

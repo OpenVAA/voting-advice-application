@@ -1,16 +1,17 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
-  import {candidateAppRoute} from '$candidate/placeholder.json';
+  import {candidateAppRoute} from '$lib/utils/routes';
   import TimedModal from '$lib/components/modal/TimedModal.svelte';
   import {goto} from '$app/navigation';
   import {authContext} from '$lib/utils/authenticationStore';
   import {Button} from '$lib/components/button';
 
-  const logoutModalTimer = 30; // time until automatic logout for modal
+  /** time until automatic logout for modal */
+  export let logoutModalTimer = 30;
   // exports from TimedModal
   let openModal: () => void;
   let closeModal: () => void;
-  let timeLeftInt = logoutModalTimer;
+  let timeLeft = logoutModalTimer;
 
   // functions for logout button
   // TODO: add proper check of unfilled data
@@ -52,25 +53,25 @@
   color="warning" />
 
 <TimedModal
-  bind:timeLeftInt
+  bind:timeLeft
   bind:openModal
   bind:closeModal
   onTimeout={logout}
   timerDuration={logoutModalTimer}>
   <div class="notification max-w-md text-center">
-    <h1>{$_('candidateApp.logoutModal.title')}</h1>
+    <h2>{$_('candidateApp.logoutModal.title')}</h2>
     <br />
     <p>
       {$_('candidateApp.logoutModal.body')}
     </p>
     <p>
-      {$_('candidateApp.logoutModal.confirmation', {values: {timeLeft: timeLeftInt}})}
+      {$_('candidateApp.logoutModal.confirmation', {values: {timeLeft}})}
     </p>
-    <br />
     <Button
       on:click={closeModal}
       text={$_('candidateApp.logoutModal.continueEnteringData')}
-      variant="main" />
+      variant="main"
+      class="mt-40" />
     <div class="h-4" />
     <Button
       on:click={logout}

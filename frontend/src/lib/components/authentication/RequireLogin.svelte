@@ -1,5 +1,5 @@
 <script>
-  import LoginPage from './LoginPage.svelte';
+  import {LoginPage} from '$lib/candidate/templates/login';
   import {getContext} from 'svelte';
 
   const {user, token} = getContext('auth');
@@ -40,5 +40,5 @@ Require candidates to be logged in to view the children of this component.
 {:else if showLogin}
   <LoginPage />
 {:else}
-  <slot name="custom-content" />
+  <slot name="not-logged-in" />
 {/if}

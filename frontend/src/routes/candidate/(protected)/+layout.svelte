@@ -1,7 +1,9 @@
 <script lang="ts">
-  import AuthenticationProvider from '$lib/components/authentication/AuthenticationProvider.svelte';
+  import {AuthenticationProvider, RequireLogin} from '$lib/components/authentication';
 </script>
 
 <AuthenticationProvider>
-  <slot />
+  <RequireLogin showLogin>
+    <slot />
+  </RequireLogin>
 </AuthenticationProvider>
