@@ -6,7 +6,7 @@
   import {logDebugError} from '$lib/utils/logger';
   import {Question} from '$lib/components/questions';
   import BasicPage from '$lib/templates/basicPage/BasicPage.svelte';
-  import {text} from 'svelte/internal';
+  import {addAnswer} from '$lib/api/candidate';
 
   /**
    * A small delay before moving to the next question.
@@ -18,14 +18,14 @@
   $: currentQuestion = $page.data.questions.find((q) => '' + q.id === '' + $page.params.questionId);
 
   // Store question id and answer value in a store
-  function answerQuestion({detail}: CustomEvent) {
+  async function answerQuestion({detail}: CustomEvent) {
     $answeredQuestions[detail.id] = detail.value;
     logDebugError(
       `Answered question ${detail.id} with value ${detail.value}. Store length: ${
         Object.values($answeredQuestions).length
       }.`
     );
-    gotoNextQuestion();
+    await addAnswer(detail.id, detail.value);
   }
 
   // Skip to next question
@@ -52,7 +52,9 @@
 {#if currentQuestion}
   {#key currentQuestion}
     <BasicPage title={currentQuestion.text}>
-      <svelte:fragment slot="heading" />
+      <svelte:fragment slot="heading">
+        <div />
+      </svelte:fragment>
       <Question
         id={currentQuestion.id}
         text={currentQuestion.text}

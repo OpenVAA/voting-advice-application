@@ -15,6 +15,32 @@ export const authenticate = async (identifier: string, password: string): Promis
   });
 };
 
+export const addAnswer = async (questionId: string, answerId: string): Promise<Response> => {
+  const token = authContext.token;
+  const url = new URL(constants.PUBLIC_BACKEND_URL);
+  url.pathname = 'api/answers';
+
+  const user = authContext.user;
+  const candidate = get(user);
+
+  const body = {
+    data: {
+      candidate: candidate?.id,
+      question: questionId,
+      answer: answerId
+    }
+  };
+
+  return await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${get(token)}`
+    },
+    body: JSON.stringify(body)
+  });
+};
+
 export const register = async (registrationKey: string, password: string): Promise<Response> => {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
   url.pathname = 'api/auth/candidate/register';
