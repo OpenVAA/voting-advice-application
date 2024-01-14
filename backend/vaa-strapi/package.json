@@ -21,11 +21,11 @@
     ]
   },
   "dependencies": {
-    "@strapi/plugin-documentation": "^4.11.7",
-    "@strapi/plugin-i18n": "4.11.7",
-    "@strapi/plugin-users-permissions": "4.12.1",
+    "@strapi/plugin-documentation": "^4.17.0",
+    "@strapi/plugin-i18n": "4.17.0",
+    "@strapi/plugin-users-permissions": "4.17.0",
     "@strapi/provider-email-nodemailer": "^4.15.5",
-    "@strapi/strapi": "4.11.7",
+    "@strapi/strapi": "4.17.0",
     "better-sqlite3": "7.4.6",
     "pg": "^8.8.0"
   },
