@@ -171,7 +171,7 @@
         <label for="unaffiliated" class={labelClass}>
           {$_('candidateApp.basicInfo.fields.unaffiliated')}
         </label>
-        <input id="unaffiliated" type="checkbox" class="toggle-primary toggle mr-8" checked />
+        <input id="unaffiliated" type="checkbox" class="toggle toggle-primary mr-8" checked />
       </div>
       <p class={disclaimerClass} slot="footer">
         {$_('candidateApp.basicInfo.unaffiliatedDescription')}
