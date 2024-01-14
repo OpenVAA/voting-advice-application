@@ -6,7 +6,7 @@
 
   export let title: $$Props['title'];
   export let variant: $$Props['variant'] = 'read-more';
-  export let iconColor: $$Props['iconColor'] = 'primary';
+  export let iconColor: $$Props['iconColor'] = 'secondary';
   export let iconPos: $$Props['iconPos'] = 'text';
   export let titleClass: $$Props['titleClass'] = '';
   export let contentClass: $$Props['contentClass'] = '';
@@ -20,36 +20,30 @@
   // Build classes
   // 1. Base classes for all collapse components
   let collapseClasses = 'collapse rounded-none min-h-touch min-w-touch h-auto w-full';
-  let titleClasses = 'collapse-title text-l font-medium';
+  let titleClasses = 'collapse-title text-center';
   let contentClasses = 'collapse-content';
   let iconClass = '';
 
   // 2. Variant-defined classes
   switch (variant) {
     case 'read-more':
-      collapseClasses += ' bg-base-200';
-      titleClasses += ' bg-base-200 text-primary';
-      contentClasses += ' bg-base-200 text-primary';
+      titleClasses += ' text-primary';
+      contentClasses += ' text-center';
       break;
     case 'category':
-      collapseClasses += ' bg-base-300';
-      titleClasses += ' bg-base-300 font-bold';
-      contentClasses += ' bg-base-100';
-      iconColor = 'secondary';
+      titleClasses += ' text-xl bg-base-300 font-bold';
+      contentClasses += ' pt-lg';
       iconPos = 'left';
       break;
     case 'question':
-      collapseClasses += ' bg-base-100';
-      titleClasses += ' bg-base-100 font-bold';
-      contentClasses += ' bg-base-100';
-      iconColor = 'secondary';
+      titleClasses += ' text-lg font-bold';
       break;
   }
 
   // 3. Icon position
   switch (iconPos) {
     case 'left':
-      titleClasses += ' display-flex';
+      titleClasses += ' flex items-center justify-center';
       break;
     case 'text':
       iconClass = 'inline-block whitespace-nowrap';
@@ -66,47 +60,43 @@
 </script>
 
 <!-- 
-    @component
-    A component for expanders that contain a title and some content. Use the
-    `variant` prop to specify the expander type.render
+  @component
+  A component for expanders that contain a title and some content. Use the
+  `variant` prop to specify the expander type.
 
-    - 'read-more' expander with base-200 as its base color, and text-primary as the
-     text color. Used to get more information about an issue when giving your opinion
-     in the candidate opinions.
+  - `read-more`: the default style of the expander. Used, for example, for getting
+    more information about a question.
+  - `question`: a more prominent style of the expander. Used in question listings
+    to display a question that can be expanded to reveal further information.
+  - `category`: the most prominent style of the expander. Used for collapsible
+    categories of items, such as questions.
 
-    - 'category' expander with base-300 as its base color for the title, and base-100
-     for the content. Text is black and bolded. Used to open a summary about some
-     area.
+  ### Properties
 
-    - 'question' expander with base-100 as its base color. Text is black and bolded.render
-     Used to get more info about an already answeared question.render
+  - `title`: Title used for the expander. This is also used as the aria-label for 
+    the checkbox on which the expander operates on.
+  - `variant`: The type for the expander.
+  - `iconColor`: The color for the icon. Default color is primary.
+  - `iconPos`: The position for the icon. Default is text, which means the icon will
+      be where the text ends.
+  - `titleClass`: Custom class string to add to the `<div>` containing the title.
+  - `contentClass`: Custom class string to add to the `<div>` containing the main content.
 
-    ### Properties
+  You should not try to use a variant and customize at the same time.
 
-    - 'title': Title used for the expander. This is also used as the aria-label for 
-     the checkbox on which the expander operates on.
-    - 'variant': The type for the expander.
-    - 'iconColor': The color for the icon. Default color is primary.
-    - 'iconPos': The position for the icon. Default is text, which means the icon will
-        be where the text ends.
-    - 'titleClass': Custom class string to add to the `<div>` containing the title.
-    - 'contentClass': Custom class string to add to the `<div>` containing the main content.
+  ### Usage
 
-    You should not try to use a variant and customize at the same time.
+  ```tsx
+  <Expander title="Example title">
+    <p>Example content<p/>
+  </Expander>
 
-    ### Usage
-
-    ```tsx
-    <Expander variant="read-more" title="Example title">
-    <p> Example content <p/>
-    </Expander>
-
-    <Expander title="Example title" iconColor="primary" customizeTitle=" bg-base-100 text-primary"
-    customizeContent=" bg-base-300 text-info font-bold">
-    <p> Example content <p/>
-    </Expander>
-    ```
-   -->
+  <Expander title="Example title" variant="category"  iconColor="primary" 
+    titleClass="bg-base-100 text-primary" contentClass="bg-base-300 text-info font-bold">
+    <p>Example content<p/>
+  </Expander>
+  ```
+-->
 
 <div class={collapseClasses}>
   <input type="checkbox" aria-label="open ${title}" on:click={toggleExpanded} />
@@ -136,12 +126,6 @@
     padding: 0.7rem;
     align-items: center;
     text-align: center;
-  }
-
-  .display-flex {
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .collapse-content {
