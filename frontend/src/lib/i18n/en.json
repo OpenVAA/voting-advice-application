@@ -3,7 +3,9 @@
     "headingGroup": "Heading group",
     "preHeading": "Pre-title",
     "primaryActionsLabel": "Primary actions",
-    "skipToMain": "Skip to main content"
+    "additionalQuestionActionsLabel": "Further actions for this question",
+    "skipToMain": "Skip to main content",
+    "submitLikert": "Save answer and continue"
   },
   "header": {
     "title": "Elections",
@@ -71,12 +73,17 @@
       "fullyAgree": "Fully agree"
     },
     "startAnswering": "Start answering",
-    "nextQuestion": "Next question",
+    "nextQuestion": "Next",
     "jumpToResults": "Jump to results",
     "previous": "Previous",
+    "remove": "Delete answer",
     "skip": "Skip",
+    "readLess": "Hide",
     "readMore": "Read More",
-    "notFound": "Question not found"
+    "notFound": "Question not found",
+    "heroEmoji": "💬",
+    "yourAnswer": "You",
+    "youHaventAnswered": "You haven't answered this question"
   },
   "error": {
     "general": "Something went wrong",
