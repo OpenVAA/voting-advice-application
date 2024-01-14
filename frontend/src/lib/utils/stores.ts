@@ -2,7 +2,7 @@ import {derived, writable} from 'svelte/store';
 import type {Readable, Writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import {page} from '$app/stores';
-import type {VoterAnswers} from '$types';
+import type {VoterAnswers} from '$lib/types';
 import {logDebugError} from './logger';
 import {matchCandidates} from '$lib/utils/matching';
 
@@ -47,6 +47,17 @@ export function resetLocalStorage(): void {
     logDebugError('Local storage has been reset');
   }
 }
+
+/**
+ * A store that is true, when the results are available
+ */
+export const resultsAvailable: Readable<boolean> = derived(
+  [page, answeredQuestions],
+  ([$page, $answeredQuestions]) =>
+    // TODO: Use a setting to set the minimum number of answers required
+    $page.data.questions.length > 0 && Object.values($answeredQuestions).length > 0,
+  false
+);
 
 // Currently, it's quite silly that we need to separate matches and candidates, but when the
 // vaa-data model integration is complete, the proper Candidate object will be
