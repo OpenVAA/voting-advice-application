@@ -79,7 +79,7 @@
 <Page title={$_('candidateApp.basicInfo.title')} mainClass="bg-base-200">
   <LogoutButton slot="banner" />
 
-  <div class="mx-20 my-20 flex flex-col items-center gap-16">
+  <div class="flex flex-col items-center gap-16">
     <h1>{$_('candidateApp.basicInfo.title')}</h1>
 
     <p class="text-center">
@@ -171,7 +171,7 @@
         <label for="unaffiliated" class={labelClass}>
           {$_('candidateApp.basicInfo.fields.unaffiliated')}
         </label>
-        <input id="unaffiliated" type="checkbox" class="toggle toggle-primary mr-8" checked />
+        <input id="unaffiliated" type="checkbox" class="toggle-primary toggle mr-8" checked />
       </div>
       <p class={disclaimerClass} slot="footer">
         {$_('candidateApp.basicInfo.unaffiliatedDescription')}
