@@ -1,7 +1,7 @@
 <script lang="ts">
   import {_} from 'svelte-i18n';
   import {candidateAppRoute} from '$lib/utils/routes';
-  import {TimedModal} from '$lib/components/modal';
+  import TimedModal from '$lib/components/modal/TimedModal.svelte';
   import {goto} from '$app/navigation';
   import {authContext} from '$lib/utils/authenticationStore';
   import {Button} from '$lib/components/button';
@@ -27,7 +27,7 @@
   };
 
   const logout = async () => {
-    authContext.logOut();
+    await authContext.logOut();
     closeModal();
     await goto(candidateAppRoute);
   };

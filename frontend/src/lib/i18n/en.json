@@ -127,6 +127,27 @@
       "nominations": "Nominations",
       "tapToAddPhoto": "Tap to add photo"
     },
+    "settings": {
+      "title": "Settings",
+      "instructions": "These settings only affect the way you use this app. Any information you enter here will not be shown to the public.",
+      "fields": {
+        "email": "Email",
+        "language": "App Language"
+      },
+      "emailDescription": "We use this email to connect to you and for password reset. It will not be shown on your public profile.",
+      "languageDescription": "Use this application in this language. It will not be shown on your public profile.",
+      "accountPassword": "Account Password",
+      "currentPassword": "Current Password",
+      "currentPasswordDescription": "Enter your existing account password that you want to change.",
+      "newPassword": "New Password",
+      "newPasswordConfirmation": "New Password Confirmation",
+      "passwordsDontMatch": "Passwords don't match",
+      "passwordNotValid": "Password is not valid",
+      "passwordIsTheSame": "The new password is the same as the current password",
+      "changePasswordError": "Password change failed. Make sure that your current password is correct.",
+      "updatePassword": "Update Password",
+      "passwordUpdated": "The password has been updated!"
+    },
     "setPassword": {
       "greeting": "Hello, {name}!",
       "description": "Set a secure password according to the requirements below:",

@@ -3,11 +3,16 @@ import {constants} from '$lib/utils/constants';
 import {authContext} from '$lib/utils/authenticationStore';
 import type {User} from '$lib/candidate/types';
 
-export const authenticate = async (identifier: string, password: string): Promise<Response> => {
+function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
-  url.pathname = 'api/auth/local';
+  url.pathname = path;
+  url.search = new URLSearchParams(search).toString();
 
-  return await fetch(url, {
+  return url.toString();
+}
+
+export const authenticate = async (identifier: string, password: string): Promise<Response> => {
+  return await fetch(getUrl('api/auth/local'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -17,10 +22,7 @@ export const authenticate = async (identifier: string, password: string): Promis
 };
 
 export const register = async (registrationKey: string, password: string): Promise<Response> => {
-  const url = new URL(constants.PUBLIC_BACKEND_URL);
-  url.pathname = 'api/auth/candidate/register';
-
-  return await fetch(url, {
+  return await fetch(getUrl('api/auth/candidate/register'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -30,10 +32,7 @@ export const register = async (registrationKey: string, password: string): Promi
 };
 
 export const requestForgotPasswordLink = async (email: string): Promise<Response> => {
-  const url = new URL(constants.PUBLIC_BACKEND_URL);
-  url.pathname = 'api/auth/forgot-password';
-
-  return await fetch(url, {
+  return await fetch(getUrl('api/auth/forgot-password'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -43,10 +42,7 @@ export const requestForgotPasswordLink = async (email: string): Promise<Response
 };
 
 export const resetPassword = async (code: string, password: string) => {
-  const url = new URL(constants.PUBLIC_BACKEND_URL);
-  url.pathname = 'api/auth/reset-password';
-
-  return await fetch(url, {
+  return await fetch(getUrl('api/auth/reset-password'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -61,10 +57,7 @@ export const resetPassword = async (code: string, password: string) => {
 };
 
 export const checkRegistrationKey = async (registrationKey: string): Promise<Response> => {
-  const url = new URL(constants.PUBLIC_BACKEND_URL);
-  url.pathname = 'api/auth/candidate/check';
-
-  return await fetch(url, {
+  return await fetch(getUrl('api/auth/candidate/check'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -78,36 +71,48 @@ type UserData = User & {error: unknown};
 /**
  * Get the current user's data, including candidate information
  */
-export const me = async (): Promise<UserData | undefined> => {
-  return request<UserData>(
-    'api/users/me',
-    new URLSearchParams({
+export const me = async (): Promise<User | undefined> => {
+  const res = await request(
+    getUrl('api/users/me', {
       'populate[candidate][populate][nominations][populate][party]': 'true',
       'populate[candidate][populate][nominations][populate][constituency]': 'true',
       'populate[candidate][populate][party]': 'true'
     })
   );
+  if (!res?.ok) return;
+
+  const data: UserData = await res.json();
+  if (data?.error) return;
+
+  return data;
 };
 
-export const request = async <T>(
-  endpoint: string,
-  params: URLSearchParams = new URLSearchParams({})
-): Promise<T | undefined> => {
-  const token = authContext.token;
-  const url = new URL(constants.PUBLIC_BACKEND_URL);
-  url.pathname = endpoint;
-  url.search = params.toString();
-
-  return await fetch(url, {
+/**
+ * Change the user's password to a new one.
+ */
+export const changePassword = async (currentPassword: string, password: string) => {
+  return request(getUrl('api/auth/change-password'), {
+    method: 'POST',
+    body: JSON.stringify({
+      currentPassword,
+      password,
+      passwordConfirmation: password
+    }),
     headers: {
-      Authorization: `Bearer ${get(token)}`
+      'Content-Type': 'application/json'
     }
-  })
-    .then((response) => {
-      return response.json() as Promise<T | undefined>;
-    })
-    .catch((error) => {
-      console.error('Error in getting data from backend: ', error);
-      return undefined;
-    });
+  });
+};
+
+export const request = async (url: string, options: RequestInit = {}) => {
+  const token = authContext.token;
+
+  // Allow providing headers, but with an enforced Authorization header
+  if (!options.headers) options.headers = {};
+  (options.headers as Record<string, string>)['Authorization'] = `Bearer ${get(token)}`;
+
+  return fetch(url, options).catch((error) => {
+    console.error('Error in getting data from backend: ', error);
+    return undefined;
+  });
 };
