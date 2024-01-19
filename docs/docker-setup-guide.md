@@ -13,7 +13,13 @@ backend into a single image that can be built with just a few commands.
 ## Getting started
 
 To build the development Docker image, go to the project root folder make a copy of the `.env.example` file and rename 
-the copy as `.env`. Then run `yarn install` and `yarn dev` or `npm install` and `npm run dev` in the project root folder. 
+the copy as `.env`.
+
+Then you need to install the git submodules by running:
+1. `git submodule init`
+2. `git submodule update`
+
+Finally, run `yarn install` and `yarn dev` or `npm install` and `npm run dev` in the project root folder.
 These commands will create a Docker image that has the frontend, the backend and a database in a single bundle.
 
 **When running the project in Docker, only use the `.env` file in project root. You usually

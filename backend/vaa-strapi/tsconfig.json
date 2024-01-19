@@ -15,6 +15,7 @@
     "src/admin/",
     "**/*.test.ts",
     "src/plugins/**",
-    "types/generated/**"
+    "types/generated/**",
+    "strapi-plugin-import-export-entries"
   ]
 }

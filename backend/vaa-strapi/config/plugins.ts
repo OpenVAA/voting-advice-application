@@ -15,5 +15,8 @@ export default ({env}) => ({
         defaultReplyTo: env('MAIL_REPLY_TO', 'candidate-app@example.com')
       }
     }
+  },
+  'import-export-entries': {
+    enabled: true
   }
 });
