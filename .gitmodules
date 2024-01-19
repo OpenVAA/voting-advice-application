@@ -1,0 +1,3 @@
+[submodule "backend/vaa-strapi/strapi-plugin-import-export-entries"]
+	path = backend/vaa-strapi/strapi-plugin-import-export-entries
+	url = git@github.com:OpenVAA/strapi-plugin-import-export-entries.git
