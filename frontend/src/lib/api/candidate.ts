@@ -15,32 +15,6 @@ export const authenticate = async (identifier: string, password: string): Promis
   });
 };
 
-export const addAnswer = async (questionId: string, answerId: string): Promise<Response> => {
-  const token = authContext.token;
-  const url = new URL(constants.PUBLIC_BACKEND_URL);
-  url.pathname = 'api/answers';
-
-  const user = authContext.user;
-  const candidate = get(user);
-
-  const body = {
-    data: {
-      candidate: candidate?.id,
-      question: questionId,
-      answer: answerId
-    }
-  };
-
-  return await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${get(token)}`
-    },
-    body: JSON.stringify(body)
-  });
-};
-
 export const register = async (registrationKey: string, password: string): Promise<Response> => {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
   url.pathname = 'api/auth/candidate/register';
@@ -83,6 +57,63 @@ export const resetPassword = async (code: string, password: string) => {
       passwordConfirmation: password
     })
   });
+};
+
+export const addAnswer = async (questionId: string, answerId: string): Promise<Response> => {
+  const token = authContext.token;
+  const url = new URL(constants.PUBLIC_BACKEND_URL);
+  url.pathname = 'api/answers';
+
+  const user = authContext.user;
+  const candidate = get(user);
+
+  const body = {
+    data: {
+      candidate: candidate?.id,
+      question: Number(questionId),
+      answer: {
+        key: answerId
+      }
+    }
+  };
+
+  return await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${get(token)}`
+    },
+    body: JSON.stringify(body)
+  });
+};
+
+export const getAnswers = async (): Promise<Response> => {
+  const url = new URL(constants.PUBLIC_BACKEND_URL);
+  url.pathname = 'api/answers';
+
+  const token = authContext.token;
+  return await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${get(token)}`
+    }
+  });
+};
+
+export const getExistingAnswers = async (): Promise<unknown> => {
+  const url = new URL(constants.PUBLIC_BACKEND_URL);
+  url.pathname = 'api/answers';
+  const user = authContext.user;
+  const candidate = get(user);
+  const candidateId = candidate?.id ?? '';
+
+  return request(
+    ['api', 'answers'],
+    new URLSearchParams({
+      'populate[question]': 'true',
+      'populate[candidate]': 'true',
+      'filters[candidate][id][$eq]': candidateId.toString()
+    })
+  );
 };
 
 export const checkRegistrationKey = async (registrationKey: string): Promise<Response> => {
