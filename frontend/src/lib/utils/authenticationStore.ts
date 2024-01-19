@@ -32,8 +32,8 @@ export const loadLocalStorage = () => {
 
 export const loadUserData = async () => {
   const user = await me();
-  if (!user || user.error) {
-    logOut();
+  if (!user) {
+    await logOut();
     return;
   }
 
