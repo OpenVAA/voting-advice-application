@@ -64,8 +64,7 @@ export const addAnswer = async (questionId: string, answerId: string): Promise<R
   const url = new URL(constants.PUBLIC_BACKEND_URL);
   url.pathname = 'api/answers';
 
-  const user = authContext.user;
-  const candidate = get(user);
+  const candidate = get(authContext.user)?.candidate;
 
   const body = {
     data: {
@@ -87,33 +86,50 @@ export const addAnswer = async (questionId: string, answerId: string): Promise<R
   });
 };
 
-export const getAnswers = async (): Promise<Response> => {
+export const updateAnswer = async (answerId: string, answerKey: string): Promise<Response> => {
+  const token = authContext.token;
+  const url = new URL(constants.PUBLIC_BACKEND_URL);
+  url.pathname = `api/answers/${answerId}`;
+
+  const body = {
+    data: {
+      answer: {
+        key: answerKey
+      }
+    }
+  };
+
+  return await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${get(token)}`
+    },
+    body: JSON.stringify(body)
+  });
+};
+
+export const getExistingAnswers = async (): Promise<Response | undefined> => {
+  const token = authContext.token;
+  const user = get(authContext.user)?.candidate;
+  const candidateId = user?.id;
+
+  if (!candidateId) return;
+
   const url = new URL(constants.PUBLIC_BACKEND_URL);
   url.pathname = 'api/answers';
 
-  const token = authContext.token;
+  url.search = new URLSearchParams({
+    'populate[question]': 'true',
+    'filters[candidate][id][$eq]': candidateId.toString()
+  }).toString();
+
   return await fetch(url, {
+    method: 'GET',
     headers: {
       Authorization: `Bearer ${get(token)}`
     }
   });
-};
-
-export const getExistingAnswers = async (): Promise<unknown> => {
-  const url = new URL(constants.PUBLIC_BACKEND_URL);
-  url.pathname = 'api/answers';
-  const user = authContext.user;
-  const candidate = get(user);
-  const candidateId = candidate?.id ?? '';
-
-  return request(
-    ['api', 'answers'],
-    new URLSearchParams({
-      'populate[question]': 'true',
-      'populate[candidate]': 'true',
-      'filters[candidate][id][$eq]': candidateId.toString()
-    })
-  );
 };
 
 export const checkRegistrationKey = async (registrationKey: string): Promise<Response> => {
