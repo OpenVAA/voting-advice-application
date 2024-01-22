@@ -1,6 +1,7 @@
 import {get} from 'svelte/store';
 import {constants} from '$lib/utils/constants';
 import {authContext} from '$lib/utils/authenticationStore';
+import type {Photo} from '$lib/types/candidateAttributes';
 
 export const authenticate = async (identifier: string, password: string): Promise<Response> => {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
@@ -93,7 +94,7 @@ export const updateBasicInfo = async (
   manifesto?: Text,
   age?: number,
   gender?: string,
-  photo?: string,
+  photo?: Photo,
   unaffiliated?: boolean
 ): Promise<Response> => {
   const token = authContext.token;
@@ -112,7 +113,8 @@ export const updateBasicInfo = async (
       manifesto,
       age,
       gender,
-      unaffiliated
+      unaffiliated,
+      photo: photo?.id
     }
   };
 
