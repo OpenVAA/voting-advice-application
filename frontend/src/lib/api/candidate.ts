@@ -82,9 +82,48 @@ export const me = async (): Promise<unknown> => {
     new URLSearchParams({
       'populate[candidate][populate][nominations][populate][party]': 'true',
       'populate[candidate][populate][nominations][populate][constituency]': 'true',
-      'populate[candidate][populate][party]': 'true'
+      'populate[candidate][populate][party]': 'true',
+      'populate[candidate][populate][photo]': 'true',
+      'populate[candidate][populate][motherTongues]': 'true'
     })
   );
+};
+
+export const updateBasicInfo = async (
+  manifesto?: Text,
+  age?: number,
+  gender?: string,
+  photo?: string,
+  unaffiliated?: boolean
+): Promise<Response> => {
+  const token = authContext.token;
+  const user = get(authContext.user);
+  const candidate = user?.candidate;
+
+  if (!candidate) {
+    throw new Error('user.candidate is undefined');
+  }
+
+  const url = new URL(constants.PUBLIC_BACKEND_URL);
+  url.pathname = `api/candidates/${candidate.id}`;
+
+  const body = {
+    data: {
+      manifesto,
+      age,
+      gender,
+      unaffiliated
+    }
+  };
+
+  return await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${get(token)}`
+    },
+    body: JSON.stringify(body)
+  });
 };
 
 export const request = async <T>(

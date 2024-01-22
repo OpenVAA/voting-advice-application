@@ -12,7 +12,9 @@ const defaultPermissions = [
   {action: 'api::nomination.nomination.find', roleType: 'authenticated'},
   {action: 'api::nomination.nomination.findOne', roleType: 'authenticated'},
   {action: 'api::constituency.constituency.find', roleType: 'authenticated'},
-  {action: 'api::constituency.constituency.findOne', roleType: 'authenticated'}
+  {action: 'api::constituency.constituency.findOne', roleType: 'authenticated'},
+  {action: 'api::language.language.find', roleType: 'authenticated'},
+  {action: 'api::language.language.findOne', roleType: 'authenticated'}
 ];
 
 module.exports = async (plugin) => {
