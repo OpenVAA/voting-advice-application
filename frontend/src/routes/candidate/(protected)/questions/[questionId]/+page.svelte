@@ -2,11 +2,13 @@
   import {_} from 'svelte-i18n';
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
-  import {answeredQuestions} from '$lib/utils/stores';
-  import {logDebugError} from '$lib/utils/logger';
+  import {answerContext} from '$lib/utils/answerStore';
   import {Question} from '$lib/components/questions';
   import BasicPage from '$lib/templates/basicPage/BasicPage.svelte';
-  import {addAnswer} from '$lib/api/candidate';
+  import {addAnswer, updateAnswer} from '$lib/api/candidate';
+  import {get} from 'svelte/store';
+
+  const answers = get(answerContext.answers);
 
   /**
    * A small delay before moving to the next question.
@@ -14,18 +16,29 @@
    */
   const DELAY_M_MS = 350;
 
+  const questionId = $page.params.questionId;
+
   let currentQuestion: QuestionProps | undefined;
   $: currentQuestion = $page.data.questions.find((q) => '' + q.id === '' + $page.params.questionId);
 
+  $: previousAnswer = answers[questionId];
+
   // Store question id and answer value in a store
   async function answerQuestion({detail}: CustomEvent) {
-    $answeredQuestions[detail.id] = detail.value;
-    logDebugError(
-      `Answered question ${detail.id} with value ${detail.value}. Store length: ${
-        Object.values($answeredQuestions).length
-      }.`
-    );
-    await addAnswer(detail.id, detail.value);
+    if (!previousAnswer) {
+      const response = await addAnswer(detail.id, detail.value);
+      const data = await response.json();
+
+      answers[questionId] = {id: data.data.id, key: detail.value};
+    } else {
+      await updateAnswer(previousAnswer.id, detail.value);
+      answers[questionId] = {
+        id: previousAnswer.id,
+        key: detail.value
+      };
+    }
+
+    answerContext.answers.set(answers);
   }
 
   // Skip to next question
@@ -55,6 +68,12 @@
       <svelte:fragment slot="heading">
         <div />
       </svelte:fragment>
+
+      <!-- Temporarily display currrent selection -->
+      {#if previousAnswer}
+        <p>Previous answer {previousAnswer.key}</p>
+      {/if}
+
       <Question
         id={currentQuestion.id}
         text={currentQuestion.text}
