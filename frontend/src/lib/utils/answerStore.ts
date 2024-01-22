@@ -1,27 +1,32 @@
 import {getExistingAnswers} from '$lib/api/candidate';
 import {writable, type Writable} from 'svelte/store';
 
-export interface Question {
-  id: number;
-  question: string;
-}
-
-export interface Answer {
-  id: number;
-  key: string;
-  question: Question;
-}
-
 export interface AnswerContext {
-  answers: Writable<unknown | null>;
+  answers: Writable<Record<string, Answer>>;
   loadAnswerData: () => Promise<void>;
 }
 
-const answerStore = writable<unknown | null>(null);
+export interface Answer {
+  key: string;
+  id: string;
+}
+
+const answerStore = writable<Record<string, Answer>>({});
 
 export const loadAnswerData = async () => {
-  const answers = await getExistingAnswers();
-  if (!answers) return;
+  const response = await getExistingAnswers();
+
+  if (!response) return;
+
+  const answerData = await response.json();
+  const answers: Record<string, Answer> = {};
+
+  answerData.data.forEach((answer: any) => {
+    answers[answer.attributes.question.data.id] = {
+      key: answer.attributes.answer.key,
+      id: answer.id
+    };
+  });
 
   answerStore.set(answers);
 };

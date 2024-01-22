@@ -5,10 +5,8 @@
   import {BasicPage} from '$lib/templates/basicPage';
 </script>
 
-<RequireLogin showLogin>
-  <BasicPage title="Welcome to the {appName}">
-    <svelte:fragment slot="banner">
-      <LogoutButton />
-    </svelte:fragment>
-  </BasicPage>
-</RequireLogin>
+<BasicPage title="Welcome to the {appName}">
+  <svelte:fragment slot="banner">
+    <LogoutButton />
+  </svelte:fragment>
+</BasicPage>
