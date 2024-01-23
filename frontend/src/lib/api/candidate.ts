@@ -59,6 +59,79 @@ export const resetPassword = async (code: string, password: string) => {
   });
 };
 
+export const addAnswer = async (questionId: string, answerId: string): Promise<Response> => {
+  const token = authContext.token;
+  const url = new URL(constants.PUBLIC_BACKEND_URL);
+  url.pathname = 'api/answers';
+
+  const candidate = get(authContext.user)?.candidate;
+
+  const body = {
+    data: {
+      candidate: candidate?.id,
+      question: Number(questionId),
+      answer: {
+        key: answerId
+      }
+    }
+  };
+
+  return await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${get(token)}`
+    },
+    body: JSON.stringify(body)
+  });
+};
+
+export const updateAnswer = async (answerId: string, answerKey: string): Promise<Response> => {
+  const token = authContext.token;
+  const url = new URL(constants.PUBLIC_BACKEND_URL);
+  url.pathname = `api/answers/${answerId}`;
+
+  const body = {
+    data: {
+      answer: {
+        key: answerKey
+      }
+    }
+  };
+
+  return await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${get(token)}`
+    },
+    body: JSON.stringify(body)
+  });
+};
+
+export const getExistingAnswers = async (): Promise<Response | undefined> => {
+  const token = authContext.token;
+  const user = get(authContext.user)?.candidate;
+  const candidateId = user?.id;
+
+  if (!candidateId) return;
+
+  const url = new URL(constants.PUBLIC_BACKEND_URL);
+  url.pathname = 'api/answers';
+
+  url.search = new URLSearchParams({
+    'populate[question]': 'true',
+    'filters[candidate][id][$eq]': candidateId.toString()
+  }).toString();
+
+  return await fetch(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${get(token)}`
+    }
+  });
+};
+
 export const checkRegistrationKey = async (registrationKey: string): Promise<Response> => {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
   url.pathname = 'api/auth/candidate/check';
