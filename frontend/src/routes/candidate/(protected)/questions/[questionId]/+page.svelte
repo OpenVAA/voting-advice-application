@@ -9,6 +9,7 @@
   import {get} from 'svelte/store';
 
   const answers = get(answerContext.answers);
+  const answerStore = answerContext.answers;
 
   /**
    * A small delay before moving to the next question.
@@ -16,26 +17,25 @@
    */
   const DELAY_M_MS = 350;
 
-  const questionId = $page.params.questionId;
-
   let currentQuestion: QuestionProps | undefined;
-
   $: currentQuestion = $page.data.questions.find((q) => '' + q.id === '' + $page.params.questionId);
-  $: previousAnswer = answers[questionId];
+
+  $: answer = $answerStore[$page.params.questionId];
 
   // Store question id and answer value in a store
   async function answerQuestion({detail}: CustomEvent) {
-    if (!previousAnswer) {
+    if (!answer) {
       const response = await addAnswer(detail.id, detail.value);
       const data = await response.json();
-      answers[questionId] = {id: data.data.id, key: detail.value};
+      answers[$page.params.questionId] = {id: data.data.id, key: detail.value};
     } else {
-      await updateAnswer(previousAnswer.id, detail.value);
-      answers[questionId] = {
-        id: previousAnswer.id,
+      await updateAnswer(answer.id, detail.value);
+      answers[$page.params.questionId] = {
+        id: answer.id,
         key: detail.value
       };
     }
+
     answerContext.answers.set(answers);
   }
 
@@ -53,7 +53,9 @@
     const currentIndex = $page.data.questions.indexOf(currentQuestion);
     if (currentIndex < $page.data.questions.length - 1) {
       const nextId = $page.data.questions[currentIndex + 1].id;
-      setTimeout(() => goto(`/questions/${nextId}`), DELAY_M_MS);
+      const currentUrl = $page.url.pathname.replace(/\/$/, '');
+      const nextQuestionUrl = `${currentUrl.substring(0, currentUrl.lastIndexOf('/'))}/${nextId}`;
+      setTimeout(() => goto(nextQuestionUrl), DELAY_M_MS);
     } else {
       setTimeout(() => goto('/results'), DELAY_M_MS);
     }
@@ -68,7 +70,9 @@
       </svelte:fragment>
 
       <!-- Temporarily display currrent selection -->
-      <p>Previous answer {previousAnswer.key}</p>
+      {#if answer}
+        <p>Answer: {answer.key}</p>
+      {/if}
 
       <Question
         id={currentQuestion.id}
