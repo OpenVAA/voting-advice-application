@@ -104,6 +104,68 @@ export const changePassword = async (currentPassword: string, password: string) 
   });
 };
 
+export const addAnswer = async (questionId: string, answerKey: string): Promise<Response> => {
+  const token = authContext.token;
+  const candidate = get(authContext.user)?.candidate;
+
+  const body = {
+    data: {
+      candidate: candidate?.id,
+      question: Number(questionId),
+      answer: {
+        key: answerKey
+      }
+    }
+  };
+
+  return await fetch(getUrl('api/answers'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${get(token)}`
+    },
+    body: JSON.stringify(body)
+  });
+};
+
+export const updateAnswer = async (answerId: string, answerKey: string): Promise<Response> => {
+  const token = authContext.token;
+
+  const body = {
+    data: {
+      answer: {
+        key: answerKey
+      }
+    }
+  };
+
+  return fetch(getUrl(`api/answers/${answerId}`), {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${get(token)}`
+    },
+    body: JSON.stringify(body)
+  });
+};
+
+export const getExistingAnswers = async (): Promise<Response | undefined> => {
+  const user = get(authContext.user)?.candidate;
+  const candidateId = user?.id;
+
+  if (!candidateId) return;
+
+  const res = await request(
+    getUrl('api/answers', {
+      'populate[question]': 'true',
+      'filters[candidate][id][$eq]': candidateId.toString()
+    })
+  );
+  if (!res?.ok) return;
+
+  return res;
+};
+
 export const request = async (url: string, options: RequestInit = {}) => {
   const token = authContext.token;
 
