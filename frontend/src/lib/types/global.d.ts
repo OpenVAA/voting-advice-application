@@ -133,6 +133,7 @@ declare global {
     options: {key: number; label: string}[];
     category?: string;
     info?: string;
+    fillingInfo?: string;
   }
 
   /**
