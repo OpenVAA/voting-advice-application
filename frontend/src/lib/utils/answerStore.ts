@@ -7,10 +7,11 @@ export interface AnswerContext {
 }
 
 export interface Answer {
-  key: string;
-  id: string;
+  key: string; // Selected answer option
+  id: string; // Id of the answer in the database
 }
 
+// Interfaces for data returned from the API
 interface AnswerAttributes {
   answer: {key: string};
   question: {data: {id: string}};
@@ -29,6 +30,8 @@ export const loadAnswerData = async () => {
   if (!response) return;
 
   const answerData = await response.json();
+
+  // Parse the data into a more usable format where the question ID is the key
   const answers: Record<string, Answer> = {};
 
   answerData.data.forEach((answer: AnswerData) => {

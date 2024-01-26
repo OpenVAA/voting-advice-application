@@ -18,7 +18,9 @@
   const DELAY_M_MS = 350;
 
   let currentQuestion: QuestionProps | undefined;
-  $: currentQuestion = $page.data.questions.find((q) => '' + q.id === '' + $page.params.questionId);
+  $: currentQuestion = $page.data.questions.find(
+    (q) => q.id.toString() === $page.params.questionId.toString()
+  );
 
   $: answer = $answerStore[$page.params.questionId];
 
@@ -26,16 +28,28 @@
   async function answerQuestion({detail}: CustomEvent) {
     if (!answer) {
       const response = await addAnswer(detail.id, detail.value);
+
+      if (!response?.ok) {
+        return;
+      }
+
       const data = await response.json();
-      answers[$page.params.questionId] = {id: data.data.id, key: detail.value};
+      const answerId = data.data.id;
+      answers[$page.params.questionId] = {id: answerId, key: detail.value};
     } else {
-      await updateAnswer(answer.id, detail.value);
+      const response = await updateAnswer(answer.id, detail.value);
+
+      if (!response?.ok) {
+        return;
+      }
+
       answers[$page.params.questionId] = {
         id: answer.id,
         key: detail.value
       };
     }
 
+    // Update the answer store
     answerContext.answers.set(answers);
   }
 
@@ -65,6 +79,7 @@
 {#if currentQuestion}
   {#key currentQuestion}
     <BasicPage title={currentQuestion.text}>
+      <!-- Temporary hack for not showing the heading on the page as it is provided by the Question component-->
       <svelte:fragment slot="heading">
         <div />
       </svelte:fragment>

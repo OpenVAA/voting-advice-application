@@ -25,11 +25,10 @@
     {$_('candidateApp.opinions.instructions', {values: {numQuestions}})}
   </p>
 
-  <svelte:fragment slot="primaryActions">
-    <Button
-      href={firstQuestionUrl}
-      variant="main"
-      icon="next"
-      text={$_('candidateApp.opinions.continue')} />
-  </svelte:fragment>
+  <Button
+    slot="primaryActions"
+    href={firstQuestionUrl}
+    variant="main"
+    icon="next"
+    text={$_('candidateApp.opinions.continue')} />
 </BasicPage>
