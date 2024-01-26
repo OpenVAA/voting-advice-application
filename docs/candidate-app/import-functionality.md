@@ -17,6 +17,12 @@ The candidate import accepts csv files that have defined the following propertie
 
 The `email` field is used as the unique identifier for candidates.
 
+Here is an example csv for the candidate import:
+```
+firstName,lastName,party,email,published
+Alice,Alice,<partyId>,alice@example.com,true
+Bob,Bob,<partyId>,bob@example.com,false
+```
 
 The nomination import accepts csv files that have defined the following properties:
  - `election` (id)
@@ -27,6 +33,13 @@ The nomination import accepts csv files that have defined the following properti
  - `published` (true / false)
 
 The composite of the fields `election`, `constituency`, `candidate` and `party` is used as the unique identifier for nominations.
+
+Here is an example csv for the nomination import:
+```
+election,constituency,candidate,party,electionSymbol,published
+<electionId>,<constituencyId>,<candidateId>,<partyId>,1,true
+<electionId>,<constituencyId>,<candidateId>,<partyId>,2,false
+```
 
 The import will fail if one or more of the fields are not defined.
 
