@@ -104,6 +104,83 @@ export const changePassword = async (currentPassword: string, password: string) 
   });
 };
 
+/**
+ * Add answer to a question for the logged in user.
+ */
+export const addAnswer = async (
+  questionId: string,
+  answerKey: string
+): Promise<Response | undefined> => {
+  const token = authContext.token;
+  const candidate = get(authContext.user)?.candidate;
+
+  if (!candidate) return;
+
+  const body = {
+    data: {
+      candidate: candidate?.id,
+      question: Number(questionId),
+      answer: {
+        key: answerKey
+      }
+    }
+  };
+
+  return await fetch(getUrl('api/answers'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${get(token)}`
+    },
+    body: JSON.stringify(body)
+  });
+};
+
+/**
+ * Update an existing answer for the logged in user.
+ * The answer id is sufficient to identify the answer and question.
+ */
+export const updateAnswer = async (answerId: string, answerKey: string): Promise<Response> => {
+  const token = authContext.token;
+
+  const body = {
+    data: {
+      answer: {
+        key: answerKey
+      }
+    }
+  };
+
+  return fetch(getUrl(`api/answers/${answerId}`), {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${get(token)}`
+    },
+    body: JSON.stringify(body)
+  });
+};
+
+/**
+ * Get all the answers for the logged in user.
+ */
+export const getExistingAnswers = async (): Promise<Response | undefined> => {
+  const user = get(authContext.user)?.candidate;
+  const candidateId = user?.id;
+
+  if (!candidateId) return;
+
+  const res = await request(
+    getUrl('api/answers', {
+      'populate[question]': 'true',
+      'filters[candidate][id][$eq]': candidateId.toString()
+    })
+  );
+  if (!res?.ok) return;
+
+  return res;
+};
+
 export const request = async (url: string, options: RequestInit = {}) => {
   const token = authContext.token;
 
