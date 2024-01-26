@@ -323,6 +323,7 @@ export const getQuestions = (): Promise<QuestionProps[]> => {
             type: typeName as QuestionType,
             category: d.attributes.questionCategory.data.attributes.name ?? '',
             info: d.attributes.info,
+            fillingInfo: d.attributes.fillingInfo,
             options
           })
         );

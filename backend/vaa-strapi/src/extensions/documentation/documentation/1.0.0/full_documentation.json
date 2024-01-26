@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2023-12-18T20:46:11.897Z"
+    "x-generation-date": "2024-01-23T12:43:41.112Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
@@ -1303,6 +1303,9 @@
                                                               "type": "string"
                                                             },
                                                             "info": {
+                                                              "type": "string"
+                                                            },
+                                                            "fillingInfo": {
                                                               "type": "string"
                                                             },
                                                             "questionType": {
@@ -2771,6 +2774,9 @@
                                       "type": "string"
                                     },
                                     "value": {
+                                      "type": "string"
+                                    },
+                                    "fillingInfo": {
                                       "type": "string"
                                     },
                                     "createdAt": {
@@ -4598,6 +4604,9 @@
                                                               "info": {
                                                                 "type": "string"
                                                               },
+                                                              "fillingInfo": {
+                                                                "type": "string"
+                                                              },
                                                               "questionType": {
                                                                 "type": "object",
                                                                 "properties": {
@@ -5959,6 +5968,9 @@
                                                   "value": {
                                                     "type": "string"
                                                   },
+                                                  "fillingInfo": {
+                                                    "type": "string"
+                                                  },
                                                   "createdAt": {
                                                     "type": "string",
                                                     "format": "date-time"
@@ -6400,6 +6412,9 @@
           "value": {
             "type": "string"
           },
+          "fillingInfo": {
+            "type": "string"
+          },
           "locale": {
             "type": "string"
           }
@@ -6443,6 +6458,9 @@
                 "type": "string"
               },
               "value": {
+                "type": "string"
+              },
+              "fillingInfo": {
                 "type": "string"
               },
               "locale": {
@@ -6609,6 +6627,9 @@
                                       "type": "string"
                                     },
                                     "info": {
+                                      "type": "string"
+                                    },
+                                    "fillingInfo": {
                                       "type": "string"
                                     },
                                     "questionType": {
@@ -8785,6 +8806,9 @@
                                                                             "value": {
                                                                               "type": "string"
                                                                             },
+                                                                            "fillingInfo": {
+                                                                              "type": "string"
+                                                                            },
                                                                             "createdAt": {
                                                                               "type": "string",
                                                                               "format": "date-time"
@@ -9184,6 +9208,9 @@
             "type": "string"
           },
           "value": {
+            "type": "string"
+          },
+          "fillingInfo": {
             "type": "string"
           },
           "createdAt": {
@@ -10888,6 +10915,9 @@
                                                                                                       "info": {
                                                                                                         "type": "string"
                                                                                                       },
+                                                                                                      "fillingInfo": {
+                                                                                                        "type": "string"
+                                                                                                      },
                                                                                                       "questionType": {
                                                                                                         "type": "object",
                                                                                                         "properties": {
@@ -11730,6 +11760,9 @@
                                                                                 "type": "string"
                                                                               },
                                                                               "value": {
+                                                                                "type": "string"
+                                                                              },
+                                                                              "fillingInfo": {
                                                                                 "type": "string"
                                                                               },
                                                                               "createdAt": {
@@ -13739,6 +13772,9 @@
                                                                                                                   "info": {
                                                                                                                     "type": "string"
                                                                                                                   },
+                                                                                                                  "fillingInfo": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
                                                                                                                   "questionType": {
                                                                                                                     "type": "object",
                                                                                                                     "properties": {
@@ -14581,6 +14617,9 @@
                                                                                             "type": "string"
                                                                                           },
                                                                                           "value": {
+                                                                                            "type": "string"
+                                                                                          },
+                                                                                          "fillingInfo": {
                                                                                             "type": "string"
                                                                                           },
                                                                                           "createdAt": {
@@ -16880,6 +16919,9 @@
                                                                                                       "info": {
                                                                                                         "type": "string"
                                                                                                       },
+                                                                                                      "fillingInfo": {
+                                                                                                        "type": "string"
+                                                                                                      },
                                                                                                       "questionType": {
                                                                                                         "type": "object",
                                                                                                         "properties": {
@@ -17722,6 +17764,9 @@
                                                                                 "type": "string"
                                                                               },
                                                                               "value": {
+                                                                                "type": "string"
+                                                                              },
+                                                                              "fillingInfo": {
                                                                                 "type": "string"
                                                                               },
                                                                               "createdAt": {
@@ -20453,6 +20498,9 @@
                                                                                                     "info": {
                                                                                                       "type": "string"
                                                                                                     },
+                                                                                                    "fillingInfo": {
+                                                                                                      "type": "string"
+                                                                                                    },
                                                                                                     "questionType": {
                                                                                                       "type": "object",
                                                                                                       "properties": {
@@ -21295,6 +21343,9 @@
                                                                               "type": "string"
                                                                             },
                                                                             "value": {
+                                                                              "type": "string"
+                                                                            },
+                                                                            "fillingInfo": {
                                                                               "type": "string"
                                                                             },
                                                                             "createdAt": {
@@ -23264,6 +23315,9 @@
                                                               "info": {
                                                                 "type": "string"
                                                               },
+                                                              "fillingInfo": {
+                                                                "type": "string"
+                                                              },
                                                               "questionType": {
                                                                 "type": "object",
                                                                 "properties": {
@@ -24732,6 +24786,9 @@
                                       "value": {
                                         "type": "string"
                                       },
+                                      "fillingInfo": {
+                                        "type": "string"
+                                      },
                                       "createdAt": {
                                         "type": "string",
                                         "format": "date-time"
@@ -25002,6 +25059,9 @@
           "info": {
             "type": "string"
           },
+          "fillingInfo": {
+            "type": "string"
+          },
           "questionType": {
             "oneOf": [
               {
@@ -25059,6 +25119,9 @@
                 "type": "string"
               },
               "info": {
+                "type": "string"
+              },
+              "fillingInfo": {
                 "type": "string"
               },
               "questionType": {
@@ -25230,6 +25293,9 @@
           "info": {
             "type": "string"
           },
+          "fillingInfo": {
+            "type": "string"
+          },
           "questionType": {
             "type": "object",
             "properties": {
@@ -25267,6 +25333,9 @@
                                       "type": "string"
                                     },
                                     "info": {
+                                      "type": "string"
+                                    },
+                                    "fillingInfo": {
                                       "type": "string"
                                     },
                                     "questionType": {
@@ -27443,6 +27512,9 @@
                                                                             "value": {
                                                                               "type": "string"
                                                                             },
+                                                                            "fillingInfo": {
+                                                                              "type": "string"
+                                                                            },
                                                                             "createdAt": {
                                                                               "type": "string",
                                                                               "format": "date-time"
@@ -29545,6 +29617,9 @@
                                                                                                       "info": {
                                                                                                         "type": "string"
                                                                                                       },
+                                                                                                      "fillingInfo": {
+                                                                                                        "type": "string"
+                                                                                                      },
                                                                                                       "questionType": {
                                                                                                         "type": "object",
                                                                                                         "properties": {
@@ -30389,6 +30464,9 @@
                                                                               "value": {
                                                                                 "type": "string"
                                                                               },
+                                                                              "fillingInfo": {
+                                                                                "type": "string"
+                                                                              },
                                                                               "createdAt": {
                                                                                 "type": "string",
                                                                                 "format": "date-time"
@@ -31104,6 +31182,9 @@
                           "type": "string"
                         },
                         "info": {
+                          "type": "string"
+                        },
+                        "fillingInfo": {
                           "type": "string"
                         },
                         "questionType": {
@@ -33364,6 +33445,9 @@
                                                                   "type": "string"
                                                                 },
                                                                 "value": {
+                                                                  "type": "string"
+                                                                },
+                                                                "fillingInfo": {
                                                                   "type": "string"
                                                                 },
                                                                 "createdAt": {

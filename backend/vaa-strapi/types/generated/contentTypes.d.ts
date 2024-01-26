@@ -743,6 +743,12 @@ export interface ApiCandidateAttributeCandidateAttribute extends Schema.Collecti
           localized: true;
         };
       }>;
+    fillingInfo: Attribute.Text &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1215,6 +1221,12 @@ export interface ApiQuestionQuestion extends Schema.CollectionType {
         };
       }>;
     info: Attribute.RichText &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    fillingInfo: Attribute.Text &
       Attribute.SetPluginOptions<{
         i18n: {
           localized: true;

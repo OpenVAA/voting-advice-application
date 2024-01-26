@@ -103,6 +103,7 @@ export interface StrapiQuestionData {
   attributes: {
     text: string;
     info: string;
+    fillingInfo: string;
     questionCategory: {
       data: {
         attributes: {

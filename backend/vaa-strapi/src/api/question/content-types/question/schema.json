@@ -33,6 +33,14 @@
       },
       "type": "richtext"
     },
+    "fillingInfo": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "text"
+    },
     "questionType": {
       "type": "relation",
       "relation": "manyToOne",

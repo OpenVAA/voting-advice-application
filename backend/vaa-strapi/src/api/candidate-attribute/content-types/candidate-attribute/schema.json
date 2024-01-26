@@ -49,6 +49,14 @@
         }
       },
       "type": "string"
+    },
+    "fillingInfo": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "text"
     }
   }
 }
