@@ -2,11 +2,20 @@ export {};
 
 declare global {
   /**
+   * The properties of a multiple choice option in a Question.
+   * TODO: This may be deprecated later by the `vaa-data` module.
+   */
+  interface AnswerOption {
+    key: number;
+    label: string;
+  }
+
+  /**
    * Properties of a Candidate's or Party's answer to a question.
    */
   interface AnswerProps {
     questionId: string;
-    answer: number;
+    answer: AnswerOption['key'];
     openAnswer?: string;
   }
 
@@ -130,7 +139,7 @@ declare global {
     id: string;
     text: string;
     type: QuestionType;
-    options: {key: number; label: string}[];
+    options: AnswerOption[];
     category?: string;
     info?: string;
     fillingInfo?: string;
