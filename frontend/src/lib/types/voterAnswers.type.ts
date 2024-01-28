@@ -1,3 +1,1 @@
-import type {MatchableValue} from '$voter/vaa-matching';
-
-export type VoterAnswers = Record<string, MatchableValue>;
+export type VoterAnswers = Record<string, AnswerOption['key']>;
