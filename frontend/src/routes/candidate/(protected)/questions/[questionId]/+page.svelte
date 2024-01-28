@@ -3,8 +3,9 @@
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
   import {answerContext} from '$lib/utils/answerStore';
-  import {Question} from '$lib/components/questions';
-  import BasicPage from '$lib/templates/basicPage/BasicPage.svelte';
+  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {LikertResponseButtons, QuestionActions, QuestionInfo} from '$lib/components/questions';
+  import {BasicPage} from '$lib/templates/basicPage';
   import {addAnswer, updateAnswer} from '$lib/api/candidate';
   import {get} from 'svelte/store';
 
@@ -79,25 +80,46 @@
 {#if currentQuestion}
   {#key currentQuestion}
     <BasicPage title={currentQuestion.text}>
-      <!-- Temporary hack for not showing the heading on the page as it is provided by the Question component-->
-      <svelte:fragment slot="heading">
-        <div />
-      </svelte:fragment>
+      <!--
 
-      <!-- Temporarily display currrent selection -->
-      {#if answer}
-        <p>Answer: {answer.key}</p>
+        NB! These are quickly hacked in because the Question component
+        is deprecated. Please, check everything and preferably rewrite.
+        Note that the AnswerOption interface's key is of type number,
+        so please update all type defs to use AnswerOption['key']
+        instead of a hard-coded type.
+
+      -->
+
+      <HeadingGroup slot="heading" id="hgroup-{currentQuestion.id}">
+        {#if currentQuestion.category && currentQuestion.category !== ''}
+          <!-- TODO: Set color based on category -->
+          <PreHeading class="text-accent">{currentQuestion.category}</PreHeading>
+        {/if}
+        <h1>{currentQuestion.text}</h1>
+      </HeadingGroup>
+
+      {#if currentQuestion.info && currentQuestion.info !== ''}
+        <QuestionInfo info={currentQuestion.info} />
       {/if}
 
-      <Question
-        id={currentQuestion.id}
-        text={currentQuestion.text}
-        type={currentQuestion.type}
-        options={currentQuestion.options}
-        category={currentQuestion.category}
-        info={currentQuestion.info}
-        on:change={answerQuestion}
-        on:skip={skipQuestion} />
+      <svelte:fragment slot="primaryActions">
+        {#if currentQuestion.type === 'Likert'}
+          <LikertResponseButtons
+            aria-labelledby="hgroup-{currentQuestion.id}"
+            name={currentQuestion.id}
+            options={currentQuestion.options}
+            selectedKey={parseInt(answer.key)}
+            on:change={answerQuestion} />
+        {:else}
+          {$_('error.general')}
+        {/if}
+        <QuestionActions
+          answered={answer.key != null}
+          separateSkip={false}
+          on:previous={() => console.error('previous')}
+          on:delete={() => console.error('delete')}
+          on:next={skipQuestion} />
+      </svelte:fragment>
     </BasicPage>
   {/key}
 {:else}
