@@ -83,7 +83,9 @@
     "notFound": "Question not found",
     "heroEmoji": "💬",
     "yourAnswer": "You",
-    "youHaventAnswered": "You haven't answered this question"
+    "youHaventAnswered": "You haven't answered this question",
+    "bothHaventAnswered": "Neither you nor {{candidate}} has answered this question",
+    "candidateHasntAnswered": "{{candidate}} hasn’t answered this question"
   },
   "error": {
     "general": "Something went wrong",
