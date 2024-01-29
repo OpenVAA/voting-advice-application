@@ -15,13 +15,23 @@ export interface Candidate {
   age: number;
   photo?: Photo;
   manifesto: Text;
-  motherTongues: string[];
+  motherTongues: Language[];
   unaffiliated: boolean;
   politicalExperience: string;
   email: string;
   nominations: Nomination[];
   locale: string;
   party?: Party;
+}
+
+export interface Language {
+  id: number;
+  locale: string;
+  localisationCode: string;
+  name: string;
+  createdAt: string;
+  publishedAt: string;
+  updatedAt: string;
 }
 
 export interface PhotoFormat {
