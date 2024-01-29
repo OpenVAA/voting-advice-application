@@ -34,6 +34,23 @@
       "type": "string",
       "required": true
     },
+    "gender": {
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "type": "string",
+      "required": false
+    },
+    "age": {
+      "type": "integer",
+      "required": false
+    },
+    "unaffiliated": {
+      "type": "boolean",
+      "required": false
+    },
     "photo": {
       "type": "media",
       "multiple": false,
@@ -46,6 +63,10 @@
           "localized": false
         }
       }
+    },
+    "manifesto": {
+      "type": "text",
+      "required": false
     },
     "motherTongues": {
       "type": "relation",
