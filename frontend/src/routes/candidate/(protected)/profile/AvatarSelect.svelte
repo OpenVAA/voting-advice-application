@@ -9,7 +9,7 @@
   import type {Photo} from '$lib/types/candidateAttributes';
 
   export let photo: Photo | undefined;
-  $: photoUrl = photo ? constants.PUBLIC_BACKEND_URL + photo.formats.thumbnail.url : null;
+  let photoUrl = photo ? constants.PUBLIC_BACKEND_URL + photo.formats.thumbnail.url : undefined;
   let imageHasChanged = false;
 
   const maxFileSize = 5 * 1024 * 1024; // 5 MB
@@ -52,9 +52,7 @@
         let reader = new FileReader();
 
         reader.onload = (e) => {
-          if (portraitImage && e.target && e.target.result) {
-            portraitImage.src = e.target.result.toString();
-          }
+          photoUrl = e.target?.result?.toString();
         };
         reader.readAsDataURL(file);
       }
@@ -103,7 +101,7 @@
     tabindex="0"
     for="portrait"
     class="cursor-pointer text-primary">
-    {#if photo}
+    {#if photoUrl}
       <div class="flex h-60 w-60 items-center justify-center overflow-hidden">
         <img
           bind:this={portraitImage}
