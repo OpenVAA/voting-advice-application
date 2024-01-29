@@ -92,7 +92,6 @@
                 value={basicInfoData[field]}
                 class={inputClass} />
             </div>
-
             <Icon name="locked" class={iconClass} />
           </Field>
         {/each}
@@ -108,9 +107,7 @@
 
         {#each nominationFields ?? [] as nomination}
           <Field>
-            <label
-              for={nomination.nominationID}
-              class="label-sm label mx-6 my-2 w-8/12 text-secondary">{nomination.fieldText}</label>
+            <label for={nomination.nominationID} class={labelClass}>{nomination.fieldText}</label>
             <div class="w-4/12 text-right text-secondary">
               <input
                 disabled
@@ -146,10 +143,15 @@
             {/each}
           </select>
         </Field>
+      </FieldGroup>
+
+      <FieldGroup>
+        <p class={headerClass} slot="header">
+          {$_('candidateApp.basicInfo.fields.motherTongue')}
+        </p>
+
         <Field>
-          <label for="motherTongue" class={labelClass}>
-            {$_('candidateApp.basicInfo.fields.motherTongue')}
-          </label>
+          <label for="motherTongue" class={labelClass}> add another </label>
           <select id="motherTongue" class="select select-sm w-6/12 text-primary">
             <option disabled selected value style="display: none;" />
             {#each fieldOptions.get('motherTongue') ?? [] as option}
@@ -158,6 +160,18 @@
             {/each}
           </select>
         </Field>
+        {#each motherTongues ?? [] as tongue}
+          <Field>
+            <label for={tongue.name} class={labelClass}>
+              {tongue.name}
+            </label>
+            <button
+              id={tongue.name}
+              on:click={() => (motherTongues = motherTongues?.filter((m) => m.id !== tongue.id))}>
+              <Icon name="removeFromList" class={iconClass} />
+            </button>
+          </Field>
+        {/each}
       </FieldGroup>
 
       <FieldGroup>
