@@ -10,7 +10,6 @@
  * and also it is not possible to create localizations using the bulk insert.
  */
 
-import crypto from 'crypto';
 import {faker, fakerES, fakerFI} from '@faker-js/faker';
 import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
 import mockQuestions from './mockQuestions.json';
@@ -573,7 +572,6 @@ async function createCandidates(length: number) {
       data: {
         ...candidateObj,
         email: faker.internet.exampleEmail(),
-        registrationKey: crypto.randomUUID(),
         locale: mainLocale.code,
         publishedAt: new Date()
       }
