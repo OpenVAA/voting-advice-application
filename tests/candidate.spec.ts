@@ -1,18 +1,31 @@
 import { test, expect } from '@playwright/test';
 
-test('has title', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
-
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Playwright/);
+test.beforeEach(async ({ page, baseURL }) => {
+  await page.goto(`${baseURL}/candidate`);
 });
 
-test('get started link', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+test('should log out', async ({ page }) => {
+  await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/candidate/);
 
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
+  await page.getByTitle('Logout').click();
+  await expect(page.getByText('Some of Your Data Is Still Missing')).toBeVisible();
+  await expect(page.getByText('Continue Entering Data')).toBeVisible();
 
-  // Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
+  const logoutButton = page.getByRole('dialog').getByRole('button', { name: 'Logout' })
+  await expect(logoutButton).toBeVisible();
+  await logoutButton.click();
+
+  await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/candidate/);
+  await expect(page.getByText('Sign in')).toBeVisible();
+});
+
+test('should navigate', async ({ page }) => {
+  await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/candidate/);
+  await expect(page.getByRole('button', { name: 'Close menu' })).not.toBeVisible();
+  await page.getByLabel('Open menu').click();
+  await expect(page.getByRole('button', { name: 'Close menu' })).toBeVisible();
+  await page.getByRole('link', { name: 'Basic Info' }).click();
+  await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/profile/);
+  await expect(page.getByRole('button', { name: 'Close menu' })).not.toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Basic Information' })).toBeVisible();
 });
