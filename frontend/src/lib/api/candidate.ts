@@ -1,8 +1,9 @@
 import {get} from 'svelte/store';
 import {constants} from '$lib/utils/constants';
 import {authContext} from '$lib/utils/authenticationStore';
-import type {User} from '$lib/candidate/types';
+import type {Language, User} from '$lib/types/candidateAttributes';
 import type {Photo} from '$lib/types/candidateAttributes';
+import type {StrapiLanguageData} from '$lib/api/getData.type';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
@@ -95,7 +96,8 @@ export const updateBasicInfo = async (
   age?: number,
   gender?: string,
   photo?: Photo,
-  unaffiliated?: boolean
+  unaffiliated?: boolean,
+  motherTongues?: Language[]
 ): Promise<Response> => {
   const token = authContext.token;
   const user = get(authContext.user);
@@ -114,7 +116,8 @@ export const updateBasicInfo = async (
       age,
       gender,
       unaffiliated,
-      photo: photo?.id
+      photo: photo?.id,
+      motherTongues
     }
   };
 
@@ -220,6 +223,18 @@ export const getExistingAnswers = async (): Promise<Response | undefined> => {
   if (!res?.ok) return;
 
   return res;
+};
+
+export const getLanguages = async (): Promise<StrapiLanguageData[] | undefined> => {
+  const res = await request(
+    getUrl('api/languages', {
+      'populate[language]': 'true'
+    })
+  );
+  if (!res?.ok) return [];
+
+  const resJson = await res.json();
+  return resJson.data;
 };
 
 export const request = async (url: string, options: RequestInit = {}) => {

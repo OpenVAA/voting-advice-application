@@ -10,6 +10,9 @@
   import {Button} from '$lib/components/button';
   import AvatarSelect from './AvatarSelect.svelte';
   import {updateBasicInfo} from '$lib/api/candidate';
+  import {getLanguages} from '$lib/api/candidate';
+  import type {StrapiLanguageData} from '$lib/api/getData.type';
+  import type {Language} from '$lib/types/candidateAttributes';
 
   // get the user from authContext
   const user = get(authContext.user);
@@ -22,6 +25,19 @@
   let unaffiliated = user?.candidate?.unaffiliated;
   let manifesto = user?.candidate?.manifesto;
   const nominations = user?.candidate?.nominations;
+
+  // all fields filled
+  $: allFilled =
+    gender &&
+    motherTongues &&
+    motherTongues.length > 0 &&
+    age &&
+    photo &&
+    manifesto &&
+    unaffiliated &&
+    true
+      ? true
+      : false;
 
   const basicInfoFields = ['firstName', 'lastName', 'party'];
 
@@ -42,7 +58,7 @@
 
   const submitForm = async () => {
     await uploadPhoto();
-    await updateBasicInfo(manifesto, age, gender, photo, unaffiliated);
+    await updateBasicInfo(manifesto, age, gender, photo, unaffiliated, motherTongues);
   };
 
   // the dot symbol for separating info string
@@ -64,6 +80,35 @@
     firstName: user?.candidate?.firstName,
     lastName: user?.candidate?.lastName,
     party: user?.candidate?.party?.shortName
+  };
+
+  // Mother tongue selection logic
+
+  let allLanguages: StrapiLanguageData[] | undefined = undefined;
+  getLanguages().then((languages) => (allLanguages = languages));
+
+  $: motherTongueLocales = motherTongues?.map((lang) => lang.localisationCode);
+  $: availableLanguages = allLanguages?.filter(
+    (lang) => !motherTongueLocales?.includes(lang.attributes.localisationCode)
+  );
+
+  let motherTongueSelect: HTMLSelectElement | undefined;
+
+  const handleLanguageSelect = (e: any) => {
+    const language = availableLanguages
+      ? availableLanguages.find((lang) => lang.attributes.localisationCode === e.target.value)
+      : undefined;
+    if (language && motherTongues) {
+      const gg: Language = {
+        id: language.id,
+        localisationCode: language?.attributes.localisationCode,
+        name: language.attributes.name
+      };
+      motherTongues = [...motherTongues, gg];
+      if (motherTongueSelect) {
+        motherTongueSelect.selectedIndex = 0;
+      }
+    }
   };
 </script>
 
@@ -151,12 +196,20 @@
         </p>
 
         <Field>
-          <label for="motherTongue" class={labelClass}> add another </label>
-          <select id="motherTongue" class="select select-sm w-6/12 text-primary">
+          <label for="motherTongue" class={labelClass}>
+            {#if motherTongues}
+              {motherTongues.length > 0 ? 'Add another' : 'Select first'}
+            {/if}
+          </label>
+          <select
+            bind:this={motherTongueSelect}
+            id="motherTongue"
+            class="select select-sm w-6/12 text-primary"
+            on:change={handleLanguageSelect}>
             <option disabled selected value style="display: none;" />
-            {#each fieldOptions.get('motherTongue') ?? [] as option}
-              <option value={option} selected={option === 'gg'}
-                >{$_(`candidateApp.languages.${option}`)}</option>
+            {#each availableLanguages ?? [] as option}
+              <option value={option.attributes.localisationCode}
+                >{$_(`candidateApp.languages.${option.attributes.name}`)}</option>
             {/each}
           </select>
         </Field>
@@ -202,7 +255,13 @@
           class="w-full resize-none bg-base-100 p-6 !outline-none"
           bind:value={manifesto} />
       </FieldGroup>
-      <Button text="hello" type="submit" variant="main" icon="next" slot="primaryActions" />
+      <Button
+        disabled={!allFilled}
+        text="hello"
+        type="submit"
+        variant="main"
+        icon="next"
+        slot="primaryActions" />
     </div>
   </form>
 </BasicPage>

@@ -26,12 +26,8 @@ export interface Candidate {
 
 export interface Language {
   id: number;
-  locale: string;
   localisationCode: string;
   name: string;
-  createdAt: string;
-  publishedAt: string;
-  updatedAt: string;
 }
 
 export interface PhotoFormat {
