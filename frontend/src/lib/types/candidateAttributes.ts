@@ -12,7 +12,7 @@ export interface Candidate {
   firstName: string;
   lastName: string;
   gender: string;
-  age: number;
+  birthday: string;
   photo?: Photo;
   manifesto: Text;
   motherTongues: Language[];

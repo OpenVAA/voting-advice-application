@@ -20,7 +20,7 @@
   // get initial values from backend
   let gender = user?.candidate?.gender;
   let motherTongues = user?.candidate?.motherTongues;
-  let age = user?.candidate?.age;
+  let birthday = user?.candidate?.birthday;
   let photo = user?.candidate?.photo;
   let unaffiliated = user?.candidate?.unaffiliated;
   let manifesto = user?.candidate?.manifesto;
@@ -28,24 +28,13 @@
 
   // all fields filled
   $: allFilled =
-    gender &&
-    motherTongues &&
-    motherTongues.length > 0 &&
-    age &&
-    photo &&
-    manifesto &&
-    unaffiliated &&
-    true
+    gender && motherTongues && motherTongues.length > 0 && birthday && manifesto && true
       ? true
       : false;
 
   const basicInfoFields = ['firstName', 'lastName', 'party'];
 
-  const fieldOptions = new Map([
-    ['gender', ['male', 'female', 'nonBinary', 'other', 'preferNotToSay']],
-    // TODO: i18n localization
-    ['motherTongue', ['English', 'Suomi', 'Svenska']]
-  ]);
+  const genders = ['male', 'female', 'nonBinary', 'other', 'preferNotToSay'];
 
   const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
@@ -58,7 +47,7 @@
 
   const submitForm = async () => {
     await uploadPhoto();
-    await updateBasicInfo(manifesto, age, gender, photo, unaffiliated, motherTongues);
+    await updateBasicInfo(manifesto, birthday, gender, photo, unaffiliated, motherTongues);
   };
 
   // the dot symbol for separating info string
@@ -172,17 +161,20 @@
       <FieldGroup>
         <Field>
           <label for="age" class={labelClass}>
-            {$_('candidateApp.basicInfo.fields.age')}
+            {$_('candidateApp.basicInfo.fields.birthday')}
           </label>
-          <input type="number" id="age" placeholder="0" class={inputClass} bind:value={age} />
+          <input type="date" id="age" class={inputClass} bind:value={birthday} />
         </Field>
         <Field>
           <label for="age" class={labelClass}>
             {$_('candidateApp.basicInfo.fields.gender')}
           </label>
-          <select id="gender" class="select select-sm w-6/12 text-primary" bind:value={gender}>
+          <select
+            id="gender"
+            class="select select-sm w-6/12 text-right text-primary"
+            bind:value={gender}>
             <option disabled selected style="display: none;" />
-            {#each fieldOptions.get('gender') ?? [] as option}
+            {#each genders as option}
               <option value={option} selected={option === gender}
                 >{$_(`candidateApp.genders.${option}`)}</option>
             {/each}

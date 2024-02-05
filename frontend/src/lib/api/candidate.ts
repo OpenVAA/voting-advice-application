@@ -93,7 +93,7 @@ export const me = async (): Promise<User | undefined> => {
 
 export const updateBasicInfo = async (
   manifesto?: Text,
-  age?: number,
+  birthday?: string,
   gender?: string,
   photo?: Photo,
   unaffiliated?: boolean,
@@ -113,7 +113,7 @@ export const updateBasicInfo = async (
   const body = {
     data: {
       manifesto,
-      age,
+      birthday,
       gender,
       unaffiliated,
       photo: photo?.id,

@@ -43,13 +43,13 @@
       "type": "string",
       "required": false
     },
-    "age": {
-      "type": "integer",
+    "birthday": {
+      "type": "string",
       "required": false
     },
     "unaffiliated": {
       "type": "boolean",
-      "required": false
+      "required": true
     },
     "photo": {
       "type": "media",
