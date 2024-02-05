@@ -3,6 +3,10 @@
   import {concatProps} from '$lib/utils/components';
   import {Page} from '../page';
   import type {BasicPageProps} from './BasicPage.type';
+  import {getContext} from 'svelte';
+  import type {AuthContext} from '$lib/utils/authenticationStore';
+  import {appType} from '$lib/utils/stores';
+  import {LogoutButton} from '$lib/candidate/components/logoutButton';
 
   type $$Props = BasicPageProps;
 
@@ -10,6 +14,11 @@
   export let noteClass: $$Props['noteClass'] = 'text-secondary text-center';
   export let noteRole: $$Props['noteRole'] = 'note';
   export let primaryActionsLabel: $$Props['primaryActionsLabel'] = $_('aria.primaryActionsLabel');
+
+  const authContext = getContext<AuthContext>('auth');
+
+  // We are in the candidate application and the user has logged in
+  const showLogoutButton = $appType === 'candidate' && authContext.user;
 </script>
 
 <!--
@@ -84,7 +93,12 @@ is based on.
 
 <Page {title} {...concatProps($$restProps, {mainClass: 'gap-y-lg'})}>
   <!-- Header -->
-  <slot name="banner" slot="banner" />
+  <div slot="banner">
+    {#if showLogoutButton}
+      <LogoutButton />
+    {/if}
+    <slot name="banner" />
+  </div>
 
   <!-- Default slot for Page starts -->
 
