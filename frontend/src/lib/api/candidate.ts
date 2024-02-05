@@ -109,7 +109,8 @@ export const changePassword = async (currentPassword: string, password: string) 
  */
 export const addAnswer = async (
   questionId: string,
-  answerKey: string
+  answerKey: AnswerOption['key'],
+  openAnswer?: string
 ): Promise<Response | undefined> => {
   const token = authContext.token;
   const candidate = get(authContext.user)?.candidate;
@@ -122,7 +123,8 @@ export const addAnswer = async (
       question: Number(questionId),
       answer: {
         key: answerKey
-      }
+      },
+      openAnswer: openAnswer
     }
   };
 
@@ -140,14 +142,19 @@ export const addAnswer = async (
  * Update an existing answer for the logged in user.
  * The answer id is sufficient to identify the answer and question.
  */
-export const updateAnswer = async (answerId: string, answerKey: string): Promise<Response> => {
+export const updateAnswer = async (
+  answerId: string,
+  answerKey: AnswerOption['key'],
+  openAnswer?: string
+): Promise<Response> => {
   const token = authContext.token;
 
   const body = {
     data: {
       answer: {
         key: answerKey
-      }
+      },
+      openAnswer: openAnswer
     }
   };
 
@@ -158,6 +165,18 @@ export const updateAnswer = async (answerId: string, answerKey: string): Promise
       Authorization: `Bearer ${get(token)}`
     },
     body: JSON.stringify(body)
+  });
+};
+
+export const deleteAnswer = async (answerId: string): Promise<Response> => {
+  const token = authContext.token;
+
+  return fetch(getUrl(`api/answers/${answerId}`), {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${get(token)}`
+    }
   });
 };
 
