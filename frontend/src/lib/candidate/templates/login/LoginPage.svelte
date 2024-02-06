@@ -42,7 +42,6 @@ Candidate login page. This component also takes care of the login process.
     <PreHeading class="text-2xl font-bold text-primary">{$page.data.appLabels.appTitle}</PreHeading>
     <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
   </HeadingGroup>
-
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onLogin}>
     <p class="max-w-md text-center">
       {$_('candidate.enter_email_and_password')}
@@ -58,6 +57,7 @@ Candidate login page. This component also takes care of the login process.
       autocomplete="email"
       required />
     <label for="password" class="hidden">{$_('candidate.password')}</label>
+
     {#if passwordRevealed === true}
       <div class="relative mb-md w-full max-w-md">
         <input
@@ -71,6 +71,7 @@ Candidate login page. This component also takes care of the login process.
           required />
         <Button
           text=""
+          title="hide the button"
           class="absolute inset-y-0 right-0 mb-md max-w-md"
           icon="hide"
           on:click={() => (passwordRevealed = !passwordRevealed)} />
@@ -88,6 +89,7 @@ Candidate login page. This component also takes care of the login process.
           required />
         <Button
           text=""
+          title="reveal the button"
           class="absolute inset-y-0 right-0 mb-md max-w-md"
           icon="show"
           on:click={() => (passwordRevealed = !passwordRevealed)} />
