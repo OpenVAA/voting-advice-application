@@ -7,26 +7,8 @@
   import {LikertResponseButtons, QuestionActions, QuestionInfo} from '$lib/components/questions';
   import {BasicPage} from '$lib/templates/basicPage';
   import {addAnswer, updateAnswer, deleteAnswer} from '$lib/api/candidate';
-  import {get} from 'svelte/store';
   import {onMount, onDestroy} from 'svelte';
-
-  let saveInterval: NodeJS.Timeout;
-
-  onMount(() => {
-    saveInterval = setInterval(() => {
-      saveOpenAnswerToLocal();
-    }, 1000);
-  });
-
-  onDestroy(() => {
-    clearInterval(saveInterval);
-  });
-
-  const answers = get(answerContext.answers);
-  const answerStore = answerContext.answers;
-  $: questionId = $page.params.questionId;
-  $: likertLocal = `candidate-app-question-${questionId}-likert`;
-  $: openAnswerLocal = `candidate-app-question-${questionId}-open`;
+  import {candidateAppRoute} from '$lib/utils/routes';
 
   /**
    * A small delay before moving to the next question.
@@ -34,37 +16,57 @@
    */
   const DELAY_M_MS = 350;
 
+  const SAVE_INTERVAL_MS = 1000;
+
+  // Open answer is saved periodically to local storage
+  let saveInterval: NodeJS.Timeout;
+  onMount(() => {
+    saveInterval = setInterval(() => {
+      saveOpenAnswerToLocal();
+    }, SAVE_INTERVAL_MS);
+  });
+
+  onDestroy(() => {
+    clearInterval(saveInterval);
+  });
+
+  const store = answerContext.answers;
+  $: answerStore = $store;
+
+  $: questionId = $page.params.questionId;
+
+  // Local storage keys, depend on the question id
+  $: likertLocal = `candidate-app-question-${questionId}-likert`;
+  $: openAnswerLocal = `candidate-app-question-${questionId}-open`;
+
   let currentQuestion: QuestionProps | undefined;
-  $: currentQuestion = $page.data.questions.find(
-    (q) => q.id.toString() === $page.params.questionId.toString()
-  );
+  $: currentQuestion = $page.data.questions.find((q) => q.id.toString() === questionId.toString());
 
-  $: answer = $answerStore[$page.params.questionId];
+  $: answer = answerStore[questionId]; // null if not answered
 
-  let selectedKey: AnswerOption['key'] | null = null;
+  let selectedKey: AnswerOption['key'] | null;
+
+  // Set the selected key on page load, local storage takes precedence
   $: {
     const likertValue = localStorage.getItem(likertLocal);
-    selectedKey = likertValue ? parseInt(likertValue) : answer?.key ?? null;
+    if (likertValue) {
+      selectedKey = parseInt(likertValue);
+    } else {
+      selectedKey = answer?.key ?? null;
+    }
+
+    setOpenAnswer();
   }
 
   let openAnswer = '';
 
-  $: {
-    const localOpenAnswer = localStorage.getItem(openAnswerLocal);
-    if (localOpenAnswer) {
-      setLocalOpenAnswer();
-    }
-  }
-
-  function setLocalOpenAnswer() {
-    openAnswer = localStorage.getItem(openAnswerLocal) ?? '';
-  }
-
-  $: answer && setOpenAnswer();
+  // Set open answer from local storage and answer store if available, local storage takes precedence
   function setOpenAnswer() {
     if (answer && !localStorage.getItem(openAnswerLocal)) {
       openAnswer = answer.openAnswer;
+      return;
     }
+    openAnswer = localStorage.getItem(openAnswerLocal) ?? '';
   }
 
   function saveLikertToLocal({detail}: CustomEvent) {
@@ -81,73 +83,96 @@
     localStorage.setItem(openAnswerLocal, openAnswer);
   }
 
-  function removeLocalAnswers() {
+  function removeLocalAnswerToQuestion() {
     localStorage.removeItem(likertLocal);
     localStorage.removeItem(openAnswerLocal);
+  }
+
+  let errorMessage = '';
+  let errorTimeout: NodeJS.Timeout;
+
+  function showError(message: string) {
+    errorMessage = message;
+    clearTimeout(errorTimeout);
+    errorTimeout = setTimeout(() => {
+      errorMessage = '';
+    }, 5000);
   }
 
   async function saveToServer() {
     const localLikert = localStorage.getItem(likertLocal);
 
     if (!answer) {
+      // New answer
+
+      // Likert is required for an answer to be saved
       if (!localLikert) {
         return;
       }
       const response = await addAnswer(questionId, parseInt(localLikert), openAnswer);
 
       if (!response?.ok) {
+        showError($_('candidateApp.opinions.answerSaveError'));
         return;
       }
 
       const data = await response.json();
       const answerId = data.data.id;
-      answers[$page.params.questionId] = {
+
+      answerStore[questionId] = {
         id: answerId,
         key: parseInt(localLikert),
         openAnswer
       };
     } else {
+      // Existing answer
+
       let previousLikert = answer.key;
+
+      // A local likert value takes precedence over the server value
       if (localLikert) {
         previousLikert = parseInt(localLikert);
       }
-      const response = await updateAnswer(answer.id, previousLikert, openAnswer);
 
+      const response = await updateAnswer(answer.id, previousLikert, openAnswer);
       if (!response?.ok) {
+        showError($_('candidateApp.opinions.answerSaveError'));
         return;
       }
 
-      answers[$page.params.questionId] = {
+      answerStore[questionId] = {
         id: answer.id,
         key: previousLikert,
         openAnswer
       };
     }
 
-    removeLocalAnswers();
-    answerContext.answers.set(answers);
+    openAnswer = '';
+    removeLocalAnswerToQuestion();
+    answerContext.answers.set(answerStore);
   }
 
   async function removeAnswer() {
     if (!answer) {
+      // No answer in database, only local answers need to be removed
       selectedKey = null;
       openAnswer = '';
-      removeLocalAnswers();
+      removeLocalAnswerToQuestion();
       return;
     }
 
     const response = await deleteAnswer(answer.id);
-
     if (!response?.ok) {
+      showError($_('candidateApp.opinions.answerDeleteError'));
       return;
     }
 
     selectedKey = null;
     openAnswer = '';
-    removeLocalAnswers();
+    removeLocalAnswerToQuestion();
 
-    delete answers[$page.params.questionId];
-    answerContext.answers.set(answers);
+    delete answerStore[questionId];
+    answerContext.answers.set(answerStore);
   }
 
   // Skip to next question
@@ -157,41 +182,36 @@
     gotoNextQuestion();
   }
 
-  async function gotoNextQuestion() {
+  async function navigateToQuestion(indexChange: number, lastPageUrl: string) {
     if (!currentQuestion) {
       return;
     }
+
+    // Save the current answer to the server before navigating
     await saveToServer();
-    openAnswer = '';
+
     const currentIndex = $page.data.questions.indexOf(currentQuestion);
-    if (currentIndex < $page.data.questions.length - 1) {
-      const nextId = $page.data.questions[currentIndex + 1].id;
+    const newIndex = currentIndex + indexChange;
+
+    if (newIndex >= 0 && newIndex < $page.data.questions.length) {
+      const newQuestionId = $page.data.questions[newIndex].id;
       const currentUrl = $page.url.pathname.replace(/\/$/, '');
-      const nextQuestionUrl = `${currentUrl.substring(0, currentUrl.lastIndexOf('/'))}/${nextId}`;
+      const nextQuestionUrl = `${currentUrl.substring(
+        0,
+        currentUrl.lastIndexOf('/')
+      )}/${newQuestionId}`;
       setTimeout(() => goto(nextQuestionUrl), DELAY_M_MS);
     } else {
-      setTimeout(() => goto('/candidate'), DELAY_M_MS);
+      setTimeout(() => goto(lastPageUrl), DELAY_M_MS);
     }
   }
 
+  async function gotoNextQuestion() {
+    await navigateToQuestion(1, candidateAppRoute);
+  }
+
   async function goToPreviousQuestion() {
-    if (!currentQuestion) {
-      return;
-    }
-    await saveToServer();
-    openAnswer = '';
-    const currentIndex = $page.data.questions.indexOf(currentQuestion);
-    if (currentIndex > 0) {
-      const previousId = $page.data.questions[currentIndex - 1].id;
-      const currentUrl = $page.url.pathname.replace(/\/$/, '');
-      const previousQuestionUrl = `${currentUrl.substring(
-        0,
-        currentUrl.lastIndexOf('/')
-      )}/${previousId}`;
-      setTimeout(() => goto(previousQuestionUrl), DELAY_M_MS);
-    } else {
-      setTimeout(() => goto('/candidate'), DELAY_M_MS);
-    }
+    await navigateToQuestion(-1, candidateAppRoute);
   }
 </script>
 
@@ -234,6 +254,10 @@
             rows="4"
             class="textarea textarea-primary w-full" />
         </div>
+
+        {#if errorMessage}
+          <p class="text-error">{errorMessage}</p>
+        {/if}
 
         <QuestionActions
           answered={selectedKey !== null}

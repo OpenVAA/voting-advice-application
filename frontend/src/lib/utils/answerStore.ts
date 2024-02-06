@@ -9,7 +9,7 @@ export interface AnswerContext {
 export interface Answer {
   id: string; // Id of the answer in the database
   key: AnswerOption['key']; // Selected answer option
-  openAnswer: string; // Optional free-forn answer
+  openAnswer: string; // Optional free-form answer
 }
 
 // Interfaces for data returned from the API
@@ -37,11 +37,10 @@ export const loadAnswerData = async () => {
   const answers: Record<string, Answer> = {};
 
   answerData.data.forEach((answer: AnswerData) => {
-    const openAnswer = answer.attributes.openAnswer || '';
     answers[answer.attributes.question.data.id] = {
       id: answer.id,
       key: parseInt(answer.attributes.answer.key),
-      openAnswer: openAnswer
+      openAnswer: answer.attributes.openAnswer || ''
     };
   });
 

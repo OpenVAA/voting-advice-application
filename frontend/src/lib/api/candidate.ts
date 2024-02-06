@@ -112,7 +112,6 @@ export const addAnswer = async (
   answerKey: AnswerOption['key'],
   openAnswer?: string
 ): Promise<Response | undefined> => {
-  const token = authContext.token;
   const candidate = get(authContext.user)?.candidate;
 
   if (!candidate) return;
@@ -128,11 +127,10 @@ export const addAnswer = async (
     }
   };
 
-  return await fetch(getUrl('api/answers'), {
+  return await request(getUrl('api/answers'), {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${get(token)}`
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify(body)
   });
@@ -146,9 +144,7 @@ export const updateAnswer = async (
   answerId: string,
   answerKey: AnswerOption['key'],
   openAnswer?: string
-): Promise<Response> => {
-  const token = authContext.token;
-
+): Promise<Response | undefined> => {
   const body = {
     data: {
       answer: {
@@ -158,24 +154,23 @@ export const updateAnswer = async (
     }
   };
 
-  return fetch(getUrl(`api/answers/${answerId}`), {
+  return request(getUrl(`api/answers/${answerId}`), {
     method: 'PUT',
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${get(token)}`
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify(body)
   });
 };
 
-export const deleteAnswer = async (answerId: string): Promise<Response> => {
-  const token = authContext.token;
-
-  return fetch(getUrl(`api/answers/${answerId}`), {
+/**
+ * Delete an existing answer for the logged in user.
+ */
+export const deleteAnswer = async (answerId: string): Promise<Response | undefined> => {
+  return request(getUrl(`api/answers/${answerId}`), {
     method: 'DELETE',
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${get(token)}`
+      'Content-Type': 'application/json'
     }
   });
 };
