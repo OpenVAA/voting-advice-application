@@ -130,9 +130,11 @@
 
   .collapse-content {
     text-align: center;
+    padding: 0rem;
   }
 
-  .collapse-content.visible {
+  /* This is needed to add padding to collapse content only when collapse is open */
+  .collapse:not(.collapse-close) > input[type='checkbox']:checked ~ .collapse-content {
     padding: 0.7rem;
   }
 
