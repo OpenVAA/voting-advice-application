@@ -17,7 +17,7 @@
   // get the user from authContext
   const user = get(authContext.user);
 
-  // get initial values from backend
+  // get initial values for basic data
   let gender = user?.candidate?.gender;
   let motherTongues = user?.candidate?.motherTongues;
   let birthday = user?.candidate?.birthday;
@@ -26,7 +26,7 @@
   let manifesto = user?.candidate?.manifesto;
   const nominations = user?.candidate?.nominations;
 
-  // all fields filled
+  // all necessary fields filled boolean
   $: allFilled =
     gender && motherTongues && motherTongues.length > 0 && birthday && manifesto && true
       ? true
@@ -36,12 +36,15 @@
 
   const genders = ['male', 'female', 'nonBinary', 'other', 'preferNotToSay'];
 
-  const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';
+  const labelClass =
+    'pointer-events-none label-sm whitespace-nowrap label mx-6 my-2 text-secondary';
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
   const headerClass = 'uppercase mx-6 my-0 p-0 text-m text-secondary';
+  const selectClass = 'select select-sm w-full text-right text-primary';
   const inputClass =
-    'input-ghost input input-sm w-full pr-2 text-right disabled:border-none disabled:bg-base-100';
-  const iconClass = 'text-secondary';
+    'input-ghost flex justify-end text-right input input-sm w-full pr-2 disabled:border-none disabled:bg-base-100';
+  const iconClass = 'text-secondary my-auto';
+  const inputContainerClass = 'flex w-full pr-6';
 
   let uploadPhoto: () => Promise<void>;
 
@@ -71,32 +74,33 @@
     party: user?.candidate?.party?.shortName
   };
 
-  // Mother tongue selection logic
-
+  // fetch languages from backend
   let allLanguages: StrapiLanguageData[] | undefined = undefined;
   getLanguages().then((languages) => (allLanguages = languages));
 
+  // map the languages to their respective locales for easier use
   $: motherTongueLocales = motherTongues?.map((lang) => lang.localisationCode);
   $: availableLanguages = allLanguages?.filter(
     (lang) => !motherTongueLocales?.includes(lang.attributes.localisationCode)
   );
 
-  let motherTongueSelect: HTMLSelectElement | undefined;
+  // html element for selecting html language
+  let motherTongueSelect: HTMLSelectElement;
 
+  // handle the change when a language is selected
   const handleLanguageSelect = (e: any) => {
     const language = availableLanguages
       ? availableLanguages.find((lang) => lang.attributes.localisationCode === e.target.value)
       : undefined;
     if (language && motherTongues) {
-      const gg: Language = {
+      const languageObj: Language = {
         id: language.id,
         localisationCode: language?.attributes.localisationCode,
         name: language.attributes.name
       };
-      motherTongues = [...motherTongues, gg];
-      if (motherTongueSelect) {
-        motherTongueSelect.selectedIndex = 0;
-      }
+      motherTongues = [...motherTongues, languageObj];
+      // set the hidden element as the selected one
+      motherTongueSelect.selectedIndex = 0;
     }
   };
 </script>
@@ -118,15 +122,15 @@
             <label for={field} class={labelClass}>
               {$_(`candidateApp.basicInfo.fields.${field}`)}
             </label>
-            <div class="w-6/12 text-right text-secondary">
+            <div class={inputContainerClass}>
               <input
                 type="text"
                 disabled
                 id={field}
                 value={basicInfoData[field]}
                 class={inputClass} />
+              <Icon name="locked" class={iconClass} />
             </div>
-            <Icon name="locked" class={iconClass} />
           </Field>
         {/each}
         <p class={disclaimerClass} slot="footer">
@@ -142,15 +146,15 @@
         {#each nominationFields ?? [] as nomination}
           <Field>
             <label for={nomination.nominationID} class={labelClass}>{nomination.fieldText}</label>
-            <div class="w-4/12 text-right text-secondary">
+            <div class={inputContainerClass}>
               <input
                 disabled
                 type="text"
                 id={nomination.nominationID}
                 value={nomination.electionSymbol ? null : $_('candidateApp.basicInfo.pending')}
                 class={inputClass} />
+              <Icon name="locked" class={iconClass} />
             </div>
-            <Icon name="locked" class={iconClass} />
           </Field>
         {/each}
         <p class={disclaimerClass} slot="footer">
@@ -160,19 +164,24 @@
 
       <FieldGroup>
         <Field>
-          <label for="age" class={labelClass}>
+          <label for="birthday" class={labelClass}>
             {$_('candidateApp.basicInfo.fields.birthday')}
           </label>
-          <input type="date" id="age" class={inputClass} bind:value={birthday} />
+          <div class={inputContainerClass}>
+            <div class={inputClass}>
+              <input type="date" id="birthday" bind:value={birthday} />
+            </div>
+          </div>
         </Field>
         <Field>
-          <label for="age" class={labelClass}>
+          <label for="gender" class={labelClass}>
             {$_('candidateApp.basicInfo.fields.gender')}
           </label>
           <select
             id="gender"
-            class="select select-sm w-6/12 text-right text-primary"
-            bind:value={gender}>
+            class={selectClass}
+            bind:value={gender}
+            style="text-align-last: right;direction: rtl;">
             <option disabled selected style="display: none;" />
             {#each genders as option}
               <option value={option} selected={option === gender}
@@ -196,7 +205,7 @@
           <select
             bind:this={motherTongueSelect}
             id="motherTongue"
-            class="select select-sm w-6/12 text-primary"
+            class={selectClass}
             on:change={handleLanguageSelect}>
             <option disabled selected value style="display: none;" />
             {#each availableLanguages ?? [] as option}
@@ -210,11 +219,15 @@
             <label for={tongue.name} class={labelClass}>
               {tongue.name}
             </label>
-            <button
-              id={tongue.name}
-              on:click={() => (motherTongues = motherTongues?.filter((m) => m.id !== tongue.id))}>
-              <Icon name="removeFromList" class={iconClass} />
-            </button>
+            <div class={inputContainerClass}>
+              <button
+                title="remove"
+                class={inputClass}
+                id={tongue.name}
+                on:click={() => (motherTongues = motherTongues?.filter((m) => m.id !== tongue.id))}>
+                <Icon name="removeFromList" class={iconClass} />
+              </button>
+            </div>
           </Field>
         {/each}
       </FieldGroup>
@@ -228,6 +241,7 @@
           <label for="unaffiliated" class={labelClass}>
             {$_('candidateApp.basicInfo.fields.unaffiliated')}
           </label>
+
           <input
             id="unaffiliated"
             type="checkbox"
@@ -249,7 +263,7 @@
       </FieldGroup>
       <Button
         disabled={!allFilled}
-        text="hello"
+        text={$_('candidateApp.opinions.continue')}
         type="submit"
         variant="main"
         icon="next"
