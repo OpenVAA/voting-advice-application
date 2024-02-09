@@ -11,6 +11,7 @@
   import AvatarSelect from './AvatarSelect.svelte';
   import {updateBasicInfo} from '$lib/api/candidate';
   import {getLanguages} from '$lib/api/candidate';
+  import {goto} from '$app/navigation';
   import type {StrapiLanguageData} from '$lib/api/getData.type';
   import type {Language} from '$lib/types/candidateAttributes';
 
@@ -52,6 +53,7 @@
   const submitForm = async () => {
     await uploadPhoto();
     await updateBasicInfo(manifesto, birthday, gender, photo, unaffiliated, motherTongues);
+    await goto('/candidate/questions');
   };
 
   // the dot symbol for separating info string
