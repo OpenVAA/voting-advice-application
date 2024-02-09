@@ -11,15 +11,17 @@
   export let photo: Photo | undefined;
   let photoUrl = photo ? constants.PUBLIC_BACKEND_URL + photo.formats.thumbnail.url : undefined;
   let imageHasChanged = false;
+  let image: File | undefined;
 
-  const maxFileSize = 5 * 1024 * 1024; // 5 MB
-  const token = get(authContext.token);
+  export const maxFileSize = 5 * 1024 * 1024; // 5 MB
 
   let portraitInput: HTMLInputElement | null;
   let portraitLabel: HTMLLabelElement | null;
   let portraitImage: HTMLImageElement | null;
 
   const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';
+
+  const token = get(authContext.token);
 
   // function for clicking the portrait input field with space
   const handlePortraitInput = (event: KeyboardEvent) => {
@@ -38,8 +40,6 @@
   onDestroy(() => {
     portraitLabel?.removeEventListener('keydown', handlePortraitInput);
   });
-
-  let image: File | undefined;
 
   // change the profile image, does not upload it to strapi
   const changePhoto = (e: Event) => {
@@ -125,3 +125,31 @@
     placeholder="PLACEHOLDER"
     class="hidden" />
 </Field>
+
+<!--
+@component
+A component for selecting and uploading png/jpeg images. On upload, deletes the
+image defined in the `photo` object.
+
+### Bindable variables
+
+- `photo`: A photo object fetched fromn strapi. See `$lib/types/candidateAttributes.ts`.
+
+### Bindable functions
+- `uploadPhoto()`: A function that deletes the image defined in `photo` and uploads the new image.
+  Also updates the `photo` object.
+
+### Properties
+
+- `maxFileSize`: An optional property to set the max accepted file size in bytes. Defaults to 5 MB.
+
+### Usage
+
+```tsx
+  let uploadPhoto: () => Promise<void>;
+  let photo: Photo = {
+    ...
+  }
+  <AvatarSelect bind:photo bind:uploadPhoto maxFileSize={5 * 1024 * 1024}/>
+```
+-->
