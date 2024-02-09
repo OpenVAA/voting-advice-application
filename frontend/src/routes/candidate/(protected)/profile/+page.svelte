@@ -14,6 +14,21 @@
   import type {StrapiLanguageData} from '$lib/api/getData.type';
   import type {Language} from '$lib/types/candidateAttributes';
 
+  const basicInfoFields = ['firstName', 'lastName', 'party'];
+
+  const genders = ['male', 'female', 'nonBinary', 'other', 'preferNotToSay'];
+
+  const labelClass =
+    'pointer-events-none label-sm whitespace-nowrap label mx-6 my-2 text-secondary';
+  const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
+  const headerClass = 'uppercase mx-6 my-0 p-0 text-m text-secondary';
+  const selectClass = 'select select-sm w-full text-right text-primary';
+  const inputClass =
+    'input-ghost flex justify-end text-right input input-sm w-full pr-2 disabled:border-none disabled:bg-base-100';
+  const iconClass = 'text-secondary my-auto flex-shrink-0';
+  const buttonContainerClass = 'pr-6';
+  const inputContainerClass = 'flex w-full pr-6';
+
   // get the user from authContext
   const user = get(authContext.user);
 
@@ -31,20 +46,6 @@
     gender && motherTongues && motherTongues.length > 0 && birthday && manifesto && true
       ? true
       : false;
-
-  const basicInfoFields = ['firstName', 'lastName', 'party'];
-
-  const genders = ['male', 'female', 'nonBinary', 'other', 'preferNotToSay'];
-
-  const labelClass =
-    'pointer-events-none label-sm whitespace-nowrap label mx-6 my-2 text-secondary';
-  const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
-  const headerClass = 'uppercase mx-6 my-0 p-0 text-m text-secondary';
-  const selectClass = 'select select-sm w-full text-right text-primary';
-  const inputClass =
-    'input-ghost flex justify-end text-right input input-sm w-full pr-2 disabled:border-none disabled:bg-base-100';
-  const iconClass = 'text-secondary my-auto';
-  const inputContainerClass = 'flex w-full pr-6';
 
   let uploadPhoto: () => Promise<void>;
 
@@ -169,7 +170,7 @@
           </label>
           <div class={inputContainerClass}>
             <div class={inputClass}>
-              <input type="date" id="birthday" bind:value={birthday} />
+              <input class="dark:bg-black" type="date" id="birthday" bind:value={birthday} />
             </div>
           </div>
         </Field>
@@ -219,10 +220,9 @@
             <label for={tongue.name} class={labelClass}>
               {tongue.name}
             </label>
-            <div class={inputContainerClass}>
+            <div class={buttonContainerClass}>
               <button
                 title="remove"
-                class={inputClass}
                 id={tongue.name}
                 on:click={() => (motherTongues = motherTongues?.filter((m) => m.id !== tongue.id))}>
                 <Icon name="removeFromList" class={iconClass} />
