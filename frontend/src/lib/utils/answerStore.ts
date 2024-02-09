@@ -7,14 +7,16 @@ export interface AnswerContext {
 }
 
 export interface Answer {
-  key: string; // Selected answer option
   id: string; // Id of the answer in the database
+  key: AnswerOption['key']; // Selected answer option
+  openAnswer: string; // Optional free-form answer
 }
 
 // Interfaces for data returned from the API
 interface AnswerAttributes {
   answer: {key: string};
   question: {data: {id: string}};
+  openAnswer?: string;
 }
 
 interface AnswerData {
@@ -36,8 +38,9 @@ export const loadAnswerData = async () => {
 
   answerData.data.forEach((answer: AnswerData) => {
     answers[answer.attributes.question.data.id] = {
-      key: answer.attributes.answer.key,
-      id: answer.id
+      id: answer.id,
+      key: parseInt(answer.attributes.answer.key),
+      openAnswer: answer.attributes.openAnswer || ''
     };
   });
 
