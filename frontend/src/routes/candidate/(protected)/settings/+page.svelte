@@ -9,7 +9,7 @@
   import {Button} from '$lib/components/button';
   import {validatePassword} from '$lib/utils/passwordValidation';
   import {changePassword} from '$lib/api/candidate';
-  import PasswordField from '$lib/components/LoginScreen/PasswordField.svelte';
+  import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
 
   const user = get(authContext.user);
 
@@ -123,10 +123,7 @@
             {$_('candidateApp.settings.currentPassword')}
           </label>
           <div class="w-6/12 text-right text-secondary">
-            <PasswordField
-              bind:password={currentPassword}
-              autoComplete=""
-              passwordId="currentPassword" />
+            <PasswordField bind:password={currentPassword} autoComplete="" />
           </div>
         </div>
       </div>
@@ -144,7 +141,7 @@
             {$_('candidateApp.settings.newPassword')}
           </label>
           <div class="w-6/12 text-right text-secondary">
-            <PasswordField bind:password autoComplete="new-password" passwordId="newPassword" />
+            <PasswordField bind:password autoComplete="new-password" />
           </div>
         </div>
       </div>
@@ -157,10 +154,7 @@
             {$_('candidateApp.settings.newPasswordConfirmation')}
           </label>
           <div class="w-6/12 text-right text-secondary">
-            <PasswordField
-              bind:password={passwordConfirmation}
-              autoComplete="new-password"
-              passwordId="newPasswordConfirmation" />
+            <PasswordField bind:password={passwordConfirmation} autoComplete="new-password" />
           </div>
         </div>
       </div>

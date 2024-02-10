@@ -8,7 +8,7 @@
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {candidateAppRoute} from '$lib/utils/routes';
-  import PasswordField from '$lib/components/LoginScreen/PasswordField.svelte';
+  import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
 
   const authContext = getContext<AuthContext>('auth');
 
@@ -29,7 +29,7 @@ Candidate login page. This component also takes care of the login process.
 ### Usage
 
 ```tsx
-<LoginPage /> 
+<LoginPage />
 ```
 -->
 
@@ -55,7 +55,7 @@ Candidate login page. This component also takes care of the login process.
       autocomplete="email"
       required />
     <div class="mb-md w-full max-w-md">
-      <PasswordField bind:password autoComplete="current-password" passwordId="password" />
+      <PasswordField bind:password autoComplete="current-password" />
     </div>
     {#if wrongCredentials}
       <p class="text-center text-error">{$_('candidate.wrong_email_or_password')}</p>

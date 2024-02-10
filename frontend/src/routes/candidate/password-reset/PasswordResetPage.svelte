@@ -10,6 +10,7 @@
   import {validatePassword} from '$lib/utils/passwordValidation';
   import {Button} from '$lib/components/button';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
+  import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
 
   export let code: string;
 
@@ -75,26 +76,11 @@
     <PasswordValidator bind:validPassword {password} />
 
     <label for="password" class="hidden">{$_('candidate.password')}</label>
-    <input
-      type="password"
-      name="password"
-      id="password"
-      class="input mb-md w-full max-w-md"
-      placeholder={$_('candidateApp.setPassword.password')}
-      bind:value={password}
-      autocomplete="new-password"
-      required />
-
     <label for="passwordConfirmation" class="hidden">{$_('candidate.password')}</label>
-    <input
-      type="password"
-      name="passwordConfirmation"
-      id="passwordConfirmation"
-      class="input mb-md w-full max-w-md"
-      placeholder={$_('candidateApp.setPassword.confirmPassword')}
-      bind:value={passwordConfirmation}
-      autocomplete="new-password"
-      required />
+    <div class="input mb-md w-full max-w-md">
+      <PasswordField bind:password autoComplete="new-password" />
+      <PasswordField bind:password={passwordConfirmation} autoComplete="new-password" />
+    </div>
     {#if errorMessage}
       <p class="text-center text-error">
         {errorMessage}

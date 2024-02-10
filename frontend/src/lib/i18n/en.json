@@ -207,6 +207,10 @@
       "instructions": "Next, the app will ask your opinions on {numQuestions} statements about political issues and values. When voters use the Election Compass, they will also answer the same statements and see how well their opinions agree with the yours.",
       "tip": "You can see all your anwers on this page when you come back to it later.",
       "continue": "continue"
+    },
+    "passwordButton": {
+      "hidePassword": "hide the password",
+      "revealPassword": "reveal the password"
     }
   }
 }

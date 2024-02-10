@@ -10,6 +10,7 @@
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {Button} from '$lib/components/button';
   import {candidateAppRoute} from '$lib/utils/routes';
+  import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
 
   export let userName: string;
   export let registrationCode: string;
@@ -88,27 +89,13 @@ Page where candidates can set their password when logging to the app for the fir
 
     <PasswordValidator bind:validPassword password={password1} />
 
-    <label for="password1" class="hidden">{$_('candidate.password')}</label>
-    <input
-      type="password"
-      name="password1"
-      id="password1"
-      class="input mb-md w-full max-w-md"
-      placeholder={$_('candidateApp.setPassword.password')}
-      bind:value={password1}
-      autocomplete="new-password"
-      required />
+    <div class="mb-md w-full max-w-md space-y-10">
+      <label for="password1" class="hidden">{$_('candidate.password')}</label>
+      <PasswordField bind:password={password1} autoComplete="new-password" />
+      <label for="password2" class="hidden">{$_('candidate.password')}</label>
+      <PasswordField bind:password={password2} autoComplete="new-password" />
+    </div>
 
-    <label for="password2" class="hidden">{$_('candidate.password')}</label>
-    <input
-      type="password"
-      name="password2"
-      id="password2"
-      class="input mb-md w-full max-w-md"
-      placeholder={$_('candidateApp.setPassword.confirmPassword')}
-      bind:value={password2}
-      autocomplete="new-password"
-      required />
     {#if errorMessage}
       <p class="text-center text-error">
         {errorMessage}
