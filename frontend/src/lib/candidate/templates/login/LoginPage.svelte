@@ -8,15 +8,13 @@
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {candidateAppRoute} from '$lib/utils/routes';
-  import PreviewAllIcons from '$lib/components/icon/PreviewAllIcons.svelte';
-  import Icon from '$lib/components/icon/Icon.svelte';
+  import PasswordField from '$lib/components/LoginScreen/PasswordField.svelte';
 
   const authContext = getContext<AuthContext>('auth');
 
   let email = '';
   let password = '';
   let wrongCredentials = false;
-  let passwordRevealed = false;
   const onLogin = async () => {
     if (!(await authContext?.logIn(email, password))) {
       wrongCredentials = true;
@@ -56,45 +54,9 @@ Candidate login page. This component also takes care of the login process.
       bind:value={email}
       autocomplete="email"
       required />
-    <label for="password" class="hidden">{$_('candidate.password')}</label>
-
-    {#if passwordRevealed === true}
-      <div class="relative mb-md w-full max-w-md">
-        <input
-          type="text"
-          name="password"
-          id="password"
-          class="input mb-md w-full max-w-md"
-          placeholder={$_('candidate.password_placeholder')}
-          bind:value={password}
-          autocomplete="current-password"
-          required />
-        <Button
-          text=""
-          title="hide the button"
-          class="absolute inset-y-0 right-0 mb-md max-w-md"
-          icon="hide"
-          on:click={() => (passwordRevealed = !passwordRevealed)} />
-      </div>
-    {:else}
-      <div class="relative mb-md w-full max-w-md">
-        <input
-          type="password"
-          name="password"
-          id="password"
-          class="input mb-md w-full max-w-md"
-          placeholder={$_('candidate.password_placeholder')}
-          bind:value={password}
-          autocomplete="current-password"
-          required />
-        <Button
-          text=""
-          title="reveal the button"
-          class="absolute inset-y-0 right-0 mb-md max-w-md"
-          icon="show"
-          on:click={() => (passwordRevealed = !passwordRevealed)} />
-      </div>
-    {/if}
+    <div class="mb-md w-full max-w-md">
+      <PasswordField bind:password autoComplete="current-password" passwordId="password" />
+    </div>
     {#if wrongCredentials}
       <p class="text-center text-error">{$_('candidate.wrong_email_or_password')}</p>
     {/if}
