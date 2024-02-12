@@ -187,8 +187,23 @@
       return;
     }
 
+    // Check if all questions have been answered (before answer to current question is saved)
+    const allAnsweredBefore = $page.data.questions.every((question) =>
+      Object.keys(answerStore).includes(question.id.toString())
+    );
+
     // Save the current answer to the server before navigating
     await saveToServer();
+
+    // Check if all questions have been answered (after answer is saved)
+    // If the last answer was filled now, go to page with congratulatory message
+    const allAnsweredAfter = $page.data.questions.every((question) =>
+      Object.keys(answerStore).includes(question.id.toString())
+    );
+    if (!allAnsweredBefore && allAnsweredAfter) {
+      setTimeout(() => goto(`${candidateAppRoute}/questions/done`), DELAY_M_MS);
+      return;
+    }
 
     const currentIndex = $page.data.questions.indexOf(currentQuestion);
     const newIndex = currentIndex + indexChange;

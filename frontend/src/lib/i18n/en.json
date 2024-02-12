@@ -210,6 +210,14 @@
       "commentOnThisIssue": "Comment on this issue",
       "answerSaveError": "Saving answer failed",
       "answerDeleteError": "Deleting answer failed"
+    },
+    "allDataFilled": {
+      "title": "You're Ready to Roll!",
+      "description": "You have filled all of the information needed for the Election Compass. You can still edit your answers and even log in later to do that.",
+      "tip": "If you want to see how the voters will see your profile, you can preview it.",
+      "logOut": "Log Out",
+      "previewYourProfile": "Preview Your Profile",
+      "editYourOpinions": "Edit Your Opinions"
     }
   }
 }
