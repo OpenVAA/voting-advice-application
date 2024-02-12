@@ -91,9 +91,9 @@ Page where candidates can set their password when logging to the app for the fir
 
     <div class="mb-md w-full max-w-md space-y-10">
       <label for="password1" class="hidden">{$_('candidate.password')}</label>
-      <PasswordField bind:password={password1} autoComplete="new-password" />
+      <PasswordField bind:password={password1} autocomplete="new-password" />
       <label for="password2" class="hidden">{$_('candidate.password')}</label>
-      <PasswordField bind:password={password2} autoComplete="new-password" />
+      <PasswordField bind:password={password2} autocomplete="new-password" />
     </div>
 
     {#if errorMessage}

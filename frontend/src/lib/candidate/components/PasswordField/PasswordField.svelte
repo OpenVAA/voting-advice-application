@@ -2,18 +2,14 @@
   import {_} from 'svelte-i18n';
   import {Button} from '$lib/components/button';
   export let password = '';
-  export let autoComplete = '';
+  export let autocomplete = '';
   let passwordRevealed = false;
   /** variable used to refer to the input box in code to change its type*/
   let inputbox: HTMLInputElement;
   /** function that hides and reveals the password and changes the icon of the button*/
   const changeRevealed = () => {
     passwordRevealed = !passwordRevealed;
-    if (passwordRevealed) {
-      inputbox.type = 'text';
-    } else {
-      inputbox.type = 'password';
-    }
+    inputbox.type = passwordRevealed ? 'text' : 'password';
   };
 </script>
 
@@ -24,14 +20,14 @@ to reveal and hide the password
 
 ### Properties
 
-- `autoComplete` : variable used for field's password auto-fill value
+- `autoComplete` : variable used for field's password autocomplete value
 - `password` : variable the password input box uses for its value
 
 ### Usage
 
 ```tsx
 
-<PasswordField bind:password={passwordOfContext} autoComplete="Autofill" />
+<PasswordField bind:password={passwordOfContext} autocomplete="autocomplete" />
 ```
 -->
 
@@ -44,7 +40,7 @@ to reveal and hide the password
     placeholder={$_('candidate.password_placeholder')}
     bind:value={password}
     bind:this={inputbox}
-    autocomplete={autoComplete}
+    {autocomplete}
     required />
   <Button
     type="button"

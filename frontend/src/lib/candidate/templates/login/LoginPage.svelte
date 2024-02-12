@@ -55,7 +55,7 @@ Candidate login page. This component also takes care of the login process.
       autocomplete="email"
       required />
     <div class="mb-md w-full max-w-md">
-      <PasswordField bind:password autoComplete="current-password" />
+      <PasswordField bind:password autocomplete="current-password" />
     </div>
     {#if wrongCredentials}
       <p class="text-center text-error">{$_('candidate.wrong_email_or_password')}</p>

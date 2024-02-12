@@ -123,7 +123,7 @@
             {$_('candidateApp.settings.currentPassword')}
           </label>
           <div class="w-6/12 text-right text-secondary">
-            <PasswordField bind:password={currentPassword} autoComplete="" />
+            <PasswordField bind:password={currentPassword} autocomplete="" />
           </div>
         </div>
       </div>
@@ -141,7 +141,7 @@
             {$_('candidateApp.settings.newPassword')}
           </label>
           <div class="w-6/12 text-right text-secondary">
-            <PasswordField bind:password autoComplete="new-password" />
+            <PasswordField bind:password autocomplete="new-password" />
           </div>
         </div>
       </div>
@@ -154,7 +154,7 @@
             {$_('candidateApp.settings.newPasswordConfirmation')}
           </label>
           <div class="w-6/12 text-right text-secondary">
-            <PasswordField bind:password={passwordConfirmation} autoComplete="new-password" />
+            <PasswordField bind:password={passwordConfirmation} autocomplete="new-password" />
           </div>
         </div>
       </div>
