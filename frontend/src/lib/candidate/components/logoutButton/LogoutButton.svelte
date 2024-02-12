@@ -37,15 +37,18 @@
 </script>
 
 <!--
-    @component
-    Allows user to log out. Displays modal notification if the user
-    hasn't filled all the data. This component doesn't have slots or
-    properties.
+@component
+Allows user to log out. Displays modal notification if the user
+hasn't filled all the data. 
 
-    ### Usage
-    ```tsx
-    <LogoutButton />
-    ```
+This component has optional boolean property `variantIcon`:
+When set to true (default), the button variant is icon. 
+When set to false, the button variant is main.
+
+### Usage
+```tsx
+  <LogoutButton />
+```
 -->
 
 {#if variantIcon}
