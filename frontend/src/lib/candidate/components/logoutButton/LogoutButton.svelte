@@ -6,6 +6,9 @@
   import {authContext} from '$lib/utils/authenticationStore';
   import {Button} from '$lib/components/button';
 
+  /** Default variant is "icon". Can be set to false if the button should be of variant "main" */
+  export let variantIcon = true;
+
   /** time until automatic logout for modal */
   export let logoutModalTimer = 30;
   // exports from TimedModal
@@ -45,12 +48,20 @@
     ```
 -->
 
-<Button
-  on:click={triggerLogout}
-  variant="icon"
-  icon="logout"
-  text={$_('candidateApp.navbar.logOut')}
-  color="warning" />
+{#if variantIcon}
+  <Button
+    on:click={triggerLogout}
+    variant="icon"
+    icon="logout"
+    text={$_('candidateApp.navbar.logOut')}
+    color="warning" />
+{:else}
+  <Button
+    on:click={triggerLogout}
+    variant="main"
+    text={$_('candidateApp.allDataFilled.logOut')}
+    color="warning" />
+{/if}
 
 <TimedModal
   bind:timeLeft
