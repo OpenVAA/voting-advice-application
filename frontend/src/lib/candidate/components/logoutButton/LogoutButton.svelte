@@ -6,7 +6,7 @@
   import {authContext} from '$lib/utils/authenticationStore';
   import {Button} from '$lib/components/button';
 
-  /** Default variant is "icon". Can be set to false if the button should be of variant "main" */
+  /** Defaults to true, so that button variant is "icon". Can be set to false if the button should be of variant "main" */
   export let variantIcon = true;
 
   /** time until automatic logout for modal */
@@ -51,6 +51,7 @@ When set to false, the button variant is main.
 ```
 -->
 
+<!-- Define the button based on variant ("icon" or "main"). Cannot be done shorter because of type errors. -->
 {#if variantIcon}
   <Button
     on:click={triggerLogout}
