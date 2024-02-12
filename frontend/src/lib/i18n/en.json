@@ -209,7 +209,9 @@
       "continue": "Continue",
       "commentOnThisIssue": "Comment on this issue",
       "answerSaveError": "Saving answer failed",
-      "answerDeleteError": "Deleting answer failed"
+      "answerDeleteError": "Deleting answer failed",
+      "deleteConfirmationTitle": "Delete Answer",
+      "deleteConfirmationBody": "Are you sure you want to delete your answer to this question? This action cannot be undone."
     }
   }
 }

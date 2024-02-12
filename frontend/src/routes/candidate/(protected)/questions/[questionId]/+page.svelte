@@ -9,6 +9,7 @@
   import {addAnswer, updateAnswer, deleteAnswer} from '$lib/api/candidate';
   import {onMount, onDestroy} from 'svelte';
   import {candidateAppRoute} from '$lib/utils/routes';
+  import {ConfirmationModal} from '$lib/components/modal';
 
   /**
    * A small delay before moving to the next question.
@@ -152,6 +153,20 @@
     answerContext.answers.set(answerStore);
   }
 
+  // Bindable functions for the confirmation modal
+  let openModal: () => void;
+  let closeModal: () => void;
+
+  async function triggerDeleteAnswer() {
+    // Ask for confirmation only if there is an open answer
+    if (openAnswer !== '') {
+      openModal();
+      return;
+    }
+
+    await removeAnswer();
+  }
+
   async function removeAnswer() {
     if (!answer) {
       // No answer in database, only local answers need to be removed
@@ -167,6 +182,7 @@
       return;
     }
 
+    closeModal();
     selectedKey = null;
     openAnswer = '';
     removeLocalAnswerToQuestion();
@@ -263,7 +279,7 @@
           answered={selectedKey !== null}
           separateSkip={false}
           on:previous={goToPreviousQuestion}
-          on:delete={removeAnswer}
+          on:delete={triggerDeleteAnswer}
           on:next={gotoNextQuestion} />
       </svelte:fragment>
     </BasicPage>
@@ -271,3 +287,10 @@
 {:else}
   {$_('question.notFound')}
 {/if}
+
+<ConfirmationModal
+  bind:openModal
+  bind:closeModal
+  confirmAction={removeAnswer}
+  title={$_('candidateApp.opinions.deleteConfirmationTitle')}
+  body={$_('candidateApp.opinions.deleteConfirmationBody')} />
