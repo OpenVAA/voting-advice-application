@@ -48,12 +48,18 @@
       ? true
       : false;
 
+  let errorMessage: string | undefined;
+
   let uploadPhoto: () => Promise<void>;
 
   const submitForm = async () => {
-    await uploadPhoto();
-    await updateBasicInfo(manifesto, birthday, gender, photo, unaffiliated, motherTongues);
-    await goto('/candidate/questions');
+    try {
+      await uploadPhoto();
+      await updateBasicInfo(manifesto, birthday, gender, photo, unaffiliated, motherTongues);
+      // await goto('/candidate/questions');
+    } catch (error) {
+      errorMessage = $_('candidateApp.basicInfo.errorMessage');
+    }
   };
 
   // the dot symbol for separating info string
@@ -78,7 +84,7 @@
   };
 
   // fetch languages from backend
-  let allLanguages: StrapiLanguageData[] | undefined = undefined;
+  let allLanguages: StrapiLanguageData[] | undefined;
   getLanguages().then((languages) => (allLanguages = languages));
 
   // map the languages to their respective locales for easier use
@@ -202,7 +208,9 @@
         <Field>
           <label for="motherTongue" class={labelClass}>
             {#if motherTongues}
-              {motherTongues.length > 0 ? 'Add another' : 'Select first'}
+              {motherTongues.length > 0
+                ? $_('candidateApp.basicInfo.addAnother')
+                : $_('candidateApp.basicInfo.seletFile')}
             {/if}
           </label>
           <select
@@ -270,6 +278,11 @@
         variant="main"
         icon="next"
         slot="primaryActions" />
+      {#if errorMessage}
+        <div class="text-error">
+          {errorMessage}
+        </div>
+      {/if}
     </div>
   </form>
 </BasicPage>

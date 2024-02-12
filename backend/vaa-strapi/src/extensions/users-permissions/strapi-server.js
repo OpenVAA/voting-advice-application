@@ -6,6 +6,7 @@ const defaultPermissions = [
   {action: 'plugin::users-permissions.candidate.check', roleType: 'public'},
   {action: 'plugin::users-permissions.candidate.register', roleType: 'public'},
   {action: 'plugin::upload.content-api.upload', roleType: 'authenticated'},
+  {action: 'plugin::upload.content-api.destroy', roleType: 'authenticated'},
   {action: 'api::candidate.candidate.find', roleType: 'authenticated'},
   {action: 'api::candidate.candidate.findOne', roleType: 'authenticated'},
   {action: 'api::candidate.candidate.update', roleType: 'authenticated'},

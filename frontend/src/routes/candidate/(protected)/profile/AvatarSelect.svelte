@@ -6,10 +6,13 @@
   import {constants} from '$lib/utils/constants';
   import {authContext} from '$lib/utils/authenticationStore';
   import {get} from 'svelte/store';
+  import {uploadFiles, deleteFile} from '$lib/api/candidate';
   import type {Photo} from '$lib/types/candidateAttributes';
 
   export let photo: Photo | undefined;
-  let photoUrl = photo ? constants.PUBLIC_BACKEND_URL + photo.formats.thumbnail.url : undefined;
+  let photoUrl = photo
+    ? new URL(constants.PUBLIC_BACKEND_URL + photo.formats.thumbnail.url)
+    : undefined;
   let imageHasChanged = false;
   let image: File | undefined;
 
@@ -52,7 +55,7 @@
         let reader = new FileReader();
 
         reader.onload = (e) => {
-          photoUrl = e.target?.result?.toString();
+          photoUrl = e.target?.result ? new URL(e.target?.result?.toString()) : undefined;
         };
         reader.readAsDataURL(file);
       }
@@ -62,69 +65,17 @@
   // upload the current image file to strapi
   export const uploadPhoto = async () => {
     if (image && imageHasChanged) {
-      const formData = new FormData();
-      formData.append('files', image);
+      const res = await uploadFiles([image]);
 
-      const postResponse = await fetch(constants.PUBLIC_BACKEND_URL + '/api/upload/', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        body: formData
-      });
-
-      // if photo is already defined and upload was succesful,
-      // delete the old photo
-      if (photo && postResponse.status === 200) {
-        await fetch(constants.PUBLIC_BACKEND_URL + `/api/upload/files/${photo.id}`, {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+      if (photo && res?.status === 200) {
+        await deleteFile(photo.id);
       }
-      const PostResJSON: Photo[] = await postResponse.json();
-      photo = PostResJSON[0];
+      const uploadedPhotos: Photo[] = await res?.json();
+      photo = uploadedPhotos[0];
       imageHasChanged = false;
     }
   };
 </script>
-
-<Field customStyle="height: 60px; padding-right: 0;">
-  <span class={labelClass}>
-    {$_('candidateApp.basicInfo.fields.portrait')}
-  </span>
-  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-  <label
-    bind:this={portraitLabel}
-    id="portraitLabel"
-    tabindex="0"
-    for="portrait"
-    class="cursor-pointer text-primary">
-    {#if photoUrl}
-      <div class="flex h-60 w-60 items-center justify-center overflow-hidden">
-        <img
-          bind:this={portraitImage}
-          src={photoUrl}
-          class="h-full w-full rounded-r-lg object-cover"
-          alt="profile_pic_preview" />
-      </div>
-    {:else}
-      <div class="pr-8">
-        {$_('candidateApp.basicInfo.tapToAddPhoto')}
-        <Icon name="photo" />
-      </div>
-    {/if}
-  </label>
-  <input
-    bind:this={portraitInput}
-    on:change={changePhoto}
-    accept="image/jpeg, image/png"
-    type="file"
-    id="portrait"
-    placeholder="PLACEHOLDER"
-    class="hidden" />
-</Field>
 
 <!--
 @component
@@ -146,10 +97,45 @@ image defined in the `photo` object.
 ### Usage
 
 ```tsx
-  let uploadPhoto: () => Promise<void>;
+let uploadPhoto: () => Promise<void>;
   let photo: Photo = {
     ...
   }
   <AvatarSelect bind:photo bind:uploadPhoto maxFileSize={5 * 1024 * 1024}/>
 ```
 -->
+
+<Field customStyle="height: 60px; padding-right: 0;">
+  <span class={labelClass}>
+    {$_('candidateApp.basicInfo.fields.portrait')}
+  </span>
+  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+  <label
+    bind:this={portraitLabel}
+    id="portraitLabel"
+    tabindex="0"
+    for="portrait"
+    class="cursor-pointer text-primary">
+    {#if photoUrl}
+      <div class="flex h-60 w-60 items-center justify-center overflow-hidden">
+        <img
+          bind:this={portraitImage}
+          src={photoUrl.href}
+          class="h-full w-full rounded-r-lg object-cover"
+          alt="profile_pic_preview" />
+      </div>
+    {:else}
+      <div class="pr-8">
+        {$_('candidateApp.basicInfo.tapToAddPhoto')}
+        <Icon name="photo" />
+      </div>
+    {/if}
+  </label>
+  <input
+    bind:this={portraitInput}
+    on:change={changePhoto}
+    accept="image/jpeg, image/png"
+    type="file"
+    id="portrait"
+    class="hidden" />
+</Field>

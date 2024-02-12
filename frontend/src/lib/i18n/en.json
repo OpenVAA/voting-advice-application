@@ -134,7 +134,10 @@
         "portrait": "Portrait",
         "unaffiliated": "Unaffiliated"
       },
+      "errorMessage": "An error occurred when sending data!",
       "pending": "pending",
+      "addAnother": "Add another",
+      "selectFirst": "Select first",
       "unaffiliatedDescription": "Set this on if you're not a member of the party on whose list you are.",
       "nominationsDescription": "These are the constituencies where you're nominated along with the election list and possible election symbol. If a nomination is marked 'Pending', your election symbol might not yet be defined.",
       "electionManifesto": "Election manifesto",

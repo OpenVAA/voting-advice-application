@@ -98,17 +98,13 @@ export const updateBasicInfo = async (
   photo?: Photo,
   unaffiliated?: boolean,
   motherTongues?: Language[]
-): Promise<Response> => {
-  const token = authContext.token;
+) => {
   const user = get(authContext.user);
   const candidate = user?.candidate;
 
   if (!candidate) {
     throw new Error('user.candidate is undefined');
   }
-
-  const url = new URL(constants.PUBLIC_BACKEND_URL);
-  url.pathname = `api/candidates/${candidate.id}`;
 
   const body = {
     data: {
@@ -121,13 +117,12 @@ export const updateBasicInfo = async (
     }
   };
 
-  return await fetch(url, {
+  return await request(getUrl(`api/candidates/${candidate.id}`), {
     method: 'PUT',
+    body: JSON.stringify(body),
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${get(token)}`
-    },
-    body: JSON.stringify(body)
+      'Content-Type': 'application/json'
+    }
   });
 };
 
@@ -231,10 +226,23 @@ export const getLanguages = async (): Promise<StrapiLanguageData[] | undefined> 
       'populate[language]': 'true'
     })
   );
-  if (!res?.ok) return [];
+  if (!res?.ok) return undefined;
 
   const resJson = await res.json();
   return resJson.data;
+};
+
+export const uploadFiles = async (files: File[]) => {
+  const formData = new FormData();
+  files.forEach((file) => formData.append('files', file));
+  return await request(getUrl('/api/upload/'), {
+    method: 'POST',
+    body: formData
+  });
+};
+
+export const deleteFile = async (id: number) => {
+  return await request(getUrl(`/api/upload/files/${id}`), {method: 'DELETE'});
 };
 
 export const request = async (url: string, options: RequestInit = {}) => {
