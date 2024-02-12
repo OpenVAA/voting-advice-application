@@ -6,6 +6,9 @@
   import {authContext} from '$lib/utils/authenticationStore';
   import {Button} from '$lib/components/button';
 
+  /** Defaults to true, so that button variant is "icon". Can be set to false if the button should be of variant "main" */
+  export let variantIcon = true;
+
   /** time until automatic logout for modal */
   export let logoutModalTimer = 30;
   // exports from TimedModal
@@ -34,23 +37,35 @@
 </script>
 
 <!--
-    @component
-    Allows user to log out. Displays modal notification if the user
-    hasn't filled all the data. This component doesn't have slots or
-    properties.
+@component
+Allows user to log out. Displays modal notification if the user
+hasn't filled all the data. 
 
-    ### Usage
-    ```tsx
-    <LogoutButton />
-    ```
+This component has optional boolean property `variantIcon`:
+When set to true (default), the button variant is icon. 
+When set to false, the button variant is main.
+
+### Usage
+```tsx
+  <LogoutButton />
+```
 -->
 
-<Button
-  on:click={triggerLogout}
-  variant="icon"
-  icon="logout"
-  text={$_('candidateApp.navbar.logOut')}
-  color="warning" />
+<!-- Define the button based on variant ("icon" or "main"). Cannot be done shorter because of type errors. -->
+{#if variantIcon}
+  <Button
+    on:click={triggerLogout}
+    variant="icon"
+    icon="logout"
+    text={$_('candidateApp.navbar.logOut')}
+    color="warning" />
+{:else}
+  <Button
+    on:click={triggerLogout}
+    variant="main"
+    text={$_('candidateApp.allDataFilled.logOut')}
+    color="warning" />
+{/if}
 
 <TimedModal
   bind:timeLeft
