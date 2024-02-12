@@ -17,6 +17,13 @@ The candidate import accepts csv files that have defined the following propertie
 
 The `email` field is used as the unique identifier for candidates.
 
+Import fails and error messages are displayed if there are any of the following problems with the data:
+
+ - Candidate doesn't have all the required fields (firstName, lastName, party, email, published)
+ - Email field is empty
+ - Email is not unique
+ - Party id is not valid
+
 Here is an example csv for the candidate import:
 ```
 firstName,lastName,party,email,published
@@ -27,21 +34,28 @@ Bob,Bob,<partyId>,bob@example.com,false
 The nomination import accepts csv files that have defined the following properties:
  - `election` (id)
  - `constituency` (id)
- - `candidate` (id)
+ - `email` (text)
  - `party` (id)
  - `electionSymbol` (text)
  - `published` (true / false)
 
-The composite of the fields `election`, `constituency`, `candidate` and `party` is used as the unique identifier for nominations.
+The composite of the fields `election`, `constituency`, `email` and `party` is used as the unique identifier for nominations.
+
+Import fails and error messages are displayed if there are any of the following problems with the data:
+
+ - Nomination doesn't have all the required fields (election, constituency, candidate, party, electionSymbol, published)
+ - Email field is empty
+ - Email is not email of some candidate
+ - Each combination of election, constituency, candidate and party is not unique
+ - Election, constituency or party id is not valid
 
 Here is an example csv for the nomination import:
 ```
-election,constituency,candidate,party,electionSymbol,published
-<electionId>,<constituencyId>,<candidateId>,<partyId>,1,true
-<electionId>,<constituencyId>,<candidateId>,<partyId>,2,false
+election,constituency,email,party,electionSymbol,published
+<electionId>,<constituencyId>,alice@example.com,<partyId>,1,true
+<electionId>,<constituencyId>,bob@example.com,<partyId>,2,false
 ```
 
-The import will fail if one or more of the fields are not defined.
 
 ## Implementation details
 
