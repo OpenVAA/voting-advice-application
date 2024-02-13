@@ -211,6 +211,15 @@
       "answerSaveError": "Saving answer failed",
       "answerDeleteError": "Deleting answer failed"
     },
+
+    "allQuestions": {
+      "title": "Your opinions",
+      "warning": "You still have {nofUnasweredQuestions} unanswered questions. Your data won’t be shown in the Election Compass until you have answered all of them.",
+      "info": "You can see all of your opinions below and edit them by tapping on them.",
+      "answerButton": "Answer this question",
+      "commentOnThisIssue": "Comment on this issue"
+
+    },
     "allDataFilled": {
       "title": "You're Ready to Roll!",
       "description": "You have filled all of the information needed for the Election Compass. You can still edit your answers and even log in later to do that.",
