@@ -109,9 +109,9 @@ export const changePassword = async (currentPassword: string, password: string) 
  */
 export const addAnswer = async (
   questionId: string,
-  answerKey: string
+  answerKey: AnswerOption['key'],
+  openAnswer?: string
 ): Promise<Response | undefined> => {
-  const token = authContext.token;
   const candidate = get(authContext.user)?.candidate;
 
   if (!candidate) return;
@@ -122,15 +122,15 @@ export const addAnswer = async (
       question: Number(questionId),
       answer: {
         key: answerKey
-      }
+      },
+      openAnswer: openAnswer
     }
   };
 
-  return await fetch(getUrl('api/answers'), {
+  return await request(getUrl('api/answers'), {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${get(token)}`
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify(body)
   });
@@ -140,24 +140,38 @@ export const addAnswer = async (
  * Update an existing answer for the logged in user.
  * The answer id is sufficient to identify the answer and question.
  */
-export const updateAnswer = async (answerId: string, answerKey: string): Promise<Response> => {
-  const token = authContext.token;
-
+export const updateAnswer = async (
+  answerId: string,
+  answerKey: AnswerOption['key'],
+  openAnswer?: string
+): Promise<Response | undefined> => {
   const body = {
     data: {
       answer: {
         key: answerKey
-      }
+      },
+      openAnswer: openAnswer
     }
   };
 
-  return fetch(getUrl(`api/answers/${answerId}`), {
+  return request(getUrl(`api/answers/${answerId}`), {
     method: 'PUT',
     headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${get(token)}`
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify(body)
+  });
+};
+
+/**
+ * Delete an existing answer for the logged in user.
+ */
+export const deleteAnswer = async (answerId: string): Promise<Response | undefined> => {
+  return request(getUrl(`api/answers/${answerId}`), {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json'
+    }
   });
 };
 

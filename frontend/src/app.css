@@ -84,4 +84,13 @@
 
 @layer utilities {
   /* Define custom named styles here */
+
+  /**
+   * Make an element full width with a page's main content canceling out paddings.
+   * Be sure to update this if the main content padding changes.
+   * TODO: Create dedicated Tailwind spacing terms for content padding.
+   */
+  .edgetoedge-x {
+    @apply -ml-safelgl -mr-safelgr w-screen pl-safelgl pr-safelgr match-w-xl:mx-0 match-w-xl:w-full match-w-xl:rounded-sm;
+  }
 }

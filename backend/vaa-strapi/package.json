@@ -27,7 +27,8 @@
     "@strapi/provider-email-nodemailer": "^4.15.5",
     "@strapi/strapi": "4.11.7",
     "better-sqlite3": "7.4.6",
-    "pg": "^8.8.0"
+    "pg": "^8.8.0",
+    "strapi-plugin-import-export-entries": "file:./strapi-plugin-import-export-entries"
   },
   "author": {
     "name": "A Strapi developer"

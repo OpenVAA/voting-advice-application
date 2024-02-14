@@ -6,52 +6,167 @@
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {LikertResponseButtons, QuestionActions, QuestionInfo} from '$lib/components/questions';
   import {BasicPage} from '$lib/templates/basicPage';
-  import {addAnswer, updateAnswer} from '$lib/api/candidate';
-  import {get} from 'svelte/store';
+  import {addAnswer, updateAnswer, deleteAnswer} from '$lib/api/candidate';
+  import {onMount, onDestroy} from 'svelte';
+  import {candidateAppRoute} from '$lib/utils/routes';
 
-  const answers = get(answerContext.answers);
-  const answerStore = answerContext.answers;
+  const SAVE_INTERVAL_MS = 1000;
 
-  /**
-   * A small delay before moving to the next question.
-   * TODO: Make this a global variable used throughout the app.
-   */
-  const DELAY_M_MS = 350;
+  // Open answer is saved periodically to local storage
+  let saveInterval: NodeJS.Timeout;
+  onMount(() => {
+    saveInterval = setInterval(() => {
+      saveOpenAnswerToLocal();
+    }, SAVE_INTERVAL_MS);
+  });
+
+  onDestroy(() => {
+    clearInterval(saveInterval);
+  });
+
+  const store = answerContext.answers;
+  $: answerStore = $store;
+
+  $: questionId = $page.params.questionId;
+
+  // Local storage keys, depend on the question id
+  $: likertLocal = `candidate-app-question-${questionId}-likert`;
+  $: openAnswerLocal = `candidate-app-question-${questionId}-open`;
 
   let currentQuestion: QuestionProps | undefined;
-  $: currentQuestion = $page.data.questions.find(
-    (q) => q.id.toString() === $page.params.questionId.toString()
-  );
+  $: currentQuestion = $page.data.questions.find((q) => q.id.toString() === questionId.toString());
 
-  $: answer = $answerStore[$page.params.questionId];
+  $: answer = answerStore[questionId]; // null if not answered
 
-  // Store question id and answer value in a store
-  async function answerQuestion({detail}: CustomEvent) {
+  let selectedKey: AnswerOption['key'] | null;
+
+  // Set the selected key on page load, local storage takes precedence
+  $: {
+    const likertValue = localStorage.getItem(likertLocal);
+    if (likertValue) {
+      selectedKey = parseInt(likertValue);
+    } else {
+      selectedKey = answer?.key ?? null;
+    }
+
+    setOpenAnswer();
+  }
+
+  let openAnswer = '';
+
+  // Set open answer from local storage and answer store if available, local storage takes precedence
+  function setOpenAnswer() {
+    if (answer && !localStorage.getItem(openAnswerLocal)) {
+      openAnswer = answer.openAnswer;
+      return;
+    }
+    openAnswer = localStorage.getItem(openAnswerLocal) ?? '';
+  }
+
+  function saveLikertToLocal({detail}: CustomEvent) {
+    selectedKey = detail.value;
+    localStorage.setItem(likertLocal, detail.value);
+  }
+
+  function saveOpenAnswerToLocal() {
+    if (openAnswer === '' || answer?.openAnswer === openAnswer) {
+      localStorage.removeItem(openAnswerLocal);
+      return;
+    }
+
+    localStorage.setItem(openAnswerLocal, openAnswer);
+  }
+
+  function removeLocalAnswerToQuestion() {
+    localStorage.removeItem(likertLocal);
+    localStorage.removeItem(openAnswerLocal);
+  }
+
+  let errorMessage = '';
+  let errorTimeout: NodeJS.Timeout;
+
+  function showError(message: string) {
+    errorMessage = message;
+    clearTimeout(errorTimeout);
+    errorTimeout = setTimeout(() => {
+      errorMessage = '';
+    }, 5000);
+  }
+
+  async function saveToServer() {
+    const localLikert = localStorage.getItem(likertLocal);
+
     if (!answer) {
-      const response = await addAnswer(detail.id, detail.value);
+      // New answer
+
+      // Likert is required for an answer to be saved
+      if (!localLikert) {
+        return;
+      }
+      const response = await addAnswer(questionId, parseInt(localLikert), openAnswer);
 
       if (!response?.ok) {
+        showError($_('candidateApp.opinions.answerSaveError'));
         return;
       }
 
       const data = await response.json();
       const answerId = data.data.id;
-      answers[$page.params.questionId] = {id: answerId, key: detail.value};
-    } else {
-      const response = await updateAnswer(answer.id, detail.value);
 
+      answerStore[questionId] = {
+        id: answerId,
+        key: parseInt(localLikert),
+        openAnswer
+      };
+    } else {
+      // Existing answer
+
+      let previousLikert = answer.key;
+
+      // A local likert value takes precedence over the server value
+      if (localLikert) {
+        previousLikert = parseInt(localLikert);
+      }
+
+      const response = await updateAnswer(answer.id, previousLikert, openAnswer);
       if (!response?.ok) {
+        showError($_('candidateApp.opinions.answerSaveError'));
         return;
       }
 
-      answers[$page.params.questionId] = {
+      answerStore[questionId] = {
         id: answer.id,
-        key: detail.value
+        key: previousLikert,
+        openAnswer
       };
     }
 
-    // Update the answer store
-    answerContext.answers.set(answers);
+    openAnswer = '';
+    removeLocalAnswerToQuestion();
+    answerContext.answers.set(answerStore);
+  }
+
+  async function removeAnswer() {
+    if (!answer) {
+      // No answer in database, only local answers need to be removed
+      selectedKey = null;
+      openAnswer = '';
+      removeLocalAnswerToQuestion();
+      return;
+    }
+
+    const response = await deleteAnswer(answer.id);
+    if (!response?.ok) {
+      showError($_('candidateApp.opinions.answerDeleteError'));
+      return;
+    }
+
+    selectedKey = null;
+    openAnswer = '';
+    removeLocalAnswerToQuestion();
+
+    delete answerStore[questionId];
+    answerContext.answers.set(answerStore);
   }
 
   // Skip to next question
@@ -61,35 +176,51 @@
     gotoNextQuestion();
   }
 
-  function gotoNextQuestion() {
+  async function navigateToQuestion(indexChange: number, lastPageUrl: string) {
     if (!currentQuestion) {
       return;
     }
-    const currentIndex = $page.data.questions.indexOf(currentQuestion);
-    if (currentIndex < $page.data.questions.length - 1) {
-      const nextId = $page.data.questions[currentIndex + 1].id;
-      const currentUrl = $page.url.pathname.replace(/\/$/, '');
-      const nextQuestionUrl = `${currentUrl.substring(0, currentUrl.lastIndexOf('/'))}/${nextId}`;
-      setTimeout(() => goto(nextQuestionUrl), DELAY_M_MS);
-    } else {
-      setTimeout(() => goto('/results'), DELAY_M_MS);
+
+    // Check if all questions have been answered (before answer to current question is saved)
+    const allAnsweredBefore = $page.data.questions.every((question) =>
+      Object.keys(answerStore).includes(question.id.toString())
+    );
+
+    // Save the current answer to the server before navigating
+    await saveToServer();
+
+    // Check if all questions have been answered (after answer is saved)
+    // If the last answer was filled now, go to page with congratulatory message
+    const allAnsweredAfter = $page.data.questions.every((question) =>
+      Object.keys(answerStore).includes(question.id.toString())
+    );
+    if (!allAnsweredBefore && allAnsweredAfter) {
+      goto(`${candidateAppRoute}/questions/done`);
+      return;
     }
+
+    const currentIndex = $page.data.questions.indexOf(currentQuestion);
+    const newIndex = currentIndex + indexChange;
+
+    if (newIndex >= 0 && newIndex < $page.data.questions.length) {
+      goto(`${candidateAppRoute}/questions/${$page.data.questions[newIndex].id}`);
+    } else {
+      goto(lastPageUrl);
+    }
+  }
+
+  async function gotoNextQuestion() {
+    await navigateToQuestion(1, candidateAppRoute);
+  }
+
+  async function goToPreviousQuestion() {
+    await navigateToQuestion(-1, candidateAppRoute);
   }
 </script>
 
 {#if currentQuestion}
   {#key currentQuestion}
     <BasicPage title={currentQuestion.text}>
-      <!--
-
-        NB! These are quickly hacked in because the Question component
-        is deprecated. Please, check everything and preferably rewrite.
-        Note that the AnswerOption interface's key is of type number,
-        so please update all type defs to use AnswerOption['key']
-        instead of a hard-coded type.
-
-      -->
-
       <HeadingGroup slot="heading" id="hgroup-{currentQuestion.id}">
         {#if currentQuestion.category && currentQuestion.category !== ''}
           <!-- TODO: Set color based on category -->
@@ -108,17 +239,35 @@
             aria-labelledby="hgroup-{currentQuestion.id}"
             name={currentQuestion.id}
             options={currentQuestion.options}
-            selectedKey={parseInt(answer.key)}
-            on:change={answerQuestion} />
+            {selectedKey}
+            on:change={saveLikertToLocal} />
         {:else}
           {$_('error.general')}
         {/if}
+
+        <div class="m-12 w-full items-start">
+          <label for="openAnswer" class="text-m uppercase"
+            >{$_('candidateApp.opinions.commentOnThisIssue')}
+          </label>
+          <textarea
+            bind:value={openAnswer}
+            on:focusout={saveOpenAnswerToLocal}
+            disabled={!selectedKey}
+            id="openAnswer"
+            rows="4"
+            class="textarea textarea-primary w-full" />
+        </div>
+
+        {#if errorMessage}
+          <p class="text-error">{errorMessage}</p>
+        {/if}
+
         <QuestionActions
-          answered={answer.key != null}
+          answered={selectedKey !== null}
           separateSkip={false}
-          on:previous={() => console.error('previous')}
-          on:delete={() => console.error('delete')}
-          on:next={skipQuestion} />
+          on:previous={goToPreviousQuestion}
+          on:delete={removeAnswer}
+          on:next={gotoNextQuestion} />
       </svelte:fragment>
     </BasicPage>
   {/key}

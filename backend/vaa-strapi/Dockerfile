@@ -1,10 +1,18 @@
 FROM node:16-alpine as base
 WORKDIR /opt/
 
+RUN apk add --no-cache python3 make g++
+
 COPY package*.json ./
 RUN npm install
 
 COPY . .
+
+WORKDIR /opt/strapi-plugin-import-export-entries/
+RUN yarn install
+RUN yarn build
+
+WORKDIR /opt/
 
 FROM base as development
 

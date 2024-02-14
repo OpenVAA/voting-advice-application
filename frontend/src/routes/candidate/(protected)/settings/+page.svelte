@@ -3,7 +3,6 @@
   import {get} from 'svelte/store';
   import {authContext} from '$lib/utils/authenticationStore';
   import {BasicPage} from '$lib/templates/basicPage';
-  import {LogoutButton} from '$candidate/components/logoutButton';
   import Icon from '$lib/components/icon/Icon.svelte';
   import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {Button} from '$lib/components/button';
@@ -61,8 +60,6 @@
 </script>
 
 <BasicPage title={$_('candidateApp.settings.title')} mainClass="bg-base-200">
-  <LogoutButton slot="banner" />
-
   <div class="text-center">
     <p>{$_('candidateApp.settings.instructions')}</p>
   </div>
