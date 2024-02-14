@@ -7,6 +7,7 @@
   import {answerContext} from '$lib/utils/answerStore';
   import Icon from '$lib/components/icon/Icon.svelte';
   import {_} from 'svelte-i18n';
+  import {candidateAppRoute} from '$lib/utils/routes';
 
   const questions = $page.data.questions;
   const categories = [...new Set(questions.map((question) => question.category))];
@@ -82,7 +83,9 @@
                 </Expander>
 
                 <!-- Navigate to unsanswered question -->
-                <a class="flex justify-center pt-10" href="/candidate/questions/{question.id}">
+                <a
+                  class="flex justify-center pt-10"
+                  href="{candidateAppRoute}/questions/{question.id}">
                   <Button variant="main" text={$_('candidateApp.allQuestions.answerButton')} />
                 </a>
               </div>

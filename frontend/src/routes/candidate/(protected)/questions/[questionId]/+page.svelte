@@ -10,12 +10,6 @@
   import {onMount, onDestroy} from 'svelte';
   import {candidateAppRoute} from '$lib/utils/routes';
 
-  /**
-   * A small delay before moving to the next question.
-   * TODO: Make this a global variable used throughout the app.
-   */
-  const DELAY_M_MS = 350;
-
   const SAVE_INTERVAL_MS = 1000;
 
   // Open answer is saved periodically to local storage
@@ -201,7 +195,7 @@
       Object.keys(answerStore).includes(question.id.toString())
     );
     if (!allAnsweredBefore && allAnsweredAfter) {
-      setTimeout(() => goto(`${candidateAppRoute}/questions/done`), DELAY_M_MS);
+      goto(`${candidateAppRoute}/questions/done`);
       return;
     }
 
@@ -209,15 +203,9 @@
     const newIndex = currentIndex + indexChange;
 
     if (newIndex >= 0 && newIndex < $page.data.questions.length) {
-      const newQuestionId = $page.data.questions[newIndex].id;
-      const currentUrl = $page.url.pathname.replace(/\/$/, '');
-      const nextQuestionUrl = `${currentUrl.substring(
-        0,
-        currentUrl.lastIndexOf('/')
-      )}/${newQuestionId}`;
-      setTimeout(() => goto(nextQuestionUrl), DELAY_M_MS);
+      goto(`${candidateAppRoute}/questions/${$page.data.questions[newIndex].id}`);
     } else {
-      setTimeout(() => goto(lastPageUrl), DELAY_M_MS);
+      goto(lastPageUrl);
     }
   }
 
