@@ -203,13 +203,7 @@
     const newIndex = currentIndex + indexChange;
 
     if (newIndex >= 0 && newIndex < $page.data.questions.length) {
-      const newQuestionId = $page.data.questions[newIndex].id;
-      const currentUrl = $page.url.pathname.replace(/\/$/, '');
-      const nextQuestionUrl = `${currentUrl.substring(
-        0,
-        currentUrl.lastIndexOf('/')
-      )}/${newQuestionId}`;
-      goto(nextQuestionUrl);
+      goto(`${candidateAppRoute}/questions/${$page.data.questions[newIndex].id}`);
     } else {
       goto(lastPageUrl);
     }
