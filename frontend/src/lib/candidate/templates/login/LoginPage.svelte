@@ -8,6 +8,7 @@
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {candidateAppRoute} from '$lib/utils/routes';
+  import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
 
   const authContext = getContext<AuthContext>('auth');
 
@@ -39,7 +40,6 @@ Candidate login page. This component also takes care of the login process.
     <PreHeading class="text-2xl font-bold text-primary">{$page.data.appLabels.appTitle}</PreHeading>
     <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
   </HeadingGroup>
-
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onLogin}>
     <p class="max-w-md text-center">
       {$_('candidate.enter_email_and_password')}
@@ -54,20 +54,12 @@ Candidate login page. This component also takes care of the login process.
       bind:value={email}
       autocomplete="email"
       required />
-    <label for="password" class="hidden">{$_('candidate.password')}</label>
-    <input
-      type="password"
-      name="password"
-      id="password"
-      class="input mb-md w-full max-w-md"
-      placeholder={$_('candidate.password_placeholder')}
-      bind:value={password}
-      autocomplete="current-password"
-      required />
+    <div class="mb-md w-full max-w-md">
+      <PasswordField bind:password autocomplete="current-password" />
+    </div>
     {#if wrongCredentials}
       <p class="text-center text-error">{$_('candidate.wrong_email_or_password')}</p>
     {/if}
-
     <Button type="submit" text={$_('candidate.sign_in_button')} variant="main" />
     <Button href="{candidateAppRoute}/forgot-password" text={$_('candidate.forgot_password')} />
     <Button href="{candidateAppRoute}/help" text={$_('candidate.contact_support')} />

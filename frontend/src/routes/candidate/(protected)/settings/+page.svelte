@@ -8,6 +8,7 @@
   import {Button} from '$lib/components/button';
   import {validatePassword} from '$lib/utils/passwordValidation';
   import {changePassword} from '$lib/api/candidate';
+  import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
 
   const user = get(authContext.user);
 
@@ -119,14 +120,7 @@
             {$_('candidateApp.settings.currentPassword')}
           </label>
           <div class="w-6/12 text-right text-secondary">
-            <input
-              type="password"
-              id="currentPassword"
-              class={inputClass}
-              placeholder={$_('candidateApp.settings.currentPassword')}
-              bind:value={currentPassword}
-              autocomplete="password"
-              required />
+            <PasswordField bind:password={currentPassword} autocomplete="" />
           </div>
         </div>
       </div>
@@ -144,14 +138,7 @@
             {$_('candidateApp.settings.newPassword')}
           </label>
           <div class="w-6/12 text-right text-secondary">
-            <input
-              type="password"
-              id="newPassword"
-              class={inputClass}
-              placeholder={$_('candidateApp.settings.newPassword')}
-              bind:value={password}
-              autocomplete="new-password"
-              required />
+            <PasswordField bind:password autocomplete="new-password" />
           </div>
         </div>
       </div>
@@ -164,14 +151,7 @@
             {$_('candidateApp.settings.newPasswordConfirmation')}
           </label>
           <div class="w-6/12 text-right text-secondary">
-            <input
-              type="password"
-              id="newPasswordConfirmation"
-              class={inputClass}
-              placeholder={$_('candidateApp.settings.newPasswordConfirmation')}
-              bind:value={passwordConfirmation}
-              autocomplete="new-password"
-              required />
+            <PasswordField bind:password={passwordConfirmation} autocomplete="new-password" />
           </div>
         </div>
       </div>
