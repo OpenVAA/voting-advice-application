@@ -17,7 +17,19 @@ const defaultPermissions = [
   {action: 'api::constituency.constituency.find', roleType: 'authenticated'},
   {action: 'api::constituency.constituency.findOne', roleType: 'authenticated'},
   {action: 'api::language.language.find', roleType: 'authenticated'},
-  {action: 'api::language.language.findOne', roleType: 'authenticated'}
+  {action: 'api::language.language.findOne', roleType: 'authenticated'},
+  {action: 'api::question.question.find', roleType: 'authenticated'},
+  {action: 'api::question.question.findOne', roleType: 'authenticated'},
+  {action: 'api::question-category.question-category.find', roleType: 'authenticated'},
+  {action: 'api::question-category.question-category.findOne', roleType: 'authenticated'},
+  {action: 'api::question-type.question-type.find', roleType: 'authenticated'},
+  {action: 'api::question-type.question-type.findOne', roleType: 'authenticated'},
+  {action: 'api::answer.answer.create', roleType: 'authenticated'},
+  {action: 'api::answer.answer.delete', roleType: 'authenticated'},
+  {action: 'api::answer.answer.find', roleType: 'authenticated'},
+  {action: 'api::answer.answer.findOne', roleType: 'authenticated'},
+  {action: 'api::answer.answer.createLocalization', roleType: 'authenticated'},
+  {action: 'api::answer.answer.update', roleType: 'authenticated'}
 ];
 
 module.exports = async (plugin) => {
