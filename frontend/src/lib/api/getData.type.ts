@@ -195,7 +195,7 @@ export interface StrapiAnswerData {
 }
 
 export interface StrapiLanguageData {
-  id: number | string;
+  id: number;
   attributes: {
     localisationCode: string;
     name: string;

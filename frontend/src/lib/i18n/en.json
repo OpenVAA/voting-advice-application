@@ -107,6 +107,11 @@
       "close": "Close",
       "cancel": "Cancel"
     },
+    "languages": {
+      "English": "English",
+      "Finnish": "Finnish",
+      "Spanish": "Spanish"
+    },
     "logoutModal": {
       "title": "Some of Your Data Is Still Missing",
       "body": "There are still 10 items of basic info and 25 opinions to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
@@ -125,11 +130,14 @@
         "electionNumber": "Election Number",
         "gender": "Gender",
         "motherTongue": "Mother Tongue",
-        "age": "Age",
+        "birthday": "Birthday",
         "portrait": "Portrait",
         "unaffiliated": "Unaffiliated"
       },
+      "errorMessage": "An error occurred when sending data!",
       "pending": "pending",
+      "addAnother": "Add another",
+      "selectFirst": "Select first",
       "unaffiliatedDescription": "Set this on if you're not a member of the party on whose list you are.",
       "nominationsDescription": "These are the constituencies where you're nominated along with the election list and possible election symbol. If a nomination is marked 'Pending', your election symbol might not yet be defined.",
       "electionManifesto": "Election manifesto",

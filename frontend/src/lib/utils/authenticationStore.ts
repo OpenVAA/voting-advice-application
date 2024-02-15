@@ -1,5 +1,5 @@
 import {authenticate, me} from '$lib/api/candidate';
-import type {User} from '$lib/candidate/types';
+import type {User} from '$lib/types/candidateAttributes';
 import {writable, type Writable} from 'svelte/store';
 
 export interface AuthContext {

@@ -1,65 +1,73 @@
 <script lang="ts">
-  import FieldGroup from '$lib/components/common/FieldGroup.svelte';
-  import {Page} from '$lib/templates/page';
+  import FieldGroup from '$lib/components/common/form/FieldGroup.svelte';
+  import Field from '$lib/components/common/form/Field.svelte';
+  import {BasicPage} from '$lib/templates/basicPage';
   import {_} from 'svelte-i18n';
   import {authContext} from '$lib/utils/authenticationStore';
   import {get} from 'svelte/store';
   import Icon from '$lib/components/icon/Icon.svelte';
-  import {onDestroy, onMount} from 'svelte';
   import {LogoutButton} from '$candidate/components/logoutButton';
+  import {Button} from '$lib/components/button';
+  import AvatarSelect from './AvatarSelect.svelte';
+  import {updateBasicInfo} from '$lib/api/candidate';
+  import {getLanguages} from '$lib/api/candidate';
+  import {goto} from '$app/navigation';
+  import type {StrapiLanguageData} from '$lib/api/getData.type';
+  import type {Language} from '$lib/types/candidateAttributes';
 
   const basicInfoFields = ['firstName', 'lastName', 'party'];
-  const editableFields = ['gender', 'motherTongue', 'age'];
-  const fieldOptions = new Map([
-    [
-      'gender',
-      ['male', 'female', 'nonBinary', 'other', 'preferNotToSay'].map((a) =>
-        $_(`candidateApp.genders.${a}`)
-      )
-    ],
-    // TODO: i18n localization
-    ['motherTongue', ['English', 'Suomi', 'Svenska']]
-  ]);
 
-  const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';
+  const genders = ['male', 'female', 'nonBinary', 'other', 'preferNotToSay'];
+
+  const labelClass =
+    'pointer-events-none label-sm whitespace-nowrap label mx-6 my-2 text-secondary';
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
   const headerClass = 'uppercase mx-6 my-0 p-0 text-m text-secondary';
+  const selectClass = 'select select-sm w-full text-right text-primary';
   const inputClass =
-    'input-ghost input input-sm w-full pr-2 text-right disabled:border-none disabled:bg-base-100';
-
-  let portraitInput: HTMLElement | null;
-  let portraitLabel: HTMLElement | null;
-
-  // function for clicking the portrait input field with space
-  const handlePortraitInput = (event: KeyboardEvent) => {
-    if (event.code === 'Space') {
-      event.preventDefault(); // Prevent default behavior (e.g., scrolling the page)
-      portraitInput?.click();
-    }
-  };
-
-  // TODO: consider refactoring file input to a different component
-
-  // add an event listener to the portrait label for keyboard navigation
-  onMount(() => {
-    portraitLabel?.addEventListener('keydown', handlePortraitInput);
-  });
-
-  // remove the event listener on unmount
-  onDestroy(() => {
-    portraitLabel?.removeEventListener('keydown', handlePortraitInput);
-  });
+    'input-ghost flex justify-end text-right input input-sm w-full pr-2 disabled:border-none disabled:bg-base-100';
+  const iconClass = 'text-secondary my-auto flex-shrink-0';
+  const buttonContainerClass = 'pr-6';
+  const inputContainerClass = 'flex w-full pr-6';
 
   // get the user from authContext
   const user = get(authContext.user);
+
+  // get initial values for basic data
+  let gender = user?.candidate?.gender;
+  let motherTongues = user?.candidate?.motherTongues;
+  let birthday = user?.candidate?.birthday;
+  let photo = user?.candidate?.photo;
+  let unaffiliated = user?.candidate?.unaffiliated;
+  let manifesto = user?.candidate?.manifesto;
   const nominations = user?.candidate?.nominations;
+
+  // all necessary fields filled boolean
+  $: allFilled =
+    gender && motherTongues && motherTongues.length > 0 && birthday && manifesto && true
+      ? true
+      : false;
+
+  let errorMessage: string | undefined;
+
+  let uploadPhoto: () => Promise<void>;
+
+  const submitForm = async () => {
+    try {
+      await uploadPhoto();
+      await updateBasicInfo(manifesto, birthday, gender, photo, unaffiliated, motherTongues);
+      // await goto('/candidate/questions');
+    } catch (error) {
+      errorMessage = $_('candidateApp.basicInfo.errorMessage');
+    }
+  };
 
   // the dot symbol for separating info string
   const dot = '\u22C5';
 
   // map nominations into objects
   const nominationFields = nominations?.map((nom) => ({
-    nominationID: nom.id,
+    nominationID: nom.id.toString(),
     constituency: nom.constituency?.name,
     party: nom.party.shortName,
     electionSymbol: nom.electionSymbol,
@@ -74,113 +82,207 @@
     lastName: user?.candidate?.lastName,
     party: user?.candidate?.party?.shortName
   };
+
+  // fetch languages from backend
+  let allLanguages: StrapiLanguageData[] | undefined;
+  getLanguages().then((languages) => (allLanguages = languages));
+
+  // map the languages to their respective locales for easier use
+  $: motherTongueLocales = motherTongues?.map((lang) => lang.localisationCode);
+  $: availableLanguages = allLanguages?.filter(
+    (lang) => !motherTongueLocales?.includes(lang.attributes.localisationCode)
+  );
+
+  // html element for selecting html language
+  let motherTongueSelect: HTMLSelectElement;
+
+  // handle the change when a language is selected
+  const handleLanguageSelect = (e: any) => {
+    const language = availableLanguages
+      ? availableLanguages.find((lang) => lang.attributes.localisationCode === e.target.value)
+      : undefined;
+    if (language && motherTongues) {
+      const languageObj: Language = {
+        id: language.id,
+        localisationCode: language?.attributes.localisationCode,
+        name: language.attributes.name
+      };
+      motherTongues = [...motherTongues, languageObj];
+      // set the hidden element as the selected one
+      motherTongueSelect.selectedIndex = 0;
+    }
+  };
 </script>
 
-<Page title={$_('candidateApp.basicInfo.title')} mainClass="bg-base-200">
-  <LogoutButton slot="banner" />
+<BasicPage title={$_('candidateApp.basicInfo.title')} mainClass="bg-base-200">
+  <svelte:fragment slot="banner">
+    <LogoutButton />
+  </svelte:fragment>
 
-  <div class="flex flex-col items-center gap-16">
-    <h1>{$_('candidateApp.basicInfo.title')}</h1>
-
-    <p class="text-center">
-      {$_('candidateApp.basicInfo.instructions')}
-    </p>
-
-    <FieldGroup fields={basicInfoFields} let:field>
-      <div class="flex items-center justify-between bg-base-100 px-4">
-        <label for={field} class={labelClass}>
-          {$_(`candidateApp.basicInfo.fields.${field}`)}
-        </label>
-        <div class="w-6/12 text-right text-secondary">
-          <input type="text" disabled id={field} value={basicInfoData[field]} class={inputClass} />
-        </div>
-        <Icon name="locked" class="text-secondary" />
-      </div>
-      <p class={disclaimerClass} slot="footer">
-        {$_('candidateApp.basicInfo.disclaimer')}
-      </p>
-    </FieldGroup>
-
-    <FieldGroup fields={nominationFields} let:field>
-      <p class={headerClass} slot="header">
-        {$_('candidateApp.basicInfo.nominations')}
+  <form on:submit|preventDefault={submitForm}>
+    <div class="mx-20 my-20 flex flex-col items-center gap-16">
+      <p class="text-center">
+        {$_('candidateApp.basicInfo.instructions')}
       </p>
 
-      <div class="flex items-center justify-between bg-base-100 px-4">
-        <label for={field.nominationID} class="label-sm label mx-6 my-2 w-8/12 text-secondary"
-          >{`${field.fieldText}`}</label>
-        <div class="w-4/12 text-right text-secondary">
-          <input
-            disabled
-            type="text"
-            id={field.nominationID}
-            value={field.electionSymbol ? null : $_('candidateApp.basicInfo.pending')}
-            class={inputClass} />
-        </div>
-        <Icon name="locked" class="text-secondary" />
-      </div>
-      <p class={disclaimerClass} slot="footer">
-        {$_('candidateApp.basicInfo.nominationsDescription')}
-      </p>
-    </FieldGroup>
+      <FieldGroup>
+        {#each basicInfoFields as field}
+          <Field>
+            <label for={field} class={labelClass}>
+              {$_(`candidateApp.basicInfo.fields.${field}`)}
+            </label>
+            <div class={inputContainerClass}>
+              <input
+                type="text"
+                disabled
+                id={field}
+                value={basicInfoData[field]}
+                class={inputClass} />
+              <Icon name="locked" class={iconClass} />
+            </div>
+          </Field>
+        {/each}
+        <p class={disclaimerClass} slot="footer">
+          {$_('candidateApp.basicInfo.disclaimer')}
+        </p>
+      </FieldGroup>
 
-    <FieldGroup fields={editableFields} let:field>
-      <div class="flex items-center justify-between bg-base-100 px-4">
-        <label for={field} class={labelClass}>
-          {$_(`candidateApp.basicInfo.fields.${field}`)}
-        </label>
-        {#if field === 'age'}
-          <input type="number" id={field} placeholder="0" class={inputClass} />
-        {:else}
-          <select id={field} class="select select-sm w-6/12 text-primary">
-            <option disabled selected value style="display: none;" />
-            {#each fieldOptions.get(field) ?? [] as option}
-              <option value={option}>{option}</option>
+      <FieldGroup>
+        <p class={headerClass} slot="header">
+          {$_('candidateApp.basicInfo.nominations')}
+        </p>
+
+        {#each nominationFields ?? [] as nomination}
+          <Field>
+            <label for={nomination.nominationID} class={labelClass}>{nomination.fieldText}</label>
+            <div class={inputContainerClass}>
+              <input
+                disabled
+                type="text"
+                id={nomination.nominationID}
+                value={nomination.electionSymbol ? null : $_('candidateApp.basicInfo.pending')}
+                class={inputClass} />
+              <Icon name="locked" class={iconClass} />
+            </div>
+          </Field>
+        {/each}
+        <p class={disclaimerClass} slot="footer">
+          {$_('candidateApp.basicInfo.nominationsDescription')}
+        </p>
+      </FieldGroup>
+
+      <FieldGroup>
+        <Field>
+          <label for="birthday" class={labelClass}>
+            {$_('candidateApp.basicInfo.fields.birthday')}
+          </label>
+          <div class={inputContainerClass}>
+            <div class={inputClass}>
+              <input class="dark:bg-black" type="date" id="birthday" bind:value={birthday} />
+            </div>
+          </div>
+        </Field>
+        <Field>
+          <label for="gender" class={labelClass}>
+            {$_('candidateApp.basicInfo.fields.gender')}
+          </label>
+          <select
+            id="gender"
+            class={selectClass}
+            bind:value={gender}
+            style="text-align-last: right;direction: rtl;">
+            <option disabled selected style="display: none;" />
+            {#each genders as option}
+              <option value={option} selected={option === gender}
+                >{$_(`candidateApp.genders.${option}`)}</option>
             {/each}
           </select>
-        {/if}
-      </div>
-    </FieldGroup>
+        </Field>
+      </FieldGroup>
 
-    <FieldGroup let:field>
-      <div class="flex h-full items-center justify-between bg-base-100 px-4">
-        <span class={labelClass}>
-          {$_('candidateApp.basicInfo.fields.portrait')}
-        </span>
-        <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-        <label
-          bind:this={portraitLabel}
-          id="portraitLabel"
-          tabindex="0"
-          for="portrait"
-          class="cursor-pointer text-primary"
-          >{$_('candidateApp.basicInfo.tapToAddPhoto')}
-          <Icon name="photo" />
-        </label>
-        <input
-          bind:this={portraitInput}
-          type="file"
-          id="portrait"
-          placeholder="PLACEHOLDER"
-          class="hidden" />
-      </div>
-    </FieldGroup>
+      <FieldGroup>
+        <p class={headerClass} slot="header">
+          {$_('candidateApp.basicInfo.fields.motherTongue')}
+        </p>
 
-    <FieldGroup let:field>
-      <div class="flex items-center justify-between bg-base-100 px-4">
-        <label for="unaffiliated" class={labelClass}>
-          {$_('candidateApp.basicInfo.fields.unaffiliated')}
-        </label>
-        <input id="unaffiliated" type="checkbox" class="toggle toggle-primary mr-8" checked />
-      </div>
-      <p class={disclaimerClass} slot="footer">
-        {$_('candidateApp.basicInfo.unaffiliatedDescription')}
-      </p>
-    </FieldGroup>
-    <FieldGroup>
-      <label for="message" class={headerClass} slot="header"
-        >{$_('candidateApp.basicInfo.electionManifesto')}</label>
-      <textarea id="message" rows="4" class="w-full bg-base-100 p-6 !outline-none" />
-    </FieldGroup>
-  </div>
-</Page>
+        <Field>
+          <label for="motherTongue" class={labelClass}>
+            {#if motherTongues}
+              {motherTongues.length > 0
+                ? $_('candidateApp.basicInfo.addAnother')
+                : $_('candidateApp.basicInfo.seletFile')}
+            {/if}
+          </label>
+          <select
+            bind:this={motherTongueSelect}
+            id="motherTongue"
+            class={selectClass}
+            on:change={handleLanguageSelect}>
+            <option disabled selected value style="display: none;" />
+            {#each availableLanguages ?? [] as option}
+              <option value={option.attributes.localisationCode}
+                >{$_(`candidateApp.languages.${option.attributes.name}`)}</option>
+            {/each}
+          </select>
+        </Field>
+        {#each motherTongues ?? [] as tongue}
+          <Field>
+            <label for={tongue.name} class={labelClass}>
+              {tongue.name}
+            </label>
+            <div class={buttonContainerClass}>
+              <button
+                title="remove"
+                id={tongue.name}
+                on:click={() => (motherTongues = motherTongues?.filter((m) => m.id !== tongue.id))}>
+                <Icon name="removeFromList" class={iconClass} />
+              </button>
+            </div>
+          </Field>
+        {/each}
+      </FieldGroup>
+
+      <FieldGroup>
+        <AvatarSelect bind:photo bind:uploadPhoto />
+      </FieldGroup>
+
+      <FieldGroup>
+        <Field>
+          <label for="unaffiliated" class={labelClass}>
+            {$_('candidateApp.basicInfo.fields.unaffiliated')}
+          </label>
+
+          <input
+            id="unaffiliated"
+            type="checkbox"
+            class="toggle toggle-primary mr-8"
+            bind:checked={unaffiliated} />
+        </Field>
+        <p class={disclaimerClass} slot="footer">
+          {$_('candidateApp.basicInfo.unaffiliatedDescription')}
+        </p>
+      </FieldGroup>
+      <FieldGroup>
+        <label for="message" class={headerClass} slot="header"
+          >{$_('candidateApp.basicInfo.electionManifesto')}</label>
+        <textarea
+          id="message"
+          rows="4"
+          class="w-full resize-none bg-base-100 p-6 !outline-none"
+          bind:value={manifesto} />
+      </FieldGroup>
+      <Button
+        disabled={!allFilled}
+        text={$_('candidateApp.opinions.continue')}
+        type="submit"
+        variant="main"
+        icon="next"
+        slot="primaryActions" />
+      {#if errorMessage}
+        <div class="text-error">
+          {errorMessage}
+        </div>
+      {/if}
+    </div>
+  </form>
+</BasicPage>

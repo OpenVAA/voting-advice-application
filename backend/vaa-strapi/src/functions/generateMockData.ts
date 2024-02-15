@@ -562,6 +562,7 @@ async function createCandidates(length: number) {
       firstName,
       lastName,
       politicalExperience,
+      unaffiliated: false,
       motherTongues: [motherTongue.id],
       otherLanguages: [otherLanguage.id],
       party: party.id

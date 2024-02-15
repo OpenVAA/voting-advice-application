@@ -1,7 +1,9 @@
 import {get} from 'svelte/store';
 import {constants} from '$lib/utils/constants';
 import {authContext} from '$lib/utils/authenticationStore';
-import type {User} from '$lib/candidate/types';
+import type {Language, User} from '$lib/types/candidateAttributes';
+import type {Photo} from '$lib/types/candidateAttributes';
+import type {StrapiLanguageData} from '$lib/api/getData.type';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
@@ -76,7 +78,9 @@ export const me = async (): Promise<User | undefined> => {
     getUrl('api/users/me', {
       'populate[candidate][populate][nominations][populate][party]': 'true',
       'populate[candidate][populate][nominations][populate][constituency]': 'true',
-      'populate[candidate][populate][party]': 'true'
+      'populate[candidate][populate][party]': 'true',
+      'populate[candidate][populate][photo]': 'true',
+      'populate[candidate][populate][motherTongues]': 'true'
     })
   );
   if (!res?.ok) return;
@@ -85,6 +89,41 @@ export const me = async (): Promise<User | undefined> => {
   if (data?.error) return;
 
   return data;
+};
+
+export const updateBasicInfo = async (
+  manifesto?: Text,
+  birthday?: string,
+  gender?: string,
+  photo?: Photo,
+  unaffiliated?: boolean,
+  motherTongues?: Language[]
+) => {
+  const user = get(authContext.user);
+  const candidate = user?.candidate;
+
+  if (!candidate) {
+    throw new Error('user.candidate is undefined');
+  }
+
+  const body = {
+    data: {
+      manifesto,
+      birthday,
+      gender,
+      unaffiliated,
+      photo: photo?.id,
+      motherTongues
+    }
+  };
+
+  return await request(getUrl(`api/candidates/${candidate.id}`), {
+    method: 'PUT',
+    body: JSON.stringify(body),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
 };
 
 /**
@@ -193,6 +232,31 @@ export const getExistingAnswers = async (): Promise<Response | undefined> => {
   if (!res?.ok) return;
 
   return res;
+};
+
+export const getLanguages = async (): Promise<StrapiLanguageData[] | undefined> => {
+  const res = await request(
+    getUrl('api/languages', {
+      'populate[language]': 'true'
+    })
+  );
+  if (!res?.ok) return undefined;
+
+  const resJson = await res.json();
+  return resJson.data;
+};
+
+export const uploadFiles = async (files: File[]) => {
+  const formData = new FormData();
+  files.forEach((file) => formData.append('files', file));
+  return await request(getUrl('/api/upload/'), {
+    method: 'POST',
+    body: formData
+  });
+};
+
+export const deleteFile = async (id: number) => {
+  return await request(getUrl(`/api/upload/files/${id}`), {method: 'DELETE'});
 };
 
 export const request = async (url: string, options: RequestInit = {}) => {
