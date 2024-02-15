@@ -235,8 +235,8 @@
       "editYourOpinions": "Edit Your Opinions"
     },
     "passwordButton": {
-      "hidePassword": "hide the password",
-      "revealPassword": "reveal the password"
+      "hidePassword": "Hide password",
+      "revealPassword": "Reveal password"
     }
   }
 }

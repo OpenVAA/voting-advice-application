@@ -8,7 +8,7 @@ async function globalSetup(config: FullConfig) {
 
   await page.goto(`${baseURL!}/candidate`);
   await page.getByLabel('Email').fill('first.last@example.com');
-  await page.getByLabel('Password').fill('password');
+  await page.getByLabel(/^Password$/).fill('password');
   await page.getByText('Sign in').click();
 
   // Wait until the page actually signs in.
