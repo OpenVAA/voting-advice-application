@@ -7,8 +7,6 @@
 </script>
 
 <BasicPage title={$_('candidateApp.allDataFilled.title')}>
-  <LogoutButton slot="banner" />
-
   <div class="text-center">
     <p>{$_('candidateApp.allDataFilled.description')}</p>
     <p>{$_('candidateApp.allDataFilled.tip')}</p>
@@ -18,9 +16,9 @@
     <LogoutButton variantIcon={false} />
     <Button
       text={$_('candidateApp.allDataFilled.previewYourProfile')}
-      href={`${candidateAppRoute}/preview`} />
+      href={`${candidateAppRoute}/questions/preview`} />
     <Button
       text={$_('candidateApp.allDataFilled.editYourOpinions')}
-      href={`${candidateAppRoute}/questions/all`} />
+      href={`${candidateAppRoute}/questions`} />
   </svelte:fragment>
 </BasicPage>

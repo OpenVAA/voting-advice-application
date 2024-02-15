@@ -43,7 +43,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
       icon="settings"
       text={$_('candidateApp.navbar.settings')} />
     <NavItem
-      href="{candidateAppRoute}/preview"
+      href="{candidateAppRoute}/questions/preview"
       icon="previewProfile"
       text={$_('candidateApp.navbar.preview')} />
     <NavItem href="{candidateAppRoute}/help" icon="help" text={$_('candidateApp.navbar.help')} />
