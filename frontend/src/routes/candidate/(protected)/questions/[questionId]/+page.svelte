@@ -36,7 +36,7 @@
   let currentQuestion: QuestionProps | undefined;
   $: currentQuestion = $page.data.questions.find((q) => q.id.toString() === questionId.toString());
 
-  $: answer = answerStore[questionId]; // null if not answered
+  $: answer = answerStore?.[questionId]; // null if not answered
 
   let selectedKey: AnswerOption['key'] | null;
 
@@ -113,11 +113,13 @@
       const data = await response.json();
       const answerId = data.data.id;
 
-      answerStore[questionId] = {
-        id: answerId,
-        key: parseInt(localLikert),
-        openAnswer
-      };
+      if (answerStore) {
+        answerStore[questionId] = {
+          id: answerId,
+          key: parseInt(localLikert),
+          openAnswer
+        };
+      }
     } else {
       // Existing answer
 
@@ -134,11 +136,13 @@
         return;
       }
 
-      answerStore[questionId] = {
-        id: answer.id,
-        key: previousLikert,
-        openAnswer
-      };
+      if (answerStore) {
+        answerStore[questionId] = {
+          id: answer.id,
+          key: previousLikert,
+          openAnswer
+        };
+      }
     }
 
     openAnswer = '';
@@ -165,7 +169,7 @@
     openAnswer = '';
     removeLocalAnswerToQuestion();
 
-    delete answerStore[questionId];
+    delete answerStore?.[questionId];
     answerContext.answers.set(answerStore);
   }
 
@@ -182,8 +186,8 @@
     }
 
     // Check if all questions have been answered (before answer to current question is saved)
-    const allAnsweredBefore = $page.data.questions.every((question) =>
-      Object.keys(answerStore).includes(question.id.toString())
+    const allAnsweredBefore = $page.data.questions.every(
+      (question) => answerStore && Object.keys(answerStore).includes(question.id.toString())
     );
 
     // Save the current answer to the server before navigating
@@ -191,8 +195,8 @@
 
     // Check if all questions have been answered (after answer is saved)
     // If the last answer was filled now, go to page with congratulatory message
-    const allAnsweredAfter = $page.data.questions.every((question) =>
-      Object.keys(answerStore).includes(question.id.toString())
+    const allAnsweredAfter = $page.data.questions.every(
+      (question) => answerStore && Object.keys(answerStore).includes(question.id.toString())
     );
     if (!allAnsweredBefore && allAnsweredAfter) {
       goto(`${candidateAppRoute}/questions/done`);

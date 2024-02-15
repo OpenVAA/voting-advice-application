@@ -16,15 +16,23 @@
   $: answerStore = $store;
 
   let nofUnasweredQuestions = 0;
-  $: nofUnasweredQuestions = questions.length - Object.entries(answerStore).length;
+  let loading = true;
+  $: {
+    if (answerStore) {
+      nofUnasweredQuestions = questions.length - Object.entries(answerStore).length;
+      loading = false;
+    }
+  }
 </script>
 
 <BasicPage title={$_('candidateApp.allQuestions.title')}>
   <svelte:fragment slot="note">
-    <div class="text-warning">
-      <Icon name="important" />
-      {$_('candidateApp.allQuestions.warning', {values: {nofUnasweredQuestions}})}
-    </div>
+    {#if nofUnasweredQuestions != 0 && !loading}
+      <div class="text-warning">
+        <Icon name="important" />
+        {$_('candidateApp.allQuestions.warning', {values: {nofUnasweredQuestions}})}
+      </div>
+    {/if}
   </svelte:fragment>
 
   <p class="text-center">
@@ -38,7 +46,7 @@
           <!-- Show questions based on categories -->
           {#if category === question.category}
             <!-- Question has been answered -->
-            {#if answerStore[question.id]}
+            {#if answerStore?.[question.id]}
               <div class="pb-20 pt-20">
                 <div class="text-accent">
                   {question.category}

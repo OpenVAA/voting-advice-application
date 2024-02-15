@@ -2,7 +2,7 @@ import {getExistingAnswers} from '$lib/api/candidate';
 import {writable, type Writable} from 'svelte/store';
 
 export interface AnswerContext {
-  answers: Writable<Record<string, Answer>>;
+  answers: Writable<Record<string, Answer> | undefined>;
   loadAnswerData: () => Promise<void>;
 }
 
@@ -24,7 +24,7 @@ interface AnswerData {
   attributes: AnswerAttributes;
 }
 
-const answerStore = writable<Record<string, Answer>>({});
+const answerStore = writable<Record<string, Answer> | undefined>(undefined);
 
 export const loadAnswerData = async () => {
   const response = await getExistingAnswers();
