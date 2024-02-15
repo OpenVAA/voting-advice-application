@@ -125,7 +125,7 @@
       "fields": {
         "firstName": "First Name",
         "lastName": "Surname",
-        "party": "party",
+        "party": "Party",
         "electionList": "Election List",
         "electionNumber": "Election Number",
         "gender": "Gender",

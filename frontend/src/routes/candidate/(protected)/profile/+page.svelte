@@ -10,6 +10,7 @@
   import {Button} from '$lib/components/button';
   import AvatarSelect from './AvatarSelect.svelte';
   import {updateBasicInfo} from '$lib/api/candidate';
+  import {loadUserData} from '$lib/utils/authenticationStore';
   import {getLanguages} from '$lib/api/candidate';
   import {goto} from '$app/navigation';
   import type {StrapiLanguageData} from '$lib/api/getData.type';
@@ -44,9 +45,7 @@
 
   // all necessary fields filled boolean
   $: allFilled =
-    gender && motherTongues && motherTongues.length > 0 && birthday && manifesto && true
-      ? true
-      : false;
+    gender && motherTongues && motherTongues.length > 0 && birthday && manifesto ? true : false;
 
   let errorMessage: string | undefined;
 
@@ -56,7 +55,8 @@
     try {
       await uploadPhoto();
       await updateBasicInfo(manifesto, birthday, gender, photo, unaffiliated, motherTongues);
-      // await goto('/candidate/questions');
+      await loadUserData(); // reload user data so it's up to date
+      await goto('/candidate/questions');
     } catch (error) {
       errorMessage = $_('candidateApp.basicInfo.errorMessage');
     }
@@ -115,10 +115,6 @@
 </script>
 
 <BasicPage title={$_('candidateApp.basicInfo.title')} mainClass="bg-base-200">
-  <svelte:fragment slot="banner">
-    <LogoutButton />
-  </svelte:fragment>
-
   <form on:submit|preventDefault={submitForm}>
     <div class="mx-20 my-20 flex flex-col items-center gap-16">
       <p class="text-center">
@@ -190,7 +186,7 @@
             id="gender"
             class={selectClass}
             bind:value={gender}
-            style="text-align-last: right;direction: rtl;">
+            style="text-align-last: right; direction: rtl;">
             <option disabled selected style="display: none;" />
             {#each genders as option}
               <option value={option} selected={option === gender}
@@ -210,7 +206,7 @@
             {#if motherTongues}
               {motherTongues.length > 0
                 ? $_('candidateApp.basicInfo.addAnother')
-                : $_('candidateApp.basicInfo.seletFile')}
+                : $_('candidateApp.basicInfo.selectFirst')}
             {/if}
           </label>
           <select
@@ -233,6 +229,7 @@
             <div class={buttonContainerClass}>
               <button
                 title="remove"
+                type="button"
                 id={tongue.name}
                 on:click={() => (motherTongues = motherTongues?.filter((m) => m.id !== tongue.id))}>
                 <Icon name="removeFromList" class={iconClass} />
