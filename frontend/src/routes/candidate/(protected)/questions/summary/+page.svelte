@@ -76,11 +76,13 @@
 
               <div class="pt-10">
                 <!-- This gives empty form label error from Wave Extension for every empty dot, but fix should come from LikertResponseButton -->
-                <LikertResponseButtons
-                  name={question.id}
-                  mode="display"
-                  options={question.options}
-                  selectedKey={answerStore[question.id].key} />
+                <a href="{candidateAppRoute}/questions/{question.id}">
+                  <LikertResponseButtons
+                    name={question.id}
+                    mode="display"
+                    options={question.options}
+                    selectedKey={answerStore[question.id].key} />
+                </a>
 
                 {#if answerStore[question.id].openAnswer}
                   <div class="pt-10">

@@ -16,9 +16,9 @@
     <LogoutButton variantIcon={false} />
     <Button
       text={$_('candidateApp.allDataFilled.previewYourProfile')}
-      href={`${candidateAppRoute}/questions/preview`} />
+      href={`${candidateAppRoute}/preview`} />
     <Button
       text={$_('candidateApp.allDataFilled.editYourOpinions')}
-      href={`${candidateAppRoute}/questions`} />
+      href={`${candidateAppRoute}/questions/summary`} />
   </svelte:fragment>
 </BasicPage>
