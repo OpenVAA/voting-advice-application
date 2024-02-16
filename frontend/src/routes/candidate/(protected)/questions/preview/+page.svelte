@@ -10,17 +10,34 @@
   import {candidateAppRoute} from '$lib/utils/routes';
 
   const questions = $page.data.questions;
-  const categories = [...new Set(questions.map((question) => question.category))];
 
   const store = answerContext.answers;
   $: answerStore = $store;
 
+  const questionsByCategory = questions.reduce(
+    (acc: Record<string, Array<QuestionProps>>, question) => {
+      if (!question.category) {
+        return acc;
+      }
+      if (!acc[question.category]) {
+        acc[question.category] = [];
+      }
+      acc[question.category].push(question);
+      return acc;
+    },
+    {}
+  );
+
   let nofUnasweredQuestions = 0;
   let loading = true;
+  let unsansweredCategories: Array<string> | undefined = undefined;
   $: {
     if (answerStore) {
       nofUnasweredQuestions = questions.length - Object.entries(answerStore).length;
       loading = false;
+      unsansweredCategories = Object.keys(questionsByCategory).filter(
+        (category) => !questionsByCategory[category].every((question) => answerStore?.[question.id])
+      );
     }
   }
 </script>
@@ -39,65 +56,65 @@
     {$_('candidateApp.allQuestions.info')}
   </p>
 
-  {#each categories as category}
+  {#each Object.entries(questionsByCategory) as [category, categoryQuestions]}
     <div class="edgetoedge-x">
-      <Expander title={category || ''} variant="category">
-        {#each questions as question, i}
-          <!-- Show questions based on categories -->
-          {#if category === question.category}
-            <!-- Question has been answered -->
-            {#if answerStore?.[question.id]}
-              <div class="pb-20 pt-20">
-                <div class="text-accent">
-                  {question.category}
-                </div>
-
-                <Expander title={question.text || ''} variant="question">
-                  {question.info}
-                </Expander>
-
-                <div class="pt-10">
-                  <!-- This gives empty form label error from Wave Extension for every empty dot, but fix should come from LikertResponseButton -->
-                  <LikertResponseButtons
-                    name={question.id}
-                    mode="display"
-                    options={question.options}
-                    selectedKey={answerStore[question.id].key} />
-
-                  {#if answerStore[question.id].openAnswer}
-                    <div class="pt-10">
-                      <label for="openAnswer{i}" class="text-m uppercase"
-                        >{$_('candidateApp.allQuestions.commentOnThisIssue')}
-                      </label>
-                      <textarea
-                        bind:value={answerStore[question.id].openAnswer}
-                        disabled
-                        id="openAnswer{i}"
-                        rows="4"
-                        class="textarea textarea-primary w-full" />
-                    </div>
-                  {/if}
-                </div>
+      <Expander
+        title={category || ''}
+        variant="category"
+        defaultExpanded={unsansweredCategories?.includes(category ?? '')}>
+        {#each categoryQuestions as question, i}
+          <!-- Question has been answered -->
+          {#if answerStore?.[question.id]}
+            <div class="pb-20 pt-20">
+              <div class="text-accent">
+                {question.category}
               </div>
-              <!-- Question not yet answered -->
-            {:else}
-              <div class="pt-30 pb-20">
-                <div class="text-accent">
-                  {question.category}
-                </div>
 
-                <Expander title={question.text || ''} variant="question" titleClass="text-warning">
-                  {question.info}
-                </Expander>
+              <Expander title={question.text ?? ''} variant="question">
+                {question.info}
+              </Expander>
 
-                <!-- Navigate to unsanswered question -->
-                <a
-                  class="flex justify-center pt-10"
-                  href="{candidateAppRoute}/questions/{question.id}">
-                  <Button variant="main" text={$_('candidateApp.allQuestions.answerButton')} />
-                </a>
+              <div class="pt-10">
+                <!-- This gives empty form label error from Wave Extension for every empty dot, but fix should come from LikertResponseButton -->
+                <LikertResponseButtons
+                  name={question.id}
+                  mode="display"
+                  options={question.options}
+                  selectedKey={answerStore[question.id].key} />
+
+                {#if answerStore[question.id].openAnswer}
+                  <div class="pt-10">
+                    <label for="openAnswer{i}" class="text-m uppercase"
+                      >{$_('candidateApp.allQuestions.commentOnThisIssue')}
+                    </label>
+                    <textarea
+                      bind:value={answerStore[question.id].openAnswer}
+                      disabled
+                      id="openAnswer{i}"
+                      rows="4"
+                      class="textarea textarea-primary w-full" />
+                  </div>
+                {/if}
               </div>
-            {/if}
+            </div>
+            <!-- Question not yet answered -->
+          {:else}
+            <div class="pt-30 pb-20">
+              <div class="text-accent">
+                {question.category}
+              </div>
+
+              <Expander title={question.text ?? ''} variant="question" titleClass="text-warning">
+                {question.info}
+              </Expander>
+
+              <!-- Navigate to unsanswered question -->
+              <a
+                class="flex justify-center pt-10"
+                href="{candidateAppRoute}/questions/{question.id}">
+                <Button variant="main" text={$_('candidateApp.allQuestions.answerButton')} />
+              </a>
+            </div>
           {/if}
         {/each}
       </Expander>

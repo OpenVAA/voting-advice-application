@@ -30,6 +30,10 @@ export type ExpanderProps = {
    */
   contentClass?: string;
   /**
+   * Variable used to define if the expander is expanded or not by default.
+   */
+  defaultExpanded?: boolean;
+  /**
    * Variable used to define a variant for the expander.
    */
   variant?: 'read-more' | 'category' | 'question';

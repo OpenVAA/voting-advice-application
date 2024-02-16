@@ -10,8 +10,9 @@
   export let iconPos: $$Props['iconPos'] = 'text';
   export let titleClass: $$Props['titleClass'] = '';
   export let contentClass: $$Props['contentClass'] = '';
+  export let defaultExpanded: $$Props['defaultExpanded'] = false;
 
-  let expanded = false;
+  let expanded = defaultExpanded;
 
   function toggleExpanded() {
     expanded = !expanded;
@@ -99,7 +100,7 @@
 -->
 
 <div class={collapseClasses}>
-  <input type="checkbox" aria-label="open ${title}" on:click={toggleExpanded} />
+  <input type="checkbox" aria-label="open ${title}" on:click={toggleExpanded} checked={expanded} />
   <div class={titleClasses}>
     {title}
     <div class="not-rotated-icon {expanded ? 'rotated-icon' : ''} ml-[0.4rem] {iconClass}">
