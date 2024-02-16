@@ -34,6 +34,7 @@ to reveal and hide the password
 <div class="relative">
   <label for="password" class="hidden">{$_('candidate.password')}</label>
   <input
+    id="password"
     type="password"
     name="password"
     class="input w-full"
