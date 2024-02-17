@@ -2,7 +2,10 @@
 // for information about these interfaces
 // and what to do when importing types
 declare namespace App {
-  // interface Locals {}
+  interface Locals {
+    currentLocale: string;
+    preferredLocale?: string;
+  }
   interface PageData {
     // Most of these properties are required so we don't need unnecessary
     // null checks every time we use them. We'll initiliaze the Array types
@@ -14,6 +17,12 @@ declare namespace App {
     parties: PartyProps[];
     party?: PartyProps;
     questions: QuestionProps[];
+    i18n: {
+      currentLocale: string;
+      preferredLocale?: string;
+      route: string;
+      translations: unknown;
+    };
   }
   // interface Error {}
   // interface Platform {}
