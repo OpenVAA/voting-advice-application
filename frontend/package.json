@@ -61,6 +61,8 @@
     "@capacitor/cli": "^4.0.0",
     "@capacitor/core": "^4.0.0",
     "@capacitor/ios": "^4.0.0",
-    "svelte-i18n": "^3.6.0"
+    "@sveltekit-i18n/parser-icu": "^1.0.8",
+    "intl-messageformat": "^10.5.11",
+    "sveltekit-i18n": "^2.4.2"
   }
 }
