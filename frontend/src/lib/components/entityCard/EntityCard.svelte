@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
+  import {t} from '$lib/i18n';
   import {Card} from '$lib/components/shared/card/index';
   import {getUUID} from '$lib/utils/components';
   import type {EntityCardProps} from './EntityCard.type';
@@ -68,7 +68,7 @@
         <!-- TODO: Convert to <MatchScore> component -->
         <div class="flex min-w-[3.125rem] flex-col items-center">
           <span class="text-lg font-bold">{summaryMatch}</span>
-          <span class="text-xs text-secondary">{$_('components.card.matchLabel')}</span>
+          <span class="text-xs text-secondary">{$t('components.card.matchLabel')}</span>
         </div>
       {/if}
     </svelte:fragment>
@@ -85,7 +85,7 @@
     aria-posinset={ariaPosinset}
     aria-setsize={ariaSetsize}>
     <h2 slot="body-title" class="text-error" id={labelId}>
-      {$_('components.card.errorDisplaying')}
+      {$t('components.card.errorDisplaying')}
     </h2>
   </Card>
 {/if}

@@ -1,6 +1,5 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
-  import {page} from '$app/stores';
+  import {t} from '$lib/i18n';
   import {concatClass} from '$lib/utils/components';
   import {appType} from '$lib/utils/stores';
   import {Icon} from '$lib/components/icon';
@@ -17,14 +16,14 @@
   export let navId: $$Props['navId'] = 'pageNav';
   export let headerClass: $$Props['headerClass'] = 'bg-base-300';
   export let mainClass: $$Props['mainClass'] = '';
-  export let drawerOpenLabel: $$Props['drawerOpenLabel'] = $_('header.openMenu');
-  export let drawerCloseLabel: $$Props['drawerCloseLabel'] = $_('header.closeMenu');
-  export let drawerToggleLabel: $$Props['drawerToggleLabel'] = $_('header.toggleMenu');
-  export let skipLinkLabel: $$Props['skipLinkLabel'] = $_('aria.skipToMain');
+  export let drawerOpenLabel: $$Props['drawerOpenLabel'] = $t('header.openMenu');
+  export let drawerCloseLabel: $$Props['drawerCloseLabel'] = $t('header.closeMenu');
+  export let drawerToggleLabel: $$Props['drawerToggleLabel'] = $t('header.toggleMenu');
+  export let skipLinkLabel: $$Props['skipLinkLabel'] = $t('aria.skipToMain');
   export let progress: $$Props['progress'] = undefined;
   export let progressMin: $$Props['progressMin'] = 0;
   export let progressMax: $$Props['progressMax'] = 100;
-  export let progressTitle: $$Props['progressTitle'] = $_('header.progressTitle');
+  export let progressTitle: $$Props['progressTitle'] = $t('header.progressTitle');
 
   let drawerOpen = false;
   let drawerOpenElement: HTMLButtonElement | undefined;
@@ -86,12 +85,12 @@ the Drawer component.
   that's used to toggle the drawer open and closed.
   @default 'pageDrawer'
 - `drawerCloseLabel?`: Text label for the button and overlay closing the drawer.
-  @default $_('header.closeMenu')
+  @default $t('header.closeMenu')
 - `drawerOpenLabel?`: The Aria label for the button opening the drawer.
-  @default $_('header.openMenu')
+  @default $t('header.openMenu')
 - `drawerToggleLabel?`: The Aria label for the `<input>` that governs toggling the drawer.
   This input is not focusable, so this is mostly theoretical.
-  @default $_('header.toggleMenu')
+  @default $t('header.toggleMenu')
 - `headerClass?`: Optional class string to add to the `<header>` tag wrapping the
   `drawerOpenButton` and `header` slots.
 - `mainClass?`: Optional class string to add to the `<div>` tag wrapping the page's
@@ -99,7 +98,7 @@ the Drawer component.
 - `navId?`: The id for the `<nav>` element containing the navigation.
   @default 'pageNav'
 - `skipLinkLabel?`: Optional text for the skip link to main content.
-  @default $_('aria.skipLinkLabel')
+  @default $t('aria.skipLinkLabel')
 - `progress?`: Optional value for the progress bar. The bar will be hidden
   if the property is `undefined` or `null`. Use the bar to show the user's
   progress in the application, not as a loading indicator: it uses the
@@ -109,7 +108,7 @@ the Drawer component.
 - `progressMax?`: Optional maximum value for the progress bar.
   @default 100
 - `progressTitle?`: Optional title for the progress bar.
-  @default `$_('header.progressTitle')`
+  @default `$t('header.progressTitle')`
 - `class`: Additional class string to append to the element's default classes.
 - Any valid attributes of a `<div>` element.
 
@@ -128,7 +127,7 @@ the Drawer component.
 
 <!-- Page title -->
 <svelte:head>
-  <title>{title} – {$page.data.appLabels.appTitle}</title>
+  <title>{title} – {$t('viewTexts.appTitle')}</title>
 </svelte:head>
 
 <!-- Skip links for screen readers and keyboard users -->

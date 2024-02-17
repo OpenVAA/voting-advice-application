@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
+  import {getContext} from 'svelte';
+  import {t} from '$lib/i18n';
   import {concatProps} from '$lib/utils/components';
+  import {appType} from '$lib/utils/stores';
+  import type {AuthContext} from '$lib/utils/authenticationStore';
   import {Page} from '../page';
   import type {BasicPageProps} from './BasicPage.type';
-  import {getContext} from 'svelte';
-  import type {AuthContext} from '$lib/utils/authenticationStore';
-  import {appType} from '$lib/utils/stores';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
 
   type $$Props = BasicPageProps;
@@ -13,12 +13,14 @@
   export let title: $$Props['title'];
   export let noteClass: $$Props['noteClass'] = 'text-secondary text-center';
   export let noteRole: $$Props['noteRole'] = 'note';
-  export let primaryActionsLabel: $$Props['primaryActionsLabel'] = $_('aria.primaryActionsLabel');
+  export let primaryActionsLabel: $$Props['primaryActionsLabel'] = $t('aria.primaryActionsLabel');
 
   const authContext = getContext<AuthContext>('auth');
 
   // We are in the candidate application and the user has logged in
-  const showLogoutButton = $appType === 'candidate' && authContext.user;
+  // TODO: Figure out a way to define this LogoutButton part only within the
+  // candidate route. This can be done with the new, slot-less templates
+  const showLogoutButton = $appType === 'candidate' && authContext?.user;
 </script>
 
 <!--
@@ -55,8 +57,7 @@ is based on.
   @default 'note'
 - `primaryActionsLabel?`: Optional `aria-label` for the section that contains the primary page
   actions.
-  @default $_('aria.primaryActionsLabel')
-- `mainClass`: Additional class string to append to the `Page` template's `mainClass`
+  @default $t('aria.primaryActionsLabel')
 - Any valid properties of the `Page` template.
 
 ### Usage
@@ -84,7 +85,7 @@ is based on.
     </p>
     
     <svelte:fragment slot="primaryActions">
-      <Button href="/next" variant="main" icon="next" text="Continue"/>
+      <Button href={getRoute(Route.Foo)} variant="main" icon="next" text="Continue"/>
     </svelte:fragment>
     
   </BasicPage>
@@ -93,12 +94,12 @@ is based on.
 
 <Page {title} {...concatProps($$restProps, {mainClass: 'gap-y-lg'})}>
   <!-- Header -->
-  <div slot="banner">
+  <svelte:fragment slot="banner">
     {#if showLogoutButton}
       <LogoutButton />
     {/if}
     <slot name="banner" />
-  </div>
+  </svelte:fragment>
 
   <!-- Default slot for Page starts -->
 

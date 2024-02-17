@@ -1,7 +1,7 @@
 <script lang="ts">
   import {type NavigationProps, Navigation, NavGroup, NavItem} from '$lib/components/navigation';
-  import {candidateAppRoute} from '$lib/utils/routes';
-  import {_} from 'svelte-i18n';
+  import {getRoute, Route} from '$lib/utils/navigation';
+  import {t} from '$lib/i18n';
 
   type $$Props = NavigationProps;
 </script>
@@ -29,39 +29,42 @@ A template part that outputs the navigation menu for the Candidate App for use i
 <Navigation slot="nav" on:navFocusOut {...$$restProps}>
   <slot />
   <NavGroup>
-    <NavItem href={candidateAppRoute} icon="home" text={$_('candidateApp.navbar.start')} />
     <NavItem
-      href="{candidateAppRoute}/profile"
+      href={getRoute(Route.CandAppHome)}
+      icon="home"
+      text={$t('candidateApp.navbar.start')} />
+    <NavItem
+      href={getRoute(Route.CandAppProfile)}
       icon="profile"
-      text={$_('candidateApp.navbar.basicInfo')} />
+      text={$t('candidateApp.navbar.basicInfo')} />
     <NavItem
-      href="{candidateAppRoute}/questions"
+      href={getRoute(Route.CandAppQuestions)}
       icon="optinion"
-      text={$_('candidateApp.navbar.yourOpinions')} />
+      text={$t('candidateApp.navbar.yourOpinions')} />
     <NavItem
-      href="{candidateAppRoute}/settings"
+      href={getRoute(Route.CandAppSettings)}
       icon="settings"
-      text={$_('candidateApp.navbar.settings')} />
+      text={$t('candidateApp.navbar.settings')} />
     <NavItem
-      href="{candidateAppRoute}/questions/preview"
+      href={getRoute(Route.CandAppPreview)}
       icon="previewProfile"
-      text={$_('candidateApp.navbar.preview')} />
-    <NavItem href="{candidateAppRoute}/help" icon="help" text={$_('candidateApp.navbar.help')} />
+      text={$t('candidateApp.navbar.preview')} />
+    <NavItem href={getRoute(Route.CandAppHelp)} icon="help" text={$t('candidateApp.navbar.help')} />
   </NavGroup>
   <NavGroup>
     <NavItem
-      href="{candidateAppRoute}/electioninfo"
+      href={getRoute(Route.CandAppInfo)}
       icon="info"
-      text={$_('candidateApp.navbar.electionInformation')} />
+      text={$t('candidateApp.navbar.electionInformation')} />
     <NavItem
-      href="{candidateAppRoute}/faq"
+      href={getRoute(Route.CandAppFAQ)}
       icon="info"
-      text={$_('candidateApp.navbar.useInformation')} />
+      text={$t('candidateApp.navbar.useInformation')} />
   </NavGroup>
   <NavGroup>
     <NavItem
-      href="{candidateAppRoute}/feedback"
+      href={getRoute(Route.CandAppFeedback)}
       icon="feedback"
-      text={$_('candidateApp.navbar.feedback')} />
+      text={$t('candidateApp.navbar.feedback')} />
   </NavGroup>
 </Navigation>

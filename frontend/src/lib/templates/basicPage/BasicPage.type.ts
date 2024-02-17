@@ -17,7 +17,7 @@ export interface BasicPageProps extends PageProps {
    * Optional `aria-label` for the section that contains the primary page
    * actions.
    *
-   * @default $_('aria.primaryActionsLabel')
+   * @default $t('aria.primaryActionsLabel')
    */
   primaryActionsLabel?: string | undefined | null;
 }
