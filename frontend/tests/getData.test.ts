@@ -1,8 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import {describe, test, expect, vi, Mock} from 'vitest';
-import {getData} from '$lib/api/getData';
 import {constants} from '$lib/utils/constants';
+import locales from './data/locales.json';
 import parties from './data/parties.json';
 import singleCandidate from './data/singleCandidate.json';
 import singleParty from './data/singleParty.json';
@@ -27,7 +27,12 @@ vi.mock(
 
 global.fetch = vi.fn();
 
-function createFetchResponse(data: unknown) {
+// Import getData only after mock fetch has been set up because it calls
+// getSupportedLocales at initialization
+(fetch as Mock).mockResolvedValue(createFetchResponse(locales));
+const getData = await import('$lib/api/getData').then((mod) => mod.getData);
+
+function createFetchResponse(data: any) {
   return {json: () => new Promise((resolve) => resolve(data))};
 }
 
