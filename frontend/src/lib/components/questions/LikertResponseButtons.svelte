@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
+  import {t} from '$lib/i18n';
   import {createEventDispatcher} from 'svelte';
   import {concatClass} from '$lib/utils/components';
   import {logDebugError} from '$lib/utils/logger';
@@ -195,7 +195,7 @@ Keyboard navigation works in the following way:
   mode="display"
   selectedKey={$voterAnswers[question.id]}
   entityKey={candidateAnswer}
-  entityLabel={$_('candidate.candidateAnswerLabel')}
+  entityLabel={$t('candidate.candidateAnswerLabel')}
    />
 ```
 -->
@@ -215,9 +215,9 @@ Keyboard navigation works in the following way:
     <!-- The voter's and entity's answers in `display` mode -->
     {#if mode === 'display'}
       {#if selectedKey == key && entityKey == key}
-        <div class="display-label text-primary">{$_('questions.yourAnswer')} & {entityLabel}</div>
+        <div class="display-label text-primary">{$t('questions.yourAnswer')} & {entityLabel}</div>
       {:else if selectedKey == key}
-        <div class="display-label text-primary">{$_('questions.yourAnswer')}</div>
+        <div class="display-label text-primary">{$t('questions.yourAnswer')}</div>
       {:else if entityKey == key}
         <div class="display-label">{entityLabel}</div>
       {/if}

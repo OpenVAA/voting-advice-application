@@ -1,8 +1,10 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
+  import {t} from '$lib/i18n';
   import type {PreHeadingProps} from './PreHeading.type';
 
   type $$Props = PreHeadingProps;
+
+  $$restProps['aria-roledescription'] ??= $t('aria.preHeading');
 </script>
 
 <!--
@@ -14,7 +16,7 @@ within a `HeadingGroup`.
 
 - `aria-roledescription`: The Aria role description of the `<p>` 
   element representing the pre-title.
-  @default $_('aria.PreHeading')
+  @default $t('aria.PreHeading')
 - Any valid attributes of a `<p>` element.
 
 ### Slots
@@ -24,10 +26,10 @@ within a `HeadingGroup`.
 ### Usage
 
 ```tsx
-<PreHeading class="text-accent">{$_('categories.environment')}</PreHeading>
+<PreHeading class="text-accent">{$t('categories.environment')}</PreHeading>
 ```
 -->
 
-<p aria-roledescription={$_('aria.preHeading')} {...$$restProps}>
+<p aria-roledescription={$t('aria.preHeading')} {...$$restProps}>
   <slot />
 </p>

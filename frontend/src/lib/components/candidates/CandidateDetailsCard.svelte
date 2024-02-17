@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
+  import {t} from '$lib/i18n';
   import {GetFullNameInOrder} from '$lib/utils/internationalisation';
   import Tabs from '$lib/components/shared/Tabs.svelte';
   import {ScoreGauge} from '$lib/components/scoreGauge/index';
@@ -10,7 +10,7 @@
   export let ranking: RankingProps | undefined = undefined;
 
   // Tabs
-  let tabs = [$_('candidate.tabs.basicInfo'), $_('candidate.tabs.opinions')];
+  let tabs = [$t('candidate.tabs.basicInfo'), $t('candidate.tabs.opinions')];
   let activeItem = tabs[0];
   const handleChangeTab = (e: CustomEvent) => {
     activeItem = e.detail;

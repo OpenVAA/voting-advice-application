@@ -26,14 +26,14 @@ export type PageProps = SvelteHTMLElements['div'] & {
   /**
    * Text label for the button and overlay closing the drawer.
    *
-   * @default $_('header.closeMenu')
+   * @default $t('header.closeMenu')
    */
   drawerCloseLabel?: string | null;
 
   /**
    * The Aria label for the button opening the drawer.
    *
-   * @default $_('header.openMenu')
+   * @default $t('header.openMenu')
    */
   drawerOpenLabel?: string | null;
 
@@ -41,7 +41,7 @@ export type PageProps = SvelteHTMLElements['div'] & {
    * The Aria label for the `<input>` that governs toggling the drawer.
    * This input is not focusable, so this is mostly theoretical.
    *
-   * @default $_('header.toggleMenu')
+   * @default $t('header.toggleMenu')
    */
   drawerToggleLabel?: string | null;
 
@@ -67,7 +67,7 @@ export type PageProps = SvelteHTMLElements['div'] & {
   /**
    * Optional text for the skip link to main content.
    *
-   * @default $_('aria.skipLinkLabel')
+   * @default $t('aria.skipLinkLabel')
    */
   skipLinkLabel?: string | null;
 
@@ -96,7 +96,7 @@ export type PageProps = SvelteHTMLElements['div'] & {
   /**
    * Optional title for the progress bar.
    *
-   * @default `$_('header.progressTitle')`
+   * @default `$t('header.progressTitle')`
    */
   progressTitle?: string | null;
 };

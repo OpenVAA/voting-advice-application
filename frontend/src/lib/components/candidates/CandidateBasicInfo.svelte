@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
+  import {t} from '$lib/i18n';
 
   export let candidate: CandidateProps;
 </script>
@@ -7,7 +7,7 @@
 <section class="p-lg">
   <table>
     <tr>
-      <th class="small-label">{$_('candidate.list')}</th>
+      <th class="small-label">{$t('candidate.list')}</th>
       <td class="flex gap-sm">
         <img class="mr-2" src="/icons/list.svg" alt="List Icon" />
         {candidate.party.name} ({candidate.party.shortName})
@@ -15,41 +15,12 @@
     </tr>
     {#if candidate.electionSymbol}
       <tr>
-        <th class="small-label">{$_('candidate.electionSymbol')}</th>
+        <th class="small-label">{$t('candidate.electionSymbol')}</th>
         <td>
           {candidate.electionSymbol}
         </td>
       </tr>
     {/if}
-  </table>
-  <div class="my-5 divider h-px" />
-  <table>
-    <tr>
-      <th class="small-label">{$_('candidate.motherTongue')}</th>
-      <td>
-        <ul class="list-disc">
-          {#each candidate.motherTongues as lang}
-            <li>{lang}</li>
-          {/each}
-        </ul>
-      </td>
-    </tr>
-    <tr>
-      <th class="small-label">{$_('candidate.otherLanguages')}</th>
-      <td>
-        <ul class="list-disc">
-          {#each candidate.otherLanguages as lang}
-            <li>{lang}</li>
-          {/each}
-        </ul>
-      </td>
-    </tr>
-    <tr>
-      <th class="small-label">{$_('candidate.politicalExperience')}</th>
-      <td>
-        {candidate.politicalExperience}
-      </td>
-    </tr>
   </table>
 </section>
 

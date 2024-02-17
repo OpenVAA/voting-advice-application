@@ -1,8 +1,11 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
+  import {t} from '$lib/i18n';
   import type {HeadingGroupProps} from './HeadingGroup.type';
 
   type $$Props = HeadingGroupProps;
+
+  $$restProps['role'] ??= 'group';
+  $$restProps['aria-roledescription'] ??= $t('aria.headingGroup');
 </script>
 
 <!--
@@ -14,7 +17,7 @@ and the main title.
 
 - `aria-roledescription`: The Aria role description of the `<hgroup>` 
   element representing the pre-title.
-  @default $_('aria.headingGroup')
+  @default $t('aria.headingGroup')
 - `role`: The Aria role of the `<hgroup>` element.
   @default 'group'
 - Any valid attributes of a `<hgroup>` element.
@@ -27,12 +30,12 @@ and the main title.
 
 ```tsx
 <HeadingGroup>
-  <PreHeading class="text-accent">{$_('categories.environment')}</PreHeading>
-  <h1>{$_('titles.environment')}</h1>
+  <PreHeading class="text-accent">{$t('categories.environment')}</PreHeading>
+  <h1>{$t('titles.environment')}</h1>
 </HeadingGroup>
 ```
 -->
 
-<hgroup aria-roledescription={$_('aria.headingGroup')} role="group" {...$$restProps}>
+<hgroup aria-roledescription={$t('aria.headingGroup')} role="group" {...$$restProps}>
   <slot />
 </hgroup>

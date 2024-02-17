@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
+  import {t} from '$lib/i18n';
   import {createEventDispatcher} from 'svelte';
   import {page} from '$app/stores';
   import {concatClass} from '$lib/utils/components';
@@ -69,7 +69,7 @@ only `next` events will be fired.
 
 <div
   role="group"
-  aria-label={$_('aria.additionalQuestionActionsLabel')}
+  aria-label={$t('aria.additionalQuestionActionsLabel')}
   {...concatClass($$restProps, 'mt-lg grid w-full grid-cols-3 items-stretch gap-md')}>
   <Button
     on:click={onNext}
@@ -77,9 +77,7 @@ only `next` events will be fired.
     color="secondary"
     iconPos="top"
     icon={answered || !separateSkip ? 'next' : 'skip'}
-    text={answered || !separateSkip
-      ? $_('questions.nextQuestion')
-      : $page.data.appLabels.actionLabels.skip} />
+    text={answered || !separateSkip ? $t('questions.nextQuestion') : $t('.actionLabels.skip')} />
   <Button
     on:click={onDelete}
     disabled={answered ? undefined : true}
@@ -88,12 +86,12 @@ only `next` events will be fired.
     color="secondary"
     iconPos="top"
     icon="close"
-    text={$_('questions.remove')} />
+    text={$t('questions.remove')} />
   <Button
     on:click={onPrevious}
     style="grid-row: 1; grid-column: 1"
     color="secondary"
     iconPos="top"
     icon="previous"
-    text={$_('questions.previous')} />
+    text={$t('questions.previous')} />
 </div>

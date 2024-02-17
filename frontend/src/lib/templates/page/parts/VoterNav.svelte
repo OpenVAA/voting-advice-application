@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
-  import {page} from '$app/stores';
+  import {t} from '$lib/i18n';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import {candidateRankings} from '$lib/utils/stores';
   import {type NavigationProps, Navigation, NavGroup, NavItem} from '$lib/components/navigation';
 
@@ -34,22 +34,22 @@ A template part that outputs the navigation menu for the Voter App for use in th
 <Navigation slot="nav" on:navFocusOut {...$$restProps}>
   <slot />
   <NavGroup>
-    <NavItem href="/" icon="home" text={$page.data.appLabels.actionLabels.home} />
-    <NavItem href="/questions" icon="opinion" text={$page.data.appLabels.actionLabels.opinions} />
+    <NavItem href={getRoute(Route.Home)} icon="home" text={$t('actionLabels.home')} />
+    <NavItem href={getRoute(Route.Questions)} icon="opinion" text={$t('actionLabels.opinions')} />
     <!-- Only output the link to results if they are available -->
     {#if $candidateRankings.length > 0}
-      <NavItem href="/results" icon="results" text={$page.data.appLabels.actionLabels.results} />
+      <NavItem href={getRoute(Route.Results)} icon="results" text={$t('actionLabels.results')} />
     {/if}
   </NavGroup>
   <NavGroup>
-    <NavItem href="/candidates" icon="candidates" text={$_('candidates.viewAllCandidates')} />
-    <NavItem href="/parties" icon="party" text={$_('parties.viewAllParties')} />
+    <NavItem
+      href={getRoute(Route.Candidates)}
+      icon="candidates"
+      text={$t('candidates.viewAllCandidates')} />
+    <NavItem href={getRoute(Route.Parties)} icon="party" text={$t('parties.viewAllParties')} />
   </NavGroup>
   <NavGroup>
-    <NavItem
-      href="/information"
-      icon="info"
-      text={$page.data.appLabels.actionLabels.electionInfo} />
-    <NavItem href="/about" icon="info" text={$page.data.appLabels.actionLabels.howItWorks} />
+    <NavItem href={getRoute(Route.Info)} icon="info" text={$t('actionLabels.electionInfo')} />
+    <NavItem href={getRoute(Route.About)} icon="info" text={$t('actionLabels.howItWorks')} />
   </NavGroup>
 </Navigation>

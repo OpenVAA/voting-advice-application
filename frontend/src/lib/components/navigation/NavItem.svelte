@@ -45,7 +45,7 @@ handler or other way of making the item interactive.
 ### Usage
 
 ```tsx
-<NavItem href="/info" icon="info" text="Show info"/>
+<NavItem href={getRoute(Route.Info)} icon="info" text="Show info"/>
 <NavItem on:click={(e) => foo(e)} text="Do foo"/>
 ```
 -->

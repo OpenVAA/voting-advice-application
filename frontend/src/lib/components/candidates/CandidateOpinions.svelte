@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
+  import {t} from '$lib/i18n';
   import {page} from '$app/stores';
   import {answeredQuestions} from '$lib/utils/stores';
   import {LikertResponseButtons} from '$lib/components/questions';
@@ -36,15 +36,15 @@
 
       {#if voterAnswer == null && answer == null}
         <div class="small-label mb-16 text-center">
-          {$_('questions.bothHaventAnswered').replace('{{candidate}}', shortName)}
+          {$t('questions.bothHaventAnswered').replace('{{candidate}}', shortName)}
         </div>
       {:else if voterAnswer == null}
         <div class="small-label mb-16 text-center">
-          {$_('questions.youHaventAnswered')}
+          {$t('questions.youHaventAnswered')}
         </div>
       {:else if answer == null}
         <div class="small-label mb-16 text-center">
-          {$_('questions.candidateHasntAnswered').replace('{{candidate}}', shortName)}
+          {$t('questions.candidateHasntAnswered').replace('{{candidate}}', shortName)}
         </div>
       {/if}
 
@@ -58,7 +58,7 @@
           entityLabel={shortName}
           {options} />
       {:else}
-        {$_('error.general')}
+        {$t('error.general')}
       {/if}
 
       {#if openAnswer}
