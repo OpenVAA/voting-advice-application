@@ -39,3 +39,9 @@ If that's not the issue, open Docker and check the `frontend` and `strapi` conta
 ## Strapi's content model is reset after restart
 
 Any changes to the content model are not reflected on local files by default. If you can't see any changes in your local files when editing the content types using Strapi's web UI, check that you have [hot reloading enabled](./docker-setup-guide.md#hot-reloading).
+
+## Strapi does not populate relations
+
+The REST api query syntax can be a bit tricky, notably `*` only goes one-level deep.
+
+Another common case is that the Content Types that are not populated have been added to the schema after creating the API token. To allow reading them, edit the API token and change it from `Custom` to `Read-Only` and back (and check that locale listing is still allowed).
