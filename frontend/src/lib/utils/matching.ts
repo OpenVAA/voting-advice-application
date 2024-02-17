@@ -13,7 +13,7 @@ import {
   MissingValueDistanceMethod
 } from '$voter/vaa-matching';
 import type {MultipleChoiceQuestionOptions} from '$lib/voter/vaa-matching/questions/multipleChoiceQuestion';
-import type {VoterAnswers} from '$types';
+import type {VoterAnswers} from '$lib/types';
 
 /**
  * Perform the candidate matching. NB. We can't use the stores directly, because they
@@ -21,6 +21,7 @@ import type {VoterAnswers} from '$types';
  * This is a placeholder for demo purposes. In the proper app, all of the
  * objects in the stores will be in a form consumed by the matching algorithm
  * by default.
+ * TODO: Write proper implementation.
  */
 export const matchCandidates = function matchCandidates(
   allQuestions: QuestionProps[],
@@ -38,9 +39,11 @@ export const matchCandidates = function matchCandidates(
   // Convert question data into proper question objects
   const questions: Record<string, LikertQuestion> = {};
   allQuestions.forEach((q) => {
+    // TODO: Allow other question types
+    if (q.type !== 'singleChoiceOrdinal' || !q.values) return;
     questions[q.id] = new LikertQuestion({
       id: q.id,
-      values: q.options.map((o) => ({value: o.key})),
+      values: q.values.map((o) => ({value: o.key})),
       category: q.category
     });
   });
@@ -63,7 +66,12 @@ export const matchCandidates = function matchCandidates(
   allCandidates.forEach((c) => {
     candidates[c.id] = new Person(
       c.id,
-      c.answers ? c.answers.map((a) => ({question: questions[a.questionId], value: a.answer})) : []
+      c.answers
+        ? c.answers
+        // TODO: Fix this impromptu filter
+          .filter((a) => a.answer != null && typeof a.answer === 'number')
+          .map((a) => ({question: questions[a.questionId], value: a.answer as number}))
+        : []
     );
   });
 

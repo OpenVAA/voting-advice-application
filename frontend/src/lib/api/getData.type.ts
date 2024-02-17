@@ -1,4 +1,72 @@
 /**
+ * Value of enumerations for specifying the type of entity the object applies to
+ */
+export type EntityType = 'all' | 'candidate' | 'party';
+
+/**
+ * Value of enumerations for specifying the type of question categories
+ */
+export type QuestionCategoryType = 'info' | 'opinion';
+
+/**
+ * The basic format for Strapi responses
+ */
+export type StrapiResponse<T> = {
+  data: T;
+};
+
+/**
+ * A Strapi error containing an error
+ */
+export interface StrapiError {
+  data: null;
+  error: {
+    details: unknown;
+    message: string;
+    name: string;
+    status: number;
+  };
+}
+
+/**
+ * Options passed to the specific getData function
+ */
+export interface GetDataOptions {
+  locale?: string;
+  electionId?: number | string;
+}
+
+/**
+ * Non-exhaustive specification of the data returned by the Strapi endpoint `i18n/locales`.
+ * Note that the data is not contained in a typical `StrapiResponse`.
+ */
+export interface StrapiLocaleData {
+  id: number;
+  code: string;
+  isDefault: boolean;
+  name: string;
+}
+
+/**
+ * The format in which the locales are internally stored in the `getData` module
+ */
+export interface LocaleProps {
+  code: string;
+  isDefault?: boolean;
+}
+
+/**
+ * Format for data localized in Strapi
+ */
+export type LocalizedStrapiData<T> = T & {
+  attributes: {
+    localizations: {
+      data: T[];
+    };
+  };
+};
+
+/**
  * Non-exhaustive specification of the data returned by the Strapi endpoint `election`.
  * Currently we're only interested in the appLabels id.
  */
@@ -6,12 +74,18 @@ export interface StrapiElectionData {
   id: string;
   locale: string;
   attributes: {
-    name: string;
-    electionDate: string;
-    shortName: string | null;
-    type: string | null;
+    electionDate: Date;
+    electionStartDate: Date;
+    name: LocalizedString;
+    shortName: LocalizedString;
+    organizer: LocalizedString;
+    info: LocalizedString;
+    electionType: string | null;
     electionAppLabel: {
-      data: StrapiAppLabelsData;
+      data: LocalizedStrapiData<StrapiAppLabelsData>;
+    };
+    constituencies: {
+      data: StrapiConstituencyData[];
     };
   };
 }
@@ -22,8 +96,6 @@ export interface StrapiElectionData {
 export interface StrapiAppLabelsData {
   id: string;
   attributes: {
-    name: string;
-    appTitle: string;
     locale: string;
     actionLabels: {
       id: string;
@@ -52,6 +124,7 @@ export interface StrapiAppLabelsData {
     };
     viewTexts: {
       id: string;
+      appTitle: string;
       toolTitle: string;
       toolDescription: string;
       publishedBy: string;
@@ -78,22 +151,66 @@ export interface StrapiQuestionTypeData {
   attributes: {
     name: string;
     info: string;
+    settings: QuestionTypeSettings;
     questions: {
       data: StrapiQuestionData[];
     };
-    settings: {
-      /**
-       * Currently the only question type supported. Should match `QuestionType` in
-       * `$lib/components/questions/Question.type`
-       */
-      type: 'Likert';
-      values: {
-        key: number;
-        label: string;
-      }[];
-    };
   };
 }
+
+/**
+ * Question type settings
+ */
+export type QuestionTypeSettings =
+  | {
+      type: 'text';
+      notLocalizable?: boolean;
+    }
+  | {
+      type: 'number';
+      min?: number;
+      max?: number;
+    }
+  | {
+      type: 'boolean';
+    }
+  | {
+      type: 'photo';
+    }
+  | {
+      type: 'date';
+      dateType?: 'yearMonthDay' | 'yearMonth' | 'monthDay' | 'month' | 'weekday' | 'hourMinute';
+      min?: Date;
+      max?: Date;
+    }
+  | {
+      type: 'singleChoiceOrdinal';
+      values: Choice[];
+    }
+  | {
+      type: 'singleChoiceCategorical';
+      values: Choice[];
+    }
+  | {
+      type: 'multipleChoiceCategorical';
+      values: Choice[];
+      min?: number;
+      max?: number;
+    }
+  | {
+      type: 'preferenceOrder';
+      values: Choice[];
+      min?: number;
+      max?: number;
+    };
+
+/**
+ * The format for an option in a multiple choice question.
+ */
+export type Choice = {
+  key: number;
+  label: LocalizedString;
+};
 
 /**
  * Non-exhaustive specification of the data returned by the Strapi endpoint `question`.
@@ -101,15 +218,34 @@ export interface StrapiQuestionTypeData {
 export interface StrapiQuestionData {
   id: number | string;
   attributes: {
-    text: string;
-    info: string;
-    fillingInfo: string;
-    questionCategory: {
-      data: {
-        attributes: {
-          name: string;
-        };
-      };
+    allowOpen: boolean | null;
+    constituencies: {
+      data: StrapiConstituencyData[];
+    };
+    entityType: EntityType | null;
+    text: LocalizedString;
+    shortName: LocalizedString;
+    info: LocalizedString;
+    fillingInfo: LocalizedString;
+    category: {
+      data: StrapiQuestionCategoryData;
+    };
+  };
+}
+
+/**
+ * Non-exhaustive specification of the data returned by the Strapi endpoint `question-category`.
+ */
+export interface StrapiQuestionCategoryData {
+  id: number | string;
+  attributes: {
+    name: LocalizedString;
+    shortName: LocalizedString;
+    info: LocalizedString;
+    order: number;
+    type: string;
+    elections: {
+      data: StrapiElectionData[];
     };
   };
 }
@@ -144,7 +280,13 @@ export interface StrapiNominationData {
 export interface StrapiConstituencyData {
   id: number | string;
   attributes: {
-    name: string;
+    name: LocalizedString;
+    shortName: LocalizedString;
+    info: LocalizedString;
+    type: string | null;
+    nominations: {
+      data: StrapiNominationData[];
+    };
   };
 }
 
@@ -157,43 +299,51 @@ export interface StrapiCandidateData {
     answers: {
       data: StrapiAnswerData[];
     };
-    // TODO: Change
-    candidateNumber: string;
     firstName: string;
     lastName: string;
-    motherTongues: {
-      data: StrapiLanguageData[];
-    };
-    otherLanguages: {
-      data: StrapiLanguageData[];
-    };
     party: {
       data: StrapiPartyData;
     };
     photo: {
       data?: string;
     };
-    politicalExperience: string;
   };
 }
 
 export interface StrapiAnswerData {
   id: number | string;
   attributes: {
-    answer: {
-      key: number;
+    value: AnswerValues[keyof AnswerValues];
+    openAnswer: LocalizedString | null;
+    candidate: {
+      data: StrapiCandidateData;
+    };
+    party: {
+      data: StrapiPartyData;
     };
     question: {
-      data: {
-        // There are more properties here, but not relations unless they are explicitly populated
-        // We're, however, only interested in the ids (although we could actually load all of the
-        // question data at the same time...)
-        id: number | string;
-      };
+      data: StrapiQuestionData;
     };
   };
 }
 
+/**
+ * The allowed `Answer` values for different `QuestionType`s based on their
+ * `settings.type`.
+ */
+export type AnswerValues = {
+  text: string | LocalizedString;
+  boolean: boolean;
+  number: number;
+  photo: string;
+  date: Date;
+  singleChoiceOrdinal: Choice['key'];
+  singleChoiceCategorical: Choice['key'];
+  multipleChoiceCategorical: Choice['key'][];
+  preferenceOrder: Choice['key'][];
+};
+
+/** TODO: Remove when generic questions are online */
 export interface StrapiLanguageData {
   id: number;
   attributes: {
@@ -205,18 +355,43 @@ export interface StrapiLanguageData {
 export interface StrapiPartyData {
   id: number | string;
   attributes: {
-    mainColor: string;
-    info: string;
-    name: string;
-    shortName: string;
+    name: LocalizedString;
+    shortName: LocalizedString;
+    info: LocalizedString;
+    color: string;
+    logo: {
+      data?: string;
+    };
     answers: {
       data: StrapiAnswerData[];
     };
     candidates: {
       data: StrapiCandidateData[];
     };
-    photo: {
-      data?: string;
+    nominations: {
+      data: StrapiNominationData[];
     };
   };
+}
+
+/**
+ * Temporary test data
+ */
+export interface StrapiTestData {
+  id: number;
+  attributes: {
+    normalText?: string;
+    multiLangText?: LocalizedString;
+    election_app_label?: unknown;
+  };
+}
+
+/**
+ * Temporary test data
+ */
+export interface TestDataProps {
+  id: string;
+  normalText: string;
+  multiLangText: string;
+  election_app_label?: unknown;
 }

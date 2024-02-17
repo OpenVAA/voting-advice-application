@@ -90,23 +90,23 @@ declare global {
     firstName: string;
     id: string;
     lastName: string;
-    motherTongues: string[];
-    otherLanguages: string[];
+    // motherTongues: string[];
+    // otherLanguages: string[];
     party: {
       name: string;
       shortName: string;
     };
-    // photo
-    politicalExperience: string;
+    photo: string;
+    // politicalExperience: string;
   }
 
   /**
    * The properties of an Election object
    */
   interface ElectionProps {
-    electionDate: string;
+    appLabels: AppLabels;
+    electionDate: Date;
     id: string;
-    locale: string;
     name: string;
     shortName: string;
     type: string;
@@ -124,17 +124,12 @@ declare global {
     info: string;
     name: string;
     shortName: string;
+    photo: string;
     memberCandidateIds?: string[];
     memberCandidates?: CandidateProps[];
     nominatedCandidateIds?: string[];
     nominatedCandidates?: CandidateProps[];
   }
-
-  /**
-   * Supported types of Questions.
-   * TODO: This may be deprecated later by the `vaa-data` module.
-   */
-  type QuestionType = 'Likert';
 
   /**
    * The properties of a Question object that can be passed onto the
