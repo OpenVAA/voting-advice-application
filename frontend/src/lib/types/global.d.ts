@@ -2,6 +2,13 @@ export {};
 
 declare global {
   /**
+   * The format for localized strings.
+   */
+  type LocalizedString = {
+    [lang: string]: string;
+  };
+
+  /**
    * The properties of a multiple choice option in a Question.
    * TODO: This may be deprecated later by the `vaa-data` module.
    */
@@ -15,18 +22,16 @@ declare global {
    */
   interface AnswerProps {
     questionId: string;
-    answer: AnswerOption['key'];
+    answer: string | boolean | number | number[] | Date | null;
     openAnswer?: string;
   }
 
   /**
    * Non-exhaustive specification of the app labels.
-   * TODO: Comletely specify available labels here and convert all $_
-   * calls that depend on i18n/en.json to using AppLabels instead.
+   * TODO: Make this spec generic, because it will not be used in the frontend
+   * otherwise by just providing its contents to the translation function
    */
   interface AppLabels {
-    name: string;
-    appTitle: string;
     locale: string;
     actionLabels: {
       id: string;
@@ -55,6 +60,7 @@ declare global {
     };
     viewTexts: {
       id: string;
+      appTitle: string;
       toolTitle: string;
       toolDescription: string;
       publishedBy: string;
@@ -138,11 +144,69 @@ declare global {
   interface QuestionProps {
     id: string;
     text: string;
-    type: QuestionType;
-    options: AnswerOption[];
     category?: string;
     info?: string;
     fillingInfo?: string;
+    type: QuestionSettingsProps['type'];
+    values?: ChoiceProps[];
+    min?: number | Date;
+    max?: number | Date;
+    notLocalizable?: boolean;
+  }
+
+  /**
+   * Question type settings
+   * Make sure these align with those in `lib/api/getData.types.ts` and the mock data generator
+   */
+  type QuestionSettingsProps =
+    | {
+        type: 'text';
+        notLocalizable?: boolean;
+      }
+    | {
+        type: 'number';
+        min?: number;
+        max?: number;
+      }
+    | {
+        type: 'boolean';
+      }
+    | {
+        type: 'photo';
+      }
+    | {
+        type: 'date';
+        dateType?: 'yearMonthDay' | 'yearMonth' | 'monthDay' | 'month' | 'weekday' | 'hourMinute';
+        min?: Date;
+        max?: Date;
+      }
+    | {
+        type: 'singleChoiceOrdinal';
+        values: ChoiceProps[];
+      }
+    | {
+        type: 'singleChoiceCategorical';
+        values: ChoiceProps[];
+      }
+    | {
+        type: 'multipleChoiceCategorical';
+        values: ChoiceProps[];
+        min?: number;
+        max?: number;
+      }
+    | {
+        type: 'preferenceOrder';
+        values: ChoiceProps[];
+        min?: number;
+        max?: number;
+      };
+
+  /**
+   * The format for an option in a multiple choice question.
+   */
+  interface ChoiceProps {
+    key: number;
+    label: string;
   }
 
   /**

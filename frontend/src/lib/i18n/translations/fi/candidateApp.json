@@ -1,0 +1,147 @@
+{
+  "navbar": {
+    "start": "FI - Start",
+    "basicInfo": "FI - Basic Info",
+    "yourOpinions": "FI - Your Opinions",
+    "settings": "FI - Settings",
+    "preview": "FI - Preview",
+    "help": "FI - Help",
+    "feedback": "FI - Send feedback",
+    "electionInformation": "FI - Information About the Elections",
+    "useInformation": "FI - How Does This App Work?",
+    "logOut": "FI - Logout",
+    "close": "FI - Close",
+    "cancel": "FI - Cancel"
+  },
+  "languages": {
+    "English": "FI - English",
+    "Finnish": "FI - Finnish",
+    "Spanish": "FI - Spanish"
+  },
+  "logoutModal": {
+    "title": "FI - Some of Your Data Is Still Missing",
+    "body": "FI - There are still 10 items of basic info and 25 opinions to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
+    "confirmation": "FI - Are you sure you want to logout? You will be automatically logged out after {timeLeft} seconds.",
+    "continueEnteringData": "FI - Continue Entering Data"
+  },
+  "basicInfo": {
+    "instructions": "FI - Fill in first your basic details and upload a photo. You'll be asked for your political opinions thereafter.",
+    "title": "FI - Basic Information",
+    "disclaimer": "FI - Your name and some other details are prefilled and cannot be changed. If there are any errors in them, please contact your party. If your Election Number is not visible, it will be automatically set after the candidate registration period ends on Oct 29.",
+    "fields": {
+      "firstName": "FI - First Name",
+      "lastName": "FI - Surname",
+      "party": "FI - Party",
+      "electionList": "FI - Election List",
+      "electionNumber": "FI - Election Number",
+      "gender": "FI - Gender",
+      "motherTongue": "FI - Mother Tongue",
+      "birthday": "FI - Birthday",
+      "portrait": "FI - Portrait",
+      "unaffiliated": "FI - Unaffiliated"
+    },
+    "errorMessage": "FI - An error occurred when sending data!",
+    "pending": "FI - pending",
+    "addAnother": "FI - Add another",
+    "selectFirst": "FI - Select first",
+    "unaffiliatedDescription": "FI - Set this on if you're not a member of the party on whose list you are.",
+    "nominationsDescription": "FI - These are the constituencies where you're nominated along with the election list and possible election symbol. If a nomination is marked 'Pending', your election symbol might not yet be defined.",
+    "electionManifesto": "FI - Election manifesto",
+    "nominations": "FI - Nominations",
+    "tapToAddPhoto": "FI - Tap to add photo"
+  },
+  "settings": {
+    "title": "FI - Settings",
+    "instructions": "FI - These settings only affect the way you use this app. Any information you enter here will not be shown to the public.",
+    "fields": {
+      "email": "FI - Email",
+      "language": "FI - App Language"
+    },
+    "emailDescription": "FI - We use this email to connect to you and for password reset. It will not be shown on your public profile.",
+    "languageDescription": "FI - Use this application in this language. It will not be shown on your public profile.",
+    "accountPassword": "FI - Account Password",
+    "currentPassword": "FI - Current Password",
+    "currentPasswordDescription": "FI - Enter your existing account password that you want to change.",
+    "newPassword": "FI - New Password",
+    "newPasswordConfirmation": "FI - New Password Confirmation",
+    "passwordsDontMatch": "FI - Passwords don't match",
+    "passwordNotValid": "FI - Password is not valid",
+    "passwordIsTheSame": "FI - The new password is the same as the current password",
+    "changePasswordError": "FI - Password change failed. Make sure that your current password is correct.",
+    "updatePassword": "FI - Update Password",
+    "passwordUpdated": "FI - The password has been updated!"
+  },
+  "setPassword": {
+    "greeting": "FI - Hello, {username}!",
+    "description": "FI - Set a secure password according to the requirements below:",
+    "password": "FI - Password",
+    "confirmPassword": "FI - Confirm password",
+    "setPassword": "FI - Set password",
+    "passwordsDontMatch": "FI - Passwords don't match",
+    "passwordNotValid": "FI - Password is not valid",
+    "registrationError": "FI - Registration failed"
+  },
+  "passwordValidation": {
+    "length": "FI - At least {minPasswordLength} characters",
+    "uppercase": "FI - Uppercase letter",
+    "lowercase": "FI - Lowercase letter",
+    "number": "FI - Number",
+    "symbol": "FI - Symbol",
+    "username": "FI - Avoid using your name in the password",
+    "repetition": "FI - Contains character repetition",
+    "commonPatterns": "FI - Contains common sequences or patterns"
+  },
+  "genders": {
+    "male": "FI - Male",
+    "female": "FI - Female",
+    "nonBinary": "FI - Non-binary",
+    "other": "FI - Other",
+    "preferNotToSay": "FI - Prefer not to say"
+  },
+  "registration": {
+    "enterCode": "FI - Enter the registration code that you've received from your party to register your account.",
+    "registrationCode": "FI - registration code",
+    "wrongRegistrationCode": "FI - Wrong registration code",
+    "registerButton": "FI - Register",
+    "submitPlaceholder": "FI - E.g. CP23-174a-f4%&-aHAB",
+    "title": "FI - Registration"
+  },
+  "resetPassword": {
+    "createNewPassword": "FI - Set a new password",
+    "passwordResetError": "FI - Password reset failed",
+    "title": "FI - Forgot Password?",
+    "description": "FI - To reset your password, please enter your email address below:",
+    "emailPlaceholder": "FI - Email address",
+    "buttonText": "FI - Send reset link",
+    "emailSentText": "FI - A reset password link has been sent to your email. Please check your inbox and click the link to set your new password.",
+    "errorText": "FI - Internal error. Try again later or contact the administrator."
+  },
+  "opinions": {
+    "title": "FI - Enter your opinions",
+    "instructions": "FI - Next, the app will ask your opinions on {numQuestions} statements about political issues and values. When voters use the Election Compass, they will also answer the same statements and see how well their opinions agree with the yours.",
+    "tip": "FI - You can see all your anwers on this page when you come back to it later.",
+    "continue": "FI - Continue",
+    "commentOnThisIssue": "FI - Comment on this issue",
+    "answerSaveError": "FI - Saving answer failed",
+    "answerDeleteError": "FI - Deleting answer failed"
+  },
+  "allQuestions": {
+    "title": "FI - Your opinions",
+    "warning": "FI - You still have {numUnansweredQuestions} unanswered questions. Your data won’t be shown in the Election Compass until you have answered all of them.",
+    "info": "FI - You can see all of your opinions below and edit them by tapping on them.",
+    "answerButton": "FI - Answer this question",
+    "commentOnThisIssue": "FI - Comment on this issue"
+  },
+  "allDataFilled": {
+    "title": "FI - You're Ready to Roll!",
+    "description": "FI - You have filled all of the information needed for the Election Compass. You can still edit your answers and even log in later to do that.",
+    "tip": "FI - If you want to see how the voters will see your profile, you can preview it.",
+    "logOut": "FI - Log Out",
+    "previewYourProfile": "FI - Preview Your Profile",
+    "editYourOpinions": "FI - Edit Your Opinions"
+  },
+  "passwordButton": {
+    "hidePassword": "FI - Hide password",
+    "revealPassword": "FI - Reveal password"
+  }
+}
