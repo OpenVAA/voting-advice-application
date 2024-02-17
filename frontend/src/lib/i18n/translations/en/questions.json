@@ -1,0 +1,25 @@
+{
+  "bothHaventAnswered": "Neither you nor {{candidate}} has answered this question",
+  "candidateHasntAnswered": "{{candidate}} hasn’t answered this question",
+  "heroEmoji": "💬",
+  "jumpToResults": "Jump to results",
+  "nextQuestion": "Next question",
+  "notFound": "Question not found",
+  "previous": "Previous",
+  "questionsIntro": "You'll next be presented with statements about political issues. When you have answered them, you'll see the candidates and parties that best agree with you.",
+  "questionsTitle": "Your Opinions",
+  "readLess": "Hide",
+  "readMore": "Read More",
+  "remove": "Delete answer",
+  "scale": {
+    "fullyDisagree": "Fully disagree",
+    "disagree": "Disagree",
+    "neutral": "Neutral",
+    "agree": "Agree",
+    "fullyAgree": "Fully agree"
+  },
+  "skip": "Skip",
+  "startAnswering": "Start answering",
+  "youHaventAnswered": "You haven't answered this question",
+  "yourAnswer": "You"
+}

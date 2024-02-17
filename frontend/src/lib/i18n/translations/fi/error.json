@@ -1,0 +1,8 @@
+{
+  "404": "FI - Page not found, sorry!",
+  "500": "FI - Internal server error, sorry!",
+  "default": "FI - Something went wrong, sorry!",
+  "general": "FI - Something went wrong",
+  "noQuestions": "FI - There are no questions yet",
+  "noQuestionCategories": "FI - No question categories"
+}

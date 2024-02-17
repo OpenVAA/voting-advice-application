@@ -1,0 +1,17 @@
+{
+  "appTitle": "Election Compass",
+  "toolTitle": "Election Compass",
+  "toolDescription": "With this application you can compare candidates in the elections on {electionDate, date, ::yyyyMMdd} based on their opinions, parties and other data.",
+  "publishedBy": "Published by {publisher}",
+  "madeWith": "Made with {openVAA}",
+  "selectMunicipalityTitle": "Select Your Municipality",
+  "selectMunicipalityDescription": "In these elections, you can only vote for candidates in your own constituency. Select your municipality and the app will find it for you.",
+  "yourConstituency": "Your constituency is {constituency}",
+  "yourOpinionsTitle": "Tell Your Opinions",
+  "yourOpinionsDescription": "Next, the app will ask your opinions on {numStatements} statements about political issues and values, which the candidates have also answered. After you’ve answered them, the app will find the candidates that best agree with your opinions. The statements are grouped into {numCategories} categories. You can answer all of them or only select those you find important.",
+  "questionsTip": "Tip: If you don’t care about a single issue or a category of them, you can skip it later.",
+  "yourCandidatesTitle": "Your Candidates",
+  "yourCandidatesDescription": "These are the candidates in your constituency. The best matches are first on the list. You can also see which {numCandidates} best match your opinions. To narrow down the results, you can also use {filters}.",
+  "yourPartiesTitle": "Your Parties",
+  "yourPartiesDescription": "These are the parties in your constituency. The best matches are first on the list. You can also see which individual {partiesTerm} best match your opinions. To narrow down the results, you can also use {filters}."
+}

@@ -1,0 +1,25 @@
+{
+  "bothHaventAnswered": "FI - Neither you nor {{candidate}} has answered this question",
+  "candidateHasntAnswered": "FI - {{candidate}} hasn’t answered this question",
+  "heroEmoji": "💬",
+  "jumpToResults": "FI - Jump to results",
+  "nextQuestion": "FI - Next question",
+  "notFound": "FI - Question not found",
+  "previous": "FI - Previous",
+  "questionsIntro": "FI - You'll next be presented with statements about political issues. When you have answered them, you'll see the candidates and parties that best agree with you.",
+  "questionsTitle": "FI - Your Opinions",
+  "readLess": "FI - Hide",
+  "readMore": "FI - Read More",
+  "remove": "FI - Delete answer",
+  "scale": {
+    "fullyDisagree": "FI - Fully disagree",
+    "disagree": "FI - Disagree",
+    "neutral": "FI - Neutral",
+    "agree": "FI - Agree",
+    "fullyAgree": "FI - Fully agree"
+  },
+  "skip": "FI - Skip",
+  "startAnswering": "FI - Start answering",
+  "youHaventAnswered": "FI - You haven't answered this question",
+  "yourAnswer": "FI - You"
+}
