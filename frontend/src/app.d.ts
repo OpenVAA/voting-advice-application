@@ -10,7 +10,6 @@ declare namespace App {
     // Most of these properties are required so we don't need unnecessary
     // null checks every time we use them. We'll initiliaze the Array types
     // as empty arrays in the global data load /+layout.server.ts
-    appLabels: AppLabels;
     candidate?: CandidateProps;
     candidates: CandidateProps[];
     election: ElectionProps;
