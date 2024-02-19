@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
   import {goto} from '$app/navigation';
+  import {t} from '$lib/i18n';
   import {resetPassword} from '$lib/api/candidate';
+  import {getRoute, Route} from '$lib/utils/navigation';
+  import {validatePassword} from '$lib/utils/passwordValidation';
   import {FrontPage} from '$lib/templates/frontPage';
-  import {candidateAppRoute} from '$lib/utils/routes';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {PasswordValidator} from '$candidate/components/passwordValidator';
-  import {validatePassword} from '$lib/utils/passwordValidation';
   import {Button} from '$lib/components/button';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
@@ -23,24 +23,24 @@
 
   const onButtonPress = async () => {
     if (password !== passwordConfirmation) {
-      errorMessage = $_('candidateApp.setPassword.passwordsDontMatch');
+      errorMessage = $t('candidateApp.setPassword.passwordsDontMatch');
       return;
     }
 
     // Additional check before backend validation
     if (!validatePassword(password)) {
-      errorMessage = $_('candidateApp.setPassword.passwordNotValid');
+      errorMessage = $t('candidateApp.setPassword.passwordNotValid');
       return;
     }
 
     const response = await resetPassword(code, password);
     if (!response.ok) {
-      errorMessage = $_('candidateApp.resetPassword.passwordResetError');
+      errorMessage = $t('candidateApp.resetPassword.passwordResetError');
       return;
     }
 
     errorMessage = '';
-    await goto(candidateAppRoute);
+    await goto(getRoute(Route.CandAppHome));
   };
 </script>
 
@@ -61,25 +61,25 @@
   ```
 -->
 
-<FrontPage title={$page.data.appLabels.appTitle}>
+<FrontPage title={$t('viewTexts.appTitle')}>
   <HeadingGroup slot="heading">
-    <PreHeading class="text-2xl font-bold text-primary">{$page.data.appLabels.appTitle}</PreHeading>
+    <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
     <h1 class="text-xl font-normal">{$page.data.election.name}</h1>
-    <h1 class="my-24 text-2xl font-normal">{$_('candidateApp.resetPassword.createNewPassword')}</h1>
+    <h1 class="my-24 text-2xl font-normal">{$t('candidateApp.resetPassword.createNewPassword')}</h1>
   </HeadingGroup>
 
   <form class="flex-nowarp flex flex-col items-center" on:submit|preventDefault={onButtonPress}>
     <p class="m-0 max-w-md text-center">
-      {$_('candidateApp.setPassword.description')}
+      {$t('candidateApp.setPassword.description')}
     </p>
 
     <PasswordValidator bind:validPassword {password} />
 
-    <label for="password" class="hidden">{$_('candidate.password')}</label>
-    <label for="passwordConfirmation" class="hidden">{$_('candidate.password')}</label>
+    <label for="password" class="hidden">{$t('candidate.password')}</label>
+    <label for="passwordConfirmation" class="hidden">{$t('candidate.password')}</label>
     <div class="input mb-md w-full max-w-md">
-      <PasswordField bind:password autoComplete="new-password" />
-      <PasswordField bind:password={passwordConfirmation} autoComplete="new-password" />
+      <PasswordField bind:password autocomplete="new-password" />
+      <PasswordField bind:password={passwordConfirmation} autocomplete="new-password" />
     </div>
     {#if errorMessage}
       <p class="text-center text-error">
@@ -91,9 +91,9 @@
       type="submit"
       variant="main"
       disabled={disableSetButton}
-      text={$_('candidateApp.setPassword.setPassword')} />
+      text={$t('candidateApp.setPassword.setPassword')} />
 
-    <Button href="{candidateAppRoute}/help" text={$_('candidate.contact_support')} />
+    <Button href={getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
   </form>
 
   <svelte:fragment slot="footer"><Footer /></svelte:fragment>

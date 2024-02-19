@@ -1,7 +1,7 @@
 <script lang="ts">
   import {tweened} from 'svelte/motion';
   import {cubicOut} from 'svelte/easing';
-  import {_} from 'svelte-i18n';
+  import {t} from '$lib/i18n';
   import {
     type ValidationDetail,
     validatePasswordDetails,
@@ -25,9 +25,7 @@
 
       // Localize validation messages
       for (const key in validationDetails) {
-        validationDetails[key].message = $_(validationDetails[key].message, {
-          values: {minPasswordLength: minPasswordLength}
-        });
+        validationDetails[key].message = $t(validationDetails[key].message, {minPasswordLength});
       }
     }, 200);
   }

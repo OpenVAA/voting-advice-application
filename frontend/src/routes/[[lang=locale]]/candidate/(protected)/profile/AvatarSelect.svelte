@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Field from '$lib/components/common/form/Field.svelte';
-  import Icon from '$lib/components/icon/Icon.svelte';
   import {onDestroy, onMount} from 'svelte';
-  import {_} from 'svelte-i18n';
-  import {constants} from '$lib/utils/constants';
-  import {authContext} from '$lib/utils/authenticationStore';
   import {get} from 'svelte/store';
   import {uploadFiles, deleteFile} from '$lib/api/candidate';
+  import {authContext} from '$lib/utils/authenticationStore';
+  import {constants} from '$lib/utils/constants';
+  import {t} from '$lib/i18n';
+  import Field from '$lib/components/common/form/Field.svelte';
+  import Icon from '$lib/components/icon/Icon.svelte';
   import type {Photo} from '$lib/types/candidateAttributes';
 
   export let photo: Photo | undefined;
@@ -107,7 +107,7 @@ let uploadPhoto: () => Promise<void>;
 
 <Field customStyle="height: 60px; padding-right: 0;">
   <span class={labelClass}>
-    {$_('candidateApp.basicInfo.fields.portrait')}
+    {$t('candidateApp.basicInfo.fields.portrait')}
   </span>
   <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
   <label
@@ -126,7 +126,7 @@ let uploadPhoto: () => Promise<void>;
       </div>
     {:else}
       <div class="pr-8">
-        {$_('candidateApp.basicInfo.tapToAddPhoto')}
+        {$t('candidateApp.basicInfo.tapToAddPhoto')}
         <Icon name="photo" />
       </div>
     {/if}

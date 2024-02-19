@@ -1,16 +1,16 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
   import {page} from '$app/stores';
   import {goto} from '$app/navigation';
-  import Footer from '$lib/templates/parts/footer/Footer.svelte';
+  import {t} from '$lib/i18n';
   import {register} from '$lib/api/candidate';
-  import {PasswordValidator} from '$candidate/components/passwordValidator';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import {validatePassword} from '$lib/utils/passwordValidation';
-  import {FrontPage} from '$lib/templates/frontPage';
+  import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {Button} from '$lib/components/button';
-  import {candidateAppRoute} from '$lib/utils/routes';
   import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
+  import Footer from '$lib/templates/parts/footer/Footer.svelte';
+  import {FrontPage} from '$lib/templates/frontPage';
 
   export let userName: string;
   export let registrationCode: string;
@@ -24,30 +24,30 @@
 
   const onSetButtonPressed = async () => {
     if (password1 !== password2) {
-      errorMessage = $_('candidateApp.setPassword.passwordsDontMatch');
+      errorMessage = $t('candidateApp.setPassword.passwordsDontMatch');
       return;
     }
 
     // Additional check before backend validation
     if (!validatePassword(password1, userName)) {
-      errorMessage = $_('candidateApp.setPassword.passwordNotValid');
+      errorMessage = $t('candidateApp.setPassword.passwordNotValid');
       return;
     }
 
     const response = await register(registrationCode, password1);
     if (!response.ok) {
-      errorMessage = $_('candidateApp.setPassword.registrationError');
+      errorMessage = $t('candidateApp.setPassword.registrationError');
       return;
     }
 
     const data = await response.json();
     if (!data.success) {
-      errorMessage = $_('candidateApp.setPassword.registrationError');
+      errorMessage = $t('candidateApp.setPassword.registrationError');
       return;
     }
 
     errorMessage = '';
-    goto(candidateAppRoute);
+    goto(getRoute(Route.CandAppHome));
   };
 </script>
 
@@ -59,7 +59,6 @@ Page where candidates can set their password when logging to the app for the fir
 
 - userName:
   - The component will greet the user with the given name.
-  - Default value is Barnabas, but this will be fixed later.
 - registrationKey:
   - The registration key is given to the component.
   - The component will use this key to register the user.
@@ -67,16 +66,16 @@ Page where candidates can set their password when logging to the app for the fir
 ### Usage
 
   ```tsx
-  <PasswordSetPage userName={"Barnabas"} registrationKey={'123-123-123'}/>
+  <PasswordSetPage userName="Barnabas" registrationKey="123-123-123" />
   ```
 -->
 
-<FrontPage title={$_('candidateApp.registration.title')}>
+<FrontPage title={$t('candidateApp.registration.title')}>
   <HeadingGroup slot="heading">
-    <PreHeading class="text-2xl font-bold text-primary">{$page.data.appLabels.appTitle}</PreHeading>
+    <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
     <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
     <h1 class="my-24 text-2xl font-normal">
-      {$_('candidateApp.setPassword.greeting', {values: {name: userName}})}
+      {$t('candidateApp.setPassword.greeting', {username})}
     </h1>
   </HeadingGroup>
 
@@ -84,15 +83,15 @@ Page where candidates can set their password when logging to the app for the fir
     class="flex flex-col flex-nowrap items-center"
     on:submit|preventDefault={onSetButtonPressed}>
     <p class="m-0 text-center">
-      {$_('candidateApp.setPassword.description')}
+      {$t('candidateApp.setPassword.description')}
     </p>
 
     <PasswordValidator bind:validPassword password={password1} />
 
     <div class="mb-md w-full max-w-md space-y-10">
-      <label for="password1" class="hidden">{$_('candidate.password')}</label>
+      <label for="password1" class="hidden">{$t('candidate.password')}</label>
       <PasswordField bind:password={password1} autocomplete="new-password" />
-      <label for="password2" class="hidden">{$_('candidate.password')}</label>
+      <label for="password2" class="hidden">{$t('candidate.password')}</label>
       <PasswordField bind:password={password2} autocomplete="new-password" />
     </div>
 
@@ -106,9 +105,9 @@ Page where candidates can set their password when logging to the app for the fir
       type="submit"
       disabled={!disableSetButton}
       variant="main"
-      text={$_('candidateApp.setPassword.setPassword')} />
+      text={$t('candidateApp.setPassword.setPassword')} />
 
-    <Button href="{candidateAppRoute}/help" text={$_('candidate.contact_support')} />
+    <Button href={getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
   </form>
 
   <Footer slot="footer" />

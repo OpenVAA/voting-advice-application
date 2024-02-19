@@ -1,14 +1,15 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
+  import {onMount, onDestroy} from 'svelte';
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
+  import {locale, t} from '$lib/i18n';
   import {answerContext} from '$lib/utils/answerStore';
+  import {addAnswer, updateAnswer, deleteAnswer} from '$lib/api/candidate';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {LikertResponseButtons, QuestionActions, QuestionInfo} from '$lib/components/questions';
   import {BasicPage} from '$lib/templates/basicPage';
-  import {addAnswer, updateAnswer, deleteAnswer} from '$lib/api/candidate';
-  import {onMount, onDestroy} from 'svelte';
-  import {candidateAppRoute} from '$lib/utils/routes';
+  import {translate} from '$lib/i18n/utils/translate';
 
   const SAVE_INTERVAL_MS = 1000;
 
@@ -57,7 +58,8 @@
   // Set open answer from local storage and answer store if available, local storage takes precedence
   function setOpenAnswer() {
     if (answer && !localStorage.getItem(openAnswerLocal)) {
-      openAnswer = answer.openAnswer;
+      // Quick fix to load in current locale
+      openAnswer = translate(answer.openAnswer);
       return;
     }
     openAnswer = localStorage.getItem(openAnswerLocal) ?? '';
@@ -69,7 +71,7 @@
   }
 
   function saveOpenAnswerToLocal() {
-    if (openAnswer === '' || answer?.openAnswer === openAnswer) {
+    if (openAnswer === '' || translate(answer?.openAnswer) === openAnswer) {
       localStorage.removeItem(openAnswerLocal);
       return;
     }
@@ -103,10 +105,14 @@
       if (!localLikert) {
         return;
       }
-      const response = await addAnswer(questionId, parseInt(localLikert), openAnswer);
+      const response = await addAnswer(
+        questionId,
+        parseInt(localLikert),
+        toLocalizedString(openAnswer)
+      );
 
       if (!response?.ok) {
-        showError($_('candidateApp.opinions.answerSaveError'));
+        showError($t('candidateApp.opinions.answerSaveError'));
         return;
       }
 
@@ -117,7 +123,7 @@
         answerStore[questionId] = {
           id: answerId,
           key: parseInt(localLikert),
-          openAnswer
+          openAnswer: toLocalizedString(openAnswer)
         };
       }
     } else {
@@ -130,9 +136,9 @@
         previousLikert = parseInt(localLikert);
       }
 
-      const response = await updateAnswer(answer.id, previousLikert, openAnswer);
+      const response = await updateAnswer(answer.id, previousLikert, toLocalizedString(openAnswer));
       if (!response?.ok) {
-        showError($_('candidateApp.opinions.answerSaveError'));
+        showError($t('candidateApp.opinions.answerSaveError'));
         return;
       }
 
@@ -140,7 +146,7 @@
         answerStore[questionId] = {
           id: answer.id,
           key: previousLikert,
-          openAnswer
+          openAnswer: toLocalizedString(openAnswer)
         };
       }
     }
@@ -161,7 +167,7 @@
 
     const response = await deleteAnswer(answer.id);
     if (!response?.ok) {
-      showError($_('candidateApp.opinions.answerDeleteError'));
+      showError($t('candidateApp.opinions.answerDeleteError'));
       return;
     }
 
@@ -199,7 +205,7 @@
       (question) => answerStore && Object.keys(answerStore).includes(question.id.toString())
     );
     if (!allAnsweredBefore && allAnsweredAfter) {
-      goto(`${candidateAppRoute}/questions/done`);
+      goto(getRoute(Route.CandAppReady));
       return;
     }
 
@@ -207,18 +213,23 @@
     const newIndex = currentIndex + indexChange;
 
     if (newIndex >= 0 && newIndex < $page.data.questions.length) {
-      goto(`${candidateAppRoute}/questions/${$page.data.questions[newIndex].id}`);
+      goto(getRoute({route: Route.CandAppQuestion, id: $page.data.questions[newIndex].id}));
     } else {
       goto(lastPageUrl);
     }
   }
 
   async function gotoNextQuestion() {
-    await navigateToQuestion(1, candidateAppRoute);
+    await navigateToQuestion(1, getRoute(Route.CandAppHome));
   }
 
   async function goToPreviousQuestion() {
-    await navigateToQuestion(-1, candidateAppRoute);
+    await navigateToQuestion(-1, getRoute(Route.CandAppHome));
+  }
+
+  /** A temp fix for saving open answers as LocalizedStrings */
+  function toLocalizedString(text: string): LocalizedString {
+    return {[locale.get()]: text};
   }
 </script>
 
@@ -238,20 +249,20 @@
       {/if}
 
       <svelte:fragment slot="primaryActions">
-        {#if currentQuestion.type === 'Likert'}
+        {#if currentQuestion.type === 'singleChoiceOrdinal'}
           <LikertResponseButtons
             aria-labelledby="hgroup-{currentQuestion.id}"
             name={currentQuestion.id}
-            options={currentQuestion.options}
+            options={currentQuestion.values}
             {selectedKey}
             on:change={saveLikertToLocal} />
         {:else}
-          {$_('error.general')}
+          {$t('error.general')}
         {/if}
 
         <div class="m-12 w-full items-start">
           <label for="openAnswer" class="text-m uppercase"
-            >{$_('candidateApp.opinions.commentOnThisIssue')}
+            >{$t('candidateApp.opinions.commentOnThisIssue')}
           </label>
           <textarea
             bind:value={openAnswer}
@@ -276,5 +287,5 @@
     </BasicPage>
   {/key}
 {:else}
-  {$_('question.notFound')}
+  {$t('question.notFound')}
 {/if}
