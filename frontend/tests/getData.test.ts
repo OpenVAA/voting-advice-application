@@ -60,7 +60,7 @@ describe('Test getting data from backend', () => {
         Authorization: `Bearer ${constants.STRAPI_TOKEN}`
       }
     });
-    expect(response).toStrictEqual(parties);
+    expect(response).toStrictEqual(parties.data);
   });
 
   test('Test requesting individual candidate', async () => {
@@ -72,7 +72,7 @@ describe('Test getting data from backend', () => {
         Authorization: `Bearer ${constants.STRAPI_TOKEN}`
       }
     });
-    expect(response).toStrictEqual(singleCandidate);
+    expect(response).toStrictEqual(singleCandidate.data);
   });
 
   test('Test requesting individual party', async () => {
@@ -84,6 +84,6 @@ describe('Test getting data from backend', () => {
         Authorization: `Bearer ${constants.STRAPI_TOKEN}`
       }
     });
-    expect(response).toStrictEqual(singleParty);
+    expect(response).toStrictEqual(singleParty.data);
   });
 });
