@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
-  import {candidateAppRoute} from '$lib/utils/routes';
+  import {t} from '$lib/i18n';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import TimedModal from '$lib/components/modal/TimedModal.svelte';
   import {goto} from '$app/navigation';
   import {authContext} from '$lib/utils/authenticationStore';
@@ -32,7 +32,7 @@
   const logout = async () => {
     await authContext.logOut();
     closeModal();
-    await goto(candidateAppRoute);
+    await goto(getRoute(Route.CandAppHome));
   };
 </script>
 
@@ -57,13 +57,13 @@ When set to false, the button variant is main.
     on:click={triggerLogout}
     variant="icon"
     icon="logout"
-    text={$_('candidateApp.navbar.logOut')}
+    text={$t('candidateApp.navbar.logOut')}
     color="warning" />
 {:else}
   <Button
     on:click={triggerLogout}
     variant="main"
-    text={$_('candidateApp.allDataFilled.logOut')}
+    text={$t('candidateApp.allDataFilled.logOut')}
     color="warning" />
 {/if}
 
@@ -74,23 +74,23 @@ When set to false, the button variant is main.
   onTimeout={logout}
   timerDuration={logoutModalTimer}>
   <div class="notification max-w-md text-center">
-    <h2>{$_('candidateApp.logoutModal.title')}</h2>
+    <h2>{$t('candidateApp.logoutModal.title')}</h2>
     <br />
     <p>
-      {$_('candidateApp.logoutModal.body')}
+      {$t('candidateApp.logoutModal.body')}
     </p>
     <p>
-      {$_('candidateApp.logoutModal.confirmation', {values: {timeLeft}})}
+      {$t('candidateApp.logoutModal.confirmation', {timeLeft})}
     </p>
     <Button
       on:click={closeModal}
-      text={$_('candidateApp.logoutModal.continueEnteringData')}
+      text={$t('candidateApp.logoutModal.continueEnteringData')}
       variant="main"
       class="mt-40" />
     <div class="h-4" />
     <Button
       on:click={logout}
-      text={$_('candidateApp.navbar.logOut')}
+      text={$t('candidateApp.navbar.logOut')}
       class="w-full hover:bg-warning hover:text-primary-content"
       color="warning" />
   </div>

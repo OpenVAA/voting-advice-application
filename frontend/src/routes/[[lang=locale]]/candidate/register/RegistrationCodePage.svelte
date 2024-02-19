@@ -1,18 +1,18 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
-  import {page} from '$app/stores';
-  import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {goto} from '$app/navigation';
-  import {candidateAppRoute} from '$lib/utils/routes';
-  import {FrontPage} from '$lib/templates/frontPage';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {page} from '$app/stores';
+  import {t} from '$lib/i18n';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
+  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {FrontPage} from '$lib/templates/frontPage';
+  import Footer from '$lib/templates/parts/footer/Footer.svelte';
 
   export let registrationCode = '';
   export let wrongCode = false;
 
   const onRegistration = async () => {
-    await goto(candidateAppRoute + '/register?registrationCode=' + registrationCode);
+    await goto(getRoute({route: Route.CandAppRegister, params: {registrationCode}}));
   };
 </script>
 
@@ -35,35 +35,35 @@ registrationCode
 ```
 -->
 
-<FrontPage title={$_('candidateApp.registration.title')}>
+<FrontPage title={$t('candidateApp.registration.title')}>
   <img slot="hero" class="bg-white" src="/images/hero-candidate.png" alt="" />
 
   <HeadingGroup slot="heading">
-    <PreHeading class="text-2xl font-bold text-primary">{$page.data.appLabels.appTitle}</PreHeading>
+    <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
     <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
   </HeadingGroup>
 
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onRegistration}>
     <p class="max-w-md text-center">
-      {$_('candidateApp.registration.enterCode')}
+      {$t('candidateApp.registration.enterCode')}
     </p>
     <input
       type="text"
       name="registration-code"
       id="registration-code"
       class="input mb-md w-full max-w-md"
-      placeholder={$_('candidateApp.registration.submitPlaceholder')}
+      placeholder={$t('candidateApp.registration.submitPlaceholder')}
       bind:value={registrationCode}
-      aria-label={$_('candidateApp.registation.registrationCode')}
+      aria-label={$t('candidateApp.registation.registrationCode')}
       required />
     {#if wrongCode}
       <p class="text-center text-error">
-        {$_('candidateApp.registration.wrongRegistrationCode')}
+        {$t('candidateApp.registration.wrongRegistrationCode')}
       </p>
     {/if}
-    <Button type="submit" text={$_('candidateApp.registration.registerButton')} variant="main" />
-    <Button href="{candidateAppRoute}/help" text={$_('candidate.contact_support')} />
-    <Button href="/" text={$_('candidate.election_compass_for_voters')} />
+    <Button type="submit" text={$t('candidateApp.registration.registerButton')} variant="main" />
+    <Button href={getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
+    <Button href={getRoute(Route.Home)} text={$t('candidate.election_compass_for_voters')} />
   </form>
 
   <Footer slot="footer" />

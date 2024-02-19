@@ -1,7 +1,7 @@
 <script lang="ts">
   import {page} from '$app/stores';
   import {goto} from '$app/navigation';
-  import {candidateAppRoute} from '$lib/utils/routes';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import PasswordResetPage from './PasswordResetPage.svelte';
 
   const codeParam = $page.url.searchParams.get('code');
@@ -9,7 +9,7 @@
 
   async function checkParam() {
     if (!codeParam) {
-      await goto(candidateAppRoute);
+      await goto(getRoute(Route.CandAppHome));
       return;
     }
     code = codeParam;

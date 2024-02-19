@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
+  import {t} from '$lib/i18n';
   import {get} from 'svelte/store';
   import {authContext} from '$lib/utils/authenticationStore';
   import {BasicPage} from '$lib/templates/basicPage';
@@ -32,43 +32,43 @@
     successMessage = '';
 
     if (password !== passwordConfirmation) {
-      errorMessage = $_('candidateApp.settings.passwordsDontMatch');
+      errorMessage = $t('candidateApp.settings.passwordsDontMatch');
       return;
     }
 
     if (currentPassword === password) {
-      errorMessage = $_('candidateApp.settings.passwordIsTheSame');
+      errorMessage = $t('candidateApp.settings.passwordIsTheSame');
       return;
     }
 
     // Additional check before backend validation
     if (!validatePassword(password)) {
-      errorMessage = $_('candidateApp.settings.passwordNotValid');
+      errorMessage = $t('candidateApp.settings.passwordNotValid');
       return;
     }
 
     const response = await changePassword(currentPassword, password);
     // Ideally, we would also want to check if the current password was wrong, but Strapi does not return this information :/
     if (!response?.ok) {
-      errorMessage = $_('candidateApp.settings.changePasswordError');
+      errorMessage = $t('candidateApp.settings.changePasswordError');
       return;
     }
 
     errorMessage = '';
-    successMessage = $_('candidateApp.settings.passwordUpdated');
+    successMessage = $t('candidateApp.settings.passwordUpdated');
   };
 </script>
 
-<BasicPage title={$_('candidateApp.settings.title')} mainClass="bg-base-200">
+<BasicPage title={$t('candidateApp.settings.title')} mainClass="bg-base-200">
   <div class="text-center">
-    <p>{$_('candidateApp.settings.instructions')}</p>
+    <p>{$t('candidateApp.settings.instructions')}</p>
   </div>
 
   <div class="mt-16 w-full">
     <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
       <div class="flex items-center justify-between bg-base-100 px-4">
         <label for="email" class={labelClass}>
-          {$_('candidateApp.settings.fields.email')}
+          {$t('candidateApp.settings.fields.email')}
         </label>
         <div class="w-6/12 text-right text-secondary">
           <input disabled type="text" id="email" value={user?.email} class={inputClass} />
@@ -77,7 +77,7 @@
       </div>
     </div>
     <p class={disclaimerClass}>
-      {$_('candidateApp.settings.emailDescription')}
+      {$t('candidateApp.settings.emailDescription')}
     </p>
   </div>
 
@@ -86,7 +86,7 @@
     <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
       <div class="flex items-center justify-between bg-base-100 px-4">
         <label for="language" class={labelClass}>
-          {$_('candidateApp.settings.fields.language')}
+          {$t('candidateApp.settings.fields.language')}
         </label>
         <div class="w-6/12 text-right text-secondary">
           <select id="language" class="select select-sm w-6/12 text-primary">
@@ -97,7 +97,7 @@
       </div>
     </div>
     <p class={disclaimerClass}>
-      {$_('candidateApp.settings.languageDescription')}
+      {$t('candidateApp.settings.languageDescription')}
     </p>
   </div>
 
@@ -106,7 +106,7 @@
 
   <div class="mt-32 w-full">
     <p class={headerClass}>
-      {$_('candidateApp.settings.accountPassword')}
+      {$t('candidateApp.settings.accountPassword')}
     </p>
   </div>
 
@@ -117,7 +117,7 @@
       <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
         <div class="flex items-center justify-between bg-base-100 px-4">
           <label for="currentPassword" class={labelClass}>
-            {$_('candidateApp.settings.currentPassword')}
+            {$t('candidateApp.settings.currentPassword')}
           </label>
           <div class="w-6/12 text-right text-secondary">
             <PasswordField bind:password={currentPassword} autocomplete="" />
@@ -125,7 +125,7 @@
         </div>
       </div>
       <p class={disclaimerClass}>
-        {$_('candidateApp.settings.currentPasswordDescription')}
+        {$t('candidateApp.settings.currentPasswordDescription')}
       </p>
     </div>
 
@@ -135,7 +135,7 @@
       <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
         <div class="flex items-center justify-between bg-base-100 px-4">
           <label for="newPassword" class={labelClass}>
-            {$_('candidateApp.settings.newPassword')}
+            {$t('candidateApp.settings.newPassword')}
           </label>
           <div class="w-6/12 text-right text-secondary">
             <PasswordField bind:password autocomplete="new-password" />
@@ -148,7 +148,7 @@
       <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
         <div class="flex items-center justify-between bg-base-100 px-4">
           <label for="newPasswordConfirmation" class={labelClass}>
-            {$_('candidateApp.settings.newPasswordConfirmation')}
+            {$t('candidateApp.settings.newPasswordConfirmation')}
           </label>
           <div class="w-6/12 text-right text-secondary">
             <PasswordField bind:password={passwordConfirmation} autocomplete="new-password" />
@@ -167,7 +167,7 @@
       type="submit"
       variant="main"
       disabled={disableSetButton}
-      text={$_('candidateApp.settings.updatePassword')} />
+      text={$t('candidateApp.settings.updatePassword')} />
 
     {#if successMessage}
       <p class="mt-2 text-center text-success">

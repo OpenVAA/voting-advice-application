@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {_} from 'svelte-i18n';
+  import {t} from '$lib/i18n';
   import {Button} from '$lib/components/button';
   export let password = '';
   export let autocomplete = '';
@@ -32,13 +32,13 @@ to reveal and hide the password
 -->
 
 <div class="relative">
-  <label for="password" class="hidden">{$_('candidate.password')}</label>
+  <label for="password" class="hidden">{$t('candidate.password')}</label>
   <input
     id="password"
     type="password"
     name="password"
     class="input w-full"
-    placeholder={$_('candidate.password_placeholder')}
+    placeholder={$t('candidate.password_placeholder')}
     bind:value={password}
     bind:this={inputbox}
     {autocomplete}
@@ -47,8 +47,8 @@ to reveal and hide the password
     type="button"
     variant="icon"
     text={passwordRevealed
-      ? $_('candidateApp.passwordButton.hidePassword')
-      : $_('candidateApp.passwordButton.revealPassword')}
+      ? $t('candidateApp.passwordButton.hidePassword')
+      : $t('candidateApp.passwordButton.revealPassword')}
     class="absolute inset-y-0 right-0"
     icon={passwordRevealed ? 'hide' : 'show'}
     on:click={() => changeRevealed()} />

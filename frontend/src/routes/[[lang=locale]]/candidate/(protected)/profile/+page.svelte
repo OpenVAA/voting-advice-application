@@ -1,18 +1,18 @@
 <script lang="ts">
+  import {get} from 'svelte/store';
+  import {goto} from '$app/navigation';
+  import {t} from '$lib/i18n';
+  import {translate} from '$lib/i18n/utils/translate';
+  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getLanguages, updateBasicInfo} from '$lib/api/candidate';
+  import {authContext} from '$lib/utils/authenticationStore';
+  import {loadUserData} from '$lib/utils/authenticationStore';
+  import Icon from '$lib/components/icon/Icon.svelte';
+  import {Button} from '$lib/components/button';
   import FieldGroup from '$lib/components/common/form/FieldGroup.svelte';
   import Field from '$lib/components/common/form/Field.svelte';
   import {BasicPage} from '$lib/templates/basicPage';
-  import {_} from 'svelte-i18n';
-  import {authContext} from '$lib/utils/authenticationStore';
-  import {get} from 'svelte/store';
-  import Icon from '$lib/components/icon/Icon.svelte';
-  import {LogoutButton} from '$candidate/components/logoutButton';
-  import {Button} from '$lib/components/button';
   import AvatarSelect from './AvatarSelect.svelte';
-  import {updateBasicInfo} from '$lib/api/candidate';
-  import {loadUserData} from '$lib/utils/authenticationStore';
-  import {getLanguages} from '$lib/api/candidate';
-  import {goto} from '$app/navigation';
   import type {StrapiLanguageData} from '$lib/api/getData.type';
   import type {Language} from '$lib/types/candidateAttributes';
 
@@ -56,9 +56,9 @@
       await uploadPhoto();
       await updateBasicInfo(manifesto, birthday, gender, photo, unaffiliated, motherTongues);
       await loadUserData(); // reload user data so it's up to date
-      await goto('/candidate/questions');
+      await goto(getRoute(Route.CandAppQuestions));
     } catch (error) {
-      errorMessage = $_('candidateApp.basicInfo.errorMessage');
+      errorMessage = $t('candidateApp.basicInfo.errorMessage');
     }
   };
 
@@ -66,21 +66,26 @@
   const dot = '\u22C5';
 
   // map nominations into objects
-  const nominationFields = nominations?.map((nom) => ({
-    nominationID: nom.id.toString(),
-    constituency: nom.constituency?.name,
-    party: nom.party.shortName,
-    electionSymbol: nom.electionSymbol,
-    fieldText: `${nom.constituency?.name} ${dot} ${nom.party.shortName} ${
-      nom.electionSymbol ? dot + ' ' + nom.electionSymbol : ''
-    }`
-  }));
+  const nominationFields = nominations?.map((nom) => {
+    const constituency = translate(nom.constituency?.name);
+    const party = translate(nom.party?.shortName);
+    const electionSymbol = nom.electionSymbol;
+    return {
+      nominationID: nom.id.toString(),
+      constituency,
+      party,
+      electionSymbol,
+      fieldText: `${constituency} ${dot} ${party} ${
+        electionSymbol ? dot + ' ' + electionSymbol : ''
+      }`
+    };
+  });
 
   // basic information
   const basicInfoData: Record<string, string | number | undefined> = {
     firstName: user?.candidate?.firstName,
     lastName: user?.candidate?.lastName,
-    party: user?.candidate?.party?.shortName
+    party: translate(user?.candidate?.party?.shortName)
   };
 
   // fetch languages from backend
@@ -114,18 +119,18 @@
   };
 </script>
 
-<BasicPage title={$_('candidateApp.basicInfo.title')} mainClass="bg-base-200">
+<BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
   <form on:submit|preventDefault={submitForm}>
-    <div class="mx-20 my-20 flex flex-col items-center gap-16">
+    <div class="flex flex-col items-center gap-16">
       <p class="text-center">
-        {$_('candidateApp.basicInfo.instructions')}
+        {$t('candidateApp.basicInfo.instructions')}
       </p>
 
       <FieldGroup>
         {#each basicInfoFields as field}
           <Field>
             <label for={field} class={labelClass}>
-              {$_(`candidateApp.basicInfo.fields.${field}`)}
+              {$t(`candidateApp.basicInfo.fields.${field}`)}
             </label>
             <div class={inputContainerClass}>
               <input
@@ -139,13 +144,13 @@
           </Field>
         {/each}
         <p class={disclaimerClass} slot="footer">
-          {$_('candidateApp.basicInfo.disclaimer')}
+          {$t('candidateApp.basicInfo.disclaimer')}
         </p>
       </FieldGroup>
 
       <FieldGroup>
         <p class={headerClass} slot="header">
-          {$_('candidateApp.basicInfo.nominations')}
+          {$t('candidateApp.basicInfo.nominations')}
         </p>
 
         {#each nominationFields ?? [] as nomination}
@@ -156,21 +161,21 @@
                 disabled
                 type="text"
                 id={nomination.nominationID}
-                value={nomination.electionSymbol ? null : $_('candidateApp.basicInfo.pending')}
+                value={nomination.electionSymbol ? null : $t('candidateApp.basicInfo.pending')}
                 class={inputClass} />
               <Icon name="locked" class={iconClass} />
             </div>
           </Field>
         {/each}
         <p class={disclaimerClass} slot="footer">
-          {$_('candidateApp.basicInfo.nominationsDescription')}
+          {$t('candidateApp.basicInfo.nominationsDescription')}
         </p>
       </FieldGroup>
 
       <FieldGroup>
         <Field>
           <label for="birthday" class={labelClass}>
-            {$_('candidateApp.basicInfo.fields.birthday')}
+            {$t('candidateApp.basicInfo.fields.birthday')}
           </label>
           <div class={inputContainerClass}>
             <div class={inputClass}>
@@ -180,7 +185,7 @@
         </Field>
         <Field>
           <label for="gender" class={labelClass}>
-            {$_('candidateApp.basicInfo.fields.gender')}
+            {$t('candidateApp.basicInfo.fields.gender')}
           </label>
           <select
             id="gender"
@@ -190,7 +195,7 @@
             <option disabled selected style="display: none;" />
             {#each genders as option}
               <option value={option} selected={option === gender}
-                >{$_(`candidateApp.genders.${option}`)}</option>
+                >{$t(`candidateApp.genders.${option}`)}</option>
             {/each}
           </select>
         </Field>
@@ -198,15 +203,15 @@
 
       <FieldGroup>
         <p class={headerClass} slot="header">
-          {$_('candidateApp.basicInfo.fields.motherTongue')}
+          {$t('candidateApp.basicInfo.fields.motherTongue')}
         </p>
 
         <Field>
           <label for="motherTongue" class={labelClass}>
             {#if motherTongues}
               {motherTongues.length > 0
-                ? $_('candidateApp.basicInfo.addAnother')
-                : $_('candidateApp.basicInfo.selectFirst')}
+                ? $t('candidateApp.basicInfo.addAnother')
+                : $t('candidateApp.basicInfo.selectFirst')}
             {/if}
           </label>
           <select
@@ -217,7 +222,7 @@
             <option disabled selected value style="display: none;" />
             {#each availableLanguages ?? [] as option}
               <option value={option.attributes.localisationCode}
-                >{$_(`candidateApp.languages.${option.attributes.name}`)}</option>
+                >{$t(`candidateApp.languages.${option.attributes.name}`)}</option>
             {/each}
           </select>
         </Field>
@@ -246,7 +251,7 @@
       <FieldGroup>
         <Field>
           <label for="unaffiliated" class={labelClass}>
-            {$_('candidateApp.basicInfo.fields.unaffiliated')}
+            {$t('candidateApp.basicInfo.fields.unaffiliated')}
           </label>
 
           <input
@@ -256,12 +261,12 @@
             bind:checked={unaffiliated} />
         </Field>
         <p class={disclaimerClass} slot="footer">
-          {$_('candidateApp.basicInfo.unaffiliatedDescription')}
+          {$t('candidateApp.basicInfo.unaffiliatedDescription')}
         </p>
       </FieldGroup>
       <FieldGroup>
         <label for="message" class={headerClass} slot="header"
-          >{$_('candidateApp.basicInfo.electionManifesto')}</label>
+          >{$t('candidateApp.basicInfo.electionManifesto')}</label>
         <textarea
           id="message"
           rows="4"
@@ -270,7 +275,7 @@
       </FieldGroup>
       <Button
         disabled={!allFilled}
-        text={$_('candidateApp.opinions.continue')}
+        text={$t('candidateApp.opinions.continue')}
         type="submit"
         variant="main"
         icon="next"
