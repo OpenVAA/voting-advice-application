@@ -68,9 +68,9 @@ export const matchCandidates = function matchCandidates(
       c.id,
       c.answers
         ? c.answers
-        // TODO: Fix this impromptu filter
-          .filter((a) => a.answer != null && typeof a.answer === 'number')
-          .map((a) => ({question: questions[a.questionId], value: a.answer as number}))
+            // TODO: Fix this impromptu filter
+            .filter((a) => a.answer != null && typeof a.answer === 'number')
+            .map((a) => ({question: questions[a.questionId], value: a.answer as number}))
         : []
     );
   });
