@@ -28,8 +28,11 @@ services:
       - 'postgres'
     volumes:
       # Creating this volume will make Docker update changes from local automatically
-      # Uncomment if you want to enable hot reloading
+      # Uncomment the two lines below if you want to enable hot reloading.
+      # We need to mark /opt/strapi-plugin-import-export-entries as a volume, otherwise
+      # hot reloading will not work
       # - ./:/opt
+      # - /opt/strapi-plugin-import-export-entries
       # Mark these as volumes so they get ignored
       - /opt/node_modules
   postgres:
