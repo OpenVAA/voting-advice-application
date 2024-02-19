@@ -10,39 +10,8 @@
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {
-    "i18n": {
-      "localized": true
-    }
-  },
+  "pluginOptions": {},
   "attributes": {
-    "name": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string",
-      "required": true
-    },
-    "info": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "text",
-      "required": true
-    },
-    "shortName": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string",
-      "required": true
-    },
     "logo": {
       "type": "media",
       "multiple": false,
@@ -50,11 +19,7 @@
       "allowedTypes": [
         "images"
       ],
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      }
+      "pluginOptions": {}
     },
     "candidates": {
       "type": "relation",
@@ -74,13 +39,21 @@
       "target": "api::nomination.nomination",
       "mappedBy": "party"
     },
-    "partyColor": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": false
-        }
-      },
+    "color": {
+      "pluginOptions": {},
       "type": "string"
+    },
+    "name": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "shortName": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "info": {
+      "pluginOptions": {},
+      "type": "json"
     }
   }
 }

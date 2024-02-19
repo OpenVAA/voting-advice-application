@@ -4,25 +4,14 @@
   "info": {
     "singularName": "candidate-attribute",
     "pluralName": "candidate-attributes",
-    "displayName": "Candidate Attributes"
+    "displayName": "Candidate Attributes",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {
-    "i18n": {
-      "localized": true
-    }
-  },
+  "pluginOptions": {},
   "attributes": {
-    "displayName": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string"
-    },
     "questionType": {
       "type": "relation",
       "relation": "oneToOne",
@@ -34,29 +23,21 @@
       "target": "api::candidate.candidate",
       "inversedBy": "candidateAttributes"
     },
-    "key": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string"
+    "name": {
+      "pluginOptions": {},
+      "type": "json"
     },
-    "value": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string"
+    "shortName": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "info": {
+      "pluginOptions": {},
+      "type": "json"
     },
     "fillingInfo": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "text"
+      "pluginOptions": {},
+      "type": "json"
     }
   }
 }

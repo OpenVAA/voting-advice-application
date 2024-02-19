@@ -28,7 +28,6 @@ const defaultPermissions = [
   {action: 'api::answer.answer.delete', roleType: 'authenticated'},
   {action: 'api::answer.answer.find', roleType: 'authenticated'},
   {action: 'api::answer.answer.findOne', roleType: 'authenticated'},
-  {action: 'api::answer.answer.createLocalization', roleType: 'authenticated'},
   {action: 'api::answer.answer.update', roleType: 'authenticated'}
 ];
 

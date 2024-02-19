@@ -16,31 +16,11 @@
     }
   },
   "attributes": {
-    "name": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string",
-      "unique": true,
-      "required": true
-    },
     "elections": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::election.election",
       "mappedBy": "electionAppLabel"
-    },
-    "appTitle": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string",
-      "unique": false,
-      "required": true
     },
     "actionLabels": {
       "type": "component",

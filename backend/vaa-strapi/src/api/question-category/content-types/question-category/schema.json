@@ -10,46 +10,13 @@
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {
-    "i18n": {
-      "localized": true
-    }
-  },
+  "pluginOptions": {},
   "attributes": {
-    "name": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string",
-      "required": true
-    },
-    "shortName": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string"
-    },
     "order": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
+      "pluginOptions": {},
       "type": "integer",
       "min": 0,
       "required": true
-    },
-    "info": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "richtext"
     },
     "elections": {
       "type": "relation",
@@ -57,11 +24,31 @@
       "target": "api::election.election",
       "inversedBy": "question_categories"
     },
+    "name": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "shortName": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "info": {
+      "pluginOptions": {},
+      "type": "json"
+    },
     "questions": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::question.question",
-      "mappedBy": "questionCategory"
+      "mappedBy": "category"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "opinion",
+        "info"
+      ],
+      "default": "opinion"
     }
   }
 }

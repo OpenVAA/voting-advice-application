@@ -10,37 +10,8 @@
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {
-    "i18n": {
-      "localized": true
-    }
-  },
+  "pluginOptions": {},
   "attributes": {
-    "text": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "text",
-      "required": true
-    },
-    "info": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "richtext"
-    },
-    "fillingInfo": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "text"
-    },
     "questionType": {
       "type": "relation",
       "relation": "manyToOne",
@@ -53,11 +24,32 @@
       "target": "api::answer.answer",
       "mappedBy": "question"
     },
-    "questionCategory": {
+    "category": {
       "type": "relation",
       "relation": "manyToOne",
       "target": "api::question-category.question-category",
       "inversedBy": "questions"
+    },
+    "text": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "info": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "fillingInfo": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "shortName": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "allowOpen": {
+      "pluginOptions": {},
+      "type": "boolean",
+      "default": true
     }
   }
 }
