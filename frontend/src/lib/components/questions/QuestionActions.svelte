@@ -1,7 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {createEventDispatcher} from 'svelte';
-  import {page} from '$app/stores';
   import {concatClass} from '$lib/utils/components';
   import {Button} from '$lib/components/button';
   import type {QuestionActionsProps} from './QuestionActions.type';

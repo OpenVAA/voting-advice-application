@@ -179,13 +179,6 @@
     answerContext.answers.set(answerStore);
   }
 
-  // Skip to next question
-  // TODO: Later we might want to add an explicit note that this question was skipped
-  // TODO: This needs to take into account as well whether the question is already answered
-  function skipQuestion() {
-    gotoNextQuestion();
-  }
-
   async function navigateToQuestion(indexChange: number, lastPageUrl: string) {
     if (!currentQuestion) {
       return;

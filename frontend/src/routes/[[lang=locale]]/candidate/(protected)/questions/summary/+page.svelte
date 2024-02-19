@@ -29,14 +29,14 @@
     {}
   );
 
-  let nofUnasweredQuestions = 0;
+  let nofUnansweredQuestions = 0;
   let loading = true;
-  let unsansweredCategories: Array<string> | undefined = undefined;
+  let unansweredCategories: Array<string> | undefined;
   $: {
     if (answerStore) {
-      nofUnasweredQuestions = questions.length - Object.entries(answerStore).length;
+      nofUnansweredQuestions = questions.length - Object.entries(answerStore).length;
       loading = false;
-      unsansweredCategories = Object.keys(questionsByCategory).filter(
+      unansweredCategories = Object.keys(questionsByCategory).filter(
         (category) => !questionsByCategory[category].every((question) => answerStore?.[question.id])
       );
     }
@@ -45,10 +45,10 @@
 
 <BasicPage title={$t('candidateApp.allQuestions.title')}>
   <svelte:fragment slot="note">
-    {#if nofUnasweredQuestions != 0 && !loading}
+    {#if nofUnansweredQuestions != 0 && !loading}
       <div class="text-warning">
         <Icon name="important" />
-        {$t('candidateApp.allQuestions.warning', {numUnansweredQuestions: nofUnasweredQuestions})}
+        {$t('candidateApp.allQuestions.warning', {numUnansweredQuestions: nofUnansweredQuestions})}
       </div>
     {/if}
   </svelte:fragment>
@@ -62,7 +62,7 @@
       <Expander
         title={category || ''}
         variant="category"
-        defaultExpanded={unsansweredCategories?.includes(category ?? '')}>
+        defaultExpanded={unansweredCategories?.includes(category ?? '')}>
         {#each categoryQuestions as question, i}
           <!-- Question has been answered -->
           {#if answerStore?.[question.id]}

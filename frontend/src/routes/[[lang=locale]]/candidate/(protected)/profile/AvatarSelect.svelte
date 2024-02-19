@@ -1,8 +1,6 @@
 <script lang="ts">
   import {onDestroy, onMount} from 'svelte';
-  import {get} from 'svelte/store';
   import {uploadFiles, deleteFile} from '$lib/api/candidate';
-  import {authContext} from '$lib/utils/authenticationStore';
   import {constants} from '$lib/utils/constants';
   import {t} from '$lib/i18n';
   import Field from '$lib/components/common/form/Field.svelte';
@@ -23,8 +21,6 @@
   let portraitImage: HTMLImageElement | null;
 
   const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';
-
-  const token = get(authContext.token);
 
   // function for clicking the portrait input field with space
   const handlePortraitInput = (event: KeyboardEvent) => {
