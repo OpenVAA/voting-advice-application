@@ -3,7 +3,8 @@ import {constants} from '$lib/utils/constants';
 import {authContext} from '$lib/utils/authenticationStore';
 import type {Language, User} from '$lib/types/candidateAttributes';
 import type {Photo} from '$lib/types/candidateAttributes';
-import type {StrapiLanguageData} from '$lib/api/getData.type';
+import type {Answer} from '$lib/utils/answerStore';
+import type {StrapiAnswerData, StrapiLanguageData, StrapiResponse} from '$lib/api/getData.type';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
@@ -83,6 +84,7 @@ export const me = async (): Promise<User | undefined> => {
       'populate[candidate][populate][motherTongues]': 'true'
     })
   );
+
   if (!res?.ok) return;
 
   const data: UserData = await res.json();
@@ -149,7 +151,7 @@ export const changePassword = async (currentPassword: string, password: string) 
 export const addAnswer = async (
   questionId: string,
   answerKey: AnswerOption['key'],
-  openAnswer?: string
+  openAnswer?: LocalizedString
 ): Promise<Response | undefined> => {
   const candidate = get(authContext.user)?.candidate;
 
@@ -159,10 +161,8 @@ export const addAnswer = async (
     data: {
       candidate: candidate?.id,
       question: Number(questionId),
-      answer: {
-        key: answerKey
-      },
-      openAnswer: openAnswer
+      value: answerKey,
+      openAnswer
     }
   };
 
@@ -182,14 +182,12 @@ export const addAnswer = async (
 export const updateAnswer = async (
   answerId: string,
   answerKey: AnswerOption['key'],
-  openAnswer?: string
+  openAnswer?: LocalizedString
 ): Promise<Response | undefined> => {
   const body = {
     data: {
-      answer: {
-        key: answerKey
-      },
-      openAnswer: openAnswer
+      value: answerKey,
+      openAnswer
     }
   };
 
@@ -217,7 +215,7 @@ export const deleteAnswer = async (answerId: string): Promise<Response | undefin
 /**
  * Get all the answers for the logged in user.
  */
-export const getExistingAnswers = async (): Promise<Response | undefined> => {
+export const getExistingAnswers = async (): Promise<Record<string, Answer> | undefined> => {
   const user = get(authContext.user)?.candidate;
   const candidateId = user?.id;
 
@@ -225,13 +223,28 @@ export const getExistingAnswers = async (): Promise<Response | undefined> => {
 
   const res = await request(
     getUrl('api/answers', {
-      'populate[question]': 'true',
-      'filters[candidate][id][$eq]': candidateId.toString()
+      'populate[question][populate][category]': 'true',
+      'filters[candidate][id][$eq]': candidateId.toString(),
+      'filters[question][category][type][$eq]': 'opinion'
     })
   );
+
   if (!res?.ok) return;
 
-  return res;
+  const answerData: StrapiResponse<StrapiAnswerData[]> = await res.json();
+
+  // Parse the data into a more usable format where the question ID is the key
+  const answers: Record<string, Answer> = {};
+
+  answerData.data.forEach((answer) => {
+    answers[answer.attributes.question.data.id] = {
+      id: `${answer.id}`,
+      key: answer.attributes.value as number,
+      openAnswer: answer.attributes.openAnswer
+    };
+  });
+
+  return answers;
 };
 
 export const getLanguages = async (): Promise<StrapiLanguageData[] | undefined> => {

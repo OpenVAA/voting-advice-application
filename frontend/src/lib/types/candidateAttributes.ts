@@ -66,21 +66,20 @@ export interface Nomination {
   electionSymbol: string;
   electionRound: number;
   party: Party;
-  locale: string;
   constituency?: Constituency;
 }
 
 export interface Party {
   id: number;
-  name: string;
-  shortName: string;
-  info: string;
+  name: LocalizedString;
+  shortName: LocalizedString;
+  info: LocalizedString;
   partyColor: string;
 }
 
 export interface Constituency {
   id: number;
-  name: string;
-  shortName: string;
+  name: LocalizedString;
+  shortName: LocalizedString;
   type: string;
 }
