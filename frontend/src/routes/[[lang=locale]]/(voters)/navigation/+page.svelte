@@ -10,7 +10,7 @@
         <h2 class="card-title">Questions</h2>
         <p>Answer questions to find suggestions about your candidates.</p>
         <div class="card-actions justify-end">
-          <a href={getRoute(Route.Questions)} class="btn-primary btn w-full max-w-md"
+          <a href={getRoute(Route.Questions)} class="btn btn-primary w-full max-w-md"
             >Answer Questions</a>
         </div>
       </div>
@@ -20,7 +20,7 @@
         <h2 class="card-title">Candidates</h2>
         <p>View the list of candidates.</p>
         <div class="card-actions justify-end">
-          <a href={getRoute(Route.Candidates)} class="btn-primary btn w-full max-w-md"
+          <a href={getRoute(Route.Candidates)} class="btn btn-primary w-full max-w-md"
             >View Candidates</a>
         </div>
       </div>
@@ -30,7 +30,7 @@
         <h2 class="card-title">Parties</h2>
         <p>View the list of parties.</p>
         <div class="card-actions justify-end">
-          <a href={getRoute(Route.Parties)} class="btn-primary btn w-full max-w-md">View Parties</a>
+          <a href={getRoute(Route.Parties)} class="btn btn-primary w-full max-w-md">View Parties</a>
         </div>
       </div>
     </div>
