@@ -1,6 +1,5 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {page} from '$app/stores';
   import {GetFullNameInOrder} from '$lib/utils/internationalisation';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {EntityCard} from '$lib/components/entityCard';
@@ -8,8 +7,6 @@
   import type {PageServerData} from './$types';
 
   export let data: PageServerData;
-
-  const urlRoot = $page.url.pathname.replace(/\/$/, '');
 </script>
 
 <div class="flex w-full flex-grow flex-col items-center justify-start bg-base-300 p-lg pb-[3.5rem]">

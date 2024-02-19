@@ -102,9 +102,11 @@
   let motherTongueSelect: HTMLSelectElement;
 
   // handle the change when a language is selected
-  const handleLanguageSelect = (e: any) => {
+  const handleLanguageSelect = (e: Event) => {
     const language = availableLanguages
-      ? availableLanguages.find((lang) => lang.attributes.localisationCode === e.target.value)
+      ? availableLanguages.find(
+          (lang) => lang.attributes.localisationCode === (e.target as HTMLSelectElement).value
+        )
       : undefined;
     if (language && motherTongues) {
       const languageObj: Language = {

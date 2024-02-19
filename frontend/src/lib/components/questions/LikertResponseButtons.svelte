@@ -207,11 +207,11 @@ Keyboard navigation works in the following way:
   <div
     aria-hidden="true"
     class="absolute top-16 h-4 -translate-y-1/2 bg-base-300"
-    style="grid-row: 2; width: calc(100% / {options.length} * {options.length -
-      1}); left: calc(50% / {options.length})" />
+    style="grid-row: 2; width: calc(100% / {options?.length} * {(options?.length ?? 0) -
+      1}); left: calc(50% / {options?.length})" />
 
   <!-- The radio buttons -->
-  {#each options as { key, label }}
+  {#each options ?? [] as { key, label }}
     <!-- The voter's and entity's answers in `display` mode -->
     {#if mode === 'display'}
       {#if selectedKey == key && entityKey == key}

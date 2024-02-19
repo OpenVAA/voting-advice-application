@@ -32,7 +32,7 @@ global.fetch = vi.fn();
 (fetch as Mock).mockResolvedValue(createFetchResponse(locales));
 const getData = await import('$lib/api/getData').then((mod) => mod.getData);
 
-function createFetchResponse(data: any) {
+function createFetchResponse(data: unknown) {
   return {json: () => new Promise((resolve) => resolve(data))};
 }
 

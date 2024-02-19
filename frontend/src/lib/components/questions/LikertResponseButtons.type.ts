@@ -8,7 +8,7 @@ export type LikertResponseButtonsProps = SvelteHTMLElements['fieldset'] & {
   /**
    * The `key`-`label` pairs of the radio buttons
    */
-  options: QuestionProps['options'];
+  options: QuestionProps['values'];
   /**
    * The same component can be used both for answering the questions and displaying answers.
    * @default 'answer'

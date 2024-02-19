@@ -10,8 +10,6 @@
   import {EntityCard} from '$lib/components/entityCard';
   import {ScoreGauge} from '$lib/components/scoreGauge';
 
-  const urlRoot = $page.url.pathname.replace(/\/$/, '');
-
   // This has to be done onMount, because goto may otherwise be called on the server
   onMount(() => {
     if ($candidateRankings?.length === 0) {

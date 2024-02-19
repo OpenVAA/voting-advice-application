@@ -19,11 +19,13 @@
       openAnswer: match?.openAnswer
     };
   }
+
+  const castLikertAnswer = (answer: unknown): number => answer as number;
 </script>
 
 <section class="p-lg">
   {#each questions as question}
-    {@const {id, text, type, options, category, info} = question}
+    {@const {id, text, type, values, category} = question}
     {@const {answer, openAnswer} = getAnswer(id)}
     {@const voterAnswer = $answeredQuestions[id]}
     {@const headingId = `questionHeading-${id}`}
@@ -48,15 +50,15 @@
         </div>
       {/if}
 
-      {#if type === 'Likert'}
+      {#if type === 'singleChoiceOrdinal'}
         <LikertResponseButtons
           aria-labelledby={headingId}
           name={id}
           mode="display"
           selectedKey={voterAnswer}
-          entityKey={answer}
+          entityKey={castLikertAnswer(answer)}
           entityLabel={shortName}
-          {options} />
+          options={values} />
       {:else}
         {$t('error.general')}
       {/if}
