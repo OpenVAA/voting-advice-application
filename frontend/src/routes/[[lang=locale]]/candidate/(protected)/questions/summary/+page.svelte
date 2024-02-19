@@ -1,37 +1,54 @@
 <script lang="ts">
   import {page} from '$app/stores';
-  import {t} from '$lib/i18n';
-  import {translate} from '$lib/i18n/utils/translate';
-  import {answerContext} from '$lib/utils/answerStore';
-  import {getRoute, Route} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
-  import {Expander} from '$lib/components/expander';
-  import {LikertResponseButtons} from '$lib/components/questions';
   import {BasicPage} from '$lib/templates/basicPage';
-  import {Icon} from '$lib/components/icon';
+  import {Expander} from '$lib/components/expander';
+  import LikertResponseButtons from '$lib/components/questions/LikertResponseButtons.svelte';
+  import {answerContext} from '$lib/utils/answerStore';
+  import Icon from '$lib/components/icon/Icon.svelte';
+  import {t} from '$lib/i18n';
+  import {getRoute, Route} from '$lib/utils/navigation';
+  import {translate} from '$lib/i18n/utils/translate';
 
   const questions = $page.data.questions;
-  const categories = [...new Set(questions.map((question) => question.category))];
 
   const store = answerContext.answers;
   $: answerStore = $store;
 
-  let numUnansweredQuestions = 0;
+  const questionsByCategory = questions.reduce(
+    (acc: Record<string, Array<QuestionProps>>, question) => {
+      if (!question.category) {
+        return acc;
+      }
+      if (!acc[question.category]) {
+        acc[question.category] = [];
+      }
+      acc[question.category].push(question);
+      return acc;
+    },
+    {}
+  );
+
+  let nofUnasweredQuestions = 0;
   let loading = true;
+  let unsansweredCategories: Array<string> | undefined = undefined;
   $: {
     if (answerStore) {
-      numUnansweredQuestions = questions.length - Object.entries(answerStore).length;
+      nofUnasweredQuestions = questions.length - Object.entries(answerStore).length;
       loading = false;
+      unsansweredCategories = Object.keys(questionsByCategory).filter(
+        (category) => !questionsByCategory[category].every((question) => answerStore?.[question.id])
+      );
     }
   }
 </script>
 
 <BasicPage title={$t('candidateApp.allQuestions.title')}>
   <svelte:fragment slot="note">
-    {#if numUnansweredQuestions != 0 && !loading}
+    {#if nofUnasweredQuestions != 0 && !loading}
       <div class="text-warning">
         <Icon name="important" />
-        {$t('candidateApp.allQuestions.warning', {numUnansweredQuestions})}
+        {$t('candidateApp.allQuestions.warning', {numUnansweredQuestions: nofUnasweredQuestions})}
       </div>
     {/if}
   </svelte:fragment>
@@ -40,11 +57,13 @@
     {$t('candidateApp.allQuestions.info')}
   </p>
 
-  {#each categories as category}
-    <Expander title={category ?? ''} variant="category">
-      {#each questions as question, i}
-        <!-- Show questions based on categories -->
-        {#if category === question.category}
+  {#each Object.entries(questionsByCategory) as [category, categoryQuestions]}
+    <div class="edgetoedge-x">
+      <Expander
+        title={category || ''}
+        variant="category"
+        defaultExpanded={unsansweredCategories?.includes(category ?? '')}>
+        {#each categoryQuestions as question, i}
           <!-- Question has been answered -->
           {#if answerStore?.[question.id]}
             <div class="pb-20 pt-20">
@@ -58,11 +77,13 @@
 
               <div class="pt-10">
                 <!-- This gives empty form label error from Wave Extension for every empty dot, but fix should come from LikertResponseButton -->
-                <LikertResponseButtons
-                  name={question.id}
-                  mode="display"
-                  options={question.values}
-                  selectedKey={answerStore[question.id].key} />
+                <a href={getRoute({route: Route.CandAppQuestion, id: question.id})}>
+                  <LikertResponseButtons
+                    name={question.id}
+                    mode="display"
+                    options={question.values}
+                    selectedKey={answerStore[question.id].key} />
+                </a>
 
                 {#if answerStore[question.id].openAnswer}
                   <div class="pt-10">
@@ -98,8 +119,16 @@
               </a>
             </div>
           {/if}
-        {/if}
-      {/each}
-    </Expander>
+        {/each}
+      </Expander>
+    </div>
   {/each}
 </BasicPage>
+
+<style>
+  /* Hotfix for making the expander span the whole width of the page */
+  .edgetoedge-x {
+    padding-left: 0;
+    padding-right: 0;
+  }
+</style>
