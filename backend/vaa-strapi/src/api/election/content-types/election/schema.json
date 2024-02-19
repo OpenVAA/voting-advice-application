@@ -10,45 +10,16 @@
   "options": {
     "draftAndPublish": true
   },
-  "pluginOptions": {
-    "i18n": {
-      "localized": true
-    }
-  },
+  "pluginOptions": {},
   "attributes": {
-    "name": {
-      "type": "string",
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "required": true
-    },
-    "organiser": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string"
-    },
     "electionStartDate": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
+      "pluginOptions": {},
       "type": "date",
       "required": true
     },
     "electionDate": {
       "type": "date",
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
+      "pluginOptions": {},
       "required": true
     },
     "electionType": {
@@ -58,20 +29,7 @@
         "presidential",
         "congress"
       ],
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      }
-    },
-    "info": {
-      "type": "richtext",
-      "required": true,
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      }
+      "pluginOptions": {}
     },
     "electionAppLabel": {
       "type": "relation",
@@ -91,19 +49,27 @@
       "target": "api::nomination.nomination",
       "mappedBy": "election"
     },
-    "shortName": {
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      },
-      "type": "string"
-    },
     "question_categories": {
       "type": "relation",
       "relation": "manyToMany",
       "target": "api::question-category.question-category",
       "mappedBy": "elections"
+    },
+    "name": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "shortName": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "organizer": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "info": {
+      "pluginOptions": {},
+      "type": "json"
     }
   }
 }

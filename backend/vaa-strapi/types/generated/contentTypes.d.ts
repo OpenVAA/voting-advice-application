@@ -575,28 +575,12 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
-  pluginOptions: {
-    i18n: {
-      localized: true;
-    };
-  };
   attributes: {
     candidate: Attribute.Relation<'api::answer.answer', 'manyToOne', 'api::candidate.candidate'>;
     party: Attribute.Relation<'api::answer.answer', 'manyToOne', 'api::party.party'>;
-    answer: Attribute.JSON &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
+    value: Attribute.JSON & Attribute.Required;
     question: Attribute.Relation<'api::answer.answer', 'manyToOne', 'api::question.question'>;
-    openAnswer: Attribute.Text &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
+    openAnswer: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -604,8 +588,6 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<'api::answer.answer', 'oneToOne', 'admin::user'> &
       Attribute.Private;
-    localizations: Attribute.Relation<'api::answer.answer', 'oneToMany', 'api::answer.answer'>;
-    locale: Attribute.String;
   };
 }
 
@@ -620,32 +602,22 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
-  pluginOptions: {
-    i18n: {
-      localized: true;
-    };
-  };
   attributes: {
-    firstName: Attribute.String &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    lastName: Attribute.String &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    photo: Attribute.Media &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: false;
-        };
-      }>;
+    email: Attribute.String & Attribute.Private;
+    registrationKey: Attribute.String & Attribute.Private;
+    user: Attribute.Relation<
+      'api::candidate.candidate',
+      'oneToOne',
+      'plugin::users-permissions.user'
+    > &
+      Attribute.Private;
+    firstName: Attribute.String & Attribute.Required;
+    lastName: Attribute.String & Attribute.Required;
+    gender: Attribute.String;
+    birthday: Attribute.String;
+    unaffiliated: Attribute.Boolean & Attribute.Required;
+    photo: Attribute.Media;
+    manifesto: Attribute.Text;
     motherTongues: Attribute.Relation<
       'api::candidate.candidate',
       'oneToMany',
@@ -656,13 +628,7 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
       'oneToMany',
       'api::language.language'
     >;
-    politicalExperience: Attribute.Text &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
+    politicalExperience: Attribute.Text & Attribute.Required;
     party: Attribute.Relation<'api::candidate.candidate', 'manyToOne', 'api::party.party'>;
     answers: Attribute.Relation<'api::candidate.candidate', 'oneToMany', 'api::answer.answer'>;
     nominations: Attribute.Relation<
@@ -670,14 +636,6 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
       'oneToMany',
       'api::nomination.nomination'
     >;
-    email: Attribute.String & Attribute.Private;
-    registrationKey: Attribute.String & Attribute.Private;
-    user: Attribute.Relation<
-      'api::candidate.candidate',
-      'oneToOne',
-      'plugin::users-permissions.user'
-    > &
-      Attribute.Private;
     candidateAttributes: Attribute.Relation<
       'api::candidate.candidate',
       'oneToMany',
@@ -690,12 +648,6 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<'api::candidate.candidate', 'oneToOne', 'admin::user'> &
       Attribute.Private;
-    localizations: Attribute.Relation<
-      'api::candidate.candidate',
-      'oneToMany',
-      'api::candidate.candidate'
-    >;
-    locale: Attribute.String;
   };
 }
 
@@ -705,22 +657,12 @@ export interface ApiCandidateAttributeCandidateAttribute extends Schema.Collecti
     singularName: 'candidate-attribute';
     pluralName: 'candidate-attributes';
     displayName: 'Candidate Attributes';
+    description: '';
   };
   options: {
     draftAndPublish: true;
   };
-  pluginOptions: {
-    i18n: {
-      localized: true;
-    };
-  };
   attributes: {
-    displayName: Attribute.String &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
     questionType: Attribute.Relation<
       'api::candidate-attribute.candidate-attribute',
       'oneToOne',
@@ -731,24 +673,10 @@ export interface ApiCandidateAttributeCandidateAttribute extends Schema.Collecti
       'manyToOne',
       'api::candidate.candidate'
     >;
-    key: Attribute.String &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    value: Attribute.String &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    fillingInfo: Attribute.Text &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
+    name: Attribute.JSON;
+    shortName: Attribute.JSON;
+    info: Attribute.JSON;
+    fillingInfo: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -764,12 +692,6 @@ export interface ApiCandidateAttributeCandidateAttribute extends Schema.Collecti
       'admin::user'
     > &
       Attribute.Private;
-    localizations: Attribute.Relation<
-      'api::candidate-attribute.candidate-attribute',
-      'oneToMany',
-      'api::candidate-attribute.candidate-attribute'
-    >;
-    locale: Attribute.String;
   };
 }
 
@@ -784,39 +706,8 @@ export interface ApiConstituencyConstituency extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
-  pluginOptions: {
-    i18n: {
-      localized: true;
-    };
-  };
   attributes: {
-    name: Attribute.String &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    shortName: Attribute.String &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    type: Attribute.Enumeration<['geographic', 'ethnic']> &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    info: Attribute.RichText &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
+    type: Attribute.Enumeration<['geographic', 'ethnic']> & Attribute.Required;
     elections: Attribute.Relation<
       'api::constituency.constituency',
       'manyToMany',
@@ -827,6 +718,9 @@ export interface ApiConstituencyConstituency extends Schema.CollectionType {
       'oneToMany',
       'api::nomination.nomination'
     >;
+    name: Attribute.JSON;
+    shortName: Attribute.JSON;
+    info: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -834,12 +728,6 @@ export interface ApiConstituencyConstituency extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<'api::constituency.constituency', 'oneToOne', 'admin::user'> &
       Attribute.Private;
-    localizations: Attribute.Relation<
-      'api::constituency.constituency',
-      'oneToMany',
-      'api::constituency.constituency'
-    >;
-    locale: Attribute.String;
   };
 }
 
@@ -854,52 +742,10 @@ export interface ApiElectionElection extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
-  pluginOptions: {
-    i18n: {
-      localized: true;
-    };
-  };
   attributes: {
-    name: Attribute.String &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    organiser: Attribute.String &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    electionStartDate: Attribute.Date &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    electionDate: Attribute.Date &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    electionType: Attribute.Enumeration<['local', 'presidential', 'congress']> &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    info: Attribute.RichText &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
+    electionStartDate: Attribute.Date & Attribute.Required;
+    electionDate: Attribute.Date & Attribute.Required;
+    electionType: Attribute.Enumeration<['local', 'presidential', 'congress']>;
     electionAppLabel: Attribute.Relation<
       'api::election.election',
       'manyToOne',
@@ -915,17 +761,15 @@ export interface ApiElectionElection extends Schema.CollectionType {
       'oneToMany',
       'api::nomination.nomination'
     >;
-    shortName: Attribute.String &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
     question_categories: Attribute.Relation<
       'api::election.election',
       'manyToMany',
       'api::question-category.question-category'
     >;
+    name: Attribute.JSON;
+    shortName: Attribute.JSON;
+    organizer: Attribute.JSON;
+    info: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -933,12 +777,6 @@ export interface ApiElectionElection extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<'api::election.election', 'oneToOne', 'admin::user'> &
       Attribute.Private;
-    localizations: Attribute.Relation<
-      'api::election.election',
-      'oneToMany',
-      'api::election.election'
-    >;
-    locale: Attribute.String;
   };
 }
 
@@ -959,26 +797,11 @@ export interface ApiElectionAppLabelElectionAppLabel extends Schema.CollectionTy
     };
   };
   attributes: {
-    name: Attribute.String &
-      Attribute.Required &
-      Attribute.Unique &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
     elections: Attribute.Relation<
       'api::election-app-label.election-app-label',
       'oneToMany',
       'api::election.election'
     >;
-    appTitle: Attribute.String &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
     actionLabels: Attribute.Component<'labels.action-labels'> &
       Attribute.SetPluginOptions<{
         i18n: {
@@ -1026,26 +849,9 @@ export interface ApiLanguageLanguage extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
-  pluginOptions: {
-    i18n: {
-      localized: true;
-    };
-  };
   attributes: {
-    name: Attribute.String &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    localisationCode: Attribute.String &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
+    name: Attribute.String & Attribute.Required;
+    localisationCode: Attribute.String & Attribute.Required;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1053,12 +859,6 @@ export interface ApiLanguageLanguage extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<'api::language.language', 'oneToOne', 'admin::user'> &
       Attribute.Private;
-    localizations: Attribute.Relation<
-      'api::language.language',
-      'oneToMany',
-      'api::language.language'
-    >;
-    locale: Attribute.String;
   };
 }
 
@@ -1072,11 +872,6 @@ export interface ApiNominationNomination extends Schema.CollectionType {
   };
   options: {
     draftAndPublish: true;
-  };
-  pluginOptions: {
-    i18n: {
-      localized: true;
-    };
   };
   attributes: {
     election: Attribute.Relation<
@@ -1095,26 +890,9 @@ export interface ApiNominationNomination extends Schema.CollectionType {
       'api::candidate.candidate'
     >;
     party: Attribute.Relation<'api::nomination.nomination', 'manyToOne', 'api::party.party'>;
-    type: Attribute.String &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    electionSymbol: Attribute.String &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    electionRound: Attribute.Integer &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }> &
-      Attribute.DefaultTo<1>;
+    type: Attribute.String;
+    electionSymbol: Attribute.String;
+    electionRound: Attribute.Integer & Attribute.Required & Attribute.DefaultTo<1>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1122,12 +900,6 @@ export interface ApiNominationNomination extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<'api::nomination.nomination', 'oneToOne', 'admin::user'> &
       Attribute.Private;
-    localizations: Attribute.Relation<
-      'api::nomination.nomination',
-      'oneToMany',
-      'api::nomination.nomination'
-    >;
-    locale: Attribute.String;
   };
 }
 
@@ -1142,48 +914,15 @@ export interface ApiPartyParty extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
-  pluginOptions: {
-    i18n: {
-      localized: true;
-    };
-  };
   attributes: {
-    name: Attribute.String &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    info: Attribute.Text &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    shortName: Attribute.String &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    logo: Attribute.Media &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
+    logo: Attribute.Media;
     candidates: Attribute.Relation<'api::party.party', 'oneToMany', 'api::candidate.candidate'>;
     answers: Attribute.Relation<'api::party.party', 'oneToMany', 'api::answer.answer'>;
     nominations: Attribute.Relation<'api::party.party', 'oneToMany', 'api::nomination.nomination'>;
-    partyColor: Attribute.String &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: false;
-        };
-      }>;
+    color: Attribute.String;
+    name: Attribute.JSON;
+    shortName: Attribute.JSON;
+    info: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1191,8 +930,6 @@ export interface ApiPartyParty extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<'api::party.party', 'oneToOne', 'admin::user'> &
       Attribute.Private;
-    localizations: Attribute.Relation<'api::party.party', 'oneToMany', 'api::party.party'>;
-    locale: Attribute.String;
   };
 }
 
@@ -1207,42 +944,23 @@ export interface ApiQuestionQuestion extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
-  pluginOptions: {
-    i18n: {
-      localized: true;
-    };
-  };
   attributes: {
-    text: Attribute.Text &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    info: Attribute.RichText &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    fillingInfo: Attribute.Text &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
     questionType: Attribute.Relation<
       'api::question.question',
       'manyToOne',
       'api::question-type.question-type'
     >;
     answers: Attribute.Relation<'api::question.question', 'oneToMany', 'api::answer.answer'>;
-    questionCategory: Attribute.Relation<
+    category: Attribute.Relation<
       'api::question.question',
       'manyToOne',
       'api::question-category.question-category'
     >;
+    text: Attribute.JSON;
+    info: Attribute.JSON;
+    fillingInfo: Attribute.JSON;
+    shortName: Attribute.JSON;
+    allowOpen: Attribute.Boolean & Attribute.DefaultTo<true>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1250,12 +968,6 @@ export interface ApiQuestionQuestion extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<'api::question.question', 'oneToOne', 'admin::user'> &
       Attribute.Private;
-    localizations: Attribute.Relation<
-      'api::question.question',
-      'oneToMany',
-      'api::question.question'
-    >;
-    locale: Attribute.String;
   };
 }
 
@@ -1270,51 +982,26 @@ export interface ApiQuestionCategoryQuestionCategory extends Schema.CollectionTy
   options: {
     draftAndPublish: true;
   };
-  pluginOptions: {
-    i18n: {
-      localized: true;
-    };
-  };
   attributes: {
-    name: Attribute.String &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    shortName: Attribute.String &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
     order: Attribute.Integer &
       Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }> &
       Attribute.SetMinMax<{
         min: 0;
-      }>;
-    info: Attribute.RichText &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
       }>;
     elections: Attribute.Relation<
       'api::question-category.question-category',
       'manyToMany',
       'api::election.election'
     >;
+    name: Attribute.JSON;
+    shortName: Attribute.JSON;
+    info: Attribute.JSON;
     questions: Attribute.Relation<
       'api::question-category.question-category',
       'oneToMany',
       'api::question.question'
     >;
+    type: Attribute.Enumeration<['opinion', 'info']> & Attribute.DefaultTo<'opinion'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1330,12 +1017,6 @@ export interface ApiQuestionCategoryQuestionCategory extends Schema.CollectionTy
       'admin::user'
     > &
       Attribute.Private;
-    localizations: Attribute.Relation<
-      'api::question-category.question-category',
-      'oneToMany',
-      'api::question-category.question-category'
-    >;
-    locale: Attribute.String;
   };
 }
 
@@ -1350,31 +1031,10 @@ export interface ApiQuestionTypeQuestionType extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
-  pluginOptions: {
-    i18n: {
-      localized: true;
-    };
-  };
   attributes: {
-    name: Attribute.String &
-      Attribute.Required &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    settings: Attribute.JSON &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    info: Attribute.Text &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
+    name: Attribute.String & Attribute.Required;
+    settings: Attribute.JSON;
+    info: Attribute.Text;
     questions: Attribute.Relation<
       'api::question-type.question-type',
       'oneToMany',
@@ -1387,12 +1047,6 @@ export interface ApiQuestionTypeQuestionType extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<'api::question-type.question-type', 'oneToOne', 'admin::user'> &
       Attribute.Private;
-    localizations: Attribute.Relation<
-      'api::question-type.question-type',
-      'oneToMany',
-      'api::question-type.question-type'
-    >;
-    locale: Attribute.String;
   };
 }
 

@@ -74,6 +74,10 @@
       "type": "text",
       "default": "These are the parties in your constituency. The best matches are first on the list. You can also see which individual {{0}} best match your opinions. To narrow down the results, you can also use {{1}}.",
       "required": true
+    },
+    "appTitle": {
+      "type": "string",
+      "default": "Election App"
     }
   }
 }

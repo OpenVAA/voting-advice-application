@@ -73,7 +73,6 @@ export interface LabelsViewTexts extends Schema.Component {
       Attribute.DefaultTo<'Tell Your Opinions'>;
     yourOpinionsDescription: Attribute.Text &
       Attribute.Required &
-      // eslint-disable-next-line quotes
       Attribute.DefaultTo<"Next, the app will ask your opinions on {{0}} statements about political issues and values, which the candidates have also answered. After you've answered them, the app will find the candidates that best agree with your opinions. The statements are grouped into {{1}} categories. You can answer all of them or only select those you find important.">;
     questionsTip: Attribute.String &
       Attribute.DefaultTo<'Tip: If you don\u2019t care about a single issue or a category of them, you can skip it later.'>;
@@ -87,6 +86,7 @@ export interface LabelsViewTexts extends Schema.Component {
     yourPartiesDescription: Attribute.Text &
       Attribute.Required &
       Attribute.DefaultTo<'These are the parties in your constituency. The best matches are first on the list. You can also see which individual {{0}} best match your opinions. To narrow down the results, you can also use {{1}}.'>;
+    appTitle: Attribute.String & Attribute.DefaultTo<'Election App'>;
   };
 }
 
