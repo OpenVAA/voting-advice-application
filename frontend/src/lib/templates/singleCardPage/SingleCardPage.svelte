@@ -61,7 +61,7 @@ is based on.
 
   <!-- The card -->
   <div
-    class="-mx-lg -mb-safelgb -mt-lg w-screen max-w-xl flex-grow rounded-t-lg bg-base-100
+    class="-mx-lg -mb-safelgb -mt-lg w-screen max-w-xl flex-grow self-center rounded-t-lg bg-base-100
            pb-[3.5rem] match-w-xl:shadow-xl {cardClass}">
     <slot />
   </div>

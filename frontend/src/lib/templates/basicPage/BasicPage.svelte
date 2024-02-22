@@ -133,7 +133,7 @@ the rendering of an empty `<figure>` element even if there's no content.
   {/if}
 
   <!-- Main content -->
-  <div class="flex flex-grow flex-col items-center justify-center">
+  <div class="flex w-full flex-grow flex-col items-center justify-center">
     <!-- Hero image -->
     {#if $$slots.hero}
       <figure role="presentation">
@@ -142,14 +142,14 @@ the rendering of an empty `<figure>` element even if there's no content.
     {/if}
 
     <!-- Title block -->
-    <div class="max-w-xl py-lg text-center">
+    <div class="w-full max-w-xl py-lg text-center">
       <slot name="heading">
         <h1>{title}</h1>
       </slot>
     </div>
 
     <!-- Main content -->
-    <div class="flex max-w-xl flex-col items-center">
+    <div class="flex w-full max-w-xl flex-col items-center">
       <slot />
     </div>
   </div>
