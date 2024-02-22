@@ -2,23 +2,35 @@
   import {t} from '$lib/i18n';
   import {GetFullNameInOrder} from '$lib/utils/internationalisation';
   import {getRoute, Route} from '$lib/utils/navigation';
+  import {Button} from '$lib/components/button';
+  import {SingleCardPage} from '$lib/templates/singleCardPage';
   import type {PageServerData} from './$types';
 
   export let data: PageServerData;
+
+  const {party} = data;
 </script>
 
-<article class="flex w-full flex-grow flex-col items-center bg-base-300 lg:p-md lg:pb-0">
-  <div class="w-full max-w-xl flex-grow rounded-t-lg bg-base-100 pb-[3.5rem] lg:shadow-xl">
+<SingleCardPage title={party.name}>
+  <Button
+    slot="banner"
+    class="!text-neutral"
+    variant="icon"
+    icon="close"
+    href={getRoute(Route.Parties)}
+    text={$t('header.back')} />
+
+  <article>
     <div class="card">
       <div class="card-body">
-        <h1 class="card-title">{data.party.name}</h1>
-        <h3>{data.party.info}</h3>
-        {#if data.party.nominatedCandidates?.length}
+        <h1 class="card-title">{party.name}</h1>
+        <h3>{party.info}</h3>
+        {#if party.nominatedCandidates?.length}
           <p><strong>{$t('candidates.candidates')}:</strong></p>
           <ul>
-            {#each data.party.nominatedCandidates as { firstName, lastName, id }}
+            {#each party.nominatedCandidates as { firstName, lastName, id }}
               <li>
-                <a href={getRoute({route: Route.Home, id})}>
+                <a href={getRoute({route: Route.Candidate, id})}>
                   {GetFullNameInOrder(firstName, lastName)}
                 </a>
               </li>
@@ -27,5 +39,5 @@
         {/if}
       </div>
     </div>
-  </div>
-</article>
+  </article>
+</SingleCardPage>
