@@ -76,7 +76,7 @@ only `next` events will be fired.
     color="secondary"
     iconPos="top"
     icon={answered || !separateSkip ? 'next' : 'skip'}
-    text={answered || !separateSkip ? $t('questions.nextQuestion') : $t('.actionLabels.skip')} />
+    text={answered || !separateSkip ? $t('questions.nextQuestion') : $t('actionLabels.skip')} />
   <Button
     on:click={onDelete}
     disabled={answered ? undefined : true}
