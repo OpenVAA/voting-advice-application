@@ -274,7 +274,7 @@ async function createElectionAppLabel() {
     toolDescription:
       'With this application you can compare candidates in the elections on {electionDate, date, ::yyyyMMdd} based on their opinions, parties and other data.',
     publishedBy: 'Published by {publisher}',
-    madeWith: 'Made with {openVAA}',
+    madeWith: 'Made with',
     selectMunicipalityTitle: 'Select Your Municipality',
     selectMunicipalityDescription:
       'In these elections, you can only vote for candidates in your own constituency. Select your municipality and the app will find it for you.',
