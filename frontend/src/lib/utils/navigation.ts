@@ -26,7 +26,7 @@ export enum Route {
   Help = 'help',
   Home = '',
   Info = 'info',
-  Intro = 'navigation',
+  Intro = 'intro',
   Parties = 'parties',
   Party = 'parties',
   Question = 'questions',
