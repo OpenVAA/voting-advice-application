@@ -1,12 +1,24 @@
 <script lang="ts">
+  import {t} from '$lib/i18n';
+  import {GetFullNameInOrder} from '$lib/utils/internationalisation';
+  import {getRoute, Route} from '$lib/utils/navigation';
+  import {Button} from '$lib/components/button';
   import {CandidateDetailsCard} from '$lib/components/candidates';
+  import {SingleCardPage} from '$lib/templates/singleCardPage';
   import type {PageServerData} from './$types';
 
   export let data: PageServerData;
+
+  const {candidate} = data;
 </script>
 
-<div class="flex w-full flex-grow flex-col items-center bg-base-300 lg:p-md lg:pb-0">
-  <div class="w-full max-w-xl flex-grow rounded-t-lg bg-base-100 pb-[3.5rem] lg:shadow-xl">
-    <CandidateDetailsCard candidate={data.candidate} />
-  </div>
-</div>
+<SingleCardPage title={GetFullNameInOrder(candidate.firstName, candidate.lastName)}>
+  <Button
+    slot="banner"
+    class="!text-neutral"
+    variant="icon"
+    icon="close"
+    href={getRoute(Route.Candidates)}
+    text={$t('header.back')} />
+  <CandidateDetailsCard {candidate} />
+</SingleCardPage>
