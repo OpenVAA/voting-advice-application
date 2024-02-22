@@ -12,8 +12,10 @@ const keys = [
   'error',
   'footer',
   'header',
+  'intro',
   'parties',
   'questions',
+  'results',
   'viewTexts'
 ];
 const locales = {en: 'English', fi: 'Suomi'};
