@@ -5,15 +5,12 @@ import {matchLocale} from '$lib/i18n/utils/matchLocale';
 import {logDebugError} from '$lib/utils/logger';
 import {parseAnswers} from './utils/localization';
 import type {
-  GetDataOptions,
   StrapiElectionData,
   StrapiError,
   StrapiNominationData,
   StrapiPartyData,
   StrapiQuestionTypeData,
   StrapiResponse,
-  TestDataProps,
-  StrapiTestData,
   StrapiAppLabelsData,
   LocalizedStrapiData
 } from './getData.type';
@@ -29,7 +26,7 @@ import {translate} from '$lib/i18n/utils/translate';
 export function getData<T extends object>(
   endpoint: string,
   params: URLSearchParams = new URLSearchParams({})
-) {
+): Promise<T> {
   const url = `${constants.BACKEND_URL}/${endpoint}?${params}`;
   return fetch(url, {
     headers: {
@@ -43,15 +40,22 @@ export function getData<T extends object>(
       });
     })
     .catch((e) => {
-      throw error(500, `${e}`);
+      // This is unexpected, so we don't use error()
+      throw new Error(e);
     });
 }
 
 /**
  * Get election data from Strapi including the app labels.
- * @param electionId The id of the Election the labels are used for
+ * @param id The id of the Election the labels are used for
  */
-export const getElection = ({electionId, locale}: GetDataOptions = {}): Promise<ElectionProps> => {
+export const getElection = ({
+  id,
+  locale
+}: {
+  id?: string;
+  locale?: string;
+} = {}): Promise<ElectionProps> => {
   locale ??= currentLocale.get();
   // Match locale softly
   const matchingLocale = matchLocale(locale, locales.get());
@@ -61,72 +65,36 @@ export const getElection = ({electionId, locale}: GetDataOptions = {}): Promise<
     'populate[electionAppLabel][populate][viewTexts]': 'true',
     'populate[electionAppLabel][populate][localizations][populate]': '*'
   });
-  return getData<StrapiElectionData[]>(addId('api/elections', electionId), params).then(
-    (result) => {
-      if (!result.length) throw error(500, 'No election found');
-      const el = result[0];
-      let appLabels: StrapiAppLabelsData | LocalizedStrapiData<StrapiAppLabelsData>;
-      const localized = el.attributes.electionAppLabel.data;
-      if (localized.attributes.locale === matchingLocale) {
-        appLabels = localized;
-      } else {
-        const found = localized.attributes.localizations.data.find(
-          (d) => d.attributes.locale === matchingLocale
-        );
-        if (!found)
-          throw error(
-            500,
-            `Could not find app labels for election ${electionId} and locale ${locale}`
-          );
-        appLabels = found;
-      }
-      // Remove localizations and unnecessary details from appLabels
-      for (const key of [
-        'id',
-        'localizations',
-        'createdAt',
-        'publishedAt',
-        'updatedAt',
-        'locale'
-      ]) {
-        delete appLabels.attributes[key as keyof StrapiAppLabelsData['attributes']];
-      }
-      return {
-        appLabels: appLabels.attributes,
-        electionDate: el.attributes.electionDate,
-        id: `${el.id}`,
-        name: translate(el.attributes.name, locale),
-        shortName: translate(el.attributes.shortName, locale),
-        type: el.attributes.electionType ?? ''
-      };
+  if (id) params.set('filters[id][$eq]', id);
+  return getData<StrapiElectionData[]>('api/elections', params).then((result) => {
+    if (!result.length) throw error(500, 'No election found');
+    const el = result[0];
+    let appLabels: StrapiAppLabelsData | LocalizedStrapiData<StrapiAppLabelsData>;
+    const localized = el.attributes.electionAppLabel.data;
+    if (localized.attributes.locale === matchingLocale) {
+      appLabels = localized;
+    } else {
+      const found = localized.attributes.localizations.data.find(
+        (d) => d.attributes.locale === matchingLocale
+      );
+      if (!found)
+        throw error(500, `Could not find app labels for election ${id} and locale ${locale}`);
+      appLabels = found;
     }
-  );
+    // Remove localizations and unnecessary details from appLabels
+    for (const key of ['id', 'localizations', 'createdAt', 'publishedAt', 'updatedAt', 'locale']) {
+      delete appLabels.attributes[key as keyof StrapiAppLabelsData['attributes']];
+    }
+    return {
+      appLabels: appLabels.attributes,
+      electionDate: el.attributes.electionDate,
+      id: `${el.id}`,
+      name: translate(el.attributes.name, locale),
+      shortName: translate(el.attributes.shortName, locale),
+      type: el.attributes.electionType ?? ''
+    };
+  });
 };
-
-/**
- * Get app labels data from Strapi
- * @param locale The locale to use for translated strings in the data
- */
-// export function getAppLabels({electionId, locale}: {electionId?: string, locale: string}): Promise<AppLabels> {
-//   return getSupportedLocales().then((locales) => {
-//     const params = new URLSearchParams({
-//       locale: matchingLocale,
-//       populate: '*'
-//     });
-//     if (electionId != null) {
-//       params.set('filters[id][$eq]', electionId);
-//     }
-//     return getData<StrapiAppLabelsData[]>('api/election-app-labels', params).then(
-//       (result) => {
-//         if (result.length) {
-//           return result[0].attributes;
-//         } else {
-//           throw error(500, `AppLabels not found for locale ${locale}`);
-//         }
-//       }
-//     );
-//   });
-// }
 
 /**
  * Get data for all candidates from Strapi. NB. This only includes Candidates that
@@ -163,17 +131,19 @@ export const getNominatedCandidates = ({
     'populate[party]': 'true',
     'populate[candidate][populate][party]': 'true',
     'populate[candidate][populate][photo]': 'true',
-    'populate[candidate][populate][answers][populate][question]': loadAnswers ? 'true' : 'false',
-    'filters[candidate][id][$notNull]': 'true' // We need to apply $notNull to id, not the candidate relation
+    'populate[candidate][populate][answers][populate][question]': loadAnswers ? 'true' : 'false'
   });
+  if (id) {
+    params.set('filters[candidate][id][$eq]', id);
+  } else {
+    params.set('filters[candidate][id][$notNull]', 'true'); // We need to apply $notNull to id, not the candidate relation
+  }
   if (constituencyId != null) params.set('filters[constituency][id][$eq]', constituencyId);
   if (electionId != null) params.set('filters[election][id][$eq]', electionId);
   if (memberOfPartyId != null) params.set('filters[candidate][party][id][$eq]', memberOfPartyId);
   if (nominatingPartyId != null) params.set('filters[party][id][$eq]', nominatingPartyId);
-  return getData<StrapiNominationData[]>(addId('api/nominations', id), params).then((result) => {
-    // if (!result.length)
-    //   throw error(500, 'Could not retrieve results for nominated candidates');
-    return result.map((nom) => {
+  return getData<StrapiNominationData[]>('api/nominations', params).then((result) =>
+    result.map((nom) => {
       const cnd = nom.attributes.candidate.data;
       const id = '' + cnd.id;
       const attr = cnd.attributes;
@@ -198,8 +168,8 @@ export const getNominatedCandidates = ({
       if (loadAnswers)
         props['answers'] = attr.answers?.data ? parseAnswers(attr.answers.data, locale) : [];
       return props;
-    });
-  });
+    })
+  );
 };
 
 /**
@@ -218,11 +188,11 @@ export const getAllParties = ({
 } = {}): Promise<PartyProps[]> => {
   const params = new URLSearchParams({
     // We need a specific calls to populate relations, * only goes one-level deep
+    'populate[logo]': 'true',
     'populate[candidates]': loadMembers ? 'true' : 'false',
     'populate[answers][populate][question]': loadAnswers ? 'true' : 'false'
   });
   return getData<StrapiPartyData[]>('api/parties', params).then((result) => {
-    if (!result.length) throw error(500, 'Could not retrieve result for all parties');
     return result.map((prt) => {
       const id = `${prt.id}`;
       const attr = prt.attributes;
@@ -274,14 +244,16 @@ export const getNominatingParties = ({
   return getAllParties({loadAnswers, loadMembers, locale}).then((parties) => {
     const params = new URLSearchParams({
       'populate[party]': 'true',
-      'populate[candidate]': loadNominations ? 'true' : 'false',
-      'filters[party][id][$notNull]': 'true' // We need to apply $notNull to the id, not the relation
+      'populate[candidate]': loadNominations ? 'true' : 'false'
     });
+    if (id) {
+      params.set('filters[party][id][$eq]', id);
+    } else {
+      params.set('filters[party][id][$notNull]', 'true'); // We need to apply $notNull to id, not the candidate relation
+    }
     if (constituencyId != null) params.set('filters[constituency][id][$eq]', constituencyId);
     if (electionId != null) params.set('filters[election][id][$eq]', electionId);
-    return getData<StrapiNominationData[]>(addId('api/nominations', id), params).then((result) => {
-      // if (result.length)
-      //   throw error(500, 'Could not retrieve result for nominating parties');
+    return getData<StrapiNominationData[]>('api/nominations', params).then((result) => {
       // For easier access by id
       const partyMap = new Map(parties.map((p) => [p.id, p]));
       // We collect the ids of the parties in these nominations here
@@ -334,9 +306,6 @@ export const getQuestions = ({
       'populate[questions][populate][category][populate][elections]': 'true'
     })
   ).then((result) => {
-    // if (result.length)
-    //   throw error(500, 'Could not retrieve result for questions');
-    logDebugError(`Getting questions for ${locale}`);
     const questions: QuestionProps[] = [];
     for (const qType of result) {
       if (qType.attributes.settings?.type !== 'singleChoiceOrdinal') {
@@ -382,30 +351,3 @@ export const getQuestions = ({
     return questions.sort((a, b) => (a.category ?? '').localeCompare(b.category ?? ''));
   });
 };
-
-/**
- * Get test data from the database.
- * @param locale The locale to use for translated strings in the data
- */
-export function getTestData({locale}: {locale: string}): Promise<TestDataProps[]> {
-  const params = new URLSearchParams({
-    'populate[election_app_label][populate][localizations][populate]': '*'
-  });
-  return getData<StrapiTestData[]>('api/v2-questions', params).then((result) =>
-    result.map((d) => ({
-      id: `${d.id}`,
-      normalText: d.attributes.normalText ?? '',
-      multiLangText: translate(d.attributes.multiLangText, locale),
-      election_app_label: d.attributes.election_app_label
-    }))
-  );
-}
-
-///////////////////////////////////////////////////////////////////////
-// Utilities
-///////////////////////////////////////////////////////////////////////
-
-/** Adds the possible `id` to the `endpoint` url */
-function addId(endpoint: string, id: string | number | null | undefined): string {
-  return id == null ? endpoint : `${endpoint}/${id}`;
-}

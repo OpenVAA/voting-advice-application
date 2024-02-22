@@ -29,14 +29,6 @@ export interface StrapiError {
 }
 
 /**
- * Options passed to the specific getData function
- */
-export interface GetDataOptions {
-  locale?: string;
-  electionId?: number | string;
-}
-
-/**
  * Non-exhaustive specification of the data returned by the Strapi endpoint `i18n/locales`.
  * Note that the data is not contained in a typical `StrapiResponse`.
  */
@@ -372,26 +364,4 @@ export interface StrapiPartyData {
       data: StrapiNominationData[];
     };
   };
-}
-
-/**
- * Temporary test data
- */
-export interface StrapiTestData {
-  id: number;
-  attributes: {
-    normalText?: string;
-    multiLangText?: LocalizedString;
-    election_app_label?: unknown;
-  };
-}
-
-/**
- * Temporary test data
- */
-export interface TestDataProps {
-  id: string;
-  normalText: string;
-  multiLangText: string;
-  election_app_label?: unknown;
 }
