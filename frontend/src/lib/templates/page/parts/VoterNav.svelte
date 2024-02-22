@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {candidateRankings} from '$lib/utils/stores';
+  import {resultsAvailable} from '$lib/utils/stores';
   import {type NavigationProps, Navigation, NavGroup, NavItem} from '$lib/components/navigation';
 
   type $$Props = NavigationProps;
@@ -36,8 +36,7 @@ A template part that outputs the navigation menu for the Voter App for use in th
   <NavGroup>
     <NavItem href={getRoute(Route.Home)} icon="home" text={$t('actionLabels.home')} />
     <NavItem href={getRoute(Route.Questions)} icon="opinion" text={$t('actionLabels.opinions')} />
-    <!-- Only output the link to results if they are available -->
-    {#if $candidateRankings.length > 0}
+    {#if $resultsAvailable}
       <NavItem href={getRoute(Route.Results)} icon="results" text={$t('actionLabels.results')} />
     {/if}
   </NavGroup>
