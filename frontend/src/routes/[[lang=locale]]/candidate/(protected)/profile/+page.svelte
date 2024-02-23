@@ -15,6 +15,7 @@
   import AvatarSelect from './AvatarSelect.svelte';
   import type {StrapiLanguageData} from '$lib/api/getData.type';
   import type {Language} from '$lib/types/candidateAttributes';
+  import {TextArea} from '$candidate/components/textArea';
 
   const basicInfoFields = ['firstName', 'lastName', 'party'];
 
@@ -43,6 +44,9 @@
   let manifesto = user?.candidate?.manifesto;
   const nominations = user?.candidate?.nominations;
 
+  let manifestoTextArea: TextArea; // Used to clear the local storage from the parent component
+  let savedManifesto = user?.candidate?.manifesto; // Used to detect changes in the manifesto
+
   // all necessary fields filled boolean
   $: allFilled =
     gender && motherTongues && motherTongues.length > 0 && birthday && manifesto ? true : false;
@@ -55,6 +59,11 @@
     try {
       await uploadPhoto();
       await updateBasicInfo(manifesto, birthday, gender, photo, unaffiliated, motherTongues);
+
+      // Update the database-saved manifesto in order to detect changes
+      savedManifesto = manifesto;
+      manifestoTextArea.deleteLocal();
+
       await loadUserData(); // reload user data so it's up to date
       await goto(getRoute(Route.CandAppQuestions));
     } catch (error) {
@@ -267,13 +276,15 @@
         </p>
       </FieldGroup>
       <FieldGroup>
-        <label for="message" class={headerClass} slot="header"
-          >{$t('candidateApp.basicInfo.electionManifesto')}</label>
-        <textarea
-          id="message"
-          rows="4"
-          class="w-full resize-none bg-base-100 p-6 !outline-none"
-          bind:value={manifesto} />
+        <TextArea
+          id="manifesto"
+          localStorageId="candidate-app-manifesto"
+          previouslySaved={savedManifesto}
+          bind:text={manifesto}
+          bind:this={manifestoTextArea}>
+          <label for="manifesto" class={headerClass} slot="header"
+            >{$t('candidateApp.basicInfo.electionManifesto')}</label>
+        </TextArea>
       </FieldGroup>
       <Button
         disabled={!allFilled}

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import {onMount, onDestroy} from 'svelte';
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
   import {locale, t} from '$lib/i18n';
@@ -10,20 +9,7 @@
   import {LikertResponseButtons, QuestionActions, QuestionInfo} from '$lib/components/questions';
   import {BasicPage} from '$lib/templates/basicPage';
   import {translate} from '$lib/i18n/utils/translate';
-
-  const SAVE_INTERVAL_MS = 1000;
-
-  // Open answer is saved periodically to local storage
-  let saveInterval: NodeJS.Timeout;
-  onMount(() => {
-    saveInterval = setInterval(() => {
-      saveOpenAnswerToLocal();
-    }, SAVE_INTERVAL_MS);
-  });
-
-  onDestroy(() => {
-    clearInterval(saveInterval);
-  });
+  import {TextArea} from '$candidate/components/textArea';
 
   const store = answerContext.answers;
   $: answerStore = $store;
@@ -39,6 +25,9 @@
 
   $: answer = answerStore?.[questionId]; // null if not answered
 
+  let openAnswerTextArea: TextArea; // Used to clear the local storage from the parent component
+  let openAnswer = '';
+
   let selectedKey: AnswerOption['key'] | null;
 
   // Set the selected key on page load, local storage takes precedence
@@ -49,20 +38,6 @@
     } else {
       selectedKey = answer?.key ?? null;
     }
-
-    setOpenAnswer();
-  }
-
-  let openAnswer = '';
-
-  // Set open answer from local storage and answer store if available, local storage takes precedence
-  function setOpenAnswer() {
-    if (answer && !localStorage.getItem(openAnswerLocal)) {
-      // Quick fix to load in current locale
-      openAnswer = translate(answer.openAnswer);
-      return;
-    }
-    openAnswer = localStorage.getItem(openAnswerLocal) ?? '';
   }
 
   function saveLikertToLocal({detail}: CustomEvent) {
@@ -70,18 +45,9 @@
     localStorage.setItem(likertLocal, detail.value);
   }
 
-  function saveOpenAnswerToLocal() {
-    if (openAnswer === '' || translate(answer?.openAnswer) === openAnswer) {
-      localStorage.removeItem(openAnswerLocal);
-      return;
-    }
-
-    localStorage.setItem(openAnswerLocal, openAnswer);
-  }
-
   function removeLocalAnswerToQuestion() {
     localStorage.removeItem(likertLocal);
-    localStorage.removeItem(openAnswerLocal);
+    openAnswerTextArea.deleteLocal();
   }
 
   let errorMessage = '';
@@ -151,8 +117,8 @@
       }
     }
 
-    openAnswer = '';
     removeLocalAnswerToQuestion();
+    openAnswer = '';
     answerContext.answers.set(answerStore);
   }
 
@@ -228,7 +194,7 @@
 
 {#if currentQuestion}
   {#key currentQuestion}
-    <BasicPage title={currentQuestion.text}>
+    <BasicPage title={currentQuestion.text} class="bg-base-200">
       <HeadingGroup slot="heading" id="hgroup-{currentQuestion.id}">
         {#if currentQuestion.category && currentQuestion.category !== ''}
           <!-- TODO: Set color based on category -->
@@ -253,18 +219,14 @@
           {$t('error.general')}
         {/if}
 
-        <div class="m-12 w-full items-start">
-          <label for="openAnswer" class="text-m uppercase"
-            >{$t('candidateApp.opinions.commentOnThisIssue')}
-          </label>
-          <textarea
-            bind:value={openAnswer}
-            on:focusout={saveOpenAnswerToLocal}
-            disabled={!selectedKey}
-            id="openAnswer"
-            rows="4"
-            class="textarea textarea-primary w-full" />
-        </div>
+        <TextArea
+          headerText={$t('candidateApp.opinions.commentOnThisIssue')}
+          localStorageId={openAnswerLocal}
+          previouslySaved={translate(answer?.openAnswer)}
+          disabled={!selectedKey}
+          id="openAnswer"
+          bind:text={openAnswer}
+          bind:this={openAnswerTextArea} />
 
         {#if errorMessage}
           <p class="text-error">{errorMessage}</p>
