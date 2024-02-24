@@ -1,13 +1,9 @@
-import {defaultLocale, locale as currentLocale, locales} from '../';
+import {defaultLocale, locale as currentLocale} from '../';
 import {matchLocale} from './matchLocale';
-
-/** We'll create a lookup table here for use with translate */
-const localeMatches: Record<string, string> = {};
 
 /**
  * Return the correct string for the `locale` using soft-matching from
- * `supportedLocales`. Note that if a locale is not included in
- * `supportedLocales` it won't be returned even if it is in `strings`.
+ * the supplied `LocalizedString` object.
  * @param strings An object with locale-translation key-value pairs
  * @param locale The target locale
  * @returns The translalated string or ''
@@ -16,12 +12,11 @@ export function translate(strings: LocalizedString | undefined | null, locale?: 
   if (strings == null || Object.keys(strings).length === 0) return '';
   locale ??= currentLocale.get();
   let key: string | undefined;
-  if (locale in localeMatches) {
-    key = localeMatches[locale];
+  if (locale in strings) {
+    key = locale;
   } else {
-    const match = matchLocale(locale, locales.get());
+    const match = matchLocale(locale, Object.keys(strings));
     key = match ?? defaultLocale;
-    localeMatches[locale] = key;
   }
-  return strings[key] ?? strings[defaultLocale] ?? Object.values(strings)[0];
+  return strings[key] ?? strings[defaultLocale] ?? Object.values(strings)[0] ?? '';
 }
