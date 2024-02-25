@@ -22,7 +22,7 @@ declare global {
    */
   interface AnswerProps {
     questionId: string;
-    answer: string | boolean | number | number[] | Date | null;
+    answer?: string | boolean | number | number[] | Date | null;
     openAnswer?: string;
   }
 
@@ -139,6 +139,7 @@ declare global {
   interface QuestionProps {
     id: string;
     text: string;
+    shortName: string;
     category?: string;
     info?: string;
     fillingInfo?: string;
@@ -147,6 +148,7 @@ declare global {
     min?: number | Date;
     max?: number | Date;
     notLocalizable?: boolean;
+    dateType?: DateType;
   }
 
   /**
@@ -171,7 +173,7 @@ declare global {
       }
     | {
         type: 'date';
-        dateType?: 'yearMonthDay' | 'yearMonth' | 'monthDay' | 'month' | 'weekday' | 'hourMinute';
+        dateType?: DateType;
         min?: Date;
         max?: Date;
       }
@@ -195,6 +197,12 @@ declare global {
         min?: number;
         max?: number;
       };
+
+  /**
+   * The preset formatting types for Dates
+   * TODO: Consider allowing any `Intl.DateTimeFormatOptions` objects
+   */
+  type DateType = 'yearMonthDay' | 'yearMonth' | 'monthDay' | 'month' | 'weekday';
 
   /**
    * The format for an option in a multiple choice question.
