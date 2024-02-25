@@ -7,19 +7,11 @@
   "contact_support": "FI - Contact Support",
   "election_compass_for_voters": "FI - Election Compass for Voters",
   "electionSymbol": "FI - Election Number",
-  "email_placeholder": "FI - example@email.com",
-  "email": "FI - Email",
-  "enter_email_and_password": "FI - Enter the email and password you've received from your party to edit your data and opinions.",
-  "forgot_password": "FI - Forgot Password?",
   "gender": "FI - gender",
   "list": "FI - list",
   "motherTongue": "FI - Mother Tongue",
   "otherLanguages": "FI - Other Languages",
-  "password_placeholder": "FI - E.g. CP23-174a-f4%&-aHAB",
-  "password": "FI - Password",
   "politicalExperience": "FI - Political experience",
-  "sign_in_button": "FI - Sign in",
-  "sign_in_title": "FI - Sign in",
   "themes": "FI - Themes",
-  "wrong_email_or_password": "FI - Wrong email or password"
+  "portraitAlt": "FI - Candidate photo"
 }

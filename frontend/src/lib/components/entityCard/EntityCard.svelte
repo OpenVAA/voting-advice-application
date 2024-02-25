@@ -50,7 +50,7 @@
         <!-- TODO: Convert to <PartyTag> component -->
         <div class="flex flex-row gap-sm">
           <!-- svelte-ignore a11y-missing-attribute -->
-          <img src="/icons/list.svg" role="presentation" />
+          <img src="/icons/list.svg" role="presentation" alt="" />
           <span class="font-bold">
             {listText}
           </span>
