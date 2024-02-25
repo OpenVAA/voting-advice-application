@@ -240,10 +240,16 @@ Keyboard navigation works in the following way:
         bind:group={selected}
         on:keyup={(e) => onKeyUp(e, key)} />
 
-      <!-- The text label -->
-      {#if mode === 'answer' || (mode === 'display' && (selectedKey == key || entityKey == key))}
-        <div class="small-label text-center">{label}</div>
-      {/if}
+      <!-- The text label. If we are displaying answers, we only show the label when it's in use
+        to reduce clutter. Due to Aria concerns we, however, need to always show it to screenreaders. -->
+      <div
+        class:sr-only={!(
+          mode === 'answer' ||
+          (mode === 'display' && (selectedKey == key || entityKey == key))
+        )}
+        class="small-label text-center">
+        {label}
+      </div>
     </label>
   {/each}
 </fieldset>
