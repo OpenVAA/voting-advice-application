@@ -171,7 +171,7 @@ export type QuestionTypeSettings =
     }
   | {
       type: 'date';
-      dateType?: 'yearMonthDay' | 'yearMonth' | 'monthDay' | 'month' | 'weekday' | 'hourMinute';
+      dateType?: DateType;
       min?: Date;
       max?: Date;
     }
@@ -214,6 +214,9 @@ export interface StrapiQuestionData {
     constituencies: {
       data: StrapiConstituencyData[];
     };
+    questionType: {
+      data: StrapiQuestionTypeData;
+    };
     entityType: EntityType | null;
     text: LocalizedString;
     shortName: LocalizedString;
@@ -235,9 +238,12 @@ export interface StrapiQuestionCategoryData {
     shortName: LocalizedString;
     info: LocalizedString;
     order: number;
-    type: string;
+    type: QuestionCategoryType;
     elections: {
       data: StrapiElectionData[];
+    };
+    questions: {
+      data: StrapiQuestionData[];
     };
   };
 }

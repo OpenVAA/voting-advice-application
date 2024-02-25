@@ -2,17 +2,17 @@ import {error} from '@sveltejs/kit';
 import {locale as currentLocale, locales} from '$lib/i18n';
 import {constants} from '$lib/utils/constants';
 import {matchLocale} from '$lib/i18n/utils/matchLocale';
-import {logDebugError} from '$lib/utils/logger';
 import {parseAnswers} from './utils/localization';
 import type {
   StrapiElectionData,
   StrapiError,
   StrapiNominationData,
   StrapiPartyData,
-  StrapiQuestionTypeData,
   StrapiResponse,
   StrapiAppLabelsData,
-  LocalizedStrapiData
+  LocalizedStrapiData,
+  QuestionCategoryType,
+  StrapiQuestionCategoryData
 } from './getData.type';
 import {translate} from '$lib/i18n/utils/translate';
 
@@ -48,6 +48,7 @@ export function getData<T extends object>(
 /**
  * Get election data from Strapi including the app labels.
  * @param id The id of the Election the labels are used for
+ * @param locale The locale to translate the texts to
  */
 export const getElection = ({
   id,
@@ -105,6 +106,7 @@ export const getElection = ({
  * @param memberOfPartyId The id of the Party the Candidates are members of
  * @param nominatingPartyId The id of the Party the Candidates are nominated by
  * @param loadAnswers If true, the Candidates' Answers will also be loaded
+ * @param locale The locale to translate the texts to
  * @returns An Array of matching Candidates, which may be empty
  */
 export const getNominatedCandidates = ({
@@ -176,6 +178,7 @@ export const getNominatedCandidates = ({
  * Get data for all parties from Strapi.
  * @param loadAnswers If true, the Parties' Answers will also be loaded
  * @param loadMembers If true, the Parties' member Candidates will also be loaded
+ * @param locale The locale to translate the texts to
  */
 export const getAllParties = ({
   loadAnswers,
@@ -219,6 +222,7 @@ export const getAllParties = ({
  * @param loadAnswers If true, the Parties' Answers will also be loaded
  * @param loadMembers If true, the Parties' member Candidates will also be loaded
  * @param loadNominations If true, the Parties' nominated Candidates will also be loaded
+ * @param locale The locale to translate the texts to
  * @returns An Array of matching Parties, which may be empty
  */
 export const getNominatingParties = ({
@@ -283,71 +287,97 @@ export const getNominatingParties = ({
 };
 
 /**
- * Get all question data from the database and convert them to a nicer format.
- * TODO:
- * - Enable other question types
- * - Base on the questions endpoint instead of type
- * - Filter based on q category type
- * - Enable ordering
+ * Get all questions from Strapi.
+ *
+ * NB. We use the `question-categories` endpoint, and thus any Questions that do not
+ * belong to a category are excluded.
+ *
+ * TODO: Enable ordering
+ * @param electionId The id of the Election the Questions are for
+ * @param categoryType The type of the question category to include. @default 'opinion'
+ * @param locale The locale to translate the texts to
  */
 export const getQuestions = ({
+  electionId,
+  locale,
+  categoryType
+}: {
+  electionId?: string;
+  locale?: string;
+  categoryType?: QuestionCategoryType | 'all';
+} = {}): Promise<QuestionProps[]> => {
+  const params = new URLSearchParams({
+    'populate[questions][populate][questionType]': 'true',
+    sort: 'order:asc'
+  });
+  categoryType ??= 'opinion';
+  if (categoryType !== 'all') params.set('filters[type][$eq]', categoryType);
+  if (electionId != null) params.set('filters[elections][id][$eq]', electionId);
+  return getData<StrapiQuestionCategoryData[]>('api/question-categories', params).then((result) => {
+    const questions: QuestionProps[] = [];
+    for (const cat of result) {
+      for (const qst of cat.attributes.questions.data) {
+        const attr = qst.attributes;
+        const settings = attr.questionType?.data.attributes.settings;
+        if (!settings) throw new Error(`Question with id '${qst.id}' has no settings!`);
+        const props: QuestionProps = {
+          id: `${qst.id}`,
+          text: translate(attr.text, locale),
+          info: translate(attr.info, locale),
+          shortName: translate(attr.shortName, locale),
+          category: translate(cat.attributes.name, locale),
+          type: settings.type
+        };
+        if ('values' in settings)
+          props.values = settings.values.map(({key, label}) => ({
+            key,
+            label: translate(label, locale)
+          }));
+        if ('min' in settings) props.min = settings.min;
+        if ('max' in settings) props.max = settings.max;
+        if ('dateType' in settings) props.dateType = settings.dateType;
+        if ('notLocalizable' in settings) props.notLocalizable = settings.notLocalizable;
+        questions.push(props);
+      }
+    }
+    return questions;
+  });
+};
+
+/**
+ * A shorthand for getting all opinion questions from Strapi.
+ * @param electionId The id of the Election the Questions are for
+ * @param locale The locale to translate the texts to
+ */
+export const getOpinionQuestions = ({
   electionId,
   locale
 }: {
   electionId?: string;
   locale?: string;
-} = {}): Promise<QuestionProps[]> => {
-  // The questions are contained in the data returned by the question-types
-  // endpoint
-  return getData<StrapiQuestionTypeData[]>(
-    'api/question-types',
-    new URLSearchParams({
-      // We need a specific call to populate the category relations, * only goes one-level deep
-      'populate[questions][populate][category][populate][elections]': 'true'
-    })
-  ).then((result) => {
-    const questions: QuestionProps[] = [];
-    for (const qType of result) {
-      if (qType.attributes.settings?.type !== 'singleChoiceOrdinal') {
-        // TODO: Allow other question types
-        // Also check TODO below
-        logDebugError('Skipping all other question types than single choice ordinal for now!');
-        continue;
-      }
-      // These contain the question type literal, possible multiple choice options as well as
-      // other possible settings
-      const settings = qType.attributes.settings;
-      // Create the individual question objects
-      qType.attributes.questions.data
-        .filter(
-          (d) =>
-            electionId == null ||
-            d.attributes.category.data?.attributes.elections.data.find((e) => e.id == electionId)
-        )
-        .forEach((d) => {
-          const q: QuestionProps = {
-            id: '' + d.id,
-            text: translate(d.attributes.text, locale),
-            info: translate(d.attributes.info, locale),
-            category: d.attributes.category.data
-              ? translate(d.attributes.category.data.attributes.name, locale)
-              : '',
-            type: settings.type
-          };
-          if ('values' in settings)
-            q.values = settings.values.map(({key, label}) => ({
-              key,
-              label: translate(label, locale)
-            }));
-          // TODO: Allow these when other question types are supported
-          // if ('min' in settings) q.min = settings.min;
-          // if ('max' in settings) q.max = settings.max;
-          // if ('notLocalizable' in settings) q.notLocalizable = settings.notLocalizable;
-          questions.push(q);
-        });
-    }
-    // Finally sort by category
-    // TODO: Add sorting by the order property
-    return questions.sort((a, b) => (a.category ?? '').localeCompare(b.category ?? ''));
+} = {}) => {
+  return getQuestions({
+    electionId,
+    locale,
+    categoryType: 'opinion'
+  });
+};
+
+/**
+ * A shorthand for getting all info questions from Strapi.
+ * @param electionId The id of the Election the Questions are for
+ * @param locale The locale to translate the texts to
+ */
+export const getInfoQuestions = ({
+  electionId,
+  locale
+}: {
+  electionId?: string;
+  locale?: string;
+} = {}) => {
+  return getQuestions({
+    electionId,
+    locale,
+    categoryType: 'info'
   });
 };
