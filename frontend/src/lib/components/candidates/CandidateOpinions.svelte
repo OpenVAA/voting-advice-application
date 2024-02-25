@@ -1,32 +1,20 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {page} from '$app/stores';
   import {answeredQuestions} from '$lib/utils/stores';
   import {LikertResponseButtons} from '$lib/components/questions';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {getLikertAnswer} from '$lib/utils/answers';
 
   export let candidate: CandidateProps;
-
-  let questions: QuestionProps[];
-  $: questions = $page.data.questions;
+  export let questions: QuestionProps[];
 
   const shortName = `${candidate.firstName[0].toLocaleUpperCase()}. ${candidate.lastName}`;
-
-  function getAnswer(questionId: string) {
-    const match = candidate.answers?.find((a) => a.questionId === questionId);
-    return {
-      answer: match?.answer,
-      openAnswer: match?.openAnswer
-    };
-  }
-
-  const castLikertAnswer = (answer: unknown): number => answer as number;
 </script>
 
-<section class="p-lg">
+<div class="p-lg">
   {#each questions as question}
     {@const {id, text, type, values, category} = question}
-    {@const {answer, openAnswer} = getAnswer(id)}
+    {@const {answer, openAnswer} = getLikertAnswer(candidate, question)}
     {@const voterAnswer = $answeredQuestions[id]}
     {@const headingId = `questionHeading-${id}`}
 
@@ -56,7 +44,7 @@
           name={id}
           mode="display"
           selectedKey={voterAnswer}
-          entityKey={castLikertAnswer(answer)}
+          entityKey={answer}
           entityLabel={shortName}
           options={values} />
       {:else}
@@ -72,4 +60,4 @@
       {/if}
     </div>
   {/each}
-</section>
+</div>

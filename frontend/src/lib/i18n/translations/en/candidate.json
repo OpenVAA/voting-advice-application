@@ -13,5 +13,7 @@
   "otherLanguages": "Other Languages",
   "politicalExperience": "Political experience",
   "themes": "Themes",
-  "portraitAlt": "Candidate photo"
+  "portraitAlt": "Candidate photo",
+  "missingAnswer": "—",
+  "multipleAnswerSeparator": " • "
 }

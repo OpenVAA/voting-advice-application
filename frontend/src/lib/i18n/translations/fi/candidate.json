@@ -13,5 +13,7 @@
   "otherLanguages": "FI - Other Languages",
   "politicalExperience": "FI - Political experience",
   "themes": "FI - Themes",
-  "portraitAlt": "FI - Candidate photo"
+  "portraitAlt": "FI - Candidate photo",
+  "missingAnswer": "—",
+  "multipleAnswerSeparator": " • "
 }

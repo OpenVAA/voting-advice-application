@@ -6,10 +6,11 @@
   import {CandidateDetailsCard} from '$lib/components/candidates';
   import {SingleCardPage} from '$lib/templates/singleCardPage';
   import type {PageServerData} from './$types';
+  import type {LayoutServerData} from '../$types';
 
-  export let data: PageServerData;
+  export let data: PageServerData & LayoutServerData;
 
-  const {candidate} = data;
+  const {candidate, questions, infoQuestions} = data;
 </script>
 
 <SingleCardPage title={GetFullNameInOrder(candidate.firstName, candidate.lastName)}>
@@ -20,5 +21,5 @@
     icon="close"
     href={getRoute(Route.Candidates)}
     text={$t('header.back')} />
-  <CandidateDetailsCard {candidate} />
+  <CandidateDetailsCard {candidate} opinionQuestions={questions} {infoQuestions} />
 </SingleCardPage>
