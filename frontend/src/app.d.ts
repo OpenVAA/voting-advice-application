@@ -18,6 +18,7 @@ declare namespace App {
     party?: PartyProps;
     questionId?: string;
     questions: QuestionProps[];
+    infoQuestions: QuestionProps[];
     i18n: {
       currentLocale: string;
       preferredLocale?: string;

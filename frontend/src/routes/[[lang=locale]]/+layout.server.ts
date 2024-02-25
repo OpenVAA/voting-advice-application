@@ -59,6 +59,7 @@ export const load = (async ({url, locals}) => {
     candidates: [],
     parties: [],
     questions: [],
+    infoQuestions: [],
     i18n: {
       currentLocale,
       preferredLocale,
