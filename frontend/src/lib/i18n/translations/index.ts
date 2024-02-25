@@ -8,6 +8,7 @@ const keys = [
   'candidate',
   'candidateApp',
   'candidates',
+  'common',
   'components',
   'error',
   'footer',
