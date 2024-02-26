@@ -24,10 +24,9 @@ export type ButtonProps = LinkOrButtonElementProps & {
    */
   color?: Color | null;
   /**
-   * Has to be set to `true` or `null`, because DaisyUI's `[disabled]` selector
-   * will incorrectly also apply to `disabled={false}`.
+   * Whether the button is disabled. This can also be used with buttons rendered as `<a>` elements.
    */
-  disabled?: true | null;
+  disabled?: boolean | null;
 } & (
     | {
         /**
