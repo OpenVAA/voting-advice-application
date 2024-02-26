@@ -15,11 +15,13 @@
   // Check dark mode and select logo file
   let src: string | undefined;
   $: if (logoSrc) {
-    if (inverseSrc)
+    if (inverseSrc) {
       // If we have both the normal and inverseSrc defined, select one of them
       src = ($darkMode && !inverse) || (!$darkMode && inverse) ? inverseSrc : logoSrc;
-    // If we only have the normalSrc defined, we'll later add a filter
-    else src = logoSrc;
+    } else {
+      // If we only have the normalSrc defined, we'll later add a filter
+      src = logoSrc;
+    }
   } else {
     src = undefined;
   }
