@@ -98,7 +98,7 @@
       progress={questionIndex + 1}>
       <svelte:fragment slot="banner">
         <Button
-          on:click={() => goto(getRoute(Route.Results))}
+          href={getRoute(Route.Results)}
           disabled={$resultsAvailable ? null : true}
           variant="icon"
           icon="results"
