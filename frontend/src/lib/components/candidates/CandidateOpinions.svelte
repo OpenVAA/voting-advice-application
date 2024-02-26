@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {answeredQuestions} from '$lib/utils/stores';
-  import {LikertResponseButtons} from '$lib/components/questions';
+  import {LikertResponseButtons, QuestionOpenAnswer} from '$lib/components/questions';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {getLikertAnswer} from '$lib/utils/answers';
 
@@ -52,11 +52,9 @@
       {/if}
 
       {#if openAnswer}
-        <div
-          class="mt-16 rounded-md bg-base-200 p-md text-center
-          before:content-[open-quote] after:content-[close-quote]">
+        <QuestionOpenAnswer>
           {openAnswer}
-        </div>
+        </QuestionOpenAnswer>
       {/if}
     </div>
   {/each}
