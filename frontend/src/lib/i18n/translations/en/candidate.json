@@ -15,5 +15,14 @@
   "themes": "Themes",
   "portraitAlt": "Candidate photo",
   "missingAnswer": "—",
-  "multipleAnswerSeparator": " • "
+  "multipleAnswerSeparator": " • ",
+  "email_placeholder": "example@email.com",
+  "email": "Email",
+  "enter_email_and_password": "Enter the email and password you've received from your party to edit your data and opinions.",
+  "forgot_password": "Forgot Password?",
+  "password_placeholder": "E.g. CP23-174a-f4%&-aHAB",
+  "password": "Password",
+  "sign_in_button": "Sign in",
+  "sign_in_title": "Sign in",
+  "wrong_email_or_password": "Wrong email or password"
 }
