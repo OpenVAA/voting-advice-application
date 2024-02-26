@@ -35,7 +35,7 @@
     <figure>
       <slot name="card-media" />
     </figure>
-    <div class="flex w-full flex-row items-center justify-between">
+    <div class="flex w-full flex-row items-center justify-between gap-md">
       <div class="flex flex-col items-start gap-6">
         <slot name="body-title" />
         <slot name="body-content" />
