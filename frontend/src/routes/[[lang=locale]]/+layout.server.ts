@@ -2,12 +2,11 @@ import type {LayoutServerLoad} from './$types';
 import {error} from '@sveltejs/kit';
 import {getElection} from '$lib/api/getData';
 import {defaultLocale, loadTranslations, locales, setLocale, translations} from '$lib/i18n';
-import {logDebugError} from '$lib/utils/logger';
 
 export const load = (async ({url, locals}) => {
   // Get language from locals (see hooks.server.ts)
   const {currentLocale, preferredLocale} = locals;
-  logDebugError(`/+layout.server.ts: Got language ${currentLocale} from locals`);
+  // logDebugError(`/+layout.server.ts: Got language ${currentLocale} from locals`);
 
   // Set the locale so that getData can used it as default
   setLocale(currentLocale);

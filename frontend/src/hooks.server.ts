@@ -13,9 +13,9 @@ export const handle: Handle = (async ({event, resolve}) => {
   const {pathname, origin} = url;
   const supportedLocales = locales.get();
 
-  logDebugError(
-    `Handle: start for ${pathname} with redirect '${request.headers.get('prevent-redirect')}'`
-  );
+  // logDebugError(
+  //   `Handle: start for ${pathname} with redirect '${request.headers.get('prevent-redirect')}'`
+  // );
 
   /////////////////////////////////////////////////////
   // 1. Try to get route param from url and
@@ -30,13 +30,13 @@ export const handle: Handle = (async ({event, resolve}) => {
 
   // If this request is not a route request, resolve normally
   if (!match) {
-    logDebugError(`Handle: resolve non-route request: ${pathname}`);
+    // logDebugError(`Handle: resolve non-route request: ${pathname}`);
     return resolve(event);
     // Try to find locale param
   } else if (isLocale(match[1])) {
     locale = match[1];
     cleanPath = cleanPath.replace(RegExp(`^/${locale}`), '') || '/';
-    logDebugError(`Handle: found locale '${locale}' with clean path '${cleanPath}'`);
+    // logDebugError(`Handle: found locale '${locale}' with clean path '${cleanPath}'`);
   }
 
   /////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ export const handle: Handle = (async ({event, resolve}) => {
     const preferredLocales = parseAcceptedLanguages(acceptLanguage);
     preferredLocale = matchLocale(preferredLocales, supportedLocales);
   }
-  logDebugError(`Handle: preferredLocale: ${preferredLocale}`);
+  // logDebugError(`Handle: preferredLocale: ${preferredLocale}`);
 
   /////////////////////////////////////////////////////
   // 3. Handle requests with a proper route param
@@ -66,7 +66,7 @@ export const handle: Handle = (async ({event, resolve}) => {
       (supportedLocales.length === 1 ||
         (locale === defaultLocale && (!preferredLocale || locale === preferredLocale)))
     ) {
-      logDebugError(`Handle: redirect default locale to no-locale path: ${cleanPath}`);
+      // logDebugError(`Handle: redirect default locale to no-locale path: ${cleanPath}`);
       return new Response(undefined, {
         headers: {location: cleanPath},
         status: 301
@@ -75,7 +75,7 @@ export const handle: Handle = (async ({event, resolve}) => {
 
     // Otherwise we just serve the page
     // Add html `lang` attribute
-    logDebugError(`Handle: resolve with proper locale '${locale}' in route param`);
+    // logDebugError(`Handle: resolve with proper locale '${locale}' in route param`);
     return resolve(
       {
         ...event,
@@ -114,7 +114,7 @@ export const handle: Handle = (async ({event, resolve}) => {
   /////////////////////////////////////////////////////
 
   if (locale !== defaultLocale) {
-    logDebugError(`Handle: redirect locale ${locale} to ${locale}${cleanPath}`);
+    // logDebugError(`Handle: redirect locale ${locale} to ${locale}${cleanPath}`);
     // 301 redirect
     return new Response(undefined, {
       headers: {location: `/${locale}${cleanPath}`},
@@ -140,7 +140,7 @@ export const handle: Handle = (async ({event, resolve}) => {
   // Get response body and set html headers
   const data = await response.text();
 
-  logDebugError(`Handle: fetch ${redirectTo} for the default locale ${locale}`);
+  // logDebugError(`Handle: fetch ${redirectTo} for the default locale ${locale}`);
   // Serve the redirected route.
   // In this case we don't have to set the html 'lang' attribute
   // as the default locale is already included in our app.html.
