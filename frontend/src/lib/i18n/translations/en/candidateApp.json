@@ -72,7 +72,7 @@
     "passwordUpdated": "The password has been updated!"
   },
   "setPassword": {
-    "greeting": "Hello, {username}!",
+    "greeting": "Hello, {userName}!",
     "description": "Set a secure password according to the requirements below:",
     "password": "Password",
     "confirmPassword": "Confirm password",
