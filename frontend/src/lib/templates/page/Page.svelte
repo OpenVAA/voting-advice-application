@@ -185,7 +185,7 @@ the Drawer component.
   </div>
 
   <!-- Drawer side menu -->
-  <div class="drawer-side">
+  <div class="drawer-side z-10">
     <div on:click={closeDrawer} aria-hidden="true" class="drawer-overlay cursor-pointer" />
     <!-- Navigation contents -->
     <svelte:component
