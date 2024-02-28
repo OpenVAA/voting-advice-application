@@ -143,5 +143,10 @@
   "passwordButton": {
     "hidePassword": "FI - Hide password",
     "revealPassword": "FI - Reveal password"
+  },
+  "homePage": {
+    "greeting": "FI - Hello, {userName}!",
+    "explanation": "FI - In order to appear in the Election Compass, you have to enter some basic information about yourself as well as answer opinion statements concerning political issues.",
+    "buttonText": "FI - Continue"
   }
 }
