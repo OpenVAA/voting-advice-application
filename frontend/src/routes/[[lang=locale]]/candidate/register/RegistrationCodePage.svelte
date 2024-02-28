@@ -54,7 +54,7 @@ registrationCode
       class="input mb-md w-full max-w-md"
       placeholder={$t('candidateApp.registration.submitPlaceholder')}
       bind:value={registrationCode}
-      aria-label={$t('candidateApp.registation.registrationCode')}
+      aria-label={$t('candidateApp.registration.registrationCode')}
       required />
     {#if wrongCode}
       <p class="text-center text-error">

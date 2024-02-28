@@ -1,5 +1,6 @@
 import {expect, test} from 'vitest';
-import {canonize, isLocale, matchLocale, parseAcceptedLanguages} from '../utils';
+import {defaultLocale} from '../';
+import {canonize, isLocale, matchLocale, parseAcceptedLanguages, translate} from '../utils';
 
 test('canonize and isLocale', () => {
   // Locale names are based on the examples in the RFC:
@@ -42,4 +43,18 @@ test('parseAcceptedLanguages', () => {
     parseAcceptedLanguages(header3),
     'String order should dictate order when there are no q values'
   ).toEqual(result3);
+});
+
+test('translate', () => {
+  const defLocale = defaultLocale;
+  const strings: LocalizedString = {
+    [defLocale]: 'Default',
+    'foo-bar': 'Foo',
+    bar: 'Bar'
+  };
+  expect(translate(strings, 'bar'), 'Exact locale match').toEqual(strings.bar);
+  expect(translate(strings, 'foo'), 'Soft locale match').toEqual(strings['foo-bar']);
+  expect(translate(strings, 'MISSING'), 'Default match').toEqual(strings[defLocale]);
+  expect(translate({}, 'foo'), 'Empty string').toEqual('');
+  expect(translate(null, 'foo'), 'Empty string').toEqual('');
 });

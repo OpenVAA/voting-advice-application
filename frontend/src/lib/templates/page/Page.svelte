@@ -185,12 +185,12 @@ the Drawer component.
   </div>
 
   <!-- Drawer side menu -->
-  <div class="drawer-side">
+  <div class="drawer-side z-10">
     <div on:click={closeDrawer} aria-hidden="true" class="drawer-overlay cursor-pointer" />
     <!-- Navigation contents -->
     <svelte:component
       this={$appType === 'candidate' ? CandidateNav : VoterNav}
-      on:navFocusOut={closeDrawer}
+      on:keyboardFocusOut={closeDrawer}
       class="h-full w-4/5 max-w-sm bg-base-100 {drawerOpen ? '' : 'hidden'}"
       id={navId}>
       <NavItem

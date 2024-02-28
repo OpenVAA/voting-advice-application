@@ -6,7 +6,13 @@
   import CandidateBasicInfo from './CandidateBasicInfo.svelte';
   import CandidateOpinions from './CandidateOpinions.svelte';
 
+  /** The Candidate object */
   export let candidate: CandidateProps;
+  /** The list of Question objects to use for showing for on the basic (non-opinion) information tab */
+  export let infoQuestions: QuestionProps[];
+  /** The list of Question objects to use for showing for on the opinions tab */
+  export let opinionQuestions: QuestionProps[];
+  /** An optional Ranking object used for showing the Candidate's match with the Voter */
   export let ranking: RankingProps | undefined = undefined;
 
   // Tabs
@@ -16,6 +22,30 @@
     activeItem = e.detail;
   };
 </script>
+
+<!--
+@component
+Used to show a Candidate's details.
+
+TODO: This component is still a work in progress and does not follow the property passing conventions of mature components.
+
+### Properties
+
+- `candidate`: The Candidate object
+- `infoQuestions`: The list of Question objects to use for showing for on the basic (non-opinion) information tab
+- `opinionQuestions`: The list of Question objects to use for showing for on the opinions tab
+- `ranking`: An optional Ranking object used for showing the Candidate's match with the Voter
+
+### Usage
+
+```tsx
+<CandidateDetailsCard 
+  candidate={candidateProps}
+  opinionQuestions={questions} 
+  infoQuestions={infoQuestions} 
+  ranking={candidateRanking}/>
+```
+-->
 
 <article>
   <!-- TODO: replace the following div tag with the EntityCard component -->
@@ -43,8 +73,8 @@
   <!-- {#} -->
   <Tabs on:changeTab={handleChangeTab} {tabs} {activeItem} />
   {#if tabs[0] === activeItem}
-    <CandidateBasicInfo {candidate} />
+    <CandidateBasicInfo {candidate} questions={infoQuestions} />
   {:else if tabs[1] === activeItem}
-    <CandidateOpinions {candidate} />
+    <CandidateOpinions {candidate} questions={opinionQuestions} />
   {/if}
 </article>

@@ -274,7 +274,7 @@ async function createElectionAppLabel() {
     toolDescription:
       'With this application you can compare candidates in the elections on {electionDate, date, ::yyyyMMdd} based on their opinions, parties and other data.',
     publishedBy: 'Published by {publisher}',
-    madeWith: 'Made with {openVAA}',
+    madeWith: 'Made with',
     selectMunicipalityTitle: 'Select Your Municipality',
     selectMunicipalityDescription:
       'In these elections, you can only vote for candidates in your own constituency. Select your municipality and the app will find it for you.',
@@ -579,7 +579,7 @@ async function createQuestionTypes() {
   }[] = [
     {
       name: 'Likert-4',
-      info: faker.lorem.paragraph(1),
+      info: 'A Likert question with 4 options.',
       settings: {
         type: 'singleChoiceOrdinal',
         values: [
@@ -604,7 +604,7 @@ async function createQuestionTypes() {
     },
     {
       name: 'Likert-5',
-      info: faker.lorem.paragraph(1),
+      info: 'A Likert question with 5 options.',
       settings: {
         type: 'singleChoiceOrdinal',
         values: [
@@ -633,28 +633,29 @@ async function createQuestionTypes() {
     },
     {
       name: 'Text',
-      info: faker.lorem.paragraph(1),
+      info: 'A basic text question.',
       settings: {
         type: 'text'
       }
     },
     {
       name: 'Date',
-      info: faker.lorem.paragraph(1),
+      info: 'A date which is displayed without the year.',
       settings: {
-        type: 'date'
+        type: 'date',
+        dateType: 'monthDay'
       }
     },
     {
       name: 'Boolean',
-      info: faker.lorem.paragraph(1),
+      info: 'A yes/no question.',
       settings: {
         type: 'boolean'
       }
     },
     {
       name: 'Gender',
-      info: faker.lorem.paragraph(1),
+      info: 'A list of genders.',
       settings: {
         type: 'singleChoiceCategorical',
         values: [
@@ -679,9 +680,38 @@ async function createQuestionTypes() {
     },
     {
       name: 'Language',
-      info: faker.lorem.paragraph(1),
+      info: 'A single language choice question.',
       settings: {
         type: 'singleChoiceCategorical',
+        values: [
+          {
+            key: 0,
+            label: fakeLocalized((_, l) => fakeTranslate(l, 'English'))
+          },
+          {
+            key: 1,
+            label: fakeLocalized((_, l) => fakeTranslate(l, 'Finnish'))
+          },
+          {
+            key: 2,
+            label: fakeLocalized((_, l) => fakeTranslate(l, 'Spanish'))
+          },
+          {
+            key: 3,
+            label: fakeLocalized((_, l) => fakeTranslate(l, 'Volapük'))
+          },
+          {
+            key: 4,
+            label: fakeLocalized((_, l) => fakeTranslate(l, 'Finnish sign language'))
+          }
+        ]
+      }
+    },
+    {
+      name: 'MultiLanguage',
+      info: 'A multiple language choice question.',
+      settings: {
+        type: 'multipleChoiceCategorical',
         values: [
           {
             key: 0,
@@ -759,8 +789,12 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
   const infoCategoryId = questionCategories.filter((cat) => cat.type === 'info')[0]?.id;
   const infoQuestions = [
     {
-      text: 'Mother tongues',
+      text: 'Mother tongue',
       type: 'Language'
+    },
+    {
+      text: 'Other languages',
+      type: 'MultiLanguage'
     },
     {
       text: 'Gender',
@@ -773,6 +807,10 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
     {
       text: 'Election manifesto',
       type: 'Text'
+    },
+    {
+      text: 'Birthday',
+      type: 'Date'
     }
   ];
   for (const question of infoQuestions) {

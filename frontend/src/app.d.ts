@@ -11,11 +11,14 @@ declare namespace App {
     // null checks every time we use them. We'll initiliaze the Array types
     // as empty arrays in the global data load /+layout.server.ts
     candidate?: CandidateProps;
+    candidateId?: string;
     candidates: CandidateProps[];
     election: ElectionProps;
     parties: PartyProps[];
     party?: PartyProps;
+    questionId?: string;
     questions: QuestionProps[];
+    infoQuestions: QuestionProps[];
     i18n: {
       currentLocale: string;
       preferredLocale?: string;

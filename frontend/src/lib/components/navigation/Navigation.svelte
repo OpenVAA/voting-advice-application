@@ -1,22 +1,16 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
+  import {onKeyboardFocusOut} from '$lib/utils/onKeyboardFocusOut';
   import type {NavigationProps} from './Navigation.type';
 
   type $$Props = NavigationProps;
 
-  // Dispatch a `navFocusOut` event when the component loses focus
+  // Dispatch a `keyboardFocusOut` event when the component loses focus
   // This can be used to automatically close a drawer menu this is
   // contained in
-  let navElement: HTMLElement;
   const dispatch = createEventDispatcher();
-  function onFocusOut(event: FocusEvent) {
-    if (
-      event.relatedTarget == null ||
-      !(event.relatedTarget instanceof Node) ||
-      !navElement.contains(event.relatedTarget)
-    ) {
-      dispatch('navFocusOut', {relatedTarget: event.relatedTarget});
-    }
+  function keyboardFocusOut() {
+    dispatch('keyboardFocusOut');
   }
 </script>
 
@@ -35,14 +29,14 @@ Create navigation menus for the application in a predefined style.
 
 ### Events
 
-- `navFocusOut`: Emitted when the component loses focus. This can be used 
-  to automatically close a drawer menu this is contained in. The event
-  `detail` is of type `{relatedTarget: FocusEvent['relatedTarget']}`.
+- `keyboardFocusOut`: Emitted when the component loses a keyboard user's 
+  focus. This can be used   to automatically close a drawer menu this is 
+  contained in.
 
 ### Usage
 
 ```tsx
-<Navigation aria-label="Main navigation" on:navFocusOut={closeDrawer}>
+<Navigation aria-label="Main navigation" on:keyboardFocusOut={closeDrawer}>
   <NavGroup>
     <NavItem href={getRoute(Route.Info)} icon="info">Show info</NavItem>
     <NavItem on:click={(e) => foo(e)}>Do foo</NavItem>
@@ -55,6 +49,6 @@ Create navigation menus for the application in a predefined style.
 ```
 -->
 
-<nav bind:this={navElement} on:focusout={onFocusOut} {...$$restProps}>
+<nav use:onKeyboardFocusOut={keyboardFocusOut} {...$$restProps}>
   <slot />
 </nav>

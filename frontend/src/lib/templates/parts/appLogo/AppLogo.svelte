@@ -1,7 +1,6 @@
 <script lang="ts">
   import {concatClass} from '$lib/utils/components';
-  import normalLogo from './svg/openvaa-logo-grey.svg';
-  import inverseLogo from './svg/openvaa-logo-white.svg';
+  import {darkMode} from '$lib/utils/darkMode';
   import type {AppLogoProps} from './AppLogo.type';
 
   type $$Props = AppLogoProps;
@@ -9,30 +8,54 @@
   export let inverse: $$Props['inverse'] = false;
   export let size: $$Props['size'] = 'md';
 
+  // TODO: Create settings for these in Strapi and use those srcs
+  const logoSrc: string | undefined = undefined;
+  const inverseSrc: string | undefined = undefined;
+
+  // Check dark mode and select logo file
+  let src: string | undefined;
+  $: if (logoSrc) {
+    if (inverseSrc) {
+      // If we have both the normal and inverseSrc defined, select one of them
+      src = ($darkMode && !inverse) || (!$darkMode && inverse) ? inverseSrc : logoSrc;
+    } else {
+      // If we only have the normalSrc defined, we'll later add a filter
+      src = logoSrc;
+    }
+  } else {
+    src = undefined;
+  }
+
   // Create class names
   let classes: string;
   $: {
     // Predefined sizes
     switch (size) {
       case 'sm':
-        classes = 'h-20 pt-2';
+        classes = 'h-20';
         break;
       case 'lg':
-        classes = 'h-32 pt-6';
+        classes = 'h-32';
         break;
       default:
-        classes = 'h-24 pt-4';
+        classes = 'h-24';
     }
+    // Use invert filter if we have a normal logo file but no inverse one
+    if (logoSrc && !inverseSrc) classes += inverse ? ' invert dark:invert-0' : ' dark:invert';
   }
-
-  // TODO: Use logo files defined in Strapi.
-  // TODO: Render only one image, see issue #279
 </script>
 
 <!--
 @component
 A template part that is used to show the application's logo. The logo 
 colour changes dynamically based on whether the light or dark mode is active.
+
+Logo files for use on a light and a dark background can be defined. If the
+latter is not supplied an `invert` filter will be applied. If no logo files are
+supplied, the OpenVAA logo will be used.
+
+TODO: Use logo files defined in Strapi. Currently, the part always displays the
+OpenVAA logo.
 
 ### Properties
 
@@ -57,6 +80,15 @@ colour changes dynamically based on whether the light or dark mode is active.
 -->
 
 <div {...concatClass($$restProps, classes)}>
-  <img src={normalLogo} {alt} class="h-full {inverse ? 'hidden dark:block' : 'dark:hidden'}" />
-  <img src={inverseLogo} {alt} class="h-full {inverse ? 'dark:hidden' : 'hidden dark:block'}" />
+  {#if src}
+    <img {src} {alt} class="h-full" />
+  {:else}
+    {#await import('$lib/components/openVAALogo') then { OpenVAALogo }}
+      <svelte:component
+        this={OpenVAALogo}
+        title={alt}
+        {size}
+        color={inverse ? 'primary-content' : 'neutral'} />
+    {/await}
+  {/if}
 </div>

@@ -23,6 +23,10 @@ export type ButtonProps = LinkOrButtonElementProps & {
    * @default 'primary'
    */
   color?: Color | null;
+  /**
+   * Whether the button is disabled. This can also be used with buttons rendered as `<a>` elements.
+   */
+  disabled?: boolean | null;
 } & (
     | {
         /**

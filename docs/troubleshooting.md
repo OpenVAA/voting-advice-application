@@ -45,3 +45,7 @@ Any changes to the content model are not reflected on local files by default. If
 The REST api query syntax can be a bit tricky, notably `*` only goes one-level deep.
 
 Another common case is that the Content Types that are not populated have been added to the schema after creating the API token. To allow reading them, edit the API token and change it from `Custom` to `Read-Only` and back (and check that locale listing is still allowed).
+
+## Candidate registration fails
+
+The `email` property is required for a `Candidate`. If it is not set, regisration will result in a 'Bad Request' error.

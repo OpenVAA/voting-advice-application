@@ -72,7 +72,7 @@
     "passwordUpdated": "FI - The password has been updated!"
   },
   "setPassword": {
-    "greeting": "FI - Hello, {username}!",
+    "greeting": "FI - Hello, {userName}!",
     "description": "FI - Set a secure password according to the requirements below:",
     "password": "FI - Password",
     "confirmPassword": "FI - Confirm password",

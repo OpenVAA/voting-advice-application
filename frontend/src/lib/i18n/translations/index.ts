@@ -8,12 +8,15 @@ const keys = [
   'candidate',
   'candidateApp',
   'candidates',
+  'common',
   'components',
   'error',
   'footer',
   'header',
+  'intro',
   'parties',
   'questions',
+  'results',
   'viewTexts'
 ];
 const locales = {en: 'English', fi: 'Suomi'};

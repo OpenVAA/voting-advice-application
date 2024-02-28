@@ -50,7 +50,7 @@
         <!-- TODO: Convert to <PartyTag> component -->
         <div class="flex flex-row gap-sm">
           <!-- svelte-ignore a11y-missing-attribute -->
-          <img src="/icons/list.svg" role="presentation" />
+          <img src="/icons/list.svg" role="presentation" alt="" />
           <span class="font-bold">
             {listText}
           </span>
@@ -68,7 +68,7 @@
         <!-- TODO: Convert to <MatchScore> component -->
         <div class="flex min-w-[3.125rem] flex-col items-center">
           <span class="text-lg font-bold">{summaryMatch}</span>
-          <span class="text-xs text-secondary">{$t('components.card.matchLabel')}</span>
+          <span class="text-center text-xs text-secondary">{$t('components.card.matchLabel')}</span>
         </div>
       {/if}
     </svelte:fragment>

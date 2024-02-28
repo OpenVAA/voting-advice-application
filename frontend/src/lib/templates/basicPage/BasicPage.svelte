@@ -35,6 +35,28 @@ to define some ids, pass Aria labels and show an optional progress bar in the
 header. You can also pass any valid properties of the `<Page>` template this
 is based on.
 
+NB! If you want to pass some slots conditionally, you cannot wrap the slots
+in an `#if` block due to a limitation of Svelte. This may be fixed by 
+https://github.com/sveltejs/svelte/pull/8304 in the future, but until then 
+the following code will not work:
+
+```tsx
+  {#if emoji !== ''}
+    <HeroEmoji slot="hero" {emoji}/>
+  {/if}
+```
+
+Instead, you have to use a wrapper. Note that this will also always result in
+the rendering of an empty `<figure>` element even if there's no content.
+
+```tsx
+  <svelte:fragment slot="hero">
+    {#if emoji !== ''}
+      <HeroEmoji {emoji}/>
+    {/if}
+  </svelte:fragment>
+```
+
 ### Slots
 
 - default: main content of the page
@@ -69,7 +91,7 @@ is based on.
       <Button on:click={showInfo} variant="icon" icon="info" text="Show info"/>
     </svelte:fragment>
 
-    <HeroEmoji slot="hero">🚀</HeroEmoji>
+    <HeroEmoji slot="hero" emoji="🚀"/>
 
     <svelte:fragment slot="note">
       <Icon name="check"/> Your constituency is <strong>Loremipsum</strong>
@@ -111,7 +133,7 @@ is based on.
   {/if}
 
   <!-- Main content -->
-  <div class="flex flex-grow flex-col items-center justify-center">
+  <div class="flex w-full flex-grow flex-col items-center justify-center">
     <!-- Hero image -->
     {#if $$slots.hero}
       <figure role="presentation">
@@ -120,14 +142,14 @@ is based on.
     {/if}
 
     <!-- Title block -->
-    <div class="max-w-xl py-lg text-center">
+    <div class="w-full max-w-xl py-lg text-center">
       <slot name="heading">
         <h1>{title}</h1>
       </slot>
     </div>
 
     <!-- Main content -->
-    <div class="flex max-w-xl flex-col items-center">
+    <div class="flex w-full max-w-xl flex-col items-center">
       <slot />
     </div>
   </div>

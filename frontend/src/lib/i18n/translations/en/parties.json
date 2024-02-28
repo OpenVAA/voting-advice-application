@@ -1,5 +1,6 @@
 {
   "parties": "Parties",
   "notFound": "No parties found",
-  "viewAllParties": "View all parties"
+  "viewAllParties": "View all parties",
+  "ingress": "These are all the parties contesting the election."
 }

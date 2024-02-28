@@ -27,7 +27,6 @@
   style={cssVarStyles}>
   {#if shape === 'radial'}
     <div
-      tabindex="0"
       role="meter"
       aria-valuemax={100}
       aria-valuenow={score}
@@ -45,7 +44,6 @@
       </div>
     {/if}
     <progress
-      tabindex="0"
       aria-labelledby={labelId}
       class="progress-color progress"
       aria-valuenow={score}

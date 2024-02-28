@@ -60,10 +60,15 @@
 
   /* Style buttons */
   .btn {
-    @apply font-normal;
+    @apply px-10 font-normal;
   }
   .btn-ghost {
     @apply text-primary;
+  }
+  .btn-ghost.btn-disabled,
+  .btn-ghost[disabled],
+  .btn-ghost:disabled {
+    background-color: transparent;
   }
 
   /* Drawer 
