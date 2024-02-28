@@ -383,6 +383,7 @@ async function createCandidates(length: number) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const party: HasId = faker.helpers.arrayElement(parties);
+    const email = `${firstName}.${lastName}@example.com`;
     // TODO: Remove these attrs later
     const politicalExperience = faker.lorem.paragraph(3);
     const motherTongue: any = faker.helpers.arrayElement(languages);
@@ -391,6 +392,7 @@ async function createCandidates(length: number) {
       data: {
         firstName,
         lastName,
+        email,
         party: party.id,
         publishedAt: new Date(),
         politicalExperience,
