@@ -1,6 +1,5 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import {BasicPage} from '$lib/templates/basicPage';
   import {Button} from '$lib/components/button';
   import {getRoute, Route} from '$lib/utils/navigation';
