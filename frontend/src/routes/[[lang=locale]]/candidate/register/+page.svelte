@@ -5,6 +5,7 @@
   import RegistrationCodePage from './RegistrationCodePage.svelte';
 
   let userName = '';
+  let email = '';
   let validRegistrationCode = false;
   $: registrationCode = $page.url.searchParams.get('registrationCode');
   $: onRegistrationCodeChange(registrationCode);
@@ -17,16 +18,18 @@
         validRegistrationCode = true;
         const data = await response.json();
         userName = data.candidate.firstName;
+        email = data.candidate.email;
       } else {
         validRegistrationCode = false;
         userName = '';
+        email = '';
       }
     });
   };
 </script>
 
 {#if registrationCode && validRegistrationCode}
-  <PasswordSetPage {userName} {registrationCode} />
+  <PasswordSetPage {userName} {registrationCode} {email} />
 {:else if registrationCode}
   <RegistrationCodePage wrongCode={true} {registrationCode} />
 {:else}

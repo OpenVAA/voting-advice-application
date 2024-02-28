@@ -11,9 +11,11 @@
   import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {FrontPage} from '$lib/templates/frontPage';
+  import {userEmailStore} from '$lib/utils/authenticationStore';
 
   export let userName: string;
   export let registrationCode: string;
+  export let email: string;
 
   let password1 = '';
   let password2 = '';
@@ -46,6 +48,7 @@
       return;
     }
 
+    userEmailStore.set(email);
     errorMessage = '';
     goto(getRoute(Route.CandAppHome));
   };

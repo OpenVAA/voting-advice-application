@@ -79,7 +79,8 @@
     "setPassword": "Set password",
     "passwordsDontMatch": "Passwords don't match",
     "passwordNotValid": "Password is not valid",
-    "registrationError": "Registration failed"
+    "registrationError": "Registration failed",
+    "passwordSetSuccesfully": "Your password is now set! Please login using it."
   },
   "passwordValidation": {
     "length": "At least {minPasswordLength} characters",

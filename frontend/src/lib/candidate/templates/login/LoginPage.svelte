@@ -9,6 +9,7 @@
   import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {FrontPage} from '$lib/templates/frontPage';
+  import {userEmailStore} from '$lib/utils/authenticationStore';
 
   const authContext = getContext<AuthContext>('auth');
 
@@ -18,8 +19,13 @@
   const onLogin = async () => {
     if (!(await authContext?.logIn(email, password))) {
       wrongCredentials = true;
+    } else {
+      userEmailStore.set(null);
     }
   };
+  if ($userEmailStore != null) {
+    email = $userEmailStore;
+  }
 </script>
 
 <!--
@@ -41,6 +47,11 @@ Candidate login page. This component also takes care of the login process.
     <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
   </HeadingGroup>
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onLogin}>
+    {#if $userEmailStore !== null}
+      <p class="text-3xl font-normal">
+        {$t('candidateApp.setPassword.passwordSetSuccesfully')}
+      </p>
+    {/if}
     <p class="max-w-md text-center">
       {$t('candidate.enter_email_and_password')}
     </p>
