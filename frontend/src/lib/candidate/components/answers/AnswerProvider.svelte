@@ -6,6 +6,7 @@
 
   onMount(() => {
     answerContext.loadAnswerData();
+    answerContext.loadQuestionData();
   });
 </script>
 

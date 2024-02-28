@@ -322,6 +322,7 @@ export interface StrapiAnswerData {
     question: {
       data: StrapiQuestionData;
     };
+    text: LocalizedString;
   };
 }
 

@@ -3,7 +3,7 @@ import {constants} from '$lib/utils/constants';
 import {authContext} from '$lib/utils/authenticationStore';
 import type {Language, User} from '$lib/types/candidateAttributes';
 import type {Photo} from '$lib/types/candidateAttributes';
-import type {Answer} from '$lib/utils/answerStore';
+import type {Answer, Question} from '$lib/utils/answerStore';
 import type {StrapiAnswerData, StrapiLanguageData, StrapiResponse} from '$lib/api/getData.type';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
@@ -143,6 +143,32 @@ export const changePassword = async (currentPassword: string, password: string) 
       'Content-Type': 'application/json'
     }
   });
+};
+
+/**
+ * Get questions that have a likert scale.
+ */
+export const getLikertQuestions = async (): Promise<Record<string, Question> | undefined> => {
+  const res = await request(
+    getUrl('api/questions', {
+      populate: 'questionType',
+      'filters[questionType][name][$startsWith]': 'Likert'
+    })
+  );
+
+  if (!res?.ok) throw Error(res?.statusText);
+
+  const questionData: StrapiResponse<StrapiAnswerData[]> = await res.json();
+
+  const questions: Record<string, Question> = {};
+
+  questionData.data.forEach((question) => {
+    questions[question.id] = {
+      id: `${question.id}`,
+      text: question.attributes.text
+    };
+  });
+  return questions;
 };
 
 /**

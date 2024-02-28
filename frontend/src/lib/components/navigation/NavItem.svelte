@@ -53,6 +53,7 @@ The item is rendered as an `<a>` element if `href` is supplied. Otherwise a `<bu
     {#if icon}
       <Icon name={icon} />
     {/if}
-    <span class="first-letter:uppercase">{text}</span>
+    <span>{text.charAt(0).toUpperCase() + text.slice(1)}</span>
+    <slot />
   </svelte:element>
 </div>

@@ -9,6 +9,7 @@
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {translate} from '$lib/i18n/utils/translate';
+  import QuestionOpenAnswer from '$lib/components/questions/QuestionOpenAnswer.svelte';
 
   const questions = $page.data.questions;
 
@@ -87,15 +88,8 @@
 
                 {#if answerStore[question.id].openAnswer}
                   <div class="pt-10">
-                    <label for="openAnswer{i}" class="text-m uppercase"
-                      >{$t('candidateApp.allQuestions.commentOnThisIssue')}
-                    </label>
-                    <textarea
-                      value={translate(answerStore[question.id].openAnswer)}
-                      disabled
-                      id="openAnswer{i}"
-                      rows="4"
-                      class="textarea textarea-primary w-full" />
+                    <QuestionOpenAnswer
+                      >{translate(answerStore[question.id].openAnswer)}</QuestionOpenAnswer>
                   </div>
                 {/if}
               </div>
