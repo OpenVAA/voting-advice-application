@@ -39,9 +39,9 @@
         type="email"
         name="email"
         id="email"
-        aria-label={$t('candidate.email_placeholder')}
+        aria-label={$t('candidateApp.emailPlaceholder')}
         class="input mb-md w-full max-w-md"
-        placeholder={$t('candidate.email_placeholder')}
+        placeholder={$t('candidateApp.emailPlaceholder')}
         bind:value={email}
         required />
 

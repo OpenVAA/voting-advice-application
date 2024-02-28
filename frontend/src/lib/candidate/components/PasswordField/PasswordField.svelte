@@ -32,13 +32,13 @@ to reveal and hide the password
 -->
 
 <div class="relative">
-  <label for="password" class="hidden">{$t('candidate.password')}</label>
+  <label for="password" class="hidden">{$t('candidateApp.passwordField.password')}</label>
   <input
     id="password"
     type="password"
     name="password"
     class="input w-full"
-    placeholder={$t('candidate.password_placeholder')}
+    placeholder={$t('candidateApp.passwordField.passwordPlaceholder')}
     bind:value={password}
     bind:this={inputbox}
     {autocomplete}
@@ -47,8 +47,8 @@ to reveal and hide the password
     type="button"
     variant="icon"
     text={passwordRevealed
-      ? $t('candidateApp.passwordButton.hidePassword')
-      : $t('candidateApp.passwordButton.revealPassword')}
+      ? $t('candidateApp.passwordField.hidePassword')
+      : $t('candidateApp.passwordField.revealPassword')}
     class="absolute inset-y-0 right-0"
     icon={passwordRevealed ? 'hide' : 'show'}
     on:click={() => changeRevealed()} />

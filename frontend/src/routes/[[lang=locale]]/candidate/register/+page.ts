@@ -4,4 +4,4 @@
     registration code due to page checking validity of the registration
     code from the backend when the page is loaded.
  */
-export const ssr = false;
+export const ssr = true;

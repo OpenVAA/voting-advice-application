@@ -98,6 +98,15 @@
     "other": "Other",
     "preferNotToSay": "Prefer not to say"
   },
+  "login": {
+    "title": "Sign in",
+    "loginButton": "Sign in",
+    "email": "Email",
+    "emailPlaceholder": "example@email.com",
+    "forgotPassword": "Forgot password?",
+    "enterEmailAndPassword": "Enter the email and password you've received from your party to edit your data and opinions.",
+    "wrongEmailOrPassword": "Wrong email or password"
+  },
   "registration": {
     "enterCode": "Enter the registration code that you've received from your party to register your account.",
     "registrationCode": "registration code",
@@ -140,7 +149,9 @@
     "previewYourProfile": "Preview Your Profile",
     "editYourOpinions": "Edit Your Opinions"
   },
-  "passwordButton": {
+  "passwordField": {
+    "password": "Password",
+    "passwordPlaceholder": "E.g. CP23-174a-f4%&-aHAB",
     "hidePassword": "Hide password",
     "revealPassword": "Reveal password"
   }

@@ -33,7 +33,7 @@ Candidate login page. This component also takes care of the login process.
 ```
 -->
 
-<FrontPage title={$t('candidate.sign_in_title')}>
+<FrontPage title={$t('candidateApp.login.title')}>
   <img slot="hero" class="bg-white" src="/images/hero-candidate.png" alt="" />
 
   <HeadingGroup slot="heading">
@@ -42,15 +42,15 @@ Candidate login page. This component also takes care of the login process.
   </HeadingGroup>
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onLogin}>
     <p class="max-w-md text-center">
-      {$t('candidate.enter_email_and_password')}
+      {$t('candidateApp.enterEmailAndPassword')}
     </p>
-    <label for="email" class="hidden">{$t('candidate.email')}</label>
+    <label for="email" class="hidden">{$t('candidateApp.email')}</label>
     <input
       type="email"
       name="email"
       id="email"
       class="input mb-md w-full max-w-md"
-      placeholder={$t('candidate.email_placeholder')}
+      placeholder={$t('candidateApp.emailPlaceholder')}
       bind:value={email}
       autocomplete="email"
       required />
@@ -58,10 +58,10 @@ Candidate login page. This component also takes care of the login process.
       <PasswordField bind:password autocomplete="current-password" />
     </div>
     {#if wrongCredentials}
-      <p class="text-center text-error">{$t('candidate.wrong_email_or_password')}</p>
+      <p class="text-center text-error">{$t('candidateApp.wrongEmailOrPassword')}</p>
     {/if}
-    <Button type="submit" text={$t('candidate.sign_in_button')} variant="main" />
-    <Button href={getRoute(Route.CandAppForgotPassword)} text={$t('candidate.forgot_password')} />
+    <Button type="submit" text={$t('candidateApp.login.button')} variant="main" />
+    <Button href={getRoute(Route.CandAppForgotPassword)} text={$t('candidateApp.forgotPassword')} />
     <Button href={getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
     <Button href={getRoute(Route.Home)} text={$t('candidate.election_compass_for_voters')} />
   </form>
