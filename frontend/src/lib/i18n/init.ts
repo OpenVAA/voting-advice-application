@@ -2,11 +2,11 @@ import {error} from '@sveltejs/kit';
 import I18n from '@sveltekit-i18n/base';
 import parser, {type Config} from '@sveltekit-i18n/parser-icu';
 import IntlMessageFormat from 'intl-messageformat';
+import settings from '$lib/config/settings.json';
 import {logDebugError} from '$lib/utils/logger';
 import {derived, get} from 'svelte/store';
 import {staticTranslations, type TranslationsPayload} from './translations';
 import {matchLocale, purgeTranslations} from './utils';
-import settings from './settings.json';
 
 const dbLocaleProps = settings.supportedLocales;
 let initError: string | undefined = undefined;
