@@ -2,7 +2,7 @@ import type {HTMLAttributes} from 'svelte/elements';
 export interface EntityCardProps extends HTMLAttributes<HTMLElement> {
   title: string;
   electionSymbol?: string;
-  listText?: string;
+  party?: PartyProps;
   summaryMatch?: string;
   imgSrc?: string;
   imgAlt?: string;
