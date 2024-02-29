@@ -1,3 +1,10 @@
+import settings from './src/lib/config/settings.json';
+
+// Utility for getting a color from the settings with a backup value
+function getColor(name, defaultValue, theme = 'light') {
+  return settings.colors?.[theme]?.[name] ?? defaultValue;
+} 
+
 // Other DaisyUI variables: https://daisyui.com/docs/themes/
 // We define them here, so they can be used in both the light and the dark themes
 const themeCSSVars = {
@@ -174,61 +181,61 @@ module.exports = {
       {
         light: {
           // DaisyUI colors: https://daisyui.com/docs/colors/
-          'primary':   '#2546a8', // = success
-          'secondary': '#666666',
-          'accent':    '#0a716b', // = info
-          'neutral':   '#333333',
-          'base-100':  '#ffffff',
-          'base-200':  '#e8f5f6', // 50% tint of base-300 on base-100
-          'base-300':  '#d1ebee', // Remember to match this with the theme-color in app.html
-          'info':      '#0a716b', // = accent (var() cannot be used in these)
-          'success':   '#2546a8', // = primary
-          'warning':   '#a82525', // = error
-          'error':     '#a82525', // = warning
-          'base-content':      '#333333', // = neutral
-          'primary-content':   '#ffffff', // = base-100
-          'secondary-content': '#ffffff', // = base-100
-          'accent-content':    '#ffffff', // = base-100
-          'info-content':      '#ffffff', // = base-100
-          'success-content':   '#ffffff', // = base-100
-          'warning-content':   '#ffffff', // = base-100
-          'error-content':     '#ffffff', // = base-100
+          'primary':   getColor('primary', '#2546a8'), // = success
+          'secondary': getColor('secondary', '#666666'),
+          'accent':    getColor('accent', '#0a716b'), // = info
+          'neutral':   getColor('neutral', '#333333'),
+          'base-100':  getColor('base-100', '#ffffff'),
+          'base-200':  getColor('base-200', '#e8f5f6'), // 50% tint of base-300 on base-100
+          'base-300':  getColor('base-300', '#d1ebee'), // Remember to match this with the theme-color in app.html
+          'info':      getColor('accent', '#0a716b'), // = accent (var() cannot be used in these)
+          'success':   getColor('primary', '#2546a8'), // = primary
+          'warning':   getColor('warning', '#a82525'), // = error
+          'error':     getColor('warning', '#a82525'), // = warning
+          'base-content':      getColor('neutral', '#333333'), // = neutral
+          'primary-content':   getColor('base-100', '#ffffff'), // = base-100
+          'secondary-content': getColor('base-100', '#ffffff'), // = base-100
+          'accent-content':    getColor('base-100', '#ffffff'), // = base-100
+          'info-content':      getColor('base-100', '#ffffff'), // = base-100
+          'success-content':   getColor('base-100', '#ffffff'), // = base-100
+          'warning-content':   getColor('base-100', '#ffffff'), // = base-100
+          'error-content':     getColor('base-100', '#ffffff'), // = base-100
 
           // Other DaisyUI variables
           ...themeCSSVars,
 
           // Custom variables
-          '--line-color':           '#d9d9d9',
+          '--line-color':           getColor('line-color', '#d9d9d9'),
           '--progress-color':       'oklch(var(--n))',
           '--progress-label-color': 'oklch(var(--n))',
         },
         dark: {
           // DaisyUI colors: https://daisyui.com/docs/colors/
-          'primary':   '#6887e3', // = success
-          'secondary': '#8c8c8c',
-          'accent':    '#11a8a0', // = info
-          'neutral':   '#cccccc',
-          'base-100':  '#000000',
-          'base-200':  '#101212', // 50% tint of base-300 on base-100
-          'base-300':  '#1f2324', // Remember to match this with the theme-color in app.html
-          'info':      '#11a8a0', // = accent (var() cannot be used in these)
-          'success':   '#6887e3', // = primary
-          'warning':   '#e16060', // = error
-          'error':     '#e16060', // = warning
-          'base-content':      '#cccccc', // = neutral
-          'primary-content':   '#000000',
-          'secondary-content': '#000000',
-          'accent-content':    '#000000',
-          'info-content':      '#000000',
-          'success-content':   '#000000',
-          'warning-content':   '#000000',
-          'error-content':     '#000000',
+          'primary':   getColor('primary', '#6887e3', 'dark'),  // = success
+          'secondary': getColor('secondary', '#8c8c8c', 'dark'),
+          'accent':    getColor('accent', '#11a8a0', 'dark'),   // = info
+          'neutral':   getColor('neutral', '#cccccc', 'dark'),
+          'base-100':  getColor('base-100', '#000000', 'dark'),
+          'base-200':  getColor('base-200', '#101212', 'dark'), // 50% tint of base-300 on base-100
+          'base-300':  getColor('base-300', '#1f2324', 'dark'), // Remember to match this with the theme-color in app.html
+          'info':      getColor('info', '#11a8a0', 'dark'),     // = accent (var() cannot be used in these)
+          'success':   getColor('primary', '#6887e3', 'dark'),  // = primary
+          'warning':   getColor('warning', '#e16060', 'dark'),  // = error
+          'error':     getColor('warning', '#e16060', 'dark'),  // = warning
+          'base-content':      getColor('neutral', '#cccccc', 'dark'), // = neutral
+          'primary-content':   getColor('base-100', '#000000', 'dark'),
+          'secondary-content': getColor('base-100', '#000000', 'dark'),
+          'accent-content':    getColor('base-100', '#000000', 'dark'),
+          'info-content':      getColor('base-100', '#000000', 'dark'),
+          'success-content':   getColor('base-100', '#000000', 'dark'),
+          'warning-content':   getColor('base-100', '#000000', 'dark'),
+          'error-content':     getColor('base-100', '#000000', 'dark'),
 
           // Other DaisyUI variables
           ...themeCSSVars,
 
           // Custom variables
-          '--line-color':           '#262626',
+          '--line-color':           getColor('line-color', '#262626', 'dark'),
           '--progress-color':       'oklch(var(--n))',
           '--progress-label-color': 'oklch(var(--n))',
         }
