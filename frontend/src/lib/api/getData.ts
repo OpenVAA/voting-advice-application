@@ -167,7 +167,7 @@ export const getNominatedCandidates = ({
       };
       let photoURL = attr?.photo?.data?.attributes?.url;
       if (photoURL) {
-        photoURL = constants.PUBLIC_BACKEND_URL + photoURL;
+        photoURL = `${constants.PUBLIC_BACKEND_URL}${photoURL}`;
         props.photoURL = photoURL;
       }
       if (loadAnswers)
