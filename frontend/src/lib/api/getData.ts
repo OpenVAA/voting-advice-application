@@ -162,11 +162,11 @@ export const getNominatedCandidates = ({
         // otherLanguages: attr.otherLanguages.data.map(
         //   (l: StrapiLanguageData) => l.attributes.name
         // ),
-        party: parseParty(nom.attributes.party.data, locale)
+        party: parseParty(nom.attributes.party.data, locale),
       };
       let photoURL = attr?.photo?.data?.attributes?.url;
       if (photoURL) {
-        photoURL = constants.PUBLIC_BACKEND_URL + photoURL;
+        photoURL = `${constants.PUBLIC_BACKEND_URL}${photoURL}`;
         props.photoURL = photoURL;
       }
       if (loadAnswers)
