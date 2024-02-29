@@ -69,7 +69,7 @@
         imgSrc={candidate.photoURL}
         imgAlt={$t('candidate.portraitAlt')}
         id={candidate.id}
-        listText={candidate.party?.shortName ?? ''}
+        party={candidate.party}
         electionSymbol={candidate.electionSymbol}
         summaryMatch={match.toString()}>
         <div slot="card-footer">
