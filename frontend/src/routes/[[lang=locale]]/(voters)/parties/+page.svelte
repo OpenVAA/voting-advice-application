@@ -35,7 +35,7 @@
     role="feed"
     class="-mx-md grid w-[calc(100%+20rem/16)] grid-cols-1 gap-md match-w-xl:mx-0 match-w-xl:w-full"
     aria-label={$t('parties.parties')}>
-    {#each parties as { id, name, shortName }, i}
+    {#each parties as { id, name }, i}
       <EntityCard
         on:click={() => goto($getRoute({route: Route.Party, id}))}
         ariaPosinset={i + 1}
