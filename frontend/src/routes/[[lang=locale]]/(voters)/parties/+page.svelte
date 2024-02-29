@@ -41,8 +41,7 @@
         ariaPosinset={i + 1}
         ariaSetsize={data.parties.length}
         title={name}
-        {id}
-        listText={shortName} />
+        {id} />
     {:else}
       <p>{$t('parties.notFound')}</p>
     {/each}
