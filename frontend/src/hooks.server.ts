@@ -10,7 +10,7 @@ const ROUTE_RE = new RegExp(/^\/([^./]*)(?:\/[^.]*)?$/);
 
 export const handle: Handle = (async ({event, resolve}) => {
   const {url, request, isDataRequest} = event;
-  const {pathname, origin} = url;
+  const {pathname} = url;
   const supportedLocales = locales.get();
 
   // logDebugError(
