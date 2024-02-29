@@ -43,6 +43,7 @@ module.exports = {
   safelist: [
     ...colorNames.map(c => `btn-${c}`), 
     ...colorNames.map(c => `fill-${c}`), 
+    ...colorNames.map(c => `dark:fill-${c}`), 
     ...colorNames.map(c => `text-${c}`)
   ],
   theme: {
