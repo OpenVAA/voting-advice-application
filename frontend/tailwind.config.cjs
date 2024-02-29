@@ -188,7 +188,7 @@ module.exports = {
           'neutral':   getColor('neutral', '#333333'),
           'base-100':  getColor('base-100', '#ffffff'),
           'base-200':  getColor('base-200', '#e8f5f6'), // 50% tint of base-300 on base-100
-          'base-300':  getColor('base-300', '#d1ebee'), // Remember to match this with the theme-color in app.html
+          'base-300':  getColor('base-300', '#d1ebee'),
           'info':      getColor('accent', '#0a716b'), // = accent (var() cannot be used in these)
           'success':   getColor('primary', '#2546a8'), // = primary
           'warning':   getColor('warning', '#a82525'), // = error
@@ -218,7 +218,7 @@ module.exports = {
           'neutral':   getColor('neutral', '#cccccc', 'dark'),
           'base-100':  getColor('base-100', '#000000', 'dark'),
           'base-200':  getColor('base-200', '#101212', 'dark'), // 50% tint of base-300 on base-100
-          'base-300':  getColor('base-300', '#1f2324', 'dark'), // Remember to match this with the theme-color in app.html
+          'base-300':  getColor('base-300', '#1f2324', 'dark'),
           'info':      getColor('info', '#11a8a0', 'dark'),     // = accent (var() cannot be used in these)
           'success':   getColor('primary', '#6887e3', 'dark'),  // = primary
           'warning':   getColor('warning', '#e16060', 'dark'),  // = error
