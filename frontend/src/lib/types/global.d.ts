@@ -85,18 +85,15 @@ declare global {
    */
   interface CandidateProps {
     answers?: AnswerProps[];
-    electionRound: number;
+    electionRound?: number;
     electionSymbol?: string;
     firstName: string;
     id: string;
     lastName: string;
     // motherTongues: string[];
     // otherLanguages: string[];
-    party: {
-      name: string;
-      shortName: string;
-    };
     photoURL?: string;
+    party: PartyProps;
     // politicalExperience: string;
   }
 
@@ -119,12 +116,14 @@ declare global {
    */
   interface PartyProps {
     answers?: AnswerProps[];
-    electionRound: number;
+    electionRound?: number;
     id: string;
     info: string;
     name: string;
     shortName: string;
     photo: string;
+    color?: string;
+    colorDark?: string;
     memberCandidateIds?: string[];
     memberCandidates?: CandidateProps[];
     nominatedCandidateIds?: string[];
