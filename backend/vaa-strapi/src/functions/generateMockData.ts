@@ -1116,7 +1116,7 @@ function abbreviate(
         case 'acronym':
           value = value
             .split(/(\s|-)+/)
-            .map((w) => (w === '' ? '' : w.substring(0)))
+            .map((w) => (w === '' || w === ' ' ? '' : w.substring(0, 1).toLocaleUpperCase(key)))
             .join('');
           break;
         case 'truncate':

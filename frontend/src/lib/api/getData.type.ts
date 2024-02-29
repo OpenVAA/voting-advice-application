@@ -239,6 +239,8 @@ export interface StrapiQuestionCategoryData {
     shortName: LocalizedString;
     info: LocalizedString;
     order: number;
+    color: string;
+    colorDark: string;
     type: QuestionCategoryType;
     election: {
       data: StrapiElectionData;
@@ -381,6 +383,7 @@ export interface StrapiPartyData {
     shortName: LocalizedString;
     info: LocalizedString;
     color: string;
+    colorDark: string;
     logo: {
       data?: string;
     };
