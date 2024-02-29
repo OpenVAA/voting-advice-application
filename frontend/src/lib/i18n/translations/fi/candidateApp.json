@@ -40,19 +40,19 @@
       "portrait": "Omakuva",
       "unaffiliated": "Sitoutumaton"
     },
-    "errorMessage": "Tapahtui virhe tietoja lähetettäessä!",
+    "errorMessage": "Tietoja lähetettäessä tapahtui virhe!",
     "pending": "odottaa",
     "addAnother": "Lisää uusi",
     "selectFirst": "Valitse ensimmäinen",
     "unaffiliatedDescription": "Aseta tämä päälle, jos et ole sen osapuolen jäsen, jonka listalla olet.",
     "nominationsDescription": "Nämä ovat vaalipiirit, joissa olet ehdolla, sekä vaaliluettelo ja mahdollinen vaalitunnus. Jos ehdokkuus on merkitty merkinnällä \"Vireillä\", vaalitunnustasi ei välttämättä ole vielä määritelty.",
-    "electionManifesto": "Vaalilause",
+    "electionManifesto": "Vaalilupaus",
     "nominations": "Ehdokkuudet",
     "tapToAddPhoto": "Paina lisätäksesi valokuvan"
   },
   "settings": {
     "title": "Asetukset",
-    "instructions": "Nämä asetukset vaikuttavat vain siihen, miten käytät tätä sovellusta. Kaikkia tänne antamiasi tietoja ei näytetä julkisesti.",
+    "instructions": "Nämä asetukset vaikuttavat vain siihen, miten käytät tätä sovellusta. Mitään tänne antamiasi tietoja ei näytetä julkisesti.",
     "fields": {
       "email": "Sähköposti",
       "language": "Sovelluksen kieli"
@@ -61,7 +61,7 @@
     "languageDescription": "Käytä tätä sovellusta tällä kielellä. Se ei näy julkisessa profiilissasi.",
     "accountPassword": "Tilin salasana",
     "currentPassword": "Nykyinen salasana",
-    "currentPasswordDescription": "Kirjoita tilisi kykyinen salasana, jonka haluat vaihtaa.",
+    "currentPasswordDescription": "Kirjoita tilisi nykyinen salasana, jonka haluat vaihtaa.",
     "newPassword": "Uusi salasana",
     "newPasswordConfirmation": "Uuden salasanan vahvistus",
     "passwordsDontMatch": "Salasanat eivät täsmää",
@@ -89,7 +89,7 @@
     "symbol": "Symboli",
     "username": "Vältä nimesi käyttämistä salasanassa",
     "repetition": "Sisältää merkkien toistoa",
-    "commonPatterns": "Sisältää yleisiä sekvenssejä tai kuvioita"
+    "commonPatterns": "Sisältää yleisiä merkkisarjoja"
   },
   "genders": {
     "male": "Mies",
@@ -146,7 +146,7 @@
   },
   "homePage": {
     "greeting": "Hei, {userName}!",
-    "explanation": "Voidaksesi esiintyä vaalikompassissa sinun on annettava joitakin perustietoja itsestäsi ja vastattava poliittisia kysymyksiä koskeviin mielipidekysymyksiin.",
+    "explanation": "Voidaksesi esiintyä vaalikompassissa sinun on annettava joitakin perustietoja itsestäsi ja vastattava poliittisiin mielipidekysymyksiin.",
     "buttonText": "Jatka"
   },
   "preview": {
