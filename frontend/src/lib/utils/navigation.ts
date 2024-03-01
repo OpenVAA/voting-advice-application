@@ -13,7 +13,7 @@ export enum Route {
   CandAppHelp = 'candidate/help',
   CandAppHome = 'candidate',
   CandAppInfo = 'candidate/info',
-  CandAppPreview = 'candidate/questions/preview',
+  CandAppPreview = 'candidate/preview',
   CandAppProfile = 'candidate/profile',
   CandAppQuestion = 'candidate/questions',
   CandAppQuestions = 'candidate/questions/summary',

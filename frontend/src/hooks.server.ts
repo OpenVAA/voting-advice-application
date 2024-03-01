@@ -10,7 +10,7 @@ const ROUTE_RE = new RegExp(/^\/([^./]*)(?:\/[^.]*)?$/);
 
 export const handle: Handle = (async ({event, resolve}) => {
   const {url, request, isDataRequest} = event;
-  const {pathname, origin} = url;
+  const {pathname} = url;
   const supportedLocales = locales.get();
 
   // logDebugError(
@@ -61,6 +61,9 @@ export const handle: Handle = (async ({event, resolve}) => {
     // if it's also the user's preference, i.e., if we can assume that
     // the locale is chosen by default. We also do that if there's only
     // one locale available.
+
+    // TODO: The locale redirect breaks the load function in *.server.ts files
+    /*
     if (
       !request.headers.get('prevent-redirect') &&
       (supportedLocales.length === 1 ||
@@ -72,6 +75,7 @@ export const handle: Handle = (async ({event, resolve}) => {
         status: 301
       });
     }
+    */
 
     // Otherwise we just serve the page
     // Add html `lang` attribute
@@ -109,6 +113,14 @@ export const handle: Handle = (async ({event, resolve}) => {
     locale = defaultLocale;
   }
 
+  // TODO: The locale redirect breaks the load function in *.server.ts files
+  // Temporary solution is to always redirect to the default locale
+  return new Response(undefined, {
+    headers: {location: `/${locale}${cleanPath}`},
+    status: 301
+  });
+
+  /*
   /////////////////////////////////////////////////////
   // 5. Redirect if we switched to a non-default locale
   /////////////////////////////////////////////////////
@@ -151,6 +163,7 @@ export const handle: Handle = (async ({event, resolve}) => {
       'Content-Type': isDataRequest ? 'application/json' : 'text/html'
     }
   });
+  */
 }) satisfies Handle;
 
 export const handleError = (async ({error, event}) => {

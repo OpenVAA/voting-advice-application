@@ -12,7 +12,7 @@ async function globalSetup(config: FullConfig) {
   await page.getByText('Sign in').click();
 
   // Wait until the page actually signs in.
-  await expect(page.getByText('Welcome to the Candidate App')).toBeVisible();
+  await expect(page.getByText('In order to appear in the Election Compass')).toBeVisible();
 
   await page.context().storageState({ path: STORAGE_STATE });
 };
