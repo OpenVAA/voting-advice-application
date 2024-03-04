@@ -77,7 +77,7 @@
 
               <div class="pt-10">
                 <!-- This gives empty form label error from Wave Extension for every empty dot, but fix should come from LikertResponseButton -->
-                <a href={getRoute({route: Route.CandAppQuestion, id: question.id})}>
+                <a href={getRoute({route: Route.CandAppQuestions, id: question.id})}>
                   <LikertResponseButtons
                     name={question.id}
                     mode="display"
@@ -114,7 +114,7 @@
               <!-- Navigate to unsanswered question -->
               <a
                 class="flex justify-center pt-10"
-                href={getRoute({route: Route.CandAppQuestion, id: question.id})}>
+                href={getRoute({route: Route.CandAppQuestions, id: question.id})}>
                 <Button variant="main" text={$t('candidateApp.allQuestions.answerButton')} />
               </a>
             </div>

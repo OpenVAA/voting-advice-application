@@ -38,7 +38,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
       icon="profile"
       text={$t('candidateApp.navbar.basicInfo')} />
     <NavItem
-      href={getRoute(Route.CandAppQuestions)}
+      href={getRoute(Route.CandAppSummary)}
       icon="optinion"
       text={$t('candidateApp.navbar.yourOpinions')} />
     <NavItem

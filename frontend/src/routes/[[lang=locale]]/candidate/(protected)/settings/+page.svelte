@@ -157,17 +157,18 @@
       </div>
     </div>
 
+    <Button
+      type="submit"
+      variant="main"
+      disabled={disableSetButton}
+      class="my-10"
+      text={$t('candidateApp.settings.updatePassword')} />
+
     {#if errorMessage}
       <p class="text-center text-error">
         {errorMessage}
       </p>
     {/if}
-
-    <Button
-      type="submit"
-      variant="main"
-      disabled={disableSetButton}
-      text={$t('candidateApp.settings.updatePassword')} />
 
     {#if successMessage}
       <p class="mt-2 text-center text-success">

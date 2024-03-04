@@ -19,6 +19,6 @@
       href={getRoute(Route.CandAppPreview)} />
     <Button
       text={$t('candidateApp.allDataFilled.editYourOpinions')}
-      href={getRoute(Route.CandAppQuestions)} />
+      href={getRoute(Route.CandAppSummary)} />
   </svelte:fragment>
 </BasicPage>
