@@ -9,7 +9,7 @@
   import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {FrontPage} from '$lib/templates/frontPage';
-  import {TheEmailOfNewUserStore} from '$lib/utils/authenticationStore';
+  import {emailOfNewUserStore} from '$lib/utils/authenticationStore';
 
   const authContext = getContext<AuthContext>('auth');
 
@@ -20,11 +20,11 @@
     if (!(await authContext?.logIn(email, password))) {
       wrongCredentials = true;
     } else {
-      TheEmailOfNewUserStore.set(null);
+      emailOfNewUserStore.set(null);
     }
   };
-  if ($TheEmailOfNewUserStore != null) {
-    email = $TheEmailOfNewUserStore;
+  if ($emailOfNewUserStore != null) {
+    email = $emailOfNewUserStore;
   }
 </script>
 

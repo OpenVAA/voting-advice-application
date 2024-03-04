@@ -12,7 +12,7 @@ export interface AuthContext {
 
 const userStore = writable<User | null>(null);
 const tokenStore = writable<string | null | undefined>(undefined);
-export const TheEmailOfNewUserStore = writable<string | null | undefined>(null);
+export const emailOfNewUserStore = writable<string | null | undefined>(null);
 export const logIn = async (email: string, password: string) => {
   const response = await authenticate(email, password);
   if (!response.ok) return false;
