@@ -9,6 +9,7 @@ Fixes [Issue link]
 - [ ] I have reviewed the changes myself in this PR. Please check the [self-review document](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/contributing/self-review.md)
 - [ ] I have added or edited unit tests.
 - [ ] I have run the unit tests successfully.
+- [ ] I have run the e2e tests successfully.
 - [ ] I have tested this change on my own device.
 - [ ] I have tested this change on other devices (Using Browserstack is recommended).
 - [ ] I have tested my changes using the [WAVE extension](https://wave.webaim.org/extension/)
