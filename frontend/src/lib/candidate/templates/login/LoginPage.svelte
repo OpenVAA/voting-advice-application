@@ -47,7 +47,7 @@ Candidate login page. This component also takes care of the login process.
     <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
   </HeadingGroup>
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onLogin}>
-    {#if $TheEmailOfNewUserStore !== null}
+    {#if $emailOfNewUserStore !== null}
       <p class="text-3xl font-normal">
         {$t('candidateApp.setPassword.passwordSetSuccesfully')}
       </p>
