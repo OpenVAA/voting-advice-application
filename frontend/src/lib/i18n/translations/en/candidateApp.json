@@ -149,5 +149,9 @@
     "greeting": "Hello, {userName}!",
     "explanation": "In order to appear in the Election Compass, you have to enter some basic information about yourself as well as answer opinion statements concerning political issues.",
     "buttonText": "Continue"
+  },
+  "preview": {
+    "title": "Preview",
+    "notFound": "Profile not found"
   }
 }
