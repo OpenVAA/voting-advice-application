@@ -79,7 +79,8 @@
     "setPassword": "Aseta salasana",
     "passwordsDontMatch": "Salasanat eivät täsmää",
     "passwordNotValid": "Salasana ei ole kelvollinen",
-    "registrationError": "Rekisteröinti epäonnistui"
+    "registrationError": "Rekisteröinti epäonnistui",
+    "passwordSetSuccesfully": "Salasanasi on nyt asetettu! Kirjaudu sisään sillä."
   },
   "passwordValidation": {
     "length": "Vähintään {minPasswordLength} merkkiä",

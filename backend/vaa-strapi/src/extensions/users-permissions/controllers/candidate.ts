@@ -49,7 +49,12 @@ module.exports = {
     }
 
     return {
-      candidate: await sanitizeCandidate(candidate, ctx)
+      candidate: {
+        ...(await sanitizeCandidate(candidate, ctx)),
+        //Return email associated with the registration key so that the login
+        //page can be prefilled on navigation
+        email: candidate.email
+      }
     };
   },
   async register(ctx) {
