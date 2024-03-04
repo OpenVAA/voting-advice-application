@@ -4,7 +4,7 @@
   import {t} from '$lib/i18n';
   import {translate} from '$lib/i18n/utils/translate';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {getLanguages, updateBasicInfo} from '$lib/api/candidate';
+  import {getLanguages, getGenders, updateBasicInfo} from '$lib/api/candidate';
   import {authContext} from '$lib/utils/authenticationStore';
   import {loadUserData} from '$lib/utils/authenticationStore';
   import Icon from '$lib/components/icon/Icon.svelte';
@@ -13,18 +13,16 @@
   import Field from '$lib/components/common/form/Field.svelte';
   import {BasicPage} from '$lib/templates/basicPage';
   import AvatarSelect from './AvatarSelect.svelte';
-  import type {StrapiLanguageData} from '$lib/api/getData.type';
+  import type {StrapiGenderData, StrapiLanguageData} from '$lib/api/getData.type';
   import type {Language} from '$lib/types/candidateAttributes';
   import {TextArea} from '$candidate/components/textArea';
 
   const basicInfoFields = ['firstName', 'lastName', 'party'];
 
-  const genders = ['male', 'female', 'nonBinary', 'other', 'preferNotToSay'];
-
   const labelClass =
     'pointer-events-none label-sm whitespace-nowrap label mx-6 my-2 text-secondary';
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
-  const headerClass = 'uppercase mx-6 my-0 p-0 text-m text-secondary';
+  const headerClass = 'uppercase mx-6 my-0 p-0 small-label';
   const selectClass = 'select select-sm w-full text-right text-primary';
   const inputClass =
     'input-ghost flex justify-end text-right input input-sm w-full pr-2 disabled:border-none disabled:bg-base-100';
@@ -37,21 +35,17 @@
 
   let loading = false;
 
-  // get initial values for basic data
-  let gender = user?.candidate?.gender;
-  let motherTongues = user?.candidate?.motherTongues;
-  let birthday = user?.candidate?.birthday;
-  let photo = user?.candidate?.photo;
-  let unaffiliated = user?.candidate?.unaffiliated;
-  let manifesto = user?.candidate?.manifesto;
-  const nominations = user?.candidate?.nominations;
+  let {gender, motherTongues, birthday, photo, unaffiliated, manifesto, nominations} =
+    user?.candidate || {};
+
+  let genderID = gender?.id;
 
   let manifestoTextArea: TextArea; // Used to clear the local storage from the parent component
   let savedManifesto = user?.candidate?.manifesto; // Used to detect changes in the manifesto
 
   // all necessary fields filled boolean
   $: allFilled =
-    gender && motherTongues && motherTongues.length > 0 && birthday && manifesto ? true : false;
+    genderID && motherTongues && motherTongues.length > 0 && birthday && manifesto ? true : false;
 
   let errorMessage: string | undefined;
 
@@ -60,10 +54,8 @@
   const submitForm = async () => {
     loading = true;
     try {
-      await Promise.all([
-        uploadPhoto(),
-        updateBasicInfo(manifesto, birthday, gender, photo, unaffiliated, motherTongues)
-      ]);
+      await uploadPhoto();
+      await updateBasicInfo(manifesto, birthday, genderID, photo, unaffiliated, motherTongues);
 
       // Update the database-saved manifesto in order to detect changes
       savedManifesto = manifesto;
@@ -107,6 +99,9 @@
   // fetch languages from backend
   let allLanguages: StrapiLanguageData[] | undefined;
   getLanguages().then((languages) => (allLanguages = languages));
+
+  let allGenders: StrapiGenderData[] | undefined;
+  getGenders().then((genders) => (allGenders = genders));
 
   // map the languages to their respective locales for easier use
   $: motherTongueLocales = motherTongues?.map((lang) => lang.localisationCode);
@@ -205,16 +200,18 @@
           <label for="gender" class={labelClass}>
             {$t('candidateApp.basicInfo.fields.gender')}
           </label>
+
           <select
             id="gender"
             class={selectClass}
-            bind:value={gender}
+            bind:value={genderID}
             style="text-align-last: right; direction: rtl;">
-            <option disabled selected style="display: none;" />
-            {#each genders as option}
-              <option value={option} selected={option === gender}
-                >{$t(`candidateApp.genders.${option}`)}</option>
-            {/each}
+            {#if allGenders}
+              {#each allGenders as option}
+                <option value={option.id} selected={option.id === genderID}
+                  >{$t(`candidateApp.genders.${option.attributes.name}`)}</option>
+              {/each}
+            {/if}
           </select>
         </Field>
       </FieldGroup>
@@ -255,7 +252,7 @@
                 type="button"
                 id={tongue.name}
                 on:click={() => (motherTongues = motherTongues?.filter((m) => m.id !== tongue.id))}>
-                <Icon name="removeFromList" class={iconClass} />
+                <Icon name="close" class={iconClass} />
               </button>
             </div>
           </Field>

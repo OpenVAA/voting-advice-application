@@ -43,11 +43,6 @@
       "type": "string",
       "required": true
     },
-    "gender": {
-      "pluginOptions": {},
-      "type": "string",
-      "required": false
-    },
     "birthday": {
       "type": "string",
       "required": false
@@ -107,6 +102,11 @@
       "relation": "oneToMany",
       "target": "api::candidate-attribute.candidate-attribute",
       "mappedBy": "candidate"
+    },
+    "gender": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::gender.gender"
     }
   }
 }

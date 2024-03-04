@@ -20,6 +20,8 @@ const defaultPermissions = [
   {action: 'api::constituency.constituency.findOne', roleType: 'authenticated'},
   {action: 'api::language.language.find', roleType: 'authenticated'},
   {action: 'api::language.language.findOne', roleType: 'authenticated'},
+  {action: 'api::gender.gender.find', roleType: 'authenticated'},
+  {action: 'api::gender.gender.findOne', roleType: 'authenticated'},
   {action: 'api::question.question.find', roleType: 'authenticated'},
   {action: 'api::question.question.findOne', roleType: 'authenticated'},
   {action: 'api::question-category.question-category.find', roleType: 'authenticated'},
@@ -124,7 +126,8 @@ module.exports = async (plugin) => {
         'candidate.populate.nominations.populate.constituency',
         'candidate.populate.party',
         'candidate.populate.photo',
-        'candidate.populate.motherTongues'
+        'candidate.populate.motherTongues',
+        'candidate.populate.gender'
       ]),
       // Disable filters by default to avoid accidentally leaking data of relations
       restrictFilters([])

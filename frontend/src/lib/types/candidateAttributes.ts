@@ -11,7 +11,7 @@ export interface Candidate {
   id: number;
   firstName: string;
   lastName: string;
-  gender: string;
+  gender: Gender;
   birthday: string;
   photo?: Photo;
   manifesto: Text;
@@ -27,6 +27,11 @@ export interface Candidate {
 export interface Language {
   id: number;
   localisationCode: string;
+  name: string;
+}
+
+export interface Gender {
+  id: number;
   name: string;
 }
 

@@ -28,6 +28,7 @@ const QUESTION_CATEGORY_API = 'api::question-category.question-category';
 const ANSWER_API = 'api::answer.answer';
 const USER_API = 'plugin::users-permissions.user';
 const LANGUAGE_API = 'api::language.language';
+const GENDER_API = 'api::gender.gender';
 
 const locales: Locale[] = [
   {
@@ -151,6 +152,11 @@ export async function generateMockData() {
     console.info('#######################################');
     console.info('inserting languages ...');
     await createLanguages();
+    console.info('Done!');
+    console.info('#######################################');
+    console.info('inserting genders ...');
+    await createGenders();
+    console.info('Done!');
     console.info('#######################################');
     console.info('inserting election app labels...');
     await createElectionAppLabel();
@@ -256,6 +262,33 @@ async function createLanguages() {
       {
         name: 'Spanish',
         localisationCode: 'es',
+        publishedAt: new Date()
+      }
+    ]
+  });
+}
+
+async function createGenders() {
+  await strapi.db.query(GENDER_API).createMany({
+    data: [
+      {
+        name: 'male',
+        publishedAt: new Date()
+      },
+      {
+        name: 'female',
+        publishedAt: new Date()
+      },
+      {
+        name: 'nonBinary',
+        publishedAt: new Date()
+      },
+      {
+        name: 'other',
+        publishedAt: new Date()
+      },
+      {
+        name: 'preferNotToSay',
         publishedAt: new Date()
       }
     ]
