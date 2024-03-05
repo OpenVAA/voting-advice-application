@@ -108,20 +108,18 @@ export const updateBasicInfo = async (
     throw new Error('user.candidate is undefined');
   }
 
-  const body = {
-    data: {
-      manifesto,
-      birthday,
-      gender,
-      unaffiliated,
-      photo: photo?.id,
-      motherTongues
-    }
-  };
-
   return await request(getUrl(`api/candidates/${candidate.id}`), {
     method: 'PUT',
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      data: {
+        manifesto,
+        birthday,
+        gender,
+        unaffiliated,
+        photo: photo?.id,
+        motherTongues
+      }
+    }),
     headers: {
       'Content-Type': 'application/json'
     }
@@ -153,25 +151,18 @@ export const addAnswer = async (
   answerKey: AnswerOption['key'],
   openAnswer?: LocalizedString
 ): Promise<Response | undefined> => {
-  const candidate = get(authContext.user)?.candidate;
-
-  if (!candidate) return;
-
-  const body = {
-    data: {
-      candidate: candidate?.id,
-      question: Number(questionId),
-      value: answerKey,
-      openAnswer
-    }
-  };
-
   return await request(getUrl('api/answers'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(body)
+    body: JSON.stringify({
+      data: {
+        question: Number(questionId),
+        value: answerKey,
+        openAnswer
+      }
+    })
   });
 };
 
@@ -184,19 +175,17 @@ export const updateAnswer = async (
   answerKey: AnswerOption['key'],
   openAnswer?: LocalizedString
 ): Promise<Response | undefined> => {
-  const body = {
-    data: {
-      value: answerKey,
-      openAnswer
-    }
-  };
-
   return request(getUrl(`api/answers/${answerId}`), {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(body)
+    body: JSON.stringify({
+      data: {
+        value: answerKey,
+        openAnswer
+      }
+    })
   });
 };
 

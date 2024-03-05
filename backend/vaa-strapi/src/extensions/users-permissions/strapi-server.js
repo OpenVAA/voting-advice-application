@@ -1,7 +1,9 @@
 'use strict';
 
 import candidate from './controllers/candidate';
+import {restrictPopulate} from '../../util/acl';
 
+// NOTE: Before adding permissions here, please make sure you've implemented the appropriate access control for the resource
 const defaultPermissions = [
   {action: 'plugin::users-permissions.candidate.check', roleType: 'public'},
   {action: 'plugin::users-permissions.candidate.register', roleType: 'public'},
@@ -110,6 +112,22 @@ module.exports = async (plugin) => {
       prefix: ''
     }
   });
+
+  // Enforce ACL on the /users/me endpoint
+  for (const route of plugin.routes['content-api'].routes) {
+    if (route.method !== 'GET' || route.path !== '/users/me') continue;
+
+    route.config.policies = [
+      // Disable populate by default to avoid accidentally leaking data through relations
+      restrictPopulate([
+        'candidate.populate.nominations.populate.party',
+        'candidate.populate.nominations.populate.constituency',
+        'candidate.populate.party',
+        'candidate.populate.photo',
+        'candidate.populate.motherTongues'
+      ])
+    ];
+  }
 
   return plugin;
 };
