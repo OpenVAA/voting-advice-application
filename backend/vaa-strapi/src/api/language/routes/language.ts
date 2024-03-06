@@ -3,7 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
-import { restrictPopulate } from '../../../util/acl';
+import { restrictPopulate, restrictFilters } from '../../../util/acl';
 
 export default factories.createCoreRouter('api::language.language', {
   only: ['find', 'findOne'], // Explicitly disabled create, update, delete
@@ -14,6 +14,8 @@ export default factories.createCoreRouter('api::language.language', {
         restrictPopulate([
           'language',
         ]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
     findOne: {
@@ -22,6 +24,8 @@ export default factories.createCoreRouter('api::language.language', {
         restrictPopulate([
           'language',
         ]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
   },

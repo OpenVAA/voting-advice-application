@@ -3,7 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
-import { restrictPopulate } from '../../../util/acl';
+import { restrictPopulate, restrictFilters } from '../../../util/acl';
 
 export default factories.createCoreRouter('api::constituency.constituency', {
   only: ['find', 'findOne'], // Explicitly disabled create, update, delete
@@ -12,12 +12,16 @@ export default factories.createCoreRouter('api::constituency.constituency', {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
   },

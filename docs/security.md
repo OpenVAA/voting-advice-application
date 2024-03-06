@@ -63,6 +63,26 @@ export default factories.createCoreRouter('...', {
 });
 ```
 
+## restrictFilters
+
+Enforces that only the allowed filters are set to prevent leaking content types from relationships. This is useful in scenarios where a specific relationship should not be returned, which filter would allow querying for even though the value is not directly retrievable. For example, user would be able to filter relationship's value by checking the prefix, which would eventually give an oracle where if the character is correct, the content type is returned, or if it's wrong, the content type isn't returned. Repeating this would then allow recovering field values that they shouldn't be able to get.
+
+Example usage:
+```ts
+export default factories.createCoreRouter('...', {
+  ...
+  config: {
+    find: {
+      policies: [
+        restrictFilters([
+          'candidate.id.$eq', // ?filters[candidate][id][$eq]=1
+        ]),
+      ],
+    },
+  },
+});
+```
+
 ## restrictFields
 
 Enforces that only the allowed fields are returned from the content type. If no fields are explicitly provided (using the `?fields=...` syntax in the request), it will default to only providing the allowed fields. This is intended for all the request endpoints as they all return the content type the action is performed on. Note that you should use the `private` field in the content type schema first for increased security (making this redundant), but if that isn't possible then this is an alternative option. This also has same caveats as `restrictPopulate` where the fields will not apply to relationships returned, and the field that shouldn't be returned will still be returned through populate if not carefully restricted.
@@ -128,12 +148,16 @@ export default factories.createCoreRouter('...', {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
     create: {
@@ -142,6 +166,8 @@ export default factories.createCoreRouter('...', {
         'global::owned-by-candidate',
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
     update: {
@@ -152,6 +178,8 @@ export default factories.createCoreRouter('...', {
         'global::owned-by-candidate',
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
     delete: {
@@ -160,6 +188,8 @@ export default factories.createCoreRouter('...', {
         restrictResourceOwnedByCandidate('api::answer.answer'),
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
   },

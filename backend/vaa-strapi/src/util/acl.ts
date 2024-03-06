@@ -32,7 +32,31 @@ export function restrictPopulate(allowedPopulate: string[]): any {
       // Allow only the explicit populate syntax (vs. allowing ?populate=*)
       if (typeof query.populate !== 'object') return false;
 
+      const origPopulate = query.populate;
       query.populate = filterObject(query.populate, allowedPopulate);
+      if (JSON.stringify(origPopulate) !== JSON.stringify(query.populate)) {
+        console.warn(`Filtered disallowed filters: ${origPopulate} -> ${query.populate}`);
+      }
+    }
+
+    return true;
+  };
+}
+
+export function restrictFilters(allowedFilters: string[]): any {
+  return async (ctx, config, {strapi}) => {
+    const query = ctx.request.query;
+
+    // Only allow the provided filter fields
+    if (query.filters) {
+      // Allow only the explicit filters syntax
+      if (typeof query.filters !== 'object') return false;
+
+      const origFilters = query.filters;
+      query.filters = filterObject(query.filters, allowedFilters);
+      if (JSON.stringify(origFilters) !== JSON.stringify(query.filters)) {
+        console.warn(`Filtered disallowed filters: ${origFilters} -> ${query.filters}`);
+      }
     }
 
     return true;
@@ -48,7 +72,11 @@ export function restrictFields(allowedFields: string[]): any {
       // Allow only the explicit fields syntax (not sure if there are any other variations, but just in case)
       if (!Array.isArray(query.fields)) return false;
 
+      const origFields = query.fields;
       query.fields = query.fields.filter((field) => allowedFields.includes(field));
+      if (origFields.length !== query.fields.length) {
+        console.warn(`Filtered disallowed fields: ${origFields} -> ${query.fields}`);
+      }
     } else {
       // If the fields aren't provided, default to allowed fields only
       query.fields = allowedFields;
@@ -65,6 +93,7 @@ export function restrictBody(allowedFields: string[]): any {
       for (const key in ctx.request.body.data) {
         if (allowedFields.includes(key)) continue;
 
+        console.warn(`Deleting restricted field ${key} from the body.`);
         delete ctx.request.body.data[key];
       }
     }
@@ -86,6 +115,11 @@ export function restrictResourceOwnedByCandidate(contentType: string): any {
       where: {id, candidate: candidate.id}
     });
 
-    return !!res;
+    const exists = !!res;
+    if (!exists) {
+      console.warn(`Resource ${contentType} is not owned by the currently authenticated user.`);
+    }
+
+    return exists;
   };
 }

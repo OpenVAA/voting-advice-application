@@ -3,7 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
-import { restrictPopulate, restrictResourceOwnedByCandidate, restrictBody } from '../../../util/acl';
+import { restrictPopulate, restrictFilters, restrictResourceOwnedByCandidate, restrictBody } from '../../../util/acl';
 
 export default factories.createCoreRouter('api::candidate.candidate', {
   only: ['find', 'findOne', 'update'], // Explicitly disabled create and delete
@@ -12,12 +12,19 @@ export default factories.createCoreRouter('api::candidate.candidate', {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([
+          'candidate.id.$eq',
+          'question.category.type.$eq',
+        ]),
       ],
     },
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
     update: {
@@ -26,6 +33,8 @@ export default factories.createCoreRouter('api::candidate.candidate', {
         restrictResourceOwnedByCandidate('api::candidate.candidate'),
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
         // Allow only updating the following fields
         restrictBody(['gender', 'birthday', 'unaffiliated', 'photo', 'manifesto', 'motherTongues', 'otherLanguages', 'politicalExperience']),
       ],
