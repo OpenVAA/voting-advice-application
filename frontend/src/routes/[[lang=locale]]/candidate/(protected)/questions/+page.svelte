@@ -6,7 +6,10 @@
   import {Icon} from '$lib/components/icon';
   import {BasicPage} from '$lib/templates/basicPage';
 
-  const firstQuestionUrl = getRoute({route: Route.CandAppQuestion, id: $page.data.questions[0].id});
+  const firstQuestionUrl = getRoute({
+    route: Route.CandAppQuestions,
+    id: $page.data.questions[0].id
+  });
   const questionCategories = new Set<string>();
 
   $page.data.questions.forEach((question) => {

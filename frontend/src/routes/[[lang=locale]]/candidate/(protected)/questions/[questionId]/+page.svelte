@@ -145,7 +145,7 @@
     answerContext.answers.set(answerStore);
   }
 
-  async function navigateToQuestion(indexChange: number, lastPageUrl: string) {
+  async function navigateToQuestion(indexChange: number, urlAfterLastQuestion: string) {
     if (!currentQuestion) {
       return;
     }
@@ -172,18 +172,18 @@
     const newIndex = currentIndex + indexChange;
 
     if (newIndex >= 0 && newIndex < $page.data.questions.length) {
-      goto(getRoute({route: Route.CandAppQuestion, id: $page.data.questions[newIndex].id}));
+      goto(getRoute({route: Route.CandAppQuestions, id: $page.data.questions[newIndex].id}));
     } else {
-      goto(lastPageUrl);
+      goto(urlAfterLastQuestion);
     }
   }
 
   async function gotoNextQuestion() {
-    await navigateToQuestion(1, getRoute(Route.CandAppHome));
+    await navigateToQuestion(1, getRoute(Route.CandAppSummary));
   }
 
   async function goToPreviousQuestion() {
-    await navigateToQuestion(-1, getRoute(Route.CandAppHome));
+    await navigateToQuestion(-1, getRoute(Route.CandAppQuestions));
   }
 
   /** A temp fix for saving open answers as LocalizedStrings */

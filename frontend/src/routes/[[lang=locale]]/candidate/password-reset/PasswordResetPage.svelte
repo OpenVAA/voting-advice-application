@@ -77,7 +77,7 @@
 
     <label for="password" class="hidden">{$t('candidate.password')}</label>
     <label for="passwordConfirmation" class="hidden">{$t('candidate.password')}</label>
-    <div class="input mb-md w-full max-w-md">
+    <div class="mb-md flex w-full max-w-md flex-col gap-6">
       <PasswordField bind:password autocomplete="new-password" />
       <PasswordField bind:password={passwordConfirmation} autocomplete="new-password" />
     </div>

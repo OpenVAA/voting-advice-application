@@ -41,7 +41,7 @@ module.exports = async (plugin) => {
     const advanced = await pluginStore.get({key: 'advanced'});
     advanced.allow_register = false; // Disable registration by default
     const url = new URL(process.env.PUBLIC_FRONTEND_URL ?? 'http://localhost:5173');
-    url.pathname = '/candidate/password-reset';
+    url.pathname = '/en/candidate/password-reset';
     advanced.email_reset_password = url; // Setup correct frontend URL for password resets
     await pluginStore.set({key: 'advanced', value: advanced});
 

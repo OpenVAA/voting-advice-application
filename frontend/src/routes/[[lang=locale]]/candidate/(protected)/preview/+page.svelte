@@ -4,6 +4,7 @@
   import SingleCardPage from '$lib/templates/singleCardPage/SingleCardPage.svelte';
   import {getContext} from 'svelte';
   import type {AuthContext} from '$lib/utils/authenticationStore';
+  import LogoutButton from '$lib/candidate/components/logoutButton/LogoutButton.svelte';
 
   export let data: {
     infoQuestions: QuestionProps[];
@@ -22,6 +23,7 @@
   <span>{$t('candidateApp.preview.notFound')}</span>
 {:else}
   <SingleCardPage title={$t('candidateApp.preview.title')}>
+    <LogoutButton slot="banner" />
     <CandidateDetailsCard {candidate} {opinionQuestions} {infoQuestions} />
   </SingleCardPage>
 {/if}

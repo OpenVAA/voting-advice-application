@@ -35,6 +35,8 @@
   // get the user from authContext
   const user = get(authContext.user);
 
+  let loading = false;
+
   // get initial values for basic data
   let gender = user?.candidate?.gender;
   let motherTongues = user?.candidate?.motherTongues;
@@ -56,9 +58,12 @@
   let uploadPhoto: () => Promise<void>;
 
   const submitForm = async () => {
+    loading = true;
     try {
-      await uploadPhoto();
-      await updateBasicInfo(manifesto, birthday, gender, photo, unaffiliated, motherTongues);
+      await Promise.all([
+        uploadPhoto(),
+        updateBasicInfo(manifesto, birthday, gender, photo, unaffiliated, motherTongues)
+      ]);
 
       // Update the database-saved manifesto in order to detect changes
       savedManifesto = manifesto;
@@ -68,6 +73,8 @@
       await goto(getRoute(Route.CandAppQuestions));
     } catch (error) {
       errorMessage = $t('candidateApp.basicInfo.errorMessage');
+    } finally {
+      loading = false;
     }
   };
 
@@ -287,7 +294,7 @@
         </TextArea>
       </FieldGroup>
       <Button
-        disabled={!allFilled}
+        disabled={!allFilled || loading}
         text={$t('candidateApp.opinions.continue')}
         type="submit"
         variant="main"
