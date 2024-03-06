@@ -35,7 +35,11 @@ export function restrictPopulate(allowedPopulate: string[]): any {
       const origPopulate = query.populate;
       query.populate = filterObject(query.populate, allowedPopulate);
       if (JSON.stringify(origPopulate) !== JSON.stringify(query.populate)) {
-        console.warn(`Filtered disallowed filters: ${origPopulate} -> ${query.populate}`);
+        console.warn(
+          `Filtered disallowed filters: ${JSON.stringify(origPopulate)} -> ${JSON.stringify(
+            query.populate
+          )}`
+        );
       }
     }
 
@@ -55,7 +59,11 @@ export function restrictFilters(allowedFilters: string[]): any {
       const origFilters = query.filters;
       query.filters = filterObject(query.filters, allowedFilters);
       if (JSON.stringify(origFilters) !== JSON.stringify(query.filters)) {
-        console.warn(`Filtered disallowed filters: ${origFilters} -> ${query.filters}`);
+        console.warn(
+          `Filtered disallowed filters: ${JSON.stringify(origFilters)} -> ${JSON.stringify(
+            query.filters
+          )}`
+        );
       }
     }
 
