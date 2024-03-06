@@ -1,7 +1,7 @@
 'use strict';
 
 import candidate from './controllers/candidate';
-import {restrictPopulate} from '../../util/acl';
+import {restrictPopulate, restrictFilters} from '../../util/acl';
 
 // NOTE: Before adding permissions here, please make sure you've implemented the appropriate access control for the resource
 const defaultPermissions = [
@@ -125,7 +125,9 @@ module.exports = async (plugin) => {
         'candidate.populate.party',
         'candidate.populate.photo',
         'candidate.populate.motherTongues'
-      ])
+      ]),
+      // Disable filters by default to avoid accidentally leaking data of relations
+      restrictFilters([])
     ];
   }
 

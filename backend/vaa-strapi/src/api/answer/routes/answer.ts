@@ -3,7 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
-import { restrictResourceOwnedByCandidate, restrictPopulate } from '../../../util/acl';
+import { restrictResourceOwnedByCandidate, restrictPopulate, restrictFilters } from '../../../util/acl';
 
 export default factories.createCoreRouter('api::answer.answer', {
   only: ['find', 'findOne', 'create', 'update', 'delete'],
@@ -12,12 +12,16 @@ export default factories.createCoreRouter('api::answer.answer', {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
     create: {
@@ -26,6 +30,8 @@ export default factories.createCoreRouter('api::answer.answer', {
         'global::owned-by-candidate',
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
     update: {
@@ -36,6 +42,8 @@ export default factories.createCoreRouter('api::answer.answer', {
         'global::owned-by-candidate',
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
     delete: {
@@ -44,6 +52,8 @@ export default factories.createCoreRouter('api::answer.answer', {
         restrictResourceOwnedByCandidate('api::answer.answer'),
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
+        // Disable filters by default to avoid accidentally leaking data of relations
+        restrictFilters([]),
       ],
     },
   },
