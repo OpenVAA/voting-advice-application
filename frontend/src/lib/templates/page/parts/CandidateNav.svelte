@@ -2,8 +2,30 @@
   import {type NavigationProps, Navigation, NavGroup, NavItem} from '$lib/components/navigation';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {t} from '$lib/i18n';
+  import InfoBadge from '$lib/components/infoBadge/infoBadge.svelte';
+  import {getContext} from 'svelte';
+  import type {AnswerContext} from '$lib/utils/answerStore';
 
   type $$Props = NavigationProps;
+
+  const answerContext = getContext<AnswerContext | undefined>('answers');
+
+  const answerstoreWritable = answerContext?.answers;
+  $: answerStore = $answerstoreWritable;
+
+  const questionstoreWritable = answerContext?.questions;
+  $: questionStore = $questionstoreWritable;
+
+  let nofUnansweredQuestions = 0;
+  let loading = true;
+
+  $: {
+    if (answerStore && questionStore) {
+      nofUnansweredQuestions =
+        Object.entries(questionStore).length - Object.entries(answerStore).length;
+      loading = false;
+    }
+  }
 </script>
 
 <!--
@@ -40,7 +62,11 @@ A template part that outputs the navigation menu for the Candidate App for use i
     <NavItem
       href={getRoute(Route.CandAppSummary)}
       icon="optinion"
-      text={$t('candidateApp.navbar.yourOpinions')} />
+      text={$t('candidateApp.navbar.yourOpinions')}>
+      {#if nofUnansweredQuestions > 0 && !loading}
+        <InfoBadge text={nofUnansweredQuestions} classes="-left-8 -top-4" />
+      {/if}
+    </NavItem>
     <NavItem
       href={getRoute(Route.CandAppSettings)}
       icon="settings"

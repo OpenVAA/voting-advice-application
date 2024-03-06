@@ -13,7 +13,7 @@
   };
 
   const {opinionQuestions, infoQuestions, candidates} = data;
-  const {user}: AuthContext = getContext('auth');
+  const {user} = getContext<AuthContext>('auth');
   const candidate = candidates.find(
     (c: CandidateProps) => c.id === $user?.candidate?.id.toString()
   );

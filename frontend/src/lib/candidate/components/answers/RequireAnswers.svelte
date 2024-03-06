@@ -4,9 +4,10 @@
 
   const answerContext = getContext<AnswerContext>('answers');
   const answers = answerContext.answers;
+  const questions = answerContext.questions;
 
-  const getAnswers = async () => {
-    await answerContext.loadAnswerData();
+  const getQuestionsAndAnswers = async () => {
+    await Promise.all([answerContext.loadAnswerData(), answerContext.loadQuestionData()]);
   };
 </script>
 
@@ -27,10 +28,10 @@ Require candidate answers to be loaded to view the children of this component.
 ```
 -->
 
-{#if $answers}
+{#if $answers && $questions}
   <slot />
 {:else}
-  {#await getAnswers()}
+  {#await getQuestionsAndAnswers()}
     <span class="loading loading-spinner loading-lg" />
   {:then}
     <slot />
