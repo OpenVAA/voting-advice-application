@@ -114,3 +114,5 @@ dist
 build
 .strapi-updater.json
 data
+.strapi
+package-lock.json

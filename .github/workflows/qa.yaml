@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - qa
-      - candidate-app
     paths-ignore:
       - '**.md'
       - '**/*/.env.example'
@@ -17,7 +16,6 @@ on:
       - ready_for_review
     branches:
       - qa
-      - candidate-app
     paths-ignore:
       - '**.md'
       - '**/*/.env.example'
@@ -65,13 +63,15 @@ jobs:
     steps:
       - name: "Checkout Backend source code"
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
-      - name: Setup Node.js 16.x
+      - name: Setup Node.js 18.x
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
-          cache: "npm"
-          cache-dependency-path: ./backend/vaa-strapi/package-lock.json
+          node-version: 18.x
+          cache: "yarn"
+          cache-dependency-path: ./backend/vaa-strapi/yarn.lock
 
       - name: Cache node modules
         id: cache-npm-backend-main
@@ -80,28 +80,40 @@ jobs:
           cache-name: cache-node-modules
         with:
           path: "backend/vaa-strapi/node_modules"
-          key: ${{ runner.os }}-backend-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-backend-build-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
-      - name: "Install Backend npm dependencies"
+      - name: "Install Backend yarn dependencies"
         run: |
-          npm install
+          yarn install
 
       - name: "Run Prettier check on Backend"
         run: |
-          npm run prettier:check
+          yarn prettier:check
 
       - name: "Run ESLint on backend"
         run: |
-          npm run lint
+          yarn lint
 
       #      - name: "Run Backend tests"
       #        run: |
       #         npm run test
 
+      - name: "Install import-export-entries dependencies"
+        run: |
+          cd strapi-plugin-import-export-entries
+          yarn install
+          cd ..
+
+      - name: "Build import-export-entries"
+        run: |
+          cd strapi-plugin-import-export-entries
+          yarn build
+          cd ..
+
       - name: "Build backend"
         run: |
-          npm run build
+          yarn build
