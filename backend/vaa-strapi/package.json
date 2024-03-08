@@ -2,7 +2,7 @@
   "name": "vaa-strapi",
   "private": true,
   "version": "0.1.0",
-  "description": "A Strapi application",
+  "description": "OpenVAA Strapi Build",
   "scripts": {
     "dev": "strapi develop",
     "start": "strapi start",
@@ -35,7 +35,7 @@
     "styled-components": "^5.3.11"
   },
   "author": {
-    "name": "A Strapi developer"
+    "name": "OpenVAA"
   },
   "strapi": {
     "uuid": "bf2736db-ee20-4091-9e1e-f02ff08da6dd"

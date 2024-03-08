@@ -40,7 +40,7 @@ in the project root, add the token to the `VITE_STRAPI_TOKEN` environment variab
 ### Setting up the frontend
 
 Once the backend is set up, you may need to [stop the containers](#stop-the-containers). Once the containers are stopped
-you must run `yarn dev` or `npm run dev` again in the project root and the frontend will now be regenerated with
+you must run `yarn dev` again in the project root and the frontend will now be regenerated with
 permissions to make calls to the backend. You can access the frontend at the following URL `http://localhost:5173`.
 
 ### Hot reloading
@@ -53,13 +53,12 @@ unless doing direct development on the backend source code.
 
 ## Stop The Containers
 
-To stop the containers, you can either go back to the terminal where you ran the `yarn dev` or `npm run dev` command and
-press <kbd>command</kbd> + <kbd>c</kbd>. Another option is to open a new terminal and run `yarn dev:down` or 
-`npm run dev:down` in the project root folder. This will stop all services associated with a Docker Compose configuration.
+To stop the containers, you can either go back to the terminal where you ran the `yarn dev` command and
+press <kbd>command</kbd> + <kbd>c</kbd>. Another option is to open a new terminal and run `yarn dev:down` in the project root folder. This will stop all services associated with a Docker Compose configuration.
 
 # Creating a production build of the application
 ## Build from Dockerimage
-Run `npm run prod` in the project root. This will create a production-ready build of the app in Docker and create containers
+Run `yarn prod` in the project root. This will create a production-ready build of the app in Docker and create containers
 for both backend and frontend which are ready to use by themselves. Frontend is accessible from port 80 by default.
 
 ## Building the frontend separately
@@ -71,5 +70,5 @@ will use port 3000 by default.
 Don't forget to run `yarn install --production` before starting the frontend.
 
 ## Building the backend separately
-To build the backend separately, run `npm run build` and `npm run start` in the `backend/vaa-strapi` directory. 
+To build the backend separately, run `yarn build` and `yarn start` in the `backend/vaa-strapi` directory. 
 This will build Strapi and start it in port 1337.

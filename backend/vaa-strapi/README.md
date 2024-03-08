@@ -3,18 +3,18 @@
 ## Running the backend separately
 
 0. You should be running Strapi with Node version 16.18.0. Use of nvm is encouraged. **Additionally, you need Docker!**
-1. Install dependencies by running `yarn install` or `npm install`
+1. Install dependencies by running `yarn install`.
 2. Copy or rename the `.env.example` to `.env` before running any of the commands. You should be able to run the Strapi
-   instance with either `npm run start` or `npm run dev`.
+   instance with either `yarn start` or `yarn dev`.
 3. Make sure to run `docker-compose up` to start the Postgres container.
-4. Run `yarn dev` or `npm run dev` to run the Strapi server.
+4. Run `yarn dev` to run the Strapi server.
 
 A base "Election" Content-Type has been created to play around initially. Please feel free to extend/change it or add
 additional Content-Types.
 
 ## Re-generating Types
 
-Run `npm run strapi ts:generate-types` to re-generate `types` folder.
+Run `yarn strapi ts:generate-types` to re-generate `types` folder.
 
 ## Mock data
 
@@ -48,8 +48,6 @@ Strapi comes with a fully featured [Command Line Interface](https://docs.strapi.
 Start your Strapi application with auto-reload enabled. [Learn more](https://docs.strapi.io/developer-docs/latest/developer-resources/cli/CLI.html#strapi-develop)
 
 ```
-npm run dev
-# or
 yarn dev
 ```
 
@@ -58,8 +56,6 @@ yarn dev
 Start your Strapi application with auto-reload disabled. [Learn more](https://docs.strapi.io/developer-docs/latest/developer-resources/cli/CLI.html#strapi-start)
 
 ```
-npm run start
-# or
 yarn start
 ```
 
@@ -68,8 +64,6 @@ yarn start
 Build your admin panel. [Learn more](https://docs.strapi.io/developer-docs/latest/developer-resources/cli/CLI.html#strapi-build)
 
 ```
-npm run build
-# or
 yarn build
 ```
 
