@@ -149,7 +149,7 @@ export const changePassword = async (currentPassword: string, password: string) 
 export const getLikertQuestions = async (): Promise<Record<string, Question> | undefined> => {
   const res = await request(
     getUrl('api/questions', {
-      populate: 'questionType',
+      'populate[questionType]': 'true',
       'filters[questionType][name][$startsWith]': 'Likert'
     })
   );
