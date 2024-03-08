@@ -10,7 +10,6 @@ services:
     environment:
       - VITE_BACKEND_URL=${VITE_BACKEND_URL}
       - PUBLIC_BACKEND_URL=${PUBLIC_BACKEND_URL}
-      - VITE_STRAPI_TOKEN=${VITE_STRAPI_TOKEN}
   strapi:
     extends:
       file: ./backend/vaa-strapi/docker-compose.yml
