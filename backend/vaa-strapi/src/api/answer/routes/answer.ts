@@ -11,17 +11,27 @@ export default factories.createCoreRouter('api::answer.answer', {
     find: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([]),
+        restrictPopulate([
+          'question.populate.category',
+        ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
+        restrictFilters([
+          'candidate.id.$eq',
+          'question.category.type.$eq',
+        ]),
       ],
     },
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([]),
+        restrictPopulate([
+          'question.populate.category',
+        ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
+        restrictFilters([
+          'candidate.id.$eq',
+          'question.category.type.$eq',
+        ]),
       ],
     },
     create: {
@@ -29,9 +39,14 @@ export default factories.createCoreRouter('api::answer.answer', {
         // Enforce ownership to always belong to the candidate
         'global::owned-by-candidate',
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([]),
+        restrictPopulate([
+          'question.populate.category',
+        ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
+        restrictFilters([
+          'candidate.id.$eq',
+          'question.category.type.$eq',
+        ]),
       ],
     },
     update: {
@@ -41,9 +56,14 @@ export default factories.createCoreRouter('api::answer.answer', {
         // Enforce ownership to always belong to the candidate
         'global::owned-by-candidate',
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([]),
+        restrictPopulate([
+          'question.populate.category',
+        ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
+        restrictFilters([
+          'candidate.id.$eq',
+          'question.category.type.$eq',
+        ]),
       ],
     },
     delete: {
@@ -51,9 +71,14 @@ export default factories.createCoreRouter('api::answer.answer', {
         // Allow only deleting candidate's own resource
         restrictResourceOwnedByCandidate('api::answer.answer'),
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([]),
+        restrictPopulate([
+          'question.populate.category',
+        ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
+        restrictFilters([
+          'candidate.id.$eq',
+          'question.category.type.$eq',
+        ]),
       ],
     },
   },
