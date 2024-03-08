@@ -8,12 +8,16 @@
     "RankingProps": "writable"
   },
   "parser": "@typescript-eslint/parser",
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
-  "plugins": ["svelte3", "@typescript-eslint"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier",
+    "plugin:svelte/recommended"
+  ],
+  "plugins": ["@typescript-eslint"],
   "ignorePatterns": ["*.cjs", "ios/*", "android/*"],
-  "overrides": [{"files": ["*.svelte"], "processor": "svelte3/svelte3"}],
   "settings": {
-    "svelte3/typescript": true
+    "svelte/typescript": true
   },
   "parserOptions": {
     "sourceType": "module",
@@ -28,6 +32,7 @@
   "rules": {
     "no-console": ["error", {"allow": ["warn", "error", "info"]}],
     "no-undef": "off",
-    "quotes": ["error", "single", {"avoidEscape": true, "allowTemplateLiterals": false}]
+    "quotes": ["error", "single", {"avoidEscape": true, "allowTemplateLiterals": false}],
+    "@typescript-eslint/no-duplicate-enum-values": "off"
   }
 }

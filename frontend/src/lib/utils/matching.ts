@@ -91,7 +91,7 @@ export const matchCandidates = function matchCandidates(
         ({
           label: c,
           matchableQuestions: Object.values(questions).filter((q) => q.category === c)
-        } as HasMatchableQuestions)
+        }) as HasMatchableQuestions
     )
   };
 
@@ -123,7 +123,10 @@ class LikertQuestion extends MultipleChoiceQuestion {
  * A dummy candidate object for matching.
  */
 class Person implements HasMatchableAnswers {
-  constructor(public readonly id: string, public answers: MatchableAnswer[] = []) {}
+  constructor(
+    public readonly id: string,
+    public answers: MatchableAnswer[] = []
+  ) {}
 
   getMatchableAnswerValue(question: MatchableQuestion): MatchableValue {
     for (const answer of this.answers) {
