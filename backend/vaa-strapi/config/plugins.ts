@@ -17,6 +17,7 @@ export default ({env}) => ({
     }
   },
   'import-export-entries': {
-    enabled: true
+    enabled: true,
+    resolve: './strapi-plugin-import-export-entries'
   }
 });

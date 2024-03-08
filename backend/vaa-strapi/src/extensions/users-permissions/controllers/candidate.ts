@@ -86,7 +86,8 @@ module.exports = {
     }
 
     const pluginStore = await strapi.store({type: 'plugin', name: 'users-permissions'});
-    const settings = await pluginStore.get({key: 'advanced'});
+    const settings: any = await pluginStore.get({key: 'advanced'});
+
     const role = await strapi
       .query('plugin::users-permissions.role')
       .findOne({where: {type: settings.default_role}});

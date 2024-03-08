@@ -23,8 +23,8 @@ Source: [Remarkablemark](https://remarkablemark.org/blog/2021/08/05/docker-error
 
 Note also that there are two commands that can be used to stop the containers:
 
-1. `npm run dev:down`: This command will remove the unused volumes
-2. `npm run dev:stop`: This command stops the containers but keeps the volumes
+1. `yarn dev:down`: This command will remove the unused volumes
+2. `yarn dev:stop`: This command stops the containers but keeps the volumes
 
 ## Docker error: Load metadata for docker.io/library/node:foo
 

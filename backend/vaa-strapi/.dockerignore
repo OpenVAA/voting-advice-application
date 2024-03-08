@@ -1,2 +1,15 @@
 node_modules/
 .cache/
+.tmp/
+dist/
+data/
+tests/
+strapi-plugin-import-export-entries/node_modules/
+.gitignore
+.prettierignore
+.prettierrc
+.eslintignore
+.eslintrc.json
+.lintstagedrc.json
+jest.config.json
+.editorconfig
