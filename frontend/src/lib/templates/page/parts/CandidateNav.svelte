@@ -1,12 +1,10 @@
 <script lang="ts">
-  import {type NavigationProps, Navigation, NavGroup, NavItem} from '$lib/components/navigation';
+  import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {t} from '$lib/i18n';
   import InfoBadge from '$lib/components/infoBadge/infoBadge.svelte';
   import {getContext} from 'svelte';
   import type {AnswerContext} from '$lib/utils/answerStore';
-
-  type $$Props = NavigationProps;
 
   const answerContext = getContext<AnswerContext | undefined>('answers');
 

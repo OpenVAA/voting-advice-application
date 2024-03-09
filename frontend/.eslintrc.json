@@ -8,20 +8,30 @@
     "RankingProps": "writable"
   },
   "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "extraFileExtensions": [".svelte"], // This is a required setting in `@typescript-eslint/parser` v4.24.0.
+    "sourceType": "module",
+    "ecmaVersion": 2020
+  },
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "prettier",
-    "plugin:svelte/recommended"
+    "plugin:svelte/prettier"
   ],
   "plugins": ["@typescript-eslint"],
   "ignorePatterns": ["*.cjs", "ios/*", "android/*"],
+  "overrides": [
+    {
+      "files": ["*.svelte"],
+      "parser": "svelte-eslint-parser",
+      "parserOptions": {
+        "parser": "@typescript-eslint/parser"
+      }
+    }
+  ],
   "settings": {
     "svelte/typescript": true
-  },
-  "parserOptions": {
-    "sourceType": "module",
-    "ecmaVersion": 2020
   },
   "env": {
     "browser": true,
