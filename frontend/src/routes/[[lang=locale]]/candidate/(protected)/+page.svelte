@@ -19,5 +19,5 @@
     slot="primaryActions"
     text={$t('candidateApp.homePage.buttonText')}
     icon="next"
-    href={getRoute(Route.CandAppProfile)} />
+    href={$getRoute(Route.CandAppProfile)} />
 </BasicPage>

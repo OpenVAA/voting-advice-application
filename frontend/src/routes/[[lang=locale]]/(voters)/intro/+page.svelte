@@ -35,7 +35,7 @@
 
   <svelte:fragment slot="primaryActions">
     <Button
-      href={getRoute(Route.Questions)}
+      href={$getRoute(Route.Questions)}
       variant="main"
       icon="next"
       text={$t('intro.continue')} />

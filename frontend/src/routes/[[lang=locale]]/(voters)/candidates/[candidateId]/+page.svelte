@@ -19,7 +19,7 @@
     class="!text-neutral"
     variant="icon"
     icon="close"
-    href={getRoute(Route.Candidates)}
+    href={$getRoute(Route.Candidates)}
     text={$t('header.back')} />
   <CandidateDetailsCard {candidate} opinionQuestions={questions} {infoQuestions} />
 </SingleCardPage>

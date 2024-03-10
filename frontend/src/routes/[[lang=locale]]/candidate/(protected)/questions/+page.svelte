@@ -6,7 +6,7 @@
   import {Icon} from '$lib/components/icon';
   import {BasicPage} from '$lib/templates/basicPage';
 
-  const firstQuestionUrl = getRoute({
+  const firstQuestionUrl = $getRoute({
     route: Route.CandAppQuestions,
     id: $page.data.questions[0].id
   });

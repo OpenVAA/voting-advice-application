@@ -32,7 +32,7 @@
   const logout = async () => {
     await authContext.logOut();
     closeModal();
-    await goto(getRoute(Route.CandAppHome));
+    await goto($getRoute(Route.CandAppHome));
   };
 </script>
 

@@ -70,7 +70,7 @@
       manifestoTextArea.deleteLocal();
 
       await loadUserData(); // reload user data so it's up to date
-      await goto(getRoute(Route.CandAppQuestions));
+      await goto($getRoute(Route.CandAppQuestions));
     } catch (error) {
       errorMessage = $t('candidateApp.basicInfo.errorMessage');
     } finally {

@@ -12,7 +12,7 @@
   export let wrongCode = false;
 
   const onRegistration = async () => {
-    await goto(getRoute({route: Route.CandAppRegister, params: {registrationCode}}));
+    await goto($getRoute({route: Route.CandAppRegister, params: {registrationCode}}));
   };
 </script>
 
@@ -62,8 +62,8 @@ registrationCode
       </p>
     {/if}
     <Button type="submit" text={$t('candidateApp.registration.registerButton')} variant="main" />
-    <Button href={getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
-    <Button href={getRoute(Route.Home)} text={$t('candidate.election_compass_for_voters')} />
+    <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
+    <Button href={$getRoute(Route.Home)} text={$t('candidate.election_compass_for_voters')} />
   </form>
 
   <Footer slot="footer" />

@@ -17,7 +17,7 @@
     class="!text-neutral"
     variant="icon"
     icon="close"
-    href={getRoute(Route.Parties)}
+    href={$getRoute(Route.Parties)}
     text={$t('header.back')} />
 
   <article>
@@ -30,7 +30,7 @@
           <ul>
             {#each party.nominatedCandidates as { firstName, lastName, id }}
               <li>
-                <a href={getRoute({route: Route.Candidate, id})}>
+                <a href={$getRoute({route: Route.Candidate, id})}>
                   {GetFullNameInOrder(firstName, lastName)}
                 </a>
               </li>

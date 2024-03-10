@@ -16,9 +16,9 @@
     <LogoutButton variantIcon={false} />
     <Button
       text={$t('candidateApp.allDataFilled.previewYourProfile')}
-      href={getRoute(Route.CandAppPreview)} />
+      href={$getRoute(Route.CandAppPreview)} />
     <Button
       text={$t('candidateApp.allDataFilled.editYourOpinions')}
-      href={getRoute(Route.CandAppSummary)} />
+      href={$getRoute(Route.CandAppSummary)} />
   </svelte:fragment>
 </BasicPage>

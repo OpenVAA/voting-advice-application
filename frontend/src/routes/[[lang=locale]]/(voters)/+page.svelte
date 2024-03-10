@@ -3,6 +3,7 @@
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {resetLocalStorage} from '$lib/utils/stores';
+  import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {OpenVAALogo} from '$lib/components/openVAALogo';
   import {FrontPage} from '$lib/templates/frontPage';
@@ -22,13 +23,14 @@
     })}
   </p>
 
-  <a
-    href={getRoute(Route.Intro)}
+  <Button
+    variant="main"
+    href={$getRoute(Route.Intro)}
     on:click={resetLocalStorage}
-    class="btn btn-primary mb-md w-full max-w-md">{$t('actionLabels.startButton')}</a>
-  <a href={getRoute(Route.Info)} class="btn btn-ghost w-full max-w-md"
+    text={$t('actionLabels.startButton')} />
+  <a href={$getRoute(Route.Info)} class="btn btn-ghost w-full max-w-md"
     >{$t('actionLabels.electionInfo')}</a>
-  <a href={getRoute(Route.About)} class="btn btn-ghost w-full max-w-md"
+  <a href={$getRoute(Route.About)} class="btn btn-ghost w-full max-w-md"
     >{$t('actionLabels.howItWorks')}</a>
 
   <svelte:fragment slot="footer">

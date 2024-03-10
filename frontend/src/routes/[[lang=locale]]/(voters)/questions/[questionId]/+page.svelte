@@ -69,8 +69,8 @@
   function gotoNextQuestion() {
     let url =
       questionIndex < questions.length - 1
-        ? getRoute({route: Route.Question, id: questions[questionIndex + 1].id})
-        : getRoute(Route.Results);
+        ? $getRoute({route: Route.Question, id: questions[questionIndex + 1].id})
+        : $getRoute(Route.Results);
     goto(url);
   }
 
@@ -81,8 +81,8 @@
   function gotoPreviousQuestion() {
     let url =
       questionIndex > 0
-        ? getRoute({route: Route.Question, id: questions[questionIndex - 1].id})
-        : getRoute(Route.Questions);
+        ? $getRoute({route: Route.Question, id: questions[questionIndex - 1].id})
+        : $getRoute(Route.Questions);
     goto(url);
   }
 </script>
@@ -98,13 +98,13 @@
       progress={questionIndex + 1}>
       <svelte:fragment slot="banner">
         <Button
-          href={getRoute(Route.Results)}
+          href={$getRoute(Route.Results)}
           disabled={$resultsAvailable ? null : true}
           variant="icon"
           icon="results"
           text={$t('actionLabels.results')} />
         <Button
-          href={getRoute(Route.Help)}
+          href={$getRoute(Route.Help)}
           variant="icon"
           icon="help"
           text={$t('actionLabels.help')} />

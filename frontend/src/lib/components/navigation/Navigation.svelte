@@ -35,12 +35,12 @@ Create navigation menus for the application in a predefined style.
 ```tsx
 <Navigation aria-label="Main navigation" on:keyboardFocusOut={closeDrawer}>
   <NavGroup>
-    <NavItem href={getRoute(Route.Info)} icon="info">Show info</NavItem>
+    <NavItem href={$getRoute(Route.Info)} icon="info">Show info</NavItem>
     <NavItem on:click={(e) => foo(e)}>Do foo</NavItem>
     <div>Some other content</div>
   </NavGroup>
   <NavGroup>
-    <NavItem href={getRoute(Route.Help)} icon="help">Show help</NavItem>
+    <NavItem href={$getRoute(Route.Help)} icon="help">Show help</NavItem>
   </NavGroup>
 </Navigation>
 ```

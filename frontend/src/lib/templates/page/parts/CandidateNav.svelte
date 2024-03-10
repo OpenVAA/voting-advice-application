@@ -50,44 +50,47 @@ A template part that outputs the navigation menu for the Candidate App for use i
   <slot />
   <NavGroup>
     <NavItem
-      href={getRoute(Route.CandAppHome)}
+      href={$getRoute(Route.CandAppHome)}
       icon="home"
       text={$t('candidateApp.navbar.start')} />
     <NavItem
-      href={getRoute(Route.CandAppProfile)}
+      href={$getRoute(Route.CandAppProfile)}
       icon="profile"
       text={$t('candidateApp.navbar.basicInfo')} />
     <NavItem
-      href={getRoute(Route.CandAppSummary)}
-      icon="optinion"
+      href={$getRoute(Route.CandAppSummary)}
+      icon="opinion"
       text={$t('candidateApp.navbar.yourOpinions')}>
       {#if nofUnansweredQuestions > 0 && !loading}
         <InfoBadge text={nofUnansweredQuestions} classes="-left-8 -top-4" />
       {/if}
     </NavItem>
     <NavItem
-      href={getRoute(Route.CandAppSettings)}
+      href={$getRoute(Route.CandAppSettings)}
       icon="settings"
       text={$t('candidateApp.navbar.settings')} />
     <NavItem
-      href={getRoute(Route.CandAppPreview)}
+      href={$getRoute(Route.CandAppPreview)}
       icon="previewProfile"
       text={$t('candidateApp.navbar.preview')} />
-    <NavItem href={getRoute(Route.CandAppHelp)} icon="help" text={$t('candidateApp.navbar.help')} />
+    <NavItem
+      href={$getRoute(Route.CandAppHelp)}
+      icon="help"
+      text={$t('candidateApp.navbar.help')} />
   </NavGroup>
   <NavGroup>
     <NavItem
-      href={getRoute(Route.CandAppInfo)}
+      href={$getRoute(Route.CandAppInfo)}
       icon="info"
       text={$t('candidateApp.navbar.electionInformation')} />
     <NavItem
-      href={getRoute(Route.CandAppFAQ)}
+      href={$getRoute(Route.CandAppFAQ)}
       icon="info"
       text={$t('candidateApp.navbar.useInformation')} />
   </NavGroup>
   <NavGroup>
     <NavItem
-      href={getRoute(Route.CandAppFeedback)}
+      href={$getRoute(Route.CandAppFeedback)}
       icon="feedback"
       text={$t('candidateApp.navbar.feedback')} />
   </NavGroup>

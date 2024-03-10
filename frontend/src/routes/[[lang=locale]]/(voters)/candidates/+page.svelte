@@ -40,7 +40,7 @@
     aria-label={$t('candidates.candidates')}>
     {#each data.candidates as { id, firstName, lastName, party, electionSymbol }, i}
       <EntityCard
-        on:click={() => goto(getRoute({route: Route.Candidate, id}))}
+        on:click={() => goto($getRoute({route: Route.Candidate, id}))}
         ariaPosinset={i + 1}
         ariaSetsize={data.candidates.length}
         title={GetFullNameInOrder(firstName, lastName)}

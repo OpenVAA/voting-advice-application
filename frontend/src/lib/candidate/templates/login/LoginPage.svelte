@@ -72,9 +72,9 @@ Candidate login page. This component also takes care of the login process.
       <p class="text-center text-error">{$t('candidate.wrong_email_or_password')}</p>
     {/if}
     <Button type="submit" text={$t('candidate.sign_in_button')} variant="main" />
-    <Button href={getRoute(Route.CandAppForgotPassword)} text={$t('candidate.forgot_password')} />
-    <Button href={getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
-    <Button href={getRoute(Route.Home)} text={$t('candidate.election_compass_for_voters')} />
+    <Button href={$getRoute(Route.CandAppForgotPassword)} text={$t('candidate.forgot_password')} />
+    <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
+    <Button href={$getRoute(Route.Home)} text={$t('candidate.election_compass_for_voters')} />
   </form>
 
   <Footer slot="footer" />
