@@ -14,6 +14,7 @@ const keys = [
   'footer',
   'header',
   'intro',
+  'navigation',
   'parties',
   'questions',
   'results',

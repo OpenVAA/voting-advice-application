@@ -3,6 +3,7 @@
   import {getRoute, Route} from '$lib/utils/navigation';
   import {resultsAvailable} from '$lib/utils/stores';
   import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
+  import LanguageSelection from './LanguageSelection.svelte';
 </script>
 
 <!--
@@ -51,4 +52,5 @@ A template part that outputs the navigation menu for the Voter App for use in th
     <NavItem href={$getRoute(Route.Info)} icon="info" text={$t('actionLabels.electionInfo')} />
     <NavItem href={$getRoute(Route.About)} icon="info" text={$t('actionLabels.howItWorks')} />
   </NavGroup>
+  <LanguageSelection />
 </Navigation>
