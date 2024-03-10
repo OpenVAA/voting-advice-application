@@ -40,7 +40,7 @@
     }
 
     errorMessage = '';
-    await goto(getRoute(Route.CandAppHome));
+    await goto($getRoute(Route.CandAppHome));
   };
 </script>
 
@@ -93,7 +93,7 @@
       disabled={disableSetButton}
       text={$t('candidateApp.setPassword.setPassword')} />
 
-    <Button href={getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
+    <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
   </form>
 
   <svelte:fragment slot="footer"><Footer /></svelte:fragment>

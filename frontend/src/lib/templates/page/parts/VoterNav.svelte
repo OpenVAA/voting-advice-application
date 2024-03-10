@@ -32,21 +32,23 @@ A template part that outputs the navigation menu for the Voter App for use in th
 <Navigation slot="nav" on:keyboardFocusOut {...$$restProps}>
   <slot />
   <NavGroup>
-    <NavItem href={getRoute(Route.Home)} icon="home" text={$t('actionLabels.home')} />
-    <NavItem href={getRoute(Route.Questions)} icon="opinion" text={$t('actionLabels.opinions')} />
-    {#if $resultsAvailable}
-      <NavItem href={getRoute(Route.Results)} icon="results" text={$t('actionLabels.results')} />
-    {/if}
+    <NavItem href={$getRoute(Route.Home)} icon="home" text={$t('actionLabels.home')} />
+    <NavItem href={$getRoute(Route.Questions)} icon="opinion" text={$t('actionLabels.opinions')} />
+    <NavItem
+      href={$getRoute(Route.Results)}
+      icon="results"
+      text={$t('actionLabels.results')}
+      disabled={!$resultsAvailable} />
   </NavGroup>
   <NavGroup>
     <NavItem
-      href={getRoute(Route.Candidates)}
+      href={$getRoute(Route.Candidates)}
       icon="candidates"
       text={$t('candidates.viewAllCandidates')} />
-    <NavItem href={getRoute(Route.Parties)} icon="party" text={$t('parties.viewAllParties')} />
+    <NavItem href={$getRoute(Route.Parties)} icon="party" text={$t('parties.viewAllParties')} />
   </NavGroup>
   <NavGroup>
-    <NavItem href={getRoute(Route.Info)} icon="info" text={$t('actionLabels.electionInfo')} />
-    <NavItem href={getRoute(Route.About)} icon="info" text={$t('actionLabels.howItWorks')} />
+    <NavItem href={$getRoute(Route.Info)} icon="info" text={$t('actionLabels.electionInfo')} />
+    <NavItem href={$getRoute(Route.About)} icon="info" text={$t('actionLabels.howItWorks')} />
   </NavGroup>
 </Navigation>

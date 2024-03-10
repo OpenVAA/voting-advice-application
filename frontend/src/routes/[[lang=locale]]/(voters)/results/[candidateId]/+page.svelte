@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {GetFullNameInOrder} from '$lib/utils/internationalisation';
-  import {Route, getRoute} from '$lib/utils/navigation';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import {candidateRankings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {CandidateDetailsCard} from '$lib/components/candidates';
@@ -43,7 +43,7 @@
     class="!text-neutral"
     variant="icon"
     icon="close"
-    href={getRoute(Route.Results)}
+    href={$getRoute(Route.Results)}
     text={$t('header.back')} />
   {#if candidate}
     <CandidateDetailsCard {candidate} {ranking} opinionQuestions={questions} {infoQuestions} />

@@ -16,7 +16,7 @@
   onMount(() => {
     if ($candidateRankings?.length === 0) {
       logDebugError('No candidate rankings found. Redirecting to questions');
-      goto(getRoute(Route.Questions));
+      goto($getRoute(Route.Questions));
     }
   });
 </script>
@@ -32,7 +32,11 @@
   </svelte:fragment>
 
   <svelte:fragment slot="banner">
-    <Button href={getRoute(Route.Help)} variant="icon" icon="help" text={$t('actionLabels.help')} />
+    <Button
+      href={$getRoute(Route.Help)}
+      variant="icon"
+      icon="help"
+      text={$t('actionLabels.help')} />
     <Button
       on:click={() => console.info('Show favourites')}
       variant="icon"
@@ -57,7 +61,7 @@
     aria-label={$t('candidates.candidates')}>
     {#each $candidateRankings as { match, candidate }, i}
       <EntityCard
-        on:click={() => goto(getRoute({route: Route.Result, id: candidate.id}))}
+        on:click={() => goto($getRoute({route: Route.Result, id: candidate.id}))}
         ariaPosinset={i + 1}
         ariaSetsize={$candidateRankings.length}
         tabindex={0}

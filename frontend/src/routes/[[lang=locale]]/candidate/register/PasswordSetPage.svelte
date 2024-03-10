@@ -50,7 +50,7 @@
 
     emailOfNewUserStore.set(email);
     errorMessage = '';
-    goto(getRoute(Route.CandAppHome));
+    goto($getRoute(Route.CandAppHome));
   };
 </script>
 
@@ -110,7 +110,7 @@ Page where candidates can set their password when logging to the app for the fir
       variant="main"
       text={$t('candidateApp.setPassword.setPassword')} />
 
-    <Button href={getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
+    <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
   </form>
 
   <Footer slot="footer" />

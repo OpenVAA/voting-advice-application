@@ -9,7 +9,7 @@
 
   async function checkParam() {
     if (!codeParam) {
-      await goto(getRoute(Route.CandAppHome));
+      await goto($getRoute(Route.CandAppHome));
       return;
     }
     code = codeParam;

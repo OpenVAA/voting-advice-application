@@ -34,7 +34,7 @@
     aria-label={$t('parties.parties')}>
     {#each data.parties as { id, name, shortName }, i}
       <EntityCard
-        on:click={() => goto(getRoute({route: Route.Party, id}))}
+        on:click={() => goto($getRoute({route: Route.Party, id}))}
         ariaPosinset={i + 1}
         ariaSetsize={data.parties.length}
         title={name}

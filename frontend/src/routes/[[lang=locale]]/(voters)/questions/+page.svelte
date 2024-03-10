@@ -7,7 +7,7 @@
   import {Icon} from '$lib/components/icon';
   import {BasicPage} from '$lib/templates/basicPage';
 
-  const firstQuestionUrl = getRoute({route: Route.Question, id: $page.data.questions[0].id});
+  const firstQuestionUrl = $getRoute({route: Route.Question, id: $page.data.questions[0].id});
 
   const questionCategories = new Set<string>();
   $page.data.questions.forEach((question) => {
@@ -31,7 +31,11 @@
   </svelte:fragment>
 
   <svelte:fragment slot="banner">
-    <Button href={getRoute(Route.Help)} variant="icon" icon="help" text={$t('actionLabels.help')} />
+    <Button
+      href={$getRoute(Route.Help)}
+      variant="icon"
+      icon="help"
+      text={$t('actionLabels.help')} />
   </svelte:fragment>
 
   <p class="text-center">

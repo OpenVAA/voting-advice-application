@@ -107,7 +107,7 @@ the rendering of an empty `<figure>` element even if there's no content.
     </p>
     
     <svelte:fragment slot="primaryActions">
-      <Button href={getRoute(Route.Foo)} variant="main" icon="next" text="Continue"/>
+      <Button href={$getRoute(Route.Foo)} variant="main" icon="next" text="Continue"/>
     </svelte:fragment>
     
   </BasicPage>

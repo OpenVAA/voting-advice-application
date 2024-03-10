@@ -164,7 +164,7 @@
       (question) => answerStore && Object.keys(answerStore).includes(question.id.toString())
     );
     if (!allAnsweredBefore && allAnsweredAfter) {
-      goto(getRoute(Route.CandAppReady));
+      goto($getRoute(Route.CandAppReady));
       return;
     }
 
@@ -172,18 +172,18 @@
     const newIndex = currentIndex + indexChange;
 
     if (newIndex >= 0 && newIndex < $page.data.questions.length) {
-      goto(getRoute({route: Route.CandAppQuestions, id: $page.data.questions[newIndex].id}));
+      goto($getRoute({route: Route.CandAppQuestions, id: $page.data.questions[newIndex].id}));
     } else {
       goto(urlAfterLastQuestion);
     }
   }
 
   async function gotoNextQuestion() {
-    await navigateToQuestion(1, getRoute(Route.CandAppSummary));
+    await navigateToQuestion(1, $getRoute(Route.CandAppSummary));
   }
 
   async function goToPreviousQuestion() {
-    await navigateToQuestion(-1, getRoute(Route.CandAppQuestions));
+    await navigateToQuestion(-1, $getRoute(Route.CandAppQuestions));
   }
 
   /** A temp fix for saving open answers as LocalizedStrings */
