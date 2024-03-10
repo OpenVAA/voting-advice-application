@@ -1,5 +1,9 @@
-import {isLocale} from '$lib/i18n/utils';
+import {locales} from '$lib/i18n';
+import {matchLocale} from '$lib/i18n/utils';
 
-export function match(param) {
-  return isLocale(param);
+/**
+ * Only supported locales are valid `locale` params.
+ */
+export function match(param: string) {
+  return locales && matchLocale(param, locales.get()) != null;
 }

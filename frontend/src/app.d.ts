@@ -4,6 +4,7 @@
 declare namespace App {
   interface Locals {
     currentLocale: string;
+    route: string;
     preferredLocale?: string;
   }
   interface PageData {
@@ -23,7 +24,6 @@ declare namespace App {
       currentLocale: string;
       preferredLocale?: string;
       route: string;
-      translations: unknown;
     };
   }
   // interface Error {}
