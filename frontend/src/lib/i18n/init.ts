@@ -21,9 +21,7 @@ const localeMatches: Record<string, string> = {};
 // 1. Load supported locales
 /////////////////////////////////////////////////////
 
-// NB. Because getData is only available on the server side,
-// we have to use a local settings file for supported languages.
-// See README.md for another solution.
+// NB. Because getData is only available on the server side, we have to use a local settings file for supported languages. See README.md for another solution.
 
 if (!dbLocaleProps?.length) {
   initError = 'Could not load supported locales from settings';
@@ -41,8 +39,7 @@ if (!dbLocaleProps?.length) {
   }
 }
 
-// If we got locales from the database, build a map of locale matches between
-// database locales and static ones (e.g. 'en-UK' => 'en')
+// If we got locales from settings, build a map of locale matches between database locales and static ones (e.g. 'en-UK' => 'en')
 const staticDefaultLocale = Object.keys(staticTranslations)[0];
 if (dbLocales.length) {
   for (const l of dbLocales)
@@ -67,9 +64,7 @@ for (const dbLoc in localeMatches) {
 }
 
 const config: Config<TranslationsPayload> = {
-  // log: {
-  //   level: import.meta.env.DEV ? 'debug' : 'warn'
-  // },
+  // log: { level: import.meta.env.DEV ? 'debug' : 'warn' },
   parser: parser(),
   // Add language names as default translations for all locales under the 'lang' key
   translations: Object.fromEntries(Object.keys(localeMatches).map((l) => [l, {lang: langNames}])),
@@ -92,8 +87,7 @@ const config: Config<TranslationsPayload> = {
 const i18n = new I18n(config);
 
 /**
- * A store providing the translate function wrapped in a try block because
- * intl-messageformat throws an error if it encounters a malformed message string.
+ * A store providing the translate function wrapped in a try block because `intl-messageformat` throws an error if it encounters a malformed message string.
  * @param key The key to translate.
  * @param payload A record of values to replace in the message.
  * @returns The translated and interpolated string or `key` if there was an error.
@@ -128,9 +122,24 @@ export {defaultLocale};
 // 4. Utility function exports
 /////////////////////////////////////////////////////
 
+const dynamicTranslationsAdded: Record<string, boolean> = {};
+
 /**
- * Parse a message with supplied values using the international message (or ICU) format.
- * See https://formatjs.io/docs/intl-messageformat/
+ * Add dynamic translations to the i18n with this method so that they will only be added once per locale.
+ * @param loc The locale to which add the translations.
+ * @param translations The translations
+ */
+export function addDynamicTranslations(
+  loc: string,
+  translations: Parameters<typeof addTranslations>[0]
+) {
+  if (dynamicTranslationsAdded[loc]) return;
+  addTranslations({[loc]: translations});
+  dynamicTranslationsAdded[loc] = true;
+}
+
+/**
+ * Parse a message with supplied values using the international message (or ICU) format. See https://formatjs.io/docs/intl-messageformat/
  *
  * @example {
  *  "plural": "You have {value, plural, =0 {no photos.} =1 {one photo.} other {# photos.}}",
