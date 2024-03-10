@@ -13,6 +13,7 @@
   export let validPassword = false;
 
   $: disableSetButton = validPassword && password2.length > 0;
+  //dispatcher used for a function that calls the submit button's function in parent component
   const dispatch = createEventDispatcher();
   export function ButtonPressed() {
     dispatch('ButtonPressed');
@@ -30,7 +31,8 @@ a second confirmation password input field, a button for submitting the password
 - `password2` : variable the second password input box uses for its value
 - `autoComplete1` : variable used for first field's password autocomplete value
 - `autoComplete2` : variable used for second field's password autocomplete value
-
+- `errorMessage` : message showing error if one exists
+- `validPassword` : variable used to determine if the password combination is valid
 
 ### Usage
 
