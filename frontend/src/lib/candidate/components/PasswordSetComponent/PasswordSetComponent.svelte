@@ -21,19 +21,29 @@
 
 <!--
 @component
-PasswordField is an input box for password that comes with a button
-to reveal and hide the password
+PasswordSetComponent is a component used by PasswordSetPage and PasswordResetPage, that contains a password input field,
+a second confirmation password input field, a button for submitting the password, a button to contact support and informatory text
 
 ### Properties
 
-- `autoComplete` : variable used for field's password autocomplete value
-- `password` : variable the password input box uses for its value
+- `password1` : variable the first password input box uses for its value
+- `password2` : variable the second password input box uses for its value
+- `autoComplete1` : variable used for first field's password autocomplete value
+- `autoComplete2` : variable used for second field's password autocomplete value
+
 
 ### Usage
 
 ```tsx
 
-<PasswordSetComponent bind:password1={passwordOfContext1} bind:password2={passwordOfContext2} autocomplete1="autocomplete1" autocomplete2="autocomplete2" />
+<PasswordSetComponent
+bind:password1={passwordOfContext1}
+bind:password2={passwordOfContext2}
+autocomplete1="autocomplete1"
+autocomplete2="autocomplete2"
+on:ButtonPressed={onSetButtonPressed}
+bind:validPassword={validPasswordOfContext}
+bind:errorMessage={errorMessageOfContext} />
 ```
 -->
 <form
