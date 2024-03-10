@@ -5,6 +5,7 @@
   import InfoBadge from '$lib/components/infoBadge/infoBadge.svelte';
   import {getContext} from 'svelte';
   import type {AnswerContext} from '$lib/utils/answerStore';
+  import LanguageSelection from './LanguageSelection.svelte';
 
   const answerContext = getContext<AnswerContext | undefined>('answers');
 
@@ -94,4 +95,5 @@ A template part that outputs the navigation menu for the Candidate App for use i
       icon="feedback"
       text={$t('candidateApp.navbar.feedback')} />
   </NavGroup>
+  <LanguageSelection />
 </Navigation>
