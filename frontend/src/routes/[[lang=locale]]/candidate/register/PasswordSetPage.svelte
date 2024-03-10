@@ -5,7 +5,6 @@
   import {register} from '$lib/api/candidate';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {validatePassword} from '$lib/utils/passwordValidation';
-  import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {FrontPage} from '$lib/templates/frontPage';
