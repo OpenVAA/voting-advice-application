@@ -9,8 +9,8 @@
   export let unit: $$Props['unit'] = '%';
   export let shape: $$Props['shape'] = 'linear';
   export let label: $$Props['label'] = '';
-  export let labelColor: $$Props['labelColor'] = 'hsl(var(--s))';
-  export let meterColor: $$Props['meterColor'] = 'hsl(var(--n))';
+  export let labelColor: $$Props['labelColor'] = 'oklch(var(--s))';
+  export let meterColor: $$Props['meterColor'] = 'oklch(var(--n))';
 
   const labelId = getUUID();
 

@@ -6,7 +6,6 @@ const themeCSSVars = {
   '--rounded-badge':   'var(--rounded-lg)',  // border radius rounded-badge utility class, used in badges and similar
   '--animation-btn':   'var(--duration-sm)', // duration of animation when you click on button
   '--animation-input': 'var(--duration-sm)', // duration of animation for inputs like checkbox, toggle, radio, etc
-  '--btn-text-case':   'none',               // set default text transform for buttons
   '--btn-focus-scale': '0.95',               // scale transform of button when you focus on it
   '--border-btn':      '0px',                // border width of buttons
   '--tab-border':      '0px',                // border width of tabs
@@ -200,8 +199,8 @@ module.exports = {
 
           // Custom variables
           '--line-color':           '#d9d9d9',
-          '--progress-color':       'hsl(var(--n))',
-          '--progress-label-color': 'hsl(var(--n))',
+          '--progress-color':       'oklch(var(--n))',
+          '--progress-label-color': 'oklch(var(--n))',
         },
         dark: {
           // DaisyUI colors: https://daisyui.com/docs/colors/
@@ -230,8 +229,8 @@ module.exports = {
 
           // Custom variables
           '--line-color':           '#262626',
-          '--progress-color':       'hsl(var(--n))',
-          '--progress-label-color': 'hsl(var(--n))',
+          '--progress-color':       'oklch(var(--n))',
+          '--progress-label-color': 'oklch(var(--n))',
         }
       }
     ]
