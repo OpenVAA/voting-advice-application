@@ -1,5 +1,10 @@
 <script lang="ts">
   import {concatClass} from '$lib/utils/components';
+  import type {NavGroupProps} from './NavGroup.type';
+
+  type $$Props = NavGroupProps;
+
+  export let title: $$Props['title'] = undefined;
 </script>
 
 <!--
@@ -21,7 +26,7 @@ Use to group `NavItem` components. Displays a faint line above the group.
 
 ```tsx
 <NavGroup>
-  <NavItem href={getRoute(Route.Info)} icon="info">Show info</NavItem>
+  <NavItem href={$getRoute(Route.Info)} icon="info">Show info</NavItem>
   <NavItem on:click={(e) => foo(e)}>Do foo</NavItem>
   <div>Some other content</div>
 </NavGroup>
@@ -39,5 +44,8 @@ Use to group `NavItem` components. Displays a faint line above the group.
     $$restProps,
     'before:content-[""] before:mx-16 before:my-md before:block before:border-t-md before:border-t-[var(--line-color)]'
   )}>
+  {#if title}
+    <h4 class="small-label flex items-center py-sm pl-[2.75rem]">{title}</h4>
+  {/if}
   <slot />
 </section>
