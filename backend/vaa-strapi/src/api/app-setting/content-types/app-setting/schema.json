@@ -1,0 +1,35 @@
+{
+  "kind": "collectionType",
+  "collectionName": "app_settings",
+  "info": {
+    "singularName": "app-setting",
+    "pluralName": "app-settings",
+    "displayName": "App Settings"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "publisherName": {
+      "type": "json"
+    },
+    "publisherLogo": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "publisherLogoDark": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "customData": {
+      "type": "json"
+    }
+  }
+}
