@@ -3,6 +3,7 @@ export async function setDefaultApiPermissions() {
 
   const contentTypes = [
     'api::answer.answer',
+    'api::app-setting.app-setting',
     'api::candidate-attribute.candidate-attribute',
     'api::candidate.candidate',
     'api::constituency.constituency',
