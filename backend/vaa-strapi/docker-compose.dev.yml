@@ -26,8 +26,6 @@ services:
       DATABASE_SSL_SELF: ${DATABASE_SSL_SELF}
       GENERATE_MOCK_DATA_ON_INITIALISE: ${GENERATE_MOCK_DATA_ON_INITIALISE}
       GENERATE_MOCK_DATA_ON_RESTART: ${GENERATE_MOCK_DATA_ON_RESTART}
-    depends_on:
-      - 'postgres'
     volumes:
       # Creating this volume will make Docker update changes from local automatically
       # Uncomment the two lines below if you want to enable hot reloading.
