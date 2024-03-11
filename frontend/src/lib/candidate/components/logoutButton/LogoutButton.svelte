@@ -20,7 +20,6 @@
   let timeLeft = logoutModalTimer;
 
   // functions for logout button
-  // TODO: add proper check of unfilled data
   const answerContext = getContext<AnswerContext | undefined>('answers');
   const answerstoreWritable = answerContext?.answers;
   $: answerStore = $answerstoreWritable;
@@ -48,7 +47,6 @@
   $: unfilledData = remainingOpinionNumber > 0 || remainingInfoAmount > 0;
 
   const triggerLogout = () => {
-    // TODO: check if candidate has filled all the data
     if (unfilledData) {
       openModal();
     } else {
