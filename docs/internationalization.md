@@ -18,7 +18,65 @@ All localized strings are fetched using the same `$t('foo.bar', {numBar: 5})` fu
 1. Whether the translations are local (i.e. from `json` files) or fetched from the database. Local fallbacks are overwritten by those from the database.
 2. Whether SSR or CSR rendering is used.
 
+### Value interpolation
+
+Note that if any interpolated values are missing, the string will not be translated and its name will be displayed.
+
 For value interpolation in already translated strings, such as those contained in database objects, the same [ICU message format](https://formatjs.io/docs/intl-messageformat/) value interpolation is provided with a `parse('Foo is {value}', {value: 'bar'})` function also provided by `$lib/i18n`.
+
+### Localized default values in components
+
+When providing localized default values to component properties, be sure to assign these reactively or they won't be updated when the locale is changed, i.e.
+
+```tsx
+// This will NOT update
+export let label = $t('someLabel');
+// On the page
+<label>{label}</label>
+
+// This will update
+export let label = undefined;
+// On the page
+<label>{label ?? $t('someLabel')}</label>
+```
+
+### Localized texts included in `export let data`
+
+Specific care must be taken with any localized content loaded on the server so that language changes are propagated everywhere where the data is used.
+
+1. The `load` functions must depend either on the `i18n.currentLocale` of the outermost server `load` function or the `lang` route parameter. To accomplish the first, use `await parent()`:
+
+```ts
+// +layout.server.ts
+export const load = (async ({parent}) => {
+  const locale = (await parent()).i18n.currentLocale;
+  return {
+    questions: await getOpinionQuestions({locale})
+  };
+}) satisfies LayoutServerLoad;
+```
+
+1. The Svelte pages and components using `data` are not automatically rerendered. To ensure this, either make updates reactive or use the `page` store instead of `export let data`, i.e.:
+
+```tsx
+// +page.svelte
+
+// Option 1: Using export let data
+export let data: PageServerData;
+let candidates: CandidateProps[];
+$: candidates = data.candidates;
+// On the page
+{#each candidates as candidate}
+  // Render
+{/each}
+
+// Option 2: Using the page store
+import {page} from '$app/stores';
+// On the page
+{#each $page.data.candidates as candidate}
+  // Render
+{/each}
+```
 
 ## Localization in Strapi
 
@@ -85,12 +143,12 @@ The locale selection process works as follows.
 
 [`+layout.server.ts`](../frontend/src/routes/[[lang=locale]]/+layout.server.ts) loads translations from the local source and the database:
 
-1. Receive `currentLocale` from `locals`:
-2. Set the locale to `currentLocale`.
-3. Load all the globally needed data from Strapi using `currentLocale` as the `locale` parameter
+1. Receive `currentLocale` and `route` from `locals` and `params.lang`:
+2. Set the locale to `params.lang ?? currentLocale`. (In theory, we could just use `currentLocale` but we must explicitly use `params.lang` to rerun `load` on param changes.)
+3. Load all the globally needed data from Strapi using the correct `locale` parameter
    1. `getElection` uses Strapi's own `i18n` plugin to localize `appLabels` contained in the `Election` object
-4. Load local translations for `currentLocale` with `$lib/i18n.loadTranslations`
-5. Parse the `route` without locale information and pass this along with `currentLocale`, `preferredLocale` and `translations` in `data.i18n`
+4. Load local translations with `$lib/i18n.loadTranslations`
+5. Pass `currentLocale`, `preferredLocale` and `route` in `data.i18n`
 
 [`+layout.ts`](../../routes/[[lang=locale]]/+layout.ts) runs twice and sets translations up for SSR and CSR:
 
