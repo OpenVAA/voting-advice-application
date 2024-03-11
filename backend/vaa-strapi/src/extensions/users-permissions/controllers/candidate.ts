@@ -1,7 +1,7 @@
 'use strict';
 
-// TODO: Use a shared module instead of having a copy of the password validation file
-import {validatePassword} from '../../../util/passwordValidationCopy';
+// unfortunately we can't use tsconfig paths, @see https://github.com/microsoft/TypeScript/issues/10866
+import {validatePassword} from '../../../shared/utils/passwordValidation';
 
 const {
   yup,

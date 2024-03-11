@@ -9,6 +9,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
+    "preserveSymlinks": true,
     "types": ["vitest/globals"],
     "moduleResolution": "Node"
   }

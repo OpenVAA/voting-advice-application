@@ -2,12 +2,13 @@
 
 ## Frontend
 
-Setting the password is done in two components:
+Setting the password is done in three components:
 
 - [`PasswordSetPage.svelte`](/frontend/src/routes/candidate/register/PasswordSetPage.svelte) (new user)
 - [`PasswordResetPage.svelte`](/frontend/src/routes/candidate/password-reset/PasswordResetPage.svelte) (forgotten password)
+- [`settings/+page.svelte`](/frontend/src/routes/candidate/(protected)/settings/+page.svelte) (update existing password)
 
-The password is validated using [`passwordValidation.ts`](/frontend/src/lib/utils/passwordValidation.ts).
+The password is validated using [`passwordValidation.ts`](/shared/utils/passwordValidation.ts).
 
 The file provides two main functions for validating a password
 
@@ -16,7 +17,7 @@ The file provides two main functions for validating a password
 - `validatePasswordDetails`  
   Returns both the password validity status boolean as well as details and state for each password requirement. These details are used for the validation UI.
 
-On both password set pages, a password validation UI is shown to the user.
+On all password set pages, a password validation UI is shown to the user.
 This functionality is provided by the [`PasswordValidator.svelte`](/frontend/src/lib/components/passwordValidator/PasswordValidator.svelte) component.
 The component provides real-time password validation checks and shows the state of each password requirement.
 More details on how the different requirements are shown to the user can be found in the documentation of the component.
@@ -36,12 +37,11 @@ If the validity check passes, a POST request is sent to the backend to either
 
 - `/api/auth/candidate/register` endpoint is implemented by [`candidate.ts`](/backend/vaa-strapi/src/extensions/users-permissions/controllers/candidate.ts) using the registration key
   - the backend also validates the password using the same `validatePassword` function
-  - validation uses a copy of the original validation file, [`passwordValidationCopy.ts`](/backend/vaa-strapi/src/util/passwordValidationCopy.ts)
 - `/api/auth/reset-password` is fully handled by Strapi's users-permissions plugin
 
 ## Password requirements
 
-The password requirements are defined in the [`passwordValidation.ts`](/frontend/src/lib/utils/passwordValidation.ts) file.
+The password requirements are defined in the [`passwordValidation.ts`](/shared/utils/passwordValidation.ts) file.
 
 Each requirement is defined by the `ValidationDetail` interface:
 
@@ -76,8 +76,6 @@ The file also contains help functions for checking different aspects of the pass
 ### Changing and creating new requirements
 
 All validation rules are defined in the `passwordValidation` function. New requirements can be added and existing ones changed by modifying `ValidationDetail` objects of the result.
-
-It should be noted that both [`passwordValidation.ts`](/frontend/src/lib/utils/passwordValidation.ts) and [`passwordValidationCopy.ts`](/backend/vaa-strapi/src/util/passwordValidationCopy.ts) need to be updated until the files are merged to prevent accidental differences between frontend and backend validation.
 
 The order of one group of requirements (positive, negative enforced, negative non-enforced) is the same order they are shown to the user in the validation UI.
 Below are examples of both types of requirements that can be used as a guide to creating new requirements. If necessary, new help functions can be defined in the file to help with validating a specific aspect of the password.

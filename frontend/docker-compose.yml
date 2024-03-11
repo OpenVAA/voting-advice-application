@@ -3,7 +3,8 @@ version: '3.4'
 services:
   frontend:
     build:
-      context: .
+      context: ../
+      dockerfile: frontend/Dockerfile
       target: production
     ports:
       - '80:3000'

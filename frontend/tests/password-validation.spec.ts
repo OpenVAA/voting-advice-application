@@ -1,4 +1,4 @@
-import {validatePassword, validatePasswordDetails} from '$lib/utils/passwordValidation';
+import {validatePassword, validatePasswordDetails} from '$shared/utils/passwordValidation';
 
 describe('Password Validation', () => {
   describe('validatePassword', () => {

@@ -3,7 +3,9 @@ version: '3.1'
 services:
   strapi:
     build:
-      context: .
+      # Context includes the root of the repository so that we can expose shared/ module.
+      context: ../../
+      dockerfile: backend/vaa-strapi/Dockerfile
       target: development
     ports:
       - 1337:1337
@@ -35,6 +37,7 @@ services:
       # - /opt/strapi-plugin-import-export-entries
       # Mark these as volumes so they get ignored
       - /opt/node_modules
+      - strapi-uploads:/opt/public/uploads
   postgres:
     image: postgres:15
     environment:
@@ -55,3 +58,4 @@ services:
 
 volumes:
   postgres:
+  strapi-uploads:

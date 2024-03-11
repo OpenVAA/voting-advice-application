@@ -29,8 +29,16 @@ export default factories.createCoreRouter('api::candidate.candidate', {
     },
     update: {
       policies: [
-        // Allow only updating candidate's own resource
-        restrictResourceOwnedByCandidate('api::candidate.candidate'),
+        // Allow only updating candidate itself
+        async (ctx: any, config, {strapi}) => {
+          const {id} = ctx.params;
+
+          const candidate = await strapi.query('api::candidate.candidate').findOne({
+            where: {id, user: {id: ctx.state.user.id}}
+          });
+
+          return !!candidate;
+        },
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
         // Disable filters by default to avoid accidentally leaking data of relations

@@ -6,7 +6,7 @@
     type ValidationDetail,
     validatePasswordDetails,
     minPasswordLength
-  } from '$lib/utils/passwordValidation';
+  } from '$shared/utils/passwordValidation';
   import {onMount} from 'svelte';
   export let password = '';
   export let username = '';
