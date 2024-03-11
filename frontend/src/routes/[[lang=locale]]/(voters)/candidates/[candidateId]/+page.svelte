@@ -10,7 +10,14 @@
 
   export let data: PageServerData & LayoutServerData;
 
-  const {candidate, questions, infoQuestions} = data;
+  let candidate: CandidateProps;
+  let questions: QuestionProps[];
+  let infoQuestions: QuestionProps[];
+  $: {
+    candidate = data.candidate;
+    questions = data.questions;
+    infoQuestions = data.infoQuestions;
+  }
 </script>
 
 <SingleCardPage title={GetFullNameInOrder(candidate.firstName, candidate.lastName)}>

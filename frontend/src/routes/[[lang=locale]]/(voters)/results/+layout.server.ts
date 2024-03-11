@@ -1,11 +1,12 @@
 import {getInfoQuestions, getNominatedCandidates, getOpinionQuestions} from '$lib/api/getData';
 import type {LayoutServerLoad} from './$types';
 
-export const load = (async () => {
+export const load = (async ({parent}) => {
+  const locale = (await parent()).i18n.currentLocale;
   return {
-    candidates: await getNominatedCandidates({loadAnswers: true}),
+    candidates: await getNominatedCandidates({loadAnswers: true, locale}),
     // We need these for displaying the candidates
-    questions: await getOpinionQuestions(),
-    infoQuestions: await getInfoQuestions()
+    questions: await getOpinionQuestions({locale}),
+    infoQuestions: await getInfoQuestions({locale})
   };
 }) satisfies LayoutServerLoad;

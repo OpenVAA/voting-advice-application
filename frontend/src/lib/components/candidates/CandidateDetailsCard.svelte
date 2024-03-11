@@ -16,8 +16,12 @@
   export let ranking: RankingProps | undefined = undefined;
 
   // Tabs
-  let tabs = [$t('candidate.tabs.basicInfo'), $t('candidate.tabs.opinions')];
-  let activeItem = tabs[0];
+  let tabs: string[];
+  let activeItem: string;
+  $: {
+    tabs = [$t('candidate.tabs.basicInfo'), $t('candidate.tabs.opinions')];
+    activeItem = tabs[0];
+  }
   const handleChangeTab = (e: CustomEvent) => {
     activeItem = e.detail;
   };

@@ -5,18 +5,16 @@
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {HeroEmoji} from '$lib/components/heroEmoji';
   import {BasicPage} from '$lib/templates/basicPage';
-
-  const title = $t('intro.title');
 </script>
 
-<BasicPage {title}>
+<BasicPage title={$t('intro.title')}>
   <svelte:fragment slot="hero">
     <HeroEmoji emoji={$t('intro.heroEmoji')} />
   </svelte:fragment>
 
   <HeadingGroup slot="heading">
     <PreHeading class="text-primary">{$t('viewTexts.appTitle')}</PreHeading>
-    <h1>{title}</h1>
+    <h1>{$t('intro.title')}</h1>
   </HeadingGroup>
 
   <svelte:fragment slot="banner">

@@ -10,31 +10,41 @@
 
   export let data: PageData;
 
-  const {candidateId, candidates, questions, infoQuestions} = data;
-
+  let candidateId: string;
+  let candidates: CandidateProps[];
+  let questions: QuestionProps[];
+  let infoQuestions: QuestionProps[];
   let candidate: CandidateProps | undefined;
   let ranking: RankingProps | undefined;
+  let title = '';
 
-  // First, check if we have a ranking for the candidate,
-  // which contains the Candidate object
-  // TODO: We could disallow access to this page if there are no
-  // $candidateRankings by moving the redirect check currently in
-  // ../+page.svelte to ../+layout.svelte
-  if ($candidateRankings.length > 0) {
-    const result = $candidateRankings.find((r) => r.candidate.id == candidateId);
-    if (result) {
-      candidate = result.candidate;
-      ranking = result.match;
+  $: {
+    candidateId = data.candidateId;
+    candidates = data.candidates;
+    questions = data.questions;
+    infoQuestions = data.infoQuestions;
+
+    // First, check if we have a ranking for the candidate,
+    // which contains the Candidate object
+    // TODO: We could disallow access to this page if there are no
+    // $candidateRankings by moving the redirect check currently in
+    // ../+page.svelte to ../+layout.svelte
+    if ($candidateRankings.length > 0) {
+      const result = $candidateRankings.find((r) => r.candidate.id == candidateId);
+      if (result) {
+        candidate = result.candidate;
+        ranking = result.match;
+      }
     }
-  }
-  // If not, try to find the candidate
-  if (!candidate) {
-    candidate = candidates.find((c) => c.id == candidateId);
-  }
+    // If not, try to find the candidate
+    if (!candidate) {
+      candidate = candidates.find((c) => c.id == candidateId);
+    }
 
-  const title = candidate
-    ? GetFullNameInOrder(candidate.firstName, candidate.lastName)
-    : $t('candidates.notFound');
+    title = candidate
+      ? GetFullNameInOrder(candidate.firstName, candidate.lastName)
+      : $t('candidates.notFound');
+  }
 </script>
 
 <SingleCardPage {title}>

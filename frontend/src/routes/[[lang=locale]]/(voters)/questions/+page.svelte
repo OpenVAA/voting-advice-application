@@ -7,16 +7,9 @@
   import {Icon} from '$lib/components/icon';
   import {BasicPage} from '$lib/templates/basicPage';
 
-  const firstQuestionUrl = $getRoute({route: Route.Question, id: $page.data.questions[0].id});
-
   const questionCategories = new Set<string>();
   $page.data.questions.forEach((question) => {
     if (question.category) questionCategories.add(question.category);
-  });
-
-  const opinionsDescriptionText = $t('viewTexts.yourOpinionsDescription', {
-    numStatements: $page.data.questions.length,
-    numCategories: questionCategories.size
   });
 </script>
 
@@ -39,12 +32,15 @@
   </svelte:fragment>
 
   <p class="text-center">
-    {opinionsDescriptionText}
+    {$t('viewTexts.yourOpinionsDescription', {
+      numStatements: $page.data.questions.length,
+      numCategories: questionCategories.size
+    })}
   </p>
 
   <svelte:fragment slot="primaryActions">
     <Button
-      href={firstQuestionUrl}
+      href={$getRoute({route: Route.Question, id: $page.data.questions[0].id})}
       variant="main"
       icon="next"
       text={$t('actionLabels.startQuestions')} />

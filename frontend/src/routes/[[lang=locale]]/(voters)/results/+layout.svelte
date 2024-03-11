@@ -3,9 +3,12 @@
   import type {LayoutServerData} from './$types';
 
   export let data: LayoutServerData;
+
+  let candidates: CandidateProps[];
+  $: candidates = data.candidates;
 </script>
 
-{#if !data.candidates.length}
+{#if !candidates?.length}
   <p>{$t('candidates.notFound')}</p>
 {:else}
   <slot />

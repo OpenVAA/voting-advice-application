@@ -24,16 +24,15 @@
    */
   const DELAY_M_MS = 350;
 
-  const {questions} = data;
-
+  let questions: QuestionProps[];
   let questionId: string;
   let question: QuestionProps | undefined;
   let questionIndex: number;
   let selectedKey: AnswerOption['key'] | undefined;
 
-  // Set questionId reactively when the route param changes, but only
-  // if the id is different so that we don't trigger unnecessary re-renders
-  $: if (questionId != data.questionId) {
+  // Set questionId reactively when the route param changes
+  $: {
+    questions = data.questions;
     questionId = data.questionId;
     question = questions.find((q) => q.id == questionId);
     if (!question) throw error(404, `No question with id ${questionId}`);
