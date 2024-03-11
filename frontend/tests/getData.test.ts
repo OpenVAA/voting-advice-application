@@ -55,11 +55,7 @@ describe('Test getting data from backend', () => {
     (fetch as Mock).mockResolvedValue(createFetchResponse(parties));
     const response = await getData('api/parties');
 
-    expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/parties?`, {
-      headers: {
-        Authorization: `Bearer ${constants.STRAPI_TOKEN}`
-      }
-    });
+    expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/parties?`);
     expect(response).toStrictEqual(parties.data);
   });
 
@@ -67,11 +63,7 @@ describe('Test getting data from backend', () => {
     (fetch as Mock).mockResolvedValue(createFetchResponse(singleCandidate));
     const response = await getData('api/candidates/1');
 
-    expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/candidates/1?`, {
-      headers: {
-        Authorization: `Bearer ${constants.STRAPI_TOKEN}`
-      }
-    });
+    expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/candidates/1?`);
     expect(response).toStrictEqual(singleCandidate.data);
   });
 
@@ -79,11 +71,7 @@ describe('Test getting data from backend', () => {
     (fetch as Mock).mockResolvedValue(createFetchResponse(singleParty));
     const response = await getData('api/parties/1');
 
-    expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/parties/1?`, {
-      headers: {
-        Authorization: `Bearer ${constants.STRAPI_TOKEN}`
-      }
-    });
+    expect(fetch).toHaveBeenCalledWith(`${constants.BACKEND_URL}/api/parties/1?`);
     expect(response).toStrictEqual(singleParty.data);
   });
 });

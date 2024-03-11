@@ -32,16 +32,9 @@ Strapi instance is restarted. This feature is only enabled in development builds
 ### Setting up the backend
 
 After the build is successful, go to the backend URL (`http://localhost:1337` by default) in your browser. The 
-**page will take a while to load as Strapi is building its codebase**. When it's loaded, go to the Strapi admin panel, 
-register there and [create an access token](https://www.youtube.com/watch?v=dVQKqZYWyv4) with read permissions 
-(remember to click i18n permissions manually). After creating the access token, copy it, go to the `.env` file 
-in the project root, add the token to the `VITE_STRAPI_TOKEN` environment variable and save the file.
+**page will take a while to load as Strapi is building its codebase**. When it's loaded, go to the Strapi admin panel and register an admin account there for yourself.
 
-### Setting up the frontend
-
-Once the backend is set up, you may need to [stop the containers](#stop-the-containers). Once the containers are stopped
-you must run `yarn dev` again in the project root and the frontend will now be regenerated with
-permissions to make calls to the backend. You can access the frontend at the following URL `http://localhost:5173`.
+After setting up the backend, you can access the frontend at the following URL `http://localhost:5173`.
 
 ### Hot reloading
 

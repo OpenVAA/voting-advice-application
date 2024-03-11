@@ -1,6 +1,7 @@
 'use strict';
 import {Strapi} from '@strapi/strapi';
 import {generateMockData} from './functions/generateMockData';
+import {setDefaultApiPermissions} from './functions/setDefaultApiPermissions';
 
 module.exports = {
   /**
@@ -23,5 +24,6 @@ module.exports = {
    */
   bootstrap(/*{ strapi }*/) {
     generateMockData();
+    setDefaultApiPermissions();
   }
 };

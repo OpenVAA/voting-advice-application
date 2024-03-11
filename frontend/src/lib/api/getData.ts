@@ -28,11 +28,7 @@ export function getData<T extends object>(
   params: URLSearchParams = new URLSearchParams({})
 ): Promise<T> {
   const url = `${constants.BACKEND_URL}/${endpoint}?${params}`;
-  return fetch(url, {
-    headers: {
-      Authorization: `Bearer ${constants.STRAPI_TOKEN}`
-    }
-  })
+  return fetch(url)
     .then((response) => {
       return response.json().then((parsed: StrapiResponse<T> | StrapiError) => {
         if ('error' in parsed) throw new Error(parsed.error.message);
@@ -59,7 +55,7 @@ export const getElection = ({
 } = {}): Promise<ElectionProps> => {
   locale ??= currentLocale.get();
   // Match locale softly
-  const matchingLocale = matchLocale(locale, locales.get());
+  const matchingLocale = matchLocale(locale || '', locales.get());
   if (!matchingLocale) throw error(500, `Locale ${locale} not supported`);
   const params = new URLSearchParams({
     'populate[electionAppLabel][populate][actionLabels]': 'true',
@@ -71,15 +67,16 @@ export const getElection = ({
     if (!result.length) throw error(500, 'No election found');
     const el = result[0];
     let appLabels: StrapiAppLabelsData | LocalizedStrapiData<StrapiAppLabelsData>;
-    const localized = el.attributes.electionAppLabel.data;
-    if (localized.attributes.locale === matchingLocale) {
+    const localized = el?.attributes?.electionAppLabel?.data;
+
+    if (localized?.attributes?.locale === matchingLocale) {
       appLabels = localized;
     } else {
-      const found = localized.attributes.localizations.data.find(
-        (d) => d.attributes.locale === matchingLocale
+      const found = localized?.attributes?.localizations?.data?.find(
+        (d) => d?.attributes?.locale === matchingLocale
       );
       if (!found)
-        throw error(500, `Could not find app labels for election ${id} and locale ${locale}`);
+        throw error(500, `Could not find app labels for election ${el.id} and locale ${locale}`);
       appLabels = found;
     }
     // Remove localizations and unnecessary details from appLabels
