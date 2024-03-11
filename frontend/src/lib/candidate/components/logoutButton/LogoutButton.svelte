@@ -1,10 +1,13 @@
 <script lang="ts">
+  import {get} from 'svelte/store';
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import TimedModal from '$lib/components/modal/TimedModal.svelte';
   import {goto} from '$app/navigation';
   import {authContext} from '$lib/utils/authenticationStore';
   import {Button} from '$lib/components/button';
+  import {getContext} from 'svelte';
+  import type {AnswerContext} from '$lib/utils/answerStore';
 
   /** Defaults to true, so that button variant is "icon". Can be set to false if the button should be of variant "main" */
   export let variantIcon = true;
@@ -18,7 +21,31 @@
 
   // functions for logout button
   // TODO: add proper check of unfilled data
-  let unfilledData = true;
+  const answerContext = getContext<AnswerContext | undefined>('answers');
+  const answerstoreWritable = answerContext?.answers;
+  $: answerStore = $answerstoreWritable;
+
+  const questionstoreWritable = answerContext?.questions;
+  $: questionStore = $questionstoreWritable;
+
+  const user = get(authContext.user);
+  $: remainingInfoAmount =
+    4 -
+    [
+      user?.candidate?.gender,
+      user?.candidate?.motherTongues?.length > 0,
+      user?.candidate?.birthday,
+      user?.candidate?.manifesto
+    ].filter((x) => x).length;
+
+  let remainingOpinionNumber = 0;
+  $: {
+    if (answerStore && questionStore) {
+      remainingOpinionNumber =
+        Object.entries(questionStore).length - Object.entries(answerStore).length;
+    }
+  }
+  $: unfilledData = remainingOpinionNumber > 0 || remainingInfoAmount > 0;
 
   const triggerLogout = () => {
     // TODO: check if candidate has filled all the data
@@ -66,7 +93,6 @@ When set to false, the button variant is main.
     text={$t('candidateApp.allDataFilled.logOut')}
     color="warning" />
 {/if}
-
 <TimedModal
   bind:timeLeft
   bind:openModal
@@ -77,7 +103,7 @@ When set to false, the button variant is main.
     <h2>{$t('candidateApp.logoutModal.title')}</h2>
     <br />
     <p>
-      {$t('candidateApp.logoutModal.body')}
+      {$t('candidateApp.logoutModal.body', {remainingInfoAmount, remainingOpinionNumber})}
     </p>
     <p>
       {$t('candidateApp.logoutModal.confirmation', {timeLeft})}
