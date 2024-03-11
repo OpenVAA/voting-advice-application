@@ -14,6 +14,7 @@ const config = {
   kit: {
     adapter: adapter({}),
     alias: {
+      $lib: path.resolve('./src/lib'),
       $types: path.resolve('./src/lib/types'),
       $voter: path.resolve('./src/lib/voter'),
       $candidate: path.resolve('./src/lib/candidate')

@@ -271,6 +271,8 @@ Keyboard navigation works in the following way:
 
   input.entitySelected:disabled:not(:checked) {
     @apply border-neutral bg-neutral;
-    box-shadow: 0 0 0 4px oklch(var(--b1)) inset, 0 0 0 4px oklch(var(--b1)) inset;
+    box-shadow:
+      0 0 0 4px oklch(var(--b1)) inset,
+      0 0 0 4px oklch(var(--b1)) inset;
   }
 </style>

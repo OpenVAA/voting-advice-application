@@ -8,16 +8,30 @@
     "RankingProps": "writable"
   },
   "parser": "@typescript-eslint/parser",
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
-  "plugins": ["svelte3", "@typescript-eslint"],
-  "ignorePatterns": ["*.cjs", "ios/*", "android/*"],
-  "overrides": [{"files": ["*.svelte"], "processor": "svelte3/svelte3"}],
-  "settings": {
-    "svelte3/typescript": true
-  },
   "parserOptions": {
+    "extraFileExtensions": [".svelte"], // This is a required setting in `@typescript-eslint/parser` v4.24.0.
     "sourceType": "module",
     "ecmaVersion": 2020
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier",
+    "plugin:svelte/prettier"
+  ],
+  "plugins": ["@typescript-eslint"],
+  "ignorePatterns": ["*.cjs", "ios/*", "android/*"],
+  "overrides": [
+    {
+      "files": ["*.svelte"],
+      "parser": "svelte-eslint-parser",
+      "parserOptions": {
+        "parser": "@typescript-eslint/parser"
+      }
+    }
+  ],
+  "settings": {
+    "svelte/typescript": true
   },
   "env": {
     "browser": true,
@@ -28,6 +42,7 @@
   "rules": {
     "no-console": ["error", {"allow": ["warn", "error", "info"]}],
     "no-undef": "off",
-    "quotes": ["error", "single", {"avoidEscape": true, "allowTemplateLiterals": false}]
+    "quotes": ["error", "single", {"avoidEscape": true, "allowTemplateLiterals": false}],
+    "@typescript-eslint/no-duplicate-enum-values": "off"
   }
 }

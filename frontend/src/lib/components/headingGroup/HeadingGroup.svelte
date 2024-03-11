@@ -1,8 +1,5 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import type {HeadingGroupProps} from './HeadingGroup.type';
-
-  type $$Props = HeadingGroupProps;
 
   $$restProps['role'] ??= 'group';
   $$restProps['aria-roledescription'] ??= $t('aria.headingGroup');

@@ -91,7 +91,10 @@ export class SubMatch extends MatchBase {
    * @param questionGroup The subgroup of questions for which the match is
    * computed.
    */
-  constructor(distance: UnsignedNormalizedDistance, public questionGroup: HasMatchableQuestions) {
+  constructor(
+    distance: UnsignedNormalizedDistance,
+    public questionGroup: HasMatchableQuestions
+  ) {
     super(distance);
   }
 }

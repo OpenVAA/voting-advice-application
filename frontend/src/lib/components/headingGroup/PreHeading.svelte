@@ -1,8 +1,5 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import type {PreHeadingProps} from './PreHeading.type';
-
-  type $$Props = PreHeadingProps;
 
   $$restProps['aria-roledescription'] ??= $t('aria.preHeading');
 </script>

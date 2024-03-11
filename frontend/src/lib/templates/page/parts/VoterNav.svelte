@@ -2,9 +2,7 @@
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {resultsAvailable} from '$lib/utils/stores';
-  import {type NavigationProps, Navigation, NavGroup, NavItem} from '$lib/components/navigation';
-
-  type $$Props = NavigationProps;
+  import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
 </script>
 
 <!--

@@ -64,7 +64,7 @@
         title={category || ''}
         variant="category"
         defaultExpanded={unansweredCategories?.includes(category ?? '')}>
-        {#each categoryQuestions as question, i}
+        {#each categoryQuestions as question}
           <!-- Question has been answered -->
           {#if answerStore?.[question.id]}
             <div class="pb-20 pt-20">

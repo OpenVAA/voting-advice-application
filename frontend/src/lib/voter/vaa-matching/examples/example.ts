@@ -120,7 +120,10 @@ function createAnswers(
  * A dummy candidate object for matching.
  */
 class Candidate implements HasMatchableAnswers {
-  constructor(public readonly name: string, public answers: MatchableAnswer[]) {}
+  constructor(
+    public readonly name: string,
+    public answers: MatchableAnswer[]
+  ) {}
 
   getMatchableAnswerValue(question: MatchableQuestion): MatchableValue {
     for (const answer of this.answers) {

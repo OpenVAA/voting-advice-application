@@ -1,9 +1,6 @@
 <script lang="ts">
   import Icon from './Icon.svelte';
   import {ICONS} from './icons';
-  import type {PreviewAllIconsProps} from './PreviewAllIcons.type';
-
-  type $$Props = PreviewAllIconsProps;
 
   // We need this clunky typing to get rid of warnings below
   const entries: [keyof typeof ICONS, readonly [string, string]][] = Object.entries(ICONS).map(
