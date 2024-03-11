@@ -54,6 +54,9 @@
     "info": {
       "pluginOptions": {},
       "type": "json"
+    },
+    "colorDark": {
+      "type": "string"
     }
   }
 }

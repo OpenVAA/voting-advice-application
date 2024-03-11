@@ -15,6 +15,7 @@ export default factories.createCoreRouter('api::nomination.nomination', {
           'election',
           'constituency',
           'party',
+          'party.populate.logo',
           'candidate',
           'candidate.populate.party',
           'candidate.populate.photo',
@@ -22,6 +23,7 @@ export default factories.createCoreRouter('api::nomination.nomination', {
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([
+          'candidate.id.$eq',
           'candidate.id.$notNull',
           'constituency.id.$eq',
           'election.id.$eq',
@@ -38,6 +40,7 @@ export default factories.createCoreRouter('api::nomination.nomination', {
           'election',
           'constituency',
           'party',
+          'party.populate.logo',
           'candidate',
           'candidate.populate.party',
           'candidate.populate.photo',

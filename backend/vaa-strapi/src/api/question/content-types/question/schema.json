@@ -50,6 +50,13 @@
       "pluginOptions": {},
       "type": "boolean",
       "default": true
+    },
+    "filterable": {
+      "type": "boolean",
+      "default": false
+    },
+    "customData": {
+      "type": "json"
     }
   }
 }

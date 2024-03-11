@@ -1,21 +1,17 @@
 /**
- * party router
+ * app-setting router
  */
 
 import { factories } from '@strapi/strapi';
 import { restrictPopulate, restrictFilters } from '../../../util/acl';
 
-export default factories.createCoreRouter('api::party.party', {
-  only: ['find', 'findOne'], // Explicitly disabled create, update, delete
+export default factories.createCoreRouter('api::app-setting.app-setting', {
+  only: ['find', 'findOne'], // Explicitly disabled create and delete
   config: {
     find: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([
-          'logo',
-          'candidates',
-          'answers.populate.question',
-        ]),
+        restrictPopulate([]),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([]),
       ],
@@ -23,11 +19,7 @@ export default factories.createCoreRouter('api::party.party', {
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([
-          'logo',
-          'candidates',
-          'answers.populate.question',
-        ]),
+        restrictPopulate([]),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([]),
       ],

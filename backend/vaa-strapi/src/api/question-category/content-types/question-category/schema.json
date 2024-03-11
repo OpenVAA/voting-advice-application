@@ -49,6 +49,12 @@
         "info"
       ],
       "default": "opinion"
+    },
+    "color": {
+      "type": "string"
+    },
+    "colorDark": {
+      "type": "string"
     }
   }
 }
