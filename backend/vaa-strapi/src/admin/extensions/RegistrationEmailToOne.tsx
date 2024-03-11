@@ -10,6 +10,14 @@ export default function RegistrationEmailToOne() {
 
   return RegistrationEmailButton({
     instructions: `Send registration email to ${initialData.firstName} ${initialData.lastName}. Add registration link to email by adding [LINK] to the email content. Registration link can be added multiple times.`,
-    confirmFunction: () => {} // TODO add functionality
+    confirmFunction: () => {
+      fetch('/api/admin/send-email', {
+        method: 'POST',
+        body: JSON.stringify({
+          subject: 'Registration link',
+          content: 'Hello, [LINK] is your registration link.'
+        })
+      });
+    }
   });
 }
