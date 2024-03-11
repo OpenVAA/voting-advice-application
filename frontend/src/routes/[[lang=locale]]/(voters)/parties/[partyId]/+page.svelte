@@ -8,7 +8,8 @@
 
   export let data: PageServerData;
 
-  const {party} = data;
+  let party: PartyProps;
+  $: party = data.party;
 </script>
 
 <SingleCardPage title={party.name}>

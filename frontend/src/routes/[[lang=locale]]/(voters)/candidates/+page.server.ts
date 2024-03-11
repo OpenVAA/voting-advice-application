@@ -1,8 +1,9 @@
 import {getNominatedCandidates} from '$lib/api/getData';
 import type {PageServerLoad} from './$types';
 
-export const load = (async () => {
+export const load = (async ({parent}) => {
+  const locale = (await parent()).i18n.currentLocale;
   return {
-    candidates: await getNominatedCandidates()
+    candidates: await getNominatedCandidates({locale})
   };
 }) satisfies PageServerLoad;

@@ -3,20 +3,23 @@ import {error} from '@sveltejs/kit';
 import {getElection} from '$lib/api/getData';
 import {loadTranslations, locale} from '$lib/i18n';
 
-export const load = (async ({locals}) => {
+export const load = (async ({locals, params}) => {
   // Get language from locals (see hooks.server.ts)
   const {currentLocale, preferredLocale, route} = locals;
 
+  // In theory, we could just use currentLocale but we must explicitly use params.lang to rerun load on param changes
+  const effectiveLocale = params.lang ?? currentLocale;
+
   // Set the locale so that getData can used it as default
-  if (currentLocale !== locale.get()) locale.set(currentLocale);
+  if (effectiveLocale !== locale.get()) locale.set(effectiveLocale);
 
   // Get basic data and translations
-  const election = await getElection({locale: currentLocale});
+  const election = await getElection({locale: effectiveLocale});
   if (!election) {
     throw error(500, 'Error loading election');
   }
 
-  await loadTranslations(currentLocale);
+  await loadTranslations(effectiveLocale);
 
   return {
     election,
@@ -26,7 +29,7 @@ export const load = (async ({locals}) => {
     questions: [],
     infoQuestions: [],
     i18n: {
-      currentLocale,
+      currentLocale: effectiveLocale,
       preferredLocale,
       route
     }

@@ -9,6 +9,9 @@
   import type {PageServerData} from './$types';
 
   export let data: PageServerData;
+
+  let candidates: CandidateProps[];
+  $: candidates = data.candidates;
 </script>
 
 <BasicPage title={$t('candidates.candidates')} mainClass="bg-base-300">
@@ -38,7 +41,7 @@
     role="feed"
     class="-mx-md grid w-[calc(100%+20rem/16)] grid-cols-1 gap-md match-w-xl:mx-0 match-w-xl:w-full"
     aria-label={$t('candidates.candidates')}>
-    {#each data.candidates as { id, firstName, lastName, party, electionSymbol }, i}
+    {#each candidates as { id, firstName, lastName, party, electionSymbol }, i}
       <EntityCard
         on:click={() => goto($getRoute({route: Route.Candidate, id}))}
         ariaPosinset={i + 1}
