@@ -1,6 +1,6 @@
 <script lang="ts">
   import {onDestroy, onMount} from 'svelte';
-  import {uploadFiles, deleteFile} from '$lib/api/candidate';
+  import {uploadFiles} from '$lib/api/candidate';
   import {constants} from '$lib/utils/constants';
   import {t} from '$lib/i18n';
   import Field from '$lib/components/common/form/Field.svelte';
@@ -63,9 +63,10 @@
     if (image && imageHasChanged) {
       const res = await uploadFiles([image]);
 
-      if (photo && res?.status === 200) {
-        await deleteFile(photo.id);
-      }
+      // Deleting file disabled, because at the moment it does not work with access control
+      // if (photo && res?.status === 200) {
+      //   await deleteFile(photo.id);
+      // }
       const uploadedPhotos: Photo[] = await res?.json();
       photo = uploadedPhotos[0];
       imageHasChanged = false;
