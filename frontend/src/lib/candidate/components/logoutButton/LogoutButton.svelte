@@ -100,9 +100,19 @@ When set to false, the button variant is main.
   <div class="notification max-w-md text-center">
     <h2>{$t('candidateApp.logoutModal.title')}</h2>
     <br />
-    <p>
-      {$t('candidateApp.logoutModal.body', {remainingInfoAmount, remainingOpinionNumber})}
-    </p>
+    {#if remainingInfoAmount > 0}
+      <p>
+        {$t('candidateApp.logoutModal.body', {remainingInfoAmount, remainingOpinionNumber})}
+      </p>
+    {:else if remainingOpinionNumber > 1}
+      <p>
+        {$t('candidateApp.logoutModal.bodyBasicInfoReady', {remainingOpinionNumber})}
+      </p>
+    {:else}
+      <p>
+        {$t('candidateApp.logoutModal.bodyBasicInfoReady1OpinionLeft')}
+      </p>
+    {/if}
     <p>
       {$t('candidateApp.logoutModal.confirmation', {timeLeft})}
     </p>
