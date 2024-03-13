@@ -20,7 +20,7 @@ const defaultPermissions = [
   {action: 'api::candidate.candidate.findOne', roleType: 'authenticated'},
   {action: 'api::candidate.candidate.update', roleType: 'authenticated'},
   {action: 'api::party.party.find', roleType: 'authenticated'},
-  {action: 'api::party.party.findOne', roleType: 'authenticated'}, // Setup email template (the default template also does not make the URL clickable)
+  {action: 'api::party.party.findOne', roleType: 'authenticated'},
   {action: 'api::nomination.nomination.find', roleType: 'authenticated'},
   {action: 'api::nomination.nomination.findOne', roleType: 'authenticated'},
   {action: 'api::constituency.constituency.find', roleType: 'authenticated'},
