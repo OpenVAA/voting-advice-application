@@ -4,7 +4,7 @@
   import {t} from '$lib/i18n';
   import {register} from '$lib/api/candidate';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {validatePassword} from '$lib/utils/passwordValidation';
+  import {validatePassword} from '$shared/utils/passwordValidation';
   import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {Button} from '$lib/components/button';

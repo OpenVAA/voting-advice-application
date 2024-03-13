@@ -6,7 +6,7 @@
   import Icon from '$lib/components/icon/Icon.svelte';
   import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {Button} from '$lib/components/button';
-  import {validatePassword} from '$lib/utils/passwordValidation';
+  import {validatePassword} from '$shared/utils/passwordValidation';
   import {changePassword} from '$lib/api/candidate';
   import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
 

@@ -1,0 +1,3 @@
+# avoid uploading node_modules to the container
+backend/vaa-strapi/node_modules
+frontend/node_modules

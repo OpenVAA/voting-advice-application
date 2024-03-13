@@ -4,3 +4,4 @@ dist
 node_modules
 src/api
 strapi-plugin-import-export-entries
+config/email-templates

@@ -40,3 +40,4 @@ services:
 
 volumes:
   postgres:
+  strapi-uploads:

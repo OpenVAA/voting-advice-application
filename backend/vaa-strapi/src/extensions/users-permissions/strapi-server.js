@@ -1,7 +1,14 @@
 'use strict';
 
+import fs from 'fs';
 import candidate from './controllers/candidate';
 import {restrictPopulate, restrictFilters} from '../../util/acl';
+// unfortunately we can't use tsconfig paths, @see https://github.com/microsoft/TypeScript/issues/10866
+import {validatePassword} from '../../shared/utils/passwordValidation';
+
+const {
+  errors: {ValidationError}
+} = require('@strapi/utils');
 
 // NOTE: Before adding permissions here, please make sure you've implemented the appropriate access control for the resource
 const defaultPermissions = [
@@ -79,16 +86,13 @@ module.exports = async (plugin) => {
       });
     }
 
-    // Setup email template (left for the future, the default template also does not make the URL clickable)
+    // Setup email template (the default template also does not make the URL clickable)
     const email = await pluginStore.get({key: 'email'});
     // All options can be found here:
     // https://github.com/strapi/strapi/blob/2a2faea1d49c0d84077f66a57b3b73021a4c3ba7/packages/plugins/users-permissions/server/bootstrap/index.js#L41-L79
-    email.reset_password.options.message = `<p>We heard that you lost your password. Sorry about that!</p>
-
-<p>But don’t worry! You can use the following link to reset your password:</p>
-<a href="<%= URL %>?code=<%= TOKEN %>"><%= URL %>?code=<%= TOKEN %></a>
-
-<p>Thanks.</p>`;
+    email.reset_password.options.message = fs
+      .readFileSync('config/email-templates/reset-password.html')
+      .toString();
     await pluginStore.set({key: 'email', value: email});
 
     return res;
@@ -133,6 +137,32 @@ module.exports = async (plugin) => {
       restrictFilters([])
     ];
   }
+
+  // Implements a curry function helper for detouring existing function, allowing to run some specific code before the real function.
+  const detour = (detourFn, fn) => {
+    return async (ctx) => {
+      await fn(ctx);
+      return await detourFn(ctx);
+    };
+  };
+
+  // Enforce our password validation to existing endpoints
+  const authController = plugin.controllers.auth;
+  // We only check the `password` field from the body even though there are multiple variations of the password field.
+  // This is because there's usually password confirmation which is compared against `password`, so the password equivalency
+  // check would fail anyway if the confirmation password does not match password requirements.
+  const checkPasswordRequirements = async (ctx) => {
+    const body = ctx.request.body;
+    if (!body.password || typeof body.password !== 'string')
+      throw new ValidationError('Missing password field in the body.');
+
+    const valid = validatePassword(body.password);
+    if (!valid) {
+      throw new ValidationError('Password does not meet requirements');
+    }
+  };
+  authController.changePassword = detour(authController.changePassword, checkPasswordRequirements);
+  authController.resetPassword = detour(authController.resetPassword, checkPasswordRequirements);
 
   return plugin;
 };

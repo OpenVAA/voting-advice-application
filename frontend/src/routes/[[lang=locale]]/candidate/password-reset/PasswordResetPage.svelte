@@ -4,7 +4,7 @@
   import {t} from '$lib/i18n';
   import {resetPassword} from '$lib/api/candidate';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {validatePassword} from '$lib/utils/passwordValidation';
+  import {validatePassword} from '$shared/utils/passwordValidation';
   import {FrontPage} from '$lib/templates/frontPage';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {PasswordValidator} from '$candidate/components/passwordValidator';
@@ -47,14 +47,14 @@
 <!--
   @component
   Component for setting a new password for a candidate.
-  
+
   If the candidate has forgotten their password, they can request a password reset link, which will bring them to this page.
   In the page the candidate can set a new password, which is validated.
   When a valid password is given and the backend accepts the password, the candidate is redirected to `/candidate`.
-  
+
   ### Properties
   - `code`: The code used to validate the password reset request
-  
+
   ### Usage
   ```tsx
   <PasswordResetPage code={"123-123-123"} />

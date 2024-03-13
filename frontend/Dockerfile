@@ -4,12 +4,13 @@ WORKDIR /usr/src/app
 
 # Install packages and cache the results
 # so we don't have to install everything when source code changes
-COPY package.json .
-COPY yarn.lock .
-RUN yarn install
+COPY frontend/package.json .
+COPY frontend/yarn.lock .
+RUN yarn
 
 # Copy files from project root to Docker image
-COPY . .
+COPY frontend .
+COPY shared /usr/src/app/src/shared
 
 FROM base as development
 EXPOSE 5173
