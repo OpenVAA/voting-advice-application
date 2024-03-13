@@ -281,11 +281,7 @@ export const getLanguages = async (): Promise<StrapiLanguageData[] | undefined> 
 };
 
 export const getGenders = async (): Promise<StrapiGenderData[] | undefined> => {
-  const res = await request(
-    getUrl('api/genders', {
-      'populate[gender]': 'true'
-    })
-  );
+  const res = await request(getUrl('api/genders'));
   if (!res?.ok) return undefined;
 
   const resJson = await res.json();
