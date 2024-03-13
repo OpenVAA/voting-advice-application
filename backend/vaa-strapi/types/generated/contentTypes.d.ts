@@ -735,7 +735,6 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
       Attribute.Private;
     firstName: Attribute.String & Attribute.Required;
     lastName: Attribute.String & Attribute.Required;
-    gender: Attribute.String;
     birthday: Attribute.String;
     unaffiliated: Attribute.Boolean & Attribute.Required;
     photo: Attribute.Media;
@@ -763,6 +762,7 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
       'oneToMany',
       'api::candidate-attribute.candidate-attribute'
     >;
+    gender: Attribute.Relation<'api::candidate.candidate', 'oneToOne', 'api::gender.gender'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -957,6 +957,29 @@ export interface ApiElectionAppLabelElectionAppLabel extends Schema.CollectionTy
       'api::election-app-label.election-app-label'
     >;
     locale: Attribute.String;
+  };
+}
+
+export interface ApiGenderGender extends Schema.CollectionType {
+  collectionName: 'genders';
+  info: {
+    singularName: 'gender';
+    pluralName: 'genders';
+    displayName: 'Genders';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::gender.gender', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::gender.gender', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
   };
 }
 
@@ -1205,6 +1228,7 @@ declare module '@strapi/types' {
       'api::constituency.constituency': ApiConstituencyConstituency;
       'api::election.election': ApiElectionElection;
       'api::election-app-label.election-app-label': ApiElectionAppLabelElectionAppLabel;
+      'api::gender.gender': ApiGenderGender;
       'api::language.language': ApiLanguageLanguage;
       'api::nomination.nomination': ApiNominationNomination;
       'api::party.party': ApiPartyParty;

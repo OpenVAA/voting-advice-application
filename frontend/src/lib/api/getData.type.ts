@@ -351,6 +351,13 @@ export interface StrapiLanguageData {
   };
 }
 
+export interface StrapiGenderData {
+  id: number;
+  attributes: {
+    name: string;
+  };
+}
+
 export interface StrapiPartyData {
   id: number | string;
   attributes: {

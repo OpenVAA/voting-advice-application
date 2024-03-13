@@ -4,7 +4,12 @@ import {authContext} from '$lib/utils/authenticationStore';
 import type {Language, User} from '$lib/types/candidateAttributes';
 import type {Photo} from '$lib/types/candidateAttributes';
 import type {Answer, Question} from '$lib/utils/answerStore';
-import type {StrapiAnswerData, StrapiLanguageData, StrapiResponse} from '$lib/api/getData.type';
+import type {
+  StrapiAnswerData,
+  StrapiLanguageData,
+  StrapiGenderData,
+  StrapiResponse
+} from '$lib/api/getData.type';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
@@ -81,6 +86,7 @@ export const me = async (): Promise<User | undefined> => {
       'populate[candidate][populate][nominations][populate][constituency]': 'true',
       'populate[candidate][populate][party]': 'true',
       'populate[candidate][populate][photo]': 'true',
+      'populate[candidate][populate][gender]': 'true',
       'populate[candidate][populate][motherTongues]': 'true'
     })
   );
@@ -96,7 +102,7 @@ export const me = async (): Promise<User | undefined> => {
 export const updateBasicInfo = async (
   manifesto?: Text,
   birthday?: string,
-  gender?: string,
+  genderID?: number,
   photo?: Photo,
   unaffiliated?: boolean,
   motherTongues?: Language[]
@@ -114,7 +120,7 @@ export const updateBasicInfo = async (
       data: {
         manifesto,
         birthday,
-        gender,
+        gender: genderID,
         unaffiliated,
         photo: photo?.id,
         motherTongues
@@ -268,6 +274,14 @@ export const getLanguages = async (): Promise<StrapiLanguageData[] | undefined> 
       'populate[language]': 'true'
     })
   );
+  if (!res?.ok) return undefined;
+
+  const resJson = await res.json();
+  return resJson.data;
+};
+
+export const getGenders = async (): Promise<StrapiGenderData[] | undefined> => {
+  const res = await request(getUrl('api/genders'));
   if (!res?.ok) return undefined;
 
   const resJson = await res.json();
