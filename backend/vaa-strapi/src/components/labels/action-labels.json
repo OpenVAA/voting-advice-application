@@ -49,7 +49,7 @@
     "answerCategoryQuestions": {
       "type": "string",
       "required": true,
-      "default": "Answer {{0}} Questions"
+      "default": "Answer {numQuestions} Questions"
     },
     "readMore": {
       "type": "string",
