@@ -13,7 +13,7 @@
   export let title: $$Props['title'];
   export let noteClass: $$Props['noteClass'] = 'text-secondary text-center';
   export let noteRole: $$Props['noteRole'] = 'note';
-  export let primaryActionsLabel: $$Props['primaryActionsLabel'] = $t('aria.primaryActionsLabel');
+  export let primaryActionsLabel: $$Props['primaryActionsLabel'] = undefined;
 
   const authContext = getContext<AuthContext>('auth');
 
@@ -73,7 +73,7 @@ the rendering of an empty `<figure>` element even if there's no content.
 ### Properties
 
 - `title`: The required page `title`.
-- `noteClass?`: Optional class string to add to the `<div>` tag wrapping the
+- `noteClass?`: Optional class string to add to the `<div>` tag wrapping the 
   `note` slot.
 - `noteRole?`: Aria role for the `note` slot.
   @default 'note'
@@ -158,7 +158,7 @@ the rendering of an empty `<figure>` element even if there's no content.
   {#if $$slots.primaryActions}
     <section
       class="flex w-full max-w-xl flex-col items-center justify-end"
-      aria-label={primaryActionsLabel}>
+      aria-label={primaryActionsLabel ?? $t('aria.primaryActionsLabel')}>
       <slot name="primaryActions" />
     </section>
   {/if}
