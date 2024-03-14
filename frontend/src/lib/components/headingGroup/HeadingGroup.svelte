@@ -1,8 +1,5 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-
-  $$restProps['role'] ??= 'group';
-  $$restProps['aria-roledescription'] ??= $t('aria.headingGroup');
 </script>
 
 <!--
@@ -12,11 +9,8 @@ and the main title.
 
 ### Properties
 
-- `aria-roledescription`: The Aria role description of the `<hgroup>` 
-  element representing the pre-title.
-  @default $t('aria.headingGroup')
-- `role`: The Aria role of the `<hgroup>` element.
-  @default 'group'
+- `aria-roledescription`: The Aria role description of the `<hgroup>` element representing the pre-title. @default $t('aria.headingGroup')
+- `role`: The Aria role of the `<hgroup>` element. @default 'group'
 - Any valid attributes of a `<hgroup>` element.
 
 ### Slots
