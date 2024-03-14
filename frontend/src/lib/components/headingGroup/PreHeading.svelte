@@ -1,19 +1,14 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-
-  $$restProps['aria-roledescription'] ??= $t('aria.preHeading');
 </script>
 
 <!--
 @component
-Used for a pre-title, or kicker, above the main title of a page
-within a `HeadingGroup`.
+Used for a pre-title, or kicker, above the main title of a page within a `HeadingGroup`.
 
 ### Properties
 
-- `aria-roledescription`: The Aria role description of the `<p>` 
-  element representing the pre-title.
-  @default $t('aria.PreHeading')
+- `aria-roledescription`: The Aria role description of the `<p>` element representing the pre-title. @default $t('aria.PreHeading')
 - Any valid attributes of a `<p>` element.
 
 ### Slots
