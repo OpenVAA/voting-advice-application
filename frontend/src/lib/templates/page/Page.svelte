@@ -16,14 +16,9 @@
   export let navId: $$Props['navId'] = 'pageNav';
   export let headerClass: $$Props['headerClass'] = 'bg-base-300';
   export let mainClass: $$Props['mainClass'] = '';
-  export let drawerOpenLabel: $$Props['drawerOpenLabel'] = $t('header.openMenu');
-  export let drawerCloseLabel: $$Props['drawerCloseLabel'] = $t('header.closeMenu');
-  export let drawerToggleLabel: $$Props['drawerToggleLabel'] = $t('header.toggleMenu');
-  export let skipLinkLabel: $$Props['skipLinkLabel'] = $t('aria.skipToMain');
   export let progress: $$Props['progress'] = undefined;
   export let progressMin: $$Props['progressMin'] = 0;
   export let progressMax: $$Props['progressMax'] = 100;
-  export let progressTitle: $$Props['progressTitle'] = $t('header.progressTitle');
 
   let drawerOpen = false;
   let drawerOpenElement: HTMLButtonElement | undefined;
@@ -80,25 +75,12 @@ the Drawer component.
 - `mainId?`: The id used for the `<main>` that contains the page's main content.
   This is needed for the hidden skip link at the start of the page.
   @default 'mainContent'
-- `drawerToggleId?`: The id used for the `<label>` element used by DaisyUI for toggling
-  the drawer. This must match the `for` attribute of the `<label>`
-  that's used to toggle the drawer open and closed.
-  @default 'pageDrawer'
-- `drawerCloseLabel?`: Text label for the button and overlay closing the drawer.
-  @default $t('header.closeMenu')
-- `drawerOpenLabel?`: The Aria label for the button opening the drawer.
-  @default $t('header.openMenu')
-- `drawerToggleLabel?`: The Aria label for the `<input>` that governs toggling the drawer.
-  This input is not focusable, so this is mostly theoretical.
-  @default $t('header.toggleMenu')
 - `headerClass?`: Optional class string to add to the `<header>` tag wrapping the
   `drawerOpenButton` and `header` slots.
 - `mainClass?`: Optional class string to add to the `<div>` tag wrapping the page's
   main content.
 - `navId?`: The id for the `<nav>` element containing the navigation.
   @default 'pageNav'
-- `skipLinkLabel?`: Optional text for the skip link to main content.
-  @default $t('aria.skipLinkLabel')
 - `progress?`: Optional value for the progress bar. The bar will be hidden
   if the property is `undefined` or `null`. Use the bar to show the user's
   progress in the application, not as a loading indicator: it uses the
@@ -107,8 +89,6 @@ the Drawer component.
   @default 0
 - `progressMax?`: Optional maximum value for the progress bar.
   @default 100
-- `progressTitle?`: Optional title for the progress bar.
-  @default `$t('header.progressTitle')`
 - `class`: Additional class string to append to the element's default classes.
 - Any valid attributes of a `<div>` element.
 
@@ -131,7 +111,7 @@ the Drawer component.
 </svelte:head>
 
 <!-- Skip links for screen readers and keyboard users -->
-<a href="#{mainId}" class="sr-only focus:not-sr-only">{skipLinkLabel}</a>
+<a href="#{mainId}" class="sr-only focus:not-sr-only">{$t('aria.skipToMain')}</a>
 
 <!-- Drawer container -->
 <div {...concatClass($$restProps, 'drawer')}>
@@ -144,7 +124,7 @@ the Drawer component.
     class="drawer-toggle"
     tabindex="-1"
     aria-hidden="true"
-    aria-label={drawerToggleLabel} />
+    aria-label={$t('header.toggleMenu')} />
 
   <!-- Drawer content -->
   <div class="drawer-content flex flex-col">
@@ -155,7 +135,7 @@ the Drawer component.
         bind:this={drawerOpenElement}
         aria-expanded={drawerOpen}
         aria-controls={navId}
-        aria-label={drawerOpenLabel}
+        aria-label={$t('header.openMenu')}
         class="btn btn-ghost drawer-button flex cursor-pointer items-center gap-md text-neutral">
         <slot name="drawerOpenButton">
           <Icon name="menu" />
@@ -172,7 +152,7 @@ the Drawer component.
           value={progress}
           min={progressMin}
           max={progressMax}
-          title={progressTitle}
+          title={$t('header.progressTitle')}
           class="absolute bottom-0 left-0 h-4 w-full translate-y-[50%]" />
       {/if}
     </header>
@@ -196,7 +176,7 @@ the Drawer component.
       <NavItem
         on:click={closeDrawer}
         icon="close"
-        text={drawerCloseLabel ?? 'Close'}
+        text={$t('header.closeMenu')}
         class="pt-16"
         id="drawerCloseButton" />
     </svelte:component>
