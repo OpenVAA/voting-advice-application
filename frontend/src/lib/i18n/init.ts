@@ -5,7 +5,7 @@ import IntlMessageFormat from 'intl-messageformat';
 import {logDebugError} from '$lib/utils/logger';
 import {derived, get} from 'svelte/store';
 import {staticTranslations, type TranslationsPayload} from './translations';
-import {matchLocale} from './utils';
+import {matchLocale, purgeTranslations} from './utils';
 import settings from './settings.json';
 
 const dbLocaleProps = settings.supportedLocales;
@@ -134,7 +134,7 @@ export function addDynamicTranslations(
   translations: Parameters<typeof addTranslations>[0]
 ) {
   if (dynamicTranslationsAdded[loc]) return;
-  addTranslations({[loc]: translations});
+  addTranslations(purgeTranslations({[loc]: translations}));
   dynamicTranslationsAdded[loc] = true;
 }
 
