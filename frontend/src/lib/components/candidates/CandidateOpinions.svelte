@@ -1,6 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {answeredQuestions} from '$lib/utils/stores';
+  import {CategoryTag} from '$lib/components/categoryTag';
   import {LikertResponseButtons, QuestionOpenAnswer} from '$lib/components/questions';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {getLikertAnswer} from '$lib/utils/answers';
@@ -20,7 +21,7 @@
 
     <div class="mb-60 mt-20">
       <HeadingGroup id={headingId} class="mb-lg text-center">
-        <PreHeading class="text-accent">{category}</PreHeading>
+        <PreHeading><CategoryTag {category} /></PreHeading>
         <h3>{text}</h3>
       </HeadingGroup>
 
