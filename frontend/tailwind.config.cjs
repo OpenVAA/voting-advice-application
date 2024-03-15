@@ -42,6 +42,7 @@ module.exports = {
   // https://tailwindcss.com/docs/content-configuration#safelisting-classes
   safelist: [
     ...colorNames.map(c => `btn-${c}`), 
+    ...colorNames.map(c => `bg-${c}`), 
     ...colorNames.map(c => `fill-${c}`), 
     ...colorNames.map(c => `dark:fill-${c}`), 
     ...colorNames.map(c => `text-${c}`)
@@ -114,11 +115,15 @@ module.exports = {
       safer: 'env(safe-area-inset-right, 0px)',
       safet: 'env(safe-area-inset-top, 0px)',
       safeb: 'env(safe-area-inset-bottom, 0px)', 
-      'safelgl': `calc(env(safe-area-inset-left, 0px) + ${20/16}rem)`,
-      'safelgr': `calc(env(safe-area-inset-right, 0px) + ${20/16}rem)`,
-      'safelgt': `calc(env(safe-area-inset-top, 0px) + ${20/16}rem)`,
+      'safemdl': `calc(env(safe-area-inset-left,   0px) + ${10/16}rem)`,
+      'safemdr': `calc(env(safe-area-inset-right,  0px) + ${10/16}rem)`,
+      'safemdt': `calc(env(safe-area-inset-top,    0px) + ${10/16}rem)`,
+      'safemdb': `calc(env(safe-area-inset-bottom, 0px) + ${10/16}rem)`,
+      'safelgl': `calc(env(safe-area-inset-left,   0px) + ${20/16}rem)`,
+      'safelgr': `calc(env(safe-area-inset-right,  0px) + ${20/16}rem)`,
+      'safelgt': `calc(env(safe-area-inset-top,    0px) + ${20/16}rem)`,
       'safelgb': `calc(env(safe-area-inset-bottom, 0px) + ${20/16}rem)`,
-      'safenavt': `calc(env(safe-area-inset-top, 0px) + ${16/16}rem)`, // For the top nav
+      'safenavt': `calc(env(safe-area-inset-top,   0px) + ${16/16}rem)`, // For the top nav
     },
     transitionDuration: {
       none:    '0s',
