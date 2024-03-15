@@ -1,3 +1,5 @@
 {
-  "heroEmoji": "🎊"
+  "heroEmoji": "🎊",
+  "candidatesShown": "FI - {numShown} candidates",
+  "candidatesTotal": "FI - of {numTotal}"
 }

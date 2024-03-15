@@ -4,5 +4,6 @@
   "preHeading": "Pre-title",
   "primaryActionsLabel": "Primary actions",
   "skipToMain": "Skip to main content",
-  "submitLikert": "Save answer and continue"
+  "submitLikert": "Save answer and continue",
+  "toggleExpandableContent": "Expand or collapse this section"
 }

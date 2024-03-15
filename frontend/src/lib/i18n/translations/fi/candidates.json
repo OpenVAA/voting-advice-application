@@ -2,5 +2,7 @@
   "candidates": "FI - Candidates",
   "notFound": "FI - No candidates found",
   "viewAllCandidates": "FI - View all candidates",
-  "ingress": "FI - These are all the candidates standing in the election."
+  "ingress": "FI - These are all the candidates standing in the election.",
+  "candidatesShown": "FI - {numShown} candidates",
+  "candidatesTotal": "FI - of {numTotal}"
 }
