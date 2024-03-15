@@ -89,7 +89,7 @@ export const matchCandidates = function matchCandidates(
     subQuestionGroups: categories.map(
       (c) =>
         ({
-          label: c,
+          label: c?.name ?? '—',
           matchableQuestions: Object.values(questions).filter((q) => q.category === c)
         }) as HasMatchableQuestions
     )
@@ -105,17 +105,17 @@ export const matchCandidates = function matchCandidates(
  * Options for a dummy question object for matching.
  */
 interface LikertQuestionOptions extends MultipleChoiceQuestionOptions {
-  category?: string;
+  category?: QuestionCategoryProps;
 }
 
 /**
  * A dummy question object for matching.
  */
 class LikertQuestion extends MultipleChoiceQuestion {
-  public readonly category: string;
+  public readonly category: QuestionCategoryProps | undefined;
   constructor({id, values, category}: LikertQuestionOptions) {
     super({id, values});
-    this.category = category ?? '';
+    this.category = category;
   }
 }
 
