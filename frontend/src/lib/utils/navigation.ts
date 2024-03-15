@@ -30,7 +30,8 @@ export enum Route {
   Party = 'parties',
   Question = 'questions',
   Questions = 'questions',
-  Result = 'results',
+  ResultCandidate = 'results/candidate',
+  ResultParty = 'results/party',
   Results = 'results',
   _Test = '_test'
 }
