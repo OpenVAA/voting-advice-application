@@ -2,6 +2,7 @@
   import {page} from '$app/stores';
   import {Button} from '$lib/components/button';
   import {BasicPage} from '$lib/templates/basicPage';
+  import {CategoryTag} from '$lib/components/categoryTag';
   import {Expander} from '$lib/components/expander';
   import LikertResponseButtons from '$lib/components/questions/LikertResponseButtons.svelte';
   import {answerContext} from '$lib/utils/answerStore';
@@ -15,19 +16,21 @@
   $: answerStore = $store;
 
   let questions: QuestionProps[];
-  let questionsByCategory: Record<string, Array<QuestionProps>>;
+  let questionsByCategory: Record<string, {category: QuestionCategoryProps; questions: QuestionProps[]}>;
 
   $: questions = $page.data.questions;
 
-  $: questionsByCategory = questions.reduce(
-    (acc, question) => {
+  $: questionsByCategory = questions.reduce((acc, question) => {
       if (!question.category) {
         return acc;
       }
-      if (!acc[question.category]) {
-        acc[question.category] = [];
+      if (!acc[question.category.id]) {
+        acc[question.category.id] = {
+          category: question.category,
+          questions: []
+        };
       }
-      acc[question.category].push(question);
+      acc[question.category.id].questions.push(question);
       return acc;
     },
     {} as typeof questionsByCategory
@@ -36,14 +39,13 @@
   let nofUnansweredQuestions = 0;
   let loading = true;
   let unansweredCategories: Array<string> | undefined;
-  $: {
-    if (answerStore) {
-      nofUnansweredQuestions = questions.length - Object.entries(answerStore).length;
-      loading = false;
-      unansweredCategories = Object.keys(questionsByCategory).filter(
-        (category) => !questionsByCategory[category].every((question) => answerStore?.[question.id])
-      );
-    }
+  $: if (answerStore) {
+    nofUnansweredQuestions = questions.length - Object.entries(answerStore).length;
+    loading = false;
+    unansweredCategories = Object.keys(questionsByCategory).filter(
+      (category) =>
+        !questionsByCategory[category].questions.every((question) => answerStore?.[question.id])
+    );
   }
 </script>
 
@@ -61,19 +63,17 @@
     {$t('candidateApp.allQuestions.info')}
   </p>
 
-  {#each Object.entries(questionsByCategory) as [category, categoryQuestions]}
+  {#each Object.values(questionsByCategory) as { category, questions }}
     <div class="edgetoedge-x">
       <Expander
-        title={category || ''}
+        title={category.name}
         variant="category"
-        defaultExpanded={unansweredCategories?.includes(category ?? '')}>
-        {#each categoryQuestions as question}
+        defaultExpanded={unansweredCategories?.includes(category.id)}>
+        {#each questions as question}
           <!-- Question has been answered -->
           {#if answerStore?.[question.id]}
             <div class="pb-20 pt-20">
-              <div class="text-accent">
-                {question.category}
-              </div>
+              <CategoryTag {category} />
 
               <Expander title={question.text ?? ''} variant="question">
                 {question.info}
@@ -100,9 +100,7 @@
             <!-- Question not yet answered -->
           {:else}
             <div class="pt-30 pb-20">
-              <div class="text-accent">
-                {question.category}
-              </div>
+              <CategoryTag {category} />
 
               <Expander title={question.text ?? ''} variant="question" titleClass="text-warning">
                 {question.info}
