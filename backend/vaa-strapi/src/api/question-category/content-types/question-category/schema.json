@@ -15,8 +15,8 @@
     "order": {
       "pluginOptions": {},
       "type": "integer",
-      "min": 0,
-      "required": true
+      "required": true,
+      "default": 0
     },
     "election": {
       "type": "relation",
