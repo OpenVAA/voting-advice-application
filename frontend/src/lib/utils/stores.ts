@@ -63,35 +63,20 @@ export const resultsAvailable: Readable<boolean> = derived(
 // Currently, it's quite silly that we need to separate matches and candidates, but when the
 // vaa-data model integration is complete, the proper Candidate object will be
 // contained in the Match objects themselves.
-export const candidateRankings: Readable<{match: RankingProps; candidate: CandidateProps}[]> =
-  derived(
-    [page, answeredQuestions],
-    ([$page, $answeredQuestions]) => {
-      if (
-        Object.values($answeredQuestions).length === 0 ||
-        $page.data.candidates.length === 0 ||
-        $page.data.questions.length === 0
-      ) {
-        return [];
-      }
-      const matches = matchCandidates(
-        $page.data.questions,
-        $answeredQuestions,
-        $page.data.candidates
-      );
-      const rankings = [];
-      for (const match of matches) {
-        const candidate = $page.data.candidates.find(
-          (c) => 'id' in match.entity && c.id === match.entity.id
-        );
-        if (candidate) {
-          rankings.push({match: match as RankingProps, candidate});
-        }
-      }
-      return rankings;
-    },
-    []
-  );
+export const candidateRankings: Readable<RankingProps<CandidateProps>[]> = derived(
+  [page, answeredQuestions],
+  ([$page, $answeredQuestions]) => {
+    if (
+      Object.values($answeredQuestions).length === 0 ||
+      $page.data.candidates.length === 0 ||
+      $page.data.questions.length === 0
+    ) {
+      return [];
+    }
+    return matchCandidates($page.data.questions, $answeredQuestions, $page.data.candidates);
+  },
+  []
+);
 
 /**
  * This store tells which application we're using. For other app types,
