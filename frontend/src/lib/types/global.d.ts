@@ -247,13 +247,21 @@ declare global {
     // distance: number;
     entity: T;
     score: number;
-    subMatches?: {
-      // distance: number;
-      score: number;
-      questionGroup: {
-        label?: string;
-      };
-    }[];
+    subMatches?: SubMatchProps[];
+  }
+
+  /**
+   * The submatches of a `RankingProps`
+   */
+  interface SubMatchProps {
+    // distance: number;
+    score: number;
+    // TODO: Convert to QuestionCategoryProps
+    questionGroup: {
+      label?: string; // Convert to name
+      color?: string;
+      colorDark?: string;
+    };
   }
 
   export type CandidateDetailsCardProps = {
