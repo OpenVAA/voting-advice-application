@@ -4,11 +4,6 @@
 export type EntityType = 'all' | 'candidate' | 'party';
 
 /**
- * Value of enumerations for specifying the type of question categories
- */
-export type QuestionCategoryType = 'info' | 'opinion';
-
-/**
  * The basic format for Strapi responses
  */
 export type StrapiResponse<T> = {
@@ -223,6 +218,7 @@ export interface StrapiQuestionData {
     shortName: LocalizedString;
     info: LocalizedString;
     fillingInfo: LocalizedString;
+    order: number | null;
     category: {
       data: StrapiQuestionCategoryData;
     };

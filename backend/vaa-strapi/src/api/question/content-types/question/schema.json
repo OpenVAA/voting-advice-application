@@ -57,6 +57,10 @@
     },
     "customData": {
       "type": "json"
+    },
+    "order": {
+      "type": "integer",
+      "default": 0
     }
   }
 }
