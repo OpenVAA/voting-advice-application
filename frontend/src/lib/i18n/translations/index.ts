@@ -10,6 +10,7 @@ const keys = [
   'candidates',
   'common',
   'components',
+  'entity',
   'error',
   'footer',
   'header',

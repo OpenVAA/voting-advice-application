@@ -1,8 +1,4 @@
 {
-  "tabs": {
-    "basicInfo": "FI - Basic Info",
-    "opinions": "FI - Opinions"
-  },
   "age": "FI - age",
   "contact_support": "FI - Contact Support",
   "election_compass_for_voters": "FI - Election Compass for Voters",
@@ -14,13 +10,11 @@
   "politicalExperience": "FI - Political experience",
   "themes": "FI - Themes",
   "portraitAlt": "FI - Candidate photo",
-  "missingAnswer": "FI - —",
-  "multipleAnswerSeparator": "FI -  • ",
-  "email_placeholder": "example@email.com",
+  "email_placeholder": "FI - example@email.com",
   "email": "FI - Email",
   "enter_email_and_password": "FI - Enter the email and password you've received from your party to edit your data and opinions.",
   "forgot_password": "FI - Forgot Password?",
-  "password_placeholder": "Esim. CP23-174a-f4%&-aHAB",
+  "password_placeholder": "FI - E.g. CP23-174a-f4%&-aHAB",
   "password": "FI - Password",
   "sign_in_button": "FI - Sign in",
   "sign_in_title": "FI - Sign in",
