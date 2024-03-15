@@ -16,11 +16,15 @@
   $: answerStore = $store;
 
   let questions: QuestionProps[];
-  let questionsByCategory: Record<string, {category: QuestionCategoryProps; questions: QuestionProps[]}>;
+  let questionsByCategory: Record<
+    string,
+    {category: QuestionCategoryProps; questions: QuestionProps[]}
+  >;
 
   $: questions = $page.data.questions;
 
-  $: questionsByCategory = questions.reduce((acc, question) => {
+  $: questionsByCategory = questions.reduce(
+    (acc, question) => {
       if (!question.category) {
         return acc;
       }
