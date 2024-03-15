@@ -13,7 +13,6 @@ import type {
   StrapiResponse,
   StrapiAppLabelsData,
   LocalizedStrapiData,
-  QuestionCategoryType,
   StrapiQuestionCategoryData
 } from './getData.type';
 
@@ -330,16 +329,18 @@ export const getQuestions = ({
   return getData<StrapiQuestionCategoryData[]>('api/question-categories', params).then((result) => {
     const questions: QuestionProps[] = [];
     for (const cat of result) {
+      const catProps = parseQuestionCategory(cat, locale);
       for (const qst of cat.attributes.questions.data) {
         const attr = qst.attributes;
         const settings = attr.questionType?.data.attributes.settings;
         if (!settings) throw new Error(`Question with id '${qst.id}' has no settings!`);
         const props: QuestionProps = {
           id: `${qst.id}`,
+          order: attr.order ?? 0,
           text: translate(attr.text, locale),
           info: translate(attr.info, locale),
           shortName: translate(attr.shortName, locale),
-          category: translate(cat.attributes.name, locale),
+          category: catProps,
           type: settings.type
         };
         if ('values' in settings)
@@ -354,8 +355,34 @@ export const getQuestions = ({
         questions.push(props);
       }
     }
-    return questions;
+    // Sort by ascending order of first category and then question
+    return questions.sort((a, b) => {
+      const catCmp = a.category.order - b.category.order;
+      if (catCmp !== 0) return catCmp;
+      return a.order - b.order;
+    });
   });
+};
+
+/**
+ * Parse StrapiQuestionCategory data into a `QuestionCategoryProps` object.
+ */
+const parseQuestionCategory = (
+  category: StrapiQuestionCategoryData,
+  locale?: string
+): QuestionCategoryProps => {
+  const id = `${category.id}`;
+  const attr = category.attributes;
+  const props: QuestionCategoryProps = {
+    id,
+    order: attr.order ?? 0,
+    type: attr.type,
+    info: translate(attr.info, locale),
+    name: translate(attr.name, locale),
+    shortName: translate(attr.shortName, locale),
+    ...ensureColors(attr.color, attr.colorDark)
+  };
+  return props;
 };
 
 /**
