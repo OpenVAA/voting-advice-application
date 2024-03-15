@@ -9,6 +9,13 @@ declare global {
   };
 
   /**
+   * Make specific properties of an interface required. Works the same way as
+   * `Required<Type>` but only applies to keys listed.
+   * Source: https://stackoverflow.com/questions/69327990/how-can-i-make-one-property-non-optional-in-a-typescript-type
+   */
+  type WithRequired<Type, Key extends keyof Type> = Type & {[Prop in Key]-?: Type[Prop]};
+
+  /**
    * The properties of a multiple choice option in a Question.
    * TODO: This may be deprecated later by the `vaa-data` module.
    */
