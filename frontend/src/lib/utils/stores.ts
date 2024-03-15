@@ -53,10 +53,11 @@ export function resetLocalStorage(): void {
  * A store that is true, when the results are available
  */
 export const resultsAvailable: Readable<boolean> = derived(
-  [page, answeredQuestions],
-  ([$page, $answeredQuestions]) =>
+  [answeredQuestions],
+  ([$answeredQuestions]) => {
     // TODO: Use a setting to set the minimum number of answers required
-    $page.data.questions.length > 0 && Object.values($answeredQuestions).length > 0,
+    return Object.values($answeredQuestions).length > 0;
+  },
   false
 );
 
