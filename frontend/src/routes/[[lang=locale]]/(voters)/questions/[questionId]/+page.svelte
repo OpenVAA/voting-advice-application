@@ -6,6 +6,7 @@
   import {getRoute, Route} from '$lib/utils/navigation';
   import {answeredQuestions, resultsAvailable} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
+  import {CategoryTag} from '$lib/components/categoryTag';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {
     LikertResponseButtons,
@@ -110,9 +111,8 @@
       </svelte:fragment>
 
       <HeadingGroup slot="heading" id={headingId}>
-        {#if category && category !== ''}
-          <!-- TODO: Set color based on category -->
-          <PreHeading class="text-accent">{category}</PreHeading>
+        {#if category}
+          <PreHeading><CategoryTag {category} /></PreHeading>
         {/if}
         <h1>{text}</h1>
       </HeadingGroup>
