@@ -7,10 +7,11 @@
   import {addAnswer, updateAnswer} from '$lib/api/candidate';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {BasicPage} from '$lib/templates/basicPage';
-  import {Warning} from '$lib/components/warning';
   import {Button} from '$lib/components/button';
+  import {CategoryTag} from '$lib/components/categoryTag';
   import {LikertResponseButtons, QuestionInfo} from '$lib/components/questions';
   import {MultilangTextInput} from '$candidate/components/textArea';
+  import {Warning} from '$lib/components/warning';
   import type {CandidateContext} from '$lib/utils/candidateStore';
   import type {QuestionPageProps} from './QuestionPage.type';
 
@@ -139,7 +140,7 @@
     goto($getRoute(Route.CandAppQuestions));
   };
 
-  $: category = translate(currentQuestion.category, $locale);
+  $: category = currentQuestion.category;
   $: info = translate(currentQuestion.info, $locale);
   $: options = currentQuestion.values?.map(({key, label}) => ({
     key,
@@ -173,9 +174,8 @@ In addition to the question, includes a Likert scale and a text area for comment
     <Warning display={!!questionsLocked} slot="note">{$t('questions.cannotEditWarning')}</Warning>
 
     <HeadingGroup slot="heading" id="hgroup-{questionId}">
-      {#if category !== ''}
-        <!-- TODO: Set color based on category -->
-        <PreHeading class="text-accent">{category}</PreHeading>
+      {#if category}
+        <PreHeading><CategoryTag {category} /></PreHeading>
       {/if}
       <h1>{translate(currentQuestion.text, $locale)}</h1>
     </HeadingGroup>

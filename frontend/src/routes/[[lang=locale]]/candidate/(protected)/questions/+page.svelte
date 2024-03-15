@@ -57,7 +57,7 @@
       if (!question.category) {
         return acc;
       }
-      const category = translate(question.category, $locale);
+      const category = question.category.name;
       if (!acc[category]) {
         acc[category] = [];
       }
