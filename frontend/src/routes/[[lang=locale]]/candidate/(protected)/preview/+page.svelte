@@ -2,14 +2,12 @@
   import type {CandidateContext} from '$lib/utils/candidateStore';
   import {getContext} from 'svelte';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import {CandidateDetailsCard} from '$lib/components/candidates';
   import {SingleCardPage} from '$lib/templates/singleCardPage';
   import {locale, t} from '$lib/i18n';
+  import {EntityDetails} from '$lib/components/entityDetails';
   import {Icon} from '$lib/components/icon';
-  import {LoadingSpinner} from '$candidate/components/loadingSpinner';
+  import { Loading } from '$lib/components/loading';
   import {getInfoQuestions, getOpinionQuestions, getNominatedCandidates} from '$lib/api/getData';
-  import {Button} from '$lib/components/button';
-  import {getRoute, Route} from '$lib/utils/navigation';
 
   const {userStore} = getContext<CandidateContext>('candidate');
 
@@ -41,7 +39,7 @@
 </script>
 
 {#await loadData}
-  <LoadingSpinner />
+  <Loading/>
 {:then}
   {#if !candidate}
     <span>{$t('candidateApp.preview.notFound')}</span>
@@ -50,18 +48,9 @@
       <svelte:fragment slot="note">
         <Icon name="info" />
         {$t('candidateApp.preview.tip')}
-        <div class="flex justify-center">
-          <Button
-            class="w-1/2"
-            href={$getRoute(Route.CandAppHome)}
-            variant="normal"
-            text={$t('candidateApp.preview.close')}
-            icon="previous"
-            iconPos="left" />
-        </div>
       </svelte:fragment>
       <LogoutButton buttonVariant="icon" slot="banner" />
-      <CandidateDetailsCard {candidate} {opinionQuestions} {infoQuestions} candidateView />
+      <EntityDetails entity={candidate} {opinionQuestions} {infoQuestions} />
     </SingleCardPage>
   {/if}
 {/await}
