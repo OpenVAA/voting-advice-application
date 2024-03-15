@@ -106,7 +106,7 @@ export interface Question {
   id: string;
   text: LocalizedString;
   shortName: LocalizedString;
-  category?: LocalizedString;
+  category: QuestionCategoryProps;
   info?: LocalizedString;
   fillingInfo?: string;
   type: QuestionSettingsProps['type'];
