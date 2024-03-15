@@ -16,6 +16,7 @@
   import type {StrapiGenderData, StrapiLanguageData} from '$lib/api/getData.type';
   import type {Language} from '$lib/types/candidateAttributes';
   import {TextArea} from '$candidate/components/textArea';
+  import {PreventNavigation} from '$lib/components/preventNavigation';
 
   const basicInfoFields = ['firstName', 'lastName', 'party'];
 
@@ -35,13 +36,40 @@
 
   let loading = false;
 
-  let {gender, motherTongues, birthday, photo, unaffiliated, manifesto, nominations} =
-    user?.candidate || {};
+  let {gender, motherTongues, birthday, photo, unaffiliated, manifesto, nominations} = {
+    gender: {
+      id: undefined
+    },
+    manifesto: '',
+    ...user?.candidate
+  };
 
   let genderID = gender?.id;
 
   let manifestoTextArea: TextArea; // Used to clear the local storage from the parent component
   let savedManifesto = user?.candidate?.manifesto; // Used to detect changes in the manifesto
+
+  // Hash form state in order to detect changes
+  let previousStateHash: string | undefined;
+  let dirty = false;
+
+  $: {
+    const getCurrentHash = () =>
+      JSON.stringify({
+        genderID,
+        motherTongues,
+        birthday,
+        photo,
+        unaffiliated,
+        nominations,
+        manifesto
+      });
+    previousStateHash = previousStateHash ?? getCurrentHash();
+    if (!dirty) {
+      const currentStateHash = getCurrentHash();
+      dirty = currentStateHash !== previousStateHash;
+    }
+  }
 
   // all necessary fields filled boolean
   $: allFilled =
@@ -53,6 +81,7 @@
 
   const submitForm = async () => {
     loading = true;
+    dirty = false;
     try {
       await uploadPhoto();
       await updateBasicInfo(manifesto, birthday, genderID, photo, unaffiliated, motherTongues);
@@ -133,6 +162,7 @@
 </script>
 
 <BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
+  <PreventNavigation active={dirty} />
   <form on:submit|preventDefault={submitForm}>
     <div class="flex flex-col items-center gap-16">
       <p class="text-center">
