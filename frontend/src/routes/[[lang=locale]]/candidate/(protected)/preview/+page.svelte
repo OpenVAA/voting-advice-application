@@ -2,8 +2,8 @@
   import {getContext} from 'svelte';
   import {t} from '$lib/i18n';
   import type {AuthContext} from '$lib/utils/authenticationStore';
-  import {CandidateDetailsCard} from '$lib/components/candidates';
   import {Icon} from '$lib/components/icon';
+  import {EntityDetails} from '$lib/components/entityDetails';
   import SingleCardPage from '$lib/templates/singleCardPage/SingleCardPage.svelte';
   import LogoutButton from '$lib/candidate/components/logoutButton/LogoutButton.svelte';
   import type {PageData} from './$types';
@@ -34,6 +34,6 @@
       {$t('candidateApp.preview.tip')}
     </svelte:fragment>
     <LogoutButton slot="banner" />
-    <CandidateDetailsCard {candidate} {opinionQuestions} {infoQuestions} />
+    <EntityDetails entity={candidate} {opinionQuestions} {infoQuestions} />
   </SingleCardPage>
 {/if}
