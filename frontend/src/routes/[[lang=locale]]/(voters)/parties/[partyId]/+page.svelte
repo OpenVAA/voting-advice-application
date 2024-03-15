@@ -1,6 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {GetFullNameInOrder} from '$lib/utils/internationalisation';
+  import {formatName} from '$lib/utils/internationalisation';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
   import {SingleCardPage} from '$lib/templates/singleCardPage';
@@ -29,10 +29,10 @@
         {#if party.nominatedCandidates?.length}
           <p><strong>{$t('candidates.candidates')}:</strong></p>
           <ul>
-            {#each party.nominatedCandidates as { firstName, lastName, id }}
+            {#each party.nominatedCandidates as candidate}
               <li>
-                <a href={$getRoute({route: Route.Candidate, id})}>
-                  {GetFullNameInOrder(firstName, lastName)}
+                <a href={$getRoute({route: Route.Candidate, id: candidate.id})}>
+                  {formatName(candidate)}
                 </a>
               </li>
             {/each}
