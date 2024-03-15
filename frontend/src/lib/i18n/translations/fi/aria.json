@@ -4,5 +4,6 @@
   "preHeading": "FI - Pre-title",
   "primaryActionsLabel": "FI - Primary actions",
   "skipToMain": "FI - Skip to main content",
-  "submitLikert": "FI - Save answer and continue"
+  "submitLikert": "FI - Save answer and continue",
+  "toggleExpandableContent": "FI - Expand or collapse this section"
 }

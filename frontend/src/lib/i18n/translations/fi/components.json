@@ -1,6 +1,11 @@
 {
+  "entityList": {
+    "showMore": "FI - Show more"
+  },
+  "matchScore": {
+    "label": "FI - match"
+  },
   "card": {
-    "errorDisplaying": "FI - Error displaying card",
-    "matchLabel": "FI - match"
+    "errorDisplaying": "FI - Error displaying card"
   }
 }
