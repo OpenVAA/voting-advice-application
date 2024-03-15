@@ -124,6 +124,7 @@ declare global {
   interface PartyProps {
     answers?: AnswerProps[];
     electionRound?: number;
+    electionSymbol?: string;
     id: string;
     info: string;
     name: string;
@@ -238,13 +239,16 @@ declare global {
   }
 
   /**
+   * Represents any entity that can be shown in listings and has answers to questions.
+   */
+  type EntityProps = CandidateProps | PartyProps;
+
+  /**
    * These conform to `vaa-matching.Match`
    */
-  interface RankingProps {
+  interface RankingProps<T extends EntityProps> {
     // distance: number;
-    // entity: {
-    //   id: string;
-    // }
+    entity: T;
     score: number;
     subMatches?: {
       // distance: number;
