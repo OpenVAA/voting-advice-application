@@ -1,78 +1,97 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {Card} from '$lib/components/shared/card/index';
-  import {PartyTag} from '$lib/components/partyTag';
+  import {error} from '@sveltejs/kit';
   import {getUUID} from '$lib/utils/components';
+  import {isCandidate, isParty} from '$lib/utils/entities';
+  import {Avatar} from '$lib/components/avatar';
+  import {Card} from '$lib/components/shared/card/index';
+  import {ElectionSymbol} from '$lib/components/electionSymbol';
+  import {formatName} from '$lib/utils/internationalisation';
+  import {MatchScore} from '$lib/components/matchScore';
+  import {PartyTag} from '$lib/components/partyTag';
+  import {SubMatches} from '$lib/components/subMatches';
   import type {EntityCardProps} from './EntityCard.type';
-  import CandidatePhoto from '$lib/components/candidates/CandidatePhoto.svelte';
 
   type $$Props = EntityCardProps;
-  export let id: $$Props['id'] = undefined;
-  export let title: $$Props['title'];
-  export let electionSymbol: $$Props['electionSymbol'] = '';
-  export let party: $$Props['party'] = undefined;
-  export let summaryMatch: $$Props['summaryMatch'] = '';
-  export let imgSrc: $$Props['imgSrc'] = undefined;
-  export let imgAlt: $$Props['imgAlt'] = undefined;
-  export let imgWidth: $$Props['imgWidth'] = undefined;
-  export let imgHeight: $$Props['imgHeight'] = undefined;
-  // Accessibility props (optional)
-  export let ariaDescribedby: $$Props['aria-describedby'] = undefined;
-  export let ariaPosinset: $$Props['aria-posinset'] = undefined;
-  export let ariaSetsize: $$Props['aria-setsize'] = undefined;
-  export let tabindex: $$Props['tabindex'] = undefined;
 
-  const labelId = getUUID();
+  export let entity: $$Props['entity'] = undefined;
+  export let ranking: $$Props['ranking'] = undefined;
+  export let context: $$Props['context'] = 'list';
+
+  const baseId = getUUID();
+
+  let name: string;
+  let src: string | undefined;
+  let electionSymbol: string | undefined;
+  let nominatingParty: PartyProps | undefined;
+
+  $: {
+    if (ranking) {
+      entity = ranking.entity;
+    } else if (!entity) {
+      throw error(500, 'Supply either entity or ranking.');
+    }
+
+    if (isCandidate(entity)) {
+      name = formatName(entity);
+      src = entity.photoURL;
+      electionSymbol = entity.electionSymbol;
+      nominatingParty = entity.party;
+    } else if (isParty(entity)) {
+      name = entity.name;
+      src = entity.photo;
+      electionSymbol = entity.electionSymbol;
+    } else {
+      error(500, 'Entity must be either a candidate or a party.');
+    }
+  }
 </script>
 
-{#if title}
-  <Card
-    on:click
-    on:keypress
-    {id}
-    aria-labelledby={labelId}
-    aria-describedby={ariaDescribedby}
-    {tabindex}
-    aria-posinset={ariaPosinset}
-    aria-setsize={ariaSetsize}>
-    <svelte:fragment slot="card-media">
-      <CandidatePhoto photoURL={imgSrc} alt={imgAlt} width={imgWidth} height={imgHeight} {title} />
-    </svelte:fragment>
-    <h3 slot="body-title" id={labelId}>{title}</h3>
-    <div class="flex flex-row items-center gap-md" slot="body-content">
-      {#if party}
-        <PartyTag {party} variant="short" />
-      {/if}
-      {#if electionSymbol}
-        <!-- TODO: Convert to <ElectionSymbol> component -->
-        <span
-          class="border-sm border-color-[var(--line-color)] rounded-sm border px-8 py-4 font-bold"
-          >{electionSymbol}</span>
-      {/if}
-    </div>
-    <svelte:fragment slot="body-match">
-      {#if summaryMatch}
-        <!-- TODO: Convert to <MatchScore> component -->
-        <div class="flex min-w-[3.125rem] flex-col items-center">
-          <span class="text-lg font-bold">{summaryMatch}</span>
-          <span class="text-center text-xs text-secondary">{$t('components.card.matchLabel')}</span>
-        </div>
-      {/if}
-    </svelte:fragment>
-    <slot name="card-footer" slot="card-footer" />
-  </Card>
-{:else}
-  <Card
-    on:click
-    on:keypress
-    {id}
-    aria-labelledby={labelId}
-    aria-describedby={ariaDescribedby}
-    {tabindex}
-    aria-posinset={ariaPosinset}
-    aria-setsize={ariaSetsize}>
-    <h2 slot="body-title" class="text-error" id={labelId}>
-      {$t('components.card.errorDisplaying')}
-    </h2>
-  </Card>
-{/if}
+<!--@component
+A card for displaying an entity, i.e. a candidate or a party, in a list or as part of entity's details, possibly including a matching score and sub-matches. You can supply either an unranked `entity` or a `ranking`, which contains the ranked entity.
+
+### Properties
+
+- `entity`: A candidate or a party if no rankings are available.
+- `ranking`: A ranked entity, i.e. a candidate or a party.
+- `context`: The context in which the card is used, affects layout. @default `'list'`
+- Any valid attributes of a `<Card>` component.
+
+### Usage
+
+```tsx
+<a href="/results/{id}">
+  <EntityCard ranking={candidateMatch}>
+</a>
+<EntityCard entity={party} context="details">
+```
+-->
+
+<Card
+  on:click
+  on:keypress
+  aria-labelledby="{baseId}_title {ranking ? `${baseId}_callout` : ''}"
+  aria-describedby="{baseId}_subtitle"
+  {...$$restProps}>
+  <Avatar slot="image" {src} {name} />
+  <h3 slot="title" id="{baseId}_title">{name}</h3>
+  <div class="flex flex-row items-center gap-md" slot="subtitle" id="{baseId}_subtitle">
+    {#if nominatingParty}
+      <PartyTag party={nominatingParty} variant="short" />
+    {/if}
+    {#if electionSymbol}
+      <ElectionSymbol text={electionSymbol} />
+    {/if}
+  </div>
+  <svelte:fragment slot="callout">
+    {#if ranking}
+      <MatchScore score={ranking.score} id="{baseId}_callout" />
+    {/if}
+  </svelte:fragment>
+  {#if ranking?.subMatches?.length}
+    <SubMatches
+      matches={ranking.subMatches}
+      variant={context === 'details' ? 'loose' : undefined}
+      class="mt-6" />
+  {/if}
+  <slot />
+</Card>
