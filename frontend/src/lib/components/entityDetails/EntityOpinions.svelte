@@ -1,21 +1,43 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
+  import {isCandidate} from '$lib/utils/entities';
   import {answeredQuestions} from '$lib/utils/stores';
   import {CategoryTag} from '$lib/components/categoryTag';
   import {LikertResponseButtons, QuestionOpenAnswer} from '$lib/components/questions';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {getLikertAnswer} from '$lib/utils/answers';
+  import type {EntityDetailsProps} from './EntityDetails.type';
 
-  export let candidate: CandidateProps;
-  export let questions: QuestionProps[];
+  export let entity: NonNullable<EntityDetailsProps['entity']>;
+  export let questions: EntityDetailsProps['opinionQuestions'];
 
-  const shortName = `${candidate.firstName[0].toLocaleUpperCase()}. ${candidate.lastName}`;
+  let shortName: string;
+
+  $: shortName = isCandidate(entity)
+    ? `${entity.firstName[0].toLocaleUpperCase()}. ${entity.lastName}`
+    : entity.shortName;
 </script>
+
+<!--
+@component
+Used to show an entity's opinions in an `EntityDetails` component.
+
+### Properties
+
+- `entity`: The entity
+- `questions`: The list of Question objects to show
+
+### Usage
+
+```tsx
+<EntityOpinions entity={candidate} questions={opinionQuestions} />
+```
+-->
 
 <div class="p-lg">
   {#each questions as question}
     {@const {id, text, type, values, category} = question}
-    {@const {answer, openAnswer} = getLikertAnswer(candidate, question)}
+    {@const {answer, openAnswer} = getLikertAnswer(entity, question)}
     {@const voterAnswer = $answeredQuestions[id]}
     {@const headingId = `questionHeading-${id}`}
 
@@ -27,7 +49,7 @@
 
       {#if voterAnswer == null && answer == null}
         <div class="small-label mb-16 text-center">
-          {$t('questions.bothHaventAnswered').replace('{{candidate}}', shortName)}
+          {$t('questions.bothHaventAnswered', {entity: shortName})}
         </div>
       {:else if voterAnswer == null}
         <div class="small-label mb-16 text-center">
@@ -35,7 +57,7 @@
         </div>
       {:else if answer == null}
         <div class="small-label mb-16 text-center">
-          {$t('questions.candidateHasntAnswered').replace('{{candidate}}', shortName)}
+          {$t('questions.entityHasntAnswered', {entity: shortName})}
         </div>
       {/if}
 
