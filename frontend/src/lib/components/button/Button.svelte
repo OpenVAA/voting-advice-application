@@ -105,6 +105,7 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
 -->
 
 <!-- Note that `disabled` is converted to `undefined` is `false` because DaisyUI's `[disabled]` selector will otherwise match it. -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
 <svelte:element
   this={href == null ? 'button' : 'a'}
   on:click
