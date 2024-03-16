@@ -47,6 +47,7 @@ The item is rendered as an `<a>` element if `href` is supplied. Otherwise a `<bu
 
 <!-- We use a div with an Aria role instead of a `<li>` because we don't place the items within a valid parent for a `<li>`. We need the wrapper because we can't change the role of `<ActionItem>`, which renders as an `<a>` or `<button>` and thus already has a defined Aria role. -->
 <div role="listitem">
+  <!-- svelte-ignore a11y-no-static-element-interactions -->
   <svelte:element
     this={href == null ? 'button' : 'a'}
     {href}
