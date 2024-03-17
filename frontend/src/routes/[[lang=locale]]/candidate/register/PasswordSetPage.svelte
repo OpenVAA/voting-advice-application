@@ -5,13 +5,11 @@
   import {register} from '$lib/api/candidate';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {validatePassword} from '$shared/utils/passwordValidation';
-  import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {Button} from '$lib/components/button';
-  import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {FrontPage} from '$lib/templates/frontPage';
   import {emailOfNewUserStore} from '$lib/utils/authenticationStore';
+  import {PasswordSetComponent} from '$lib/candidate/components/PasswordSetComponent';
 
   export let userName: string;
   export let registrationCode: string;
@@ -21,8 +19,6 @@
   let password2 = '';
   let validPassword = false;
   let errorMessage = '';
-
-  $: disableSetButton = validPassword && password2.length > 0;
 
   const onSetButtonPressed = async () => {
     if (password1 !== password2) {
@@ -82,35 +78,15 @@ Page where candidates can set their password when logging to the app for the fir
     </h1>
   </HeadingGroup>
 
-  <form
-    class="flex flex-col flex-nowrap items-center"
-    on:submit|preventDefault={onSetButtonPressed}>
-    <p class="m-0 text-center">
-      {$t('candidateApp.setPassword.description')}
-    </p>
-
-    <PasswordValidator bind:validPassword password={password1} />
-
-    <div class="mb-md w-full max-w-md space-y-10">
-      <label for="password1" class="hidden">{$t('candidate.password')}</label>
-      <PasswordField bind:password={password1} autocomplete="new-password" />
-      <label for="password2" class="hidden">{$t('candidate.password')}</label>
-      <PasswordField bind:password={password2} autocomplete="new-password" />
-    </div>
-
-    {#if errorMessage}
-      <p class="text-center text-error">
-        {errorMessage}
-      </p>
-    {/if}
-
-    <Button
-      type="submit"
-      disabled={!disableSetButton}
-      variant="main"
-      text={$t('candidateApp.setPassword.setPassword')} />
-
-    <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
+  <form class="flex flex-col flex-nowrap items-center">
+    <PasswordSetComponent
+      on:ButtonPressed={onSetButtonPressed}
+      bind:validPassword
+      bind:errorMessage
+      bind:password1
+      bind:password2
+      autocomplete1="new-password"
+      autocomplete2="new-password" />
   </form>
 
   <Footer slot="footer" />

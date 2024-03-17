@@ -32,9 +32,9 @@ to reveal and hide the password
 -->
 
 <div class="relative">
-  <label for="password" class="hidden">{$t('candidate.password')}</label>
+  <label for={password} class="hidden">{$t('candidate.password')}</label>
   <input
-    id="password"
+    id={password}
     type="password"
     name="password"
     class="input w-full"
