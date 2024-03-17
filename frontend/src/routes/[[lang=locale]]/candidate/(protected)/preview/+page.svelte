@@ -1,9 +1,10 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {CandidateDetailsCard} from '$lib/components/candidates';
-  import SingleCardPage from '$lib/templates/singleCardPage/SingleCardPage.svelte';
   import {getContext} from 'svelte';
+  import {t} from '$lib/i18n';
   import type {AuthContext} from '$lib/utils/authenticationStore';
+  import {CandidateDetailsCard} from '$lib/components/candidates';
+  import {Icon} from '$lib/components/icon';
+  import SingleCardPage from '$lib/templates/singleCardPage/SingleCardPage.svelte';
   import LogoutButton from '$lib/candidate/components/logoutButton/LogoutButton.svelte';
   import type {PageData} from './$types';
 
@@ -28,6 +29,10 @@
   <span>{$t('candidateApp.preview.notFound')}</span>
 {:else}
   <SingleCardPage title={$t('candidateApp.preview.title')}>
+    <svelte:fragment slot="note">
+      <Icon name="info" />
+      {$t('candidateApp.preview.tip')}
+    </svelte:fragment>
     <LogoutButton slot="banner" />
     <CandidateDetailsCard {candidate} {opinionQuestions} {infoQuestions} />
   </SingleCardPage>
