@@ -154,6 +154,7 @@
   },
   "preview": {
     "title": "Preview",
-    "notFound": "Profile not found"
+    "notFound": "Profile not found",
+    "tip": "This is a preview of how your profile will look to voters."
   }
 }

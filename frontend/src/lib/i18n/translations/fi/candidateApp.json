@@ -154,6 +154,7 @@
   },
   "preview": {
     "title": "Profiilin esikatselu",
-    "notFound": "Profiilia ei löytynyt"
+    "notFound": "Profiilia ei löytynyt",
+    "tip": "Tämä on esikatselu siitä, miltä profiilisi näyttää äänestäjille."
   }
 }
