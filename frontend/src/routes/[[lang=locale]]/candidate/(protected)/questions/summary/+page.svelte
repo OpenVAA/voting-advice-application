@@ -4,7 +4,6 @@
   import {BasicPage} from '$lib/templates/basicPage';
   import {Expander} from '$lib/components/expander';
   import LikertResponseButtons from '$lib/components/questions/LikertResponseButtons.svelte';
-  import Icon from '$lib/components/icon/Icon.svelte';
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {translate} from '$lib/i18n/utils/translate';
@@ -49,18 +48,21 @@
 </script>
 
 <BasicPage title={$t('candidateApp.allQuestions.title')}>
-  <svelte:fragment slot="note">
-    {#if nofUnansweredQuestions != 0 && !loading}
-      <div class="text-warning">
-        <Icon name="important" />
-        {$t('candidateApp.allQuestions.warning', {numUnansweredQuestions: nofUnansweredQuestions})}
-      </div>
-    {/if}
-  </svelte:fragment>
-
   <p class="text-center">
     {$t('candidateApp.allQuestions.info')}
   </p>
+  {#if nofUnansweredQuestions != 0 && !loading}
+    <div class="pb-6 text-center text-warning">
+      {$t('candidateApp.allQuestions.warning', {numUnansweredQuestions: nofUnansweredQuestions})}
+    </div>
+    <div class="flex w-full justify-center pb-40 pt-20">
+      <Button
+        href={$getRoute({route: Route.CandAppQuestions, id: '1'})}
+        text={$t('candidateApp.allQuestions.enterMissingAnswer')}
+        variant="main"
+        icon="next" />
+    </div>
+  {/if}
 
   {#each Object.entries(questionsByCategory) as [category, categoryQuestions]}
     <div class="edgetoedge-x">
@@ -97,10 +99,16 @@
                   </div>
                 {/if}
               </div>
+              {#if categoryQuestions[categoryQuestions.length - 1] !== question}
+                <hr class="mt-40" />
+              {:else}
+                <div class="mb-40" />
+              {/if}
             </div>
+
             <!-- Question not yet answered -->
           {:else}
-            <div class="pt-30 pb-20">
+            <div class="pt-40">
               <div class="text-accent">
                 {question.category}
               </div>
@@ -111,16 +119,27 @@
 
               <!-- Navigate to unsanswered question -->
               <a
-                class="flex justify-center pt-10"
+                class="flex justify-center py-20"
                 href={$getRoute({route: Route.CandAppQuestions, id: question.id})}>
-                <Button variant="main" text={$t('candidateApp.allQuestions.answerButton')} />
+                <Button
+                  text={$t('candidateApp.allQuestions.answerButton')}
+                  class="w-full max-w-md bg-base-300" />
               </a>
+              {#if categoryQuestions[categoryQuestions.length - 1] !== question}
+                <hr class="mt-40" />
+              {:else}
+                <div class="mb-40" />
+              {/if}
             </div>
           {/if}
         {/each}
       </Expander>
     </div>
   {/each}
+
+  <div class="flex w-full justify-center py-40">
+    <Button text={$t('candidateApp.allQuestions.return')} variant="main" />
+  </div>
 </BasicPage>
 
 <style>

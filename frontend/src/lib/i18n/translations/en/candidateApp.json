@@ -133,7 +133,10 @@
     "warning": "You still have {numUnansweredQuestions} unanswered questions. Your data won't be shown in the Election Compass until you have answered all of them.",
     "info": "You can see all of your opinions below and edit them by tapping on them.",
     "answerButton": "Answer this question",
-    "commentOnThisIssue": "Comment on this issue"
+    "commentOnThisIssue": "Comment on this issue",
+    "enterMissingAnswer": "Enter Missing Answers",
+    "editYourAnswer": "Edit Your Answer",
+    "return": "return"
   },
   "allDataFilled": {
     "title": "You're Ready to Roll!",
