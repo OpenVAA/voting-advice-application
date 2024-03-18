@@ -267,11 +267,7 @@ declare global {
     // distance: number;
     score: number;
     // TODO: Convert to QuestionCategoryProps
-    questionGroup: {
-      label?: string; // Convert to name
-      color?: string;
-      colorDark?: string;
-    };
+    questionGroup: QuestionCategoryProps;
   }
 
   export type CandidateDetailsCardProps = {

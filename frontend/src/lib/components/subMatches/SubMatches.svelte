@@ -34,7 +34,7 @@ Display an entity's sub-matches.
   {#each matches as { score, questionGroup }}
     <ScoreGauge
       {score}
-      label={questionGroup.label ?? ''}
+      label={questionGroup.name ?? ''}
       color={questionGroup.color}
       colorDark={questionGroup.colorDark}
       variant="radial"
