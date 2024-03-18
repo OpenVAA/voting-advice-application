@@ -8,4 +8,10 @@ services:
       target: production
     ports:
       - '80:3000'
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5173/ || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 15s
     restart: always

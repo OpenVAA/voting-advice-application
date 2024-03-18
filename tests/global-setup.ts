@@ -15,6 +15,6 @@ async function globalSetup(config: FullConfig) {
   await expect(page.getByText('In order to appear in the Election Compass')).toBeVisible();
 
   await page.context().storageState({ path: STORAGE_STATE });
-};
+}
 
 export default globalSetup;
