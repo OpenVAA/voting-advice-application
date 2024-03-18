@@ -10,7 +10,7 @@ import {
 } from '../space';
 import type {MatchableQuestion, MatchableQuestionGroup} from '../question';
 import type {MatchingSpaceProjector} from './matchingSpaceProjector';
-import type {MatchingAlgorithmOptions, MatchingOptions } from './matchingAlgorithm.type';
+import type {MatchingAlgorithmOptions, MatchingOptions} from './matchingAlgorithm.type';
 
 /**
  * Base class for matching algorithms. With different constructor options

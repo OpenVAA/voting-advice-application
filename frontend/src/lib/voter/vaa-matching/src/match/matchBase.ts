@@ -1,6 +1,6 @@
 import {
-  assertUnsignedNormalized, 
-  NORMALIZED_DISTANCE_EXTENT, 
+  assertUnsignedNormalized,
+  NORMALIZED_DISTANCE_EXTENT,
   type UnsignedNormalizedDistance
 } from '../distance';
 

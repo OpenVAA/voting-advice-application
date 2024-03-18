@@ -2,8 +2,8 @@ import {imputeMissingValues, MISSING_VALUE} from '../missingValue';
 import type {MatchingSpace} from '../space/matchingSpace';
 import type {MatchingSpacePosition} from '../space/position';
 import type {UnsignedNormalizedDistance} from './distance';
-import { DistanceMetric, directionalDistance, manhattanDistance } from './metric';
-import type { DistanceMeasurementOptions, GlobalAndSubspaceDistances } from './measure.type';
+import {DistanceMetric, directionalDistance, manhattanDistance} from './metric';
+import type {DistanceMeasurementOptions, GlobalAndSubspaceDistances} from './measure.type';
 
 export function measureDistance(
   a: MatchingSpacePosition,
@@ -60,8 +60,7 @@ export function measureDistance(
     let valA = a.coordinates[i],
       valB = b.coordinates[i];
     // First, handle missing values (we use == to allow undefined | null just in case)
-    if (valA == MISSING_VALUE)
-      throw new Error('The first position cannot contain missing values!');
+    if (valA == MISSING_VALUE) throw new Error('The first position cannot contain missing values!');
     if (valB == MISSING_VALUE)
       [valA, valB] = imputeMissingValues(valA, options.missingValueOptions);
     // Calculate distance
