@@ -1,17 +1,15 @@
 import {
   type HasMatchableAnswers,
-  type HasMatchableQuestions,
   type MatchableAnswer,
-  type MatchableValue,
   type MatchingOptions,
-  MatchingAlgorithmBase,
+  MatchingAlgorithm,
   type MatchableQuestion,
   MISSING_VALUE,
   MultipleChoiceQuestion,
   DistanceMetric,
-  MissingValueDistanceMethod
+  MissingValueDistanceMethod,
+  type MatchableQuestionGroup
 } from '$voter/vaa-matching';
-import type {MultipleChoiceQuestionOptions} from '$lib/voter/vaa-matching/questions/multipleChoiceQuestion';
 import type {VoterAnswers} from '$lib/types';
 
 /**
@@ -28,7 +26,7 @@ export function matchCandidates(
   allCandidates: CandidateProps[]
 ): RankingProps<CandidateProps>[] {
   // Create the algorithm instance
-  const algorithm = new MatchingAlgorithmBase({
+  const algorithm = new MatchingAlgorithm({
     distanceMetric: DistanceMetric.Manhattan,
     missingValueOptions: {
       missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
@@ -82,18 +80,14 @@ export function matchCandidates(
       Object.values(questions)
         .filter((q) => answeredIds.has(q.id))
         .map((q) => q.category)
+        .filter((c) => c != null)
     )
-  ];
-  const matchingOptions: MatchingOptions = {
-    subQuestionGroups: categories.map(
-      (c) =>
-        ({
-          label: c?.name ?? '—',
-          color: c?.color,
-          colorDark: c?.colorDark,
-          matchableQuestions: Object.values(questions).filter((q) => q.category === c)
-        }) as HasMatchableQuestions
-    )
+  ] as QuestionCategoryProps[];
+  const matchingOptions: MatchingOptions<QuestionCategoryProps & MatchableQuestionGroup> = {
+    questionGroups: categories.map((c) => ({
+      ...c,
+      matchableQuestions: Object.values(questions).filter((q) => q.category === c)
+    }))
   };
 
   // Get matches
@@ -109,7 +103,9 @@ export function matchCandidates(
 /**
  * Options for a dummy question object for matching.
  */
-interface LikertQuestionOptions extends MultipleChoiceQuestionOptions {
+interface LikertQuestionOptions {
+  id: ConstructorParameters<typeof MultipleChoiceQuestion>[0];
+  values: ConstructorParameters<typeof MultipleChoiceQuestion>[1];
   category?: QuestionCategoryProps;
 }
 
@@ -119,7 +115,7 @@ interface LikertQuestionOptions extends MultipleChoiceQuestionOptions {
 class LikertQuestion extends MultipleChoiceQuestion {
   public readonly category: QuestionCategoryProps | undefined;
   constructor({id, values, category}: LikertQuestionOptions) {
-    super({id, values});
+    super(id, values);
     this.category = category;
   }
 }
@@ -133,7 +129,7 @@ class Person implements HasMatchableAnswers {
     public answers: MatchableAnswer[] = []
   ) {}
 
-  getMatchableAnswerValue(question: MatchableQuestion): MatchableValue {
+  getAnswerValue(question: MatchableQuestion) {
     for (const answer of this.answers) {
       if (answer.question === question) return answer.value;
     }
