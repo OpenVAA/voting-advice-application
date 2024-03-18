@@ -1,5 +1,8 @@
-import { NORMALIZED_DISTANCE_EXTENT, type SignedNormalizedDistance, 
-  type UnsignedNormalizedDistance } from './distance';
+import {
+  NORMALIZED_DISTANCE_EXTENT,
+  type SignedNormalizedDistance,
+  type UnsignedNormalizedDistance
+} from './distance';
 
 /**
  * Assert that `value` is a `SignedNormalizedDistance` within the correct range.
