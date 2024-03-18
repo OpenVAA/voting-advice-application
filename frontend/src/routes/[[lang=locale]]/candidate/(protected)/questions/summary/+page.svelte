@@ -91,17 +91,11 @@
                     selectedKey={answers[question.id].key} />
                 </a>
 
-                <div class="pt-10">
-                  <Button
-                    href={$getRoute({route: Route.CandAppQuestions, id: question.id})}
-                    text={$t('candidateApp.allQuestions.editYourAnswer')}
-                    icon="missingIcon"
-                    iconPos="left" />
-                </div>
-
-                {#if translate(answers[question.id].openAnswer) !== ''}
-                  <QuestionOpenAnswer
-                    >{translate(answers[question.id].openAnswer)}</QuestionOpenAnswer>
+                {#if answers[question.id].openAnswer}
+                  <div class="pt-10">
+                    <QuestionOpenAnswer
+                      >{translate(answers[question.id].openAnswer)}</QuestionOpenAnswer>
+                  </div>
                 {/if}
               </div>
               {#if categoryQuestions[categoryQuestions.length - 1] !== question}
