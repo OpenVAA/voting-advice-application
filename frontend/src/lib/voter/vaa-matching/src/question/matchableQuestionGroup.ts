@@ -1,4 +1,4 @@
-import type { MatchableQuestion } from './matchableQuestion';
+import type {MatchableQuestion} from './matchableQuestion';
 
 /**
  * Question groups are used for subcategory matches in matching algorithm.

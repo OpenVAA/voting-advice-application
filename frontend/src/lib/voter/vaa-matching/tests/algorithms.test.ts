@@ -7,8 +7,8 @@ import {
   manhattanDistance,
   measureDistance,
   NORMALIZED_DISTANCE_EXTENT,
-  type SignedNormalizedDistance, 
-  type UnsignedNormalizedDistance,
+  type SignedNormalizedDistance,
+  type UnsignedNormalizedDistance
 } from '../src/distance';
 import type {Match} from '../src/match';
 import {
@@ -528,10 +528,7 @@ class Candidate implements HasMatchableAnswers {
  * @param values The normalised values
  * @returns Array of values
  */
-function createLikertValues(
-  scale: number,
-  values: UnsignedNormalizedDistance[]
-) {
+function createLikertValues(scale: number, values: UnsignedNormalizedDistance[]) {
   return values.map((v) => 1 + v * (scale - 1));
 }
 

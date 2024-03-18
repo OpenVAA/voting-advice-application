@@ -1,5 +1,8 @@
-import { NORMALIZED_DISTANCE_EXTENT, type SignedNormalizedDistance, 
-  type UnsignedNormalizedDistance } from './distance';
+import {
+  NORMALIZED_DISTANCE_EXTENT,
+  type SignedNormalizedDistance,
+  type UnsignedNormalizedDistance
+} from './distance';
 
 /**
  * Available distance measurement metrics
@@ -36,7 +39,9 @@ export enum DistanceMetric {
  * @param b Signed distance
  * @returns Unsigned distance
  */
-export function manhattanDistance(a: SignedNormalizedDistance, b: SignedNormalizedDistance
+export function manhattanDistance(
+  a: SignedNormalizedDistance,
+  b: SignedNormalizedDistance
 ): UnsignedNormalizedDistance {
   return Math.abs(a - b);
 }
@@ -48,7 +53,9 @@ export function manhattanDistance(a: SignedNormalizedDistance, b: SignedNormaliz
  * @param b Signed distance
  * @returns Unsigned distance
  */
-export function directionalDistance(a: SignedNormalizedDistance, b: SignedNormalizedDistance
+export function directionalDistance(
+  a: SignedNormalizedDistance,
+  b: SignedNormalizedDistance
 ): UnsignedNormalizedDistance {
   return 0.5 * NORMALIZED_DISTANCE_EXTENT - (2 * a * b) / NORMALIZED_DISTANCE_EXTENT;
 }

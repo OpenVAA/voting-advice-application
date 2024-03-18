@@ -3,13 +3,12 @@ import {MISSING_VALUE} from '../missingValue';
 import type {MatchingSpaceCoordinate} from '../space';
 import type {MatchableQuestion} from './matchableQuestion';
 
-
 interface MultipleChoiceValue {
   value: number;
 }
 
 /**
- * An example implementation for multiple choice questions, including 
+ * An example implementation for multiple choice questions, including
  * Likert questions
  */
 export class MultipleChoiceQuestion implements MatchableQuestion {
@@ -51,9 +50,8 @@ export class MultipleChoiceQuestion implements MatchableQuestion {
    * @returns The value in the signed normalized range (e.g. [-.5, .5])
    */
   normalizeValue(value: number | undefined | null): MatchingSpaceCoordinate {
-    if (value == null) 
-      return MISSING_VALUE;
-    if (!(typeof value === 'number')) 
+    if (value == null) return MISSING_VALUE;
+    if (!(typeof value === 'number'))
       throw new Error(`Value must be a number! Got ${typeof value}`);
     if (value < this.minValue || value > this.maxValue)
       throw new Error(`Value out of bounds [${this.minValue}, ${this.maxValue}]: ${value}`);
