@@ -6,7 +6,7 @@ export type TextAreaProps = {
   /**
    * The text content of the text area.
    */
-  text: string | Text | undefined;
+  text: string | undefined;
   /**
    * The header text to be displayed above the textarea. If not provided, header slot will be used.
    * @default undefined
@@ -22,7 +22,7 @@ export type TextAreaProps = {
    * Is initially shown if nothing is in local storage.
    * @default undefined
    */
-  previouslySaved?: string | Text | undefined;
+  previouslySaved?: string | undefined;
   /**
    * The number of rows in the textarea.
    * @default 4
