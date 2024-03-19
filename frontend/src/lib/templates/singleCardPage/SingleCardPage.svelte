@@ -27,7 +27,6 @@ Use the properties to add to the classes of the elements containing the slots, t
 
 - default: the card that's the main content of the page
 - `banner`: content for the secondary actions displayed on the right side of the `<header>`
-- `banner`: content for the secondary actions displayed on the right
 
 ### Properties
 
