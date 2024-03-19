@@ -161,7 +161,7 @@ export const getNominatedCandidates = ({
               name: translate(nom.attributes.party.data.attributes.name, locale),
               shortName: translate(nom.attributes.party.data.attributes.shortName, locale)
             }
-          : {name: '', shortName: ''},
+          : {name: '', shortName: ''}
       };
 
       let photoURL = attr?.photo?.data?.attributes?.url;
