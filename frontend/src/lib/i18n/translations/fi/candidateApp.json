@@ -20,9 +20,8 @@
   },
   "logoutModal": {
     "title": "Osa tiedoistasi puuttuu edelleen",
-    "body": "Täytettävänä on vielä {remainingInfoAmount} perustietoa ja {remainingOpinionNumber} mielipidettä. Tietosi eivät näy Vaalikompassissa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
-    "bodyBasicInfoReady": "Täytettävänä on vielä {remainingOpinionNumber} mielipidettä. Tietosi eivät näy Vaalikompassissa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
-    "bodyBasicInfoReady1OpinionLeft": "Täytettävänä on vielä yksi mielipide. Tietosi eivät näy Vaalikompassissa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
+    "body": "Sinun pitää vielä täyttää {remainingInfoAmount, plural, =1 {yksi perustieto} other {# perustietoa}} ja {remainingOpinionNumber, plural, =1 {yksi mielipide} other {# mielipidettä}}. Tietosi eivät näy Vaalikompassissa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
+    "bodyBasicInfoReady": "Sinun pitää vielä täyttää {remainingOpinionNumber, plural, =1 {yksi mielipide} other {# mielipidettä}}. Tietosi eivät näy Vaalikompassissa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
     "confirmation": "Oletko varma, että haluat kirjautua ulos? Sinut kirjaudutaan automaattisesti ulos {timeLeft} sekunnin kuluttua.",
     "continueEnteringData": "Jatka tietojen syöttämistä"
   },
