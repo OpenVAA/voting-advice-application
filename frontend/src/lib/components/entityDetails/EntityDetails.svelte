@@ -2,7 +2,7 @@
   import {error} from '@sveltejs/kit';
   import {t} from '$lib/i18n';
   import {EntityCard, type EntityCardProps} from '$lib/components/entityCard';
-  import Tabs from '$lib/components/shared/Tabs.svelte';
+  import {Tabs} from '$lib/components/tabs';
   import EntityInfo from './EntityInfo.svelte';
   import EntityOpinions from './EntityOpinions.svelte';
   import type {EntityDetailsProps} from './EntityDetails.type';
@@ -31,10 +31,6 @@
     ecProps = ranking ? {ranking} : {entity: sureEntity};
     tabs = [$t('entity.tabs.basicInfo'), $t('entity.tabs.opinions')];
   }
-
-  const handleChangeTab = (e: CustomEvent) => {
-    activeIndex = e.detail;
-  };
 </script>
 
 <!--
@@ -67,7 +63,7 @@ Used to show an entity's details and possible ranking. You can supply either an 
   <header>
     <EntityCard {...ecProps} context="details" class="!p-lg" />
   </header>
-  <Tabs on:changeTab={handleChangeTab} {tabs} {activeIndex} />
+  <Tabs {tabs} bind:activeIndex />
   {#if activeIndex === 0}
     <EntityInfo entity={sureEntity} questions={infoQuestions} />
   {:else if activeIndex === 1}

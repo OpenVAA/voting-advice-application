@@ -5,7 +5,10 @@
 
   const dispatch = createEventDispatcher();
 
-  // TODO Use prop binding instead of event
+  function activate(index: number) {
+    activeIndex = index;
+    dispatch('changeTab', index);
+  }
 </script>
 
 <ul class="flex items-center justify-center bg-base-300 px-lg py-8">
@@ -16,11 +19,9 @@
       class:bg-base-100={i === activeIndex}
       tabindex="0"
       role="tab"
-      on:click={() => dispatch('changeTab', i)}
+      on:click={() => activate(i)}
       on:keyup={(e) => {
-        if (e.key === 'Enter') {
-          dispatch('changeTab', i);
-        }
+        if (e.key === 'Enter') activate(i);
       }}>
       {tab}
     </li>
