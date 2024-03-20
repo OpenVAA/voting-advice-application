@@ -1,12 +1,23 @@
-import {getInfoQuestions, getNominatedCandidates, getOpinionQuestions} from '$lib/api/getData';
+import {
+  getInfoQuestions,
+  getNominatedCandidates,
+  getNominatingParties,
+  getOpinionQuestions
+} from '$lib/api/getData';
+import settings from '$lib/config/settings.json';
 import type {LayoutServerLoad} from './$types';
 
 export const load = (async ({parent}) => {
   const locale = (await parent()).i18n.currentLocale;
-  return {
-    candidates: await getNominatedCandidates({loadAnswers: true, locale}),
+  const data: Partial<App.PageData> = {
     // We need these for displaying the candidates
     questions: await getOpinionQuestions({locale}),
     infoQuestions: await getInfoQuestions({locale})
   };
+  if (settings.results.sections.includes('candidate'))
+    data.candidates = await getNominatedCandidates({loadAnswers: true, locale});
+  // TODO: Enable party rankings
+  if (settings.results.sections.includes('party'))
+    data.parties = await getNominatingParties({locale});
+  return data;
 }) satisfies LayoutServerLoad;
