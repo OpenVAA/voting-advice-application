@@ -1,4 +1,12 @@
 {
+  "answerNo": "No",
   "answerYes": "Yes",
-  "answerNo": "No"
+  "candidate": {
+    "singular": "Candidate",
+    "plural": "Candidates"
+  },
+  "party": {
+    "singular": "Party",
+    "plural": "Parties"
+  }
 }

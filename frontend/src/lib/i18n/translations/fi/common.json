@@ -1,4 +1,12 @@
 {
-  "answerYes": "FI - Yes",
-  "answerNo": "FI - No"
+  "answerNo": "Ei",
+  "answerYes": "Kyllä",
+  "candidate": {
+    "singular": "Ehdokas",
+    "plural": "Ehdokkaat"
+  },
+  "party": {
+    "singular": "Puolue",
+    "plural": "Puolueet"
+  }
 }
