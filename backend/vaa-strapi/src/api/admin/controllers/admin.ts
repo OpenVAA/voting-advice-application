@@ -11,8 +11,7 @@ export default {
       return;
     }
 
-    const adminService = strapi.service('api::admin.admin');
-    adminService.sendEmailToUnregistered(subject, content);
+    strapi.service('api::admin.admin').sendEmailToUnregistered(subject, content);
 
     ctx.status = 200;
   },
@@ -23,9 +22,8 @@ export default {
       ctx.body = 'Invalid request';
       return;
     }
-    const adminService = strapi.service('api::admin.admin');
+    strapi.service('api::admin.admin').sendEmail(candidateId, subject, content);
 
-    adminService.sendEmail(candidateId, content);
     ctx.status = 200;
   }
 };

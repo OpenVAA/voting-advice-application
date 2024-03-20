@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
 import {
-  Alert,
   Button,
   ModalLayout,
   ModalBody,
@@ -11,6 +10,7 @@ import {
   Typography
 } from '@strapi/design-system';
 import {Envelop} from '@strapi/icons';
+import {useNotification} from '@strapi/helper-plugin';
 
 export default function RegistrationEmailButton({instructions, confirmFunction}) {
   // Only show this button in candidate collection
@@ -20,9 +20,9 @@ export default function RegistrationEmailButton({instructions, confirmFunction})
   }
 
   const [isVisible, setIsVisible] = useState(false);
-  const [showError, setShowError] = useState(false);
   const [emailSubject, setEmailSubject] = useState('');
   const [emailContent, setEmailContent] = useState('');
+  const toggleNotification = useNotification();
 
   return (
     <>
@@ -54,18 +54,6 @@ export default function RegistrationEmailButton({instructions, confirmFunction})
               onChange={(e) => setEmailContent(e.target.value)}>
               {emailContent}
             </Textarea>
-            {showError && (
-              <>
-                <br />
-                <Alert
-                  title="Error"
-                  variant="danger"
-                  closeLabel="Close alert"
-                  onClose={() => setShowError(false)}>
-                  Email content doesn't inlude [LINK]
-                </Alert>
-              </>
-            )}
           </ModalBody>
           <ModalFooter
             startActions={
@@ -77,12 +65,26 @@ export default function RegistrationEmailButton({instructions, confirmFunction})
               <Button
                 startIcon={<Envelop />}
                 onClick={() => {
-                  if (emailContent.includes('[LINK]')) {
-                    confirmFunction();
-                    setIsVisible(false);
-                    setShowError(false);
+                  if (!emailContent.includes('[LINK]')) {
+                    toggleNotification({
+                      type: 'warning',
+                      message: "Email content doesn't include [LINK]",
+                      timeout: 5000
+                    });
+                  } else if (emailSubject.length == 0) {
+                    toggleNotification({
+                      type: 'warning',
+                      message: 'Email subject is empty',
+                      timeout: 5000
+                    });
                   } else {
-                    setShowError(true);
+                    confirmFunction(emailSubject, emailContent);
+                    setIsVisible(false);
+                    toggleNotification({
+                      type: 'success',
+                      message: 'Registration email was sent successfully',
+                      timeout: 5000
+                    });
                   }
                 }}>
                 Send
