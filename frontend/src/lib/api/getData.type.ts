@@ -1,9 +1,4 @@
 /**
- * Value of enumerations for specifying the type of entity the object applies to
- */
-export type EntityType = 'all' | 'candidate' | 'party';
-
-/**
  * The basic format for Strapi responses
  */
 export type StrapiResponse<T> = {
@@ -212,7 +207,7 @@ export interface StrapiQuestionData {
     questionType: {
       data: StrapiQuestionTypeData;
     };
-    entityType: EntityType | null;
+    entityType: EntityType | 'all' | null;
     text: LocalizedString;
     shortName: LocalizedString;
     info: LocalizedString;

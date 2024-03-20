@@ -250,6 +250,11 @@ declare global {
   type EntityType = 'all' | 'candidate' | 'party';
 
   /**
+   * Value of enumerations for specifying the type of entity the object applies to
+   */
+  type EntityType = 'all' | 'candidate' | 'party';
+
+  /**
    * Represents any entity that can be shown in listings and has answers to questions.
    */
   type EntityProps = CandidateProps | PartyProps;
