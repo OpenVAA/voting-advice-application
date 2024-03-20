@@ -5,8 +5,6 @@
   import {translate} from '$lib/i18n/utils/translate';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {getLanguages, getGenders, updateBasicInfo} from '$lib/api/candidate';
-  import {authContext} from '$lib/utils/authenticationStore';
-  import {loadUserData} from '$lib/utils/authenticationStore';
   import Icon from '$lib/components/icon/Icon.svelte';
   import {Button} from '$lib/components/button';
   import FieldGroup from '$lib/components/common/form/FieldGroup.svelte';
@@ -17,6 +15,8 @@
   import type {Language} from '$lib/types/candidateAttributes';
   import {TextArea} from '$candidate/components/textArea';
   import {PreventNavigation} from '$lib/components/preventNavigation';
+  import {getContext} from 'svelte';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
   const basicInfoFields = ['firstName', 'lastName', 'party'];
 
@@ -32,7 +32,8 @@
   const inputContainerClass = 'flex w-full pr-6';
 
   // get the user from authContext
-  const user = get(authContext.user);
+  const {user: userStore, loadUserData} = getContext<CandidateContext>('candidate');
+  const user = get(userStore);
 
   let loading = false;
 
@@ -73,7 +74,7 @@
 
   // all necessary fields filled boolean
   $: allFilled =
-    genderID && motherTongues && motherTongues.length > 0 && birthday && manifesto ? true : false;
+    !!genderID && !!motherTongues && motherTongues.length > 0 && !!birthday && !!manifesto;
 
   let errorMessage: string | undefined;
 

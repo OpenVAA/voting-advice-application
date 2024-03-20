@@ -3,9 +3,13 @@
   import {BasicPage} from '$lib/templates/basicPage';
   import {Button} from '$lib/components/button';
   import {getRoute, Route} from '$lib/utils/navigation';
+  import {type CandidateContext} from '$lib/utils/candidateStore';
+  import {getContext} from 'svelte';
   import {get} from 'svelte/store';
-  import {authContext} from '$lib/utils/authenticationStore';
-  let userName = get(authContext.user)?.candidate?.firstName;
+
+  const {user: userWritable} = getContext<CandidateContext>('candidate');
+  const user = get(userWritable);
+  const userName = user?.candidate?.firstName;
 </script>
 
 <!--Homepage for the user-->

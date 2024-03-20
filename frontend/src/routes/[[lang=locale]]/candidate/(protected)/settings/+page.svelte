@@ -1,7 +1,5 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {get} from 'svelte/store';
-  import {authContext} from '$lib/utils/authenticationStore';
   import {BasicPage} from '$lib/templates/basicPage';
   import Icon from '$lib/components/icon/Icon.svelte';
   import {PasswordValidator} from '$candidate/components/passwordValidator';
@@ -9,8 +7,11 @@
   import {validatePassword} from '$shared/utils/passwordValidation';
   import {changePassword} from '$lib/api/candidate';
   import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
+  import {getContext} from 'svelte';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const user = get(authContext.user);
+  const {user: userWritable} = getContext<CandidateContext>('candidate');
+  $: user = $userWritable;
 
   // TODO: consider refactoring this as this uses same classes as profile/+page.svelte?
   const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';

@@ -1,8 +1,9 @@
-<script>
+<script lang="ts">
   import {LoginPage} from '$lib/candidate/templates/login';
   import {getContext} from 'svelte';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {user, token} = getContext('auth');
+  const {user, token} = getContext<CandidateContext>('candidate');
   export let showLogin = false;
 </script>
 

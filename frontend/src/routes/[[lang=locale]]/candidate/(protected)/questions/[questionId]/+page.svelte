@@ -2,7 +2,6 @@
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
   import {locale, t} from '$lib/i18n';
-  import {answerContext} from '$lib/utils/answerStore';
   import {addAnswer, updateAnswer, deleteAnswer} from '$lib/api/candidate';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
@@ -10,9 +9,11 @@
   import {BasicPage} from '$lib/templates/basicPage';
   import {translate} from '$lib/i18n/utils/translate';
   import {TextArea} from '$candidate/components/textArea';
+  import {getContext} from 'svelte';
+  import {type CandidateContext} from '$lib/utils/candidateStore';
 
-  const store = answerContext.answers;
-  $: answerStore = $store;
+  const {answers} = getContext<CandidateContext>('candidate');
+  $: answerStore = $answers;
 
   $: questionId = $page.params.questionId;
 
@@ -119,7 +120,7 @@
 
     removeLocalAnswerToQuestion();
     openAnswer = '';
-    answerContext.answers.set(answerStore);
+    answers.set(answerStore);
   }
 
   async function removeAnswer() {
@@ -142,7 +143,7 @@
     removeLocalAnswerToQuestion();
 
     delete answerStore?.[questionId];
-    answerContext.answers.set(answerStore);
+    answers.set(answerStore);
   }
 
   async function navigateToQuestion(indexChange: number, urlAfterLastQuestion: string) {
