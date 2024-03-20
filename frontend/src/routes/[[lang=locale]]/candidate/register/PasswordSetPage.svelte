@@ -9,14 +9,14 @@
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {FrontPage} from '$lib/templates/frontPage';
   import {emailOfNewUserStore} from '$lib/utils/authenticationStore';
-  import {PasswordSetComponent} from '$lib/candidate/components/PasswordSetComponent';
+  import {PasswordSetter} from '$lib/candidate/components/PasswordSetter';
 
   export let userName: string;
   export let registrationCode: string;
   export let email: string;
 
-  let password1 = '';
-  let password2 = '';
+  let password = '';
+  let passwordConfirmation = '';
   let validPassword = false;
   let errorMessage = '';
 
@@ -79,14 +79,12 @@ Page where candidates can set their password when logging to the app for the fir
   </HeadingGroup>
 
   <form class="flex flex-col flex-nowrap items-center">
-    <PasswordSetComponent
+    <PasswordSetter
       on:ButtonPressed={onSetButtonPressed}
       bind:validPassword
       bind:errorMessage
-      bind:password1
-      bind:password2
-      autocomplete1="new-password"
-      autocomplete2="new-password" />
+      bind:password
+      bind:passwordConfirmation />
   </form>
 
   <Footer slot="footer" />

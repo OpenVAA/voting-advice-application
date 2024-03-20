@@ -3,6 +3,7 @@
   import {Button} from '$lib/components/button';
   export let password = '';
   export let autocomplete = '';
+  export let id = password;
   let passwordRevealed = false;
   /** variable used to refer to the input box in code to change its type*/
   let inputbox: HTMLInputElement;
@@ -32,7 +33,7 @@ to reveal and hide the password
 -->
 
 <div class="relative">
-  <label for={password} class="hidden">{$t('candidate.password')}</label>
+  <label for={id} class="hidden">{$t('candidate.password')}</label>
   <input
     id={password}
     type="password"

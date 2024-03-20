@@ -8,7 +8,7 @@
   import {FrontPage} from '$lib/templates/frontPage';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
-  import {PasswordSetComponent} from '$lib/candidate/components/PasswordSetComponent';
+  import {PasswordSetter} from '$lib/candidate/components/PasswordSetter';
 
   export let code: string;
 
@@ -64,14 +64,12 @@
     <h1 class="my-24 text-2xl font-normal">{$t('candidateApp.resetPassword.createNewPassword')}</h1>
   </HeadingGroup>
   <form class="flex-nowarp flex flex-col items-center">
-    <PasswordSetComponent
-      on:ButtonPressed={onButtonPress}
+    <PasswordSetter
+      ButtonPressed={onButtonPress}
       bind:validPassword
       bind:errorMessage
-      bind:password1={password}
-      bind:password2={passwordConfirmation}
-      autocomplete1="new-password"
-      autocomplete2="new-password" />
+      bind:password
+      bind:passwordConfirmation />
   </form>
-  <svelte:fragment slot="footer"><Footer /></svelte:fragment>
+  <Footer slot="footer" />
 </FrontPage>
