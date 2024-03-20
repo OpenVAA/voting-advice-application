@@ -6,5 +6,6 @@
   "showFullImage": "Show full image",
   "skipToMain": "Skip to main content",
   "submitLikert": "Save answer and continue",
-  "toggleExpandableContent": "Expand or collapse this section"
+  "toggleExpandableContent": "Expand or collapse this section",
+  "closeDialog": "Close dialog"
 }

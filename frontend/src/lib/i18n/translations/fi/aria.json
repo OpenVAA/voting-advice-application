@@ -6,5 +6,6 @@
   "showFullImage": "FI - Show full image",
   "skipToMain": "FI - Skip to main content",
   "submitLikert": "FI - Save answer and continue",
-  "toggleExpandableContent": "FI - Expand or collapse this section"
+  "toggleExpandableContent": "FI - Expand or collapse this section",
+  "closeDialog": "FI - Close dialog"
 }
