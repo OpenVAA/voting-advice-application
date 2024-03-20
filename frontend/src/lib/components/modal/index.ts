@@ -1,1 +1,2 @@
-export {default as TimedModal} from './TimedModal.svelte';
+export {default as Modal} from './Modal.svelte';
+export * from './Modal.type';
