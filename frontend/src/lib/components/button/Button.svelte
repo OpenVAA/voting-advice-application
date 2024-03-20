@@ -28,7 +28,16 @@
     labelClass = 'first-letter:uppercase';
 
     // 2. Variant-defined classes
-    classes += variant === 'main' ? ' w-full max-w-md' : ' btn-ghost';
+    switch (variant) {
+      case 'icon':
+        classes += ' btn-ghost';
+        break;
+      case 'main':
+        classes += ' w-full max-w-md';
+        break;
+      default:
+        classes += ' btn-ghost w-full max-w-md';
+    }
 
     // 3. Icon position
     switch (iconPos) {
@@ -43,7 +52,6 @@
         break;
       case 'right':
         classes += ' flex-row-reverse';
-        break;
     }
 
     // 4. Set color
