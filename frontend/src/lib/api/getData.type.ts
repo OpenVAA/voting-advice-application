@@ -303,7 +303,10 @@ export interface StrapiCandidateData {
       data: StrapiPartyData;
     };
     photo: {
-      data?: string;
+      data?: {
+        id: number | string;
+        attributes: StrapiImageData;
+      };
     };
   };
 }
@@ -378,4 +381,24 @@ export interface StrapiPartyData {
       data: StrapiNominationData[];
     };
   };
+}
+
+export interface StrapiImageData extends StrapiImageFormatData {
+  alternativeText?: string;
+  caption?: string;
+  formats: {
+    thumbnail?: StrapiImageFormatData;
+    small?: StrapiImageFormatData;
+    medium?: StrapiImageFormatData;
+    large?: StrapiImageFormatData;
+  };
+}
+
+export interface StrapiImageFormatData {
+  ext: string;
+  height?: number;
+  name: string;
+  size?: number;
+  url: string;
+  width?: number;
 }
