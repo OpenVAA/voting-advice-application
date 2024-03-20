@@ -4,7 +4,12 @@
   "title": "Voting Advice Application settings",
   "description": "Settings for an OpenVAA-built voting advice application.",
   "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "colors", "supportedLocales", "results"],
   "properties": {
+    "$schema": {
+      "const": "./settings-schema\\.json"
+    },
     "colors": {
       "description": "The main DaisyUI colors used by the application. These have to be defined separately for both the light (default) and dark themes. Only some of the named colors are used in the application: e.g., 'warning' is also used for 'error'.",
       "type": "object",
@@ -60,7 +65,23 @@
           }
         }
       }
+    },
+    "results": {
+      "description": "Settings related to the results view.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sections"],
+      "properties": {
+        "sections": {
+          "description": "Which entity types to show in the results view. There must be at least one.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["candidate", "party"]
+          }
+        }
+      }
     }
-  },
-  "required": ["colors", "supportedLocales"]
+  }
 }

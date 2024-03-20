@@ -38,5 +38,8 @@
       "code": "es-CO",
       "name": "Español (Colombia)"
     }
-  ]
+  ],
+  "results": {
+    "sections": ["candidate", "party"]
+  }
 }
