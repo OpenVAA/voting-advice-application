@@ -11,13 +11,16 @@
   import {translate} from '$lib/i18n/utils/translate';
   import QuestionOpenAnswer from '$lib/components/questions/QuestionOpenAnswer.svelte';
 
-  const questions = $page.data.questions;
-
   const store = answerContext.answers;
   $: answerStore = $store;
 
-  const questionsByCategory = questions.reduce(
-    (acc: Record<string, Array<QuestionProps>>, question) => {
+  let questions: QuestionProps[];
+  let questionsByCategory: Record<string, Array<QuestionProps>>;
+
+  $: questions = $page.data.questions;
+
+  $: questionsByCategory = questions.reduce(
+    (acc, question) => {
       if (!question.category) {
         return acc;
       }
@@ -27,7 +30,7 @@
       acc[question.category].push(question);
       return acc;
     },
-    {}
+    {} as typeof questionsByCategory
   );
 
   let nofUnansweredQuestions = 0;

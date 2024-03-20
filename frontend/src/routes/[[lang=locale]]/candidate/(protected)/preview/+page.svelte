@@ -1,28 +1,38 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {CandidateDetailsCard} from '$lib/components/candidates';
-  import SingleCardPage from '$lib/templates/singleCardPage/SingleCardPage.svelte';
   import {getContext} from 'svelte';
+  import {t} from '$lib/i18n';
   import type {AuthContext} from '$lib/utils/authenticationStore';
+  import {CandidateDetailsCard} from '$lib/components/candidates';
+  import {Icon} from '$lib/components/icon';
+  import SingleCardPage from '$lib/templates/singleCardPage/SingleCardPage.svelte';
   import LogoutButton from '$lib/candidate/components/logoutButton/LogoutButton.svelte';
+  import type {PageData} from './$types';
 
-  export let data: {
-    infoQuestions: QuestionProps[];
-    opinionQuestions: QuestionProps[];
-    candidates: CandidateProps[];
-  };
+  export let data: PageData;
 
-  const {opinionQuestions, infoQuestions, candidates} = data;
   const {user} = getContext<AuthContext>('auth');
-  const candidate = candidates.find(
-    (c: CandidateProps) => c.id === $user?.candidate?.id.toString()
-  );
+
+  let infoQuestions: QuestionProps[];
+  let opinionQuestions: QuestionProps[];
+  let candidates: CandidateProps[];
+  let candidate: CandidateProps | undefined;
+
+  $: {
+    infoQuestions = data.infoQuestions;
+    opinionQuestions = data.opinionQuestions;
+    candidates = data.candidates;
+    candidate = candidates.find((c) => c.id === `${$user?.candidate?.id}`);
+  }
 </script>
 
 {#if !candidate}
   <span>{$t('candidateApp.preview.notFound')}</span>
 {:else}
   <SingleCardPage title={$t('candidateApp.preview.title')}>
+    <svelte:fragment slot="note">
+      <Icon name="info" />
+      {$t('candidateApp.preview.tip')}
+    </svelte:fragment>
     <LogoutButton slot="banner" />
     <CandidateDetailsCard {candidate} {opinionQuestions} {infoQuestions} />
   </SingleCardPage>
