@@ -2,6 +2,8 @@ import {error} from '@sveltejs/kit';
 import {locale as currentLocale, locales} from '$lib/i18n';
 import {constants} from '$lib/utils/constants';
 import {matchLocale} from '$lib/i18n/utils/matchLocale';
+import {translate} from '$lib/i18n/utils/translate';
+import {ensureColors} from './utils/color';
 import {parseAnswers} from './utils/localization';
 import type {
   StrapiElectionData,
@@ -11,10 +13,8 @@ import type {
   StrapiResponse,
   StrapiAppLabelsData,
   LocalizedStrapiData,
-  QuestionCategoryType,
   StrapiQuestionCategoryData
 } from './getData.type';
-import {translate} from '$lib/i18n/utils/translate';
 
 // To build REST queries, one can use https://docs.strapi.io/dev-docs/api/rest/interactive-query-builder
 
@@ -127,8 +127,9 @@ export const getNominatedCandidates = ({
     // We need a specific calls to populate relations, * only goes one-level deep
     'populate[election]': 'true',
     'populate[constituency]': 'true',
-    'populate[party]': 'true',
-    'populate[candidate][populate][party]': 'true',
+    'populate[party][populate][logo]': 'true',
+    // Not used currently, would be memberOf property
+    // 'populate[candidate][populate][party]': 'true',
     'populate[candidate][populate][photo]': 'true',
     'populate[candidate][populate][answers][populate][question]': loadAnswers ? 'true' : 'false'
   });
@@ -146,6 +147,11 @@ export const getNominatedCandidates = ({
       const cnd = nom.attributes.candidate.data;
       const id = '' + cnd.id;
       const attr = cnd.attributes;
+      if (!nom.attributes.party.data)
+        throw error(
+          500,
+          `Could not retrieve result for nominating candidates: party for candidate with id '${id}' not found`
+        );
       const props: CandidateProps = {
         electionRound: nom.attributes.electionRound,
         electionSymbol: nom.attributes.electionSymbol,
@@ -156,14 +162,8 @@ export const getNominatedCandidates = ({
         // otherLanguages: attr.otherLanguages.data.map(
         //   (l: StrapiLanguageData) => l.attributes.name
         // ),
-        party: nom.attributes.party?.data
-          ? {
-              name: translate(nom.attributes.party.data.attributes.name, locale),
-              shortName: translate(nom.attributes.party.data.attributes.shortName, locale)
-            }
-          : {name: '', shortName: ''}
+        party: parseParty(nom.attributes.party.data, locale)
       };
-
       let photoURL = attr?.photo?.data?.attributes?.url;
       if (photoURL) {
         photoURL = constants.PUBLIC_BACKEND_URL + photoURL;
@@ -198,22 +198,33 @@ export const getAllParties = ({
     'populate[answers][populate][question]': loadAnswers ? 'true' : 'false'
   });
   return getData<StrapiPartyData[]>('api/parties', params).then((result) => {
-    return result.map((prt) => {
-      const id = `${prt.id}`;
-      const attr = prt.attributes;
-      const props: PartyProps = {
-        electionRound: 0, // We use a default here
-        id,
-        info: translate(attr.info, locale),
-        name: translate(attr.name, locale),
-        shortName: translate(attr.shortName, locale),
-        photo: attr.logo.data ?? ''
-      };
-      if (loadAnswers) props['answers'] = parseAnswers(attr.answers.data, locale);
-      if (loadMembers) props.memberCandidateIds = attr.candidates.data.map((c) => `${c.id}`);
-      return props;
-    });
+    return result.map((prt) => parseParty(prt, locale, loadAnswers, loadMembers));
   });
+};
+
+/**
+ * Parse Strapi Party data into a `PartyProps` object.
+ */
+const parseParty = (
+  party: StrapiPartyData,
+  locale?: string,
+  includeAnswers = false,
+  includeMembers = false
+): PartyProps => {
+  const id = `${party.id}`;
+  const attr = party.attributes;
+  const props: PartyProps = {
+    electionRound: 0, // We use a default here
+    id,
+    info: translate(attr.info, locale),
+    name: translate(attr.name, locale),
+    shortName: translate(attr.shortName, locale),
+    photo: attr.logo?.data ?? '',
+    ...ensureColors(attr.color, attr.colorDark)
+  };
+  if (includeAnswers) props['answers'] = parseAnswers(attr.answers.data, locale);
+  if (includeMembers) props.memberCandidateIds = attr.candidates.data.map((c) => `${c.id}`);
+  return props;
 };
 
 /**
@@ -318,16 +329,18 @@ export const getQuestions = ({
   return getData<StrapiQuestionCategoryData[]>('api/question-categories', params).then((result) => {
     const questions: QuestionProps[] = [];
     for (const cat of result) {
+      const catProps = parseQuestionCategory(cat, locale);
       for (const qst of cat.attributes.questions.data) {
         const attr = qst.attributes;
         const settings = attr.questionType?.data.attributes.settings;
         if (!settings) throw new Error(`Question with id '${qst.id}' has no settings!`);
         const props: QuestionProps = {
           id: `${qst.id}`,
+          order: attr.order ?? 0,
           text: translate(attr.text, locale),
           info: translate(attr.info, locale),
           shortName: translate(attr.shortName, locale),
-          category: translate(cat.attributes.name, locale),
+          category: catProps,
           type: settings.type
         };
         if ('values' in settings)
@@ -342,8 +355,34 @@ export const getQuestions = ({
         questions.push(props);
       }
     }
-    return questions;
+    // Sort by ascending order of first category and then question
+    return questions.sort((a, b) => {
+      const catCmp = a.category.order - b.category.order;
+      if (catCmp !== 0) return catCmp;
+      return a.order - b.order;
+    });
   });
+};
+
+/**
+ * Parse StrapiQuestionCategory data into a `QuestionCategoryProps` object.
+ */
+const parseQuestionCategory = (
+  category: StrapiQuestionCategoryData,
+  locale?: string
+): QuestionCategoryProps => {
+  const id = `${category.id}`;
+  const attr = category.attributes;
+  const props: QuestionCategoryProps = {
+    id,
+    order: attr.order ?? 0,
+    type: attr.type,
+    info: translate(attr.info, locale),
+    name: translate(attr.name, locale),
+    shortName: translate(attr.shortName, locale),
+    ...ensureColors(attr.color, attr.colorDark)
+  };
+  return props;
 };
 
 /**

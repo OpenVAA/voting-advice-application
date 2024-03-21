@@ -1,0 +1,38 @@
+<script lang="ts">
+  import {concatClass} from '$lib/utils/components';
+  import {Icon} from '$lib/components/icon';
+  import type {PartyTagProps} from './PartyTag.type';
+
+  type $$Props = PartyTagProps;
+
+  export let party: $$Props['party'];
+  export let variant: $$Props['variant'] = 'default';
+</script>
+
+<!--
+@component
+Used to display a party tag with an icon.
+
+### Properties
+
+- `party`: The Party object.
+- `variant`: Whether to use an abbreviation or the full name. @default `'default'`
+- Any valid attributes of a `<div>` element.
+
+### Usage
+
+```tsx
+<PartyTag party={candidate.party}/>
+<PartyTag party={candidate.party} variant="short"/>
+```
+-->
+
+<div {...concatClass($$restProps, 'flex flex-row items-center gap-xs font-bold')}>
+  <Icon
+    name="party"
+    customColor={party.color || undefined}
+    customColorDark={party.colorDark || undefined} />
+  <span>
+    {variant === 'short' ? party.shortName : party.name}
+  </span>
+</div>

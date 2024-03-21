@@ -85,18 +85,15 @@ declare global {
    */
   interface CandidateProps {
     answers?: AnswerProps[];
-    electionRound: number;
+    electionRound?: number;
     electionSymbol?: string;
     firstName: string;
     id: string;
     lastName: string;
     // motherTongues: string[];
     // otherLanguages: string[];
-    party: {
-      name: string;
-      shortName: string;
-    };
     photoURL?: string;
+    party: PartyProps;
     // politicalExperience: string;
   }
 
@@ -119,12 +116,14 @@ declare global {
    */
   interface PartyProps {
     answers?: AnswerProps[];
-    electionRound: number;
+    electionRound?: number;
     id: string;
     info: string;
     name: string;
     shortName: string;
     photo: string;
+    color?: string;
+    colorDark?: string;
     memberCandidateIds?: string[];
     memberCandidates?: CandidateProps[];
     nominatedCandidateIds?: string[];
@@ -140,7 +139,8 @@ declare global {
     id: string;
     text: string;
     shortName: string;
-    category?: string;
+    order: number;
+    category: QuestionCategoryProps;
     info?: string;
     fillingInfo?: string;
     type: QuestionSettingsProps['type'];
@@ -150,6 +150,24 @@ declare global {
     notLocalizable?: boolean;
     dateType?: DateType;
   }
+
+  /**
+   * The properties of a QuestionCategory object that can be passed onto the
+   * related components.
+   * TODO: This may be deprecated later by the `vaa-data` module.
+   */
+  interface QuestionCategoryProps {
+    id: string;
+    name: string;
+    shortName: string;
+    order: number;
+    type: QuestionCategoryType;
+    info?: string;
+    color?: string;
+    colorDark?: string;
+  }
+
+  type QuestionCategoryType = 'info' | 'opinion';
 
   /**
    * Question type settings

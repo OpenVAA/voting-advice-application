@@ -1,6 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {Card} from '$lib/components/shared/card/index';
+  import {PartyTag} from '$lib/components/partyTag';
   import {getUUID} from '$lib/utils/components';
   import type {EntityCardProps} from './EntityCard.type';
   import CandidatePhoto from '$lib/components/candidates/CandidatePhoto.svelte';
@@ -9,7 +10,7 @@
   export let id: $$Props['id'] = undefined;
   export let title: $$Props['title'];
   export let electionSymbol: $$Props['electionSymbol'] = '';
-  export let listText: $$Props['listText'] = '';
+  export let party: $$Props['party'] = undefined;
   export let summaryMatch: $$Props['summaryMatch'] = '';
   export let imgSrc: $$Props['imgSrc'] = undefined;
   export let imgAlt: $$Props['imgAlt'] = undefined;
@@ -39,15 +40,8 @@
     </svelte:fragment>
     <h3 slot="body-title" id={labelId}>{title}</h3>
     <div class="flex flex-row items-center gap-md" slot="body-content">
-      {#if listText}
-        <!-- TODO: Convert to <PartyTag> component -->
-        <div class="flex flex-row gap-sm">
-          <!-- svelte-ignore a11y-missing-attribute -->
-          <img src="/icons/list.svg" role="presentation" alt="" />
-          <span class="font-bold">
-            {listText}
-          </span>
-        </div>
+      {#if party}
+        <PartyTag {party} variant="short" />
       {/if}
       {#if electionSymbol}
         <!-- TODO: Convert to <ElectionSymbol> component -->

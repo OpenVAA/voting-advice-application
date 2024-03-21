@@ -1,9 +1,10 @@
-import {derived, writable} from 'svelte/store';
+import {derived, readable, writable} from 'svelte/store';
 import type {Readable, Writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import {page} from '$app/stores';
 import type {VoterAnswers} from '$lib/types';
-import {logDebugError} from './logger';
+import localSettings from '$lib/config/settings.json';
+import {logDebugError} from '$lib/utils/logger';
 import {matchCandidates} from '$lib/utils/matching';
 
 // Store values in local storage to prevent them from disappearing in refresh
@@ -102,3 +103,8 @@ export const appType: Writable<AppType> = writable('voter');
  * The possible types of the application
  */
 export type AppType = 'candidate' | 'voter';
+
+/**
+ * Contains the current app settings. This currently includes only the local settings, but in the future this can include the effective settings incorporating any choices made by the user of the app.
+ */
+export const settings: Readable<typeof localSettings> = readable(localSettings);

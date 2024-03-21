@@ -12,15 +12,17 @@ export function getUUID(): string {
  *   same values in `props`
  * @returns The merged props, based on a shallow copy of `props`
  */
-export function concatProps<T extends Record<string, unknown>, D extends Record<string, string>>(
-  props: T,
-  defaults: D
-): Omit<T, keyof D> & D {
+export function concatProps<
+  T extends Record<string, unknown>,
+  D extends Record<string, string | undefined>
+>(props: T, defaults: D): Omit<T, keyof D> & D {
   // Make a shallow copy of props so as not to alter its values
   const merged: Record<string, unknown> = {...props};
   for (const k in defaults) {
     merged[k] =
-      k in merged && typeof merged[k] === 'string' ? `${defaults[k]} ${merged[k]}` : defaults[k];
+      k in merged && typeof merged[k] === 'string'
+        ? `${defaults[k] ?? ''} ${merged[k]}`
+        : defaults[k];
   }
   return merged as Omit<T, keyof D> & D;
 }

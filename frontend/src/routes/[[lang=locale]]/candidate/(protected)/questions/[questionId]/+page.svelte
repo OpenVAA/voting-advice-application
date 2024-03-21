@@ -10,6 +10,7 @@
   import {BasicPage} from '$lib/templates/basicPage';
   import {translate} from '$lib/i18n/utils/translate';
   import {TextArea} from '$candidate/components/textArea';
+  import CategoryTag from '$lib/components/categoryTag/CategoryTag.svelte';
 
   const store = answerContext.answers;
   $: answerStore = $store;
@@ -196,9 +197,9 @@
   {#key currentQuestion}
     <BasicPage title={currentQuestion.text} class="bg-base-200">
       <HeadingGroup slot="heading" id="hgroup-{currentQuestion.id}">
-        {#if currentQuestion.category && currentQuestion.category !== ''}
-          <!-- TODO: Set color based on category -->
-          <PreHeading class="text-accent">{currentQuestion.category}</PreHeading>
+        {#if currentQuestion.category}
+          <PreHeading class="text-accent"
+            ><CategoryTag category={currentQuestion.category} /></PreHeading>
         {/if}
         <h1>{currentQuestion.text}</h1>
       </HeadingGroup>

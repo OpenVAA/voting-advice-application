@@ -9,7 +9,7 @@
 
   const questionCategories = new Set<string>();
   $page.data.questions.forEach((question) => {
-    if (question.category) questionCategories.add(question.category);
+    if (question.category) questionCategories.add(question.category.id);
   });
 </script>
 

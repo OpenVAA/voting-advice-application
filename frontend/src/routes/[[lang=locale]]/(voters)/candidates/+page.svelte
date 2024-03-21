@@ -49,9 +49,9 @@
         title={GetFullNameInOrder(firstName, lastName)}
         imgAlt={$t('candidate.portraitAlt')}
         {id}
-        listText={party?.name ?? ''}
-        {electionSymbol}
-        imgSrc={photoURL} />
+        imgSrc={photoURL}
+        {party}
+        {electionSymbol} />
     {:else}
       <p>{$t('candidates.notFound')}</p>
     {/each}
