@@ -97,8 +97,18 @@ declare global {
     firstName: string;
     id: string;
     lastName: string;
-    photoURL?: string;
+    photo?: ImageProps;
     party: PartyProps;
+  }
+
+  /**
+   * Properties of an image property
+   */
+  interface ImageProps {
+    url: string;
+    thumbnail: {
+      url: string;
+    };
   }
 
   /**
@@ -126,7 +136,7 @@ declare global {
     info: string;
     name: string;
     shortName: string;
-    photo: string;
+    photo?: ImageProps;
     color?: string;
     colorDark?: string;
     memberCandidateIds?: string[];

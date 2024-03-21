@@ -14,7 +14,8 @@ import type {
   StrapiResponse,
   StrapiAppLabelsData,
   LocalizedStrapiData,
-  StrapiQuestionCategoryData
+  StrapiQuestionCategoryData,
+  StrapiImageData
 } from './getData.type';
 
 // To build REST queries, one can use https://docs.strapi.io/dev-docs/api/rest/interactive-query-builder
@@ -165,11 +166,8 @@ export const getNominatedCandidates = ({
         lastName: attr.lastName,
         party: parseParty(nom.attributes.party.data, locale)
       };
-      let photoURL = attr?.photo?.data?.attributes?.url;
-      if (photoURL) {
-        photoURL = `${constants.PUBLIC_BACKEND_URL}${photoURL}`;
-        props.photoURL = photoURL;
-      }
+      const photo = attr.photo?.data?.attributes;
+      if (photo) props.photo = parseImage(photo);
       if (loadAnswers)
         props['answers'] = attr.answers?.data ? parseAnswers(attr.answers.data, locale) : [];
       return props;
@@ -220,9 +218,10 @@ const parseParty = (
     info: translate(attr.info, locale),
     name: translate(attr.name, locale),
     shortName: translate(attr.shortName, locale),
-    photo: attr.logo?.data ?? '',
     ...ensureColors(attr.color, attr.colorDark)
   };
+  const photo = attr.logo?.data?.attributes;
+  if (photo) props.photo = parseImage(photo);
   if (includeAnswers) props['answers'] = parseAnswers(attr.answers.data, locale);
   if (includeMembers) props.memberCandidateIds = attr.candidates.data.map((c) => `${c.id}`);
   return props;
@@ -422,4 +421,19 @@ export const getInfoQuestions = ({
     locale,
     categoryType: 'info'
   });
+};
+
+/**
+ * Parse image properties from Strapi, providing the full image url as a default for the thumbnail.
+ */
+const parseImage = (image: StrapiImageData): ImageProps => {
+  const url = `${constants.PUBLIC_BACKEND_URL}${image.url}`;
+  return {
+    url,
+    thumbnail: {
+      url: image.formats?.thumbnail
+        ? `${constants.PUBLIC_BACKEND_URL}${image.formats.thumbnail.url}`
+        : url
+    }
+  };
 };
