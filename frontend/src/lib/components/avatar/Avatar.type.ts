@@ -8,9 +8,9 @@ export type AvatarProps = SvelteHTMLElements['figure'] & {
   name: string;
 
   /**
-   * The `src` of the avatar image.
+   * The possible avatar image.
    */
-  src?: string;
+  image?: ImageProps;
 
   /**
    * These can be provided to override the automatic initials construction.
@@ -21,4 +21,9 @@ export type AvatarProps = SvelteHTMLElements['figure'] & {
    * The background color of the initials placeholder. @default 'base-300'
    */
   color?: Color;
+
+  /**
+   * Whether to link the thumbnail to the full image. @default false
+   */
+  linkFullImage?: boolean;
 };

@@ -20,7 +20,7 @@
   const baseId = getUUID();
 
   let name: string;
-  let src: string | undefined;
+  let image: ImageProps | undefined;
   let electionSymbol: string | undefined;
   let nominatingParty: PartyProps | undefined;
 
@@ -33,12 +33,12 @@
 
     if (isCandidate(entity)) {
       name = formatName(entity);
-      src = entity.photoURL;
+      image = entity.photo;
       electionSymbol = entity.electionSymbol;
       nominatingParty = entity.party;
     } else if (isParty(entity)) {
       name = entity.name;
-      src = entity.photo;
+      image = entity.photo;
       electionSymbol = entity.electionSymbol;
     } else {
       error(500, 'Entity must be either a candidate or a party.');
@@ -72,7 +72,7 @@ A card for displaying an entity, i.e. a candidate or a party, in a list or as pa
   aria-labelledby="{baseId}_title {ranking ? `${baseId}_callout` : ''}"
   aria-describedby="{baseId}_subtitle"
   {...$$restProps}>
-  <Avatar slot="image" {src} {name} />
+  <Avatar slot="image" {image} {name} linkFullImage={context === 'details'} />
   <h3 slot="title" id="{baseId}_title">{name}</h3>
   <div class="flex flex-row items-center gap-md" slot="subtitle" id="{baseId}_subtitle">
     {#if nominatingParty}
