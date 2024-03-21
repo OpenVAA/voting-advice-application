@@ -368,7 +368,10 @@ export interface StrapiPartyData {
     color: string;
     colorDark: string;
     logo: {
-      data?: string;
+      data?: {
+        id: number | string;
+        attributes: StrapiImageData;
+      };
     };
     answers: {
       data: StrapiAnswerData[];

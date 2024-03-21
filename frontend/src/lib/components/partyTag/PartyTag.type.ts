@@ -7,5 +7,5 @@ export type PartyTagProps = SvelteHTMLElements['div'] & {
   /**
    * Whether to use an abbreviation or the full name. @default 'default'
    */
-  variant?: 'default' | 'short';
+  variant?: 'default' | 'short' | 'full';
 };

@@ -1,93 +1,150 @@
 <script lang="ts">
+  import {concatProps, getUUID} from '$lib/utils/components';
   import type {ScoreGaugeProps} from './ScoreGauge.type';
-  import {getUUID} from '$lib/utils/components';
 
   type $$Props = ScoreGaugeProps;
 
   export let score: $$Props['score'];
-  export let showUnit: $$Props['showUnit'] = true;
-  export let unit: $$Props['unit'] = '%';
-  export let shape: $$Props['shape'] = 'linear';
-  export let label: $$Props['label'] = '';
-  export let labelColor: $$Props['labelColor'] = 'oklch(var(--s))';
-  export let meterColor: $$Props['meterColor'] = 'oklch(var(--n))';
+  export let label: $$Props['label'];
+  export let max: $$Props['max'] = 100;
+  export let showScore: $$Props['showScore'] = true;
+  export let unit: $$Props['unit'] = '';
+  export let variant: $$Props['variant'] = 'radial';
+  export let color: $$Props['color'] = 'oklch(var(--n))';
+  export let colorDark: $$Props['colorDark'] = 'oklch(var(--n))';
 
   const labelId = getUUID();
 
-  $: cssVarStyles = `--progress-color:${meterColor};` + `--progress-label-color:${labelColor}`;
+  // Create styles
+  let classes: string;
+  let styles: string | undefined;
+  $: {
+    classes = 'vaa-score-gauge grid gap-4';
+    switch (variant) {
+      case 'linear':
+        classes += ' grid-rows-[fit-content(100%)_minmax(0,_1fr)] justify-items-start';
+        break;
+      default:
+        classes += ' grid-cols-[fit-content(100%)_minmax(0,_1fr)] items-center';
+    }
+    styles = `--meter-color: ${color}; --meter-color-dark: ${colorDark};`;
+    // Set the radial size based on the contents
+    const radSize = (showScore ? Math.max(`${max}${unit}`.length, 3) : 3) * 0.7;
+    styles += `--radial-size: ${radSize.toFixed(3)}rem; --radial-size-lg: ${(radSize * 1.25).toFixed(3)}rem;`;
+  }
 </script>
 
-<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<!--@component
+Show a radial or a linear score gauge for a sub-match.
+
+### Properties
+
+- `score`: The score of the gauge in the range from 0 to `max`, usually 100.
+- `max`: The maximum value of the gauge. @default 100
+- `label`: The text label for the gauge, e.g. the name of the category.
+- `variant`: The format of the gauge. @default 'linear'
+- `showScore`: Whether to also show the score as numbers. @default true
+- `unit`: The string to add to the score if it's shown, e.g. '%'. @default ''
+- `color`: The color of the gauge. @default 'oklch(var(--n))' i.e. the `neutral` color.
+- `colorDark`: The color of the gauge in dark mode. @default 'oklch(var(--n))' i.e. the `neutral` color.
+
+```tsx
+<ScoreGauge score={23} label={category.name} 
+  color={category.color} colorDark={category.colorDark}
+  variant="radial"/>
+<ScoreGauge score={23} label={category.name}/>
+```
+-->
+
 <div
-  class="grid gap-4"
-  class:grid-cols-1={shape === 'linear'}
-  class:justify-items-center={shape === 'linear'}
-  class:grid-col-2-fit={shape === 'radial'}
-  class:items-center={shape === 'radial'}
-  style={cssVarStyles}>
-  {#if shape === 'radial'}
+  {...concatProps($$restProps, {
+    class: classes,
+    style: styles
+  })}>
+  {#if variant === 'linear'}
+    <progress
+      role="meter"
+      aria-labelledby={labelId}
+      class="progress-color progress"
+      aria-valuemax={max}
+      aria-valuenow={score}
+      value={score}
+      {max} />
+  {:else}
     <div
       role="meter"
-      aria-valuemax={100}
+      aria-valuemax={max}
       aria-valuenow={score}
       aria-labelledby={labelId}
-      class="radial-progress self-center"
-      style={`--value:${score};`}>
-      {#if showUnit}
+      class="radial-progress flex-shrink-0 self-center"
+      style="--value:{(score / (max ?? 100)) * 100};">
+      {#if showScore}
         <span class="text-sm text-secondary" aria-hidden="true">{score}{unit}</span>
       {/if}
     </div>
-  {:else if shape === 'linear'}
-    {#if showUnit}
-      <div class="text-sm text-secondary" aria-hidden="true">
+  {/if}
+  <div class="grid grid-cols-[minmax(0,_1fr)_fit-content(100%)] gap-sm justify-self-stretch">
+    <label
+      class="grow truncate text-sm text-secondary"
+      for={labelId}
+      id={labelId}
+      aria-hidden="true">
+      {label}
+    </label>
+    {#if variant === 'linear' && showScore}
+      <div class="shrink-0 text-sm text-secondary" aria-hidden="true">
         {score}{unit}
       </div>
     {/if}
-    <progress
-      aria-labelledby={labelId}
-      class="progress-color progress"
-      aria-valuenow={score}
-      value={score}
-      max="100" />
-  {/if}
-  {#if label}
-    <label class="truncate text-sm text-secondary" for={labelId} id={labelId} aria-hidden="true"
-      >{label}</label>
-  {/if}
+  </div>
 </div>
 
-<style>
+<style lang="postcss">
+  /* We need a media query to selectively set the --progress-color value we want to use. */
+  .vaa-score-gauge {
+    --progress-color: var(--meter-color);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .vaa-score-gauge {
+      --progress-color: var(--meter-color-dark);
+    }
+  }
+
   /* For Firefox */
   progress::-moz-progress-bar {
     background: var(--progress-color);
   }
-  /* For Firefox */
 
   /* For Chrome or Safari */
   progress::-webkit-progress-value {
     background: var(--progress-color);
   }
-  /* For Chrome or Safari */
 
   /* For IE10 */
   progress {
     color: var(--progress-color);
   }
 
-  /* TODO: Find a way to use Tailwind utility classes here */
-
   .radial-progress {
     color: var(--progress-color);
-    --size: 2.5rem;
+    --size: var(--radial-size);
+    --thickness: calc(var(--radial-size) * 0.12);
+  }
+
+  /* This is the css rule copied from DaisyUI with the last line (oklch(var(--b3))) added to create the full circle background */
+  .radial-progress:before {
+    background:
+      radial-gradient(farthest-side, currentColor 98%, #0000) top/var(--thickness) var(--thickness)
+        no-repeat,
+      conic-gradient(currentColor calc(var(--value) * 1%), #0000 0),
+      oklch(var(--b3));
   }
 
   @media (min-width: 1024px) {
     .radial-progress {
-      --size: 3.5rem;
+      --size: var(--radial-size-lg);
+      --thickness: calc(var(--radial-size-lg) * 0.12);
     }
-  }
-
-  .grid-col-2-fit {
-    grid-template-columns: fit-content(100%) minmax(0, 1fr);
   }
 </style>

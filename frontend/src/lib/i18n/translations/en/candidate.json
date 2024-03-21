@@ -1,8 +1,4 @@
 {
-  "tabs": {
-    "basicInfo": "Basic Info",
-    "opinions": "Opinions"
-  },
   "age": "age",
   "contact_support": "Contact Support",
   "election_compass_for_voters": "Election Compass for Voters",
@@ -14,8 +10,6 @@
   "politicalExperience": "Political experience",
   "themes": "Themes",
   "portraitAlt": "Candidate photo",
-  "missingAnswer": "—",
-  "multipleAnswerSeparator": " • ",
   "email_placeholder": "example@email.com",
   "email": "Email",
   "enter_email_and_password": "Enter the email and password you've received from your party to edit your data and opinions.",

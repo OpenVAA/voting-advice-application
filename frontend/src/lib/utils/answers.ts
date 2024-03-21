@@ -5,13 +5,13 @@ import {logDebugError} from '$lib/utils/logger';
 // TODO: These will be deprecated when we get proper Classes defs and methods for Question objects using the vaa-data module.
 
 /**
- * Get the candidate's answer for the given questions.
- * @param candidate The Candidate
+ * Get the entity's answer for the given questions.
+ * @param entity The Entity
  * @param question The Question object
  * @returns An `AnswerProps` object with the answer
  */
-export function getAnswer(candidate: CandidateProps, question: QuestionProps) {
-  const match = candidate.answers?.find((a) => a.questionId === question.id);
+export function getAnswer(entity: EntityProps, question: QuestionProps) {
+  const match = entity.answers?.find((a) => a.questionId === question.id);
   return {
     answer: match?.answer,
     openAnswer: match?.openAnswer
@@ -19,12 +19,12 @@ export function getAnswer(candidate: CandidateProps, question: QuestionProps) {
 }
 
 /**
- * Get the candidate's Likert answer for the given question.
- * @param candidate The Candidate
+ * Get the entity's Likert answer for the given question.
+ * @param entity The Entity
  * @param question The Question object
  * @returns An `AnswerProps` object with an integer answer
  */
-export function getLikertAnswer(candidate: CandidateProps, question: QuestionProps) {
+export function getLikertAnswer(entity: EntityProps, question: QuestionProps) {
   if (question.type !== 'singleChoiceOrdinal') {
     logDebugError(`getLikertAnswer: Question ${question.id} is not a Likert question.`);
     return {
@@ -32,7 +32,7 @@ export function getLikertAnswer(candidate: CandidateProps, question: QuestionPro
       openAnswer: undefined
     };
   }
-  const {answer, openAnswer} = getAnswer(candidate, question);
+  const {answer, openAnswer} = getAnswer(entity, question);
   return {
     answer: answer as number,
     openAnswer
@@ -40,16 +40,16 @@ export function getLikertAnswer(candidate: CandidateProps, question: QuestionPro
 }
 
 /**
- * Fetch the candidate's answer for the given question and return it as a string or arra of string that can be displayed to the user.
- * @param candidate The Candidate object
+ * Fetch the entity's answer for the given question and return it as a string or arra of string that can be displayed to the user.
+ * @param entity The Candidate object
  * @param question The Question object
  * @returns A string, an array of strings, or `undefined` if the answer is missing, invalid or would be an empty list
  */
 export function getAnswerForDisplay(
-  candidate: CandidateProps,
+  entity: EntityProps,
   question: QuestionProps
 ): string | string[] | undefined {
-  const {answer} = getAnswer(candidate, question);
+  const {answer} = getAnswer(entity, question);
   if (answer == null || answer === '') return undefined;
   const qt = question.type;
   if (qt === 'boolean') return t.get((answer as boolean) ? 'common.answerYes' : 'common.answerNo');

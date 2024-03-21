@@ -1,15 +1,17 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import type {LayoutServerData} from './$types';
+  import {onMount} from 'svelte';
+  import {goto} from '$app/navigation';
+  import {logDebugError} from '$lib/utils/logger';
+  import {getRoute, Route} from '$lib/utils/navigation';
+  import {resultsAvailable} from '$lib/utils/stores';
 
-  export let data: LayoutServerData;
-
-  let candidates: CandidateProps[];
-  $: candidates = data.candidates;
+  // This has to be done onMount, because goto may otherwise be called on the server
+  onMount(() => {
+    if (!$resultsAvailable) {
+      logDebugError('No candidate rankings found. Redirecting to questions');
+      goto($getRoute(Route.Questions));
+    }
+  });
 </script>
 
-{#if !candidates?.length}
-  <p>{$t('candidates.notFound')}</p>
-{:else}
-  <slot />
-{/if}
+<slot />

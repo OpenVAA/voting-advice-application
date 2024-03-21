@@ -1,7 +1,6 @@
 import {
   type HasMatchableAnswers,
   type HasMatchableQuestions,
-  type Match,
   type MatchableAnswer,
   type MatchableValue,
   type MatchingOptions,
@@ -23,11 +22,11 @@ import type {VoterAnswers} from '$lib/types';
  * by default.
  * TODO: Write proper implementation.
  */
-export const matchCandidates = function matchCandidates(
+export function matchCandidates(
   allQuestions: QuestionProps[],
   answeredQuestions: VoterAnswers,
   allCandidates: CandidateProps[]
-): Match[] {
+): RankingProps<CandidateProps>[] {
   // Create the algorithm instance
   const algorithm = new MatchingAlgorithmBase({
     distanceMetric: DistanceMetric.Manhattan,
@@ -90,6 +89,8 @@ export const matchCandidates = function matchCandidates(
       (c) =>
         ({
           label: c?.name ?? '—',
+          color: c?.color,
+          colorDark: c?.colorDark,
           matchableQuestions: Object.values(questions).filter((q) => q.category === c)
         }) as HasMatchableQuestions
     )
@@ -98,8 +99,12 @@ export const matchCandidates = function matchCandidates(
   // Get matches
   const matches = algorithm.match(voter, Object.values(candidates), matchingOptions);
   matches.sort((a, b) => a.distance - b.distance);
-  return matches;
-};
+  return matches.map(({score, subMatches, entity}) => ({
+    score,
+    subMatches,
+    entity: allCandidates.find((c) => c.id === (entity as Person).id) as CandidateProps
+  }));
+}
 
 /**
  * Options for a dummy question object for matching.

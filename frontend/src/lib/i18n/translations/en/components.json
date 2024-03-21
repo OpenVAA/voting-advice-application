@@ -1,6 +1,11 @@
 {
+  "entityList": {
+    "showMore": "Show more"
+  },
+  "matchScore": {
+    "label": "match"
+  },
   "card": {
-    "errorDisplaying": "Error displaying card",
-    "matchLabel": "match"
+    "errorDisplaying": "Error displaying card"
   }
 }

@@ -1,20 +1,20 @@
 <script lang="ts">
-  import {goto} from '$app/navigation';
   import {t} from '$lib/i18n';
-  import {GetFullNameInOrder} from '$lib/utils/internationalisation';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
-  import {EntityCard} from '$lib/components/entityCard';
+  import {EntityList} from '$lib/components/entityList';
+  import {StretchBackground} from '$lib/components/stretchBackground';
   import {BasicPage} from '$lib/templates/basicPage';
   import type {PageServerData} from './$types';
 
   export let data: PageServerData;
 
+  let itemsShown = 0;
   let candidates: CandidateProps[];
   $: candidates = data.candidates;
 </script>
 
-<BasicPage title={$t('candidates.candidates')} mainClass="bg-base-300">
+<BasicPage title={$t('candidates.candidates')}>
   <!-- <svelte:fragment slot="note">
     <Icon name="tip" />
     {$t('viewTexts.questionsTip')}
@@ -33,27 +33,16 @@
     {$t('candidates.ingress')}
   </p>
 
-  <!-- The -mx-md and w-[calc(100%+20rem/16)] below are there to extend the cards a bit over 
-       the normal padding, match-w-xl: classes cancel this on screens where the max-width 
-       comes into effect. TODO: Define the calculated width as a predefined utility class 
-       that uses the same md definition. -->
-  <div
-    role="feed"
-    class="-mx-md grid w-[calc(100%+20rem/16)] grid-cols-1 gap-md match-w-xl:mx-0 match-w-xl:w-full"
-    aria-label={$t('candidates.candidates')}>
-    {#each candidates as { id, firstName, lastName, party, electionSymbol, photoURL }, i}
-      <EntityCard
-        on:click={() => goto($getRoute({route: Route.Candidate, id}))}
-        ariaPosinset={i + 1}
-        ariaSetsize={data.candidates.length}
-        title={GetFullNameInOrder(firstName, lastName)}
-        imgAlt={$t('candidate.portraitAlt')}
-        {id}
-        imgSrc={photoURL}
-        {party}
-        {electionSymbol} />
-    {:else}
-      <p>{$t('candidates.notFound')}</p>
-    {/each}
-  </div>
+  <StretchBackground padding="medium" bgColor="base-300" toBottom>
+    <h2 class="mb-lg mt-xl">
+      {$t('candidates.candidatesShown', {numShown: itemsShown})}
+      <span class="font-normal text-secondary"
+        >{$t('candidates.candidatesTotal', {numTotal: candidates.length})}</span>
+    </h2>
+    <EntityList
+      bind:itemsShown
+      entities={candidates}
+      actionCallBack={({id}) => $getRoute({route: Route.Candidate, id})}
+      class="mb-lg" />
+  </StretchBackground>
 </BasicPage>

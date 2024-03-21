@@ -1,0 +1,9 @@
+{
+  "tabs": {
+    "basicInfo": "FI - Basic Info",
+    "opinions": "FI - Opinions"
+  },
+  "electionSymbol": "FI - Election Number",
+  "missingAnswer": "—",
+  "multipleAnswerSeparator": " • "
+}

@@ -33,6 +33,12 @@ Used to display a party tag with an icon.
     customColor={party.color || undefined}
     customColorDark={party.colorDark || undefined} />
   <span>
-    {variant === 'short' ? party.shortName : party.name}
+    {#if variant === 'short'}
+      {party.shortName}
+    {:else if variant === 'full'}
+      {party.name} ({party.shortName})
+    {:else}
+      {party.name}
+    {/if}
   </span>
 </div>

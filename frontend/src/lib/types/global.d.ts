@@ -9,6 +9,13 @@ declare global {
   };
 
   /**
+   * Make specific properties of an interface required. Works the same way as
+   * `Required<Type>` but only applies to keys listed.
+   * Source: https://stackoverflow.com/questions/69327990/how-can-i-make-one-property-non-optional-in-a-typescript-type
+   */
+  type WithRequired<Type, Key extends keyof Type> = Type & {[Prop in Key]-?: Type[Prop]};
+
+  /**
    * The properties of a multiple choice option in a Question.
    * TODO: This may be deprecated later by the `vaa-data` module.
    */
@@ -92,9 +99,19 @@ declare global {
     lastName: string;
     // motherTongues: string[];
     // otherLanguages: string[];
-    photoURL?: string;
+    photo?: ImageProps;
     party: PartyProps;
     // politicalExperience: string;
+  }
+
+  /**
+   * Properties of an image property
+   */
+  interface ImageProps {
+    url: string;
+    thumbnail: {
+      url: string;
+    };
   }
 
   /**
@@ -117,11 +134,12 @@ declare global {
   interface PartyProps {
     answers?: AnswerProps[];
     electionRound?: number;
+    electionSymbol?: string;
     id: string;
     info: string;
     name: string;
     shortName: string;
-    photo: string;
+    photo?: ImageProps;
     color?: string;
     colorDark?: string;
     memberCandidateIds?: string[];
@@ -231,20 +249,31 @@ declare global {
   }
 
   /**
+   * Represents any entity that can be shown in listings and has answers to questions.
+   */
+  type EntityProps = CandidateProps | PartyProps;
+
+  /**
    * These conform to `vaa-matching.Match`
    */
-  interface RankingProps {
+  interface RankingProps<T extends EntityProps> {
     // distance: number;
-    // entity: {
-    //   id: string;
-    // }
+    entity: T;
     score: number;
-    subMatches?: {
-      // distance: number;
-      score: number;
-      questionGroup: {
-        label?: string;
-      };
-    }[];
+    subMatches?: SubMatchProps[];
+  }
+
+  /**
+   * The submatches of a `RankingProps`
+   */
+  interface SubMatchProps {
+    // distance: number;
+    score: number;
+    // TODO: Convert to QuestionCategoryProps
+    questionGroup: {
+      label?: string; // Convert to name
+      color?: string;
+      colorDark?: string;
+    };
   }
 }
