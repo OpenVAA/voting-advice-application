@@ -107,7 +107,8 @@
     "wrongRegistrationCode": "Väärä rekisteröintikoodi",
     "registerButton": "Rekisteröidy",
     "submitPlaceholder": "Esimerkiksi CP23-174a-f4%&-aHAB",
-    "title": "Rekisteröinti"
+    "title": "Rekisteröinti",
+    "loggedInWarning": "Käyttäjä on tällä hetkellä kirjautunut sisään. Kirjaudu ulos ennen kuin jatkat rekisteröintiin."
   },
   "resetPassword": {
     "createNewPassword": "Aseta uusi salasana",
