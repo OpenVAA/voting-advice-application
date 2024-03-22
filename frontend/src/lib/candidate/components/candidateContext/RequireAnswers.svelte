@@ -1,13 +1,13 @@
 <script lang="ts">
+  import type {CandidateContext} from '$lib/utils/candidateStore';
   import {getContext} from 'svelte';
-  import type {AnswerContext} from '$lib/utils/answerStore';
 
-  const answerContext = getContext<AnswerContext>('answers');
-  const answers = answerContext.answers;
-  const questions = answerContext.questions;
+  const candidateContext = getContext<CandidateContext>('candidate');
+  const answers = candidateContext.answersStore;
+  const questions = candidateContext.questionsStore;
 
   const getQuestionsAndAnswers = async () => {
-    await Promise.all([answerContext.loadAnswerData(), answerContext.loadQuestionData()]);
+    await Promise.all([candidateContext.loadAnswerData(), candidateContext.loadQuestionData()]);
   };
 </script>
 

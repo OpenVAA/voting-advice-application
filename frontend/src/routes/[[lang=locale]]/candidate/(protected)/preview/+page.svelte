@@ -1,16 +1,16 @@
 <script lang="ts">
   import {getContext} from 'svelte';
-  import {t} from '$lib/i18n';
-  import type {AuthContext} from '$lib/utils/authenticationStore';
-  import {CandidateDetailsCard} from '$lib/components/candidates';
-  import {Icon} from '$lib/components/icon';
-  import SingleCardPage from '$lib/templates/singleCardPage/SingleCardPage.svelte';
   import LogoutButton from '$lib/candidate/components/logoutButton/LogoutButton.svelte';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
   import type {PageData} from './$types';
+  import {CandidateDetailsCard} from '$lib/components/candidates';
+  import {SingleCardPage} from '$lib/templates/singleCardPage';
+  import {t} from '$lib/i18n';
+  import {Icon} from '$lib/components/icon';
 
   export let data: PageData;
 
-  const {user} = getContext<AuthContext>('auth');
+  const {userStore} = getContext<CandidateContext>('candidate');
 
   let infoQuestions: QuestionProps[];
   let opinionQuestions: QuestionProps[];
@@ -21,7 +21,7 @@
     infoQuestions = data.infoQuestions;
     opinionQuestions = data.opinionQuestions;
     candidates = data.candidates;
-    candidate = candidates.find((c) => c.id === `${$user?.candidate?.id}`);
+    candidate = candidates.find((c) => c.id === `${$userStore?.candidate?.id}`);
   }
 </script>
 

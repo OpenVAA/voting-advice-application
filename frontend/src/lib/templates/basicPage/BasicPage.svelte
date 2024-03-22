@@ -3,10 +3,10 @@
   import {t} from '$lib/i18n';
   import {concatProps} from '$lib/utils/components';
   import {appType} from '$lib/utils/stores';
-  import type {AuthContext} from '$lib/utils/authenticationStore';
   import {Page} from '../page';
   import type {BasicPageProps} from './BasicPage.type';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
   type $$Props = BasicPageProps;
 
@@ -15,12 +15,12 @@
   export let noteRole: $$Props['noteRole'] = 'note';
   export let primaryActionsLabel: $$Props['primaryActionsLabel'] = undefined;
 
-  const authContext = getContext<AuthContext>('auth');
+  const {userStore} = getContext<CandidateContext>('candidate');
 
   // We are in the candidate application and the user has logged in
   // TODO: Figure out a way to define this LogoutButton part only within the
   // candidate route. This can be done with the new, slot-less templates
-  const showLogoutButton = $appType === 'candidate' && authContext?.user;
+  const showLogoutButton = $appType === 'candidate' && userStore;
 </script>
 
 <!--

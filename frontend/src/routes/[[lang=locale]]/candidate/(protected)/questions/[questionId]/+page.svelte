@@ -2,7 +2,6 @@
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
   import {locale, t} from '$lib/i18n';
-  import {answerContext} from '$lib/utils/answerStore';
   import {addAnswer, updateAnswer, deleteAnswer} from '$lib/api/candidate';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
@@ -10,9 +9,11 @@
   import {BasicPage} from '$lib/templates/basicPage';
   import {translate} from '$lib/i18n/utils/translate';
   import {TextArea} from '$candidate/components/textArea';
+  import {getContext} from 'svelte';
+  import {type CandidateContext} from '$lib/utils/candidateStore';
 
-  const store = answerContext.answers;
-  $: answerStore = $store;
+  const {answersStore} = getContext<CandidateContext>('candidate');
+  $: answers = $answersStore;
 
   $: questionId = $page.params.questionId;
 
@@ -23,7 +24,7 @@
   let currentQuestion: QuestionProps | undefined;
   $: currentQuestion = $page.data.questions.find((q) => q.id.toString() === questionId.toString());
 
-  $: answer = answerStore?.[questionId]; // null if not answered
+  $: answer = answers?.[questionId]; // null if not answered
 
   let openAnswerTextArea: TextArea; // Used to clear the local storage from the parent component
   let openAnswer = '';
@@ -85,8 +86,8 @@
       const data = await response.json();
       const answerId = data.data.id;
 
-      if (answerStore) {
-        answerStore[questionId] = {
+      if (answers) {
+        answers[questionId] = {
           id: answerId,
           key: parseInt(localLikert),
           openAnswer: toLocalizedString(openAnswer)
@@ -108,8 +109,8 @@
         return;
       }
 
-      if (answerStore) {
-        answerStore[questionId] = {
+      if (answers) {
+        answers[questionId] = {
           id: answer.id,
           key: previousLikert,
           openAnswer: toLocalizedString(openAnswer)
@@ -119,7 +120,7 @@
 
     removeLocalAnswerToQuestion();
     openAnswer = '';
-    answerContext.answers.set(answerStore);
+    answersStore.set(answers);
   }
 
   async function removeAnswer() {
@@ -141,8 +142,8 @@
     openAnswer = '';
     removeLocalAnswerToQuestion();
 
-    delete answerStore?.[questionId];
-    answerContext.answers.set(answerStore);
+    delete answers?.[questionId];
+    answersStore.set(answers);
   }
 
   async function navigateToQuestion(indexChange: number, urlAfterLastQuestion: string) {
@@ -152,7 +153,7 @@
 
     // Check if all questions have been answered (before answer to current question is saved)
     const allAnsweredBefore = $page.data.questions.every(
-      (question) => answerStore && Object.keys(answerStore).includes(question.id.toString())
+      (question) => answers && Object.keys(answers).includes(question.id.toString())
     );
 
     // Save the current answer to the server before navigating
@@ -161,7 +162,7 @@
     // Check if all questions have been answered (after answer is saved)
     // If the last answer was filled now, go to page with congratulatory message
     const allAnsweredAfter = $page.data.questions.every(
-      (question) => answerStore && Object.keys(answerStore).includes(question.id.toString())
+      (question) => answers && Object.keys(answers).includes(question.id.toString())
     );
     if (!allAnsweredBefore && allAnsweredAfter) {
       goto($getRoute(Route.CandAppReady));

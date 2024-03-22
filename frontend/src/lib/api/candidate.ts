@@ -1,15 +1,13 @@
 import {get} from 'svelte/store';
 import {constants} from '$lib/utils/constants';
-import {authContext} from '$lib/utils/authenticationStore';
-import type {Language, User} from '$lib/types/candidateAttributes';
-import type {Photo} from '$lib/types/candidateAttributes';
-import type {Answer, Question} from '$lib/utils/answerStore';
+import type {Answer, Language, Question, User, Photo} from '$lib/types/candidateAttributes';
 import type {
   StrapiAnswerData,
   StrapiLanguageData,
   StrapiGenderData,
   StrapiResponse
 } from '$lib/api/getData.type';
+import {candidateContext} from '$lib/utils/candidateStore';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
@@ -107,7 +105,7 @@ export const updateBasicInfo = async (
   unaffiliated?: boolean,
   motherTongues?: Language[]
 ) => {
-  const user = get(authContext.user);
+  const user = get(candidateContext.userStore);
   const candidate = user?.candidate;
 
   if (!candidate) {
@@ -237,7 +235,7 @@ export const deleteAnswer = async (answerId: string): Promise<Response | undefin
  * Get all the answers for the logged in user.
  */
 export const getExistingAnswers = async (): Promise<Record<string, Answer> | undefined> => {
-  const user = get(authContext.user)?.candidate;
+  const user = get(candidateContext.userStore)?.candidate;
   const candidateId = user?.id;
 
   if (!candidateId) return;
@@ -302,7 +300,7 @@ export const deleteFile = async (id: number) => {
 };
 
 export const request = async (url: string, options: RequestInit = {}) => {
-  const token = authContext.token;
+  const token = candidateContext.tokenStore;
 
   // Allow providing headers, but with an enforced Authorization header
   if (!options.headers) options.headers = {};

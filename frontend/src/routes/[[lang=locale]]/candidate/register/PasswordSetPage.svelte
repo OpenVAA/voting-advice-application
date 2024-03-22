@@ -10,6 +10,8 @@
   import {FrontPage} from '$lib/templates/frontPage';
   import {emailOfNewUserStore} from '$lib/utils/authenticationStore';
   import {PasswordSetter} from '$lib/candidate/components/PasswordSetter';
+  import {getContext} from 'svelte';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
   export let userName: string;
   export let registrationCode: string;
@@ -17,6 +19,7 @@
 
   let password = '';
   let passwordConfirmation = '';
+  const {emailOfNewUserStore} = getContext<CandidateContext>('candidate');
   let validPassword = false;
   let errorMessage = '';
 

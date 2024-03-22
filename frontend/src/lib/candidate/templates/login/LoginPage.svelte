@@ -2,22 +2,21 @@
   import {getContext} from 'svelte';
   import {page} from '$app/stores';
   import {t} from '$lib/i18n';
-  import type {AuthContext} from '$lib/utils/authenticationStore';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {FrontPage} from '$lib/templates/frontPage';
-  import {emailOfNewUserStore} from '$lib/utils/authenticationStore';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const authContext = getContext<AuthContext>('auth');
+  const {logIn, emailOfNewUserStore} = getContext<CandidateContext>('candidate');
 
   let email = '';
   let password = '';
   let wrongCredentials = false;
   const onLogin = async () => {
-    if (!(await authContext?.logIn(email, password))) {
+    if (!(await logIn(email, password))) {
       wrongCredentials = true;
     } else {
       emailOfNewUserStore.set(null);
