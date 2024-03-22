@@ -10,8 +10,8 @@
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {user: userWritable} = getContext<CandidateContext>('candidate');
-  $: user = $userWritable;
+  const {userStore} = getContext<CandidateContext>('candidate');
+  $: user = $userStore;
 
   // TODO: consider refactoring this as this uses same classes as profile/+page.svelte?
   const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';

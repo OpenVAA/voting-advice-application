@@ -7,7 +7,10 @@
   import LanguageSelection from './LanguageSelection.svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {basicInfoFilled, nofUnansweredQuestions} = getContext<CandidateContext>('candidate') ?? {};
+  const {
+    basicInfoFilledStore: basicInfoFilled,
+    nofUnansweredQuestionsStore: nofUnansweredQuestions
+  } = getContext<CandidateContext>('candidate') ?? {};
 
   let allFilled: boolean | undefined;
   basicInfoFilled?.subscribe((value) => {

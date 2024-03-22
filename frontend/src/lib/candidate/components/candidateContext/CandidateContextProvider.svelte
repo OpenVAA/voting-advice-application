@@ -4,31 +4,31 @@
   import {get} from 'svelte/store';
 
   setContext('candidate', candidateContext);
-  const token = candidateContext.token;
+  const token = candidateContext.tokenStore;
 
   onMount(() => {
     candidateContext.loadLocalStorage();
     $token && candidateContext.loadUserData();
   });
 
-  candidateContext.user.subscribe((user) => {
+  candidateContext.userStore.subscribe((user) => {
     const {motherTongues, birthday, manifesto} = user?.candidate ?? {};
     const allFilled = !!motherTongues && motherTongues.length > 0 && !!birthday && !!manifesto;
-    candidateContext.basicInfoFilled.set(allFilled);
+    candidateContext.basicInfoFilledStore.set(allFilled);
   });
 
   const updateNofUnansweredQuestions = () => {
-    const answers = get(candidateContext.answers);
-    const questions = get(candidateContext.questions);
+    const answers = get(candidateContext.answersStore);
+    const questions = get(candidateContext.questionsStore);
     if (answers && questions) {
-      candidateContext.nofUnansweredQuestions.set(
+      candidateContext.nofUnansweredQuestionsStore.set(
         Object.entries(questions).length - Object.entries(answers).length
       );
     }
   };
 
-  candidateContext.answers.subscribe(updateNofUnansweredQuestions);
-  candidateContext.questions.subscribe(updateNofUnansweredQuestions);
+  candidateContext.answersStore.subscribe(updateNofUnansweredQuestions);
+  candidateContext.questionsStore.subscribe(updateNofUnansweredQuestions);
 </script>
 
 <!--

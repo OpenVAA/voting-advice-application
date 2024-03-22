@@ -32,7 +32,7 @@
   const inputContainerClass = 'flex w-full pr-6';
 
   // get the user from authContext
-  const {user: userStore, loadUserData} = getContext<CandidateContext>('candidate');
+  const {userStore, loadUserData} = getContext<CandidateContext>('candidate');
   const user = get(userStore);
 
   let loading = false;

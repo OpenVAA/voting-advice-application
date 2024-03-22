@@ -12,7 +12,7 @@
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {answers: answersStore} = getContext<CandidateContext>('candidate');
+  const {answersStore} = getContext<CandidateContext>('candidate');
   $: answers = $answersStore;
 
   let questions: QuestionProps[];

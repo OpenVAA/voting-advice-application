@@ -10,7 +10,7 @@
   import {FrontPage} from '$lib/templates/frontPage';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {logIn, emailOfNewUser} = getContext<CandidateContext>('candidate');
+  const {logIn, emailOfNewUserStore} = getContext<CandidateContext>('candidate');
 
   let email = '';
   let password = '';
@@ -19,11 +19,11 @@
     if (!(await logIn(email, password))) {
       wrongCredentials = true;
     } else {
-      emailOfNewUser.set(null);
+      emailOfNewUserStore.set(null);
     }
   };
-  if ($emailOfNewUser != null) {
-    email = $emailOfNewUser;
+  if ($emailOfNewUserStore != null) {
+    email = $emailOfNewUserStore;
   }
 </script>
 
@@ -46,7 +46,7 @@ Candidate login page. This component also takes care of the login process.
     <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
   </HeadingGroup>
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onLogin}>
-    {#if $emailOfNewUser !== null}
+    {#if $emailOfNewUserStore !== null}
       <p class="text-3xl font-normal">
         {$t('candidateApp.setPassword.passwordSetSuccesfully')}
       </p>

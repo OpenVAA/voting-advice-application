@@ -7,8 +7,8 @@
   import {getContext} from 'svelte';
   import {get} from 'svelte/store';
 
-  const {user: userWritable} = getContext<CandidateContext>('candidate');
-  const user = get(userWritable);
+  const {userStore} = getContext<CandidateContext>('candidate');
+  const user = get(userStore);
   const userName = user?.candidate?.firstName;
 </script>
 

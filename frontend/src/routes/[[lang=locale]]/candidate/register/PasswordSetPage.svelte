@@ -18,7 +18,7 @@
   export let registrationCode: string;
   export let email: string;
 
-  const {emailOfNewUser} = getContext<CandidateContext>('candidate');
+  const {emailOfNewUserStore} = getContext<CandidateContext>('candidate');
 
   let password1 = '';
   let password2 = '';
@@ -51,7 +51,7 @@
       return;
     }
 
-    emailOfNewUser.set(email);
+    emailOfNewUserStore.set(email);
     errorMessage = '';
     goto($getRoute(Route.CandAppHome));
   };

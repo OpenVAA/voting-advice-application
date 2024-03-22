@@ -17,15 +17,11 @@
   let closeModal: () => void;
   let timeLeft = logoutModalTimer;
 
-  const {
-    user: userWritable,
-    answers: answersWritable,
-    questions: questionsWritable,
-    logOut
-  } = getContext<CandidateContext>('candidate');
-  $: user = $userWritable;
-  $: answers = $answersWritable;
-  $: questions = $questionsWritable;
+  const {userStore, answersStore, questionsStore, logOut} =
+    getContext<CandidateContext>('candidate');
+  $: user = $userStore;
+  $: answers = $answersStore;
+  $: questions = $questionsStore;
   $: remainingInfoAmount =
     4 -
     [

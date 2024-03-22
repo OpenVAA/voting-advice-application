@@ -10,7 +10,7 @@
 
   export let data: PageData;
 
-  const {user} = getContext<CandidateContext>('candidate');
+  const {userStore} = getContext<CandidateContext>('candidate');
 
   let infoQuestions: QuestionProps[];
   let opinionQuestions: QuestionProps[];
@@ -21,7 +21,7 @@
     infoQuestions = data.infoQuestions;
     opinionQuestions = data.opinionQuestions;
     candidates = data.candidates;
-    candidate = candidates.find((c) => c.id === `${$user?.candidate?.id}`);
+    candidate = candidates.find((c) => c.id === `${$userStore?.candidate?.id}`);
   }
 </script>
 

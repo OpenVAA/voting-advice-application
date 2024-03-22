@@ -15,12 +15,12 @@
   export let noteRole: $$Props['noteRole'] = 'note';
   export let primaryActionsLabel: $$Props['primaryActionsLabel'] = undefined;
 
-  const {user} = getContext<CandidateContext>('candidate');
+  const {userStore} = getContext<CandidateContext>('candidate');
 
   // We are in the candidate application and the user has logged in
   // TODO: Figure out a way to define this LogoutButton part only within the
   // candidate route. This can be done with the new, slot-less templates
-  const showLogoutButton = $appType === 'candidate' && user;
+  const showLogoutButton = $appType === 'candidate' && userStore;
 </script>
 
 <!--

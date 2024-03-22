@@ -7,8 +7,8 @@
   import {get} from 'svelte/store';
   export let data: LayoutServerData;
 
-  const {basicInfoFilled} = getContext<CandidateContext>('candidate');
-  if (!get(basicInfoFilled)) {
+  const {basicInfoFilledStore} = getContext<CandidateContext>('candidate');
+  if (!get(basicInfoFilledStore)) {
     goto('/candidate/profile');
   }
 </script>

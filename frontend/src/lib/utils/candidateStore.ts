@@ -6,30 +6,30 @@ import {getLikertQuestions} from '$lib/api/candidate';
 
 export interface CandidateContext {
   // Authentication
-  user: Writable<User | null>;
-  token: Writable<string | null | undefined>;
+  userStore: Writable<User | null>;
+  tokenStore: Writable<string | null | undefined>;
   logIn: (email: string, password: string) => Promise<boolean>;
   loadUserData: () => Promise<void>;
   logOut: () => Promise<void>;
   loadLocalStorage: () => void;
-  emailOfNewUser: Writable<string | null | undefined>;
+  emailOfNewUserStore: Writable<string | null | undefined>;
   // Answers
-  answers: Writable<Record<string, Answer> | undefined>;
+  answersStore: Writable<Record<string, Answer> | undefined>;
   loadAnswerData: () => Promise<void>;
   // Questions
-  questions: Writable<Record<string, Question> | undefined>;
+  questionsStore: Writable<Record<string, Question> | undefined>;
   loadQuestionData: () => Promise<void>;
   // Custom util
-  basicInfoFilled: Writable<boolean | undefined>;
-  nofUnansweredQuestions: Writable<number | undefined>;
+  basicInfoFilledStore: Writable<boolean | undefined>;
+  nofUnansweredQuestionsStore: Writable<number | undefined>;
 }
 
 const userStore = writable<User | null>(null);
 const tokenStore = writable<string | null | undefined>(undefined);
 const emailOfNewUserStore = writable<string | undefined>(undefined);
-const answerStore = writable<Record<string, Answer> | undefined>(undefined);
-const questionStore = writable<Record<string, Question> | undefined>(undefined);
-const basicInfoFilled = writable<boolean | undefined>(undefined);
+const answersStore = writable<Record<string, Answer> | undefined>(undefined);
+const questionsStore = writable<Record<string, Question> | undefined>(undefined);
+const basicInfoFilledStore = writable<boolean | undefined>(undefined);
 const nofUnansweredQuestionsStore = writable<number | undefined>(undefined);
 
 const logIn = async (email: string, password: string) => {
@@ -70,7 +70,7 @@ const loadAnswerData = async () => {
 
   if (!answers) return;
 
-  answerStore.set(answers);
+  answersStore.set(answers);
 };
 
 const loadQuestionData = async () => {
@@ -78,21 +78,21 @@ const loadQuestionData = async () => {
 
   if (!questions) return;
 
-  questionStore.set(questions);
+  questionsStore.set(questions);
 };
 
 export const candidateContext: CandidateContext = {
-  user: userStore,
-  token: tokenStore,
+  userStore,
+  tokenStore,
   logIn,
   loadUserData,
   logOut,
-  emailOfNewUser: emailOfNewUserStore,
-  answers: answerStore,
+  emailOfNewUserStore,
+  answersStore,
   loadAnswerData,
-  questions: questionStore,
+  questionsStore,
   loadQuestionData,
   loadLocalStorage,
-  basicInfoFilled,
-  nofUnansweredQuestions: nofUnansweredQuestionsStore
+  basicInfoFilledStore,
+  nofUnansweredQuestionsStore
 };

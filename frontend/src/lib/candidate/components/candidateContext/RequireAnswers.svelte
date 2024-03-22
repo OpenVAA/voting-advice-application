@@ -3,8 +3,8 @@
   import {getContext} from 'svelte';
 
   const candidateContext = getContext<CandidateContext>('candidate');
-  const answers = candidateContext.answers;
-  const questions = candidateContext.questions;
+  const answers = candidateContext.answersStore;
+  const questions = candidateContext.questionsStore;
 
   const getQuestionsAndAnswers = async () => {
     await Promise.all([candidateContext.loadAnswerData(), candidateContext.loadQuestionData()]);
