@@ -28,9 +28,6 @@
 
   let translationsShown = false;
   $: translationsShown = translationsShown && !disabled; // Hide translations if disabled
-
-  // Show the current locale first
-  $: localesOrdered = [$currentLocale, ...$locales.filter((locale) => locale !== $currentLocale)];
 </script>
 
 <!--
@@ -54,7 +51,7 @@ If all languages are shown, the header is shown for each language.
 - `rows` (optional): The number of rows of the text area.
 - `disabled` (optional): If the text area is disabled.
 - `compact` (optional): If the text area is a multiline text area or a input field.
-- `placeholder` (optional): The placeholder of the text area.
+- `placeholder` (optional): The placeholder of the text area. Shown for non-current locale text areas.
 
 ### Bindable functions
 - `deleteLocal`: Deletes the local storage for the text area. Used to clear the local storage from a parent component.
@@ -94,39 +91,54 @@ Input field variant
 
   <FieldGroup>
     {#if multilangText}
-      {#each localesOrdered as locale}
-        <!-- Show the primary locale always -->
-        {#if translationsShown || locale === $currentLocale}
-          <Field bgColor={locale === $currentLocale ? 'bg-base-100' : 'bg-base-100'}>
+      <!-- Current locale text area is always shown -->
+      <Field>
+        {#if compact}
+          <InputField
+            bind:text={multilangText[$currentLocale]}
+            id={id + '-' + $currentLocale}
+            {headerText}
+            {disabled} />
+        {:else}
+          <TextArea
+            bind:text={multilangText[$currentLocale]}
+            id={id + '-' + $currentLocale}
+            headerText={translationsShown ? $t(`lang.${$currentLocale}`) : undefined}
+            localStorageId={localStorageId + '-' + $currentLocale}
+            previouslySaved={previouslySavedMultilang?.[$currentLocale]}
+            {rows}
+            {disabled} />
+        {/if}
+      </Field>
+
+      {#if translationsShown}
+        {#each $locales.filter((locale) => locale !== $currentLocale) as locale}
+          <Field>
             {#if compact}
               <InputField
                 id={id + '-' + locale}
                 bind:text={multilangText[locale]}
-                headerText={translationsShown && locale !== $currentLocale
-                  ? $t(`lang.${locale}`)
-                  : headerText}
+                headerText={$t(`lang.${locale}`)}
                 {disabled}
-                placeholder={locale !== $currentLocale ? placeholder : ''} />
+                {placeholder} />
             {:else}
-              <div class="w-full {translationsShown ? 'mt-6' : ''}">
-                <TextArea
-                  id={id + '-' + locale}
-                  bind:text={multilangText[locale]}
-                  headerText={translationsShown ? $t(`lang.${locale}`) : undefined}
-                  localStorageId={localStorageId + '-' + locale}
-                  previouslySaved={previouslySavedMultilang?.[locale]}
-                  {rows}
-                  {disabled}
-                  placeholder={locale !== $currentLocale ? '—' : ''} />
-              </div>
+              <TextArea
+                id={id + '-' + locale}
+                bind:text={multilangText[locale]}
+                headerText={$t(`lang.${locale}`)}
+                localStorageId={localStorageId + '-' + locale}
+                previouslySaved={previouslySavedMultilang?.[locale]}
+                {rows}
+                {disabled}
+                {placeholder} />
             {/if}
           </Field>
-        {/if}
-      {/each}
+        {/each}
+      {/if}
     {/if}
   </FieldGroup>
 
-  <!-- Toggle if translations are shown -->
+  <!-- Toggle whether translations are shown -->
   <Button
     type="button"
     on:click={() => (translationsShown = !translationsShown)}

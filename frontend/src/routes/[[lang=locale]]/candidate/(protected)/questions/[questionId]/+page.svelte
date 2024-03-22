@@ -83,7 +83,7 @@
         answerStore[questionId] = {
           id: answerId,
           key: parseInt(localLikert),
-          openAnswer: openAnswer
+          openAnswer
         };
       }
     } else {
@@ -106,7 +106,7 @@
         answerStore[questionId] = {
           id: answer.id,
           key: previousLikert,
-          openAnswer: openAnswer
+          openAnswer
         };
       }
     }
@@ -212,7 +212,7 @@
           id="openAnswer"
           headerText={$t('candidateApp.opinions.commentOnThisIssue')}
           localStorageId={openAnswerLocal}
-          previouslySavedMultilang={answer?.openAnswer}
+          previouslySavedMultilang={answer?.openAnswer ?? undefined}
           disabled={!selectedKey}
           placeholder="—"
           bind:multilangText={openAnswer}

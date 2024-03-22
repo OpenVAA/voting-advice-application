@@ -6,7 +6,7 @@ export type TextAreaProps = {
   /**
    * The text content of the text area.
    */
-  text?: string | undefined;
+  text?: string;
   /**
    * The header text to be displayed above the textarea. If not provided, header slot will be used.
    * @default undefined
@@ -35,12 +35,12 @@ export type TextAreaProps = {
   disabled?: boolean;
   /**
    * Background color of the textarea.
-   * @default 'bg-bases-100'
+   * @default 'bg-base-100'
    */
   bgColor?: string;
   /**
    * The placeholder text for the textarea.
-   * @default undefined
+   * @default ''
    */
   placeholder?: string;
 };
@@ -55,7 +55,7 @@ export type MultilangTextAreaProps = {
    * Is initially shown if nothing is in local storage.
    * @default undefined
    */
-  previouslySavedMultilang?: LocalizedString | undefined | null;
+  previouslySavedMultilang?: LocalizedString;
   /**
    * Size variant of the text area.
    * Compact variant is used for smaller text areas.
