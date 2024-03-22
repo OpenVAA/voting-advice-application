@@ -15,7 +15,7 @@
   import AvatarSelect from './AvatarSelect.svelte';
   import type {StrapiGenderData, StrapiLanguageData} from '$lib/api/getData.type';
   import type {Language} from '$lib/types/candidateAttributes';
-  import {TextArea} from '$candidate/components/textArea';
+  import {MultilangTextInput} from '$candidate/components/textArea';
   import {PreventNavigation} from '$lib/components/preventNavigation';
 
   const basicInfoFields = ['firstName', 'lastName', 'party'];
@@ -40,13 +40,13 @@
     gender: {
       id: undefined
     },
-    manifesto: '',
+    manifesto: {},
     ...user?.candidate
   };
 
   let genderID = gender?.id;
 
-  let manifestoTextArea: TextArea; // Used to clear the local storage from the parent component
+  let manifestoTextArea: MultilangTextInput; // Used to clear the local storage from the parent component
   let savedManifesto = user?.candidate?.manifesto; // Used to detect changes in the manifesto
 
   // Hash form state in order to detect changes
@@ -309,17 +309,16 @@
           {$t('candidateApp.basicInfo.unaffiliatedDescription')}
         </p>
       </FieldGroup>
-      <FieldGroup>
-        <TextArea
-          id="manifesto"
-          localStorageId="candidate-app-manifesto"
-          previouslySaved={savedManifesto}
-          bind:text={manifesto}
-          bind:this={manifestoTextArea}>
-          <label for="manifesto" class={headerClass} slot="header"
-            >{$t('candidateApp.basicInfo.electionManifesto')}</label>
-        </TextArea>
-      </FieldGroup>
+
+      <MultilangTextInput
+        id="manifesto"
+        headerText={$t('candidateApp.basicInfo.electionManifesto')}
+        localStorageId="candidate-app-manifesto"
+        previouslySavedMultilang={savedManifesto}
+        placeholder="—"
+        bind:multilangText={manifesto}
+        bind:this={manifestoTextArea} />
+
       <Button
         disabled={!allFilled || loading}
         text={$t('candidateApp.opinions.continue')}

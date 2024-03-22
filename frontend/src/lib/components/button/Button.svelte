@@ -25,7 +25,7 @@
   $: {
     // 1. Base classes
     classes = 'btn min-h-touch min-w-touch h-auto flex items-center justify-center gap-y-6 gap-x-4';
-    labelClass = 'first-letter:uppercase';
+    labelClass = '';
 
     // 2. Variant-defined classes
     classes += variant === 'main' ? ' w-full max-w-md' : ' btn-ghost';
@@ -117,6 +117,6 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
     <Icon name={icon} />
   {/if}
   {#if variant !== 'icon'}
-    <div class={labelClass}>{text}</div>
+    <div class={labelClass}>{text.charAt(0).toUpperCase() + text.slice(1)}</div>
   {/if}
 </svelte:element>

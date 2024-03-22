@@ -32,7 +32,7 @@
     4 -
     [
       user?.candidate?.gender,
-      user?.candidate?.motherTongues?.length > 0,
+      (user?.candidate?.motherTongues?.length ?? 0) > 0,
       user?.candidate?.birthday,
       user?.candidate?.manifesto
     ].filter((x) => x).length;

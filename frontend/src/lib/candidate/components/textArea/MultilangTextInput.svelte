@@ -1,0 +1,138 @@
+<script lang="ts">
+  import {Button} from '$lib/components/button';
+  import {locale as currentLocale, locales, t} from '$lib/i18n';
+  import type {TextAreaProps, MultilangTextAreaProps} from './TextArea.type';
+  import {Field, FieldGroup} from '$lib/components/common/form';
+  import {TextArea, InputField} from '$candidate/components/textArea';
+
+  type $$Props = TextAreaProps & MultilangTextAreaProps;
+  export let id: $$Props['id'];
+  export let multilangText: $$Props['multilangText'];
+
+  export let headerText: $$Props['headerText'] = undefined;
+  export let localStorageId: $$Props['localStorageId'] = undefined;
+  export let previouslySavedMultilang: $$Props['previouslySavedMultilang'] = undefined;
+  export let rows: $$Props['rows'] = 4;
+  export let disabled: $$Props['disabled'] = false;
+  export let compact: $$Props['compact'] = false;
+  export let placeholder: $$Props['placeholder'] = '';
+
+  export const deleteLocal = () => {
+    if (!localStorageId) {
+      return;
+    }
+    for (const locale of $locales) {
+      localStorage.removeItem(localStorageId + '-' + locale);
+    }
+  };
+
+  let translationsShown = false;
+  $: translationsShown = translationsShown && !disabled; // Hide translations if disabled
+
+  // Show the current locale first
+  $: localesOrdered = [$currentLocale, ...$locales.filter((locale) => locale !== $currentLocale)];
+</script>
+
+<!--
+@component
+A text area that can be used to input text in multiple languages.
+Uses either a text area or an input field for each language.
+Text is given as a LocalizedString object with the language code as the key.
+
+The primary language is always shown, other languages can be toggled.
+If all languages are shown, the header is shown for each language.
+
+### Slots
+- `header` - Optional header for the text area, can be used instead of the default one.
+
+### Properties
+- `id` (required): The id of the text area.
+- `multilangText` (required): The text in multiple languages as a LocalizedString object
+- `headerText` (optional): The header text.
+- `localStorageId` (optional): The local storage id of the text area. If provided, the text is saved to local storage periodically.
+- `previouslySavedMultilang` (optional): The previously saved text in multiple languages. Is shown if there is no locally saved text.
+- `rows` (optional): The number of rows of the text area.
+- `disabled` (optional): If the text area is disabled.
+- `compact` (optional): If the text area is a multiline text area or a input field.
+- `placeholder` (optional): The placeholder of the text area.
+
+### Bindable functions
+- `deleteLocal`: Deletes the local storage for the text area. Used to clear the local storage from a parent component.
+
+### Usage
+
+Text area variant
+```tsx
+<MultilangTextArea
+  id="example-id"
+  headerText="Example Header"
+  localStorageId="example-local-storage-id"
+  previouslySavedMultilang={answer?.openAnswer}
+  disabled={false}
+  placeholder="—"
+  bind:multilangText={openAnswer}
+  bind:this={openAnswerTextArea} />
+```
+
+Input field variant
+```tsx
+<MultilangTextArea
+  id="example-id"
+  headerText="Example Header"
+  placeholder="—"
+  bind:multilangText={openAnswer}
+  compact={true} />
+```
+-->
+
+<div class="m-12 w-full">
+  {#if headerText && !compact}
+    <label for={id} class="text-m mx-6 my-6 p-0 uppercase text-secondary">{headerText}</label>
+  {:else}
+    <slot name="header" field={undefined} />
+  {/if}
+
+  <FieldGroup>
+    {#if multilangText}
+      {#each localesOrdered as locale}
+        <!-- Show the primary locale always -->
+        {#if translationsShown || locale === $currentLocale}
+          <Field bgColor={locale === $currentLocale ? 'bg-base-100' : 'bg-base-100'}>
+            {#if compact}
+              <InputField
+                id={id + '-' + locale}
+                bind:text={multilangText[locale]}
+                headerText={translationsShown && locale !== $currentLocale
+                  ? $t(`lang.${locale}`)
+                  : headerText}
+                {disabled}
+                placeholder={locale !== $currentLocale ? placeholder : ''} />
+            {:else}
+              <div class="w-full {translationsShown ? 'mt-6' : ''}">
+                <TextArea
+                  id={id + '-' + locale}
+                  bind:text={multilangText[locale]}
+                  headerText={translationsShown ? $t(`lang.${locale}`) : undefined}
+                  localStorageId={localStorageId + '-' + locale}
+                  previouslySaved={previouslySavedMultilang?.[locale]}
+                  {rows}
+                  {disabled}
+                  placeholder={locale !== $currentLocale ? '—' : ''} />
+              </div>
+            {/if}
+          </Field>
+        {/if}
+      {/each}
+    {/if}
+  </FieldGroup>
+
+  <!-- Toggle if translations are shown -->
+  <Button
+    type="button"
+    on:click={() => (translationsShown = !translationsShown)}
+    text={translationsShown ? $t('candidateApp.textarea.hide') : $t('candidateApp.textarea.show')}
+    variant="normal"
+    icon={translationsShown ? 'hide' : 'language'}
+    {disabled}
+    iconPos="left" />
+</div>

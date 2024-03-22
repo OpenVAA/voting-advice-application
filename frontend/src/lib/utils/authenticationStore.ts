@@ -43,7 +43,7 @@ export const loadUserData = async () => {
 export const logOut = async () => {
   userStore.set(null);
   tokenStore.set(null);
-  localStorage.removeItem('token');
+  localStorage.clear();
 };
 
 export const authContext: AuthContext = {

@@ -155,5 +155,9 @@
   "preview": {
     "title": "Preview",
     "notFound": "Profile not found"
+  },
+  "textarea": {
+    "hide": "Hide translations for this field",
+    "show": "Show translations for this field"
   }
 }

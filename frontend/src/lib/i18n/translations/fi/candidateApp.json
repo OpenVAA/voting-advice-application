@@ -155,5 +155,9 @@
   "preview": {
     "title": "Profiilin esikatselu",
     "notFound": "Profiilia ei löytynyt"
+  },
+  "textarea": {
+    "hide": "Piilota kentän käännökset",
+    "show": "Näytä kentän käännökset"
   }
 }
