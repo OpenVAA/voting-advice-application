@@ -41,7 +41,7 @@
     role="feed"
     class="-mx-md grid w-[calc(100%+20rem/16)] grid-cols-1 gap-md match-w-xl:mx-0 match-w-xl:w-full"
     aria-label={$t('candidates.candidates')}>
-    {#each candidates as { id, firstName, lastName, party, electionSymbol }, i}
+    {#each candidates as { id, firstName, lastName, party, electionSymbol, photoURL }, i}
       <EntityCard
         on:click={() => goto($getRoute({route: Route.Candidate, id}))}
         ariaPosinset={i + 1}
@@ -50,7 +50,8 @@
         imgAlt={$t('candidate.portraitAlt')}
         {id}
         listText={party?.name ?? ''}
-        {electionSymbol} />
+        {electionSymbol}
+        imgSrc={photoURL} />
     {:else}
       <p>{$t('candidates.notFound')}</p>
     {/each}
