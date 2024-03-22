@@ -1,16 +1,20 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
+  import {goto} from '$app/navigation';
+  import {getRoute} from '$lib/utils/navigation';
   import {BasicPage} from '$lib/templates/basicPage';
   import Icon from '$lib/components/icon/Icon.svelte';
   import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {Button} from '$lib/components/button';
   import {validatePassword} from '$shared/utils/passwordValidation';
-  import {changePassword} from '$lib/api/candidate';
+  import {changePassword, getLanguages, updateAppLanguage} from '$lib/api/candidate';
   import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {StrapiLanguageData} from '$lib/api/getData.type';
+  import type {Language} from '$lib/types/candidateAttributes';
 
-  const {userStore} = getContext<CandidateContext>('candidate');
+  const {userStore, loadUserData} = getContext<CandidateContext>('candidate');
   $: user = $userStore;
 
   // TODO: consider refactoring this as this uses same classes as profile/+page.svelte?
@@ -28,6 +32,42 @@
   let successMessage = '';
 
   $: disableSetButton = !validPassword || passwordConfirmation.length === 0;
+
+  // Variable for the user's chosen app language. Keep it updated if changed.
+  let appLanguageCode = '';
+  userStore.subscribe((updatedUser) => {
+    appLanguageCode = updatedUser?.candidate?.appLanguage?.localisationCode;
+  });
+
+  // Fetch languages from backend
+  let allLanguages: StrapiLanguageData[] | undefined;
+  getLanguages().then((languages) => (allLanguages = languages));
+
+  // Handle the change when the app language is changed
+  const handleLanguageSelect = async (e: Event) => {
+    const chosenLanguage = allLanguages
+      ? allLanguages.find(
+          (lang) => lang.attributes.localisationCode === (e.target as HTMLSelectElement).value
+        )
+      : undefined;
+
+    if (chosenLanguage) {
+      const languageObj: Language = {
+        id: chosenLanguage?.id,
+        localisationCode: chosenLanguage?.attributes?.localisationCode,
+        name: chosenLanguage?.attributes?.name
+      };
+
+      try {
+        await updateAppLanguage(languageObj);
+        await loadUserData(); // Reload user data so it's up to date
+        await goto($getRoute({locale: languageObj.localisationCode})); // Change page language to the chosen one
+      } catch (error) {
+        errorMessage = $t('candidateApp.settings.changeLanguageError');
+        //TODO change error message location?
+      }
+    }
+  };
 
   const onButtonPress = async () => {
     successMessage = '';
@@ -82,7 +122,6 @@
     </p>
   </div>
 
-  <!-- TODO: this is a placeholder for the future i18n support, @see https://github.com/OpenVAA/voting-advice-application/issues/202 -->
   <div class="mt-16 w-full">
     <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
       <div class="flex items-center justify-between bg-base-100 px-4">
@@ -90,9 +129,17 @@
           {$t('candidateApp.settings.fields.language')}
         </label>
         <div class="w-6/12 text-right text-secondary">
-          <select id="language" class="select select-sm w-6/12 text-primary">
-            <!-- TODO: fetch the locales from somewhere when implementing proper i18n support here -->
-            <option value="english">English</option>
+          <select
+            id="language"
+            class="select select-sm w-6/12 text-primary"
+            on:change={handleLanguageSelect}
+            bind:value={appLanguageCode}>
+            {#each allLanguages ?? [] as option}
+              <option
+                value={option.attributes.localisationCode}
+                selected={option.attributes.localisationCode === appLanguageCode}>
+                {$t(`candidateApp.languages.${option.attributes.name}`)}</option>
+            {/each}
           </select>
         </div>
       </div>

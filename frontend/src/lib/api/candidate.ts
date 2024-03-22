@@ -85,7 +85,8 @@ export const me = async (): Promise<User | undefined> => {
       'populate[candidate][populate][party]': 'true',
       'populate[candidate][populate][photo]': 'true',
       'populate[candidate][populate][gender]': 'true',
-      'populate[candidate][populate][motherTongues]': 'true'
+      'populate[candidate][populate][motherTongues]': 'true',
+      'populate[candidate][populate][appLanguage]': 'true'
     })
   );
 
@@ -122,6 +123,30 @@ export const updateBasicInfo = async (
         unaffiliated,
         photo: photo?.id,
         motherTongues
+      }
+    }),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+};
+
+/**
+ * Change the user's preferred language for the app.
+ */
+export const updateAppLanguage = async (language?: Language) => {
+  const user = get(candidateContext.userStore);
+  const candidate = user?.candidate;
+
+  if (!candidate) {
+    throw new Error('user.candidate is undefined');
+  }
+
+  return await request(getUrl(`api/candidates/${candidate.id}`), {
+    method: 'PUT',
+    body: JSON.stringify({
+      data: {
+        appLanguage: language?.id
       }
     }),
     headers: {

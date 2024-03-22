@@ -2,6 +2,7 @@
   import {getContext} from 'svelte';
   import {page} from '$app/stores';
   import {t} from '$lib/i18n';
+  import {goto} from '$app/navigation';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
@@ -10,16 +11,28 @@
   import {FrontPage} from '$lib/templates/frontPage';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {logIn, emailOfNewUserStore} = getContext<CandidateContext>('candidate');
+  const {userStore, logIn, emailOfNewUserStore} = getContext<CandidateContext>('candidate');
 
   let email = '';
   let password = '';
   let wrongCredentials = false;
+
+  // Variable for the user's chosen app language
+  let appLanguageCode: string;
+  userStore.subscribe((user) => {
+    appLanguageCode = user?.candidate?.appLanguage?.localisationCode;
+  });
+
   const onLogin = async () => {
     if (!(await logIn(email, password))) {
       wrongCredentials = true;
     } else {
       emailOfNewUserStore.set(null);
+
+      // If user has chosen an app language, change to that language
+      if (appLanguageCode) {
+        await goto($getRoute({locale: appLanguageCode}));
+      }
     }
   };
   if ($emailOfNewUserStore != null) {
