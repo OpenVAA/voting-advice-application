@@ -8,7 +8,6 @@
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {FrontPage} from '$lib/templates/frontPage';
-  import {emailOfNewUserStore} from '$lib/utils/authenticationStore';
   import {PasswordSetter} from '$lib/candidate/components/PasswordSetter';
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
