@@ -1,8 +1,9 @@
-<script>
+<script lang="ts">
   import {LoginPage} from '$lib/candidate/templates/login';
   import {getContext} from 'svelte';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {user, token} = getContext('auth');
+  const {userStore, tokenStore} = getContext<CandidateContext>('candidate');
   export let showLogin = false;
 </script>
 
@@ -31,9 +32,9 @@ Require candidates to be logged in to view the children of this component.
 ```
 -->
 
-{#if $user}
+{#if $userStore}
   <slot />
-{:else if ($token === undefined || ($token && !$user)) && showLogin}
+{:else if ($tokenStore === undefined || ($tokenStore && !$userStore)) && showLogin}
   <div class="mt-100 flex h-screen flex-col items-center">
     <span class="loading loading-spinner loading-lg" />
   </div>

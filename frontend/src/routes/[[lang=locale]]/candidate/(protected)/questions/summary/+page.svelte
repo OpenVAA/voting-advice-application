@@ -4,15 +4,16 @@
   import {BasicPage} from '$lib/templates/basicPage';
   import {Expander} from '$lib/components/expander';
   import LikertResponseButtons from '$lib/components/questions/LikertResponseButtons.svelte';
-  import {answerContext} from '$lib/utils/answerStore';
   import Icon from '$lib/components/icon/Icon.svelte';
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {translate} from '$lib/i18n/utils/translate';
   import QuestionOpenAnswer from '$lib/components/questions/QuestionOpenAnswer.svelte';
+  import {getContext} from 'svelte';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const store = answerContext.answers;
-  $: answerStore = $store;
+  const {answersStore} = getContext<CandidateContext>('candidate');
+  $: answers = $answersStore;
 
   let questions: QuestionProps[];
   let questionsByCategory: Record<string, Array<QuestionProps>>;
@@ -37,11 +38,11 @@
   let loading = true;
   let unansweredCategories: Array<string> | undefined;
   $: {
-    if (answerStore) {
-      nofUnansweredQuestions = questions.length - Object.entries(answerStore).length;
+    if (answers) {
+      nofUnansweredQuestions = questions.length - Object.entries(answers).length;
       loading = false;
       unansweredCategories = Object.keys(questionsByCategory).filter(
-        (category) => !questionsByCategory[category].every((question) => answerStore?.[question.id])
+        (category) => !questionsByCategory[category].every((question) => answers?.[question.id])
       );
     }
   }
@@ -69,7 +70,7 @@
         defaultExpanded={unansweredCategories?.includes(category ?? '')}>
         {#each categoryQuestions as question}
           <!-- Question has been answered -->
-          {#if answerStore?.[question.id]}
+          {#if answers?.[question.id]}
             <div class="pb-20 pt-20">
               <div class="text-accent">
                 {question.category}
@@ -86,13 +87,13 @@
                     name={question.id}
                     mode="display"
                     options={question.values}
-                    selectedKey={answerStore[question.id].key} />
+                    selectedKey={answers[question.id].key} />
                 </a>
 
-                {#if answerStore[question.id].openAnswer}
+                {#if answers[question.id].openAnswer}
                   <div class="pt-10">
                     <QuestionOpenAnswer
-                      >{translate(answerStore[question.id].openAnswer)}</QuestionOpenAnswer>
+                      >{translate(answers[question.id].openAnswer)}</QuestionOpenAnswer>
                   </div>
                 {/if}
               </div>

@@ -1,13 +1,9 @@
 <script lang="ts">
-  import {AuthenticationProvider, RequireLogin} from '$lib/components/authentication';
-  import {AnswerProvider} from '$candidate/components/answers';
+  import {RequireLogin, RequireAnswers} from '$lib/candidate/components/candidateContext';
 </script>
 
-<AuthenticationProvider>
-  <RequireLogin showLogin>
-    <!-- Load answers for all routes under /candidate -->
-    <AnswerProvider>
-      <slot />
-    </AnswerProvider>
-  </RequireLogin>
-</AuthenticationProvider>
+<RequireLogin showLogin>
+  <RequireAnswers>
+    <slot />
+  </RequireAnswers>
+</RequireLogin>
