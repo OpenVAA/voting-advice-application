@@ -15,11 +15,12 @@
   $: answers = $answersStore;
 
   let questions: QuestionProps[];
+  let questionsByCategory: Record<string, Array<QuestionProps>>;
 
   $: questions = $page.data.questions;
 
-  const questionsByCategory = questions.reduce(
-    (acc: Record<string, Array<QuestionProps>>, question) => {
+  $: questionsByCategory = questions.reduce(
+    (acc, question) => {
       if (!question.category) {
         return acc;
       }
@@ -29,7 +30,7 @@
       acc[question.category].push(question);
       return acc;
     },
-    {}
+    {} as typeof questionsByCategory
   );
 
   let nofUnansweredQuestions = 0;
@@ -91,7 +92,7 @@
                     selectedKey={answers[question.id].key} />
                 </a>
 
-                {#if answers[question.id].openAnswer}
+                {#if translate(answers[question.id].openAnswer) !== ''}
                   <div class="pt-10">
                     <QuestionOpenAnswer
                       >{translate(answers[question.id].openAnswer)}</QuestionOpenAnswer>
