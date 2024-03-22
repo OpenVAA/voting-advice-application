@@ -88,3 +88,14 @@ export interface Constituency {
   shortName: LocalizedString;
   type: string;
 }
+
+export interface Answer {
+  id: string; // Id of the answer in the database
+  key: AnswerOption['key']; // Selected answer option
+  openAnswer: LocalizedString | null; // Optional free-form answer
+}
+
+export interface Question {
+  id: string; // Id of the question in the database
+  text: LocalizedString; //text of the question
+}

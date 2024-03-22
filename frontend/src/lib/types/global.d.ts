@@ -96,7 +96,7 @@ declare global {
       name: string;
       shortName: string;
     };
-    photo: string;
+    photoURL?: string;
     // politicalExperience: string;
   }
 

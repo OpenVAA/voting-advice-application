@@ -1,13 +1,11 @@
 <script lang="ts">
-  import {get} from 'svelte/store';
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import TimedModal from '$lib/components/modal/TimedModal.svelte';
   import {goto} from '$app/navigation';
-  import {authContext} from '$lib/utils/authenticationStore';
   import {Button} from '$lib/components/button';
   import {getContext} from 'svelte';
-  import type {AnswerContext} from '$lib/utils/answerStore';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
   /** Defaults to true, so that button variant is "icon". Can be set to false if the button should be of variant "main" */
   export let variantIcon = true;
@@ -19,29 +17,24 @@
   let closeModal: () => void;
   let timeLeft = logoutModalTimer;
 
-  // functions for logout button
-  const answerContext = getContext<AnswerContext | undefined>('answers');
-  const answerstoreWritable = answerContext?.answers;
-  $: answerStore = $answerstoreWritable;
-
-  const questionstoreWritable = answerContext?.questions;
-  $: questionStore = $questionstoreWritable;
-
-  const user = get(authContext.user);
+  const {userStore, answersStore, questionsStore, logOut} =
+    getContext<CandidateContext>('candidate');
+  $: user = $userStore;
+  $: answers = $answersStore;
+  $: questions = $questionsStore;
   $: remainingInfoAmount =
     4 -
     [
       user?.candidate?.gender,
-      user?.candidate?.motherTongues?.length > 0,
+      user?.candidate?.motherTongues?.length ?? 1 > 0,
       user?.candidate?.birthday,
       user?.candidate?.manifesto
     ].filter((x) => x).length;
 
   let remainingOpinionNumber = 0;
   $: {
-    if (answerStore && questionStore) {
-      remainingOpinionNumber =
-        Object.entries(questionStore).length - Object.entries(answerStore).length;
+    if (answers && questions) {
+      remainingOpinionNumber = Object.entries(answers).length - Object.entries(questions).length;
     }
   }
   $: unfilledData = remainingOpinionNumber > 0 || remainingInfoAmount > 0;
@@ -55,7 +48,7 @@
   };
 
   const logout = async () => {
-    await authContext.logOut();
+    await logOut();
     closeModal();
     await goto($getRoute(Route.CandAppHome));
   };

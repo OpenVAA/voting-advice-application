@@ -50,7 +50,7 @@ jobs:
 
       - name: "Run Frontend tests"
         run: yarn test
-        
+
       - name: "Build frontend"
         run: yarn build
 
@@ -117,3 +117,59 @@ jobs:
       - name: "Build backend"
         run: |
           yarn build
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: "Configure environment"
+        run: cp .env.example .env
+
+      - name: Setup Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: "yarn"
+          cache-dependency-path: ./yarn.lock
+
+      - name: Cache node modules
+        id: cache-npm-e2e-main
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules-e2e
+        with:
+          path: "node_modules"
+          key: ${{ runner.os }}-e2e-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: "Install yarn dependencies"
+        run: yarn install
+
+      - name: "Install playwright"
+        run: yarn playwright install
+
+      - name: "Start OpenVAA"
+        run: yarn dev
+
+      - name: "Run E2E tests"
+        run: yarn test
+
+      - name: "Upload playwright report"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: "Stop OpenVAA"
+        if: always()
+        run: yarn dev:down

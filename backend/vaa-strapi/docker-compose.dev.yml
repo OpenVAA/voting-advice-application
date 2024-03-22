@@ -33,9 +33,14 @@ services:
       # hot reloading will not work
       # - ./:/opt
       # - /opt/strapi-plugin-import-export-entries
-      # Mark these as volumes so they get ignored
-      - /opt/node_modules
+
       - strapi-uploads:/opt/public/uploads
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:1337/ || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 45s
   postgres:
     image: postgres:15
     environment:

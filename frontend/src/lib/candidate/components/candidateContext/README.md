@@ -2,9 +2,9 @@
 
 The files in this folder are responsible for handling candidate authentication. The AuthenticationProvider component provides an authentication context, which the other components need.
 
-## AuthenticationProvider
+## CandidateContextProvider
 
-Authentication provider provides the authentication context to all its children.
+Candidate context provider provides the candidate context to all its children.
 
 ### Contexts
 
@@ -17,9 +17,9 @@ Authentication provider provides the authentication context to all its children.
 ### Usage
 
 ```tsx
-<AuthenticationProvider>
+<CandidateContextProvider>
   <p>Example content</p>
-</AuthenticationProvider>
+</CandidateContextProvider>
 ```
 
 ## RequireLogin

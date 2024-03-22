@@ -66,7 +66,7 @@
         ariaSetsize={$candidateRankings.length}
         tabindex={0}
         title={GetFullNameInOrder(candidate.firstName, candidate.lastName)}
-        imgSrc="/images/candidate-photo.png"
+        imgSrc={candidate.photoURL}
         imgAlt={$t('candidate.portraitAlt')}
         id={candidate.id}
         listText={candidate.party?.shortName ?? ''}

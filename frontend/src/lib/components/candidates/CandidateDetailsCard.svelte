@@ -5,6 +5,7 @@
   import {ScoreGauge} from '$lib/components/scoreGauge/index';
   import CandidateBasicInfo from './CandidateBasicInfo.svelte';
   import CandidateOpinions from './CandidateOpinions.svelte';
+  import CandidatePhoto from '$lib/components/candidates/CandidatePhoto.svelte';
 
   /** The Candidate object */
   export let candidate: CandidateProps;
@@ -54,14 +55,22 @@ TODO: This component is still a work in progress and does not follow the propert
 <article>
   <!-- TODO: replace the following div tag with the EntityCard component -->
   <header class="p-lg">
-    <h1>
-      {GetFullNameInOrder(candidate.firstName, candidate.lastName)}
-    </h1>
-    <p class="text-center">
-      <span class="p-1 badge-md rounded-sm bg-secondary text-white"
-        >{candidate.party.shortName}</span>
-      {#if ranking}<span class="px-3 text-lg">{ranking}</span>{/if}
-    </p>
+    <div class="flex items-center justify-center">
+      <CandidatePhoto
+        photoURL={candidate.photoURL}
+        title={GetFullNameInOrder(candidate.firstName, candidate.lastName)}
+        imgWidth="128" />
+      <div class="flex-auto">
+        <h1>
+          {GetFullNameInOrder(candidate.firstName, candidate.lastName)}
+        </h1>
+        <p class="text-center">
+          <span class="p-1 badge-md rounded-sm bg-secondary text-white"
+            >{candidate.party.shortName}</span>
+          {#if ranking}<span class="px-3 text-lg">{ranking}</span>{/if}
+        </p>
+      </div>
+    </div>
     {#if ranking?.subMatches && ranking.subMatches.length > 0}
       <div class="mt-md grid grid-flow-row grid-cols-3 gap-x-lg gap-y-14 py-sm lg:grid-cols-4">
         {#each ranking.subMatches as subMatch}
