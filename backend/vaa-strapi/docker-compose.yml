@@ -27,6 +27,12 @@ services:
       GENERATE_MOCK_DATA_ON_INITIALISE: ${GENERATE_MOCK_DATA_ON_INITIALISE}
     depends_on:
       - 'postgres'
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:1337/ || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 45s
   postgres:
     image: postgres
     environment:
