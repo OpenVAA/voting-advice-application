@@ -24,18 +24,18 @@
   let errorMessage = '';
 
   const onSetButtonPressed = async () => {
-    if (password1 !== password2) {
+    if (password !== passwordConfirmation) {
       errorMessage = $t('candidateApp.setPassword.passwordsDontMatch');
       return;
     }
 
     // Additional check before backend validation
-    if (!validatePassword(password1, userName)) {
+    if (!validatePassword(password, userName)) {
       errorMessage = $t('candidateApp.setPassword.passwordNotValid');
       return;
     }
 
-    const response = await register(registrationCode, password1);
+    const response = await register(registrationCode, password);
     if (!response.ok) {
       errorMessage = $t('candidateApp.setPassword.registrationError');
       return;
@@ -83,7 +83,7 @@ Page where candidates can set their password when logging to the app for the fir
 
   <form class="flex flex-col flex-nowrap items-center">
     <PasswordSetter
-      on:ButtonPressed={onSetButtonPressed}
+      buttonPressed={onSetButtonPressed}
       bind:validPassword
       bind:errorMessage
       bind:password

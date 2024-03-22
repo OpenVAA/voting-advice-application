@@ -13,7 +13,7 @@
 
   $: disableSetButton = validPassword && passwordConfirmation.length > 0;
   //dispatcher used for a function that calls the submit button's function in parent component
-  export let ButtonPressed;
+  export let buttonPressed = () => {};
 </script>
 
 <!--
@@ -43,7 +43,7 @@ bind:errorMessage={errorMessageOfContext} />
 
 <form
   class="m-0 flex w-full flex-col flex-nowrap items-center"
-  on:submit|preventDefault={ButtonPressed}>
+  on:submit|preventDefault={buttonPressed}>
   <p class="m-0 text-center">
     {$t('candidateApp.setPassword.description')}
   </p>

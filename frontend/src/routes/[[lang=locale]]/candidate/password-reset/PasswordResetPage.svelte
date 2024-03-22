@@ -65,7 +65,7 @@
   </HeadingGroup>
   <form class="flex-nowarp flex flex-col items-center">
     <PasswordSetter
-      ButtonPressed={onButtonPress}
+      buttonPressed={onButtonPress}
       bind:validPassword
       bind:errorMessage
       bind:password
