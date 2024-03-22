@@ -15,12 +15,11 @@
   $: answers = $answersStore;
 
   let questions: QuestionProps[];
-  let questionsByCategory: Record<string, Array<QuestionProps>>;
 
   $: questions = $page.data.questions;
 
-  $: questionsByCategory = questions.reduce(
-    (acc, question) => {
+  const questionsByCategory = questions.reduce(
+    (acc: Record<string, Array<QuestionProps>>, question) => {
       if (!question.category) {
         return acc;
       }
@@ -30,7 +29,7 @@
       acc[question.category].push(question);
       return acc;
     },
-    {} as typeof questionsByCategory
+    {}
   );
 
   let nofUnansweredQuestions = 0;
@@ -92,11 +91,17 @@
                     selectedKey={answers[question.id].key} />
                 </a>
 
-                {#if answers[question.id].openAnswer}
-                  <div class="pt-10">
-                    <QuestionOpenAnswer
-                      >{translate(answers[question.id].openAnswer)}</QuestionOpenAnswer>
-                  </div>
+                <div class="pt-10">
+                  <Button
+                    href={$getRoute({route: Route.CandAppQuestions, id: question.id})}
+                    text={$t('candidateApp.allQuestions.editYourAnswer')}
+                    icon="missingIcon"
+                    iconPos="left" />
+                </div>
+
+                {#if translate(answers[question.id].openAnswer) !== ''}
+                  <QuestionOpenAnswer
+                    >{translate(answers[question.id].openAnswer)}</QuestionOpenAnswer>
                 {/if}
               </div>
               {#if categoryQuestions[categoryQuestions.length - 1] !== question}
