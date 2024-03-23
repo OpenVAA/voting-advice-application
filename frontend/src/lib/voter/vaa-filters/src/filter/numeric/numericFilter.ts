@@ -1,0 +1,73 @@
+import {getEntity, type MaybeWrapped} from '../../entity';
+import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
+import {Filter} from '../base/filter';
+
+/**
+ * An abstract base class for filters that search for numberic data.
+ * NB. This could be refactored to inherit from a common parent of this and EnumeratedFilter and allow value counts.
+ */
+
+export abstract class NumericFilter<T extends MaybeWrapped> extends Filter<T, number> {
+  protected _rules: {
+    min?: number;
+    max?: number;
+    excludeMissing?: boolean;
+  } = {};
+
+  /**
+   * Parse all the values from the targets to find min and max values.
+   */
+
+  /**
+   * Parse all the values from the targets to find min and max values.
+   * @input A list of entities.
+   * @returns The min and max values.
+   */
+  parseValues(targets: T[]) {
+    const values = targets
+      .map((t) => this.getValue(getEntity(t)))
+      .filter((v) => typeof v === 'number') as number[];
+    return values.length
+      ? {
+          min: Math.min(...values),
+          max: Math.max(...values)
+        }
+      : undefined;
+  }
+
+  get min() {
+    return this._rules.min;
+  }
+
+  get max() {
+    return this._rules.max;
+  }
+
+  /**
+   * Set the minimum value for the filter.
+   */
+  set min(value: number | undefined) {
+    this.setRule('min', value);
+  }
+
+  /**
+   * Set the maximum value for the filter.
+   */
+  set max(value: number | undefined) {
+    this.setRule('max', value);
+  }
+
+  /**
+   * Set whether missing values are exluded.
+   */
+  excludeMissing(value?: boolean) {
+    this.setRule('excludeMissing', value);
+  }
+
+  testValue(value: MaybeMissing<number>) {
+    if (value === MISSING_VALUE) return !this._rules.excludeMissing;
+    if (this._rules.min != null && (value as number) < this._rules.min) return false;
+    if (this._rules.max != null && (value as number) > this._rules.max) return false;
+    return true;
+  }
+}
