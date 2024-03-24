@@ -7,7 +7,7 @@
 
   export let password = '';
   export let passwordConfirmation = '';
-  let autocompleteString = 'new-password';
+  export let autocompleteString = 'new-password';
   export let errorMessage = '';
   export let validPassword = false;
 
@@ -49,10 +49,11 @@ bind:errorMessage={errorMessageOfContext} />
   </p>
   <PasswordValidator bind:validPassword {password} />
   <div class="mb-md flex w-full max-w-md flex-col gap-6">
-    <label for="password" class="hidden">{$t('candidate.password')}</label>
-    <PasswordField bind:password autocomplete={autocompleteString} />
-    <label for="passwordConfirmation" class="hidden">{$t('candidate.password')}</label>
-    <PasswordField bind:password={passwordConfirmation} autocomplete={autocompleteString} />
+    <PasswordField bind:password id="password" autocomplete={autocompleteString} />
+    <PasswordField
+      bind:password={passwordConfirmation}
+      id="passwordConfirmation"
+      autocomplete={autocompleteString} />
   </div>
 
   {#if errorMessage}
