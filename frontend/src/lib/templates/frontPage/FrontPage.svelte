@@ -48,6 +48,7 @@ is based on.
     <h1>{$page.data.election.name}</h1>
   </svelte:fragment>
 
+
   <img
     slot="hero"
     src="/images/hero.png"
@@ -91,6 +92,7 @@ is based on.
       <slot name="heading">
         <h1>{title}</h1>
       </slot>
+      <slot name="banner" />
     </div>
 
     <!-- Main content -->

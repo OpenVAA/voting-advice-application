@@ -9,14 +9,12 @@
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
-  import {get} from 'svelte/store';
+  import LogoutButton from '$lib/candidate/components/logoutButton/LogoutButton.svelte';
 
   export let registrationCode = '';
   export let wrongCode = false;
-  const candidateContext = getContext<CandidateContext>('candidate');
-  let user = get(candidateContext?.userStore);
-  candidateContext?.userStore.subscribe((value) => (user = value));
-  $: loggedIn = !!user;
+  const {userStore} = getContext<CandidateContext>('candidate');
+  $: loggedIn = $userStore;
 
   const onRegistration = async () => {
     await goto($getRoute({route: Route.CandAppRegister, params: {registrationCode}}));
@@ -49,7 +47,11 @@ registrationCode
     <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
     <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
   </HeadingGroup>
-
+  <div slot="header">
+    {#if loggedIn}
+      <LogoutButton></LogoutButton>
+    {/if}
+  </div>
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onRegistration}>
     <p class="max-w-md text-center">
       {$t('candidateApp.registration.enterCode')}
