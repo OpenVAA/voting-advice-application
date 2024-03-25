@@ -2,7 +2,6 @@ import {derived, readable, writable} from 'svelte/store';
 import type {Readable, Writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import {page} from '$app/stores';
-import type {VoterAnswers} from '$lib/types';
 import localSettings from '$lib/config/settings.json';
 import {logDebugError} from '$lib/utils/logger';
 import {matchCandidates} from '$lib/utils/matching';
@@ -35,8 +34,32 @@ function createStoreValueAndSubscribeToLocalStorage<T>(key: string, defaultValue
 // Create the actual Svelte store values
 export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage(
   'answeredQuestions',
-  {} as VoterAnswers
+  {} as AnswerDict
 );
+
+/**
+ * Set a voter's answer value
+ * @param questionId The question id
+ * @param value The question value. If `undefined`, the answer will be deleted
+ */
+export function setVoterAnswer(questionId: string, value?: AnswerProps['value']) {
+  answeredQuestions.update((d) => {
+    if (value === undefined) {
+      delete d[questionId];
+    } else {
+      d[questionId] = {value};
+    }
+    return d;
+  });
+}
+
+/**
+ * Delete a voter's answer value
+ * @param questionId The question id
+ */
+export function deleteVoterAnswer(questionId: string) {
+  setVoterAnswer(questionId);
+}
 
 /**
  * Reset the local storage values

@@ -16,6 +16,12 @@
   $: shortName = isCandidate(entity)
     ? `${entity.firstName[0].toLocaleUpperCase()}. ${entity.lastName}`
     : entity.shortName;
+
+  /** This is needed to ensure typing but will be no longer needed, when vaa-data model is implemented an Question object methods can be used to enforce typing. */
+  function getVoterLikertAnswer(question: QuestionProps): number | undefined {
+    const answer = $answeredQuestions[question.id]?.value;
+    return typeof answer === 'number' ? answer : undefined;
+  }
 </script>
 
 <!--
@@ -37,8 +43,8 @@ Used to show an entity's opinions in an `EntityDetails` component.
 <div class="p-lg">
   {#each questions as question}
     {@const {id, text, type, values, category} = question}
-    {@const {answer, openAnswer} = getLikertAnswer(entity, question)}
-    {@const voterAnswer = $answeredQuestions[id]}
+    {@const answer = getLikertAnswer(entity, question)}
+    {@const voterAnswer = getVoterLikertAnswer(question)}
     {@const headingId = `questionHeading-${id}`}
 
     <div class="mb-60 mt-20">
@@ -79,16 +85,16 @@ Used to show an entity's opinions in an `EntityDetails` component.
           name={id}
           mode="display"
           selectedKey={voterAnswer}
-          entityKey={answer}
+          entityKey={answer?.value}
           entityLabel={shortName}
           options={values} />
       {:else}
         {$t('error.general')}
       {/if}
 
-      {#if openAnswer}
+      {#if answer?.openAnswer}
         <QuestionOpenAnswer>
-          {openAnswer}
+          {answer.openAnswer}
         </QuestionOpenAnswer>
       {/if}
     </div>
