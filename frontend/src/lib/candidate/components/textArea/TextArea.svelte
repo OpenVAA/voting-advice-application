@@ -1,6 +1,7 @@
 <script lang="ts">
   import {onMount, onDestroy} from 'svelte';
   import type {TextAreaProps} from './TextArea.type';
+  import {Icon} from '$lib/components/icon';
 
   type $$Props = TextAreaProps;
 
@@ -14,6 +15,9 @@
   export let disabled: $$Props['disabled'] = false;
   export let bgColor: $$Props['bgColor'] = 'bg-base-100';
   export let placeholder: $$Props['placeholder'] = '';
+  export let locked: $$Props['locked'] = false;
+
+  $: lockedClass = locked ? 'text-secondary' : '';
 
   const SAVE_INTERVAL_MS = 1000;
   let saveInterval: NodeJS.Timeout;
@@ -82,9 +86,10 @@ TextArea is a text area component with a header and a local storage save feature
 - `localStorageId` (optional): Local storage id for the saved text. If provided, content is saved to local storage periodically.
 - `previouslySaved` (optional): Previously saved text from the database, i.e. not locally saved. Is shown if there is no locally saved text.
 - `rows` (optional): The number of rows for the text area. Default is 4.
-- `disabled` (optional): Whether the text area is disabled. Default is false.
+- `disabled` (optional): If the text area is disabled. This is used to indicate that the text area cannot be used yet.
 - `bgColor` (optional): The background color of the text area. Default is 'bg-base-100'.
 - `placeholder` (optional): The placeholder text for the text area.
+- `locked` (optional): If the text area is locked and has a lock icon. This is used to indicate that the text can no longer be edited.
 
 ### Usage
 Usage without local saving:
@@ -110,7 +115,7 @@ Usage with local saving:
 ```
 -->
 
-<div class="w-full">
+<div class="relative w-full">
   {#if headerText}
     <label for={id} class="text-m mx-6 my-6 p-0 uppercase text-secondary">{headerText}</label>
   {:else}
@@ -120,9 +125,16 @@ Usage with local saving:
   <textarea
     {id}
     {rows}
-    {disabled}
     {placeholder}
-    class="textarea w-full resize-none p-6 !outline-none disabled:bg-base-300 {bgColor}"
+    disabled={disabled && !locked}
+    readonly={locked}
+    class="textarea w-full resize-none p-6 !outline-none disabled:bg-base-300 {bgColor} {lockedClass}"
     bind:value={text}
     on:focusout={saveToLocalStorage} />
+
+  {#if locked}
+    <div class="absolute bottom-0 right-0 m-10">
+      <Icon name="locked" class="my-auto flex-shrink-0 text-secondary" />
+    </div>
+  {/if}
 </div>
