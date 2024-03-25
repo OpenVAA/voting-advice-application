@@ -22,6 +22,7 @@ export interface Candidate {
   nominations: Nomination[];
   locale: string;
   party?: Party;
+  appLanguage?: Language;
 }
 
 export interface Language {

@@ -61,6 +61,7 @@
     },
     "emailDescription": "We use this email to connect to you and for password reset. It will not be shown on your public profile.",
     "languageDescription": "Use this application in this language. It will not be shown on your public profile.",
+    "changeLanguageError": "An error occurred while changing the application language.",
     "accountPassword": "Account Password",
     "currentPassword": "Current Password",
     "currentPasswordDescription": "Enter your existing account password that you want to change.",

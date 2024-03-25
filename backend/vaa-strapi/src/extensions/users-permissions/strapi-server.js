@@ -131,7 +131,8 @@ module.exports = async (plugin) => {
         'candidate.populate.party',
         'candidate.populate.photo',
         'candidate.populate.motherTongues',
-        'candidate.populate.gender'
+        'candidate.populate.gender',
+        'candidate.populate.appLanguage'
       ]),
       // Disable filters by default to avoid accidentally leaking data of relations
       restrictFilters([])

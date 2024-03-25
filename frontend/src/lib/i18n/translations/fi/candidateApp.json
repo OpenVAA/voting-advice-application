@@ -14,9 +14,9 @@
     "cancel": "Peruuta"
   },
   "languages": {
-    "English": "Englanniksi",
-    "Finnish": "Suomeksi",
-    "Spanish": "Espanjaksi"
+    "English": "Englanti",
+    "Finnish": "Suomi",
+    "Spanish": "Espanja"
   },
   "logoutModal": {
     "title": "Osa tiedoistasi puuttuu edelleen",
@@ -61,6 +61,7 @@
     },
     "emailDescription": "Käytämme tätä sähköpostia yhteydenottoon ja salasanan palauttamiseen. Se ei näy julkisessa profiilissasi.",
     "languageDescription": "Käytä tätä sovellusta tällä kielellä. Se ei näy julkisessa profiilissasi.",
+    "changeLanguageError": "Kielen vaihto epäonnistui.",
     "accountPassword": "Tilin salasana",
     "currentPassword": "Nykyinen salasana",
     "currentPasswordDescription": "Kirjoita tilisi nykyinen salasana, jonka haluat vaihtaa.",
