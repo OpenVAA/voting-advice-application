@@ -62,7 +62,7 @@ const loadUserData = async () => {
 const logOut = async () => {
   userStore.set(null);
   tokenStore.set(null);
-  localStorage.removeItem('token');
+  localStorage.clear();
 };
 
 const loadAnswerData = async () => {
