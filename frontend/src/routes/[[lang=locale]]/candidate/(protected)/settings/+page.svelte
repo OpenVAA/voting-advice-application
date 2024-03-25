@@ -30,7 +30,7 @@
   let validPassword = false;
   let errorMessage = '';
   let successMessage = '';
-  let langaugeErrorMessage = '';
+  let languageErrorMessage = '';
 
   $: disableSetButton = !validPassword || passwordConfirmation.length === 0;
 
@@ -46,7 +46,7 @@
 
   // Handle the change when the app language is changed
   const handleLanguageSelect = async (e: Event) => {
-    langaugeErrorMessage = '';
+    languageErrorMessage = '';
 
     const chosenLanguage = allLanguages
       ? allLanguages.find(
@@ -66,7 +66,7 @@
         await loadUserData(); // Reload user data so it's up to date
         await goto($getRoute({locale: languageObj.localisationCode})); // Change page language to the chosen one
       } catch (error) {
-        langaugeErrorMessage = $t('candidateApp.settings.changeLanguageError');
+        languageErrorMessage = $t('candidateApp.settings.changeLanguageError');
       }
     }
   };
@@ -151,9 +151,9 @@
     </p>
   </div>
 
-  {#if langaugeErrorMessage}
+  {#if languageErrorMessage}
     <p class="mb-0 mt-16 text-center text-error">
-      {langaugeErrorMessage}
+      {languageErrorMessage}
     </p>
   {/if}
 

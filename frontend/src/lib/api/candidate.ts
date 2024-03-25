@@ -134,7 +134,7 @@ export const updateBasicInfo = async (
 /**
  * Change the user's preferred language for the app.
  */
-export const updateAppLanguage = async (language?: Language) => {
+export const updateAppLanguage = async (language: Language) => {
   const user = get(candidateContext.userStore);
   const candidate = user?.candidate;
 
