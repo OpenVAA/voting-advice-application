@@ -77,7 +77,7 @@ Page where candidates can set their password when logging to the app for the fir
 
 <FrontPage title={$t('candidateApp.registration.title')}>
   <HeadingGroup slot="heading">
-    <PreHeading class="text-primary text-2xl font-bold">{$t('viewTexts.appTitle')}</PreHeading>
+    <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
     <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
     <h1 class="my-24 text-2xl font-normal">
       {$t('candidateApp.setPassword.greeting', {userName})}
@@ -89,7 +89,7 @@ Page where candidates can set their password when logging to the app for the fir
     {/if}
   </div>
   {#if loggedIn}
-    <p class="text-warning text-center">{$t('candidateApp.registration.loggedInWarning')}</p>
+    <p class="text-center text-warning">{$t('candidateApp.registration.loggedInWarning')}</p>
   {/if}
   <form class="flex flex-col flex-nowrap items-center">
     <PasswordSetter
