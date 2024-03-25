@@ -4,7 +4,7 @@
   type $$Props = TextAreaProps;
 
   export let id: $$Props['id'];
-  export let text: $$Props['text'] = undefined;
+  export let text: $$Props['text'] = '';
 
   export let headerText: $$Props['headerText'] = undefined;
   export let disabled: $$Props['disabled'] = false;

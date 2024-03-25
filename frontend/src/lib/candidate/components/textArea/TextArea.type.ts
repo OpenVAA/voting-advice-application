@@ -9,7 +9,7 @@ export type TextAreaProps = {
   text?: string;
   /**
    * The header text to be displayed above the textarea. If not provided, header slot will be used.
-   * @default undefined
+   * @default ''
    */
   headerText?: string;
   /**

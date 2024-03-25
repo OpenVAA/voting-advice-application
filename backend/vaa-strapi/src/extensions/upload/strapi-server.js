@@ -8,7 +8,7 @@ module.exports = async (plugin) => {
     route.config = {
       policies: [
         // Allow only deleting candidate's own resource
-        async (ctx, config, {strapi}) => {
+        async () => {
           // TODO: we need a proper way to confirm who the photo belongs to before allowing this, otherwise we could
           // have another candidate set someone else's photo as their own, and then they would be able to delete
           // someone else's image as a result.

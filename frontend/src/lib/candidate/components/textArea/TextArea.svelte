@@ -5,7 +5,7 @@
   type $$Props = TextAreaProps;
 
   export let id: $$Props['id'];
-  export let text: $$Props['text'] = undefined;
+  export let text: $$Props['text'] = '';
 
   export let headerText: $$Props['headerText'] = undefined;
   export let localStorageId: $$Props['localStorageId'] = undefined;
@@ -122,7 +122,7 @@ Usage with local saving:
     {rows}
     {disabled}
     {placeholder}
-    class="textarea w-full resize-none {bgColor} p-6 !outline-none disabled:bg-base-300"
+    class="textarea w-full resize-none p-6 !outline-none disabled:bg-base-300 {bgColor}"
     bind:value={text}
     on:focusout={saveToLocalStorage} />
 </div>
