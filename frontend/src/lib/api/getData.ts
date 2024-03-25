@@ -159,12 +159,11 @@ export const getNominatedCandidates = ({
         firstName: attr.firstName,
         id,
         lastName: attr.lastName,
-        party: parseParty(nom.attributes.party.data, locale)
+        party: parseParty(nom.attributes.party.data, locale),
+        answers: loadAnswers && attr.answers?.data ? parseAnswers(attr.answers.data, locale) : {}
       };
       const photo = attr.photo?.data?.attributes;
       if (photo) props.photo = parseImage(photo);
-      if (loadAnswers)
-        props['answers'] = attr.answers?.data ? parseAnswers(attr.answers.data, locale) : [];
       return props;
     })
   );
@@ -213,11 +212,11 @@ const parseParty = (
     info: translate(attr.info, locale),
     name: translate(attr.name, locale),
     shortName: translate(attr.shortName, locale),
-    ...ensureColors(attr.color, attr.colorDark)
+    ...ensureColors(attr.color, attr.colorDark),
+    answers: includeAnswers && attr.answers?.data ? parseAnswers(attr.answers.data, locale) : {}
   };
   const photo = attr.logo?.data?.attributes;
   if (photo) props.photo = parseImage(photo);
-  if (includeAnswers) props['answers'] = parseAnswers(attr.answers.data, locale);
   if (includeMembers) props.memberCandidateIds = attr.candidates.data.map((c) => `${c.id}`);
   return props;
 };
