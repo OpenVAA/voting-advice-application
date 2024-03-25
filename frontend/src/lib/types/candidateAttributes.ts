@@ -14,7 +14,7 @@ export interface Candidate {
   gender: Gender;
   birthday: string;
   photo?: Photo;
-  manifesto: string;
+  manifesto: LocalizedString;
   motherTongues: Language[];
   unaffiliated: boolean;
   politicalExperience: string;

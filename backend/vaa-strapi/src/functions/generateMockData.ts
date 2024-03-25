@@ -444,7 +444,8 @@ async function createCandidates(length: number) {
         politicalExperience,
         unaffiliated: false,
         motherTongues: [motherTongue.id],
-        otherLanguages: [otherLanguage.id]
+        otherLanguages: [otherLanguage.id],
+        manifesto: {}
       }
     });
 

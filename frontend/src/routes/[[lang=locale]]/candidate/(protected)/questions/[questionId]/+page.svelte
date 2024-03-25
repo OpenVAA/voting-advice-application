@@ -1,14 +1,13 @@
 <script lang="ts">
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
-  import {locale, t} from '$lib/i18n';
+  import {t} from '$lib/i18n';
   import {addAnswer, updateAnswer, deleteAnswer} from '$lib/api/candidate';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {LikertResponseButtons, QuestionActions, QuestionInfo} from '$lib/components/questions';
   import {BasicPage} from '$lib/templates/basicPage';
-  import {translate} from '$lib/i18n/utils/translate';
-  import {TextArea} from '$candidate/components/textArea';
+  import {MultilangTextInput} from '$candidate/components/textArea';
   import {getContext} from 'svelte';
   import {type CandidateContext} from '$lib/utils/candidateStore';
 
@@ -26,8 +25,8 @@
 
   $: answer = answers?.[questionId]; // null if not answered
 
-  let openAnswerTextArea: TextArea; // Used to clear the local storage from the parent component
-  let openAnswer = '';
+  let openAnswerTextArea: MultilangTextInput; // Used to clear the local storage from the parent component
+  let openAnswer: LocalizedString = {};
 
   let selectedKey: AnswerOption['key'] | null;
 
@@ -72,11 +71,7 @@
       if (!localLikert) {
         return;
       }
-      const response = await addAnswer(
-        questionId,
-        parseInt(localLikert),
-        toLocalizedString(openAnswer)
-      );
+      const response = await addAnswer(questionId, parseInt(localLikert), openAnswer);
 
       if (!response?.ok) {
         showError($t('candidateApp.opinions.answerSaveError'));
@@ -90,7 +85,7 @@
         answers[questionId] = {
           id: answerId,
           key: parseInt(localLikert),
-          openAnswer: toLocalizedString(openAnswer)
+          openAnswer
         };
       }
     } else {
@@ -103,7 +98,7 @@
         previousLikert = parseInt(localLikert);
       }
 
-      const response = await updateAnswer(answer.id, previousLikert, toLocalizedString(openAnswer));
+      const response = await updateAnswer(answer.id, previousLikert, openAnswer);
       if (!response?.ok) {
         showError($t('candidateApp.opinions.answerSaveError'));
         return;
@@ -113,13 +108,13 @@
         answers[questionId] = {
           id: answer.id,
           key: previousLikert,
-          openAnswer: toLocalizedString(openAnswer)
+          openAnswer
         };
       }
     }
 
     removeLocalAnswerToQuestion();
-    openAnswer = '';
+    openAnswer = {};
     answersStore.set(answers);
   }
 
@@ -127,7 +122,7 @@
     if (!answer) {
       // No answer in database, only local answers need to be removed
       selectedKey = null;
-      openAnswer = '';
+      openAnswer = {};
       removeLocalAnswerToQuestion();
       return;
     }
@@ -139,7 +134,7 @@
     }
 
     selectedKey = null;
-    openAnswer = '';
+    openAnswer = {};
     removeLocalAnswerToQuestion();
 
     delete answers?.[questionId];
@@ -186,11 +181,6 @@
   async function goToPreviousQuestion() {
     await navigateToQuestion(-1, $getRoute(Route.CandAppQuestions));
   }
-
-  /** A temp fix for saving open answers as LocalizedStrings */
-  function toLocalizedString(text: string): LocalizedString {
-    return {[locale.get()]: text};
-  }
 </script>
 
 {#if currentQuestion}
@@ -220,13 +210,14 @@
           {$t('error.general')}
         {/if}
 
-        <TextArea
+        <MultilangTextInput
+          id="openAnswer"
           headerText={$t('candidateApp.opinions.commentOnThisIssue')}
           localStorageId={openAnswerLocal}
-          previouslySaved={translate(answer?.openAnswer)}
+          previouslySavedMultilang={answer?.openAnswer ?? undefined}
           disabled={!selectedKey}
-          id="openAnswer"
-          bind:text={openAnswer}
+          placeholder="—"
+          bind:multilangText={openAnswer}
           bind:this={openAnswerTextArea} />
 
         {#if errorMessage}
