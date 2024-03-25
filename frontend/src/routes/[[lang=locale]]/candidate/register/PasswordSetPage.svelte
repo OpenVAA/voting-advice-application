@@ -5,12 +5,10 @@
   import {register} from '$lib/api/candidate';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {validatePassword} from '$shared/utils/passwordValidation';
-  import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {Button} from '$lib/components/button';
-  import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {FrontPage} from '$lib/templates/frontPage';
+  import {PasswordSetter} from '$lib/candidate/components/PasswordSetter';
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
@@ -18,28 +16,25 @@
   export let registrationCode: string;
   export let email: string;
 
+  let password = '';
+  let passwordConfirmation = '';
   const {emailOfNewUserStore} = getContext<CandidateContext>('candidate');
-
-  let password1 = '';
-  let password2 = '';
   let validPassword = false;
   let errorMessage = '';
 
-  $: disableSetButton = validPassword && password2.length > 0;
-
   const onSetButtonPressed = async () => {
-    if (password1 !== password2) {
+    if (password !== passwordConfirmation) {
       errorMessage = $t('candidateApp.setPassword.passwordsDontMatch');
       return;
     }
 
     // Additional check before backend validation
-    if (!validatePassword(password1, userName)) {
+    if (!validatePassword(password, userName)) {
       errorMessage = $t('candidateApp.setPassword.passwordNotValid');
       return;
     }
 
-    const response = await register(registrationCode, password1);
+    const response = await register(registrationCode, password);
     if (!response.ok) {
       errorMessage = $t('candidateApp.setPassword.registrationError');
       return;
@@ -85,35 +80,13 @@ Page where candidates can set their password when logging to the app for the fir
     </h1>
   </HeadingGroup>
 
-  <form
-    class="flex flex-col flex-nowrap items-center"
-    on:submit|preventDefault={onSetButtonPressed}>
-    <p class="m-0 text-center">
-      {$t('candidateApp.setPassword.description')}
-    </p>
-
-    <PasswordValidator bind:validPassword password={password1} />
-
-    <div class="mb-md w-full max-w-md space-y-10">
-      <label for="password1" class="hidden">{$t('candidate.password')}</label>
-      <PasswordField bind:password={password1} autocomplete="new-password" />
-      <label for="password2" class="hidden">{$t('candidate.password')}</label>
-      <PasswordField bind:password={password2} autocomplete="new-password" />
-    </div>
-
-    {#if errorMessage}
-      <p class="text-center text-error">
-        {errorMessage}
-      </p>
-    {/if}
-
-    <Button
-      type="submit"
-      disabled={!disableSetButton}
-      variant="main"
-      text={$t('candidateApp.setPassword.setPassword')} />
-
-    <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
+  <form class="flex flex-col flex-nowrap items-center">
+    <PasswordSetter
+      buttonPressed={onSetButtonPressed}
+      bind:validPassword
+      bind:errorMessage
+      bind:password
+      bind:passwordConfirmation />
   </form>
 
   <Footer slot="footer" />

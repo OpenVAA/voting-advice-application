@@ -7,10 +7,8 @@
   import {validatePassword} from '$shared/utils/passwordValidation';
   import {FrontPage} from '$lib/templates/frontPage';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {PasswordValidator} from '$candidate/components/passwordValidator';
-  import {Button} from '$lib/components/button';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
-  import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
+  import {PasswordSetter} from '$lib/candidate/components/PasswordSetter';
 
   export let code: string;
 
@@ -18,8 +16,6 @@
   let passwordConfirmation = '';
   let validPassword = false;
   let errorMessage = '';
-
-  $: disableSetButton = !validPassword || passwordConfirmation.length === 0;
 
   const onButtonPress = async () => {
     if (password !== passwordConfirmation) {
@@ -67,34 +63,13 @@
     <h1 class="text-xl font-normal">{$page.data.election.name}</h1>
     <h1 class="my-24 text-2xl font-normal">{$t('candidateApp.resetPassword.createNewPassword')}</h1>
   </HeadingGroup>
-
-  <form class="flex-nowarp flex flex-col items-center" on:submit|preventDefault={onButtonPress}>
-    <p class="m-0 max-w-md text-center">
-      {$t('candidateApp.setPassword.description')}
-    </p>
-
-    <PasswordValidator bind:validPassword {password} />
-
-    <label for="password" class="hidden">{$t('candidate.password')}</label>
-    <label for="passwordConfirmation" class="hidden">{$t('candidate.password')}</label>
-    <div class="mb-md flex w-full max-w-md flex-col gap-6">
-      <PasswordField bind:password autocomplete="new-password" />
-      <PasswordField bind:password={passwordConfirmation} autocomplete="new-password" />
-    </div>
-    {#if errorMessage}
-      <p class="text-center text-error">
-        {errorMessage}
-      </p>
-    {/if}
-
-    <Button
-      type="submit"
-      variant="main"
-      disabled={disableSetButton}
-      text={$t('candidateApp.setPassword.setPassword')} />
-
-    <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
+  <form class="flex-nowarp flex flex-col items-center">
+    <PasswordSetter
+      buttonPressed={onButtonPress}
+      bind:validPassword
+      bind:errorMessage
+      bind:password
+      bind:passwordConfirmation />
   </form>
-
-  <svelte:fragment slot="footer"><Footer /></svelte:fragment>
+  <Footer slot="footer" />
 </FrontPage>
