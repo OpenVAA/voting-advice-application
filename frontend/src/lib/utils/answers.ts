@@ -10,12 +10,8 @@ import {logDebugError} from '$lib/utils/logger';
  * @param question The Question object
  * @returns An `AnswerProps` object with the answer
  */
-export function getAnswer(entity: EntityProps, question: QuestionProps) {
-  const match = entity.answers?.find((a) => a.questionId === question.id);
-  return {
-    answer: match?.answer,
-    openAnswer: match?.openAnswer
-  };
+export function getAnswer(entity: EntityProps, question: QuestionProps): AnswerProps | undefined {
+  return entity.answers[question.id] ?? undefined;
 }
 
 /**
@@ -32,11 +28,13 @@ export function getLikertAnswer(entity: EntityProps, question: QuestionProps) {
       openAnswer: undefined
     };
   }
-  const {answer, openAnswer} = getAnswer(entity, question);
-  return {
-    answer: answer as number,
-    openAnswer
-  };
+  const answer = getAnswer(entity, question);
+  return answer
+    ? {
+        value: answer.value as number,
+        openAnswer: answer.openAnswer
+      }
+    : undefined;
 }
 
 /**
@@ -49,24 +47,25 @@ export function getAnswerForDisplay(
   entity: EntityProps,
   question: QuestionProps
 ): string | string[] | undefined {
-  const {answer} = getAnswer(entity, question);
-  if (answer == null || answer === '') return undefined;
+  const answer = getAnswer(entity, question);
+  if (answer == null || answer.value === '') return undefined;
   const qt = question.type;
-  if (qt === 'boolean') return t.get((answer as boolean) ? 'common.answerYes' : 'common.answerNo');
+  if (qt === 'boolean')
+    return t.get((answer.value as boolean) ? 'common.answerYes' : 'common.answerNo');
   if (qt === 'date') {
     const format =
       question.dateType && question.dateType in DATE_FORMATS
         ? DATE_FORMATS[question.dateType]
         : DATE_FORMATS.yearMonthDay;
-    return new Date(answer as Date).toLocaleDateString(locale.get(), format);
+    return new Date(answer.value as Date).toLocaleDateString(locale.get(), format);
   }
   if (['singleChoiceOrdinal', 'singleChoiceCategorical'].includes(qt))
-    return getChoiceLabel(question, answer);
+    return getChoiceLabel(question, answer.value);
   if (['multipleChoiceCategorical', 'preferenceOrder'].includes(qt)) {
-    const labels = getChoiceLabels(question, answer);
+    const labels = getChoiceLabels(question, answer.value);
     return labels?.length ? labels : undefined;
   }
-  if (['text', 'number'].includes(qt)) return `${answer}`;
+  if (['text', 'number'].includes(qt)) return `${answer.value}`;
   throw new Error('Not implemented');
 }
 
@@ -76,10 +75,7 @@ export function getAnswerForDisplay(
  * @param answer The Candidate's answer
  * @returns The answer's translated label or `undefined`
  */
-function getChoiceLabel(
-  question: QuestionProps,
-  answer: ReturnType<typeof getAnswer>['answer']
-): string | undefined {
+function getChoiceLabel(question: QuestionProps, answer: AnswerProps['value']): string | undefined {
   const label = question.values?.find((v) => v.key === (answer as number))?.label;
   if (label == null) {
     logDebugError(`Invalid question choice ${answer} for question ${question.id}`);
@@ -96,7 +92,7 @@ function getChoiceLabel(
  */
 function getChoiceLabels(
   question: QuestionProps,
-  answers: ReturnType<typeof getAnswer>['answer']
+  answers: AnswerProps['value']
 ): string[] | undefined {
   if (!Array.isArray(answers)) {
     logDebugError(`Invalid question answers (${answers}) for question ${question.id}`);

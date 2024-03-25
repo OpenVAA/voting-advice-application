@@ -25,11 +25,15 @@ declare global {
   }
 
   /**
+   * An entity's answers are stored in a record.
+   */
+  type AnswerDict = Record<string, AnswerProps>;
+
+  /**
    * Properties of a Candidate's or Party's answer to a question.
    */
   interface AnswerProps {
-    questionId: string;
-    answer?: string | boolean | number | number[] | Date | null;
+    value: string | boolean | number | number[] | Date | undefined | null;
     openAnswer?: string;
   }
 
@@ -91,7 +95,7 @@ declare global {
    * TODO: This may be deprecated later by the `vaa-data` module.
    */
   interface CandidateProps {
-    answers?: AnswerProps[];
+    answers: AnswerDict;
     electionRound?: number;
     electionSymbol?: string;
     firstName: string;
@@ -129,7 +133,7 @@ declare global {
    * TODO: This may be deprecated later by the `vaa-data` module.
    */
   interface PartyProps {
-    answers?: AnswerProps[];
+    answers: AnswerDict;
     electionRound?: number;
     electionSymbol?: string;
     id: string;
@@ -154,12 +158,12 @@ declare global {
     id: string;
     text: string;
     shortName: string;
-    order: number;
+    order?: number;
     category: QuestionCategoryProps;
     info?: string;
     fillingInfo?: string;
     type: QuestionSettingsProps['type'];
-    values?: ChoiceProps[];
+    values?: AnswerOption[];
     min?: number | Date;
     max?: number | Date;
     notLocalizable?: boolean;
@@ -175,7 +179,7 @@ declare global {
     id: string;
     name: string;
     shortName: string;
-    order: number;
+    order?: number;
     type: QuestionCategoryType;
     info?: string;
     color?: string;
@@ -212,21 +216,21 @@ declare global {
       }
     | {
         type: 'singleChoiceOrdinal';
-        values: ChoiceProps[];
+        values: AnswerOption[];
       }
     | {
         type: 'singleChoiceCategorical';
-        values: ChoiceProps[];
+        values: AnswerOption[];
       }
     | {
         type: 'multipleChoiceCategorical';
-        values: ChoiceProps[];
+        values: AnswerOption[];
         min?: number;
         max?: number;
       }
     | {
         type: 'preferenceOrder';
-        values: ChoiceProps[];
+        values: AnswerOption[];
         min?: number;
         max?: number;
       };
@@ -238,12 +242,9 @@ declare global {
   type DateType = 'yearMonthDay' | 'yearMonth' | 'monthDay' | 'month' | 'weekday';
 
   /**
-   * The format for an option in a multiple choice question.
+   * Value of enumerations for specifying the type of entity the object applies to
    */
-  interface ChoiceProps {
-    key: number;
-    label: string;
-  }
+  type EntityType = 'all' | 'candidate' | 'party';
 
   /**
    * Represents any entity that can be shown in listings and has answers to questions.
@@ -253,7 +254,7 @@ declare global {
   /**
    * These conform to `vaa-matching.Match`
    */
-  interface RankingProps<T extends EntityProps> {
+  interface RankingProps<T extends EntityProps = EntityProps> {
     // distance: number;
     entity: T;
     score: number;
