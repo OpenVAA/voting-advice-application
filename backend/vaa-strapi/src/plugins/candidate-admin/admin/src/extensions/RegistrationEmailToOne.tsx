@@ -11,10 +11,10 @@ export default function RegistrationEmailToOne() {
   return RegistrationEmailButton({
     instructions: `Send registration email to ${initialData.firstName} ${initialData.lastName}. Add registration link to email by adding [LINK] to the email content. Registration link can be added multiple times.`,
     confirmFunction: (emailSubject, emailContent) => {
-      fetch('/api/admin/send-email', {
+      fetch('/candidate-admin/send-email', {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${sessionStorage.getItem('jwtToken')}`
+          Authorization: `Bearer ${sessionStorage.getItem('jwtToken').replaceAll('"', '')}`
         },
         body: JSON.stringify({
           subject: emailSubject,

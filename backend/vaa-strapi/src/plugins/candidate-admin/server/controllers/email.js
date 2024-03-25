@@ -2,7 +2,7 @@
  * A set of functions called "actions" for `admin`
  */
 
-export default {
+module.exports = {
   sendEmailToUnregistered: async (ctx, next) => {
     const {subject, content} = JSON.parse(ctx.request.body ?? '{}');
     if (!subject || !content) {
@@ -11,7 +11,7 @@ export default {
       return;
     }
 
-    strapi.service('api::admin.admin').sendEmailToUnregistered(subject, content);
+    strapi.service('plugin::candidate-admin.email').sendEmailToUnregistered(subject, content);
 
     ctx.status = 200;
   },
@@ -22,7 +22,7 @@ export default {
       ctx.body = 'Invalid request';
       return;
     }
-    strapi.service('api::admin.admin').sendEmail(candidateId, subject, content);
+    strapi.service('plugin::candidate-admin.email').sendEmail(candidateId, subject, content);
 
     ctx.status = 200;
   }

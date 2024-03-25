@@ -2,7 +2,7 @@
  * admin service
  */
 
-const getFormattedMessage = (content: string, registrationKey: string) => {
+const getFormattedMessage = (content, registrationKey) => {
   const url = new URL(process.env.PUBLIC_FRONTEND_URL ?? 'http://localhost:5173');
   url.pathname = '/en/candidate/register';
   url.searchParams.append('registrationCode', registrationKey);
@@ -13,8 +13,8 @@ const getFormattedMessage = (content: string, registrationKey: string) => {
   return text;
 };
 
-export default () => ({
-  sendEmail: async (candidateId: string, subject: string, content: string) => {
+module.exports = () => ({
+  sendEmail: async (candidateId, subject, content) => {
     const candidate = await strapi.entityService.findOne('api::candidate.candidate', candidateId, {
       fields: ['registrationKey', 'email']
     });
@@ -29,20 +29,17 @@ export default () => ({
       text
     });
   },
-  sendEmailToUnregistered: async (subject: string, content: string) => {
-    const unregisteredCandidates = (await strapi.entityService.findMany(
-      'api::candidate.candidate',
-      {
-        fields: ['registrationKey', 'email'],
-        filters: {
-          user: {
-            id: {
-              $null: true
-            }
+  sendEmailToUnregistered: async (subject, content) => {
+    const unregisteredCandidates = await strapi.entityService.findMany('api::candidate.candidate', {
+      fields: ['registrationKey', 'email'],
+      filters: {
+        user: {
+          id: {
+            $null: true
           }
         }
       }
-    )) as any[];
+    });
     for (const candidate of unregisteredCandidates) {
       const emailPluginService = strapi.plugins['email'].services.email;
       const text = getFormattedMessage(content, candidate.registrationKey);

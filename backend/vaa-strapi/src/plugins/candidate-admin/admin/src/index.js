@@ -2,7 +2,7 @@ import RegistrationEmailToAll from './extensions/RegistrationEmailToAll';
 import RegistrationEmailToOne from './extensions/RegistrationEmailToOne';
 
 export default {
-  bootstrap(app) {
+  register(app) {
     app.injectContentManagerComponent('listView', 'actions', {
       name: 'Registration email to all',
       Component: RegistrationEmailToAll
