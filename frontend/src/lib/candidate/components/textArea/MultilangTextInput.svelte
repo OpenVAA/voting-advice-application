@@ -138,6 +138,10 @@ Input field variant
     {/if}
   </FieldGroup>
 
+  {#if translationsShown}
+    <p class="text-sm">{$t('candidateApp.textarea.info')}</p>
+  {/if}
+
   <!-- Toggle whether translations are shown -->
   <Button
     type="button"
