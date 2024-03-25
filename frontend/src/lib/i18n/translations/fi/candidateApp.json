@@ -156,5 +156,10 @@
     "title": "Profiilin esikatselu",
     "notFound": "Profiilia ei löytynyt",
     "tip": "Tämä on esikatselu siitä, miltä profiilisi näyttää äänestäjille."
+  },
+  "textarea": {
+    "hide": "Piilota kentän käännökset",
+    "show": "Näytä kentän käännökset",
+    "info": "Voit antaa omat käännökset kielille, joilla sovellus on saatavilla. Jos et kirjoita omia käännöksiäsi, alkuperäinen vastaus näytetään."
   }
 }

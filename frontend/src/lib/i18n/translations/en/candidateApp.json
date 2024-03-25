@@ -156,5 +156,10 @@
     "title": "Preview",
     "notFound": "Profile not found",
     "tip": "This is a preview of how your profile will look to voters."
+  },
+  "textarea": {
+    "hide": "Hide translations for this field",
+    "show": "Show translations for this field",
+    "info": "You can supply your own translations for the languages the application is available in. If you don’t write your own translations, your original response will be shown."
   }
 }

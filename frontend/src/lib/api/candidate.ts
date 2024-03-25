@@ -98,7 +98,7 @@ export const me = async (): Promise<User | undefined> => {
 };
 
 export const updateBasicInfo = async (
-  manifesto?: string,
+  manifesto?: LocalizedString,
   birthday?: string,
   genderID?: number,
   photo?: Photo,
