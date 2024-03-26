@@ -84,9 +84,9 @@ export const resultsAvailable: Readable<boolean> = derived(
   false
 );
 
-// Currently, it's quite silly that we need to separate matches and candidates, but when the
-// vaa-data model integration is complete, the proper Candidate object will be
-// contained in the Match objects themselves.
+/**
+ * A store that holds the candidate rankings
+ */
 export const candidateRankings: Readable<RankingProps<CandidateProps>[]> = derived(
   [page, answeredQuestions],
   ([$page, $answeredQuestions]) => {
