@@ -7,5 +7,23 @@
   },
   "card": {
     "errorDisplaying": "FI - Error displaying card"
+  },
+  "entityFilters": {
+    "applyAndClose": "FI - Close filters",
+    "filtersActive": "FI - {numActiveFilters, plural, =1 {1 filter is} other {# filters are}} active",
+    "filterButtonLabel": "FI - Filter results",
+    "noResults": "FI - The filters produced no results. Try changing them.",
+    "reset": "FI - Reset filters",
+    "missingValue": "FI - No answer",
+    "selectAll": "FI Select all",
+    "unselectAll": "FI Unselect all",
+    "text": {
+      "ariaLabel": "FI - Text:",
+      "placeholder": "FI - Text to search for"
+    },
+    "titles": {
+      "name": "FI - Name",
+      "party": "FI - Party"
+    }
   }
 }
