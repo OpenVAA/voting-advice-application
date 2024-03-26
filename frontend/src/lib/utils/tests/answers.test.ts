@@ -20,7 +20,8 @@ const category: QuestionCategoryProps = {
   id: 'c1',
   name: 'X',
   shortName: 'X',
-  type: 'info'
+  type: 'info',
+  order: 0
 };
 
 const QST: Record<string, QuestionProps> = {
