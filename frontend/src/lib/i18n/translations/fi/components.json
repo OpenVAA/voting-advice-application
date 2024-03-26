@@ -16,6 +16,7 @@
     "reset": "FI - Reset filters",
     "missingValue": "FI - No answer",
     "text": {
+      "ariaLabel": "FI - Text:",
       "placeholder": "FI - Text to search for"
     },
     "titles": {

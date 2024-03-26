@@ -16,6 +16,7 @@
     "reset": "Reset filters",
     "missingValue": "No answer",
     "text": {
+      "ariaLabel": "Text:",
       "placeholder": "Text to search for"
     },
     "titles": {

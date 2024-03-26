@@ -31,6 +31,7 @@ Render a text filter for entities.
 
 <form {...concatClass($$restProps, 'grid')}>
   <label class="input input-bordered flex items-center gap-2">
+    <span class="sr-only">{$t('components.entityFilters.text.ariaLabel')}</span>
     <input
       bind:value
       type="text"
