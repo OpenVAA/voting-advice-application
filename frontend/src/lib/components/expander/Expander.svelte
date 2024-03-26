@@ -22,22 +22,22 @@
   // 1. Base classes for all collapse components
   let collapseClasses = 'collapse rounded-none min-h-touch min-w-touch h-auto w-full';
   let titleClasses = 'collapse-title text-center';
-  let contentClasses = 'collapse-content';
+  let contentClasses = 'collapse-content !px-0 py-md';
   let iconClass = '';
 
   // 2. Variant-defined classes
   switch (variant) {
     case 'read-more':
-      titleClasses += ' text-primary';
+      titleClasses += ' !px-0 ext-primary';
       contentClasses += ' text-center';
       break;
     case 'category':
-      titleClasses += ' text-xl bg-base-300 font-bold';
+      titleClasses += ' !px-md text-xl bg-base-300 font-bold';
       contentClasses += ' pt-lg';
       iconPos = 'left';
       break;
     case 'question':
-      titleClasses += ' text-lg font-bold';
+      titleClasses += ' !px-0 text-lg font-bold';
       break;
   }
 
@@ -82,6 +82,7 @@
       be where the text ends.
   - `titleClass`: Custom class string to add to the `<div>` containing the title.
   - `contentClass`: Custom class string to add to the `<div>` containing the main content.
+  - `defaultExpanded`: Variable used to define if the expander is expanded or not by default.
 
   You should not try to use a variant and customize at the same time.
 
