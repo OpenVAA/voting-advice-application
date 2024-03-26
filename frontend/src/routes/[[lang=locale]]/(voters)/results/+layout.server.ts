@@ -17,7 +17,6 @@ export const load = (async ({parent}) => {
   if (settings.results.sections.includes('candidate'))
     data.candidates = await getNominatedCandidates({loadAnswers: true, locale});
   // TODO: Enable party rankings
-  if (settings.results.sections.includes('party'))
-    data.parties = await getNominatingParties({locale});
-  return data;
+  data.parties = await getNominatingParties({locale});
+  return data as App.PageData;
 }) satisfies LayoutServerLoad;
