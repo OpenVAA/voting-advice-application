@@ -1,6 +1,5 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {formatName} from '$lib/utils/internationalisation';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {candidateRankings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
@@ -24,7 +23,7 @@
 </script>
 
 {#if ranking}
-  <SingleCardPage title={formatName(ranking?.entity)}>
+  <SingleCardPage title={ranking.entity.name}>
     <Button
       slot="banner"
       class="!text-neutral"
