@@ -1,6 +1,7 @@
 import {getEntity, type MaybeWrapped, hasAnswers, type ExtractEntity} from '../../entity';
 import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
 import {ruleIsActive, matchRules, copyRules, type Rules, type Rule} from '../rules';
+import {castValue} from './castValue';
 import type {FilterOptions} from './filter.type';
 
 /**
@@ -25,37 +26,27 @@ export abstract class Filter<T extends MaybeWrapped, V> {
   /**
    * Ge the value from an entity.
    * @param entity A non-wrapped entity.
-   * @returns The value to filter on or `MISSING_VALUE`
+   * @returns The value to filter on or `MISSING_VALUE` or an array of these if `this.options.multipleValues` is true.
    */
-  getValue(entity: ExtractEntity<T>): MaybeMissing<V> {
+  getValue(entity: ExtractEntity<T>): MaybeMissing<V> | MaybeMissing<V>[] {
     let value: unknown;
-    if ('question' in this.options) {
+    if (this.options.question) {
       if (!hasAnswers(entity)) throw new Error('Entity does not have answers.');
-      value = entity.getAnswerValue(this.options.question);
-    } else if ('property' in this.options) {
+      value = entity.answers[this.options.question.id]?.value;
+    } else if (this.options.property != null) {
       value = entity[this.options.property as keyof typeof entity];
       if (this.options.subProperty && typeof value === 'object' && value !== null)
         value = value[this.options.subProperty as keyof typeof value];
     } else {
       throw new Error('No value could be gotten with the filter.');
     }
-    return value == null ? MISSING_VALUE : this.castValue(value);
-  }
-
-  /**
-   * Cast a non-missing value to the correct data type.
-   */
-  castValue(value: unknown): V {
-    switch (this.options.type) {
-      case 'string':
-        return `${value}` as V;
-      case 'number':
-        return Number(value) as V;
-      case 'boolean':
-        return Boolean(value) as V;
-      default:
-        throw new Error(`Unsupported value type: ${this.options['type']}`);
-    }
+    return this.options.multipleValues
+      ? value == null
+        ? [MISSING_VALUE]
+        : castValue<V>(value, this.options.type, true)
+      : value == null
+        ? MISSING_VALUE
+        : castValue<V>(value, this.options.type);
   }
 
   /////////////////////////////////////////////////////////////////////////////////
@@ -78,7 +69,9 @@ export abstract class Filter<T extends MaybeWrapped, V> {
    * @returns true if the entity passes the filter.
    */
   test(entity: ExtractEntity<T>) {
-    return this.testValue(this.getValue(entity));
+    return this.options.multipleValues
+      ? this.testValues(this.getValue(entity) as MaybeMissing<V>[])
+      : this.testValue(this.getValue(entity) as MaybeMissing<V>);
   }
 
   /////////////////////////////////////////////////////////////////////////////////
@@ -153,9 +146,20 @@ export abstract class Filter<T extends MaybeWrapped, V> {
   /////////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Test one value against this filter. Implement this method in subclasses.
+   * Test one value against this filter. Implement this method in subclasses. This throws by default and will only be called if `this.options.multipleValues` is `false`.
    * @param value A possibly missing value
    * @returns true if the value passes the filter.
    */
-  abstract testValue(value: MaybeMissing<V>): boolean;
+  testValue(value: MaybeMissing<V>): boolean {
+    throw new Error(`Single values are not supported by this filter: ${value}`);
+  }
+
+  /**
+   * Test multiple values against this filter. Implement this method in subclasses. This throws by default and will only be called if `this.options.multipleValues` is `true`.
+   * @param values An array of possibly missing values
+   * @returns true if the value passes the filter.
+   */
+  testValues(values: MaybeMissing<V>[]): boolean {
+    throw new Error(`Multiple values are not supported by this filter: ${values.join(', ')}`);
+  }
 }

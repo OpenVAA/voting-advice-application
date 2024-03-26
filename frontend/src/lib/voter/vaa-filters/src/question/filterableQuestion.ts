@@ -3,38 +3,36 @@ import type {Choice} from './choice';
 /**
  * Any filterable question.
  */
-export interface FilterableQuestion {
-  readonly type: keyof FilterableValue;
-}
-
-/**
- * The answer values of filterable questions.
- */
-export interface FilterableValue {
-  text: string;
-  number: number;
-  singleChoiceOrdinal: Choice['key'];
-  singleChoiceCategorical: Choice['key'];
-}
+export type FilterableQuestion = TextQuestion | NumericQuestion | ChoiceQuestion;
 
 /**
  * A question whose answers are string values.
  */
-export interface TextQuestion {
+export interface TextQuestion extends QuestionBase {
   type: 'text';
 }
 
 /**
  * A question whose answers are number values.
  */
-export interface NumericQuestion {
+export interface NumericQuestion extends QuestionBase {
   type: 'number';
 }
 
 /**
  * A question whose answers are choices with a key and a label.
  */
-export interface SingleChoiceQuestion {
-  type: 'singleChoiceOrdinal' | 'singleChoiceCategorical';
+export interface ChoiceQuestion extends QuestionBase {
+  type: 'singleChoiceOrdinal' | 'singleChoiceCategorical' | 'multipleChoiceCategorical';
   values: Choice[];
+}
+
+/**
+ * All questions types must extend this interface.
+ */
+interface QuestionBase {
+  /**
+   * The entities' answers to questions are matched using the question id
+   */
+  id: string;
 }

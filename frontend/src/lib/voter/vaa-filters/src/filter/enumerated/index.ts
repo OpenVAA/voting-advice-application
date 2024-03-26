@@ -1,3 +1,3 @@
 export * from './enumeratedFilter';
 export * from './objectFilter';
-export * from './singleChoiceQuestionFilter';
+export * from './choiceQuestionFilter';

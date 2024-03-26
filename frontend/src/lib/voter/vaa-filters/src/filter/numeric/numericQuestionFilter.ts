@@ -8,9 +8,11 @@ import {NumericFilter} from './numericFilter';
 export class NumericQuestionFilter<
   T extends MaybeWrapped<EntityWithAnswers>
 > extends NumericFilter<T> {
-  declare readonly options: {question: NumericQuestion; type: 'number'};
-
-  constructor(question: NumericQuestion) {
-    super({question, type: 'number'});
+  /**
+   * Create a numeric question filter.
+   * @param question The numeric question
+   */
+  constructor({question}: {question: NumericQuestion}) {
+    super({question});
   }
 }

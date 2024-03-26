@@ -1,28 +1,40 @@
 import {type ExtractEntity, type FilterableEntity, type MaybeWrapped} from '../../entity';
 import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
+import type {PropertyFilterOptions} from '../base';
 import {EnumeratedFilter} from './enumeratedFilter';
 
 /**
  * A filter for properties which are objects with a string-index label and key for filtering, e.g. party objects of candidates.
  * TODO: This could be refactored to merge with `SingleChoiceQuestionFilter`.
  */
-
 export class ObjectFilter<
   T extends MaybeWrapped<FilterableEntity>,
   O extends object = object
 > extends EnumeratedFilter<T, string, O> {
-  declare readonly options: {property: keyof ExtractEntity<T> & string; type: 'string'};
+  /** Options specific to the objects */
+  objOptions: ObjOptions<O>;
 
+  /**
+   * Create a filter for properties which are objects with a string-index label and key for filtering, e.g. party objects of candidates.
+   * @param property The property of the entity, e.g. candidate, in which the object is stored, e.g. party
+   * @param keyProperty The key property of the object, usually id
+   * @param labelProperty The label property of the object, usually name
+   * @param objects A list of all the possible objects, e.g. parties
+   * @param locale The locale is used for value sorting
+   */
   constructor(
-    property: keyof ExtractEntity<T> & string,
-    public readonly objOptions: {
-      keyProperty: keyof O & string;
-      labelProperty: keyof O & string;
-      objects: O[];
-    },
-    locale?: string
+    {
+      property,
+      keyProperty,
+      labelProperty,
+      objects
+    }: {
+      property: keyof ExtractEntity<T> & PropertyFilterOptions['property'];
+    } & ObjOptions<O>,
+    public locale: string
   ) {
-    super({property, subProperty: objOptions.keyProperty, type: 'string'}, locale);
+    super({property, subProperty: keyProperty, type: 'string'});
+    this.objOptions = {keyProperty, labelProperty, objects};
   }
 
   /**
@@ -30,7 +42,7 @@ export class ObjectFilter<
    */
   compareValues(a: string, b: string) {
     const label = this.objOptions.labelProperty;
-    return `${this.getOrg(a)[label]}`.localeCompare(`${this.getOrg(b)[label]}`, this.locale);
+    return `${this.getObject(a)[label]}`.localeCompare(`${this.getObject(b)[label]}`, this.locale);
   }
 
   /**
@@ -40,14 +52,14 @@ export class ObjectFilter<
     return {
       value,
       count,
-      object: value === MISSING_VALUE ? undefined : this.getOrg(value as string)
+      object: value === MISSING_VALUE ? undefined : this.getObject(value as string)
     };
   }
 
   /**
    * Utility for getting a value's associated organisation
    */
-  getOrg(value: string): O {
+  getObject(value: string): O {
     const org = this.objOptions.objects.find((o) => o[this.objOptions.keyProperty] === value);
     if (!org)
       throw new Error(
@@ -56,3 +68,9 @@ export class ObjectFilter<
     return org;
   }
 }
+
+type ObjOptions<O> = {
+  keyProperty: keyof O & string;
+  labelProperty: keyof O & string;
+  objects: O[];
+};

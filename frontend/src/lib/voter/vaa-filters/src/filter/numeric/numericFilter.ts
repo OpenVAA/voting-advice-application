@@ -1,18 +1,32 @@
 import {getEntity, type MaybeWrapped} from '../../entity';
 import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
-import {Filter} from '../base/filter';
+import {Filter, type PropertyFilterOptions, type QuestionFilterOptions} from '../base';
 
 /**
- * An abstract base class for filters that search for numberic data.
+ * A base class for numeric filters.
  * NB. This could be refactored to inherit from a common parent of this and EnumeratedFilter and allow value counts.
  */
-
 export abstract class NumericFilter<T extends MaybeWrapped> extends Filter<T, number> {
   protected _rules: {
     min?: number;
     max?: number;
     excludeMissing?: boolean;
   } = {};
+
+  /**
+   * Create a numeric filter.
+   * @param options The filter options
+   */
+  constructor(
+    options: (QuestionFilterOptions | PropertyFilterOptions) & {
+      /** The type is automatically set to number */
+      type?: 'number';
+      /** Multiple values are not allowed */
+      multipleValues?: false;
+    }
+  ) {
+    super({...options, type: 'number', multipleValues: false});
+  }
 
   /**
    * Parse all the values from the targets to find min and max values.

@@ -1,25 +1,36 @@
 import type {EntityWithAnswers, MaybeWrapped} from '../../entity';
 import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
-import {
-  KEY_PROP,
-  KEY_TYPE,
-  LABEL_PROP,
-  type Choice,
-  type SingleChoiceQuestion
-} from '../../question';
+import {KEY_PROP, LABEL_PROP, type Choice, KEY_TYPE, type ChoiceQuestion} from '../../question';
+import type {FilterOptions} from '../base';
 import {EnumeratedFilter} from './enumeratedFilter';
 
 /**
- * A filter for single choice questions.
+ * A filter for single or multiple choice questions
  */
-
-export class SingleChoiceQuestionFilter<
+export class ChoiceQuestionFilter<
   T extends MaybeWrapped<EntityWithAnswers>
 > extends EnumeratedFilter<T, Choice[typeof KEY_PROP], Choice> {
-  declare readonly options: {question: SingleChoiceQuestion; type: typeof KEY_TYPE};
+  declare readonly options: FilterOptions & {
+    question: ChoiceQuestion;
+    /** The type is always the type of the Choice key property */
+    type: typeof KEY_TYPE;
+    multipleValues?: boolean;
+  };
 
-  constructor(question: SingleChoiceQuestion, locale?: string) {
-    super({question, type: KEY_TYPE}, locale);
+  /**
+   * Create a filter for single or multiple choice questions
+   * @param question The single or multiple choice question
+   * @param locale The locale is used for value sorting
+   */
+  constructor(
+    {question}: {question: ChoiceQuestion},
+    public locale: string
+  ) {
+    super({
+      question,
+      type: KEY_TYPE,
+      multipleValues: question.type === 'multipleChoiceCategorical'
+    });
   }
 
   /**

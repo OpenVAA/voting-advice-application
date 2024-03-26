@@ -6,7 +6,7 @@ The filters in this module allow basic filtering of entities, e.g. candidates or
 
 ## TODO:
 
-- Remove objects and choices from the filtes bc they are a frontend property
+- Remove objects and choices from the filters bc they are a frontend property
 - Add global locale changing to group
 - Make canonical missing value undefined, but add isMissing utility that checks for empty arrays etc.
 - Possibly move isMissing check to filter method so it can be overriden
@@ -14,7 +14,7 @@ The filters in this module allow basic filtering of entities, e.g. candidates or
 ## Basic use
 
 1. Choose from one of the implemented filters, e.g. [`SingleChoiceQuestionFilter`](./src/filter/enumerated/singleChoiceQuestionFilter.ts), which works on questions that have an enumerated list of values of which the entity may select one.
-2. Depending on the filter, they take different constructor parameters and type generics. [`SingleChoiceQuestionFilter`](./src/filter/enumerated/singleChoiceQuestionFilter.ts) takes a `question` parameter implementing the [`SingleChoiceQuestion`](./src/question/filterableQuestion.ts) interface and an optional `locale` code, which is used in value sorting.
+2. Depending on the filter, they take different constructor parameters and type generics. [`SingleChoiceQuestionFilter`](./src/filter/enumerated/singleChoiceQuestionFilter.ts) takes a `question` parameter implementing the [`ChoiceQuestion`](./src/question/filterableQuestion.ts) interface and an optional `locale` code, which is used in value sorting.
 3. After creating the filter, you can add rules to it to filter down the results.
 4. To apply the filter, use the `apply` method.
 5. To list the value options, use the `parse` method on the available targets.
@@ -24,7 +24,7 @@ The filters in this module allow basic filtering of entities, e.g. candidates or
 // Get candidates from somewhere, CandidateProps must implement EntityWithAnswers
 const candidates: CandidateProps[] = getCandidates();
 
-// Create filter: ; genderQuestion: SingleChoiceQuestion, $locale: string
+// Create filter: ; genderQuestion: ChoiceQuestion, $locale: string
 const filter = new SingleChoiceQuestionFilter<CandidateProps>(genderQuestion, $locale);
 
 // Define event handler

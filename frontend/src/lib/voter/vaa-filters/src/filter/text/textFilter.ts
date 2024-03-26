@@ -1,23 +1,33 @@
 import {type MaybeWrapped} from '../../entity';
 import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
-import {Filter, type FilterOptions} from '../base';
+import {Filter, type PropertyFilterOptions, type QuestionFilterOptions} from '../base';
 
 /**
- * An abstract base class for filters that search for text in a text field.
+ * A base class for filters that search for text.
  */
 
-export abstract class TextFilter<T extends MaybeWrapped> extends Filter<T, string> {
+export class TextFilter<T extends MaybeWrapped> extends Filter<T, string> {
   protected _rules: {
     exclude?: string;
     include?: string;
     caseSensitive?: boolean;
   } = {};
 
+  /**
+   * Create a filter for text matching
+   * @param options The filter options
+   * @param locale The locale is used for case-insensitive matching
+   */
   constructor(
-    options: FilterOptions,
-    public locale?: string
+    options: (QuestionFilterOptions | PropertyFilterOptions) & {
+      /** The type is automatically set to number */
+      type?: 'number';
+      /** Multiple values are not allowed, although this could be changed in the future. */
+      multipleValues?: false;
+    },
+    public locale: string
   ) {
-    super(options);
+    super({...options, type: 'string', multipleValues: false});
   }
 
   get exclude() {

@@ -1,7 +1,7 @@
 import {getEntity, type MaybeWrapped} from '../../entity';
 import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
-import type {FilterOptions} from '../base/filter.type';
 import {Filter} from '../base/filter';
+import {intersect} from './intersect';
 
 /**
  * The abstract base class for filters with enumerated values that can be listed, such as questions with enumerated choices.
@@ -16,13 +16,6 @@ export abstract class EnumeratedFilter<
     include?: MaybeMissing<V>[];
   } = {};
 
-  constructor(
-    options: FilterOptions,
-    public locale?: string
-  ) {
-    super(options);
-  }
-
   /////////////////////////////////////////////////////////////////////////////////
   // VALUE HANDLING
   /////////////////////////////////////////////////////////////////////////////////
@@ -35,9 +28,19 @@ export abstract class EnumeratedFilter<
   parseValues(targets: T[]): Array<ReturnType<typeof this.processValueForDisplay>> {
     const values = new Map<MaybeMissing<V>, number>();
     targets.forEach((t) => {
-      const value = this.getValue(getEntity(t));
-      const count = values.get(value);
-      values.set(value, (count ?? 0) + 1);
+      const valueOrArray = this.getValue(getEntity(t));
+      let valueArray: MaybeMissing<V>[];
+      if (this.options.multipleValues) {
+        if (!Array.isArray(valueOrArray))
+          throw new Error(`Filter expected multiple values, but got ${valueOrArray}`);
+        valueArray = valueOrArray;
+      } else {
+        valueArray = [valueOrArray];
+      }
+      valueArray.forEach((v) => {
+        const count = values.get(v) ?? 0;
+        values.set(v, count + 1);
+      });
     });
     return this.sortValues([...values.keys()]).map((v) =>
       this.processValueForDisplay(v, values.get(v) ?? 0)
@@ -79,8 +82,19 @@ export abstract class EnumeratedFilter<
   }
 
   testValue(value: MaybeMissing<V>) {
+    if (this.options.multipleValues)
+      throw new Error(`Single values are not supported by this filter: ${value}`);
     if (this._rules.exclude?.includes(value)) return false;
     if (this._rules.include?.length && !this._rules.include.includes(value)) return false;
+    return true;
+  }
+
+  testValues(values: MaybeMissing<V>[]) {
+    if (!this.options.multipleValues)
+      throw new Error(`Multiple values are not supported by this filter: ${values.join(', ')}`);
+    const {exclude, include} = this._rules;
+    if (exclude?.length && intersect(exclude, values)) return false;
+    if (include?.length && !intersect(include, values)) return false;
     return true;
   }
 
