@@ -2,7 +2,7 @@
   import {get} from 'svelte/store';
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import TimedModal from '$lib/components/modal/TimedModal.svelte';
+  import {TimedModal} from '$lib/components/modal/timed';
   import {goto} from '$app/navigation';
   import {authContext} from '$lib/utils/authenticationStore';
   import {Button} from '$lib/components/button';
@@ -32,7 +32,7 @@
     4 -
     [
       user?.candidate?.gender,
-      user?.candidate?.motherTongues?.length > 0,
+      user?.candidate?.motherTongues?.length,
       user?.candidate?.birthday,
       user?.candidate?.manifesto
     ].filter((x) => x).length;
@@ -95,37 +95,32 @@ When set to false, the button variant is main.
   bind:timeLeft
   bind:openModal
   bind:closeModal
-  onTimeout={logout}
+  on:timeout={logout}
+  title={$t('candidateApp.logoutModal.title')}
   timerDuration={logoutModalTimer}>
   <div class="notification max-w-md text-center">
-    <h2>{$t('candidateApp.logoutModal.title')}</h2>
-    <br />
     {#if remainingInfoAmount > 0}
       <p>
         {$t('candidateApp.logoutModal.body', {remainingInfoAmount, remainingOpinionNumber})}
       </p>
-    {:else if remainingOpinionNumber > 1}
+    {:else if remainingOpinionNumber > 0}
       <p>
         {$t('candidateApp.logoutModal.bodyBasicInfoReady', {remainingOpinionNumber})}
-      </p>
-    {:else}
-      <p>
-        {$t('candidateApp.logoutModal.bodyBasicInfoReady1OpinionLeft')}
       </p>
     {/if}
     <p>
       {$t('candidateApp.logoutModal.confirmation', {timeLeft})}
     </p>
+  </div>
+  <div slot="actions" class="flex w-full flex-col items-center">
     <Button
       on:click={closeModal}
       text={$t('candidateApp.logoutModal.continueEnteringData')}
-      variant="main"
-      class="mt-40" />
-    <div class="h-4" />
+      variant="main" />
     <Button
       on:click={logout}
       text={$t('candidateApp.navbar.logOut')}
-      class="w-full hover:bg-warning hover:text-primary-content"
+      class="w-full hover:bg-warning hover:text-warning-content"
       color="warning" />
   </div>
 </TimedModal>

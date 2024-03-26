@@ -7,5 +7,21 @@
   },
   "card": {
     "errorDisplaying": "Error displaying card"
+  },
+  "entityFilters": {
+    "applyAndClose": "Close filters",
+    "filtersActive": "{numActiveFilters, plural, =1 {1 filter is} other {# filters are}} active",
+    "filterButtonLabel": "Filter results",
+    "noResults": "The filters produced no results. Try changing them.",
+    "reset": "Reset filters",
+    "missingValue": "No answer",
+    "text": {
+      "ariaLabel": "Text:",
+      "placeholder": "Text to search for"
+    },
+    "titles": {
+      "name": "Name",
+      "party": "Party"
+    }
   }
 }

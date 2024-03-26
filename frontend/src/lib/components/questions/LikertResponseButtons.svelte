@@ -91,7 +91,7 @@
    * key when in the radio group
    */
   function onKeyUp(event: KeyboardEvent, value: AnswerOption['key']) {
-    if (event.code === 'Space' || event.code === 'Enter') {
+    if (event.key === ' ' || event.key === 'Spacebar' || event.key === 'Enter') {
       selected = value;
       dispatchEvent(value);
     }

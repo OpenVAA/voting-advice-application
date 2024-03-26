@@ -1,5 +1,7 @@
 {
   "heroEmoji": "🎊",
   "candidatesShown": "{numShown} candidates",
-  "candidatesTotal": "of {numTotal}"
+  "candidatesTotal": "of {numTotal}",
+  "partiesShown": "{numShown} parties",
+  "partiesTotal": "of {numTotal}"
 }
