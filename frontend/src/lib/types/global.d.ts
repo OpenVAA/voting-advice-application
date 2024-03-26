@@ -101,6 +101,7 @@ declare global {
     firstName: string;
     id: string;
     lastName: string;
+    name: string;
     // motherTongues: string[];
     // otherLanguages: string[];
     photo?: ImageProps;
@@ -164,6 +165,7 @@ declare global {
     order?: number;
     category: QuestionCategoryProps;
     info?: string;
+    filterable?: boolean;
     fillingInfo?: string;
     type: QuestionSettingsProps['type'];
     values?: AnswerOption[];
@@ -182,7 +184,7 @@ declare global {
     id: string;
     name: string;
     shortName: string;
-    order?: number;
+    order: number;
     type: QuestionCategoryType;
     info?: string;
     color?: string;
