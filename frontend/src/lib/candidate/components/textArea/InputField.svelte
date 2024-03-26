@@ -1,5 +1,6 @@
 <script lang="ts">
   import type {TextAreaProps} from './TextArea.type';
+  import {Icon} from '$lib/components/icon';
 
   type $$Props = TextAreaProps;
 
@@ -9,6 +10,7 @@
   export let headerText: $$Props['headerText'] = undefined;
   export let disabled: $$Props['disabled'] = false;
   export let placeholder: $$Props['placeholder'] = '';
+  export let locked: $$Props['locked'] = false;
 </script>
 
 <!--
@@ -22,8 +24,9 @@ A compact text input field.
 - `id` (required): The id of the input field.
 - `text` (required): The text in the input field.
 - `headerText` (optional): The header text of the input field.
-- `disabled` (optional): If the input field is disabled.
+- `disabled` (optional): If the text area is disabled. This is used to indicate that the text area cannot be used yet.
 - `placeholder` (optional): The placeholder of the input field.
+- `locked` (optional): If the text area is locked and has a lock icon. This is used to indicate that the text can no longer be edited.
 
 ### Usage
 ```tsx
@@ -48,9 +51,14 @@ A compact text input field.
 <div class="flex w-full pr-6">
   <input
     type="text"
-    {disabled}
+    disabled={disabled && !locked}
+    readonly={locked}
     {id}
     {placeholder}
     bind:value={text}
     class="input input-sm input-ghost flex w-full justify-end pr-2 text-right disabled:border-none disabled:bg-base-100" />
 </div>
+
+{#if locked}
+  <Icon name="locked" class="my-auto flex-shrink-0 text-secondary" />
+{/if}

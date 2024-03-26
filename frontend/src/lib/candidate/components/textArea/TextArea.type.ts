@@ -30,6 +30,7 @@ export type TextAreaProps = {
   rows?: number;
   /**
    * Whether the textarea is disabled.
+   * This is used to indicate that the text area cannot be used yet.
    * @default false
    */
   disabled?: boolean;
@@ -43,6 +44,13 @@ export type TextAreaProps = {
    * @default ''
    */
   placeholder?: string;
+  /**
+   * Whether the textarea is locked. This is different from disabled and is set by the application admin.
+   * Locked textareas take precedence over disabled textareas and their appearance is different.
+   * Locked textareas are used to indicate that the user can no longer edit the text.
+   * @default false
+   */
+  locked?: boolean;
 };
 
 export type MultilangTextAreaProps = {
