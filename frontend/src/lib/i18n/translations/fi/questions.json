@@ -1,6 +1,6 @@
 {
   "bothHaventAnswered": "FI - Neither you nor {{candidate}} has answered this question",
-  "candidateHasntAnswered": "FI - {{candidate}} hasn’t answered this question",
+  "entityHasntAnswered": "FI - {{candidate}} hasn’t answered this question",
   "heroEmoji": "💬",
   "jumpToResults": "FI - Jump to results",
   "nextQuestion": "FI - Next question",

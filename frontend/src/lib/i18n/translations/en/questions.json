@@ -1,6 +1,6 @@
 {
   "bothHaventAnswered": "Neither you nor {entity} has answered this question",
-  "candidateHasntAnswered": "{entity} hasn’t answered this question",
+  "entityHasntAnswered": "{entity} hasn’t answered this question",
   "heroEmoji": "💬",
   "jumpToResults": "Jump to results",
   "nextQuestion": "Next question",
