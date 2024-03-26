@@ -16,6 +16,7 @@
   export let disabled: $$Props['disabled'] = false;
   export let compact: $$Props['compact'] = false;
   export let placeholder: $$Props['placeholder'] = '';
+  export let locked: $$Props['locked'] = false;
 
   export const deleteLocal = () => {
     if (!localStorageId) {
@@ -25,6 +26,11 @@
       localStorage.removeItem(localStorageId + '-' + locale);
     }
   };
+
+  // Locked indicates that the text can no longer be edited
+  // but still allows the user to view entered text including translations whereas
+  // disabled is used to indicate that the text area cannot be used yet
+  $: disabled = disabled && !locked; // Locked takes precedence over disabled
 
   let translationsShown = false;
   $: translationsShown = translationsShown && !disabled; // Hide translations if disabled
@@ -49,9 +55,10 @@ If all languages are shown, the header is shown for each language.
 - `localStorageId` (optional): The local storage id of the text area. If provided, the text is saved to local storage periodically.
 - `previouslySavedMultilang` (optional): The previously saved text in multiple languages. Is shown if there is no locally saved text.
 - `rows` (optional): The number of rows of the text area.
-- `disabled` (optional): If the text area is disabled.
+- `disabled` (optional): If the text area is disabled. This is used to indicate that the text area cannot be used yet.
 - `compact` (optional): If the text area is a multiline text area or a input field.
 - `placeholder` (optional): The placeholder of the text area. Shown for non-current locale text areas.
+- `locked` (optional): If the text area is locked and has a lock icon. This is used to indicate that the text can no longer be edited.
 
 ### Bindable functions
 - `deleteLocal`: Deletes the local storage for the text area. Used to clear the local storage from a parent component.
@@ -98,7 +105,8 @@ Input field variant
             bind:text={multilangText[$currentLocale]}
             id={id + '-' + $currentLocale}
             {headerText}
-            {disabled} />
+            {disabled}
+            {locked} />
         {:else}
           <TextArea
             bind:text={multilangText[$currentLocale]}
@@ -107,7 +115,8 @@ Input field variant
             localStorageId={localStorageId + '-' + $currentLocale}
             previouslySaved={previouslySavedMultilang?.[$currentLocale]}
             {rows}
-            {disabled} />
+            {disabled}
+            {locked} />
         {/if}
       </Field>
 
@@ -119,8 +128,9 @@ Input field variant
                 id={id + '-' + locale}
                 bind:text={multilangText[locale]}
                 headerText={$t(`lang.${locale}`)}
+                {placeholder}
                 {disabled}
-                {placeholder} />
+                {locked} />
             {:else}
               <TextArea
                 id={id + '-' + locale}
@@ -130,7 +140,8 @@ Input field variant
                 previouslySaved={previouslySavedMultilang?.[locale]}
                 {rows}
                 {disabled}
-                {placeholder} />
+                {placeholder}
+                {locked} />
             {/if}
           </Field>
         {/each}
@@ -139,7 +150,7 @@ Input field variant
   </FieldGroup>
 
   {#if translationsShown}
-    <p class="text-sm">{$t('candidateApp.textarea.info')}</p>
+    <p class="px-6 text-sm">{$t('candidateApp.textarea.info')}</p>
   {/if}
 
   <!-- Toggle whether translations are shown -->
