@@ -1,6 +1,5 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {formatName} from '$lib/utils/internationalisation';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
   import {SingleCardPage} from '$lib/templates/singleCardPage';
@@ -31,9 +30,7 @@
           <ul>
             {#each party.nominatedCandidates as candidate}
               <li>
-                <a href={$getRoute({route: Route.Candidate, id: candidate.id})}>
-                  {formatName(candidate)}
-                </a>
+                <a href={$getRoute({route: Route.Candidate, id: candidate.id})}>{candidate.name}</a>
               </li>
             {/each}
           </ul>
