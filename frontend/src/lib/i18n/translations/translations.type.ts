@@ -10,6 +10,7 @@ export type TranslationsPayload = Partial<{
   username: string;
   numCandidates: number;
   numCategories: number;
+  numActiveFilters: number;
   numShown: number;
   numTotal: number;
   numQuestions: number;
