@@ -2,6 +2,7 @@ import {error} from '@sveltejs/kit';
 import {browser} from '$app/environment';
 import {locale as currentLocale, locales} from '$lib/i18n';
 import {constants} from '$lib/utils/constants';
+import {formatName} from '$lib/utils/internationalisation';
 import {matchLocale} from '$lib/i18n/utils/matchLocale';
 import {translate} from '$lib/i18n/utils/translate';
 import {ensureColors} from './utils/color';
@@ -158,12 +159,14 @@ export const getNominatedCandidates = ({
           500,
           `Could not retrieve result for nominating candidates: party for candidate with id '${id}' not found`
         );
+      const {firstName, lastName} = attr;
       const props: CandidateProps = {
+        id,
         electionRound: nom.attributes.electionRound,
         electionSymbol: nom.attributes.electionSymbol,
-        firstName: attr.firstName,
-        id,
-        lastName: attr.lastName,
+        firstName,
+        lastName,
+        name: formatName({firstName, lastName}),
         party: parseParty(nom.attributes.party.data, locale),
         answers: loadAnswers && attr.answers?.data ? parseAnswers(attr.answers.data, locale) : {}
       };
@@ -340,6 +343,7 @@ export const getQuestions = ({
           info: translate(attr.info, locale),
           shortName: translate(attr.shortName, locale),
           category: catProps,
+          filterable: attr.filterable ?? false,
           type: settings.type
         };
         if ('values' in settings)
@@ -358,7 +362,7 @@ export const getQuestions = ({
     return questions.sort((a, b) => {
       const catCmp = a.category.order - b.category.order;
       if (catCmp !== 0) return catCmp;
-      return a.order - b.order;
+      return (a.order ?? 0) - (b.order ?? 0);
     });
   });
 };

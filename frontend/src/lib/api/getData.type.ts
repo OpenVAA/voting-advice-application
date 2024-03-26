@@ -213,6 +213,7 @@ export interface StrapiQuestionData {
     shortName: LocalizedString;
     info: LocalizedString;
     fillingInfo: LocalizedString;
+    filterable: boolean | null;
     order: number | null;
     category: {
       data: StrapiQuestionCategoryData;
@@ -229,7 +230,7 @@ export interface StrapiQuestionCategoryData {
     name: LocalizedString;
     shortName: LocalizedString;
     info: LocalizedString;
-    order: number;
+    order: number | null;
     color: string;
     colorDark: string;
     type: QuestionCategoryType;
