@@ -5,7 +5,6 @@
   import {Avatar} from '$lib/components/avatar';
   import {Card} from '$lib/components/shared/card/index';
   import {ElectionSymbol} from '$lib/components/electionSymbol';
-  import {formatName} from '$lib/utils/internationalisation';
   import {MatchScore} from '$lib/components/matchScore';
   import {PartyTag} from '$lib/components/partyTag';
   import {SubMatches} from '$lib/components/subMatches';
@@ -32,7 +31,7 @@
     }
 
     if (isCandidate(entity)) {
-      name = formatName(entity);
+      name = entity.name;
       image = entity.photo;
       electionSymbol = entity.electionSymbol;
       nominatingParty = entity.party;
