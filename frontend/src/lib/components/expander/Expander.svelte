@@ -22,22 +22,22 @@
   // 1. Base classes for all collapse components
   let collapseClasses = 'collapse rounded-none min-h-touch min-w-touch h-auto w-full';
   let titleClasses = 'collapse-title text-center';
-  let contentClasses = 'collapse-content';
+  let contentClasses = 'collapse-content !px-0 py-md';
   let iconClass = '';
 
   // 2. Variant-defined classes
   switch (variant) {
     case 'read-more':
-      titleClasses += ' text-primary';
+      titleClasses += ' !px-0 ext-primary';
       contentClasses += ' text-center';
       break;
     case 'category':
-      titleClasses += ' text-xl bg-base-300 font-bold';
+      titleClasses += ' !px-md text-xl bg-base-300 font-bold';
       contentClasses += ' pt-lg';
       iconPos = 'left';
       break;
     case 'question':
-      titleClasses += ' text-lg font-bold';
+      titleClasses += ' !px-0 text-lg font-bold';
       break;
     case 'question-help':
       titleClasses += ' text-lg font-bold flex flex-row justify-between !text-left';
@@ -79,14 +79,15 @@ A component for expanders that contain a title and some content. Use the
 
 ### Properties
 
-- `title`: Title used for the expander. This is also used as the aria-label for 
-  the checkbox on which the expander operates on.
-- `variant`: The type for the expander.
-- `iconColor`: The color for the icon. Default color is primary.
-- `iconPos`: The position for the icon. Default is text, which means the icon will
-    be where the text ends.
-- `titleClass`: Custom class string to add to the `<div>` containing the title.
-- `contentClass`: Custom class string to add to the `<div>` containing the main content.
+  - `title`: Title used for the expander. This is also used as the aria-label for 
+    the checkbox on which the expander operates on.
+  - `variant`: The type for the expander.
+  - `iconColor`: The color for the icon. Default color is primary.
+  - `iconPos`: The position for the icon. Default is text, which means the icon will
+      be where the text ends.
+  - `titleClass`: Custom class string to add to the `<div>` containing the title.
+  - `contentClass`: Custom class string to add to the `<div>` containing the main content.
+  - `defaultExpanded`: Variable used to define if the expander is expanded or not by default.
 
 You should not try to use a variant and customize at the same time.
 
