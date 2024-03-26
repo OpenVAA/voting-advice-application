@@ -40,12 +40,15 @@ export function isLocalized(value: unknown): value is LocalizedString {
  * @param locale Optional locale to use for translating localized strings
  * @returns The Answers as AnswerProps
  */
-export function parseAnswers(answers: StrapiAnswerData[], locale?: string): AnswerProps[] {
-  return answers.map((a) => ({
-    questionId: `${a.attributes.question.data.id}`,
-    answer: isLocalized(a.attributes.value)
-      ? translate(a.attributes.value, locale)
-      : a.attributes.value,
-    openAnswer: translate(a.attributes.openAnswer, locale)
-  }));
+export function parseAnswers(answers: StrapiAnswerData[], locale?: string): AnswerDict {
+  const dict = {} as AnswerDict;
+  answers.forEach((a) => {
+    dict[`${a.attributes.question.data.id}`] = {
+      value: isLocalized(a.attributes.value)
+        ? translate(a.attributes.value, locale)
+        : a.attributes.value,
+      openAnswer: translate(a.attributes.openAnswer, locale)
+    };
+  });
+  return dict;
 }

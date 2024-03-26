@@ -4,7 +4,12 @@
   import {t} from '$lib/i18n';
   import {logDebugError} from '$lib/utils/logger';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {answeredQuestions, resultsAvailable} from '$lib/utils/stores';
+  import {
+    answeredQuestions,
+    deleteVoterAnswer,
+    resultsAvailable,
+    setVoterAnswer
+  } from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {CategoryTag} from '$lib/components/categoryTag';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
@@ -43,12 +48,12 @@
   // Set this in a separate reactive block so that it tracks changes in
   // $answeredQuestions and question
   $: if (question) {
-    selectedKey = $answeredQuestions[question.id] as AnswerOption['key'] | undefined;
+    selectedKey = $answeredQuestions[question.id]?.value as AnswerOption['key'] | undefined;
   }
 
   /** Save voter answer in a store and go to next question */
   function answerQuestion({detail}: CustomEvent<LikertResponseButtonsEventDetail>) {
-    $answeredQuestions[detail.id] = detail.value;
+    setVoterAnswer(detail.id, detail.value);
     logDebugError(
       `Answered question ${detail.id} with value ${detail.value}. Store length: ${
         Object.values($answeredQuestions).length
@@ -60,9 +65,7 @@
   /** Delete the voter's answer */
   function deleteAnswer() {
     if (!question) return;
-    delete $answeredQuestions[question.id];
-    // Reactive update is only triggered through assignment
-    $answeredQuestions = $answeredQuestions;
+    deleteVoterAnswer(question.id);
   }
 
   /** Go to the next question or results if this was the last question */
