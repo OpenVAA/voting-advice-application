@@ -84,13 +84,11 @@
 
               <div class="pt-10">
                 <!-- This gives empty form label error from Wave Extension for every empty dot, but fix should come from LikertResponseButton -->
-                <a href={$getRoute({route: Route.CandAppQuestions, id: question.id})}>
-                  <LikertResponseButtons
-                    name={question.id}
-                    mode="display"
-                    options={question.values}
-                    selectedKey={answers[question.id].key} />
-                </a>
+                <LikertResponseButtons
+                  name={question.id}
+                  mode="display"
+                  options={question.values}
+                  selectedKey={answers[question.id].key} />
 
                 {#if translate(answers[question.id].openAnswer) !== ''}
                   <div class="pt-10">
@@ -98,6 +96,14 @@
                       >{translate(answers[question.id].openAnswer)}</QuestionOpenAnswer>
                   </div>
                 {/if}
+
+                <div class="flex justify-center py-20">
+                  <Button
+                    text={$t('candidateApp.allQuestions.editYourAnswer')}
+                    href={$getRoute({route: Route.CandAppQuestions, id: question.id})}
+                    icon="missingIcon"
+                    iconPos="left"></Button>
+                </div>
               </div>
               {#if categoryQuestions[categoryQuestions.length - 1] !== question}
                 <hr class="mt-40" />
@@ -138,7 +144,10 @@
   {/each}
 
   <div class="flex w-full justify-center py-40">
-    <Button text={$t('candidateApp.allQuestions.return')} variant="main" />
+    <Button
+      text={$t('candidateApp.allQuestions.return')}
+      variant="main"
+      href={$getRoute({route: Route.CandAppHome})} />
   </div>
 </BasicPage>
 
