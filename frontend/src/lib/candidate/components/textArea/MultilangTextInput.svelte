@@ -103,14 +103,14 @@ Input field variant
         {#if compact}
           <InputField
             bind:text={multilangText[$currentLocale]}
-            id={id + '-' + $currentLocale}
+            id={translationsShown ? id + '-' + $currentLocale : id}
             {headerText}
             {disabled}
             {locked} />
         {:else}
           <TextArea
             bind:text={multilangText[$currentLocale]}
-            id={id + '-' + $currentLocale}
+            id={translationsShown ? id + '-' + $currentLocale : id}
             headerText={translationsShown ? $t(`lang.${$currentLocale}`) : undefined}
             localStorageId={localStorageId + '-' + $currentLocale}
             previouslySaved={previouslySavedMultilang?.[$currentLocale]}

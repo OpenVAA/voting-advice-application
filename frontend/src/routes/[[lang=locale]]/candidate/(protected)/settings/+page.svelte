@@ -171,12 +171,16 @@
     on:submit|preventDefault={onButtonPress}>
     <div class="w-full">
       <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
-        <div class="flex items-center justify-between bg-base-100 px-4">
+        <div class="flex items-center justify-between bg-base-100">
           <label for="currentPassword" class={labelClass}>
             {$t('candidateApp.settings.currentPassword')}
           </label>
           <div class="w-6/12 text-right text-secondary">
-            <PasswordField bind:password={currentPassword} autocomplete="" />
+            <PasswordField
+              id="currentPassword"
+              bind:password={currentPassword}
+              externalLabel={true}
+              autocomplete="current-password" />
           </div>
         </div>
       </div>
@@ -189,12 +193,16 @@
 
     <div class="w-full">
       <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
-        <div class="flex items-center justify-between bg-base-100 px-4">
+        <div class="flex items-center justify-between bg-base-100">
           <label for="newPassword" class={labelClass}>
             {$t('candidateApp.settings.newPassword')}
           </label>
           <div class="w-6/12 text-right text-secondary">
-            <PasswordField bind:password autocomplete="new-password" />
+            <PasswordField
+              id="newPassword"
+              bind:password
+              externalLabel={true}
+              autocomplete="new-password" />
           </div>
         </div>
       </div>
@@ -202,12 +210,16 @@
 
     <div class="w-full">
       <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
-        <div class="flex items-center justify-between bg-base-100 px-4">
+        <div class="flex items-center justify-between bg-base-100">
           <label for="newPasswordConfirmation" class={labelClass}>
             {$t('candidateApp.settings.newPasswordConfirmation')}
           </label>
           <div class="w-6/12 text-right text-secondary">
-            <PasswordField bind:password={passwordConfirmation} autocomplete="new-password" />
+            <PasswordField
+              id="newPasswordConfirmation"
+              bind:password={passwordConfirmation}
+              externalLabel={true}
+              autocomplete="new-password" />
           </div>
         </div>
       </div>
