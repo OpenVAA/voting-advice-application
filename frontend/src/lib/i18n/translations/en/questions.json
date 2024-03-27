@@ -21,5 +21,6 @@
   "skip": "Skip",
   "startAnswering": "Start answering",
   "youHaventAnswered": "You haven't answered this question",
-  "yourAnswer": "You"
+  "yourAnswer": "You",
+  "cannotEditWarning": "Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data."
 }
