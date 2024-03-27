@@ -1,12 +1,11 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {Button} from '$lib/components/button';
+  export let id = 'password';
   export let password = '';
   export let autocomplete = '';
-  export let id = 'password';
-  //label uses default value for id even if it is changed when creating a passwordField, but it seems to work when using
-  //a reactive variable, otherwise all passwordfields share the label which causes WAVE error with multiple passwordFields.
-  $: fieldId = id;
+  export let externalLabel = false;
+
   let passwordRevealed = false;
   /** variable used to refer to the input box in code to change its type*/
   let inputbox: HTMLInputElement;
@@ -23,20 +22,22 @@ PasswordField is an input box for password that comes with a button
 to reveal and hide the password
 
 ### Properties
-
-- `autoComplete` : variable used for field's password autocomplete value
-- `password` : variable the password input box uses for its value
+- `id` : id for the input
+- `password` : value of the password, bindable
+- `autoComplete` : autocomplete value for password input
+- `externalLabel` : whether the label is outside the component and should not be rendered inside
 
 ### Usage
-
 ```tsx
-
 <PasswordField bind:password={passwordOfContext} autocomplete="autocomplete" />
 ```
 -->
 
 <div class="relative">
-  <label for={fieldId} class="hidden">{$t('candidate.password')}</label>
+  {#if !externalLabel}
+    <label for={id} class="hidden">{$t('candidate.password')}</label>
+  {/if}
+
   <input
     {id}
     type="password"
