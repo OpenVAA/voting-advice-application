@@ -4,6 +4,8 @@
   export let password = '';
   export let autocomplete = '';
   export let id = 'password';
+  //label uses default value for id even if it is changed when creating a passwordField, but it seems to work when using
+  //a reactive variable, otherwise all passwordfields share the label which causes WAVE error with multiple passwordFields.
   $: fieldId = id;
   let passwordRevealed = false;
   /** variable used to refer to the input box in code to change its type*/
