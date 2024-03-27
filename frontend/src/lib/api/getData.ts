@@ -310,6 +310,7 @@ export const getQuestions = ({
 } = {}): Promise<QuestionProps[]> => {
   const params = new URLSearchParams({
     'populate[questions][populate][questionType]': 'true',
+    'populate[questions][populate][category][populate][election]': 'true',
     sort: 'order:asc'
   });
   categoryType ??= 'opinion';
@@ -328,7 +329,8 @@ export const getQuestions = ({
           info: translate(attr.info, locale),
           shortName: translate(attr.shortName, locale),
           category: translate(cat.attributes.name, locale),
-          type: settings.type
+          type: settings.type,
+          editable: attr.category.data.attributes.election.data.attributes.canEditQuestions
         };
         if ('values' in settings)
           props.values = settings.values.map(({key, label}) => ({

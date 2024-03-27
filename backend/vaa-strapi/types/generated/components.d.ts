@@ -29,7 +29,7 @@ export interface LabelsActionLabels extends Schema.Component {
     previous: Attribute.String & Attribute.Required & Attribute.DefaultTo<'Previous'>;
     answerCategoryQuestions: Attribute.String &
       Attribute.Required &
-      Attribute.DefaultTo<'Answer {{0}} Questions'>;
+      Attribute.DefaultTo<'Answer {numQuestions} Questions'>;
     readMore: Attribute.String & Attribute.Required & Attribute.DefaultTo<'Read More'>;
     skip: Attribute.String & Attribute.Required & Attribute.DefaultTo<'Skip'>;
     filter: Attribute.String & Attribute.Required & Attribute.DefaultTo<'Filter Results'>;
@@ -56,9 +56,11 @@ export interface LabelsViewTexts extends Schema.Component {
     toolTitle: Attribute.String & Attribute.Required & Attribute.DefaultTo<'Election Compass'>;
     toolDescription: Attribute.Text &
       Attribute.Required &
-      Attribute.DefaultTo<'With this application you can compare candidates in the elections on {{0}} based on their opinions, parties and other data.'>;
-    publishedBy: Attribute.String & Attribute.Required & Attribute.DefaultTo<'Published by {{0}}'>;
-    madeWith: Attribute.String & Attribute.Required & Attribute.DefaultTo<'Made with {{0}}'>;
+      Attribute.DefaultTo<'With this application you can compare candidates in the elections on {electionDate, date, ::yyyyMMdd} based on their opinions, parties and other data.'>;
+    publishedBy: Attribute.String &
+      Attribute.Required &
+      Attribute.DefaultTo<'Published by {publisher}'>;
+    madeWith: Attribute.String & Attribute.Required & Attribute.DefaultTo<'Made with '>;
     selectMunicipalityTitle: Attribute.String &
       Attribute.Required &
       Attribute.DefaultTo<'Select Your Municipality'>;
@@ -67,13 +69,13 @@ export interface LabelsViewTexts extends Schema.Component {
       Attribute.DefaultTo<'In these elections, you can only vote for candidates in your own constituency. Select your municipality and the app will find it for you.'>;
     yourConstituency: Attribute.String &
       Attribute.Required &
-      Attribute.DefaultTo<'Your constituency is {{0}}'>;
+      Attribute.DefaultTo<'Your constituency is {constituency}'>;
     yourOpinionsTitle: Attribute.String &
       Attribute.Required &
       Attribute.DefaultTo<'Tell Your Opinions'>;
     yourOpinionsDescription: Attribute.Text &
       Attribute.Required &
-      Attribute.DefaultTo<"Next, the app will ask your opinions on {{0}} statements about political issues and values, which the candidates have also answered. After you've answered them, the app will find the candidates that best agree with your opinions. The statements are grouped into {{1}} categories. You can answer all of them or only select those you find important.">;
+      Attribute.DefaultTo<'Next, the app will ask your opinions on {numStatements} statements about political issues and values, which the candidates have also answered. After you\u2019ve answered them, the app will find the candidates that best agree with your opinions. The statements are grouped into {numCategories} categories. You can answer all of them or only select those you find important.'>;
     questionsTip: Attribute.String &
       Attribute.DefaultTo<'Tip: If you don\u2019t care about a single issue or a category of them, you can skip it later.'>;
     yourCandidatesTitle: Attribute.String &
@@ -81,12 +83,12 @@ export interface LabelsViewTexts extends Schema.Component {
       Attribute.DefaultTo<'Your Candidates'>;
     yourCandidatesDescription: Attribute.Text &
       Attribute.Required &
-      Attribute.DefaultTo<'These are the candidates in your constituency. The best matches are first on the list. You can also see which {{0}} best match your opinions. To narrow down the results, you can also use {{1}}.'>;
+      Attribute.DefaultTo<'These are the candidates in your constituency. The best matches are first on the list. You can also see which {numCandidates} best match your opinions. To narrow down the results, you can also use {filters}.'>;
     yourPartiesTitle: Attribute.String & Attribute.Required & Attribute.DefaultTo<'Your Parties'>;
     yourPartiesDescription: Attribute.Text &
       Attribute.Required &
-      Attribute.DefaultTo<'These are the parties in your constituency. The best matches are first on the list. You can also see which individual {{0}} best match your opinions. To narrow down the results, you can also use {{1}}.'>;
-    appTitle: Attribute.String & Attribute.DefaultTo<'Election App'>;
+      Attribute.DefaultTo<'These are the parties in your constituency. The best matches are first on the list. You can also see which individual {partiesTerm} best match your opinions. To narrow down the results, you can also use {filters}.'>;
+    appTitle: Attribute.String & Attribute.Required & Attribute.DefaultTo<'Election App'>;
   };
 }
 

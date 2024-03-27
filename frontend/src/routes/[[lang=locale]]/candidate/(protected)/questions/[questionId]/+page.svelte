@@ -10,7 +10,7 @@
   import {MultilangTextInput} from '$candidate/components/textArea';
   import {getContext} from 'svelte';
   import {type CandidateContext} from '$lib/utils/candidateStore';
-
+  import Warning from '$lib/components/warning/Warning.svelte';
   const {answersStore} = getContext<CandidateContext>('candidate');
   $: answers = $answersStore;
 
@@ -186,6 +186,9 @@
 {#if currentQuestion}
   {#key currentQuestion}
     <BasicPage title={currentQuestion.text} class="bg-base-200">
+      <Warning display={!currentQuestion.editable} slot="note"
+        >{$t('questions.cannotEditWarning')}</Warning>
+
       <HeadingGroup slot="heading" id="hgroup-{currentQuestion.id}">
         {#if currentQuestion.category && currentQuestion.category !== ''}
           <!-- TODO: Set color based on category -->
@@ -204,6 +207,7 @@
             aria-labelledby="hgroup-{currentQuestion.id}"
             name={currentQuestion.id}
             options={currentQuestion.values}
+            mode={currentQuestion.editable ? 'answer' : 'display'}
             {selectedKey}
             on:change={saveLikertToLocal} />
         {:else}
@@ -216,6 +220,7 @@
           localStorageId={openAnswerLocal}
           previouslySavedMultilang={answer?.openAnswer ?? undefined}
           disabled={!selectedKey}
+          locked={!currentQuestion.editable}
           placeholder="—"
           bind:multilangText={openAnswer}
           bind:this={openAnswerTextArea} />

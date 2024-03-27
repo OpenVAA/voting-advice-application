@@ -67,6 +67,7 @@ export interface StrapiElectionData {
   locale: string;
   attributes: {
     electionDate: Date;
+    canEditQuestions: boolean;
     electionStartDate: Date;
     name: LocalizedString;
     shortName: LocalizedString;
@@ -239,8 +240,8 @@ export interface StrapiQuestionCategoryData {
     info: LocalizedString;
     order: number;
     type: QuestionCategoryType;
-    elections: {
-      data: StrapiElectionData[];
+    election: {
+      data: StrapiElectionData;
     };
     questions: {
       data: StrapiQuestionData[];

@@ -4,7 +4,7 @@ import RegistrationEmailButton from './RegistrationEmailButton';
 export default function RegistrationEmailToOne() {
   const {initialData} = useCMEditViewDataManager();
   // Only show this button if user hasn't registrated
-  if (initialData.user.length > 0) {
+  if (initialData.user?.length > 0) {
     return null;
   }
 
