@@ -16,11 +16,9 @@
   export let userName: string;
   export let registrationCode: string;
   export let email: string;
-
   let password = '';
   let passwordConfirmation = '';
-  const {emailOfNewUserStore} = getContext<CandidateContext>('candidate');
-  const {userStore} = getContext<CandidateContext>('candidate');
+  const {emailOfNewUserStore, userStore, logOut} = getContext<CandidateContext>('candidate');
   $: loggedIn = $userStore;
 
   let validPassword = false;
@@ -49,7 +47,9 @@
       errorMessage = $t('candidateApp.setPassword.registrationError');
       return;
     }
-
+    if (loggedIn) {
+      await logOut();
+    }
     emailOfNewUserStore.set(email);
     errorMessage = '';
     goto($getRoute(Route.CandAppHome));
