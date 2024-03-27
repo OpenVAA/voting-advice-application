@@ -10,6 +10,7 @@
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {FrontPage} from '$lib/templates/frontPage';
   import type {CandidateContext} from '$lib/utils/candidateStore';
+  import {beforeNavigate} from '$app/navigation';
 
   const {userStore, logIn, emailOfNewUserStore} = getContext<CandidateContext>('candidate');
 
@@ -22,6 +23,8 @@
   userStore.subscribe((user) => {
     appLanguageCode = user?.candidate?.appLanguage?.localisationCode;
   });
+
+  beforeNavigate(() => emailOfNewUserStore.set(null));
 
   const onLogin = async () => {
     if (!(await logIn(email, password))) {

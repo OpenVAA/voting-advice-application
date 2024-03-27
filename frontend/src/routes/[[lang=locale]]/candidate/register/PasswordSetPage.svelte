@@ -16,11 +16,9 @@
   export let userName: string;
   export let registrationCode: string;
   export let email: string;
-  const {logOut} = getContext<CandidateContext>('candidate');
   let password = '';
   let passwordConfirmation = '';
-  const {emailOfNewUserStore} = getContext<CandidateContext>('candidate');
-  const {userStore} = getContext<CandidateContext>('candidate');
+  const {emailOfNewUserStore, userStore, logOut} = getContext<CandidateContext>('candidate');
   $: loggedIn = $userStore;
 
   let validPassword = false;
@@ -50,7 +48,7 @@
       return;
     }
     if (loggedIn) {
-      logOut();
+      await logOut();
     }
     emailOfNewUserStore.set(email);
     errorMessage = '';
