@@ -27,6 +27,8 @@ const defaultPermissions = [
   {action: 'api::constituency.constituency.findOne', roleType: 'authenticated'},
   {action: 'api::language.language.find', roleType: 'authenticated'},
   {action: 'api::language.language.findOne', roleType: 'authenticated'},
+  {action: 'api::election.election.find', roleType: 'authenticated'},
+  {action: 'api::election.election.findOne', roleType: 'authenticated'},
   {action: 'api::gender.gender.find', roleType: 'authenticated'},
   {action: 'api::gender.gender.findOne', roleType: 'authenticated'},
   {action: 'api::question.question.find', roleType: 'authenticated'},

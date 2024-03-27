@@ -11,7 +11,7 @@
   type $$Props = BasicPageProps;
 
   export let title: $$Props['title'];
-  export let noteClass: $$Props['noteClass'] = 'text-secondary text-center';
+  export let noteClass: $$Props['noteClass'] = 'text-secondary text-center max-w-xl';
   export let noteRole: $$Props['noteRole'] = 'note';
   export let primaryActionsLabel: $$Props['primaryActionsLabel'] = undefined;
 

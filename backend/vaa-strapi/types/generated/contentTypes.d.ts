@@ -738,7 +738,7 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
     birthday: Attribute.String;
     unaffiliated: Attribute.Boolean & Attribute.Required;
     photo: Attribute.Media;
-    manifesto: Attribute.Text;
+    manifesto: Attribute.JSON;
     motherTongues: Attribute.Relation<
       'api::candidate.candidate',
       'oneToMany',
@@ -763,6 +763,11 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
       'api::candidate-attribute.candidate-attribute'
     >;
     gender: Attribute.Relation<'api::candidate.candidate', 'oneToOne', 'api::gender.gender'>;
+    appLanguage: Attribute.Relation<
+      'api::candidate.candidate',
+      'oneToOne',
+      'api::language.language'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -883,15 +888,16 @@ export interface ApiElectionElection extends Schema.CollectionType {
       'oneToMany',
       'api::nomination.nomination'
     >;
-    question_categories: Attribute.Relation<
-      'api::election.election',
-      'manyToMany',
-      'api::question-category.question-category'
-    >;
     name: Attribute.JSON;
     shortName: Attribute.JSON;
     organizer: Attribute.JSON;
     info: Attribute.JSON;
+    question_categories: Attribute.Relation<
+      'api::election.election',
+      'oneToMany',
+      'api::question-category.question-category'
+    >;
+    canEditQuestions: Attribute.Boolean;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1139,9 +1145,9 @@ export interface ApiQuestionCategoryQuestionCategory extends Schema.CollectionTy
         },
         number
       >;
-    elections: Attribute.Relation<
+    election: Attribute.Relation<
       'api::question-category.question-category',
-      'manyToMany',
+      'manyToOne',
       'api::election.election'
     >;
     name: Attribute.JSON;

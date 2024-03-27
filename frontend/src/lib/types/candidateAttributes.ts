@@ -99,4 +99,5 @@ export interface Answer {
 export interface Question {
   id: string; // Id of the question in the database
   text: LocalizedString; //text of the question
+  editable: boolean;
 }

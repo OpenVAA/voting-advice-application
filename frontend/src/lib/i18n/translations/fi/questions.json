@@ -21,5 +21,6 @@
   "skip": "FI - Skip",
   "startAnswering": "FI - Start answering",
   "youHaventAnswered": "FI - You haven't answered this question",
-  "yourAnswer": "FI - You"
+  "yourAnswer": "FI - You",
+  "cannotEditWarning": "Vastausten muokkaaminen ei ole enää mahdollista, mutta voit kuitenkin tarkastella niitä. Jos tiedoissa on jotain väärin, ota yhteys järjestelmän ylläpitäjään."
 }
