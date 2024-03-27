@@ -21,7 +21,9 @@ export interface CandidateContext {
   loadQuestionData: () => Promise<void>;
   // Custom util
   basicInfoFilledStore: Writable<boolean | undefined>;
-  nofUnansweredQuestionsStore: Writable<number | undefined>;
+  nofUnasweredBasicInfoQuestionsStore: Writable<number | undefined>;
+  opinionQuestionsFilledStore: Writable<boolean | undefined>;
+  nofUnansweredOpinionQuestionsStore: Writable<number | undefined>;
 }
 
 const userStore = writable<User | null>(null);
@@ -30,7 +32,9 @@ const emailOfNewUserStore = writable<string | undefined>(undefined);
 const answersStore = writable<Record<string, Answer> | undefined>(undefined);
 const questionsStore = writable<Record<string, Question> | undefined>(undefined);
 const basicInfoFilledStore = writable<boolean | undefined>(undefined);
-const nofUnansweredQuestionsStore = writable<number | undefined>(undefined);
+const nofUnansweredBasicInfoQuestionsStore = writable<number | undefined>(undefined);
+const opinionQuestionsFilledStore = writable<boolean | undefined>(undefined);
+const nofUnansweredOpinionQuestionsStore = writable<number | undefined>(undefined);
 
 const logIn = async (email: string, password: string) => {
   const response = await authenticate(email, password);
@@ -94,5 +98,7 @@ export const candidateContext: CandidateContext = {
   loadQuestionData,
   loadLocalStorage,
   basicInfoFilledStore,
-  nofUnansweredQuestionsStore
+  nofUnansweredOpinionQuestionsStore: nofUnansweredOpinionQuestionsStore,
+  opinionQuestionsFilledStore,
+  nofUnasweredBasicInfoQuestionsStore: nofUnansweredBasicInfoQuestionsStore
 };

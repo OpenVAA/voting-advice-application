@@ -4,9 +4,18 @@
   type $$Props = infoBadgeProps;
   export let text: $$Props['text'] = '';
   export let classes: $$Props['classes'] = 'badge';
+  export let disabled: $$Props['disabled'] = false;
 
-  const baseClasses =
-    'badge badge-sm badge-warning px-[0.2rem] relative text-[0.8rem] d-flex justify-center items-center';
+  let baseClasses = 'badge badge-sm';
+
+  if (!disabled) {
+    baseClasses += ' badge-warning';
+  } else {
+    baseClasses += ' badge-ghost';
+  }
+
+  baseClasses +=
+    ' px-[0.25rem] font-bold relative text-[0.8rem] d-flex justify-center items-center';
 
   const finalClasses = `${baseClasses} ${classes}`;
 </script>
@@ -27,3 +36,12 @@
 -->
 
 <div class={finalClasses}><span class="m-0 p-0">{text}</span></div>
+
+<style>
+  .badge-ghost {
+    background-color: black;
+    color: white;
+    border-width: 0px;
+    opacity: 0.2;
+  }
+</style>

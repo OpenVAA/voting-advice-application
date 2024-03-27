@@ -155,7 +155,12 @@
   "homePage": {
     "greeting": "Hello, {userName}!",
     "explanation": "In order to appear in the Election Compass, you have to enter some basic information about yourself as well as answer opinion statements concerning political issues.",
-    "buttonText": "Continue"
+    "buttonText": "Continue",
+    "basicInfoButton": "Enter your basic information",
+    "questionsButton": "Tell your opinions",
+    "previewButton": "Preview your profile",
+    "logOut": "Log Out",
+    "explanationWhenReady": "You have filled all of the information needed for the Election Compass. You can still edit your answers and even log in later to do that. If you want to see how the voters will see your profile, you can now preview it."
   },
   "preview": {
     "title": "Preview",

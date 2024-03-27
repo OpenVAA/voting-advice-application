@@ -61,7 +61,7 @@ hasn't filled all the data.
 
 This component has optional boolean property `variantIcon`:
 When set to true (default), the button variant is icon. 
-When set to false, the button variant is main.
+When set to false, the button variant is ghost.
 
 ### Usage
 ```tsx
@@ -69,7 +69,7 @@ When set to false, the button variant is main.
 ```
 -->
 
-<!-- Define the button based on variant ("icon" or "main"). Cannot be done shorter because of type errors. -->
+<!-- Define the button based on variant ("icon" or "ghost"). Cannot be done shorter because of type errors. -->
 {#if variantIcon}
   <Button
     on:click={triggerLogout}
@@ -78,11 +78,7 @@ When set to false, the button variant is main.
     text={$t('candidateApp.navbar.logOut')}
     color="warning" />
 {:else}
-  <Button
-    on:click={triggerLogout}
-    variant="main"
-    text={$t('candidateApp.allDataFilled.logOut')}
-    color="warning" />
+  <Button on:click={triggerLogout} text={$t('candidateApp.allDataFilled.logOut')} color="warning" />
 {/if}
 <TimedModal
   bind:timeLeft

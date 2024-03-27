@@ -12,18 +12,29 @@
   });
 
   candidateContext.userStore.subscribe((user) => {
-    const {motherTongues, birthday, manifesto} = user?.candidate ?? {};
-    const allFilled = !!motherTongues && motherTongues.length > 0 && !!birthday && !!manifesto;
+    const {motherTongues, birthday, manifesto, gender} = user?.candidate ?? {};
+    const allFilled =
+      !!motherTongues && motherTongues.length > 0 && !!birthday && !!manifesto && !!gender;
     candidateContext.basicInfoFilledStore.set(allFilled);
+
+    const nofBasicQuestionsFilled = [
+      !!motherTongues && motherTongues.length > 0,
+      !!birthday,
+      !!manifesto,
+      !!gender
+    ].filter((n) => n).length;
+    candidateContext.nofUnasweredBasicInfoQuestionsStore.set(4 - nofBasicQuestionsFilled);
   });
 
   const updateNofUnansweredQuestions = () => {
     const answers = get(candidateContext.answersStore);
     const questions = get(candidateContext.questionsStore);
     if (answers && questions) {
-      candidateContext.nofUnansweredQuestionsStore.set(
+      candidateContext.nofUnansweredOpinionQuestionsStore.set(
         Object.entries(questions).length - Object.entries(answers).length
       );
+      const allFilled = Object.entries(questions).length - Object.entries(answers).length === 0;
+      candidateContext.opinionQuestionsFilledStore.set(allFilled);
     }
   };
 
