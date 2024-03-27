@@ -91,6 +91,7 @@ is based on.
       <slot name="heading">
         <h1>{title}</h1>
       </slot>
+      <slot name="banner" />
     </div>
 
     <!-- Main content -->

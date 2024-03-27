@@ -11,6 +11,7 @@
   import {PasswordSetter} from '$lib/candidate/components/PasswordSetter';
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
+  import LogoutButton from '$lib/candidate/components/logoutButton/LogoutButton.svelte';
 
   export let userName: string;
   export let registrationCode: string;
@@ -19,6 +20,9 @@
   let password = '';
   let passwordConfirmation = '';
   const {emailOfNewUserStore} = getContext<CandidateContext>('candidate');
+  const {userStore} = getContext<CandidateContext>('candidate');
+  $: loggedIn = $userStore;
+
   let validPassword = false;
   let errorMessage = '';
 
@@ -79,7 +83,14 @@ Page where candidates can set their password when logging to the app for the fir
       {$t('candidateApp.setPassword.greeting', {userName})}
     </h1>
   </HeadingGroup>
-
+  <div slot="header">
+    {#if loggedIn}
+      <LogoutButton />
+    {/if}
+  </div>
+  {#if loggedIn}
+    <p class="text-center text-warning">{$t('candidateApp.registration.loggedInWarning')}</p>
+  {/if}
   <form class="flex flex-col flex-nowrap items-center">
     <PasswordSetter
       buttonPressed={onSetButtonPressed}
