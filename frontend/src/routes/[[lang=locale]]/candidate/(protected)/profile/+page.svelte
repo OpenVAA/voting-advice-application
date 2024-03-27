@@ -74,7 +74,11 @@
 
   // all necessary fields filled boolean
   $: allFilled =
-    !!genderID && !!motherTongues && motherTongues.length > 0 && !!birthday && !!manifesto;
+    !!genderID &&
+    !!motherTongues &&
+    motherTongues.length > 0 &&
+    !!birthday &&
+    Object.values(manifesto).every((value) => value !== '');
 
   let errorMessage: string | undefined;
 
