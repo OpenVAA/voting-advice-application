@@ -49,12 +49,6 @@
       "target": "api::nomination.nomination",
       "mappedBy": "election"
     },
-    "question_categories": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::question-category.question-category",
-      "mappedBy": "elections"
-    },
     "name": {
       "pluginOptions": {},
       "type": "json"
@@ -70,6 +64,15 @@
     "info": {
       "pluginOptions": {},
       "type": "json"
+    },
+    "question_categories": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::question-category.question-category",
+      "mappedBy": "election"
+    },
+    "canEditQuestions": {
+      "type": "boolean"
     }
   }
 }

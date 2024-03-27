@@ -5,7 +5,8 @@ import type {
   StrapiAnswerData,
   StrapiLanguageData,
   StrapiGenderData,
-  StrapiResponse
+  StrapiResponse,
+  StrapiQuestionData
 } from '$lib/api/getData.type';
 import {candidateContext} from '$lib/utils/candidateStore';
 
@@ -179,20 +180,23 @@ export const getLikertQuestions = async (): Promise<Record<string, Question> | u
   const res = await request(
     getUrl('api/questions', {
       'populate[questionType]': 'true',
+      'populate[category][populate][election]': 'true',
       'filters[questionType][name][$startsWith]': 'Likert'
     })
   );
 
   if (!res?.ok) throw Error(res?.statusText);
 
-  const questionData: StrapiResponse<StrapiAnswerData[]> = await res.json();
+  const questionData: StrapiResponse<StrapiQuestionData[]> = await res.json();
 
   const questions: Record<string, Question> = {};
 
   questionData.data.forEach((question) => {
     questions[question.id] = {
       id: `${question.id}`,
-      text: question.attributes.text
+      text: question.attributes.text,
+      editable:
+        question.attributes.category.data.attributes.election.data.attributes.canEditQuestions
     };
   });
   return questions;

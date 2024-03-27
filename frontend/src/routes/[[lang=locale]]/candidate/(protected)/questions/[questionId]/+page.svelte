@@ -204,6 +204,7 @@
             aria-labelledby="hgroup-{currentQuestion.id}"
             name={currentQuestion.id}
             options={currentQuestion.values}
+            mode={currentQuestion.editable ? 'answer' : 'display'}
             {selectedKey}
             on:change={saveLikertToLocal} />
         {:else}
@@ -215,7 +216,7 @@
           headerText={$t('candidateApp.opinions.commentOnThisIssue')}
           localStorageId={openAnswerLocal}
           previouslySavedMultilang={answer?.openAnswer ?? undefined}
-          disabled={!selectedKey}
+          disabled={!selectedKey || !currentQuestion.editable}
           placeholder="—"
           bind:multilangText={openAnswer}
           bind:this={openAnswerTextArea} />

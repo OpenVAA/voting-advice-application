@@ -391,7 +391,8 @@ async function createElection() {
       electionType,
       info,
       electionAppLabel: AppLabel.id,
-      publishedAt: new Date()
+      publishedAt: new Date(),
+      canEditQuestions: true
     }
   });
 }
@@ -601,7 +602,7 @@ async function createQuestionCategories() {
         info,
         type: 'opinion',
         color,
-        elections: [elections[0].id],
+        election: elections[0].id,
         publishedAt: new Date()
       }
     });

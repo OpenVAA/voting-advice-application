@@ -18,9 +18,9 @@
       "min": 0,
       "required": true
     },
-    "elections": {
+    "election": {
       "type": "relation",
-      "relation": "manyToMany",
+      "relation": "manyToOne",
       "target": "api::election.election",
       "inversedBy": "question_categories"
     },

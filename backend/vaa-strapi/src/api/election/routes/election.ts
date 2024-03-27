@@ -2,8 +2,8 @@
  * election router
  */
 
-import { factories } from '@strapi/strapi';
-import { restrictPopulate, restrictFilters } from '../../../util/acl';
+import {factories} from '@strapi/strapi';
+import {restrictPopulate, restrictFilters} from '../../../util/acl';
 
 export default factories.createCoreRouter('api::election.election', {
   only: ['find', 'findOne'], // Explicitly disabled create, update, delete
@@ -15,10 +15,11 @@ export default factories.createCoreRouter('api::election.election', {
           'electionAppLabel.populate.actionLabels',
           'electionAppLabel.populate.viewTexts',
           'electionAppLabel.populate.localizations.populate',
+          'question.populate.category.populate.election'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
+        restrictFilters([])
+      ]
     },
     findOne: {
       policies: [
@@ -27,10 +28,11 @@ export default factories.createCoreRouter('api::election.election', {
           'electionAppLabel.populate.actionLabels',
           'electionAppLabel.populate.viewTexts',
           'electionAppLabel.populate.localizations.populate',
+          'question.populate.category.populate.election'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
-    },
-  },
+        restrictFilters([])
+      ]
+    }
+  }
 });

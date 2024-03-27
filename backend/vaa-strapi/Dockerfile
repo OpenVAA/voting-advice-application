@@ -1,6 +1,6 @@
 FROM node:18-alpine3.18 as base
 
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache python3 make g++ yarn
 
 WORKDIR /opt/
 
