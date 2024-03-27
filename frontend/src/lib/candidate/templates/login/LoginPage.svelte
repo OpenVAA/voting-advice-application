@@ -16,6 +16,7 @@
   let email = '';
   let password = '';
   let wrongCredentials = false;
+  let showPasswordSetMessage = false;
 
   // Variable for the user's chosen app language
   let appLanguageCode: string;
@@ -27,8 +28,6 @@
     if (!(await logIn(email, password))) {
       wrongCredentials = true;
     } else {
-      emailOfNewUserStore.set(null);
-
       // If user has chosen an app language, change to that language
       if (appLanguageCode) {
         await goto($getRoute({locale: appLanguageCode}));
@@ -37,6 +36,8 @@
   };
   if ($emailOfNewUserStore != null) {
     email = $emailOfNewUserStore;
+    showPasswordSetMessage = true;
+    emailOfNewUserStore.set(null);
   }
 </script>
 
@@ -59,7 +60,7 @@ Candidate login page. This component also takes care of the login process.
     <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
   </HeadingGroup>
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onLogin}>
-    {#if $emailOfNewUserStore !== null}
+    {#if showPasswordSetMessage}
       <p class="text-3xl font-normal">
         {$t('candidateApp.setPassword.passwordSetSuccesfully')}
       </p>
