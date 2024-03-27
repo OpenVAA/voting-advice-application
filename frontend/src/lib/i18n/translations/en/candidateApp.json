@@ -108,7 +108,8 @@
     "wrongRegistrationCode": "Wrong registration code",
     "registerButton": "Register",
     "submitPlaceholder": "E.g. CP23-174a-f4%&-aHAB",
-    "title": "Registration"
+    "title": "Registration",
+    "loggedInWarning": "A user is currently logged in. Log out before proceeding."
   },
   "resetPassword": {
     "createNewPassword": "Set a new password",
