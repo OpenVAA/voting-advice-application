@@ -16,6 +16,7 @@ export enum Route {
   CandAppPreview = 'candidate/preview',
   CandAppProfile = 'candidate/profile',
   CandAppQuestions = 'candidate/questions',
+  CandAppQuestionEdit = 'candidate/questions/edit',
   CandAppSummary = 'candidate/questions/summary',
   CandAppReady = 'candidate/questions/done',
   CandAppRegister = 'candidate/register',

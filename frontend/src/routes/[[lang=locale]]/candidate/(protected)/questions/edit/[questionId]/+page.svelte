@@ -2,4 +2,4 @@
   import {QuestionPage} from '$candidate/templates/question';
 </script>
 
-<QuestionPage />
+<QuestionPage editMode={true} />
