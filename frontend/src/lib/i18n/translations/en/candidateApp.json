@@ -169,6 +169,33 @@
     "notFound": "Profile not found",
     "tip": "This is a preview of how your profile will look to voters."
   },
+  "help": {
+    "title": "Help",
+    "description": "Here you can find answers to the most common questions with using this application.",
+    "continueFilling": "Continue Filling",
+    "questions": {
+      "question1": {
+        "question": "My name is wrong but I can't change it",
+        "answer": "Answer 1"
+      },
+      "question2": {
+        "question": "My profile is not visible in the Election Compass",
+        "answer": "Answer 2"
+      },
+      "question3": {
+        "question": "I don't want to tell my opinion on some issues",
+        "answer": "Answer 3"
+      },
+      "question4": {
+        "question": "My party is not listed",
+        "answer": "Answer 4"
+      },
+      "question5": {
+        "question": "I don't have a profile picture to upload",
+        "answer": "Answer 5"
+      }
+    }
+  },
   "textarea": {
     "hide": "Hide translations for this field",
     "show": "Show translations for this field",
