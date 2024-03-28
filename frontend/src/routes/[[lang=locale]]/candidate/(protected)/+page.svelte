@@ -42,18 +42,21 @@
   function getNextAction() {
     if (!!basicInfoFilled && !!opinionQuestionsFilled) {
       return {
+        title: $t('candidateApp.allDataFilled.title'),
         explanation: $t('candidateApp.homePage.explanationWhenReady'),
         buttonText: $t('candidateApp.homePage.previewButton'),
         href: $getRoute(Route.CandAppPreview)
       };
     } else if (!!basicInfoFilled && !opinionQuestionsFilled) {
       return {
+        title: $t('candidateApp.homePage.greeting', {userName}),
         explanation: $t('candidateApp.homePage.explanation'),
         buttonText: $t('candidateApp.homePage.questionsButton'),
         href: $getRoute(Route.CandAppQuestions)
       };
     } else {
       return {
+        title: $t('candidateApp.homePage.greeting', {userName}),
         explanation: $t('candidateApp.homePage.explanation'),
         buttonText: $t('candidateApp.homePage.basicInfoButton'),
         href: $getRoute(Route.CandAppProfile)
@@ -64,7 +67,7 @@
 
 <!--Homepage for the user-->
 
-<BasicPage title={$t('candidateApp.homePage.greeting', {userName})}>
+<BasicPage title={getNextAction().title}>
   <p class="max-w-md text-center">
     {getNextAction().explanation}
   </p>

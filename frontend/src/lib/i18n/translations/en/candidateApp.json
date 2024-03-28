@@ -138,7 +138,8 @@
     "commentOnThisIssue": "Comment on this issue",
     "enterMissingAnswer": "Enter Missing Answers",
     "editYourAnswer": "Edit Your Answer",
-    "return": "return"
+    "return": "return",
+    "editingAllowedNote": "Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data."
   },
   "allDataFilled": {
     "title": "You're Ready to Roll!",
