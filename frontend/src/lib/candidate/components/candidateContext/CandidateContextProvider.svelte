@@ -12,16 +12,26 @@
   });
 
   candidateContext.userStore.subscribe((user) => {
-    const {motherTongues, birthday, manifesto, gender} = user?.candidate ?? {};
+    let {gender, motherTongues, birthday, manifesto} = {
+      gender: {
+        id: undefined
+      },
+      manifesto: {},
+      ...user?.candidate
+    };
     const allFilled =
-      !!motherTongues && motherTongues.length > 0 && !!birthday && !!manifesto && !!gender;
+      !!gender?.id &&
+      !!motherTongues &&
+      motherTongues.length > 0 &&
+      !!birthday &&
+      Object.values(manifesto).some((value) => value !== '');
     candidateContext.basicInfoFilledStore.set(allFilled);
 
     const nofBasicQuestionsFilled = [
+      !!gender?.id,
       !!motherTongues && motherTongues.length > 0,
       !!birthday,
-      !!manifesto,
-      !!gender
+      Object.values(manifesto).some((value) => value !== '')
     ].filter((n) => n).length;
     candidateContext.nofUnasweredBasicInfoQuestionsStore.set(4 - nofBasicQuestionsFilled);
   });
