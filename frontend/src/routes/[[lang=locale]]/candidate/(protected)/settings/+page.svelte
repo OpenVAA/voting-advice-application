@@ -37,7 +37,7 @@
   // Variable for the user's chosen app language. Keep it updated if changed.
   let appLanguageCode = '';
   userStore.subscribe((updatedUser) => {
-    appLanguageCode = updatedUser?.candidate?.appLanguage?.localisationCode;
+    appLanguageCode = updatedUser?.candidate?.appLanguage?.localisationCode ?? '';
   });
 
   // Fetch languages from backend
