@@ -15,7 +15,7 @@
   export let noteRole: $$Props['noteRole'] = 'note';
   export let primaryActionsLabel: $$Props['primaryActionsLabel'] = undefined;
 
-  const {userStore} = getContext<CandidateContext>('candidate');
+  const userStore = getContext<CandidateContext>('candidate')?.userStore;
 
   // We are in the candidate application and the user has logged in
   // TODO: Figure out a way to define this LogoutButton part only within the
