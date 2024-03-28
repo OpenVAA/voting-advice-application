@@ -159,6 +159,31 @@
     "notFound": "Profiilia ei löytynyt",
     "tip": "Tämä on esikatselu siitä, miltä profiilisi näyttää äänestäjille."
   },
+  "help": {
+    "title": "FI - Help",
+    "description": "FI - Here you can find answers to the most common questions with using this application.",
+    "continueFilling": "FI - Continue Filling",
+    "question1": {
+      "question": "FI - My name is wrong but I can't change it",
+      "solution": "FI - Solution 1"
+    },
+    "question2": {
+      "question": "FI - My profile is not visible in the Election Compass",
+      "solution": "FI - Solution 2"
+    },
+    "question3": {
+      "question": "FI - I don't want to tell my opinion on some issues",
+      "solution": "FI - Solution 3"
+    },
+    "question4": {
+      "question": "FI - My party is not listed",
+      "solution": "FI - Solution 4"
+    },
+    "question5": {
+      "question": "FI - I don't have a profile picture to upload",
+      "solution": "FI - Solution 5"
+    }
+  },
   "textarea": {
     "hide": "Piilota kentän käännökset",
     "show": "Näytä kentän käännökset",
