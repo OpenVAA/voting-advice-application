@@ -19,9 +19,9 @@
   let showPasswordSetMessage = false;
 
   // Variable for the user's chosen app language
-  let appLanguageCode: string;
+  let appLanguageCode = '';
   userStore.subscribe((user) => {
-    appLanguageCode = user?.candidate?.appLanguage?.localisationCode;
+    appLanguageCode = user?.candidate?.appLanguage?.localisationCode ?? '';
   });
 
   const onLogin = async () => {
