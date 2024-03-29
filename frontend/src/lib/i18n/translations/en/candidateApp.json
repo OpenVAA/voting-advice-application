@@ -135,7 +135,11 @@
     "warning": "You still have {numUnansweredQuestions} unanswered questions. Your data won't be shown in the Election Compass until you have answered all of them.",
     "info": "You can see all of your opinions below and edit them by tapping on them.",
     "answerButton": "Answer this question",
-    "commentOnThisIssue": "Comment on this issue"
+    "commentOnThisIssue": "Comment on this issue",
+    "enterMissingAnswer": "Enter Missing Answers",
+    "editYourAnswer": "Edit Your Answer",
+    "return": "return",
+    "editingAllowedNote": "Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data."
   },
   "allDataFilled": {
     "title": "You're Ready to Roll!",
@@ -152,7 +156,12 @@
   "homePage": {
     "greeting": "Hello, {userName}!",
     "explanation": "In order to appear in the Election Compass, you have to enter some basic information about yourself as well as answer opinion statements concerning political issues.",
-    "buttonText": "Continue"
+    "buttonText": "Continue",
+    "basicInfoButton": "Enter your basic information",
+    "questionsButton": "Tell your opinions",
+    "previewButton": "Preview your profile",
+    "logOut": "Log Out",
+    "explanationWhenReady": "You have filled all of the information needed for the Election Compass. You can still edit your answers and even log in later to do that. If you want to see how the voters will see your profile, you can now preview it."
   },
   "preview": {
     "title": "Preview",
