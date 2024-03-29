@@ -17,30 +17,30 @@
   let closeModal: () => void;
   let timeLeft = logoutModalTimer;
 
-  const {userStore, answersStore, questionsStore, logOut} =
-    getContext<CandidateContext>('candidate');
-  $: user = $userStore;
-  $: answers = $answersStore;
-  $: questions = $questionsStore;
-  $: remainingInfoAmount =
-    4 -
-    [
-      user?.candidate?.gender,
-      user?.candidate?.motherTongues?.length ?? 1 > 0,
-      user?.candidate?.birthday,
-      user?.candidate?.manifesto
-    ].filter((x) => x).length;
+  const {
+    nofUnasweredBasicInfoQuestionsStore: nofUnansweredBasicInfoQuestions,
+    opinionQuestionsFilledStore,
+    nofUnansweredOpinionQuestionsStore: nofUnansweredOpinionQuestions,
+    logOut
+  } = getContext<CandidateContext>('candidate');
 
-  let remainingOpinionNumber = 0;
-  $: {
-    if (answers && questions) {
-      remainingOpinionNumber = Object.entries(answers).length - Object.entries(questions).length;
-    }
-  }
-  $: unfilledData = remainingOpinionNumber > 0 || remainingInfoAmount > 0;
+  let opinionQuestionsLeft: number | undefined;
+  nofUnansweredOpinionQuestions?.subscribe((value) => {
+    opinionQuestionsLeft = value;
+  });
+
+  let opinionQuestionsFilled: boolean | undefined;
+  opinionQuestionsFilledStore?.subscribe((value) => {
+    opinionQuestionsFilled = value;
+  });
+
+  let basicInfoQuestionsLeft: number | undefined;
+  nofUnansweredBasicInfoQuestions?.subscribe((value) => {
+    basicInfoQuestionsLeft = value;
+  });
 
   const triggerLogout = () => {
-    if (unfilledData) {
+    if (!opinionQuestionsFilled || !basicInfoQuestionsLeft) {
       openModal();
     } else {
       logout();
@@ -89,13 +89,18 @@ When set to false, the button variant is ghost.
   <div class="notification max-w-md text-center">
     <h2>{$t('candidateApp.logoutModal.title')}</h2>
     <br />
-    {#if remainingInfoAmount > 0}
+    {#if basicInfoQuestionsLeft && basicInfoQuestionsLeft > 0}
       <p>
-        {$t('candidateApp.logoutModal.body', {remainingInfoAmount, remainingOpinionNumber})}
+        {$t('candidateApp.logoutModal.body', {
+          remainingInfoAmount: basicInfoQuestionsLeft,
+          remainingOpinionNumber: opinionQuestionsLeft
+        })}
       </p>
-    {:else if remainingOpinionNumber > 1}
+    {:else if opinionQuestionsLeft && opinionQuestionsLeft > 1}
       <p>
-        {$t('candidateApp.logoutModal.bodyBasicInfoReady', {remainingOpinionNumber})}
+        {$t('candidateApp.logoutModal.bodyBasicInfoReady', {
+          remainingOpinionNumber: opinionQuestionsLeft
+        })}
       </p>
     {:else}
       <p>
