@@ -18,6 +18,7 @@
   $: answers = $answersStore;
   let questions = get(questionsStore) ?? [];
   let questionsByCategory: Record<string, Array<QuestionProps>>;
+
   let dataEditable: boolean;
   let nofUnansweredQuestions: number | undefined;
   let loading = true;
@@ -39,6 +40,7 @@
 
   $: {
     if (questions) {
+      //TODO:  use store when store is implementer
       dataEditable = Object.values(questions)[0].editable;
 
       loading = true;
@@ -59,6 +61,20 @@
   });
 
   const numQuestions = $page.data.questions.length;
+
+  function getAnsweredButtonText() {
+    if (dataEditable) {
+      return {
+        text: $t('candidateApp.questions.editYourAnswer'),
+        icon: 'missingIcon'
+      };
+    } else {
+      return {
+        text: $t('candidateApp.questions.viewYourAnswer'),
+        icon: 'show'
+      };
+    }
+  }
 </script>
 
 {#if answers && Object.entries(answers).length === 0}
@@ -79,21 +95,22 @@
       text={$t('candidateApp.opinions.continue')} />
   </BasicPage>
 {:else}
-  <BasicPage title={$t('candidateApp.allQuestions.title')}>
+  <BasicPage title={$t('candidateApp.questions.title')}>
     <Warning display={!dataEditable} slot="note"
-      >{$t('candidateApp.allQuestions.editingAllowedNote')}</Warning>
+      >{$t('candidateApp.questions.editingAllowedNote')}
+    </Warning>
 
-    <p class="text-center">
-      {$t('candidateApp.allQuestions.info')}
+    <p class="pb-20 text-center">
+      {$t('candidateApp.questions.info')}
     </p>
-    {#if nofUnansweredQuestions != 0 && !loading}
+    {#if nofUnansweredQuestions != 0 && !loading && dataEditable}
       <div class="pb-6 text-center text-warning">
-        {$t('candidateApp.allQuestions.warning', {numUnansweredQuestions: nofUnansweredQuestions})}
+        {$t('candidateApp.questions.warning', {numUnansweredQuestions: nofUnansweredQuestions})}
       </div>
       <div class="flex w-full justify-center pb-40 pt-20">
         <Button
           href={$getRoute({route: Route.CandAppQuestions, id: '1'})}
-          text={$t('candidateApp.allQuestions.enterMissingAnswer')}
+          text={$t('candidateApp.questions.enterMissingAnswer')}
           variant="main"
           icon="next" />
       </div>
@@ -134,9 +151,9 @@
 
                   <div class="flex justify-center py-20">
                     <Button
-                      text={$t('candidateApp.allQuestions.editYourAnswer')}
+                      text={getAnsweredButtonText().text}
                       href={$getRoute({route: Route.CandAppQuestions, id: question.id})}
-                      icon="missingIcon"
+                      icon={getAnsweredButtonText().icon}
                       iconPos="left"></Button>
                   </div>
                 </div>
@@ -159,13 +176,17 @@
                 </Expander>
 
                 <!-- Navigate to unsanswered question -->
-                <a
-                  class="flex justify-center py-20"
-                  href={$getRoute({route: Route.CandAppQuestions, id: question.id})}>
-                  <Button
-                    text={$t('candidateApp.allQuestions.answerButton')}
-                    class="w-full max-w-md bg-base-300" />
-                </a>
+                {#if dataEditable}
+                  <a
+                    class="flex justify-center py-20"
+                    href={$getRoute({route: Route.CandAppQuestions, id: question.id})}>
+                    <Button
+                      text={$t('candidateApp.questions.answerButton')}
+                      class="w-full max-w-md bg-base-300" />
+                  </a>
+                {:else}
+                  <p class="p-10">{$t('candidateApp.questions.notAnswered')}</p>
+                {/if}
                 {#if categoryQuestions[categoryQuestions.length - 1] !== question}
                   <hr class="mt-40" />
                 {:else}
@@ -180,7 +201,7 @@
 
     <div class="flex w-full justify-center py-40">
       <Button
-        text={$t('candidateApp.allQuestions.return')}
+        text={$t('candidateApp.questions.return')}
         variant="main"
         href={$getRoute({route: Route.CandAppHome})} />
     </div>

@@ -8,16 +8,27 @@
   import {get} from 'svelte/store';
   import InfoBadge from '$lib/components/infoBadge/infoBadge.svelte';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
+  import Warning from '$lib/components/warning/Warning.svelte';
 
   const {
     userStore,
     basicInfoFilledStore,
     nofUnasweredBasicInfoQuestionsStore: nofUnansweredBasicInfoQuestions,
     opinionQuestionsFilledStore,
-    nofUnansweredOpinionQuestionsStore: nofUnansweredOpinionQuestions
+    nofUnansweredOpinionQuestionsStore: nofUnansweredOpinionQuestions,
+    questionsStore
   } = getContext<CandidateContext>('candidate');
   const user = get(userStore);
   const userName = user?.candidate?.firstName;
+
+  let dataEditable: boolean;
+
+  let questions = get(questionsStore) ?? [];
+
+  if (questions) {
+    //TODO: use store when store is implemented
+    dataEditable = Object.values(questions)[0].editable;
+  }
 
   let opinionQuestionsLeft: number | undefined;
   nofUnansweredOpinionQuestions?.subscribe((value) => {
@@ -42,23 +53,30 @@
   function getNextAction() {
     if (!!basicInfoFilled && !!opinionQuestionsFilled) {
       return {
-        title: $t('candidateApp.allDataFilled.title'),
-        explanation: $t('candidateApp.homePage.explanationWhenReady'),
-        buttonText: $t('candidateApp.homePage.previewButton'),
+        title: $t('candidateApp.homePage.title'),
+        explanation: $t('candidateApp.homePage.description'),
+        tip: $t('candidateApp.homePage.tip'),
+        buttonTextBasicInfo: $t('candidateApp.homePage.basicInfoButtonView'),
+        buttonTextQuestion: $t('candidateApp.homePage.questionsButtonView'),
+        buttonTextPrimaryActions: $t('candidateApp.homePage.previewButton'),
         href: $getRoute(Route.CandAppPreview)
       };
     } else if (!!basicInfoFilled && !opinionQuestionsFilled) {
       return {
         title: $t('candidateApp.homePage.greeting', {userName}),
         explanation: $t('candidateApp.homePage.explanation'),
-        buttonText: $t('candidateApp.homePage.questionsButton'),
+        buttonTextBasicInfo: $t('candidateApp.homePage.basicInfoButtonEdit'),
+        buttonTextQuestion: $t('candidateApp.homePage.questionsButton'),
+        buttonTextPrimaryActions: $t('candidateApp.homePage.questionsButton'),
         href: $getRoute(Route.CandAppQuestions)
       };
     } else {
       return {
         title: $t('candidateApp.homePage.greeting', {userName}),
         explanation: $t('candidateApp.homePage.explanation'),
-        buttonText: $t('candidateApp.homePage.basicInfoButton'),
+        buttonTextBasicInfo: $t('candidateApp.homePage.basicInfoButton'),
+        buttonTextQuestion: $t('candidateApp.homePage.questionsButton'),
+        buttonTextPrimaryActions: $t('candidateApp.homePage.basicInfoButtonPrimaryActions'),
         href: $getRoute(Route.CandAppProfile)
       };
     }
@@ -68,11 +86,24 @@
 <!--Homepage for the user-->
 
 <BasicPage title={getNextAction().title}>
+  <Warning display={!dataEditable} slot="note"
+    >{$t('candidateApp.homePage.editingNotAllowedNote')}
+    {#if !opinionQuestionsFilled || !basicInfoFilledStore}
+      <br />
+      <br />
+      {$t('candidateApp.homePage.editingNotAllowedPartiallyFilled')}
+    {/if}
+  </Warning>
   <p class="max-w-md text-center">
     {getNextAction().explanation}
+    {#if !!basicInfoFilled && !!opinionQuestionsFilled}
+      <br />
+      <br />
+      {getNextAction().tip}
+    {/if}
   </p>
   <Button
-    text={$t('candidateApp.homePage.basicInfoButton')}
+    text={getNextAction().buttonTextBasicInfo}
     icon="profile"
     iconPos="left"
     href={$getRoute(Route.CandAppProfile)}>
@@ -81,7 +112,7 @@
     {/if}
   </Button>
   <Button
-    text={$t('candidateApp.homePage.questionsButton')}
+    text={getNextAction().buttonTextQuestion}
     icon="opinion"
     iconPos="left"
     disabled={!basicInfoFilled}
@@ -102,11 +133,13 @@
   </Button>
 
   <div class="flex w-full flex-col items-center justify-center" slot="primaryActions">
-    <Button
-      variant="main"
-      text={getNextAction().buttonText}
-      icon="next"
-      href={getNextAction().href} />
+    {#if !(!dataEditable && !opinionQuestionsFilled)}
+      <Button
+        variant="main"
+        text={getNextAction().buttonTextPrimaryActions}
+        icon="next"
+        href={getNextAction().href} />
+    {/if}
 
     <LogoutButton variantIcon={false}></LogoutButton>
   </div>

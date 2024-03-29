@@ -78,7 +78,7 @@ When set to false, the button variant is ghost.
     text={$t('candidateApp.navbar.logOut')}
     color="warning" />
 {:else}
-  <Button on:click={triggerLogout} text={$t('candidateApp.allDataFilled.logOut')} color="warning" />
+  <Button on:click={triggerLogout} text={$t('candidateApp.homePage.logOut')} color="warning" />
 {/if}
 <TimedModal
   bind:timeLeft

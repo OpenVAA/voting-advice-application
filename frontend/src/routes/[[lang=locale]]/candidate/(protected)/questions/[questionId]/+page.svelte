@@ -175,7 +175,7 @@
   }
 
   async function gotoNextQuestion() {
-    await navigateToQuestion(1, $getRoute(Route.CandAppSummary));
+    await navigateToQuestion(1, $getRoute(Route.CandAppQuestions));
   }
 
   async function goToPreviousQuestion() {
