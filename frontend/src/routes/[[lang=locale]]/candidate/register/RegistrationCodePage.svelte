@@ -47,17 +47,15 @@ registrationCode
     <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
     <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
   </HeadingGroup>
-  <div slot="header">
-    {#if loggedIn}
-      <LogoutButton></LogoutButton>
-    {/if}
-  </div>
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onRegistration}>
     <p class="max-w-md text-center">
       {$t('candidateApp.registration.enterCode')}
     </p>
     {#if loggedIn}
       <p class="text-center text-warning">{$t('candidateApp.registration.loggedInWarning')}</p>
+      <div class="center">
+        <LogoutButton />
+      </div>
     {/if}
     <input
       type="text"
