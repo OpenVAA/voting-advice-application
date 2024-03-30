@@ -108,6 +108,8 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
 <svelte:element
   this={href == null ? 'button' : 'a'}
   on:click
+  role="button"
+  tabindex="0"
   {href}
   aria-label={variant === 'icon' ? text : undefined}
   title={variant === 'icon' ? text : undefined}
@@ -119,4 +121,5 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
   {#if variant !== 'icon'}
     <div class={labelClass}>{text.charAt(0).toUpperCase() + text.slice(1)}</div>
   {/if}
+  <slot />
 </svelte:element>

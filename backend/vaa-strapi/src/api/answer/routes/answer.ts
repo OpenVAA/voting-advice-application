@@ -5,6 +5,27 @@
 import { factories } from '@strapi/strapi';
 import { restrictResourceOwnedByCandidate, restrictPopulate, restrictFilters } from '../../../util/acl';
 
+const electionCanEditQuestions = async (ctx, config, {strapi}) => {
+  const {id} = ctx.params;
+
+  const answer = await strapi.db.query('api::answer.answer').findOne({
+    where: {id},
+    populate: {
+      question: {
+        populate: {
+          category: {
+            populate: {
+              election: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return answer?.question?.category?.election?.canEditQuestions ?? true; // If no election is set, then allowing editing questions by default
+};
+
 export default factories.createCoreRouter('api::answer.answer', {
   only: ['find', 'findOne', 'create', 'update', 'delete'],
   config: {
@@ -47,6 +68,8 @@ export default factories.createCoreRouter('api::answer.answer', {
           'candidate.id.$eq',
           'question.category.type.$eq',
         ]),
+        // Allow modification only when the current election allows it
+        electionCanEditQuestions,
       ],
     },
     update: {
@@ -64,6 +87,8 @@ export default factories.createCoreRouter('api::answer.answer', {
           'candidate.id.$eq',
           'question.category.type.$eq',
         ]),
+        // Allow modification only when the current election allows it
+        electionCanEditQuestions,
       ],
     },
     delete: {
@@ -79,6 +104,8 @@ export default factories.createCoreRouter('api::answer.answer', {
           'candidate.id.$eq',
           'question.category.type.$eq',
         ]),
+        // Allow modification only when the current election allows it
+        electionCanEditQuestions,
       ],
     },
   },
