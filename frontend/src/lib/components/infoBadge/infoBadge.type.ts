@@ -1,4 +1,4 @@
-export type infoBadgeProps = {
+export type InfoBadgeProps = {
   /**
    * Text to be displayed in the badge
    */
@@ -10,5 +10,5 @@ export type infoBadgeProps = {
   /**
    * Whether the badge is disabled and rendered as grey.
    */
-  disabled?: boolean | null;
+  disabled?: boolean;
 };

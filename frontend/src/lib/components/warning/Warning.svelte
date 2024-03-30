@@ -22,7 +22,13 @@ A simple warning component to be used with BasicPage
 
 <div class="text-warning">
   {#if display}
-    <Icon name="missingIcon" />
-    <slot />
+    <div class="flex items-start gap-6">
+      <div class="w-60">
+        <Icon name="missingIcon" />
+      </div>
+      <div class="flex-grow text-left">
+        <slot />
+      </div>
+    </div>
   {/if}
 </div>

@@ -50,8 +50,8 @@
     basicInfoFilled = value;
   });
 
-  function getNextAction() {
-    if (!!basicInfoFilled && !!opinionQuestionsFilled) {
+  const getNextAction = () => {
+    if (basicInfoFilled && opinionQuestionsFilled) {
       return {
         title: $t('candidateApp.homePage.title'),
         explanation: $t('candidateApp.homePage.description'),
@@ -61,7 +61,7 @@
         buttonTextPrimaryActions: $t('candidateApp.homePage.previewButton'),
         href: $getRoute(Route.CandAppPreview)
       };
-    } else if (!!basicInfoFilled && !opinionQuestionsFilled) {
+    } else if (basicInfoFilled && !opinionQuestionsFilled) {
       return {
         title: $t('candidateApp.homePage.greeting', {userName}),
         explanation: $t('candidateApp.homePage.explanation'),
@@ -70,36 +70,34 @@
         buttonTextPrimaryActions: $t('candidateApp.homePage.questionsButton'),
         href: $getRoute(Route.CandAppQuestions)
       };
-    } else {
-      return {
-        title: $t('candidateApp.homePage.greeting', {userName}),
-        explanation: $t('candidateApp.homePage.explanation'),
-        buttonTextBasicInfo: $t('candidateApp.homePage.basicInfoButton'),
-        buttonTextQuestion: $t('candidateApp.homePage.questionsButton'),
-        buttonTextPrimaryActions: $t('candidateApp.homePage.basicInfoButtonPrimaryActions'),
-        href: $getRoute(Route.CandAppProfile)
-      };
     }
-  }
+    return {
+      title: $t('candidateApp.homePage.greeting', {userName}),
+      explanation: $t('candidateApp.homePage.explanation'),
+      buttonTextBasicInfo: $t('candidateApp.homePage.basicInfoButton'),
+      buttonTextQuestion: $t('candidateApp.homePage.questionsButton'),
+      buttonTextPrimaryActions: $t('candidateApp.homePage.basicInfoButtonPrimaryActions'),
+      href: $getRoute(Route.CandAppProfile)
+    };
+  };
 </script>
 
 <!--Homepage for the user-->
 
 <BasicPage title={getNextAction().title}>
-  <Warning display={!dataEditable} slot="note"
-    >{$t('candidateApp.homePage.editingNotAllowedNote')}
-    {#if !opinionQuestionsFilled || !basicInfoFilledStore}
-      <br />
-      <br />
-      {$t('candidateApp.homePage.editingNotAllowedPartiallyFilled')}
+  <Warning display={!dataEditable} slot="note">
+    <p>{$t('candidateApp.homePage.editingNotAllowedNote')}</p>
+    {#if !opinionQuestionsFilled || !basicInfoFilled}
+      <p>{$t('candidateApp.homePage.editingNotAllowedPartiallyFilled')}</p>
     {/if}
   </Warning>
+
   <p class="max-w-md text-center">
     {getNextAction().explanation}
-    {#if !!basicInfoFilled && !!opinionQuestionsFilled}
-      <br />
-      <br />
-      {getNextAction().tip}
+    {#if basicInfoFilled && opinionQuestionsFilled}
+      <div class="margin-10">
+        {getNextAction().tip}
+      </div>
     {/if}
   </p>
   <Button
@@ -108,7 +106,7 @@
     iconPos="left"
     href={$getRoute(Route.CandAppProfile)}>
     {#if basicInfoQuestionsLeft && basicInfoQuestionsLeft > 0}
-      <InfoBadge text={String(basicInfoQuestionsLeft)} classes="-left-4 -top-4" />
+      <InfoBadge text={basicInfoQuestionsLeft} classes="-left-4 -top-4" />
     {/if}
   </Button>
   <Button
@@ -118,10 +116,7 @@
     disabled={!basicInfoFilled}
     href={$getRoute(Route.CandAppQuestions)}>
     {#if opinionQuestionsLeft && opinionQuestionsLeft > 0}
-      <InfoBadge
-        text={String(opinionQuestionsLeft)}
-        disabled={!basicInfoFilled}
-        classes="-left-4 -top-4" />
+      <InfoBadge text={opinionQuestionsLeft} disabled={!basicInfoFilled} classes="-left-4 -top-4" />
     {/if}
   </Button>
   <Button

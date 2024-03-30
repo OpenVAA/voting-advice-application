@@ -209,10 +209,6 @@ export const getLikertQuestions = async (): Promise<Record<string, QuestionProps
         key,
         label: translate(label)
       }));
-    if ('min' in settings) props.min = settings.min;
-    if ('max' in settings) props.max = settings.max;
-    if ('dateType' in settings) props.dateType = settings.dateType;
-    if ('notLocalizable' in settings) props.notLocalizable = settings.notLocalizable;
 
     questions[question.id] = props;
   });

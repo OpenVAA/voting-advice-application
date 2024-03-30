@@ -18,14 +18,14 @@
   let timeLeft = logoutModalTimer;
 
   const {
-    nofUnasweredBasicInfoQuestionsStore: nofUnansweredBasicInfoQuestions,
+    nofUnasweredBasicInfoQuestionsStore,
     opinionQuestionsFilledStore,
-    nofUnansweredOpinionQuestionsStore: nofUnansweredOpinionQuestions,
+    nofUnansweredOpinionQuestionsStore,
     logOut
   } = getContext<CandidateContext>('candidate');
 
   let opinionQuestionsLeft: number | undefined;
-  nofUnansweredOpinionQuestions?.subscribe((value) => {
+  nofUnasweredBasicInfoQuestionsStore?.subscribe((value) => {
     opinionQuestionsLeft = value;
   });
 
@@ -35,7 +35,7 @@
   });
 
   let basicInfoQuestionsLeft: number | undefined;
-  nofUnansweredBasicInfoQuestions?.subscribe((value) => {
+  nofUnansweredOpinionQuestionsStore?.subscribe((value) => {
     basicInfoQuestionsLeft = value;
   });
 

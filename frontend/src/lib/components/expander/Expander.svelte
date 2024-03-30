@@ -131,13 +131,16 @@
 
   .collapse-content {
     text-align: center;
-    padding: 0rem;
+    padding-right: 1.25rem;
+    padding-left: 1.25rem;
+    padding-top: 0;
+    padding-bottom: 0;
   }
 
   /* This is needed to add padding to collapse content only when collapse is open */
   .collapse:not(.collapse-close) > input[type='checkbox']:checked ~ .collapse-content {
-    padding-right: calc(env(safe-area-inset-right, 0px) + 1.25rem);
-    padding-left: calc(env(safe-area-inset-left, 0px) + 1.25rem);
+    padding-right: 1.25rem;
+    padding-left: 1.25rem;
   }
 
   /* This is needed to remove the excisting
