@@ -70,7 +70,7 @@
       <div class="flex justify-center py-20 pb-40">
         <Button
           text={getAnsweredButtonText().text}
-          href={$getRoute({route: Route.CandAppQuestions, id: question.id})}
+          href={$getRoute({route: Route.CandAppQuestionEdit, id: question.id})}
           icon={getAnsweredButtonText().icon}
           iconPos="left" />
       </div>

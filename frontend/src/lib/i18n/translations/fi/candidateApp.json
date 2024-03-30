@@ -23,7 +23,7 @@
     "body": "Täytettävänä on vielä {remainingInfoAmount} perustietoa ja {remainingOpinionNumber} mielipidettä. Tietosi eivät näy Vaalikompassissa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
     "bodyBasicInfoReady": "Täytettävänä on vielä {remainingOpinionNumber} mielipidettä. Tietosi eivät näy Vaalikompassissa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
     "bodyBasicInfoReady1OpinionLeft": "Täytettävänä on vielä yksi mielipide. Tietosi eivät näy Vaalikompassissa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
-    "confirmation": "Oletko varma, että haluat kirjautua ulos? Sinut kirjaudutaan automaattisesti ulos {timeLeft} sekunnin kuluttua.",
+    "confirmation": "Oletko varma, että haluat kirjautua ulos? Sinut kirjataan automaattisesti ulos {timeLeft} sekunnin kuluttua.",
     "continueEnteringData": "Jatka tietojen syöttämistä"
   },
   "basicInfo": {
@@ -126,24 +126,25 @@
     "instructions": "Seuraavaksi sovellus kysyy mielipiteitäsi {numQuestions} poliittisia kysymyksiä ja arvoja koskevista lausunnoista. Kun äänestäjät käyttävät vaalikompassia, he vastaavat myös samoihin väittämiin ja näkevät, kuinka hyvin heidän mielipiteensä vastaavat sinun mielipiteitäsi.",
     "tip": "Näet kaikki vastauksesi tällä sivulla, kun palaat siihen myöhemmin.",
     "continue": "Jatka",
-    "commentOnThisIssue": "Kommentoi tätä asiaa",
+    "commentOnThisIssue": "Perustele vastauksesi",
     "answerSaveError": "Vastauksen tallentaminen epäonnistui",
     "answerDeleteError": "Vastauksen poistaminen epäonnistui"
   },
-  "allQuestions": {
+  "questions": {
     "title": "Mielipiteesi",
     "warning": "Sinulla on vielä {numUnansweredQuestions} vastaamattomia kysymyksiä. Tietosi eivät näy Vaalikompassissa ennen kuin olet vastannut kaikkiin kysymyksiin.",
     "info": "Näet kaikki mielipiteesi alla ja voit muokata niitä napauttamalla niitä.",
     "answerButton": "Vastaa tähän kysymykseen",
-    "commentOnThisIssue": "Kommentoi tätä asiaa"
-  },
-  "allDataFilled": {
-    "title": "Olet valmis!",
-    "description": "Olet täyttänyt kaikki vaalikompassia varten tarvittavat tiedot. Voit vielä muokata vastauksiasi ja jopa kirjautua sisään myöhemmin sitä varten.",
-    "tip": "Jos haluat nähdä, miten äänestäjät näkevät profiilisi, voit esikatsella sitä.",
-    "logOut": "Kirjaudu ulos",
-    "previewYourProfile": "Esikatsele profiiliasi",
-    "editYourOpinions": "Muokkaa mielipiteitäsi"
+    "notAnswered": "Et vastannut tähän kysymykseen",
+    "commentOnThisIssue": "Perustele vastauksesi",
+    "enterMissingAnswer": "Vastaa puuttuviiin kysymyksiin",
+    "editYourAnswer": "Muokkaa vastaustasi",
+    "viewYourAnswer": "Tarkastele vastaustasi",
+    "return": "Palaa",
+    "cancel": "Peruuta",
+    "saveAndContinue": "Tallenna ja jatka",
+    "saveAndReturn": "Tallenna ja palaa",
+    "editingAllowedNote": "Vastausten muokkaaminen ei ole enää mahdollista, mutta voit silti tarkastella niitä. Ota yhteyttä ylläpitäjään, jos tiedoissa on virheitä."
   },
   "passwordButton": {
     "hidePassword": "Piilota salasana",
@@ -152,7 +153,20 @@
   "homePage": {
     "greeting": "Hei, {userName}!",
     "explanation": "Voidaksesi esiintyä vaalikompassissa sinun on annettava joitakin perustietoja itsestäsi ja vastattava poliittisiin mielipidekysymyksiin.",
-    "buttonText": "Jatka"
+    "buttonText": "Jatka",
+    "basicInfoButton": "Täytä perustietosi",
+    "basicInfoButtonEdit": "Muokkaa perustietojasi",
+    "basicInfoButtonView": "Tarkastele perustietojasi",
+    "basicInfoButtonPrimaryActions": "Täytä perustiedot",
+    "questionsButton": "Kerro mielipiteesi",
+    "questionsButtonView": "Tarkastele mielipiteitäsi",
+    "previewButton": "Esikatsele profiiliasi",
+    "logOut": "Kirjaudu ulos",
+    "editingNotAllowedNote": "Vastausten muokkaaminen ei ole enää mahdollista, mutta voit silti tarkastella niitä. Ota yhteyttä ylläpitäjään, jos tiedoissa on virheitä.",
+    "editingNotAllowedPartiallyFilled": "Koska et vastannut kaikkiin kysymyksiin, profiiliasi ei näytetä.",
+    "title": "Olet valmis!",
+    "description": "Olet täyttänyt kaikki vaalikompassia varten tarvittavat tiedot. Voit vielä muokata vastauksiasi ja jopa kirjautua sisään myöhemmin sitä varten.",
+    "tip": "Jos haluat nähdä, miten äänestäjät näkevät profiilisi, voit esikatsella sitä."
   },
   "preview": {
     "title": "Profiilin esikatselu",

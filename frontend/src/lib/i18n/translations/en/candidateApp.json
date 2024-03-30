@@ -140,11 +140,14 @@
     "enterMissingAnswer": "Enter Missing Answers",
     "editYourAnswer": "Edit Your Answer",
     "viewYourAnswer": "View Your Answer",
-    "return": "return",
+    "return": "Return",
+    "cancel": "Cancel",
+    "saveAndContinue": "Save and Continue",
+    "saveAndReturn": "Save and Return",
     "editingAllowedNote": "Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data."
   },
   "passwordButton": {
-    "hidePassword": "Hide pasprettier-plugin-sveltesword",
+    "hidePassword": "Hide password",
     "revealPassword": "Reveal password"
   },
   "homePage": {

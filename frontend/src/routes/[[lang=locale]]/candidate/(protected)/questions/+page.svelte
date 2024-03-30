@@ -82,6 +82,8 @@
       }
     }
   }
+
+  $: nextUnansweredQuestion = Object.values(questions).find((question) => !answers?.[question.id]);
 </script>
 
 {#if answers && Object.entries(answers).length === 0}
@@ -104,7 +106,7 @@
       </div>
       <div class="flex w-full justify-center pb-40 pt-20">
         <Button
-          href={$getRoute({route: Route.CandAppQuestions, id: '1'})}
+          href={$getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion?.id})}
           text={$t('candidateApp.questions.enterMissingAnswer')}
           variant="main"
           icon="next" />
