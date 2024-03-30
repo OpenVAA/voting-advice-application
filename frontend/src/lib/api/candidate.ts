@@ -1,6 +1,6 @@
 import {get} from 'svelte/store';
 import {constants} from '$lib/utils/constants';
-import type {Answer, Language, Question, User, Photo} from '$lib/types/candidateAttributes';
+import type {Answer, Language, User, Photo} from '$lib/types/candidateAttributes';
 import type {
   StrapiAnswerData,
   StrapiLanguageData,
@@ -9,6 +9,7 @@ import type {
   StrapiQuestionData
 } from '$lib/api/getData.type';
 import {candidateContext} from '$lib/utils/candidateStore';
+import {translate} from '$lib/i18n/utils/translate';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
@@ -176,7 +177,7 @@ export const changePassword = async (currentPassword: string, password: string) 
 /**
  * Get questions that have a likert scale.
  */
-export const getLikertQuestions = async (): Promise<Record<string, Question> | undefined> => {
+export const getLikertQuestions = async (): Promise<Record<string, QuestionProps> | undefined> => {
   const res = await request(
     getUrl('api/questions', {
       'populate[questionType]': 'true',
@@ -189,15 +190,27 @@ export const getLikertQuestions = async (): Promise<Record<string, Question> | u
 
   const questionData: StrapiResponse<StrapiQuestionData[]> = await res.json();
 
-  const questions: Record<string, Question> = {};
+  const questions: Record<string, QuestionProps> = {};
 
   questionData.data.forEach((question) => {
-    questions[question.id] = {
+    const attr = question.attributes;
+    const settings = attr.questionType?.data.attributes.settings;
+    const props: QuestionProps = {
       id: `${question.id}`,
-      text: question.attributes.text,
-      editable:
-        question.attributes.category.data.attributes.election.data.attributes.canEditQuestions
+      text: translate(attr.text),
+      info: translate(attr.info),
+      shortName: translate(attr.shortName),
+      category: translate(question.attributes.category.data.attributes.name),
+      type: settings.type,
+      editable: attr.category.data.attributes.election.data.attributes.canEditQuestions
     };
+    if ('values' in settings)
+      props.values = settings.values.map(({key, label}) => ({
+        key,
+        label: translate(label)
+      }));
+
+    questions[question.id] = props;
   });
   return questions;
 };

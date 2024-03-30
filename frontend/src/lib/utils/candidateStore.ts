@@ -1,5 +1,5 @@
 import {authenticate, me} from '$lib/api/candidate';
-import type {Answer, Question, User} from '$lib/types/candidateAttributes';
+import type {Answer, User} from '$lib/types/candidateAttributes';
 import {writable, type Writable} from 'svelte/store';
 import {getExistingAnswers} from '$lib/api/candidate';
 import {getLikertQuestions} from '$lib/api/candidate';
@@ -17,20 +17,24 @@ export interface CandidateContext {
   answersStore: Writable<Record<string, Answer> | undefined>;
   loadAnswerData: () => Promise<void>;
   // Questions
-  questionsStore: Writable<Record<string, Question> | undefined>;
+  questionsStore: Writable<Record<string, QuestionProps> | undefined>;
   loadQuestionData: () => Promise<void>;
   // Custom util
   basicInfoFilledStore: Writable<boolean | undefined>;
-  nofUnansweredQuestionsStore: Writable<number | undefined>;
+  nofUnasweredBasicInfoQuestionsStore: Writable<number | undefined>;
+  opinionQuestionsFilledStore: Writable<boolean | undefined>;
+  nofUnansweredOpinionQuestionsStore: Writable<number | undefined>;
 }
 
 const userStore = writable<User | null>(null);
 const tokenStore = writable<string | null | undefined>(undefined);
 const emailOfNewUserStore = writable<string | undefined>(undefined);
 const answersStore = writable<Record<string, Answer> | undefined>(undefined);
-const questionsStore = writable<Record<string, Question> | undefined>(undefined);
+const questionsStore = writable<Record<string, QuestionProps> | undefined>(undefined);
 const basicInfoFilledStore = writable<boolean | undefined>(undefined);
-const nofUnansweredQuestionsStore = writable<number | undefined>(undefined);
+const nofUnansweredBasicInfoQuestionsStore = writable<number | undefined>(undefined);
+const opinionQuestionsFilledStore = writable<boolean | undefined>(undefined);
+const nofUnansweredOpinionQuestionsStore = writable<number | undefined>(undefined);
 
 const logIn = async (email: string, password: string) => {
   const response = await authenticate(email, password);
@@ -94,5 +98,7 @@ export const candidateContext: CandidateContext = {
   loadQuestionData,
   loadLocalStorage,
   basicInfoFilledStore,
-  nofUnansweredQuestionsStore
+  nofUnansweredOpinionQuestionsStore: nofUnansweredOpinionQuestionsStore,
+  opinionQuestionsFilledStore,
+  nofUnasweredBasicInfoQuestionsStore: nofUnansweredBasicInfoQuestionsStore
 };
