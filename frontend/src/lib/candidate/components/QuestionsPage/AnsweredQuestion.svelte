@@ -72,7 +72,7 @@
           text={getAnsweredButtonText().text}
           href={$getRoute({route: Route.CandAppQuestions, id: question.id})}
           icon={getAnsweredButtonText().icon}
-          iconPos="left"></Button>
+          iconPos="left" />
       </div>
     </div>
     {#if categoryQuestions[categoryQuestions.length - 1] !== question}

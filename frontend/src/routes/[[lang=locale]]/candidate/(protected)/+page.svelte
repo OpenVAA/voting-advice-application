@@ -80,11 +80,13 @@
       href: $getRoute(Route.CandAppProfile)
     };
   };
+
+  $: nextAction = getNextAction();
 </script>
 
 <!--Homepage for the user-->
 
-<BasicPage title={getNextAction().title}>
+<BasicPage title={nextAction.title}>
   <Warning display={!dataEditable} slot="note">
     <p>{$t('candidateApp.homePage.editingNotAllowedNote')}</p>
     {#if !opinionQuestionsFilled || !basicInfoFilled}
@@ -93,15 +95,15 @@
   </Warning>
 
   <p class="max-w-md text-center">
-    {getNextAction().explanation}
+    {nextAction.explanation}
     {#if basicInfoFilled && opinionQuestionsFilled}
       <div class="margin-10">
-        {getNextAction().tip}
+        {nextAction.tip}
       </div>
     {/if}
   </p>
   <Button
-    text={getNextAction().buttonTextBasicInfo}
+    text={nextAction.buttonTextBasicInfo}
     icon="profile"
     iconPos="left"
     href={$getRoute(Route.CandAppProfile)}>
@@ -110,7 +112,7 @@
     {/if}
   </Button>
   <Button
-    text={getNextAction().buttonTextQuestion}
+    text={nextAction.buttonTextQuestion}
     icon="opinion"
     iconPos="left"
     disabled={!basicInfoFilled}
@@ -131,9 +133,9 @@
     {#if !(!dataEditable && !opinionQuestionsFilled)}
       <Button
         variant="main"
-        text={getNextAction().buttonTextPrimaryActions}
+        text={nextAction.buttonTextPrimaryActions}
         icon="next"
-        href={getNextAction().href} />
+        href={nextAction.href} />
     {/if}
 
     <LogoutButton variantIcon={false}></LogoutButton>
