@@ -78,7 +78,7 @@
     !!motherTongues &&
     motherTongues.length > 0 &&
     !!birthday &&
-    Object.values(manifesto).every((value) => value !== '');
+    Object.values(manifesto).some((value) => value !== '');
 
   let errorMessage: string | undefined;
 

@@ -9,7 +9,7 @@
 
   const {
     basicInfoFilledStore: basicInfoFilled,
-    nofUnansweredQuestionsStore: nofUnansweredQuestions
+    nofUnansweredOpinionQuestionsStore: nofUnansweredQuestions
   } = getContext<CandidateContext>('candidate') ?? {};
 
   let allFilled: boolean | undefined;
@@ -50,12 +50,12 @@ A template part that outputs the navigation menu for the Candidate App for use i
       icon="profile"
       text={$t('candidateApp.navbar.basicInfo')} />
     <NavItem
-      href={$getRoute(Route.CandAppSummary)}
+      href={$getRoute(Route.CandAppQuestions)}
       icon="opinion"
       text={$t('candidateApp.navbar.yourOpinions')}
       disabled={!allFilled}>
       {#if $nofUnansweredQuestions && $nofUnansweredQuestions > 0}
-        <InfoBadge text={$nofUnansweredQuestions} classes="-left-8 -top-4" />
+        <InfoBadge text={$nofUnansweredQuestions} disabled={!allFilled} classes="-left-8 -top-4" />
       {/if}
     </NavItem>
     <NavItem

@@ -130,20 +130,18 @@
     "answerSaveError": "Saving answer failed",
     "answerDeleteError": "Deleting answer failed"
   },
-  "allQuestions": {
+  "questions": {
     "title": "Your opinions",
     "warning": "You still have {numUnansweredQuestions} unanswered questions. Your data won't be shown in the Election Compass until you have answered all of them.",
     "info": "You can see all of your opinions below and edit them by tapping on them.",
     "answerButton": "Answer this question",
-    "commentOnThisIssue": "Comment on this issue"
-  },
-  "allDataFilled": {
-    "title": "You're Ready to Roll!",
-    "description": "You have filled all of the information needed for the Election Compass. You can still edit your answers and even log in later to do that.",
-    "tip": "If you want to see how the voters will see your profile, you can preview it.",
-    "logOut": "Log Out",
-    "previewYourProfile": "Preview Your Profile",
-    "editYourOpinions": "Edit Your Opinions"
+    "notAnswered": "You didn't answer this question.",
+    "commentOnThisIssue": "Comment on this issue",
+    "enterMissingAnswer": "Enter Missing Answers",
+    "editYourAnswer": "Edit Your Answer",
+    "viewYourAnswer": "View Your Answer",
+    "return": "return",
+    "editingAllowedNote": "Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data."
   },
   "passwordButton": {
     "hidePassword": "Hide pasprettier-plugin-sveltesword",
@@ -152,7 +150,20 @@
   "homePage": {
     "greeting": "Hello, {userName}!",
     "explanation": "In order to appear in the Election Compass, you have to enter some basic information about yourself as well as answer opinion statements concerning political issues.",
-    "buttonText": "Continue"
+    "buttonText": "Continue",
+    "basicInfoButton": "Enter your basic information",
+    "basicInfoButtonEdit": "Edit your basic information",
+    "basicInfoButtonView": "View your basic information",
+    "basicInfoButtonPrimaryActions": "Fill Basic Information",
+    "questionsButton": "Tell your opinions",
+    "questionsButtonView": "View your opinions",
+    "previewButton": "Preview your profile",
+    "logOut": "Log Out",
+    "editingNotAllowedNote": "Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data.",
+    "editingNotAllowedPartiallyFilled": "Because you didn’t answer all of the questions, your profile won’t be shown.",
+    "title": "You're Ready to Roll!",
+    "description": "You have filled all of the information needed for the Election Compass. You can still edit your answers and even log in later to do that.",
+    "tip": "If you want to see how the voters will see your profile, you can preview it."
   },
   "preview": {
     "title": "Preview",
