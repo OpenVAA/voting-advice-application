@@ -61,7 +61,7 @@ Candidate login page. This component also takes care of the login process.
   </HeadingGroup>
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onLogin}>
     {#if showPasswordSetMessage}
-      <p class="text-3xl font-normal">
+      <p class="max-w-md text-3xl font-normal">
         {$t('candidateApp.setPassword.passwordSetSuccesfully')}
       </p>
     {/if}
