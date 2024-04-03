@@ -3,8 +3,8 @@
   import {uploadFiles} from '$lib/api/candidate';
   import {constants} from '$lib/utils/constants';
   import {t} from '$lib/i18n';
-  import Field from '$lib/components/common/form/Field.svelte';
-  import Icon from '$lib/components/icon/Icon.svelte';
+  import {Field} from '$lib/components/common/form';
+  import {Icon} from '$lib/components/icon';
   import type {Photo} from '$lib/types/candidateAttributes';
 
   export let photo: Photo | undefined;

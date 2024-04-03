@@ -3,12 +3,12 @@
   import {goto} from '$app/navigation';
   import {getRoute} from '$lib/utils/navigation';
   import {BasicPage} from '$lib/templates/basicPage';
-  import Icon from '$lib/components/icon/Icon.svelte';
+  import {Icon} from '$lib/components/icon';
   import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {Button} from '$lib/components/button';
   import {validatePassword} from '$shared/utils/passwordValidation';
   import {changePassword, getLanguages, updateAppLanguage} from '$lib/api/candidate';
-  import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
+  import {PasswordField} from '$lib/candidate/components/passwordField';
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
   import type {StrapiLanguageData} from '$lib/api/getData.type';

@@ -20,9 +20,9 @@
   },
   "logoutModal": {
     "title": "Osa tiedoistasi puuttuu edelleen",
-    "body": "Täytettävänä on vielä {remainingInfoAmount} perustietoa ja {remainingOpinionNumber} mielipidettä. Tietosi eivät näy Vaalikompassissa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
-    "bodyBasicInfoReady": "Täytettävänä on vielä {remainingOpinionNumber} mielipidettä. Tietosi eivät näy Vaalikompassissa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
-    "bodyBasicInfoReady1OpinionLeft": "Täytettävänä on vielä yksi mielipide. Tietosi eivät näy Vaalikompassissa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
+    "body": "Täytettävänä on vielä {remainingInfoAmount} perustietoa ja {remainingOpinionNumber} mielipidettä. Tietosi eivät näy vaalikoneessa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
+    "bodyBasicInfoReady": "Täytettävänä on vielä {remainingOpinionNumber} mielipidettä. Tietosi eivät näy vaalikoneessa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
+    "bodyBasicInfoReady1OpinionLeft": "Täytettävänä on vielä yksi mielipide. Tietosi eivät näy vaalikoneessa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
     "confirmation": "Oletko varma, että haluat kirjautua ulos? Sinut kirjataan automaattisesti ulos {timeLeft} sekunnin kuluttua.",
     "continueEnteringData": "Jatka tietojen syöttämistä"
   },
@@ -121,17 +121,11 @@
     "emailSentText": "Salasanan palautuslinkki on lähetetty sähköpostiisi. Tarkista postilaatikkosi ja klikkaa linkkiä asettaaksesi uuden salasanasi.",
     "errorText": "Sisäinen virhe. Yritä myöhemmin uudelleen tai ota yhteyttä ylläpitäjään."
   },
-  "opinions": {
-    "title": "Kerro mielipiteesi",
-    "instructions": "Seuraavaksi sovellus kysyy mielipiteitäsi {numQuestions} poliittisia kysymyksiä ja arvoja koskevista lausunnoista. Kun äänestäjät käyttävät vaalikompassia, he vastaavat myös samoihin väittämiin ja näkevät, kuinka hyvin heidän mielipiteensä vastaavat sinun mielipiteitäsi.",
-    "tip": "Näet kaikki vastauksesi tällä sivulla, kun palaat siihen myöhemmin.",
-    "continue": "Jatka",
-    "commentOnThisIssue": "Perustele vastauksesi",
-    "answerSaveError": "Vastauksen tallentaminen epäonnistui",
-    "answerDeleteError": "Vastauksen poistaminen epäonnistui"
-  },
   "questions": {
     "title": "Mielipiteesi",
+    "start": "Kerro mielipiteesi",
+    "instructions": "Seuraavaksi sovellus kysyy mielipidettäsi {numQuestions} väittämään poliittisista kysymyksistä ja arvoista. Kun äänestäjät käyttävät vaalikompassia, he vastaavat myös samoihin väittämiin ja näkevät, kuinka hyvin heidän mielipiteensä vastaavat sinun mielipiteitäsi.",
+    "tip": "Näet kaikki vastauksesi tällä sivulla, kun palaat siihen myöhemmin.",
     "warning": "Sinulla on vielä {numUnansweredQuestions} vastaamattomia kysymyksiä. Tietosi eivät näy Vaalikompassissa ennen kuin olet vastannut kaikkiin kysymyksiin.",
     "info": "Näet kaikki mielipiteesi alla ja voit muokata niitä napauttamalla niitä.",
     "answerButton": "Vastaa tähän kysymykseen",
@@ -140,10 +134,12 @@
     "enterMissingAnswer": "Vastaa puuttuviiin kysymyksiin",
     "editYourAnswer": "Muokkaa vastaustasi",
     "viewYourAnswer": "Tarkastele vastaustasi",
+    "continue": "Jatka",
     "return": "Palaa",
     "cancel": "Peruuta",
     "saveAndContinue": "Tallenna ja jatka",
     "saveAndReturn": "Tallenna ja palaa",
+    "answerSaveError": "Vastauksen tallentaminen epäonnistui",
     "editingAllowedNote": "Vastausten muokkaaminen ei ole enää mahdollista, mutta voit silti tarkastella niitä. Ota yhteyttä ylläpitäjään, jos tiedoissa on virheitä."
   },
   "passwordButton": {
@@ -152,7 +148,7 @@
   },
   "homePage": {
     "greeting": "Hei, {userName}!",
-    "explanation": "Voidaksesi esiintyä vaalikompassissa sinun on annettava joitakin perustietoja itsestäsi ja vastattava poliittisiin mielipidekysymyksiin.",
+    "explanation": "Voidaksesi esiintyä vaalikoneessa sinun on annettava joitakin perustietoja itsestäsi ja vastattava poliittisiin mielipidekysymyksiin.",
     "buttonText": "Jatka",
     "basicInfoButton": "Täytä perustietosi",
     "basicInfoButtonEdit": "Muokkaa perustietojasi",
@@ -165,7 +161,7 @@
     "editingNotAllowedNote": "Vastausten muokkaaminen ei ole enää mahdollista, mutta voit silti tarkastella niitä. Ota yhteyttä ylläpitäjään, jos tiedoissa on virheitä.",
     "editingNotAllowedPartiallyFilled": "Koska et vastannut kaikkiin kysymyksiin, profiiliasi ei näytetä.",
     "title": "Olet valmis!",
-    "description": "Olet täyttänyt kaikki vaalikompassia varten tarvittavat tiedot. Voit vielä muokata vastauksiasi ja jopa kirjautua sisään myöhemmin sitä varten.",
+    "description": "Olet täyttänyt kaikki vaalikoneen tarvittavat tiedot. Voit vielä muokata vastauksiasi ja jopa kirjautua sisään myöhemmin sitä varten.",
     "tip": "Jos haluat nähdä, miten äänestäjät näkevät profiilisi, voit esikatsella sitä."
   },
   "preview": {

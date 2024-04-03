@@ -1,4 +1,16 @@
+import type {Question} from '$lib/types/candidateAttributes';
+
 export type QuestionPageProps = {
+  /**
+   * Shown question
+   */
+  currentQuestion: Question;
+
+  /**
+   * All questions
+   */
+  questions: Record<string, Question>;
+
   /**
    * Edit mode for the question page.
    * If true, the page shows "Save and Return" and "Cancel" buttons. In this case the user comes from the question summary.

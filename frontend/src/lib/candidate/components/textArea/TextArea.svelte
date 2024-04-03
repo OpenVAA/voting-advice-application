@@ -117,7 +117,9 @@ Usage with local saving:
 
 <div class="relative w-full">
   {#if headerText}
-    <label for={id} class="text-m mx-6 my-6 p-0 uppercase text-secondary">{headerText}</label>
+    <div class="mx-10 mt-10">
+      <label for={id} class="text-m uppercase text-secondary">{headerText}</label>
+    </div>
   {:else}
     <slot name="header" field={undefined} />
   {/if}

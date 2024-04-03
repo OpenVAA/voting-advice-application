@@ -4,10 +4,10 @@
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
-  import type {RenderQuestionProps} from './Question.type';
   import {get} from 'svelte/store';
   import {translate} from '$lib/i18n/utils';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {RenderQuestionProps} from './Question.type';
 
   type $$Props = RenderQuestionProps;
 
@@ -28,7 +28,7 @@
 
 <div class="pt-40">
   <div class="text-accent">
-    {question.category}
+    {translate(question.category)}
   </div>
 
   <Expander title={translate(question.text)} variant="question" titleClass="text-warning">

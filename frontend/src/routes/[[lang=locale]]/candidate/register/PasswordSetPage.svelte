@@ -6,12 +6,12 @@
   import {getRoute, Route} from '$lib/utils/navigation';
   import {validatePassword} from '$shared/utils/passwordValidation';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import Footer from '$lib/templates/parts/footer/Footer.svelte';
+  import {Footer} from '$lib/templates/parts/footer';
   import {FrontPage} from '$lib/templates/frontPage';
-  import {PasswordSetter} from '$lib/candidate/components/PasswordSetter';
+  import {PasswordSetter} from '$lib/candidate/components/passwordSetter';
   import {getContext} from 'svelte';
+  import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import type {CandidateContext} from '$lib/utils/candidateStore';
-  import LogoutButton from '$lib/candidate/components/logoutButton/LogoutButton.svelte';
 
   export let userName: string;
   export let registrationCode: string;

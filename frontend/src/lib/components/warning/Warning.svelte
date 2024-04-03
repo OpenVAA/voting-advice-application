@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '../icon/Icon.svelte';
+  import {Icon} from '$lib/components/icon';
   import type {WarningProps} from './Warning.type';
 
   type $$Props = WarningProps;

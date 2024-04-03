@@ -1,7 +1,7 @@
 <script lang="ts">
   import {goto} from '$app/navigation';
-  import {page} from '$app/stores';
   import {t, locale} from '$lib/i18n';
+  import {translate} from '$lib/i18n/utils/translate';
   import {getContext} from 'svelte';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {addAnswer, updateAnswer} from '$lib/api/candidate';
@@ -13,24 +13,22 @@
   import {MultilangTextInput} from '$candidate/components/textArea';
   import type {CandidateContext} from '$lib/utils/candidateStore';
   import type {QuestionPageProps} from './QuestionPage.type';
-  import {translate} from '$lib/i18n/utils/translate';
 
   type $$Props = QuestionPageProps;
+  export let currentQuestion: $$Props['currentQuestion'];
+  export let questions: $$Props['questions'];
   export let editMode: $$Props['editMode'] = false;
 
-  const {answersStore, questionsStore} = getContext<CandidateContext>('candidate');
+  const {answersStore} = getContext<CandidateContext>('candidate');
 
   $: answers = $answersStore;
-  $: questions = $questionsStore;
+  $: answer = answers?.[questionId]; // undefined if not answered
 
-  $: questionId = $page.params.questionId;
+  $: questionId = currentQuestion.id;
 
   // Local storage keys, depend on the question id
   $: likertLocal = `candidate-app-question-${questionId}-likert`;
   $: openAnswerLocal = `candidate-app-question-${questionId}-open`;
-
-  $: currentQuestion = questions?.[questionId];
-  $: answer = answers?.[questionId]; // undefined if not answered
 
   let openAnswerTextArea: MultilangTextInput; // Used to clear the local storage from the parent component
   let openAnswer: LocalizedString = {};
@@ -76,7 +74,7 @@
 
       const response = await addAnswer(questionId, selectedKey, openAnswer);
       if (!response?.ok) {
-        showError($t('candidateApp.opinions.answerSaveError'));
+        showError($t('candidateApp.questions.answerSaveError'));
         return;
       }
 
@@ -89,7 +87,7 @@
       const likertAnswer = selectedKey ?? answer.key;
       const response = await updateAnswer(answer.id, likertAnswer, openAnswer);
       if (!response?.ok) {
-        showError($t('candidateApp.opinions.answerSaveError'));
+        showError($t('candidateApp.questions.answerSaveError'));
         return;
       }
 
@@ -120,10 +118,6 @@
   };
 
   const saveAndContinue = async () => {
-    if (!questions || !currentQuestion) {
-      return;
-    }
-
     await saveToServer();
 
     const nextUnansweredQuestion = Object.values(questions).find(
@@ -138,90 +132,100 @@
     goto($getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion.id}));
   };
 
-  $: title = translate(currentQuestion?.text, $locale);
-  $: category = translate(currentQuestion?.category, $locale);
-  $: info = translate(currentQuestion?.info, $locale);
-  $: values = currentQuestion?.values?.map(({key, label}) => ({
+  $: category = translate(currentQuestion.category, $locale);
+  $: info = translate(currentQuestion.info, $locale);
+  $: options = currentQuestion.values?.map(({key, label}) => ({
     key,
     label: translate(label, $locale)
   }));
 </script>
 
-{#if currentQuestion}
-  {#key currentQuestion}
-    <BasicPage title={translate(currentQuestion.text)} class="bg-base-200">
-      <Warning display={!currentQuestion.editable} slot="note"
-        >{$t('questions.cannotEditWarning')}</Warning>
+<!--
+@component
+Display the page for answering a single question.
+In addition to the question, includes a Likert scale and a text area for commenting.
 
-      <HeadingGroup slot="heading" id="hgroup-{currentQuestion.id}">
-        {#if category !== ''}
-          <!-- TODO: Set color based on category -->
-          <PreHeading class="text-accent">{category}</PreHeading>
-        {/if}
-        <h1>{title}</h1>
-      </HeadingGroup>
+## Props
+- `currentQuestion` (required): The question to display.
+- `questions` (required): Record of all questions.
+- `editMode` (optional): Whether the page is in edit mode. Changes the buttons displayed.
 
-      {#if info !== ''}
-        <QuestionInfo {info} />
+## Usage
+```tsx
+<QuestionPage {currentQuestion} {questions} />
+```
+
+-->
+
+{#key currentQuestion}
+  <BasicPage title={translate(currentQuestion.text, $locale)} class="bg-base-200">
+    <Warning display={!currentQuestion.editable} slot="note"
+      >{$t('questions.cannotEditWarning')}</Warning>
+
+    <HeadingGroup slot="heading" id="hgroup-{questionId}">
+      {#if category !== ''}
+        <!-- TODO: Set color based on category -->
+        <PreHeading class="text-accent">{category}</PreHeading>
+      {/if}
+      <h1>{translate(currentQuestion.text, $locale)}</h1>
+    </HeadingGroup>
+
+    {#if info !== ''}
+      <QuestionInfo {info} />
+    {/if}
+
+    <svelte:fragment slot="primaryActions">
+      {#if currentQuestion.type === 'singleChoiceOrdinal'}
+        <LikertResponseButtons
+          aria-labelledby="hgroup-{questionId}"
+          name={questionId}
+          mode={currentQuestion.editable ? 'answer' : 'display'}
+          {options}
+          {selectedKey}
+          on:change={saveLikertToLocal} />
+      {:else}
+        {$t('error.general')}
       {/if}
 
-      <svelte:fragment slot="primaryActions">
-        {#if currentQuestion.type === 'singleChoiceOrdinal'}
-          <LikertResponseButtons
-            aria-labelledby="hgroup-{currentQuestion.id}"
-            name={currentQuestion.id}
-            options={values}
-            mode={currentQuestion.editable ? 'answer' : 'display'}
-            {selectedKey}
-            on:change={saveLikertToLocal} />
-        {:else}
-          {$t('error.general')}
-        {/if}
+      <MultilangTextInput
+        id="openAnswer"
+        headerText={$t('candidateApp.questions.commentOnThisIssue')}
+        localStorageId={openAnswerLocal}
+        previouslySavedMultilang={answer?.openAnswer ?? undefined}
+        disabled={!selectedKey}
+        locked={!currentQuestion.editable}
+        placeholder="—"
+        bind:multilangText={openAnswer}
+        bind:this={openAnswerTextArea} />
 
-        <MultilangTextInput
-          id="openAnswer"
-          headerText={$t('candidateApp.opinions.commentOnThisIssue')}
-          localStorageId={openAnswerLocal}
-          previouslySavedMultilang={answer?.openAnswer ?? undefined}
-          disabled={!selectedKey}
-          locked={!currentQuestion.editable}
-          placeholder="—"
-          bind:multilangText={openAnswer}
-          bind:this={openAnswerTextArea} />
+      {#if errorMessage}
+        <p class="text-error">{errorMessage}</p>
+      {/if}
 
-        {#if errorMessage}
-          <p class="text-error">{errorMessage}</p>
-        {/if}
-
-        {#if !currentQuestion.editable}
+      {#if !currentQuestion.editable}
+        <Button
+          on:click={() => goto($getRoute(Route.CandAppQuestions))}
+          variant="main"
+          text={$t('candidateApp.questions.return')} />
+      {:else if editMode}
+        <div class="flex justify-center gap-12">
+          <Button
+            on:click={saveAndReturn}
+            variant="main"
+            text={$t('candidateApp.questions.saveAndReturn')} />
           <Button
             on:click={() => goto($getRoute(Route.CandAppQuestions))}
             variant="main"
-            text={$t('candidateApp.questions.return')} />
-        {:else if editMode}
-          <div class="flex justify-center">
-            <Button
-              on:click={saveAndReturn}
-              class="mx-6"
-              variant="main"
-              text={$t('candidateApp.questions.saveAndReturn')} />
-            <Button
-              on:click={() => goto($getRoute(Route.CandAppQuestions))}
-              class="mx-6"
-              variant="main"
-              text={$t('candidateApp.questions.cancel')} />
-          </div>
-        {:else}
-          <Button
-            on:click={saveAndContinue}
-            variant="main"
-            icon="next"
-            disabled={!selectedKey}
-            text={$t('candidateApp.questions.saveAndContinue')} />
-        {/if}
-      </svelte:fragment>
-    </BasicPage>
-  {/key}
-{:else}
-  {$t('question.notFound')}
-{/if}
+            text={$t('candidateApp.questions.cancel')} />
+        </div>
+      {:else}
+        <Button
+          on:click={saveAndContinue}
+          variant="main"
+          icon="next"
+          disabled={!selectedKey}
+          text={$t('candidateApp.questions.saveAndContinue')} />
+      {/if}
+    </svelte:fragment>
+  </BasicPage>
+{/key}
