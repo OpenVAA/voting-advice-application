@@ -42,7 +42,7 @@
   });
 
   const triggerLogout = () => {
-    if ((!opinionQuestionsFilled || !basicInfoQuestionsLeft) && !stayOnPage) {
+    if (!opinionQuestionsFilled || !basicInfoQuestionsLeft) {
       openModal();
     } else {
       logout();
