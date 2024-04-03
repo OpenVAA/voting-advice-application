@@ -7,6 +7,7 @@
   import type {CandidateContext} from '$lib/utils/candidateStore';
   import type {RenderQuestionProps} from './Question.type';
   import {get} from 'svelte/store';
+  import {translate} from '$lib/i18n/utils';
 
   type $$Props = RenderQuestionProps;
 
@@ -30,7 +31,7 @@
     {question.category}
   </div>
 
-  <Expander title={question.text ?? ''} variant="question" titleClass="text-warning">
+  <Expander title={translate(question.text)} variant="question" titleClass="text-warning">
     {question.info}
   </Expander>
 

@@ -2,7 +2,7 @@
   import {Button} from '$lib/components/button';
   import {Expander} from '$lib/components/expander';
   import LikertResponseButtons from '$lib/components/questions/LikertResponseButtons.svelte';
-  import {t} from '$lib/i18n';
+  import {t, locale} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {translate} from '$lib/i18n/utils/translate';
   import QuestionOpenAnswer from '$lib/components/questions/QuestionOpenAnswer.svelte';
@@ -46,11 +46,11 @@
 {#if answers?.[question.id]}
   <div class="pb-20 pt-20">
     <div class="text-accent">
-      {question.category}
+      {translate(question.category)}
     </div>
 
-    <Expander title={question.text ?? ''} variant="question">
-      {question.info}
+    <Expander title={translate(question.text)} variant="question">
+      {translate(question.info)}
     </Expander>
 
     <div class="pt-10">
@@ -58,7 +58,10 @@
       <LikertResponseButtons
         name={question.id}
         mode="display"
-        options={question.values}
+        options={question.values?.map(({key, label}) => ({
+          key,
+          label: translate(label, $locale)
+        }))}
         selectedKey={answers[question.id].key} />
 
       {#if translate(answers[question.id].openAnswer) !== ''}

@@ -1,7 +1,7 @@
 <script lang="ts">
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
-  import {t} from '$lib/i18n';
+  import {t, locale} from '$lib/i18n';
   import {getContext} from 'svelte';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {addAnswer, updateAnswer} from '$lib/api/candidate';
@@ -13,6 +13,7 @@
   import {MultilangTextInput} from '$candidate/components/textArea';
   import type {CandidateContext} from '$lib/utils/candidateStore';
   import type {QuestionPageProps} from './QuestionPage.type';
+  import {translate} from '$lib/i18n/utils/translate';
 
   type $$Props = QuestionPageProps;
   export let editMode: $$Props['editMode'] = false;
@@ -136,24 +137,32 @@
     }
     goto($getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion.id}));
   };
+
+  $: title = translate(currentQuestion?.text, $locale);
+  $: category = translate(currentQuestion?.category, $locale);
+  $: info = translate(currentQuestion?.info, $locale);
+  $: values = currentQuestion?.values?.map(({key, label}) => ({
+    key,
+    label: translate(label, $locale)
+  }));
 </script>
 
 {#if currentQuestion}
   {#key currentQuestion}
-    <BasicPage title={currentQuestion.text} class="bg-base-200">
+    <BasicPage title={translate(currentQuestion.text)} class="bg-base-200">
       <Warning display={!currentQuestion.editable} slot="note"
         >{$t('questions.cannotEditWarning')}</Warning>
 
       <HeadingGroup slot="heading" id="hgroup-{currentQuestion.id}">
-        {#if currentQuestion.category && currentQuestion.category !== ''}
+        {#if category !== ''}
           <!-- TODO: Set color based on category -->
-          <PreHeading class="text-accent">{currentQuestion.category}</PreHeading>
+          <PreHeading class="text-accent">{category}</PreHeading>
         {/if}
-        <h1>{currentQuestion.text}</h1>
+        <h1>{title}</h1>
       </HeadingGroup>
 
-      {#if currentQuestion.info && currentQuestion.info !== ''}
-        <QuestionInfo info={currentQuestion.info} />
+      {#if info !== ''}
+        <QuestionInfo {info} />
       {/if}
 
       <svelte:fragment slot="primaryActions">
@@ -161,7 +170,7 @@
           <LikertResponseButtons
             aria-labelledby="hgroup-{currentQuestion.id}"
             name={currentQuestion.id}
-            options={currentQuestion.values}
+            options={values}
             mode={currentQuestion.editable ? 'answer' : 'display'}
             {selectedKey}
             on:change={saveLikertToLocal} />
