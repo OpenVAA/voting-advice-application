@@ -6,24 +6,21 @@ import { factories } from '@strapi/strapi';
 import { restrictResourceOwnedByCandidate, restrictPopulate, restrictFilters } from '../../../util/acl';
 
 const electionCanEditQuestions = async (ctx, config, {strapi}) => {
-  const {id} = ctx.params;
+  if (!ctx.state.user) return false;
 
-  const answer = await strapi.db.query('api::answer.answer').findOne({
-    where: {id},
+  // TODO: refactor this when nomination is one-to-one mapping to the candidate
+  const candidate = await strapi.db.query('api::candidate.candidate').findOne({
+    where: {user: {id: ctx.state.user.id}},
     populate: {
-      question: {
+      nominations: {
         populate: {
-          category: {
-            populate: {
-              election: true,
-            },
-          },
+          election: true,
         },
       },
     },
   });
 
-  return answer?.question?.category?.election?.canEditQuestions ?? true; // If no election is set, then allowing editing questions by default
+  return candidate?.nominations[0]?.election?.canEditQuestions ?? false;
 };
 
 export default factories.createCoreRouter('api::answer.answer', {
