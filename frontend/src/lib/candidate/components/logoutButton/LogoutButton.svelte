@@ -9,6 +9,8 @@
 
   /** Defaults to true, so that button variant is "icon". Can be set to false if the button should be of variant "main" */
   export let variantIcon = true;
+  /*Determines whether the user is taken to the login page after logging out or stays on the current page*/
+  export let stayOnPage = false;
 
   /** time until automatic logout for modal */
   export let logoutModalTimer = 30;
@@ -40,7 +42,7 @@
   });
 
   const triggerLogout = () => {
-    if (!opinionQuestionsFilled || !basicInfoQuestionsLeft) {
+    if ((!opinionQuestionsFilled || !basicInfoQuestionsLeft) && !stayOnPage) {
       openModal();
     } else {
       logout();
@@ -50,7 +52,9 @@
   const logout = async () => {
     await logOut();
     closeModal();
-    await goto($getRoute(Route.CandAppHome));
+    if (!stayOnPage) {
+      await goto($getRoute(Route.CandAppHome));
+    }
   };
 </script>
 
