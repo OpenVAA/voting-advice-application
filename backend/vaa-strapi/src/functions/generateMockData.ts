@@ -971,6 +971,15 @@ async function createAnswers(entityType: Omit<EntityType, 'all'>) {
 }
 
 async function createCandidateUsers() {
+  if (process.env.NODE_ENV === 'production') {
+    console.warn('Skipped - running in production mode.');
+    return;
+  }
+
+  console.warn(
+    'The application is running in development mode - creating a default user for the first candidate'
+  );
+
   const authenticated = await strapi.query('plugin::users-permissions.role').findOne({
     where: {
       type: 'authenticated'
