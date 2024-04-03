@@ -3,7 +3,7 @@
   import {getRoute, Route} from '$lib/utils/navigation';
   import BasicPage from '$lib/templates/basicPage/BasicPage.svelte';
   import Button from '$lib/components/button/Button.svelte';
-  import QAExpander from './QAExpander.svelte';
+  import Expander from '$lib/components/expander/Expander.svelte';
 </script>
 
 <BasicPage title={$t('candidateApp.help.title')}>
@@ -11,25 +11,25 @@
     <p class="pb-lg">{$t('candidateApp.help.description')}</p>
   </div>
 
-  <QAExpander
-    question={$t('candidateApp.help.questions.question1.question')}
-    answer={$t('candidateApp.help.questions.question1.answer')} />
+  <Expander title={$t('candidateApp.help.questions.question1.question')} variant="question-help">
+    {$t('candidateApp.help.questions.question1.answer')}
+  </Expander>
 
-  <QAExpander
-    question={$t('candidateApp.help.questions.question2.question')}
-    answer={$t('candidateApp.help.questions.question2.answer')} />
+  <Expander title={$t('candidateApp.help.questions.question2.question')} variant="question-help">
+    {$t('candidateApp.help.questions.question2.answer')}
+  </Expander>
 
-  <QAExpander
-    question={$t('candidateApp.help.questions.question3.question')}
-    answer={$t('candidateApp.help.questions.question3.answer')} />
+  <Expander title={$t('candidateApp.help.questions.question3.question')} variant="question-help">
+    {$t('candidateApp.help.questions.question3.answer')}
+  </Expander>
 
-  <QAExpander
-    question={$t('candidateApp.help.questions.question4.question')}
-    answer={$t('candidateApp.help.questions.question4.answer')} />
+  <Expander title={$t('candidateApp.help.questions.question4.question')} variant="question-help">
+    {$t('candidateApp.help.questions.question4.answer')}
+  </Expander>
 
-  <QAExpander
-    question={$t('candidateApp.help.questions.question5.question')}
-    answer={$t('candidateApp.help.questions.question5.answer')} />
+  <Expander title={$t('candidateApp.help.questions.question5.question')} variant="question-help">
+    {$t('candidateApp.help.questions.question5.answer')}
+  </Expander>
 
   <svelte:fragment slot="primaryActions">
     <Button
