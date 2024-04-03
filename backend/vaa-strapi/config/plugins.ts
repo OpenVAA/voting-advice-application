@@ -1,4 +1,11 @@
 export default ({env}) => ({
+  'users-permissions': {
+    config: {
+      jwt: {
+        expiresIn: '4h'
+      }
+    }
+  },
   email: {
     config: {
       provider: 'nodemailer',
