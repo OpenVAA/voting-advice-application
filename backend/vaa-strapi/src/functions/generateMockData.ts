@@ -619,7 +619,7 @@ async function createQuestionCategories() {
       order,
       info,
       type: 'info',
-      elections: [elections[0].id],
+      election: elections[0].id,
       publishedAt: new Date()
     }
   });

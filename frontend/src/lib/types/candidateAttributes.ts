@@ -95,9 +95,3 @@ export interface Answer {
   key: AnswerOption['key']; // Selected answer option
   openAnswer: LocalizedString | null; // Optional free-form answer
 }
-
-export interface Question {
-  id: string; // Id of the question in the database
-  text: LocalizedString; //text of the question
-  editable: boolean;
-}
