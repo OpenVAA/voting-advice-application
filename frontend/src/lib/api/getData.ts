@@ -16,7 +16,8 @@ import type {
   StrapiAppLabelsData,
   LocalizedStrapiData,
   StrapiQuestionCategoryData,
-  StrapiImageData
+  StrapiImageData,
+  StrapiAppSettingsData
 } from './getData.type';
 
 // To build REST queries, one can use https://docs.strapi.io/dev-docs/api/rest/interactive-query-builder
@@ -44,6 +45,33 @@ export function getData<T extends object>(
       throw new Error(e);
     });
 }
+
+/**
+ * Get app settings defined in Strapi.
+ * @param locale The locale to translate the texts to
+ */
+export const getAppSettings = ({
+  locale
+}: {
+  locale?: string;
+} = {}): Promise<Partial<AppSettings>> => {
+  const params = new URLSearchParams({
+    'populate[publisherLogo]': 'true',
+    'populate[publisherLogoDark]': 'true'
+  });
+  return getData<StrapiAppSettingsData[]>('api/app-settings', params).then((result) => {
+    if (result.length !== 1)
+      throw new Error(`Expected one AppSettings object, but got ${result.length}`);
+    const attr = result[0].attributes;
+    const publisher: AppSettings['publisher'] = {
+      name: translate(attr.publisherName, locale)
+    };
+    if (attr.publisherLogo.data) publisher.logo = parseImage(attr.publisherLogo.data.attributes);
+    if (attr.publisherLogoDark.data)
+      publisher.logoDark = parseImage(attr.publisherLogoDark.data.attributes);
+    return {publisher};
+  });
+};
 
 /**
  * Get election data from Strapi including the app labels.
