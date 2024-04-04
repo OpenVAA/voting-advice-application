@@ -2,15 +2,13 @@
   import {LoginPage} from '$lib/candidate/templates/login';
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
-  import type {Candidate} from '$lib/types/candidateAttributes';
-  import BasicPage from '$lib/templates/basicPage/BasicPage.svelte';
-  import Warning from '$lib/components/warning/Warning.svelte';
+  import {BasicPage} from '$lib/templates/basicPage';
+  import {Warning} from '$lib/components/warning/intex';
   import {t} from '$lib/i18n';
 
   const {userStore, tokenStore} = getContext<CandidateContext>('candidate');
   export let showLogin = false;
-  let candidate = <Candidate | undefined>undefined;
-  userStore.subscribe((value) => (candidate = value?.candidate));
+  $: candidate = $userStore?.candidate;
 </script>
 
 <!--
@@ -39,10 +37,10 @@ Require candidates to be logged in to view the children of this component.
 -->
 
 {#if $userStore}
-  {#if candidate != undefined}
+  {#if candidate}
     <slot />
   {:else}
-    <BasicPage title="">
+    <BasicPage title="Error">
       <Warning display slot="heading">
         <p>{$t('candidateApp.error.userNoCandidateError')}</p>
       </Warning>
