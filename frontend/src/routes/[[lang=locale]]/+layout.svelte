@@ -5,6 +5,10 @@
   import type {LayoutData} from './$types';
 
   export let data: LayoutData;
+
+  const fontUrl =
+    $settings?.font?.url ??
+    'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap';
 </script>
 
 <svelte:head>
@@ -17,6 +21,11 @@
     name="theme-color"
     content={$settings?.colors?.dark?.['base-300'] ?? '#1f2324'}
     media="(prefers-color-scheme: dark)" />
+  {#if fontUrl.indexOf('fonts.googleapis') !== -1}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true" />
+  {/if}
+  <link href={fontUrl} rel="stylesheet" />
 </svelte:head>
 
 {#if data.election}

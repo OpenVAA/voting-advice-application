@@ -1,10 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  html {
+    /* We need to explicitly set this, because we're not using the default `sans` font utility. */
+    @apply font-base;
+  }
   body {
     @apply bg-base-100 text-md;
   }
