@@ -24,6 +24,11 @@
       "line-color": "#262626"
     }
   },
+  "font": {
+    "name": "Inter",
+    "url": "https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap')",
+    "style": "sans"
+  },
   "supportedLocales": [
     {
       "code": "en",

@@ -34,6 +34,37 @@ const colorNames = ['current', 'primary', 'secondary', 'accent', 'neutral', 'bas
   'info', 'success', 'warning', 'error', 'base-content', 'primary-content', 'secondary-content', 'accent-content', 
   'info-content', 'success-content', 'warning-content', 'error-content'];
 
+// The emoji font-family
+const emojiFonts = [
+  '"Apple Color Emoji"',
+  '"Segoe UI Emoji"',
+  '"Segoe UI Symbol"',
+  '"Noto Color Emoji"',
+];
+
+// The fallback fonts for different font styles. Note that the emoji fonts will be appended to all of these.
+const fontFallbacks = {
+  sans: [
+    'system-ui',
+    '-apple-system',
+    'BlinkMacSystemFont',
+    '"Segoe UI"',
+    'Roboto',
+    '"Helvetica Neue"',
+    'Arial',
+    '"Noto Sans"',
+    'sans-serif',
+  ],
+  serif: [
+    'ui-serif', 
+    'Georgia', 
+    'Cambria',
+    '"Times New Roman"', 
+    'Times',
+    'serif',
+  ]
+}
+
 module.exports = {
   content: ['./src/**/*.{html,js,svelte,ts}'],
   // We need to safelist these color utility classes so that we can freely use
@@ -68,6 +99,14 @@ module.exports = {
       sm:   '1.21',
       md:   '1.35',
       lg:   '1.5'
+    },
+    fontFamily: {
+      base: [
+        settings.font?.name ?? 'Inter',
+        ...(fontFallbacks[settings.font?.style ?? 'sans'] ?? fontFallbacks.sans),
+        ...emojiFonts
+      ],
+      emoji: emojiFonts
     },
     fontSize: ({ theme }) => ({
       xs:    [`${11.5/16}rem`, { lineHeight: theme('lineHeight.sm') }], // label in all caps
@@ -134,30 +173,6 @@ module.exports = {
       full:    '675ms',
     },
     extend: {
-      fontFamily: {
-        sans: [
-            'Inter',
-            'system-ui',
-            '-apple-system',
-            'BlinkMacSystemFont',
-            '"Segoe UI"',
-            'Roboto',
-            '"Helvetica Neue"',
-            'Arial',
-            '"Noto Sans"',
-            'sans-serif',
-            '"Apple Color Emoji"',
-            '"Segoe UI Emoji"',
-            '"Segoe UI Symbol"',
-            '"Noto Color Emoji"',
-          ],
-          emoji: [
-            '"Apple Color Emoji"',
-            '"Segoe UI Emoji"',
-            '"Segoe UI Symbol"',
-            '"Noto Color Emoji"',
-          ],
-      },
       height: {
         screen: fixedScreenHeight,
       },
