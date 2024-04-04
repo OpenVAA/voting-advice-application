@@ -90,6 +90,33 @@ declare global {
   }
 
   /**
+   * The application settings, combined from both local settings and those retrieved from the database.
+   */
+  interface AppSettings {
+    colors: {
+      light: {[name: string]: string};
+      dark: {[name: string]: string};
+    };
+    font: {
+      name: string;
+      url: string;
+    };
+    supportedLocales: Array<{
+      code: string;
+      name: string;
+      isDefault?: boolean;
+    }>;
+    results: {
+      sections: string[];
+    };
+    publisher?: {
+      name: string;
+      logo?: ImageProps;
+      logoDark?: ImageProps;
+    };
+  }
+
+  /**
    * The properties of a Candidate object that can be passed onto the
    * related components.
    * TODO: This may be deprecated later by the `vaa-data` module.
