@@ -36,6 +36,12 @@ export type PageProps = SvelteHTMLElements['div'] & {
   mainClass?: string;
 
   /**
+   * Whether to invert the logo and accompanying menu button colors. Set
+   * to true if the header is dark. @default false
+   */
+  invertLogo?: boolean;
+
+  /**
    * The id for the `<nav>` element containing the navigation.
    *
    * @default 'pageNav'
