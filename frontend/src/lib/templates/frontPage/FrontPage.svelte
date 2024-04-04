@@ -1,5 +1,6 @@
 <script lang="ts">
   import {concatProps} from '$lib/utils/components';
+  import {Footer} from '../parts/footer';
   import {Page} from '../page';
   import type {FrontPageProps} from './FrontPage.type';
 
@@ -28,7 +29,6 @@ is based on.
 - `hero`: an optional hero image
 - `heading`: optional content for the main title block, defaults to a 
   `<h1>` element containing the required `title` property
-- `footer`: the footer to display at the bottom of the page
     
 ### Properties
 
@@ -42,7 +42,6 @@ is based on.
 
 ```tsx
 <FrontPage title="General Elections 2066">
-
   <svelte:fragment slot="heading">
     <p>{$t('viewTexts.appTitle')}</p>
     <h1>{$page.data.election.name}</h1>
@@ -56,11 +55,6 @@ is based on.
   <p class="text-center">
     Lorem ipsum
   </p>
-
-  <svelte:fragment slot="footer">
-    Footer contents
-  </svelte:fragment>
-
 </FrontPage>
 
 ```
@@ -100,10 +94,7 @@ is based on.
     </div>
   </div>
 
-  <!-- Footer -->
-  <footer class="mt-lg pb-safelgb text-center text-sm text-secondary">
-    <slot name="footer" />
-  </footer>
+  <Footer />
 </Page>
 
 <style lang="postcss">
