@@ -1,12 +1,37 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
+  import {concatClass} from '$lib/utils/components';
+  import {settings} from '$lib/utils/stores';
+  import {OpenVAALogo} from '$lib/components/openVAALogo';
+  import type {FooterProps} from './Footer.type';
+
+  type $$Props = FooterProps; // eslint-disable-line @typescript-eslint/no-unused-vars
 </script>
 
-<footer class="p-lg text-center text-sm text-secondary">
-  {$t('viewTexts.publishedBy', {publisher: 'OpenVAA'})}
-  <img class="inline w-14" src={'/icons/publisher.svg'} alt="governmental" srcset="" /> • {$t(
-    'viewTexts.madeWith',
-    {openVAA: 'OpenVAA'}
-  )}
-  <img class="inline w-14" src="/icons/vote.svg" alt="" srcset="" /> OpenVAA
+<!--
+@component
+A template part that is used to show the application's common footer.
+
+### Properties
+
+- Any valid attributes of the `<footer>` element.
+
+### Usage
+
+```tsx
+<Footer/>
+```
+-->
+
+<footer
+  {...concatClass(
+    $$restProps,
+    'mt-lg pl-safelgl pr-safelgr pb-safelgb text-center text-sm text-secondary'
+  )}>
+  {#if $settings.publisher?.name}
+    {$t('viewTexts.publishedBy', {publisher: $settings.publisher.name})} •
+  {/if}
+  {$t('viewTexts.madeWith')}
+  <a href="https://github.com/OpenVAA/voting-advice-application/" target="_blank"
+    ><OpenVAALogo color="secondary" size="xs" /></a>
 </footer>
