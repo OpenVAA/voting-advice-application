@@ -1,16 +1,23 @@
 <script lang="ts">
+  import {t} from '$lib/i18n';
   import {concatClass} from '$lib/utils/components';
   import {darkMode} from '$lib/utils/darkMode';
+  import {settings} from '$lib/utils/stores';
   import type {AppLogoProps} from './AppLogo.type';
 
   type $$Props = AppLogoProps;
-  export let alt: $$Props['alt'];
+  export let alt: $$Props['alt'] = undefined;
   export let inverse: $$Props['inverse'] = false;
   export let size: $$Props['size'] = 'md';
 
-  // TODO: Create settings for these in Strapi and use those srcs
-  const logoSrc: string | undefined = undefined;
-  const inverseSrc: string | undefined = undefined;
+  // Retrieve app logo from settings
+  let logoSrc: string | undefined;
+  let inverseSrc: string | undefined;
+  $: if ($settings.publisher?.logo) {
+    logoSrc = $settings.publisher.logo.url;
+    inverseSrc = $settings.publisher.logoDark?.url;
+    alt ??= $settings.publisher.name;
+  }
 
   // Check dark mode and select logo file
   let src: string | undefined;
@@ -47,27 +54,17 @@
 
 <!--
 @component
-A template part that is used to show the application's logo. The logo 
-colour changes dynamically based on whether the light or dark mode is active.
+A template part that is used to show the application's logo. The logo colour changes dynamically based on whether the light or dark mode is active.
 
-Logo files for use on a light and a dark background can be defined. If the
-latter is not supplied an `invert` filter will be applied. If no logo files are
-supplied, the OpenVAA logo will be used.
-
-TODO: Use logo files defined in Strapi. Currently, the part always displays the
-OpenVAA logo.
+Logo files for use on a light and a dark background can be defined. If the latter is not supplied an `invert` filter will be applied. If no logo files are supplied, the OpenVAA logo will be used.
 
 ### Properties
 
 - `alt`: The `alt` text for the logo image.
-- `inverse`: If `true`, the light and dark versions of the logo will be reversed.
-  Set to `true` if using the logo on a dark background. @default `false`
-- `size`: The size of the logo as one of the predefined sizes 'sm', 'md' or 'lg'.
-  For arbitrary values, you can supply a `class` attribute, such as 
-  `class="h-[3.5rem]"`. @default `'md'`
+- `inverse`: If `true`, the light and dark versions of the logo will be reversed. Set to `true` if using the logo on a dark background. @default `false`
+- `size`: The size of the logo as one of the predefined sizes 'sm', 'md' or 'lg'. For arbitrary values, you can supply a `class` attribute, such as `class="h-[3.5rem]"`. @default `'md'`
 - `class`: Additional class string to append to the element's default classes.
-- Any valid attributes of the `<div>` element wrapping the light and dark
-  `<img>` elements
+- Any valid attributes of the `<div>` element wrapping the light and dark `<img>` elements
 
 ### Usage
 
@@ -81,12 +78,12 @@ OpenVAA logo.
 
 <div {...concatClass($$restProps, classes)}>
   {#if src}
-    <img {src} {alt} class="h-full" />
+    <img {src} alt={alt ?? $settings.publisher?.name ?? ''} class="h-full" />
   {:else}
     {#await import('$lib/components/openVAALogo') then { OpenVAALogo }}
       <svelte:component
         this={OpenVAALogo}
-        title={alt}
+        title={alt ?? $t('common.openVAA')}
         {size}
         color={inverse ? 'primary-content' : 'neutral'} />
     {/await}
