@@ -11,6 +11,8 @@
   export let variantIcon = true;
   /*Determines whether the user is taken to the login page after logging out or stays on the current page*/
   export let stayOnPage = false;
+  /*Determines whether the button is a filled red box or only text*/
+  export let fillButton = false;
 
   /** time until automatic logout for modal */
   export let logoutModalTimer = 30;
@@ -81,12 +83,14 @@ When set to false, the button variant is ghost.
     icon="logout"
     text={$t('candidateApp.navbar.logOut')}
     color="warning" />
-{:else}
+{:else if fillButton}
   <Button
     on:click={triggerLogout}
     text={$t('candidateApp.homePage.logOut')}
     color="warning"
     variant="main" />
+{:else}
+  <Button on:click={triggerLogout} text={$t('candidateApp.homePage.logOut')} color="warning" />
 {/if}
 <TimedModal
   bind:timeLeft

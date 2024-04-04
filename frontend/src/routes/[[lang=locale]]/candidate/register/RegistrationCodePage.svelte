@@ -54,7 +54,7 @@ registrationCode
     {#if loggedIn}
       <p class="text-center text-warning">{$t('candidateApp.registration.loggedInWarning')}</p>
       <div class="center pb-10">
-        <LogoutButton variantIcon={false} stayOnPage={true} />
+        <LogoutButton variantIcon={false} stayOnPage={true} fillButton={true} />
       </div>
     {/if}
     <input
