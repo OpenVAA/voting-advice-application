@@ -3,7 +3,6 @@
   import {page} from '$app/stores';
   import {requestForgotPasswordLink} from '$lib/api/candidate';
   import {FrontPage} from '$lib/templates/frontPage';
-  import {Footer} from '$lib/templates/parts/footer';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
 
@@ -56,6 +55,4 @@
       {statusMessage}
     </p>
   {/if}
-
-  <Footer slot="footer" />
 </FrontPage>

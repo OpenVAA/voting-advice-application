@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {getContext} from 'svelte';
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
   import {t} from '$lib/i18n';
@@ -6,8 +7,6 @@
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {FrontPage} from '$lib/templates/frontPage';
-  import {Footer} from '$lib/templates/parts/footer';
-  import {getContext} from 'svelte';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
@@ -73,6 +72,4 @@ In addition, shows a warning to the user if another user is already logged in.
     <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
     <Button href={$getRoute(Route.Home)} text={$t('candidate.election_compass_for_voters')} />
   </form>
-
-  <Footer slot="footer" />
 </FrontPage>
