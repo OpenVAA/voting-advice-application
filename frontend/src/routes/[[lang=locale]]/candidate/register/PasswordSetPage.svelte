@@ -9,7 +9,6 @@
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {Button} from '$lib/components/button';
   import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
-  import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import {FrontPage} from '$lib/templates/frontPage';
   import {emailOfNewUserStore} from '$lib/utils/authenticationStore';
 
@@ -112,6 +111,4 @@ Page where candidates can set their password when logging to the app for the fir
 
     <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
   </form>
-
-  <Footer slot="footer" />
 </FrontPage>

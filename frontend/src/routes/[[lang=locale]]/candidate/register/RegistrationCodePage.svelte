@@ -6,7 +6,6 @@
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {FrontPage} from '$lib/templates/frontPage';
-  import Footer from '$lib/templates/parts/footer/Footer.svelte';
 
   export let registrationCode = '';
   export let wrongCode = false;
@@ -65,6 +64,4 @@ registrationCode
     <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
     <Button href={$getRoute(Route.Home)} text={$t('candidate.election_compass_for_voters')} />
   </form>
-
-  <Footer slot="footer" />
 </FrontPage>

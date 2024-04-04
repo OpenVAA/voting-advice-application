@@ -9,7 +9,6 @@
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {Button} from '$lib/components/button';
-  import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
 
   export let code: string;
@@ -95,6 +94,4 @@
 
     <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
   </form>
-
-  <svelte:fragment slot="footer"><Footer /></svelte:fragment>
 </FrontPage>

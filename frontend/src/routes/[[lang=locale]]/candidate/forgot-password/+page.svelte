@@ -3,7 +3,6 @@
   import {page} from '$app/stores';
   import {requestForgotPasswordLink} from '$lib/api/candidate';
   import FrontPage from '$lib/templates/frontPage/FrontPage.svelte';
-  import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import Button from '$lib/components/button/Button.svelte';
   import HeadingGroup from '$lib/components/headingGroup/HeadingGroup.svelte';
   import PreHeading from '$lib/components/headingGroup/PreHeading.svelte';
@@ -57,6 +56,4 @@
       {statusMessage}
     </p>
   {/if}
-
-  <Footer slot="footer" />
 </FrontPage>
