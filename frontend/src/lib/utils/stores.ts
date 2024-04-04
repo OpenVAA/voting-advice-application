@@ -1,4 +1,4 @@
-import {derived, readable, writable} from 'svelte/store';
+import {derived, writable} from 'svelte/store';
 import type {Readable, Writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import {page} from '$app/stores';
@@ -144,6 +144,9 @@ export const appType: Writable<AppType> = writable('voter');
 export type AppType = 'candidate' | 'voter';
 
 /**
- * Contains the current app settings. This currently includes only the local settings, but in the future this can include the effective settings incorporating any choices made by the user of the app.
+ * Contains the currently effective app settings.
+ * NB! Settings are overwritten by root key.
  */
-export const settings: Readable<typeof localSettings> = readable(localSettings);
+export const settings: Readable<AppSettings> = derived([page], ([$page]) =>
+  $page.data.appSettings ? Object.assign(localSettings, $page.data.appSettings) : localSettings
+);

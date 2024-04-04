@@ -126,6 +126,28 @@ export interface StrapiAppLabelsData {
 }
 
 /**
+ * Non-exhaustive specification of app settings
+ */
+export interface StrapiAppSettingsData {
+  id: string;
+  attributes: {
+    publisherName: LocalizedString | null;
+    publisherLogo: {
+      data?: {
+        id: number | string;
+        attributes: StrapiImageData;
+      };
+    };
+    publisherLogoDark: {
+      data?: {
+        id: number | string;
+        attributes: StrapiImageData;
+      };
+    };
+  };
+}
+
+/**
  * Non-exhaustive specification of the data returned by the Strapi endpoint `question-type`.
  */
 export interface StrapiQuestionTypeData {
