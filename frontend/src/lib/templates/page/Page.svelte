@@ -16,6 +16,7 @@
   export let navId: $$Props['navId'] = 'pageNav';
   export let headerClass: $$Props['headerClass'] = 'bg-base-300';
   export let mainClass: $$Props['mainClass'] = '';
+  export let invertLogo: $$Props['invertLogo'] = false;
   export let progress: $$Props['progress'] = undefined;
   export let progressMin: $$Props['progressMin'] = 0;
   export let progressMax: $$Props['progressMax'] = 100;
@@ -79,6 +80,8 @@ the Drawer component.
   `drawerOpenButton` and `header` slots.
 - `mainClass?`: Optional class string to add to the `<div>` tag wrapping the page's
   main content.
+- `invertLogo`: Whether to invert the logo and accompanying menu button colors. Set 
+  to true if the header is dark. @default `false`
 - `navId?`: The id for the `<nav>` element containing the navigation.
   @default 'pageNav'
 - `progress?`: Optional value for the progress bar. The bar will be hidden
@@ -136,10 +139,12 @@ the Drawer component.
         aria-expanded={drawerOpen}
         aria-controls={navId}
         aria-label={$t('header.openMenu')}
-        class="btn btn-ghost drawer-button flex cursor-pointer items-center gap-md text-neutral">
+        class="btn btn-ghost drawer-button flex cursor-pointer items-center gap-md {invertLogo
+          ? 'text-primary-content'
+          : 'text-neutral'}">
         <slot name="drawerOpenButton">
           <Icon name="menu" />
-          <AppLogo aria-hidden="true" alt="" />
+          <AppLogo inverse={invertLogo} aria-hidden="true" />
         </slot>
       </button>
       <!-- The rest of the header -->
