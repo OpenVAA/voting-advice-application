@@ -6,7 +6,6 @@
   import {getRoute, Route} from '$lib/utils/navigation';
   import {validatePassword} from '$shared/utils/passwordValidation';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {Footer} from '$lib/templates/parts/footer';
   import {FrontPage} from '$lib/templates/frontPage';
   import {PasswordSetter} from '$lib/candidate/components/passwordSetter';
   import {getContext} from 'svelte';
@@ -98,6 +97,4 @@ Shows an error message if the registration is not successful.
       bind:password
       bind:passwordConfirmation />
   </form>
-
-  <Footer slot="footer" />
 </FrontPage>

@@ -5,7 +5,6 @@
   import {resetLocalStorage} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {OpenVAALogo} from '$lib/components/openVAALogo';
   import {FrontPage} from '$lib/templates/frontPage';
 </script>
 
@@ -32,11 +31,4 @@
     >{$t('actionLabels.electionInfo')}</a>
   <a href={$getRoute(Route.About)} class="btn btn-ghost w-full max-w-md"
     >{$t('actionLabels.howItWorks')}</a>
-
-  <svelte:fragment slot="footer">
-    {$t('viewTexts.publishedBy', {publisher: 'OpenVAA'})}
-    • {$t('viewTexts.madeWith')}
-    <a href="https://github.com/OpenVAA/voting-advice-application/" target="_blank"
-      ><OpenVAALogo color="secondary" size="xs" /></a>
-  </svelte:fragment>
 </FrontPage>
