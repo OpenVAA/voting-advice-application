@@ -11,7 +11,10 @@ export default factories.createCoreRouter('api::app-setting.app-setting', {
     find: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([]),
+        restrictPopulate([
+          'publisherLogo',
+          'publisherLogoDark',
+        ]),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([]),
       ],
@@ -19,7 +22,10 @@ export default factories.createCoreRouter('api::app-setting.app-setting', {
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([]),
+        restrictPopulate([
+          'publisherLogo',
+          'publisherLogoDark',
+        ]),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([]),
       ],
