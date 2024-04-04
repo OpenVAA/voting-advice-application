@@ -1,9 +1,9 @@
 import type {SvelteHTMLElements} from 'svelte/elements';
 export type AppLogoProps = SvelteHTMLElements['div'] & {
   /**
-   * The `alt` text for the logo image.
+   * The `alt` text for the logo image. If missing, the publisher name or 'OpenVAA' will be used, depending on the logo shown.
    */
-  alt: string;
+  alt?: string;
   /**
    * If `true`, the light and dark versions of the logo will be reversed.
    * Set to `true` if using the logo on a dark background.
