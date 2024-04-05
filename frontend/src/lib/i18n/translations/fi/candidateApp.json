@@ -166,5 +166,8 @@
   },
   "error": {
     "userNoCandidateError": "Virhe: Sisäänkirjautuneeseen käyttäjään ei ole yhdistetty ehdokastietoja."
+  },
+  "other": {
+    "unsavedChanges": "Sinulla on tallentamattomia muutoksia. Haluatko varmasti jatkaa?"
   }
 }
