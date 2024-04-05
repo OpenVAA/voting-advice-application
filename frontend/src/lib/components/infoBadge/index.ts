@@ -1,2 +1,2 @@
-export {default as infoBadge} from './infoBadge.svelte';
-export * from './infoBadge.type';
+export {default as InfoBadge} from './InfoBadge.svelte';
+export * from './InfoBadge.type';

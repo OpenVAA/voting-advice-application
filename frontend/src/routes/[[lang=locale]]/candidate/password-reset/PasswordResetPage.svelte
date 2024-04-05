@@ -7,8 +7,8 @@
   import {validatePassword} from '$shared/utils/passwordValidation';
   import {FrontPage} from '$lib/templates/frontPage';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import Footer from '$lib/templates/parts/footer/Footer.svelte';
-  import {PasswordSetter} from '$lib/candidate/components/PasswordSetter';
+  import {Footer} from '$lib/templates/parts/footer';
+  import {PasswordSetter} from '$lib/candidate/components/passwordSetter';
 
   export let code: string;
 

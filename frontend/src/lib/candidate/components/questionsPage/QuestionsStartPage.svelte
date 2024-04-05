@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Icon from '$lib/components/icon/Icon.svelte';
-  import BasicPage from '$lib/templates/basicPage/BasicPage.svelte';
+  import {Icon} from '$lib/components/icon';
+  import {BasicPage} from '$lib/templates/basicPage';
   import {t} from '$lib/i18n';
   import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
   import {get} from 'svelte/store';
-  import Button from '$lib/components/button/Button.svelte';
+  import {Button} from '$lib/components/button';
   import {getRoute, Route} from '$lib/utils/navigation';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
   const {questionsStore} = getContext<CandidateContext>('candidate');
   const questions = get(questionsStore) ?? [];
@@ -17,13 +17,13 @@
   });
 </script>
 
-<BasicPage title={$t('candidateApp.opinions.title')}>
+<BasicPage title={$t('candidateApp.questions.start')}>
   <svelte:fragment slot="note">
     <Icon name="tip" />
-    {$t('candidateApp.opinions.tip')}
+    {$t('candidateApp.questions.tip')}
   </svelte:fragment>
   <p class="text-center">
-    {$t('candidateApp.opinions.instructions', {numQuestions})}
+    {$t('candidateApp.questions.instructions', {numQuestions})}
   </p>
 
   <Button
@@ -31,5 +31,5 @@
     href={firstQuestionUrl}
     variant="main"
     icon="next"
-    text={$t('candidateApp.opinions.continue')} />
+    text={$t('candidateApp.questions.continue')} />
 </BasicPage>

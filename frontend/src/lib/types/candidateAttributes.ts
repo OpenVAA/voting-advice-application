@@ -95,3 +95,24 @@ export interface Answer {
   key: AnswerOption['key']; // Selected answer option
   openAnswer: LocalizedString | null; // Optional free-form answer
 }
+
+export interface Question {
+  id: string;
+  text: LocalizedString;
+  shortName: LocalizedString;
+  category?: LocalizedString;
+  info?: LocalizedString;
+  fillingInfo?: string;
+  type: QuestionSettingsProps['type'];
+  values?: QuestionChoiceProps[];
+  min?: number | Date;
+  max?: number | Date;
+  notLocalizable?: boolean;
+  dateType?: DateType;
+  editable: boolean;
+}
+
+interface QuestionChoiceProps {
+  key: number;
+  label: LocalizedString;
+}

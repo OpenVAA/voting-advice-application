@@ -2,7 +2,7 @@
   import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {t} from '$lib/i18n';
-  import InfoBadge from '$lib/components/infoBadge/infoBadge.svelte';
+  import {InfoBadge} from '$lib/components/infoBadge';
   import {getContext} from 'svelte';
   import LanguageSelection from './LanguageSelection.svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';

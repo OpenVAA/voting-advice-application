@@ -1,6 +1,6 @@
 <script lang="ts">
   import {getContext} from 'svelte';
-  import LogoutButton from '$lib/candidate/components/logoutButton/LogoutButton.svelte';
+  import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import type {CandidateContext} from '$lib/utils/candidateStore';
   import {CandidateDetailsCard} from '$lib/components/candidates';
   import {SingleCardPage} from '$lib/templates/singleCardPage';
