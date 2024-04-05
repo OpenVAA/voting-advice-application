@@ -169,6 +169,33 @@
     "notFound": "Profiilia ei löytynyt",
     "tip": "Tämä on esikatselu siitä, miltä profiilisi näyttää äänestäjille."
   },
+  "help": {
+    "title": "FI - Help",
+    "description": "FI - Here you can find answers to the most common questions with using this application.",
+    "continueFilling": "FI - Continue Filling",
+    "questions": {
+      "question1": {
+        "question": "FI - My name is wrong but I can't change it",
+        "answer": "FI - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question2": {
+        "question": "FI - My profile is not visible in the Election Compass",
+        "answer": "FI - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question3": {
+        "question": "FI - I don't want to tell my opinion on some issues",
+        "answer": "FI - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question4": {
+        "question": "FI - My party is not listed",
+        "answer": "FI - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question5": {
+        "question": "FI - I don't have a profile picture to upload",
+        "answer": "FI - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      }
+    }
+  },
   "textarea": {
     "hide": "Piilota kentän käännökset",
     "show": "Näytä kentän käännökset",

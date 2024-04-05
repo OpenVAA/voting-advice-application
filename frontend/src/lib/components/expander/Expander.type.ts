@@ -36,5 +36,5 @@ export type ExpanderProps = {
   /**
    * Variable used to define a variant for the expander.
    */
-  variant?: 'read-more' | 'category' | 'question';
+  variant?: 'read-more' | 'category' | 'question' | 'question-help';
 };

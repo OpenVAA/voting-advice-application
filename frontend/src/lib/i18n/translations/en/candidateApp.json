@@ -169,6 +169,33 @@
     "notFound": "Profile not found",
     "tip": "This is a preview of how your profile will look to voters."
   },
+  "help": {
+    "title": "Help",
+    "description": "Here you can find answers to the most common questions with using this application.",
+    "continueFilling": "Continue Filling",
+    "questions": {
+      "question1": {
+        "question": "My name is wrong but I can't change it",
+        "answer": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question2": {
+        "question": "My profile is not visible in the Election Compass",
+        "answer": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question3": {
+        "question": "I don't want to tell my opinion on some issues",
+        "answer": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question4": {
+        "question": "My party is not listed",
+        "answer": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question5": {
+        "question": "I don't have a profile picture to upload",
+        "answer": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      }
+    }
+  },
   "textarea": {
     "hide": "Hide translations for this field",
     "show": "Show translations for this field",
