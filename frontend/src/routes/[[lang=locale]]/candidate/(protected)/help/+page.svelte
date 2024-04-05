@@ -1,9 +1,9 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import BasicPage from '$lib/templates/basicPage/BasicPage.svelte';
-  import Button from '$lib/components/button/Button.svelte';
-  import Expander from '$lib/components/expander/Expander.svelte';
+  import {BasicPage} from '$lib/templates/basicPage';
+  import {Button} from '$lib/components/button';
+  import {Expander} from '$lib/components/expander';
 </script>
 
 <BasicPage title={$t('candidateApp.help.title')}>
