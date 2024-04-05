@@ -2,27 +2,26 @@
   import {getContext} from 'svelte';
   import LogoutButton from '$lib/candidate/components/logoutButton/LogoutButton.svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
-  import type {PageData} from './$types';
   import {CandidateDetailsCard} from '$lib/components/candidates';
   import {SingleCardPage} from '$lib/templates/singleCardPage';
-  import {t} from '$lib/i18n';
+  import {locale, t} from '$lib/i18n';
   import {Icon} from '$lib/components/icon';
-
-  export let data: PageData;
+  import {getInfoQuestions, getOpinionQuestions, getNominatedCandidates} from '$lib/api/getData';
 
   const {userStore} = getContext<CandidateContext>('candidate');
 
   let infoQuestions: QuestionProps[];
-  let opinionQuestions: QuestionProps[];
-  let candidates: CandidateProps[];
-  let candidate: CandidateProps | undefined;
+  getInfoQuestions({locale: $locale}).then((res) => (infoQuestions = res));
 
-  $: {
-    infoQuestions = data.infoQuestions;
-    opinionQuestions = data.opinionQuestions;
-    candidates = data.candidates;
-    candidate = candidates.find((c) => c.id === `${$userStore?.candidate?.id}`);
-  }
+  let opinionQuestions: QuestionProps[];
+  getOpinionQuestions({locale: $locale}).then((res) => (opinionQuestions = res));
+
+  let candidate: CandidateProps | undefined;
+  getNominatedCandidates({
+    loadAnswers: true,
+    locale: $locale,
+    id: $userStore?.candidate?.id.toString()
+  }).then((res) => (candidate = res[0]));
 </script>
 
 {#if !candidate}

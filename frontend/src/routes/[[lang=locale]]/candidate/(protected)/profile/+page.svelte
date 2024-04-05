@@ -45,7 +45,8 @@
     ...user?.candidate
   };
 
-  let genderID = gender?.id;
+  // Default to null because Strapi returns null if not defined
+  $: genderID = gender?.id ?? null;
 
   let manifestoTextArea: MultilangTextInput; // Used to clear the local storage from the parent component
   let savedManifesto = user?.candidate?.manifesto; // Used to detect changes in the manifesto
@@ -63,7 +64,7 @@
         photo,
         unaffiliated,
         nominations,
-        manifesto
+        manifesto: Object.values(manifesto).join('')
       });
     previousStateHash = previousStateHash ?? getCurrentHash();
     if (!dirty) {
@@ -89,7 +90,14 @@
     dirty = false;
     try {
       await uploadPhoto();
-      await updateBasicInfo(manifesto, birthday, genderID, photo, unaffiliated, motherTongues);
+      await updateBasicInfo(
+        manifesto,
+        birthday,
+        genderID ?? undefined,
+        photo,
+        unaffiliated,
+        motherTongues
+      );
 
       // Update the database-saved manifesto in order to detect changes
       savedManifesto = manifesto;

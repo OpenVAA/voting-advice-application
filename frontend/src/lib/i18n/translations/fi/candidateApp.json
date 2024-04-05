@@ -163,5 +163,11 @@
     "hide": "Piilota kentän käännökset",
     "show": "Näytä kentän käännökset",
     "info": "Voit antaa omat käännökset kielille, joilla sovellus on saatavilla. Jos et kirjoita omia käännöksiäsi, alkuperäinen vastaus näytetään."
+  },
+  "error": {
+    "userNoCandidateError": "Virhe: Sisäänkirjautuneeseen käyttäjään ei ole yhdistetty ehdokastietoja."
+  },
+  "other": {
+    "unsavedChanges": "Sinulla on tallentamattomia muutoksia. Haluatko varmasti jatkaa?"
   }
 }
