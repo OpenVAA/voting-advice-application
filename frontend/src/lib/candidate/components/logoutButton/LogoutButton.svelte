@@ -7,12 +7,10 @@
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  /** Defaults to true, so that button variant is "icon". Can be set to false if the button should be of variant "main" */
-  export let variantIcon = true;
+  /** Defaults to normal, button variant can be "normal" for just text, "icon" for a button with an icon and "main" for a filled red box */
+  export let buttonVariant = 'normal';
   /*Determines whether the user is taken to the login page after logging out or stays on the current page*/
   export let stayOnPage = false;
-  /*Determines whether the button is a filled red box or only text*/
-  export let fillButton = false;
 
   /** time until automatic logout for modal */
   export let logoutModalTimer = 30;
@@ -65,9 +63,10 @@
 Allows user to log out. Displays modal notification if the user
 hasn't filled all the data. 
 
-This component has optional boolean property `variantIcon`:
-When set to true (default), the button variant is icon. 
-When set to false, the button variant is ghost.
+This component has optional string property `buttonVariant`:
+When set to normal (default), the button variant is normal which is just plain text. 
+When set to icon, the button variant is icon.
+When set to main, the button variant is main which is a red box.
 
 ### Usage
 ```tsx
@@ -75,15 +74,15 @@ When set to false, the button variant is ghost.
 ```
 -->
 
-<!-- Define the button based on variant ("icon" or "ghost"). Cannot be done shorter because of type errors. -->
-{#if variantIcon}
+<!-- Define the button based on variant ("icon", "main" or "normal"). Cannot be done shorter because of type errors. -->
+{#if buttonVariant === 'icon'}
   <Button
     on:click={triggerLogout}
     variant="icon"
     icon="logout"
     text={$t('candidateApp.navbar.logOut')}
     color="warning" />
-{:else if fillButton}
+{:else if buttonVariant === 'main'}
   <Button
     on:click={triggerLogout}
     text={$t('candidateApp.homePage.logOut')}
