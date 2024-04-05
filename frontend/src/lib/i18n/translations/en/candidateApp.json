@@ -177,5 +177,8 @@
   },
   "error": {
     "userNoCandidateError": "Error: The logged in user has no candidate info tied to it."
+  },
+  "other": {
+    "unsavedChanges": "You have unsaved changes. Are you sure you want to leave this page?"
   }
 }
