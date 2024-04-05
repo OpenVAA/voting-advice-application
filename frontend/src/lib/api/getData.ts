@@ -1,4 +1,5 @@
 import {error} from '@sveltejs/kit';
+import {browser} from '$app/environment';
 import {locale as currentLocale, locales} from '$lib/i18n';
 import {constants} from '$lib/utils/constants';
 import {matchLocale} from '$lib/i18n/utils/matchLocale';
@@ -27,7 +28,8 @@ export function getData<T extends object>(
   endpoint: string,
   params: URLSearchParams = new URLSearchParams({})
 ): Promise<T> {
-  const url = `${constants.BACKEND_URL}/${endpoint}?${params}`;
+  // Support both SSR and browser as the preview page on candidate's site wants to mimic the candidate preview as closely as possible
+  const url = `${browser ? constants.PUBLIC_BACKEND_URL : constants.BACKEND_URL}/${endpoint}?${params}`;
   return fetch(url)
     .then((response) => {
       return response.json().then((parsed: StrapiResponse<T> | StrapiError) => {
