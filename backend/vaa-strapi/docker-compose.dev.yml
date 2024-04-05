@@ -28,11 +28,8 @@ services:
       GENERATE_MOCK_DATA_ON_RESTART: ${GENERATE_MOCK_DATA_ON_RESTART}
     volumes:
       # Creating this volume will make Docker update changes from local automatically
-      # Uncomment the two lines below if you want to enable hot reloading.
-      # We need to mark /opt/strapi-plugin-import-export-entries as a volume, otherwise
-      # hot reloading will not work
-      # - ./:/opt
-      # - /opt/strapi-plugin-import-export-entries
+      # Note that this only applies to src/, where all the source code is anyway.
+      # - ./src:/opt/src
 
       - strapi-uploads:/opt/public/uploads
     healthcheck:
