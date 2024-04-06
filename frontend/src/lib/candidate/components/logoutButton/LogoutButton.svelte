@@ -18,14 +18,14 @@
   let timeLeft = logoutModalTimer;
 
   const {
-    nofUnasweredBasicInfoQuestionsStore,
+    nofUnansweredBasicInfoQuestionsStore,
     opinionQuestionsFilledStore,
     nofUnansweredOpinionQuestionsStore,
     logOut
   } = getContext<CandidateContext>('candidate');
 
   let opinionQuestionsLeft: number | undefined;
-  nofUnasweredBasicInfoQuestionsStore?.subscribe((value) => {
+  nofUnansweredBasicInfoQuestionsStore?.subscribe((value) => {
     opinionQuestionsLeft = value;
   });
 

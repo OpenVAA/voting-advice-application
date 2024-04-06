@@ -31,7 +31,7 @@
   const inputContainerClass = 'flex w-full pr-6';
 
   // get the user from authContext
-  const {userStore, loadUserData} = getContext<CandidateContext>('candidate');
+  const {userStore, loadUserData, progressStore} = getContext<CandidateContext>('candidate');
   const user = get(userStore);
 
   let loading = false;
@@ -79,6 +79,10 @@
     motherTongues.length > 0 &&
     !!birthday &&
     Object.values(manifesto).some((value) => value !== '');
+
+  // Advance progress bar when user navigates to the profile page
+  // Part of the total progress for basic info and used when profile is not yet filled
+  $: openedProfileIncrease = allFilled ? 0 : 1;
 
   let errorMessage: string | undefined;
 
@@ -173,8 +177,12 @@
   };
 </script>
 
-<BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
-  <PreventNavigation active={dirty} />
+<BasicPage
+  title={$t('candidateApp.basicInfo.title')}
+  mainClass="bg-base-200"
+  progress={($progressStore?.progress ?? 0) + openedProfileIncrease}
+  progressMax={$progressStore?.max}>
+  <PreventNavigation active={dirty && !loading} />
   <form on:submit|preventDefault={submitForm}>
     <div class="flex flex-col items-center gap-16">
       <p class="text-center">

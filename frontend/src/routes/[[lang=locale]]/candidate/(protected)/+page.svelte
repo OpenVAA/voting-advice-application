@@ -13,10 +13,11 @@
   const {
     userStore,
     basicInfoFilledStore,
-    nofUnasweredBasicInfoQuestionsStore: nofUnansweredBasicInfoQuestions,
+    nofUnansweredBasicInfoQuestionsStore: nofUnansweredBasicInfoQuestions,
     opinionQuestionsFilledStore,
     nofUnansweredOpinionQuestionsStore: nofUnansweredOpinionQuestions,
-    questionsStore
+    questionsStore,
+    progressStore
   } = getContext<CandidateContext>('candidate');
   const user = get(userStore);
   const userName = user?.candidate?.firstName;
@@ -86,7 +87,10 @@
 
 <!--Homepage for the user-->
 
-<BasicPage title={nextAction.title}>
+<BasicPage
+  title={nextAction.title}
+  progress={$progressStore?.progress}
+  progressMax={$progressStore?.max}>
   <Warning display={!dataEditable} slot="note">
     <p>{$t('candidateApp.homePage.editingNotAllowedNote')}</p>
     {#if !opinionQuestionsFilled || !basicInfoFilled}

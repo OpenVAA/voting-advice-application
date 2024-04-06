@@ -19,7 +19,7 @@
   export let questions: $$Props['questions'];
   export let editMode: $$Props['editMode'] = false;
 
-  const {answersStore} = getContext<CandidateContext>('candidate');
+  const {answersStore, progressStore} = getContext<CandidateContext>('candidate');
 
   $: answers = $answersStore;
   $: answer = answers?.[questionId]; // undefined if not answered
@@ -158,7 +158,11 @@ In addition to the question, includes a Likert scale and a text area for comment
 -->
 
 {#key currentQuestion}
-  <BasicPage title={translate(currentQuestion.text, $locale)} class="bg-base-200">
+  <BasicPage
+    title={translate(currentQuestion.text, $locale)}
+    class="bg-base-200"
+    progress={$progressStore?.progress}
+    progressMax={$progressStore?.max}>
     <Warning display={!currentQuestion.editable} slot="note"
       >{$t('questions.cannotEditWarning')}</Warning>
 

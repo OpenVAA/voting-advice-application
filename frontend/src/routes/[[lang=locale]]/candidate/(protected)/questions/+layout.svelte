@@ -1,13 +1,15 @@
 <script lang="ts">
-  import {goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
   import type {CandidateContext} from '$lib/utils/candidateStore';
   import {getContext} from 'svelte';
+  import {goto} from '$app/navigation';
+  import {t} from '$lib/i18n';
   import {get} from 'svelte/store';
   import {getRoute, Route} from '$lib/utils/navigation';
+  import {LoadingSpinner} from '$candidate/components/loadingSpinner';
 
   const {basicInfoFilledStore, questionsStore} = getContext<CandidateContext>('candidate');
-  if (!get(basicInfoFilledStore)) {
+
+  $: if (!get(basicInfoFilledStore)) {
     goto($getRoute(Route.CandAppProfile));
   }
 
@@ -18,7 +20,9 @@
   <title>{$t('questions.questionsTitle')}</title>
 </svelte:head>
 
-{#if !questions || !Object.values(questions).length}
+{#if !get(basicInfoFilledStore)}
+  <LoadingSpinner />
+{:else if !questions || !Object.values(questions).length}
   <p>{$t('error.noQuestions')}</p>
 {:else}
   <slot />

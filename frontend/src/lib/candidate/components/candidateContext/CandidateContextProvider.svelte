@@ -33,7 +33,7 @@
       !!birthday,
       Object.values(manifesto).some((value) => value !== '')
     ].filter((n) => n).length;
-    candidateContext.nofUnasweredBasicInfoQuestionsStore.set(4 - nofBasicQuestionsFilled);
+    candidateContext.nofUnansweredBasicInfoQuestionsStore.set(4 - nofBasicQuestionsFilled);
   });
 
   const updateNofUnansweredQuestions = () => {
@@ -48,8 +48,31 @@
     }
   };
 
+  const updateProgress = () => {
+    const answers = get(candidateContext.answersStore);
+    const questions = get(candidateContext.questionsStore);
+    const basicInfoFilled = get(candidateContext.basicInfoFilledStore);
+
+    if (answers && questions) {
+      const answeredQuestions = Object.entries(answers).length;
+      const totalQuestions = Object.entries(questions).length;
+
+      const basicInfoWeight = 3; // Weight of basic info in progress bar
+      const basicInfo = basicInfoFilled ? basicInfoWeight : 0;
+
+      candidateContext.progressStore.set({
+        progress: 1 + answeredQuestions + basicInfo,
+        max: 1 + totalQuestions + basicInfoWeight
+      });
+    }
+  };
+
   candidateContext.answersStore.subscribe(updateNofUnansweredQuestions);
   candidateContext.questionsStore.subscribe(updateNofUnansweredQuestions);
+
+  candidateContext.answersStore.subscribe(updateProgress);
+  candidateContext.questionsStore.subscribe(updateProgress);
+  candidateContext.basicInfoFilledStore.subscribe(updateProgress);
 </script>
 
 <!--

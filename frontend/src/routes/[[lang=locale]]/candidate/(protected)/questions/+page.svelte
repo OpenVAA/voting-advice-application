@@ -21,7 +21,8 @@
     opinionQuestionsFilledStore,
     nofUnansweredOpinionQuestionsStore,
     questionsStore,
-    answersStore
+    answersStore,
+    progressStore
   } = getContext<CandidateContext>('candidate');
 
   let dataEditable: boolean;
@@ -94,7 +95,10 @@
 {#if answers && Object.entries(answers).length === 0}
   <QuestionsStartPage />
 {:else}
-  <BasicPage title={$t('candidateApp.questions.title')}>
+  <BasicPage
+    title={$t('candidateApp.questions.title')}
+    progress={$progressStore?.progress}
+    progressMax={$progressStore?.max}>
     <Warning display={!dataEditable} slot="note">
       <p>{$t('candidateApp.questions.editingAllowedNote')}</p>
       {#if !opinionQuestionsFilled || !basicInfoFilled}
