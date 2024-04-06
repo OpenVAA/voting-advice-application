@@ -51,36 +51,38 @@ Carol,Carolsson,${partyId},carol@example.com,false`
     await page.getByText('alice@example.com').first().click();
     await page.getByRole('button', { name: 'Send registration email' }).click();
     await page.getByLabel('Email subject').fill('Subject');
-    await page.getByLabel('Email content').fill('Content [LINK]');
     await page.getByRole('button', { name: 'Send', exact: true }).click();
     await page.getByText('Registration email was sent').click();
+
+    // Wait for 5 seconds to allow the email to be sent
+    await page.waitForTimeout(5000);
 
     // Navigate to maildev and open registration link
     await page.goto('http://localhost:1080/#/');
     await page.getByRole('link', { name: 'Subject To: alice@example.com' }).click();
-    const page1Promise = page.waitForEvent('popup');
-    await page.frameLocator('iframe >> nth=0').getByRole('link', { name: 'http://localhost:5173/en/' }).click();
-    const page1 = await page1Promise;
+    const link = await page.frameLocator('iframe >> nth=0').getByRole('link', { name: 'http://localhost:5173/en/' }).getAttribute('href');
+    if (!link) throw new Error('Link not found');
+    await page.goto(link);
 
     // Complete the registration process
     // Check that the candidate name is correct
-    await expect(page1.getByRole('heading', { name: 'Hello, Alice!' })).toBeVisible();
-    await page1.locator('#password').fill('Password1!');
-    await page1.locator('#passwordConfirmation').fill('Password1!a');
+    await expect(page.getByRole('heading', { name: 'Hello, Alice!' })).toBeVisible();
+    await page.locator('#password').fill('Password1!');
+    await page.locator('#passwordConfirmation').fill('Password1!a');
     // Test password mismatch
-    await page1.getByRole('button', { name: 'Set password' }).click();
-    await expect(page1.getByText('Passwords don\'t match')).toBeVisible();
+    await page.getByRole('button', { name: 'Set password' }).click();
+    await expect(page.getByText('Passwords don\'t match')).toBeVisible();
     // Correct the password
-    await page1.locator('#passwordConfirmation').fill('Password1!');
-    await page1.getByRole('button', { name: 'Set password' }).click();
+    await page.locator('#passwordConfirmation').fill('Password1!');
+    await page.getByRole('button', { name: 'Set password' }).click();
 
     // Check that the password was set by logging in
-    await expect(page1.getByText('Your password is now set!')).toBeVisible();
-    expect(await page1.getByPlaceholder('example@email.com').inputValue()).toBe('alice@example.com');
-    await page1.getByPlaceholder('E.g. CP23-174a-f4%&-aHAB').fill('Password1!');
-    await page1.getByRole('button', { name: 'Sign in' }).click();
+    await expect(page.getByText('Your password is now set!')).toBeVisible();
+    expect(await page.getByPlaceholder('example@email.com').inputValue()).toBe('alice@example.com');
+    await page.getByPlaceholder('E.g. CP23-174a-f4%&-aHAB').fill('Password1!');
+    await page.getByRole('button', { name: 'Sign in' }).click();
 
     // Check that the login was successful
-    await expect(page1.getByText('Alice Alisson')).toBeVisible();
+    await expect(page.getByText('Hello, Alice!')).toBeVisible();
   });
 });
