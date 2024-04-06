@@ -174,7 +174,7 @@
 </script>
 
 <BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
-  <PreventNavigation active={dirty} />
+  <PreventNavigation active={dirty && !loading} />
   <form on:submit|preventDefault={submitForm}>
     <div class="flex flex-col items-center gap-16">
       <p class="text-center">
