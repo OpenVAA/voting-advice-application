@@ -4,21 +4,24 @@ test.beforeEach(async ({ page, baseURL }) => {
   await page.goto(`${baseURL}/en/candidate`);
 });
 
-// test('should log out', async ({ page }) => {
-//   await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/en\/candidate/);
+test('should log out', async ({ page }) => {
+  await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/en\/candidate/);
 
-//   await page.getByTitle('Logout').click();
+  await page.getByTitle('Logout').click();
 
-//   await expect(page.getByText('Some of Your Data Is Still Missing')).toBeVisible();
-//   await expect(page.getByText('Continue Entering Data')).toBeVisible();
+  // TODO: Handle the logout dialog
+  /*
+  await expect(page.getByRole('banner').getByRole('heading', { name: 'Some of Your Data Is Still' })).toBeVisible();
+  await expect(page.getByRole('banner').getByRole('button', { name: 'Continue Entering Data' })).toBeVisible();
 
-//   const logoutButton = page.getByRole('dialog').getByRole('button', { name: 'Logout' });
-//   await expect(logoutButton).toBeVisible();
-//   await logoutButton.click();
+  const logoutButton = page.getByRole('banner').getByRole('dialog').getByRole('button', { name: 'Logout' });
+  await expect(logoutButton).toBeVisible();
+  await logoutButton.click();
+  */
 
-//   await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/en\/candidate/);
-//   await expect(page.getByText('Sign in')).toBeVisible();
-// });
+  await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/en\/candidate/);
+  await expect(page.getByText('Sign in')).toBeVisible();
+});
 
 test('should navigate', async ({ page }) => {
   await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/en\/candidate/);

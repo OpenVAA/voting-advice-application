@@ -49,7 +49,7 @@
     },
     "unaffiliated": {
       "type": "boolean",
-      "required": true
+      "required": false
     },
     "photo": {
       "type": "media",
@@ -78,7 +78,7 @@
     "politicalExperience": {
       "pluginOptions": {},
       "type": "text",
-      "required": true
+      "required": false
     },
     "party": {
       "type": "relation",

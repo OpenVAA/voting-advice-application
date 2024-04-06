@@ -154,6 +154,10 @@ export async function generateMockData() {
     await createLanguages();
     console.info('Done!');
     console.info('#######################################');
+    console.info('inserting strapi admin');
+    createStrapiAdmin();
+    console.info('Done!');
+    console.info('#######################################');
     console.info('inserting genders ...');
     await createGenders();
     console.info('Done!');
@@ -236,6 +240,31 @@ async function dropCollections() {
   await strapi.db.query(QUESTION_TYPE_API).deleteMany({});
   await strapi.db.query(USER_API).deleteMany({});
   await strapi.db.query(LANGUAGE_API).deleteMany({});
+}
+
+async function createStrapiAdmin() {
+  if (process.env.NODE_ENV === 'development') {
+    const hasAdmin = await strapi.service('admin::user').exists();
+    const superAdminRole = await strapi.service('admin::role').getSuperAdmin();
+
+    if (hasAdmin || !superAdminRole) {
+      return;
+    }
+
+    const params = {
+      username: process.env.DEV_USERNAME ?? 'admin',
+      password: process.env.DEV_PASSWORD ?? 'admin',
+      firstname: process.env.DEV_USERNAME ?? 'Admin',
+      lastname: process.env.DEV_USERNAME ?? 'Admin',
+      email: process.env.DEV_EMAIL ?? 'admin@example.com',
+      blocked: false,
+      isActive: true,
+      registrationToken: null,
+      roles: superAdminRole ? [superAdminRole.id] : []
+    };
+
+    await strapi.service('admin::user').create(params);
+  }
 }
 
 async function createAppSettings() {
