@@ -9,15 +9,12 @@ test('should log out', async ({ page }) => {
 
   await page.getByTitle('Logout').click();
 
-  // TODO: Handle the logout dialog
-  /*
   await expect(page.getByRole('banner').getByRole('heading', { name: 'Some of Your Data Is Still' })).toBeVisible();
   await expect(page.getByRole('banner').getByRole('button', { name: 'Continue Entering Data' })).toBeVisible();
 
   const logoutButton = page.getByRole('banner').getByRole('dialog').getByRole('button', { name: 'Logout' });
   await expect(logoutButton).toBeVisible();
   await logoutButton.click();
-  */
 
   await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/en\/candidate/);
   await expect(page.getByText('Sign in')).toBeVisible();
