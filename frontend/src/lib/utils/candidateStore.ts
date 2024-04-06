@@ -1,5 +1,5 @@
 import {authenticate, me} from '$lib/api/candidate';
-import type {Answer, User} from '$lib/types/candidateAttributes';
+import type {Question, Answer, User} from '$lib/types/candidateAttributes';
 import {writable, type Writable} from 'svelte/store';
 import {getExistingAnswers} from '$lib/api/candidate';
 import {getLikertQuestions} from '$lib/api/candidate';
@@ -17,7 +17,7 @@ export interface CandidateContext {
   answersStore: Writable<Record<string, Answer> | undefined>;
   loadAnswerData: () => Promise<void>;
   // Questions
-  questionsStore: Writable<Record<string, QuestionProps> | undefined>;
+  questionsStore: Writable<Record<string, Question> | undefined>;
   loadQuestionData: () => Promise<void>;
   // Custom util
   basicInfoFilledStore: Writable<boolean | undefined>;
@@ -30,7 +30,7 @@ const userStore = writable<User | null>(null);
 const tokenStore = writable<string | null | undefined>(undefined);
 const emailOfNewUserStore = writable<string | undefined>(undefined);
 const answersStore = writable<Record<string, Answer> | undefined>(undefined);
-const questionsStore = writable<Record<string, QuestionProps> | undefined>(undefined);
+const questionsStore = writable<Record<string, Question> | undefined>(undefined);
 const basicInfoFilledStore = writable<boolean | undefined>(undefined);
 const nofUnansweredBasicInfoQuestionsStore = writable<number | undefined>(undefined);
 const opinionQuestionsFilledStore = writable<boolean | undefined>(undefined);

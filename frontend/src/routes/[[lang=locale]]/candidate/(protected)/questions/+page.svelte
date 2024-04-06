@@ -2,15 +2,19 @@
   import {Button} from '$lib/components/button';
   import {BasicPage} from '$lib/templates/basicPage';
   import {Expander} from '$lib/components/expander';
-  import {t} from '$lib/i18n';
+  import {locale, t} from '$lib/i18n';
+  import {translate} from '$lib/i18n/utils';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
   import {get} from 'svelte/store';
-  import Warning from '$lib/components/warning/Warning.svelte';
-  import QuestionsStartPage from '$lib/candidate/components/QuestionsPage/QuestionsStartPage.svelte';
-  import AnsweredQuestion from '$lib/candidate/components/QuestionsPage/AnsweredQuestion.svelte';
-  import UnAnsweredQuestion from '$lib/candidate/components/QuestionsPage/UnAnsweredQuestion.svelte';
+  import {Warning} from '$lib/components/warning';
+  import {
+    QuestionsStartPage,
+    AnsweredQuestion,
+    UnAnsweredQuestion
+  } from '$lib/candidate/components/questionsPage';
+  import type {Question} from '$lib/types/candidateAttributes';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
   const {
     basicInfoFilledStore,
@@ -48,7 +52,7 @@
 
   $: answers = $answersStore;
 
-  let questionsByCategory: Record<string, Array<QuestionProps>>;
+  let questionsByCategory: Record<string, Array<Question>>;
 
   let loading = true;
   let unansweredCategories: Array<string> | undefined;
@@ -58,10 +62,11 @@
       if (!question.category) {
         return acc;
       }
-      if (!acc[question.category]) {
-        acc[question.category] = [];
+      const category = translate(question.category, $locale);
+      if (!acc[category]) {
+        acc[category] = [];
       }
-      acc[question.category].push(question);
+      acc[category].push(question);
       return acc;
     },
     {} as typeof questionsByCategory
@@ -82,6 +87,8 @@
       }
     }
   }
+
+  $: nextUnansweredQuestion = Object.values(questions).find((question) => !answers?.[question.id]);
 </script>
 
 {#if answers && Object.entries(answers).length === 0}
@@ -104,7 +111,7 @@
       </div>
       <div class="flex w-full justify-center pb-40 pt-20">
         <Button
-          href={$getRoute({route: Route.CandAppQuestions, id: '1'})}
+          href={$getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion?.id})}
           text={$t('candidateApp.questions.enterMissingAnswer')}
           variant="main"
           icon="next" />

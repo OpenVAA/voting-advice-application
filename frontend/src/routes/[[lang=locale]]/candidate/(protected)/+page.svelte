@@ -3,12 +3,12 @@
   import {BasicPage} from '$lib/templates/basicPage';
   import {Button} from '$lib/components/button';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {type CandidateContext} from '$lib/utils/candidateStore';
   import {getContext} from 'svelte';
   import {get} from 'svelte/store';
-  import InfoBadge from '$lib/components/infoBadge/infoBadge.svelte';
+  import {InfoBadge} from '$lib/components/infoBadge';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import Warning from '$lib/components/warning/Warning.svelte';
+  import {Warning} from '$lib/components/warning';
+  import {type CandidateContext} from '$lib/utils/candidateStore';
 
   const {
     userStore,

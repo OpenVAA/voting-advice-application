@@ -13,7 +13,7 @@
 </script>
 
 {#if questions && currentQuestion}
-  <QuestionPage {questions} {currentQuestion} />
+  <QuestionPage {questions} {currentQuestion} editMode={true} />
 {:else}
   {$t('question.notFound')}
 {/if}

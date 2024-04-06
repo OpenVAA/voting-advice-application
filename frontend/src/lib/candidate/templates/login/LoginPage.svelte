@@ -6,8 +6,8 @@
   import {getRoute, Route} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import PasswordField from '$lib/candidate/components/PasswordField/PasswordField.svelte';
-  import Footer from '$lib/templates/parts/footer/Footer.svelte';
+  import {PasswordField} from '$lib/candidate/components/passwordField';
+  import {Footer} from '$lib/templates/parts/footer';
   import {FrontPage} from '$lib/templates/frontPage';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
@@ -19,9 +19,9 @@
   let showPasswordSetMessage = false;
 
   // Variable for the user's chosen app language
-  let appLanguageCode: string;
+  let appLanguageCode = '';
   userStore.subscribe((user) => {
-    appLanguageCode = user?.candidate?.appLanguage?.localisationCode;
+    appLanguageCode = user?.candidate?.appLanguage?.localisationCode ?? '';
   });
 
   const onLogin = async () => {

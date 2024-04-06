@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Icon from '../icon/Icon.svelte';
+  import {Icon} from '$lib/components/icon';
   import type {ExpanderProps} from './Expander.type';
 
   type $$Props = ExpanderProps;
@@ -39,6 +39,10 @@
     case 'question':
       titleClasses += ' text-lg font-bold';
       break;
+    case 'question-help':
+      titleClasses += ' text-lg font-bold flex flex-row justify-between !text-left';
+      contentClasses += ' !text-left';
+      break;
   }
 
   // 3. Icon position
@@ -61,9 +65,9 @@
 </script>
 
 <!-- 
-  @component
-  A component for expanders that contain a title and some content. Use the
-  `variant` prop to specify the expander type.
+@component
+A component for expanders that contain a title and some content. Use the
+`variant` prop to specify the expander type.
 
   - `read-more`: the default style of the expander. Used, for example, for getting
     more information about a question.
@@ -71,32 +75,33 @@
     to display a question that can be expanded to reveal further information.
   - `category`: the most prominent style of the expander. Used for collapsible
     categories of items, such as questions.
+  - `question-help`: used to display questions and answers in the style of the help page.
 
-  ### Properties
+### Properties
 
-  - `title`: Title used for the expander. This is also used as the aria-label for 
-    the checkbox on which the expander operates on.
-  - `variant`: The type for the expander.
-  - `iconColor`: The color for the icon. Default color is primary.
-  - `iconPos`: The position for the icon. Default is text, which means the icon will
-      be where the text ends.
-  - `titleClass`: Custom class string to add to the `<div>` containing the title.
-  - `contentClass`: Custom class string to add to the `<div>` containing the main content.
+- `title`: Title used for the expander. This is also used as the aria-label for 
+  the checkbox on which the expander operates on.
+- `variant`: The type for the expander.
+- `iconColor`: The color for the icon. Default color is primary.
+- `iconPos`: The position for the icon. Default is text, which means the icon will
+    be where the text ends.
+- `titleClass`: Custom class string to add to the `<div>` containing the title.
+- `contentClass`: Custom class string to add to the `<div>` containing the main content.
 
-  You should not try to use a variant and customize at the same time.
+You should not try to use a variant and customize at the same time.
 
-  ### Usage
+### Usage
 
-  ```tsx
-  <Expander title="Example title">
-    <p>Example content<p/>
-  </Expander>
+```tsx
+<Expander title="Example title">
+  <p>Example content<p/>
+</Expander>
 
-  <Expander title="Example title" variant="category"  iconColor="primary" 
-    titleClass="bg-base-100 text-primary" contentClass="bg-base-300 text-info font-bold">
-    <p>Example content<p/>
-  </Expander>
-  ```
+<Expander title="Example title" variant="category"  iconColor="primary" 
+  titleClass="bg-base-100 text-primary" contentClass="bg-base-300 text-info font-bold">
+  <p>Example content<p/>
+</Expander>
+```
 -->
 
 <div class={collapseClasses}>
@@ -139,8 +144,9 @@
 
   /* This is needed to add padding to collapse content only when collapse is open */
   .collapse:not(.collapse-close) > input[type='checkbox']:checked ~ .collapse-content {
-    padding-right: 1.25rem;
-    padding-left: 1.25rem;
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+    transition: padding-top 0.2s;
   }
 
   /* This is needed to remove the excisting

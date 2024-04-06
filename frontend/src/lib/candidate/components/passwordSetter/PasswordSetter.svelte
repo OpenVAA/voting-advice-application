@@ -1,9 +1,9 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {Button} from '$lib/components/button';
-  import PasswordField from '../PasswordField/PasswordField.svelte';
+  import {PasswordField} from '$candidate/components/passwordField';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import PasswordValidator from '../passwordValidator/PasswordValidator.svelte';
+  import {PasswordValidator} from '$candidate/components/passwordValidator';
 
   export let password = '';
   export let passwordConfirmation = '';

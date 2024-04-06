@@ -91,7 +91,7 @@ Input field variant
 
 <div class="m-12 w-full">
   {#if headerText && !compact}
-    <label for={id} class="text-m mx-6 my-6 p-0 uppercase text-secondary">{headerText}</label>
+    <label for={id} class="text-m mx-10 my-6 p-0 uppercase text-secondary">{headerText}</label>
   {:else}
     <slot name="header" field={undefined} />
   {/if}

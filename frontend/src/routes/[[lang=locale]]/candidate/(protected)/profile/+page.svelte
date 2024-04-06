@@ -5,17 +5,16 @@
   import {translate} from '$lib/i18n/utils/translate';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {getLanguages, getGenders, updateBasicInfo} from '$lib/api/candidate';
-  import Icon from '$lib/components/icon/Icon.svelte';
+  import {Icon} from '$lib/components/icon';
   import {Button} from '$lib/components/button';
-  import FieldGroup from '$lib/components/common/form/FieldGroup.svelte';
-  import Field from '$lib/components/common/form/Field.svelte';
+  import {Field, FieldGroup} from '$lib/components/common/form';
   import {BasicPage} from '$lib/templates/basicPage';
   import AvatarSelect from './AvatarSelect.svelte';
-  import type {StrapiGenderData, StrapiLanguageData} from '$lib/api/getData.type';
-  import type {Language} from '$lib/types/candidateAttributes';
   import {MultilangTextInput} from '$candidate/components/textArea';
   import {PreventNavigation} from '$lib/components/preventNavigation';
   import {getContext} from 'svelte';
+  import type {StrapiGenderData, StrapiLanguageData} from '$lib/api/getData.type';
+  import type {Language} from '$lib/types/candidateAttributes';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
   const basicInfoFields = ['firstName', 'lastName', 'party'];
@@ -175,7 +174,7 @@
 </script>
 
 <BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
-  <PreventNavigation active={dirty} />
+  <PreventNavigation active={dirty && !loading} />
   <form on:submit|preventDefault={submitForm}>
     <div class="flex flex-col items-center gap-16">
       <p class="text-center">
@@ -334,7 +333,7 @@
 
       <Button
         disabled={!allFilled || loading}
-        text={$t('candidateApp.opinions.continue')}
+        text={$t('candidateApp.questions.continue')}
         type="submit"
         variant="main"
         icon="next"

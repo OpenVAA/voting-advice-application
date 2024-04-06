@@ -121,17 +121,11 @@
     "emailSentText": "A reset password link has been sent to your email. Please check your inbox and click the link to set your new password.",
     "errorText": "Internal error. Try again later or contact the administrator."
   },
-  "opinions": {
-    "title": "Enter your opinions",
-    "instructions": "Next, the app will ask your opinions on {numQuestions} statements about political issues and values. When voters use the Election Compass, they will also answer the same statements and see how well their opinions agree with the yours.",
-    "tip": "You can see all your anwers on this page when you come back to it later.",
-    "continue": "Continue",
-    "commentOnThisIssue": "Comment on this issue",
-    "answerSaveError": "Saving answer failed",
-    "answerDeleteError": "Deleting answer failed"
-  },
   "questions": {
     "title": "Your opinions",
+    "start": "Enter your opinions",
+    "instructions": "Next, the app will ask your opinions on {numQuestions} statements about political issues and values. When voters use the Election Compass, they will also answer the same statements and see how well their opinions agree with the yours.",
+    "tip": "You can see all your anwers on this page when you come back to it later.",
     "warning": "You still have {numUnansweredQuestions} unanswered questions. Your data won't be shown in the Election Compass until you have answered all of them.",
     "info": "You can see all of your opinions below and edit them by tapping on them.",
     "answerButton": "Answer this question",
@@ -140,11 +134,16 @@
     "enterMissingAnswer": "Enter Missing Answers",
     "editYourAnswer": "Edit Your Answer",
     "viewYourAnswer": "View Your Answer",
-    "return": "return",
+    "continue": "Continue",
+    "return": "Return",
+    "cancel": "Cancel",
+    "saveAndContinue": "Save and Continue",
+    "saveAndReturn": "Save and Return",
+    "answerSaveError": "Saving answer failed",
     "editingAllowedNote": "Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data."
   },
   "passwordButton": {
-    "hidePassword": "Hide pasprettier-plugin-sveltesword",
+    "hidePassword": "Hide password",
     "revealPassword": "Reveal password"
   },
   "homePage": {
@@ -169,6 +168,33 @@
     "title": "Preview",
     "notFound": "Profile not found",
     "tip": "This is a preview of how your profile will look to voters."
+  },
+  "help": {
+    "title": "Help",
+    "description": "Here you can find answers to the most common questions with using this application.",
+    "continueFilling": "Continue Filling",
+    "questions": {
+      "question1": {
+        "question": "My name is wrong but I can't change it",
+        "answer": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question2": {
+        "question": "My profile is not visible in the Election Compass",
+        "answer": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question3": {
+        "question": "I don't want to tell my opinion on some issues",
+        "answer": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question4": {
+        "question": "My party is not listed",
+        "answer": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question5": {
+        "question": "I don't have a profile picture to upload",
+        "answer": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      }
+    }
   },
   "textarea": {
     "hide": "Hide translations for this field",

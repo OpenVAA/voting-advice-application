@@ -1,10 +1,10 @@
 <script lang="ts">
   import {LoginPage} from '$lib/candidate/templates/login';
   import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
   import {BasicPage} from '$lib/templates/basicPage';
-  import {Warning} from '$lib/components/warning/intex';
+  import {Warning} from '$lib/components/warning/index';
   import {t} from '$lib/i18n';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
   const {userStore, tokenStore} = getContext<CandidateContext>('candidate');
   export let showLogin = false;
