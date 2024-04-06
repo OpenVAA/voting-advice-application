@@ -8,7 +8,7 @@
   import {getRoute, Route} from '$lib/utils/navigation';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {questionsStore, progressStore} = getContext<CandidateContext>('candidate');
+  const {questionsStore} = getContext<CandidateContext>('candidate');
   const questions = get(questionsStore) ?? [];
   const numQuestions = Object.values(questions).length;
   const firstQuestionUrl = $getRoute({
@@ -17,10 +17,7 @@
   });
 </script>
 
-<BasicPage
-  title={$t('candidateApp.questions.start')}
-  progress={$progressStore?.progress}
-  progressMax={$progressStore?.max}>
+<BasicPage title={$t('candidateApp.questions.start')}>
   <svelte:fragment slot="note">
     <Icon name="tip" />
     {$t('candidateApp.questions.tip')}

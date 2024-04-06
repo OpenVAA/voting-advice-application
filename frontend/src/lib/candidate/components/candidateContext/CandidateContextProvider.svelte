@@ -51,18 +51,14 @@
   const updateProgress = () => {
     const answers = get(candidateContext.answersStore);
     const questions = get(candidateContext.questionsStore);
-    const basicInfoFilled = get(candidateContext.basicInfoFilledStore);
 
     if (answers && questions) {
       const answeredQuestions = Object.entries(answers).length;
       const totalQuestions = Object.entries(questions).length;
 
-      const basicInfoWeight = 3; // Weight of basic info in progress bar
-      const basicInfo = basicInfoFilled ? basicInfoWeight : 0;
-
       candidateContext.progressStore.set({
-        progress: 1 + answeredQuestions + basicInfo,
-        max: 1 + totalQuestions + basicInfoWeight
+        progress: answeredQuestions,
+        max: totalQuestions
       });
     }
   };
@@ -72,7 +68,6 @@
 
   candidateContext.answersStore.subscribe(updateProgress);
   candidateContext.questionsStore.subscribe(updateProgress);
-  candidateContext.basicInfoFilledStore.subscribe(updateProgress);
 </script>
 
 <!--

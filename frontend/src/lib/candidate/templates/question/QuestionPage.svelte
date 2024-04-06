@@ -132,6 +132,11 @@
     goto($getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion.id}));
   };
 
+  const cancelAndReturn = () => {
+    removeLocalAnswerToQuestion();
+    goto($getRoute(Route.CandAppQuestions));
+  };
+
   $: category = translate(currentQuestion.category, $locale);
   $: info = translate(currentQuestion.info, $locale);
   $: options = currentQuestion.values?.map(({key, label}) => ({
@@ -145,12 +150,12 @@
 Display the page for answering a single question.
 In addition to the question, includes a Likert scale and a text area for commenting.
 
-## Props
+### Properties
 - `currentQuestion` (required): The question to display.
 - `questions` (required): Record of all questions.
 - `editMode` (optional): Whether the page is in edit mode. Changes the buttons displayed.
 
-## Usage
+### Usage
 ```tsx
 <QuestionPage {currentQuestion} {questions} />
 ```
@@ -218,7 +223,7 @@ In addition to the question, includes a Likert scale and a text area for comment
             variant="main"
             text={$t('candidateApp.questions.saveAndReturn')} />
           <Button
-            on:click={() => goto($getRoute(Route.CandAppQuestions))}
+            on:click={cancelAndReturn}
             variant="main"
             text={$t('candidateApp.questions.cancel')} />
         </div>

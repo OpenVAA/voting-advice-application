@@ -49,7 +49,7 @@ registrationCode
   </HeadingGroup>
   <div slot="header">
     {#if loggedIn}
-      <LogoutButton></LogoutButton>
+      <LogoutButton />
     {/if}
   </div>
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onRegistration}>

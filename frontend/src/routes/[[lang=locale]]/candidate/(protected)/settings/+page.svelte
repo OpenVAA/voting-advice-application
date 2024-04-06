@@ -14,7 +14,7 @@
   import type {StrapiLanguageData} from '$lib/api/getData.type';
   import type {Language} from '$lib/types/candidateAttributes';
 
-  const {userStore, loadUserData, progressStore} = getContext<CandidateContext>('candidate');
+  const {userStore, loadUserData} = getContext<CandidateContext>('candidate');
   $: user = $userStore;
 
   // TODO: consider refactoring this as this uses same classes as profile/+page.svelte?
@@ -97,16 +97,17 @@
       return;
     }
 
+    // Clear fields on success
+    currentPassword = '';
+    password = '';
+    passwordConfirmation = '';
+
     errorMessage = '';
     successMessage = $t('candidateApp.settings.passwordUpdated');
   };
 </script>
 
-<BasicPage
-  title={$t('candidateApp.settings.title')}
-  mainClass="bg-base-200"
-  progress={$progressStore?.progress}
-  progressMax={$progressStore?.max}>
+<BasicPage title={$t('candidateApp.settings.title')} mainClass="bg-base-200">
   <div class="text-center">
     <p>{$t('candidateApp.settings.instructions')}</p>
   </div>
