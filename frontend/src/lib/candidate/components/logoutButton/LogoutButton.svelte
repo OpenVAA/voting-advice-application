@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import TimedModal from '$lib/components/modal/TimedModal.svelte';
+  import {TimedModal} from '$lib/components/modal';
   import {goto} from '$app/navigation';
   import {Button} from '$lib/components/button';
   import {getContext} from 'svelte';
@@ -18,29 +18,25 @@
   let timeLeft = logoutModalTimer;
 
   const {
-    nofUnasweredBasicInfoQuestionsStore,
+    nofUnansweredBasicInfoQuestionsStore,
     opinionQuestionsFilledStore,
     nofUnansweredOpinionQuestionsStore,
+    basicInfoFilledStore,
     logOut
   } = getContext<CandidateContext>('candidate');
 
-  let opinionQuestionsLeft: number | undefined;
-  nofUnasweredBasicInfoQuestionsStore?.subscribe((value) => {
-    opinionQuestionsLeft = value;
-  });
-
-  let opinionQuestionsFilled: boolean | undefined;
-  opinionQuestionsFilledStore?.subscribe((value) => {
-    opinionQuestionsFilled = value;
-  });
-
   let basicInfoQuestionsLeft: number | undefined;
-  nofUnansweredOpinionQuestionsStore?.subscribe((value) => {
+  nofUnansweredBasicInfoQuestionsStore?.subscribe((value) => {
     basicInfoQuestionsLeft = value;
   });
 
+  let opinionQuestionsLeft: number | undefined;
+  nofUnansweredOpinionQuestionsStore?.subscribe((value) => {
+    opinionQuestionsLeft = value;
+  });
+
   const triggerLogout = () => {
-    if (!opinionQuestionsFilled || !basicInfoQuestionsLeft) {
+    if (!$opinionQuestionsFilledStore || !$basicInfoFilledStore) {
       openModal();
     } else {
       logout();
@@ -89,22 +85,16 @@ When set to false, the button variant is ghost.
   <div class="notification max-w-md text-center">
     <h2>{$t('candidateApp.logoutModal.title')}</h2>
     <br />
-    {#if basicInfoQuestionsLeft && basicInfoQuestionsLeft > 0}
+    {#if !$basicInfoFilledStore}
       <p>
-        {$t('candidateApp.logoutModal.body', {
-          remainingInfoAmount: basicInfoQuestionsLeft,
-          remainingOpinionNumber: opinionQuestionsLeft
-        })}
-      </p>
-    {:else if opinionQuestionsLeft && opinionQuestionsLeft > 1}
-      <p>
-        {$t('candidateApp.logoutModal.bodyBasicInfoReady', {
-          remainingOpinionNumber: opinionQuestionsLeft
+        {$t('candidateApp.logoutModal.itemsLeft', {
+          basicInfoQuestionsLeft,
+          opinionQuestionsLeft
         })}
       </p>
     {:else}
       <p>
-        {$t('candidateApp.logoutModal.bodyBasicInfoReady1OpinionLeft')}
+        {$t('candidateApp.logoutModal.questionsLeft', {opinionQuestionsLeft})}
       </p>
     {/if}
     <p>

@@ -97,6 +97,11 @@
       return;
     }
 
+    // Clear fields on success
+    currentPassword = '';
+    password = '';
+    passwordConfirmation = '';
+
     errorMessage = '';
     successMessage = $t('candidateApp.settings.passwordUpdated');
   };

@@ -194,4 +194,7 @@ the Drawer component.
   #main-progress-bar::-webkit-meter-optimum-value {
     @apply rounded-r-full bg-primary bg-none;
   }
+  #main-progress-bar::-moz-meter-bar {
+    @apply rounded-r-full bg-primary bg-none;
+  }
 </style>
