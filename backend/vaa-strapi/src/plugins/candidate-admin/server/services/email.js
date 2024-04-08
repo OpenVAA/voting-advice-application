@@ -8,7 +8,7 @@ const getFormattedMessage = (content, registrationKey) => {
   url.searchParams.append('registrationCode', registrationKey);
   const resetUrl = url.toString();
 
-  let text = content.replace(/\[LINK\]/g, `<a href="${resetUrl}">${resetUrl}</a>`);
+  let text = content.replace(/{LINK}/g, `<a href="${resetUrl}">${resetUrl}</a>`);
   text = text.replace(/\n/g, '<br>');
   return text;
 };
