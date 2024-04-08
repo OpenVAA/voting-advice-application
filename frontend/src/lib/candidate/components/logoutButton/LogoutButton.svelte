@@ -6,14 +6,16 @@
   import {Button} from '$lib/components/button';
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {LogoutButtonProps} from '$lib/types/LogoutButton.type';
 
+  type $$props = LogoutButtonProps;
+  export let buttonVariant: $$props['buttonVariant'] = 'normal';
   /** Defaults to normal, button variant can be "normal" for just text, "icon" for a button with an icon and "main" for a filled red box */
-  export let buttonVariant = 'normal';
   /*Determines whether the user is taken to the login page after logging out or stays on the current page*/
-  export let stayOnPage = false;
+  export let stayOnPage: $$props['stayOnPage'] = false;
 
   /** time until automatic logout for modal */
-  export let logoutModalTimer = 30;
+  export let logoutModalTimer: $$props['logoutModalTimer'] = 30;
   // exports from TimedModal
   let openModal: () => void;
   let closeModal: () => void;
@@ -61,12 +63,11 @@
 <!--
 @component
 Allows user to log out. Displays modal notification if the user
-hasn't filled all the data. 
-
-This component has optional string property `buttonVariant`:
-When set to normal (default), the button variant is normal which is just plain text. 
-When set to icon, the button variant is icon.
-When set to main, the button variant is main which is a red box.
+hasn't filled all the data.
+- `buttonVariant`:the style variant of the button, either normal for plain text, icon for graphical icon or main for a box with text.
+  Defaults to normal
+-`stayOnPage`: boolean deciding if pressing the button takes the user to the login page or not. Defaults to true
+-`logoutModalTimer`:Time in seconds that the logout modal created by the button waits before automatically logging the user out. Defaults to 30
 
 ### Usage
 ```tsx

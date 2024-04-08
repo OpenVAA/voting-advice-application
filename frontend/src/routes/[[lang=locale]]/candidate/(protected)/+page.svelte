@@ -138,6 +138,6 @@
         href={nextAction.href} />
     {/if}
 
-    <LogoutButton></LogoutButton>
+    <LogoutButton />
   </div>
 </BasicPage>
