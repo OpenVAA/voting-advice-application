@@ -21,7 +21,9 @@ export default function RegistrationEmailButton({instructions, confirmFunction})
 
   const [isVisible, setIsVisible] = useState(false);
   const [emailSubject, setEmailSubject] = useState('');
-  const [emailContent, setEmailContent] = useState('');
+  const [emailContent, setEmailContent] = useState(
+    'Register to the Election Compass with the following link:\n\n{LINK}'
+  );
   const toggleNotification = useNotification();
 
   return (
@@ -65,10 +67,10 @@ export default function RegistrationEmailButton({instructions, confirmFunction})
               <Button
                 startIcon={<Envelop />}
                 onClick={() => {
-                  if (!emailContent.includes('[LINK]')) {
+                  if (!emailContent.includes('{LINK}')) {
                     toggleNotification({
                       type: 'warning',
-                      message: "Email content doesn't include [LINK]",
+                      message: "Email content doesn't include {LINK}",
                       timeout: 5000
                     });
                   } else if (emailSubject.length == 0) {

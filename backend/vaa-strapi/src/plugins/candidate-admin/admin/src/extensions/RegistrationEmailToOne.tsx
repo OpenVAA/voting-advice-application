@@ -9,7 +9,7 @@ export default function RegistrationEmailToOne() {
   }
 
   return RegistrationEmailButton({
-    instructions: `Send registration email to ${initialData.firstName} ${initialData.lastName}. Add registration link to email by adding [LINK] to the email content. Registration link can be added multiple times.`,
+    instructions: `Send registration email to ${initialData.firstName} ${initialData.lastName}. Add registration link to email by adding {LINK} to the email content. Registration link can be added multiple times.`,
     confirmFunction: (emailSubject, emailContent) => {
       fetch('/candidate-admin/send-email', {
         method: 'POST',
