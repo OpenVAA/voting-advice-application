@@ -12,7 +12,7 @@
   export let validPassword = false;
 
   $: disableSetButton = validPassword && passwordConfirmation.length > 0;
-  //dispatcher used for a function that calls the submit button's function in parent component
+  // Dispatcher used for a function that calls the submit button's function in parent component
   export let buttonPressed = () => {};
 </script>
 
@@ -33,11 +33,11 @@ a second confirmation password input field, a button for submitting the password
 ```tsx
 
 <PasswordSetComponent
-bind:password={passwordOfContext1}
-bind:passwordConfirmation={passwordOfContext2}
-on:ButtonPressed={onSetButtonPressed}
-bind:validPassword={validPasswordOfContext}
-bind:errorMessage={errorMessageOfContext} />
+  bind:password={passwordOfContext1}
+  bind:passwordConfirmation={passwordOfContext2}
+  on:ButtonPressed={onSetButtonPressed}
+  bind:validPassword={validPasswordOfContext}
+  bind:errorMessage={errorMessageOfContext} />
 ```
 -->
 

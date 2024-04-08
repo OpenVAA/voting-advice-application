@@ -29,7 +29,7 @@ to reveal and hide the password
 
 ### Usage
 ```tsx
-<PasswordField bind:password={passwordOfContext} autocomplete="autocomplete" />
+<PasswordField bind:password={passwordOfContext} autocomplete="current-password" />
 ```
 -->
 
@@ -56,5 +56,5 @@ to reveal and hide the password
       : $t('candidateApp.passwordButton.revealPassword')}
     class="absolute inset-y-0 right-0"
     icon={passwordRevealed ? 'hide' : 'show'}
-    on:click={() => changeRevealed()} />
+    on:click={changeRevealed} />
 </div>
