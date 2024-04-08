@@ -171,6 +171,9 @@
       motherTongueSelect.selectedIndex = 0;
     }
   };
+
+  const birthdayMin = '1800-01-01';
+  const birthdayMax = new Date().toISOString().split('T')[0];
 </script>
 
 <BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
@@ -234,7 +237,13 @@
           </label>
           <div class={inputContainerClass}>
             <div class={inputClass}>
-              <input class="dark:bg-black" type="date" id="birthday" bind:value={birthday} />
+              <input
+                class="dark:bg-black"
+                type="date"
+                min={birthdayMin}
+                max={birthdayMax}
+                id="birthday"
+                bind:value={birthday} />
             </div>
           </div>
         </Field>
