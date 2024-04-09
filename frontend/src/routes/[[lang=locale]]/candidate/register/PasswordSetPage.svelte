@@ -83,13 +83,11 @@ Page where candidates can set their password when logging to the app for the fir
       {$t('candidateApp.setPassword.greeting', {userName})}
     </h1>
   </HeadingGroup>
-  <div slot="header">
-    {#if loggedIn}
-      <LogoutButton />
-    {/if}
-  </div>
   {#if loggedIn}
     <p class="text-center text-warning">{$t('candidateApp.registration.loggedInWarning')}</p>
+    <div class="center pb-10">
+      <LogoutButton stayOnPage={true} buttonVariant="main" />
+    </div>
   {/if}
   <form class="flex flex-col flex-nowrap items-center">
     <PasswordSetter

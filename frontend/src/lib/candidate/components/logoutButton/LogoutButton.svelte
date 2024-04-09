@@ -6,12 +6,14 @@
   import {Button} from '$lib/components/button';
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {LogoutButtonProps} from '$lib/types/LogoutButton.type';
 
-  /** Defaults to true, so that button variant is "icon". Can be set to false if the button should be of variant "main" */
-  export let variantIcon = true;
+  type $$props = LogoutButtonProps;
+  export let buttonVariant: $$props['buttonVariant'] = 'normal';
+  export let stayOnPage: $$props['stayOnPage'] = false;
 
   /** time until automatic logout for modal */
-  export let logoutModalTimer = 30;
+  export let logoutModalTimer: $$props['logoutModalTimer'] = 30;
   // exports from TimedModal
   let openModal: () => void;
   let closeModal: () => void;
@@ -46,18 +48,20 @@
   const logout = async () => {
     await logOut();
     closeModal();
-    await goto($getRoute(Route.CandAppHome));
+    if (!stayOnPage) {
+      await goto($getRoute(Route.CandAppHome));
+    }
   };
 </script>
 
 <!--
 @component
 Allows user to log out. Displays modal notification if the user
-hasn't filled all the data. 
-
-This component has optional boolean property `variantIcon`:
-When set to true (default), the button variant is icon. 
-When set to false, the button variant is ghost.
+hasn't filled all the data.
+- `buttonVariant`:the style variant of the button, either normal for plain text, icon for graphical icon or main for a box with text.
+  Defaults to normal
+-`stayOnPage`: boolean deciding if pressing the button takes the user to the login page or not. Defaults to true
+-`logoutModalTimer`:Time in seconds that the logout modal created by the button waits before automatically logging the user out. Defaults to 30
 
 ### Usage
 ```tsx
@@ -65,14 +69,20 @@ When set to false, the button variant is ghost.
 ```
 -->
 
-<!-- Define the button based on variant ("icon" or "ghost"). Cannot be done shorter because of type errors. -->
-{#if variantIcon}
+<!-- Define the button based on variant ("icon", "main" or "normal"). Cannot be done shorter because of type errors. -->
+{#if buttonVariant === 'icon'}
   <Button
     on:click={triggerLogout}
     variant="icon"
     icon="logout"
     text={$t('candidateApp.navbar.logOut')}
     color="warning" />
+{:else if buttonVariant === 'main'}
+  <Button
+    on:click={triggerLogout}
+    text={$t('candidateApp.homePage.logOut')}
+    color="warning"
+    variant="main" />
 {:else}
   <Button on:click={triggerLogout} text={$t('candidateApp.homePage.logOut')} color="warning" />
 {/if}

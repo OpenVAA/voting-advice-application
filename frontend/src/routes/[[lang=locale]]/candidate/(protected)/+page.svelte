@@ -141,6 +141,6 @@
         href={nextAction.href} />
     {/if}
 
-    <LogoutButton variantIcon={false}></LogoutButton>
+    <LogoutButton />
   </div>
 </BasicPage>

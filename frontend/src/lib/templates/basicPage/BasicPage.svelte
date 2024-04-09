@@ -118,7 +118,7 @@ the rendering of an empty `<figure>` element even if there's no content.
   <!-- Header -->
   <svelte:fragment slot="banner">
     {#if showLogoutButton}
-      <LogoutButton />
+      <LogoutButton buttonVariant="icon" />
     {/if}
     <slot name="banner" />
   </svelte:fragment>
