@@ -94,11 +94,11 @@ Therefore, the validity should be also checked on form submit as well and on the
 
 ### Usage
 
-  When using this component, the `validPassword` property should be bound to a boolean variable that is used to enable/disable the submit button.
-  `password` and `username` should be given as props.
-  ```tsx
-  <PasswordValidator bind:validPassword={validPassword} password={password} username={username} />
-  ```
+When using this component, the `validPassword` property should be bound to a boolean variable that is used to enable/disable the submit button.
+`password` and `username` should be given as props.
+```tsx
+<PasswordValidator bind:validPassword={validPassword} password={password} username={username} />
+```
 -->
 
 <div class="m-sm flex w-full flex-col">

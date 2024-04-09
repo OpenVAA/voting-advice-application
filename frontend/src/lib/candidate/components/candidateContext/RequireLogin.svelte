@@ -3,6 +3,7 @@
   import {getContext} from 'svelte';
   import {BasicPage} from '$lib/templates/basicPage';
   import {Warning} from '$lib/components/warning/index';
+  import {LoadingSpinner} from '$candidate/components/loadingSpinner';
   import {t} from '$lib/i18n';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
@@ -47,9 +48,7 @@ Require candidates to be logged in to view the children of this component.
     </BasicPage>
   {/if}
 {:else if ($tokenStore === undefined || ($tokenStore && !$userStore)) && showLogin}
-  <div class="mt-100 flex h-screen flex-col items-center">
-    <span class="loading loading-spinner loading-lg" />
-  </div>
+  <LoadingSpinner />
 {:else if showLogin}
   <LoginPage />
 {:else}

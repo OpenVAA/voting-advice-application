@@ -33,7 +33,7 @@
       !!birthday,
       Object.values(manifesto).some((value) => value !== '')
     ].filter((n) => n).length;
-    candidateContext.nofUnasweredBasicInfoQuestionsStore.set(4 - nofBasicQuestionsFilled);
+    candidateContext.nofUnansweredBasicInfoQuestionsStore.set(4 - nofBasicQuestionsFilled);
   });
 
   const updateNofUnansweredQuestions = () => {
@@ -48,8 +48,26 @@
     }
   };
 
+  const updateProgress = () => {
+    const answers = get(candidateContext.answersStore);
+    const questions = get(candidateContext.questionsStore);
+
+    if (answers && questions) {
+      const answeredQuestions = Object.entries(answers).length;
+      const totalQuestions = Object.entries(questions).length;
+
+      candidateContext.progressStore.set({
+        progress: answeredQuestions,
+        max: totalQuestions
+      });
+    }
+  };
+
   candidateContext.answersStore.subscribe(updateNofUnansweredQuestions);
   candidateContext.questionsStore.subscribe(updateNofUnansweredQuestions);
+
+  candidateContext.answersStore.subscribe(updateProgress);
+  candidateContext.questionsStore.subscribe(updateProgress);
 </script>
 
 <!--

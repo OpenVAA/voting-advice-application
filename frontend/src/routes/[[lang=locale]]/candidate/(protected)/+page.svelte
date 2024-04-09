@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
+  import {t, locale} from '$lib/i18n';
   import {BasicPage} from '$lib/templates/basicPage';
   import {Button} from '$lib/components/button';
   import {getRoute, Route} from '$lib/utils/navigation';
@@ -13,7 +13,7 @@
   const {
     userStore,
     basicInfoFilledStore,
-    nofUnasweredBasicInfoQuestionsStore: nofUnansweredBasicInfoQuestions,
+    nofUnansweredBasicInfoQuestionsStore: nofUnansweredBasicInfoQuestions,
     opinionQuestionsFilledStore,
     nofUnansweredOpinionQuestionsStore: nofUnansweredOpinionQuestions,
     questionsStore
@@ -81,7 +81,10 @@
     };
   };
 
-  $: nextAction = getNextAction();
+  $: nextAction = {
+    $locale, // Trigger reactivity when locale changes
+    ...getNextAction()
+  };
 </script>
 
 <!--Homepage for the user-->

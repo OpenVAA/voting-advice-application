@@ -1,5 +1,5 @@
 import {authenticate, me} from '$lib/api/candidate';
-import type {Question, Answer, User} from '$lib/types/candidateAttributes';
+import type {Question, Answer, User, Progress} from '$lib/types/candidateAttributes';
 import {writable, type Writable} from 'svelte/store';
 import {getExistingAnswers} from '$lib/api/candidate';
 import {getLikertQuestions} from '$lib/api/candidate';
@@ -21,9 +21,10 @@ export interface CandidateContext {
   loadQuestionData: () => Promise<void>;
   // Custom util
   basicInfoFilledStore: Writable<boolean | undefined>;
-  nofUnasweredBasicInfoQuestionsStore: Writable<number | undefined>;
+  nofUnansweredBasicInfoQuestionsStore: Writable<number | undefined>;
   opinionQuestionsFilledStore: Writable<boolean | undefined>;
   nofUnansweredOpinionQuestionsStore: Writable<number | undefined>;
+  progressStore: Writable<Progress | undefined>;
 }
 
 const userStore = writable<User | null>(null);
@@ -35,6 +36,7 @@ const basicInfoFilledStore = writable<boolean | undefined>(undefined);
 const nofUnansweredBasicInfoQuestionsStore = writable<number | undefined>(undefined);
 const opinionQuestionsFilledStore = writable<boolean | undefined>(undefined);
 const nofUnansweredOpinionQuestionsStore = writable<number | undefined>(undefined);
+const progressStore = writable<Progress | undefined>(undefined);
 
 const logIn = async (email: string, password: string) => {
   const response = await authenticate(email, password);
@@ -98,7 +100,8 @@ export const candidateContext: CandidateContext = {
   loadQuestionData,
   loadLocalStorage,
   basicInfoFilledStore,
-  nofUnansweredOpinionQuestionsStore: nofUnansweredOpinionQuestionsStore,
+  nofUnansweredOpinionQuestionsStore,
   opinionQuestionsFilledStore,
-  nofUnasweredBasicInfoQuestionsStore: nofUnansweredBasicInfoQuestionsStore
+  nofUnansweredBasicInfoQuestionsStore,
+  progressStore
 };
