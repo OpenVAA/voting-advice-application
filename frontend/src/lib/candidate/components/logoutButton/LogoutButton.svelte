@@ -10,8 +10,6 @@
 
   type $$props = LogoutButtonProps;
   export let buttonVariant: $$props['buttonVariant'] = 'normal';
-  /** Defaults to normal, button variant can be "normal" for just text, "icon" for a button with an icon and "main" for a filled red box */
-  /*Determines whether the user is taken to the login page after logging out or stays on the current page*/
   export let stayOnPage: $$props['stayOnPage'] = false;
 
   /** time until automatic logout for modal */
