@@ -26,6 +26,19 @@
   }
 </script>
 
+<!--
+@component
+Renders an unanswered question on the summary page. Consists of the questions title and a button to navigate to the questions page.
+
+-`question`: The question that is rendered. Taken as a mandatory prop
+-`categoryQuestions`: All the questions belonging to the same category. Taken as a mandatory prop
+
+### Usage
+```tsx
+  <UnAnsweredQuestion {question} {categoryQuestions} />
+```
+-->
+
 <div class="pt-40">
   <div class="text-accent">
     {translate(question.category)}

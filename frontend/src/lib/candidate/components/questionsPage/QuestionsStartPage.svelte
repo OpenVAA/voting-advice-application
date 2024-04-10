@@ -10,12 +10,26 @@
 
   const {questionsStore} = getContext<CandidateContext>('candidate');
   const questions = get(questionsStore) ?? [];
+
   const numQuestions = Object.values(questions).length;
   const firstQuestionUrl = $getRoute({
     route: Route.CandAppQuestions,
     id: Object.values(questions)[0].id
   });
 </script>
+
+<!--
+@component
+Renders the question start page, which tells the user information on how to answer the questions.
+
+-`numQuestions`: The number of questions to be answered.
+-`firstQuestionUrl`: The url of the first question where the user is navigated to after the start page.
+
+### Usage
+```tsx
+  <QuestionsStartPage />
+```
+-->
 
 <BasicPage title={$t('candidateApp.questions.start')}>
   <svelte:fragment slot="note">
