@@ -8,11 +8,10 @@ import { restrictResourceOwnedByCandidate, restrictPopulate, restrictFilters } f
 const electionCanEditQuestions = async (ctx, config, {strapi}) => {
   if (!ctx.state.user) return false;
 
-  // TODO: refactor this when nomination is one-to-one mapping to the candidate
   const candidate = await strapi.db.query('api::candidate.candidate').findOne({
     where: {user: {id: ctx.state.user.id}},
     populate: {
-      nominations: {
+      nomination: {
         populate: {
           election: true,
         },
@@ -20,7 +19,7 @@ const electionCanEditQuestions = async (ctx, config, {strapi}) => {
     },
   });
 
-  return candidate?.nominations[0]?.election?.canEditQuestions ?? false;
+  return candidate?.nomination?.election?.canEditQuestions ?? false;
 };
 
 export default factories.createCoreRouter('api::answer.answer', {
