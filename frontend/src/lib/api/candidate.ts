@@ -81,8 +81,9 @@ type UserData = User & {error: unknown};
 export const me = async (): Promise<User | undefined> => {
   const res = await request(
     getUrl('api/users/me', {
-      'populate[candidate][populate][nominations][populate][party]': 'true',
-      'populate[candidate][populate][nominations][populate][constituency]': 'true',
+      'populate[candidate][populate][nomination][populate][party]': 'true',
+      'populate[candidate][populate][nomination][populate][constituency]': 'true',
+      'populate[candidate][populate][nomination][populate][election]': 'true',
       'populate[candidate][populate][party]': 'true',
       'populate[candidate][populate][photo]': 'true',
       'populate[candidate][populate][gender]': 'true',
@@ -180,7 +181,7 @@ export const getLikertQuestions = async (): Promise<Record<string, Question> | u
   const res = await request(
     getUrl('api/questions', {
       'populate[questionType]': 'true',
-      'populate[category][populate][election]': 'true',
+      'populate[category]': 'true',
       'filters[questionType][name][$startsWith]': 'Likert'
     })
   );
@@ -200,8 +201,7 @@ export const getLikertQuestions = async (): Promise<Record<string, Question> | u
       info: attr.info,
       shortName: attr.shortName,
       category: question.attributes.category.data.attributes.name,
-      type: settings.type,
-      editable: attr.category.data.attributes.election.data.attributes.canEditQuestions
+      type: settings.type
     };
     if ('values' in settings)
       props.values = settings.values.map(({key, label}) => ({

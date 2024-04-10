@@ -24,12 +24,6 @@
       "target": "api::constituency.constituency",
       "inversedBy": "nominations"
     },
-    "candidate": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::candidate.candidate",
-      "inversedBy": "nominations"
-    },
     "party": {
       "type": "relation",
       "relation": "manyToOne",
@@ -49,6 +43,12 @@
       "type": "integer",
       "required": true,
       "default": 1
+    },
+    "candidate": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::candidate.candidate",
+      "mappedBy": "nomination"
     }
   }
 }

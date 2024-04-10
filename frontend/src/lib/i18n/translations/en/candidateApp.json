@@ -49,7 +49,10 @@
     "nominationsDescription": "These are the constituencies where you're nominated along with the election list and possible election symbol. If a nomination is marked 'Pending', your election symbol might not yet be defined.",
     "electionManifesto": "Election manifesto",
     "nominations": "Nominations",
-    "tapToAddPhoto": "Tap to add photo"
+    "tapToAddPhoto": "Tap to add photo",
+    "saveAndContinue": "Save and Continue",
+    "return": "Return",
+    "saveAndReturn": "Save and Return"
   },
   "settings": {
     "title": "Settings",

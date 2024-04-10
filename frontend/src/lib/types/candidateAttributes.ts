@@ -19,7 +19,7 @@ export interface Candidate {
   unaffiliated: boolean;
   politicalExperience: string;
   email: string;
-  nominations: Nomination[];
+  nomination: Nomination;
   locale: string;
   party?: Party;
   appLanguage?: Language;
@@ -72,6 +72,7 @@ export interface Nomination {
   electionSymbol: string;
   electionRound: number;
   party: Party;
+  election: Election;
   constituency?: Constituency;
 }
 
@@ -81,6 +82,11 @@ export interface Party {
   shortName: LocalizedString;
   info: LocalizedString;
   partyColor: string;
+}
+
+export interface Election {
+  id: number;
+  canEditQuestions: boolean;
 }
 
 export interface Constituency {

@@ -128,8 +128,9 @@ module.exports = async (plugin) => {
     route.config.policies = [
       // Disable populate by default to avoid accidentally leaking data through relations
       restrictPopulate([
-        'candidate.populate.nominations.populate.party',
-        'candidate.populate.nominations.populate.constituency',
+        'candidate.populate.nomination.populate.party',
+        'candidate.populate.nomination.populate.constituency',
+        'candidate.populate.nomination.populate.election',
         'candidate.populate.party',
         'candidate.populate.photo',
         'candidate.populate.motherTongues',

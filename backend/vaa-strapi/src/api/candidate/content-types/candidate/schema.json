@@ -55,7 +55,9 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": ["images"],
+      "allowedTypes": [
+        "images"
+      ],
       "pluginOptions": {}
     },
     "manifesto": {
@@ -90,11 +92,11 @@
       "target": "api::answer.answer",
       "mappedBy": "candidate"
     },
-    "nominations": {
+    "nomination": {
       "type": "relation",
-      "relation": "oneToMany",
+      "relation": "oneToOne",
       "target": "api::nomination.nomination",
-      "mappedBy": "candidate"
+      "inversedBy": "candidate"
     },
     "candidateAttributes": {
       "type": "relation",

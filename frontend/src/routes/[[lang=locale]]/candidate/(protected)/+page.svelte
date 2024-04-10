@@ -16,19 +16,14 @@
     nofUnansweredBasicInfoQuestionsStore: nofUnansweredBasicInfoQuestions,
     opinionQuestionsFilledStore,
     nofUnansweredOpinionQuestionsStore: nofUnansweredOpinionQuestions,
-    questionsStore
+    questionsLockedStore
   } = getContext<CandidateContext>('candidate');
   const user = get(userStore);
   const userName = user?.candidate?.firstName;
 
   let dataEditable: boolean;
 
-  let questions = get(questionsStore) ?? [];
-
-  if (questions) {
-    //TODO: use store when store is implemented
-    dataEditable = Object.values(questions)[0].editable;
-  }
+  dataEditable = !get(questionsLockedStore);
 
   let opinionQuestionsLeft: number | undefined;
   nofUnansweredOpinionQuestions?.subscribe((value) => {

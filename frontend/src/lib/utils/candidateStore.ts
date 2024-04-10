@@ -25,6 +25,7 @@ export interface CandidateContext {
   opinionQuestionsFilledStore: Writable<boolean | undefined>;
   nofUnansweredOpinionQuestionsStore: Writable<number | undefined>;
   progressStore: Writable<Progress | undefined>;
+  questionsLockedStore: Writable<boolean | undefined>;
 }
 
 const userStore = writable<User | null>(null);
@@ -37,6 +38,7 @@ const nofUnansweredBasicInfoQuestionsStore = writable<number | undefined>(undefi
 const opinionQuestionsFilledStore = writable<boolean | undefined>(undefined);
 const nofUnansweredOpinionQuestionsStore = writable<number | undefined>(undefined);
 const progressStore = writable<Progress | undefined>(undefined);
+const questionsLockedStore = writable<boolean | undefined>(undefined);
 
 const logIn = async (email: string, password: string) => {
   const response = await authenticate(email, password);
@@ -62,6 +64,13 @@ const loadUserData = async () => {
     return;
   }
 
+  const canEditQuestions = user.candidate?.nomination?.election?.canEditQuestions;
+
+  if (canEditQuestions === undefined) {
+    throw Error('user.candidate?.nomination?.election?.canEditQuestions is undefined');
+  }
+
+  questionsLockedStore.set(!canEditQuestions);
   userStore.set(user);
 };
 
@@ -103,5 +112,6 @@ export const candidateContext: CandidateContext = {
   nofUnansweredOpinionQuestionsStore,
   opinionQuestionsFilledStore,
   nofUnansweredBasicInfoQuestionsStore,
-  progressStore
+  progressStore,
+  questionsLockedStore
 };

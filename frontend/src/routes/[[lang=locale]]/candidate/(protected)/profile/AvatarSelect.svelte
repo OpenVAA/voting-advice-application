@@ -7,6 +7,7 @@
   import {Icon} from '$lib/components/icon';
   import type {Photo} from '$lib/types/candidateAttributes';
 
+  export let disabled: boolean = false;
   export let photo: Photo | undefined;
   let photoUrl = photo
     ? new URL(constants.PUBLIC_BACKEND_URL + photo.formats.thumbnail.url)
@@ -102,33 +103,44 @@ let uploadPhoto: () => Promise<void>;
 ```
 -->
 
-<Field customStyle="height: 60px; padding-right: 0;">
+<Field
+  customStyle={disabled
+    ? 'height: 60px; padding-right: 0.5rem;;'
+    : 'height: 60px; padding-right: 0;'}>
   <span class={labelClass}>
     {$t('candidateApp.basicInfo.fields.portrait')}
   </span>
-  <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-  <label
-    bind:this={portraitLabel}
-    id="portraitLabel"
-    tabindex="0"
-    for="portrait"
-    class="cursor-pointer text-primary">
-    {#if photoUrl}
-      <div class="flex h-60 w-60 items-center justify-center overflow-hidden">
-        <img
-          bind:this={portraitImage}
-          src={photoUrl.href}
-          class="h-full w-full rounded-r-lg object-cover"
-          alt="profile_pic_preview" />
-      </div>
-    {:else}
-      <div class="pr-8">
-        {$t('candidateApp.basicInfo.tapToAddPhoto')}
-        <Icon name="photo" />
-      </div>
+
+  <div class="flex">
+    {#if disabled}
+      <Icon name="locked" class="-mx-2 my-auto flex-shrink-0 px-0 text-secondary" />
     {/if}
-  </label>
+
+    <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+    <label
+      bind:this={portraitLabel}
+      id="portraitLabel"
+      tabindex="0"
+      for="portrait"
+      class="cursor-pointer text-primary">
+      {#if photoUrl}
+        <div class="flex h-60 w-60 items-center justify-center overflow-hidden">
+          <img
+            bind:this={portraitImage}
+            src={photoUrl.href}
+            class="h-full w-full rounded-r-lg object-cover"
+            alt="profile_pic_preview" />
+        </div>
+      {:else if !disabled}
+        <div class="pr-8">
+          {$t('candidateApp.basicInfo.tapToAddPhoto')}
+          <Icon name="photo" />
+        </div>
+      {/if}
+    </label>
+  </div>
   <input
+    {disabled}
     bind:this={portraitInput}
     on:change={changePhoto}
     accept="image/jpeg, image/png"

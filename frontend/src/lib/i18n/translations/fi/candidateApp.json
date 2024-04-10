@@ -49,7 +49,10 @@
     "nominationsDescription": "Nämä ovat vaalipiirit, joissa olet ehdolla, sekä vaaliluettelo ja mahdollinen vaalitunnus. Jos ehdokkuus on merkitty merkinnällä \"Vireillä\", vaalitunnustasi ei välttämättä ole vielä määritelty.",
     "electionManifesto": "Vaalilupaus",
     "nominations": "Ehdokkuudet",
-    "tapToAddPhoto": "Paina lisätäksesi valokuvan"
+    "tapToAddPhoto": "Paina lisätäksesi valokuvan",
+    "saveAndContinue": "Tallenna ja jatka",
+    "return": "Palaa",
+    "saveAndReturn": "Tallenna ja palaa"
   },
   "settings": {
     "title": "Asetukset",

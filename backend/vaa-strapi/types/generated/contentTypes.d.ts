@@ -752,9 +752,9 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
     politicalExperience: Attribute.Text & Attribute.Required;
     party: Attribute.Relation<'api::candidate.candidate', 'manyToOne', 'api::party.party'>;
     answers: Attribute.Relation<'api::candidate.candidate', 'oneToMany', 'api::answer.answer'>;
-    nominations: Attribute.Relation<
+    nomination: Attribute.Relation<
       'api::candidate.candidate',
-      'oneToMany',
+      'oneToOne',
       'api::nomination.nomination'
     >;
     candidateAttributes: Attribute.Relation<
@@ -1035,15 +1035,15 @@ export interface ApiNominationNomination extends Schema.CollectionType {
       'manyToOne',
       'api::constituency.constituency'
     >;
-    candidate: Attribute.Relation<
-      'api::nomination.nomination',
-      'manyToOne',
-      'api::candidate.candidate'
-    >;
     party: Attribute.Relation<'api::nomination.nomination', 'manyToOne', 'api::party.party'>;
     type: Attribute.String;
     electionSymbol: Attribute.String;
     electionRound: Attribute.Integer & Attribute.Required & Attribute.DefaultTo<1>;
+    candidate: Attribute.Relation<
+      'api::nomination.nomination',
+      'oneToOne',
+      'api::candidate.candidate'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
