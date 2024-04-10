@@ -24,5 +24,13 @@
   "password": "FI - Password",
   "sign_in_button": "FI - Sign in",
   "sign_in_title": "FI - Sign in",
-  "wrong_email_or_password": "FI - Wrong email or password"
+  "wrong_email_or_password": "FI - Wrong email or password",
+  "preview": {
+    "motherTongues": "FI - Mother Tongues",
+    "otherLanguages": "FI - Other Languages",
+    "gender": "FI - Gender",
+    "unaffiliated": "FI - Unaffiliated",
+    "electionManifesto": "FI - Election Manifesto",
+    "birthday": "FI - Birthday"
+  }
 }

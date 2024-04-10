@@ -24,5 +24,13 @@
   "password": "Password",
   "sign_in_button": "Sign in",
   "sign_in_title": "Sign in",
-  "wrong_email_or_password": "Wrong email or password"
+  "wrong_email_or_password": "Wrong email or password",
+  "preview": {
+    "motherTongues": "Mother Tongues",
+    "otherLanguages": "Other Languages",
+    "gender": "Gender",
+    "unaffiliated": "Unaffiliated",
+    "electionManifesto": "Election Manifesto",
+    "birthday": "Birthday"
+  }
 }

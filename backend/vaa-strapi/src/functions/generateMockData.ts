@@ -426,11 +426,22 @@ async function createCandidates(length: number) {
 
   const parties = await strapi.db.query(PARTY_API).findMany({});
 
+  const genders = await strapi.db.query(GENDER_API).findMany({});
+
   for (let i = 0; i <= length; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const party: HasId = faker.helpers.arrayElement(parties);
     const email = `${firstName}.${lastName}@example.com`;
+    const birthday = faker.date
+      .between({
+        from: '1950-01-01T00:00:00.000Z',
+        to: '2010-01-01T00:00:00.000Z'
+      })
+      .toISOString()
+      .split('T')[0];
+    const gender = faker.helpers.arrayElement(genders);
+    const manifesto = faker.lorem.paragraph(8);
     // TODO: Remove these attrs later
     const politicalExperience = faker.lorem.paragraph(3);
     const motherTongue: any = faker.helpers.arrayElement(languages);
@@ -442,11 +453,13 @@ async function createCandidates(length: number) {
         email,
         party: party.id,
         publishedAt: new Date(),
+        birthday,
+        gender,
         politicalExperience,
         unaffiliated: false,
         motherTongues: [motherTongue.id],
         otherLanguages: [otherLanguage.id],
-        manifesto: {}
+        manifesto: fakeLocalized((_, l) => fakeTranslate(l, manifesto))
       }
     });
 

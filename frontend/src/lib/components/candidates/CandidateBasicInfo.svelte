@@ -2,10 +2,43 @@
   import {t} from '$lib/i18n';
   import {Icon} from '$lib/components/icon';
   import InfoItem from './InfoItem.svelte';
-  import {getAnswerForDisplay} from '$lib/utils/answers';
 
   export let candidate: CandidateProps;
-  export let questions: QuestionProps[];
+
+  // TODO: this would be good to refactor in the future to be properly dynamic, but then there are issues
+  // on how to represent dynamic values on candidate's basic info page
+  const questions = [
+    {
+      label: $t('candidate.preview.motherTongues'),
+      answer: candidate.motherTongues,
+      type: 'multipleChoiceCategorical'
+    },
+    {
+      label: $t('candidate.preview.otherLanguages'),
+      answer: candidate.otherLanguages,
+      type: 'multipleChoiceCategorical'
+    },
+    {
+      label: $t('candidate.preview.gender'),
+      answer: candidate.gender,
+      type: 'text'
+    },
+    {
+      label: $t('candidate.preview.unaffiliated'),
+      answer: $t(candidate.unaffiliated ? 'common.answerYes' : 'common.answerNo'),
+      type: 'text'
+    },
+    {
+      label: $t('candidate.preview.electionManifesto'),
+      answer: candidate.manifesto,
+      type: 'text'
+    },
+    {
+      label: $t('candidate.preview.birthday'),
+      answer: new Date(candidate.birthday).toDateString(),
+      type: 'text'
+    }
+  ];
 </script>
 
 <div class="p-lg">
@@ -23,20 +56,19 @@
   {#if questions?.length}
     <div class="infoGroup" role="group">
       {#each questions as question}
-        {@const answer = getAnswerForDisplay(candidate, question)}
-        <InfoItem label={question.text}>
-          {#if answer == null}
+        <InfoItem label={question.label}>
+          {#if question.answer === undefined || question.answer === ''}
             <span class="text-secondary">{$t('candidate.missingAnswer')}</span>
-          {:else if question.type === 'multipleChoiceCategorical' && Array.isArray(answer)}
-            {answer.join($t('candidate.multipleAnswerSeparator'))}
+          {:else if question.type === 'multipleChoiceCategorical' && Array.isArray(question.answer)}
+            {question.answer.join($t('candidate.multipleAnswerSeparator'))}
           {:else if question.type === 'preferenceOrder'}
             <ol class="pl-18">
-              {#each answer as item}
+              {#each question.answer as item}
                 <li>{item}</li>
               {/each}
             </ol>
           {:else}
-            {answer}
+            {question.answer}
           {/if}
         </InfoItem>
       {/each}

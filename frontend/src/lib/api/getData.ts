@@ -13,8 +13,10 @@ import type {
   StrapiAppLabelsData,
   LocalizedStrapiData,
   QuestionCategoryType,
-  StrapiQuestionCategoryData
+  StrapiQuestionCategoryData,
+  StrapiLanguageData
 } from './getData.type';
+import {t} from '$lib/i18n';
 import {translate} from '$lib/i18n/utils/translate';
 
 // To build REST queries, one can use https://docs.strapi.io/dev-docs/api/rest/interactive-query-builder
@@ -132,6 +134,9 @@ export const getNominatedCandidates = ({
     'populate[party]': 'true',
     'populate[candidate][populate][party]': 'true',
     'populate[candidate][populate][photo]': 'true',
+    'populate[candidate][populate][gender]': 'true',
+    'populate[candidate][populate][motherTongues]': 'true',
+    'populate[candidate][populate][otherLanguages]': 'true',
     'populate[candidate][populate][answers][populate][question]': loadAnswers ? 'true' : 'false'
   });
   if (id) {
@@ -154,10 +159,14 @@ export const getNominatedCandidates = ({
         firstName: attr.firstName,
         id,
         lastName: attr.lastName,
-        // motherTongues: attr.motherTongues.data.map((l: StrapiLanguageData) => l.attributes.name),
-        // otherLanguages: attr.otherLanguages.data.map(
-        //   (l: StrapiLanguageData) => l.attributes.name
-        // ),
+        birthday: attr.birthday,
+        unaffiliated: attr.unaffiliated,
+        manifesto: translate(attr.manifesto, locale),
+        gender: attr.gender
+          ? t.get(`candidateApp.genders.${attr.gender.data?.attributes?.name}`)
+          : undefined,
+        motherTongues: attr.motherTongues?.data.map((l: StrapiLanguageData) => l.attributes.name),
+        otherLanguages: attr.otherLanguages?.data.map((l: StrapiLanguageData) => l.attributes.name),
         party: nom.attributes.party?.data
           ? {
               name: translate(nom.attributes.party.data.attributes.name, locale),
