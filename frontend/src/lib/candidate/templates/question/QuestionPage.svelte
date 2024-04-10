@@ -19,12 +19,14 @@
   export let questions: $$Props['questions'];
   export let editMode: $$Props['editMode'] = false;
 
-  const {answersStore, progressStore} = getContext<CandidateContext>('candidate');
+  const {answersStore, progressStore, questionsLockedStore} =
+    getContext<CandidateContext>('candidate');
 
   $: answers = $answersStore;
   $: answer = answers?.[questionId]; // undefined if not answered
 
   $: questionId = currentQuestion.id;
+  $: questionsLocked = $questionsLockedStore;
 
   // Local storage keys, depend on the question id
   $: likertLocal = `candidate-app-question-${questionId}-likert`;
@@ -168,8 +170,7 @@ In addition to the question, includes a Likert scale and a text area for comment
     class="bg-base-200"
     progress={$progressStore?.progress}
     progressMax={$progressStore?.max}>
-    <Warning display={!currentQuestion.editable} slot="note"
-      >{$t('questions.cannotEditWarning')}</Warning>
+    <Warning display={!!questionsLocked} slot="note">{$t('questions.cannotEditWarning')}</Warning>
 
     <HeadingGroup slot="heading" id="hgroup-{questionId}">
       {#if category !== ''}
