@@ -90,8 +90,12 @@ declare global {
     firstName: string;
     id: string;
     lastName: string;
-    // motherTongues: string[];
-    // otherLanguages: string[];
+    birthday: string;
+    unaffiliated: boolean;
+    manifesto: string;
+    gender?: string;
+    motherTongues?: string[];
+    otherLanguages?: string[];
     party: {
       name: string;
       shortName: string;
