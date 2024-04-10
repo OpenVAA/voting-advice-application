@@ -5,6 +5,9 @@
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {getLikertAnswer} from '$lib/utils/answers';
 
+  /** An optinal props to define wether component is used on the candidate or voter's side*/
+  export let candidateView: CandidateDetailsCardProps['candidateView'] = false;
+
   export let candidate: CandidateProps;
   export let questions: QuestionProps[];
 
@@ -24,11 +27,15 @@
         <h3>{text}</h3>
       </HeadingGroup>
 
-      {#if voterAnswer == null && answer == null}
+      {#if voterAnswer == null && answer == null && !candidateView}
         <div class="small-label mb-16 text-center">
           {$t('questions.bothHaventAnswered').replace('{{candidate}}', shortName)}
         </div>
-      {:else if voterAnswer == null}
+      {:else if voterAnswer == null && answer == null && candidateView}
+        <div class="small-label mb-16 text-center">
+          {$t('questions.youHaventAnswered')}
+        </div>
+      {:else if voterAnswer == null && !candidateView}
         <div class="small-label mb-16 text-center">
           {$t('questions.youHaventAnswered')}
         </div>
