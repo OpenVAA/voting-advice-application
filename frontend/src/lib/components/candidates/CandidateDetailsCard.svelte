@@ -15,6 +15,8 @@
   export let opinionQuestions: QuestionProps[];
   /** An optional Ranking object used for showing the Candidate's match with the Voter */
   export let ranking: RankingProps | undefined = undefined;
+  /** An optional props to define wether component is used on the candidate or voter's side*/
+  export let candidateView: CandidateDetailsCardProps['candidateView'] = false;
 
   // Tabs
   let tabs: string[];
@@ -88,6 +90,6 @@ TODO: This component is still a work in progress and does not follow the propert
   {#if tabs[0] === activeItem}
     <CandidateBasicInfo {candidate} questions={infoQuestions} />
   {:else if tabs[1] === activeItem}
-    <CandidateOpinions {candidate} questions={opinionQuestions} />
+    <CandidateOpinions {candidate} questions={opinionQuestions} {candidateView} />
   {/if}
 </article>

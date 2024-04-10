@@ -230,4 +230,13 @@ declare global {
       };
     }[];
   }
+
+  export type CandidateDetailsCardProps = {
+    /**
+     *  Defines whether component is used to show candidate's preview or if it is
+     * used in the voter side to render both candidate's and voters answers.
+     * */
+
+    candidateView?: boolean;
+  };
 }
