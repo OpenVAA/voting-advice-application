@@ -11,7 +11,9 @@
   const {questionsStore} = getContext<CandidateContext>('candidate');
   const questions = get(questionsStore) ?? [];
 
+  // The number of questions to be answered.
   const numQuestions = Object.values(questions).length;
+  // The url of the first question where the user is navigated to after the start page.
   const firstQuestionUrl = $getRoute({
     route: Route.CandAppQuestions,
     id: Object.values(questions)[0].id
@@ -21,9 +23,6 @@
 <!--
 @component
 Renders the question start page, which tells the user information on how to answer the questions.
-
--`numQuestions`: The number of questions to be answered.
--`firstQuestionUrl`: The url of the first question where the user is navigated to after the start page.
 
 ### Usage
 ```tsx
