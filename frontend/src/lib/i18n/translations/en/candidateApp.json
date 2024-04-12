@@ -205,7 +205,9 @@
     "info": "You can supply your own translations for the languages the application is available in. If you don’t write your own translations, your original response will be shown."
   },
   "error": {
-    "userNoCandidateError": "Error: The logged in user has no candidate info tied to it."
+    "userNoCandidateError": "Error: The logged in user has no candidate info tied to it. Please contact the system admininstrator.",
+    "candidateNoNominationError": "Error: The candidate associated with the logged in user has no nomination. Please contact the system admininstrator.",
+    "nominationNoElectionError": "Error: The nominatinon associated with the candidate has no election. Please contact the system admininstrator."
   },
   "other": {
     "unsavedChanges": "You have unsaved changes. Are you sure you want to leave this page?"

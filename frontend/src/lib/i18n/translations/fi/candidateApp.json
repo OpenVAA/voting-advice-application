@@ -205,7 +205,9 @@
     "info": "Voit antaa omat käännökset kielille, joilla sovellus on saatavilla. Jos et kirjoita omia käännöksiäsi, alkuperäinen vastaus näytetään."
   },
   "error": {
-    "userNoCandidateError": "Virhe: Sisäänkirjautuneeseen käyttäjään ei ole yhdistetty ehdokastietoja."
+    "userNoCandidateError": "Virhe: Sisäänkirjautuneeseen käyttäjään ei ole yhdistetty ehdokastietoja. Ota yhteyttä järjestelmän ylläpitäjään.",
+    "candidateNoNominationError": "Virhe: Kandidaatilta puuttuu ehdokkuus. Ota yhteyttä järjestelmän ylläpitäjään.",
+    "nominationNoElectionError": "Virhe: Kandidaatin ehdokkuudelta puuttuu vaali. Ota yhteyttä järjestelmän ylläpitäjään."
   },
   "other": {
     "unsavedChanges": "Sinulla on tallentamattomia muutoksia. Haluatko varmasti jatkaa?"
