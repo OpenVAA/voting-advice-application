@@ -1,7 +1,7 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
   import {getUUID} from '$lib/utils/components';
-  import {isCandidate, isParty} from '$lib/utils/entities';
+  import {isCandidate, isParty, parseMaybeRanked} from '$lib/utils/entities';
   import {Avatar} from '$lib/components/avatar';
   import {Card} from '$lib/components/shared/card/index';
   import {ElectionSymbol} from '$lib/components/electionSymbol';
@@ -12,24 +12,20 @@
 
   type $$Props = EntityCardProps;
 
-  export let entity: $$Props['entity'] = undefined;
-  export let ranking: $$Props['ranking'] = undefined;
+  export let content: $$Props['content'];
   export let context: $$Props['context'] = 'list';
 
   const baseId = getUUID();
 
-  let name: string;
-  let image: ImageProps | undefined;
   let electionSymbol: string | undefined;
+  let entity: EntityProps;
+  let image: ImageProps | undefined;
+  let name: string;
   let nominatingParty: PartyProps | undefined;
+  let ranking: RankingProps | undefined;
 
   $: {
-    if (ranking) {
-      entity = ranking.entity;
-    } else if (!entity) {
-      throw error(500, 'Supply either entity or ranking.');
-    }
-
+    ({entity, ranking} = parseMaybeRanked(content));
     if (isCandidate(entity)) {
       name = entity.name;
       image = entity.photo;
@@ -46,12 +42,11 @@
 </script>
 
 <!--@component
-A card for displaying an entity, i.e. a candidate or a party, in a list or as part of entity's details, possibly including a matching score and sub-matches. You can supply either an unranked `entity` or a `ranking`, which contains the ranked entity.
+A card for displaying an entity, i.e. a candidate or a party, in a list or as part of entity's details, possibly including a matching score and sub-matches. You can supply either a naked entity or a ranking containing an entity.
 
 ### Properties
 
-- `entity`: A candidate or a party if no rankings are available.
-- `ranking`: A ranked entity, i.e. a candidate or a party.
+- `content`: A possibly ranked entity, e.g. candidate or a party.
 - `context`: The context in which the card is used, affects layout. @default `'list'`
 - Any valid attributes of a `<Card>` component.
 
@@ -59,9 +54,9 @@ A card for displaying an entity, i.e. a candidate or a party, in a list or as pa
 
 ```tsx
 <a href="/results/{id}">
-  <EntityCard ranking={candidateMatch}>
+  <EntityCard content={candidateMatch}>
 </a>
-<EntityCard entity={party} context="details">
+<EntityCard content={party} context="details">
 ```
 -->
 

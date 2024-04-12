@@ -259,14 +259,24 @@ declare global {
   type EntityProps = CandidateProps | PartyProps;
 
   /**
-   * These conform to `vaa-matching.Match`
+   * Conforms to `vaa-filters.WrappedEntity`
    */
-  interface RankingProps<T extends EntityProps = EntityProps> {
-    // distance: number;
+  interface WrappedEntity<T extends EntityProps = EntityProps> {
     entity: T;
+  }
+
+  /**
+   * Conforms to `vaa-matching.Match`
+   */
+  interface RankingProps<T extends EntityProps = EntityProps> extends WrappedEntity<T> {
     score: number;
     subMatches?: SubMatchProps[];
   }
+
+  /**
+   * A possibly ranked entity, accepted by all components consuming entities.
+   */
+  type MaybeRanked<T extends EntityProps = EntityProps> = T | WrappedEntity<T> | RankingProps<T>;
 
   /**
    * The submatches of a `RankingProps`
