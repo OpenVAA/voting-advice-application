@@ -12,18 +12,18 @@
   let candidateId: string;
   let questions: QuestionProps[];
   let infoQuestions: QuestionProps[];
-  let ranking: RankingProps<CandidateProps> | undefined;
+  let content: WrappedEntity<CandidateProps> | undefined;
 
   $: {
     candidateId = data.candidateId;
     questions = data.questions;
     infoQuestions = data.infoQuestions;
-    ranking = $candidateRankings.find((r) => r.entity.id == candidateId);
+    content = $candidateRankings.find((r) => r.entity.id == candidateId);
   }
 </script>
 
-{#if ranking}
-  <SingleCardPage title={ranking.entity.name}>
+{#if content}
+  <SingleCardPage title={content.entity.name}>
     <Button
       slot="banner"
       class="!text-neutral"
@@ -31,6 +31,6 @@
       icon="close"
       href={$getRoute(Route.Results)}
       text={$t('header.back')} />
-    <EntityDetails {ranking} opinionQuestions={questions} {infoQuestions} />
+    <EntityDetails {content} opinionQuestions={questions} {infoQuestions} />
   </SingleCardPage>
 {/if}
