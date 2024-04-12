@@ -1,24 +1,24 @@
 <!-- 
-  @component
-  A componend used to group `Field`-components together.
+@component
+A componend used to group `Field`-components together.
 
-  ### Properties
+### Properties
 
- - `customStyle`: A custom style passed on to the parent component.
+- `customStyle`: A custom style passed on to the parent component.
 
-  You should not try to use a variant and customize at the same time.
+You should not try to use a variant and customize at the same time.
 
-  ### Usage
+### Usage
 
-  ```tsx
-  <FieldGroup>
-    <div slot="header"> header text </div>
-    <Field>
-      ...
-    </Field>
-    <div slot="footer"> footer text </div>
-  </FieldGroup>
-  ```
+```tsx
+<FieldGroup>
+  <div slot="header"> header text </div>
+  <Field>
+    ...
+  </Field>
+  <div slot="footer"> footer text </div>
+</FieldGroup>
+```
 -->
 
 <div class="w-full">

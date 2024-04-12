@@ -4,26 +4,26 @@
 </script>
 
 <!-- 
-  @component
-  A field component meant to be used with `FieldGroup`.
-  Meant to be mainly used with two chidlren that are aligned on both ends of the field.
+@component
+A field component meant to be used with `FieldGroup`.
+Meant to be mainly used with two chidlren that are aligned on both ends of the field.
 
-  ### Properties
+### Properties
 
- - `customStyle`: A custom style passed on to the parent component.
+- `customStyle`: A custom style passed on to the parent component.
 
-  You should not try to use a variant and customize at the same time.
+You should not try to use a variant and customize at the same time.
 
-  ### Usage
+### Usage
 
-  ```tsx
-  <FieldGroup>
-    <Field>
-      <label for="input_1"> Label for input </label>  
-      <input id="input_1"/>
-    </Field>
-  </FieldGroup>
-  ```
+```tsx
+<FieldGroup>
+  <Field>
+    <label for="input_1"> Label for input </label>  
+    <input id="input_1"/>
+  </Field>
+</FieldGroup>
+```
 -->
 
 <div class="flex h-full items-center justify-between {bgColor}" style={customStyle}>
