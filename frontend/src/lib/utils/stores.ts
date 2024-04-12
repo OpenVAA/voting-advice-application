@@ -4,6 +4,7 @@ import {browser} from '$app/environment';
 import {page} from '$app/stores';
 import localSettings from '$lib/config/settings.json';
 import {logDebugError} from '$lib/utils/logger';
+import {wrap} from '$lib/utils/entities';
 import {matchCandidates} from '$lib/utils/matching';
 
 // Store values in local storage to prevent them from disappearing in refresh
@@ -85,19 +86,48 @@ export const resultsAvailable: Readable<boolean> = derived(
 );
 
 /**
- * A store that holds the candidate rankings
+ * Utility stores for candidates as part of `PageData`.
  */
-export const candidateRankings: Readable<RankingProps<CandidateProps>[]> = derived(
-  [page, answeredQuestions],
-  ([$page, $answeredQuestions]) => {
-    if (
-      Object.values($answeredQuestions).length === 0 ||
-      $page.data.candidates.length === 0 ||
-      $page.data.questions.length === 0
-    ) {
-      return [];
-    }
-    return matchCandidates($page.data.questions, $answeredQuestions, $page.data.candidates);
+export const candidates: Readable<CandidateProps[]> = derived(
+  page,
+  ($page) => $page.data.candidates,
+  []
+);
+
+/**
+ * Utility stores for parties as part of `PageData`.
+ */
+export const parties: Readable<PartyProps[]> = derived(page, ($page) => $page.data.parties, []);
+
+/**
+ * Utility stores for infoQuestions as part of `PageData`.
+ */
+export const infoQuestions: Readable<QuestionProps[]> = derived(
+  page,
+  ($page) => $page.data.infoQuestions,
+  []
+);
+
+/**
+ * Utility stores for opinionQuestions as part of `PageData`.
+ */
+export const opinionQuestions: Readable<QuestionProps[]> = derived(
+  page,
+  ($page) => $page.data.questions,
+  []
+);
+
+/**
+ * A store that holds the candidate rankings. For ease of use, these will be wrapped entities with no `score` properties, if results are not yet available.
+ */
+export const candidateRankings: Readable<
+  RankingProps<CandidateProps>[] | WrappedEntity<CandidateProps>[]
+> = derived(
+  [candidates, opinionQuestions, answeredQuestions, resultsAvailable],
+  ([$candidates, $opinionQuestions, $answeredQuestions, $resultsAvailable]) => {
+    return $resultsAvailable
+      ? matchCandidates($opinionQuestions, $answeredQuestions, $candidates)
+      : $candidates.map(wrap);
   },
   []
 );
