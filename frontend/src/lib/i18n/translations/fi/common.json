@@ -8,5 +8,6 @@
   "party": {
     "singular": "Puolue",
     "plural": "Puolueet"
-  }
+  },
+  "clearInput": "Tyhjennä"
 }
