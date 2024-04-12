@@ -10,9 +10,9 @@
   },
   "entityFilters": {
     "applyAndClose": "Close filters",
+    "filters": "Filters",
     "filtersActive": "{numActiveFilters, plural, =1 {1 filter is} other {# filters are}} active",
-    "filterButtonLabel": "Filter results",
-    "noResults": "The filters produced no results. Try changing them.",
+    "filterButtonLabel": "Filter",
     "reset": "Reset filters",
     "missingValue": "No answer",
     "selectAll": "Select all",
@@ -25,5 +25,10 @@
       "name": "Name",
       "party": "Party"
     }
+  },
+  "entityListControls": {
+    "searchPlaceholder": "Search by name",
+    "noFilterResults": "The filters yielded no matches. You can try changing them.",
+    "noSearchResults": "The search yielded no matches. You can try changing it."
   }
 }

@@ -8,5 +8,6 @@
   "party": {
     "singular": "Party",
     "plural": "Parties"
-  }
+  },
+  "clearInput": "Clear"
 }
