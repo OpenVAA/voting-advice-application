@@ -17,7 +17,8 @@ const config = {
       $lib: path.resolve('./src/lib'),
       $types: path.resolve('./src/lib/types'),
       $voter: path.resolve('./src/lib/voter'),
-      $candidate: path.resolve('./src/lib/candidate')
+      $candidate: path.resolve('./src/lib/candidate'),
+      $shared: path.resolve('./src/shared')
     }
   }
 };
