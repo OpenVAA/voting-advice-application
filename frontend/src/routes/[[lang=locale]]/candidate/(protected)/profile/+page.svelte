@@ -31,7 +31,6 @@
     'input-ghost flex justify-end text-right input input-sm w-full pr-2 disabled:border-none disabled:bg-base-100';
   const iconClass = 'text-secondary my-auto flex-shrink-0';
   const buttonContainerClass = 'pr-6';
-  // const inputContainerClass = 'flex w-full pr-6';
 
   // get the user from authContext
   const {
@@ -97,6 +96,10 @@
   let uploadPhoto: () => Promise<void>;
 
   const submitForm = async () => {
+    if (questionsLocked) {
+      await goto($getRoute(Route.CandAppHome));
+      return;
+    }
     loading = true;
     dirty = false;
     try {
@@ -129,22 +132,6 @@
 
   // the dot symbol for separating info string
   const dot = '\u22C5';
-
-  // map nominations into objects
-  const nominationFields = (nomination ? [nomination] : []).map((nom) => {
-    const constituency = translate(nom.constituency?.name);
-    const party = translate(nom.party?.shortName);
-    const electionSymbol = nom.electionSymbol;
-    return {
-      nominationID: nom.id.toString(),
-      constituency,
-      party,
-      electionSymbol,
-      fieldText: `${constituency} ${dot} ${party} ${
-        electionSymbol ? dot + ' ' + electionSymbol : ''
-      }`
-    };
-  });
 
   // basic information
   const basicInfoData: Record<string, string | number | undefined> = {
@@ -188,6 +175,13 @@
     }
   };
 
+  let submitButtonText = '';
+  $: {
+    if (!opinionQuestionsFilled && !questionsLocked)
+      submitButtonText = $t('candidateApp.basicInfo.saveAndContinue');
+    else if (questionsLocked) submitButtonText = $t('candidateApp.basicInfo.return');
+    else submitButtonText = $t('candidateApp.basicInfo.saveAndReturn');
+  }
   const birthdayMin = '1800-01-01';
   const birthdayMax = new Date().toISOString().split('T')[0];
 </script>
@@ -232,20 +226,23 @@
         <p class={headerClass} slot="header">
           {$t('candidateApp.basicInfo.nominations')}
         </p>
-
-        {#each nominationFields ?? [] as nomination}
+        {#if nomination}
           <Field>
-            <label for={nomination.nominationID} class={labelClass}>{nomination.fieldText}</label>
+            <label for="nomination" class={labelClass}
+              >{`${translate(nomination.constituency?.shortName)} ${dot} ${translate(nomination.party.shortName)} ${
+                nomination.electionSymbol ? dot + ' ' + nomination.electionSymbol : ''
+              }`}</label>
             <InputContainer locked={true}>
               <input
                 disabled
                 type="text"
-                id={nomination.nominationID}
+                id="nomination"
                 value={nomination.electionSymbol ? null : $t('candidateApp.basicInfo.pending')}
                 class={inputClass} />
             </InputContainer>
           </Field>
-        {/each}
+        {/if}
+
         <p class={disclaimerClass} slot="footer">
           {$t('candidateApp.basicInfo.nominationsDescription')}
         </p>
@@ -381,15 +378,20 @@
 
       <Button
         disabled={!allFilled || loading}
-        text={!opinionQuestionsFilled && !questionsLocked
-          ? $t('candidateApp.basicInfo.saveAndContinue')
-          : questionsLocked
-            ? $t('candidateApp.basicInfo.return')
-            : $t('candidateApp.basicInfo.saveAndReturn')}
+        text={submitButtonText}
         type="submit"
         variant="main"
         icon="next"
         slot="primaryActions" />
+      {#if opinionQuestionsFilled && !questionsLocked}
+        <Button
+          color="error"
+          on:click={async (event) => {
+            event.preventDefault();
+            await goto($getRoute(Route.CandAppHome));
+          }}
+          text={'Cancel'} />
+      {/if}
       {#if errorMessage}
         <div class="text-error">
           {errorMessage}
