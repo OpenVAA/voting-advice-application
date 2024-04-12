@@ -137,38 +137,40 @@ export const getNominatedCandidates = ({
   });
   if (id) {
     params.set('filters[candidate][id][$eq]', id);
-  } else {
-    params.set('filters[candidate][id][$notNull]', 'true'); // We need to apply $notNull to id, not the candidate relation
   }
+  // Checking for missing relations is tricky, $notNull has very strange bugs, which may be fixed in 4.23.0 and we can't use the filter below. We'll instead filter the results after the fact. See: https://github.com/strapi/strapi/issues/12225
+  // else {params.set('filters[candidate][id][$notNull]', 'true');}
   if (constituencyId != null) params.set('filters[constituency][id][$eq]', constituencyId);
   if (electionId != null) params.set('filters[election][id][$eq]', electionId);
   if (memberOfPartyId != null) params.set('filters[candidate][party][id][$eq]', memberOfPartyId);
   if (nominatingPartyId != null) params.set('filters[party][id][$eq]', nominatingPartyId);
   return getData<StrapiNominationData[]>('api/nominations', params).then((result) =>
-    result.map((nom) => {
-      const cnd = nom.attributes.candidate.data;
-      const id = '' + cnd.id;
-      const attr = cnd.attributes;
-      if (!nom.attributes.party.data)
-        throw error(
-          500,
-          `Could not retrieve result for nominating candidates: party for candidate with id '${id}' not found`
-        );
-      const {firstName, lastName} = attr;
-      const props: CandidateProps = {
-        id,
-        electionRound: nom.attributes.electionRound,
-        electionSymbol: nom.attributes.electionSymbol,
-        firstName,
-        lastName,
-        name: formatName({firstName, lastName}),
-        party: parseParty(nom.attributes.party.data, locale),
-        answers: loadAnswers && attr.answers?.data ? parseAnswers(attr.answers.data, locale) : {}
-      };
-      const photo = attr.photo?.data?.attributes;
-      if (photo) props.photo = parseImage(photo);
-      return props;
-    })
+    result
+      .filter((nom) => nom.attributes.candidate?.data != null)
+      .map((nom) => {
+        const cnd = nom.attributes.candidate.data;
+        const id = '' + cnd.id;
+        const attr = cnd.attributes;
+        if (!nom.attributes.party.data)
+          throw error(
+            500,
+            `Could not retrieve result for nominating candidates: party for candidate with id '${id}' not found`
+          );
+        const {firstName, lastName} = attr;
+        const props: CandidateProps = {
+          id,
+          electionRound: nom.attributes.electionRound,
+          electionSymbol: nom.attributes.electionSymbol,
+          firstName,
+          lastName,
+          name: formatName({firstName, lastName}),
+          party: parseParty(nom.attributes.party.data, locale),
+          answers: loadAnswers && attr.answers?.data ? parseAnswers(attr.answers.data, locale) : {}
+        };
+        const photo = attr.photo?.data?.attributes;
+        if (photo) props.photo = parseImage(photo);
+        return props;
+      })
   );
 };
 
@@ -262,9 +264,9 @@ export const getNominatingParties = ({
     });
     if (id) {
       params.set('filters[party][id][$eq]', id);
-    } else {
-      params.set('filters[party][id][$notNull]', 'true'); // We need to apply $notNull to id, not the candidate relation
     }
+    // Checking for missing relations is tricky, $notNull has very strange bugs, which may be fixed in 4.23.0 and we can't use the filter below. We'll instead filter the results after the fact. See: https://github.com/strapi/strapi/issues/12225
+    // else {params.set('filters[party][id][$notNull]', 'true');}
     if (constituencyId != null) params.set('filters[constituency][id][$eq]', constituencyId);
     if (electionId != null) params.set('filters[election][id][$eq]', electionId);
     return getData<StrapiNominationData[]>('api/nominations', params).then((result) => {
@@ -273,23 +275,25 @@ export const getNominatingParties = ({
       // We collect the ids of the parties in these nominations here
       const partyIds = new Set<string>();
       // Get the nominated candidates for each party
-      result.map((nom) => {
-        const partyId = `${nom.attributes.party.data.id}`;
-        partyIds.add(partyId);
-        const party = partyMap.get(partyId);
-        if (!party)
-          throw error(
-            500,
-            `Could not retrieve result for nominating parties: party with id '${partyId}' not found`
-          );
-        if (loadNominations) {
-          const candId = nom.attributes.candidate.data?.id;
-          if (candId != null) {
-            party.nominatedCandidateIds ??= [];
-            party.nominatedCandidateIds.push(candId + '');
+      result
+        .filter((nom) => nom.attributes.party?.data != null)
+        .map((nom) => {
+          const partyId = `${nom.attributes.party.data.id}`;
+          partyIds.add(partyId);
+          const party = partyMap.get(partyId);
+          if (!party)
+            throw error(
+              500,
+              `Could not retrieve result for nominating parties: party with id '${partyId}' not found`
+            );
+          if (loadNominations) {
+            const candId = nom.attributes.candidate.data?.id;
+            if (candId != null) {
+              party.nominatedCandidateIds ??= [];
+              party.nominatedCandidateIds.push(candId + '');
+            }
           }
-        }
-      });
+        });
       // Only return those parties that were found in the nominations
       return Array.from(partyIds).map((id) => partyMap.get(id) as PartyProps);
     });
