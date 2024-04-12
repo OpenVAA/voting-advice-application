@@ -43,6 +43,20 @@
   };
 </script>
 
+<!--
+@component
+Renders an answered question on the summary page. Consists of the questions title, likert responses,
+open answers and a button to navigate to the questions page.
+
+-`question`: The question that is rendered. Taken as a mandatory prop
+-`categoryQuestions`: All the questions belonging to the same category. Taken as a mandatory prop
+
+### Usage
+```tsx
+  <AnsweredQuestion {question} {categoryQuestions} />
+```
+-->
+
 {#if answers?.[question.id]}
   <div class="pb-20 pt-20">
     <div class="text-accent">
