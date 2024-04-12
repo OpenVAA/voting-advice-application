@@ -3,7 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
-import { restrictPopulate, restrictFilters, restrictResourceOwnedByCandidate, restrictBody } from '../../../util/acl';
+import { restrictPopulate, restrictFilters, restrictBody, electionCanEditQuestions } from '../../../util/acl';
 
 export default factories.createCoreRouter('api::candidate.candidate', {
   only: ['find', 'findOne', 'update'], // Explicitly disabled create and delete
@@ -45,6 +45,8 @@ export default factories.createCoreRouter('api::candidate.candidate', {
         restrictFilters([]),
         // Allow only updating the following fields
         restrictBody(['gender', 'birthday', 'unaffiliated', 'photo', 'manifesto', 'motherTongues', 'otherLanguages', 'politicalExperience', 'appLanguage']),
+        // Allow modification only when the current election allows it
+        electionCanEditQuestions,
       ],
     },
   },

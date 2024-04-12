@@ -11,11 +11,17 @@
 @component
 A simple warning component to be used with BasicPage
 
+´´
+
+### Properties
+
+- `display`: A boolean value to set whether to display the warning or not.
+
 ### Usage
 
 ```tsx
 <Warning>
-    Some warning.
+    Warning content, such as text or HTML element.
 </Warning>
 ```
 -->

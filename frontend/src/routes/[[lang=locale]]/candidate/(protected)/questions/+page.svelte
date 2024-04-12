@@ -22,17 +22,15 @@
     nofUnansweredOpinionQuestionsStore,
     questionsStore,
     answersStore,
-    progressStore
+    progressStore,
+    questionsLockedStore
   } = getContext<CandidateContext>('candidate');
+
+  $: questionsLocked = $questionsLockedStore;
 
   let dataEditable: boolean;
 
   let questions = get(questionsStore) ?? [];
-
-  if (questions) {
-    //TODO: use store when store is implemented
-    dataEditable = Object.values(questions)[0].editable;
-  }
 
   let opinionQuestionsLeft: number | undefined;
   nofUnansweredOpinionQuestionsStore?.subscribe((value) => {
@@ -48,8 +46,6 @@
   basicInfoFilledStore?.subscribe((value) => {
     basicInfoFilled = value;
   });
-
-  //TODO refactor to use stores and break into components
 
   $: answers = $answersStore;
 
@@ -75,9 +71,6 @@
 
   $: {
     if (questions) {
-      //TODO:  use store when store is implemented
-      dataEditable = Object.values(questions)[0].editable;
-
       loading = true;
 
       if (answers) {
@@ -92,14 +85,14 @@
   $: nextUnansweredQuestion = Object.values(questions).find((question) => !answers?.[question.id]);
 </script>
 
-{#if answers && Object.entries(answers).length === 0}
+{#if answers && !questionsLocked && Object.entries(answers).length === 0}
   <QuestionsStartPage />
 {:else}
   <BasicPage
     title={$t('candidateApp.questions.title')}
     progress={$progressStore?.progress}
     progressMax={$progressStore?.max}>
-    <Warning display={!dataEditable} slot="note">
+    <Warning display={!!questionsLocked} slot="note">
       <p>{$t('candidateApp.questions.editingAllowedNote')}</p>
       {#if !opinionQuestionsFilled || !basicInfoFilled}
         <p>{$t('candidateApp.homePage.editingNotAllowedPartiallyFilled')}</p>
