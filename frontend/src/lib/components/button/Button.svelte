@@ -24,7 +24,8 @@
 
   $: {
     // 1. Base classes
-    classes = 'btn min-h-touch min-w-touch h-auto flex items-center justify-center gap-y-6 gap-x-4';
+    classes =
+      'btn relative min-h-touch min-w-touch h-auto flex items-center justify-center gap-y-6 gap-x-4';
     labelClass = 'first-letter:uppercase';
 
     // 2. Variant-defined classes
@@ -96,6 +97,10 @@ The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<
 - `class`: Additional class string to append to the element's default classes.
 - Any valid attributes of either an `<a>` or `<button>` element depending whether `href` was defined or not, respectively.
 
+### Slots
+
+- `badge`: A slot for adding a badge to the button.
+
 ### Reactivity
 
 Reactivity is not supported for the properties: `variant`, `iconPos`.
@@ -108,7 +113,9 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
   <Button on:click={skip} icon="skip" iconPos="top" color="secondary"
    text="Skip this question"/>
   <Button on:click={addToList} variant="icon" icon="addToList" 
-   text="Add to list"/>
+   text="Add to list">
+    <InfoBadge text="5" slot="badge"/>
+  </Button>
 ```
 -->
 
@@ -127,5 +134,10 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
   {/if}
   {#if variant !== 'icon'}
     <div class={labelClass}>{text}</div>
+  {/if}
+  {#if $$slots.badge}
+    <div class="absolute -end-6 top-0">
+      <slot name="badge" />
+    </div>
   {/if}
 </svelte:element>
