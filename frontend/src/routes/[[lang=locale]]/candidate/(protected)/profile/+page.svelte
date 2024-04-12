@@ -207,7 +207,7 @@
             <label for={field} class={labelClass}>
               {$t(`candidateApp.basicInfo.fields.${field}`)}
             </label>
-            <InputContainer locked={true}>
+            <InputContainer locked>
               <input
                 type="text"
                 disabled
@@ -390,7 +390,7 @@
             event.preventDefault();
             await goto($getRoute(Route.CandAppHome));
           }}
-          text={'Cancel'} />
+          text={$t('candidateApp.navbar.cancel')} />
       {/if}
       {#if errorMessage}
         <div class="text-error">
