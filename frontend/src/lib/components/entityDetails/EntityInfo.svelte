@@ -6,7 +6,7 @@
   import InfoItem from './InfoItem.svelte';
   import type {EntityDetailsProps} from './EntityDetails.type';
 
-  export let entity: NonNullable<EntityDetailsProps['entity']>;
+  export let entity: EntityProps;
   export let questions: EntityDetailsProps['infoQuestions'];
 </script>
 
@@ -64,6 +64,6 @@ Used to show an entity's basic info in an `EntityDetails` component.
 <style lang="postcss">
   .infoGroup {
     /* first: is valid although the linter flags it */
-    @apply mt-16 flex flex-col gap-md border-t-md pt-16 first:mt-0 first:border-t-0 first:pt-0;
+    @apply mt-16 flex flex-col gap-md border-t-md border-t-[var(--line-color)] pt-16 first:mt-0 first:border-t-0 first:pt-0;
   }
 </style>

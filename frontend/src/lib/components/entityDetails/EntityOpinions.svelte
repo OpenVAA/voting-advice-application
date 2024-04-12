@@ -8,7 +8,7 @@
   import {getLikertAnswer} from '$lib/utils/answers';
   import type {EntityDetailsProps} from './EntityDetails.type';
 
-  export let entity: NonNullable<EntityDetailsProps['entity']>;
+  export let entity: EntityProps;
   export let questions: EntityDetailsProps['opinionQuestions'];
 
   let shortName: string;

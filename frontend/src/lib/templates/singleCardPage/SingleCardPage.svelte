@@ -49,7 +49,7 @@ Use the properties to add to the classes of the elements containing the slots, t
 
     <span slot="note" class="text-warning">Warning!</span>
 
-    <EntityDetails entity={candidate} />
+    <EntityDetails content={candidate} />
         
   </SingleCardPage>
 ```

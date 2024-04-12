@@ -1,26 +1,24 @@
 <script lang="ts">
-  import {onDestroy} from 'svelte';
   import {error} from '@sveltejs/kit';
+  import {onDestroy} from 'svelte';
   import {t} from '$lib/i18n';
   import {concatClass} from '$lib/utils/components';
-  import {logDebugError} from '$lib/utils/logger';
+  import {parseMaybeRanked} from '$lib/utils/entities';
   import {Button} from '$lib/components/button';
   import {EntityCard, type EntityCardProps} from '$lib/components/entityCard';
   import type {CardAction, EntityListProps} from './EntityList.type';
 
   type $$Props = EntityListProps;
 
-  export let entities: $$Props['entities'] = undefined;
-  export let rankings: $$Props['rankings'] = undefined;
+  export let contents: $$Props['contents'];
   export let actionCallBack: $$Props['actionCallBack'] = undefined;
+  export let entityCardProps: $$Props['entityCardProps'] = undefined;
   export let itemsPerPage: NonNullable<$$Props['itemsPerPage']> = 10;
   export let itemsTolerance: NonNullable<$$Props['itemsTolerance']> = 0.2;
   export let itemsShown: $$Props['itemsShown'] = 0;
 
-  /** All of the list items regardless of their type */
-  let allItems: Array<RankingProps<EntityProps> | EntityProps>;
   /** The items spread onto pages */
-  let pages: Array<Array<RankingProps<EntityProps> | EntityProps>>;
+  let pages: Array<$$Props['contents']>;
   /** The index of the currently shown page (the previous pages are also shown) */
   let currentPage: number;
 
@@ -35,19 +33,16 @@
 
   // Paginate items onto pages reactively, so that subsequent changes to the entities, e.g. due to filters, are reflected
   $: {
-    if (rankings && entities) throw error(500, 'Only supply either entities or rankings.');
-    if (!rankings && !entities) throw error(500, 'Supply either entities or rankings.');
-    allItems = (rankings ? rankings : entities) as Array<RankingProps<EntityProps> | EntityProps>;
     pages = [];
     currentPage = 0;
     let start = 0;
-    while (start < allItems.length) {
+    while (start < contents.length) {
       let end = start + itemsPerPage;
       // The batch size is `itemsPerPage` unless the last batch would fall within `itemsTolerance` in which case it is combined with the second to last batch
-      if (allItems.length - end <= Math.ceil(itemsPerPage * itemsTolerance)) {
-        end = allItems.length;
+      if (contents.length - end <= Math.ceil(itemsPerPage * itemsTolerance)) {
+        end = contents.length;
       }
-      pages.push(allItems.slice(start, end));
+      pages.push(contents.slice(start, end));
       start = end;
     }
   }
@@ -61,18 +56,17 @@
   });
 
   /**
-   * Parse the `EntityCardProps` and `CardAction` for an item that may be either a ranking or an entity.
-   * @param item A ranking or an entity
+   * Parse the `MaybeRanked` and `CardAction` for an item.
+   * @param item A possibly ranked entity.
    * @returns {ecProps, action}
    */
-  function parseItem(item: RankingProps<EntityProps> | EntityProps): {
+  function parseItem(item: MaybeRanked): {
     ecProps: EntityCardProps;
     action: CardAction;
   } {
-    const isRanking = 'entity' in item;
-    const entity = isRanking ? item.entity : item;
+    const {entity} = parseMaybeRanked(item);
     return {
-      ecProps: isRanking ? {ranking: item as RankingProps<EntityProps>} : {entity},
+      ecProps: {...entityCardProps, content: item},
       action: actionCallBack ? actionCallBack(entity) : undefined
     };
   }
@@ -106,12 +100,12 @@ Show a list of entities with pagination and defined actions.
 
 ### Properties
 
+- `contents`: A list of possibly ranked entities, e.g. candidates or a parties.
 - `actionCallBack`: An optional function that is called for each entity in the list to determine the action to be performed when the entity card is clicked. @default `undefined`
 - `entityCardProps`: Optional properties that will be passed to each `EntityCard` in the list. @default `undefined`
 - `itemsPerPage`: The number of entities to display on each page of the list. @default `10`
 - `itemsTolerance`: The fraction of `itemsPerPage` that can be exceeded on the last page to prevent showing a short last page. @default `0.2`
-- `entities`: A list of candidates or a parties if no rankings are available.
-- `rankings`: A list of ranked entities, i.e. candidates or parties.
+- Any valid attributes of a `<div>` element.
 
 ### Bindable properties
 
@@ -128,7 +122,7 @@ Show a list of entities with pagination and defined actions.
 <h2>{itemsShown} candidates of {candidates.length}</h2>
 <EntityList 
   bind:itemsShown
-  entities={candidates} 
+  contents={candidates} 
   actionCallBack={({id}) => $getRoute({route: Route.Candidate, id})}/>
 ```
 -->
@@ -153,18 +147,19 @@ Show a list of entities with pagination and defined actions.
                 <EntityCard {...ecProps} />
               </a>
             {:else}
-              {logDebugError(`Unknown action type: ${typeof action}`)}
-              <EntityCard {...ecProps} />
+              {error(500, `Unknown action type: ${typeof action}`)}
             {/if}
           {/each}
         {/if}
-        <!-- Show the button for the next page. We use sr-only to keep in the DOM even after it has been clicked for better keyboard navigation -->
-        <Button
-          on:click={() => showPage(i)}
-          class="mt-lg self-center {i <= currentPage ? 'sr-only' : ''}"
-          disabled={i <= currentPage}
-          variant="main"
-          text={$t('components.entityList.showMore')} />
+        {#if i > 0}
+          <!-- Show the button for the next page. We use sr-only to keep in the DOM even after it has been clicked for better keyboard navigation -->
+          <Button
+            on:click={() => showPage(i)}
+            class="mt-lg self-center {i <= currentPage ? '!sr-only' : ''}"
+            disabled={i <= currentPage}
+            variant="main"
+            text={$t('components.entityList.showMore')} />
+        {/if}
       </div>
     {/if}
   {/each}

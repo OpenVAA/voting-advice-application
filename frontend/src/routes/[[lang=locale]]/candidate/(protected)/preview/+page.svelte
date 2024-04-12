@@ -50,7 +50,7 @@
         {$t('candidateApp.preview.tip')}
       </svelte:fragment>
       <LogoutButton buttonVariant="icon" slot="banner" />
-      <EntityDetails entity={candidate} {opinionQuestions} {infoQuestions} />
+      <EntityDetails content={candidate} {opinionQuestions} {infoQuestions} />
     </SingleCardPage>
   {/if}
 {/await}
