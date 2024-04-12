@@ -1,6 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {Route, getRoute} from '$lib/utils/navigation';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
   // import {EntityDetails} from '$lib/components/entityDetails';
   import {SingleCardPage} from '$lib/templates/singleCardPage';

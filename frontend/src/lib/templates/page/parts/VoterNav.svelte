@@ -38,15 +38,7 @@ A template part that outputs the navigation menu for the Voter App for use in th
     <NavItem
       href={$getRoute(Route.Results)}
       icon="results"
-      text={$t('actionLabels.results')}
-      disabled={!$resultsAvailable} />
-  </NavGroup>
-  <NavGroup>
-    <NavItem
-      href={$getRoute(Route.Candidates)}
-      icon="candidates"
-      text={$t('candidates.viewAllCandidates')} />
-    <NavItem href={$getRoute(Route.Parties)} icon="party" text={$t('parties.viewAllParties')} />
+      text={$resultsAvailable ? $t('navigation.results') : $t('navigation.browseEntities')} />
   </NavGroup>
   <NavGroup>
     <NavItem href={$getRoute(Route.Info)} icon="info" text={$t('actionLabels.electionInfo')} />
