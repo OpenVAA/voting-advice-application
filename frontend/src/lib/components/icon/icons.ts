@@ -28,6 +28,7 @@ export const ICONS: Record<string, readonly [folder: string, filename: string]> 
   candidate: ['material', 'person'],
   candidates: ['material', 'group'],
   check: ['material', 'check'],
+  checkAll: ['material', 'done_all'],
   close: ['material', 'close'],
   collapse: ['material', 'expand_less'],
   constituency: ['material', 'person_pin_circle'],
@@ -61,5 +62,6 @@ export const ICONS: Record<string, readonly [folder: string, filename: string]> 
   show: ['material', 'visibility'],
   skip: ['custom', 'skip'],
   sort: ['material', 'sort_by_alpha'],
-  tip: ['material', 'lightbulb']
+  tip: ['material', 'lightbulb'],
+  uncheckAll: ['material', 'remove_done']
 } as const;
