@@ -21,9 +21,7 @@
   const user = get(userStore);
   const userName = user?.candidate?.firstName;
 
-  let dataEditable: boolean;
-
-  dataEditable = !get(questionsLockedStore);
+  $: questionsLocked = $questionsLockedStore;
 
   let opinionQuestionsLeft: number | undefined;
   nofUnansweredOpinionQuestions?.subscribe((value) => {
@@ -85,7 +83,7 @@
 <!--Homepage for the user-->
 
 <BasicPage title={nextAction.title}>
-  <Warning display={!dataEditable} slot="note">
+  <Warning display={!!questionsLocked} slot="note">
     <p>{$t('candidateApp.homePage.editingNotAllowedNote')}</p>
     {#if !opinionQuestionsFilled || !basicInfoFilled}
       <p>{$t('candidateApp.homePage.editingNotAllowedPartiallyFilled')}</p>
@@ -128,13 +126,11 @@
   </Button>
 
   <div class="flex w-full flex-col items-center justify-center" slot="primaryActions">
-    {#if !(!dataEditable && !opinionQuestionsFilled)}
-      <Button
-        variant="main"
-        text={nextAction.buttonTextPrimaryActions}
-        icon="next"
-        href={nextAction.href} />
-    {/if}
+    <Button
+      variant="main"
+      text={nextAction.buttonTextPrimaryActions}
+      icon="next"
+      href={nextAction.href} />
 
     <LogoutButton />
   </div>

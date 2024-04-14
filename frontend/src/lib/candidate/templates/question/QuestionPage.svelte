@@ -189,7 +189,7 @@ In addition to the question, includes a Likert scale and a text area for comment
         <LikertResponseButtons
           aria-labelledby="hgroup-{questionId}"
           name={questionId}
-          mode={currentQuestion.editable ? 'answer' : 'display'}
+          mode={!questionsLocked ? 'answer' : 'display'}
           {options}
           {selectedKey}
           on:change={saveLikertToLocal} />
@@ -203,7 +203,7 @@ In addition to the question, includes a Likert scale and a text area for comment
         localStorageId={openAnswerLocal}
         previouslySavedMultilang={answer?.openAnswer ?? undefined}
         disabled={!selectedKey}
-        locked={!currentQuestion.editable}
+        locked={!!questionsLocked}
         placeholder="—"
         bind:multilangText={openAnswer}
         bind:this={openAnswerTextArea} />
@@ -212,7 +212,7 @@ In addition to the question, includes a Likert scale and a text area for comment
         <p class="text-error">{errorMessage}</p>
       {/if}
 
-      {#if !currentQuestion.editable}
+      {#if !!questionsLocked}
         <Button
           on:click={() => goto($getRoute(Route.CandAppQuestions))}
           variant="main"

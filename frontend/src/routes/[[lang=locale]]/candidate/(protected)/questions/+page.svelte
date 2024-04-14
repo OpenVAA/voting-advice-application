@@ -28,8 +28,6 @@
 
   $: questionsLocked = $questionsLockedStore;
 
-  let dataEditable: boolean;
-
   let questions = get(questionsStore) ?? [];
 
   let opinionQuestionsLeft: number | undefined;
@@ -102,7 +100,7 @@
     <p class="pb-20 text-center">
       {$t('candidateApp.questions.info')}
     </p>
-    {#if opinionQuestionsLeft != 0 && !loading && dataEditable}
+    {#if opinionQuestionsLeft != 0 && !loading && !questionsLocked}
       <div class="pb-6 text-center text-warning">
         {$t('candidateApp.questions.warning', {numUnansweredQuestions: opinionQuestionsLeft})}
       </div>

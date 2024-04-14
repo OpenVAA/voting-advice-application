@@ -12,23 +12,33 @@
   const {userStore} = getContext<CandidateContext>('candidate');
 
   let infoQuestions: QuestionProps[];
-  getInfoQuestions({locale: $locale}).then((res) => (infoQuestions = res));
-
   let opinionQuestions: QuestionProps[];
-  getOpinionQuestions({locale: $locale}).then((res) => (opinionQuestions = res));
-
   let candidate: CandidateProps | undefined;
-  const loadCandidate = async () => {
-    const res = await getNominatedCandidates({
-      loadAnswers: true,
-      locale: $locale,
-      id: $userStore?.candidate?.id.toString()
-    });
-    candidate = res[0];
+  let loadData: Promise<void>;
+
+  const fetchData = async () => {
+    const [infoRes, opinionRes, candidateRes] = await Promise.all([
+      getInfoQuestions({locale: $locale}),
+      getOpinionQuestions({locale: $locale}),
+      getNominatedCandidates({
+        loadAnswers: true,
+        locale: $locale,
+        id: $userStore?.candidate?.id.toString()
+      })
+    ]);
+
+    infoQuestions = infoRes;
+    opinionQuestions = opinionRes;
+    candidate = candidateRes[0];
   };
+
+  $: {
+    loadData = fetchData();
+    $locale;
+  }
 </script>
 
-{#await loadCandidate()}
+{#await loadData}
   <LoadingSpinner />
 {:then}
   {#if !candidate}

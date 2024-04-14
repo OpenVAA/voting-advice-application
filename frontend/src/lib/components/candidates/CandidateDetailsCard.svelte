@@ -61,7 +61,7 @@ TODO: This component is still a work in progress and does not follow the propert
       <CandidatePhoto
         photoURL={candidate.photoURL}
         title={GetFullNameInOrder(candidate.firstName, candidate.lastName)}
-        imgWidth="128" />
+        imgWidth={128} />
       <div class="flex-auto">
         <h1>
           {GetFullNameInOrder(candidate.firstName, candidate.lastName)}

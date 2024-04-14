@@ -7,7 +7,6 @@
   import {translate} from '$lib/i18n/utils/translate';
   import {QuestionOpenAnswer} from '$lib/components/questions';
   import {getContext} from 'svelte';
-  import {get} from 'svelte/store';
   import type {CandidateContext} from '$lib/utils/candidateStore';
   import type {RenderQuestionProps} from './Question.type';
 
@@ -16,31 +15,11 @@
   export let question: $$Props['question'];
   export let categoryQuestions: $$Props['categoryQuestions'];
 
-  const {answersStore, questionsStore} = getContext<CandidateContext>('candidate');
+  const {answersStore, questionsLockedStore} = getContext<CandidateContext>('candidate');
 
-  let dataEditable: boolean;
-
-  let questions = get(questionsStore) ?? [];
-
-  if (questions) {
-    //TODO: use store when store is implemented
-    dataEditable = Object.values(questions)[0].editable;
-  }
+  $: questionsLocked = $questionsLockedStore;
 
   $: answers = $answersStore;
-
-  const getAnsweredButtonText = () => {
-    if (dataEditable) {
-      return {
-        text: $t('candidateApp.questions.editYourAnswer'),
-        icon: 'missingIcon'
-      };
-    }
-    return {
-      text: $t('candidateApp.questions.viewYourAnswer'),
-      icon: 'show'
-    };
-  };
 </script>
 
 <!--
@@ -86,9 +65,11 @@ open answers and a button to navigate to the questions page.
 
       <div class="flex justify-center py-20 pb-40">
         <Button
-          text={getAnsweredButtonText().text}
+          text={!questionsLocked
+            ? $t('candidateApp.questions.editYourAnswer')
+            : $t('candidateApp.questions.viewYourAnswer')}
           href={$getRoute({route: Route.CandAppQuestionEdit, id: question.id})}
-          icon={getAnsweredButtonText().icon}
+          icon={!questionsLocked ? 'missingIcon' : 'show'}
           iconPos="left" />
       </div>
     </div>
