@@ -46,11 +46,15 @@
   const getNextAction = () => {
     if (basicInfoFilled && opinionQuestionsFilled) {
       return {
-        title: $t('candidateApp.homePage.title'),
+        title: $t('candidateApp.homePage.ready'),
         explanation: $t('candidateApp.homePage.description'),
         tip: $t('candidateApp.homePage.tip'),
-        buttonTextBasicInfo: $t('candidateApp.homePage.basicInfoButtonView'),
-        buttonTextQuestion: $t('candidateApp.homePage.questionsButtonView'),
+        buttonTextBasicInfo: !questionsLocked
+          ? $t('candidateApp.homePage.basicInfoButtonEdit')
+          : $t('candidateApp.homePage.basicInfoButtonView'),
+        buttonTextQuestion: !questionsLocked
+          ? $t('candidateApp.homePage.questionsButtonEdit')
+          : $t('candidateApp.homePage.questionsButtonView'),
         buttonTextPrimaryActions: $t('candidateApp.homePage.previewButton'),
         href: $getRoute(Route.CandAppPreview)
       };
@@ -58,18 +62,30 @@
       return {
         title: $t('candidateApp.homePage.greeting', {userName}),
         explanation: $t('candidateApp.homePage.explanation'),
-        buttonTextBasicInfo: $t('candidateApp.homePage.basicInfoButtonEdit'),
-        buttonTextQuestion: $t('candidateApp.homePage.questionsButton'),
-        buttonTextPrimaryActions: $t('candidateApp.homePage.questionsButton'),
+        buttonTextBasicInfo: !questionsLocked
+          ? $t('candidateApp.homePage.basicInfoButtonEdit')
+          : $t('candidateApp.homePage.basicInfoButtonView'),
+        buttonTextQuestion: !questionsLocked
+          ? $t('candidateApp.homePage.questionsButton')
+          : $t('candidateApp.homePage.questionsButtonView'),
+        buttonTextPrimaryActions: !questionsLocked
+          ? $t('candidateApp.homePage.questionsButton')
+          : $t('candidateApp.homePage.questionsButtonView'),
         href: $getRoute(Route.CandAppQuestions)
       };
     }
     return {
       title: $t('candidateApp.homePage.greeting', {userName}),
       explanation: $t('candidateApp.homePage.explanation'),
-      buttonTextBasicInfo: $t('candidateApp.homePage.basicInfoButton'),
-      buttonTextQuestion: $t('candidateApp.homePage.questionsButton'),
-      buttonTextPrimaryActions: $t('candidateApp.homePage.basicInfoButtonPrimaryActions'),
+      buttonTextBasicInfo: !questionsLocked
+        ? $t('candidateApp.homePage.basicInfoButton')
+        : $t('candidateApp.homePage.basicInfoButtonView'),
+      buttonTextQuestion: !questionsLocked
+        ? $t('candidateApp.homePage.questionsButton')
+        : $t('candidateApp.homePage.questionsButtonView'),
+      buttonTextPrimaryActions: !questionsLocked
+        ? $t('candidateApp.homePage.basicInfoButtonPrimaryActions')
+        : $t('candidateApp.homePage.basicInfoButtonView'),
       href: $getRoute(Route.CandAppProfile)
     };
   };
