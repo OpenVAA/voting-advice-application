@@ -15,18 +15,18 @@
 <!--
 @component
 Require candidates to be logged in to view the children of this component.
+Shows an error message if there is no candidate associated with the user.
 
 ### Slots
 
-- default: The content to show when the user is logged in.
-- not-logged-in: The content to show when the user is not logged in.
+- `default`: The content to show when the user is logged in.
+- `not-logged-in`: The content to show when the user is not logged in.
 
 ### Properties
 
-- showLogin (optional):
-  - If true, the component will render the login page when the user is not logged in.
-  - If false, the children of this component will be hidden when the user is not logged in.
-  - Default value is false.
+- `showLogin` (optional):
+  If true, the component will render the login page when the user is not logged in.
+  If false, the children of this component will be hidden when the user is not logged in.
 
 ### Usage
 
