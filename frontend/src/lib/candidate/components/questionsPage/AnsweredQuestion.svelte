@@ -69,7 +69,7 @@ open answers and a button to navigate to the questions page.
             ? $t('candidateApp.questions.editYourAnswer')
             : $t('candidateApp.questions.viewYourAnswer')}
           href={$getRoute({route: Route.CandAppQuestionEdit, id: question.id})}
-          icon={!questionsLocked ? 'missingIcon' : 'show'}
+          icon={!questionsLocked ? 'create' : 'show'}
           iconPos="left" />
       </div>
     </div>
