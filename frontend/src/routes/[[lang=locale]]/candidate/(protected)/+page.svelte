@@ -21,9 +21,7 @@
   const user = get(userStore);
   const userName = user?.candidate?.firstName;
 
-  let dataEditable: boolean;
-
-  dataEditable = !get(questionsLockedStore);
+  $: questionsLocked = $questionsLockedStore;
 
   let opinionQuestionsLeft: number | undefined;
   nofUnansweredOpinionQuestions?.subscribe((value) => {
@@ -48,11 +46,15 @@
   const getNextAction = () => {
     if (basicInfoFilled && opinionQuestionsFilled) {
       return {
-        title: $t('candidateApp.homePage.title'),
+        title: $t('candidateApp.homePage.ready'),
         explanation: $t('candidateApp.homePage.description'),
         tip: $t('candidateApp.homePage.tip'),
-        buttonTextBasicInfo: $t('candidateApp.homePage.basicInfoButtonView'),
-        buttonTextQuestion: $t('candidateApp.homePage.questionsButtonView'),
+        buttonTextBasicInfo: !questionsLocked
+          ? $t('candidateApp.homePage.basicInfoButtonEdit')
+          : $t('candidateApp.homePage.basicInfoButtonView'),
+        buttonTextQuestion: !questionsLocked
+          ? $t('candidateApp.homePage.questionsButtonEdit')
+          : $t('candidateApp.homePage.questionsButtonView'),
         buttonTextPrimaryActions: $t('candidateApp.homePage.previewButton'),
         href: $getRoute(Route.CandAppPreview)
       };
@@ -60,18 +62,30 @@
       return {
         title: $t('candidateApp.homePage.greeting', {userName}),
         explanation: $t('candidateApp.homePage.explanation'),
-        buttonTextBasicInfo: $t('candidateApp.homePage.basicInfoButtonEdit'),
-        buttonTextQuestion: $t('candidateApp.homePage.questionsButton'),
-        buttonTextPrimaryActions: $t('candidateApp.homePage.questionsButton'),
+        buttonTextBasicInfo: !questionsLocked
+          ? $t('candidateApp.homePage.basicInfoButtonEdit')
+          : $t('candidateApp.homePage.basicInfoButtonView'),
+        buttonTextQuestion: !questionsLocked
+          ? $t('candidateApp.homePage.questionsButton')
+          : $t('candidateApp.homePage.questionsButtonView'),
+        buttonTextPrimaryActions: !questionsLocked
+          ? $t('candidateApp.homePage.questionsButton')
+          : $t('candidateApp.homePage.questionsButtonView'),
         href: $getRoute(Route.CandAppQuestions)
       };
     }
     return {
       title: $t('candidateApp.homePage.greeting', {userName}),
       explanation: $t('candidateApp.homePage.explanation'),
-      buttonTextBasicInfo: $t('candidateApp.homePage.basicInfoButton'),
-      buttonTextQuestion: $t('candidateApp.homePage.questionsButton'),
-      buttonTextPrimaryActions: $t('candidateApp.homePage.basicInfoButtonPrimaryActions'),
+      buttonTextBasicInfo: !questionsLocked
+        ? $t('candidateApp.homePage.basicInfoButton')
+        : $t('candidateApp.homePage.basicInfoButtonView'),
+      buttonTextQuestion: !questionsLocked
+        ? $t('candidateApp.homePage.questionsButton')
+        : $t('candidateApp.homePage.questionsButtonView'),
+      buttonTextPrimaryActions: !questionsLocked
+        ? $t('candidateApp.homePage.basicInfoButtonPrimaryActions')
+        : $t('candidateApp.homePage.basicInfoButtonView'),
       href: $getRoute(Route.CandAppProfile)
     };
   };
@@ -85,7 +99,7 @@
 <!--Homepage for the user-->
 
 <BasicPage title={nextAction.title}>
-  <Warning display={!dataEditable} slot="note">
+  <Warning display={!!questionsLocked} slot="note">
     <p>{$t('candidateApp.homePage.editingNotAllowedNote')}</p>
     {#if !opinionQuestionsFilled || !basicInfoFilled}
       <p>{$t('candidateApp.homePage.editingNotAllowedPartiallyFilled')}</p>
@@ -128,13 +142,11 @@
   </Button>
 
   <div class="flex w-full flex-col items-center justify-center" slot="primaryActions">
-    {#if !(!dataEditable && !opinionQuestionsFilled)}
-      <Button
-        variant="main"
-        text={nextAction.buttonTextPrimaryActions}
-        icon="next"
-        href={nextAction.href} />
-    {/if}
+    <Button
+      variant="main"
+      text={nextAction.buttonTextPrimaryActions}
+      icon="next"
+      href={nextAction.href} />
 
     <LogoutButton />
   </div>

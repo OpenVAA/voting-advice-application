@@ -13,6 +13,7 @@
 
   export let registrationCode = '';
   export let wrongCode = false;
+
   const {userStore} = getContext<CandidateContext>('candidate');
   $: loggedIn = $userStore;
 
@@ -24,15 +25,12 @@
 <!--
 @component
 Page where user can input their registration code.
+Adds the registration code to the URL on submit and redirects to where the registration code is checked.
+In addition, shows a warning to the user if another user is already logged in.
 
 ### Properties
-wrongCode
-- If this is `true` the page will display error message.
-- Default value is `false`.
-
-registrationCode
-- This is used as value of the input field.
-- Default value is empty string.
+- `wrongCode` (optional): if true, error message is shown
+- `registrationCode` (optional): value of the input field
 
 ### Usage
 ```tsx

@@ -16,6 +16,7 @@
   export let userName: string;
   export let registrationCode: string;
   export let email: string;
+
   let password = '';
   let passwordConfirmation = '';
   const {emailOfNewUserStore, userStore, logOut} = getContext<CandidateContext>('candidate');
@@ -59,19 +60,19 @@
 <!--
 @component
 Page where candidates can set their password when logging to the app for the first time.
+Registration code and email are required to complete the registration.
+Shows an error message if the registration is not successful.
 
 ### Properties
 
-- userName:
-  - The component will greet the user with the given name.
-- registrationKey:
-  - The registration key is given to the component.
-  - The component will use this key to register the user.
-  - The component will show an error message if the registration fails.
+- `userName` (required): name the user is greeted with
+- `registrationCode` (required): registration key of the user, used by the backend
+- `email` (required): email of the user, used for registration
+
 ### Usage
 
   ```tsx
-  <PasswordSetPage userName="Barnabas" registrationKey="123-123-123" />
+  <PasswordSetPage userName="Barnabas" registrationCode="123-123-123" />
   ```
 -->
 
