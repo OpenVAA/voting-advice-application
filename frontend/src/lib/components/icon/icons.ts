@@ -61,5 +61,7 @@ export const ICONS: Record<string, readonly [folder: string, filename: string]> 
   show: ['material', 'visibility'],
   skip: ['custom', 'skip'],
   sort: ['material', 'sort_by_alpha'],
-  tip: ['material', 'lightbulb']
+  tip: ['material', 'lightbulb'],
+  warning: ['material', 'warning'],
+  create: ['material', 'create']
 } as const;

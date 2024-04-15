@@ -30,7 +30,7 @@ A simple warning component to be used with BasicPage
   {#if display}
     <div class="flex items-start gap-6">
       <div class="w-60">
-        <Icon name="missingIcon" />
+        <Icon name="warning" />
       </div>
       <div class="flex-grow text-left">
         <slot />
