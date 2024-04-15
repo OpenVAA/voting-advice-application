@@ -112,9 +112,11 @@ You should not try to use a variant and customize at the same time.
       <Icon name="next" size="sm" color={iconColor} />
     </div>
   </div>
-  <div class={contentClasses}>
-    <slot />
-  </div>
+  {#if expanded}
+    <div class={contentClasses}>
+      <slot />
+    </div>
+  {/if}
 </div>
 
 <style>

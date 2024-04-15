@@ -115,7 +115,6 @@ export interface Question {
   max?: number | Date;
   notLocalizable?: boolean;
   dateType?: DateType;
-  editable: boolean;
 }
 
 interface QuestionChoiceProps {
