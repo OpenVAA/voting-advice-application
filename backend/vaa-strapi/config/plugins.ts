@@ -20,6 +20,10 @@ export default ({env}) => ({
       settings: {
         defaultFrom: env('MAIL_FROM', 'candidate-app@example.com'),
         defaultReplyTo: env('MAIL_REPLY_TO', 'candidate-app@example.com')
+      },
+      ratelimit: env.NODE_ENV === 'development' && {
+        max: 10000,
+        interval: 60000
       }
     }
   },

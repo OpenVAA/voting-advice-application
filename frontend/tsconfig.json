@@ -11,16 +11,6 @@
     "strict": true,
     "preserveSymlinks": true,
     "types": ["vitest/globals"],
-    "moduleResolution": "Node",
-    "paths": {
-      "$lib": ["./src/lib"],
-      "$lib/*": ["./src/lib/*"],
-      "$voter": ["./src/lib/voter"],
-      "$voter/*": ["./src/lib/voter/*"],
-      "$candidate": ["./src/lib/candidate"],
-      "$candidate/*": ["./src/lib/candidate/*"],
-      "$shared": ["./src/shared/"],
-      "$shared/*": ["./src/shared/*"]
-    }
+    "moduleResolution": "Node"
   }
 }
