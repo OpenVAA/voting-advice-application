@@ -33,7 +33,7 @@
     if (dataEditable) {
       return {
         text: $t('candidateApp.questions.editYourAnswer'),
-        icon: 'missingIcon'
+        icon: 'create'
       };
     }
     return {
