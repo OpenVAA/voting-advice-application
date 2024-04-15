@@ -113,6 +113,7 @@ The dialog can be closed by pressing the `Escape` key.
 </TimedModal>
 ```
 -->
+<!-- ignore interactive tabindex so we can hide dialog when modal is not visible -->
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <dialog
   bind:this={modalContainer}
