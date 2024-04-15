@@ -16,8 +16,8 @@
 
   export const openModal = () => {
     if (!isOpen) {
-      modalContainer?.showModal();
       isOpen = true;
+      modalContainer?.showModal();
       resetProgressBarTimer();
       resetTimeout();
     }
@@ -25,8 +25,8 @@
 
   export const closeModal = () => {
     if (isOpen) {
-      modalContainer?.close();
       isOpen = false;
+      modalContainer?.close();
       stopProgressBarTimer();
     }
   };
@@ -113,14 +113,20 @@ The dialog can be closed by pressing the `Escape` key.
 </TimedModal>
 ```
 -->
-
-<dialog bind:this={modalContainer} class="modal dark:bg-white dark:bg-opacity-10" aria-modal>
-  <div class="modal-box">
-    <slot />
-    <progress
-      id="modal-progress"
-      class="w-56 progress progress-error absolute bottom-0 left-0 right-0"
-      value={$progressBarTimer}
-      max={timerDuration} />
-  </div>
+<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+<dialog
+  bind:this={modalContainer}
+  tabindex={isOpen ? 0 : -1}
+  class="modal dark:bg-white dark:bg-opacity-10"
+  aria-modal>
+  {#if isOpen}
+    <div class="modal-box">
+      <slot />
+      <progress
+        id="modal-progress"
+        class="w-56 progress progress-error absolute bottom-0 left-0 right-0"
+        value={$progressBarTimer}
+        max={timerDuration} />
+    </div>
+  {/if}
 </dialog>
