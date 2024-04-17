@@ -8,5 +8,6 @@ export default {
   },
   beforeUpdate(event) {
     event.params.data.email = event.params.data.email?.toLowerCase();
+    event.params.data.manifesto = event.params.data.manifesto ?? {};
   }
 };
