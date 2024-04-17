@@ -66,10 +66,6 @@ const loadUserData = async () => {
 
   const canEditQuestions = user.candidate?.nomination?.election?.canEditQuestions;
 
-  if (canEditQuestions === undefined) {
-    throw Error('user.candidate?.nomination?.election?.canEditQuestions is undefined');
-  }
-
   questionsLockedStore.set(!canEditQuestions);
   userStore.set(user);
 };

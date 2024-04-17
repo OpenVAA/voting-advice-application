@@ -109,8 +109,8 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
   this={href == null ? 'button' : 'a'}
   on:click
   role="button"
-  tabindex="0"
-  {href}
+  tabindex={disabled ? -1 : 0}
+  href={disabled ? undefined : href}
   aria-label={variant === 'icon' ? text : undefined}
   title={variant === 'icon' ? text : undefined}
   disabled={disabled || undefined}

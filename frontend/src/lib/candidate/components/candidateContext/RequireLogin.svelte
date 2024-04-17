@@ -10,6 +10,16 @@
   const {userStore, tokenStore} = getContext<CandidateContext>('candidate');
   export let showLogin = false;
   $: candidate = $userStore?.candidate;
+  $: nomination = candidate?.nomination;
+  $: election = nomination?.election;
+
+  let error: string | undefined;
+  $: {
+    if (!candidate) error = $t('candidateApp.error.userNoCandidateError');
+    else if (!nomination) error = $t('candidateApp.error.candidateNoNominationError');
+    else if (!election) error = $t('candidateApp.error.nominationNoElectionError');
+    else error = undefined;
+  }
 </script>
 
 <!--
@@ -38,12 +48,12 @@ Shows an error message if there is no candidate associated with the user.
 -->
 
 {#if $userStore}
-  {#if candidate}
+  {#if !error}
     <slot />
   {:else}
     <BasicPage title="Error">
       <Warning display slot="heading">
-        <p>{$t('candidateApp.error.userNoCandidateError')}</p>
+        <p>{error}</p>
       </Warning>
     </BasicPage>
   {/if}
