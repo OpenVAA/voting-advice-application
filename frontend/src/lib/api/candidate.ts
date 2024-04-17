@@ -18,8 +18,8 @@ function getUrl(path: string, search: Record<string, string> = {}) {
   return url.toString();
 }
 
-export const authenticate = async (identifier: string, password: string): Promise<Response> => {
-  return await fetch(getUrl('api/auth/local'), {
+export const authenticate = (identifier: string, password: string): Promise<Response> => {
+  return fetch(getUrl('api/auth/local'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -28,8 +28,8 @@ export const authenticate = async (identifier: string, password: string): Promis
   });
 };
 
-export const register = async (registrationKey: string, password: string): Promise<Response> => {
-  return await fetch(getUrl('api/auth/candidate/register'), {
+export const register = (registrationKey: string, password: string): Promise<Response> => {
+  return fetch(getUrl('api/auth/candidate/register'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -38,8 +38,8 @@ export const register = async (registrationKey: string, password: string): Promi
   });
 };
 
-export const requestForgotPasswordLink = async (email: string): Promise<Response> => {
-  return await fetch(getUrl('api/auth/forgot-password'), {
+export const requestForgotPasswordLink = (email: string): Promise<Response> => {
+  return fetch(getUrl('api/auth/forgot-password'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -48,8 +48,8 @@ export const requestForgotPasswordLink = async (email: string): Promise<Response
   });
 };
 
-export const resetPassword = async (code: string, password: string) => {
-  return await fetch(getUrl('api/auth/reset-password'), {
+export const resetPassword = (code: string, password: string): Promise<Response> => {
+  return fetch(getUrl('api/auth/reset-password'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -63,8 +63,8 @@ export const resetPassword = async (code: string, password: string) => {
   });
 };
 
-export const checkRegistrationKey = async (registrationKey: string): Promise<Response> => {
-  return await fetch(getUrl('api/auth/candidate/check'), {
+export const checkRegistrationKey = (registrationKey: string): Promise<Response> => {
+  return fetch(getUrl('api/auth/candidate/check'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -160,7 +160,7 @@ export const updateAppLanguage = async (language: Language) => {
 /**
  * Change the user's password to a new one.
  */
-export const changePassword = async (currentPassword: string, password: string) => {
+export const changePassword = (currentPassword: string, password: string) => {
   return request(getUrl('api/auth/change-password'), {
     method: 'POST',
     body: JSON.stringify({
@@ -217,12 +217,12 @@ export const getLikertQuestions = async (): Promise<Record<string, Question> | u
 /**
  * Add answer to a question for the logged in user.
  */
-export const addAnswer = async (
+export const addAnswer = (
   questionId: string,
   answerKey: AnswerOption['key'],
   openAnswer?: LocalizedString
 ): Promise<Response | undefined> => {
-  return await request(getUrl('api/answers'), {
+  return request(getUrl('api/answers'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -241,7 +241,7 @@ export const addAnswer = async (
  * Update an existing answer for the logged in user.
  * The answer id is sufficient to identify the answer and question.
  */
-export const updateAnswer = async (
+export const updateAnswer = (
   answerId: string,
   answerKey: AnswerOption['key'],
   openAnswer?: LocalizedString
@@ -263,7 +263,7 @@ export const updateAnswer = async (
 /**
  * Delete an existing answer for the logged in user.
  */
-export const deleteAnswer = async (answerId: string): Promise<Response | undefined> => {
+export const deleteAnswer = (answerId: string): Promise<Response | undefined> => {
   return request(getUrl(`api/answers/${answerId}`), {
     method: 'DELETE',
     headers: {
@@ -327,17 +327,17 @@ export const getGenders = async (): Promise<StrapiGenderData[] | undefined> => {
   return resJson.data;
 };
 
-export const uploadFiles = async (files: File[]) => {
+export const uploadFiles = (files: File[]) => {
   const formData = new FormData();
   files.forEach((file) => formData.append('files', file));
-  return await request(getUrl('/api/upload/'), {
+  return request(getUrl('/api/upload/'), {
     method: 'POST',
     body: formData
   });
 };
 
-export const deleteFile = async (id: number) => {
-  return await request(getUrl(`/api/upload/files/${id}`), {method: 'DELETE'});
+export const deleteFile = (id: number) => {
+  return request(getUrl(`/api/upload/files/${id}`), {method: 'DELETE'});
 };
 
 export const request = async (url: string, options: RequestInit = {}) => {
@@ -347,8 +347,8 @@ export const request = async (url: string, options: RequestInit = {}) => {
   if (!options.headers) options.headers = {};
   (options.headers as Record<string, string>)['Authorization'] = `Bearer ${get(token)}`;
 
-  return fetch(url, options).catch((error) => {
-    console.error('Error in getting data from backend: ', error);
+  return await fetch(url, options).catch((error) => {
+    console.error('Error in getting data from backend:', error);
     return undefined;
   });
 };
