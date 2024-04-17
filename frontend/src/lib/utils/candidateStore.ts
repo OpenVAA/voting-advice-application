@@ -66,7 +66,7 @@ const loadUserData = async () => {
 
   const canEditQuestions = user.candidate?.nomination?.election?.canEditQuestions;
 
-  if (canEditQuestions === undefined) {
+  if (canEditQuestions === undefined && user.candidate != null) {
     throw Error('user.candidate?.nomination?.election?.canEditQuestions is undefined');
   }
 
