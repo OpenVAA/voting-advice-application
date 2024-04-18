@@ -125,14 +125,15 @@ Carol,Carolsson,${partyId},carol@example.com,false`
 		await page.locator("#portraitLabel").click();
 		await page.getByLabel("Gender").selectOption("Male");
 		await page.getByLabel("Birthday").fill("1990-01-01");
-		await page.getByLabel("Select first").selectOption("fi");
+		const motherTongueField = await page.getByLabel("motherTongue");
+		await motherTongueField.selectOption("fi");
 		//Save the button as a variable to make the test able to find it while disabled
 		const saveButton = page.getByRole("button", { name: "Save and Return" });
 		await page.getByLabel("Finnish").click();
 		//button should not be clickable with 0 languages picked
 		await expect(saveButton).toBeDisabled();
-		await page.getByLabel("Select first").selectOption("fi");
-		await page.getByLabel("Add another").selectOption("en");
+		await motherTongueField.selectOption("fi");
+		await motherTongueField.selectOption("en");
 		await expect(
 			page.locator("form div").filter({ hasText: "Finnish" }).nth(3)
 		).toBeVisible();
