@@ -124,7 +124,7 @@ Carol,Carolsson,${partyId},carol@example.com,false`
 			await fileChooser.setFiles(path.join(__dirname, "test_image_black.png"));
 		});
 		await page.locator("#portraitLabel").click();
-		await page.getByLabel("Gender").selectOption("Man");
+		await page.getByLabel("Gender").selectOption("Male");
 		await page.getByLabel("Birthday").fill("1990-01-01");
 		await page.getByLabel("Finnish").click();
 		await expect(saveButton).toBeDisabled();
