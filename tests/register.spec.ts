@@ -125,7 +125,7 @@ Carol,Carolsson,${partyId},carol@example.com,false`
 		});
 		await page.locator("#portraitLabel").click();
 		await page.getByLabel("Gender").selectOption("Man");
-		await page.getByLabel("Age").fill("30");
+		await page.getByLabel("Birthday").fill("1990-01-01");
 		await page.getByLabel("Finnish").click();
 		await expect(saveButton).toBeDisabled();
 		await page.getByLabel("Select first").selectOption("fi");
