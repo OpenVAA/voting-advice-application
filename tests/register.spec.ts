@@ -122,7 +122,7 @@ Carol,Carolsson,${partyId},carol@example.com,false`
 		page.on("filechooser", async (fileChooser) => {
 			await fileChooser.setFiles(path.join(__dirname, "test_image_black.png"));
 		});
-		await page.locator("#portraitLabel").click();
+		await page.getByLabel("portrait").click();
 		await page.getByLabel("Gender").selectOption("Male");
 		await page.getByLabel("Birthday").fill("1990-01-01");
 		const motherTongueField = await page.getByLabel("motherTongue");
