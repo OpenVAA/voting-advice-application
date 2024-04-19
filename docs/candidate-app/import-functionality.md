@@ -71,6 +71,10 @@ The file was modified so that the import button is only visible on certain pages
 
 Originally, the plugin had an option to write the csv directly into the modal. This file was modified so that the text editor is hidden.
 
+### [admin/src/components/ImportModal/components/ImportEditor](../../backend/vaa-strapi/strapi-plugin-import-export-entries/admin/src/components/ImportModal/components/ImportEditor/ImportEditor.js)
+
+Originally, the import modal had an option tab for choosing the id field. This was removed as it is not needed.
+
 ### [admin/src/index.js](../../backend/vaa-strapi/strapi-plugin-import-export-entries/admin/src/index.js)
 
 In this file, the export button and editView options were made hidden.
