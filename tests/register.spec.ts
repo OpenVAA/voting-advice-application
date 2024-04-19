@@ -122,18 +122,17 @@ Carol,Carolsson,${partyId},carol@example.com,false`
 		page.on("filechooser", async (fileChooser) => {
 			await fileChooser.setFiles(path.join(__dirname, "test_image_black.png"));
 		});
-		await page.getByText("Portrait").click();
+		await page.getByText("Tap to add photo").click();
 		await page.getByLabel("Gender").selectOption("Male");
 		await page.getByLabel("Birthday").fill("1990-01-01");
-		const motherTongueField = await page.getByLabel("motherTongue");
-		await motherTongueField.selectOption("fi");
+		const motherTongueField = page.getByLabel("Add another");
 		//Save the button as a variable to make the test able to find it while disabled
 		const saveButton = page.getByRole("button", { name: "Save and Return" });
-		await page.getByLabel("Finnish").click();
+		await page.getByLabel("English").click();
 		//button should not be clickable with 0 languages picked
 		await expect(saveButton).toBeDisabled();
-		await motherTongueField.selectOption("fi");
-		await motherTongueField.selectOption("en");
+		await page.getByLabel("Select first").selectOption("Finnish");
+		await motherTongueField.selectOption("English");
 		await expect(
 			page.locator("form div").filter({ hasText: "Finnish" }).nth(3)
 		).toBeVisible();
