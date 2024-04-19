@@ -125,7 +125,7 @@ Carol,Carolsson,${partyId},carol@example.com,false`
 		await page.getByText("Tap to add photo").click();
 		await page.getByLabel("Gender").selectOption("Male");
 		await page.getByLabel("Birthday").fill("1990-01-01");
-		await page.getByLabel("Select first").selectOption("English");
+		await page.getByLabel("Add another").selectOption("Spanish");
 		const motherTongueField = page.getByLabel("Add another");
 		//Save the button as a variable to make the test able to find it while disabled
 		const saveButton = page.getByRole("button", { name: "Save and Return" });
