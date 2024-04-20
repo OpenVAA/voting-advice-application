@@ -65,8 +65,8 @@ export function getAnswerForDisplay(
     const labels = getChoiceLabels(question, answer.value);
     return labels?.length ? labels : undefined;
   }
-  if (['text', 'number'].includes(qt)) return `${answer.value}`;
-  throw new Error('Not implemented');
+  if (['text', 'number', 'link'].includes(qt)) return `${answer.value}`;
+  throw new Error(`Question type ${question.type} not implemented`);
 }
 
 /**

@@ -249,16 +249,22 @@ declare global {
         max?: Date;
       }
     | {
+        type: 'link';
+      }
+    | {
         type: 'singleChoiceOrdinal';
         values: AnswerOption[];
+        display?: 'vertical' | 'horizontal';
       }
     | {
         type: 'singleChoiceCategorical';
         values: AnswerOption[];
+        display?: 'vertical' | 'horizontal';
       }
     | {
         type: 'multipleChoiceCategorical';
         values: AnswerOption[];
+        display?: 'vertical' | 'horizontal';
         min?: number;
         max?: number;
       }
