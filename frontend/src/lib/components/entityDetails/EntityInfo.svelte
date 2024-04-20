@@ -38,26 +38,47 @@ Used to show an entity's basic info in an `EntityDetails` component.
     </InfoItem>
   </div>
   {#if questions?.length}
-    <div class="infoGroup" role="group">
-      {#each questions as question}
-        {@const answer = getAnswerForDisplay(entity, question)}
-        <InfoItem label={question.text}>
-          {#if answer == null}
-            <span class="text-secondary">{$t('entity.missingAnswer')}</span>
-          {:else if question.type === 'multipleChoiceCategorical' && Array.isArray(answer)}
-            {answer.join($t('entity.multipleAnswerSeparator'))}
-          {:else if question.type === 'preferenceOrder'}
-            <ol class="pl-18">
-              {#each answer as item}
-                <li>{item}</li>
-              {/each}
-            </ol>
-          {:else}
-            {answer}
-          {/if}
+    {@const nonLinkQuestions = questions.filter((q) => q.type !== 'link')}
+    {@const linkQuestions = questions.filter((q) => q.type === 'link')}
+    {#if nonLinkQuestions.length}
+      <div class="infoGroup" role="group">
+        {#each nonLinkQuestions as question}
+          {@const answer = getAnswerForDisplay(entity, question)}
+          <InfoItem label={question.text}>
+            {#if answer == null}
+              <span class="text-secondary">{$t('entity.missingAnswer')}</span>
+            {:else if question.type === 'multipleChoiceCategorical' && Array.isArray(answer)}
+              {answer.join($t('entity.multipleAnswerSeparator'))}
+            {:else if question.type === 'preferenceOrder'}
+              <ol class="pl-18">
+                {#each answer as item}
+                  <li>{item}</li>
+                {/each}
+              </ol>
+            {:else}
+              {answer}
+            {/if}
+          </InfoItem>
+        {/each}
+      </div>
+    {/if}
+    {#if linkQuestions.length}
+      <div class="infoGroup" role="group">
+        <InfoItem label={$t('components.entityInfo.links')}>
+          {#each linkQuestions as question}
+            {@const answer = getAnswerForDisplay(entity, question)}
+            {#if answer}
+              <a
+                href={answer}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="small-label mb-sm me-md inline-block hyphens-none rounded-full bg-base-300 px-md py-sm last:me-0"
+                >{question.text}</a>
+            {/if}
+          {/each}
         </InfoItem>
-      {/each}
-    </div>
+      </div>
+    {/if}
   {/if}
 </div>
 

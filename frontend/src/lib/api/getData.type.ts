@@ -201,16 +201,22 @@ export type QuestionTypeSettings =
       max?: Date;
     }
   | {
+      type: 'link';
+    }
+  | {
       type: 'singleChoiceOrdinal';
       values: Choice[];
+      display?: 'vertical' | 'horizontal';
     }
   | {
       type: 'singleChoiceCategorical';
       values: Choice[];
+      display?: 'vertical' | 'horizontal';
     }
   | {
       type: 'multipleChoiceCategorical';
       values: Choice[];
+      display?: 'vertical' | 'horizontal';
       min?: number;
       max?: number;
     }
