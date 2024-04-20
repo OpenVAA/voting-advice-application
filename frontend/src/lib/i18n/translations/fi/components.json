@@ -1,4 +1,7 @@
 {
+  "entityInfo": {
+    "links": "Linkit"
+  },
   "entityList": {
     "showMore": "FI - Show more"
   },

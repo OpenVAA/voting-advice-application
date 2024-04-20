@@ -1,4 +1,7 @@
 {
+  "entityInfo": {
+    "links": "Links"
+  },
   "entityList": {
     "showMore": "Show more"
   },
