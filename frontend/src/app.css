@@ -5,7 +5,24 @@
 @layer base {
   html {
     /* We need to explicitly set this, because we're not using the default `sans` font utility. */
-    @apply font-base;
+    @apply hyphens-auto font-base;
+  }
+  /* Disable hyphenation on these elements */
+  a:link,
+  a:active,
+  a:visited,
+  a:hover,
+  input,
+  select,
+  option,
+  textarea,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply hyphens-none;
   }
   body {
     @apply bg-base-100 text-md;
