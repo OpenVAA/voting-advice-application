@@ -1,20 +1,20 @@
-import { expect, chromium, FullConfig } from '@playwright/test';
-import { STORAGE_STATE } from '../playwright.config';
+import { expect, chromium, FullConfig } from '@playwright/test'
+import { STORAGE_STATE } from '../playwright.config'
 
 async function globalSetup(config: FullConfig) {
-  const { baseURL } = config.projects[0].use;
-  const browser = await chromium.launch();
-  const page = await browser.newPage();
+  const { baseURL } = config.projects[0].use
+  const browser = await chromium.launch()
+  const page = await browser.newPage()
 
-  await page.goto(`${baseURL!}/candidate`);
-  await page.getByLabel('Email').fill('first.last@example.com');
-  await page.getByLabel(/^Password$/).fill('password');
-  await page.getByText('Sign in').click();
+  await page.goto(`${baseURL!}/candidate`)
+  await page.getByLabel('Email').fill('first.last@example.com')
+  await page.getByLabel(/^Password$/).fill('password')
+  await page.getByText('Sign in').click()
 
   // Wait until the page actually signs in.
-  await expect(page.getByText('You\'re Ready to Roll!')).toBeVisible();
+  await expect(page.getByText("You're Ready to Roll!")).toBeVisible()
 
-  await page.context().storageState({ path: STORAGE_STATE });
+  await page.context().storageState({ path: STORAGE_STATE })
 }
 
-export default globalSetup;
+export default globalSetup
