@@ -34,5 +34,27 @@
   },
   "matchScore": {
     "label": "match"
+  },
+  "video": {
+    "error": "There was an error loading this video. You can try to reload the page or switch to a text view by tapping the icon in the top-right corner.",
+    "jumpBack": "Jump back",
+    "jumpForward": "Jump forward",
+    "captions": "Captions",
+    "subtitles": "Subtitles",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "play": "Play",
+    "pause": "Pause",
+    "replay": "Replay",
+    "hideCaptions": "Hide subtitles",
+    "showCaptions": "Show subtitles",
+    "progessbarLabel": "Time remaining",
+    "unsupportedWarning": "Unfortunately, your browser does not support this kind of video.",
+    "timeLeft": "{minutes, plural, =0 {} =1 {one minutes} other {# minutes}} {seconds, plural, =0 {} =1 {one second} other {# seconds}} left",
+    "transcript": "Text",
+    "video": "Video",
+    "transcriptToggleLabel": "Switch between video and text",
+    "showTranscript": "Show text instead of video",
+    "showVideo": "Show video"
   }
 }
