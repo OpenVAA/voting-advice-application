@@ -8,6 +8,8 @@
   import {Icon} from '$lib/components/icon';
   import {LoadingSpinner} from '$candidate/components/loadingSpinner';
   import {getInfoQuestions, getOpinionQuestions, getNominatedCandidates} from '$lib/api/getData';
+  import {Button} from '$lib/components/button';
+  import {getRoute, Route} from '$lib/utils/navigation';
 
   const {userStore} = getContext<CandidateContext>('candidate');
 
@@ -48,6 +50,15 @@
       <svelte:fragment slot="note">
         <Icon name="info" />
         {$t('candidateApp.preview.tip')}
+        <div class="flex justify-center">
+          <Button
+            class="w-1/2"
+            href={$getRoute(Route.CandAppHome)}
+            variant="normal"
+            text={$t('candidateApp.preview.close')}
+            icon="previous"
+            iconPos="left" />
+        </div>
       </svelte:fragment>
       <LogoutButton buttonVariant="icon" slot="banner" />
       <CandidateDetailsCard {candidate} {opinionQuestions} {infoQuestions} candidateView />
