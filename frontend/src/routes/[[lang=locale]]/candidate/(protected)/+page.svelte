@@ -19,7 +19,7 @@
     questionsLockedStore
   } = getContext<CandidateContext>('candidate');
   const user = get(userStore);
-  const userName = user?.candidate?.firstName;
+  const username = user?.candidate?.firstName;
 
   $: questionsLocked = $questionsLockedStore;
 
@@ -60,7 +60,7 @@
       };
     } else if (basicInfoFilled && !opinionQuestionsFilled) {
       return {
-        title: $t('candidateApp.homePage.greeting', {userName}),
+        title: $t('candidateApp.homePage.greeting', {username}),
         explanation: $t('candidateApp.homePage.explanation'),
         buttonTextBasicInfo: !questionsLocked
           ? $t('candidateApp.homePage.basicInfoButtonEdit')
@@ -75,7 +75,7 @@
       };
     }
     return {
-      title: $t('candidateApp.homePage.greeting', {userName}),
+      title: $t('candidateApp.homePage.greeting', {username}),
       explanation: $t('candidateApp.homePage.explanation'),
       buttonTextBasicInfo: !questionsLocked
         ? $t('candidateApp.homePage.basicInfoButton')

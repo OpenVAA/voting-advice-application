@@ -4,7 +4,7 @@
   import PasswordSetPage from './PasswordSetPage.svelte';
   import RegistrationCodePage from './RegistrationCodePage.svelte';
 
-  let userName = '';
+  let username = '';
   let email = '';
   let validRegistrationCode = false;
   let loading = false;
@@ -20,11 +20,11 @@
         if (response.ok) {
           validRegistrationCode = true;
           const data = await response.json();
-          userName = data.candidate.firstName;
+          username = data.candidate.firstName;
           email = data.candidate.email;
         } else {
           validRegistrationCode = false;
-          userName = '';
+          username = '';
           email = '';
         }
       })
@@ -35,7 +35,7 @@
 </script>
 
 {#if registrationCode && validRegistrationCode && !loading}
-  <PasswordSetPage {userName} {registrationCode} {email} />
+  <PasswordSetPage {username} {registrationCode} {email} />
 {:else if registrationCode}
   <RegistrationCodePage wrongCode={!loading && !validRegistrationCode} {registrationCode} />
 {:else}

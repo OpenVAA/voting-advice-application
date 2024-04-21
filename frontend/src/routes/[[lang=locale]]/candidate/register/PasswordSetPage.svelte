@@ -13,7 +13,7 @@
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  export let userName: string;
+  export let username: string;
   export let registrationCode: string;
   export let email: string;
 
@@ -32,7 +32,7 @@
     }
 
     // Additional check before backend validation
-    if (!validatePassword(password, userName)) {
+    if (!validatePassword(password, username)) {
       errorMessage = $t('candidateApp.setPassword.passwordNotValid');
       return;
     }
@@ -65,14 +65,14 @@ Shows an error message if the registration is not successful.
 
 ### Properties
 
-- `userName` (required): name the user is greeted with
+- `username` (required): name the user is greeted with
 - `registrationCode` (required): registration key of the user, used by the backend
 - `email` (required): email of the user, used for registration
 
 ### Usage
 
   ```tsx
-  <PasswordSetPage userName="Barnabas" registrationCode="123-123-123" />
+  <PasswordSetPage username="Barnabas" registrationCode="123-123-123" />
   ```
 -->
 
@@ -81,7 +81,7 @@ Shows an error message if the registration is not successful.
     <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
     <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
     <h1 class="my-24 text-2xl font-normal">
-      {$t('candidateApp.setPassword.greeting', {userName})}
+      {$t('candidateApp.setPassword.greeting', {username})}
     </h1>
   </HeadingGroup>
   {#if loggedIn}

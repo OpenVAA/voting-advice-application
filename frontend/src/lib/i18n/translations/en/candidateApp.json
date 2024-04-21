@@ -77,7 +77,7 @@
     "passwordUpdated": "The password has been updated!"
   },
   "setPassword": {
-    "greeting": "Hello, {userName}!",
+    "greeting": "Hello, {username}!",
     "description": "Set a secure password according to the requirements below:",
     "password": "Password",
     "confirmPassword": "Confirm password",
@@ -149,7 +149,7 @@
     "revealPassword": "Reveal password"
   },
   "homePage": {
-    "greeting": "Hello, {userName}!",
+    "greeting": "Hello, {username}!",
     "explanation": "In order to appear in the Election Compass, you have to enter some basic information about yourself as well as answer opinion statements concerning political issues.",
     "buttonText": "Continue",
     "basicInfoButton": "Enter your basic information",
@@ -170,7 +170,8 @@
   "preview": {
     "title": "Preview",
     "notFound": "Profile not found",
-    "tip": "This is a preview of how your profile will look to voters."
+    "tip": "This is a preview of how your profile will look to voters.",
+    "close": "Close preview"
   },
   "help": {
     "title": "Help",
