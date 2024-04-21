@@ -120,9 +120,11 @@ test.describe.serial('should complete the registration process', () => {
   });
 
   test('should succesfully set basic info', async ({ page, baseURL }) => {
+    // Log the default user out
     await page.goto(`http://localhost:5173/en/candidate`);
     await page.getByLabel('Logout').click();
 
+    // Log in with the created user Alice
     await page.getByLabel('Email').fill('alice@example.com');
     await page.getByLabel(/^Password$/).fill('Password1!');
     await page.getByText('Sign in').click();
@@ -131,6 +133,8 @@ test.describe.serial('should complete the registration process', () => {
     await expect(page).toHaveURL(
       /(http[s]?:\/\/)?(.*)\/en\/candidate\/profile/
     );
+
+    // Upload a profile picture
     page.on('filechooser', async (fileChooser) => {
       await fileChooser.setFiles(path.join(__dirname, 'test_image_black.png'));
     });
@@ -144,22 +148,22 @@ test.describe.serial('should complete the registration process', () => {
     // Button should not be clickable with 0 languages picked and manifesto not set
     await expect(saveButton).toBeDisabled();
 
-    // fill manifesto
+    // Fill manifesto
     await page
       .getByLabel('election manifesto')
       .fill(
         'Lorem ipsum dolor sit amet, consectetur adipisci elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.'
       );
 
-    // button should still be disabled because no language is set
+    // Button should still be disabled because no language is set
     await expect(saveButton).toBeDisabled();
 
     await motherTongueField.selectOption('Finnish');
 
-    // button should now be visible with a language selected
+    // Button should now be visible with a language selected
     await expect(saveButton).toBeEnabled();
 
-    // also test the other languages
+    // Also test the other languages
     await motherTongueField.selectOption('Spanish');
     await motherTongueField.selectOption('English');
 
@@ -174,7 +178,7 @@ test.describe.serial('should complete the registration process', () => {
     ).toBeVisible();
     await page.getByLabel('English').click();
 
-    // now submit the form
+    // Now submit the form
     await expect(saveButton).toBeVisible();
     await saveButton.click();
     await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/en\/candidate/);
