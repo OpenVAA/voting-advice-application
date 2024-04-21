@@ -306,6 +306,7 @@
                 disabled={questionsLocked}
                 bind:this={motherTongueSelect}
                 id="motherTongue"
+                data-testid="motherTongue"
                 class={selectClass}
                 on:change={handleLanguageSelect}>
                 <option disabled selected value style="display: none;" />
@@ -380,6 +381,7 @@
         disabled={!allFilled || loading}
         text={submitButtonText}
         type="submit"
+        data-testid="submitButton"
         variant="main"
         icon="next"
         slot="primaryActions" />
