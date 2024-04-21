@@ -14,8 +14,8 @@
   export let drawerToggleId: $$Props['drawerToggleId'] = 'pageDrawerToggle';
   export let mainId: $$Props['mainId'] = 'mainContent';
   export let navId: $$Props['navId'] = 'pageNav';
-  export let headerClass: $$Props['headerClass'] = 'bg-base-300';
-  export let mainClass: $$Props['mainClass'] = '';
+  export let headerClass: $$Props['headerClass'] = undefined;
+  export let mainClass: $$Props['mainClass'] = undefined;
   export let invertLogo: $$Props['invertLogo'] = false;
   export let progress: $$Props['progress'] = undefined;
   export let progressMin: $$Props['progressMin'] = 0;
@@ -132,7 +132,8 @@ the Drawer component.
   <!-- Drawer content -->
   <div class="drawer-content flex flex-col">
     <header
-      class="min-h-header relative flex items-center justify-between pr-6 pt-safet {headerClass}">
+      class="min-h-header relative flex items-center justify-between bg-base-300 pr-6 pt-safet {headerClass ??
+        ''}">
       <button
         on:click={openDrawer}
         bind:this={drawerOpenElement}
@@ -158,12 +159,13 @@ the Drawer component.
           min={progressMin}
           max={progressMax}
           title={$t('header.progressTitle')}
-          class="absolute bottom-0 left-0 h-4 w-full translate-y-[50%]" />
+          class="absolute left-0 top-0 h-4 w-full translate-y-[-1px]" />
       {/if}
     </header>
     <main
       id={mainId}
-      class="flex flex-grow flex-col items-center pb-safelgb pl-safelgl pr-safelgr pt-lg {mainClass}">
+      class="flex flex-grow flex-col items-center pb-safelgb pl-safelgl pr-safelgr pt-lg {mainClass ??
+        ''}">
       <!-- Main page content -->
       <slot />
     </main>
