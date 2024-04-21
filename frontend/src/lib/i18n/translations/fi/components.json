@@ -34,5 +34,27 @@
   },
   "matchScore": {
     "label": "sopivuus"
+  },
+  "video": {
+    "error": "Videota ei voitu ladata. Voit kokeilla ladata sivun uudelleen tai valita oikeasta yläkulmasta tekstinäkymän videon sijaan.",
+    "jumpBack": "Hyppää taaksepäin",
+    "jumpForward": "Hyppää eteenpäin",
+    "captions": "Kuvailevat tekstitykset",
+    "subtitles": "Tekstitykset",
+    "mute": "Äänet pois",
+    "unmute": "Äänet päälle",
+    "play": "Toista",
+    "pause": "Tauota",
+    "replay": "Toista uudelleen",
+    "hideCaptions": "Piilota tekstitykset",
+    "showCaptions": "Näytä tekstitykset",
+    "progessbarLabel": "Aikaa jäljellä",
+    "unsupportedWarning": "Selaimesi ei valitettavasti voi näyttää tätä videota.",
+    "timeLeft": "{minutes, plural, =0 {} =1 {yksi minuutti} other {# minuuttia}} {seconds, plural, =0 {} =1 {yksi sekunta} other {# sekuntia}} jäljellä",
+    "transcript": "Teksti",
+    "video": "Video",
+    "transcriptToggleLabel": "Vaihda teksti- ja videonäkymän välillä",
+    "showTranscript": "Näytä tekstinä videon sijaan",
+    "showVideo": "Näytä video"
   }
 }
