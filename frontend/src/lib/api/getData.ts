@@ -5,7 +5,7 @@ import {formatName} from '$lib/utils/internationalisation';
 import {matchLocale} from '$lib/i18n/utils/matchLocale';
 import {translate} from '$lib/i18n/utils/translate';
 import {ensureColors} from './utils/color';
-import {parseAnswers} from './utils/localization';
+import {parseAnswers, parseCustomData} from './utils/localization';
 import type {
   StrapiElectionData,
   StrapiError,
@@ -379,7 +379,8 @@ export const getQuestions = ({
           shortName: translate(attr.shortName, locale),
           category: catProps,
           filterable: attr.filterable ?? false,
-          type: settings.type
+          type: settings.type,
+          customData: attr.customData ? parseCustomData(attr.customData) : null
         };
         if ('values' in settings)
           props.values = settings.values.map(({key, label}) => ({

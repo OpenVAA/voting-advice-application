@@ -1,4 +1,4 @@
-import {translate} from '$lib/i18n/utils/translate';
+import {translate, translateObject} from '$lib/i18n/utils/translate';
 import type {StrapiAnswerData} from '../getData.type';
 
 // TODO: This check is currently removed because available locales
@@ -51,4 +51,17 @@ export function parseAnswers(answers: StrapiAnswerData[], locale?: string): Answ
     };
   });
   return dict;
+}
+
+/**
+ * Parse a custom data object from Strapi. If its root has a `localized` property, its contents will be translated.
+ */
+export function parseCustomData(data: JSONData): JSONData {
+  if (typeof data !== 'object' || data === null || !('localized' in data)) return data;
+  const {localized, ...rest} = data;
+  if (typeof localized !== 'object' || localized === null) return data;
+  return {
+    ...translateObject(localized as Record<string, unknown>),
+    ...rest
+  };
 }
