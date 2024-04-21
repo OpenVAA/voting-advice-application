@@ -149,7 +149,7 @@
     "revealPassword": "Näytä salasana"
   },
   "homePage": {
-    "greeting": "Hei, {userName}!",
+    "greeting": "Hei, {username}!",
     "explanation": "Voidaksesi esiintyä vaalikoneessa sinun on annettava joitakin perustietoja itsestäsi ja vastattava poliittisiin mielipidekysymyksiin.",
     "buttonText": "Jatka",
     "basicInfoButton": "Täytä perustietosi",
@@ -170,7 +170,8 @@
   "preview": {
     "title": "Profiilin esikatselu",
     "notFound": "Profiilia ei löytynyt",
-    "tip": "Tämä on esikatselu siitä, miltä profiilisi näyttää äänestäjille."
+    "tip": "Tämä on esikatselu siitä, miltä profiilisi näyttää äänestäjille.",
+    "close": "Sulje esikatselu"
   },
   "help": {
     "title": "FI - Help",
