@@ -22,7 +22,7 @@
 export type IconName = keyof typeof ICONS;
 
 /** All the available icons and tuples of their folders and filenames without the SVG extension in the `svg` folder */
-export const ICONS: Record<string, readonly [folder: string, filename: string]> = {
+export const ICONS = {
   addToList: ['material', 'playlist_add_check'],
   alliance: ['material', 'link'],
   candidate: ['material', 'person'],
@@ -40,6 +40,7 @@ export const ICONS: Record<string, readonly [folder: string, filename: string]> 
   filter: ['material', 'filter_alt'],
   help: ['material', 'help'],
   hide: ['material', 'visibility_off'],
+  hideSubtitles: ['custom', 'subtitles_off'],
   home: ['material', 'home'],
   important: ['material', 'priority_high'],
   info: ['material', 'info'],
@@ -49,21 +50,32 @@ export const ICONS: Record<string, readonly [folder: string, filename: string]> 
   logout: ['material', 'logout'],
   menu: ['material', 'menu'],
   missingIcon: ['custom', 'missing_icon'],
+  mute: ['material', 'volume_off'],
   next: ['material', 'arrow_forward_ios'],
   opinion: ['custom', 'opinion'],
   party: ['material', 'flag'],
+  pause: ['material', 'pause'],
   photo: ['material', 'photo_camera'],
+  play: ['material', 'play_arrow'],
   previewProfile: ['material', 'switch_account'],
   previous: ['material', 'arrow_back_ios'],
   profile: ['material', 'face'],
   removeFromList: ['material', 'playlist_remove'],
+  replay: ['material', 'replay'],
   results: ['material', 'format_list_numbered'],
   search: ['material', 'search'],
   settings: ['material', 'settings'],
   show: ['material', 'visibility'],
+  showSubtitles: ['custom', 'subtitles_on'],
   skip: ['custom', 'skip'],
+  skipNext: ['material', 'skip_next'],
+  skipPrevious: ['material', 'skip_previous'],
   sort: ['material', 'sort_by_alpha'],
+  text: ['material', 'article'],
   tip: ['material', 'lightbulb'],
+  video: ['material', 'videocam'],
+  videoOff: ['material', 'videocam_off'],
   uncheckAll: ['material', 'remove_done'],
-  warning: ['material', 'warning'],
+  unmute: ['material', 'volume_up'],
+  warning: ['material', 'warning']
 } as const;
