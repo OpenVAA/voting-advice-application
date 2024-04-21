@@ -68,8 +68,7 @@
         // If an icon is used, add left or right margin so that the text is  nicely centered: ml/r is calculated so that it is the sum of the gap (4) and icon widths (24) = 28/16 rem
         labelClass += iconPos === 'right' ? ' ml-[1.75rem]' : ' mr-[1.75rem]';
       }
-    } else if (icon && (iconPos === 'top' || iconPos === 'bottom')) {
-      // We use the small-label class only in vertical buttons with an icon. The color needs to be separately applied here, bc small-label sets the text color to secondary
+    } else if (variant === 'secondary') {
       labelClass += ` small-label text-${color}`;
     }
   }
@@ -81,7 +80,10 @@ A component for buttons that mostly contain text and an icon. Use the `variant` 
 
 - `main`: A large, prominent button that is used for the main action of the page. In general, there should only be one of these on a page.
 - `icon`: A button containing only an icon. Note that you still need to provide the `text` property, which will be used as the `aria-label` and `title` of the button.
-- `normal`: The default button type, which usually consists of an icon and text. The styling for these uses DaisyUI's `btn-ghost` class, i.e. the button does not have a background color.
+- `secondary`: A button with a smaller (uppercase) text and possibly an icon.
+- `normal`: The default button type, which usually consists of an icon and text.
+
+Only `main` buttons have a backround color. The other variants use DaisyUI's `btn-ghost` class, i.e. they do not have a background color.
 
 The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<button>` element will be used. Be sure to provide an `on:click` event handler or other way of making the item interactive.
 
