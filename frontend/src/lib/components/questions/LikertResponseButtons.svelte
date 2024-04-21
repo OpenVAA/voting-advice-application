@@ -17,6 +17,7 @@
   export let entityKey: $$Props['entityKey'] = undefined;
   export let entityLabel: $$Props['entityLabel'] = '';
   export let mode: $$Props['mode'] = 'answer';
+  export let onShadedBg: $$Props['onShadedBg'] = false;
 
   if (mode === 'display' && entityKey && !entityLabel)
     logDebugError(
@@ -27,44 +28,32 @@
   let selected: AnswerOption['key'] | null | undefined;
   $: selected = selectedKey;
 
-  // In order to achieve the correct behaviour with both mouse/touch and keyboard
-  // users and on different browsers, we have to listen a number of events. The
-  // radio inputs' events are fired in this order:
+  // In order to achieve the correct behaviour with both mouse/touch and keyboard users and on different browsers, we have to listen a number of events. The radio inputs' events are fired in this order:
   //
   // 1. `keydown`: keyboard only
   //    `pointerdown`: mouse/touch only (Chrome also fires this when `disabled`)
   // 2. `pointerup`: mouse/touch only (Chrome also fires this when `disabled`)
-  // 3. `click`:  both mouse/touch and keyboard users, but Safari does not fire
-  //     this if the `<label>` is clicked even though that selects the radio
-  //     button
+  // 3. `click`:  both mouse/touch and keyboard users, but Safari does not fire this if the `<label>` is clicked even though that selects the radio button
   // 4. `change`: the group value is only updated at this point
   // 5. `keyup`: keyboard only
   //
-  // In addition, a custom `onFocusOut` event is fired when the user leaves the
-  // radio group.
+  // In addition, a custom `onFocusOut` event is fired when the user leaves the radio group.
   //
   // With these complications, the behaviour is here implemented as follows:
   //
   // 1. Listen to `click` events of the `<label>`
   //    - If the source is keyboard, do nothing
-  //    - If the source is mouse/touch, dispatch an event and using the value
-  //      passed as a parameter to the event handler, because the radio group's
-  //      value is not yet updated
+  //    - If the source is mouse/touch, dispatch an event and using the value passed as a parameter to the event handler, because the radio group's value is not yet updated
   // 2. Listen to `onFocusOut` of the `<div>` containing the radio group
-  //    - Dispatch the `change`/`reselect` event using the value of the radio
-  //      group
-  //    - This event should only fired when the user defocuses the radio group
-  //      using the keyboard because if it received focus due to a pointer click
-  //      we would already have dealt it with the click handler
+  //    - Dispatch the `change`/`reselect` event using the value of the radio group
+  //    - This event should only fired when the user defocuses the radio group using the keyboard because if it received focus due to a pointer click we would already have dealt it with the click handler
   // 3. Listen to `keyup` events of the `<input>` elements
-  //    - For a nicer keyboard UX, also listen to `space` and `enter` keys and
-  //      and submit the answer if they are pressed inside the radio group
+  //    - For a nicer keyboard UX, also listen to `space` and `enter` keys and and submit the answer if they are pressed inside the radio group
 
   const dispatch = createEventDispatcher();
 
   /**
-   * Used to check for changes to the radio buttons or clicks on them.
-   * These include keyboard interactions using the arrow keys as well.
+   * Used to check for changes to the radio buttons or clicks on them. These include keyboard interactions using the arrow keys as well.
    */
   function onClick(event: MouseEvent, value: AnswerOption['key']) {
     let keyboard: boolean;
@@ -75,20 +64,17 @@
         event.pointerType !== 'pen' &&
         event.pointerType !== 'touch';
     } else {
-      // Safari and Firefox, however, use the old `MouseEvent` type instead, which does not
-      // include `pointerType`. In them, we have to check the `detail` property.
+      // Safari and Firefox, however, use the old `MouseEvent` type instead, which does not include `pointerType`. In them, we have to check the `detail` property.
       keyboard = event.detail === 0;
     }
-    // If the user is using the keyboard, we do not fire any events now, but only when they
-    // move focus away from the radio buttons, which is covered by `onRadioGroupFocusOut`
+    // If the user is using the keyboard, we do not fire any events now, but only when they move focus away from the radio buttons, which is covered by `onRadioGroupFocusOut`
     if (!keyboard) {
       dispatchEvent(value);
     }
   }
 
   /**
-   * Dispatch the `change`/`reselect` event if the user presses the space or enter
-   * key when in the radio group
+   * Dispatch the `change`/`reselect` event if the user presses the space or enter key when in the radio group
    */
   function onKeyUp(event: KeyboardEvent, value: AnswerOption['key']) {
     if (event.key === ' ' || event.key === 'Spacebar' || event.key === 'Enter') {
@@ -98,24 +84,18 @@
   }
 
   /**
-   * Dispatch the `change`/`reselect` event using the value of the radio group
-   * when the user leaves the radio group using the keyboard.
+   * Dispatch the `change`/`reselect` event using the value of the radio group when the user leaves the radio group using the keyboard.
    */
   function onGroupFocusOut() {
     dispatchEvent();
   }
 
   /**
-   * Dispatch the `change`/`reselect` event depending on either the value passed
-   * or the radio group's value if no value is supplied.
+   * Dispatch the `change`/`reselect` event depending on either the value passed or the radio group's value if no value is supplied.
    *
-   * NB. The event will only be dispatched if a valid value is either supplied
-   * or selected in the radio group.
+   * NB. The event will only be dispatched if a valid value is either supplied or selected in the radio group.
    *
-   * @param value Optional value that overrides the current value of the radio
-   *   group. This should be passed when invoking this function from the `click`
-   *   event handler, because it is fired before the radio group's value is
-   *   updated. @default undefined
+   * @param value Optional value that overrides the current value of the radio group. This should be passed when invoking this function from the `click` event handler, because it is fired before the radio group's value is updated. @default undefined
    */
   function dispatchEvent(value?: AnswerOption['key'] | null) {
     // Use the selected value if no value is supplied
@@ -132,15 +112,11 @@
 
 <!--
 @component
-Display the radio buttons used for answering Likert and other ordinal, 
-multiple choice questions.
+Display the radio buttons used for answering Likert and other ordinal, multiple choice questions.
 
-The buttons are rendered as `<input type="radio">` elements contained
-inside a `<fieldset>`. Consider passing an `aria-labelledby` pointing to
-the question or an `aria-label`.
+The buttons are rendered as `<input type="radio">` elements contained inside a `<fieldset>`. Consider passing an `aria-labelledby` pointing to the question or an `aria-label`.
 
-The radio buttons' behaviour is as follows when using a pointer or touch 
-device:
+The radio buttons' behaviour is as follows when using a pointer or touch device:
 
 1. Selecting an option dispatches a `change` event 
 2. Clicking on the selected radio button dispatches a `reselect` event
@@ -148,31 +124,24 @@ device:
 Keyboard navigation works in the following way:
 
 1. `Tab` focuses the whole radio group
-2. The arrow keys change the focused radio button and *select* it at the
-   same time
-3. When the keyboard focus leaves the radio group, either of the events
-   is dispatched, depending on whether value has been changed or not
-4. The event is also dispatched when the user presses the `Space` or 
-   `Enter` key
+2. The arrow keys change the focused radio button and *select* it at the same time
+3. When the keyboard focus leaves the radio group, either of the events is dispatched, depending on whether value has been changed or not
+4. The event is also dispatched when the user presses the `Space` or `Enter` key
 
 ### Properties
 
 - `name`: The `name` of the radio group. Usually the question's id
 - `options`: The `key`-`label` pairs of the radio buttons
-- `mode`: The same component can be used both for answering the questions 
-  and displaying answers. @default `'answer'`
+- `mode`: The same component can be used both for answering the questions and displaying answers. @default `'answer'`
 - `selectedKey`: The initially selected key of the radio group.
 - `entityKey`: The answer key of the entity in display mode.
-- `entityLabel`: The label for the entity's answer. Be sure to supply this 
-  if `entityKey` is supplied.
+- `entityLabel`: The label for the entity's answer. Be sure to supply this if `entityKey` is supplied.
 - Any valid attributes of a `<fieldset>` element
 
 ### Events
 
-- `reselect`: The user has clicked on the same radio button that
-  was initially selected.
-- `change`: The user has clicked on a different radio button than
-  which was initially selected or there was no selected value initially
+- `reselect`: The user has clicked on the same radio button that was initially selected.
+- `change`: The user has clicked on a different radio button than which was initially selected or there was no selected value initially
 - Both contain the a `detail` object with the properties:
   - `id`: The `name` of the radio group. Usually the question's id
   - `value`: The selected key of the radio group.
@@ -195,18 +164,19 @@ Keyboard navigation works in the following way:
   mode="display"
   selectedKey={$voterAnswers[question.id]}
   entityKey={candidateAnswer}
-  entityLabel={$t('candidate.candidateAnswerLabel')}
-   />
+  entityLabel={$t('candidate.candidateAnswerLabel')} />
 ```
 -->
 
 <fieldset
   use:onKeyboardFocusOut={onGroupFocusOut}
+  style:--radio-bg={onShadedBg ? 'var(--b3)' : 'var(--b1)'}
+  style:--line-bg={onShadedBg ? 'var(--b1)' : 'var(--b3)'}
   {...concatClass($$restProps, 'relative w-full gap-0')}>
   <!-- The line behind the options -->
   <div
     aria-hidden="true"
-    class="absolute top-16 h-4 -translate-y-1/2 bg-base-300"
+    class="absolute top-16 h-4 -translate-y-1/2 bg-[oklch(var(--line-bg))]"
     style="grid-row: 2; width: calc(100% / {options?.length} * {(options?.length ?? 0) -
       1}); left: calc(50% / {options?.length})" />
 
@@ -224,6 +194,7 @@ Keyboard navigation works in the following way:
     {/if}
 
     <!-- The button -->
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
     <label
       on:click={(e) => onClick(e, key)}
       on:keyup={(e) => onKeyUp(e, key)}
@@ -231,8 +202,7 @@ Keyboard navigation works in the following way:
       style="grid-row: 2">
       <input
         type="radio"
-        class="radio-primary radio relative h-32 w-32 border-lg bg-base-100 outline outline-4
-               outline-base-100 disabled:opacity-100"
+        class="radio-primary radio relative h-32 w-32 border-lg bg-base-100 outline outline-4 outline-[oklch(var(--radio-bg))] disabled:opacity-100"
         class:entitySelected={entityKey == key}
         {name}
         disabled={mode !== 'answer'}
@@ -240,8 +210,7 @@ Keyboard navigation works in the following way:
         bind:group={selected}
         on:keyup={(e) => onKeyUp(e, key)} />
 
-      <!-- The text label. If we are displaying answers, we only show the label when it's in use
-        to reduce clutter. Due to Aria concerns we, however, need to always show it to screenreaders. -->
+      <!-- The text label. If we are displaying answers, we only show the label when it's in use to reduce clutter. Due to Aria concerns we, however, need to always show it to screenreaders. -->
       <div
         class:sr-only={!(
           mode === 'answer' ||
@@ -266,7 +235,7 @@ Keyboard navigation works in the following way:
   }
 
   input[type='radio']:disabled:not(:checked):not(.entitySelected) {
-    @apply m-8 h-16 w-16 border-none bg-base-300 outline-2;
+    @apply m-8 h-16 w-16 border-none bg-[oklch(var(--line-bg))] outline-2;
   }
 
   input.entitySelected:disabled:not(:checked) {
