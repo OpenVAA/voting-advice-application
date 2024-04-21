@@ -10,32 +10,31 @@ export type LikertResponseButtonsProps = SvelteHTMLElements['fieldset'] & {
    */
   options: QuestionProps['values'];
   /**
-   * The same component can be used both for answering the questions and displaying answers.
-   * @default 'answer'
+   * The same component can be used both for answering the questions and displaying answers. @default 'answer'
    */
   mode?: 'answer' | 'display';
   /**
-   * The initially selected key of the radio group.
-   * @default undefined
+   * The initially selected key of the radio group. @default undefined
    */
   selectedKey?: AnswerOption['key'] | null;
   /**
-   * The answer key of the entity in display mode.
-   * @default undefined
+   * The answer key of the entity in display mode. @default undefined
    */
   entityKey?: AnswerOption['key'] | null;
   /**
    * The label for the entity's answer. Be sure to supply this if `entityKey` is supplied.
    */
   entityLabel?: string;
+  /**
+   * Set to `true` if using the component on a dark (`base-300`) background. @default false
+   */
+  onShadedBg?: boolean;
 };
 
 /**
  * The event types fired by the radio buttons:
- * - `reselect`: The user has clicked on the same radio button that
- *   was initially selected.
- * - `change`: The user has clicked on a different radio button than
- * which was initially selected or there was no selected value initially
+ * - `reselect`: The user has clicked on the same radio button that was initially selected.
+ * - `change`: The user has clicked on a different radio button than which was initially selected or there was no selected value initially
  */
 export type LikertResponseButtonsEventType = 'reselect' | 'change';
 
