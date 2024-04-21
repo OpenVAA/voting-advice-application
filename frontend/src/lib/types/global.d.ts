@@ -8,6 +8,11 @@ declare global {
     [lang: string]: string;
   };
 
+  /*
+   * The format for JSON structure.
+   */
+  type JSONData = null | string | number | boolean | {[x: string]: StrapiJson} | Array<StrapiJson>;
+
   /**
    * Make specific properties of an interface required. Works the same way as
    * `Required<Type>` but only applies to keys listed.
@@ -178,6 +183,19 @@ declare global {
     max?: number | Date;
     notLocalizable?: boolean;
     dateType?: DateType;
+    customData?: (JSONData & {video?: CustomVideoProps}) | null;
+  }
+
+  /**
+   * The properties for defining video content in customData
+   */
+  interface CustomVideoProps {
+    title: string;
+    sources: string[];
+    captions: string;
+    poster: string;
+    aspectRatio: number;
+    transcript?: string;
   }
 
   /**
