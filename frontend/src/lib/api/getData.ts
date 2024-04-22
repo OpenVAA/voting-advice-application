@@ -56,6 +56,8 @@ export const getAppSettings = ({
   locale?: string;
 } = {}): Promise<Partial<AppSettings>> => {
   const params = new URLSearchParams({
+    'populate[poster]': 'true',
+    'populate[posterCandidateApp]': 'true',
     'populate[publisherLogo]': 'true',
     'populate[publisherLogoDark]': 'true'
   });
@@ -69,7 +71,13 @@ export const getAppSettings = ({
     if (attr.publisherLogo.data) publisher.logo = parseImage(attr.publisherLogo.data.attributes);
     if (attr.publisherLogoDark.data)
       publisher.logoDark = parseImage(attr.publisherLogoDark.data.attributes);
-    return {publisher};
+    const poster = attr.poster?.data?.attributes;
+    const posterCandidateApp = attr.posterCandidateApp?.data?.attributes;
+    return {
+      publisher,
+      poster: poster ? parseImage(poster) : undefined,
+      posterCandidateApp: posterCandidateApp ? parseImage(posterCandidateApp) : undefined
+    };
   });
 };
 
@@ -98,9 +106,9 @@ export const getElection = ({
   return getData<StrapiElectionData[]>('api/elections', params).then((result) => {
     if (!result.length) throw error(500, 'No election found');
     const el = result[0];
+    const attr = el.attributes;
     let appLabels: StrapiAppLabelsData | LocalizedStrapiData<StrapiAppLabelsData>;
-    const localized = el?.attributes?.electionAppLabel?.data;
-
+    const localized = attr.electionAppLabel?.data;
     if (localized?.attributes?.locale === matchingLocale) {
       appLabels = localized;
     } else {
@@ -117,11 +125,11 @@ export const getElection = ({
     }
     return {
       appLabels: appLabels.attributes,
-      electionDate: el.attributes.electionDate,
+      electionDate: attr.electionDate,
       id: `${el.id}`,
-      name: translate(el.attributes.name, locale),
-      shortName: translate(el.attributes.shortName, locale),
-      type: el.attributes.electionType ?? ''
+      name: translate(attr.name, locale),
+      shortName: translate(attr.shortName, locale),
+      type: attr.electionType ?? ''
     };
   });
 };

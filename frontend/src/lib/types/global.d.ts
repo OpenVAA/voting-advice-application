@@ -114,6 +114,8 @@ declare global {
       logo?: ImageProps;
       logoDark?: ImageProps;
     };
+    poster?: ImageProps;
+    posterCandidateApp?: ImageProps;
   }
 
   /**

@@ -2,7 +2,7 @@
   import {page} from '$app/stores';
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {resetLocalStorage} from '$lib/utils/stores';
+  import {resetLocalStorage, settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {FrontPage} from '$lib/templates/frontPage';
@@ -14,7 +14,7 @@
     <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
   </HeadingGroup>
 
-  <img slot="hero" class="bg-white" src="/images/hero.png" alt="" />
+  <img slot="hero" class="bg-white" src={$settings.poster?.url ?? '/images/hero.png'} alt="" />
 
   <p class="text-center">
     {$t('viewTexts.toolDescription', {
