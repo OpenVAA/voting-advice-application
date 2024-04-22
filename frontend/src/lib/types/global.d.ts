@@ -90,6 +90,9 @@ declare global {
       name: string;
       isDefault?: boolean;
     }>;
+    questions: {
+      showCategoryTags: boolean;
+    };
     results: {
       sections: string[];
     };

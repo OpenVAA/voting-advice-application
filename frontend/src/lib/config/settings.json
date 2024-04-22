@@ -44,6 +44,9 @@
       "name": "Español (Colombia)"
     }
   ],
+  "questions": {
+    "showCategoryTags": true
+  },
   "results": {
     "sections": ["candidate", "party"]
   }
