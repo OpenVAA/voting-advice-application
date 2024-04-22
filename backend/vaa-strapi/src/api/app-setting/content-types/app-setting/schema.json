@@ -4,7 +4,8 @@
   "info": {
     "singularName": "app-setting",
     "pluralName": "app-settings",
-    "displayName": "App Settings"
+    "displayName": "App Settings",
+    "description": ""
   },
   "options": {
     "draftAndPublish": false
@@ -15,21 +16,37 @@
       "type": "json"
     },
     "publisherLogo": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
     },
     "publisherLogoDark": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
     },
     "customData": {
       "type": "json"
+    },
+    "poster": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "posterCandidateApp": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }
