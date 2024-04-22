@@ -86,6 +86,19 @@
         }
       }
     },
+    "questions": {
+      "description": "Settings related to the question view.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["showCategoryTags"],
+      "properties": {
+        "showCategoryTags": {
+          "description": "Whether to show the category tag along the question text.",
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
     "results": {
       "description": "Settings related to the results view.",
       "type": "object",
