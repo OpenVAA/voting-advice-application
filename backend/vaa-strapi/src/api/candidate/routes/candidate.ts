@@ -11,7 +11,9 @@ export default factories.createCoreRouter('api::candidate.candidate', {
     find: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([]),
+        restrictPopulate([
+          'photo'
+        ]),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([
           'candidate.id.$eq',
@@ -22,7 +24,9 @@ export default factories.createCoreRouter('api::candidate.candidate', {
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([]),
+        restrictPopulate([
+          'photo'
+        ]),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([]),
       ],
