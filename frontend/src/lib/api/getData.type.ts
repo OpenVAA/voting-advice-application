@@ -144,6 +144,18 @@ export interface StrapiAppSettingsData {
         attributes: StrapiImageData;
       };
     };
+    poster: {
+      data?: {
+        id: number | string;
+        attributes: StrapiImageData;
+      };
+    };
+    posterCandidateApp: {
+      data?: {
+        id: number | string;
+        attributes: StrapiImageData;
+      };
+    };
   };
 }
 

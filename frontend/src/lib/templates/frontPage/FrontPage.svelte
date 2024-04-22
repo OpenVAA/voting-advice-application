@@ -74,7 +74,7 @@ is based on.
 
   <!-- Hero image -->
   {#if $$slots.hero}
-    <figure role="presentation" class="hero bg-[#d4dbef]">
+    <figure role="presentation" class="vaa-frontpage-hero hero bg-[#d4dbef]">
       <slot name="hero" />
     </figure>
   {/if}
@@ -97,7 +97,7 @@ is based on.
 </Page>
 
 <style lang="postcss">
-  .hero > img {
-    @apply h-[30vh] w-full max-w-lg object-cover;
+  :global(.vaa-frontpage-hero > img) {
+    @apply h-[40vh] w-full object-cover;
   }
 </style>
