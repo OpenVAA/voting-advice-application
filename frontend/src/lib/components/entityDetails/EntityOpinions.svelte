@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {isCandidate} from '$lib/utils/entities';
-  import {answeredQuestions} from '$lib/utils/stores';
+  import {answeredQuestions, settings} from '$lib/utils/stores';
   import {CategoryTag} from '$lib/components/categoryTag';
   import {LikertResponseButtons, QuestionOpenAnswer} from '$lib/components/questions';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
@@ -49,7 +49,9 @@ Used to show an entity's opinions in an `EntityDetails` component.
 
     <div class="mb-60 mt-20">
       <HeadingGroup id={headingId} class="mb-lg text-center">
-        <PreHeading><CategoryTag {category} /></PreHeading>
+        {#if $settings.questions.showCategoryTags && category}
+          <PreHeading><CategoryTag {category} /></PreHeading>
+        {/if}
         <h3>{text}</h3>
       </HeadingGroup>
 
