@@ -695,6 +695,7 @@ export interface ApiAppSettingAppSetting extends Schema.CollectionType {
     singularName: 'app-setting';
     pluralName: 'app-settings';
     displayName: 'App Settings';
+    description: '';
   };
   options: {
     draftAndPublish: false;
@@ -704,6 +705,8 @@ export interface ApiAppSettingAppSetting extends Schema.CollectionType {
     publisherLogo: Attribute.Media;
     publisherLogoDark: Attribute.Media;
     customData: Attribute.JSON;
+    poster: Attribute.Media;
+    posterCandidateApp: Attribute.Media;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<'api::app-setting.app-setting', 'oneToOne', 'admin::user'> &
@@ -1109,6 +1112,7 @@ export interface ApiQuestionQuestion extends Schema.CollectionType {
     allowOpen: Attribute.Boolean & Attribute.DefaultTo<true>;
     filterable: Attribute.Boolean & Attribute.DefaultTo<false>;
     customData: Attribute.JSON;
+    order: Attribute.Integer & Attribute.DefaultTo<0>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1131,14 +1135,7 @@ export interface ApiQuestionCategoryQuestionCategory extends Schema.CollectionTy
     draftAndPublish: true;
   };
   attributes: {
-    order: Attribute.Integer &
-      Attribute.Required &
-      Attribute.SetMinMax<
-        {
-          min: 0;
-        },
-        number
-      >;
+    order: Attribute.Integer & Attribute.Required & Attribute.DefaultTo<0>;
     elections: Attribute.Relation<
       'api::question-category.question-category',
       'manyToMany',
