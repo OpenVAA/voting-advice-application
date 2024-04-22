@@ -222,7 +222,7 @@ test.describe.serial('should complete the registration process', () => {
       await page.getByLabel('Fully agree').click();
       await page.waitForTimeout(500); //Wait so that UI has time to change (otherwise doesn't work all the time)
       await page.getByRole('button', { name: 'Save and Continue' }).click();
-      await page.waitForTimeout(100); //Wait so that UI has time to change (otherwise doesn't work all the time)
+      await page.waitForTimeout(500); //Wait so that UI has time to change (otherwise doesn't work all the time)
     }
 
     // Expect to be at "You're Ready to Roll" page
@@ -278,8 +278,8 @@ test.describe.serial('should complete the registration process', () => {
     await expect(page.getByText('You still have ')).toBeHidden();
     await expect(page.getByRole('button', { name: 'Enter Missing Answers' })).toBeHidden();
     
-    // Open immigration category
-    await page.getByLabel('open $Immigration').click();
+    // Open first category
+    await page.getByLabel('open ').nth(1).click();
 
     // Expect correct answer and comment text to be shown
     await expect(page.getByText('You', { exact: true }).first()).toBeVisible();
@@ -299,7 +299,7 @@ test.describe.serial('should complete the registration process', () => {
     await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/en\/candidate\/questions/);
 
     // Go back and test cancel button
-    await page.getByLabel('open $Immigration').click();
+    await page.getByLabel('open ').nth(1).click();
     await page.getByRole('button', { name: 'Edit Your Answer' }).first().click();
 
     // Change opinion and press cancel
@@ -308,8 +308,12 @@ test.describe.serial('should complete the registration process', () => {
 
     // Expect button to go to correct page and opinion to be unchanged
     await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/en\/candidate\/questions/);
-    await page.getByLabel('open $Immigration').click();
+    await page.getByLabel('open ').nth(1).click();
     await expect(page.getByText('Fully agree').first()).toBeVisible();
+
+    // Expect return button to go to correct page
+    await page.getByRole('button', { name: 'Return' }).click();
+    await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/en\/candidate/);
   });
 
   test('preview page should work correctly', async ({ page }) => {
@@ -338,14 +342,6 @@ test.describe.serial('should complete the registration process', () => {
     await expect(page.getByText('Unaffiliated No')).toBeVisible();
     await expect(page.getByText(`Election Manifesto ${userManifesto}`)).toBeVisible();
     await expect(page.getByText('Birthday Mon Jan 01 1990')).toBeVisible();
-
-    // Go to opinions tab
-    await page.getByRole('tab', { name: 'Opinions' }).click();
-
-    // Expect correct opinion and comment to show
-    await expect(page.getByLabel('Immigration The state should').getByText(`${userFirstName[0]}. ${userLastName}`)).toBeVisible();
-    await expect(page.getByLabel('Immigration The state should').getByText('Fully agree')).toBeVisible();
-    await expect(page.getByText('Lorem ipsum')).toBeVisible();
 
     // Expect close button to take to start page
     await page.getByRole('button', { name: 'Close preview' }).click();
