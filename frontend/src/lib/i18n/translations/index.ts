@@ -7,21 +7,28 @@ const keys = [
   'actionLabels',
   'candidate',
   'candidateApp',
-  'candidates',
   'common',
   'components',
   'entity',
   'error',
-  'footer',
   'header',
   'intro',
   'navigation',
-  'parties',
   'questions',
   'results',
   'viewTexts'
 ];
 const locales = {en: 'English', fi: 'Suomi'};
+
+/**
+ * Add any payload key / translation key pairs that should be included in the default translations payloads here. They will be available to all translations by default.
+ */
+export const DEFAULT_PAYLOAD_KEYS = {
+  candidateSingular: 'common.candidate.singular',
+  candidatePlural: 'common.candidate.plural',
+  partySingular: 'common.party.singular',
+  partyPlural: 'common.party.plural'
+};
 
 /**
  * All available locales
