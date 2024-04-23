@@ -1,11 +1,10 @@
 {
   "additionalQuestionActionsLabel": "Further actions for this question",
+  "closeDialog": "Close dialog",
   "headingGroup": "Heading group",
   "preHeading": "Pre-title",
   "primaryActionsLabel": "Primary actions",
   "showFullImage": "Show full image",
   "skipToMain": "Skip to main content",
-  "submitLikert": "Save answer and continue",
-  "toggleExpandableContent": "Expand or collapse this section",
-  "closeDialog": "Close dialog"
+  "toggleExpandableContent": "Expand or collapse this section"
 }

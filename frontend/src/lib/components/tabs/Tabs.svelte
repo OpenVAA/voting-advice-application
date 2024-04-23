@@ -1,6 +1,7 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
   import {concatClass} from '$lib/utils/components';
+  import {ucFirst} from '$lib/utils/text/ucFirst';
   import type {TabsProps} from './Tabs.type';
 
   type $$Props = TabsProps;
@@ -54,7 +55,7 @@ Show a tab title bar that can be used to switch between different tabs.
       on:keyup={(e) => {
         if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') activate(i);
       }}>
-      {tab}
+      {ucFirst(tab)}
     </li>
   {/each}
 </ul>

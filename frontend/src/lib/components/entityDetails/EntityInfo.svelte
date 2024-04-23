@@ -33,7 +33,7 @@ Used to show an entity's basic info in an `EntityDetails` component.
         <PartyTag party={entity.party} variant="full" />
       </InfoItem>
     {/if}
-    <InfoItem label={$t('entity.electionSymbol')}>
+    <InfoItem label={$t('common.electionSymbol')}>
       {entity.electionSymbol ?? '—'}
     </InfoItem>
   </div>
@@ -46,9 +46,9 @@ Used to show an entity's basic info in an `EntityDetails` component.
           {@const answer = getAnswerForDisplay(entity, question)}
           <InfoItem label={question.text}>
             {#if answer == null}
-              <span class="text-secondary">{$t('entity.missingAnswer')}</span>
+              <span class="text-secondary">{$t('common.missingAnswer')}</span>
             {:else if question.type === 'multipleChoiceCategorical' && Array.isArray(answer)}
-              {answer.join($t('entity.multipleAnswerSeparator'))}
+              {answer.join($t('common.multipleAnswerSeparator'))}
             {:else if question.type === 'preferenceOrder'}
               <ol class="pl-18">
                 {#each answer as item}
@@ -66,7 +66,7 @@ Used to show an entity's basic info in an `EntityDetails` component.
       <div class="infoGroup" role="group">
         <InfoItem label={$t('components.entityInfo.links')}>
           {#each linkQuestions as question}
-            {@const answer = getAnswerForDisplay(entity, question)}
+            {@const answer = `${getAnswerForDisplay(entity, question)}`}
             {#if answer}
               <a
                 href={answer}

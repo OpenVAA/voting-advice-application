@@ -15,5 +15,5 @@
 {#if questions && currentQuestion}
   <QuestionPage {questions} {currentQuestion} />
 {:else}
-  {$t('question.notFound')}
+  {$t('questions.notFound')}
 {/if}

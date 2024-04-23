@@ -1,7 +1,15 @@
 {
-  "heroEmoji": "🎊",
-  "candidatesShown": "{numShown} candidates",
+  "candidatesShown": "{numShown, plural, =1 {1 {candidateSingular}} other {# {candidatePlural}}}",
   "candidatesTotal": "of {numTotal}",
-  "partiesShown": "{numShown} parties",
-  "partiesTotal": "of {numTotal}"
+  "heroEmoji": "🎊",
+  "ingress": {
+    "browse": "These are the {candidatePlural} and {partyPlural} standing in these elections. You can use the filters to narrow them down.",
+    "results": "These are the {candidatePlural} and {partyPlural} standing in these elections. The best matches are first on the list. To narrow down the results, you can also use the filters."
+  },
+  "partiesShown": "{numShown, plural, =1 {1 {partySingular}} other {# {partyPlural}}}",
+  "partiesTotal": "of {numTotal}",
+  "title": {
+    "browse": "Browse {candidatePlural} and {partyPlural}",
+    "results": "Your Results"
+  }
 }

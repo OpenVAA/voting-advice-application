@@ -3,6 +3,5 @@
   "500": "Internal server error, sorry!",
   "default": "Something went wrong, sorry!",
   "general": "Something went wrong",
-  "noQuestions": "There are no questions yet",
-  "noQuestionCategories": "No question categories"
+  "noQuestions": "There are no questions yet"
 }

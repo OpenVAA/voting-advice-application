@@ -1,37 +1,38 @@
 {
+  "entityDetails": {
+    "tabs": {
+      "basicInfo": "Basic Info",
+      "opinions": "Opinions"
+    }
+  },
+  "entityFilters": {
+    "applyAndClose": "Close filters",
+    "filterButtonLabel": "Filter",
+    "filters": "Filters",
+    "missingValue": "No answer",
+    "reset": "Reset filters",
+    "selectAll": "Select all",
+    "text": {
+      "ariaLabel": "Text:",
+      "placeholder": "Text to search for"
+    },
+    "titles": {
+      "party": "Party"
+    },
+    "unselectAll": "Unselect all"
+  },
   "entityInfo": {
     "links": "Links"
   },
   "entityList": {
     "showMore": "Show more"
   },
+  "entityListControls": {
+    "noFilterResults": "The filters yielded no matches. You can try changing them.",
+    "noSearchResults": "The search yielded no matches. You can try changing it.",
+    "searchPlaceholder": "Search by name"
+  },
   "matchScore": {
     "label": "match"
-  },
-  "card": {
-    "errorDisplaying": "Error displaying card"
-  },
-  "entityFilters": {
-    "applyAndClose": "Close filters",
-    "filters": "Filters",
-    "filtersActive": "{numActiveFilters, plural, =1 {1 filter is} other {# filters are}} active",
-    "filterButtonLabel": "Filter",
-    "reset": "Reset filters",
-    "missingValue": "No answer",
-    "selectAll": "Select all",
-    "unselectAll": "Unselect all",
-    "text": {
-      "ariaLabel": "Text:",
-      "placeholder": "Text to search for"
-    },
-    "titles": {
-      "name": "Name",
-      "party": "Party"
-    }
-  },
-  "entityListControls": {
-    "searchPlaceholder": "Search by name",
-    "noFilterResults": "The filters yielded no matches. You can try changing them.",
-    "noSearchResults": "The search yielded no matches. You can try changing it."
   }
 }

@@ -1,9 +1,9 @@
 {
-  "title": "FI - Let's start!",
+  "continue": "Jatka",
   "heroEmoji": "🚀",
-  "ingress": "FI - This application will help you find the best candidates and parties for your election.",
-  "listItemOpinions": "FI - Enter your opinions",
-  "listItemResults": "FI - See the candidates and parties that best agree with you",
-  "listItemDetails": "FI - Study them in detail",
-  "continue": "FI - Continue"
+  "ingress": "Vaalikone auttaa sinua löytämään kanssasi eniten samaa mieltä olevat {candidatePlural} ja {partyPlural} näissä vaaleissa.",
+  "listItemDetails": "Tarkastele ehdokkaita ja puolueita tarkemmin",
+  "listItemOpinions": "Kerro mielipiteesi",
+  "listItemResults": "Näe kanssasi eniten samaa mieltä olevat {candidatePlural} ja {partyPlural}",
+  "title": "Aloitetaan!"
 }

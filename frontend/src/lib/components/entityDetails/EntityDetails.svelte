@@ -19,7 +19,10 @@
 
   $: {
     ({entity} = parseMaybeRanked(content));
-    tabs = [$t('entity.tabs.basicInfo'), $t('entity.tabs.opinions')];
+    tabs = [
+      $t('components.entityDetails.tabs.basicInfo'),
+      $t('components.entityDetails.tabs.opinions')
+    ];
   }
 </script>
 
