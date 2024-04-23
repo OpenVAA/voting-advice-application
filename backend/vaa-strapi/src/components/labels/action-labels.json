@@ -12,23 +12,18 @@
       "default": "Start Finding Candidates!"
     },
     "electionInfo": {
-      "type": "string",
+      "type": "text",
       "required": true,
-      "default": "Information about the elections"
+      "default": "Information About the Elections"
     },
     "howItWorks": {
-      "type": "string",
+      "type": "text",
       "required": true,
-      "default": "How does this app work?"
+      "default": "How Does This App Work?"
     },
     "help": {
       "type": "string",
       "default": "Help",
-      "required": true
-    },
-    "searchMunicipality": {
-      "type": "string",
-      "default": "Your Municipality or Town",
       "required": true
     },
     "startQuestions": {
@@ -36,70 +31,10 @@
       "default": "Start the Questionnaire",
       "required": true
     },
-    "selectCategories": {
-      "type": "string",
-      "default": "Select Categories",
-      "required": true
-    },
-    "previous": {
-      "type": "string",
-      "required": true,
-      "default": "Previous"
-    },
-    "answerCategoryQuestions": {
-      "type": "string",
-      "required": true,
-      "default": "Answer {numQuestions} Questions"
-    },
-    "readMore": {
-      "type": "string",
-      "required": true,
-      "default": "Read More"
-    },
-    "skip": {
-      "type": "string",
-      "default": "Skip",
-      "required": true
-    },
-    "filter": {
-      "type": "string",
-      "default": "Filter Results",
-      "required": true
-    },
-    "alphaOrder": {
-      "type": "string",
-      "default": "A-Z",
-      "required": true
-    },
-    "bestMatchOrder": {
-      "type": "string",
-      "required": true,
-      "default": "Best Match"
-    },
-    "addToList": {
-      "type": "string",
-      "default": "Add to List",
-      "required": true
-    },
-    "candidateBasicInfo": {
-      "type": "string",
-      "required": true,
-      "default": "Basic Info"
-    },
-    "candidateOpinions": {
-      "type": "string",
-      "default": "Opinions",
-      "required": true
-    },
     "home": {
       "type": "string",
       "required": true,
       "default": "home"
-    },
-    "constituency": {
-      "type": "string",
-      "required": true,
-      "default": "Constituency"
     },
     "opinions": {
       "type": "string",
