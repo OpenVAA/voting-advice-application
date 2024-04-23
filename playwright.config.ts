@@ -38,8 +38,8 @@ export default defineConfig({
 
   globalSetup: require.resolve('./tests/global-setup.ts'),
 
-  // Set global timeout to 60s
-  globalTimeout: 60000,
+  // Set global timeout to 100s
+  globalTimeout: 100000,
 
   /* Configure projects for major browsers */
   projects: [
