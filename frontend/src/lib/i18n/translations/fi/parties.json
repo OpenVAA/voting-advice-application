@@ -1,8 +1,0 @@
-{
-  "parties": "FI - Parties",
-  "notFound": "FI - No parties found",
-  "viewAllParties": "FI - View all parties",
-  "ingress": "FI - These are all the parties contesting the election.",
-  "partiesShown": "FI - {numShown} parties",
-  "partiesTotal": "FI - of {numTotal}"
-}

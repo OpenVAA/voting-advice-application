@@ -1,5 +1,6 @@
 <script lang="ts">
   import {concatClass} from '$lib/utils/components';
+  import {ucFirst} from '$lib/utils/text/ucFirst';
   import {Icon} from '$lib/components/icon';
   import type {NavItemProps} from './NavItem.type';
 
@@ -57,7 +58,7 @@ The item is rendered as an `<a>` element if `href` is supplied. Otherwise a `<bu
     {#if icon}
       <Icon name={icon} />
     {/if}
-    <span>{text.charAt(0).toUpperCase() + text.slice(1)}</span>
+    <span>{ucFirst(text)}</span>
     <slot />
   </svelte:element>
 </div>

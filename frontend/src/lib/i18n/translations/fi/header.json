@@ -1,10 +1,7 @@
 {
-  "title": "FI - Elections",
-  "back": "FI - Back",
-  "help": "FI - Help",
-  "openMenu": "FI - Open menu",
-  "closeMenu": "FI - Close menu",
-  "toggleMenu": "FI - Toggle menu",
-  "goHome": "FI - Return to home page",
-  "progressTitle": "FI - Progress"
+  "back": "Palaa",
+  "closeMenu": "Sulje valikko",
+  "openMenu": "Avaa valikko",
+  "progressTitle": "Eteneminen",
+  "toggleMenu": "Avaa tai sulje valikko"
 }

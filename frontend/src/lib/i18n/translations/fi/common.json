@@ -2,13 +2,16 @@
   "answerNo": "Ei",
   "answerYes": "Kyllä",
   "candidate": {
-    "singular": "Ehdokas",
-    "plural": "Ehdokkaat"
+    "singular": "ehdokas",
+    "plural": "ehdokkaat"
   },
+  "clearInput": "Tyhjennä",
+  "electionSymbol": "Ehdokasnumero",
+  "missingAnswer": "—",
+  "multipleAnswerSeparator": " • ",
   "openVAA": "OpenVAA",
   "party": {
-    "singular": "Puolue",
-    "plural": "Puolueet"
-  },
-  "clearInput": "Tyhjennä"
+    "singular": "puolue",
+    "plural": "puolueet"
+  }
 }

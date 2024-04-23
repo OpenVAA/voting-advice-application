@@ -1,10 +1,7 @@
 {
-  "title": "Elections",
   "back": "Back",
-  "help": "Help",
-  "openMenu": "Open menu",
   "closeMenu": "Close menu",
-  "toggleMenu": "Toggle menu",
-  "goHome": "Return to home page",
-  "progressTitle": "Progress"
+  "openMenu": "Open menu",
+  "progressTitle": "Progress",
+  "toggleMenu": "Toggle menu"
 }
