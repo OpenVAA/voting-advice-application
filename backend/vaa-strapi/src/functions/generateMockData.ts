@@ -326,51 +326,26 @@ async function createGenders() {
 
 async function createElectionAppLabel() {
   const actionLabels = {
-    startButton: 'Start Finding The Best Candidates!',
-    electionInfo: 'Information about the elections',
-    howItWorks: 'How does this app work?',
+    electionInfo: 'Information About the Elections',
     help: 'Help',
-    searchMunicipality: 'Your Municipality or Town',
-    startQuestions: 'Start the Questionnaire',
-    selectCategories: 'Select Categories',
-    previous: 'Previous',
-    answerCategoryQuestions: 'Answer {numQuestions} Questions',
-    readMore: 'Read More',
-    skip: 'Skip',
-    filter: 'Filter Results',
-    alphaOrder: 'A-Z',
-    bestMatchOrder: 'Best Match',
-    addToList: 'Add to List',
-    candidateBasicInfo: 'Basic Info',
-    candidateOpinions: 'Opinions',
     home: 'home',
-    constituency: 'Constituency',
+    howItWorks: 'How Does This App Work?',
     opinions: 'Opinions',
     results: 'Results',
+    startButton: 'Start Finding The Best Candidates!',
+    startQuestions: 'Start the Questionnaire',
     yourList: 'Your List'
   };
   const viewTexts = {
     appTitle: 'Election Compass',
-    toolTitle: 'Election Compass',
-    toolDescription:
+    frontpageIngress:
       'With this application you can compare candidates in the elections on {electionDate, date, ::yyyyMMdd} based on their opinions, parties and other data.',
-    publishedBy: 'Published by {publisher}',
     madeWith: 'Made with',
-    selectMunicipalityTitle: 'Select Your Municipality',
-    selectMunicipalityDescription:
-      'In these elections, you can only vote for candidates in your own constituency. Select your municipality and the app will find it for you.',
-    yourConstituency: 'Your constituency is {constituency}',
-    yourOpinionsTitle: 'Tell Your Opinions',
-    yourOpinionsDescription:
+    publishedBy: 'Published by {publisher}',
+    questionsTip: 'Tip: If you don’t care about an issue, you can skip it.',
+    yourOpinionsIngress:
       'Next, the app will ask your opinions on {numStatements} statements about political issues and values, which the candidates have also answered. After you’ve answered them, the app will find the candidates that best agree with your opinions. The statements are grouped into {numCategories} categories. You can answer all of them or only select those you find important.',
-    questionsTip:
-      'Tip: If you don’t care about a single issue or a category of them, you can skip it later.',
-    yourCandidatesTitle: 'Your Candidates',
-    yourCandidatesDescription:
-      'These are the candidates in your constituency. The best matches are first on the list. You can also see which {numCandidates} best match your opinions. To narrow down the results, you can also use {filters}.',
-    yourPartiesTitle: 'Your Parties',
-    yourPartiesDescription:
-      'These are the parties in your constituency. The best matches are first on the list. You can also see which individual {partiesTerm} best match your opinions. To narrow down the results, you can also use {filters}.'
+    yourOpinionsTitle: 'Tell Your Opinions'
   };
 
   const strapiObjects: HasId[] = await Promise.all(

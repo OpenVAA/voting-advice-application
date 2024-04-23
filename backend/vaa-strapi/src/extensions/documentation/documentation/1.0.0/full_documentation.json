@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2024-04-22T16:26:09.695Z"
+    "x-generation-date": "2024-04-24T08:56:11.810Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
@@ -1862,144 +1862,64 @@
                                                                                                   "nominations": {
                                                                                                     "type": "object",
                                                                                                     "properties": {
-                                                                                                      "data": {
-                                                                                                        "type": "array",
-                                                                                                        "items": {
-                                                                                                          "type": "object",
-                                                                                                          "properties": {
-                                                                                                            "id": {
-                                                                                                              "type": "number"
-                                                                                                            },
-                                                                                                            "attributes": {
-                                                                                                              "type": "object",
-                                                                                                              "properties": {
-                                                                                                                "election": {
-                                                                                                                  "type": "object",
-                                                                                                                  "properties": {
-                                                                                                                    "data": {
-                                                                                                                      "type": "object",
-                                                                                                                      "properties": {
-                                                                                                                        "id": {
-                                                                                                                          "type": "number"
-                                                                                                                        },
-                                                                                                                        "attributes": {
-                                                                                                                          "type": "object",
-                                                                                                                          "properties": {}
-                                                                                                                        }
-                                                                                                                      }
-                                                                                                                    }
-                                                                                                                  }
-                                                                                                                },
-                                                                                                                "constituency": {
-                                                                                                                  "type": "object",
-                                                                                                                  "properties": {
-                                                                                                                    "data": {
-                                                                                                                      "type": "object",
-                                                                                                                      "properties": {
-                                                                                                                        "id": {
-                                                                                                                          "type": "number"
-                                                                                                                        },
-                                                                                                                        "attributes": {
-                                                                                                                          "type": "object",
-                                                                                                                          "properties": {}
-                                                                                                                        }
-                                                                                                                      }
-                                                                                                                    }
-                                                                                                                  }
-                                                                                                                },
-                                                                                                                "candidate": {
-                                                                                                                  "type": "object",
-                                                                                                                  "properties": {
-                                                                                                                    "data": {
-                                                                                                                      "type": "object",
-                                                                                                                      "properties": {
-                                                                                                                        "id": {
-                                                                                                                          "type": "number"
-                                                                                                                        },
-                                                                                                                        "attributes": {
-                                                                                                                          "type": "object",
-                                                                                                                          "properties": {}
-                                                                                                                        }
-                                                                                                                      }
-                                                                                                                    }
-                                                                                                                  }
-                                                                                                                },
-                                                                                                                "party": {
-                                                                                                                  "type": "object",
-                                                                                                                  "properties": {
-                                                                                                                    "data": {
-                                                                                                                      "type": "object",
-                                                                                                                      "properties": {
-                                                                                                                        "id": {
-                                                                                                                          "type": "number"
-                                                                                                                        },
-                                                                                                                        "attributes": {
-                                                                                                                          "type": "object",
-                                                                                                                          "properties": {}
-                                                                                                                        }
-                                                                                                                      }
-                                                                                                                    }
-                                                                                                                  }
-                                                                                                                },
-                                                                                                                "type": {
-                                                                                                                  "type": "string"
-                                                                                                                },
-                                                                                                                "electionSymbol": {
-                                                                                                                  "type": "string"
-                                                                                                                },
-                                                                                                                "electionRound": {
-                                                                                                                  "type": "integer"
-                                                                                                                },
-                                                                                                                "createdAt": {
-                                                                                                                  "type": "string",
-                                                                                                                  "format": "date-time"
-                                                                                                                },
-                                                                                                                "updatedAt": {
-                                                                                                                  "type": "string",
-                                                                                                                  "format": "date-time"
-                                                                                                                },
-                                                                                                                "publishedAt": {
-                                                                                                                  "type": "string",
-                                                                                                                  "format": "date-time"
-                                                                                                                },
-                                                                                                                "createdBy": {
-                                                                                                                  "type": "object",
-                                                                                                                  "properties": {
-                                                                                                                    "data": {
-                                                                                                                      "type": "object",
-                                                                                                                      "properties": {
-                                                                                                                        "id": {
-                                                                                                                          "type": "number"
-                                                                                                                        },
-                                                                                                                        "attributes": {
-                                                                                                                          "type": "object",
-                                                                                                                          "properties": {}
-                                                                                                                        }
-                                                                                                                      }
-                                                                                                                    }
-                                                                                                                  }
-                                                                                                                },
-                                                                                                                "updatedBy": {
-                                                                                                                  "type": "object",
-                                                                                                                  "properties": {
-                                                                                                                    "data": {
-                                                                                                                      "type": "object",
-                                                                                                                      "properties": {
-                                                                                                                        "id": {
-                                                                                                                          "type": "number"
-                                                                                                                        },
-                                                                                                                        "attributes": {
-                                                                                                                          "type": "object",
-                                                                                                                          "properties": {}
-                                                                                                                        }
-                                                                                                                      }
-                                                                                                                    }
-                                                                                                                  }
-                                                                                                                }
-                                                                                                              }
-                                                                                                            }
-                                                                                                          }
-                                                                                                        }
+                                                                                                      "id": {
+                                                                                                        "type": "number"
+                                                                                                      },
+                                                                                                      "startButton": {
+                                                                                                        "type": "string"
+                                                                                                      },
+                                                                                                      "electionInfo": {
+                                                                                                        "type": "string"
+                                                                                                      },
+                                                                                                      "howItWorks": {
+                                                                                                        "type": "string"
+                                                                                                      },
+                                                                                                      "help": {
+                                                                                                        "type": "string"
+                                                                                                      },
+                                                                                                      "startQuestions": {
+                                                                                                        "type": "string"
+                                                                                                      },
+                                                                                                      "home": {
+                                                                                                        "type": "string"
+                                                                                                      },
+                                                                                                      "opinions": {
+                                                                                                        "type": "string"
+                                                                                                      },
+                                                                                                      "results": {
+                                                                                                        "type": "string"
+                                                                                                      },
+                                                                                                      "yourList": {
+                                                                                                        "type": "string"
+                                                                                                      }
+                                                                                                    }
+                                                                                                  },
+                                                                                                  "viewTexts": {
+                                                                                                    "type": "object",
+                                                                                                    "properties": {
+                                                                                                      "id": {
+                                                                                                        "type": "number"
+                                                                                                      },
+                                                                                                      "publishedBy": {
+                                                                                                        "type": "string"
+                                                                                                      },
+                                                                                                      "madeWith": {
+                                                                                                        "type": "string"
+                                                                                                      },
+                                                                                                      "yourOpinionsTitle": {
+                                                                                                        "type": "string"
+                                                                                                      },
+                                                                                                      "questionsTip": {
+                                                                                                        "type": "string"
+                                                                                                      },
+                                                                                                      "appTitle": {
+                                                                                                        "type": "string"
+                                                                                                      },
+                                                                                                      "frontpageIngress": {
+                                                                                                        "type": "string"
+                                                                                                      },
+                                                                                                      "yourOpinionsIngress": {
+                                                                                                        "type": "string"
                                                                                                       }
                                                                                                     }
                                                                                                   },
@@ -5842,144 +5762,64 @@
                                                                                                               "nominations": {
                                                                                                                 "type": "object",
                                                                                                                 "properties": {
-                                                                                                                  "data": {
-                                                                                                                    "type": "array",
-                                                                                                                    "items": {
-                                                                                                                      "type": "object",
-                                                                                                                      "properties": {
-                                                                                                                        "id": {
-                                                                                                                          "type": "number"
-                                                                                                                        },
-                                                                                                                        "attributes": {
-                                                                                                                          "type": "object",
-                                                                                                                          "properties": {
-                                                                                                                            "election": {
-                                                                                                                              "type": "object",
-                                                                                                                              "properties": {
-                                                                                                                                "data": {
-                                                                                                                                  "type": "object",
-                                                                                                                                  "properties": {
-                                                                                                                                    "id": {
-                                                                                                                                      "type": "number"
-                                                                                                                                    },
-                                                                                                                                    "attributes": {
-                                                                                                                                      "type": "object",
-                                                                                                                                      "properties": {}
-                                                                                                                                    }
-                                                                                                                                  }
-                                                                                                                                }
-                                                                                                                              }
-                                                                                                                            },
-                                                                                                                            "constituency": {
-                                                                                                                              "type": "object",
-                                                                                                                              "properties": {
-                                                                                                                                "data": {
-                                                                                                                                  "type": "object",
-                                                                                                                                  "properties": {
-                                                                                                                                    "id": {
-                                                                                                                                      "type": "number"
-                                                                                                                                    },
-                                                                                                                                    "attributes": {
-                                                                                                                                      "type": "object",
-                                                                                                                                      "properties": {}
-                                                                                                                                    }
-                                                                                                                                  }
-                                                                                                                                }
-                                                                                                                              }
-                                                                                                                            },
-                                                                                                                            "candidate": {
-                                                                                                                              "type": "object",
-                                                                                                                              "properties": {
-                                                                                                                                "data": {
-                                                                                                                                  "type": "object",
-                                                                                                                                  "properties": {
-                                                                                                                                    "id": {
-                                                                                                                                      "type": "number"
-                                                                                                                                    },
-                                                                                                                                    "attributes": {
-                                                                                                                                      "type": "object",
-                                                                                                                                      "properties": {}
-                                                                                                                                    }
-                                                                                                                                  }
-                                                                                                                                }
-                                                                                                                              }
-                                                                                                                            },
-                                                                                                                            "party": {
-                                                                                                                              "type": "object",
-                                                                                                                              "properties": {
-                                                                                                                                "data": {
-                                                                                                                                  "type": "object",
-                                                                                                                                  "properties": {
-                                                                                                                                    "id": {
-                                                                                                                                      "type": "number"
-                                                                                                                                    },
-                                                                                                                                    "attributes": {
-                                                                                                                                      "type": "object",
-                                                                                                                                      "properties": {}
-                                                                                                                                    }
-                                                                                                                                  }
-                                                                                                                                }
-                                                                                                                              }
-                                                                                                                            },
-                                                                                                                            "type": {
-                                                                                                                              "type": "string"
-                                                                                                                            },
-                                                                                                                            "electionSymbol": {
-                                                                                                                              "type": "string"
-                                                                                                                            },
-                                                                                                                            "electionRound": {
-                                                                                                                              "type": "integer"
-                                                                                                                            },
-                                                                                                                            "createdAt": {
-                                                                                                                              "type": "string",
-                                                                                                                              "format": "date-time"
-                                                                                                                            },
-                                                                                                                            "updatedAt": {
-                                                                                                                              "type": "string",
-                                                                                                                              "format": "date-time"
-                                                                                                                            },
-                                                                                                                            "publishedAt": {
-                                                                                                                              "type": "string",
-                                                                                                                              "format": "date-time"
-                                                                                                                            },
-                                                                                                                            "createdBy": {
-                                                                                                                              "type": "object",
-                                                                                                                              "properties": {
-                                                                                                                                "data": {
-                                                                                                                                  "type": "object",
-                                                                                                                                  "properties": {
-                                                                                                                                    "id": {
-                                                                                                                                      "type": "number"
-                                                                                                                                    },
-                                                                                                                                    "attributes": {
-                                                                                                                                      "type": "object",
-                                                                                                                                      "properties": {}
-                                                                                                                                    }
-                                                                                                                                  }
-                                                                                                                                }
-                                                                                                                              }
-                                                                                                                            },
-                                                                                                                            "updatedBy": {
-                                                                                                                              "type": "object",
-                                                                                                                              "properties": {
-                                                                                                                                "data": {
-                                                                                                                                  "type": "object",
-                                                                                                                                  "properties": {
-                                                                                                                                    "id": {
-                                                                                                                                      "type": "number"
-                                                                                                                                    },
-                                                                                                                                    "attributes": {
-                                                                                                                                      "type": "object",
-                                                                                                                                      "properties": {}
-                                                                                                                                    }
-                                                                                                                                  }
-                                                                                                                                }
-                                                                                                                              }
-                                                                                                                            }
-                                                                                                                          }
-                                                                                                                        }
-                                                                                                                      }
-                                                                                                                    }
+                                                                                                                  "id": {
+                                                                                                                    "type": "number"
+                                                                                                                  },
+                                                                                                                  "startButton": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
+                                                                                                                  "electionInfo": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
+                                                                                                                  "howItWorks": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
+                                                                                                                  "help": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
+                                                                                                                  "startQuestions": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
+                                                                                                                  "home": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
+                                                                                                                  "opinions": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
+                                                                                                                  "results": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
+                                                                                                                  "yourList": {
+                                                                                                                    "type": "string"
+                                                                                                                  }
+                                                                                                                }
+                                                                                                              },
+                                                                                                              "viewTexts": {
+                                                                                                                "type": "object",
+                                                                                                                "properties": {
+                                                                                                                  "id": {
+                                                                                                                    "type": "number"
+                                                                                                                  },
+                                                                                                                  "publishedBy": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
+                                                                                                                  "madeWith": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
+                                                                                                                  "yourOpinionsTitle": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
+                                                                                                                  "questionsTip": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
+                                                                                                                  "appTitle": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
+                                                                                                                  "frontpageIngress": {
+                                                                                                                    "type": "string"
+                                                                                                                  },
+                                                                                                                  "yourOpinionsIngress": {
+                                                                                                                    "type": "string"
                                                                                                                   }
                                                                                                                 }
                                                                                                               },
@@ -8587,49 +8427,10 @@
                                                                                                                     "help": {
                                                                                                                       "type": "string"
                                                                                                                     },
-                                                                                                                    "searchMunicipality": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
                                                                                                                     "startQuestions": {
                                                                                                                       "type": "string"
                                                                                                                     },
-                                                                                                                    "selectCategories": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "previous": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "answerCategoryQuestions": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "readMore": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "skip": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "filter": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "alphaOrder": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "bestMatchOrder": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "addToList": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "candidateBasicInfo": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "candidateOpinions": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
                                                                                                                     "home": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "constituency": {
                                                                                                                       "type": "string"
                                                                                                                     },
                                                                                                                     "opinions": {
@@ -8649,49 +8450,25 @@
                                                                                                                     "id": {
                                                                                                                       "type": "number"
                                                                                                                     },
-                                                                                                                    "toolTitle": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "toolDescription": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
                                                                                                                     "publishedBy": {
                                                                                                                       "type": "string"
                                                                                                                     },
                                                                                                                     "madeWith": {
                                                                                                                       "type": "string"
                                                                                                                     },
-                                                                                                                    "selectMunicipalityTitle": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "selectMunicipalityDescription": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "yourConstituency": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
                                                                                                                     "yourOpinionsTitle": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "yourOpinionsDescription": {
                                                                                                                       "type": "string"
                                                                                                                     },
                                                                                                                     "questionsTip": {
                                                                                                                       "type": "string"
                                                                                                                     },
-                                                                                                                    "yourCandidatesTitle": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "yourCandidatesDescription": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "yourPartiesTitle": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "yourPartiesDescription": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
                                                                                                                     "appTitle": {
+                                                                                                                      "type": "string"
+                                                                                                                    },
+                                                                                                                    "frontpageIngress": {
+                                                                                                                      "type": "string"
+                                                                                                                    },
+                                                                                                                    "yourOpinionsIngress": {
                                                                                                                       "type": "string"
                                                                                                                     }
                                                                                                                   }
@@ -9989,49 +9766,10 @@
                                         "help": {
                                           "type": "string"
                                         },
-                                        "searchMunicipality": {
-                                          "type": "string"
-                                        },
                                         "startQuestions": {
                                           "type": "string"
                                         },
-                                        "selectCategories": {
-                                          "type": "string"
-                                        },
-                                        "previous": {
-                                          "type": "string"
-                                        },
-                                        "answerCategoryQuestions": {
-                                          "type": "string"
-                                        },
-                                        "readMore": {
-                                          "type": "string"
-                                        },
-                                        "skip": {
-                                          "type": "string"
-                                        },
-                                        "filter": {
-                                          "type": "string"
-                                        },
-                                        "alphaOrder": {
-                                          "type": "string"
-                                        },
-                                        "bestMatchOrder": {
-                                          "type": "string"
-                                        },
-                                        "addToList": {
-                                          "type": "string"
-                                        },
-                                        "candidateBasicInfo": {
-                                          "type": "string"
-                                        },
-                                        "candidateOpinions": {
-                                          "type": "string"
-                                        },
                                         "home": {
-                                          "type": "string"
-                                        },
-                                        "constituency": {
                                           "type": "string"
                                         },
                                         "opinions": {
@@ -10051,49 +9789,25 @@
                                         "id": {
                                           "type": "number"
                                         },
-                                        "toolTitle": {
-                                          "type": "string"
-                                        },
-                                        "toolDescription": {
-                                          "type": "string"
-                                        },
                                         "publishedBy": {
                                           "type": "string"
                                         },
                                         "madeWith": {
                                           "type": "string"
                                         },
-                                        "selectMunicipalityTitle": {
-                                          "type": "string"
-                                        },
-                                        "selectMunicipalityDescription": {
-                                          "type": "string"
-                                        },
-                                        "yourConstituency": {
-                                          "type": "string"
-                                        },
                                         "yourOpinionsTitle": {
-                                          "type": "string"
-                                        },
-                                        "yourOpinionsDescription": {
                                           "type": "string"
                                         },
                                         "questionsTip": {
                                           "type": "string"
                                         },
-                                        "yourCandidatesTitle": {
-                                          "type": "string"
-                                        },
-                                        "yourCandidatesDescription": {
-                                          "type": "string"
-                                        },
-                                        "yourPartiesTitle": {
-                                          "type": "string"
-                                        },
-                                        "yourPartiesDescription": {
-                                          "type": "string"
-                                        },
                                         "appTitle": {
+                                          "type": "string"
+                                        },
+                                        "frontpageIngress": {
+                                          "type": "string"
+                                        },
+                                        "yourOpinionsIngress": {
                                           "type": "string"
                                         }
                                       }
@@ -14979,49 +14693,10 @@
                           "help": {
                             "type": "string"
                           },
-                          "searchMunicipality": {
-                            "type": "string"
-                          },
                           "startQuestions": {
                             "type": "string"
                           },
-                          "selectCategories": {
-                            "type": "string"
-                          },
-                          "previous": {
-                            "type": "string"
-                          },
-                          "answerCategoryQuestions": {
-                            "type": "string"
-                          },
-                          "readMore": {
-                            "type": "string"
-                          },
-                          "skip": {
-                            "type": "string"
-                          },
-                          "filter": {
-                            "type": "string"
-                          },
-                          "alphaOrder": {
-                            "type": "string"
-                          },
-                          "bestMatchOrder": {
-                            "type": "string"
-                          },
-                          "addToList": {
-                            "type": "string"
-                          },
-                          "candidateBasicInfo": {
-                            "type": "string"
-                          },
-                          "candidateOpinions": {
-                            "type": "string"
-                          },
                           "home": {
-                            "type": "string"
-                          },
-                          "constituency": {
                             "type": "string"
                           },
                           "opinions": {
@@ -15041,49 +14716,25 @@
                           "id": {
                             "type": "number"
                           },
-                          "toolTitle": {
-                            "type": "string"
-                          },
-                          "toolDescription": {
-                            "type": "string"
-                          },
                           "publishedBy": {
                             "type": "string"
                           },
                           "madeWith": {
                             "type": "string"
                           },
-                          "selectMunicipalityTitle": {
-                            "type": "string"
-                          },
-                          "selectMunicipalityDescription": {
-                            "type": "string"
-                          },
-                          "yourConstituency": {
-                            "type": "string"
-                          },
                           "yourOpinionsTitle": {
-                            "type": "string"
-                          },
-                          "yourOpinionsDescription": {
                             "type": "string"
                           },
                           "questionsTip": {
                             "type": "string"
                           },
-                          "yourCandidatesTitle": {
-                            "type": "string"
-                          },
-                          "yourCandidatesDescription": {
-                            "type": "string"
-                          },
-                          "yourPartiesTitle": {
-                            "type": "string"
-                          },
-                          "yourPartiesDescription": {
-                            "type": "string"
-                          },
                           "appTitle": {
+                            "type": "string"
+                          },
+                          "frontpageIngress": {
+                            "type": "string"
+                          },
+                          "yourOpinionsIngress": {
                             "type": "string"
                           }
                         }
@@ -15553,49 +15204,10 @@
                                         "help": {
                                           "type": "string"
                                         },
-                                        "searchMunicipality": {
-                                          "type": "string"
-                                        },
                                         "startQuestions": {
                                           "type": "string"
                                         },
-                                        "selectCategories": {
-                                          "type": "string"
-                                        },
-                                        "previous": {
-                                          "type": "string"
-                                        },
-                                        "answerCategoryQuestions": {
-                                          "type": "string"
-                                        },
-                                        "readMore": {
-                                          "type": "string"
-                                        },
-                                        "skip": {
-                                          "type": "string"
-                                        },
-                                        "filter": {
-                                          "type": "string"
-                                        },
-                                        "alphaOrder": {
-                                          "type": "string"
-                                        },
-                                        "bestMatchOrder": {
-                                          "type": "string"
-                                        },
-                                        "addToList": {
-                                          "type": "string"
-                                        },
-                                        "candidateBasicInfo": {
-                                          "type": "string"
-                                        },
-                                        "candidateOpinions": {
-                                          "type": "string"
-                                        },
                                         "home": {
-                                          "type": "string"
-                                        },
-                                        "constituency": {
                                           "type": "string"
                                         },
                                         "opinions": {
@@ -15615,49 +15227,25 @@
                                         "id": {
                                           "type": "number"
                                         },
-                                        "toolTitle": {
-                                          "type": "string"
-                                        },
-                                        "toolDescription": {
-                                          "type": "string"
-                                        },
                                         "publishedBy": {
                                           "type": "string"
                                         },
                                         "madeWith": {
                                           "type": "string"
                                         },
-                                        "selectMunicipalityTitle": {
-                                          "type": "string"
-                                        },
-                                        "selectMunicipalityDescription": {
-                                          "type": "string"
-                                        },
-                                        "yourConstituency": {
-                                          "type": "string"
-                                        },
                                         "yourOpinionsTitle": {
-                                          "type": "string"
-                                        },
-                                        "yourOpinionsDescription": {
                                           "type": "string"
                                         },
                                         "questionsTip": {
                                           "type": "string"
                                         },
-                                        "yourCandidatesTitle": {
-                                          "type": "string"
-                                        },
-                                        "yourCandidatesDescription": {
-                                          "type": "string"
-                                        },
-                                        "yourPartiesTitle": {
-                                          "type": "string"
-                                        },
-                                        "yourPartiesDescription": {
-                                          "type": "string"
-                                        },
                                         "appTitle": {
+                                          "type": "string"
+                                        },
+                                        "frontpageIngress": {
+                                          "type": "string"
+                                        },
+                                        "yourOpinionsIngress": {
                                           "type": "string"
                                         }
                                       }
@@ -18123,49 +17711,10 @@
           "help": {
             "type": "string"
           },
-          "searchMunicipality": {
-            "type": "string"
-          },
           "startQuestions": {
             "type": "string"
           },
-          "selectCategories": {
-            "type": "string"
-          },
-          "previous": {
-            "type": "string"
-          },
-          "answerCategoryQuestions": {
-            "type": "string"
-          },
-          "readMore": {
-            "type": "string"
-          },
-          "skip": {
-            "type": "string"
-          },
-          "filter": {
-            "type": "string"
-          },
-          "alphaOrder": {
-            "type": "string"
-          },
-          "bestMatchOrder": {
-            "type": "string"
-          },
-          "addToList": {
-            "type": "string"
-          },
-          "candidateBasicInfo": {
-            "type": "string"
-          },
-          "candidateOpinions": {
-            "type": "string"
-          },
           "home": {
-            "type": "string"
-          },
-          "constituency": {
             "type": "string"
           },
           "opinions": {
@@ -18185,49 +17734,25 @@
           "id": {
             "type": "number"
           },
-          "toolTitle": {
-            "type": "string"
-          },
-          "toolDescription": {
-            "type": "string"
-          },
           "publishedBy": {
             "type": "string"
           },
           "madeWith": {
             "type": "string"
           },
-          "selectMunicipalityTitle": {
-            "type": "string"
-          },
-          "selectMunicipalityDescription": {
-            "type": "string"
-          },
-          "yourConstituency": {
-            "type": "string"
-          },
           "yourOpinionsTitle": {
-            "type": "string"
-          },
-          "yourOpinionsDescription": {
             "type": "string"
           },
           "questionsTip": {
             "type": "string"
           },
-          "yourCandidatesTitle": {
-            "type": "string"
-          },
-          "yourCandidatesDescription": {
-            "type": "string"
-          },
-          "yourPartiesTitle": {
-            "type": "string"
-          },
-          "yourPartiesDescription": {
-            "type": "string"
-          },
           "appTitle": {
+            "type": "string"
+          },
+          "frontpageIngress": {
+            "type": "string"
+          },
+          "yourOpinionsIngress": {
             "type": "string"
           }
         }
@@ -19117,49 +18642,10 @@
                                       "help": {
                                         "type": "string"
                                       },
-                                      "searchMunicipality": {
-                                        "type": "string"
-                                      },
                                       "startQuestions": {
                                         "type": "string"
                                       },
-                                      "selectCategories": {
-                                        "type": "string"
-                                      },
-                                      "previous": {
-                                        "type": "string"
-                                      },
-                                      "answerCategoryQuestions": {
-                                        "type": "string"
-                                      },
-                                      "readMore": {
-                                        "type": "string"
-                                      },
-                                      "skip": {
-                                        "type": "string"
-                                      },
-                                      "filter": {
-                                        "type": "string"
-                                      },
-                                      "alphaOrder": {
-                                        "type": "string"
-                                      },
-                                      "bestMatchOrder": {
-                                        "type": "string"
-                                      },
-                                      "addToList": {
-                                        "type": "string"
-                                      },
-                                      "candidateBasicInfo": {
-                                        "type": "string"
-                                      },
-                                      "candidateOpinions": {
-                                        "type": "string"
-                                      },
                                       "home": {
-                                        "type": "string"
-                                      },
-                                      "constituency": {
                                         "type": "string"
                                       },
                                       "opinions": {
@@ -19179,49 +18665,25 @@
                                       "id": {
                                         "type": "number"
                                       },
-                                      "toolTitle": {
-                                        "type": "string"
-                                      },
-                                      "toolDescription": {
-                                        "type": "string"
-                                      },
                                       "publishedBy": {
                                         "type": "string"
                                       },
                                       "madeWith": {
                                         "type": "string"
                                       },
-                                      "selectMunicipalityTitle": {
-                                        "type": "string"
-                                      },
-                                      "selectMunicipalityDescription": {
-                                        "type": "string"
-                                      },
-                                      "yourConstituency": {
-                                        "type": "string"
-                                      },
                                       "yourOpinionsTitle": {
-                                        "type": "string"
-                                      },
-                                      "yourOpinionsDescription": {
                                         "type": "string"
                                       },
                                       "questionsTip": {
                                         "type": "string"
                                       },
-                                      "yourCandidatesTitle": {
-                                        "type": "string"
-                                      },
-                                      "yourCandidatesDescription": {
-                                        "type": "string"
-                                      },
-                                      "yourPartiesTitle": {
-                                        "type": "string"
-                                      },
-                                      "yourPartiesDescription": {
-                                        "type": "string"
-                                      },
                                       "appTitle": {
+                                        "type": "string"
+                                      },
+                                      "frontpageIngress": {
+                                        "type": "string"
+                                      },
+                                      "yourOpinionsIngress": {
                                         "type": "string"
                                       }
                                     }
@@ -23571,144 +23033,64 @@
                                                                                                     "nominations": {
                                                                                                       "type": "object",
                                                                                                       "properties": {
-                                                                                                        "data": {
-                                                                                                          "type": "array",
-                                                                                                          "items": {
-                                                                                                            "type": "object",
-                                                                                                            "properties": {
-                                                                                                              "id": {
-                                                                                                                "type": "number"
-                                                                                                              },
-                                                                                                              "attributes": {
-                                                                                                                "type": "object",
-                                                                                                                "properties": {
-                                                                                                                  "election": {
-                                                                                                                    "type": "object",
-                                                                                                                    "properties": {
-                                                                                                                      "data": {
-                                                                                                                        "type": "object",
-                                                                                                                        "properties": {
-                                                                                                                          "id": {
-                                                                                                                            "type": "number"
-                                                                                                                          },
-                                                                                                                          "attributes": {
-                                                                                                                            "type": "object",
-                                                                                                                            "properties": {}
-                                                                                                                          }
-                                                                                                                        }
-                                                                                                                      }
-                                                                                                                    }
-                                                                                                                  },
-                                                                                                                  "constituency": {
-                                                                                                                    "type": "object",
-                                                                                                                    "properties": {
-                                                                                                                      "data": {
-                                                                                                                        "type": "object",
-                                                                                                                        "properties": {
-                                                                                                                          "id": {
-                                                                                                                            "type": "number"
-                                                                                                                          },
-                                                                                                                          "attributes": {
-                                                                                                                            "type": "object",
-                                                                                                                            "properties": {}
-                                                                                                                          }
-                                                                                                                        }
-                                                                                                                      }
-                                                                                                                    }
-                                                                                                                  },
-                                                                                                                  "candidate": {
-                                                                                                                    "type": "object",
-                                                                                                                    "properties": {
-                                                                                                                      "data": {
-                                                                                                                        "type": "object",
-                                                                                                                        "properties": {
-                                                                                                                          "id": {
-                                                                                                                            "type": "number"
-                                                                                                                          },
-                                                                                                                          "attributes": {
-                                                                                                                            "type": "object",
-                                                                                                                            "properties": {}
-                                                                                                                          }
-                                                                                                                        }
-                                                                                                                      }
-                                                                                                                    }
-                                                                                                                  },
-                                                                                                                  "party": {
-                                                                                                                    "type": "object",
-                                                                                                                    "properties": {
-                                                                                                                      "data": {
-                                                                                                                        "type": "object",
-                                                                                                                        "properties": {
-                                                                                                                          "id": {
-                                                                                                                            "type": "number"
-                                                                                                                          },
-                                                                                                                          "attributes": {
-                                                                                                                            "type": "object",
-                                                                                                                            "properties": {}
-                                                                                                                          }
-                                                                                                                        }
-                                                                                                                      }
-                                                                                                                    }
-                                                                                                                  },
-                                                                                                                  "type": {
-                                                                                                                    "type": "string"
-                                                                                                                  },
-                                                                                                                  "electionSymbol": {
-                                                                                                                    "type": "string"
-                                                                                                                  },
-                                                                                                                  "electionRound": {
-                                                                                                                    "type": "integer"
-                                                                                                                  },
-                                                                                                                  "createdAt": {
-                                                                                                                    "type": "string",
-                                                                                                                    "format": "date-time"
-                                                                                                                  },
-                                                                                                                  "updatedAt": {
-                                                                                                                    "type": "string",
-                                                                                                                    "format": "date-time"
-                                                                                                                  },
-                                                                                                                  "publishedAt": {
-                                                                                                                    "type": "string",
-                                                                                                                    "format": "date-time"
-                                                                                                                  },
-                                                                                                                  "createdBy": {
-                                                                                                                    "type": "object",
-                                                                                                                    "properties": {
-                                                                                                                      "data": {
-                                                                                                                        "type": "object",
-                                                                                                                        "properties": {
-                                                                                                                          "id": {
-                                                                                                                            "type": "number"
-                                                                                                                          },
-                                                                                                                          "attributes": {
-                                                                                                                            "type": "object",
-                                                                                                                            "properties": {}
-                                                                                                                          }
-                                                                                                                        }
-                                                                                                                      }
-                                                                                                                    }
-                                                                                                                  },
-                                                                                                                  "updatedBy": {
-                                                                                                                    "type": "object",
-                                                                                                                    "properties": {
-                                                                                                                      "data": {
-                                                                                                                        "type": "object",
-                                                                                                                        "properties": {
-                                                                                                                          "id": {
-                                                                                                                            "type": "number"
-                                                                                                                          },
-                                                                                                                          "attributes": {
-                                                                                                                            "type": "object",
-                                                                                                                            "properties": {}
-                                                                                                                          }
-                                                                                                                        }
-                                                                                                                      }
-                                                                                                                    }
-                                                                                                                  }
-                                                                                                                }
-                                                                                                              }
-                                                                                                            }
-                                                                                                          }
+                                                                                                        "id": {
+                                                                                                          "type": "number"
+                                                                                                        },
+                                                                                                        "startButton": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "electionInfo": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "howItWorks": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "help": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "startQuestions": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "home": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "opinions": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "results": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "yourList": {
+                                                                                                          "type": "string"
+                                                                                                        }
+                                                                                                      }
+                                                                                                    },
+                                                                                                    "viewTexts": {
+                                                                                                      "type": "object",
+                                                                                                      "properties": {
+                                                                                                        "id": {
+                                                                                                          "type": "number"
+                                                                                                        },
+                                                                                                        "publishedBy": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "madeWith": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "yourOpinionsTitle": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "questionsTip": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "appTitle": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "frontpageIngress": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "yourOpinionsIngress": {
+                                                                                                          "type": "string"
                                                                                                         }
                                                                                                       }
                                                                                                     },
@@ -25973,49 +25355,10 @@
                                                                                                                     "help": {
                                                                                                                       "type": "string"
                                                                                                                     },
-                                                                                                                    "searchMunicipality": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
                                                                                                                     "startQuestions": {
                                                                                                                       "type": "string"
                                                                                                                     },
-                                                                                                                    "selectCategories": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "previous": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "answerCategoryQuestions": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "readMore": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "skip": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "filter": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "alphaOrder": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "bestMatchOrder": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "addToList": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "candidateBasicInfo": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "candidateOpinions": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
                                                                                                                     "home": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "constituency": {
                                                                                                                       "type": "string"
                                                                                                                     },
                                                                                                                     "opinions": {
@@ -26035,49 +25378,25 @@
                                                                                                                     "id": {
                                                                                                                       "type": "number"
                                                                                                                     },
-                                                                                                                    "toolTitle": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "toolDescription": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
                                                                                                                     "publishedBy": {
                                                                                                                       "type": "string"
                                                                                                                     },
                                                                                                                     "madeWith": {
                                                                                                                       "type": "string"
                                                                                                                     },
-                                                                                                                    "selectMunicipalityTitle": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "selectMunicipalityDescription": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "yourConstituency": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
                                                                                                                     "yourOpinionsTitle": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "yourOpinionsDescription": {
                                                                                                                       "type": "string"
                                                                                                                     },
                                                                                                                     "questionsTip": {
                                                                                                                       "type": "string"
                                                                                                                     },
-                                                                                                                    "yourCandidatesTitle": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "yourCandidatesDescription": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "yourPartiesTitle": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
-                                                                                                                    "yourPartiesDescription": {
-                                                                                                                      "type": "string"
-                                                                                                                    },
                                                                                                                     "appTitle": {
+                                                                                                                      "type": "string"
+                                                                                                                    },
+                                                                                                                    "frontpageIngress": {
+                                                                                                                      "type": "string"
+                                                                                                                    },
+                                                                                                                    "yourOpinionsIngress": {
                                                                                                                       "type": "string"
                                                                                                                     }
                                                                                                                   }
@@ -27390,7 +26709,83 @@
                                         }
                                       }
                                     },
-                                    "nominations": {
+                                    "actionLabels": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "number"
+                                        },
+                                        "startButton": {
+                                          "type": "string"
+                                        },
+                                        "electionInfo": {
+                                          "type": "string"
+                                        },
+                                        "howItWorks": {
+                                          "type": "string"
+                                        },
+                                        "help": {
+                                          "type": "string"
+                                        },
+                                        "startQuestions": {
+                                          "type": "string"
+                                        },
+                                        "home": {
+                                          "type": "string"
+                                        },
+                                        "opinions": {
+                                          "type": "string"
+                                        },
+                                        "results": {
+                                          "type": "string"
+                                        },
+                                        "yourList": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    },
+                                    "viewTexts": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "number"
+                                        },
+                                        "publishedBy": {
+                                          "type": "string"
+                                        },
+                                        "madeWith": {
+                                          "type": "string"
+                                        },
+                                        "yourOpinionsTitle": {
+                                          "type": "string"
+                                        },
+                                        "questionsTip": {
+                                          "type": "string"
+                                        },
+                                        "appTitle": {
+                                          "type": "string"
+                                        },
+                                        "frontpageIngress": {
+                                          "type": "string"
+                                        },
+                                        "yourOpinionsIngress": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    },
+                                    "createdAt": {
+                                      "type": "string",
+                                      "format": "date-time"
+                                    },
+                                    "updatedAt": {
+                                      "type": "string",
+                                      "format": "date-time"
+                                    },
+                                    "publishedAt": {
+                                      "type": "string",
+                                      "format": "date-time"
+                                    },
+                                    "createdBy": {
                                       "type": "object",
                                       "properties": {
                                         "data": {
@@ -32947,49 +32342,10 @@
                                                                                                         "help": {
                                                                                                           "type": "string"
                                                                                                         },
-                                                                                                        "searchMunicipality": {
-                                                                                                          "type": "string"
-                                                                                                        },
                                                                                                         "startQuestions": {
                                                                                                           "type": "string"
                                                                                                         },
-                                                                                                        "selectCategories": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "previous": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "answerCategoryQuestions": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "readMore": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "skip": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "filter": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "alphaOrder": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "bestMatchOrder": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "addToList": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "candidateBasicInfo": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "candidateOpinions": {
-                                                                                                          "type": "string"
-                                                                                                        },
                                                                                                         "home": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "constituency": {
                                                                                                           "type": "string"
                                                                                                         },
                                                                                                         "opinions": {
@@ -33009,49 +32365,25 @@
                                                                                                         "id": {
                                                                                                           "type": "number"
                                                                                                         },
-                                                                                                        "toolTitle": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "toolDescription": {
-                                                                                                          "type": "string"
-                                                                                                        },
                                                                                                         "publishedBy": {
                                                                                                           "type": "string"
                                                                                                         },
                                                                                                         "madeWith": {
                                                                                                           "type": "string"
                                                                                                         },
-                                                                                                        "selectMunicipalityTitle": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "selectMunicipalityDescription": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "yourConstituency": {
-                                                                                                          "type": "string"
-                                                                                                        },
                                                                                                         "yourOpinionsTitle": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "yourOpinionsDescription": {
                                                                                                           "type": "string"
                                                                                                         },
                                                                                                         "questionsTip": {
                                                                                                           "type": "string"
                                                                                                         },
-                                                                                                        "yourCandidatesTitle": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "yourCandidatesDescription": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "yourPartiesTitle": {
-                                                                                                          "type": "string"
-                                                                                                        },
-                                                                                                        "yourPartiesDescription": {
-                                                                                                          "type": "string"
-                                                                                                        },
                                                                                                         "appTitle": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "frontpageIngress": {
+                                                                                                          "type": "string"
+                                                                                                        },
+                                                                                                        "yourOpinionsIngress": {
                                                                                                           "type": "string"
                                                                                                         }
                                                                                                       }
