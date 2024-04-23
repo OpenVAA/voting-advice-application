@@ -5,7 +5,7 @@ import IntlMessageFormat from 'intl-messageformat';
 import settings from '$lib/config/settings.json';
 import {logDebugError} from '$lib/utils/logger';
 import {derived, get} from 'svelte/store';
-import {staticTranslations, type TranslationsPayload} from './translations';
+import {DEFAULT_PAYLOAD_KEYS, staticTranslations, type TranslationsPayload} from './translations';
 import {matchLocale, purgeTranslations} from './utils';
 
 const dbLocaleProps = settings.supportedLocales;
@@ -16,6 +16,8 @@ let dbDefaultLocale: string | undefined;
 const langNames: Record<string, string> = {};
 /** Mapping of soft locale matches from db locales to static ones */
 const localeMatches: Record<string, string> = {};
+/** Items to add to all translation payloads */
+const defaultPayload: Record<string, unknown> = {};
 
 /////////////////////////////////////////////////////
 // 1. Load supported locales
@@ -96,13 +98,14 @@ export const t = {
   ...derived(i18n.t, ($t) => (key: string, payload?: TranslationsPayload) => {
     let parsed: string | undefined;
     try {
-      parsed = $t(key, payload);
+      parsed = $t(key, {...defaultPayload, ...payload});
     } catch (e) {
       logDebugError(e);
     }
     return parsed == null ? key : parsed;
   }),
-  get: (key: string, payload?: TranslationsPayload) => get(i18n.t)(key, payload)
+  get: (key: string, payload?: TranslationsPayload) =>
+    get(i18n.t)(key, {...defaultPayload, ...payload})
 };
 
 export const {
@@ -158,7 +161,10 @@ export function parse(message: string, payload: Record<string, unknown> = {}, us
   useLocale ??= locale.get();
   let parsed: string | undefined;
   try {
-    parsed = new IntlMessageFormat(message, useLocale).format(payload) as string;
+    parsed = new IntlMessageFormat(message, useLocale).format({
+      ...defaultPayload,
+      ...payload
+    }) as string;
   } catch (e) {
     logDebugError(e);
   }
@@ -166,7 +172,25 @@ export function parse(message: string, payload: Record<string, unknown> = {}, us
 }
 
 /////////////////////////////////////////////////////
-// 5. Finally throw an error if we couldn't load translations from settings
+// 5. DEFAULT PAYLOAD
+/////////////////////////////////////////////////////
+
+/**
+ * Updates the default payload items
+ */
+function updateDefaultPayload() {
+  const t = get(i18n.t);
+  for (const [key, path] of Object.entries(DEFAULT_PAYLOAD_KEYS)) {
+    defaultPayload[key] = t(path);
+  }
+}
+
+locale.subscribe((l) => {
+  if (l) updateDefaultPayload();
+});
+
+/////////////////////////////////////////////////////
+// 6. Finally throw an error if we couldn't load translations from settings
 /////////////////////////////////////////////////////
 
 if (initError) {
