@@ -75,16 +75,19 @@ A template part that outputs the navigation menu for the Candidate App for use i
     <NavItem
       href={$getRoute(Route.CandAppInfo)}
       icon="info"
+      disabled
       text={$t('candidateApp.navbar.electionInformation')} />
     <NavItem
       href={$getRoute(Route.CandAppFAQ)}
       icon="info"
+      disabled
       text={$t('candidateApp.navbar.useInformation')} />
   </NavGroup>
   <NavGroup>
     <NavItem
       href={$getRoute(Route.CandAppFeedback)}
       icon="feedback"
+      disabled
       text={$t('candidateApp.navbar.feedback')} />
   </NavGroup>
   <LanguageSelection />
