@@ -3,7 +3,7 @@
   import {t} from '$lib/i18n';
   import {candidateFilters} from '$lib/utils/filters';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {candidateRankings, parties, settings} from '$lib/utils/stores';
+  import {candidateRankings, parties, resultsAvailable, settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {EntityList} from '$lib/components/entityList';
   import {EntityListControls} from '$lib/components/entityListControls';
@@ -23,7 +23,7 @@
   // TODO: Enable party rankings
 </script>
 
-<BasicPage title={$t('viewTexts.yourCandidatesTitle')}>
+<BasicPage title={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}>
   <svelte:fragment slot="hero">
     <HeroEmoji emoji={$t('results.heroEmoji')} />
   </svelte:fragment>
@@ -42,10 +42,7 @@
   </svelte:fragment>
 
   <p class="text-center">
-    {$t('viewTexts.yourCandidatesDescription', {
-      numCandidates: $candidateRankings.length,
-      filters: 'filters'
-    })}
+    {$resultsAvailable ? $t('results.ingress.results') : $t('results.ingress.browse')}
   </p>
 
   <StretchBackground padding="medium" bgColor="base-300" toBottom class="min-h-[75vh]">

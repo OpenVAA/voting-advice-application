@@ -1,5 +1,5 @@
 {
-  "browseEntities": "Browse candidates",
+  "browseEntities": "Browse {candidatePlural} and {partyPlural}",
   "results": "Your results",
   "selectLanguage": "Select Language"
 }

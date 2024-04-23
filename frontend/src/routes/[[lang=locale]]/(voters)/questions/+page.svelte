@@ -32,7 +32,7 @@
   </svelte:fragment>
 
   <p class="text-center">
-    {$t('viewTexts.yourOpinionsDescription', {
+    {$t('viewTexts.yourOpinionsIngress', {
       numStatements: $page.data.questions.length,
       numCategories: questionCategories.size
     })}

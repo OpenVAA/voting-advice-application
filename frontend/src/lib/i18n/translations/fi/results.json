@@ -1,7 +1,15 @@
 {
+  "candidatesShown": "{numShown, plural, =1 {1 {candidateSingular}} other {# {candidatePlural}}}",
+  "candidatesTotal": "({numTotal})",
   "heroEmoji": "🎊",
-  "candidatesShown": "FI - {numShown} candidates",
-  "candidatesTotal": "FI - of {numTotal}",
-  "partiesShown": "FI - {numShown} parties",
-  "partiesTotal": "FI - of {numTotal}"
+  "ingress": {
+    "browse": "Alla ovat näiden vaalien {candidatePlural} ja {partyPlural}. Voit käyttää suodattimia tulosten karsimiseen.",
+    "results": "Alla ovat näiden vaalien {candidatePlural} ja {partyPlural}. Eniten samaa mieltä kanssasi olevat ovat ensimmäisenä listalla. Voit lisäksi käyttää suodattimia tulosten karsimiseen."
+  },
+  "partiesShown": "{numShown, plural, =1 {1 {partySingular}} other {# {partyPlural}}}",
+  "partiesTotal": "({numTotal})",
+  "title": {
+    "browse": "Vaalien {candidatePlural} ja {partyPlural}",
+    "results": "Sinun tuloksesi"
+  }
 }

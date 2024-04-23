@@ -46,46 +46,25 @@ declare global {
     locale: string;
     actionLabels: {
       id: string;
-      startButton: string;
       electionInfo: string;
-      howItWorks: string;
       help: string;
-      searchMunicipality: string;
-      startQuestions: string;
-      selectCategories: string;
-      previous: string;
-      answerCategoryQuestions: string;
-      readMore: string;
-      skip: string;
-      filter: string;
-      alphaOrder: string;
-      bestMatchOrder: string;
-      addToList: string;
-      candidateBasicInfo: string;
-      candidateOpinions: string;
       home: string;
-      constituency: string;
+      howItWorks: string;
       opinions: string;
       results: string;
+      startButton: string;
+      startQuestions: string;
       yourList: string;
     };
     viewTexts: {
       id: string;
       appTitle: string;
-      toolTitle: string;
-      toolDescription: string;
-      publishedBy: string;
+      frontpageIngress: string;
       madeWith: string;
-      selectMunicipalityTitle: string;
-      selectMunicipalityDescription: string;
-      yourConstituency: string;
-      yourOpinionsTitle: string;
-      yourOpinionsDescription: string;
+      publishedBy: string;
       questionsTip: string;
-      yourCandidatesTitle: string;
-      yourCandidatesDescription: string;
-      yourPartiesTitle: string;
-      yourPartiesDescription: string;
+      yourOpinionsIngress: string;
+      yourOpinionsTitle: string;
     };
   }
 

@@ -1,8 +1,0 @@
-{
-  "candidates": "Candidates",
-  "notFound": "No candidates found",
-  "viewAllCandidates": "View all candidates",
-  "ingress": "These are all the candidates standing in the election.",
-  "candidatesShown": "{numShown} candidates",
-  "candidatesTotal": "of {numTotal}"
-}

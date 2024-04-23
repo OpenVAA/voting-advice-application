@@ -2,13 +2,16 @@
   "answerNo": "No",
   "answerYes": "Yes",
   "candidate": {
-    "singular": "Candidate",
-    "plural": "Candidates"
+    "singular": "candidate",
+    "plural": "candidates"
   },
+  "clearInput": "Clear",
+  "electionSymbol": "Election Number",
+  "missingAnswer": "—",
+  "multipleAnswerSeparator": " • ",
   "openVAA": "OpenVAA",
   "party": {
-    "singular": "Party",
-    "plural": "Parties"
-  },
-  "clearInput": "Clear"
+    "singular": "party",
+    "plural": "parties"
+  }
 }

@@ -1,8 +1,0 @@
-{
-  "parties": "Parties",
-  "notFound": "No parties found",
-  "viewAllParties": "View all parties",
-  "ingress": "These are all the parties contesting the election.",
-  "partiesShown": "{numShown} parties",
-  "partiesTotal": "of {numTotal}"
-}

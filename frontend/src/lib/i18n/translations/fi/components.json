@@ -1,37 +1,38 @@
 {
+  "entityDetails": {
+    "tabs": {
+      "basicInfo": "Perustiedot",
+      "opinions": "Mielipiteet"
+    }
+  },
+  "entityFilters": {
+    "applyAndClose": "Sulje suodattimet",
+    "filterButtonLabel": "Suodatin",
+    "filters": "Suodattimet",
+    "missingValue": "Ei vastausta",
+    "reset": "Nollaa suodattimet",
+    "selectAll": "Valitse kaikki",
+    "text": {
+      "ariaLabel": "Hakusana:",
+      "placeholder": "Hakusana"
+    },
+    "titles": {
+      "party": "Puolue"
+    },
+    "unselectAll": "Poista valinta kaikista"
+  },
   "entityInfo": {
     "links": "Linkit"
   },
   "entityList": {
-    "showMore": "FI - Show more"
-  },
-  "matchScore": {
-    "label": "FI - match"
-  },
-  "card": {
-    "errorDisplaying": "FI - Error displaying card"
-  },
-  "entityFilters": {
-    "applyAndClose": "FI - Close filters",
-    "filters": "FI - Filters",
-    "filtersActive": "FI - {numActiveFilters, plural, =1 {1 filter is} other {# filters are}} active",
-    "filterButtonLabel": "FI - Filter results",
-    "reset": "FI - Reset filters",
-    "missingValue": "FI - No answer",
-    "selectAll": "FI Select all",
-    "unselectAll": "FI Unselect all",
-    "text": {
-      "ariaLabel": "FI - Text:",
-      "placeholder": "FI - Text to search for"
-    },
-    "titles": {
-      "name": "FI - Name",
-      "party": "FI - Party"
-    }
+    "showMore": "Näytä lisää"
   },
   "entityListControls": {
-    "searchPlaceholder": "FI Search by name",
-    "noFilterResults": "FI The filters yielded no matches. You can try changing them.",
-    "noSearchResults": "FI The search yielded no matches. You can try changing it."
+    "noFilterResults": "Suodattimilla ei löytynyt yhtään tulosta. Koeta muuttaa niitä.",
+    "noSearchResults": "Haulla ei löytynyt yhtään tulosta. Koeta muuttaa sitä.",
+    "searchPlaceholder": "Etsi nimellä"
+  },
+  "matchScore": {
+    "label": "sopivuus"
   }
 }

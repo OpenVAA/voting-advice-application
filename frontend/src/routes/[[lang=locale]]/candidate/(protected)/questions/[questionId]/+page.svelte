@@ -243,5 +243,5 @@
     </BasicPage>
   {/key}
 {:else}
-  {$t('question.notFound')}
+  {$t('questions.notFound')}
 {/if}

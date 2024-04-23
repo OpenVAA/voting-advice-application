@@ -17,7 +17,7 @@
   <img slot="hero" class="bg-white" src={$settings.poster?.url ?? '/images/hero.png'} alt="" />
 
   <p class="text-center">
-    {$t('viewTexts.toolDescription', {
+    {$t('viewTexts.frontpageIngress', {
       electionDate: new Date($page.data.election.electionDate)
     })}
   </p>

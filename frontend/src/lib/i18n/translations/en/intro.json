@@ -1,9 +1,9 @@
 {
-  "title": "Let's start!",
+  "continue": "Continue",
   "heroEmoji": "🚀",
-  "ingress": "This application will help you find the best candidates and parties for your election.",
-  "listItemOpinions": "Enter your opinions",
-  "listItemResults": "See the candidates and parties that best agree with you",
+  "ingress": "This application will help you find the {candidatePlural} and {partyPlural} that best match your opinions in the elections.",
   "listItemDetails": "Study them in detail",
-  "continue": "Continue"
+  "listItemOpinions": "Enter your opinions",
+  "listItemResults": "See the {candidatePlural} and {partyPlural} that best agree with you",
+  "title": "Let’s start!"
 }
