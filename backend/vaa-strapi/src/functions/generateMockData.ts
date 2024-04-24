@@ -12,23 +12,17 @@
 
 import {type Faker, faker, fakerES, fakerFI} from '@faker-js/faker';
 import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
-import mockQuestions from './mockQuestions.json';
-import mockCategories from './mockCategories.json';
-
-const APP_SETTING_API = 'api::app-setting.app-setting';
-const ELECTION_API = 'api::election.election';
-const ELECTION_APP_LABEL_API = 'api::election-app-label.election-app-label';
-const CONSTITUENCY_API = 'api::constituency.constituency';
-const PARTY_API = 'api::party.party';
-const CANDIDATE_API = 'api::candidate.candidate';
-const NOMINATION_API = 'api::nomination.nomination';
-const QUESTION_API = 'api::question.question';
-const QUESTION_TYPE_API = 'api::question-type.question-type';
-const QUESTION_CATEGORY_API = 'api::question-category.question-category';
-const ANSWER_API = 'api::answer.answer';
-const USER_API = 'plugin::users-permissions.user';
-const LANGUAGE_API = 'api::language.language';
-const GENDER_API = 'api::gender.gender';
+import {API} from './utils/api';
+import type {
+  AnswerValue,
+  EntityType,
+  LocalizedString,
+  QuestionTypeSettings
+} from './utils/data.type';
+import {dropAllCollections} from './utils/drop';
+import {createRelationsForAvailableLocales} from './utils/i18n';
+import mockQuestions from './mockData/mockQuestions.json';
+import mockCategories from './mockData/mockCategories.json';
 
 const locales: Locale[] = [
   {
@@ -59,55 +53,55 @@ export async function generateMockData() {
     if (generateMockDataOnInitialise && !generateMockDataOnRestart) {
       let countOfObjects = 0;
       countOfObjects += await strapi.db
-        .query(APP_SETTING_API)
+        .query(API.AppSettings)
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
-        .query(ELECTION_API)
+        .query(API.Election)
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
-        .query(ELECTION_APP_LABEL_API)
+        .query(API.AppLabel)
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
-        .query(PARTY_API)
+        .query(API.Party)
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
-        .query(CANDIDATE_API)
+        .query(API.Candidate)
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
-        .query(NOMINATION_API)
+        .query(API.Nomination)
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
-        .query(CONSTITUENCY_API)
+        .query(API.Constituency)
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
-        .query(QUESTION_CATEGORY_API)
+        .query(API.QuestionCategory)
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
-        .query(QUESTION_TYPE_API)
+        .query(API.QuestionType)
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
-        .query(QUESTION_API)
+        .query(API.Question)
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
-        .query(ANSWER_API)
+        .query(API.Answer)
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
-        .query(LANGUAGE_API)
+        .query(API.Language)
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
-        .query(USER_API)
+        .query(API.User)
         .count({})
         .then((number) => number);
 
@@ -128,7 +122,7 @@ export async function generateMockData() {
   try {
     if (generateMockDataOnRestart) {
       console.info('#######################################');
-      await dropCollections();
+      await dropAllCollections();
       console.info('dropped collections');
     }
 
@@ -219,27 +213,8 @@ export async function generateMockData() {
   }
 }
 
-/**
- * Drops all data in the collections
- */
-async function dropCollections() {
-  await strapi.db.query(CANDIDATE_API).deleteMany({});
-  await strapi.db.query(PARTY_API).deleteMany({});
-  await strapi.db.query(NOMINATION_API).deleteMany({});
-  await strapi.db.query(ANSWER_API).deleteMany({});
-  await strapi.db.query(QUESTION_CATEGORY_API).deleteMany({});
-  await strapi.db.query(CONSTITUENCY_API).deleteMany({});
-  await strapi.db.query(ELECTION_APP_LABEL_API).deleteMany({});
-  await strapi.db.query(ELECTION_API).deleteMany({});
-  await strapi.db.query(APP_SETTING_API).deleteMany({});
-  await strapi.db.query(QUESTION_API).deleteMany({});
-  await strapi.db.query(QUESTION_TYPE_API).deleteMany({});
-  await strapi.db.query(USER_API).deleteMany({});
-  await strapi.db.query(LANGUAGE_API).deleteMany({});
-}
-
 async function createAppSettings() {
-  await strapi.db.query(APP_SETTING_API).create({
+  await strapi.db.query(API.AppSettings).create({
     data: {
       publisherName: fakeLocalized((faker) => faker.company.name())
     }
@@ -247,7 +222,7 @@ async function createAppSettings() {
 }
 
 async function createLanguages() {
-  await strapi.db.query(LANGUAGE_API).createMany({
+  await strapi.db.query(API.Language).createMany({
     data: [
       {
         name: 'English',
@@ -269,7 +244,7 @@ async function createLanguages() {
 }
 
 async function createGenders() {
-  await strapi.db.query(GENDER_API).createMany({
+  await strapi.db.query(API.Gender).createMany({
     data: [
       {
         name: 'male',
@@ -322,7 +297,7 @@ async function createElectionAppLabel() {
   const strapiObjects: HasId[] = await Promise.all(
     locales.map(
       async (l) =>
-        await strapi.entityService.create(ELECTION_APP_LABEL_API, {
+        await strapi.entityService.create(API.AppLabel, {
           data: {
             actionLabels: fakeTranslate(l, actionLabels),
             viewTexts: fakeTranslate(l, viewTexts),
@@ -333,11 +308,11 @@ async function createElectionAppLabel() {
     )
   );
 
-  await createRelationsForAvailableLocales(ELECTION_APP_LABEL_API, strapiObjects);
+  await createRelationsForAvailableLocales(API.AppLabel, strapiObjects);
 }
 
 async function createElection() {
-  let AppLabel = await strapi.db.query(ELECTION_APP_LABEL_API).findOne({
+  let AppLabel = await strapi.db.query(API.AppLabel).findOne({
     where: {
       locale: locales[0].code
     }
@@ -356,7 +331,7 @@ async function createElection() {
   const electionStartDate = date.toISOString().split('T')[0];
   const electionDate = date.toISOString().split('T')[0];
 
-  await strapi.db.query(ELECTION_API).create({
+  await strapi.db.query(API.Election).create({
     data: {
       name,
       shortName,
@@ -382,7 +357,7 @@ async function createParties(length: number) {
     const shortName = abbreviate(name);
     const info = fakeLocalized((faker) => faker.lorem.sentences(3));
     const color = faker.color.rgb();
-    await strapi.db.query(PARTY_API).create({
+    await strapi.db.query(API.Party).create({
       data: {
         name,
         shortName,
@@ -396,9 +371,9 @@ async function createParties(length: number) {
 
 async function createCandidates(length: number) {
   // TODO: Remove languages later
-  const languages = await strapi.db.query(LANGUAGE_API).findMany({});
+  const languages = await strapi.db.query(API.Language).findMany({});
 
-  const parties = await strapi.db.query(PARTY_API).findMany({});
+  const parties = await strapi.db.query(API.Party).findMany({});
 
   for (let i = 0; i <= length; i++) {
     const firstName = faker.person.firstName();
@@ -409,7 +384,7 @@ async function createCandidates(length: number) {
     const politicalExperience = faker.lorem.paragraph(3);
     const motherTongue: any = faker.helpers.arrayElement(languages);
     const otherLanguage: any = faker.helpers.arrayElement(languages);
-    await strapi.db.query(CANDIDATE_API).create({
+    await strapi.db.query(API.Candidate).create({
       data: {
         firstName,
         lastName,
@@ -426,7 +401,7 @@ async function createCandidates(length: number) {
     // TODO: Remove when custom basic info questions are online
     //
     // // Political experience attribute
-    // const textQuestionType = await strapi.db.query(QUESTION_TYPE_API).findOne({
+    // const textQuestionType = await strapi.db.query(API.QuestionType).findOne({
     //   where: {
     //     name: 'Text answer'
     //   }
@@ -450,7 +425,7 @@ async function createCandidates(length: number) {
 
     // // Gender attribute
 
-    // const genderQuestionType = await strapi.db.query(QUESTION_TYPE_API).findOne({
+    // const genderQuestionType = await strapi.db.query(API.QuestionType).findOne({
     //   where: {
     //     name: 'Gender'
     //   }
@@ -481,7 +456,7 @@ async function createCandidates(length: number) {
 }
 
 async function createConstituencies(numberOfConstituencies: number) {
-  const elections = await strapi.db.query(ELECTION_API).findMany({});
+  const elections = await strapi.db.query(API.Election).findMany({});
 
   for (let i = 0; i <= numberOfConstituencies; i++) {
     const name = fakeLocalized((faker) => faker.location.state());
@@ -489,7 +464,7 @@ async function createConstituencies(numberOfConstituencies: number) {
     const type = i < 2 ? 'ethnic' : 'geographic';
     const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
     const election: HasId = faker.helpers.arrayElement(elections);
-    await strapi.db.query(CONSTITUENCY_API).create({
+    await strapi.db.query(API.Constituency).create({
       data: {
         name,
         shortName,
@@ -503,10 +478,10 @@ async function createConstituencies(numberOfConstituencies: number) {
 }
 
 async function createCandidateNominations(length: number) {
-  const elections: HasId[] = await strapi.db.query(ELECTION_API).findMany({});
-  const constituencies: HasId[] = await strapi.db.query(CONSTITUENCY_API).findMany({});
+  const elections: HasId[] = await strapi.db.query(API.Election).findMany({});
+  const constituencies: HasId[] = await strapi.db.query(API.Constituency).findMany({});
   const candidates: {id: string | number; party: HasId}[] = await strapi.db
-    .query(CANDIDATE_API)
+    .query(API.Candidate)
     .findMany({
       populate: ['party']
     });
@@ -519,7 +494,7 @@ async function createCandidateNominations(length: number) {
     const electionRound = faker.number.int(1);
     const constituency = faker.helpers.arrayElement(constituencies);
     const electionId = elections[0].id;
-    await strapi.db.query(NOMINATION_API).create({
+    await strapi.db.query(API.Nomination).create({
       data: {
         electionSymbol,
         electionRound,
@@ -534,9 +509,9 @@ async function createCandidateNominations(length: number) {
 }
 
 async function createPartyNominations(length: number) {
-  const elections: HasId[] = await strapi.db.query(ELECTION_API).findMany({});
-  const constituencies: HasId[] = await strapi.db.query(CONSTITUENCY_API).findMany({});
-  const parties: HasId[] = await strapi.db.query(PARTY_API).findMany({});
+  const elections: HasId[] = await strapi.db.query(API.Election).findMany({});
+  const constituencies: HasId[] = await strapi.db.query(API.Constituency).findMany({});
+  const parties: HasId[] = await strapi.db.query(API.Party).findMany({});
 
   for (let i = 0; i <= length; i++) {
     const party = faker.helpers.arrayElement(parties);
@@ -546,7 +521,7 @@ async function createPartyNominations(length: number) {
     const electionRound = faker.number.int(1);
     const constituency = faker.helpers.arrayElement(constituencies);
     const electionId = elections[0].id;
-    await strapi.db.query(NOMINATION_API).create({
+    await strapi.db.query(API.Nomination).create({
       data: {
         electionSymbol,
         electionRound,
@@ -560,14 +535,14 @@ async function createPartyNominations(length: number) {
 }
 
 async function createQuestionCategories() {
-  const elections: HasId[] = await strapi.db.query(ELECTION_API).findMany({});
+  const elections: HasId[] = await strapi.db.query(API.Election).findMany({});
   for (const category of mockCategories) {
     const name = fakeLocalized((faker) => faker.word.sample(15).toLocaleUpperCase(), category);
     const shortName = abbreviate(name, {type: 'truncate'});
     const order = mockCategories.indexOf(category);
     const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
     const color = faker.color.rgb();
-    await strapi.db.query(QUESTION_CATEGORY_API).create({
+    await strapi.db.query(API.QuestionCategory).create({
       data: {
         name,
         shortName,
@@ -585,7 +560,7 @@ async function createQuestionCategories() {
   const shortName = abbreviate(name, {type: 'truncate'});
   const order = 0;
   const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
-  await strapi.db.query(QUESTION_CATEGORY_API).create({
+  await strapi.db.query(API.QuestionCategory).create({
     data: {
       name,
       shortName,
@@ -766,7 +741,7 @@ async function createQuestionTypes() {
   ];
 
   for (const questionType of questionTypes) {
-    await strapi.db.query(QUESTION_TYPE_API).create({
+    await strapi.db.query(API.QuestionType).create({
       data: {
         ...questionType,
         publishedAt: new Date()
@@ -782,18 +757,18 @@ async function createQuestionTypes() {
  */
 async function createQuestions(options: {constituencyPctg?: number} = {}) {
   const questionTypes: (HasId & {name: string; settings: QuestionTypeSettings})[] = await strapi.db
-    .query(QUESTION_TYPE_API)
+    .query(API.QuestionType)
     .findMany({});
   const likertTypes = questionTypes.filter(
     (questionType) => questionType.settings.type === 'singleChoiceOrdinal'
   );
 
   const questionCategories: (HasId & {type: 'opinion' | 'info'})[] = await strapi.db
-    .query(QUESTION_CATEGORY_API)
+    .query(API.QuestionCategory)
     .findMany({});
 
   const opinionCategories = questionCategories.filter((cat) => cat.type === 'opinion');
-  const constituencies: HasId[] = await strapi.db.query(CONSTITUENCY_API).findMany({});
+  const constituencies: HasId[] = await strapi.db.query(API.Constituency).findMany({});
 
   const constituencyPctg = options.constituencyPctg ?? 0.1;
   // Create Opinion questions
@@ -804,7 +779,7 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
     const category = faker.helpers.arrayElement(opinionCategories);
     const constituency =
       Math.random() < constituencyPctg ? faker.helpers.arrayElement(constituencies) : null;
-    await strapi.db.query(QUESTION_API).create({
+    await strapi.db.query(API.Question).create({
       data: {
         text,
         info,
@@ -849,7 +824,7 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
     const typeId = questionTypes.filter((qt) => qt.name === question.type)[0]?.id;
     const text = fakeLocalized((_, l) => fakeTranslate(l, question.text));
     const info = fakeLocalized((faker) => faker.lorem.sentences(3));
-    await strapi.db.query(QUESTION_API).create({
+    await strapi.db.query(API.Question).create({
       data: {
         text,
         info,
@@ -865,14 +840,14 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
 
 async function createAnswers(entityType: Omit<EntityType, 'all'>) {
   const entities: HasId[] = await strapi.db
-    .query(entityType === 'candidate' ? CANDIDATE_API : PARTY_API)
+    .query(entityType === 'candidate' ? API.Candidate : API.Party)
     .findMany({});
 
   const questions: (HasId & {
     allowOpen: boolean;
     entityType?: EntityType;
     questionType: {settings: QuestionTypeSettings};
-  })[] = await strapi.db.query(QUESTION_API).findMany({
+  })[] = await strapi.db.query(API.Question).findMany({
     populate: ['questionType']
   });
 
@@ -930,7 +905,7 @@ async function createAnswers(entityType: Omit<EntityType, 'all'>) {
         : null;
       const entityRelation =
         entityType === 'candidate' ? {candidate: entity.id} : {party: entity.id};
-      await strapi.db.query(ANSWER_API).create({
+      await strapi.db.query(API.Answer).create({
         data: {
           value,
           openAnswer,
@@ -950,8 +925,8 @@ async function createCandidateUsers() {
     }
   });
 
-  const candidate = await strapi.db.query(CANDIDATE_API).findOne({});
-  await strapi.entityService.create(USER_API, {
+  const candidate = await strapi.db.query(API.Candidate).findOne({});
+  await strapi.entityService.create(API.User, {
     data: {
       username: 'first.last',
       email: 'first.last@example.com',
@@ -965,35 +940,11 @@ async function createCandidateUsers() {
   });
 
   // Disable registration key for the candidate we chose as they're already registered
-  await strapi.query(USER_API).update({
+  await strapi.query(API.User).update({
     where: {id: candidate.id},
     data: {
       registrationKey: null
     }
-  });
-}
-
-function capitaliseFirstLetter(word: string) {
-  return word.charAt(0).toUpperCase() + word.slice(1);
-}
-
-// Creates relations between original entity and its translations
-async function createRelationsForAvailableLocales(endpoint: any, objects: HasId[]) {
-  if (objects.length < 2) {
-    console.warn(
-      `Not enough objects (${objects.length}) passed to createRelationsForAvailableLocales. Skipping localization linking.`
-    );
-    return;
-  }
-  const updatedObj = await strapi.query(endpoint).update({
-    where: {id: objects[0].id},
-    data: {
-      localizations: objects.slice(1).map((entry) => entry.id)
-    },
-    populate: ['localizations']
-  });
-  await strapi.plugins.i18n.services.localizations.syncLocalizations(updatedObj, {
-    model: strapi.getModel(endpoint)
   });
 }
 
@@ -1057,6 +1008,10 @@ interface AbbreviationOptions {
   length?: number;
 }
 
+function capitaliseFirstLetter(word: string) {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+}
+
 interface HasId {
   id: number | string;
 }
@@ -1067,73 +1022,3 @@ interface Locale {
   localeObject: unknown;
   faker: Faker;
 }
-
-type LocalizedString = {
-  [locale: string]: string;
-};
-
-type QuestionTypeSettings =
-  | {
-      type: 'text';
-      notLocalizable?: boolean;
-    }
-  | {
-      type: 'boolean';
-    }
-  | {
-      type: 'number';
-      min?: number;
-      max?: number;
-    }
-  | {
-      type: 'photo';
-    }
-  | {
-      type: 'date';
-      dateType?: 'yearMonthDay' | 'yearMonth' | 'monthDay' | 'month' | 'weekday' | 'hourMinute';
-      min?: Date;
-      max?: Date;
-    }
-  | {
-      type: 'singleChoiceOrdinal';
-      values: Choice[];
-    }
-  | {
-      type: 'singleChoiceCategorical';
-      values: Choice[];
-    }
-  | {
-      type: 'multipleChoiceCategorical';
-      values: Choice[];
-      min?: number;
-      max?: number;
-    }
-  | {
-      type: 'preferenceOrder';
-      values: Choice[];
-      min?: number;
-      max?: number;
-    };
-
-type Choice = {
-  key: number;
-  label: LocalizedString;
-};
-
-/**
- * The allowed `Answer` values for different `QuestionType`s based on their
- * `settings.type`.
- */
-type AnswerValue = {
-  text: string | LocalizedString;
-  boolean: boolean;
-  number: number;
-  photo: string;
-  date: Date;
-  singleChoiceOrdinal: Choice['key'];
-  singleChoiceCategorical: Choice['key'];
-  multipleChoiceCategorical: Choice['key'][];
-  preferenceOrder: Choice['key'][];
-};
-
-type EntityType = 'all' | 'candidate' | 'party';
