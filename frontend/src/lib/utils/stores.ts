@@ -21,6 +21,7 @@ function getItemFromLocalStorage(key: string): unknown {
 function subscribeToLocalStorage<T>(item: Writable<T>, key: string): void {
   if (browser && localStorage) {
     item.subscribe((value) => localStorage.setItem(key, JSON.stringify(value)));
+    3;
   }
 }
 
@@ -74,18 +75,6 @@ export function resetLocalStorage(): void {
 }
 
 /**
- * A store that is true, when the results are available
- */
-export const resultsAvailable: Readable<boolean> = derived(
-  [answeredQuestions],
-  ([$answeredQuestions]) => {
-    // TODO: Use a setting to set the minimum number of answers required
-    return Object.values($answeredQuestions).length > 0;
-  },
-  false
-);
-
-/**
  * Utility stores for candidates as part of `PageData`.
  */
 export const candidates: Readable<CandidateProps[]> = derived(
@@ -118,21 +107,6 @@ export const opinionQuestions: Readable<QuestionProps[]> = derived(
 );
 
 /**
- * A store that holds the candidate rankings. For ease of use, these will be wrapped entities with no `score` properties, if results are not yet available.
- */
-export const candidateRankings: Readable<
-  RankingProps<CandidateProps>[] | WrappedEntity<CandidateProps>[]
-> = derived(
-  [candidates, opinionQuestions, answeredQuestions, resultsAvailable],
-  ([$candidates, $opinionQuestions, $answeredQuestions, $resultsAvailable]) => {
-    return $resultsAvailable
-      ? matchCandidates($opinionQuestions, $answeredQuestions, $candidates)
-      : $candidates.map(wrap);
-  },
-  []
-);
-
-/**
  * This store tells which application we're using. For other app types,
  * set this to the current type in the layout containing the app.
  */
@@ -149,4 +123,35 @@ export type AppType = 'candidate' | 'voter';
  */
 export const settings: Readable<AppSettings> = derived([page], ([$page]) =>
   $page.data.appSettings ? Object.assign(localSettings, $page.data.appSettings) : localSettings
+);
+
+/**
+ * A store that is true, when the results (and questions) are available
+ */
+export const resultsAvailable: Readable<boolean> = derived(
+  [answeredQuestions, opinionQuestions, settings],
+  ([$answeredQuestions, $opinionQuestions, $settings]) => {
+    if (!($opinionQuestions.length && Object.keys($answeredQuestions).length)) return false;
+    // We need to filtering because some of the user's answers might be to questions subsequently removed or hidden
+    return (
+      $opinionQuestions.filter((q) => $answeredQuestions[q.id] != null).length >=
+      Math.min($opinionQuestions.length, $settings.results?.minimumAnswers ?? 1)
+    );
+  },
+  false
+);
+
+/**
+ * A store that holds the candidate rankings. For ease of use, these will be wrapped entities with no `score` properties, if results are not yet available.
+ */
+export const candidateRankings: Readable<
+  RankingProps<CandidateProps>[] | WrappedEntity<CandidateProps>[]
+> = derived(
+  [candidates, opinionQuestions, answeredQuestions, resultsAvailable],
+  ([$candidates, $opinionQuestions, $answeredQuestions, $resultsAvailable]) => {
+    return $resultsAvailable
+      ? matchCandidates($opinionQuestions, $answeredQuestions, $candidates)
+      : $candidates.map(wrap);
+  },
+  []
 );
