@@ -103,8 +103,15 @@
       "description": "Settings related to the results view.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["sections"],
+      "required": ["minimumAnswers", "sections"],
       "properties": {
+        "minimumAnswers": {
+          "showCategoryTags": {
+            "description": "The minimum number of voter answers needed before matching results are available.",
+            "type": "integer",
+            "default": 1
+          }
+        },
         "sections": {
           "description": "Which entity types to show in the results view. There must be at least one.",
           "type": "array",
