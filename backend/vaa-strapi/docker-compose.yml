@@ -25,12 +25,15 @@ services:
       DATABASE_SCHEMA: ${DATABASE_SCHEMA}
       DATABASE_SSL_SELF: ${DATABASE_SSL_SELF}
       GENERATE_MOCK_DATA_ON_INITIALISE: ${GENERATE_MOCK_DATA_ON_INITIALISE}
+      LOAD_DATA_ON_INITIALISE_FOLDER: ${LOAD_DATA_ON_INITIALISE_FOLDER}
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:1337/ || exit 1
       interval: 30s
       timeout: 30s
       retries: 3
       start_period: 45s
+    depends_on:
+      - 'postgres'
   postgres:
     image: postgres:15
     environment:
