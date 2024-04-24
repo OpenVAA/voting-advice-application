@@ -94,6 +94,7 @@ declare global {
       showCategoryTags: boolean;
     };
     results: {
+      minimumAnswers: number;
       sections: string[];
     };
     publisher?: {

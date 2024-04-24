@@ -48,6 +48,7 @@
     "showCategoryTags": true
   },
   "results": {
+    "minimumAnswers": 5,
     "sections": ["candidate", "party"]
   }
 }
