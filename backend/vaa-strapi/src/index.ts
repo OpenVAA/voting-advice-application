@@ -1,6 +1,8 @@
 'use strict';
 import {Strapi} from '@strapi/strapi';
+import {loadDataFolder} from './constants';
 import {generateMockData} from './functions/generateMockData';
+import {loadData} from './functions/loadData';
 import {setDefaultApiPermissions} from './functions/setDefaultApiPermissions';
 
 module.exports = {
@@ -23,7 +25,15 @@ module.exports = {
    * run jobs, or perform some special logic.
    */
   bootstrap(/*{ strapi }*/) {
-    generateMockData();
+    try {
+      if (loadDataFolder) {
+        loadData(loadDataFolder);
+      } else {
+        generateMockData();
+      }
+    } catch (e) {
+      console.error('There was an error running loadData or generateMockData!', e);
+    }
     setDefaultApiPermissions();
   }
 };
