@@ -12,6 +12,8 @@ interface MultipleChoiceValue {
  * Likert questions
  */
 export class MultipleChoiceQuestion implements MatchableQuestion {
+  readonly maxValue: number;
+  readonly minValue: number;
   readonly normalizedDimensions = 1;
   [key: string]: unknown;
 
@@ -25,18 +27,12 @@ export class MultipleChoiceQuestion implements MatchableQuestion {
   ) {
     this.id = id;
     this.values = values;
+    this.minValue = Math.min(...this.values.map((v) => v.value));
+    this.maxValue = Math.max(...this.values.map((v) => v.value));
   }
 
   get neutralValue() {
     return this.minValue + this.valueRange / 2;
-  }
-
-  get maxValue() {
-    return this.values[this.values.length - 1].value;
-  }
-
-  get minValue() {
-    return this.values[0].value;
   }
 
   get valueRange(): number {
