@@ -21,15 +21,27 @@ import type {
 
 // To build REST queries, one can use https://docs.strapi.io/dev-docs/api/rest/interactive-query-builder
 
+/**
+ * The default limit for query results. This is set to be very high, because we don't use pagination.
+ */
+const ITEM_LIMIT = 1000;
+
 ///////////////////////////////////////////////////////////////////////
 // Function declarations
 ///////////////////////////////////////////////////////////////////////
 
-/** Generic data getter. In most cases, you should use the dedicated functions. */
+/**
+ * Generic data getter. In most cases, you should use the dedicated functions.
+ * NB. If the `pagination[pageSize]` param is not set, the default value of `ITEM_LIMIT` is used.
+ */
 export function getData<T extends object>(
   endpoint: string,
   params: URLSearchParams = new URLSearchParams({})
 ): Promise<T> {
+  if (!params.has('pagination[pageSize]')) {
+    params = new URLSearchParams(params);
+    params.set('pagination[pageSize]', `${ITEM_LIMIT}`);
+  }
   const url = `${constants.BACKEND_URL}/${endpoint}?${params}`;
   return fetch(url)
     .then((response) => {
