@@ -35,7 +35,8 @@ export function isLocalized(value: unknown): value is LocalizedString {
 }
 
 /**
- * Parse Strapi Answer data
+ * Parse Strapi Answer data.
+ * NB. Answers whose question property is `null` are excluded. This can happen when questions are converted to drafts later.
  * @param answers Answer data from Strapi
  * @param locale Optional locale to use for translating localized strings
  * @returns The Answers as AnswerProps
@@ -43,7 +44,9 @@ export function isLocalized(value: unknown): value is LocalizedString {
 export function parseAnswers(answers: StrapiAnswerData[], locale?: string): AnswerDict {
   const dict = {} as AnswerDict;
   answers.forEach((a) => {
-    dict[`${a.attributes.question.data.id}`] = {
+    const questionId = a.attributes.question?.data?.id;
+    if (questionId == null) return;
+    dict[`${questionId}`] = {
       value: isLocalized(a.attributes.value)
         ? translate(a.attributes.value, locale)
         : a.attributes.value,
