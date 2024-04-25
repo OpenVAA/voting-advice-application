@@ -45,7 +45,8 @@
     }
   ],
   "questions": {
-    "showCategoryTags": true
+    "showCategoryTags": true,
+    "showIntroPage": true
   },
   "results": {
     "minimumAnswers": 5,

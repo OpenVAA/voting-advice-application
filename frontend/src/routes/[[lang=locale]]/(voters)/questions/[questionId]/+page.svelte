@@ -3,7 +3,7 @@
   import {goto} from '$app/navigation';
   import {t} from '$lib/i18n';
   import {logDebugError} from '$lib/utils/logger';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
   import {settings} from '$lib/utils/stores';
   import {
     answeredQuestions,
@@ -50,7 +50,7 @@
     questions = data.questions;
     // Save the current questionId so that we only rebuild the page if the question is actually changed
     const previousId = question?.id;
-    questionId = data.questionId;
+    questionId = data.questionId === FIRST_QUESTION_ID ? questions[0].id : data.questionId;
     question = questions.find((q) => q.id == questionId);
     if (!question) throw error(404, `No question with id ${questionId}`);
     // Only perform updates if the question has actually changed

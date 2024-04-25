@@ -1,6 +1,7 @@
 import {error} from '@sveltejs/kit';
 import {get, derived} from 'svelte/store';
 import {page} from '$app/stores';
+import {settings} from '$lib/utils/stores';
 
 /**
  * The allowed routes
@@ -22,7 +23,8 @@ export enum Route {
   CandAppSettings = 'candidate/settings',
   Candidate = 'candidates',
   Candidates = 'candidates',
-  Help = 'help',
+  /** The Help route is currently redirected to About */
+  Help = 'about',
   Home = '',
   Info = 'info',
   Intro = 'intro',
@@ -35,6 +37,11 @@ export enum Route {
   Results = 'results',
   _Test = '_test'
 }
+
+/**
+ * A special id used to mark the question to start from before question ids are available
+ */
+export const FIRST_QUESTION_ID = '__first__';
 
 /**
  * A route containing a locale-safe function to build route urls. A store is used because the links depend on changes to the `$page` store and would not be updated upon, e.g., locale changes otherwise.
@@ -69,7 +76,8 @@ function _getRoute(
 ): string {
   if (typeof options === 'string') options = {route: options};
   let locale = options.locale;
-  const {id, route, params} = options;
+  const {route, params} = options;
+  let {id} = options;
   if (locale && route == null) {
     const $page = get(page);
     const url = $page.url.pathname;
@@ -82,7 +90,13 @@ function _getRoute(
   if (locale === 'none') locale = '';
   const parts = ['']; // This will add the initial slash
   if (locale) parts.push(locale);
-  if (route !== '') parts.push(route);
+  // If the questions.showIntroPage setting is false, we bypass the intro page
+  if (route === Route.Questions && id == null && !get(settings).questions?.showIntroPage) {
+    parts.push(Route.Question);
+    id = FIRST_QUESTION_ID;
+  } else if (route !== '') {
+    parts.push(route);
+  }
   if (id) parts.push(id);
   let url = parts.join('/');
   if (params) url += `?${new URLSearchParams(params).toString()}`;
