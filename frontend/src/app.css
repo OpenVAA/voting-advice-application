@@ -46,7 +46,10 @@
     @apply mb-0;
   }
   ol {
-    @apply list-decimal;
+    @apply list-outside list-decimal pl-lg;
+  }
+  ul {
+    @apply list-outside list-disc pl-lg;
   }
   hgroup p {
     @apply my-sm text-center first:mt-0;
