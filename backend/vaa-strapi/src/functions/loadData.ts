@@ -140,7 +140,8 @@ async function createFromFile(
         create(folder, api, data as object[], mediaFields, publish)
           .catch((e) => {
             console.error(
-              `createFromFile: Error creating '${api}' from file ${name} when creating objects`
+              `createFromFile: Error creating '${api}' from file ${name} when creating objects`,
+              e
             );
             resolve(undefined);
           })
