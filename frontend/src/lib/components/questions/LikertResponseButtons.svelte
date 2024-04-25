@@ -1,7 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {createEventDispatcher} from 'svelte';
-  import {concatClass} from '$lib/utils/components';
   import {logDebugError} from '$lib/utils/logger';
   import {onKeyboardFocusOut} from '$lib/utils/onKeyboardFocusOut';
   import type {
@@ -18,6 +17,7 @@
   export let entityLabel: $$Props['entityLabel'] = '';
   export let mode: $$Props['mode'] = 'answer';
   export let onShadedBg: $$Props['onShadedBg'] = false;
+  export let variant: $$Props['variant'] = 'default';
 
   if (mode === 'display' && entityKey && !entityLabel)
     logDebugError(
@@ -27,6 +27,9 @@
   /** Holds the currently selected value and is initialized as `selectedKey` */
   let selected: AnswerOption['key'] | null | undefined;
   $: selected = selectedKey;
+
+  let vertical: boolean;
+  $: vertical = variant === 'vertical';
 
   // In order to achieve the correct behaviour with both mouse/touch and keyboard users and on different browsers, we have to listen a number of events. The radio inputs' events are fired in this order:
   //
@@ -116,6 +119,8 @@ Display the radio buttons used for answering Likert and other ordinal, multiple 
 
 The buttons are rendered as `<input type="radio">` elements contained inside a `<fieldset>`. Consider passing an `aria-labelledby` pointing to the question or an `aria-label`.
 
+The buttons are display horizontally by default, but can be rendered vertically by passing `variant="vertical"`. The vertical layout should be used for options with long labels.
+
 The radio buttons' behaviour is as follows when using a pointer or touch device:
 
 1. Selecting an option dispatches a `change` event 
@@ -136,6 +141,8 @@ Keyboard navigation works in the following way:
 - `selectedKey`: The initially selected key of the radio group.
 - `entityKey`: The answer key of the entity in display mode.
 - `entityLabel`: The label for the entity's answer. Be sure to supply this if `entityKey` is supplied.
+- `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default `false`
+- `variant`: Defines the layout variant of the buttons. The `vertical` variant can be used for questions with longer labels. @default `'default'`
 - Any valid attributes of a `<fieldset>` element
 
 ### Events
@@ -172,13 +179,22 @@ Keyboard navigation works in the following way:
   use:onKeyboardFocusOut={onGroupFocusOut}
   style:--radio-bg={onShadedBg ? 'var(--b3)' : 'var(--b1)'}
   style:--line-bg={onShadedBg ? 'var(--b1)' : 'var(--b3)'}
-  {...concatClass($$restProps, 'relative w-full gap-0')}>
+  class:vertical
+  {...$$restProps}>
   <!-- The line behind the options -->
-  <div
-    aria-hidden="true"
-    class="absolute top-16 h-4 -translate-y-1/2 bg-[oklch(var(--line-bg))]"
-    style="grid-row: 2; width: calc(100% / {options?.length} * {(options?.length ?? 0) -
-      1}); left: calc(50% / {options?.length})" />
+  {#if vertical}
+    <div
+      aria-hidden="true"
+      class="absolute left-16 w-4 -translate-x-1/2 bg-[oklch(var(--line-bg))]"
+      style="grid-column: 2; height: calc(100% / {options?.length} * {(options?.length ?? 0) -
+        1}); top: calc(50% / {options?.length})" />
+  {:else}
+    <div
+      aria-hidden="true"
+      class="absolute top-16 h-4 -translate-y-1/2 bg-[oklch(var(--line-bg))]"
+      style="grid-row: 2; width: calc(100% / {options?.length} * {(options?.length ?? 0) -
+        1}); left: calc(50% / {options?.length})" />
+  {/if}
 
   <!-- The radio buttons -->
   {#each options ?? [] as { key, label }}
@@ -195,11 +211,7 @@ Keyboard navigation works in the following way:
 
     <!-- The button -->
     <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-    <label
-      on:click={(e) => onClick(e, key)}
-      on:keyup={(e) => onKeyUp(e, key)}
-      class="grid grid-flow-row auto-rows-max justify-items-center gap-md"
-      style="grid-row: 2">
+    <label on:click={(e) => onClick(e, key)} on:keyup={(e) => onKeyUp(e, key)}>
       <input
         type="radio"
         class="radio-primary radio relative h-32 w-32 border-lg bg-base-100 outline outline-4 outline-[oklch(var(--radio-bg))] disabled:opacity-100"
@@ -216,7 +228,7 @@ Keyboard navigation works in the following way:
           mode === 'answer' ||
           (mode === 'display' && (selectedKey == key || entityKey == key))
         )}
-        class="small-label text-center">
+        class="small-label {vertical ? 'text-start' : 'text-center'}">
         {label}
       </div>
     </label>
@@ -225,11 +237,44 @@ Keyboard navigation works in the following way:
 
 <style lang="postcss">
   fieldset {
-    @apply grid auto-cols-fr grid-flow-col;
+    @apply relative grid w-full gap-0;
+  }
+
+  fieldset.vertical {
+    @apply grid-flow-row auto-rows-fr gap-md;
+    grid-template-columns: fr fr auto;
+  }
+
+  fieldset:not(.vertical) {
+    @apply auto-cols-fr grid-flow-row;
     grid-template-rows: auto max-content;
   }
 
+  label {
+    @apply grid gap-md;
+  }
+
+  fieldset.vertical label {
+    @apply auto-cols-fr grid-flow-col items-center justify-items-start gap-md;
+    grid-column: 2;
+    grid-template-columns: auto;
+  }
+
+  fieldset:not(.vertical) label {
+    @apply grid-flow-row auto-rows-max justify-items-center;
+    grid-row: 2;
+  }
+
   .display-label {
+    @apply small-label;
+  }
+
+  fieldset.vertical .display-label {
+    @apply small-label self-center pe-6 text-end;
+    grid-column: 1;
+  }
+
+  fieldset:not(.vertical) .display-label {
     @apply small-label self-end pb-6 text-center;
     grid-row: 1;
   }
