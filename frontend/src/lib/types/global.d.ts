@@ -92,6 +92,7 @@ declare global {
     }>;
     questions: {
       showCategoryTags: boolean;
+      showIntroPage: boolean;
     };
     results: {
       minimumAnswers: number;

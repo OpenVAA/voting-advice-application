@@ -90,10 +90,15 @@
       "description": "Settings related to the question view.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["showCategoryTags"],
+      "required": ["showCategoryTags", "showIntroPage"],
       "properties": {
         "showCategoryTags": {
           "description": "Whether to show the category tag along the question text.",
+          "type": "boolean",
+          "default": true
+        },
+        "showIntroPage": {
+          "description": "Whether to show the questions intro page before going to questions.",
           "type": "boolean",
           "default": true
         }
