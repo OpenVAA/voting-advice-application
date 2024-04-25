@@ -42,7 +42,7 @@ Used to show an entity's opinions in an `EntityDetails` component.
 
 <div class="p-lg">
   {#each questions as question}
-    {@const {id, text, type, values, category} = question}
+    {@const {id, text, type, values, category, customData} = question}
     {@const answer = getLikertAnswer(entity, question)}
     {@const voterAnswer = getVoterLikertAnswer(question)}
     {@const headingId = `questionHeading-${id}`}
@@ -77,7 +77,8 @@ Used to show an entity's opinions in an `EntityDetails` component.
           selectedKey={voterAnswer}
           entityKey={answer?.value}
           entityLabel={shortName}
-          options={values} />
+          options={values}
+          variant={customData?.vertical ? 'vertical' : undefined} />
       {:else}
         {$t('error.general')}
       {/if}

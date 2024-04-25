@@ -133,7 +133,7 @@
 </script>
 
 {#if question}
-  {@const {id, text, type, values, category, info} = question}
+  {@const {id, text, type, values, category, info, customData} = question}
   {@const headingId = `questionHeading-${id}`}
 
   <BasicPage
@@ -194,6 +194,7 @@
           options={values}
           {selectedKey}
           onShadedBg={videoProps != null}
+          variant={customData?.vertical ? 'vertical' : undefined}
           on:change={answerQuestion} />
       {:else}
         {$t('error.general')}
