@@ -29,6 +29,10 @@ export type LikertResponseButtonsProps = SvelteHTMLElements['fieldset'] & {
    * Set to `true` if using the component on a dark (`base-300`) background. @default false
    */
   onShadedBg?: boolean;
+  /**
+   * Defines the layout variant of the buttons. The `vertical` variant can be used for questions with longer labels. @default 'default'
+   */
+  variant?: 'default' | 'vertical';
 };
 
 /**
