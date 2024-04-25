@@ -1,26 +1,33 @@
+/*
+ * Matching utility functions
+ *
+ * NB. This is a temporary implementation which will be replaced with a proper one when the `vaa-data` model is implemented. The model will allow the passing of its consituent objects directly to the matching algorithm without need for constructing mediating objects, such as `LikertQuestion`s below.
+ */
+
 import {
   type MatchingOptions,
   MatchingAlgorithm,
+  MISSING_VALUE,
   MultipleChoiceQuestion,
   DistanceMetric,
   MissingValueDistanceMethod,
   type MatchableQuestionGroup
 } from '$voter/vaa-matching';
 import {error} from '@sveltejs/kit';
+import {logDebugError} from './logger';
 
 /**
- * Perform the candidate matching. NB. We can't use the stores directly, because they
- * will not be reliably updated when called from within a module.
- * This is a placeholder for demo purposes. In the proper app, all of the
- * objects in the stores will be in a form consumed by the matching algorithm
- * by default.
- * TODO: Write proper implementation.
+ * Run the matching algorithm.
+ * @param allQuestions All of the available questions
+ * @param answeredQuestions The question-answer dictionary of the user's answers
+ * @param entities The candidates or parties to include in the matching
+ * @returns The matching results as entities wrapped in ranking properties
  */
-export function matchCandidates(
+export function match<E extends EntityProps>(
   allQuestions: QuestionProps[],
   answeredQuestions: AnswerDict,
-  candidates: CandidateProps[]
-): RankingProps<CandidateProps>[] {
+  entities: E[]
+): RankingProps<E>[] {
   // Create the algorithm instance
   const algorithm = new MatchingAlgorithm({
     distanceMetric: DistanceMetric.Manhattan,
@@ -73,9 +80,51 @@ export function matchCandidates(
     }))
   };
 
-  // Get matches
-  const matches = algorithm.match(questions, voter, candidates, matchingOptions);
-  return matches;
+  // Perform the matching
+  return algorithm.match(questions, voter, entities, matchingOptions);
+}
+
+/**
+ * Performs a naïve party match based on the mean of their candidates' answers.
+ * NB. This will not overwrite any existing party answers.
+ * NB. The current implementation will only consider single-choice questions.
+ * @param allQuestions All of the available questions
+ * @param answeredQuestions The question-answer dictionary of the user's answers
+ * @param candidates The candidates to include in the matching
+ * @param parties The parties to include in the matching
+ * @returns The matching results as entities wrapped in ranking properties
+ */
+export function matchParties(
+  allQuestions: QuestionProps[],
+  answeredQuestions: AnswerDict,
+  candidates: CandidateProps[],
+  parties: PartyProps[]
+): RankingProps<PartyProps>[] {
+  // Calculate average answers for each party for each question
+  for (const party of parties) {
+    if (!party.answers) party.answers = {};
+    const partyCands = candidates.filter((c) => c.party?.id === party.id);
+    for (const qid of Object.keys(answeredQuestions)) {
+      if (party.answers[qid] != null) continue;
+      const answers = partyCands
+        .map((c) => c.answers[qid]?.value)
+        .filter((v) => {
+          if (v == null) return false;
+          if (typeof v !== 'number') {
+            logDebugError(
+              `Matching.matchParties: Invalid answer type ${typeof v} (only numbers allowd). Value: ${v}.`
+            );
+            return false;
+          }
+          return true;
+        }) as number[];
+      // Calculate average answer
+      party.answers[qid] = {
+        value: answers.length ? answers.reduce((a, b) => a + b, 0) / answers.length : MISSING_VALUE
+      };
+    }
+  }
+  return match(allQuestions, answeredQuestions, parties);
 }
 
 /**
