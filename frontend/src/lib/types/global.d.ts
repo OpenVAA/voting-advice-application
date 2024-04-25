@@ -191,7 +191,12 @@ declare global {
     max?: number | Date;
     notLocalizable?: boolean;
     dateType?: DateType;
-    customData?: (JSONData & {video?: CustomVideoProps}) | null;
+    customData?:
+      | (JSONData & {
+          video?: CustomVideoProps;
+          vertical?: boolean;
+        })
+      | null;
   }
 
   /**
