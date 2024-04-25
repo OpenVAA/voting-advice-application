@@ -67,7 +67,7 @@ for (const dbLoc in localeMatches) {
 
 const config: Config<TranslationsPayload> = {
   // log: { level: import.meta.env.DEV ? 'debug' : 'warn' },
-  parser: parser(),
+  parser: parser({ignoreTag: true}),
   // Add language names as default translations for all locales under the 'lang' key
   translations: Object.fromEntries(Object.keys(localeMatches).map((l) => [l, {lang: langNames}])),
   // Define loaders so that we use the dbLocales names for ones matched in static locales
