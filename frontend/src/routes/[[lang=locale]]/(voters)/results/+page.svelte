@@ -3,7 +3,7 @@
   import {t} from '$lib/i18n';
   import {candidateFilters} from '$lib/utils/filters';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {candidateRankings, parties, resultsAvailable, settings} from '$lib/utils/stores';
+  import {candidateRankings, partyRankings, resultsAvailable, settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {EntityList} from '$lib/components/entityList';
   import {EntityListControls} from '$lib/components/entityListControls';
@@ -18,9 +18,7 @@
   if (!sections?.length) error(500, 'No sections to show');
 
   let filteredCandidates: MaybeRanked<CandidateProps>[] = $candidateRankings;
-  let filteredParties: MaybeRanked<PartyProps>[] = $parties;
-
-  // TODO: Enable party rankings
+  let filteredParties: MaybeRanked<PartyProps>[] = $partyRankings;
 </script>
 
 <BasicPage title={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}>
@@ -82,14 +80,17 @@
     {:else if sections[$activeTab] === 'party'}
       <h2 class="mx-10 mb-md mt-md">
         {$t('results.partiesShown', {numShown: filteredParties.length})}
-        {#if filteredParties.length !== $parties.length}
+        {#if filteredParties.length !== $partyRankings.length}
           <span class="font-normal text-secondary"
-            >{$t('results.partiesTotal', {numTotal: $parties.length})}</span>
+            >{$t('results.partiesTotal', {numTotal: $partyRankings.length})}</span>
         {/if}
       </h2>
 
       {#if $candidateFilters}
-        <EntityListControls contents={$parties} bind:output={filteredParties} class="mx-10 mb-md" />
+        <EntityListControls
+          contents={$partyRankings}
+          bind:output={filteredParties}
+          class="mx-10 mb-md" />
       {/if}
 
       <EntityList

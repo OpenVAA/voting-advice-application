@@ -5,7 +5,7 @@ import {page} from '$app/stores';
 import localSettings from '$lib/config/settings.json';
 import {logDebugError} from '$lib/utils/logger';
 import {wrap} from '$lib/utils/entities';
-import {matchCandidates} from '$lib/utils/matching';
+import {match, matchParties} from '$lib/utils/matching';
 
 // Store values in local storage to prevent them from disappearing in refresh
 // Here we check if item already exists on a refresh event
@@ -158,8 +158,22 @@ export const candidateRankings: Readable<
   [candidates, opinionQuestions, answeredQuestions, resultsAvailable],
   ([$candidates, $opinionQuestions, $answeredQuestions, $resultsAvailable]) => {
     return $resultsAvailable
-      ? matchCandidates($opinionQuestions, $answeredQuestions, $candidates)
+      ? match($opinionQuestions, $answeredQuestions, $candidates)
       : $candidates.map(wrap);
   },
   []
 );
+
+/**
+ * A store that holds the party rankings. For ease of use, these will be wrapped entities with no `score` properties, if results are not yet available.
+ */
+export const partyRankings: Readable<RankingProps<PartyProps>[] | WrappedEntity<PartyProps>[]> =
+  derived(
+    [candidates, parties, opinionQuestions, answeredQuestions, resultsAvailable],
+    ([$candidates, $parties, $opinionQuestions, $answeredQuestions, $resultsAvailable]) => {
+      return $resultsAvailable
+        ? matchParties($opinionQuestions, $answeredQuestions, $candidates, $parties)
+        : $parties.map(wrap);
+    },
+    []
+  );
