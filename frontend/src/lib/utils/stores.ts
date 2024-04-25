@@ -75,7 +75,15 @@ export function resetLocalStorage(): void {
 }
 
 /**
- * Utility stores for candidates as part of `PageData`.
+ * Utility store for the election as part of `PageData`.
+ */
+export const election: Readable<ElectionProps | undefined> = derived(
+  page,
+  ($page) => $page.data.election
+);
+
+/**
+ * Utility store for candidates as part of `PageData`.
  */
 export const candidates: Readable<CandidateProps[]> = derived(
   page,
@@ -84,12 +92,12 @@ export const candidates: Readable<CandidateProps[]> = derived(
 );
 
 /**
- * Utility stores for parties as part of `PageData`.
+ * Utility store for parties as part of `PageData`.
  */
 export const parties: Readable<PartyProps[]> = derived(page, ($page) => $page.data.parties, []);
 
 /**
- * Utility stores for infoQuestions as part of `PageData`.
+ * Utility store for infoQuestions as part of `PageData`.
  */
 export const infoQuestions: Readable<QuestionProps[]> = derived(
   page,
@@ -98,7 +106,7 @@ export const infoQuestions: Readable<QuestionProps[]> = derived(
 );
 
 /**
- * Utility stores for opinionQuestions as part of `PageData`.
+ * Utility store for opinionQuestions as part of `PageData`.
  */
 export const opinionQuestions: Readable<QuestionProps[]> = derived(
   page,
