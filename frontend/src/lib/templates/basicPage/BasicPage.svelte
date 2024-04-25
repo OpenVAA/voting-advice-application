@@ -182,8 +182,8 @@ Instead, you have to use a wrapper. Note that this will also always result in th
 </Page>
 
 <style lang="postcss">
-  :global(.vaa-basicPage-actions a),
-  :global(.vaa-basicPage-actions button) {
+  :global(.vaa-basicPage-actions a:not([disabled])),
+  :global(.vaa-basicPage-actions button:not([disabled])) {
     /* !text is valid class prefix */
     @apply !text-[var(--headerIcon-color)];
   }
