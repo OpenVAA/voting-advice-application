@@ -3,6 +3,7 @@ export * from './translations.type';
 
 /* Be sure to update these arrays every time you add a new locale to `./translations` */
 const keys = [
+  'about',
   'aria',
   'actionLabels',
   'candidate',
@@ -12,6 +13,7 @@ const keys = [
   'entity',
   'error',
   'header',
+  'info',
   'intro',
   'navigation',
   'questions',

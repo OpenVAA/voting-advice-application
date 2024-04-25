@@ -18,7 +18,11 @@
   </HeadingGroup>
 
   <svelte:fragment slot="banner">
-    <Button href="/help" variant="icon" icon="help" text={$t('actionLabels.help')} />
+    <Button
+      href={$getRoute(Route.Help)}
+      variant="icon"
+      icon="help"
+      text={$t('actionLabels.help')} />
   </svelte:fragment>
 
   <p class="text-center">
