@@ -1,0 +1,6 @@
+{
+  "content": "<p>The Election Compass works by comparing the opinions you enter to those given by {candidatePlural} and {partyPlural}. The results are given a match score, which is the percentage of how closely you agree with them.</p>\n<ul>\n<li>A score of 100 means that you agree completely on all the questions you have answered.</li>\n<li>A score of 0 means that you disagree on all of the questions.</li>\n<li>A score between these two extremes means you agree on some questions and disagree on others.</li>\n</ul>",
+  "heroEmoji": "⚙️",
+  "returnButton": "Return Home",
+  "title": "How Does This App Work?"
+}
