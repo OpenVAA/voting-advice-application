@@ -1,4 +1,4 @@
-import {derived, writable} from 'svelte/store';
+import {derived, get, writable} from 'svelte/store';
 import type {Readable, Writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import {page} from '$app/stores';
@@ -7,28 +7,72 @@ import {logDebugError} from '$lib/utils/logger';
 import {wrap} from '$lib/utils/entities';
 import {match, matchParties} from '$lib/utils/matching';
 
-// Store values in local storage to prevent them from disappearing in refresh
-// Here we check if item already exists on a refresh event
-function getItemFromLocalStorage(key: string): unknown {
-  let item = null;
+/**
+ * Contains the currently effective app settings.
+ * NB! Settings are overwritten by root key.
+ */
+export const settings: Readable<AppSettings> = derived([page], ([$page]) =>
+  $page?.data?.appSettings ? Object.assign(localSettings, $page.data.appSettings) : localSettings
+);
+
+type LocallyStoredValue<T> = {
+  version: number;
+  data: T;
+};
+
+/**
+ * Save a value to local storage to prevent them from disappearing on page refresh.
+ * The function will automatically append the app version to the data so that it may be deprecated.
+ * @param key The key to store the value under.
+ * @param value The value to store.
+ */
+function saveItemToLocalStorage<T = JSONData>(key: string, value: T): void {
+  const toStore: LocallyStoredValue<T> = {
+    version: get(settings).appVersion.version,
+    data: value
+  };
+  localStorage.setItem(key, JSON.stringify(toStore));
+}
+
+/**
+ * Get a value stored in local storage to prevent them from disappearing on page refresh.
+ * The function will automatically check whether the stored data version is up to date.
+ */
+function getItemFromLocalStorage<T = JSONData>(key: string): T | undefined {
+  let item: T | undefined;
   if (browser && localStorage) {
     const itemInLocalStorage = localStorage.getItem(key);
-    item = itemInLocalStorage ? JSON.parse(itemInLocalStorage) : null;
+    if (itemInLocalStorage) {
+      const stored = JSON.parse(itemInLocalStorage) as LocallyStoredValue<T>;
+      // Check that stored data is versioned and the version is greater than or equal to the required version
+      if (
+        stored &&
+        typeof stored === 'object' &&
+        stored.version != null &&
+        stored.version >= get(settings).appVersion.requireUserDataVersion
+      ) {
+        item = stored.data;
+      } else {
+        localStorage.removeItem(key);
+      }
+    }
   }
   return item;
 }
 
-function subscribeToLocalStorage<T>(item: Writable<T>, key: string): void {
+function subscribeToLocalStorage<T = JSONData>(item: Writable<T>, key: string): void {
   if (browser && localStorage) {
-    item.subscribe((value) => localStorage.setItem(key, JSON.stringify(value)));
-    3;
+    item.subscribe((value) => saveItemToLocalStorage(key, value));
   }
 }
 
-function createStoreValueAndSubscribeToLocalStorage<T>(key: string, defaultValue: T): Writable<T> {
-  const storedValue = getItemFromLocalStorage(key);
+function createStoreValueAndSubscribeToLocalStorage<T = JSONData>(
+  key: string,
+  defaultValue: T
+): Writable<T> {
+  const storedValue = getItemFromLocalStorage<T>(key);
   // TODO: Check that the storedValue matches the defaultValue's type
-  const storeValue = writable(storedValue === null ? defaultValue : storedValue) as Writable<T>;
+  const storeValue = writable(storedValue == null ? defaultValue : storedValue) as Writable<T>;
   subscribeToLocalStorage(storeValue, key);
   return storeValue;
 }
@@ -124,14 +168,6 @@ export const appType: Writable<AppType> = writable('voter');
  * The possible types of the application
  */
 export type AppType = 'candidate' | 'voter';
-
-/**
- * Contains the currently effective app settings.
- * NB! Settings are overwritten by root key.
- */
-export const settings: Readable<AppSettings> = derived([page], ([$page]) =>
-  $page.data.appSettings ? Object.assign(localSettings, $page.data.appSettings) : localSettings
-);
 
 /**
  * A store that is true, when the results (and questions) are available
