@@ -2,7 +2,7 @@
   import {error} from '@sveltejs/kit';
   import {getUUID} from '$lib/utils/components';
   import {isCandidate, isParty, parseMaybeRanked} from '$lib/utils/entities';
-  import {Avatar} from '$lib/components/avatar';
+  import {Avatar, type AvatarProps} from '$lib/components/avatar';
   import {Card} from '$lib/components/shared/card/index';
   import {ElectionSymbol} from '$lib/components/electionSymbol';
   import {MatchScore} from '$lib/components/matchScore';
@@ -17,23 +17,33 @@
 
   const baseId = getUUID();
 
+  let avatarProps: AvatarProps;
   let electionSymbol: string | undefined;
   let entity: EntityProps;
-  let image: ImageProps | undefined;
   let name: string;
   let nominatingParty: PartyProps | undefined;
   let ranking: RankingProps | undefined;
 
   $: {
     ({entity, ranking} = parseMaybeRanked(content));
+    name = entity.name;
+    avatarProps = {
+      name,
+      image: entity.photo,
+      linkFullImage: context === 'details'
+    };
     if (isCandidate(entity)) {
-      name = entity.name;
-      image = entity.photo;
       electionSymbol = entity.electionSymbol;
       nominatingParty = entity.party;
     } else if (isParty(entity)) {
-      name = entity.name;
-      image = entity.photo;
+      // Instead of auto-generating the initials from the name, we use the party's abbreviation
+      if (entity.shortName) avatarProps.initials = entity.shortName;
+      // If the party has a color defined, use it for the avatar background. We expect these to be dark, so the light text is used
+      if (entity.color) {
+        avatarProps.customColor = entity.color;
+        avatarProps.textColor = 'primary-content';
+        if (entity.colorDark) avatarProps.customColorDark = entity.colorDark;
+      }
       electionSymbol = entity.electionSymbol;
     } else {
       error(500, 'Entity must be either a candidate or a party.');
@@ -66,7 +76,7 @@ A card for displaying an entity, i.e. a candidate or a party, in a list or as pa
   aria-labelledby="{baseId}_title {ranking ? `${baseId}_callout` : ''}"
   aria-describedby="{baseId}_subtitle"
   {...$$restProps}>
-  <Avatar slot="image" {image} {name} linkFullImage={context === 'details'} />
+  <Avatar slot="image" {...avatarProps} />
   <h3 slot="title" id="{baseId}_title">{name}</h3>
   <div class="flex flex-row items-center gap-md" slot="subtitle" id="{baseId}_subtitle">
     {#if nominatingParty}
