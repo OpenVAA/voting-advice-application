@@ -54,7 +54,7 @@
     "transcript": "Text",
     "video": "Video",
     "transcriptToggleLabel": "Switch between video and text",
-    "showTranscript": "Show text instead of video",
+    "showTranscript": "Show video as text",
     "showVideo": "Show video"
   }
 }
