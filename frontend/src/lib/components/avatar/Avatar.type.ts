@@ -23,6 +23,21 @@ export type AvatarProps = SvelteHTMLElements['figure'] & {
   color?: Color;
 
   /**
+   * The color of the initials text placeholder. @default 'neutral'
+   */
+  textColor?: Color;
+
+  /**
+   * A custom color string to use for the background color of the initials placeholder, e.g. in case of parties, which will override the `color` property. Make sure to define both `customColor` and `customColorDark` together.
+   */
+  customColor?: string | null;
+
+  /**
+   * A custom color string to use for the background color of the initials placeholder in dark mode, which will override the `color` property.
+   */
+  customColorDark?: string | null;
+
+  /**
    * Whether to link the thumbnail to the full image. @default false
    */
   linkFullImage?: boolean;
