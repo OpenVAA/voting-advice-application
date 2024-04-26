@@ -36,6 +36,7 @@
   },
   "firstName": "Etunimi",
   "home": "Alkuun",
+  "inCooperation": "Yhteistyössä",
   "info": "Lisätietoja",
   "language": {
     "select": "Valitse kieli"
@@ -70,7 +71,7 @@
   },
   "progress": "Eteneminen",
   "publishedBy": "Julkaisija: {publisher}",
-  "question": "Kysymys",
+  "question": "Väittämä",
   "readMore": "Lue lisää",
   "required": "Vaadittava",
   "resetAnswers": "Tyhjennä vastauksesi",

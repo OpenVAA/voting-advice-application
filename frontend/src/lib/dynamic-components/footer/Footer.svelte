@@ -25,8 +25,20 @@ A template part that is used to show the application's common footer, shown on s
 
   type $$Props = FooterProps; // eslint-disable-line @typescript-eslint/no-unused-vars
 
-  const { appCustomization, t } = getAppContext();
+  const { appCustomization, darkMode, locale, t } = getAppContext();
 </script>
+
+<div class="my-lg">
+  <h3 class="my-lg text-center">{$t('common.inCooperation')}</h3>
+  <div class="vaa-frontpage-logos align-center flex flex-row flex-wrap items-center justify-center gap-x-xl gap-y-lg">
+    <OpenVAALogo />
+    <img src="/images/allianssi-logo-full-{$darkMode ? 'white' : 'black'}.png" alt="Allianssi" />
+    <img
+      src="/images/kone-logo-{$darkMode ? 'white' : 'black'}-{$locale ?? 'fi'}.svg"
+      alt="Koneen Säätiö, Konestiftelsen, Kone Foundation" />
+    <img src="/images/sitra-logo-{$darkMode ? 'white' : 'black'}.svg" alt="Sitra" class="!max-w-[6rem]" />
+  </div>
+</div>
 
 <footer {...concatClass($$restProps, 'mt-lg pl-safelgl pr-safelgr pb-safelgb text-center text-sm text-secondary')}>
   {#if $appCustomization.publisherName}
