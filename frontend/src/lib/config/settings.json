@@ -1,5 +1,9 @@
 {
   "$schema": "./settings-schema.json",
+  "appVersion": {
+    "version": 1,
+    "requireUserDataVersion": 1
+  },
   "colors": {
     "light": {
       "primary": "#2546a8",
