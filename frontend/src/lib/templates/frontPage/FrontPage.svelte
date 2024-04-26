@@ -74,8 +74,13 @@ is based on.
 
   <!-- Hero image -->
   {#if $$slots.hero}
-    <figure role="presentation" class="vaa-frontpage-hero hero bg-[#d4dbef]">
+    <figure role="presentation" class="vaa-frontpage-hero -z-1 hero bg-[#d4dbef]">
       <slot name="hero" />
+      {#if $$slots.heroLogo}
+        <div class="heroLogo">
+          <slot name="heroLogo" />
+        </div>
+      {/if}
     </figure>
   {/if}
 
@@ -99,5 +104,13 @@ is based on.
 <style lang="postcss">
   :global(.vaa-frontpage-hero > img) {
     @apply h-[40vh] w-full object-cover;
+  }
+
+  .heroLogo {
+    @apply flex h-1/2 w-full;
+  }
+
+  :global(.heroLogo > img) {
+    @apply m-auto max-w-[80%];
   }
 </style>

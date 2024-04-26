@@ -22,5 +22,7 @@
     "plural": "parties"
   },
   "thanksNo": "No Thanks",
-  "unaffiliated": "Unaffiliated"
+  "unaffiliated": "Unaffiliated",
+  "question": "Statement",
+  "inCooperation": "In Cooperation With"
 }

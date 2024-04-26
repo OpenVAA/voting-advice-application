@@ -22,5 +22,7 @@
     "plural": "puolueet"
   },
   "thanksNo": "Ei kiitos",
-  "unaffiliated": "Sitoutumaton"
+  "unaffiliated": "Sitoutumaton",
+  "question": "Väittämä",
+  "inCooperation": "Yhteistyössä"
 }
