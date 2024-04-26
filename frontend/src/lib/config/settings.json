@@ -44,6 +44,9 @@
       "name": "Español (Colombia)"
     }
   ],
+  "header": {
+    "showHelp": true
+  },
   "questions": {
     "showCategoryTags": true,
     "showIntroPage": true
