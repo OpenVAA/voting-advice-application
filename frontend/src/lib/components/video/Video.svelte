@@ -78,6 +78,7 @@
    * The current loading status of the video. The `error-pending` status is used when an error has occurred but we're still waiting for it to be resolved.
    */
   let status: 'waiting' | 'error' | 'error-pending' | 'normal' = 'normal';
+  let errorTimeout: NodeJS.Timeout | undefined;
 
   ////////////////////////////////////////////////////////////////////////////////
   // TRANSCRIPT
@@ -318,7 +319,9 @@
    */
   function onError() {
     status = 'error-pending';
-    setTimeout(() => {
+    // Clear any existing timeout, because onError would be called again only if the error has been cleared in the meantime
+    if (errorTimeout) clearTimeout(errorTimeout);
+    errorTimeout = setTimeout(() => {
       if (status === 'error-pending') status = 'error';
     }, ERROR_DELAY);
   }
