@@ -202,6 +202,7 @@
       {/if}
       <QuestionActions
         answered={selectedKey != null}
+        disablePrevious={questionIndex === 0}
         separateSkip={false}
         variant={videoProps ? 'icon' : 'default'}
         on:previous={gotoPreviousQuestion}
