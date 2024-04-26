@@ -11,7 +11,7 @@ declare global {
   /*
    * The format for JSON structure.
    */
-  type JSONData = null | string | number | boolean | {[x: string]: StrapiJson} | Array<StrapiJson>;
+  type JSONData = null | string | number | boolean | {[x: string]: JSONData} | Array<JSONData>;
 
   /**
    * Make specific properties of an interface required. Works the same way as
@@ -77,6 +77,10 @@ declare global {
    * The application settings, combined from both local settings and those retrieved from the database.
    */
   interface AppSettings {
+    appVersion: {
+      version: number;
+      requireUserDataVersion: number;
+    };
     colors: {
       light: {[name: string]: string};
       dark: {[name: string]: string};
