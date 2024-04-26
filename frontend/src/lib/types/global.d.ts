@@ -90,6 +90,9 @@ declare global {
       name: string;
       isDefault?: boolean;
     }>;
+    header: {
+      showHelp: boolean;
+    };
     questions: {
       showCategoryTags: boolean;
       showIntroPage: boolean;

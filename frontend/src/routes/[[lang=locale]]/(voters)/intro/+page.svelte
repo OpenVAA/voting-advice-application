@@ -1,6 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
+  import {settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {HeroEmoji} from '$lib/components/heroEmoji';
@@ -18,11 +19,13 @@
   </HeadingGroup>
 
   <svelte:fragment slot="banner">
-    <Button
-      href={$getRoute(Route.Help)}
-      variant="icon"
-      icon="help"
-      text={$t('actionLabels.help')} />
+    {#if $settings.header.showHelp}
+      <Button
+        href={$getRoute(Route.Help)}
+        variant="icon"
+        icon="help"
+        text={$t('actionLabels.help')} />
+    {/if}
   </svelte:fragment>
 
   <p class="text-center">
