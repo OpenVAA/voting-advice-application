@@ -26,7 +26,13 @@
 
   /** Holds the currently selected value and is initialized as `selectedKey` */
   let selected: AnswerOption['key'] | null | undefined;
-  $: selected = selectedKey;
+  const inputs: Record<string, HTMLInputElement> = {};
+  $: {
+    selected = selectedKey;
+    // We need to explicitly set the selected value, because group binding does not consistently update the input states themeselves
+    const input = inputs[`${selected}`];
+    if (input) input.checked = true;
+  }
 
   let vertical: boolean;
   $: vertical = variant === 'vertical';
@@ -222,6 +228,7 @@ Keyboard navigation works in the following way:
         {name}
         disabled={mode !== 'answer'}
         value={key}
+        bind:this={inputs[`${key}`]}
         bind:group={selected}
         on:keyup={(e) => onKeyUp(e, key)} />
 
