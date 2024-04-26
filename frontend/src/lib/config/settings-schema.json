@@ -86,6 +86,19 @@
         }
       }
     },
+    "header": {
+      "description": "Settings related to the app header.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["showHelp"],
+      "properties": {
+        "showHelp": {
+          "description": "Whether to show the help icon by default in the header.",
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
     "questions": {
       "description": "Settings related to the question view.",
       "type": "object",

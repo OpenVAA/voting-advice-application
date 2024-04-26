@@ -27,11 +27,13 @@
   </svelte:fragment>
 
   <svelte:fragment slot="banner">
-    <Button
-      href={$getRoute(Route.Help)}
-      variant="icon"
-      icon="help"
-      text={$t('actionLabels.help')} />
+    {#if $settings.header.showHelp}
+      <Button
+        href={$getRoute(Route.Help)}
+        variant="icon"
+        icon="help"
+        text={$t('actionLabels.help')} />
+    {/if}
     <Button
       on:click={() => console.info('Show favourites')}
       variant="icon"
