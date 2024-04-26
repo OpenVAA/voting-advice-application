@@ -36,6 +36,7 @@
   },
   "firstName": "Förnamn",
   "home": "hem",
+  "inCooperation": "I samarbete med",
   "info": "Information",
   "language": {
     "select": "Välj språk"

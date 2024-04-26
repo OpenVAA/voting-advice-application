@@ -199,6 +199,7 @@ export type TranslationKey =
   | 'common.faction.singular'
   | 'common.firstName'
   | 'common.home'
+  | 'common.inCooperation'
   | 'common.info'
   | 'common.language.select'
   | 'common.lastName'
