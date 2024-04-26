@@ -28,7 +28,7 @@
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
-  import { HeadingGroup } from '$lib/components/headingGroup';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
@@ -41,7 +41,7 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, appSettings, darkMode, getRoute, newUserEmail, t } = getCandidateContext();
+  const { appCustomization, appSettings, darkMode, getRoute, locale, newUserEmail, t } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -100,16 +100,23 @@
   // Top bar and styling
   ////////////////////////////////////////////////////////////////////
 
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
-  topBarSettings.push({
-    imageSrc: $darkMode
-      ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-      : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-  });
+  pageStyles.push({ drawer: { background: undefined } });
+  // topBarSettings.push({
+  //   imageSrc: $darkMode
+  //     ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
+  //     : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
+  // });
 </script>
 
-<MainContent title={$t('candidateApp.login.title')}>
-  <HeadingGroup slot="heading">
+<MainContent title={$t('candidateApp.login.title')} 
+  class="!pb-0 !px-0 !sm:px-lg" 
+  contentClass="!max-w-3xl p-lg sm:p-xl rounded-t-lg bg-base-300 grow">
+  <HeadingGroup slot="heading" class="mt-lg w-full p-lg">
+    <PreHeading class="flex flex-col items-center"
+      ><img
+        src="/images/nuorten-vaalikone-logo-{$locale ?? 'fi'}-{$darkMode ? 'white' : 'black'}.svg"
+        alt={$t('dynamic.appName')}
+        class="w-[26rem]" /></PreHeading>
     <h1>
       {showPasswordSetMessage ? $t('candidateApp.setPassword.passwordSetSuccesfully') : $t('dynamic.candidateAppName')}
     </h1>
@@ -203,3 +210,13 @@
 
   <Footer />
 </MainContent>
+
+<style lang="postcss">
+  :global(body) {
+    @apply bg-[url('https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/frontpage-bg-sm.jpg')] bg-cover bg-fixed bg-center sm:bg-[url('https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/frontpage-bg-md.jpg')] lg:bg-[url('https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/frontpage-bg-lg.jpg')] dark:bg-[url('https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/frontpage-bg-sm-dark.jpg')] dark:sm:bg-[url('https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/frontpage-bg-md-dark.jpg')] dark:lg:bg-[url('https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/frontpage-bg-lg-dark.jpg')];
+  }
+
+  :global(.vaa-frontpage-logos > svg, .vaa-frontpage-logos > img) {
+    @apply inline-block max-h-[2rem] max-w-[8rem];
+  }
+</style>

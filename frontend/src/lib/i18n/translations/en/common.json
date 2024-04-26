@@ -36,6 +36,7 @@
   },
   "firstName": "First Name",
   "home": "home",
+  "inCooperation": "In Cooperation With",
   "info": "Info",
   "language": {
     "select": "Select Language"
@@ -70,7 +71,7 @@
   },
   "progress": "Progress",
   "publishedBy": "Published by {publisher}",
-  "question": "Question",
+  "question": "Statement",
   "readMore": "Read More",
   "required": "Required",
   "resetAnswers": "Clear your answers",
