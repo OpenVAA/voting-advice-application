@@ -26,7 +26,8 @@ module.exports = {
    */
   bootstrap(/*{ strapi }*/) {
     try {
-      if (loadDataFolder) {
+      // Due to ENV variable handling, we'll bypass some falsy value
+      if (loadDataFolder && !['""', "''", '-', 'false', 'FALSE', '0'].includes(loadDataFolder)) {
         loadData(loadDataFolder);
       } else {
         generateMockData();
