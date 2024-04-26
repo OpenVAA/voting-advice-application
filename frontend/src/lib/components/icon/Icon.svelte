@@ -26,7 +26,7 @@
 
   // Create styles
   let classes: string;
-  let styles: string | undefined;
+  let styles: string;
   $: {
     classes = 'inline-block';
     styles = '';
