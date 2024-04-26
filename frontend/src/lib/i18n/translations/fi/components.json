@@ -7,7 +7,7 @@
   },
   "entityFilters": {
     "applyAndClose": "Sulje suodattimet",
-    "filterButtonLabel": "Suodatin",
+    "filterButtonLabel": "Suodata",
     "filters": "Suodattimet",
     "missingValue": "Ei vastausta",
     "reset": "Nollaa suodattimet",
@@ -54,7 +54,7 @@
     "transcript": "Teksti",
     "video": "Video",
     "transcriptToggleLabel": "Vaihda teksti- ja videonäkymän välillä",
-    "showTranscript": "Näytä tekstinä videon sijaan",
+    "showTranscript": "Näytä video tekstinä",
     "showVideo": "Näytä video"
   }
 }

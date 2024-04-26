@@ -2,6 +2,7 @@
   "bothHaventAnswered": "Sinä ja {entity} ette ole vastanneet tähän kysymykseen",
   "entityHasntAnswered": "{entity} ei ole vastannut tähän kysymykseen",
   "heroEmoji": "💬",
+  "infoDescription": "Taustatietoja tästä kysymyksestä",
   "next": "Seuraava",
   "notFound": "Kysmystä ei löytynyt",
   "previous": "Edellinen",
