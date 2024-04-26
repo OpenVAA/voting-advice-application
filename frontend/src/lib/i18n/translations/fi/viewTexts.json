@@ -1,5 +1,5 @@
 {
-  "appTitle": "Vaalikone",
+  "appTitle": "Nuorten Vaalikone",
   "frontpageIngress": "Vaalikoneen avulla voit etsiä ehdokkaita ja puolueita vaaleissa {electionDate, date, ::dMyyyy} sen mukaan, miten paljon he ovat samaa mieltä kanssasi.",
   "madeWith": "Rakennettu käyttäen",
   "publishedBy": "Julkaisija: {publisher}",
