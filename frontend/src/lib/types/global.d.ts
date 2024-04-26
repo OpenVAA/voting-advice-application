@@ -144,7 +144,7 @@ declare global {
    * The properties of an Election object
    */
   interface ElectionProps {
-    appLabels: AppLabels;
+    appLabels?: AppLabels;
     electionDate: Date;
     id: string;
     name: string;

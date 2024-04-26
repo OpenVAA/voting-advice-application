@@ -92,7 +92,7 @@ export const getAppSettings = ({
 };
 
 /**
- * Get election data from Strapi including the app labels.
+ * Get election data from Strapi including the possible app labels.
  * @param id The id of the Election the labels are used for
  * @param locale The locale to translate the texts to
  */
@@ -117,24 +117,30 @@ export const getElection = ({
     if (!result.length) throw error(500, 'No election found');
     const el = result[0];
     const attr = el.attributes;
-    let appLabels: StrapiAppLabelsData | LocalizedStrapiData<StrapiAppLabelsData>;
+    let appLabels: StrapiAppLabelsData | LocalizedStrapiData<StrapiAppLabelsData> | undefined;
     const localized = attr.electionAppLabel?.data;
     if (localized?.attributes?.locale === matchingLocale) {
       appLabels = localized;
     } else {
-      const found = localized?.attributes?.localizations?.data?.find(
+      appLabels = localized?.attributes?.localizations?.data?.find(
         (d) => d?.attributes?.locale === matchingLocale
       );
-      if (!found)
-        throw error(500, `Could not find app labels for election ${el.id} and locale ${locale}`);
-      appLabels = found;
     }
-    // Remove localizations and unnecessary details from appLabels
-    for (const key of ['id', 'localizations', 'createdAt', 'publishedAt', 'updatedAt', 'locale']) {
-      delete appLabels.attributes[key as keyof StrapiAppLabelsData['attributes']];
+    if (appLabels) {
+      // Remove localizations and unnecessary details from appLabels
+      for (const key of [
+        'id',
+        'localizations',
+        'createdAt',
+        'publishedAt',
+        'updatedAt',
+        'locale'
+      ]) {
+        delete appLabels.attributes[key as keyof StrapiAppLabelsData['attributes']];
+      }
     }
     return {
-      appLabels: appLabels.attributes,
+      appLabels: appLabels?.attributes,
       electionDate: attr.electionDate,
       id: `${el.id}`,
       name: translate(attr.name, locale),
