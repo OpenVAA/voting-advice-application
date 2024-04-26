@@ -53,9 +53,10 @@
     questionId = data.questionId === FIRST_QUESTION_ID ? questions[0].id : data.questionId;
     question = questions.find((q) => q.id == questionId);
     if (!question) throw error(404, `No question with id ${questionId}`);
+    // Update the index because we need it in the goto-functions
+    questionIndex = questions.indexOf(question);
     // Only perform updates if the question has actually changed
     if (previousId !== question.id) {
-      questionIndex = questions.indexOf(question);
       // Track whether the previous question has video content
       const previousHadVideo = videoProps != null;
       // Check if this question has video content
