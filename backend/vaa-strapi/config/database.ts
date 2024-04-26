@@ -8,11 +8,7 @@ module.exports = ({env}) => ({
       user: env('DATABASE_USERNAME', 'strapi'),
       password: env('DATABASE_PASSWORD', 'strapi'),
       schema: env('DATABASE_SCHEMA', 'public'), // Not required
-      ssl: env.bool('DATABASE_SSL_SELF')
-        ? {
-            rejectUnauthorized: env.bool('DATABASE_SSL_SELF', false)
-          }
-        : false // This is a workaround due to a Strapi bug, it is documented at https://docs.strapi.io/developer-docs/latest/setup-deployment-guides/configurations/required/databases.html#configuration-structure
+      ssl: env.bool('DATABASE_SSL_SELF', false)
     },
     useNullAsDefault: true
   }
