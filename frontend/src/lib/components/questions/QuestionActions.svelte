@@ -8,6 +8,7 @@
   type $$Props = QuestionActionsProps;
 
   export let answered: $$Props['answered'] = false;
+  export let disablePrevious: $$Props['disablePrevious'] = false;
   export let variant: $$Props['variant'] = 'default';
   export let separateSkip: $$Props['separateSkip'] = false;
 
@@ -34,6 +35,7 @@ Display the question's secondary actions, such as skip.
 ### Properties
 
 - `answered`: Set to `true` if the question has already been answered. This controls which actions are shown. @default `false`
+- `disablePrevious`:  Whether to disable the previous button. @default `false`
 - `variant`: Use to switch between looser and tighter layouts. @default `'default'`
 - `separateSkip`: Whether to separate `skip` and `next` actions both as events and button symbols. @default `false`
 - Any valid properties of a `<div>` element
@@ -86,6 +88,7 @@ If `separateSkip` is set to `true`, the `next` event is switched to a `skip` eve
     text={$t('questions.remove')} />
   <Button
     on:click={onPrevious}
+    disabled={disablePrevious}
     style="grid-row: 1; grid-column: 1"
     color="secondary"
     variant={variant === 'icon' ? 'icon' : 'secondary'}
