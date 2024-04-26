@@ -19,7 +19,7 @@ export async function loadData(folder: string, force = false) {
   console.info('##########################################');
   console.info('Starting data loading...');
 
-  if (!folder.startsWith('./')) {
+  if (!(folder.startsWith('.') || folder.startsWith('/'))) {
     folder = Path.resolve('.', folder);
     console.warn(`Folder doesn't start with './', converted to: ${folder}`);
   }
