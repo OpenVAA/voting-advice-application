@@ -77,6 +77,9 @@ declare global {
    * The application settings, combined from both local settings and those retrieved from the database.
    */
   interface AppSettings {
+    admin: {
+      email: string;
+    };
     appVersion: {
       version: number;
       requireUserDataVersion: number;

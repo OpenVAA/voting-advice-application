@@ -3,6 +3,9 @@
  * for interpolation
  */
 export type TranslationsPayload = Partial<{
+  adminEmail: string;
+  candidatePlural: string;
+  candidateSingular: string;
   constituency: string;
   electionDate: Date;
   filters: string;
@@ -18,6 +21,8 @@ export type TranslationsPayload = Partial<{
   numUnansweredQuestions: number;
   openVAA: string;
   partiesTerm: string;
+  partyPlural: string;
+  partySingular: string;
   publisher: string;
   seconds: number;
   timeLeft: number;

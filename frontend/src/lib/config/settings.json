@@ -4,6 +4,9 @@
     "version": 1,
     "requireUserDataVersion": 1
   },
+  "admin": {
+    "email": "error@openvaa.org"
+  },
   "colors": {
     "light": {
       "primary": "#2546a8",
