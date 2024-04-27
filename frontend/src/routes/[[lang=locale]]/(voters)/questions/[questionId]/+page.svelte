@@ -215,9 +215,11 @@
 
       <svelte:fragment slot="heading">
         <HeadingGroup id={headingId} class="relative">
-          {#if $settings.questions.showCategoryTags && category}
-            <PreHeading><CategoryTag {category} /></PreHeading>
-          {/if}
+          <PreHeading class="mb-0">
+            <span class="small-label"
+              >{$t('common.question')} {questionIndex + 1}/{questions.length}</span>
+            {#if $settings.questions.showCategoryTags && category}<CategoryTag {category} />{/if}
+          </PreHeading>
           <h1 class={videoProps ? 'my-0 text-lg sm:my-md sm:text-xl' : ''}>{text}</h1>
         </HeadingGroup>
       </svelte:fragment>
