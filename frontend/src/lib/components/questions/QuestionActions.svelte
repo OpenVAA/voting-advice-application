@@ -11,6 +11,8 @@
   export let disablePrevious: $$Props['disablePrevious'] = false;
   export let variant: $$Props['variant'] = 'default';
   export let separateSkip: $$Props['separateSkip'] = false;
+  export let nextLabel: $$Props['nextLabel'] = undefined;
+  export let previousLabel: $$Props['previousLabel'] = undefined;
 
   const dispatch = createEventDispatcher();
 
@@ -38,6 +40,8 @@ Display the question's secondary actions, such as skip.
 - `disablePrevious`:  Whether to disable the previous button. @default `false`
 - `variant`: Use to switch between looser and tighter layouts. @default `'default'`
 - `separateSkip`: Whether to separate `skip` and `next` actions both as events and button symbols. @default `false`
+- `nextLabel`: The text label for the `next` button. @default `$t('questions.next')` or `$t('questions.skip')`
+- `previousLabel`: The text label for the `previous` button. @default `$t('questions.previous')`
 - Any valid properties of a `<div>` element
 
 ### Events
@@ -75,7 +79,7 @@ If `separateSkip` is set to `true`, the `next` event is switched to a `skip` eve
     iconPos={variant === 'tight' ? 'right' : 'top'}
     class={variant === 'icon' || variant === 'tight' ? 'content-end' : ''}
     icon={answered || !separateSkip ? 'next' : 'skip'}
-    text={answered || !separateSkip ? $t('questions.next') : $t('questions.skip')} />
+    text={nextLabel ?? (answered || !separateSkip ? $t('questions.next') : $t('questions.skip'))} />
   <Button
     on:click={onDelete}
     disabled={answered ? undefined : true}
@@ -95,5 +99,5 @@ If `separateSkip` is set to `true`, the `next` event is switched to a `skip` eve
     iconPos={variant === 'tight' ? 'left' : 'top'}
     class={variant === 'icon' || variant === 'tight' ? 'content-start' : ''}
     icon="previous"
-    text={$t('questions.previous')} />
+    text={previousLabel ?? $t('questions.previous')} />
 </div>
