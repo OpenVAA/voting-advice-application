@@ -13,7 +13,7 @@
   export let contents: $$Props['contents'];
   export let actionCallBack: $$Props['actionCallBack'] = undefined;
   export let entityCardProps: $$Props['entityCardProps'] = undefined;
-  export let itemsPerPage: NonNullable<$$Props['itemsPerPage']> = 10;
+  export let itemsPerPage: NonNullable<$$Props['itemsPerPage']> = 20;
   export let itemsTolerance: NonNullable<$$Props['itemsTolerance']> = 0.2;
   export let itemsShown: $$Props['itemsShown'] = 0;
 
@@ -103,7 +103,7 @@ Show a list of entities with pagination and defined actions.
 - `contents`: A list of possibly ranked entities, e.g. candidates or a parties.
 - `actionCallBack`: An optional function that is called for each entity in the list to determine the action to be performed when the entity card is clicked. @default `undefined`
 - `entityCardProps`: Optional properties that will be passed to each `EntityCard` in the list. @default `undefined`
-- `itemsPerPage`: The number of entities to display on each page of the list. @default `10`
+- `itemsPerPage`: The number of entities to display on each page of the list. @default `20`
 - `itemsTolerance`: The fraction of `itemsPerPage` that can be exceeded on the last page to prevent showing a short last page. @default `0.2`
 - Any valid attributes of a `<div>` element.
 
