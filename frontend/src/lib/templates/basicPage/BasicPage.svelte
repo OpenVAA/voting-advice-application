@@ -18,10 +18,11 @@
   export let titleClass: $$Props['titleClass'] = '';
 
   let screenWidth = 0;
-  /** We use `videoWidth` as a proxy to check for the presence of content in the `video` slot. Note that we cannot merely check if the slot is provided, because it might be empty. */
+  /** We use `videoHeight` and `videoWidth` as proxies to check for the presence of content in the `video` slot. Note that we cannot merely check if the slot is provided, because it might be empty. */
+  let videoHeight = 0;
   let videoWidth = 0;
   let hasVideo = false;
-  $: hasVideo = videoWidth > 0;
+  $: hasVideo = videoWidth > 0 && videoHeight > 0;
 
   const userStore = getContext<CandidateContext>('candidate')?.userStore;
 
@@ -145,6 +146,7 @@ Instead, you have to use a wrapper. Note that this will also always result in th
     <!-- Video -->
     {#if $$slots.video}
       <div
+        bind:clientHeight={videoHeight}
         bind:clientWidth={videoWidth}
         class="-ml-safelgl -mr-safelgr -mt-lg {hasVideo ? 'grow' : ''} sm:mt-[1.75rem] sm:grow-0">
         <slot name="video" />
