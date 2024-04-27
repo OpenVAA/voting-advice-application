@@ -140,7 +140,7 @@
   <BasicPage
     title={text}
     class={videoProps ? 'bg-base-300' : undefined}
-    titleClass={videoProps ? '!py-0 mt-md' : undefined}
+    titleClass={videoProps ? '!pb-0' : undefined}
     progressMin={0}
     progressMax={questions.length + 1}
     progress={questionIndex + 1}>
@@ -148,13 +148,13 @@
       <Button
         href={$getRoute(Route.Results)}
         disabled={$resultsAvailable ? null : true}
-        variant="icon"
+        variant="responsive-icon"
         icon="results"
         text={$t('actionLabels.results')} />
       {#if videoProps}
         <Button
           on:click={() => toggleTranscript()}
-          variant="icon"
+          variant="responsive-icon"
           icon={mode === 'video' ? 'videoOff' : 'video'}
           text={mode === 'video'
             ? $t('components.video.showTranscript')
@@ -175,7 +175,7 @@
     </div>
 
     <svelte:fragment slot="heading">
-      <HeadingGroup id={headingId}>
+      <HeadingGroup id={headingId} class="relative">
         {#if $settings.questions.showCategoryTags && category}
           <PreHeading><CategoryTag {category} /></PreHeading>
         {/if}
@@ -203,11 +203,11 @@
       <QuestionActions
         answered={selectedKey != null}
         disablePrevious={questionIndex === 0}
-        separateSkip={false}
-        variant={videoProps ? 'icon' : 'default'}
+        separateSkip={true}
         on:previous={gotoPreviousQuestion}
         on:delete={deleteAnswer}
-        on:next={gotoNextQuestion} />
+        on:next={gotoNextQuestion}
+        on:skip={gotoNextQuestion} />
     </svelte:fragment>
   </BasicPage>
 {/if}
