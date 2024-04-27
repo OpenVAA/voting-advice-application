@@ -145,12 +145,14 @@
     progressMax={questions.length + 1}
     progress={questionIndex + 1}>
     <svelte:fragment slot="banner">
-      <Button
-        href={$getRoute(Route.Results)}
-        disabled={$resultsAvailable ? null : true}
-        variant="responsive-icon"
-        icon="results"
-        text={$t('actionLabels.results')} />
+      {#if $settings.questions.showResultsLink}
+        <Button
+          href={$getRoute(Route.Results)}
+          disabled={$resultsAvailable ? null : true}
+          variant="responsive-icon"
+          icon="results"
+          text={$t('actionLabels.results')} />
+      {/if}
       {#if videoProps}
         <Button
           on:click={() => toggleTranscript()}
@@ -202,9 +204,11 @@
       {/if}
       <QuestionActions
         answered={selectedKey != null}
-        nextLabel={questionIndex === questions.length - 1 ? $t('actionLabels.results') : undefined}
+        nextLabel={questionIndex === questions.length - 1 && selectedKey != null
+          ? $t('actionLabels.results')
+          : undefined}
         previousLabel={questionIndex === 0 ? $t('header.back') : undefined}
-        separateSkip={questionIndex !== questions.length - 1}
+        separateSkip={true}
         on:previous={gotoPreviousQuestion}
         on:delete={deleteAnswer}
         on:next={gotoNextQuestion}
