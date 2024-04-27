@@ -1,7 +1,7 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
   import {startEvent} from '$lib/utils/analytics/track';
-  import {t} from '$lib/i18n';
+  import {locale, t} from '$lib/i18n';
   import {candidateFilters} from '$lib/utils/filters';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {
@@ -21,12 +21,13 @@
   import type {EntityCardProps} from '$lib/components/entityCard';
   import {EntityList} from '$lib/components/entityList';
   import {EntityListControls} from '$lib/components/entityListControls';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
   import {Loading} from '$lib/components/loading';
   import {StretchBackground} from '$lib/components/stretchBackground';
+  import {Video, type VideoMode} from '$lib/components/video';
   import {Tabs} from '$lib/components/tabs';
   import {BasicPage} from '$lib/templates/basicPage';
-  import {activeTab} from './page-stores';
+  import {activeTab, resultsVideoSeen} from './page-stores';
+  import resultsVideo from './resultsVideo.json';
 
   // Which entity sections to show
   const sections = $settings.results.sections as EntityType[];
@@ -121,13 +122,28 @@
   function candidateRoute(candidate: WrappedEntity<CandidateProps>) {
     return $getRoute({route: Route.ResultCandidate, id: candidate.entity.id});
   }
+
+  // Custom for Nuorten Vaalikone
+
+  // Variables related to video content
+  let mode: VideoMode;
+  let toggleTranscript: (show?: boolean) => void;
+  let videoProps: CustomVideoProps | undefined;
+  /** Only autoplay the video once */
+  const autoPlay = !$resultsVideoSeen;
+  $resultsVideoSeen = true;
+
+  $: if (resultsAvailableSync) {
+    videoProps = resultsVideo[$locale as keyof typeof resultsVideo]?.video as
+      | CustomVideoProps
+      | undefined;
+  }
 </script>
 
-<BasicPage title={resultsAvailableSync ? $t('results.title.results') : $t('results.title.browse')}>
-  <svelte:fragment slot="hero">
-    <HeroEmoji emoji={$t('results.heroEmoji')} />
-  </svelte:fragment>
-
+<BasicPage
+  title={resultsAvailableSync ? $t('results.title.results') : $t('results.title.browse')}
+  class={videoProps ? 'bg-base-300' : undefined}
+  titleClass={videoProps ? '!pb-0' : undefined}>
   <svelte:fragment slot="banner">
     {#if $settings.header.showFeedback && $openFeedbackModal}
       <Button
@@ -143,16 +159,33 @@
         icon="help"
         text={$t('actionLabels.help')} />
     {/if}
-    <Button
-      on:click={() => console.info('Show favourites')}
-      variant="icon"
-      icon="list"
-      text={$t('actionLabels.yourList')} />
+    {#if videoProps}
+      <Button
+        on:click={() => toggleTranscript()}
+        variant="responsive-icon"
+        icon={mode === 'video' ? 'videoOn' : 'videoOff'}
+        text={mode === 'video'
+          ? $t('components.video.showTranscript')
+          : $t('components.video.showVideo')} />
+    {/if}
   </svelte:fragment>
 
-  <p class="text-center">
-    {resultsAvailableSync ? $t('results.ingress.results') : $t('results.ingress.browse')}
-  </p>
+  <svelte:fragment slot="video">
+    {#if videoProps}
+      <Video
+        {autoPlay}
+        bind:mode
+        bind:toggleTranscript
+        hideControls={['transcript']}
+        {...videoProps} />
+    {/if}
+  </svelte:fragment>
+
+  {#if !videoProps}
+    <p class="text-center">
+      {resultsAvailableSync ? $t('results.ingress.results') : $t('results.ingress.browse')}
+    </p>
+  {/if}
 
   <StretchBackground padding="medium" bgColor="base-300" toBottom class="min-h-[75vh]">
     <!-- We need to add mx-10 below to match the margins to the basic page margins, except for the EntityList components which we want to give more width -->
