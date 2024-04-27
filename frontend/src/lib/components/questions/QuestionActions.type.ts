@@ -17,4 +17,12 @@ export type QuestionActionsProps = SvelteHTMLElements['div'] & {
    * Whether to separate `skip` and `next` actions both as events and button symbols. @default false
    */
   separateSkip?: boolean;
+  /**
+   * The text label for the `next` button. @default $t('questions.next') or $t('questions.skip')
+   */
+  nextLabel?: string;
+  /**
+   * The text label for the `previous` button. @default $t('questions.previous')
+   */
+  previousLabel?: string;
 };
