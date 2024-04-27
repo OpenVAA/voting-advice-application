@@ -1,7 +1,9 @@
 {
   "404": "Page not found, sorry!",
   "500": "Internal server error, sorry!",
+  "content": "<p>We're very sorry for the inconvenience. You can try to go back and reload the page and see if the problem persists.</p><p>If you still experience the problem, please send an email to {adminEmail} and describe the problem. Thank you!</p>",
   "default": "Something went wrong, sorry!",
   "general": "Something went wrong",
+  "heroEmoji": "🙊",
   "noQuestions": "There are no questions yet"
 }
