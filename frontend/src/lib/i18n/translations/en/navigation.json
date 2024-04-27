@@ -1,5 +1,6 @@
 {
   "browseEntities": "Browse {candidatePlural} and {partyPlural}",
+  "resetAnswers": "Clear your answers",
   "results": "Your results",
   "selectLanguage": "Select Language"
 }
