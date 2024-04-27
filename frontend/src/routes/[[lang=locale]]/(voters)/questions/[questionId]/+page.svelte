@@ -107,7 +107,7 @@
     let url =
       questionIndex > 0
         ? $getRoute({route: Route.Question, id: questions[questionIndex - 1].id})
-        : $getRoute(Route.Questions);
+        : $getRoute($settings.questions.showIntroPage ? Route.Questions : Route.Intro);
     goto(url);
   }
 
@@ -202,8 +202,9 @@
       {/if}
       <QuestionActions
         answered={selectedKey != null}
-        disablePrevious={questionIndex === 0}
-        separateSkip={true}
+        nextLabel={questionIndex === questions.length - 1 ? $t('actionLabels.results') : undefined}
+        previousLabel={questionIndex === 0 ? $t('header.back') : undefined}
+        separateSkip={questionIndex !== questions.length - 1}
         on:previous={gotoPreviousQuestion}
         on:delete={deleteAnswer}
         on:next={gotoNextQuestion}
