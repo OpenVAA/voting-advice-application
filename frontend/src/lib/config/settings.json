@@ -56,7 +56,8 @@
   },
   "questions": {
     "showCategoryTags": true,
-    "showIntroPage": true
+    "showIntroPage": true,
+    "showResultsLink": true
   },
   "results": {
     "minimumAnswers": 5,

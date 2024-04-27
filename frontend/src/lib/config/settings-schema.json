@@ -146,6 +146,11 @@
           "description": "Whether to show the questions intro page before going to questions.",
           "type": "boolean",
           "default": true
+        },
+        "showResultsLink": {
+          "description": "Whether to the link to results in the header when answering questions if enough answers are provided.",
+          "type": "boolean",
+          "default": true
         }
       }
     },
