@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {resultsAvailable} from '$lib/utils/stores';
+  import {answeredQuestions, resetLocalStorage, resultsAvailable} from '$lib/utils/stores';
   import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
   import LanguageSelection from './LanguageSelection.svelte';
 </script>
@@ -35,6 +35,11 @@ A template part that outputs the navigation menu for the Voter App for use in th
   <NavGroup>
     <NavItem href={$getRoute(Route.Home)} icon="home" text={$t('actionLabels.home')} />
     <NavItem href={$getRoute(Route.Questions)} icon="opinion" text={$t('actionLabels.opinions')} />
+    <NavItem
+      disabled={!$answeredQuestions || Object.values($answeredQuestions).length === 0}
+      on:click={() => resetLocalStorage()}
+      icon="close"
+      text={$t('navigation.resetAnswers')} />
     <NavItem
       href={$getRoute(Route.Results)}
       icon="results"
