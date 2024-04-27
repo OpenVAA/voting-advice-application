@@ -66,8 +66,8 @@ Used to show an entity's basic info in an `EntityDetails` component.
       <div class="infoGroup" role="group">
         <InfoItem label={$t('components.entityInfo.links')}>
           {#each linkQuestions as question}
-            {@const answer = `${getAnswerForDisplay(entity, question)}`}
-            {#if answer}
+            {@const answer = getAnswerForDisplay(entity, question)}
+            {#if answer && typeof answer === 'string'}
               <a
                 href={answer}
                 target="_blank"
