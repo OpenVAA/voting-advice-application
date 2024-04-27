@@ -1,6 +1,7 @@
 <script lang="ts">
+  import {goto} from '$app/navigation';
   import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, referredByUs, Route} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
   // import {EntityDetails} from '$lib/components/entityDetails';
   import {SingleCardPage} from '$lib/templates/singleCardPage';
@@ -34,7 +35,7 @@
     class="!text-neutral"
     variant="icon"
     icon="close"
-    href={$getRoute(Route.Results)}
+    on:click={() => (referredByUs() ? history.back() : goto($getRoute(Route.Results)))}
     text={$t('header.back')} />
   <h1>{title}</h1>
   <!-- <EntityDetails {ranking} opinionQuestions={questions} {infoQuestions} /> -->
