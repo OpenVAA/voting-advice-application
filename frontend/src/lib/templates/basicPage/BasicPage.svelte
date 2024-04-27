@@ -145,7 +145,7 @@ Instead, you have to use a wrapper. Note that this will also always result in th
     {#if $$slots.video}
       <div
         bind:clientWidth={videoWidth}
-        class="-ml-safelgl -mr-safelgr -mt-lg {hasVideo ? 'grow' : ''} sm:grow-0">
+        class="-ml-safelgl -mr-safelgr -mt-lg {hasVideo ? 'grow' : ''} sm:mt-[1.75rem] sm:grow-0">
         <slot name="video" />
       </div>
     {/if}
