@@ -280,10 +280,35 @@
   function buildTranscript() {
     const track = getTrack();
     if (!track?.cues) return;
-    return [...track.cues]
-      .filter((cue) => 'text' in cue && typeof cue.text === 'string')
-      .map((cue) => `<p>${(cue as VTTCue).text}</p>`)
-      .join('\n');
+    const blocks: string[] = [];
+    // Sometimes the cues continue from the previous cue, so we need may need to concatenate them
+    let combined = '';
+    for (const cue of [...track.cues].filter(
+      (cue) => 'text' in cue && typeof cue.text === 'string'
+    )) {
+      let continued = false;
+      let text = (cue as VTTCue).text.trim();
+      // The text continues in the next cue
+      if (text.match(/[-–—]$/)) {
+        text = text.slice(0, text.length - 1);
+        continued = true;
+      }
+      if (combined && !continued) {
+        // This was the last part to combine
+        text = `${combined} ${text}`;
+        combined = '';
+      }
+      // The text will still continue
+      if (continued) {
+        combined += ` ${text}`;
+        continue;
+      }
+      // The text is not continuing
+      blocks.push(text);
+    }
+    // We might have one last piece if the combined text was never finished
+    if (combined) blocks.push(combined);
+    return blocks.map((text) => `<p>${text}</p>`).join('\n');
   }
 
   /**
