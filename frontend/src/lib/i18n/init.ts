@@ -2,8 +2,8 @@ import {error} from '@sveltejs/kit';
 import I18n from '@sveltekit-i18n/base';
 import parser, {type Config} from '@sveltekit-i18n/parser-icu';
 import IntlMessageFormat from 'intl-messageformat';
-import settings from '$lib/config/settings.json';
 import {logDebugError} from '$lib/utils/logger';
+import settings from '$lib/config/settings.json';
 import {derived, get} from 'svelte/store';
 import {DEFAULT_PAYLOAD_KEYS, staticTranslations, type TranslationsPayload} from './translations';
 import {matchLocale, purgeTranslations} from './utils';
@@ -17,7 +17,7 @@ const langNames: Record<string, string> = {};
 /** Mapping of soft locale matches from db locales to static ones */
 const localeMatches: Record<string, string> = {};
 /** Items to add to all translation payloads */
-const defaultPayload: Record<string, unknown> = {};
+const defaultPayload: Partial<TranslationsPayload> = {};
 
 /////////////////////////////////////////////////////
 // 1. Load supported locales
@@ -176,13 +176,14 @@ export function parse(message: string, payload: Record<string, unknown> = {}, us
 /////////////////////////////////////////////////////
 
 /**
- * Updates the default payload items
+ * Updates the default payload items.
  */
 function updateDefaultPayload() {
   const t = get(i18n.t);
   for (const [key, path] of Object.entries(DEFAULT_PAYLOAD_KEYS)) {
     defaultPayload[key] = t(path);
   }
+  defaultPayload.adminEmail = settings.admin.email;
 }
 
 locale.subscribe((l) => {

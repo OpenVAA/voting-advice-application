@@ -10,6 +10,20 @@
     "$schema": {
       "const": "./settings-schema.json"
     },
+    "admin": {
+      "description": "Settings related to the administrative functions.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["email"],
+      "properties": {
+        "email": {
+          "description": "The admin email of the application. When errors occur, users may be asked to contact this address.",
+          "type": "string",
+          "format": "idn-email",
+          "default": "error@openvaa.org"
+        }
+      }
+    },
     "appVersion": {
       "description": "Settings related to the version of the app and handling of saved user data.",
       "type": "object",
