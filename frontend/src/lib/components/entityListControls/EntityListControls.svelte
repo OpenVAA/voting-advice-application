@@ -87,7 +87,7 @@ Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
 -->
 
 <div {...concatClass($$restProps, 'flex flex-col')}>
-  <div class="mb-md flex flex-row-reverse justify-between">
+  <div class="mb-md flex flex-row-reverse justify-between gap-lg">
     {#if searchFilter}
       <TextEntityFilter
         filter={searchFilter}

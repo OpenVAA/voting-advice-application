@@ -32,7 +32,7 @@
     labelClass = 'input flex items-center gap-2';
     switch (variant) {
       case 'discrete':
-        labelClass += ' input-ghost';
+        labelClass += ' bg-base-200';
         break;
       default:
         labelClass += ' input-bordered';
@@ -57,13 +57,13 @@ Render a text filter for entities.
 ```
 -->
 
-<form {...concatClass($$restProps, 'grid')}>
+<form {...concatClass($$restProps, '')}>
   <label class={labelClass}>
     <span class="sr-only">{$t('components.entityFilters.text.ariaLabel')}</span>
     <input
       bind:value
       type="text"
-      class="grow"
+      class="max-w-[8rem]"
       placeholder={placeholder ?? $t('components.entityFilters.text.placeholder')} />
     {#if value === ''}
       <Icon name="search" />
