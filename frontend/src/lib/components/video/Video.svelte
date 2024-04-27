@@ -21,10 +21,6 @@
    */
   const ERROR_DELAY = 4000;
   /**
-   * The duration in seconds of a pressing down that is treated as hold (i.e. keeping the video paused) instead of a click.
-   */
-  const HOLD_THRESHOLD = 0.7;
-  /**
    * A small eps in seconds used to determine if the video's currrent time is at the end of the video and in seeking to the end.
    */
   const TIME_EPS = 0.05;
@@ -104,11 +100,6 @@
   $: playButtonAction = !paused ? 'pause' : atEnd ? 'replay' : 'play';
 
   /**
-   * The time when a hold action was started.
-   */
-  let holdStart: number | undefined;
-
-  /**
    * Used to highlight the jump buttons when the corresponding invisible screen area is pressed
    */
   let jumpBackPressed = false;
@@ -117,6 +108,11 @@
    * Used to highlight the jump buttons when the corresponding invisible screen area is pressed
    */
   let jumpForwardPressed = false;
+
+  /**
+   * Used to highlight the toggle play button when the corresponding invisible screen area is pressed
+   */
+  let togglePlayPressed = false;
 
   /**
    * Toggle between transcript and video
@@ -137,19 +133,17 @@
   }
 
   /**
-   * Enable holding down to pause the video
-   */
-  function hold(pointerDown: boolean) {
-    holdStart = pointerDown ? Date.now() : undefined;
-    setPaused(pointerDown || atEnd);
-  }
-
-  /**
-   * Fired when pointer is released on the invisible skip areas. A long press will be treated only as the end of a hold and the jump will not be triggered.
+   * Fired when the invisible jump areas of the screen are pressed. We treat this clicks as jumps only if the video is not paused.
    * @param steps Passed to `jump`
    */
-  function heldJump(steps: number) {
-    if (holdStart && Date.now() - holdStart > HOLD_THRESHOLD * 1000) return hold(false);
+  function screenJump(steps: number) {
+    if (paused || steps === 0) {
+      togglePlay();
+      togglePlayPressed = true;
+      setTimeout(() => (togglePlayPressed = false), 125);
+      return;
+    }
+    // Use the `jumpBack/ForwardPressed` variables to temporarily highlight the buttons doing the same action
     if (steps < 0) {
       jumpBackPressed = true;
       setTimeout(() => (jumpBackPressed = false), 125);
@@ -454,26 +448,27 @@ User choices are stored in the `videoPreferences` store so that they persist acr
     <!-- All controls. Note that we do not want these two overlap -->
     <div class="absolute bottom-0 left-0 right-0 top-0 flex flex-col">
       <!-- Invisible overlay areas -->
-      <div
-        on:pointerdown|once={tryUnmute}
-        on:pointerdown={() => hold(true)}
-        on:pointerup={() => hold(false)}
-        class="flex grow flex-row justify-between">
+      <div class="flex grow flex-row justify-stretch">
         <button
           on:click|once={tryUnmute}
-          on:pointerdown={() => hold(true)}
-          on:pointerup={() => heldJump(-1)}
+          on:click|capture={() => screenJump(-1)}
           aria-hidden="true"
           tabindex="-1"
-          class="w-[20%] opacity-20 transition-colors duration-sm active:bg-gradient-to-r active:from-neutral"
+          class="w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-r active:from-neutral active:to-50%"
           ><span class="sr-only">{$t('components.video.jumpBack')}</span></button>
         <button
           on:click|once={tryUnmute}
-          on:pointerdown={() => hold(true)}
-          on:pointerup={() => heldJump(+1)}
+          on:click|capture={() => screenJump(0)}
           aria-hidden="true"
           tabindex="-1"
-          class="w-[50%] opacity-20 transition-colors duration-sm active:bg-gradient-to-l active:from-neutral active:to-50%"
+          class="grow-1 w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-r active:from-transparent active:via-neutral active:via-50%"
+          ><span class="sr-only">{$t('components.video.jumpBack')}</span></button>
+        <button
+          on:click|once={tryUnmute}
+          on:click|capture={() => screenJump(+1)}
+          aria-hidden="true"
+          tabindex="-1"
+          class="w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-l active:from-neutral active:to-50%"
           class:hidden={atEnd}
           ><span class="sr-only">{$t('components.video.jumpForward')}</span></button>
       </div>
@@ -522,7 +517,9 @@ User choices are stored in the `videoPreferences` store so that they persist acr
             on:click|once={tryUnmute}
             on:click={() => togglePlay()}
             text={$t(`components.video.${playButtonAction}`)}
-            class="relative rounded-full !bg-opacity-30 active:bg-primary-content" />
+            class="relative rounded-full !bg-opacity-30 {togglePlayPressed
+              ? 'bg-primary-content'
+              : ''} active:bg-primary-content" />
         {/if}
         {#if !hideControls || !hideControls.includes('skip')}
           <Button
