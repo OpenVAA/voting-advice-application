@@ -103,6 +103,7 @@ declare global {
     questions: {
       showCategoryTags: boolean;
       showIntroPage: boolean;
+      showResultsLink: boolean;
     };
     results: {
       minimumAnswers: number;
