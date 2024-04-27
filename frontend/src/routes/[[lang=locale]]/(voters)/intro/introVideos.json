@@ -1,0 +1,125 @@
+[
+  {
+    "fi": {
+      "video": {
+        "aspectRatio": 0.8,
+        "poster": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-1-fi.jpg",
+        "sources": [
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-1-fi.webm",
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-1-fi.mp4"
+        ],
+        "title": "Tietoa vaalikoneesta",
+        "transcript": "<p>Tervetuloa vastaamaan Nuorten vaalikoneeseen!</p>\n<p>Nuorten vaalikone auttaa sua löytämään ehdokkaan EU-vaaleissa. Kone kysyy ensin mielipiteitäsi eri aiheista, kuten vaik ympäristöstä ja taloudesta. Sen jälkeen kone järjestää sulle puolueet ja ehdokkaat sen perusteella, miten paljon he ovat samaa mieltä kanssasi.</p>",
+        "captions": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-1-fi.srt"
+      }
+    },
+    "sv": {
+      "video": {
+        "aspectRatio": 0.8,
+        "poster": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-1-sv.jpg",
+        "sources": [
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-1-sv.webm",
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-1-sv.mp4"
+        ],
+        "title": "Om valkompassen",
+        "transcript": "<p>Välkommen att svara på Valkompassen för unga!</p><p>Valkompassen hjälper dig att hitta en lämplig kandidat i EU-valet.</p><p>Kompassen frågar först om dina åsikter om olika ämnen, såsom miljö och ekonomi. Sedan ordnar kompassen partierna och kandidaterna enligt hur mycket de håller med dig.</p>",
+        "captions": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-1-sv.srt"
+      }
+    },
+    "en": {
+      "video": {
+        "aspectRatio": 0.8,
+        "poster": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-1-en.jpg",
+        "sources": [
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-1-en.webm",
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-1-en.mp4"
+        ],
+        "title": "About the Election Compass",
+        "transcript": "<p>Welcome to the Election Compass for Young People!</p><p>The Election Compass helps you find the right EU elections candidate.</p><p>You are first asked for your opinions on different topics, such as the environment and the economy. Then the machine organises the parties and candidates according to how much they agree with you.</p>",
+        "captions": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-1-en.srt"
+      }
+    }
+  },
+  {
+    "fi": {
+      "video": {
+        "aspectRatio": 0.8,
+        "poster": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-fi.jpg",
+        "sources": [
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-fi.webm",
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-fi.mp4"
+        ],
+        "title": "EU ja EU-vaalit",
+        "transcript": "<p>Euroopan unioni eli EU on ainutlaatuinen 27 kansallisvaltion poliittinen ja taloudellinen liitto, joka on perustettu vuonna 1992. EU:ssa asuu noin 450 miljoonaa ihmistä. EU:n kuusi keskeistä arvoa ovat ihmisarvo, vapaus, demokratia, tasa-arvo, oikeusvaltioperiaate ja ihmisoikeudet. EU edistää näitä arvoja sen omalla alueella ja globaalisti.</p><figure><img src='https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-Äänestysprosentit-fi.png'/><figcaption>Äänestysprosentti EU-vaaleissa 2019</figcaption></figure><p>EU-vaaleissa äänestäminen on tosi tärkeää. Nuoret äänestää muita ikäryhmiä vähemmän, minkä vuoksi nuorten ääni ei tällä hetkellä kuulu päätöksenteossa niin laajasti kuin mahdollista. Näissä vaaleissa päätetään yhdessä EU:n tulevaisuudesta. Äänestämällä voit kertoa mielipiteesi asioista, jotka ovat sulle tärkeitä, ja edesauttaa sulle sopivan ehdokkaan pääsemistä parlamenttiin.</p><figure><img src='https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-Vaalipvm-fi.png'/><figcaption>Vaalipäivä on 9.6.</figcaption></figure><p>Suomessa vaalipäivä on 9. kesäkuuta. Käytäthän silloin ääntäsi!</p>",
+        "captions": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-fi.srt"
+      }
+    },
+    "sv": {
+      "video": {
+        "aspectRatio": 0.8,
+        "poster": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-sv.jpg",
+        "sources": [
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-sv.webm",
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-sv.mp4"
+        ],
+        "title": "EU och EU-valet",
+        "transcript": "<p>Europeiska unionen, EU, är en unik ekonomisk och politisk allians mellan 27 nationalstater.</p><p>EU grundades år 1992. I EU bor cirka 450 miljoner människor.</p><p>EU:s sex centrala värden är människovärde, frihet, jämställdhet, demokrati, rättsstatsprincipen och mänskliga rättigheter. EU främjar dessa värderingar inom sitt eget område och globalt. Därför är det viktigt att rösta i EU-valet.</p><figure><img src='https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-Äänestysprosentit-sv.png'/> <figcaption>Valdeltagandet i EU-valet 2019</figcaption></figure><p>Unga röstar mer sällan än andra åldersgrupper. Därför hörs inte de ungas röst i beslutsfattandet lika mycket som de andras.</p><p>I dessa val bestämmer man tillsammans om EU:s framtid. Genom att rösta kan du berätta din åsikt om saker som är viktiga för dig och hjälpa till parlamentet en kandidat som håller med dig.</p><figure><img src='https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-Vaalipvm-sv.png'/> <figcaption>Valdagen är den 9 juni</figcaption></figure><p>I Finland är valdagen den 9 juni. Använd alltså din röst.</p>",
+        "captions": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-sv.srt"
+      }
+    },
+    "en": {
+      "video": {
+        "aspectRatio": 0.8,
+        "poster": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-en.jpg",
+        "sources": [
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-en.webm",
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-en.mp4"
+        ],
+        "title": "EU and EU elections",
+        "transcript": "<p>The European Union, or EU, is a unique economic and political union consisting of 27 nation states.</p><p>The EU was founded in 1992. There are around 450 million people living in the EU.</p><p>The six core values of the EU are human dignity, freedom, equality, democracy, the rule of law and human rights. The EU promotes these values in its own region and globally. Voting in EU elections is therefore important.</p><figure><img src='https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-Äänestysprosentit-en.png'/> <figcaption>Voting percentage in the EU elections 2019</figcaption></figure><p>Young people vote less than other age groups. Therefore, the voice of young people is not heard in decision-making as well as it could be.</p><p>In these elections, the future of the EU is decided together. By voting, you can express what is important to you and vote for a candidate who agrees with you.</p><figure><img src='https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-Vaalipvm-en.png'/> <figcaption>The election date is June 9th</figcaption></figure><p>In Finland, the election day is 9 June. So use your vote.</p>",
+        "captions": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-en.srt"
+      }
+    }
+  },
+  {
+    "fi": {
+      "video": {
+        "aspectRatio": 0.8,
+        "poster": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-fi.jpg",
+        "sources": [
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-fi.webm",
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-fi.mp4"
+        ],
+        "title": "Euroopan Parlamentti",
+        "transcript": "<p>Euroopan parlamentti hyväksyy lakeja, jotka vaikuttavat kaikkiin: suuriin ja pieniin EU-maihin, ja niiden kansalaisiin sekä yrityksiin, globaalisti ja paikallisesti. EU:n lainsäädännössä käsitellään monia tärkeitä asioita, kuten ympäristöä, turvallisuutta, tai taloutta.</p><p>Vaaleissa Euroopan parlamenttiin valitaan yhteensä 720 jäsentä eli meppiä, joista viisitoista tulee Suomesta. Eri maista tulevat mepit järjestäytyvät parlamenttiin poliittisten ryhmien mukaan, eivät kansallisuuksittain. Tällä kaudella ryhmiä on ollut kahdeksan.</p><figure><img src='https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-Ryhmittymät-fi.png'/><figcaption>Euroopan Parlamentin tämänhetkiset poliittiset ryhmittymät ja suomalaisten puolueiden todennäköiset ryhmät.</figcaption></figure><p>Nykyään jokaiseen tärkeään kotimaiseen aiheeseen liittyy myös eurooppalainen näkökulma. Äänesi ratkaisee sen, ketkä valitaan Euroopan parlamenttiin edustamaan.</p>",
+        "captions": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-fi.srt"
+      }
+    },
+    "sv": {
+      "video": {
+        "aspectRatio": 0.8,
+        "poster": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-sv.jpg",
+        "sources": [
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-sv.webm",
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-sv.mp4"
+        ],
+        "title": "Europa-parlamentet",
+        "transcript": "<p>Europaparlamentet antar lagar som påverkar alla: stora och små EU-länder och deras medborgare, stora företag och startupföretag både globalt och lokalt.</p><p>EU-lagstiftningen behandlar många viktiga frågor, såsom miljö, säkerhet, konsumenternas rättigheter och ekonomi.</p><p>Vid valet väljs 720 ledamöter till Europaparlamentet. Av dem kommer 15 från Finland.</p><p>Ledamöter från olika länder organiserar sig i parlamentet enligt politiska grupper, inte enligt nationalitet. Under den här perioden fanns det åtta grupper.</p><figure><img src='https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-Ryhmittymät-sv.png'/> <figcaption>De aktuella politiska grupperingarna i Europaparlamentet och de finländska partiernas sannolika grupper.</figcaption></figure><p>Varje viktigt inhemskt ämne har också ett europeiskt perspektiv. Din röst avgör vem som representerar dig i Europaparlamentet.</p>",
+        "captions": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-sv.srt"
+      }
+    },
+    "en": {
+      "video": {
+        "aspectRatio": 0.8,
+        "poster": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-en.jpg",
+        "sources": [
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-en.webm",
+          "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-en.mp4"
+        ],
+        "title": "The European Parliament",
+        "transcript": "<p>The European Parliament adopts laws that affect everyone: large and small EU countries and their citizens, large corporations and startups globally and locally.</p><p>There are many important aspects covered by EU legislation, such as the environment, safety, consumer rights and economy.</p><p>In the elections, 720 Members of the European Parliament will be elected, 15 of whom are from Finland.</p><p>Members from different countries are organised in the Parliament by political groups, not by nationality. There were eight groups this term.</p><figure><img src='https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-Ryhmittymät-en.png'/> <figcaption>The current political groups in the European Parliament and the likely groups of Finnish parties.</figcaption></figure><p>Every important domestic topic also has a European perspective. Your vote will determine who will be elected to represent you in the European Parliament.</p>",
+        "captions": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-3-en.srt"
+      }
+    }
+  }
+]

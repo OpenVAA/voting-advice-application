@@ -1,9 +1,10 @@
 {
-  "continue": "Continue",
+  "continue": "Jump to Questions",
   "heroEmoji": "🚀",
   "ingress": "This application will help you find the {candidatePlural} and {partyPlural} that best match your opinions in the elections.",
   "listItemDetails": "Study them in detail",
   "listItemOpinions": "Enter your opinions",
   "listItemResults": "See the {candidatePlural} and {partyPlural} that best agree with you",
+  "preheading": "About the Election Compass and the Elections",
   "title": "Let’s start!"
 }
