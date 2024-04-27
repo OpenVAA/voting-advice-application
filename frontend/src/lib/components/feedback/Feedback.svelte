@@ -178,7 +178,7 @@ Show a form for sending feedback.
     on:focus={() => (textareaExpanded = true)}
     disabled={status !== 'default'}
     aria-label={$t('feedback.descriptionLabel')}
-    class="textarea textarea-bordered h-[1rem] w-full resize-none"
+    class="textarea textarea-bordered text-[16px] h-[1rem] w-full resize-none"
     class:resize-y={textareaExpanded}
     class:min-h-[6rem]={textareaExpanded}
     placeholder={$t('feedback.descriptionPlaceholder')}></textarea>

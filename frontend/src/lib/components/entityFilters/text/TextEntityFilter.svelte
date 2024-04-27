@@ -63,7 +63,7 @@ Render a text filter for entities.
     <input
       bind:value
       type="text"
-      class="max-w-[8rem]"
+      class="max-w-[8rem] text-[16px]"
       placeholder={placeholder ?? $t('components.entityFilters.text.placeholder')} />
     {#if value === ''}
       <Icon name="search" />
