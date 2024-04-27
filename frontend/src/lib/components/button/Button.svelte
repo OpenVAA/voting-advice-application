@@ -14,7 +14,10 @@
   export let disabled: $$Props['disabled'] = undefined;
 
   // Check iconPos
-  if (variant === 'main' && (iconPos === 'top' || iconPos === 'bottom')) {
+  if (
+    (variant === 'main' || variant === 'responsive-icon') &&
+    (iconPos === 'top' || iconPos === 'bottom')
+  ) {
     iconPos = 'right';
   }
 
@@ -31,6 +34,7 @@
     // 2. Variant-defined classes
     switch (variant) {
       case 'icon':
+      case 'responsive-icon':
         classes += ' btn-ghost';
         break;
       case 'main':
@@ -62,14 +66,20 @@
     }
 
     // 5. Finally, define the class for the text label
-    if (variant === 'main') {
-      labelClass += ' flex-grow text-center';
-      if (icon) {
-        // If an icon is used, add left or right margin so that the text is  nicely centered: ml/r is calculated so that it is the sum of the gap (4) and icon widths (24) = 28/16 rem
-        labelClass += iconPos === 'right' ? ' ml-[1.75rem]' : ' mr-[1.75rem]';
-      }
-    } else if (variant === 'secondary') {
-      labelClass += ` small-label text-${color}`;
+    switch (variant) {
+      case 'main':
+        labelClass += ' flex-grow text-center';
+        if (icon) {
+          // If an icon is used, add left or right margin so that the text is  nicely centered: ml/r is calculated so that it is the sum of the gap (4) and icon widths (24) = 28/16 rem
+          labelClass += iconPos === 'right' ? ' ml-[1.75rem]' : ' mr-[1.75rem]';
+        }
+        break;
+      case 'responsive-icon':
+        labelClass += ` sr-only sm:not-sr-only small-label text-${color}`;
+        break;
+      case 'secondary':
+        labelClass += ` small-label text-${color}`;
+        break;
     }
   }
 </script>
@@ -80,6 +90,7 @@ A component for buttons that mostly contain text and an icon. Use the `variant` 
 
 - `main`: A large, prominent button that is used for the main action of the page. In general, there should only be one of these on a page.
 - `icon`: A button containing only an icon. Note that you still need to provide the `text` property, which will be used as the `aria-label` and `title` of the button.
+- `responsive-icon`: A button rendered as icon only on small screens but which exposes the text label on large screens. Set the `iconPos` to `left` or `right` to control its location in the expanded view.
 - `secondary`: A button with a smaller (uppercase) text and possibly an icon.
 - `normal`: The default button type, which usually consists of an icon and text.
 
@@ -128,7 +139,7 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
   on:click
   {href}
   aria-label={variant === 'icon' ? text : undefined}
-  title={variant === 'icon' ? text : undefined}
+  title={variant === 'icon' || variant === 'responsive-icon' ? text : undefined}
   disabled={disabled || undefined}
   {...concatClass($$restProps, classes)}>
   {#if icon}
