@@ -33,7 +33,8 @@
     "searchPlaceholder": "Search by name"
   },
   "matchScore": {
-    "label": "match"
+    "label": "match",
+    "score": "{score}%"
   },
   "video": {
     "error": "There was an error loading this video. You can try to reload the page or switch to a text view by tapping the icon in the top-right corner.",
