@@ -28,20 +28,20 @@
   $: {
     // 1. Base classes
     classes =
-      'btn relative min-h-touch min-w-touch h-auto flex items-center justify-center gap-y-6 gap-x-4';
+      'btn relative flex flex-nowrap min-h-touch min-w-touch h-auto flex items-center gap-y-6 gap-x-4';
     labelClass = 'first-letter:uppercase';
 
     // 2. Variant-defined classes
     switch (variant) {
       case 'icon':
       case 'responsive-icon':
-        classes += ' btn-ghost';
+        classes += ' btn-ghost justify-start';
         break;
       case 'main':
-        classes += ' w-full max-w-md';
+        classes += ' w-full max-w-md justify-center';
         break;
       default:
-        classes += ' btn-ghost w-full max-w-md';
+        classes += ` btn-ghost w-full max-w-md ${icon ? 'justify-start' : 'justify-center'}`;
     }
 
     // 3. Icon position
