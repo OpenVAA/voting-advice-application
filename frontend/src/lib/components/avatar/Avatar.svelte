@@ -19,7 +19,7 @@
   let styles: string;
   let initialsClasses: string;
   $: {
-    classes = `w-[3.125rem] h-[3.125rem] overflow-hidden flex justify-center items-center text-${textColor}`;
+    classes = `w-[3.125rem] h-[3.125rem] shrink-0 overflow-hidden flex justify-center items-center text-${textColor}`;
     classes += image ? ' rounded-md' : ' rounded-full';
     styles = '';
     initialsClasses = 'avatar placeholder';
