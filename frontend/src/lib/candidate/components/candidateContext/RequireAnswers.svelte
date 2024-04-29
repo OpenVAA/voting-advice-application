@@ -1,12 +1,11 @@
 <script lang="ts">
-  import type {CandidateContext} from '$lib/utils/candidateStore';
   import {getContext} from 'svelte';
-  import {LoadingSpinner} from '$candidate/components/loadingSpinner';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import {Loading} from '$lib/components/loading';
 
   const candidateContext = getContext<CandidateContext>('candidate');
-  const answers = candidateContext.answersStore;
-  const questions = candidateContext.questionsStore;
-
+  const {answersStore, questionsStore} = candidateContext;
+  
   const getQuestionsAndAnswers = async () => {
     await Promise.all([candidateContext.loadAnswerData(), candidateContext.loadQuestionData()]);
   };
@@ -29,11 +28,11 @@ Require candidate answers to be loaded to view the children of this component.
 ```
 -->
 
-{#if $answers && $questions}
+{#if $answersStore && $questionsStore}
   <slot />
 {:else}
   {#await getQuestionsAndAnswers()}
-    <LoadingSpinner />
+    <Loading showLabel />
   {:then}
     <slot />
   {/await}

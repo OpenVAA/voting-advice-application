@@ -5,6 +5,7 @@
   import {sanitizeHtml} from '$lib/utils/sanitize';
   import {Button} from '$lib/components/button';
   import {Icon} from '$lib/components/icon';
+  import {Loading} from '$lib/components/loading';
   import {videoPreferences} from './component-stores';
   import type {VideoMode, VideoProps} from './Video.type';
 
@@ -580,9 +581,13 @@ User choices are stored in the `videoPreferences` store so that they persist acr
     </div>
 
     <!-- Loading spinner -->
-    <span
-      class="loading loading-spinner loading-md absolute right-[0.8rem] top-[3.1rem] text-primary-content transition-all duration-sm"
-      class:opacity-0={status !== 'waiting'} />
+    <Loading
+      inline
+      size="md"
+      class="absolute right-[0.8rem] top-[3.1rem] !text-primary-content transition-all duration-sm {status !==
+      'waiting'
+        ? 'opacity-0'
+        : ''}" />
 
     <!-- Error message -->
     {#if status === 'error'}
