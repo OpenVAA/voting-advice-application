@@ -18,15 +18,21 @@ import {logDebugError} from './logger';
 let candidateFilterGroup: FilterGroup<MaybeRanked<CandidateProps>> | undefined = undefined;
 let candidateFiltersLocale: string = '';
 
-export const candidateFilters: Readable<FilterGroup<MaybeRanked<CandidateProps>> | undefined> =
-  derived([infoQuestions, locale, parties], ([$infoQuestions, $locale, $parties]) => {
-    if (!$infoQuestions.length && !$parties.length) return undefined;
+export const candidateFilters: Readable<
+  Promise<FilterGroup<MaybeRanked<CandidateProps>> | undefined>
+> = derived(
+  [infoQuestions, locale, parties],
+  async ([$infoQuestions, $locale, $parties]) => {
+    const parties = await $parties;
+    if (!$infoQuestions.length && !parties.length) return undefined;
     if (candidateFiltersLocale !== $locale) {
-      candidateFilterGroup = buildCandidateFilters($infoQuestions, $parties);
+      candidateFilterGroup = buildCandidateFilters($infoQuestions, parties);
       candidateFiltersLocale = $locale;
     }
     return candidateFilterGroup;
-  });
+  },
+  Promise.resolve(undefined)
+);
 
 /**
  * Initialize candidate filters

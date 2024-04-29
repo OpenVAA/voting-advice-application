@@ -7,6 +7,6 @@ export const load = (async ({parent}) => {
   return {
     opinionQuestions: await getOpinionQuestions({locale}),
     infoQuestions: await getInfoQuestions({locale}),
-    candidates: await getNominatedCandidates({loadAnswers: true, locale})
+    candidates: getNominatedCandidates({loadAnswers: true, locale})
   };
 }) satisfies PageServerLoad;

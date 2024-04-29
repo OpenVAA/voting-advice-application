@@ -1,39 +1,55 @@
 <script lang="ts">
+  import {error} from '@sveltejs/kit';
   import {getContext} from 'svelte';
+  import {goto} from '$app/navigation';
   import {t} from '$lib/i18n';
   import type {AuthContext} from '$lib/utils/authenticationStore';
-  import {Icon} from '$lib/components/icon';
+  import {Route, getRoute, referredByUs} from '$lib/utils/navigation';
+  import {Button} from '$lib/components/button';
   import {EntityDetails} from '$lib/components/entityDetails';
+  import {Icon} from '$lib/components/icon';
+  import {Loading} from '$lib/components/loading';
   import SingleCardPage from '$lib/templates/singleCardPage/SingleCardPage.svelte';
   import LogoutButton from '$lib/candidate/components/logoutButton/LogoutButton.svelte';
   import type {PageData} from './$types';
 
   export let data: PageData;
 
+  const {infoQuestions, opinionQuestions, candidates} = data;
   const {user} = getContext<AuthContext>('auth');
 
-  let infoQuestions: QuestionProps[];
-  let opinionQuestions: QuestionProps[];
-  let candidates: CandidateProps[];
-  let candidate: CandidateProps | undefined;
+  let candidate: Promise<CandidateProps | undefined>;
 
   $: {
-    infoQuestions = data.infoQuestions;
-    opinionQuestions = data.opinionQuestions;
-    candidates = data.candidates;
-    candidate = candidates.find((c) => c.id === `${$user?.candidate?.id}`);
+    const candidateId = $user?.candidate?.id;
+    if (candidateId == null) error(500, 'No candidate id');
+    candidate = candidates.then((d) => d.find((c) => c.id == `${candidateId}`));
   }
 </script>
 
-{#if !candidate}
-  <span>{$t('candidateApp.preview.notFound')}</span>
-{:else}
-  <SingleCardPage title={$t('candidateApp.preview.title')}>
-    <svelte:fragment slot="note">
-      <Icon name="info" />
-      {$t('candidateApp.preview.tip')}
-    </svelte:fragment>
-    <LogoutButton slot="banner" />
-    <EntityDetails content={candidate} {opinionQuestions} {infoQuestions} />
-  </SingleCardPage>
-{/if}
+<SingleCardPage title={$t('candidateApp.preview.title')}>
+  <svelte:fragment slot="note">
+    <Icon name="info" />
+    {$t('candidateApp.preview.tip')}
+  </svelte:fragment>
+  <svelte:fragment slot="banner">
+    <LogoutButton />
+    <Button
+      slot="banner"
+      class="!text-neutral"
+      variant="icon"
+      icon="close"
+      on:click={() => (referredByUs() ? history.back() : goto($getRoute(Route.CandAppHome)))}
+      text={$t('header.back')} />
+  </svelte:fragment>
+
+  {#await candidate}
+    <Loading showLabel />
+  {:then content}
+    {#if content}
+      <EntityDetails {content} {opinionQuestions} {infoQuestions} />
+    {:else}
+      <div class="w-full text-center text-warning">{$t('candidateApp.preview.notFound')}</div>
+    {/if}
+  {/await}
+</SingleCardPage>

@@ -17,17 +17,17 @@ import {error} from '@sveltejs/kit';
 import {logDebugError} from './logger';
 
 /**
- * Run the matching algorithm.
+ * Run the matching algorithm as an async process.
  * @param allQuestions All of the available questions
  * @param answeredQuestions The question-answer dictionary of the user's answers
  * @param entities The candidates or parties to include in the matching
  * @returns The matching results as entities wrapped in ranking properties
  */
-export function match<E extends EntityProps>(
+export async function match<E extends EntityProps>(
   allQuestions: QuestionProps[],
   answeredQuestions: AnswerDict,
   entities: E[]
-): RankingProps<E>[] {
+): Promise<RankingProps<E>[]> {
   // Create the algorithm instance
   const algorithm = new MatchingAlgorithm({
     distanceMetric: DistanceMetric.Manhattan,
@@ -94,12 +94,12 @@ export function match<E extends EntityProps>(
  * @param parties The parties to include in the matching
  * @returns The matching results as entities wrapped in ranking properties
  */
-export function matchParties(
+export async function matchParties(
   allQuestions: QuestionProps[],
   answeredQuestions: AnswerDict,
   candidates: CandidateProps[],
   parties: PartyProps[]
-): RankingProps<PartyProps>[] {
+): Promise<RankingProps<PartyProps>[]> {
   // Calculate average answers for each party for each question
   for (const party of parties) {
     if (!party.answers) party.answers = {};
