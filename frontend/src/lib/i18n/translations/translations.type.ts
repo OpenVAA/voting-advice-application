@@ -24,6 +24,7 @@ export type TranslationsPayload = Partial<{
   partyPlural: string;
   partySingular: string;
   publisher: string;
+  score: string | number;
   seconds: number;
   timeLeft: number;
   username: string;

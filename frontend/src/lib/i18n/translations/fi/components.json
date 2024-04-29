@@ -33,7 +33,8 @@
     "searchPlaceholder": "Etsi nimellä"
   },
   "matchScore": {
-    "label": "sopivuus"
+    "label": "sopivuus",
+    "score": "{score}%"
   },
   "video": {
     "error": "Videota ei voitu ladata. Voit kokeilla ladata sivun uudelleen tai valita oikeasta yläkulmasta tekstinäkymän videon sijaan.",
