@@ -30,7 +30,11 @@ Used to show an entity's basic info in an `EntityDetails` component.
   <div class="infoGroup" role="group">
     {#if isCandidate(entity)}
       <InfoItem label={$t('candidate.list')}>
-        <PartyTag party={entity.party} variant="full" />
+        {#if entity.party}
+          <PartyTag party={entity.party} variant="full" />
+        {:else}
+          {$t('common.unaffiliated')}
+        {/if}
       </InfoItem>
     {/if}
     <InfoItem label={$t('common.electionSymbol')}>
@@ -50,7 +54,7 @@ Used to show an entity's basic info in an `EntityDetails` component.
             {:else if question.type === 'multipleChoiceCategorical' && Array.isArray(answer)}
               {answer.join($t('common.multipleAnswerSeparator'))}
             {:else if question.type === 'preferenceOrder'}
-              <ol class="pl-18">
+              <ol>
                 {#each answer as item}
                   <li>{item}</li>
                 {/each}

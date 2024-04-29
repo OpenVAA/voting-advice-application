@@ -14,5 +14,6 @@
   "party": {
     "singular": "puolue",
     "plural": "puolueet"
-  }
+  },
+  "unaffiliated": "Sitoutumaton"
 }
