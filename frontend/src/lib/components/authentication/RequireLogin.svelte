@@ -1,6 +1,7 @@
 <script>
-  import {LoginPage} from '$lib/candidate/templates/login';
   import {getContext} from 'svelte';
+  import {Loading} from '$lib/components/loading';
+  import {LoginPage} from '$lib/candidate/templates/login';
 
   const {user, token} = getContext('auth');
   export let showLogin = false;
@@ -35,7 +36,7 @@ Require candidates to be logged in to view the children of this component.
   <slot />
 {:else if ($token === undefined || ($token && !$user)) && showLogin}
   <div class="mt-100 flex h-screen flex-col items-center">
-    <span class="loading loading-spinner loading-lg" />
+    <Loading showLabel />
   </div>
 {:else if showLogin}
   <LoginPage />

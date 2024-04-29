@@ -1,6 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {settings} from '$lib/utils/stores';
+  import {Loading} from '$lib/components/loading';
   import '../../app.css';
   import type {LayoutData} from './$types';
 
@@ -31,5 +32,5 @@
 {#if data.election}
   <slot />
 {:else}
-  <span class="loading loading-spinner loading-lg" />
+  <Loading showLabel />
 {/if}

@@ -1,6 +1,7 @@
 <script lang="ts">
   import {getContext} from 'svelte';
   import type {AnswerContext} from '$lib/utils/answerStore';
+  import {Loading} from '$lib/components/loading';
 
   const answerContext = getContext<AnswerContext>('answers');
   const answers = answerContext.answers;
@@ -32,7 +33,7 @@ Require candidate answers to be loaded to view the children of this component.
   <slot />
 {:else}
   {#await getQuestionsAndAnswers()}
-    <span class="loading loading-spinner loading-lg" />
+    <Loading showLabel />
   {:then}
     <slot />
   {/await}
