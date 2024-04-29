@@ -14,5 +14,6 @@
   "party": {
     "singular": "party",
     "plural": "parties"
-  }
+  },
+  "unaffiliated": "Unaffiliated"
 }

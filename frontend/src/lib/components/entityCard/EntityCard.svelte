@@ -9,6 +9,7 @@
   import {PartyTag} from '$lib/components/partyTag';
   import {SubMatches} from '$lib/components/subMatches';
   import type {EntityCardProps} from './EntityCard.type';
+  import {t} from '$lib/i18n';
 
   type $$Props = EntityCardProps;
 
@@ -79,11 +80,15 @@ A card for displaying an entity, i.e. a candidate or a party, in a list or as pa
   <Avatar slot="image" {...avatarProps} />
   <h3 slot="title" id="{baseId}_title">{name}</h3>
   <div class="flex flex-row items-center gap-md" slot="subtitle" id="{baseId}_subtitle">
-    {#if nominatingParty}
-      <PartyTag party={nominatingParty} variant="short" />
-    {/if}
-    {#if electionSymbol}
-      <ElectionSymbol text={electionSymbol} />
+    {#if isCandidate(entity)}
+      {#if nominatingParty}
+        <PartyTag party={nominatingParty} variant="short" />
+      {:else}
+        {$t('common.unaffiliated')}
+      {/if}
+      {#if electionSymbol}
+        <ElectionSymbol text={electionSymbol} />
+      {/if}
     {/if}
   </div>
   <svelte:fragment slot="callout">
