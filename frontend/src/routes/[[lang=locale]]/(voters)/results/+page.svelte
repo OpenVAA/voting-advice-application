@@ -8,6 +8,7 @@
   import {EntityList} from '$lib/components/entityList';
   import {EntityListControls} from '$lib/components/entityListControls';
   import {HeroEmoji} from '$lib/components/heroEmoji';
+  import {Loading} from '$lib/components/loading';
   import {StretchBackground} from '$lib/components/stretchBackground';
   import {Tabs} from '$lib/components/tabs';
   import {BasicPage} from '$lib/templates/basicPage';
@@ -17,8 +18,8 @@
   const sections = $settings.results.sections as EntityType[];
   if (!sections?.length) error(500, 'No sections to show');
 
-  let filteredCandidates: MaybeRanked<CandidateProps>[] = $candidateRankings;
-  let filteredParties: MaybeRanked<PartyProps>[] = $partyRankings;
+  let filteredCandidates: MaybeRanked<CandidateProps>[] = [];
+  let filteredParties: MaybeRanked<PartyProps>[] = [];
 </script>
 
 <BasicPage title={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}>
@@ -57,48 +58,50 @@
 
     <!-- Candidates -->
     {#if sections[$activeTab] === 'candidate'}
-      <h2 class="mx-10 mb-md mt-md">
-        {$t('results.candidatesShown', {numShown: filteredCandidates.length})}
-        {#if filteredCandidates.length !== $candidateRankings.length}
-          <span class="font-normal text-secondary"
-            >{$t('results.candidatesTotal', {numTotal: $candidateRankings.length})}</span>
+      {#await Promise.all([$candidateRankings, $candidateFilters])}
+        <Loading showLabel class="mt-lg" />
+      {:then [allCandidates, candidateFilters]}
+        <h2 class="mx-10 mb-md mt-md">
+          {$t('results.candidatesShown', {numShown: filteredCandidates.length})}
+          {#if filteredCandidates.length !== allCandidates.length}
+            <span class="font-normal text-secondary"
+              >{$t('results.candidatesTotal', {numTotal: allCandidates.length})}</span>
+          {/if}
+        </h2>
+        {#if candidateFilters}
+          <EntityListControls
+            contents={allCandidates}
+            filterGroup={candidateFilters}
+            bind:output={filteredCandidates}
+            class="mx-10 mb-md" />
         {/if}
-      </h2>
-
-      {#if $candidateFilters}
-        <EntityListControls
-          contents={$candidateRankings}
-          filterGroup={$candidateFilters}
-          bind:output={filteredCandidates}
-          class="mx-10 mb-md" />
-      {/if}
-
-      <EntityList
-        contents={filteredCandidates}
-        actionCallBack={({id}) => $getRoute({route: Route.ResultCandidate, id})}
-        class="mb-lg" />
+        <EntityList
+          contents={filteredCandidates}
+          actionCallBack={({id}) => $getRoute({route: Route.ResultCandidate, id})}
+          class="mb-lg" />
+      {/await}
 
       <!-- Parties -->
     {:else if sections[$activeTab] === 'party'}
-      <h2 class="mx-10 mb-md mt-md">
-        {$t('results.partiesShown', {numShown: filteredParties.length})}
-        {#if filteredParties.length !== $partyRankings.length}
-          <span class="font-normal text-secondary"
-            >{$t('results.partiesTotal', {numTotal: $partyRankings.length})}</span>
-        {/if}
-      </h2>
-
-      {#if $candidateFilters}
+      {#await $partyRankings}
+        <Loading showLabel class="mt-lg" />
+      {:then allParties}
+        <h2 class="mx-10 mb-md mt-md">
+          {$t('results.partiesShown', {numShown: filteredParties.length})}
+          {#if filteredParties.length !== allParties.length}
+            <span class="font-normal text-secondary"
+              >{$t('results.partiesTotal', {numTotal: allParties.length})}</span>
+          {/if}
+        </h2>
         <EntityListControls
-          contents={$partyRankings}
+          contents={allParties}
           bind:output={filteredParties}
           class="mx-10 mb-md" />
-      {/if}
-
-      <EntityList
-        contents={filteredParties}
-        actionCallBack={({id}) => $getRoute({route: Route.ResultParty, id})}
-        class="mb-lg" />
+        <EntityList
+          contents={filteredParties}
+          actionCallBack={({id}) => $getRoute({route: Route.ResultParty, id})}
+          class="mb-lg" />
+      {/await}
     {/if}
   </StretchBackground>
 </BasicPage>

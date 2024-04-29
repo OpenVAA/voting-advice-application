@@ -9,9 +9,10 @@ import type {LayoutServerLoad} from './$types';
 export const load = (async ({parent}) => {
   const locale = (await parent()).i18n.currentLocale;
   return {
+    candidates: getNominatedCandidates({loadAnswers: true, locale}),
+    parties: getNominatingParties({loadAnswers: true, locale}),
+    // Await these
     questions: await getOpinionQuestions({locale}),
-    infoQuestions: await getInfoQuestions({locale}),
-    candidates: await getNominatedCandidates({loadAnswers: true, locale}),
-    parties: await getNominatingParties({loadAnswers: true, locale})
+    infoQuestions: await getInfoQuestions({locale})
   };
 }) satisfies LayoutServerLoad;

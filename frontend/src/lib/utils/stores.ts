@@ -129,16 +129,20 @@ export const election: Readable<ElectionProps | undefined> = derived(
 /**
  * Utility store for candidates as part of `PageData`.
  */
-export const candidates: Readable<CandidateProps[]> = derived(
+export const candidates: Readable<Promise<CandidateProps[]>> = derived(
   page,
   ($page) => $page.data.candidates,
-  []
+  Promise.resolve([])
 );
 
 /**
  * Utility store for parties as part of `PageData`.
  */
-export const parties: Readable<PartyProps[]> = derived(page, ($page) => $page.data.parties, []);
+export const parties: Readable<Promise<PartyProps[]>> = derived(
+  page,
+  ($page) => $page.data.parties,
+  Promise.resolve([])
+);
 
 /**
  * Utility store for infoQuestions as part of `PageData`.
@@ -189,27 +193,31 @@ export const resultsAvailable: Readable<boolean> = derived(
  * A store that holds the candidate rankings. For ease of use, these will be wrapped entities with no `score` properties, if results are not yet available.
  */
 export const candidateRankings: Readable<
-  RankingProps<CandidateProps>[] | WrappedEntity<CandidateProps>[]
+  Promise<RankingProps<CandidateProps>[] | WrappedEntity<CandidateProps>[]>
 > = derived(
   [candidates, opinionQuestions, answeredQuestions, resultsAvailable],
-  ([$candidates, $opinionQuestions, $answeredQuestions, $resultsAvailable]) => {
+  async ([$candidates, $opinionQuestions, $answeredQuestions, $resultsAvailable]) => {
+    const candidates = await $candidates;
     return $resultsAvailable
-      ? match($opinionQuestions, $answeredQuestions, $candidates)
-      : $candidates.map(wrap);
+      ? match($opinionQuestions, $answeredQuestions, candidates)
+      : candidates.map(wrap);
   },
-  []
+  Promise.resolve([])
 );
 
 /**
  * A store that holds the party rankings. For ease of use, these will be wrapped entities with no `score` properties, if results are not yet available.
  */
-export const partyRankings: Readable<RankingProps<PartyProps>[] | WrappedEntity<PartyProps>[]> =
-  derived(
-    [candidates, parties, opinionQuestions, answeredQuestions, resultsAvailable],
-    ([$candidates, $parties, $opinionQuestions, $answeredQuestions, $resultsAvailable]) => {
-      return $resultsAvailable
-        ? matchParties($opinionQuestions, $answeredQuestions, $candidates, $parties)
-        : $parties.map(wrap);
-    },
-    []
-  );
+export const partyRankings: Readable<
+  Promise<RankingProps<PartyProps>[] | WrappedEntity<PartyProps>[]>
+> = derived(
+  [candidates, parties, opinionQuestions, answeredQuestions, resultsAvailable],
+  async ([$candidates, $parties, $opinionQuestions, $answeredQuestions, $resultsAvailable]) => {
+    const candidates = await $candidates;
+    const parties = await $parties;
+    return $resultsAvailable
+      ? matchParties($opinionQuestions, $answeredQuestions, candidates, parties)
+      : parties.map(wrap);
+  },
+  Promise.resolve([])
+);
