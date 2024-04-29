@@ -3,7 +3,7 @@
  *
  * NB. This is a temporary implementation which will be replaced with a proper one when the `vaa-data` model is implemented. The model will allow the passing of its consituent objects directly to the matching algorithm without need for constructing mediating objects, such as `LikertQuestion`s below.
  */
-
+import {error} from '@sveltejs/kit';
 import {
   type MatchingOptions,
   MatchingAlgorithm,
@@ -13,20 +13,23 @@ import {
   MissingValueDistanceMethod,
   type MatchableQuestionGroup
 } from '$voter/vaa-matching';
-import {error} from '@sveltejs/kit';
-import {logDebugError} from './logger';
+import {logDebugError} from '$lib/utils/logger';
 
 /**
  * Run the matching algorithm as an async process.
  * @param allQuestions All of the available questions
  * @param answeredQuestions The question-answer dictionary of the user's answers
  * @param entities The candidates or parties to include in the matching
+ * @param options.subMatches Whether to calculate the submatches for categories if there's more than one of them
  * @returns The matching results as entities wrapped in ranking properties
  */
 export async function match<E extends EntityProps>(
   allQuestions: QuestionProps[],
   answeredQuestions: AnswerDict,
-  entities: E[]
+  entities: E[],
+  options: {
+    subMatches?: boolean;
+  } = {}
 ): Promise<RankingProps<E>[]> {
   // Create the algorithm instance
   const algorithm = new MatchingAlgorithm({
@@ -62,23 +65,31 @@ export async function match<E extends EntityProps>(
     return [];
   }
 
-  // Create answer subgroups
-  // We only consider those subgroups that the voter has answered
-  const answeredIds = new Set(Object.keys(voter.answers));
-  const categories = [
-    ...new Set(
-      questions
-        .filter((q) => answeredIds.has(q.id))
-        .map((q) => q.category)
-        .filter((c) => c != null)
-    )
-  ] as QuestionCategoryProps[];
-  const matchingOptions: MatchingOptions<QuestionCategoryProps & MatchableQuestionGroup> = {
-    questionGroups: categories.map((c) => ({
-      ...c,
-      matchableQuestions: questions.filter((q) => q.category === c)
-    }))
-  };
+  // Possibly prepare for submatch calculation
+  let matchingOptions: MatchingOptions<QuestionCategoryProps & MatchableQuestionGroup> | undefined =
+    undefined;
+  if (options.subMatches) {
+    // Create answer subgroups
+    // We only consider those subgroups that the voter has answered
+    const answeredIds = new Set(Object.keys(voter.answers));
+    const categories = [
+      ...new Set(
+        questions
+          .filter((q) => answeredIds.has(q.id))
+          .map((q) => q.category)
+          .filter((c) => c != null)
+      )
+    ] as QuestionCategoryProps[];
+    // If there's only one category, there's no need to create subgroups
+    if (categories.length > 1) {
+      matchingOptions = {
+        questionGroups: categories.map((c) => ({
+          ...c,
+          matchableQuestions: questions.filter((q) => q.category === c)
+        }))
+      };
+    }
+  }
 
   // Perform the matching
   return algorithm.match(questions, voter, entities, matchingOptions);
@@ -98,7 +109,8 @@ export async function matchParties(
   allQuestions: QuestionProps[],
   answeredQuestions: AnswerDict,
   candidates: CandidateProps[],
-  parties: PartyProps[]
+  parties: PartyProps[],
+  options?: Parameters<typeof match>[3]
 ): Promise<RankingProps<PartyProps>[]> {
   // Calculate average answers for each party for each question
   for (const party of parties) {
@@ -124,7 +136,7 @@ export async function matchParties(
       };
     }
   }
-  return match(allQuestions, answeredQuestions, parties);
+  return match(allQuestions, answeredQuestions, parties, options);
 }
 
 /**
