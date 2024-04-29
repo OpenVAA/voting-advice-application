@@ -81,7 +81,7 @@
         Object.values($answeredQuestions).length
       }.`
     );
-    setTimeout(gotoNextQuestion, DELAY_M_MS);
+    setTimeout(() => jumpQuestion(+1), DELAY_M_MS);
   }
 
   /** Delete the voter's answer */
@@ -90,25 +90,23 @@
     deleteVoterAnswer(question.id);
   }
 
-  /** Go to the next question or results if this was the last question */
-  function gotoNextQuestion() {
-    let url =
-      questionIndex < questions.length - 1
-        ? $getRoute({route: Route.Question, id: questions[questionIndex + 1].id})
-        : $getRoute(Route.Results);
-    goto(url);
-  }
-
   /**
-   * Go to the previous question or the questions intro page if this was
-   * the first question
+   * Go to the next or previous question, or to results or the intro page if this was the last or first question
    */
-  function gotoPreviousQuestion() {
-    let url =
-      questionIndex > 0
-        ? $getRoute({route: Route.Question, id: questions[questionIndex - 1].id})
-        : $getRoute($settings.questions.showIntroPage ? Route.Questions : Route.Intro);
-    goto(url);
+  function jumpQuestion(steps: number) {
+    const newIndex = questionIndex + steps;
+    let url: string;
+    let noScroll = false;
+    if (newIndex < 0) {
+      url = $getRoute($settings.questions.showIntroPage ? Route.Questions : Route.Intro);
+    } else if (newIndex >= questions.length) {
+      url = $getRoute(Route.Results);
+    } else {
+      url = $getRoute({route: Route.Question, id: questions[newIndex].id});
+      // Disable scrolling when moving between questions for a smoother experience
+      noScroll = true;
+    }
+    goto(url, {noScroll});
   }
 
   /**
@@ -209,10 +207,10 @@
           : undefined}
         previousLabel={questionIndex === 0 ? $t('header.back') : undefined}
         separateSkip={true}
-        on:previous={gotoPreviousQuestion}
+        on:previous={() => jumpQuestion(-1)}
         on:delete={deleteAnswer}
-        on:next={gotoNextQuestion}
-        on:skip={gotoNextQuestion} />
+        on:next={() => jumpQuestion(+1)}
+        on:skip={() => jumpQuestion(+1)} />
     </svelte:fragment>
   </BasicPage>
 {/if}
