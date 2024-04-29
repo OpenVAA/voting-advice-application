@@ -1,13 +1,16 @@
 <script lang="ts">
-  import type {CandidateContext} from '$lib/utils/candidateStore';
   import {getContext} from 'svelte';
-  import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import {SingleCardPage} from '$lib/templates/singleCardPage';
+  import { goto } from '$app/navigation';
   import {locale, t} from '$lib/i18n';
+  import {getInfoQuestions, getOpinionQuestions, getNominatedCandidates} from '$lib/api/getData';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import { Route, getRoute, referredByUs } from '$lib/utils/navigation';
+  import { Button } from '$lib/components/button';
   import {EntityDetails} from '$lib/components/entityDetails';
   import {Icon} from '$lib/components/icon';
   import { Loading } from '$lib/components/loading';
-  import {getInfoQuestions, getOpinionQuestions, getNominatedCandidates} from '$lib/api/getData';
+  import {LogoutButton} from '$lib/candidate/components/logoutButton';
+  import {SingleCardPage} from '$lib/templates/singleCardPage';
 
   const {userStore} = getContext<CandidateContext>('candidate');
 
@@ -49,7 +52,16 @@
         <Icon name="info" />
         {$t('candidateApp.preview.tip')}
       </svelte:fragment>
-      <LogoutButton buttonVariant="icon" slot="banner" />
+      <svelte:fragment slot="banner">
+        <LogoutButton />
+        <Button
+          slot="banner"
+          class="!text-neutral"
+          variant="icon"
+          icon="close"
+          on:click={() => (referredByUs() ? history.back() : goto($getRoute(Route.CandAppHome)))}
+          text={$t('candidateApp.preview.close')} />
+      </svelte:fragment>
       <EntityDetails content={candidate} {opinionQuestions} {infoQuestions} />
     </SingleCardPage>
   {/if}
