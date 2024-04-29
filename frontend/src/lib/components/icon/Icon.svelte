@@ -33,13 +33,13 @@
     // Predefined sizes
     switch (size) {
       case 'sm':
-        classes += ' h-16 w-16';
+        classes += ' h-16 w-16 min-h-16 min-w-16';
         break;
       case 'lg':
-        classes += ' h-32 w-32';
+        classes += ' h-32 w-32 min-h-32 min-w-32';
         break;
       default:
-        classes += ' h-24 w-24';
+        classes += ' h-24 w-24 min-h-24 min-w-24';
     }
     // Set fill color
     if (customColor) {
