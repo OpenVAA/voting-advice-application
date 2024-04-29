@@ -195,11 +195,13 @@ export const resultsAvailable: Readable<boolean> = derived(
 export const candidateRankings: Readable<
   Promise<RankingProps<CandidateProps>[] | WrappedEntity<CandidateProps>[]>
 > = derived(
-  [candidates, opinionQuestions, answeredQuestions, resultsAvailable],
-  async ([$candidates, $opinionQuestions, $answeredQuestions, $resultsAvailable]) => {
+  [candidates, opinionQuestions, answeredQuestions, resultsAvailable, settings],
+  async ([$candidates, $opinionQuestions, $answeredQuestions, $resultsAvailable, $settings]) => {
     const candidates = await $candidates;
     return $resultsAvailable
-      ? match($opinionQuestions, $answeredQuestions, candidates)
+      ? match($opinionQuestions, $answeredQuestions, candidates, {
+          subMatches: $settings.results.showSubmatches
+        })
       : candidates.map(wrap);
   },
   Promise.resolve([])
@@ -211,12 +213,21 @@ export const candidateRankings: Readable<
 export const partyRankings: Readable<
   Promise<RankingProps<PartyProps>[] | WrappedEntity<PartyProps>[]>
 > = derived(
-  [candidates, parties, opinionQuestions, answeredQuestions, resultsAvailable],
-  async ([$candidates, $parties, $opinionQuestions, $answeredQuestions, $resultsAvailable]) => {
+  [candidates, parties, opinionQuestions, answeredQuestions, resultsAvailable, settings],
+  async ([
+    $candidates,
+    $parties,
+    $opinionQuestions,
+    $answeredQuestions,
+    $resultsAvailable,
+    $settings
+  ]) => {
     const candidates = await $candidates;
     const parties = await $parties;
     return $resultsAvailable
-      ? matchParties($opinionQuestions, $answeredQuestions, candidates, parties)
+      ? matchParties($opinionQuestions, $answeredQuestions, candidates, parties, {
+          subMatches: $settings.results.showSubmatches
+        })
       : parties.map(wrap);
   },
   Promise.resolve([])
