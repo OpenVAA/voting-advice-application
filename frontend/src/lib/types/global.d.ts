@@ -108,6 +108,7 @@ declare global {
     results: {
       minimumAnswers: number;
       sections: string[];
+      showSubmatches: boolean;
     };
     publisher?: {
       name: string;
