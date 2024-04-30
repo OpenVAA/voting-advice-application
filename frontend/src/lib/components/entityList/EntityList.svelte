@@ -1,24 +1,20 @@
 <script lang="ts">
-  import {error} from '@sveltejs/kit';
   import {onDestroy} from 'svelte';
   import {t} from '$lib/i18n';
   import {concatClass} from '$lib/utils/components';
-  import {parseMaybeRanked} from '$lib/utils/entities';
   import {Button} from '$lib/components/button';
-  import {EntityCard, type EntityCardProps} from '$lib/components/entityCard';
-  import type {CardAction, EntityListProps} from './EntityList.type';
+  import {EntityCard} from '$lib/components/entityCard';
+  import type {EntityListProps} from './EntityList.type';
 
   type $$Props = EntityListProps;
 
-  export let contents: $$Props['contents'];
-  export let actionCallBack: $$Props['actionCallBack'] = undefined;
-  export let entityCardProps: $$Props['entityCardProps'] = undefined;
+  export let cards: $$Props['cards'];
   export let itemsPerPage: NonNullable<$$Props['itemsPerPage']> = 20;
   export let itemsTolerance: NonNullable<$$Props['itemsTolerance']> = 0.2;
   export let itemsShown: $$Props['itemsShown'] = 0;
 
   /** The items spread onto pages */
-  let pages: Array<$$Props['contents']>;
+  let pages: Array<$$Props['cards']>;
   /** The index of the currently shown page (the previous pages are also shown) */
   let currentPage: number;
 
@@ -36,13 +32,13 @@
     pages = [];
     currentPage = 0;
     let start = 0;
-    while (start < contents.length) {
+    while (start < cards.length) {
       let end = start + itemsPerPage;
       // The batch size is `itemsPerPage` unless the last batch would fall within `itemsTolerance` in which case it is combined with the second to last batch
-      if (contents.length - end <= Math.ceil(itemsPerPage * itemsTolerance)) {
-        end = contents.length;
+      if (cards.length - end <= Math.ceil(itemsPerPage * itemsTolerance)) {
+        end = cards.length;
       }
-      pages.push(contents.slice(start, end));
+      pages.push(cards.slice(start, end));
       start = end;
     }
   }
@@ -54,22 +50,6 @@
   onDestroy(() => {
     if (scrollTimeout) clearTimeout(scrollTimeout);
   });
-
-  /**
-   * Parse the `MaybeRanked` and `CardAction` for an item.
-   * @param item A possibly ranked entity.
-   * @returns {ecProps, action}
-   */
-  function parseItem(item: MaybeRanked): {
-    ecProps: EntityCardProps;
-    action: CardAction;
-  } {
-    const {entity} = parseMaybeRanked(item);
-    return {
-      ecProps: {...entityCardProps, content: item},
-      action: actionCallBack ? actionCallBack(entity) : undefined
-    };
-  }
 
   /**
    * Show the items for the page and scroll them into view.
@@ -100,10 +80,8 @@ Show a list of entities with pagination and defined actions.
 
 ### Properties
 
-- `contents`: A list of possibly ranked entities, e.g. candidates or a parties.
-- `actionCallBack`: An optional function that is called for each entity in the list to determine the action to be performed when the entity card is clicked. @default `undefined`
-- `entityCardProps`: Optional properties that will be passed to each `EntityCard` in the list. @default `undefined`
-- `itemsPerPage`: The number of entities to display on each page of the list. @default `20`
+- `cards`: The properties for the `EntityCard`s to show.
+- `itemsPerPage`: The number of entities to display on each page of the list. @default `30`
 - `itemsTolerance`: The fraction of `itemsPerPage` that can be exceeded on the last page to prevent showing a short last page. @default `0.2`
 - Any valid attributes of a `<div>` element.
 
@@ -113,7 +91,6 @@ Show a list of entities with pagination and defined actions.
 
 ### Accessibility
 
-- If such an `actionCallBack` is defined that returns either url strings or `MouseEvent` handlers for the entities, they will be wrapped in tabbable `<a>` or `<button>` elements.
 - Loading more items happens using a basic `<button>`, which becomes invisible to when clicked but remains in the DOM.
 
 ### Usage
@@ -135,20 +112,7 @@ Show a list of entities with pagination and defined actions.
         {#if i <= currentPage}
           <!-- Show the contents for the current page and those before it -->
           {#each items as item}
-            {@const {ecProps, action} = parseItem(item)}
-            {#if action == null}
-              <EntityCard {...ecProps} />
-            {:else if typeof action === 'function'}
-              <button on:click={action}>
-                <EntityCard {...ecProps} />
-              </button>
-            {:else if typeof action === 'string'}
-              <a href={action}>
-                <EntityCard {...ecProps} />
-              </a>
-            {:else}
-              {error(500, `Unknown action type: ${typeof action}`)}
-            {/if}
+            <EntityCard {...item} />
           {/each}
         {/if}
         {#if i > 0}
