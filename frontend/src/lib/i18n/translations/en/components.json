@@ -1,4 +1,8 @@
 {
+  "entityCard": {
+    "hideAllCandidates": "Collapse list",
+    "showAllCandidates": "Show all {numCandidates} candidates"
+  },
   "entityDetails": {
     "tabs": {
       "basicInfo": "Basic Info",
