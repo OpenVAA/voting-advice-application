@@ -158,7 +158,7 @@
       "description": "Settings related to the results view.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["minimumAnswers", "sections", "showSubmatches"],
+      "required": ["minimumAnswers", "sections", "showSubcardsForParties", "showSubmatches"],
       "properties": {
         "minimumAnswers": {
           "showCategoryTags": {
@@ -175,6 +175,11 @@
           "items": {
             "enum": ["candidate", "party"]
           }
+        },
+        "showSubcardsForParties": {
+          "description": "Whether to show parties’ candidates as subcards in the results view.",
+          "type": "boolean",
+          "default": true
         },
         "showSubmatches": {
           "description": "Whether to show (and compute) submatches for question categories for the entities. If there's only one category, submatches are never computed.",
