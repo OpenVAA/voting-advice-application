@@ -3,17 +3,9 @@ import type {EntityCardProps} from '$lib/components/entityCard';
 
 export type EntityListProps = SvelteHTMLElements['div'] & {
   /**
-   * A list of possibly ranked entities, e.g. candidates or a parties.
+   * The properties for the `EntityCard`s to show.
    */
-  contents: MaybeRanked[];
-  /**
-   * An optional function that is called for each entity in the list to determine the action to be performed when the entity card is clicked. @default undefined
-   */
-  actionCallBack?: (entity: EntityProps) => CardAction;
-  /**
-   * Optional properties that will be passed to each `EntityCard` in the list. @default undefined
-   */
-  entityCardProps?: Partial<Omit<EntityCardProps, 'content'>>;
+  cards: EntityCardProps[];
   /**
    * The number of entities to display on each page of the list. @default 20
    */
@@ -27,8 +19,3 @@ export type EntityListProps = SvelteHTMLElements['div'] & {
    */
   readonly itemsShown?: number;
 };
-
-/**
- * The return type of the `actionCallBack` property that determines which action is performed when the entity is clicked: either an url string, a `MouseEvent` handler, or `undefined` if no action should be performed.
- */
-export type CardAction = string | ((e: MouseEvent) => void) | undefined;
