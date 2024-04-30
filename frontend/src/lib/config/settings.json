@@ -62,6 +62,7 @@
   "results": {
     "minimumAnswers": 5,
     "sections": ["candidate", "party"],
+    "showSubcardsForParties": true,
     "showSubmatches": true
   }
 }
