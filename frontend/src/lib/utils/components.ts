@@ -12,19 +12,17 @@ export function getUUID(): string {
  *   same values in `props`
  * @returns The merged props, based on a shallow copy of `props`
  */
-export function concatProps<
-  T extends Record<string, unknown>,
-  D extends Record<string, string | undefined>
->(props: T, defaults: D): Omit<T, keyof D> & D {
+export function concatProps<T extends object>(props: T, defaults: Partial<StringProps<T>>) {
   // Make a shallow copy of props so as not to alter its values
-  const merged: Record<string, unknown> = {...props};
+  const merged = {...props};
   for (const k in defaults) {
-    merged[k] =
+    merged[k] = (
       k in merged && typeof merged[k] === 'string'
         ? `${defaults[k] ?? ''} ${merged[k]}`
-        : defaults[k];
+        : defaults[k]
+    ) as T[typeof k];
   }
-  return merged as Omit<T, keyof D> & D;
+  return merged;
 }
 
 /**
@@ -35,6 +33,13 @@ export function concatProps<
  * @returns The merged props, based on a shallow copy of `props` with
  *   `classes` joined with possible `props.class`
  */
-export function concatClass<T extends Record<string, unknown>>(props: T, classes: string) {
-  return concatProps(props, {class: classes});
+export function concatClass<T extends {class?: string | null}>(props: T, classes: string) {
+  return concatProps(props, {class: classes} as Partial<StringProps<T>>);
 }
+
+/**
+ * Extract the string properties of an object.
+ */
+type StringProps<T extends object> = {
+  [K in keyof T]: T[K] extends string ? T[K] : never;
+};
