@@ -5,6 +5,7 @@
   import {getRoute, Route} from '$lib/utils/navigation';
   import {candidateRankings, partyRankings, resultsAvailable, settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
+  import type {EntityCardProps} from '$lib/components/entityCard';
   import {EntityList} from '$lib/components/entityList';
   import {EntityListControls} from '$lib/components/entityListControls';
   import {HeroEmoji} from '$lib/components/heroEmoji';
@@ -18,8 +19,50 @@
   const sections = $settings.results.sections as EntityType[];
   if (!sections?.length) error(500, 'No sections to show');
 
-  let filteredCandidates: MaybeRanked<CandidateProps>[] = [];
-  let filteredParties: MaybeRanked<PartyProps>[] = [];
+  let filteredCandidates: WrappedEntity<CandidateProps>[] = [];
+  let filteredParties: WrappedEntity<PartyProps>[] = [];
+
+  /**
+   * Create `EntityCard` properties for a candidate.
+   * @param candidate The wrapped candidate
+   */
+  function parseCandidate(candidate: WrappedEntity<CandidateProps>): EntityCardProps {
+    return {
+      content: candidate,
+      action: candidateRoute(candidate)
+    };
+  }
+
+  /**
+   * Create `EntityCard` properties for a party.
+   * @param party The wrapped party
+   * @param allCandidates All wrapped candidates. If these are supplied the parties members will be selected from the list and added as subcards to the party.
+   * @param maxSubcards The maximum number of subcards to show if `allCandidates` are supplied.
+   */
+  function parseParty(
+    party: WrappedEntity<PartyProps>,
+    allCandidates?: WrappedEntity<CandidateProps>[],
+    maxSubcards = 3
+  ): EntityCardProps {
+    return {
+      content: party,
+      action: $getRoute({route: Route.ResultParty, id: party.entity.id}),
+      subcards: allCandidates?.length
+        ? allCandidates
+            .filter((c) => c.entity.party?.id === party.entity.id)
+            .map((c) => ({
+              content: c,
+              action: candidateRoute(c),
+              maxSubcards
+            }))
+        : undefined
+    };
+  }
+
+  /** Shorthand for building a candidate link route */
+  function candidateRoute(candidate: WrappedEntity<CandidateProps>) {
+    return $getRoute({route: Route.ResultCandidate, id: candidate.entity.id});
+  }
 </script>
 
 <BasicPage title={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}>
@@ -75,17 +118,15 @@
             bind:output={filteredCandidates}
             class="mx-10 mb-md" />
         {/if}
-        <EntityList
-          contents={filteredCandidates}
-          actionCallBack={({id}) => $getRoute({route: Route.ResultCandidate, id})}
-          class="mb-lg" />
+        <EntityList cards={filteredCandidates.map(parseCandidate)} class="mb-lg" />
       {/await}
 
       <!-- Parties -->
     {:else if sections[$activeTab] === 'party'}
-      {#await $partyRankings}
+      <!-- Instead of candidateRankings we just create a Promise that resolves to undefined if subcards are not to be shown. In that case allCandidates will be undefined, and parseParty will not add subcards. -->
+      {#await Promise.all( [$partyRankings, $settings.results.showSubcardsForParties ? $candidateRankings : Promise.resolve(undefined)] )}
         <Loading showLabel class="mt-lg" />
-      {:then allParties}
+      {:then [allParties, allCandidatesOrUndef]}
         <h2 class="mx-10 mb-md mt-md">
           {$t('results.partiesShown', {numShown: filteredParties.length})}
           {#if filteredParties.length !== allParties.length}
@@ -98,8 +139,7 @@
           bind:output={filteredParties}
           class="mx-10 mb-md" />
         <EntityList
-          contents={filteredParties}
-          actionCallBack={({id}) => $getRoute({route: Route.ResultParty, id})}
+          cards={filteredParties.map((p) => parseParty(p, allCandidatesOrUndef))}
           class="mb-lg" />
       {/await}
     {/if}
