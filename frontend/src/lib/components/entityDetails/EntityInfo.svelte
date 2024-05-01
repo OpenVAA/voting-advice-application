@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {getAnswerForDisplay} from '$lib/utils/answers';
   import {isCandidate} from '$lib/utils/entities';
+  import {InfoAnswer} from '$lib/components/infoAnswer';
   import {PartyTag} from '$lib/components/partyTag';
   import InfoItem from './InfoItem.svelte';
   import type {EntityDetailsProps} from './EntityDetails.type';
@@ -47,21 +47,8 @@ Used to show an entity's basic info in an `EntityDetails` component.
     {#if nonLinkQuestions.length}
       <div class="infoGroup" role="group">
         {#each nonLinkQuestions as question}
-          {@const answer = getAnswerForDisplay(entity, question)}
           <InfoItem label={question.text}>
-            {#if answer == null}
-              <span class="text-secondary">{$t('common.missingAnswer')}</span>
-            {:else if question.type === 'multipleChoiceCategorical' && Array.isArray(answer)}
-              {answer.join($t('common.multipleAnswerSeparator'))}
-            {:else if question.type === 'preferenceOrder'}
-              <ol>
-                {#each answer as item}
-                  <li>{item}</li>
-                {/each}
-              </ol>
-            {:else}
-              {answer}
-            {/if}
+            <InfoAnswer {entity} {question} />
           </InfoItem>
         {/each}
       </div>
@@ -70,15 +57,7 @@ Used to show an entity's basic info in an `EntityDetails` component.
       <div class="infoGroup" role="group">
         <InfoItem label={$t('components.entityInfo.links')}>
           {#each linkQuestions as question}
-            {@const answer = getAnswerForDisplay(entity, question)}
-            {#if answer && typeof answer === 'string'}
-              <a
-                href={answer}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="small-label mb-sm me-md inline-block hyphens-none rounded-full bg-base-300 px-md py-sm last:me-0"
-                >{question.text}</a>
-            {/if}
+            <InfoAnswer {entity} {question} hideMissing class="mb-sm" />
           {/each}
         </InfoItem>
       </div>
