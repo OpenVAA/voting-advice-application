@@ -61,6 +61,15 @@
     "order": {
       "type": "integer",
       "default": 0
+    },
+    "entityType": {
+      "type": "enumeration",
+      "enum": [
+        "all",
+        "candidate",
+        "party"
+      ],
+      "default": "all"
     }
   }
 }

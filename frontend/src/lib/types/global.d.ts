@@ -209,6 +209,7 @@ declare global {
     shortName: string;
     order?: number;
     category: QuestionCategoryProps;
+    entityType: EntityType;
     info?: string;
     filterable?: boolean;
     fillingInfo?: string;
