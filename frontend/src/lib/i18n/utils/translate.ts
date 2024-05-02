@@ -21,7 +21,7 @@ export function translateObject<T extends Record<string, unknown> | null | undef
   obj: T,
   locale?: string
 ) {
-  if (obj == null || Object.keys(obj).length === 0) return undefined;
+  if (!isTranslation(obj)) return undefined;
   locale ??= currentLocale.get();
   let key: string | undefined;
   if (locale in obj) {
@@ -31,4 +31,11 @@ export function translateObject<T extends Record<string, unknown> | null | undef
     key = match ?? defaultLocale;
   }
   return obj[key] ?? obj[defaultLocale] ?? Object.values(obj)[0] ?? undefined;
+}
+
+/**
+ * Check if an object is a valid LocalizedString and is not empty.
+ */
+export function isTranslation(obj: unknown): obj is LocalizedString {
+  return obj != null && typeof obj === 'object' && Object.keys(obj).length > 0;
 }
