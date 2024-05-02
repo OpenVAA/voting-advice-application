@@ -97,6 +97,9 @@ declare global {
       name: string;
       isDefault?: boolean;
     }>;
+    entityDetails: {
+      contents: Record<EntityType, AppSettingsEntityDetailsContent[]>;
+    };
     header: {
       showHelp: boolean;
     };
@@ -111,7 +114,7 @@ declare global {
         party: Array<'candidates' | 'submatches' | AppSettingsQuestionRef>;
       };
       minimumAnswers: number;
-      sections: Array<'candidate' | 'party'>;
+      sections: Array<Omit<EntityType, 'all'>>;
     };
     publisher?: {
       name: string;
@@ -128,6 +131,11 @@ declare global {
   type AppSettingsQuestionRef = {
     question: string;
   };
+
+  /**
+   * A entity details' content type in `AppSettings`.
+   */
+  type AppSettingsEntityDetailsContent = 'info' | 'opinions';
 
   /**
    * The properties of a Candidate object that can be passed onto the
@@ -309,11 +317,6 @@ declare global {
    * TODO: Consider allowing any `Intl.DateTimeFormatOptions` objects
    */
   type DateType = 'yearMonthDay' | 'yearMonth' | 'monthDay' | 'month' | 'weekday';
-
-  /**
-   * Value of enumerations for specifying the type of entity the object applies to
-   */
-  type EntityType = 'all' | 'candidate' | 'party';
 
   /**
    * Value of enumerations for specifying the type of entity the object applies to
