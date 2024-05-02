@@ -226,7 +226,7 @@ export interface StrapiQuestionData {
     questionType: {
       data: StrapiQuestionTypeData;
     };
-    entityType: EntityType | 'all' | null;
+    entityType: EntityType | null;
     text: LocalizedString;
     shortName: LocalizedString;
     info: LocalizedString;

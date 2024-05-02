@@ -403,6 +403,7 @@ export const getQuestions = ({
           shortName: shortName ? shortName : text,
           category: catProps,
           filterable: attr.filterable ?? false,
+          entityType: attr.entityType ?? 'all',
           type: settings.type,
           customData: attr.customData ? parseCustomData(attr.customData) : null
         };
