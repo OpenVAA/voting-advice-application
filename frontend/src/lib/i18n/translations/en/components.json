@@ -6,7 +6,8 @@
   "entityDetails": {
     "tabs": {
       "info": "Basic Info",
-      "opinions": "Opinions"
+      "opinions": "Opinions",
+      "candidates": "{candidatePlural}"
     }
   },
   "entityFilters": {
