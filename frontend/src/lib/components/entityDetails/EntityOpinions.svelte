@@ -40,14 +40,14 @@ Used to show an entity's opinions in an `EntityDetails` component.
 ```
 -->
 
-<div class="p-lg">
+<div class="grid p-lg">
   {#each questions as question}
     {@const {id, text, type, values, category, customData} = question}
     {@const answer = getLikertAnswer(entity, question)}
     {@const voterAnswer = getVoterLikertAnswer(question)}
     {@const headingId = `questionHeading-${id}`}
 
-    <div class="mb-60 mt-20">
+    <div class="mb-xxl mt-lg grid">
       <HeadingGroup id={headingId} class="mb-lg text-center">
         {#if $settings.questions.showCategoryTags && category}
           <PreHeading><CategoryTag {category} /></PreHeading>
