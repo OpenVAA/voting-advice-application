@@ -146,11 +146,16 @@
               "uniqueItems": true,
               "minItems": 1,
               "items": {
-                "enum": ["info", "opinions"]
+                "enum": ["candidates", "info", "opinions"]
               },
-              "default": ["info", "opinions"]
+              "default": ["info", "candidates", "opinions"]
             }
           }
+        },
+        "showMissingAnswers": {
+          "description": "Whether to show a marker for missing answers in entity details as, e.g. 'Election Symbol: --', or hide missing items completely. The marker, if shown, is defined in the translations. This only applies to non-opinion questions.",
+          "type": "boolean",
+          "default": false
         }
       }
     },

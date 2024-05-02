@@ -1,6 +1,9 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {isCandidate} from '$lib/utils/entities';
+  import {getAnswer} from '$lib/utils/answers';
+  import {isCandidate, isParty} from '$lib/utils/entities';
+  import {sanitizeHtml} from '$lib/utils/sanitize';
+  import {settings} from '$lib/utils/stores';
   import {InfoAnswer} from '$lib/components/infoAnswer';
   import {PartyTag} from '$lib/components/partyTag';
   import InfoItem from './InfoItem.svelte';
@@ -26,30 +29,42 @@ Used to show an entity's basic info in an `EntityDetails` component.
 ```
 -->
 
-<div class="p-lg">
-  <div class="infoGroup" role="group">
-    {#if isCandidate(entity)}
-      <InfoItem label={$t('candidate.list')}>
-        {#if entity.party}
-          <PartyTag party={entity.party} variant="full" />
-        {:else}
-          {$t('common.unaffiliated')}
-        {/if}
-      </InfoItem>
-    {/if}
-    <InfoItem label={$t('common.electionSymbol')}>
-      {entity.electionSymbol ?? '—'}
-    </InfoItem>
-  </div>
+<div class="grid p-lg">
+  <!-- We don't want to render an empty infoGroup, so we need to do these unseemly double-checks -->
+  {#if isCandidate(entity) || $settings.entityDetails.showMissingAnswers || entity.electionSymbol || (isParty(entity) && entity.info)}
+    <div class="infoGroup" role="group">
+      {#if isParty(entity) && entity.info}
+        <div>
+          {@html sanitizeHtml(entity.info)}
+        </div>
+      {/if}
+      {#if isCandidate(entity)}
+        <InfoItem label={$t('candidate.list')}>
+          {#if entity.party}
+            <PartyTag party={entity.party} variant="full" />
+          {:else}
+            {$t('common.unaffiliated')}
+          {/if}
+        </InfoItem>
+      {/if}
+      {#if $settings.entityDetails.showMissingAnswers || entity.electionSymbol}
+        <InfoItem label={$t('common.electionSymbol')}>
+          {entity.electionSymbol ?? $t('common.missingAnswer')}
+        </InfoItem>
+      {/if}
+    </div>
+  {/if}
   {#if questions?.length}
     {@const nonLinkQuestions = questions.filter((q) => q.type !== 'link')}
     {@const linkQuestions = questions.filter((q) => q.type === 'link')}
     {#if nonLinkQuestions.length}
       <div class="infoGroup" role="group">
         {#each nonLinkQuestions as question}
-          <InfoItem label={question.text}>
-            <InfoAnswer {entity} {question} />
-          </InfoItem>
+          {#if $settings.entityDetails.showMissingAnswers || getAnswer(entity, question) != null}
+            <InfoItem label={question.text}>
+              <InfoAnswer {entity} {question} />
+            </InfoItem>
+          {/if}
         {/each}
       </div>
     {/if}

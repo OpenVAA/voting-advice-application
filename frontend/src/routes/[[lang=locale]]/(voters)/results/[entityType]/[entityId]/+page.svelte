@@ -3,7 +3,7 @@
   import {goto} from '$app/navigation';
   import {t} from '$lib/i18n';
   import {getRoute, referredByUs, Route} from '$lib/utils/navigation';
-  import {candidateRankings, partyRankings} from '$lib/utils/stores';
+  import {candidateRankings, partyRankings, settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {EntityDetails} from '$lib/components/entityDetails';
   import {Loading} from '$lib/components/loading';
@@ -12,7 +12,10 @@
 
   export let data;
 
+  let entityType: EntityType;
   let id: string;
+  /** A party's candidates for displaying on a separate tab in EntityDetails or undefined if not applicable */
+  let candidatesOrUndef: Promise<WrappedEntity[] | undefined>;
   let entity: Promise<WrappedEntity | undefined>;
   let questions: QuestionProps[];
   let infoQuestions: QuestionProps[];
@@ -21,9 +24,9 @@
 
   $: {
     id = data.entityId;
-    questions = data.questions;
-    infoQuestions = data.infoQuestions;
-    switch (data.entityType) {
+    entityType = data.entityType as EntityType;
+    ({questions, infoQuestions} = data);
+    switch (entityType) {
       case 'candidate':
         entities = candidateRankings;
         break;
@@ -38,6 +41,16 @@
       if (res) title = res.entity.name;
       return res;
     });
+    if ($settings.entityDetails.contents[entityType].includes('candidates')) {
+      if (entityType !== 'party')
+        error(500, `Entity type ${entityType} can not have 'candidates' in EntityDetails`);
+      candidatesOrUndef = $candidateRankings.then((d) => {
+        const res = d.filter((c) => c.entity.party?.id == id);
+        return res.length ? res : undefined;
+      });
+    } else {
+      candidatesOrUndef = Promise.resolve(undefined);
+    }
   }
 </script>
 
@@ -49,13 +62,13 @@
     icon="close"
     on:click={() => (referredByUs() ? history.back() : goto($getRoute(Route.Results)))}
     text={$t('header.back')} />
-  {#await entity}
+  {#await Promise.all([entity, candidatesOrUndef])}
     <Loading showLabel />
-  {:then content}
+  {:then [content, subentities]}
     {#if content}
-      <EntityDetails {content} opinionQuestions={questions} {infoQuestions} />
+      <EntityDetails {content} {subentities} opinionQuestions={questions} {infoQuestions} />
     {:else}
-      {error(404, `Entity ${data.entityType}:${data.entityId} not found`)}
+      {error(404, `Entity ${entityType}:${id} not found`)}
     {/if}
   {/await}
 </SingleCardPage>

@@ -99,6 +99,7 @@ declare global {
     }>;
     entityDetails: {
       contents: Record<EntityType, AppSettingsEntityDetailsContent[]>;
+      showMissingAnswers: boolean;
     };
     header: {
       showHelp: boolean;
@@ -135,7 +136,7 @@ declare global {
   /**
    * A entity details' content type in `AppSettings`.
    */
-  type AppSettingsEntityDetailsContent = 'info' | 'opinions';
+  type AppSettingsEntityDetailsContent = 'candidates' | 'info' | 'opinions';
 
   /**
    * The properties of a Candidate object that can be passed onto the
