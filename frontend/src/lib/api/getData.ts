@@ -141,12 +141,14 @@ export const getElection = ({
         delete appLabels.attributes[key as keyof StrapiAppLabelsData['attributes']];
       }
     }
+    const name = translate(attr.name, locale);
+    const shortName = translate(attr.shortName, locale);
     return {
       appLabels: appLabels?.attributes,
       electionDate: attr.electionDate,
       id: `${el.id}`,
-      name: translate(attr.name, locale),
-      shortName: translate(attr.shortName, locale),
+      name,
+      shortName: shortName ? shortName : name,
       type: attr.electionType ?? ''
     };
   });
@@ -270,12 +272,14 @@ const parseParty = (
 ): PartyProps => {
   const id = `${party.id}`;
   const attr = party.attributes;
+  const name = translate(attr.name, locale);
+  const shortName = translate(attr.shortName, locale);
   const props: PartyProps = {
     electionRound: 0, // We use a default here
     id,
     info: translate(attr.info, locale),
-    name: translate(attr.name, locale),
-    shortName: translate(attr.shortName, locale),
+    name,
+    shortName: shortName ? shortName : name,
     ...ensureColors(attr.color, attr.colorDark),
     answers: includeAnswers && attr.answers?.data ? parseAnswers(attr.answers.data, locale) : {}
   };
@@ -394,12 +398,14 @@ export const getQuestions = ({
         const attr = qst.attributes;
         const settings = attr.questionType?.data.attributes.settings;
         if (!settings) throw new Error(`Question with id '${qst.id}' has no settings!`);
+        const text = translate(attr.text, locale);
+        const shortName = translate(attr.shortName, locale);
         const props: QuestionProps = {
           id: `${qst.id}`,
           order: attr.order ?? 0,
-          text: translate(attr.text, locale),
+          text,
           info: translate(attr.info, locale),
-          shortName: translate(attr.shortName, locale),
+          shortName: shortName ? shortName : text,
           category: catProps,
           filterable: attr.filterable ?? false,
           type: settings.type,
@@ -435,13 +441,15 @@ const parseQuestionCategory = (
 ): QuestionCategoryProps => {
   const id = `${category.id}`;
   const attr = category.attributes;
+  const name = translate(attr.name, locale);
+  const shortName = translate(attr.shortName, locale);
   const props: QuestionCategoryProps = {
     id,
     order: attr.order ?? 0,
     type: attr.type,
     info: translate(attr.info, locale),
-    name: translate(attr.name, locale),
-    shortName: translate(attr.shortName, locale),
+    name,
+    shortName: shortName ? shortName : name,
     ...ensureColors(attr.color, attr.colorDark)
   };
   return props;
