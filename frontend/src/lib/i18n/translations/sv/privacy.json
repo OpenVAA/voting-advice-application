@@ -7,7 +7,7 @@
   "cookiesTitle": "Kakor",
   "cookiesContent": "Applikationen använder inga cookies för att lagra dina uppgifter. Dina svar och preferenser lagras i din webbläsares lokala lagring (local storage) för en bättre användarupplevelse. Dessa data kan endast nås av din enhet, inte av applikationens utgivare.",
   "dataTitle": "Insamling av användningsdata",
-  "dataContent": "Vi skulle vilja samla in användningsdata anonymt för forskningsändamål och för att förbättra applikationen. Datan som ska samlas in inkluderar dina svar på frågorna, den tid som ägnas åt att svara på frågorna och i andra avsnitt och de visade resultaten, men data kan inte kopplas till dig.",
+  "dataContent": "<p>Den här versionen av valkompassen för ungdomar är skapad som en del av forskningsprojektet YouthVAA, som studerar hur ungdomar använder valkompasser och hur valkompasser bättre kan passa ungdomars behov.</p><p>Vi skulle vilja samla in användningsdata anonymt för forskningsändamål och för att förbättra applikationen. Datan som ska samlas in inkluderar dina svar på frågorna, den tid som ägnas åt att svara på frågorna och i andra avsnitt och de visade resultaten, men data kan inte kopplas till dig.</p>",
   "dataContentPlatform": {
     "umami": "Vi använder Umami-tjänsten för datainsamling. Den använder inte cookies. Ytterligare information: {analyticsLink}."
   },

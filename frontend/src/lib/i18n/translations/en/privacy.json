@@ -7,7 +7,7 @@
   "cookiesTitle": "Cookies",
   "cookiesContent": "The application does not use cookies to store your data. Your answers and preferences are stored in your browser’s local storage for a better user experience. This data can only be accessed by your device, not by the application’s publisher.",
   "dataTitle": "Collecting Usage Data",
-  "dataContent": "We would like to collected usage data anonymously for research purposes and to improve the application. The data to collect includes your answers to the questions, the time spent answering the questions and in other sections and the results viewed, but the data cannot be connected to you.",
+  "dataContent": "<p>This version of the Election Compass for Young People is created as part of the YouthVAA research project, which studies how young people use election compasses and election compasses could better suit young people’s needs.</p><p>We would like to collected usage data anonymously for research purposes and to improve the application. The data to collect includes your answers to the questions, the time spent answering the questions and in other sections and the results viewed, but the data cannot be connected to you.</p>",
   "dataContentPlatform": {
     "umami": "We use the Umami service for data collection. It does not employ cookies. Further info: {analyticsLink}."
   },

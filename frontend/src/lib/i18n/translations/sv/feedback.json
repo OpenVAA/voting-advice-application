@@ -5,7 +5,7 @@
   "error": "Vi är oerhört ledsna, det uppstod ett fel när din feedback skickades.",
   "errorEmailIntro": "Vi ber dig att skicka din feedback via e-post genom att klicka på knappen nedan. All feedback du redan skrivit inkluderas automatiskt i e-postmeddelandet.",
   "errorEmailSubject": "Feedack",
-  "popupTitle": "Vad tycker du om valkompassen?",
+  "popupTitle": "Vad tycker du om Valkompassen för unga?",
   "ratingLabel": "Totalt betyg för appen",
   "ratingValueLabel": "{rating, plural, =0 {Inget betyg} other {Betyg # av {ratingMax}}}",
   "sendButton": "Skicka feedback",

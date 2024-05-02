@@ -7,7 +7,7 @@
   "cookiesTitle": "Evästeet",
   "cookiesContent": "Sovellus ei käytä evästeitä tietojen tallentamiseen. Vastauksesi ja asetuksesi tallennetaan selaimesi paikalliseen säilöön (local storage) sovelluksen käyttömukavuuden parantamiseksi. Näitä tietoja voi lukea ainoastaan sinun laitteesi, ei siis esimerkiksi vaalikoneen julkaisija.",
   "dataTitle": "Vastausten ja käyttötietojen kerääminen",
-  "dataContent": "Haluaisimme kerätä koneen käyttötietoja täysin nimettömästi tutkimusta ja sovelluksen kehittämistä varten. Kerättäviin tietoihin sisältyvät muun muassa vaalikonevastaukset, vastaamiseen käytetty aika ja mitä tuloksia on katseltu, mutta tietoja ei voi yhdistää sinuun.",
+  "dataContent": "<p>Tämä Nuorten Vaalikoneen versio on rakennettu osana YouthVAA-tutkimushanketta, jossa tutkitaan nuorten vaalikoneiden käyttöä ja kehitetään koneita palvelemaan paremmin nuorten tarpeita.</p><p>Haluaisimme kerätä koneen käyttötietoja täysin nimettömästi tutkimusta ja sovelluksen kehittämistä varten. Kerättäviin tietoihin sisältyvät muun muassa vaalikonevastaukset, vastaamiseen käytetty aika ja mitä tuloksia on katseltu, mutta tietoja ei voi yhdistää sinuun.</p>",
   "dataContentPlatform": {
     "umami": "Keräämiseen käytetetään Umami-alustaa, eikä se edellytä evästeiden käyttöä. Lisätietoja: {analyticsLink}."
   },

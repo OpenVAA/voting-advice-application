@@ -1,6 +1,6 @@
 {
   "appTitle": "Nuorten Vaalikone",
-  "frontpageIngress": "Vaalikoneen avulla voit etsiä ehdokkaita ja puolueita vaaleissa {electionDate, date, ::dMyyyy} sen mukaan, miten paljon he ovat samaa mieltä kanssasi.",
+  "frontpageIngress": "<p>Nuorten vaalikone auttaa sinua löytämään sopivan ehdokkaan EU-vaaleissa 2024. Vaalikone järjestelee ehdokkaat ja puolueet sen mukaan, miten paljon he ovat samaa mieltä kanssasi.</p><p>EU-vaalit järjestetään {electionDate, date, ::dMyyyy}. Muista äänestää joko varsinaisena vaalipäivänä tai ennakkoon 29.5.–4.6.2024.</p>",
   "madeWith": "Rakennettu käyttäen",
   "publishedBy": "Julkaisija: {publisher}",
   "questionsTip": "Vinkki: Jos et piittaa jostakin kysymyksestä, voit ohittaa sen.",

@@ -1,6 +1,6 @@
 {
-  "appTitle": "Election Compass",
-  "frontpageIngress": "With this application you can compare candidates in the elections on {electionDate, date, ::yyyyMMdd} based on their opinions, parties and other data.",
+  "appTitle": "Election Compass for Young People",
+  "frontpageIngress": "<p>The Election Compass for Young People helps you find a suitable candidate in the 2024 EU Elections. The Election Compass scores candidates and parties by how well they agree with your opinions.</p><p>The elections are held on {electionDate, date, ::ddMMyyyy}. Make sure to cast your vote on the election day or during the early voting period May 29 to June 4, 2024.</p>",
   "madeWith": "Made with",
   "publishedBy": "Published by {publisher}",
   "questionsTip": "Tip: If you don’t care about an issue, you can skip it.",

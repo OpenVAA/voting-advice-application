@@ -1,6 +1,6 @@
 {
-  "appTitle": "Valkompassen",
-  "frontpageIngress": "<p>Valkompassen ger kandidater och partier poäng efter hur väl de överensstämmer med dina åsikter. Valet hålls den {electionDate, date, ::ddMMyyyy}.",
+  "appTitle": "Valkompass för unga människor",
+  "frontpageIngress": "<p>Valkompassen för unga hjälper dig att hitta en lämplig kandidat i EU-valet 2024. Valkompassen ger kandidater och partier poäng efter hur väl de överensstämmer med dina åsikter.</p><p>Valet hålls den {electionDate, date, ::ddMMyyyy}. Se till att du röstar på valdagen eller under förtidsröstningsperioden 29 maj till 4 juni 2024.</p> <p>",
   "madeWith": "Gjord med",
   "publishedBy": "Publicerad av {publisher}",
   "questionsTip": "Tips: Om du inte bryr dig om ett problem kan du hoppa över det.",

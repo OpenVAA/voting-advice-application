@@ -5,7 +5,7 @@
   "error": "Anteeksi, palautteen lähettämisessä tapahtui virhe.",
   "errorEmailIntro": "Voisitko ystävällisesti lähettää palautteesi sähköpostilla klikkaamalla alta. Jo kirjoittamasi viesti kopioidaan automaattisesti mukaan.",
   "errorEmailSubject": "Palaute",
-  "popupTitle": "Mitä mieltä olet vaalikoneesta?",
+  "popupTitle": "Mitä mieltä olet Nuorten Vaalikoneesta?",
   "ratingLabel": "Yleisarvio vaalikoneesta",
   "ratingValueLabel": "{rating, plural, =0 {Ei arviota} other {Arvio # maksimista {ratingMax}}}",
   "sendButton": "Lähetä palaute",
