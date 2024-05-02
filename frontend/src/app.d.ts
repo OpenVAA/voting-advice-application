@@ -12,9 +12,10 @@ declare namespace App {
     // null checks every time we use them. We'll initiliaze the Array types
     // as empty arrays in the global data load /+layout.server.ts
     appSettings?: Partial<AppSettings>;
-    candidateId?: string;
     candidates: Promise<CandidateProps[]>;
     election: ElectionProps;
+    entityId?: string;
+    entityType?: EntityType;
     parties: Promise<PartyProps[]>;
     questionId?: string;
     questions: QuestionProps[];
