@@ -158,8 +158,72 @@
       "description": "Settings related to the results view.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["minimumAnswers", "sections", "showSubcardsForParties", "showSubmatches"],
+      "required": ["cardContents", "minimumAnswers", "sections"],
       "properties": {
+        "cardContents": {
+          "description": "Settings related to the contents of the entity cards in the results list and entity details.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["candidate", "party"],
+          "properties": {
+            "candidate": {
+              "description": "The additional contents of candidate cards. NB. the order of the items has currently no effect.",
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "anyOf": [
+                  {
+                    "description": "The scores for question categories. If there's only one category, submatches are never computed. Applies to both the results list and entity details.",
+                    "const": "submatches"
+                  },
+                  {
+                    "description": "Show the entity's answer to a specific question. Only applies to the results list.",
+                    "type": "object",
+                    "required": ["question"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "question": {
+                        "description": "The question's id.",
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              },
+              "default": ["submatches"]
+            },
+            "party": {
+              "description": "The additional contents of party cards. NB. the order of the items has currently no effect.",
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "anyOf": [
+                  {
+                    "description": "The scores for question categories. If there's only one category, submatches are never computed. Applies to both the results list and entity details.",
+                    "const": "submatches"
+                  },
+                  {
+                    "description": "List party's the top 3 candidates within it's card. Only applies to the results list.",
+                    "const": "candidates"
+                  },
+                  {
+                    "description": "Show the entity's answer to a specific question. Only applies to the results list.",
+                    "type": "object",
+                    "required": ["question"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "question": {
+                        "description": "The question's id.",
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              },
+              "default": ["candidates"]
+            }
+          }
+        },
         "minimumAnswers": {
           "showCategoryTags": {
             "description": "The minimum number of voter answers needed before matching results are available.",
@@ -175,16 +239,6 @@
           "items": {
             "enum": ["candidate", "party"]
           }
-        },
-        "showSubcardsForParties": {
-          "description": "Whether to show parties’ candidates as subcards in the results view.",
-          "type": "boolean",
-          "default": true
-        },
-        "showSubmatches": {
-          "description": "Whether to show (and compute) submatches for question categories for the entities. If there's only one category, submatches are never computed.",
-          "type": "boolean",
-          "default": true
         }
       }
     }

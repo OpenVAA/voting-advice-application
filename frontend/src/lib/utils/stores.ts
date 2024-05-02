@@ -11,8 +11,12 @@ import {match, matchParties} from '$lib/utils/matching';
  * Contains the currently effective app settings.
  * NB! Settings are overwritten by root key.
  */
-export const settings: Readable<AppSettings> = derived([page], ([$page]) =>
-  $page?.data?.appSettings ? Object.assign(localSettings, $page.data.appSettings) : localSettings
+export const settings: Readable<AppSettings> = derived(
+  [page],
+  ([$page]) =>
+    ($page?.data?.appSettings
+      ? Object.assign(localSettings, $page.data.appSettings)
+      : localSettings) as AppSettings
 );
 
 type LocallyStoredValue<T> = {
@@ -163,6 +167,16 @@ export const opinionQuestions: Readable<QuestionProps[]> = derived(
 );
 
 /**
+ * Utility store for an dictionary of all info and opinion questions as part of `PageData`.
+ */
+export const allQuestions: Readable<Record<string, QuestionProps>> = derived(
+  [infoQuestions, opinionQuestions],
+  ([$infoQuestions, $opinionQuestions]) =>
+    Object.fromEntries([...$infoQuestions, ...$opinionQuestions].map((q) => [q.id, q])),
+  {}
+);
+
+/**
  * This store tells which application we're using. For other app types,
  * set this to the current type in the layout containing the app.
  */
@@ -200,7 +214,7 @@ export const candidateRankings: Readable<
     const candidates = await $candidates;
     return $resultsAvailable
       ? match($opinionQuestions, $answeredQuestions, candidates, {
-          subMatches: $settings.results.showSubmatches
+          subMatches: $settings.results.cardContents.candidate.includes('submatches')
         })
       : candidates.map(wrap);
   },
@@ -226,7 +240,7 @@ export const partyRankings: Readable<
     const parties = await $parties;
     return $resultsAvailable
       ? matchParties($opinionQuestions, $answeredQuestions, candidates, parties, {
-          subMatches: $settings.results.showSubmatches
+          subMatches: $settings.results.cardContents.party.includes('submatches')
         })
       : parties.map(wrap);
   },

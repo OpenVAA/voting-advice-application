@@ -106,10 +106,12 @@ declare global {
       showResultsLink: boolean;
     };
     results: {
+      cardContents: {
+        candidate: Array<'submatches' | AppSettingsQuestionRef>;
+        party: Array<'candidates' | 'submatches' | AppSettingsQuestionRef>;
+      };
       minimumAnswers: number;
-      sections: string[];
-      showSubcardsForParties: boolean;
-      showSubmatches: boolean;
+      sections: Array<'candidate' | 'party'>;
     };
     publisher?: {
       name: string;
@@ -119,6 +121,13 @@ declare global {
     poster?: ImageProps;
     posterCandidateApp?: ImageProps;
   }
+
+  /**
+   * A reference to a question in `AppSettings`.
+   */
+  type AppSettingsQuestionRef = {
+    question: string;
+  };
 
   /**
    * The properties of a Candidate object that can be passed onto the

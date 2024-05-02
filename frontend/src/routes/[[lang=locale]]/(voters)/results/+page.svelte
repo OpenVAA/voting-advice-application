@@ -3,7 +3,13 @@
   import {t} from '$lib/i18n';
   import {candidateFilters} from '$lib/utils/filters';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {candidateRankings, partyRankings, resultsAvailable, settings} from '$lib/utils/stores';
+  import {
+    allQuestions,
+    candidateRankings,
+    partyRankings,
+    resultsAvailable,
+    settings
+  } from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import type {EntityCardProps} from '$lib/components/entityCard';
   import {EntityList} from '$lib/components/entityList';
@@ -19,8 +25,30 @@
   const sections = $settings.results.sections as EntityType[];
   if (!sections?.length) error(500, 'No sections to show');
 
+  // These will hold the filtered entities returned by EntityListControls
   let filteredCandidates: WrappedEntity<CandidateProps>[] = [];
   let filteredParties: WrappedEntity<PartyProps>[] = [];
+
+  /**
+   * The possible additional card props to add to cards on EntityLists. Currenltly, this only includes possible extra questions.
+   */
+  let additionalEcProps: Record<string, Partial<EntityCardProps>> = {candidate: {}, party: {}};
+  $: {
+    for (const type in additionalEcProps) {
+      const qids = $settings.results.cardContents[
+        type as keyof AppSettings['results']['cardContents']
+      ]
+        .filter((c) => typeof c === 'object' && c.question != null)
+        .map((c) => (c as AppSettingsQuestionRef).question);
+      if (qids.length) {
+        const questions = [];
+        for (const qid of qids) {
+          if ($allQuestions[qid]) questions.push($allQuestions[qid]);
+        }
+        additionalEcProps[type].questions = questions.length ? questions : undefined;
+      }
+    }
+  }
 
   /**
    * Create `EntityCard` properties for a candidate.
@@ -29,7 +57,8 @@
   function parseCandidate(candidate: WrappedEntity<CandidateProps>): EntityCardProps {
     return {
       content: candidate,
-      action: candidateRoute(candidate)
+      action: candidateRoute(candidate),
+      ...additionalEcProps.candidate
     };
   }
 
@@ -48,14 +77,10 @@
       content: party,
       action: $getRoute({route: Route.ResultParty, id: party.entity.id}),
       subcards: allCandidates?.length
-        ? allCandidates
-            .filter((c) => c.entity.party?.id === party.entity.id)
-            .map((c) => ({
-              content: c,
-              action: candidateRoute(c),
-              maxSubcards
-            }))
-        : undefined
+        ? allCandidates.filter((c) => c.entity.party?.id === party.entity.id).map(parseCandidate)
+        : undefined,
+      maxSubcards,
+      ...additionalEcProps.party
     };
   }
 
@@ -124,7 +149,7 @@
       <!-- Parties -->
     {:else if sections[$activeTab] === 'party'}
       <!-- Instead of candidateRankings we just create a Promise that resolves to undefined if subcards are not to be shown. In that case allCandidates will be undefined, and parseParty will not add subcards. -->
-      {#await Promise.all( [$partyRankings, $settings.results.showSubcardsForParties ? $candidateRankings : Promise.resolve(undefined)] )}
+      {#await Promise.all( [$partyRankings, $settings.results.cardContents.party.includes('candidates') ? $candidateRankings : Promise.resolve(undefined)] )}
         <Loading showLabel class="mt-lg" />
       {:then [allParties, allCandidatesOrUndef]}
         <h2 class="mx-10 mb-md mt-md">
