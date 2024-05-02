@@ -8,6 +8,7 @@
   export let name: $$Props['name'];
   export let image: $$Props['image'] = undefined;
   export let initials: $$Props['initials'] = undefined;
+  export let size: $$Props['size'] = 'md';
   export let color: $$Props['color'] = 'base-300';
   export let textColor: $$Props['textColor'] = 'neutral';
   export let customColor: $$Props['customColor'] = undefined;
@@ -19,7 +20,8 @@
   let styles: string;
   let initialsClasses: string;
   $: {
-    classes = `w-[3.125rem] h-[3.125rem] shrink-0 overflow-hidden flex justify-center items-center text-${textColor}`;
+    classes = size === 'sm' ? 'w-[2.75rem] h-[2.75rem]' : 'w-[3.125rem] h-[3.125rem]';
+    classes += ` shrink-0 overflow-hidden flex justify-center items-center text-${textColor}`;
     classes += image ? ' rounded-md' : ' rounded-full';
     styles = '';
     initialsClasses = 'avatar placeholder';
@@ -70,6 +72,7 @@ Display either a photo or a initials-based avatar for an entity.
 - `name`: The name of the entity. This is used either for the `alt` text of a possible image or the construction of a initials for a placeholder.
 - `image`: The possible avatar image.
 - `initials`: These can be provided to override the automatic initials construction.
+- `size`: The size of the avatar. @default `'md'`
 - `color`: The background color of the initials placeholder. @default `'base-300'`
 - `textColor`: The color of the initials text placeholder. @default `'neutral'`
 - `customColor`: A custom color string to use for the background color of the initials placeholder, e.g. in case of parties, which will override the `color` property. Make sure to define both `customColor` and `customColorDark` together.

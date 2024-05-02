@@ -18,6 +18,11 @@ export type AvatarProps = SvelteHTMLElements['figure'] & {
   initials?: string;
 
   /**
+   * The size of the avatar. @default 'md'
+   */
+  size?: 'sm' | 'md';
+
+  /**
    * The background color of the initials placeholder. @default 'base-300'
    */
   color?: Color;
