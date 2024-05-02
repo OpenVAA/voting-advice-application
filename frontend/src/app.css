@@ -8,10 +8,6 @@
     @apply hyphens-auto font-base;
   }
   /* Disable hyphenation on these elements */
-  a:link,
-  a:active,
-  a:visited,
-  a:hover,
   input,
   select,
   option,
@@ -21,7 +17,8 @@
   h3,
   h4,
   h5,
-  h6 {
+  h6,
+  .btn {
     @apply hyphens-none;
   }
   body {
