@@ -51,6 +51,12 @@
       "name": "Español (Colombia)"
     }
   ],
+  "entityDetails": {
+    "contents": {
+      "candidate": ["info", "opinions"],
+      "party": ["info", "opinions"]
+    }
+  },
   "header": {
     "showHelp": true
   },
@@ -62,7 +68,12 @@
   "results": {
     "cardContents": {
       "candidate": ["submatches"],
-      "party": ["candidates"]
+      "party": [
+        "candidates",
+        {
+          "question": "500"
+        }
+      ]
     },
     "minimumAnswers": 5,
     "sections": ["candidate", "party"]

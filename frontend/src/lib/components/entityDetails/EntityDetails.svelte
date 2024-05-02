@@ -1,6 +1,8 @@
 <script lang="ts">
+  import {error} from '@sveltejs/kit';
   import {t} from '$lib/i18n';
-  import {parseMaybeRanked} from '$lib/utils/entities';
+  import {getEntityType, parseMaybeRanked} from '$lib/utils/entities';
+  import {settings} from '$lib/utils/stores';
   import {EntityCard} from '$lib/components/entityCard';
   import {Tabs} from '$lib/components/tabs';
   import EntityInfo from './EntityInfo.svelte';
@@ -14,15 +16,19 @@
   export let opinionQuestions: $$Props['opinionQuestions'];
 
   let entity: EntityProps;
+  let tabContents: AppSettingsEntityDetailsContent[];
+  /** The tab labels */
   let tabs: string[];
+  /** The currently active tab */
   let activeIndex = 0;
+  let entityType: EntityType | undefined;
 
   $: {
     ({entity} = parseMaybeRanked(content));
-    tabs = [
-      $t('components.entityDetails.tabs.basicInfo'),
-      $t('components.entityDetails.tabs.opinions')
-    ];
+    entityType = getEntityType(entity);
+    if (!entityType) error(500, 'Unknown entity type');
+    tabContents = $settings.entityDetails.contents[entityType];
+    tabs = tabContents.map((c) => $t(`components.entityDetails.tabs.${c}`));
   }
 </script>
 
@@ -55,10 +61,18 @@ Used to show an entity's details and possible ranking. You can supply either a n
   <header>
     <EntityCard {content} context="details" class="!p-lg" />
   </header>
-  <Tabs {tabs} bind:activeIndex />
-  {#if activeIndex === 0}
+  {#if tabContents.length > 1}
+    <Tabs {tabs} bind:activeIndex />
+    {#if activeIndex === tabContents.indexOf('info')}
+      <EntityInfo {entity} questions={infoQuestions} />
+    {:else if activeIndex === tabContents.indexOf('opinions')}
+      <EntityOpinions {entity} questions={opinionQuestions} />
+    {/if}
+  {:else if tabContents[0] === 'info'}
     <EntityInfo {entity} questions={infoQuestions} />
-  {:else if activeIndex === 1}
-    <EntityOpinions {entity} questions={opinionQuestions} />
+  {:else if tabContents[0] === 'opinions'}
+    <EntityInfo {entity} questions={infoQuestions} />
+  {:else}
+    {error(500, `Unknown tab content: ${tabContents[0]}`)}
   {/if}
 </article>
