@@ -60,9 +60,11 @@
     "showResultsLink": true
   },
   "results": {
+    "cardContents": {
+      "candidate": ["submatches"],
+      "party": ["candidates"]
+    },
     "minimumAnswers": 5,
-    "sections": ["candidate", "party"],
-    "showSubcardsForParties": true,
-    "showSubmatches": true
+    "sections": ["candidate", "party"]
   }
 }
