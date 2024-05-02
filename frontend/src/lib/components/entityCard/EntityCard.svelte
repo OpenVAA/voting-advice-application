@@ -6,6 +6,7 @@
   import {Avatar, type AvatarProps} from '$lib/components/avatar';
   import {Button} from '$lib/components/button';
   import {ElectionSymbol} from '$lib/components/electionSymbol';
+  import {InfoAnswer} from '$lib/components/infoAnswer';
   import {MatchScore} from '$lib/components/matchScore';
   import {PartyTag} from '$lib/components/partyTag';
   import {SubMatches} from '$lib/components/subMatches';
@@ -17,6 +18,7 @@
   export let action: $$Props['action'] = undefined;
   export let content: $$Props['content'];
   export let context: $$Props['context'] = 'list';
+  export let questions: $$Props['questions'] = undefined;
   export let subcards: $$Props['subcards'] = undefined;
   export let maxSubcards: $$Props['maxSubcards'] = undefined;
   // We have to set the default value like this, otherwise the value is treated later as possibly undefined
@@ -39,7 +41,8 @@
     avatarProps = {
       name,
       image: entity.photo,
-      linkFullImage: context === 'details'
+      linkFullImage: context === 'details',
+      size: context === 'subcard' ? 'sm' : undefined
     };
     if (isCandidate(entity)) {
       electionSymbol = entity.electionSymbol;
@@ -68,13 +71,22 @@
 </script>
 
 <!--@component
-A card for displaying an entity, i.e. a candidate or a party, in a list or as part of entity's details, possibly including a matching score, sub-matches and nested entity cards. You can supply either a naked entity or a ranking containing an entity.
+A card for displaying an entity, i.e. a candidate or a party, in a list or as part of entity's details, possibly including a matching score, sub-matches, nested entity cards and answers to specified questions. You can supply either a naked entity or a ranking containing an entity.
+
+In nested cards, the layout and rendering of contents varies from that of a parent card to make the layout more compact.
+- Some elements are smaller and the title is rendered as `<h4>` instead of `<h3>`.
+- The election symbol is shown next to the title.
+- Nested entity cards are not rendered.
 
 ### Properties
 
+- `action`: The action to take when the card is clicked. If the card has subentites, the action will only be triggered by clicking the header of the card.
 - `content`: A possibly ranked entity, e.g. candidate or a party.
 - `context`: The context in which the card is used, affects layout. @default `'list'`
-- Any valid attributes of a `<Card>` component.
+- `questions`: Possible question whose answers should be shown in the card.
+- `subcards`: Possible sub-entities of the entity to show in the card, e.g. candidates for a party.
+- `maxSubcards`: The maximum number of sub-entities to show. If there are more a button will be shown for displaying the remaining ones. @default `3`
+- Any valid attributes of an `<article>` element.
 
 ### Accessibility
 
@@ -110,7 +122,10 @@ A card for displaying an entity, i.e. a candidate or a party, in a list or as pa
             'avatar title    callout'
             'avatar subtitle callout';
           ">
+        <!-- Avatar -->
         <Avatar {...avatarProps} style="grid-area: avatar" />
+
+        <!-- Title -->
         <div class="grid grid-flow-col items-center gap-sm" style="grid-area: title">
           <svelte:element this={context === 'subcard' ? 'h4' : 'h3'} id="{baseId}_title">
             {name}
@@ -119,6 +134,8 @@ A card for displaying an entity, i.e. a candidate or a party, in a list or as pa
             <ElectionSymbol text={electionSymbol} />
           {/if}
         </div>
+
+        <!-- Subtitle -->
         <div
           id="{baseId}_subtitle"
           class="grid grid-flow-col items-center gap-sm"
@@ -136,6 +153,8 @@ A card for displaying an entity, i.e. a candidate or a party, in a list or as pa
             {/if}
           {/if}
         </div>
+
+        <!-- Callout (Match) -->
         {#if ranking}
           <MatchScore
             id="{baseId}_callout"
@@ -152,6 +171,22 @@ A card for displaying an entity, i.e. a candidate or a party, in a list or as pa
         matches={ranking.subMatches}
         variant={context === 'details' ? 'loose' : undefined}
         class="mt-6" />
+    {/if}
+    {#if questions?.length}
+      <div
+        class="grid items-start gap-md"
+        style="grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));">
+        {#each questions as question}
+          <div class="grid gap-xs">
+            <div class="small-label text-left">
+              {question.shortName}
+            </div>
+            <div>
+              <InfoAnswer {entity} {question} />
+            </div>
+          </div>
+        {/each}
+      </div>
     {/if}
     {#if subcards}
       <div class="mt-md grid gap-lg">
