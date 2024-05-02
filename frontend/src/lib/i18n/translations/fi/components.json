@@ -6,7 +6,8 @@
   "entityDetails": {
     "tabs": {
       "info": "Perustiedot",
-      "opinions": "Mielipiteet"
+      "opinions": "Mielipiteet",
+      "candidates": "{candidatePlural}"
     }
   },
   "entityFilters": {

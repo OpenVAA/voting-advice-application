@@ -2,32 +2,64 @@
   import {error} from '@sveltejs/kit';
   import {t} from '$lib/i18n';
   import {getEntityType, parseMaybeRanked} from '$lib/utils/entities';
+  import {Route, getRoute} from '$lib/utils/navigation';
   import {settings} from '$lib/utils/stores';
-  import {EntityCard} from '$lib/components/entityCard';
+  import {EntityCard, type EntityCardProps} from '$lib/components/entityCard';
   import {Tabs} from '$lib/components/tabs';
-  import EntityInfo from './EntityInfo.svelte';
-  import EntityOpinions from './EntityOpinions.svelte';
+  import {EntityInfo, EntityOpinions, EntitySubentities} from './';
   import type {EntityDetailsProps} from './EntityDetails.type';
+  import {concatClass} from '$lib/utils/components';
 
   type $$Props = EntityDetailsProps;
 
   export let content: $$Props['content'];
   export let infoQuestions: $$Props['infoQuestions'];
   export let opinionQuestions: $$Props['opinionQuestions'];
+  export let subentities: $$Props['subentities'] = undefined;
 
   let entity: EntityProps;
+  let entityType: EntityType | undefined;
+  let subcards: EntityCardProps[] | undefined;
+  /** The tab content types */
   let tabContents: AppSettingsEntityDetailsContent[];
-  /** The tab labels */
+  /** The matching tab labels */
   let tabs: string[];
   /** The currently active tab */
   let activeIndex = 0;
-  let entityType: EntityType | undefined;
+  /** Info questions filtered for the current entity type */
+  let filteredInfoQuestions: $$Props['infoQuestions'];
+  /** Opinion questions filtered for the current entity type */
+  let filteredOpinionQuestions: $$Props['opinionQuestions'];
 
   $: {
     ({entity} = parseMaybeRanked(content));
     entityType = getEntityType(entity);
     if (!entityType) error(500, 'Unknown entity type');
-    tabContents = $settings.entityDetails.contents[entityType];
+    const inclQuestion = (q: QuestionProps) =>
+      !q.entityType || q.entityType === entityType || q.entityType === 'all';
+    filteredInfoQuestions = infoQuestions.filter(inclQuestion);
+    filteredOpinionQuestions = opinionQuestions.filter(inclQuestion);
+    tabContents = [];
+    for (const c of $settings.entityDetails.contents[entityType]) {
+      switch (c) {
+        case 'info':
+          tabContents.push('info');
+          break;
+        case 'opinions':
+          if (filteredOpinionQuestions.length) tabContents.push('opinions');
+          break;
+        case 'candidates':
+          if (!subentities?.length) break;
+          tabContents.push('candidates');
+          subcards = subentities.map((e) => ({
+            content: e,
+            action: $getRoute({route: Route.ResultCandidate, id: parseMaybeRanked(e).entity.id})
+          }));
+          break;
+        default:
+          error(500, `Unknown tab content ${c}`);
+      }
+    }
     tabs = tabContents.map((c) => $t(`components.entityDetails.tabs.${c}`));
   }
 </script>
@@ -57,22 +89,30 @@ Used to show an entity's details and possible ranking. You can supply either a n
 ```
 -->
 
-<article {...$$restProps}>
-  <header>
+<article {...concatClass($$restProps, 'flex flex-col grow')}>
+  <!-- Add a border if there's not need for a Tabs component which separates the contents visually from the header -->
+  <header class:bottomBorder={tabContents.length === 1}>
     <EntityCard {content} context="details" class="!p-lg" />
   </header>
   {#if tabContents.length > 1}
     <Tabs {tabs} bind:activeIndex />
     {#if activeIndex === tabContents.indexOf('info')}
-      <EntityInfo {entity} questions={infoQuestions} />
+      <EntityInfo {entity} questions={filteredInfoQuestions} />
     {:else if activeIndex === tabContents.indexOf('opinions')}
-      <EntityOpinions {entity} questions={opinionQuestions} />
+      <EntityOpinions {entity} questions={filteredOpinionQuestions} />
+    {:else if activeIndex === tabContents.indexOf('candidates') && subcards}
+      <EntitySubentities {subcards} />
     {/if}
   {:else if tabContents[0] === 'info'}
-    <EntityInfo {entity} questions={infoQuestions} />
+    <EntityInfo {entity} questions={filteredInfoQuestions} />
   {:else if tabContents[0] === 'opinions'}
-    <EntityInfo {entity} questions={infoQuestions} />
-  {:else}
-    {error(500, `Unknown tab content: ${tabContents[0]}`)}
+    <EntityOpinions {entity} questions={filteredOpinionQuestions} />
   {/if}
 </article>
+
+<style lang="postcss">
+  .bottomBorder {
+    /* after: is a valid prefix */
+    @apply relative after:absolute after:bottom-0 after:left-lg after:right-lg after:border-b-md after:border-b-[var(--line-color)] after:content-[''];
+  }
+</style>
