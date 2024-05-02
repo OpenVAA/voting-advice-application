@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2024-04-24T08:56:11.810Z"
+    "x-generation-date": "2024-05-02T11:46:15.920Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
@@ -2179,6 +2179,14 @@
                                                             "customData": {},
                                                             "order": {
                                                               "type": "integer"
+                                                            },
+                                                            "entityType": {
+                                                              "type": "string",
+                                                              "enum": [
+                                                                "all",
+                                                                "candidate",
+                                                                "party"
+                                                              ]
                                                             },
                                                             "createdAt": {
                                                               "type": "string",
@@ -6080,6 +6088,14 @@
                                                                         "order": {
                                                                           "type": "integer"
                                                                         },
+                                                                        "entityType": {
+                                                                          "type": "string",
+                                                                          "enum": [
+                                                                            "all",
+                                                                            "candidate",
+                                                                            "party"
+                                                                          ]
+                                                                        },
                                                                         "createdAt": {
                                                                           "type": "string",
                                                                           "format": "date-time"
@@ -9431,6 +9447,14 @@
                                     "order": {
                                       "type": "integer"
                                     },
+                                    "entityType": {
+                                      "type": "string",
+                                      "enum": [
+                                        "all",
+                                        "candidate",
+                                        "party"
+                                      ]
+                                    },
                                     "createdAt": {
                                       "type": "string",
                                       "format": "date-time"
@@ -11461,6 +11485,14 @@
                                                                                                       "customData": {},
                                                                                                       "order": {
                                                                                                         "type": "integer"
+                                                                                                      },
+                                                                                                      "entityType": {
+                                                                                                        "type": "string",
+                                                                                                        "enum": [
+                                                                                                          "all",
+                                                                                                          "candidate",
+                                                                                                          "party"
+                                                                                                        ]
                                                                                                       },
                                                                                                       "createdAt": {
                                                                                                         "type": "string",
@@ -13971,6 +14003,14 @@
                                                                                                                   "customData": {},
                                                                                                                   "order": {
                                                                                                                     "type": "integer"
+                                                                                                                  },
+                                                                                                                  "entityType": {
+                                                                                                                    "type": "string",
+                                                                                                                    "enum": [
+                                                                                                                      "all",
+                                                                                                                      "candidate",
+                                                                                                                      "party"
+                                                                                                                    ]
                                                                                                                   },
                                                                                                                   "createdAt": {
                                                                                                                     "type": "string",
@@ -16899,6 +16939,14 @@
                                                                                                       "customData": {},
                                                                                                       "order": {
                                                                                                         "type": "integer"
+                                                                                                      },
+                                                                                                      "entityType": {
+                                                                                                        "type": "string",
+                                                                                                        "enum": [
+                                                                                                          "all",
+                                                                                                          "candidate",
+                                                                                                          "party"
+                                                                                                        ]
                                                                                                       },
                                                                                                       "createdAt": {
                                                                                                         "type": "string",
@@ -20338,6 +20386,14 @@
                                                                                                     "order": {
                                                                                                       "type": "integer"
                                                                                                     },
+                                                                                                    "entityType": {
+                                                                                                      "type": "string",
+                                                                                                      "enum": [
+                                                                                                        "all",
+                                                                                                        "candidate",
+                                                                                                        "party"
+                                                                                                      ]
+                                                                                                    },
                                                                                                     "createdAt": {
                                                                                                       "type": "string",
                                                                                                       "format": "date-time"
@@ -23351,6 +23407,14 @@
                                                               "order": {
                                                                 "type": "integer"
                                                               },
+                                                              "entityType": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                  "all",
+                                                                  "candidate",
+                                                                  "party"
+                                                                ]
+                                                              },
                                                               "createdAt": {
                                                                 "type": "string",
                                                                 "format": "date-time"
@@ -26359,6 +26423,14 @@
                                     "order": {
                                       "type": "integer"
                                     },
+                                    "entityType": {
+                                      "type": "string",
+                                      "enum": [
+                                        "all",
+                                        "candidate",
+                                        "party"
+                                      ]
+                                    },
                                     "createdAt": {
                                       "type": "string",
                                       "format": "date-time"
@@ -26514,6 +26586,14 @@
           "customData": {},
           "order": {
             "type": "integer"
+          },
+          "entityType": {
+            "type": "string",
+            "enum": [
+              "all",
+              "candidate",
+              "party"
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -30016,6 +30096,14 @@
                                                                                                       "order": {
                                                                                                         "type": "integer"
                                                                                                       },
+                                                                                                      "entityType": {
+                                                                                                        "type": "string",
+                                                                                                        "enum": [
+                                                                                                          "all",
+                                                                                                          "candidate",
+                                                                                                          "party"
+                                                                                                        ]
+                                                                                                      },
                                                                                                       "createdAt": {
                                                                                                         "type": "string",
                                                                                                         "format": "date-time"
@@ -33345,6 +33433,14 @@
                         "customData": {},
                         "order": {
                           "type": "integer"
+                        },
+                        "entityType": {
+                          "type": "string",
+                          "enum": [
+                            "all",
+                            "candidate",
+                            "party"
+                          ]
                         },
                         "createdAt": {
                           "type": "string",

@@ -1119,6 +1119,7 @@ export interface ApiQuestionQuestion extends Schema.CollectionType {
     filterable: Attribute.Boolean & Attribute.DefaultTo<false>;
     customData: Attribute.JSON;
     order: Attribute.Integer & Attribute.DefaultTo<0>;
+    entityType: Attribute.Enumeration<['all', 'candidate', 'party']> & Attribute.DefaultTo<'all'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
