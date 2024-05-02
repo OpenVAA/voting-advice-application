@@ -13,4 +13,8 @@ export type EntityDetailsProps = SvelteHTMLElements['article'] & {
    * The list of Question objects to use for showing for on the opinions tab.
    */
   opinionQuestions: QuestionProps[];
+  /**
+   * Any subentities to show on a separate tab.
+   */
+  subentities?: MaybeRanked[];
 };
