@@ -7,7 +7,10 @@ export default defineConfig({
   resolve: {
     alias: {
       $lib: path.join(__dirname, './src/lib'),
-      $types: path.join(__dirname, './src/lib/types')
+      $types: path.join(__dirname, './src/lib/types'),
+      $voter: path.resolve(__dirname, './src/lib/voter'),
+      $candidate: path.resolve(__dirname, './src/lib/candidate'),
+      $shared: path.resolve(__dirname, './src/shared')
     }
   },
   test: {
