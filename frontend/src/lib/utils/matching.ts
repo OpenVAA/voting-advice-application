@@ -112,9 +112,13 @@ export async function matchParties(
   parties: PartyProps[],
   options?: Parameters<typeof match>[3]
 ): Promise<RankingProps<PartyProps>[]> {
+  // Save original answers here, bc we're adding computed averages to the answers dictionary.
+  // NB. In the full vaa-data model, this will be handled by a getter function
+  const originalAnswers = {} as Record<string, AnswerDict>;
   // Calculate average answers for each party for each question
   for (const party of parties) {
-    if (!party.answers) party.answers = {};
+    originalAnswers[party.id] = party.answers;
+    party.answers = {...party.answers};
     const partyCands = candidates.filter((c) => c.party?.id === party.id);
     for (const qid of Object.keys(answeredQuestions)) {
       if (party.answers[qid] != null) continue;
@@ -136,7 +140,12 @@ export async function matchParties(
       };
     }
   }
-  return match(allQuestions, answeredQuestions, parties, options);
+  const res = match(allQuestions, answeredQuestions, parties, options);
+  // Restore original answers
+  for (const party of parties) {
+    party.answers = originalAnswers[party.id];
+  }
+  return res;
 }
 
 /**
