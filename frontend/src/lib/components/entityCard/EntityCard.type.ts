@@ -13,6 +13,10 @@ export type EntityCardProps = SvelteHTMLElements['article'] & {
    */
   context?: 'list' | 'details' | 'subcard';
   /**
+   * Possible question whose answers should be shown in the card.
+   */
+  questions?: QuestionProps[];
+  /**
    * Possible sub-entities of the entity to show in the card, e.g. candidates for a party.
    */
   subcards?: EntityCardProps[];
