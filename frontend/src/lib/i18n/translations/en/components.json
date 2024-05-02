@@ -5,7 +5,7 @@
   },
   "entityDetails": {
     "tabs": {
-      "basicInfo": "Basic Info",
+      "info": "Basic Info",
       "opinions": "Opinions"
     }
   },

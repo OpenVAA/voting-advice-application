@@ -5,7 +5,7 @@
   },
   "entityDetails": {
     "tabs": {
-      "basicInfo": "Perustiedot",
+      "info": "Perustiedot",
       "opinions": "Mielipiteet"
     }
   },

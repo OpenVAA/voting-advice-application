@@ -118,6 +118,42 @@
         }
       }
     },
+    "entityDetails": {
+      "description": "Settings related to the entity details view, i.e. the pages for individual candidates and parties.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contents"],
+      "properties": {
+        "contents": {
+          "description": "Which content tabs to show.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["candidate", "party"],
+          "properties": {
+            "candidate": {
+              "description": "The content tabs to show for candidates.",
+              "type": "array",
+              "uniqueItems": true,
+              "minItems": 1,
+              "items": {
+                "enum": ["info", "opinions"]
+              },
+              "default": ["info", "opinions"]
+            },
+            "party": {
+              "description": "The content tabs to show for parties.",
+              "type": "array",
+              "uniqueItems": true,
+              "minItems": 1,
+              "items": {
+                "enum": ["info", "opinions"]
+              },
+              "default": ["info", "opinions"]
+            }
+          }
+        }
+      }
+    },
     "header": {
       "description": "Settings related to the app header.",
       "type": "object",
