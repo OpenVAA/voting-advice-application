@@ -68,8 +68,8 @@ Use the properties to add to the classes of the elements containing the slots, t
 
   <!-- The card -->
   <div
-    class="-mx-lg -mb-safelgb -mt-lg w-screen max-w-xl flex-grow self-center rounded-t-lg bg-base-100
-           pb-[3.5rem] match-w-xl:shadow-xl {cardClass}">
+    class="-mx-lg -mb-safelgb -mt-lg flex w-screen max-w-xl flex-grow self-center rounded-t-lg
+           bg-base-100 pb-[3.5rem] match-w-xl:shadow-xl {cardClass}">
     <slot />
   </div>
 </Page>
