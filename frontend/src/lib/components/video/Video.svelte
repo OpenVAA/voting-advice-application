@@ -419,7 +419,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
     {#if transcriptToggleValue === 'text'}
       <Button
         variant="icon"
-        color="primary-content"
+        color="white"
         icon="videoOff"
         on:click={() => (transcriptToggleValue = 'video')}
         text={$t('components.video.showVideo')}
@@ -510,66 +510,66 @@ User choices are stored in the `videoPreferences` store so that they persist acr
         {#if !hideControls.includes('transcript')}
           <Button
             variant="icon"
-            color="primary-content"
+            color="white"
             icon="videoOn"
             on:click={() => (transcriptToggleValue = 'text')}
             text={$t('components.video.showTranscript')}
-            class="rounded-full !bg-opacity-30 active:bg-primary-content" />
+            class="rounded-full !bg-opacity-30 active:bg-white" />
         {/if}
         {#if !hideControls.includes('captions')}
           <Button
             variant="icon"
-            color="primary-content"
+            color="white"
             icon={textTracksHidden ? 'subtitlesOff' : 'subtitlesOn'}
             on:click|once={tryUnmute}
             on:click={() => toggleCaptions()}
             text={$t(`components.video.${textTracksHidden ? 'hideCaptions' : 'showCaptions'}`)}
-            class="relative rounded-full !bg-opacity-30 active:bg-primary-content" />
+            class="relative rounded-full !bg-opacity-30 active:bg-white" />
         {/if}
         {#if !hideControls.includes('skip')}
           <Button
             variant="icon"
-            color="primary-content"
+            color="white"
             icon="skipPrevious"
             on:click|once={tryUnmute}
             on:click={() => jump(-1)}
             text={$t('components.video.jumpBack')}
             class="relative rounded-full !bg-opacity-30 {jumpBackPressed
-              ? 'bg-primary-content'
-              : ''} active:bg-primary-content" />
+              ? 'bg-white'
+              : ''} active:bg-white" />
         {/if}
         {#if !hideControls.includes('pause')}
           <Button
             variant="icon"
-            color="primary-content"
+            color="white"
             icon={playButtonAction}
             on:click|once={tryUnmute}
             on:click={() => togglePlay()}
             text={$t(`components.video.${playButtonAction}`)}
             class="relative rounded-full !bg-opacity-30 {togglePlayPressed
-              ? 'bg-primary-content'
-              : ''} active:bg-primary-content" />
+              ? 'bg-white'
+              : ''} active:bg-white" />
         {/if}
         {#if !hideControls.includes('skip')}
           <Button
             variant="icon"
-            color="primary-content"
+            color="white"
             icon="skipNext"
             on:click|once={tryUnmute}
             on:click={() => jump(+1)}
             text={$t('components.video.jumpForward')}
             class="relative rounded-full !bg-opacity-30 {jumpForwardPressed
-              ? 'bg-primary-content'
-              : ''}  active:bg-primary-content" />
+              ? 'bg-white'
+              : ''}  active:bg-white" />
         {/if}
         {#if !hideControls.includes('mute')}
           <Button
             variant="icon"
-            color="primary-content"
+            color="white"
             icon={muted ? 'soundOff' : 'soundOn'}
             on:click={() => toggleSound()}
             text={$t(`components.video.${muted ? 'unmute' : 'mute'}`)}
-            class="relative rounded-full !bg-opacity-30 active:bg-primary-content" />
+            class="relative rounded-full !bg-opacity-30 active:bg-white" />
         {/if}
       </div>
       <!-- Progress bar -->
@@ -580,14 +580,14 @@ User choices are stored in the `videoPreferences` store so that they persist acr
         aria-valuenow={Math.round(currentTime)}
         aria-label={$t('components.video.progessbarLabel')}
         style:--progress={`${!duration ? 0 : atEnd ? 100 : ((100 * currentTime) / duration).toFixed(2)}%`}
-        class="relative h-2 w-[var(--progress)] overflow-hidden rounded-full bg-primary-content" />
+        class="relative h-2 w-[var(--progress)] overflow-hidden rounded-full bg-white" />
     </div>
 
     <!-- Loading spinner -->
     <Loading
       inline
       size="md"
-      class="absolute right-[0.8rem] top-[3.1rem] !text-primary-content transition-all duration-sm {status !==
+      class="absolute right-[0.8rem] top-[3.1rem] !text-white transition-all duration-sm {status !==
       'waiting'
         ? 'opacity-0'
         : ''}" />
