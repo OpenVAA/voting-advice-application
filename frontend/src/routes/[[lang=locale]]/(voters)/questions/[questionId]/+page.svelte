@@ -48,15 +48,15 @@
   // Set questionId and prepare question data reactively when the route param changes
   $: {
     questions = data.questions;
-    // Save the current questionId so that we only rebuild the page if the question is actually changed
-    const previousId = question?.id;
+    // Save the current question so that we only rebuild the page if the question has actually changed either due to being a different one or a locale change
+    const previousQuestion = question;
     questionId = data.questionId === FIRST_QUESTION_ID ? questions[0].id : data.questionId;
     question = questions.find((q) => q.id == questionId);
     if (!question) throw error(404, `No question with id ${questionId}`);
     // Update the index because we need it in the goto-functions
     questionIndex = questions.indexOf(question);
     // Only perform updates if the question has actually changed
-    if (previousId !== question.id) {
+    if (question !== previousQuestion) {
       // Track whether the previous question has video content
       const previousHadVideo = videoProps != null;
       // Check if this question has video content
