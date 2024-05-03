@@ -98,11 +98,15 @@ declare global {
       isDefault?: boolean;
     }>;
     entityDetails: {
-      contents: Record<EntityType, AppSettingsEntityDetailsContent[]>;
+      contents: Record<Exclude<EntityType, 'all'>, AppSettingsEntityDetailsContent[]>;
       showMissingAnswers: boolean;
     };
     header: {
       showHelp: boolean;
+    };
+    matching: {
+      minimumAnswers: number;
+      partyMatching: AppSettingsGroupMatchingType;
     };
     questions: {
       showCategoryTags: boolean;
@@ -114,8 +118,7 @@ declare global {
         candidate: Array<'submatches' | AppSettingsQuestionRef>;
         party: Array<'candidates' | 'submatches' | AppSettingsQuestionRef>;
       };
-      minimumAnswers: number;
-      sections: Array<Omit<EntityType, 'all'>>;
+      sections: Array<Exclude<EntityType, 'all'>>;
     };
     publisher?: {
       name: string;
@@ -137,6 +140,11 @@ declare global {
    * A entity details' content type in `AppSettings`.
    */
   type AppSettingsEntityDetailsContent = 'candidates' | 'info' | 'opinions';
+
+  /**
+   * The method for performing group, i.e. party, maching in `AppSettings`.
+   */
+  type AppSettingsGroupMatchingType = 'none' | 'answersOnly' | 'mean' | 'median';
 
   /**
    * The properties of a Candidate object that can be passed onto the
