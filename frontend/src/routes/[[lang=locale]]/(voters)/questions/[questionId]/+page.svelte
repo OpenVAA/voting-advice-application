@@ -155,7 +155,7 @@
         <Button
           on:click={() => toggleTranscript()}
           variant="responsive-icon"
-          icon={mode === 'video' ? 'videoOff' : 'video'}
+          icon={mode === 'video' ? 'videoOn' : 'videoOff'}
           text={mode === 'video'
             ? $t('components.video.showTranscript')
             : $t('components.video.showVideo')} />
