@@ -10,6 +10,7 @@ beforeAll(() => {
     page.mockSetLocale('en');
     return {page};
   });
+  vi.mock('$app/environment', () => ({browser: false}));
 });
 
 test('getRoute', () => {
