@@ -46,6 +46,8 @@
   export let skipByCue: $$Props['skipByCue'] = true;
   export let skipAmount: $$Props['skipAmount'] = DEFAULT_SKIP_AMOUNT;
 
+  hideControls ??= [];
+
   ////////////////////////////////////////////////////////////////////////////////
   // TEXT TRACKS
   ////////////////////////////////////////////////////////////////////////////////
@@ -413,12 +415,12 @@ User choices are stored in the `videoPreferences` store so that they persist acr
   style:--video-aspectRatio={aspectRatio}
   style:width="min(100%, calc(36rem * var(--video-aspectRatio)))">
   <!-- Show video button if transcript visible -->
-  {#if !hideControls || !hideControls.includes('transcript')}
+  {#if !hideControls.includes('transcript')}
     {#if transcriptToggleValue === 'text'}
       <Button
         variant="icon"
         color="primary-content"
-        icon="video"
+        icon="videoOff"
         on:click={() => (transcriptToggleValue = 'video')}
         text={$t('components.video.showVideo')}
         class="!absolute bottom-4 left-sm z-50 rounded-full bg-primary" />
@@ -427,7 +429,8 @@ User choices are stored in the `videoPreferences` store so that they persist acr
 
   <!-- Transcript -->
   <div
-    class="video-transcript relative mt-[3rem] h-[calc(100%_-_3rem)] w-full overflow-scroll rounded-md bg-base-100 p-lg pb-[4rem] sm:mt-0 sm:h-full"
+    class="video-transcript relative mt-[3rem] h-[calc(100%_-_3rem)] w-full overflow-scroll rounded-md bg-base-100 p-lg sm:mt-0 sm:h-full"
+    class:pb-[4rem]={!hideControls.includes('transcript')}
     class:hidden={!transcriptVisible}>
     <div class="w-full">
       {@html sanitizeHtml(transcript)}
@@ -504,26 +507,26 @@ User choices are stored in the `videoPreferences` store so that they persist acr
         hideControls.length === 0
           ? "before:absolute before:bottom-0 before:left-0 before:right-0 before:h-[4rem] before:bg-gradient-to-t before:from-neutral before:from-50% before:opacity-50 before:content-['']"
           : ''}">
-        {#if !hideControls || !hideControls.includes('transcript')}
+        {#if !hideControls.includes('transcript')}
           <Button
             variant="icon"
             color="primary-content"
-            icon="videoOff"
+            icon="videoOn"
             on:click={() => (transcriptToggleValue = 'text')}
             text={$t('components.video.showTranscript')}
             class="rounded-full !bg-opacity-30 active:bg-primary-content" />
         {/if}
-        {#if !hideControls || !hideControls.includes('captions')}
+        {#if !hideControls.includes('captions')}
           <Button
             variant="icon"
             color="primary-content"
-            icon={textTracksHidden ? 'showSubtitles' : 'hideSubtitles'}
+            icon={textTracksHidden ? 'subtitlesOff' : 'subtitlesOn'}
             on:click|once={tryUnmute}
             on:click={() => toggleCaptions()}
             text={$t(`components.video.${textTracksHidden ? 'hideCaptions' : 'showCaptions'}`)}
             class="relative rounded-full !bg-opacity-30 active:bg-primary-content" />
         {/if}
-        {#if !hideControls || !hideControls.includes('skip')}
+        {#if !hideControls.includes('skip')}
           <Button
             variant="icon"
             color="primary-content"
@@ -535,7 +538,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
               ? 'bg-primary-content'
               : ''} active:bg-primary-content" />
         {/if}
-        {#if !hideControls || !hideControls.includes('pause')}
+        {#if !hideControls.includes('pause')}
           <Button
             variant="icon"
             color="primary-content"
@@ -547,7 +550,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
               ? 'bg-primary-content'
               : ''} active:bg-primary-content" />
         {/if}
-        {#if !hideControls || !hideControls.includes('skip')}
+        {#if !hideControls.includes('skip')}
           <Button
             variant="icon"
             color="primary-content"
@@ -559,11 +562,11 @@ User choices are stored in the `videoPreferences` store so that they persist acr
               ? 'bg-primary-content'
               : ''}  active:bg-primary-content" />
         {/if}
-        {#if !hideControls || !hideControls.includes('mute')}
+        {#if !hideControls.includes('mute')}
           <Button
             variant="icon"
             color="primary-content"
-            icon={muted ? 'unmute' : 'mute'}
+            icon={muted ? 'soundOff' : 'soundOn'}
             on:click={() => toggleSound()}
             text={$t(`components.video.${muted ? 'unmute' : 'mute'}`)}
             class="relative rounded-full !bg-opacity-30 active:bg-primary-content" />
