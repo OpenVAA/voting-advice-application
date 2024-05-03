@@ -3,6 +3,7 @@
   import {t} from '$lib/i18n';
   import {Breakpoints} from '$lib/utils/breakpoints';
   import {concatProps} from '$lib/utils/components';
+  import {darkMode} from '$lib/utils/darkMode';
   import {appType} from '$lib/utils/stores';
   import type {AuthContext} from '$lib/utils/authenticationStore';
   import {Page} from '../page';
@@ -110,9 +111,10 @@ Instead, you have to use a wrapper. Note that this will also always result in th
 
 <svelte:window bind:innerWidth={screenWidth} />
 
+<!-- The complicated condition for invertLogo ensures that when video is present behind the header, the logo is always white. Invert would otherwise render the default logo in dark mode. -->
 <Page
   {title}
-  invertLogo={hasVideo && screenWidth < Breakpoints.sm}
+  invertLogo={hasVideo && screenWidth < Breakpoints.sm && !$darkMode}
   {...concatProps($$restProps, {
     mainClass: 'gap-y-lg',
     headerClass: hasVideo ? '!absolute w-full bg-transparent z-10' : undefined
@@ -122,7 +124,7 @@ Instead, you have to use a wrapper. Note that this will also always result in th
     <div
       class="vaa-basicPage-actions flex gap-0"
       style:--headerIcon-color={hasVideo && screenWidth < Breakpoints.sm
-        ? 'oklch(var(--pc))'
+        ? 'white'
         : 'oklch(var(--p))'}>
       {#if showLogoutButton}
         <LogoutButton />
