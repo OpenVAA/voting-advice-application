@@ -24,4 +24,5 @@ export type Color =
   | 'info-content'
   | 'success-content'
   | 'warning-content'
-  | 'error-content';
+  | 'error-content'
+  | 'white';
