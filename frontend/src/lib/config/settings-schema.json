@@ -172,6 +172,24 @@
         }
       }
     },
+    "matching": {
+      "description": "Settings related to the matching algorithm.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimumAnswers", "partyMatching"],
+      "properties": {
+        "minimumAnswers": {
+          "description": "The minimum number of voter answers needed before matching results are available.",
+          "type": "integer",
+          "default": 1
+        },
+        "partyMatching": {
+          "description": "The method with which parties are matched. • None: no party matching is done • answersOnly: matching is only performed on the parties explicit answers • Mean/Median: missing party answers are replaced with the mean, median or mode of the party's candidates' answers. Nb. Mode is not yet implemented because of difficulty of handling multiple modes when the counts are tied.",
+          "enum": ["none", "answersOnly", "mean", "median"],
+          "default": "median"
+        }
+      }
+    },
     "questions": {
       "description": "Settings related to the question view.",
       "type": "object",
@@ -199,7 +217,7 @@
       "description": "Settings related to the results view.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["cardContents", "minimumAnswers", "sections"],
+      "required": ["cardContents", "sections"],
       "properties": {
         "cardContents": {
           "description": "Settings related to the contents of the entity cards in the results list and entity details.",
@@ -263,13 +281,6 @@
               },
               "default": ["candidates"]
             }
-          }
-        },
-        "minimumAnswers": {
-          "showCategoryTags": {
-            "description": "The minimum number of voter answers needed before matching results are available.",
-            "type": "integer",
-            "default": 1
           }
         },
         "sections": {

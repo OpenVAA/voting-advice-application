@@ -61,6 +61,10 @@
   "header": {
     "showHelp": true
   },
+  "matching": {
+    "minimumAnswers": 5,
+    "partyMatching": "median"
+  },
   "questions": {
     "showCategoryTags": true,
     "showIntroPage": true,
@@ -76,7 +80,6 @@
         }
       ]
     },
-    "minimumAnswers": 5,
     "sections": ["candidate", "party"]
   }
 }

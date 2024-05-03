@@ -111,7 +111,7 @@ export async function matchParties(
   candidates: CandidateProps[],
   parties: PartyProps[],
   options?: Parameters<typeof match>[3] & {
-    matchingType?: Omit<AppSettingsGroupMatchingType, 'none'>;
+    matchingType?: Exclude<AppSettingsGroupMatchingType, 'none'>;
   }
 ): Promise<RankingProps<PartyProps>[]> {
   const matchingType = options?.matchingType ?? 'median';
@@ -119,7 +119,7 @@ export async function matchParties(
   // NB. In the full vaa-data model, this will be handled by a getter function
   const originalAnswers = {} as Record<string, AnswerDict>;
   // Calculate average answers for each party for each question
-  if (matchingType !== 'answers-only') {
+  if (matchingType !== 'answersOnly') {
     for (const party of parties) {
       originalAnswers[party.id] = party.answers;
       party.answers = {...party.answers};
