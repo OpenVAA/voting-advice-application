@@ -32,7 +32,7 @@ const touchTargetSize = `${44/16}rem`;
 // as well as the color definitions in the DaisyUI themes futher below.
 const colorNames = ['current', 'primary', 'secondary', 'accent', 'neutral', 'base-100', 'base-200', 'base-300', 
   'info', 'success', 'warning', 'error', 'base-content', 'primary-content', 'secondary-content', 'accent-content', 
-  'info-content', 'success-content', 'warning-content', 'error-content'];
+  'info-content', 'success-content', 'warning-content', 'error-content', 'white'];
 
 // The emoji font-family
 const emojiFonts = [
