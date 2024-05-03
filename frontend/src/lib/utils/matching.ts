@@ -111,7 +111,7 @@ export async function matchParties(
   candidates: CandidateProps[],
   parties: PartyProps[],
   options?: Parameters<typeof match>[3] & {
-    matchingType?: Omit<AppSettingsGroupMatchingType, 'none'>;
+    matchingType?: Exclude<AppSettingsGroupMatchingType, 'none'>;
   }
 ): Promise<RankingProps<PartyProps>[]> {
   const matchingType = options?.matchingType ?? 'median';

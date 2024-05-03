@@ -112,5 +112,11 @@ function _getRoute(
 export function referredByUs(): boolean {
   if (!browser) return false;
   if (!document.referrer) return false;
+  console.info(
+    'has referrer',
+    document.referrer,
+    document.referrer.split('//'),
+    document.location.hostname
+  );
   return document.referrer.split('//')[1].startsWith(document.location.hostname);
 }

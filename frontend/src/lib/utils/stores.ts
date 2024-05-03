@@ -197,7 +197,7 @@ export const resultsAvailable: Readable<boolean> = derived(
     // We need to filtering because some of the user's answers might be to questions subsequently removed or hidden
     return (
       $opinionQuestions.filter((q) => $answeredQuestions[q.id] != null).length >=
-      Math.min($opinionQuestions.length, $settings.results?.minimumAnswers ?? 1)
+      Math.min($opinionQuestions.length, $settings.matching?.minimumAnswers ?? 1)
     );
   },
   false
@@ -238,9 +238,10 @@ export const partyRankings: Readable<
   ]) => {
     const candidates = await $candidates;
     const parties = await $parties;
-    return $resultsAvailable
+    return $resultsAvailable && $settings.matching.partyMatching !== 'none'
       ? matchParties($opinionQuestions, $answeredQuestions, candidates, parties, {
-          subMatches: $settings.results.cardContents.party.includes('submatches')
+          subMatches: $settings.results.cardContents.party.includes('submatches'),
+          matchingType: $settings.matching.partyMatching
         })
       : parties.map(wrap);
   },
