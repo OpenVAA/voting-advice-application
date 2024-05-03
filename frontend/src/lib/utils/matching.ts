@@ -110,42 +110,75 @@ export async function matchParties(
   answeredQuestions: AnswerDict,
   candidates: CandidateProps[],
   parties: PartyProps[],
-  options?: Parameters<typeof match>[3]
+  options?: Parameters<typeof match>[3] & {
+    matchingType?: Omit<AppSettingsGroupMatchingType, 'none'>;
+  }
 ): Promise<RankingProps<PartyProps>[]> {
-  // Save original answers here, bc we're adding computed averages to the answers dictionary.
+  const matchingType = options?.matchingType ?? 'median';
+  // Save original answers here, if we will be adding computed averages to the answers dictionary.
   // NB. In the full vaa-data model, this will be handled by a getter function
   const originalAnswers = {} as Record<string, AnswerDict>;
   // Calculate average answers for each party for each question
-  for (const party of parties) {
-    originalAnswers[party.id] = party.answers;
-    party.answers = {...party.answers};
-    const partyCands = candidates.filter((c) => c.party?.id === party.id);
-    for (const qid of Object.keys(answeredQuestions)) {
-      if (party.answers[qid] != null) continue;
-      const answers = partyCands
-        .map((c) => c.answers[qid]?.value)
-        .filter((v) => {
-          if (v == null) return false;
-          if (typeof v !== 'number') {
-            logDebugError(
-              `Matching.matchParties: Invalid answer type ${typeof v} (only numbers allowd). Value: ${v}.`
-            );
-            return false;
-          }
-          return true;
-        }) as number[];
-      // Calculate average answer
-      party.answers[qid] = {
-        value: answers.length ? answers.reduce((a, b) => a + b, 0) / answers.length : MISSING_VALUE
-      };
+  if (matchingType !== 'answers-only') {
+    for (const party of parties) {
+      originalAnswers[party.id] = party.answers;
+      party.answers = {...party.answers};
+      const partyCands = candidates.filter((c) => c.party?.id === party.id);
+      for (const qid of Object.keys(answeredQuestions)) {
+        if (party.answers[qid] != null) continue;
+        const answers = partyCands
+          .map((c) => c.answers[qid]?.value)
+          .filter((v) => {
+            if (v == null) return false;
+            if (typeof v !== 'number') {
+              logDebugError(
+                `Matching.matchParties: Invalid answer type ${typeof v} (only numbers allowd). Value: ${v}.`
+              );
+              return false;
+            }
+            return true;
+          }) as number[];
+        // Calculate party answers
+        party.answers[qid] = {
+          value:
+            answers.length === 0
+              ? MISSING_VALUE
+              : matchingType === 'mean'
+                ? mean(answers)
+                : matchingType === 'median'
+                  ? median(answers)
+                  : error(500, `Matching.matchParties: Invalid matching type ${matchingType}.`)
+        };
+      }
     }
   }
   const res = match(allQuestions, answeredQuestions, parties, options);
   // Restore original answers
-  for (const party of parties) {
-    party.answers = originalAnswers[party.id];
+  if (Object.keys(originalAnswers).length) {
+    for (const party of parties) {
+      party.answers = originalAnswers[party.id];
+    }
   }
   return res;
+}
+
+/**
+ * Calculates the mean of a list of numbers.
+ */
+export function mean(values: number[]) {
+  if (values.length === 0) error(500, 'Cannot calculate mean of an empty list.');
+  return values.reduce((a, b) => a + b, 0) / values.length;
+}
+
+/**
+ * Calculates the median of a list of numbers.
+ * Orig. author jdmdevdotnet: https://stackoverflow.com/questions/45309447/calculating-median-javascript
+ */
+export function median(values: number[]) {
+  if (values.length === 0) error(500, 'Cannot calculate median of an empty list.');
+  values = [...values].sort((a, b) => a - b);
+  const half = Math.floor(values.length / 2);
+  return values.length % 2 ? values[half] : (values[half - 1] + values[half]) / 2;
 }
 
 /**
