@@ -443,7 +443,8 @@ User choices are stored in the `videoPreferences` store so that they persist acr
 
   <!-- Transcript -->
   <div
-    class="video-transcript relative mt-[3rem] h-[calc(100%_-_3rem)] w-full overflow-scroll rounded-md bg-base-100 p-lg sm:mt-0 sm:h-full"
+    class="video-transcript relative mt-[3rem] h-[calc(100%_-_3rem)] w-full overflow-scroll rounded-md bg-base-100 p-lg leading-lg
+           sm:mt-0 sm:h-full"
     class:pb-[4rem]={!hideControls.includes('transcript')}
     class:hidden={!transcriptVisible}>
     <div class="w-full">
