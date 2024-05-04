@@ -22,9 +22,9 @@
    */
   const ERROR_DELAY = 4000;
   /**
-   * A small eps in seconds used to determine if the video's currrent time is at the end of the video and in seeking to the end.
+   * A small eps in seconds used to determine whether we treat the video is being at the end
    */
-  const TIME_EPS = 0.05;
+  const END_EPS = 0.05;
 
   ////////////////////////////////////////////////////////////////////////////////
   // PUBLIC PROPERTIES
@@ -71,7 +71,7 @@
    * Bindable: Whether the video is at the end (with a small margin)
    */
   export let atEnd = false;
-  $: atEnd = duration - currentTime <= TIME_EPS;
+  $: atEnd = isAtEnd(currentTime);
 
   /**
    * The current loading status of the video. The `error-pending` status is used when an error has occurred but we're still waiting for it to be resolved.
@@ -207,28 +207,33 @@
     $videoPreferences.transcriptVisible = show;
   }
 
+  let seekTarget: number | undefined;
+
   /**
    * Skip the video a number of steps based on text track cues or `skipAmount` if cues are not available. If the video is in the end, a `steps` of `-1` will be skip to the beginning of the last cue. If `steps` would result in a negative index or one greater than the number of cues, the video will be scrolled to the beginning or the end.
    * @param steps A positive or negative number of steps to skip. If zero, the current cue will be rewound.
    */
   export function jump(steps: number) {
-    if (steps > 0 && atEnd) return;
+    if (!video || (steps > 0 && atEnd)) return;
+    let effectiveTime = video.currentTime;
     const cues = getTrack()?.cues;
     if (!skipByCue || cues == null)
-      return gotoAndPlay(currentTime + (skipAmount ?? DEFAULT_SKIP_AMOUNT) * steps);
-    const cue = (atEnd ? cues.length : findCue(currentTime)) + steps;
-    return gotoAndPlay(cue < 0 ? 0 : cue >= cues.length ? 'end' : cues[cue].startTime);
+      return gotoAndPlay(effectiveTime + (skipAmount ?? DEFAULT_SKIP_AMOUNT) * steps);
+    const cue = (atEnd ? cues.length : findCue(effectiveTime)) + steps;
+    seekTarget = cue < 0 ? 0 : cue >= cues.length ? duration : cues[cue].startTime;
+    return gotoAndPlay(seekTarget);
   }
 
   /**
    * Scroll the video to the given time and play.
    * @param timepoint
    */
-  export function gotoAndPlay(timepoint: number | 'end') {
-    if (timepoint === 'end') timepoint = duration;
-    // We need to deduct a small margin from duration, bc otherwise the video will start again
-    currentTime = Math.max(0, Math.min(timepoint, duration - TIME_EPS));
-    setPaused(false);
+  export function gotoAndPlay(timepoint: number) {
+    if (!video) return;
+    // On Safari, there's a strange bug if the timepoint is passed is not precise enough, which sometimes causes the player to freeze. Therefore, we add a tiny fraction to the value.
+    // We also need to deduct a small margin from duration, bc otherwise the video will start again
+    video.currentTime = Math.max(0, Math.min(timepoint, duration - END_EPS)) + 1e-10;
+    if (paused) setPaused(false);
   }
 
   /**
@@ -258,6 +263,8 @@
     poster = props.poster;
     aspectRatio = props.aspectRatio;
     transcript = props.transcript ?? '';
+    atEnd = false;
+    seekTarget = undefined;
     setTimeout(() => {
       video?.load();
       if (transcriptVisible && !transcript) transcript = buildTranscript();
@@ -334,6 +341,13 @@
   function getVideoType(src: string) {
     const match = src.match(/\.(\w+)$/);
     return match ? `video/${match[1]}` : undefined;
+  }
+
+  /**
+   * Check whether the supplied time is at the end of the video.
+   */
+  function isAtEnd(timepoint: number) {
+    return duration - timepoint <= END_EPS;
   }
 
   /**
@@ -448,7 +462,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
       on:canplay={() => (status = 'normal')}
       on:playing={() => (status = 'normal')}
       on:waiting={() => (status = 'waiting')}
-      on:error={() => onError()}
+      on:error={onError}
       autoplay={autoPlay && !transcriptVisible}
       {poster}
       crossorigin="anonymous"
