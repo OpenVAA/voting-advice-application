@@ -244,6 +244,16 @@
                       "question": {
                         "description": "The question's id.",
                         "type": "string"
+                      },
+                      "hideLabel": {
+                        "description": "Whether to hide the question label in the card.",
+                        "type": "boolean",
+                        "default": false
+                      },
+                      "format": {
+                        "description": "How to format the answer. • Default: use the same format as in EntityDetails. • Tag: format the answers as a pill or tag.",
+                        "enum": ["default", "tag"],
+                        "default": "default"
                       }
                     }
                   }
@@ -274,6 +284,16 @@
                       "question": {
                         "description": "The question's id.",
                         "type": "string"
+                      },
+                      "hideLabel": {
+                        "description": "Whether to hide the question label in the card.",
+                        "type": "boolean",
+                        "default": false
+                      },
+                      "format": {
+                        "description": "How to format the answer. • Default: use the same format as in EntityDetails. • Tag: format the answers as a pill or tag.",
+                        "enum": ["default", "tag"],
+                        "default": "default"
                       }
                     }
                   }
