@@ -64,7 +64,8 @@
   }
 
   // Card styling
-  let classes = 'vaa-card relative grid gap-md';
+  const gridClasses = 'grid gap-md';
+  let classes = `vaa-card relative ${gridClasses}`;
   if (context !== 'subcard') {
     classes += ' rounded-md bg-base-100 px-md py-16';
     if (action) classes += ' text-neutral transition-shadow ease-in-out hover:shadow-xl';
@@ -81,7 +82,7 @@ In nested cards, the layout and rendering of contents varies from that of a pare
 
 ### Properties
 
-- `action`: The action to take when the card is clicked. If the card has subentites, the action will only be triggered by clicking the header of the card.
+- `action`: The action to take when the card is clicked. If the card has subentites, the action will only be triggered by clicking the content above them.
 - `content`: A possibly ranked entity, e.g. candidate or a party.
 - `context`: The context in which the card is used, affects layout. @default `'list'`
 - `questions`: Possible question whose answers should be shown in the card, along with possibly options for their display.
@@ -113,7 +114,10 @@ In nested cards, the layout and rendering of contents varies from that of a pare
     {...concatClass($$restProps, classes)}>
     <!-- Card header -->
     <!-- ...but if subcards are present, only the card header is clickable -->
-    <EntityCardAction action={subcards?.length ? action : undefined} shadeOnHover>
+    <EntityCardAction
+      action={subcards?.length ? action : undefined}
+      shadeOnHover
+      class={gridClasses}>
       <header
         class="grid items-center justify-items-start gap-x-md gap-y-xs"
         style="
@@ -164,36 +168,36 @@ In nested cards, the layout and rendering of contents varies from that of a pare
             style="grid-area: callout" />
         {/if}
       </header>
+      {#if context !== 'subcard' && ranking?.subMatches?.length}
+        <SubMatches
+          matches={ranking.subMatches}
+          variant={context === 'details' ? 'loose' : undefined}
+          class="mt-6" />
+      {/if}
+      {#if questions?.length}
+        <div
+          class="grid items-start gap-md"
+          style="grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));">
+          {#each questions as { question, hideLabel, format }}
+            <!-- If `hideLabel` is true and we don't have an answer, we don't want to show anything -->
+            {#if !hideLabel || getAnswer(entity, question) != null}
+              <div class="grid gap-xs">
+                {#if !hideLabel}
+                  <div class="small-label text-left">
+                    {question.shortName}
+                  </div>
+                {/if}
+                <div>
+                  <InfoAnswer {entity} {question} {format} />
+                </div>
+              </div>
+            {/if}
+          {/each}
+        </div>
+      {/if}
     </EntityCardAction>
 
-    <!-- Card body -->
-    {#if context !== 'subcard' && ranking?.subMatches?.length}
-      <SubMatches
-        matches={ranking.subMatches}
-        variant={context === 'details' ? 'loose' : undefined}
-        class="mt-6" />
-    {/if}
-    {#if questions?.length}
-      <div
-        class="grid items-start gap-md"
-        style="grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));">
-        {#each questions as { question, hideLabel, format }}
-          <!-- If `hideLabel` is true and we don't have an answer, we don't want to show anything -->
-          {#if !hideLabel || getAnswer(entity, question) != null}
-            <div class="grid gap-xs">
-              {#if !hideLabel}
-                <div class="small-label text-left">
-                  {question.shortName}
-                </div>
-              {/if}
-              <div>
-                <InfoAnswer {entity} {question} {format} />
-              </div>
-            </div>
-          {/if}
-        {/each}
-      </div>
-    {/if}
+    <!-- Subentities -->
     {#if subcards}
       <div class="mt-md grid gap-lg">
         {#each subcards.slice(0, showAllSubcards ? undefined : maxSubcards) as ecProps}
@@ -221,7 +225,7 @@ In nested cards, the layout and rendering of contents varies from that of a pare
 
 <style lang="postcss">
   .offset-border {
-    /** After: is a valid prefix */
+    /* after: is a valid prefix */
     @apply after:absolute after:left-0 after:right-0 after:top-[calc(-10rem/16)] after:border-t-md after:border-base-300 after:content-[''];
   }
 </style>

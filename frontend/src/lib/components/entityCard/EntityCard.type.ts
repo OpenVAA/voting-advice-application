@@ -2,7 +2,7 @@ import type {SvelteHTMLElements} from 'svelte/elements';
 import type {InfoAnswerProps} from '../infoAnswer';
 export type EntityCardProps = SvelteHTMLElements['article'] & {
   /**
-   * The action to take when the card is clicked. If the card has subentites, the action will only be triggered by clicking the header of the card.
+   * The action to take when the card is clicked. If the card has subentites, the action will only be triggered by clicking the content above them.
    */
   action?: CardAction;
   /**
