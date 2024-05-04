@@ -98,7 +98,7 @@ module.exports = {
       none: '1',
       sm:   '1.21',
       md:   '1.35',
-      lg:   '1.5'
+      lg:   '1.65'
     },
     fontFamily: {
       base: [
