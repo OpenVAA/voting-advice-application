@@ -1,8 +1,8 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
-  import {goto} from '$app/navigation';
+  import {afterNavigate, goto} from '$app/navigation';
   import {t} from '$lib/i18n';
-  import {getRoute, referredByUs, Route} from '$lib/utils/navigation';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import {candidateRankings, partyRankings, settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {EntityDetails} from '$lib/components/entityDetails';
@@ -52,6 +52,12 @@
       candidatesOrUndef = Promise.resolve(undefined);
     }
   }
+
+  /**
+   * We use this to determine if we arrived via an external link or from within the app.
+   */
+  let externalReferrer = true;
+  afterNavigate((n) => (externalReferrer = n.from?.route == null));
 </script>
 
 <SingleCardPage {title}>
@@ -60,7 +66,7 @@
     class="!text-neutral"
     variant="icon"
     icon="close"
-    on:click={() => (referredByUs() ? history.back() : goto($getRoute(Route.Results)))}
+    on:click={() => (externalReferrer ? goto($getRoute(Route.Results)) : history.back())}
     text={$t('header.back')} />
   {#await Promise.all([entity, candidatesOrUndef])}
     <Loading showLabel />

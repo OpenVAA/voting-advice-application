@@ -1,10 +1,10 @@
 <script lang="ts">
   import {getContext} from 'svelte';
-  import { goto } from '$app/navigation';
+  import {afterNavigate, goto} from '$app/navigation';
   import {locale, t} from '$lib/i18n';
   import {getInfoQuestions, getOpinionQuestions, getNominatedCandidates} from '$lib/api/getData';
   import type {CandidateContext} from '$lib/utils/candidateStore';
-  import { Route, getRoute, referredByUs } from '$lib/utils/navigation';
+  import { Route, getRoute } from '$lib/utils/navigation';
   import { Button } from '$lib/components/button';
   import {EntityDetails} from '$lib/components/entityDetails';
   import {Icon} from '$lib/components/icon';
@@ -39,6 +39,12 @@
     loadData = fetchData();
     $locale;
   }
+
+  /**
+   * We use this to determine if we arrived via an external link or from within the app.
+   */
+  let externalReferrer = true;
+  afterNavigate((n) => (externalReferrer = n.from?.route == null));
 </script>
 
 {#await loadData}
@@ -59,7 +65,7 @@
           class="!text-neutral"
           variant="icon"
           icon="close"
-          on:click={() => (referredByUs() ? history.back() : goto($getRoute(Route.CandAppHome)))}
+          on:click={() => (externalReferrer ? goto($getRoute(Route.CandAppHome)) : history.back())}
           text={$t('candidateApp.preview.close')} />
       </svelte:fragment>
       <EntityDetails content={candidate} {opinionQuestions} {infoQuestions} />
