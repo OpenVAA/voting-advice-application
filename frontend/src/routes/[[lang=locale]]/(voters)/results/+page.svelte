@@ -35,15 +35,18 @@
   let additionalEcProps: Record<string, Partial<EntityCardProps>> = {candidate: {}, party: {}};
   $: {
     for (const type in additionalEcProps) {
-      const qids = $settings.results.cardContents[
+      const questionSettings = $settings.results.cardContents[
         type as keyof AppSettings['results']['cardContents']
-      ]
-        .filter((c) => typeof c === 'object' && c.question != null)
-        .map((c) => (c as AppSettingsQuestionRef).question);
-      if (qids.length) {
-        const questions = [];
-        for (const qid of qids) {
-          if ($allQuestions[qid]) questions.push($allQuestions[qid]);
+      ].filter((c) => typeof c === 'object' && c.question != null) as AppSettingsQuestionRef[];
+      if (questionSettings.length) {
+        const questions: EntityCardProps['questions'] = [];
+        for (const qs of questionSettings) {
+          const {question, ...rest} = qs;
+          if ($allQuestions[question])
+            questions.push({
+              question: $allQuestions[question],
+              ...rest
+            });
         }
         additionalEcProps[type].questions = questions.length ? questions : undefined;
       }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
   import {t} from '$lib/i18n';
+  import {getAnswer} from '$lib/utils/answers';
   import {concatClass, getUUID} from '$lib/utils/components';
   import {isCandidate, isParty, parseMaybeRanked} from '$lib/utils/entities';
   import {Avatar, type AvatarProps} from '$lib/components/avatar';
@@ -83,7 +84,7 @@ In nested cards, the layout and rendering of contents varies from that of a pare
 - `action`: The action to take when the card is clicked. If the card has subentites, the action will only be triggered by clicking the header of the card.
 - `content`: A possibly ranked entity, e.g. candidate or a party.
 - `context`: The context in which the card is used, affects layout. @default `'list'`
-- `questions`: Possible question whose answers should be shown in the card.
+- `questions`: Possible question whose answers should be shown in the card, along with possibly options for their display.
 - `subcards`: Possible sub-entities of the entity to show in the card, e.g. candidates for a party.
 - `maxSubcards`: The maximum number of sub-entities to show. If there are more a button will be shown for displaying the remaining ones. @default `3`
 - Any valid attributes of an `<article>` element.
@@ -176,15 +177,20 @@ In nested cards, the layout and rendering of contents varies from that of a pare
       <div
         class="grid items-start gap-md"
         style="grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));">
-        {#each questions as question}
-          <div class="grid gap-xs">
-            <div class="small-label text-left">
-              {question.shortName}
+        {#each questions as { question, hideLabel, format }}
+          <!-- If `hideLabel` is true and we don't have an answer, we don't want to show anything -->
+          {#if !hideLabel || getAnswer(entity, question) != null}
+            <div class="grid gap-xs">
+              {#if !hideLabel}
+                <div class="small-label text-left">
+                  {question.shortName}
+                </div>
+              {/if}
+              <div>
+                <InfoAnswer {entity} {question} {format} />
+              </div>
             </div>
-            <div>
-              <InfoAnswer {entity} {question} />
-            </div>
-          </div>
+          {/if}
         {/each}
       </div>
     {/if}

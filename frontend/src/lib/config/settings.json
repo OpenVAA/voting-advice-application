@@ -73,12 +73,7 @@
   "results": {
     "cardContents": {
       "candidate": ["submatches"],
-      "party": [
-        "candidates",
-        {
-          "question": "500"
-        }
-      ]
+      "party": ["candidates"]
     },
     "sections": ["candidate", "party"]
   }

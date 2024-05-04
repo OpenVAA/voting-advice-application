@@ -134,6 +134,8 @@ declare global {
    */
   type AppSettingsQuestionRef = {
     question: string;
+    hideLabel?: boolean;
+    format?: 'default' | 'tag';
   };
 
   /**
