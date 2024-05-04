@@ -1,6 +1,5 @@
 import {error} from '@sveltejs/kit';
 import {get, derived} from 'svelte/store';
-import {browser} from '$app/environment';
 import {page} from '$app/stores';
 import {settings} from '$lib/utils/stores';
 
@@ -103,20 +102,4 @@ function _getRoute(
   let url = parts.join('/');
   if (params) url += `?${new URLSearchParams(params).toString()}`;
   return url;
-}
-
-/**
- * Check whehter the current page was referred from within the app
- * @returns true if it was, false if the referrer is from the outside or not found
- */
-export function referredByUs(): boolean {
-  if (!browser) return false;
-  if (!document.referrer) return false;
-  console.info(
-    'has referrer',
-    document.referrer,
-    document.referrer.split('//'),
-    document.location.hostname
-  );
-  return document.referrer.split('//')[1].startsWith(document.location.hostname);
 }

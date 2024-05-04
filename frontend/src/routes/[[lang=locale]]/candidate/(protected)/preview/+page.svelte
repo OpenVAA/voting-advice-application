@@ -1,10 +1,10 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
   import {getContext} from 'svelte';
-  import {goto} from '$app/navigation';
+  import {afterNavigate, goto} from '$app/navigation';
   import {t} from '$lib/i18n';
   import type {AuthContext} from '$lib/utils/authenticationStore';
-  import {Route, getRoute, referredByUs} from '$lib/utils/navigation';
+  import {Route, getRoute} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
   import {EntityDetails} from '$lib/components/entityDetails';
   import {Icon} from '$lib/components/icon';
@@ -25,6 +25,12 @@
     if (candidateId == null) error(500, 'No candidate id');
     candidate = candidates.then((d) => d.find((c) => c.id == `${candidateId}`));
   }
+
+  /**
+   * We use this to determine if we arrived via an external link or from within the app.
+   */
+  let externalReferrer = true;
+  afterNavigate((n) => (externalReferrer = n.from?.route == null));
 </script>
 
 <SingleCardPage title={$t('candidateApp.preview.title')}>
@@ -39,7 +45,7 @@
       class="!text-neutral"
       variant="icon"
       icon="close"
-      on:click={() => (referredByUs() ? history.back() : goto($getRoute(Route.CandAppHome)))}
+      on:click={() => (externalReferrer ? goto($getRoute(Route.CandAppHome)) : history.back())}
       text={$t('header.back')} />
   </svelte:fragment>
 
