@@ -1,5 +1,7 @@
+import type {HTMLAttributes} from 'svelte/elements';
 import type {CardAction} from './EntityCard.type';
-export interface EntityCardActionProps {
+
+export type EntityCardActionProps = HTMLAttributes<HTMLElement> & {
   /**
    * The action to take when the part or card is clicked.
    */
@@ -8,4 +10,4 @@ export interface EntityCardActionProps {
    * Whether to shade the element on hover. Use when applying to subcards or their parent card's header. @default false
    */
   shadeOnHover?: boolean;
-}
+};
