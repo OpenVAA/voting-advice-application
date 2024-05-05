@@ -15,6 +15,7 @@ const keys = [
   'header',
   'info',
   'intro',
+  'maintenance',
   'navigation',
   'questions',
   'results',

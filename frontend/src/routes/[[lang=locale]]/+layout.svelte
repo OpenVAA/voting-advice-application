@@ -2,10 +2,14 @@
   import {t} from '$lib/i18n';
   import {settings} from '$lib/utils/stores';
   import {Loading} from '$lib/components/loading';
+  import {MaintenancePage} from '$lib/templates/maintenance';
   import '../../app.css';
   import type {LayoutData} from './$types';
 
   export let data: LayoutData;
+
+  let underMaintenance;
+  $: underMaintenance = data.appSettings.underMaintenance ?? false;
 
   const fontUrl =
     $settings?.font?.url ??
@@ -13,7 +17,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('viewTexts.appTitle')}</title>
+  <title>{underMaintenance ? $t('maintenance.title') : $t('viewTexts.appTitle')}</title>
   <meta
     name="theme-color"
     content={$settings?.colors?.light?.['base-300'] ?? '#d1ebee'}
@@ -29,7 +33,9 @@
   <link href={fontUrl} rel="stylesheet" />
 </svelte:head>
 
-{#if data.election}
+{#if underMaintenance}
+  <MaintenancePage />
+{:else if data.election}
   <slot />
 {:else}
   <Loading showLabel />

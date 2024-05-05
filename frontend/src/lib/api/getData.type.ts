@@ -136,6 +136,7 @@ export interface StrapiAppSettingsData {
         attributes: StrapiImageData;
       };
     };
+    underMaintenance?: boolean;
   };
 }
 
