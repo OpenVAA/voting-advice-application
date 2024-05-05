@@ -135,7 +135,7 @@ export const election: Readable<ElectionProps | undefined> = derived(
  */
 export const candidates: Readable<Promise<CandidateProps[]>> = derived(
   page,
-  ($page) => $page.data.candidates,
+  ($page) => $page.data.candidates ?? Promise.resolve([]),
   Promise.resolve([])
 );
 
@@ -144,7 +144,7 @@ export const candidates: Readable<Promise<CandidateProps[]>> = derived(
  */
 export const parties: Readable<Promise<PartyProps[]>> = derived(
   page,
-  ($page) => $page.data.parties,
+  ($page) => $page.data.parties ?? Promise.resolve([]),
   Promise.resolve([])
 );
 
