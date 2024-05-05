@@ -1,5 +1,7 @@
 /** Return the entity type for the entity */
-export function getEntityType(entity: EntityProps | undefined): EntityType | undefined {
+export function getEntityType(
+  entity: EntityProps | undefined
+): Exclude<EntityType, 'all'> | undefined {
   if (entity == null) return undefined;
   return isCandidate(entity) ? 'candidate' : isParty(entity) ? 'party' : undefined;
 }

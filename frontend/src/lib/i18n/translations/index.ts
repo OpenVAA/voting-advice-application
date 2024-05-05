@@ -10,7 +10,6 @@ const keys = [
   'candidateApp',
   'common',
   'components',
-  'entity',
   'error',
   'header',
   'info',

@@ -99,7 +99,8 @@ declare global {
     }>;
     entityDetails: {
       contents: Record<Exclude<EntityType, 'all'>, AppSettingsEntityDetailsContent[]>;
-      showMissingAnswers: boolean;
+      showMissingElectionSymbol: Record<Exclude<EntityType, 'all'>, boolean>;
+      showMissingAnswers: Record<Exclude<EntityType, 'all'>, boolean>;
     };
     header: {
       showHelp: boolean;
