@@ -268,6 +268,7 @@
     setTimeout(() => {
       video?.load();
       if (transcriptVisible && !transcript) transcript = buildTranscript();
+      if (!transcriptVisible && autoPlay) togglePlay('play');
       toggleCaptions(tracksShown);
     }, 225);
   }
