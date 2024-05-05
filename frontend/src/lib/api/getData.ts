@@ -46,49 +46,53 @@ export function getData<T extends object>(
   return fetch(url)
     .then((response) => {
       return response.json().then((parsed: StrapiResponse<T> | StrapiError) => {
-        if ('error' in parsed) throw new Error(parsed.error.message);
+        if ('error' in parsed) throw new Error(`Error with getData: ${parsed?.error?.message}`);
         return parsed.data;
       });
     })
     .catch((e) => {
-      // This is unexpected, so we don't use error()
-      throw new Error(e);
+      throw new Error(`Error with getData: ${e?.message}`);
     });
 }
 
 /**
  * Get app settings defined in Strapi.
+ * NB. `getAppSettings` can be used to test the database connection, because unlike the other `getData` functions, it will not throw if a connection could not be made but instead resolves to `undefined`.
  * @param locale The locale to translate the texts to
+ * @returns The app settings or `undefined` if there was an error
  */
 export const getAppSettings = ({
   locale
 }: {
   locale?: string;
-} = {}): Promise<Partial<AppSettings>> => {
+} = {}): Promise<Partial<AppSettings> | undefined> => {
   const params = new URLSearchParams({
     'populate[poster]': 'true',
     'populate[posterCandidateApp]': 'true',
     'populate[publisherLogo]': 'true',
     'populate[publisherLogoDark]': 'true'
   });
-  return getData<StrapiAppSettingsData[]>('api/app-settings', params).then((result) => {
-    if (result.length !== 1)
-      throw new Error(`Expected one AppSettings object, but got ${result.length}`);
-    const attr = result[0].attributes;
-    const publisher: AppSettings['publisher'] = {
-      name: translate(attr.publisherName, locale)
-    };
-    if (attr.publisherLogo.data) publisher.logo = parseImage(attr.publisherLogo.data.attributes);
-    if (attr.publisherLogoDark.data)
-      publisher.logoDark = parseImage(attr.publisherLogoDark.data.attributes);
-    const poster = attr.poster?.data?.attributes;
-    const posterCandidateApp = attr.posterCandidateApp?.data?.attributes;
-    return {
-      publisher,
-      poster: poster ? parseImage(poster) : undefined,
-      posterCandidateApp: posterCandidateApp ? parseImage(posterCandidateApp) : undefined
-    };
-  });
+  return getData<StrapiAppSettingsData[]>('api/app-settings', params)
+    .then((result) => {
+      if (result.length !== 1)
+        error(500, `Expected one AppSettings object, but got ${result.length}`);
+      const attr = result[0].attributes;
+      const publisher: AppSettings['publisher'] = {
+        name: translate(attr.publisherName, locale)
+      };
+      if (attr.publisherLogo.data) publisher.logo = parseImage(attr.publisherLogo.data.attributes);
+      if (attr.publisherLogoDark.data)
+        publisher.logoDark = parseImage(attr.publisherLogoDark.data.attributes);
+      const poster = attr.poster?.data?.attributes;
+      const posterCandidateApp = attr.posterCandidateApp?.data?.attributes;
+      return {
+        publisher,
+        poster: poster ? parseImage(poster) : undefined,
+        posterCandidateApp: posterCandidateApp ? parseImage(posterCandidateApp) : undefined,
+        underMaintenance: attr.underMaintenance ?? false
+      };
+    })
+    .catch(() => undefined);
 };
 
 /**
@@ -106,7 +110,7 @@ export const getElection = ({
   locale ??= currentLocale.get();
   // Match locale softly
   const matchingLocale = matchLocale(locale || '', locales.get());
-  if (!matchingLocale) throw error(500, `Locale ${locale} not supported`);
+  if (!matchingLocale) error(500, `Locale ${locale} not supported`);
   const params = new URLSearchParams({
     'populate[electionAppLabel][populate][actionLabels]': 'true',
     'populate[electionAppLabel][populate][viewTexts]': 'true',
@@ -114,7 +118,7 @@ export const getElection = ({
   });
   if (id) params.set('filters[id][$eq]', id);
   return getData<StrapiElectionData[]>('api/elections', params).then((result) => {
-    if (!result.length) throw error(500, 'No election found');
+    if (!result.length) error(500, 'No election found');
     const el = result[0];
     const attr = el.attributes;
     let appLabels: StrapiAppLabelsData | LocalizedStrapiData<StrapiAppLabelsData> | undefined;
@@ -208,7 +212,7 @@ export const getNominatedCandidates = ({
         const id = '' + cnd.id;
         const attr = cnd.attributes;
         if (!nom.attributes.party.data)
-          throw error(
+          error(
             500,
             `Could not retrieve result for nominating candidates: party for candidate with id '${id}' not found`
           );
@@ -340,7 +344,7 @@ export const getNominatingParties = ({
           partyIds.add(partyId);
           const party = partyMap.get(partyId);
           if (!party)
-            throw error(
+            error(
               500,
               `Could not retrieve result for nominating parties: party with id '${partyId}' not found`
             );
@@ -392,7 +396,7 @@ export const getQuestions = ({
       for (const qst of cat.attributes.questions.data) {
         const attr = qst.attributes;
         const settings = attr.questionType?.data.attributes.settings;
-        if (!settings) throw new Error(`Question with id '${qst.id}' has no settings!`);
+        if (!settings) error(500, `Question with id '${qst.id}' has no settings!`);
         const text = translate(attr.text, locale);
         const shortName = translate(attr.shortName, locale);
         const props: QuestionProps = {

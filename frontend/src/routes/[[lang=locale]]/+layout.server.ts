@@ -1,7 +1,7 @@
-import type {LayoutServerLoad} from './$types';
 import {error} from '@sveltejs/kit';
 import {getAppSettings, getElection} from '$lib/api/getData';
 import {loadTranslations, locale} from '$lib/i18n';
+import type {LayoutServerLoad} from './$types';
 
 export const load = (async ({locals, params}) => {
   // Get language from locals (see hooks.server.ts)
@@ -13,20 +13,27 @@ export const load = (async ({locals, params}) => {
   // Set the locale so that getData can used it as default
   if (effectiveLocale !== locale.get()) locale.set(effectiveLocale);
 
-  // Get basic data and translations
-  const election = await getElection({locale: effectiveLocale});
-  if (!election) {
-    throw error(500, 'Error loading election');
-  }
-
   await loadTranslations(effectiveLocale);
 
+  // Get app settings and possibly enter maintenance mode. `getAppSettings` will resolve to `undefined` if the database connection could not be made.
+  let appSettings = await getAppSettings({locale: effectiveLocale});
+  if (!appSettings) {
+    appSettings = {underMaintenance: true};
+  }
+
+  let election: ElectionProps | undefined;
+  if (!appSettings.underMaintenance) {
+    // Get basic data and translations
+    election = await getElection({locale: effectiveLocale});
+    if (!election) {
+      throw error(500, 'Error loading election');
+    }
+  }
+
   return {
-    appSettings: await getAppSettings({locale: effectiveLocale}),
+    appSettings,
     election,
     // We'll initialize as empty Arrays because they are required by `PageData`. See `app.d.ts` for more details
-    candidates: [],
-    parties: [],
     questions: [],
     infoQuestions: [],
     i18n: {

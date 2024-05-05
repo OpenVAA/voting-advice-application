@@ -104,6 +104,7 @@ declare global {
     header: {
       showHelp: boolean;
     };
+    underMaintenance?: boolean;
     matching: {
       minimumAnswers: number;
       partyMatching: AppSettingsGroupMatchingType;
