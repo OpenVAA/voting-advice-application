@@ -8,7 +8,7 @@ import mime from 'mime-types';
 import Path from 'path';
 import type {Common} from '@strapi/strapi';
 import {API} from './utils/api';
-import {deleteAllMedia, deleteMedia, dropAllCollections, getAllMedia} from './utils/drop';
+import {deleteMedia, dropAllCollections, getAllMedia} from './utils/drop';
 import {createRelationsForAvailableLocales} from './utils/i18n';
 import type {HasId} from './utils/data.type';
 
