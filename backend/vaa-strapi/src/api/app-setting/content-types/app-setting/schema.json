@@ -35,18 +35,28 @@
       "type": "json"
     },
     "poster": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
     },
     "posterCandidateApp": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
+    },
+    "underMaintenance": {
+      "type": "boolean",
+      "default": false
+    },
+    "allowOverwrite": {
+      "type": "boolean",
+      "default": false
     }
   }
 }
