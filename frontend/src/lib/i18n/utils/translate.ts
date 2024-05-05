@@ -34,8 +34,8 @@ export function translateObject<T extends Record<string, unknown> | null | undef
 }
 
 /**
- * Check if an object is a valid LocalizedString and is not empty.
+ * Check if an object is a valid localized object and is not empty.
  */
-export function isTranslation(obj: unknown): obj is LocalizedString {
+export function isTranslation(obj: unknown): obj is Record<string, unknown> {
   return obj != null && typeof obj === 'object' && Object.keys(obj).length > 0;
 }
