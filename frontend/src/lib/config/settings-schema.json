@@ -122,7 +122,7 @@
       "description": "Settings related to the entity details view, i.e. the pages for individual candidates and parties.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["contents"],
+      "required": ["contents", "showMissingElectionSymbol", "showMissingAnswers"],
       "properties": {
         "contents": {
           "description": "Which content tabs to show.",
@@ -152,10 +152,19 @@
             }
           }
         },
+        "showMissingElectionSymbol": {
+          "description": "Whether to show a marker for missing election symbol in entity details, e.g. 'Election Symbol: --', or hide missing items completely. The marker, if shown, is defined in the translations.",
+          "type": "object",
+          "patternProperties": {
+            "^candidate|party$": {"type": "boolean"}
+          }
+        },
         "showMissingAnswers": {
-          "description": "Whether to show a marker for missing answers in entity details as, e.g. 'Election Symbol: --', or hide missing items completely. The marker, if shown, is defined in the translations. This only applies to non-opinion questions.",
-          "type": "boolean",
-          "default": false
+          "description": "Whether to show a marker for missing answers in entity details as, e.g. 'Age: --', or hide missing items completely. The marker, if shown, is defined in the translations. This only applies to non-opinion questions.",
+          "type": "object",
+          "patternProperties": {
+            "^candidate|party$": {"type": "boolean"}
+          }
         }
       }
     },

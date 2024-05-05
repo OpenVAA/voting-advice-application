@@ -6,7 +6,10 @@
     "plural": "candidates"
   },
   "clearInput": "Clear",
-  "electionSymbol": "Election Number",
+  "electionSymbol": {
+    "candidate": "Election Number",
+    "party": "Election Symbol"
+  },
   "loading": "Loading…",
   "missingAnswer": "—",
   "multipleAnswerSeparator": " • ",

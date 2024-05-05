@@ -6,7 +6,10 @@
     "plural": "ehdokkaat"
   },
   "clearInput": "Tyhjennä",
-  "electionSymbol": "Ehdokasnumero",
+  "electionSymbol": {
+    "candidate": "Ehdokasnumero",
+    "party": "Vaalisymboli"
+  },
   "loading": "Ladataan…",
   "missingAnswer": "—",
   "multipleAnswerSeparator": " • ",

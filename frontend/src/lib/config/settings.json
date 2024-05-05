@@ -56,7 +56,14 @@
       "candidate": ["info", "opinions"],
       "party": ["info", "candidates", "opinions"]
     },
-    "showMissingAnswers": false
+    "showMissingElectionSymbol": {
+      "candidate": true,
+      "party": false
+    },
+    "showMissingAnswers": {
+      "candidate": true,
+      "party": true
+    }
   },
   "header": {
     "showHelp": true

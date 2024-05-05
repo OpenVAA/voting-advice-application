@@ -1,7 +1,8 @@
 <script lang="ts">
+  import {error} from '@sveltejs/kit';
   import {t} from '$lib/i18n';
   import {getAnswer} from '$lib/utils/answers';
-  import {isCandidate, isParty} from '$lib/utils/entities';
+  import {getEntityType, isCandidate, isParty} from '$lib/utils/entities';
   import {sanitizeHtml} from '$lib/utils/sanitize';
   import {settings} from '$lib/utils/stores';
   import {InfoAnswer} from '$lib/components/infoAnswer';
@@ -11,6 +12,13 @@
 
   export let entity: EntityProps;
   export let questions: EntityDetailsProps['infoQuestions'];
+
+  let entityType: Exclude<EntityType, 'all'>;
+  $: {
+    const res = getEntityType(entity);
+    if (!res) error(500, `No entity type found for entity: ${entity?.id}`);
+    entityType = res;
+  }
 </script>
 
 <!--
@@ -31,7 +39,7 @@ Used to show an entity's basic info in an `EntityDetails` component.
 
 <div class="grid p-lg">
   <!-- We don't want to render an empty infoGroup, so we need to do these unseemly double-checks -->
-  {#if isCandidate(entity) || $settings.entityDetails.showMissingAnswers || entity.electionSymbol || (isParty(entity) && entity.info)}
+  {#if isCandidate(entity) || $settings.entityDetails.showMissingElectionSymbol[entityType] || entity.electionSymbol || (isParty(entity) && entity.info)}
     <div class="infoGroup" role="group">
       {#if isParty(entity) && entity.info}
         <div>
@@ -47,8 +55,8 @@ Used to show an entity's basic info in an `EntityDetails` component.
           {/if}
         </InfoItem>
       {/if}
-      {#if $settings.entityDetails.showMissingAnswers || entity.electionSymbol}
-        <InfoItem label={$t('common.electionSymbol')}>
+      {#if $settings.entityDetails.showMissingElectionSymbol[entityType] || entity.electionSymbol}
+        <InfoItem label={$t(`common.electionSymbol.${entityType}`)}>
           {entity.electionSymbol ?? $t('common.missingAnswer')}
         </InfoItem>
       {/if}
@@ -60,7 +68,7 @@ Used to show an entity's basic info in an `EntityDetails` component.
     {#if nonLinkQuestions.length}
       <div class="infoGroup" role="group">
         {#each nonLinkQuestions as question}
-          {#if $settings.entityDetails.showMissingAnswers || getAnswer(entity, question) != null}
+          {#if $settings.entityDetails.showMissingAnswers[entityType] || getAnswer(entity, question) != null}
             <InfoItem label={question.text}>
               <InfoAnswer {entity} {question} />
             </InfoItem>
