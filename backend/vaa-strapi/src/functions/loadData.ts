@@ -1,101 +1,141 @@
+/**
+ * A quick-and-dirty tool for loading data into Strapi.
+ * NB. This should be refactored and packaged into a function that can be invoked from the Strapi admin UI instead of on restart.
+ */
+
 import fs from 'fs';
 import mime from 'mime-types';
 import Path from 'path';
 import type {Common} from '@strapi/strapi';
 import {API} from './utils/api';
-import {deleteAllMedia, dropAllCollections} from './utils/drop';
+import {deleteMedia, dropAllCollections, getAllMedia} from './utils/drop';
 import {createRelationsForAvailableLocales} from './utils/i18n';
 import type {HasId} from './utils/data.type';
 
 /**
- * Load data from `folder`, if the database does not contain an Election. Warning! This will delete all existing data, including media files.
- * The data folder must contain separate json files for each data type: `answers.json `, `appLabels.json `, `appSettings.json `, `candidates.json `, `constituencies.json `, `elections.json `, `infoQuestions.json `, `locales.json `, `nominations.json `, `opinionQuestions.json `, `parties.json `, `questionCategories.json `, `questionTypes.json`.
+ * Load data from `folder`, if `AppSettings` do not exist or their `allowOverwrite` property is true. Warning! This will delete all existing data, including media files.
+ * The data folder must contain separate json files for each data type: `answers.json`, `appSettings.json`, `candidates.json`, `constituencies.json`, `elections.json`, `infoQuestions.json`, `locales.json`, `nominations.json`, `opinionQuestions.json`, `parties.json`, `questionCategories.json`, `questionTypes.json`. The data for App Labels, `appLabels.json`, is optional.
  * Possible images should be placed in the same folder and referenced by a relative path.
- * @param folder The folder to load data from (relative to `/backend/vaa-strapi`)
- * @param force Load and clear data even if the database already contains an Election
- * @returns
+ * The data folder is set by the env variable `LOAD_DATA_ON_INITIALISE_FOLDER` by default.
+ * @param folder The folder to load data from
+ * @param force Load and clear data regardless of `AppSettings.allowOverwrite`
  */
 export async function loadData(folder: string, force = false) {
-  console.info('##########################################');
-  console.info('Starting data loading...');
+  console.info(
+    '[loadData] ##########################################\n[loadData] Starting data loading...'
+  );
 
-  if (!(folder.startsWith('.') || folder.startsWith('/'))) {
-    folder = Path.resolve('.', folder);
-    console.warn(`Folder doesn't start with './', converted to: ${folder}`);
-  }
+  folder = Path.resolve('.', folder);
+  console.info(`[loadData] - Path resolved to: ${folder}`);
 
-  if ((await strapi.entityService.findMany(API.Election)).length) {
-    if (force) {
-      console.warn('Warning! The database has one or more Elections but the force flag is used.');
+  if (force) {
+    console.info('[loadData] - The force argument is true. Continuing with data loading...');
+  } else {
+    console.info('[loadData] Getting current AppSettings...');
+    const currentSettings = await strapi.entityService.findMany(API.AppSettings);
+    if (!currentSettings?.length) {
+      console.info('[loadData] - No AppSettings found. Continuing with data loading...');
+    } else if (currentSettings.length > 1) {
+      console.info(
+        `[loadData] - Found more than one AppSettings (${currentSettings.length}). Please remove all but one. Data loading aborted.\n[loadData] ##########################################`
+      );
+      return false;
+    } else if (!currentSettings[0].allowOverwrite) {
+      console.info(
+        '[loadData] - AppSettings.allowOverwrite is false. Data loading aborted.\n[loadData] ##########################################'
+      );
+      return false;
     } else {
       console.info(
-        'The database has one or more Elections and data will not be loaded. Use the force flag to overwrite existing data.'
+        '[loadData] - AppSettings.allowOverwrite is true. Continuing with data loading...'
       );
-      console.info('##########################################');
-      return;
     }
-  } else {
-    console.info('No existing elections found.');
   }
 
-  console.warn('Warning! Deleting all existing collections...');
-  await dropAllCollections();
-  console.warn('Warning! Deleting all existing  media files...');
-  await deleteAllMedia();
+  await strapi.db.transaction(async ({rollback, commit}) => {
+    console.info('[loadData] Starting transaction...');
 
-  console.info('Creating Locales...');
-  await createLocales((await loadFile(folder, 'locales')) as {name: string; code: string}[]);
+    // Get a list of all media files in the media library which will be deleted at the end of the transaction
+    const mediaFiles = await getAllMedia();
 
-  console.info('Creating AppSettings...');
-  if (
-    !(await createFromFile(folder, 'appSettings', API.AppSettings, [
-      'publisherLogo',
-      'publisherLogoDark',
-      'poster',
-      'posterCandidateApp'
-    ]))
-  )
-    return false;
+    try {
+      console.info('[loadData] Warning! Deleting all existing collections...');
+      await dropAllCollections();
 
-  console.info('Creating AppLabels...');
-  const appLabels = await createFromFile(folder, 'appLabels', API.AppLabel);
-  if (!appLabels) return false;
-  await createRelationsForAvailableLocales(API.AppLabel, appLabels as HasId[]);
+      console.info('[loadData] Creating Locales...');
+      await createLocales((await loadFile(folder, 'locales')) as {name: string; code: string}[]);
 
-  console.info('Creating Elections...');
-  if (!(await createFromFile(folder, 'elections', API.Election))) return false;
+      console.info('[loadData] Creating AppSettings...');
+      if (
+        !(await createFromFile(folder, 'appSettings', API.AppSettings, [
+          'publisherLogo',
+          'publisherLogoDark',
+          'poster',
+          'posterCandidateApp'
+        ]))
+      )
+        throw new Error();
 
-  console.info('Creating Constituencies...');
-  if (!(await createFromFile(folder, 'constituencies', API.Constituency))) return false;
+      console.info('[loadData] Creating AppLabels...');
+      const appLabels = await createFromFile(folder, 'appLabels', API.AppLabel);
+      if (appLabels) {
+        await createRelationsForAvailableLocales(API.AppLabel, appLabels as HasId[]);
+      } else {
+        console.info(
+          '[loadData] Warning! No AppLabels found. Continuing with loading the rest of the data...'
+        );
+      }
 
-  console.info('Creating Question Categories...');
-  if (!(await createFromFile(folder, 'questionCategories', API.QuestionCategory))) return false;
+      console.info('[loadData] Creating Elections...');
+      if (!(await createFromFile(folder, 'elections', API.Election))) throw new Error();
 
-  console.info('Creating Question Types...');
-  if (!(await createFromFile(folder, 'questionTypes', API.QuestionType))) return false;
+      console.info('[loadData] Creating Constituencies...');
+      if (!(await createFromFile(folder, 'constituencies', API.Constituency))) throw new Error();
 
-  console.info('Creating Info Questions...');
-  if (!(await createFromFile(folder, 'infoQuestions', API.Question))) return false;
+      console.info('[loadData] Creating Question Categories...');
+      if (!(await createFromFile(folder, 'questionCategories', API.QuestionCategory)))
+        throw new Error();
 
-  console.info('Creating Opinion Questions...');
-  if (!(await createFromFile(folder, 'opinionQuestions', API.Question))) return false;
+      console.info('[loadData] Creating Question Types...');
+      if (!(await createFromFile(folder, 'questionTypes', API.QuestionType))) throw new Error();
 
-  console.info('Creating Parties...');
-  if (!(await createFromFile(folder, 'parties', API.Party, ['logo']))) return false;
+      console.info('[loadData] Creating Info Questions...');
+      if (!(await createFromFile(folder, 'infoQuestions', API.Question))) throw new Error();
 
-  console.info('Creating Candidates...');
-  if (!(await createFromFile(folder, 'candidates', API.Candidate, ['photo']))) return false;
+      console.info('[loadData] Creating Opinion Questions...');
+      if (!(await createFromFile(folder, 'opinionQuestions', API.Question))) throw new Error();
 
-  console.info('Creating Nominations...');
-  if (!(await createFromFile(folder, 'nominations', API.Nomination))) return false;
+      console.info('[loadData] Creating Parties...');
+      if (!(await createFromFile(folder, 'parties', API.Party, ['logo']))) throw new Error();
 
-  console.info('Creating Answers...');
-  if (!(await createFromFile(folder, 'answers', API.Answer))) return false;
+      console.info('[loadData] Creating Candidates...');
+      if (!(await createFromFile(folder, 'candidates', API.Candidate, ['photo'])))
+        throw new Error();
 
-  console.info('Data loading done!');
-  console.info('##########################################');
+      console.info('[loadData] Creating Nominations...');
+      if (!(await createFromFile(folder, 'nominations', API.Nomination))) throw new Error();
 
-  return true;
+      console.info('[loadData] Creating Answers...');
+      if (!(await createFromFile(folder, 'answers', API.Answer))) throw new Error();
+    } catch (error) {
+      console.info('[loadData] - There was an error. Rolling back transaction...');
+      await rollback();
+      console.info('[loadData] Data loading aborted');
+      return;
+    }
+
+    console.info('[loadData] - Committing transaction...');
+    commit();
+
+    console.info(
+      '[loadData] Warning! Deleting all media files that existed before loading data...'
+    );
+    await deleteMedia(mediaFiles);
+
+    console.info('[loadData] Data loading done!');
+  });
+
+  console.info('[loadData] ##########################################');
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -107,7 +147,7 @@ async function createLocales(locales: {code: string; name: string}[]) {
   for (const {code, name} of locales) {
     if (strapiLocales.find((l) => l.code === code)) return;
     await strapi.plugins.i18n.services.locales.create({code, name});
-    console.info(`Created locale '${code}'`);
+    console.info(`[loadData] Created locale '${code}'`);
   }
 }
 
@@ -132,15 +172,19 @@ async function createFromFile(
     loadFile(folder, name)
       .catch(() => {
         console.error(
-          `createFromFile: Error creating '${api}' from file ${name} when reading file`
+          `[loadData] [createFromFile] Error creating '${api}' from file ${name} when reading file`
         );
         resolve();
       })
       .then((data) => {
+        if (!data) {
+          resolve(undefined);
+          return;
+        }
         create(folder, api, data as object[], mediaFields, publish)
           .catch((e) => {
             console.error(
-              `createFromFile: Error creating '${api}' from file ${name} when creating objects`,
+              `[loadData] [createFromFile] Error creating '${api}' from file ${name} when creating objects`,
               e
             );
             resolve(undefined);
@@ -159,12 +203,19 @@ async function createFromFile(
  */
 async function loadFile(folder: string, name: string): Promise<object[]> {
   return new Promise((resolve) => {
-    import(Path.resolve(folder, `${name}.json`))
-      .catch((e) => {
-        console.error(`loadFile: Error loading file with name '${name}'`, e);
-        throw e;
-      })
-      .then((res) => resolve(res.default));
+    const fp = Path.resolve(folder, `${name}.json`);
+    if (!fs.existsSync(fp)) {
+      console.error(`[loadData] [loadFile] No file such exists: ${fp}`);
+      resolve(undefined);
+      return;
+    }
+    try {
+      const data = fs.readFileSync(fp);
+      resolve(JSON.parse(data.toString()) as object[]);
+    } catch (e) {
+      console.error(`[loadData] [loadFile] Error loading file: ${fp}`, e);
+      resolve(undefined);
+    }
   });
 }
 
@@ -201,7 +252,7 @@ async function create<T extends object>(
             const type = mime.lookup(fullPath);
             files[key] = {name, path: fullPath, size, type};
           } catch (e) {
-            console.error(`create: Error reading media file '${itemData[key]}'`, e);
+            console.error(`[loadData] [create] Error reading media file '${itemData[key]}'`, e);
             throw e;
           }
         }
@@ -216,7 +267,11 @@ async function create<T extends object>(
         files
       })
       .catch((e) => {
-        console.error(`create: Error creating '${api}'`, ...(e.details?.errors ?? []), itemData);
+        console.error(
+          `[loadData] [create] Error creating '${api}'`,
+          ...(e.details?.errors ?? []),
+          itemData
+        );
         throw e;
       });
     res.push(obj);
