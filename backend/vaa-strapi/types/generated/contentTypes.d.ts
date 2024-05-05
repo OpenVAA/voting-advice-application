@@ -707,6 +707,8 @@ export interface ApiAppSettingAppSetting extends Schema.CollectionType {
     customData: Attribute.JSON;
     poster: Attribute.Media;
     posterCandidateApp: Attribute.Media;
+    underMaintenance: Attribute.Boolean & Attribute.DefaultTo<false>;
+    allowOverwrite: Attribute.Boolean & Attribute.DefaultTo<false>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<'api::app-setting.app-setting', 'oneToOne', 'admin::user'> &
