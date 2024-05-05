@@ -406,6 +406,10 @@ User choices are stored in the `videoPreferences` store so that they persist acr
 - `gotoAndPlay`: Scroll the video to the given time and play.
 - `reload`: Call this function after changing the video contents, i.e. sources, captions, poster and transcript.
 
+### Events
+
+- `ended`: Forwarded from the `<video>` element.
+
 ### Usage
 
 ```tsx
@@ -423,11 +427,11 @@ User choices are stored in the `videoPreferences` store so that they persist acr
 <div
   {...concatClass(
     $$restProps,
-    `relative select-none touch-manipulation w-full aspect-[var(--video-aspectRatio)] overflow-hidden
+    `relative select-none touch-manipulation aspect-[var(--video-aspectRatio)] overflow-hidden
    max-h-[36rem] rounded-b-md sm:rounded-t-md bg-accent sm:bg-transparent`
   )}
   style:--video-aspectRatio={aspectRatio}
-  style:width="min(100%, calc(36rem * var(--video-aspectRatio)))">
+  style:min-width="min(100%, calc(36rem * var(--video-aspectRatio)))">
   <!-- Show video button if transcript visible -->
   {#if !hideControls.includes('transcript')}
     {#if transcriptToggleValue === 'text'}
@@ -464,6 +468,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
       on:playing={() => (status = 'normal')}
       on:waiting={() => (status = 'waiting')}
       on:error={onError}
+      on:ended
       autoplay={autoPlay && !transcriptVisible}
       {poster}
       crossorigin="anonymous"
