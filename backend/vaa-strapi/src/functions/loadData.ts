@@ -59,6 +59,11 @@ export async function loadData(folder: string, force = false) {
     const mediaFiles = await getAllMedia();
 
     try {
+      // Due to a bug in Strapi, we need to ensure this. See: https://github.com/strapi/strapi/issues/16071#issuecomment-1613334063
+      console.info('[loadData] Ensuring we have an upload folder...');
+      if (!(await strapi.plugin('upload').service('api-upload-folder').getAPIUploadFolder()))
+        throw new Error();
+
       console.info('[loadData] Warning! Deleting all existing collections...');
       await dropAllCollections();
 
@@ -260,7 +265,6 @@ async function create<T extends object>(
       }
     }
     // Create the object
-    // Due to a bug in Strapi, we need to await the creation of at least the first object with media files. See: https://github.com/strapi/strapi/issues/16071#issuecomment-1613334063
     const obj = await strapi.entityService
       .create(api, {
         data: {...itemData, publishedAt: publish ? new Date() : undefined} as object,
