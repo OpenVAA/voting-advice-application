@@ -115,6 +115,9 @@ declare global {
       showIntroPage: boolean;
       showResultsLink: boolean;
     };
+    research: {
+      collectUsageData: boolean;
+    };
     results: {
       cardContents: {
         candidate: Array<'submatches' | AppSettingsQuestionRef>;
@@ -149,6 +152,16 @@ declare global {
    * The method for performing group, i.e. party, maching in `AppSettings`.
    */
   type AppSettingsGroupMatchingType = 'none' | 'answersOnly' | 'mean' | 'median';
+
+  /**
+   * The persistent preferences that can be set by the user.
+   */
+  interface UserPreferences {
+    dataCollection?: {
+      consent: boolean;
+      date: Date;
+    };
+  }
 
   /**
    * The properties of a Candidate object that can be passed onto the

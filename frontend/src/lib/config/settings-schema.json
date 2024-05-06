@@ -222,6 +222,19 @@
         }
       }
     },
+    "research": {
+      "description": "Settings related to data collection and other research use.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["collectUsageData"],
+      "properties": {
+        "collectUsageData": {
+          "description": "Whether to collect anonymous usage data unless the user opts out of data collection.",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
     "results": {
       "description": "Settings related to the results view.",
       "type": "object",

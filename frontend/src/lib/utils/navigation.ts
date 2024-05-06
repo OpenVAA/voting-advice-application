@@ -30,6 +30,7 @@ export enum Route {
   Intro = 'intro',
   Parties = 'parties',
   Party = 'parties',
+  Privacy = 'privacy',
   Question = 'questions',
   Questions = 'questions',
   ResultCandidate = 'results/candidate',
