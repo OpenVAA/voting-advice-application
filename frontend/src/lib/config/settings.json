@@ -51,6 +51,9 @@
       "name": "Español (Colombia)"
     }
   ],
+  "research": {
+    "collectUsageData": false
+  },
   "entityDetails": {
     "contents": {
       "candidate": ["info", "opinions"],
