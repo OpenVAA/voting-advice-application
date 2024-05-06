@@ -116,6 +116,7 @@ Instead, you have to use a wrapper. Note that this will also always result in th
   {title}
   invertLogo={hasVideo && screenWidth < Breakpoints.sm && !$darkMode}
   {...concatProps($$restProps, {
+    class: 'bg-base-100',
     mainClass: 'gap-y-lg',
     headerClass: hasVideo ? '!absolute w-full bg-transparent z-10' : undefined
   })}>
