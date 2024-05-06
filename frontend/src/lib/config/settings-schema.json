@@ -28,7 +28,7 @@
       "description": "Settings related to the version of the app and handling of saved user data.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["version", "requireUserDataVersion"],
+      "required": ["version", "requireUserDataVersion", "source"],
       "properties": {
         "version": {
           "description": "The current version of the app.",
@@ -39,6 +39,11 @@
           "description": "If the app version in which user data is last saved is smaller than this, the data will be reset.",
           "type": "integer",
           "default": 1
+        },
+        "source": {
+          "description": "The url of the source code for the app.",
+          "type": "string",
+          "default": "https://github.com/OpenVAA/voting-advice-application"
         }
       }
     },

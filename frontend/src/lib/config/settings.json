@@ -2,7 +2,8 @@
   "$schema": "./settings-schema.json",
   "appVersion": {
     "version": 1,
-    "requireUserDataVersion": 1
+    "requireUserDataVersion": 1,
+    "source": "https://github.com/OpenVAA/voting-advice-application"
   },
   "admin": {
     "email": "error@openvaa.org"

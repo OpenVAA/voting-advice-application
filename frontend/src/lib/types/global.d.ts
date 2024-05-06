@@ -83,6 +83,7 @@ declare global {
     appVersion: {
       version: number;
       requireUserDataVersion: number;
+      source: string;
     };
     colors: {
       light: {[name: string]: string};

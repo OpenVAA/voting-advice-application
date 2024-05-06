@@ -28,11 +28,24 @@
     text={$t('about.returnButton')} />
 
   {@html sanitizeHtml($t('about.content'))}
+
   {#if $settings.matching.partyMatching !== 'none'}
-    <h2 class="mb-md mt-lg">{$t('about.partyMatchingTitle')}</h2>
+    <h2 class="mb-md mt-xl">{$t('about.partyMatchingTitle')}</h2>
     {@html sanitizeHtml(
       $t('about.partyMatchingContent', {partyMatchingMethod: $settings.matching.partyMatching})
     )}
+  {/if}
+
+  {#if $settings.appVersion.source}
+    <h2 class="mb-md mt-lg">{$t('about.sourceTitle')}</h2>
+    <p>
+      {$t('about.sourceContent')}
+      <a
+        href={$settings.appVersion.source}
+        target="_blank"
+        class="small-label me-md inline-block rounded-[1rem] bg-base-300 px-md py-sm"
+        >{$t('about.sourceSitename')}</a>
+    </p>
   {/if}
 
   <svelte:fragment slot="primaryActions">
