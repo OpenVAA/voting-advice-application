@@ -2,7 +2,7 @@
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {election} from '$lib/utils/stores';
+  import {settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {HeroEmoji} from '$lib/components/heroEmoji';
@@ -27,13 +27,13 @@
     href={$getRoute(Route.Home)}
     text={$t('about.returnButton')} />
 
-  <div>
+  {@html sanitizeHtml($t('about.content'))}
+  {#if $settings.matching.partyMatching !== 'none'}
+    <h2 class="mb-md mt-lg">{$t('about.partyMatchingTitle')}</h2>
     {@html sanitizeHtml(
-      $t('about.content', {
-        electionDate: new Date($election?.electionDate ?? '')
-      })
+      $t('about.partyMatchingContent', {partyMatchingMethod: $settings.matching.partyMatching})
     )}
-  </div>
+  {/if}
 
   <svelte:fragment slot="primaryActions">
     <Button variant="main" href={$getRoute(Route.Home)} text={$t('about.returnButton')} />

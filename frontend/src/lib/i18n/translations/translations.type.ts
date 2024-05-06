@@ -21,6 +21,7 @@ export type TranslationsPayload = Partial<{
   numUnansweredQuestions: number;
   openVAA: string;
   partiesTerm: string;
+  partyMatchingMethod: AppSettingsGroupMatchingType;
   partyPlural: string;
   partySingular: string;
   publisher: string;
