@@ -16,6 +16,7 @@ const keys = [
   'intro',
   'maintenance',
   'navigation',
+  'privacy',
   'questions',
   'results',
   'viewTexts'
