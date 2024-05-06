@@ -27,6 +27,7 @@ export type TranslationsPayload = Partial<{
   publisher: string;
   score: string | number;
   seconds: number;
+  sourceUrl: string;
   timeLeft: number;
   username: string;
   [key: string]: unknown;
