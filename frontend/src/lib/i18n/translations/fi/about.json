@@ -4,5 +4,8 @@
   "partyMatchingContent": "{partyMatchingMethod, select, answersOnly {<p>Puolueiden tulokset on laskettu puolueiden antamien vastausten perusteella.</p>} mean {<p>Puolueiden tulokset on laskettu niiden antamien vastausten perusteella tai, jos jokin puolue ei ole vastannut kysymyksiin, sen ehdokkaiden vastausten keskiarvosta.</p>} median {<p>Puolueiden tulokset on laskettu niiden antamien vastausten perusteella tai, jos jokin puolue ei ole vastannut kysymyksiin, sen ehdokkaiden vastausten  mediaanista.</p>} other {<p>Puolueiden tulokset on laskettu niiden antamien vastausten perusteella tai, jos jokin puolue ei ole vastannut kysymyksiin, sen ehdokkaiden vastausten perusteella.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Huomaa, että puolueen ehdokkaat saattavat olla puolueensa kanssa eri mieltä kysymyksistä, joten näin laskettu kanta ei välttämättä vastaa puolueen kantaa.</p>}}",
   "heroEmoji": "⚙️",
   "returnButton": "Palaa etusivulle",
+  "sourceTitle": "Lähdekoodi",
+  "sourceContent": "Vaalikoneen lähdekoodi on saatavilla",
+  "sourceSitename": "GitHubissa",
   "title": "Kuinka vaalikone toimii?"
 }
