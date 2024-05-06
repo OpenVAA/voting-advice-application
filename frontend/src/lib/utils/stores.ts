@@ -81,7 +81,9 @@ function createStoreValueAndSubscribeToLocalStorage<T = JSONData>(
   return storeValue;
 }
 
-// Create the actual Svelte store values
+/**
+ * A store for the voter's answers which is maintained in local storage.
+ */
 export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage(
   'answeredQuestions',
   {} as AnswerDict
@@ -112,14 +114,30 @@ export function deleteVoterAnswer(questionId: string) {
 }
 
 /**
- * Reset the local storage values
+ * Reset the locally stored voter answers
  */
-export function resetLocalStorage(): void {
+export function resetVoterAnswers(): void {
   if (browser && localStorage) {
     localStorage.removeItem('answeredQuestions');
     answeredQuestions.set({});
     logDebugError('Local storage has been reset');
   }
+}
+
+/**
+ * A store for the voter's usage preferences which is maintained in local storage.
+ */
+export const userPreferences = createStoreValueAndSubscribeToLocalStorage(
+  'userPreferences',
+  {} as UserPreferences
+);
+
+/**
+ * Set the user's data consent together with the date of giving or denying the consent.
+ * @param consent The value for the consent
+ */
+export function setDataConsent(consent: boolean) {
+  userPreferences.update((d) => ({...d, dataCollection: {consent, date: new Date()}}));
 }
 
 /**
