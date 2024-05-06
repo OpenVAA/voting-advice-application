@@ -193,8 +193,8 @@
           "default": 1
         },
         "partyMatching": {
-          "description": "The method with which parties are matched. • None: no party matching is done • Answers-only: matching is only performed on the parties explicit answers • Mean/Median: missing party answers are replaced with the mean, median or mode of the party's candidates' answers. Nb. Mode is not yet implemented because of difficulty of handling multiple modes when the counts are tied.",
-          "enum": ["none", "answers-only", "mean", "median"],
+          "description": "The method with which parties are matched. • None: no party matching is done • answersOnly: matching is only performed on the parties explicit answers • Mean/Median: missing party answers are replaced with the mean, median or mode of the party's candidates' answers. Nb. Mode is not yet implemented because of difficulty of handling multiple modes when the counts are tied.",
+          "enum": ["none", "answersOnly", "mean", "median"],
           "default": "median"
         }
       }

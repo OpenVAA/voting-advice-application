@@ -151,7 +151,7 @@ declare global {
   /**
    * The method for performing group, i.e. party, maching in `AppSettings`.
    */
-  type AppSettingsGroupMatchingType = 'none' | 'answers-only' | 'mean' | 'median';
+  type AppSettingsGroupMatchingType = 'none' | 'answersOnly' | 'mean' | 'median';
 
   /**
    * The persistent preferences that can be set by the user.
