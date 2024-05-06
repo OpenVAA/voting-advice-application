@@ -64,7 +64,7 @@
   let video: HTMLVideoElement | undefined;
   let currentTime = 0;
   let duration: number;
-  let paused: boolean;
+  let boundPaused: boolean;
   let muted = true;
 
   /**
@@ -72,6 +72,13 @@
    */
   export let atEnd = false;
   $: atEnd = isAtEnd(currentTime);
+
+  /**
+   * We need a custom `playing` property because the bound one from the video element does not always work.
+   * For more criteria, see https://stackoverflow.com/questions/6877403/how-to-tell-if-a-video-element-is-currently-playing
+   */
+  let playing: boolean;
+  $: playing = currentTime > 0 && !boundPaused;
 
   /**
    * The current loading status of the video. The `error-pending` status is used when an error has occurred but we're still waiting for it to be resolved.
@@ -100,7 +107,7 @@
    * The current action of the combined play/pause/replay button.
    */
   let playButtonAction: PlayButtonAction = 'play';
-  $: playButtonAction = !paused ? 'pause' : atEnd ? 'replay' : 'play';
+  $: playButtonAction = playing ? 'pause' : atEnd ? 'replay' : 'play';
 
   /**
    * Used to highlight the jump buttons when the corresponding invisible screen area is pressed
@@ -140,7 +147,7 @@
    * @param steps Passed to `jump`
    */
   function screenJump(steps: number) {
-    if (paused || steps === 0) {
+    if (!playing || steps === 0) {
       togglePlay();
       togglePlayPressed = true;
       setTimeout(() => (togglePlayPressed = false), 125);
@@ -233,7 +240,7 @@
     // On Safari, there's a strange bug if the timepoint is passed is not precise enough, which sometimes causes the player to freeze. Therefore, we add a tiny fraction to the value.
     // We also need to deduct a small margin from duration, bc otherwise the video will start again
     video.currentTime = Math.max(0, Math.min(timepoint, duration - END_EPS)) + 1e-10;
-    if (paused) setPaused(false);
+    if (!playing) setPaused(false);
   }
 
   /**
@@ -464,7 +471,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
       bind:currentTime
       bind:duration
       bind:muted
-      bind:paused
+      bind:paused={boundPaused}
       on:canplay={() => (status = 'normal')}
       on:playing={() => (status = 'normal')}
       on:waiting={() => (status = 'waiting')}
