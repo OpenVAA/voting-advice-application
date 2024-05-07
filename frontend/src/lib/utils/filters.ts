@@ -11,7 +11,9 @@ import {
   FilterGroup,
   ObjectFilter,
   ChoiceQuestionFilter,
-  type ChoiceQuestion
+  type ChoiceQuestion,
+  NumericQuestionFilter,
+  type NumericQuestion
 } from '$voter/vaa-filters';
 import {logDebugError} from './logger';
 
@@ -66,6 +68,14 @@ export function buildCandidateFilters(infoQuestions: QuestionProps[], parties: P
             },
             locale.get()
           )
+        );
+        break;
+      case 'number':
+        filters.push(
+          new NumericQuestionFilter<MaybeRanked<CandidateProps>>({
+            question: q as NumericQuestion,
+            name: q.text
+          })
         );
         break;
       default:
