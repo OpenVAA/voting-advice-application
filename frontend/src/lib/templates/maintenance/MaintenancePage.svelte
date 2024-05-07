@@ -3,6 +3,7 @@
   import {t} from '$lib/i18n';
   import {track} from '$lib/utils/analytics/track';
   import {sanitizeHtml} from '$lib/utils/sanitize';
+  import {Button} from '$lib/components/button';
   import {HeroEmoji} from '$lib/components/heroEmoji';
 
   onMount(() => track('maintenance_shown'));
@@ -39,5 +40,6 @@ The template for showing an under maintenance page.
   <!-- Main content -->
   <div class="flex w-full max-w-xl flex-col items-center text-center">
     {@html sanitizeHtml($t('maintenance.content'))}
+    <Button href={$t('maintenance.alternativeVaaUrl')} text={$t('maintenance.alternativeVaa')} />
   </div>
 </main>

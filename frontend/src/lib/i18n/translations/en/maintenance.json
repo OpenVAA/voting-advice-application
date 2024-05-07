@@ -1,5 +1,7 @@
 {
-  "content": "<p>We're very sorry, the Election Compass is currently unavailable due to maintenance. It should be back in use shortly, so please try again later.</p><p>Don’t worry if you were just in the middle of answering. You can continue from where you left off, when you come back.</p>",
+  "alternativeVaa": "Text version of the Election Compass",
+  "alternativeVaaUrl": "https://nuorisoala.fi/nuorten-vaalikone-2024/#/?lng=en",
+  "content": "<p>We're very sorry, the Election Compass is currently unavailable due to maintenance. It should be back in use shortly, so please try again later.</p><p>Don’t worry if you were just in the middle of answering. You can continue from where you left off, when you come back.</p><p>If you prefer, you can use the text version of the Election Compass in the meantime:</p>",
   "heroEmoji": "🛠️",
   "title": "Under Maintenance"
 }
