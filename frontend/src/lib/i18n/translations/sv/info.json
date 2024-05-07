@@ -1,0 +1,6 @@
+{
+  "content": "Valets <b>datum</b> är {electionDate, date, ::yyyyMMdd}.",
+  "heroEmoji": "🗳️",
+  "returnButton": "Återvänd hem",
+  "title": "Information om"
+}

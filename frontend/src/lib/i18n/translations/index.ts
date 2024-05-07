@@ -22,7 +22,7 @@ const keys = [
   'results',
   'viewTexts'
 ];
-const locales = {en: 'English', fi: 'Suomi'};
+const locales = {en: 'English', fi: 'Suomi', sv: 'Svenska'};
 
 /**
  * Add any payload key / translation key pairs that should be included in the default translations payloads here. They will be available to all translations by default. In addition to these, some values are added from settings. See `init.ts` for more details.
