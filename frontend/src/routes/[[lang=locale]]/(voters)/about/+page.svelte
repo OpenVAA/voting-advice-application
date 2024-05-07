@@ -2,14 +2,11 @@
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {settings} from '$lib/utils/stores';
+  import {openFeedbackModal, settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {HeroEmoji} from '$lib/components/heroEmoji';
   import {BasicPage} from '$lib/templates/basicPage';
-  import {FeedbackModal} from '$lib/components/feedbackModal';
-
-  let openFeedback: () => void;
 </script>
 
 <BasicPage title={$t('about.title')}>
@@ -39,11 +36,13 @@
     )}
   {/if}
 
-  <h2 class="mb-md mt-lg">{$t('about.feedbackTitle')}</h2>
-  <p>
-    {$t('about.feedbackContent')}
-  </p>
-  <Button on:click={openFeedback} text={$t('navigation.sendFeedback')} />
+  {#if $openFeedbackModal}
+    <h2 class="mb-md mt-lg">{$t('about.feedbackTitle')}</h2>
+    <p>
+      {$t('about.feedbackContent')}
+    </p>
+    <Button on:click={$openFeedbackModal} text={$t('navigation.sendFeedback')} />
+  {/if}
 
   {#if $settings.appVersion.source}
     <h2 class="mb-md mt-lg">{$t('about.sourceTitle')}</h2>
@@ -61,5 +60,3 @@
     <Button variant="main" href={$getRoute(Route.Home)} text={$t('about.returnButton')} />
   </svelte:fragment>
 </BasicPage>
-
-<FeedbackModal bind:openFeedback />
