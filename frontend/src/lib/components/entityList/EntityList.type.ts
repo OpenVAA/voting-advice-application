@@ -7,7 +7,7 @@ export type EntityListProps = SvelteHTMLElements['div'] & {
    */
   cards: EntityCardProps[];
   /**
-   * The number of entities to display on each page of the list. @default 20
+   * The number of entities to display on each page of the list. @default 50
    */
   itemsPerPage?: number;
   /**

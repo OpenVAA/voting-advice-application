@@ -9,7 +9,7 @@
   type $$Props = EntityListProps;
 
   export let cards: $$Props['cards'];
-  export let itemsPerPage: NonNullable<$$Props['itemsPerPage']> = 20;
+  export let itemsPerPage: NonNullable<$$Props['itemsPerPage']> = 50;
   export let itemsTolerance: NonNullable<$$Props['itemsTolerance']> = 0.2;
   export let itemsShown: $$Props['itemsShown'] = 0;
 
@@ -81,7 +81,7 @@ Show a list of entities with pagination and defined actions.
 ### Properties
 
 - `cards`: The properties for the `EntityCard`s to show.
-- `itemsPerPage`: The number of entities to display on each page of the list. @default `30`
+- `itemsPerPage`: The number of entities to display on each page of the list. @default `50`
 - `itemsTolerance`: The fraction of `itemsPerPage` that can be exceeded on the last page to prevent showing a short last page. @default `0.2`
 - Any valid attributes of a `<div>` element.
 
