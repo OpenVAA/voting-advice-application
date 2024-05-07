@@ -6,6 +6,7 @@
   import {
     allQuestions,
     candidateRankings,
+    openFeedbackModal,
     partyRankings,
     resultsAvailable,
     settings
@@ -99,6 +100,13 @@
   </svelte:fragment>
 
   <svelte:fragment slot="banner">
+    {#if $settings.header.showFeedback && $openFeedbackModal}
+      <Button
+        on:click={$openFeedbackModal}
+        variant="icon"
+        icon="feedback"
+        text={$t('navigation.sendFeedback')} />
+    {/if}
     {#if $settings.header.showHelp}
       <Button
         href={$getRoute(Route.Help)}

@@ -4,7 +4,7 @@
   import {t} from '$lib/i18n';
   import {logDebugError} from '$lib/utils/logger';
   import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
-  import {settings} from '$lib/utils/stores';
+  import {openFeedbackModal, settings} from '$lib/utils/stores';
   import {
     answeredQuestions,
     deleteVoterAnswer,
@@ -143,6 +143,13 @@
     progressMax={questions.length + 1}
     progress={questionIndex + 1}>
     <svelte:fragment slot="banner">
+      {#if $settings.header.showFeedback && $openFeedbackModal}
+        <Button
+          on:click={$openFeedbackModal}
+          variant="icon"
+          icon="feedback"
+          text={$t('navigation.sendFeedback')} />
+      {/if}
       {#if $settings.questions.showResultsLink}
         <Button
           href={$getRoute(Route.Results)}

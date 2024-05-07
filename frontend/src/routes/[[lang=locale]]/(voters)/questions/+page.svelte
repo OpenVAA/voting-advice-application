@@ -2,7 +2,7 @@
   import {page} from '$app/stores';
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {settings} from '$lib/utils/stores';
+  import {openFeedbackModal, settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {HeroEmoji} from '$lib/components/heroEmoji';
   import {Icon} from '$lib/components/icon';
@@ -25,6 +25,13 @@
   </svelte:fragment>
 
   <svelte:fragment slot="banner">
+    {#if $settings.header.showFeedback && $openFeedbackModal}
+      <Button
+        on:click={$openFeedbackModal}
+        variant="icon"
+        icon="feedback"
+        text={$t('navigation.sendFeedback')} />
+    {/if}
     {#if $settings.header.showHelp}
       <Button
         href={$getRoute(Route.Help)}

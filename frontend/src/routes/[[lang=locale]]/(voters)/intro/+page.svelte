@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {settings} from '$lib/utils/stores';
+  import {openFeedbackModal, settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {HeroEmoji} from '$lib/components/heroEmoji';
@@ -19,6 +19,13 @@
   </HeadingGroup>
 
   <svelte:fragment slot="banner">
+    {#if $settings.header.showFeedback && $openFeedbackModal}
+      <Button
+        on:click={$openFeedbackModal}
+        variant="icon"
+        icon="feedback"
+        text={$t('navigation.sendFeedback')} />
+    {/if}
     {#if $settings.header.showHelp}
       <Button
         href={$getRoute(Route.Help)}

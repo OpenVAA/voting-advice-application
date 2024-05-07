@@ -3,7 +3,7 @@
   import {afterNavigate, goto} from '$app/navigation';
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {candidateRankings, partyRankings, settings} from '$lib/utils/stores';
+  import {candidateRankings, openFeedbackModal, partyRankings, settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {EntityDetails} from '$lib/components/entityDetails';
   import {Loading} from '$lib/components/loading';
@@ -61,13 +61,21 @@
 </script>
 
 <SingleCardPage {title}>
-  <Button
-    slot="banner"
-    class="!text-neutral"
-    variant="icon"
-    icon="close"
-    on:click={() => (externalReferrer ? goto($getRoute(Route.Results)) : history.back())}
-    text={$t('header.back')} />
+  <svelte:fragment slot="banner">
+    {#if $settings.header.showFeedback && $openFeedbackModal}
+      <Button
+        on:click={$openFeedbackModal}
+        variant="icon"
+        icon="feedback"
+        text={$t('navigation.sendFeedback')} />
+    {/if}
+    <Button
+      class="!text-neutral"
+      variant="icon"
+      icon="close"
+      on:click={() => (externalReferrer ? goto($getRoute(Route.Results)) : history.back())}
+      text={$t('header.back')} />
+  </svelte:fragment>
   {#await Promise.all([entity, candidatesOrUndef])}
     <Loading showLabel />
   {:then [content, subentities]}
