@@ -971,6 +971,39 @@ export interface ApiElectionAppLabelElectionAppLabel extends Schema.CollectionTy
   };
 }
 
+export interface ApiFeedbackFeedback extends Schema.CollectionType {
+  collectionName: 'feedbacks';
+  info: {
+    singularName: 'feedback';
+    pluralName: 'feedbacks';
+    displayName: 'Feedback';
+    description: '';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    rating: Attribute.Integer &
+      Attribute.SetMinMax<
+        {
+          min: 1;
+          max: 5;
+        },
+        number
+      >;
+    description: Attribute.Text;
+    userAgent: Attribute.Text;
+    date: Attribute.DateTime;
+    url: Attribute.Text;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::feedback.feedback', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::feedback.feedback', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
 export interface ApiGenderGender extends Schema.CollectionType {
   collectionName: 'genders';
   info: {
@@ -1234,6 +1267,7 @@ declare module '@strapi/types' {
       'api::constituency.constituency': ApiConstituencyConstituency;
       'api::election.election': ApiElectionElection;
       'api::election-app-label.election-app-label': ApiElectionAppLabelElectionAppLabel;
+      'api::feedback.feedback': ApiFeedbackFeedback;
       'api::gender.gender': ApiGenderGender;
       'api::language.language': ApiLanguageLanguage;
       'api::nomination.nomination': ApiNominationNomination;

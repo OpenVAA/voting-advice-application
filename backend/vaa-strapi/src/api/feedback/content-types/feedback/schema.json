@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "feedbacks",
+  "info": {
+    "singularName": "feedback",
+    "pluralName": "feedbacks",
+    "displayName": "Feedback",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "rating": {
+      "type": "integer",
+      "max": 5,
+      "min": 1
+    },
+    "description": {
+      "type": "text"
+    },
+    "userAgent": {
+      "type": "text"
+    },
+    "date": {
+      "type": "datetime"
+    },
+    "url": {
+      "type": "text"
+    }
+  }
+}
