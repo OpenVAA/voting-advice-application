@@ -421,3 +421,17 @@ export interface StrapiImageFormatData {
   url: string;
   width?: number;
 }
+
+/**
+ * Non-exhaustive specification of the data returned by the Strapi endpoint `feedback`.
+ */
+export interface StrapiFeedbackData {
+  id: number | string;
+  attributes: {
+    date?: Date;
+    description?: string;
+    rating?: number;
+    url?: string;
+    userAgent?: string;
+  };
+}
