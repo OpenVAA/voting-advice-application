@@ -3,7 +3,7 @@
   "candidatesTotal": "({numTotal})",
   "heroEmoji": "🎊",
   "ingress": {
-    "browse": "Alla ovat näiden vaalien {candidatePlural} ja {partyPlural}. Voit käyttää suodattimia tulosten karsimiseen.",
+    "browse": "Alla ovat näiden vaalien {candidatePlural} ja {partyPlural} järjestettynä vaalinumeron tai nimen mukaan. Voit käyttää suodattimia tulosten karsimiseen.",
     "results": "Alla ovat näiden vaalien {candidatePlural} ja {partyPlural}. Eniten samaa mieltä kanssasi olevat ovat ensimmäisenä listalla. Voit lisäksi käyttää suodattimia tulosten karsimiseen."
   },
   "partiesShown": "{numShown, plural, =1 {1 puolue} other {# puoluetta}}",

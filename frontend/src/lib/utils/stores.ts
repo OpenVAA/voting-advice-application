@@ -6,6 +6,7 @@ import localSettings from '$lib/config/settings.json';
 import {logDebugError} from '$lib/utils/logger';
 import {wrap} from '$lib/utils/entities';
 import {match, matchParties} from '$lib/utils/matching';
+import {sortCandidates, sortParties} from './sort';
 
 /**
  * Contains the currently effective app settings.
@@ -153,7 +154,7 @@ export const election: Readable<ElectionProps | undefined> = derived(
  */
 export const candidates: Readable<Promise<CandidateProps[]>> = derived(
   page,
-  ($page) => $page.data.candidates ?? Promise.resolve([]),
+  ($page) => $page.data.candidates?.then((d) => d.sort(sortCandidates)) ?? Promise.resolve([]),
   Promise.resolve([])
 );
 
@@ -162,7 +163,7 @@ export const candidates: Readable<Promise<CandidateProps[]>> = derived(
  */
 export const parties: Readable<Promise<PartyProps[]>> = derived(
   page,
-  ($page) => $page.data.parties ?? Promise.resolve([]),
+  ($page) => $page.data.parties?.then((d) => d.sort(sortParties)) ?? Promise.resolve([]),
   Promise.resolve([])
 );
 
