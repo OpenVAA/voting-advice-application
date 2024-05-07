@@ -29,7 +29,7 @@
     // 1. Base classes
     classes =
       'btn relative flex flex-nowrap min-h-touch min-w-touch h-auto flex items-center gap-y-6 gap-x-4';
-    labelClass = 'first-letter:uppercase';
+    labelClass = 'vaa-button-label first-letter:uppercase';
 
     // 2. Variant-defined classes
     switch (variant) {
@@ -156,3 +156,10 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
     </div>
   {/if}
 </svelte:element>
+
+<style lang="postcss">
+  [disabled] .vaa-button-label,
+  .disabled .vaa-button-label {
+    @apply text-neutral text-opacity-20;
+  }
+</style>
