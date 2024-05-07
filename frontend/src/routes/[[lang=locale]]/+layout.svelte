@@ -1,6 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {settings} from '$lib/utils/stores';
+  import {openFeedbackModal, settings} from '$lib/utils/stores';
+  import {FeedbackModal} from '$lib/components/feedbackModal';
   import {Loading} from '$lib/components/loading';
   import {MaintenancePage} from '$lib/templates/maintenance';
   import '../../app.css';
@@ -35,8 +36,11 @@
 
 {#if underMaintenance}
   <MaintenancePage />
-{:else if data.election}
-  <slot />
 {:else}
-  <Loading showLabel />
+  {#if data.election}
+    <slot />
+  {:else}
+    <Loading showLabel />
+  {/if}
+  <FeedbackModal bind:openFeedback={$openFeedbackModal} />
 {/if}

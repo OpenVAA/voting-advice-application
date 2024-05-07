@@ -1,12 +1,14 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {answeredQuestions, resetVoterAnswers, resultsAvailable} from '$lib/utils/stores';
+  import {
+    answeredQuestions,
+    openFeedbackModal,
+    resetVoterAnswers,
+    resultsAvailable
+  } from '$lib/utils/stores';
   import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
   import LanguageSelection from './LanguageSelection.svelte';
-  import {FeedbackModal} from '$lib/components/feedbackModal';
-
-  let openFeedback: () => void;
 </script>
 
 <!--
@@ -52,9 +54,9 @@ A template part that outputs the navigation menu for the Voter App for use in th
     <NavItem href={$getRoute(Route.Info)} icon="info" text={$t('actionLabels.electionInfo')} />
     <NavItem href={$getRoute(Route.About)} icon="info" text={$t('actionLabels.howItWorks')} />
     <NavItem href={$getRoute(Route.Privacy)} icon="info" text={$t('privacy.title')} />
-    <NavItem on:click={openFeedback} icon="feedback" text={$t('navigation.sendFeedback')} />
+    {#if $openFeedbackModal}
+      <NavItem on:click={$openFeedbackModal} icon="feedback" text={$t('navigation.sendFeedback')} />
+    {/if}
   </NavGroup>
   <LanguageSelection />
 </Navigation>
-
-<FeedbackModal bind:openFeedback />
