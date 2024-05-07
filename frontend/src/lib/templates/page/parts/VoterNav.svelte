@@ -4,6 +4,9 @@
   import {answeredQuestions, resetVoterAnswers, resultsAvailable} from '$lib/utils/stores';
   import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
   import LanguageSelection from './LanguageSelection.svelte';
+  import {FeedbackModal} from '$lib/components/feedbackModal';
+
+  let openFeedback: () => void;
 </script>
 
 <!--
@@ -25,7 +28,7 @@ A template part that outputs the navigation menu for the Voter App for use in th
 
 ```tsx
 <VoterNav>
-  <NavItem slot="close" on:click={closeMenu} icon="close" text="Close"/>
+  <NavItem href={$getRoute(Route.Home)} icon="home" text={$t('actionLabels.home')} />
 </VoterNav>
 ```
 -->
@@ -49,6 +52,9 @@ A template part that outputs the navigation menu for the Voter App for use in th
     <NavItem href={$getRoute(Route.Info)} icon="info" text={$t('actionLabels.electionInfo')} />
     <NavItem href={$getRoute(Route.About)} icon="info" text={$t('actionLabels.howItWorks')} />
     <NavItem href={$getRoute(Route.Privacy)} icon="info" text={$t('privacy.title')} />
+    <NavItem on:click={openFeedback} icon="feedback" text={$t('navigation.sendFeedback')} />
   </NavGroup>
   <LanguageSelection />
 </Navigation>
+
+<FeedbackModal bind:openFeedback />
