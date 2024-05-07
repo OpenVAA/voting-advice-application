@@ -1,7 +1,7 @@
 {
   "content": "<p>The Election Compass works by comparing the opinions you enter to those given by {candidatePlural} and {partyPlural}. The results are given a match score, which is the percentage of how closely you agree with them.</p>\n<ul>\n<li>A score of 100 means that you agree completely on all the questions you have answered.</li>\n<li>A score of 0 means that you disagree on all of the questions.</li>\n<li>A score between these two extremes means you agree on some questions and disagree on others.</li>\n</ul>",
   "feedbackTitle": "Feedback",
-  "feedbackContent": "You can send feedback about the Election Compass by email",
+  "feedbackContent": "You can send feedback about the Election Compass by using the feedback form.",
   "heroEmoji": "⚙️",
   "partyMatchingTitle": "Party Matching",
   "partyMatchingContent": "{partyMatchingMethod, select, answersOnly {<p>The party scores are calculated based on the answers given by the parties.</p>} mean {<p>The party scores are calculated based on the answers given by them or – if these are missing – from the average of their candidates’ answers.</p>} median {<p>The party scores are calculated based on the answers given by them or – if these are missing – from the median of their candidates’ answers.</p>} other {<p>The party scores are calculated based on the answers given by them or – if these are missing – from their candidates’ answers.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Note that candidates may disagree on some questions with their party, and the estimated party answers may therefore differ from the parties’ official stances.</p>}}",
