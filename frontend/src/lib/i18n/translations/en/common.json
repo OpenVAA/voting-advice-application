@@ -1,6 +1,7 @@
 {
   "answerNo": "No",
   "answerYes": "Yes",
+  "cancel": "Cancel",
   "candidate": {
     "singular": "candidate",
     "plural": "candidates"

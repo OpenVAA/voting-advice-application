@@ -1,0 +1,10 @@
+{
+  "title": "Palaute",
+  "sendButton": "Lähetä palaute",
+  "sendButtonThanks": "Kiitos palautteestasi!",
+  "emailIntro": "Voit halutessasi myös lähettää meille sähköpostia osoitteeseen",
+  "descriptionPlaceholder": "Kirjoita muut kommenttisi tai ehdotuksesi tähän",
+  "descriptionLabel": "Muut kommentit",
+  "ratingValueLabel": "{rating, plural, =0 {Ei arviota} other {Arvio # maksimista {ratingMax}}}",
+  "ratingLabel": "Yleisarvio vaalikoneesta"
+}
