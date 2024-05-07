@@ -104,6 +104,7 @@ declare global {
       showMissingAnswers: Record<Exclude<EntityType, 'all'>, boolean>;
     };
     header: {
+      showFeedback: boolean;
       showHelp: boolean;
     };
     underMaintenance?: boolean;

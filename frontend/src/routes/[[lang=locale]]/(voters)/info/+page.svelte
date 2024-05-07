@@ -2,7 +2,7 @@
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {election} from '$lib/utils/stores';
+  import {election, openFeedbackModal, settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {HeroEmoji} from '$lib/components/heroEmoji';
@@ -19,13 +19,22 @@
     <h1>{$t('info.title')}</h1>
   </HeadingGroup>
 
-  <Button
-    slot="banner"
-    class="!text-neutral"
-    variant="icon"
-    icon="close"
-    href={$getRoute(Route.Home)}
-    text={$t('info.returnButton')} />
+  <svelte:fragment slot="banner">
+    {#if $settings.header.showFeedback && $openFeedbackModal}
+      <Button
+        on:click={$openFeedbackModal}
+        variant="icon"
+        icon="feedback"
+        text={$t('navigation.sendFeedback')} />
+    {/if}
+    <Button
+      slot="banner"
+      class="!text-neutral"
+      variant="icon"
+      icon="close"
+      href={$getRoute(Route.Home)}
+      text={$t('info.returnButton')} />
+  </svelte:fragment>
 
   <div>
     {@html sanitizeHtml(
