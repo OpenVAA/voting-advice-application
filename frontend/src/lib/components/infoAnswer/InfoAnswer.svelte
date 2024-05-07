@@ -78,9 +78,17 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
     {question.text}
   </a>
 {:else if typeof answer === 'string'}
-  <span class:vaa-tag={asTag} {...$$restProps}>
-    {ucFirst(answer)}
-  </span>
+  {#if asTag}
+    <div {...concatClass($$restProps, '-mb-md')}>
+      {#each answer.split(/ *\| */).filter((s) => s !== '') as item}
+        <span class="vaa-tag">{ucFirst(item)}</span>
+      {/each}
+    </div>
+  {:else}
+    <span {...$$restProps}>
+      {ucFirst(answer)}
+    </span>
+  {/if}
 {:else}
   {logDebugError(
     `InfoAnswer: Error displaying answer for question ${question.id}: ${answer} (${typeof answer})`
@@ -91,6 +99,6 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
 <style lang="postcss">
   .vaa-tag {
     /* last: is valid prefix */
-    @apply small-label me-md inline-block rounded-[1rem] bg-base-300 px-md py-sm last:me-0;
+    @apply small-label mb-md me-md inline-block rounded-[1rem] bg-base-300 px-md py-sm last:me-0;
   }
 </style>
