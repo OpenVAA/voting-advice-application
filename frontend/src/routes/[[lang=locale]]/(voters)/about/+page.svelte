@@ -7,6 +7,9 @@
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {HeroEmoji} from '$lib/components/heroEmoji';
   import {BasicPage} from '$lib/templates/basicPage';
+  import {FeedbackModal} from '$lib/components/feedbackModal';
+
+  let openFeedback: () => void;
 </script>
 
 <BasicPage title={$t('about.title')}>
@@ -36,16 +39,11 @@
     )}
   {/if}
 
-  {#if $settings.admin?.email}
-    <h2 class="mb-md mt-lg">{$t('about.feedbackTitle')}</h2>
-    <p>
-      {$t('about.feedbackContent')}
-      <a
-        href="mailto:{$settings.admin.email}"
-        class="small-label me-md inline-block rounded-[1rem] bg-base-300 px-md py-sm"
-        >{$settings.admin.email}</a>
-    </p>
-  {/if}
+  <h2 class="mb-md mt-lg">{$t('about.feedbackTitle')}</h2>
+  <p>
+    {$t('about.feedbackContent')}
+  </p>
+  <Button on:click={openFeedback} text={$t('navigation.sendFeedback')} />
 
   {#if $settings.appVersion.source}
     <h2 class="mb-md mt-lg">{$t('about.sourceTitle')}</h2>
@@ -63,3 +61,5 @@
     <Button variant="main" href={$getRoute(Route.Home)} text={$t('about.returnButton')} />
   </svelte:fragment>
 </BasicPage>
+
+<FeedbackModal bind:openFeedback />
