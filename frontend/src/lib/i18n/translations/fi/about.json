@@ -1,7 +1,7 @@
 {
   "content": "<p>Vaalikone vertaa sinun mielipiteitäsi niihin, jotka {candidatePlural} ja {partyPlural} ovat ilmoittaneet samoihin kysymyksiin. Vastaamisen jälkeen näille lasketaan sopivuustulos, joka osoittaa, kuinka paljon olette samaa mieltä.</p>\n<ul>\n<li>Tulos 100 tarkoittaa, että olette täysin samaa mieltä kysymyksistä, joihin olet vastannut.</li>\n<li>Tulos 0 tarkoittaa, että olette täysin eri mieltä kaikista kysymyksistä, joihin olet vastannut.</li>\n<li>Tulokset näiden välillä tarkoittavat, että olette joistakin kysymyksistä samaa, joistakin eri mieltä.</li>\n</ul>",
   "feedbackTitle": "Palaute",
-  "feedbackContent": "Voit lähettää palautetta vaalikoneesta sähköpostitse",
+  "feedbackContent": "Voit lähettää palautetta vaalikoneesta palautelomakkeen avulla.",
   "partyMatchingTitle": "Puolueiden tulokset",
   "partyMatchingContent": "{partyMatchingMethod, select, answersOnly {<p>Puolueiden tulokset on laskettu puolueiden antamien vastausten perusteella.</p>} mean {<p>Puolueiden tulokset on laskettu niiden antamien vastausten perusteella tai, jos jokin puolue ei ole vastannut kysymyksiin, sen ehdokkaiden vastausten keskiarvosta.</p>} median {<p>Puolueiden tulokset on laskettu niiden antamien vastausten perusteella tai, jos jokin puolue ei ole vastannut kysymyksiin, sen ehdokkaiden vastausten  mediaanista.</p>} other {<p>Puolueiden tulokset on laskettu niiden antamien vastausten perusteella tai, jos jokin puolue ei ole vastannut kysymyksiin, sen ehdokkaiden vastausten perusteella.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Huomaa, että puolueen ehdokkaat saattavat olla puolueensa kanssa eri mieltä kysymyksistä, joten näin laskettu kanta ei välttämättä vastaa puolueen kantaa.</p>}}",
   "heroEmoji": "⚙️",
