@@ -53,11 +53,11 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
   {/if}
 {:else if question.type === 'multipleChoiceCategorical' && Array.isArray(answer)}
   {#if asTag}
-    {#each answer as item}
-      <div {...$$restProps}>
+    <div {...$$restProps}>
+      {#each answer as item}
         <span class="vaa-tag">{item}</span>
-      </div>
-    {/each}
+      {/each}
+    </div>
   {:else}
     <span {...$$restProps}>
       {answer.join($t('common.multipleAnswerSeparator'))}
