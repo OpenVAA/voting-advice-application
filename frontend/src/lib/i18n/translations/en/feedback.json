@@ -1,0 +1,10 @@
+{
+  "title": "Feedback",
+  "sendButton": "Send Feedback",
+  "sendButtonThanks": "Thanks for Your Feedback!",
+  "emailIntro": "If you wish, you can also reach us by email at",
+  "descriptionPlaceholder": "Write your comments or suggestions here",
+  "descriptionLabel": "Further comments",
+  "ratingValueLabel": "{rating, plural, =0 {No rating} other {Rating # out of {ratingMax}}}",
+  "ratingLabel": "Overall rating for the app"
+}

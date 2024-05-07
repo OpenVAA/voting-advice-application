@@ -11,6 +11,7 @@ const keys = [
   'common',
   'components',
   'error',
+  'feedback',
   'header',
   'info',
   'intro',
