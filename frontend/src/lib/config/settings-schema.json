@@ -177,8 +177,13 @@
       "description": "Settings related to the app header.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["showHelp"],
+      "required": ["showFeedback", "showHelp"],
       "properties": {
+        "showFeedback": {
+          "description": "Whether to show the feedback icon by default in the header.",
+          "type": "boolean",
+          "default": true
+        },
         "showHelp": {
           "description": "Whether to show the help icon by default in the header.",
           "type": "boolean",

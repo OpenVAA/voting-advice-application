@@ -19,13 +19,22 @@
     <h1>{$t('about.title')}</h1>
   </HeadingGroup>
 
-  <Button
-    slot="banner"
-    class="!text-neutral"
-    variant="icon"
-    icon="close"
-    href={$getRoute(Route.Home)}
-    text={$t('about.returnButton')} />
+  <svelte:fragment slot="banner">
+    {#if $settings.header.showFeedback && $openFeedbackModal}
+      <Button
+        on:click={$openFeedbackModal}
+        variant="icon"
+        icon="feedback"
+        text={$t('navigation.sendFeedback')} />
+    {/if}
+    <Button
+      slot="banner"
+      class="!text-neutral"
+      variant="icon"
+      icon="close"
+      href={$getRoute(Route.Home)}
+      text={$t('about.returnButton')} />
+  </svelte:fragment>
 
   {@html sanitizeHtml($t('about.content'))}
 

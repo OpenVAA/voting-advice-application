@@ -70,6 +70,7 @@
     }
   },
   "header": {
+    "showFeedback": true,
     "showHelp": true
   },
   "matching": {
