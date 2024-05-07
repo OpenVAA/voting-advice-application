@@ -1,0 +1,24 @@
+{
+  "answerNo": "Nej",
+  "answerYes": "Ja",
+  "candidate": {
+    "singular": "kandidat",
+    "plural": "kandidater"
+  },
+  "clearInput": "Klart",
+  "close": "Stäng",
+  "electionSymbol": {
+    "candidate": "Valnummer",
+    "party": "Valsymbol"
+  },
+  "info": "Information",
+  "loading": "Laddar…",
+  "missingAnswer": "—",
+  "multipleAnswerSeparator": "•",
+  "openVAA": "OpenVAA",
+  "party": {
+    "singular": "parti",
+    "plural": "partier"
+  },
+  "unaffiliated": "Utan anknytning"
+}

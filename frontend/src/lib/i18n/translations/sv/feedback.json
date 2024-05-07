@@ -1,0 +1,10 @@
+{
+  "title": "Feedback",
+  "sendButton": "Skicka feedback",
+  "sendButtonThanks": "Tack för din feedback!",
+  "emailIntro": "Om du vill kan du också nå oss via e-post på",
+  "descriptionPlaceholder": "Skriv dina kommentarer eller förslag här",
+  "descriptionLabel": "Ytterligare kommentarer",
+  "ratingValueLabel": "{rating, plural, =0 {Inget betyg} other {Betyg # av {ratingMax}}}",
+  "ratingLabel": "Totalt betyg för appen"
+}

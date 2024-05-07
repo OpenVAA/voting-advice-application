@@ -1,0 +1,13 @@
+{
+  "content": "Nedan beskrivs hur applikationen hanterar sekretess och datainsamling.",
+  "cookiesTitle": "Kakor",
+  "cookiesContent": "Applikationen använder inte några cookies för att lagra dina uppgifter. Dina svar och preferenser lagras i din webbläsares lokala lagring för en bättre användarupplevelse. Dessa data kan endast nås av din enhet, inte av applikationens utgivare.",
+  "dataTitle": "Insamling av användningsdata",
+  "dataContent": "<p>Den här versionen av valkompassen för ungdomar är skapad som en del av forskningsprojektet YouthVAA, som studerar hur ungdomar använder valkompasser och hur valkompasser bättre kan passa ungdomars behov.</p> <p>Användningsdata samlas in anonymt för forskningsändamål och för att förbättra applikationen med hjälp av Google Analytics. Uppgifterna kan inte kopplas till någon enskild person.</p> <p>De uppgifter som samlas in inkluderar dina svar på frågorna, den tid som spenderas på att svara på frågorna och i andra avsnitt och de resultat som visas.</p> <",
+  "dataConsentIntro": "Om du inte vill dela med dig av dina uppgifter, vänligen kryssa i rutan nedan.",
+  "dataConsentInfoButton": "Ytterligare information om insamling av användningsdata",
+  "dataConsentLabel": "Jag vill inte dela med mig av mina anonymiserade uppgifter för forskning.",
+  "heroEmoji": "🛡️",
+  "returnButton": "Återvänd hem",
+  "title": "Integritet"
+}

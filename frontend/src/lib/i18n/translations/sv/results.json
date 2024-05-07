@@ -1,0 +1,15 @@
+{
+  "candidatesShown": "{numShown, plural, =1 {1 {candidateSingular}} other {# {candidatePlural}}}",
+  "candidatesTotal": "av {numTotal}",
+  "heroEmoji": "🎊",
+  "ingress": {
+    "browse": "Detta är de kandidaterna och partierna som ställer upp i dessa val. Du kan använda filtren för att begränsa dem.",
+    "results": "Detta är de kandidaterna och partierna som ställer upp i dessa val. De bästa matchningarna är först på listan. För att begränsa resultaten kan du också använda filtren."
+  },
+  "partiesShown": "{numShown, plural, =1 {1 {partySingular}} other {# {partyPlural}}}",
+  "partiesTotal": "av {numTotal}",
+  "title": {
+    "browse": "Bläddra bland {candidatePlural} och {partyPlural}",
+    "results": "Dina resultat"
+  }
+}
