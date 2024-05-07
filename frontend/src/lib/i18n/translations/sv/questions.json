@@ -1,0 +1,16 @@
+{
+  "bothHaventAnswered": "Varken du eller {entity} har svarat på denna fråga",
+  "entityHasntAnswered": "{entity} har inte svarat på denna fråga",
+  "heroEmoji": "💬",
+  "infoDescription": "Bakgrundsinformation om frågan",
+  "next": "Nästa fråga",
+  "notFound": "Frågan hittades inte",
+  "previous": "Föregående",
+  "questionsTitle": "Dina åsikter",
+  "readMore": "Läs mer om",
+  "remove": "Radera svar",
+  "skip": "Hoppa över",
+  "startAnswering": "Börja svara på frågor",
+  "youHaventAnswered": "Du har inte svarat på denna fråga",
+  "yourAnswer": "Du"
+}

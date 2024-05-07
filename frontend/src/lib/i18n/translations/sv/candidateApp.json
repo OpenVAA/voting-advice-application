@@ -1,0 +1,159 @@
+{
+  "navbar": {
+    "start": "SV Start",
+    "basicInfo": "SV Basic Info",
+    "yourOpinions": "SV Your Opinions",
+    "settings": "SV Settings",
+    "preview": "SV Preview",
+    "help": "SV Help",
+    "feedback": "SV Send feedback",
+    "electionInformation": "SV Information About the Elections",
+    "useInformation": "SV How Does This App Work?",
+    "logOut": "SV Logout",
+    "close": "SV Close",
+    "cancel": "SV Cancel"
+  },
+  "languages": {
+    "English": "SV English",
+    "Finnish": "SV Finnish",
+    "Spanish": "SV Spanish"
+  },
+  "logoutModal": {
+    "title": "SV Some of Your Data Is Still Missing",
+    "body": "SV There {remainingInfoAmount, plural, =1 {is still one item} other {are still # items}} of basic info and {remainingOpinionNumber, plural, =1 {one opinion} other {# opinions}} to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
+    "bodyBasicInfoReady": "SV There {remainingOpinionNumber, plural, =1 {is still one opinion} other {are still # opinions}} to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
+    "confirmation": "SV Are you sure you want to logout? You will be automatically logged out after {timeLeft} seconds.",
+    "continueEnteringData": "SV Continue Entering Data"
+  },
+  "basicInfo": {
+    "instructions": "SV Fill in first your basic details and upload a photo. You'll be asked for your political opinions thereafter.",
+    "title": "SV Basic Information",
+    "disclaimer": "SV Your name and some other details are prefilled and cannot be changed. If there are any errors in them, please contact your party. If your Election Number is not visible, it will be automatically set after the candidate registration period ends on Oct 29.",
+    "fields": {
+      "firstName": "SV First Name",
+      "lastName": "SV Surname",
+      "party": "SV Party",
+      "electionList": "SV Election List",
+      "electionNumber": "SV Election Number",
+      "gender": "SV Gender",
+      "motherTongue": "SV Mother Tongue",
+      "birthday": "SV Birthday",
+      "portrait": "SV Portrait",
+      "unaffiliated": "SV Unaffiliated"
+    },
+    "errorMessage": "SV An error occurred when sending data!",
+    "pending": "SV pending",
+    "addAnother": "SV Add another",
+    "selectFirst": "SV Select first",
+    "unaffiliatedDescription": "SV Set this on if you're not a member of the party on whose list you are.",
+    "nominationsDescription": "SV These are the constituencies where you're nominated along with the election list and possible election symbol. If a nomination is marked 'Pending', your election symbol might not yet be defined.",
+    "electionManifesto": "SV Election manifesto",
+    "nominations": "SV Nominations",
+    "tapToAddPhoto": "SV Tap to add photo"
+  },
+  "settings": {
+    "title": "SV Settings",
+    "instructions": "SV These settings only affect the way you use this app. Any information you enter here will not be shown to the public.",
+    "fields": {
+      "email": "SV Email",
+      "language": "SV App Language"
+    },
+    "emailDescription": "SV We use this email to connect to you and for password reset. It will not be shown on your public profile.",
+    "languageDescription": "SV Use this application in this language. It will not be shown on your public profile.",
+    "accountPassword": "SV Account Password",
+    "currentPassword": "SV Current Password",
+    "currentPasswordDescription": "SV Enter your existing account password that you want to change.",
+    "newPassword": "SV New Password",
+    "newPasswordConfirmation": "SV New Password Confirmation",
+    "passwordsDontMatch": "SV Passwords don't match",
+    "passwordNotValid": "SV Password is not valid",
+    "passwordIsTheSame": "SV The new password is the same as the current password",
+    "changePasswordError": "SV Password change failed. Make sure that your current password is correct.",
+    "updatePassword": "SV Update Password",
+    "passwordUpdated": "SV The password has been updated!"
+  },
+  "setPassword": {
+    "greeting": "SV Hello, {userName}!",
+    "description": "SV Set a secure password according to the requirements below:",
+    "password": "SV Password",
+    "confirmPassword": "SV Confirm password",
+    "setPassword": "SV Set password",
+    "passwordsDontMatch": "SV Passwords don't match",
+    "passwordNotValid": "SV Password is not valid",
+    "registrationError": "SV Registration failed",
+    "passwordSetSuccesfully": "SV Your password is now set! Please login using it."
+  },
+  "passwordValidation": {
+    "length": "SV At least {minPasswordLength} characters",
+    "uppercase": "SV Uppercase letter",
+    "lowercase": "SV Lowercase letter",
+    "number": "SV Number",
+    "symbol": "SV Symbol",
+    "username": "SV Avoid using your name in the password",
+    "repetition": "SV Contains character repetition",
+    "commonPatterns": "SV Contains common sequences or patterns"
+  },
+  "genders": {
+    "male": "SV Male",
+    "female": "SV Female",
+    "nonBinary": "SV Non-binary",
+    "other": "SV Other",
+    "preferNotToSay": "SV Prefer not to say"
+  },
+  "registration": {
+    "enterCode": "SV Enter the registration code that you've received from your party to register your account.",
+    "registrationCode": "SV registration code",
+    "wrongRegistrationCode": "SV Wrong registration code",
+    "registerButton": "SV Register",
+    "submitPlaceholder": "SV E.g. CP23-174a-f4%&-aHAB",
+    "title": "SV Registration"
+  },
+  "resetPassword": {
+    "createNewPassword": "SV Set a new password",
+    "passwordResetError": "SV Password reset failed",
+    "title": "SV Forgot Password?",
+    "description": "SV To reset your password, please enter your email address below:",
+    "emailPlaceholder": "SV Email address",
+    "buttonText": "SV Send reset link",
+    "emailSentText": "SV A reset password link has been sent to your email. Please check your inbox and click the link to set your new password.",
+    "errorText": "SV Internal error. Try again later or contact the administrator."
+  },
+  "opinions": {
+    "title": "SV Enter your opinions",
+    "instructions": "SV Next, the app will ask your opinions on {numQuestions} statements about political issues and values. When voters use the Election Compass, they will also answer the same statements and see how well their opinions agree with the yours.",
+    "tip": "SV You can see all your anwers on this page when you come back to it later.",
+    "continue": "SV Continue",
+    "commentOnThisIssue": "SV Comment on this issue",
+    "answerSaveError": "SV Saving answer failed",
+    "answerDeleteError": "SV Deleting answer failed"
+  },
+  "allQuestions": {
+    "title": "SV Your opinions",
+    "warning": "SV You still have {numUnansweredQuestions} unanswered questions. Your data won't be shown in the Election Compass until you have answered all of them.",
+    "info": "SV You can see all of your opinions below and edit them by tapping on them.",
+    "answerButton": "SV Answer this question",
+    "commentOnThisIssue": "SV Comment on this issue"
+  },
+  "allDataFilled": {
+    "title": "SV You're Ready to Roll!",
+    "description": "SV You have filled all of the information needed for the Election Compass. You can still edit your answers and even log in later to do that.",
+    "tip": "SV If you want to see how the voters will see your profile, you can preview it.",
+    "logOut": "SV Log Out",
+    "previewYourProfile": "SV Preview Your Profile",
+    "editYourOpinions": "SV Edit Your Opinions"
+  },
+  "passwordButton": {
+    "hidePassword": "SV Hide pasprettier-plugin-sveltesword",
+    "revealPassword": "SV Reveal password"
+  },
+  "homePage": {
+    "greeting": "SV Hello, {userName}!",
+    "explanation": "SV In order to appear in the Election Compass, you have to enter some basic information about yourself as well as answer opinion statements concerning political issues.",
+    "buttonText": "SV Continue"
+  },
+  "preview": {
+    "title": "SV Preview",
+    "notFound": "SV Profile not found",
+    "tip": "SV This is a preview of how your profile will look to voters."
+  }
+}

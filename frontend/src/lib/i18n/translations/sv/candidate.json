@@ -1,0 +1,14 @@
+{
+  "contact_support": "Kontakta support",
+  "election_compass_for_voters": "Valkompass för väljare",
+  "email": "E-post",
+  "email_placeholder": "example@email.com",
+  "enter_email_and_password": "Ange den e-postadress och det lösenord som du har fått från ditt parti för att redigera dina uppgifter och åsikter.",
+  "forgot_password": "Glömt lösenord?",
+  "list": "Lista",
+  "password": "Lösenord",
+  "password_placeholder": "T.ex. CP23-174a-f4%&-aHAB",
+  "sign_in_button": "Registrera dig",
+  "sign_in_title": "Registrera dig",
+  "wrong_email_or_password": "Fel e-post eller lösenord"
+}

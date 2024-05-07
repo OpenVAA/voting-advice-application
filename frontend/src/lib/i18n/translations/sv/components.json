@@ -1,0 +1,66 @@
+{
+  "entityCard": {
+    "hideAllCandidates": "Kollapsad lista",
+    "showAllCandidates": "Visa alla {numCandidates} kandidater"
+  },
+  "entityDetails": {
+    "tabs": {
+      "info": "Information",
+      "opinions": "Yttranden",
+      "candidates": "{candidatePlural}"
+    }
+  },
+  "entityFilters": {
+    "applyAndClose": "Stäng filter",
+    "filterButtonLabel": "Filter",
+    "filters": "Filter",
+    "missingValue": "Inget svar",
+    "reset": "Återställ filter",
+    "selectAll": "Välj alla",
+    "text": {
+      "ariaLabel": "Text:",
+      "placeholder": "Text att söka efter"
+    },
+    "titles": {
+      "party": "Partiet"
+    },
+    "unselectAll": "Välj bort alla"
+  },
+  "entityInfo": {
+    "links": "Länkar"
+  },
+  "entityList": {
+    "showMore": "Visa mer"
+  },
+  "entityListControls": {
+    "noFilterResults": "Filtren gav inga träffar. Du kan försöka ändra dem.",
+    "noSearchResults": "Sökningen gav inga träffar. Du kan försöka ändra det.",
+    "searchPlaceholder": "Sök efter namn"
+  },
+  "matchScore": {
+    "label": "matchning",
+    "score": "{score}%"
+  },
+  "video": {
+    "error": "Det uppstod ett fel vid inläsningen av den här videon. Du kan försöka ladda om sidan eller växla till en textvy genom att trycka på ikonen i det övre högra hörnet.",
+    "jumpBack": "Hoppa tillbaka",
+    "jumpForward": "Hoppa framåt",
+    "captions": "Bildtexter",
+    "subtitles": "Undertexter",
+    "mute": "Mute",
+    "unmute": "Avslöja",
+    "play": "Spela",
+    "pause": "Paus",
+    "replay": "Replay",
+    "hideCaptions": "Dölj undertexter",
+    "showCaptions": "Visa undertexter",
+    "progessbarLabel": "Återstående tid",
+    "unsupportedWarning": "Tyvärr stöder inte din webbläsare den här typen av video.",
+    "timeLeft": "{minuter, plural, =0 {} =1 {en minut} other {# minuter}} {sekunder, plural, =0 {} =1 {en sekund} other {# sekunder}} kvar",
+    "transcript": "Text",
+    "video": "Video",
+    "transcriptToggleLabel": "Växla mellan video och text",
+    "showTranscript": "Visa video som text",
+    "showVideo": "Visa video"
+  }
+}

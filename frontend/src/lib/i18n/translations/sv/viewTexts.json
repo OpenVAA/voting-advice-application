@@ -1,0 +1,9 @@
+{
+  "appTitle": "Valkompassen",
+  "frontpageIngress": "<p>Valkompassen ger kandidater och partier poäng efter hur väl de överensstämmer med dina åsikter. Valet hålls den {electionDate, date, ::ddMMyyyy}.",
+  "madeWith": "Gjord med",
+  "publishedBy": "Publicerad av {publisher}",
+  "questionsTip": "Tips: Om du inte bryr dig om ett problem kan du hoppa över det.",
+  "yourOpinionsIngress": "Därefter kommer appen att fråga dina åsikter om {numStatements} uttalanden om politiska frågor och värderingar, som kandidaterna också har svarat på. När du har svarat på dem hittar appen de kandidater som bäst håller med om dina åsikter. Påståendena är grupperade i {numCategories} kategorier. Du kan svara på alla eller bara välja de som du tycker är viktiga.",
+  "yourOpinionsTitle": "Berätta dina åsikter"
+}
