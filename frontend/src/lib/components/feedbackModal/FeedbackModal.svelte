@@ -94,8 +94,8 @@ Show a modal dialog for sending feedback.
   bind:closeModal
   {...$$restProps}>
   <div class="grid justify-items-stretch gap-md">
-    <fieldset class="grid justify-items-center">
-      <legend class="mb-md text-center">{$t('feedback.ratingLabel')}</legend>
+    <fieldset class="flex justify-center">
+      <legend class="mb-md w-full text-center">{$t('feedback.ratingLabel')}</legend>
       <div class="rating">
         <input
           on:click={() => (rating = undefined)}
@@ -125,7 +125,7 @@ Show a modal dialog for sending feedback.
       class="textarea textarea-bordered min-h-[6rem] w-full"
       placeholder={$t('feedback.descriptionPlaceholder')}></textarea>
     {#if $settings.admin.email}
-      <p>
+      <p class="text-center">
         {$t('feedback.emailIntro')}
         <a href="mailto:{$settings.admin.email}">{$settings.admin.email}</a>.
       </p>
