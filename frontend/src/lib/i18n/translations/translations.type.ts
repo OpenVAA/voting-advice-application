@@ -25,6 +25,8 @@ export type TranslationsPayload = Partial<{
   partyPlural: string;
   partySingular: string;
   publisher: string;
+  rating: number;
+  ratingMax: number;
   score: string | number;
   seconds: number;
   sourceUrl: string;

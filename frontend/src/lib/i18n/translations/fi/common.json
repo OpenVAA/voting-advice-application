@@ -1,6 +1,7 @@
 {
   "answerNo": "Ei",
   "answerYes": "Kyllä",
+  "cancel": "Peruuta",
   "candidate": {
     "singular": "ehdokas",
     "plural": "ehdokkaat"

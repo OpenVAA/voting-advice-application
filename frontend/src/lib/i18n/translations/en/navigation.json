@@ -2,5 +2,6 @@
   "browseEntities": "Browse {candidatePlural} and {partyPlural}",
   "resetAnswers": "Clear your answers",
   "results": "Your results",
+  "sendFeedback": "Send feedback",
   "selectLanguage": "Select Language"
 }
