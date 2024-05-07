@@ -12,8 +12,13 @@
   },
   "entityFilters": {
     "applyAndClose": "Close filters",
+    "error": "The filter couldn’t be loaded, sorry!",
     "filterButtonLabel": "Filter",
     "filters": "Filters",
+    "numeric": {
+      "maxLabel": "Maximum",
+      "minLabel": "Minimum"
+    },
     "missingValue": "No answer",
     "reset": "Reset filters",
     "selectAll": "Select all",

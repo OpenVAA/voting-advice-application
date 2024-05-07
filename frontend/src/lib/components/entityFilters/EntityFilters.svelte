@@ -1,7 +1,13 @@
 <script lang="ts">
   import {concatClass} from '$lib/utils/components';
   import {Expander} from '$lib/components/expander';
-  import {ObjectFilter, ChoiceQuestionFilter, TextFilter} from '$voter/vaa-filters';
+  import {
+    ObjectFilter,
+    ChoiceQuestionFilter,
+    TextFilter,
+    NumericFilter,
+    NumericQuestionFilter
+  } from '$voter/vaa-filters';
   import type {EntityFiltersProps} from './EntityFilters.type';
 
   type $$Props = EntityFiltersProps;
@@ -37,6 +43,10 @@ Show filters for entities. This component and the individual filter components o
       {#if filter instanceof TextFilter}
         {#await import('./text') then { TextEntityFilter }}
           <svelte:component this={TextEntityFilter} {filter} />
+        {/await}
+      {:else if filter instanceof NumericFilter || filter instanceof NumericQuestionFilter}
+        {#await import('./numeric') then { NumericEntityFilter }}
+          <svelte:component this={NumericEntityFilter} {filter} {targets} />
         {/await}
       {:else if filter instanceof ObjectFilter || filter instanceof ChoiceQuestionFilter}
         {#await import('./enumerated') then { EnumeratedEntityFilter }}
