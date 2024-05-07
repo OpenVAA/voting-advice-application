@@ -1,7 +1,12 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {answeredQuestions, resetVoterAnswers, resultsAvailable} from '$lib/utils/stores';
+  import {
+    answeredQuestions,
+    openFeedbackModal,
+    resetVoterAnswers,
+    resultsAvailable
+  } from '$lib/utils/stores';
   import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
   import LanguageSelection from './LanguageSelection.svelte';
 </script>
@@ -25,7 +30,7 @@ A template part that outputs the navigation menu for the Voter App for use in th
 
 ```tsx
 <VoterNav>
-  <NavItem slot="close" on:click={closeMenu} icon="close" text="Close"/>
+  <NavItem href={$getRoute(Route.Home)} icon="home" text={$t('actionLabels.home')} />
 </VoterNav>
 ```
 -->
@@ -49,6 +54,9 @@ A template part that outputs the navigation menu for the Voter App for use in th
     <NavItem href={$getRoute(Route.Info)} icon="info" text={$t('actionLabels.electionInfo')} />
     <NavItem href={$getRoute(Route.About)} icon="info" text={$t('actionLabels.howItWorks')} />
     <NavItem href={$getRoute(Route.Privacy)} icon="info" text={$t('privacy.title')} />
+    {#if $openFeedbackModal}
+      <NavItem on:click={$openFeedbackModal} icon="feedback" text={$t('navigation.sendFeedback')} />
+    {/if}
   </NavGroup>
   <LanguageSelection />
 </Navigation>

@@ -266,3 +266,8 @@ export const partyRankings: Readable<
   },
   Promise.resolve([])
 );
+
+/**
+ * A store that holds the function for opening the feedback modal.
+ */
+export const openFeedbackModal: Writable<() => void | undefined> = writable();
