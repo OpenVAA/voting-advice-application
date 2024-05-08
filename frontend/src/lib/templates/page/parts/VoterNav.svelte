@@ -9,6 +9,9 @@
   } from '$lib/utils/stores';
   import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
   import LanguageSelection from './LanguageSelection.svelte';
+
+  let resultsAvailableSync = false;
+  $: $resultsAvailable.then((v) => (resultsAvailableSync = v));
 </script>
 
 <!--
@@ -48,7 +51,7 @@ A template part that outputs the navigation menu for the Voter App for use in th
     <NavItem
       href={$getRoute(Route.Results)}
       icon="results"
-      text={$resultsAvailable ? $t('navigation.results') : $t('navigation.browseEntities')} />
+      text={resultsAvailableSync ? $t('navigation.results') : $t('navigation.browseEntities')} />
   </NavGroup>
   <NavGroup>
     <NavItem href={$getRoute(Route.Info)} icon="info" text={$t('actionLabels.electionInfo')} />

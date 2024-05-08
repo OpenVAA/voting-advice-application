@@ -1,9 +1,16 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
   import {afterNavigate, goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
+  import {locale, t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {candidateRankings, openFeedbackModal, partyRankings, settings} from '$lib/utils/stores';
+  import {
+    candidateRankings,
+    infoQuestions,
+    openFeedbackModal,
+    opinionQuestions,
+    partyRankings,
+    settings
+  } from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {EntityDetails} from '$lib/components/entityDetails';
   import {Loading} from '$lib/components/loading';
@@ -17,15 +24,12 @@
   /** A party's candidates for displaying on a separate tab in EntityDetails or undefined if not applicable */
   let candidatesOrUndef: Promise<WrappedEntity[] | undefined>;
   let entity: Promise<WrappedEntity | undefined>;
-  let questions: QuestionProps[];
-  let infoQuestions: QuestionProps[];
   let title = '';
   let entities: Readable<Promise<WrappedEntity[]>>;
 
   $: {
     id = data.entityId;
     entityType = data.entityType as EntityType;
-    ({questions, infoQuestions} = data);
     switch (entityType) {
       case 'candidate':
         entities = candidateRankings;
@@ -54,10 +58,11 @@
   }
 
   /**
-   * We use this to determine if we arrived via an external link or from within the app.
+   * We determine if we arrived via an external link or from within the app, so we can use `history.back()`. However, if we changed the locale, we shouldn't use back() either.
    */
-  let externalReferrer = true;
-  afterNavigate((n) => (externalReferrer = n.from?.route == null));
+  let useBack = false;
+  let initialLocale = $locale;
+  afterNavigate((n) => (useBack = n.from?.route != null && initialLocale === $locale));
 </script>
 
 <SingleCardPage {title}>
@@ -73,14 +78,18 @@
       class="!text-neutral"
       variant="icon"
       icon="close"
-      on:click={() => (externalReferrer ? goto($getRoute(Route.Results)) : history.back())}
+      on:click={() => (useBack ? history.back() : goto($getRoute(Route.Results)))}
       text={$t('header.back')} />
   </svelte:fragment>
-  {#await Promise.all([entity, candidatesOrUndef])}
+  {#await Promise.all([entity, candidatesOrUndef, $opinionQuestions, $infoQuestions])}
     <Loading showLabel />
-  {:then [content, subentities]}
+  {:then [content, subentities, opinionQuestionsSync, infoQuestionsSync]}
     {#if content}
-      <EntityDetails {content} {subentities} opinionQuestions={questions} {infoQuestions} />
+      <EntityDetails
+        {content}
+        {subentities}
+        opinionQuestions={opinionQuestionsSync}
+        infoQuestions={infoQuestionsSync} />
     {:else}
       {error(404, `Entity ${entityType}:${id} not found`)}
     {/if}

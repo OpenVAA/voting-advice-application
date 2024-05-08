@@ -11,8 +11,7 @@ export const load = (async ({parent}) => {
   return {
     candidates: getNominatedCandidates({loadAnswers: true, locale}),
     parties: getNominatingParties({loadAnswers: true, locale}),
-    // Await these
-    questions: await getOpinionQuestions({locale}),
-    infoQuestions: await getInfoQuestions({locale})
+    opinionQuestions: getOpinionQuestions({locale}),
+    infoQuestions: getInfoQuestions({locale})
   };
 }) satisfies LayoutServerLoad;
