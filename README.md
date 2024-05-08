@@ -22,7 +22,10 @@ After the EU Elections are over (9th June, 2024), we will concentrate on reworki
   - Refactor the code and apply uniform coding conventions
   - Write missing unit and end-to-end tests
 - **2024, autumn** — Release the first full VAA to the public, which includes the interface for the candidates to input their answers
+  - Build application manager UI
+  - Enable plugins or easier customisation of pages and main components
 - **2025, spring** — Release VAAs in the Finnish county elections
+- **2025, summer** — First production release
 
 ## 🍭 Contributing
 
