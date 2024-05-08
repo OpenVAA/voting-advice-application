@@ -26,9 +26,10 @@ export const candidateFilters: Readable<
   [infoQuestions, locale, parties],
   async ([$infoQuestions, $locale, $parties]) => {
     const parties = await $parties;
-    if (!$infoQuestions.length && !parties.length) return undefined;
+    const infoQuestionsSync = await $infoQuestions;
+    if (!infoQuestionsSync.length && !parties.length) return undefined;
     if (candidateFiltersLocale !== $locale) {
-      candidateFilterGroup = buildCandidateFilters($infoQuestions, parties);
+      candidateFilterGroup = buildCandidateFilters(infoQuestionsSync, parties);
       candidateFiltersLocale = $locale;
     }
     return candidateFilterGroup;

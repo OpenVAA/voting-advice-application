@@ -170,29 +170,34 @@ export const parties: Readable<Promise<PartyProps[]>> = derived(
 /**
  * Utility store for infoQuestions as part of `PageData`.
  */
-export const infoQuestions: Readable<QuestionProps[]> = derived(
+export const infoQuestions: Readable<Promise<QuestionProps[]>> = derived(
   page,
-  ($page) => $page.data.infoQuestions,
-  []
+  ($page) => $page.data.infoQuestions ?? Promise.resolve([]),
+  Promise.resolve([])
 );
 
 /**
  * Utility store for opinionQuestions as part of `PageData`.
  */
-export const opinionQuestions: Readable<QuestionProps[]> = derived(
+export const opinionQuestions: Readable<Promise<QuestionProps[]>> = derived(
   page,
-  ($page) => $page.data.questions,
-  []
+  ($page) => $page.data.opinionQuestions ?? Promise.resolve([]),
+  Promise.resolve([])
 );
 
 /**
  * Utility store for an dictionary of all info and opinion questions as part of `PageData`.
  */
-export const allQuestions: Readable<Record<string, QuestionProps>> = derived(
+export const allQuestions: Readable<Promise<Record<string, QuestionProps>>> = derived(
   [infoQuestions, opinionQuestions],
-  ([$infoQuestions, $opinionQuestions]) =>
-    Object.fromEntries([...$infoQuestions, ...$opinionQuestions].map((q) => [q.id, q])),
-  {}
+  async ([$infoQuestions, $opinionQuestions]) => {
+    const infoQuestionsSync = await $infoQuestions;
+    const opinionQuestionsSync = await $opinionQuestions;
+    return Object.fromEntries(
+      [...infoQuestionsSync, ...opinionQuestionsSync].map((q) => [q.id, q])
+    );
+  },
+  Promise.resolve({})
 );
 
 /**
@@ -209,17 +214,18 @@ export type AppType = 'candidate' | 'voter';
 /**
  * A store that is true, when the results (and questions) are available
  */
-export const resultsAvailable: Readable<boolean> = derived(
+export const resultsAvailable: Readable<Promise<boolean>> = derived(
   [answeredQuestions, opinionQuestions, settings],
-  ([$answeredQuestions, $opinionQuestions, $settings]) => {
-    if (!($opinionQuestions.length && Object.keys($answeredQuestions).length)) return false;
+  async ([$answeredQuestions, $opinionQuestions, $settings]) => {
+    const opinionQuestionsSync = await $opinionQuestions;
+    if (!(opinionQuestionsSync.length && Object.keys($answeredQuestions).length)) return false;
     // We need to filtering because some of the user's answers might be to questions subsequently removed or hidden
     return (
-      $opinionQuestions.filter((q) => $answeredQuestions[q.id] != null).length >=
-      Math.min($opinionQuestions.length, $settings.matching?.minimumAnswers ?? 1)
+      opinionQuestionsSync.filter((q) => $answeredQuestions[q.id] != null).length >=
+      Math.min(opinionQuestionsSync.length, $settings.matching?.minimumAnswers ?? 1)
     );
   },
-  false
+  Promise.resolve(false)
 );
 
 /**
@@ -230,12 +236,14 @@ export const candidateRankings: Readable<
 > = derived(
   [candidates, opinionQuestions, answeredQuestions, resultsAvailable, settings],
   async ([$candidates, $opinionQuestions, $answeredQuestions, $resultsAvailable, $settings]) => {
-    const candidates = await $candidates;
-    return $resultsAvailable
-      ? match($opinionQuestions, $answeredQuestions, candidates, {
+    const resultsAvailableSync = await $resultsAvailable;
+    const candidatesSync = await $candidates;
+    const opinionQuestionsSync = await $opinionQuestions;
+    return resultsAvailableSync
+      ? match(opinionQuestionsSync, $answeredQuestions, candidatesSync, {
           subMatches: $settings.results.cardContents.candidate.includes('submatches')
         })
-      : candidates.map(wrap);
+      : candidatesSync.map(wrap);
   },
   Promise.resolve([])
 );
@@ -255,14 +263,16 @@ export const partyRankings: Readable<
     $resultsAvailable,
     $settings
   ]) => {
-    const candidates = await $candidates;
-    const parties = await $parties;
-    return $resultsAvailable && $settings.matching.partyMatching !== 'none'
-      ? matchParties($opinionQuestions, $answeredQuestions, candidates, parties, {
+    const resultsAvailableSync = await $resultsAvailable;
+    const opinionQuestionsSync = await $opinionQuestions;
+    const candidatesSync = await $candidates;
+    const partiesSync = await $parties;
+    return resultsAvailableSync && $settings.matching.partyMatching !== 'none'
+      ? matchParties(opinionQuestionsSync, $answeredQuestions, candidatesSync, partiesSync, {
           subMatches: $settings.results.cardContents.party.includes('submatches'),
           matchingType: $settings.matching.partyMatching
         })
-      : parties.map(wrap);
+      : partiesSync.map(wrap);
   },
   Promise.resolve([])
 );
