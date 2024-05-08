@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {goto} from '$app/navigation';
   import {locale as currentLocale, locales, t} from '$lib/i18n';
   import {getRoute} from '$lib/utils/navigation';
   import {NavGroup, NavItem} from '$lib/components/navigation';
@@ -24,7 +25,7 @@ A template part that language selection options for the navigation menu if these
   <NavGroup title={$t('navigation.selectLanguage')}>
     {#each $locales as locale}
       <NavItem
-        href={$getRoute({locale})}
+        on:click={() => goto($getRoute({locale})).then(() => location?.reload())}
         icon="language"
         text={$t(`lang.${locale}`)}
         disabled={locale === $currentLocale} />
