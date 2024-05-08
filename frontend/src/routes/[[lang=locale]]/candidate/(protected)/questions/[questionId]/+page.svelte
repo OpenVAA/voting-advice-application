@@ -22,7 +22,10 @@
   $: openAnswerLocal = `candidate-app-question-${questionId}-open`;
 
   let currentQuestion: QuestionProps | undefined;
-  $: currentQuestion = $page.data.questions.find((q) => q.id.toString() === questionId.toString());
+  $: if ($page.data.opinionQuestionsSync)
+    currentQuestion = $page.data.opinionQuestionsSync.find(
+      (q) => q.id.toString() === questionId.toString()
+    );
 
   $: answer = answerStore?.[questionId]; // null if not answered
 
@@ -147,12 +150,12 @@
   }
 
   async function navigateToQuestion(indexChange: number, urlAfterLastQuestion: string) {
-    if (!currentQuestion) {
+    if (!currentQuestion || !$page.data.opinionQuestionsSync) {
       return;
     }
 
     // Check if all questions have been answered (before answer to current question is saved)
-    const allAnsweredBefore = $page.data.questions.every(
+    const allAnsweredBefore = $page.data.opinionQuestionsSync.every(
       (question) => answerStore && Object.keys(answerStore).includes(question.id.toString())
     );
 
@@ -161,7 +164,7 @@
 
     // Check if all questions have been answered (after answer is saved)
     // If the last answer was filled now, go to page with congratulatory message
-    const allAnsweredAfter = $page.data.questions.every(
+    const allAnsweredAfter = $page.data.opinionQuestionsSync.every(
       (question) => answerStore && Object.keys(answerStore).includes(question.id.toString())
     );
     if (!allAnsweredBefore && allAnsweredAfter) {
@@ -169,11 +172,13 @@
       return;
     }
 
-    const currentIndex = $page.data.questions.indexOf(currentQuestion);
+    const currentIndex = $page.data.opinionQuestionsSync.indexOf(currentQuestion);
     const newIndex = currentIndex + indexChange;
 
-    if (newIndex >= 0 && newIndex < $page.data.questions.length) {
-      goto($getRoute({route: Route.CandAppQuestions, id: $page.data.questions[newIndex].id}));
+    if (newIndex >= 0 && newIndex < $page.data.opinionQuestionsSync.length) {
+      goto(
+        $getRoute({route: Route.CandAppQuestions, id: $page.data.opinionQuestionsSync[newIndex].id})
+      );
     } else {
       goto(urlAfterLastQuestion);
     }

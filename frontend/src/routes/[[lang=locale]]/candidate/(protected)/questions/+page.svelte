@@ -8,15 +8,16 @@
 
   const firstQuestionUrl = $getRoute({
     route: Route.CandAppQuestions,
-    id: $page.data.questions[0].id
+    id: $page.data.opinionQuestionsSync?.[0]?.id
   });
   const questionCategories = new Set<string>();
 
-  $page.data.questions.forEach((question) => {
-    if (question.category) questionCategories.add(question.category.id);
-  });
+  if ($page.data.opinionQuestionsSync)
+    $page.data.opinionQuestionsSync.forEach((question) => {
+      if (question.category) questionCategories.add(question.category.id);
+    });
 
-  const numQuestions = $page.data.questions.length;
+  const numQuestions = $page.data.opinionQuestionsSync?.length ?? 0;
 </script>
 
 <BasicPage title={$t('candidateApp.opinions.title')}>

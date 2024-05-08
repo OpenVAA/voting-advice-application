@@ -19,6 +19,8 @@ declare namespace App {
     parties?: Promise<PartyProps[]>;
     questionId?: string;
     opinionQuestions?: Promise<QuestionProps[]>;
+    // TODO: This is a temporary fix for the candidate app and will be corrected when this branc is merged into main
+    opinionQuestionsSync?: QuestionProps[];
     infoQuestions?: Promise<QuestionProps[]>;
     i18n: {
       currentLocale: string;

@@ -1,6 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import type {LayoutServerData} from '$types';
+  import type {LayoutServerData} from './$types';
   export let data: LayoutServerData;
 </script>
 
@@ -8,7 +8,7 @@
   <title>{$t('questions.questionsTitle')}</title>
 </svelte:head>
 
-{#if !data.questions.length}
+{#if !data.opinionQuestionsSync?.length}
   <p>{$t('error.noQuestions')}</p>
 {:else}
   <slot />

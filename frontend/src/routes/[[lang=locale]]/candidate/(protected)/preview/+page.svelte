@@ -49,11 +49,14 @@
       text={$t('header.back')} />
   </svelte:fragment>
 
-  {#await candidate}
+  {#await Promise.all([candidate, infoQuestions, opinionQuestions])}
     <Loading showLabel />
-  {:then content}
+  {:then [content, infoQuestionsSync, opinionQuestionsSync]}
     {#if content}
-      <EntityDetails {content} {opinionQuestions} {infoQuestions} />
+      <EntityDetails
+        {content}
+        opinionQuestions={opinionQuestionsSync}
+        infoQuestions={infoQuestionsSync} />
     {:else}
       <div class="w-full text-center text-warning">{$t('candidateApp.preview.notFound')}</div>
     {/if}
