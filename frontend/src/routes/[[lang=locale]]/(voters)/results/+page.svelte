@@ -45,7 +45,7 @@
   async function updateAdditionalEcProps(
     currentAllQuestions: Promise<Record<string, QuestionProps>>,
     currentSettings: AppSettings
-  ): void {
+  ) {
     const allQuestionsSync = await currentAllQuestions;
     for (const type in additionalEcProps) {
       const questionSettings = currentSettings.results.cardContents[
