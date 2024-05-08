@@ -47,28 +47,29 @@
   afterNavigate((n) => (externalReferrer = n.from?.route == null));
 </script>
 
-{#await loadData}
-  <Loading/>
-{:then}
-  {#if !candidate}
-    <span>{$t('candidateApp.preview.notFound')}</span>
-  {:else}
-    <SingleCardPage title={$t('candidateApp.preview.title')}>
-      <svelte:fragment slot="note">
-        <Icon name="info" />
-        {$t('candidateApp.preview.tip')}
-      </svelte:fragment>
-      <svelte:fragment slot="banner">
-        <LogoutButton />
-        <Button
-          slot="banner"
-          class="!text-neutral"
-          variant="icon"
-          icon="close"
-          on:click={() => (externalReferrer ? goto($getRoute(Route.CandAppHome)) : history.back())}
-          text={$t('candidateApp.preview.close')} />
-      </svelte:fragment>
-      <EntityDetails content={candidate} {opinionQuestions} {infoQuestions} />
-    </SingleCardPage>
-  {/if}
-{/await}
+<SingleCardPage title={$t('candidateApp.preview.title')}>
+  <svelte:fragment slot="note">
+    <Icon name="info" />
+    {$t('candidateApp.preview.tip')}
+  </svelte:fragment>
+  <svelte:fragment slot="banner">
+    <LogoutButton />
+    <Button
+      slot="banner"
+      class="!text-neutral"
+      variant="icon"
+      icon="close"
+      on:click={() => (externalReferrer ? goto($getRoute(Route.CandAppHome)) : history.back())}
+      text={$t('candidateApp.preview.close')} />
+  </svelte:fragment>
+
+  {#await loadData}
+    <Loading showLabel />
+  {:then}
+    {#if candidate}
+    <EntityDetails content={candidate} {opinionQuestions} {infoQuestions} />
+    {:else}
+      <div class="w-full text-center text-warning">{$t('candidateApp.preview.notFound')}</div>
+    {/if}
+  {/await}
+</SingleCardPage>

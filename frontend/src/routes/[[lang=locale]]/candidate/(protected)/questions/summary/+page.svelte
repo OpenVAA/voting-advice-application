@@ -21,7 +21,7 @@
     {category: QuestionCategoryProps; questions: QuestionProps[]}
   >;
 
-  $: questions = $page.data.questions;
+  $: questions = $page.data.opinionQuestionsSync ?? [];
 
   $: questionsByCategory = questions.reduce(
     (acc, question) => {
