@@ -2,14 +2,20 @@
   import {concatClass} from '$lib/utils/components';
   import {ucFirst} from '$lib/utils/text/ucFirst';
   import {Icon} from '$lib/components/icon';
+  import {getNavigationContext} from './navigationContext';
   import type {NavItemProps} from './NavItem.type';
-
   type $$Props = NavItemProps;
 
+  export let autoCloseNav: $$Props['autoCloseNav'] = true;
   export let disabled: $$Props['disabled'] = undefined;
   export let href: $$Props['href'] = undefined;
   export let icon: $$Props['icon'] = undefined;
   export let text: $$Props['text'];
+
+  /**
+   * A function that will close the navigation menu when clicked.
+   */
+  const {close} = getNavigationContext();
 
   // Create classes
   let classes: string;
@@ -34,6 +40,7 @@ The item is rendered as an `<a>` element if `href` is supplied. Otherwise a `<bu
 - `href`: The URL to navigate to. If this is not supplied be sure to provide an `on:click` event handler or other way of making the item interactive.
 - `icon`: An optional `IconName` of the icon to use. @default `undefined`
 - `text`: A required text to display.
+- `autoCloseNav`: Whether the menu available from the page context should be closed when the item is clicked. @default `true`
 - `disabled`: Whether the button is disabled. This can also be used with items rendered as `<a>` elements.
 - `class`: Additional class string to append to the element's default classes.
 - Any valid attributes of either an `<a>` or `<button>` element depending whether `href` was defined or not, respectively.
@@ -53,6 +60,9 @@ The item is rendered as an `<a>` element if `href` is supplied. Otherwise a `<bu
     this={href == null ? 'button' : 'a'}
     {href}
     on:click
+    on:click={() => {
+      if (autoCloseNav && close) close();
+    }}
     disabled={disabled || undefined}
     {...concatClass($$restProps, classes)}>
     {#if icon}
