@@ -18,8 +18,8 @@ declare namespace App {
     entityType?: EntityType;
     parties?: Promise<PartyProps[]>;
     questionId?: string;
-    questions: QuestionProps[];
-    infoQuestions: QuestionProps[];
+    opinionQuestions?: Promise<QuestionProps[]>;
+    infoQuestions?: Promise<QuestionProps[]>;
     i18n: {
       currentLocale: string;
       preferredLocale?: string;

@@ -6,7 +6,9 @@
   import {
     allQuestions,
     candidateRankings,
+    infoQuestions,
     openFeedbackModal,
+    opinionQuestions,
     partyRankings,
     resultsAvailable,
     settings
@@ -30,22 +32,32 @@
   let filteredCandidates: WrappedEntity<CandidateProps>[] = [];
   let filteredParties: WrappedEntity<PartyProps>[] = [];
 
+  let resultsAvailableSync = false;
+  $: $resultsAvailable.then((v) => (resultsAvailableSync = v));
+
   /**
    * The possible additional card props to add to cards on EntityLists. Currenltly, this only includes possible extra questions.
    */
   let additionalEcProps: Record<string, Partial<EntityCardProps>> = {candidate: {}, party: {}};
-  $: {
+
+  $: updateAdditionalEcProps($allQuestions, $settings);
+
+  async function updateAdditionalEcProps(
+    currentAllQuestions: Promise<Record<string, QuestionProps>>,
+    currentSettings: AppSettings
+  ) {
+    const allQuestionsSync = await currentAllQuestions;
     for (const type in additionalEcProps) {
-      const questionSettings = $settings.results.cardContents[
+      const questionSettings = currentSettings.results.cardContents[
         type as keyof AppSettings['results']['cardContents']
       ].filter((c) => typeof c === 'object' && c.question != null) as AppSettingsQuestionRef[];
       if (questionSettings.length) {
         const questions: EntityCardProps['questions'] = [];
         for (const qs of questionSettings) {
           const {question, ...rest} = qs;
-          if ($allQuestions[question])
+          if (allQuestionsSync[question])
             questions.push({
-              question: $allQuestions[question],
+              question: allQuestionsSync[question],
               ...rest
             });
         }
@@ -94,7 +106,7 @@
   }
 </script>
 
-<BasicPage title={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}>
+<BasicPage title={resultsAvailableSync ? $t('results.title.results') : $t('results.title.browse')}>
   <svelte:fragment slot="hero">
     <HeroEmoji emoji={$t('results.heroEmoji')} />
   </svelte:fragment>
@@ -122,7 +134,7 @@
   </svelte:fragment>
 
   <p class="text-center">
-    {$resultsAvailable ? $t('results.ingress.results') : $t('results.ingress.browse')}
+    {resultsAvailableSync ? $t('results.ingress.results') : $t('results.ingress.browse')}
   </p>
 
   <StretchBackground padding="medium" bgColor="base-300" toBottom class="min-h-[75vh]">
@@ -137,7 +149,7 @@
 
     <!-- Candidates -->
     {#if sections[$activeTab] === 'candidate'}
-      {#await Promise.all([$candidateRankings, $candidateFilters])}
+      {#await Promise.all( [$candidateRankings, $candidateFilters, $opinionQuestions, $infoQuestions] )}
         <Loading showLabel class="mt-lg" />
       {:then [allCandidates, candidateFilters]}
         <h2 class="mx-10 mb-md mt-md">
@@ -160,7 +172,7 @@
       <!-- Parties -->
     {:else if sections[$activeTab] === 'party'}
       <!-- Instead of candidateRankings we just create a Promise that resolves to undefined if subcards are not to be shown. In that case allCandidates will be undefined, and parseParty will not add subcards. -->
-      {#await Promise.all( [$partyRankings, $settings.results.cardContents.party.includes('candidates') ? $candidateRankings : Promise.resolve(undefined)] )}
+      {#await Promise.all( [$partyRankings, $settings.results.cardContents.party.includes('candidates') ? $candidateRankings : Promise.resolve(undefined), $opinionQuestions, $infoQuestions] )}
         <Loading showLabel class="mt-lg" />
       {:then [allParties, allCandidatesOrUndef]}
         <h2 class="mx-10 mb-md mt-md">

@@ -1,17 +1,12 @@
 <script lang="ts">
-  import {page} from '$app/stores';
   import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {openFeedbackModal, settings} from '$lib/utils/stores';
+  import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
+  import {openFeedbackModal, opinionQuestions, settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {HeroEmoji} from '$lib/components/heroEmoji';
   import {Icon} from '$lib/components/icon';
+  import {Loading} from '$lib/components/loading';
   import {BasicPage} from '$lib/templates/basicPage';
-
-  const questionCategories = new Set<string>();
-  $page.data.questions.forEach((question) => {
-    if (question.category) questionCategories.add(question.category.id);
-  });
 </script>
 
 <BasicPage title={$t('viewTexts.yourOpinionsTitle')}>
@@ -41,16 +36,23 @@
     {/if}
   </svelte:fragment>
 
-  <p class="text-center">
-    {$t('viewTexts.yourOpinionsIngress', {
-      numStatements: $page.data.questions.length,
-      numCategories: questionCategories.size
-    })}
-  </p>
+  {#await $opinionQuestions}
+    <Loading />
+  {:then opinionQuestionsSync}
+    {@const categories = new Set(
+      opinionQuestionsSync.filter((q) => q.category).map((q) => q.category.id)
+    )}
+    <p class="text-center">
+      {$t('viewTexts.yourOpinionsIngress', {
+        numStatements: opinionQuestionsSync.length,
+        numCategories: categories.size
+      })}
+    </p>
+  {/await}
 
   <svelte:fragment slot="primaryActions">
     <Button
-      href={$getRoute({route: Route.Question, id: $page.data.questions[0].id})}
+      href={$getRoute({route: Route.Question, id: FIRST_QUESTION_ID})}
       variant="main"
       icon="next"
       text={$t('actionLabels.startQuestions')} />

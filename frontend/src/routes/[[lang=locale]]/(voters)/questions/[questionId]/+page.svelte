@@ -8,6 +8,7 @@
   import {
     answeredQuestions,
     deleteVoterAnswer,
+    opinionQuestions,
     resultsAvailable,
     setVoterAnswer
   } from '$lib/utils/stores';
@@ -23,6 +24,7 @@
   import {type VideoMode, Video} from '$lib/components/video';
   import {BasicPage} from '$lib/templates/basicPage';
   import type {PageData} from './$types';
+  import {Loading} from '$lib/components/loading';
 
   export let data: PageData;
 
@@ -38,6 +40,9 @@
   let questionIndex: number;
   let selectedKey: AnswerOption['key'] | undefined;
 
+  let resultsAvailableSync = false;
+  $: $resultsAvailable.then((v) => (resultsAvailableSync = v));
+
   // Variable related to possible video content
   let atEnd: boolean;
   let mode: VideoMode;
@@ -46,11 +51,13 @@
   let videoProps: CustomVideoProps | undefined;
 
   // Set questionId and prepare question data reactively when the route param changes
-  $: {
-    questions = data.questions;
+  $: updateQuestion(data.questionId);
+
+  async function updateQuestion(newQuestionId: string) {
+    questions = await $opinionQuestions;
     // Save the current question so that we only rebuild the page if the question has actually changed either due to being a different one or a locale change
     const previousQuestion = question;
-    questionId = data.questionId === FIRST_QUESTION_ID ? questions[0].id : data.questionId;
+    questionId = newQuestionId === FIRST_QUESTION_ID ? questions[0].id : newQuestionId;
     question = questions.find((q) => q.id == questionId);
     if (!question) throw error(404, `No question with id ${questionId}`);
     // Update the index because we need it in the goto-functions
@@ -131,93 +138,97 @@
   }
 </script>
 
-{#if question}
-  {@const {id, text, type, values, category, info, customData} = question}
-  {@const headingId = `questionHeading-${id}`}
+{#await $opinionQuestions}
+  <Loading class="mt-lg" />
+{:then}
+  {#if question}
+    {@const {id, text, type, values, category, info, customData} = question}
+    {@const headingId = `questionHeading-${id}`}
 
-  <BasicPage
-    title={text}
-    class={videoProps ? 'bg-base-300' : undefined}
-    titleClass={videoProps ? '!pb-0' : undefined}
-    progressMin={0}
-    progressMax={questions.length + 1}
-    progress={questionIndex + 1}>
-    <svelte:fragment slot="banner">
-      {#if $settings.header.showFeedback && $openFeedbackModal}
-        <Button
-          on:click={$openFeedbackModal}
-          variant="icon"
-          icon="feedback"
-          text={$t('navigation.sendFeedback')} />
-      {/if}
-      {#if $settings.questions.showResultsLink}
-        <Button
-          href={$getRoute(Route.Results)}
-          disabled={$resultsAvailable ? null : true}
-          variant="responsive-icon"
-          icon="results"
-          text={$t('actionLabels.results')} />
-      {/if}
-      {#if videoProps}
-        <Button
-          on:click={() => toggleTranscript()}
-          variant="responsive-icon"
-          icon={mode === 'video' ? 'videoOn' : 'videoOff'}
-          text={mode === 'video'
-            ? $t('components.video.showTranscript')
-            : $t('components.video.showVideo')} />
-      {/if}
-    </svelte:fragment>
-
-    <div slot="video">
-      {#if videoProps}
-        <Video
-          bind:atEnd
-          bind:mode
-          bind:reload
-          bind:toggleTranscript
-          hideControls={['transcript']}
-          {...videoProps} />
-      {/if}
-    </div>
-
-    <svelte:fragment slot="heading">
-      <HeadingGroup id={headingId} class="relative">
-        {#if $settings.questions.showCategoryTags && category}
-          <PreHeading><CategoryTag {category} /></PreHeading>
+    <BasicPage
+      title={text}
+      class={videoProps ? 'bg-base-300' : undefined}
+      titleClass={videoProps ? '!pb-0' : undefined}
+      progressMin={0}
+      progressMax={questions.length + 1}
+      progress={questionIndex + 1}>
+      <svelte:fragment slot="banner">
+        {#if $settings.header.showFeedback && $openFeedbackModal}
+          <Button
+            on:click={$openFeedbackModal}
+            variant="icon"
+            icon="feedback"
+            text={$t('navigation.sendFeedback')} />
         {/if}
-        <h1 class={videoProps ? 'my-0 text-lg sm:my-md sm:text-xl' : ''}>{text}</h1>
-      </HeadingGroup>
-    </svelte:fragment>
+        {#if $settings.questions.showResultsLink}
+          <Button
+            href={$getRoute(Route.Results)}
+            disabled={resultsAvailableSync ? null : true}
+            variant="responsive-icon"
+            icon="results"
+            text={$t('actionLabels.results')} />
+        {/if}
+        {#if videoProps}
+          <Button
+            on:click={() => toggleTranscript()}
+            variant="responsive-icon"
+            icon={mode === 'video' ? 'videoOn' : 'videoOff'}
+            text={mode === 'video'
+              ? $t('components.video.showTranscript')
+              : $t('components.video.showVideo')} />
+        {/if}
+      </svelte:fragment>
 
-    {#if !videoProps && info && info !== ''}
-      <QuestionInfo {info} />
-    {/if}
+      <div slot="video">
+        {#if videoProps}
+          <Video
+            bind:atEnd
+            bind:mode
+            bind:reload
+            bind:toggleTranscript
+            hideControls={['transcript']}
+            {...videoProps} />
+        {/if}
+      </div>
 
-    <svelte:fragment slot="primaryActions">
-      {#if type === 'singleChoiceOrdinal'}
-        <LikertResponseButtons
-          aria-labelledby={headingId}
-          name={id}
-          options={values}
-          {selectedKey}
-          onShadedBg={videoProps != null}
-          variant={customData?.vertical ? 'vertical' : undefined}
-          on:change={answerQuestion} />
-      {:else}
-        {$t('error.general')}
+      <svelte:fragment slot="heading">
+        <HeadingGroup id={headingId} class="relative">
+          {#if $settings.questions.showCategoryTags && category}
+            <PreHeading><CategoryTag {category} /></PreHeading>
+          {/if}
+          <h1 class={videoProps ? 'my-0 text-lg sm:my-md sm:text-xl' : ''}>{text}</h1>
+        </HeadingGroup>
+      </svelte:fragment>
+
+      {#if !videoProps && info && info !== ''}
+        <QuestionInfo {info} />
       {/if}
-      <QuestionActions
-        answered={selectedKey != null}
-        nextLabel={questionIndex === questions.length - 1 && selectedKey != null
-          ? $t('actionLabels.results')
-          : undefined}
-        previousLabel={questionIndex === 0 ? $t('header.back') : undefined}
-        separateSkip={true}
-        on:previous={() => jumpQuestion(-1)}
-        on:delete={deleteAnswer}
-        on:next={() => jumpQuestion(+1)}
-        on:skip={() => jumpQuestion(+1)} />
-    </svelte:fragment>
-  </BasicPage>
-{/if}
+
+      <svelte:fragment slot="primaryActions">
+        {#if type === 'singleChoiceOrdinal'}
+          <LikertResponseButtons
+            aria-labelledby={headingId}
+            name={id}
+            options={values}
+            {selectedKey}
+            onShadedBg={videoProps != null}
+            variant={customData?.vertical ? 'vertical' : undefined}
+            on:change={answerQuestion} />
+        {:else}
+          {$t('error.general')}
+        {/if}
+        <QuestionActions
+          answered={selectedKey != null}
+          nextLabel={questionIndex === questions.length - 1 && selectedKey != null
+            ? $t('actionLabels.results')
+            : undefined}
+          previousLabel={questionIndex === 0 ? $t('header.back') : undefined}
+          separateSkip={true}
+          on:previous={() => jumpQuestion(-1)}
+          on:delete={deleteAnswer}
+          on:next={() => jumpQuestion(+1)}
+          on:skip={() => jumpQuestion(+1)} />
+      </svelte:fragment>
+    </BasicPage>
+  {/if}
+{/await}
