@@ -11,7 +11,6 @@
   type $$Props = FeedbackModalProps;
 
   export let title: $$Props['title'] = undefined;
-  title ??= $t('feedback.title');
 
   /**
    * The delay for autoclosing the modal after it's been submitted.
@@ -88,7 +87,7 @@ Show a modal dialog for sending feedback.
 -->
 
 <Modal
-  {title}
+  title={title ?? $t('feedback.title')}
   boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]"
   bind:openModal
   bind:closeModal
