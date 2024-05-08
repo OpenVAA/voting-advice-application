@@ -2,8 +2,7 @@
   import {Button} from '$lib/components/button';
   import {BasicPage} from '$lib/templates/basicPage';
   import {Expander} from '$lib/components/expander';
-  import {locale, t} from '$lib/i18n';
-  import {translate} from '$lib/i18n/utils';
+  import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {getContext} from 'svelte';
   import {get} from 'svelte/store';
