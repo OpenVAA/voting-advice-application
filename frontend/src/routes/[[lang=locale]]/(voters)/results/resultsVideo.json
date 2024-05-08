@@ -2,40 +2,40 @@
   "fi": {
     "video": {
       "aspectRatio": 0.8,
-      "poster": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/outro-fi.jpg",
+      "poster": "https://dfe4vsdvqdchh.cloudfront.net/outro-fi.jpg",
       "sources": [
-        "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/outro-fi.webm",
-        "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/outro-fi.mp4"
+        "https://dfe4vsdvqdchh.cloudfront.net/outro-fi.webm",
+        "https://dfe4vsdvqdchh.cloudfront.net/outro-fi.mp4"
       ],
       "title": "Sinun tuloksesi",
-      "transcript": "<p>Hienoa, että pääsit tänne asti.</p><p>Alla näet mielipiteitäsi lähimpänä olevat ehdokkaat.</p><p>Ehdokkaden prosenttiluku näyttää, miten samaa mieltä he kanssasi ovat. Puolueprosentti on laskettu ehdokkaiden mielipiteiden mukaan.</p><p>Monella ehdokkaalla on omat nettisivut tai someprofiili. Toivottavasti löydät sopivan ehdokkaan.</p><figure><img src='https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-Vaalipvm-fi.png'/><figcaption>Vaalipäivä on 9.6.</figcaption></figure><p>Merkkaa kalenteriin EU-vaalit 9.6. ja muista äänestää!</p>",
-      "captions": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/outro-fi.srt"
+      "transcript": "<p>Hienoa, että pääsit tänne asti.</p><p>Alla näet mielipiteitäsi lähimpänä olevat ehdokkaat.</p><p>Ehdokkaden prosenttiluku näyttää, miten samaa mieltä he kanssasi ovat. Puolueprosentti on laskettu ehdokkaiden mielipiteiden mukaan.</p><p>Monella ehdokkaalla on omat nettisivut tai someprofiili. Toivottavasti löydät sopivan ehdokkaan.</p><figure><img src='https://dfe4vsdvqdchh.cloudfront.net/intro-2-Vaalipvm-fi.png'/><figcaption>Vaalipäivä on 9.6.</figcaption></figure><p>Merkkaa kalenteriin EU-vaalit 9.6. ja muista äänestää!</p>",
+      "captions": "https://dfe4vsdvqdchh.cloudfront.net/outro-fi.srt"
     }
   },
   "sv": {
     "video": {
       "aspectRatio": 0.8,
-      "poster": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/outro-sv.jpg",
+      "poster": "https://dfe4vsdvqdchh.cloudfront.net/outro-sv.jpg",
       "sources": [
-        "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/outro-sv.webm",
-        "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/outro-sv.mp4"
+        "https://dfe4vsdvqdchh.cloudfront.net/outro-sv.webm",
+        "https://dfe4vsdvqdchh.cloudfront.net/outro-sv.mp4"
       ],
       "title": "Dina resulter",
-      "transcript": "<p>Vad fint att du kom ända hit.</p><p>Nedan ser du de kandidater som ligger närmast dina åsikter.</p><p>Kandidaternas procenttal visar hur mycket de håller med dig. Partiprocenten har beräknats utifrån kandidaternas åsikter.</p><p>Många kandidater har egen webbplats eller profil i sociala medier. Förhoppningsvis hittar du en lämplig kandidat.</p<figure><img src='https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-Vaalipvm-sv.png'/> <figcaption>Valdagen är den 9 juni</figcaption></figure><p>Anteckna EU-valet den 9 juni i kalendern och kom ihåg att rösta!</p>",
-      "captions": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/outro-sv.srt"
+      "transcript": "<p>Vad fint att du kom ända hit.</p><p>Nedan ser du de kandidater som ligger närmast dina åsikter.</p><p>Kandidaternas procenttal visar hur mycket de håller med dig. Partiprocenten har beräknats utifrån kandidaternas åsikter.</p><p>Många kandidater har egen webbplats eller profil i sociala medier. Förhoppningsvis hittar du en lämplig kandidat.</p<figure><img src='https://dfe4vsdvqdchh.cloudfront.net/intro-2-Vaalipvm-sv.png'/> <figcaption>Valdagen är den 9 juni</figcaption></figure><p>Anteckna EU-valet den 9 juni i kalendern och kom ihåg att rösta!</p>",
+      "captions": "https://dfe4vsdvqdchh.cloudfront.net/outro-sv.srt"
     }
   },
   "en": {
     "video": {
       "aspectRatio": 0.8,
-      "poster": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/outro-en.jpg",
+      "poster": "https://dfe4vsdvqdchh.cloudfront.net/outro-en.jpg",
       "sources": [
-        "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/outro-en.webm",
-        "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/outro-en.mp4"
+        "https://dfe4vsdvqdchh.cloudfront.net/outro-en.webm",
+        "https://dfe4vsdvqdchh.cloudfront.net/outro-en.mp4"
       ],
       "title": "Your Eesults",
-      "transcript": "<p>You have made it this far.</p><p>Below you can see the candidates closest to your opinion.</p><p>The percentage of the candidates shows how much they agree with you. The party percentage has been calculated according to the opinions of the candidates.</p><p>Many candidates have their own website or social media profile. Hopefully, you will find a suitable candidate.</p><figure><img src='https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/intro-2-Vaalipvm-en.png'/><figcaption>The election date is June 9th</figcaption></figure><p>Mark the EU elections on June 9th in your calendar and don't forget to vote!</p>",
-      "captions": "https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/outro-en.srt"
+      "transcript": "<p>You have made it this far.</p><p>Below you can see the candidates closest to your opinion.</p><p>The percentage of the candidates shows how much they agree with you. The party percentage has been calculated according to the opinions of the candidates.</p><p>Many candidates have their own website or social media profile. Hopefully, you will find a suitable candidate.</p><figure><img src='https://dfe4vsdvqdchh.cloudfront.net/intro-2-Vaalipvm-en.png'/><figcaption>The election date is June 9th</figcaption></figure><p>Mark the EU elections on June 9th in your calendar and don't forget to vote!</p>",
+      "captions": "https://dfe4vsdvqdchh.cloudfront.net/outro-en.srt"
     }
   }
 }

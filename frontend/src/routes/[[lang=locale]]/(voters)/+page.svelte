@@ -71,13 +71,13 @@
 
 <style lang="postcss">
   :global(body) {
-    @apply bg-[url('https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/frontpage-bg-sm.jpg')] bg-cover bg-fixed 
+    @apply bg-[url('https://dfe4vsdvqdchh.cloudfront.net/frontpage-bg-sm.jpg')] bg-cover bg-fixed 
       bg-center 
-      dark:bg-[url('https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/frontpage-bg-sm-dark.jpg')]
-      sm:bg-[url('https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/frontpage-bg-md.jpg')]
-      dark:sm:bg-[url('https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/frontpage-bg-md-dark.jpg')] 
-      lg:bg-[url('https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/frontpage-bg-lg.jpg')]
-      dark:lg:bg-[url('https://nuortenvaalikone.s3.eu-north-1.amazonaws.com/frontpage-bg-lg-dark.jpg')];
+      dark:bg-[url('https://dfe4vsdvqdchh.cloudfront.net/frontpage-bg-sm-dark.jpg')]
+      sm:bg-[url('https://dfe4vsdvqdchh.cloudfront.net/frontpage-bg-md.jpg')]
+      dark:sm:bg-[url('https://dfe4vsdvqdchh.cloudfront.net/frontpage-bg-md-dark.jpg')] 
+      lg:bg-[url('https://dfe4vsdvqdchh.cloudfront.net/frontpage-bg-lg.jpg')]
+      dark:lg:bg-[url('https://dfe4vsdvqdchh.cloudfront.net/frontpage-bg-lg-dark.jpg')];
   }
 
   :global(.vaa-frontpage-logos > svg, .vaa-frontpage-logos > img) {
