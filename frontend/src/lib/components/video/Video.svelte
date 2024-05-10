@@ -449,7 +449,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
         icon="videoOff"
         on:click={() => (transcriptToggleValue = 'video')}
         text={$t('components.video.showVideo')}
-        class="!absolute bottom-4 left-sm z-50 rounded-full bg-primary" />
+        class="!absolute bottom-4 left-sm z-20 rounded-full bg-primary" />
     {/if}
   {/if}
 
