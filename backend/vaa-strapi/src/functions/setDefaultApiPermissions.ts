@@ -1,6 +1,9 @@
 export async function setDefaultApiPermissions() {
+  console.info('[setDefaultApiPermissions] Setting default API permissions');
+
   const roleId = 2; // Role for public user
 
+  // Voter App
   const contentTypes = [
     'api::answer.answer',
     'api::app-setting.app-setting',
@@ -32,6 +35,15 @@ export async function setDefaultApiPermissions() {
     });
   }
 
+  // Allow sending feedback
+  await strapi.query('plugin::users-permissions.permission').create({
+    data: {
+      action: 'api::feedback.feedback' + '.create',
+      role: roleId
+    }
+  });
+
+  // Candidate App
   const authTypes = [
     'plugin::users-permissions.auth.callback',
     'plugin::users-permissions.auth.changePassword',
