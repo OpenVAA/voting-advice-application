@@ -38,6 +38,20 @@ To test all of the application's colors, copy-paste the contents of [`color-test
 
 The file is not included anywhere as a ready Svelte file, because otherwise all of the color classes in it would unnecessarily be compiled into the application by Tailwind.
 
+## Z-index
+
+For basic content, avoid using `z-index` and prefer layerying using the element order.
+
+For elements that absolutely need their `z-index` set, the following Tailwind classes are used:
+
+- `z-10`: Navigation drawer menu, page header
+- `z-20`: Buttons overlaid on the header by the [`<Video>`](../../frontend/src/lib/components/video/Video.svelte) component
+- `z-30`: The [`<Alert>`]((../../frontend/src/lib/components/alert/Alert.svelte)) component
+- `z-40`: Not used currently
+- `z-50`: Not used currently
+
+Note that the dialog created by the [`<Modal>`](../../frontend/src/lib/components/modal/Modal.svelte) component, is placed in a ’Top Layer’ placed in front of any content, regardless of their `z-index`.
+
 ## Default styling
 
 See `app.css` for some styling defaults that are set throughout the app.
