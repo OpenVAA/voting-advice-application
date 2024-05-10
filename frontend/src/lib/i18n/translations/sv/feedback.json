@@ -1,10 +1,14 @@
 {
-  "title": "Feedback",
-  "sendButton": "Skicka feedback",
-  "sendButtonThanks": "Tack för din feedback!",
-  "emailIntro": "Om du vill kan du också nå oss via e-post på",
-  "descriptionPlaceholder": "Skriv dina kommentarer eller förslag här",
   "descriptionLabel": "Ytterligare kommentarer",
+  "descriptionPlaceholder": "Skriv dina kommentarer eller förslag här",
+  "emailIntro": "Om du vill kan du också nå oss via e-post på",
+  "error": "Vi är oerhört ledsna, det uppstod ett fel när din feedback skickades.",
+  "errorEmailIntro": "Vi ber dig att skicka din feedback via e-post genom att klicka på knappen nedan. All feedback du redan skrivit inkluderas automatiskt i e-postmeddelandet.",
+  "errorEmailSubject": "Feedack",
+  "ratingLabel": "Totalt betyg för appen",
   "ratingValueLabel": "{rating, plural, =0 {Inget betyg} other {Betyg # av {ratingMax}}}",
-  "ratingLabel": "Totalt betyg för appen"
+  "sendButton": "Skicka feedback",
+  "sendButtonSending": "Skickas…",
+  "sendButtonThanks": "Tack för din feedback!",
+  "title": "Feedback"
 }
