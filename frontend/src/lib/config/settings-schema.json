@@ -5,7 +5,20 @@
   "description": "Settings for an OpenVAA-built voting advice application.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["$schema", "colors", "supportedLocales", "results"],
+  "required": [
+    "$schema",
+    "admin",
+    "appVersion",
+    "colors",
+    "font",
+    "supportedLocales",
+    "analytics",
+    "entityDetails",
+    "header",
+    "matching",
+    "questions",
+    "results"
+  ],
   "properties": {
     "$schema": {
       "const": "./settings-schema.json"
@@ -123,6 +136,42 @@
         }
       }
     },
+    "analytics": {
+      "description": "Settings related to data collection and other research or analytics use.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trackEvents"],
+      "properties": {
+        "platform": {
+          "description": "Which platform, if any, to use for analytics. Remember to also check that the translations under the `privacy` key and the platform used are up to date.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "code", "infoUrl"],
+          "default": null,
+          "properties": {
+            "name": {
+              "description": "The name of the analytics platform.",
+              "enum": ["umami"]
+            },
+            "code": {
+              "description": "The tracking code or similar id for the platform.",
+              "type": "string",
+              "minLength": 1
+            },
+            "infoUrl": {
+              "description": "The url for more information about the tracking platform.",
+              "type": "string",
+              "minLength": 10
+            }
+          }
+        },
+        "trackEvents": {
+          "description": "Whether to collect anonymous usage data about all UI actions, including answers to statements. This will only have an effect if the analytics platform is defined.",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
     "entityDetails": {
       "description": "Settings related to the entity details view, i.e. the pages for individual candidates and parties.",
       "type": "object",
@@ -229,19 +278,6 @@
           "description": "Whether to the link to results in the header when answering questions if enough answers are provided.",
           "type": "boolean",
           "default": true
-        }
-      }
-    },
-    "research": {
-      "description": "Settings related to data collection and other research use.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["collectUsageData"],
-      "properties": {
-        "collectUsageData": {
-          "description": "Whether to collect anonymous usage data unless the user opts out of data collection.",
-          "type": "boolean",
-          "default": false
         }
       }
     },

@@ -98,6 +98,14 @@ declare global {
       name: string;
       isDefault?: boolean;
     }>;
+    analytics: {
+      platform?: {
+        name: AppSettingsAnalyticsPlatform;
+        code: string;
+        infoUrl: string;
+      };
+      trackEvents: boolean;
+    };
     entityDetails: {
       contents: Record<Exclude<EntityType, 'all'>, AppSettingsEntityDetailsContent[]>;
       showMissingElectionSymbol: Record<Exclude<EntityType, 'all'>, boolean>;
@@ -117,9 +125,6 @@ declare global {
       showIntroPage: boolean;
       showResultsLink: boolean;
     };
-    research: {
-      collectUsageData: boolean;
-    };
     results: {
       cardContents: {
         candidate: Array<'submatches' | AppSettingsQuestionRef>;
@@ -135,6 +140,11 @@ declare global {
     poster?: ImageProps;
     posterCandidateApp?: ImageProps;
   }
+
+  /**
+   * The supported analytics platforms.
+   */
+  type AppSettingsAnalyticsPlatform = 'umami';
 
   /**
    * A reference to a question in `AppSettings`.
@@ -160,10 +170,15 @@ declare global {
    */
   interface UserPreferences {
     dataCollection?: {
-      consent: boolean;
-      date: Date;
+      consent: UserDataConsent;
+      date: string;
     };
   }
+
+  /**
+   * The possible values for user's data collection consent
+   */
+  type UserDataCollectionConsent = 'denied' | 'granted' | 'indetermined';
 
   /**
    * The properties of a Candidate object that can be passed onto the
