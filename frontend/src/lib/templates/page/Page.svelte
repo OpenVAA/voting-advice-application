@@ -1,5 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
+  import {startEvent} from '$lib/utils/analytics/track';
   import {concatClass} from '$lib/utils/components';
   import {appType} from '$lib/utils/stores';
   import {Icon} from '$lib/components/icon';
@@ -32,6 +33,7 @@
     drawerOpen = true;
     // We need a small timeout for drawerCloseButton to be focusable
     setTimeout(() => document.getElementById('drawerCloseButton')?.focus(), 50);
+    startEvent('menu_open');
   }
 
   /**
@@ -100,6 +102,10 @@ the Drawer component.
 - `class`: Additional class string to append to the element's default classes.
 - Any valid attributes of a `<div>` element.
 
+### Tracking events
+
+- `menu_open`: Fired when the user opens the menu.
+
 ### Usage
 
 ```tsx
@@ -118,8 +124,9 @@ the Drawer component.
   <title>{title} – {$t('viewTexts.appTitle')}</title>
 </svelte:head>
 
-<!-- Skip links for screen readers and keyboard users -->
-<a href="#{mainId}" class="sr-only focus:not-sr-only">{$t('aria.skipToMain')}</a>
+<!-- Skip links for screen readers and keyboard users. We use tabindex="1" so that's it's available before any alerts injected by layouts. -->
+<!-- svelte-ignore a11y-positive-tabindex -->
+<a href="#{mainId}" tabindex="1" class="sr-only focus:not-sr-only">{$t('aria.skipToMain')}</a>
 
 <!-- Drawer container -->
 <div {...concatClass($$restProps, 'drawer')}>

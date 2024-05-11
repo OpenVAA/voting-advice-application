@@ -25,6 +25,7 @@
   import {BasicPage} from '$lib/templates/basicPage';
   import type {PageData} from './$types';
   import {Loading} from '$lib/components/loading';
+  import {startEvent} from '$lib/utils/analytics/track';
 
   export let data: PageData;
 
@@ -224,10 +225,19 @@
             : undefined}
           previousLabel={questionIndex === 0 ? $t('header.back') : undefined}
           separateSkip={true}
-          on:previous={() => jumpQuestion(-1)}
+          on:previous={() => {
+            startEvent('question_previous', {questionIndex});
+            jumpQuestion(-1);
+          }}
           on:delete={deleteAnswer}
-          on:next={() => jumpQuestion(+1)}
-          on:skip={() => jumpQuestion(+1)} />
+          on:next={() => {
+            startEvent('question_next', {questionIndex});
+            jumpQuestion(+1);
+          }}
+          on:skip={() => {
+            startEvent('question_skip', {questionIndex});
+            jumpQuestion(+1);
+          }} />
       </svelte:fragment>
     </BasicPage>
   {/if}

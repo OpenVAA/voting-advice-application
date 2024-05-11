@@ -1,10 +1,13 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
+  import {afterNavigate, onNavigate} from '$app/navigation';
   import {settings, userPreferences} from '$lib/utils/stores';
   import {DataConsentPopup} from '$lib/components/dataConsent/popup';
-  import {submitAllEvents} from '$lib/utils/analytics/track';
+  import {startPageview, submitAllEvents} from '$lib/utils/analytics/track';
 
+  onNavigate(() => submitAllEvents());
   onDestroy(() => submitAllEvents());
+  afterNavigate(({from, to}) => startPageview(to?.url?.href ?? '', from?.url?.href));
 </script>
 
 <slot />
