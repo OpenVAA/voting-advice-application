@@ -5,7 +5,6 @@
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {FrontPage} from '$lib/templates/frontPage';
-  import DataConsent from '$lib/components/dataConsent/DataConsent.svelte';
 </script>
 
 <FrontPage title={$election?.name ?? ''}>
@@ -21,9 +20,6 @@
     href={$getRoute(Route.Intro)}
     on:click={resetVoterAnswers}
     text={$t('actionLabels.startButton')} />
-  {#if $settings.research.collectUsageData}
-    <DataConsent />
-  {/if}
 
   <p class="mt-lg text-center">
     {$t('viewTexts.frontpageIngress', {
