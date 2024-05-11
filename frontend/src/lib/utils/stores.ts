@@ -3,6 +3,7 @@ import type {Readable, Writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import {page} from '$app/stores';
 import localSettings from '$lib/config/settings.json';
+import {track} from '$lib/utils/analytics/track';
 import {logDebugError} from '$lib/utils/logger';
 import {wrap} from '$lib/utils/entities';
 import {match, matchParties} from '$lib/utils/matching';
@@ -98,8 +99,10 @@ export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage(
 export function setVoterAnswer(questionId: string, value?: AnswerProps['value']) {
   answeredQuestions.update((d) => {
     if (value === undefined) {
+      track('answer_delete', {questionId});
       delete d[questionId];
     } else {
+      track('answer', {questionId});
       d[questionId] = {value};
     }
     return d;
@@ -121,6 +124,7 @@ export function resetVoterAnswers(): void {
   if (browser && localStorage) {
     localStorage.removeItem('answeredQuestions');
     answeredQuestions.set({});
+    track('answer_resetAll');
     logDebugError('Local storage has been reset');
   }
 }
@@ -137,8 +141,14 @@ export const userPreferences = createStoreValueAndSubscribeToLocalStorage(
  * Set the user's data consent together with the date of giving or denying the consent.
  * @param consent The value for the consent
  */
-export function setDataConsent(consent: boolean) {
-  userPreferences.update((d) => ({...d, dataCollection: {consent, date: new Date()}}));
+export function setDataConsent(consent: UserDataCollectionConsent): void {
+  userPreferences.update((d) => ({
+    ...d,
+    dataCollection: {consent, date: new Date().toISOString()}
+  }));
+  if (consent === 'granted') {
+    track('dataConsent_granted');
+  }
 }
 
 /**
