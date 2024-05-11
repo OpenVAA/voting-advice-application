@@ -52,8 +52,8 @@
       "name": "Español (Colombia)"
     }
   ],
-  "research": {
-    "collectUsageData": false
+  "analytics": {
+    "trackEvents": false
   },
   "entityDetails": {
     "contents": {
