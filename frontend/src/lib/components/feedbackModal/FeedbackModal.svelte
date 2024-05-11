@@ -2,6 +2,7 @@
   import {onDestroy} from 'svelte';
   import {sendFeedback} from '$lib/api/feedback';
   import {t} from '$lib/i18n';
+  import {track} from '$lib/utils/analytics/track';
   import {settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {Modal} from '$lib/components/modal';
@@ -47,9 +48,11 @@
     status = 'sending';
     sendFeedback(rating, description).then((res) => {
       if (!res?.ok) {
+        track('feedback_error', {rating, description});
         status = 'error';
         return;
       }
+      track('feedback_sent', {rating, description});
       status = 'sent';
       closeTimeout = setTimeout(closeAndReset, CLOSE_DELAY);
     });
@@ -106,11 +109,15 @@
 @component
 Show a modal dialog for sending feedback.
 
-
 ### Properties
 
 - `title`: Optional title for the modal. Defaults to `{$t('feedback.title')}`
 - Any valid properties of a `<Modal>` component.
+
+### Tracking events
+
+- `feedback_sent`: Feedback is succesfully sent. Contains `rating` and `description` properties.
+- `feedback_error`: There was an error sending the feedback. Contains `rating` and `description` properties.
 
 ### Usage
 

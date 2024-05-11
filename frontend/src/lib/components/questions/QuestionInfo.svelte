@@ -2,6 +2,7 @@
   import {t} from '$lib/i18n';
   import {Expander} from '$lib/components/expander';
   import type {QuestionInfoProps} from './QuestionInfo.type';
+  import {track} from '$lib/utils/analytics/track';
 
   type $$Props = QuestionInfoProps;
 
@@ -17,6 +18,11 @@ Display the question's expandable information content.
 - `info`: The info text of the question
 - Any valid properties of an `<Expander>` component
 
+### Tracking events
+
+- `questionInfo_collapse`
+- `questionInfo_expand`
+
 ### Usage
 
 ```tsx
@@ -24,6 +30,10 @@ Display the question's expandable information content.
 ```
 -->
 
-<Expander title={$t('questions.readMore')} {...$$restProps}>
+<Expander
+  on:collapse={() => track('questionInfo_collapse')}
+  on:expand={() => track('questionInfo_expand')}
+  title={$t('questions.readMore')}
+  {...$$restProps}>
   {info}
 </Expander>

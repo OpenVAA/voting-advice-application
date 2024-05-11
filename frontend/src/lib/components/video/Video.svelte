@@ -1,13 +1,15 @@
 <script lang="ts">
+  import {onDestroy, onMount} from 'svelte';
   import {fade} from 'svelte/transition';
   import {locale, t} from '$lib/i18n';
+  import {startEvent, submitEvent, type TrackingEvent} from '$lib/utils/analytics/track';
   import {concatClass} from '$lib/utils/components';
   import {sanitizeHtml} from '$lib/utils/sanitize';
   import {Button} from '$lib/components/button';
   import {Icon} from '$lib/components/icon';
   import {Loading} from '$lib/components/loading';
   import {videoPreferences} from './component-stores';
-  import type {VideoMode, VideoProps} from './Video.type';
+  import type {VideoMode, VideoProps, VideoTrackingEventData} from './Video.type';
 
   ////////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
@@ -131,6 +133,72 @@
   $: toggleTranscript(transcriptToggleValue === 'text');
 
   ////////////////////////////////////////////////////////////////////////////////
+  // TRACKING
+  ////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * The event data for the current video
+   */
+  let event: TrackingEvent<VideoTrackingEventData> | undefined = undefined;
+
+  /**
+   * Start a new video event
+   */
+  function startVideoEvent() {
+    if (event) submitEvent(event);
+    event = startEvent(
+      'video',
+      {
+        startAt: duration && currentTime ? currentTime / duration : 0,
+        startMuted: muted,
+        startWithTranscript: transcriptVisible,
+        startWithCaptions: showCaptions
+      },
+      // Add the rest of data when submitting the event
+      (current) => {
+        event = undefined;
+        current.data = {
+          ...current.data,
+          src: video?.currentSrc,
+          duration,
+          endAt: atEnd ? 'end' : duration !== 0 ? currentTime / duration : 0,
+          endMuted: muted,
+          endWithTranscript: transcriptVisible,
+          endWithCaptions: showCaptions
+        };
+        return current;
+      }
+    );
+  }
+
+  /**
+   * Add properties to the video event
+   * @param data
+   */
+  function addToEvent(
+    data:
+      | Partial<VideoTrackingEventData>
+      | ((current: VideoTrackingEventData) => VideoTrackingEventData)
+  ) {
+    if (!event) startVideoEvent();
+    if (typeof data === 'function') {
+      event!.data = data(event!.data);
+    } else {
+      event!.data = {...event!.data, ...data};
+    }
+  }
+
+  /**
+   * Submit the current video event
+   */
+  function submitVideoEvent() {
+    if (event) submitEvent(event);
+  }
+
+  onMount(startVideoEvent);
+  onDestroy(submitVideoEvent);
+
+  ////////////////////////////////////////////////////////////////////////////////
   // CONTROL FUNCTIONS
   ////////////////////////////////////////////////////////////////////////////////
 
@@ -211,6 +279,9 @@
     if (show && !transcript) transcript = buildTranscript();
     setPaused(show || atEnd);
     transcriptVisible = show;
+    addToEvent((data) => ({
+      toggleTranscript: `${data.toggleTranscript ?? ''}${show ? 'true' : 'false'},`
+    }));
     $videoPreferences.transcriptVisible = show;
   }
 
@@ -228,6 +299,7 @@
       return gotoAndPlay(effectiveTime + (skipAmount ?? DEFAULT_SKIP_AMOUNT) * steps);
     const cue = (atEnd ? cues.length : findCue(effectiveTime)) + steps;
     seekTarget = cue < 0 ? 0 : cue >= cues.length ? duration : cues[cue].startTime;
+    addToEvent((data) => ({jump: `${data.jump ?? ''}${steps},`}));
     return gotoAndPlay(seekTarget);
   }
 
@@ -260,6 +332,8 @@
    * Call this function after changing the video contents, i.e. sources, captions, poster and transcript.
    */
   export function reload(props: CustomVideoProps) {
+    // Submit any tracking event we have created
+    submitVideoEvent();
     if (!video) return;
     // Hide text track before reloading to prevent duplicate rendering on Chrome
     const tracksShown = !textTracksHidden;
@@ -277,6 +351,8 @@
       if (transcriptVisible && !transcript) transcript = buildTranscript();
       if (!transcriptVisible && autoPlay) togglePlay('play');
       toggleCaptions(tracksShown);
+      // Start a new video tracking event
+      startVideoEvent();
     }, 225);
   }
 
@@ -366,7 +442,9 @@
     // Clear any existing timeout, because onError would be called again only if the error has been cleared in the meantime
     if (errorTimeout) clearTimeout(errorTimeout);
     errorTimeout = setTimeout(() => {
-      if (status === 'error-pending') status = 'error';
+      if (status !== 'error-pending') return;
+      status = 'error';
+      addToEvent({error: true});
     }, ERROR_DELAY);
   }
 </script>
@@ -417,6 +495,13 @@ User choices are stored in the `videoPreferences` store so that they persist acr
 ### Events
 
 - `ended`: Forwarded from the `<video>` element.
+
+### Tracking events
+
+- `video`: The video player creates an analytics event for each video viewed which combines a number of properties. See the `VideoTrackingEventData` in [`Video.type.ts`](./Video.type.ts) for a complete description. The event is started and submitted when:
+  - the component is created/destroyed
+  - when the video shown is changed with `reload`
+  - when the page's visibility changes to `hidden`.
 
 ### Usage
 
@@ -476,6 +561,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
       on:playing={() => (status = 'normal')}
       on:waiting={() => (status = 'waiting')}
       on:error={onError}
+      on:ended={() => addToEvent({ended: true})}
       on:ended
       autoplay={autoPlay && !transcriptVisible}
       {poster}

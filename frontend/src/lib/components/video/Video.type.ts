@@ -1,4 +1,6 @@
+import type {TrackingEvent} from '$lib/utils/analytics/track';
 import type {SvelteHTMLElements} from 'svelte/elements';
+
 export type VideoProps = SvelteHTMLElements['div'] & {
   /**
    * The title of the video for labelling.
@@ -71,3 +73,29 @@ export type VideoMode = 'video' | 'text';
  * The types of video controls to show or hide.
  */
 export type VideoControl = 'pause' | 'mute' | 'skip' | 'captions' | 'transcript';
+
+/**
+ * The analytics data for a video event.
+ */
+export type VideoTrackingEventData = TrackingEvent['data'] &
+  Partial<{
+    duration: number;
+    /** As a fraction of duration [0,1] */
+    endAt: 'end' | number;
+    /** Whether the end was reached at any point */
+    ended: boolean;
+    endMuted: boolean;
+    endWithCaptions: boolean;
+    endWithTranscript: boolean;
+    error: boolean;
+    /** Jump steps as a comma-separeted list, '1,-1,1,' */
+    jump: string;
+    src: string;
+    /** As a fraction of duration [0,1] */
+    startAt: number;
+    startMuted: boolean;
+    startWithCaptions: boolean;
+    startWithTranscript: boolean;
+    /** Toggle values as a comma-separeted list, 'true,false,true,' */
+    toggleTranscript: string;
+  }>;

@@ -1,12 +1,20 @@
 <script lang="ts">
+  import {onMount} from 'svelte';
   import {t} from '$lib/i18n';
+  import {track} from '$lib/utils/analytics/track';
   import {sanitizeHtml} from '$lib/utils/sanitize';
   import {HeroEmoji} from '$lib/components/heroEmoji';
+
+  onMount(() => track('maintenance_shown'));
 </script>
 
 <!--
 @component
 The template for showing an under maintenance page.
+
+### Tracking events
+
+- `maintenance_shown`
 
 ### Usage
 

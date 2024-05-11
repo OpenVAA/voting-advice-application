@@ -1,6 +1,7 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
   import {t} from '$lib/i18n';
+  import {track} from '$lib/utils/analytics/track';
   import {getAnswer} from '$lib/utils/answers';
   import {concatClass, getUUID} from '$lib/utils/components';
   import {isCandidate, isParty, parseMaybeRanked} from '$lib/utils/entities';
@@ -93,7 +94,11 @@ In nested cards, the layout and rendering of contents varies from that of a pare
 ### Accessibility
 
 - Currently, keyboard navigation is non-hierarchical even when subcards are present. In the future, this should be expanded into a more elaborate system where arrow keys or such can be used to navigate within a card with subcards.
-  
+
+### Tracking events
+
+- `entityCard_expandSubcards`: Triggered when the list of subcards is expanded. Contains a `length` property with the total number of subcards.
+
 ### Usage
 
 ```tsx
@@ -207,6 +212,7 @@ In nested cards, the layout and rendering of contents varies from that of a pare
           <div class="offset-border relative -my-md after:!top-0">
             <Button
               on:click={() => (showAllSubcards = !showAllSubcards)}
+              on:click={() => track('entityCard_expandSubcards', {length: subcards.length})}
               variant="secondary"
               color="secondary"
               class="max-w-none"
