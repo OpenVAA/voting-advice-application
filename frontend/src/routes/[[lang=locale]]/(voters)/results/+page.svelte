@@ -1,10 +1,12 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
+  import {startEvent} from '$lib/utils/analytics/track';
   import {t} from '$lib/i18n';
   import {candidateFilters} from '$lib/utils/filters';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {
     allQuestions,
+    answeredQuestions,
     candidateRankings,
     infoQuestions,
     openFeedbackModal,
@@ -33,7 +35,13 @@
   let filteredParties: WrappedEntity<PartyProps>[] = [];
 
   let resultsAvailableSync = false;
-  $: $resultsAvailable.then((v) => (resultsAvailableSync = v));
+  $resultsAvailable.then((v) => {
+    resultsAvailableSync = v;
+    startEvent(v ? 'results_ranked' : 'results_browse', {
+      section: sections[$activeTab],
+      numAnswers: Object.keys($answeredQuestions).length
+    });
+  });
 
   /**
    * The possible additional card props to add to cards on EntityLists. Currenltly, this only includes possible extra questions.
@@ -144,6 +152,7 @@
       <Tabs
         tabs={sections.map((entityType) => $t(`common.${entityType}.plural`))}
         bind:activeIndex={$activeTab}
+        on:change={({detail}) => startEvent('results_changeTab', {section: sections[detail.index]})}
         class="mx-10" />
     {/if}
 

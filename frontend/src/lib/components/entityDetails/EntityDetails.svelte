@@ -1,6 +1,7 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
   import {t} from '$lib/i18n';
+  import {startEvent} from '$lib/utils/analytics/track';
   import {getEntityType, parseMaybeRanked} from '$lib/utils/entities';
   import {Route, getRoute} from '$lib/utils/navigation';
   import {settings} from '$lib/utils/stores';
@@ -75,6 +76,10 @@ Used to show an entity's details and possible ranking. You can supply either a n
 - `opinionQuestions`: The list of Question objects to show on the opinions tab
 - Any valid attributes of an `<article>` element.
 
+### Tracking events
+
+- `entityDetails_changeTab`: Fired when the user changes the active tab. Has a `section` property with the name of the tab.
+
 ### Usage
 
 ```tsx
@@ -95,7 +100,11 @@ Used to show an entity's details and possible ranking. You can supply either a n
     <EntityCard {content} context="details" class="!p-lg" />
   </header>
   {#if tabContents.length > 1}
-    <Tabs {tabs} bind:activeIndex />
+    <Tabs
+      {tabs}
+      bind:activeIndex
+      on:change={({detail}) =>
+        startEvent('entityDetails_changeTab', {section: tabContents[detail.index]})} />
     {#if activeIndex === tabContents.indexOf('info')}
       <EntityInfo {entity} questions={filteredInfoQuestions} />
     {:else if activeIndex === tabContents.indexOf('opinions')}

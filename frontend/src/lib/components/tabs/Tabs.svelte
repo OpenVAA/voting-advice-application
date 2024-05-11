@@ -9,11 +9,11 @@
   export let tabs: $$Props['tabs'] = [];
   export let activeIndex: $$Props['activeIndex'] = 0;
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{change: {index: number}}>();
 
   function activate(index: number) {
     activeIndex = index;
-    dispatch('changeTab', index);
+    dispatch('change', {index});
   }
 </script>
 
@@ -28,7 +28,7 @@ Show a tab title bar that can be used to switch between different tabs.
 
 ### Events
 
-- `changeTab`: Emitted when the active tab changes. The event `details` contain the active tab index. Note, it's preferable to just bind to the `activeIndex` property instead.
+- `change`: Emitted when the active tab changes. The event `details` contains the active tab index as `index`. Note, it's preferable to just bind to the `activeIndex` property instead.
 
 ### Accessibility
 
