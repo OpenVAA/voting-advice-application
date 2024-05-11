@@ -53,7 +53,16 @@
     }
   ],
   "analytics": {
-    "trackEvents": false
+    "platform": {
+      "name": "umami",
+      "code": "fa313651-7600-464a-a34a-7f591c4cee68",
+      "infoUrl": "https://umami.is/"
+    },
+    "survey": {
+      "linkTemplate": "https://polscihelsinki.eu.qualtrics.com/jfe/form/SV_8va9vZJTfeT4Pwa?vaaID={sessionId}",
+      "showIn": ["frontpage", "entityDetails", "navigation"]
+    },
+    "trackEvents": true
   },
   "entityDetails": {
     "contents": {
