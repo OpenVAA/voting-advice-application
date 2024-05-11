@@ -4,8 +4,10 @@
  */
 export type TranslationsPayload = Partial<{
   adminEmail: string;
+  analyticsLink: string;
   candidatePlural: string;
   candidateSingular: string;
+  consentDate: Date;
   constituency: string;
   electionDate: Date;
   filters: string;

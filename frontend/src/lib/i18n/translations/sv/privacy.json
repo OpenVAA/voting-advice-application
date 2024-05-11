@@ -1,12 +1,27 @@
 {
+  "analyticsContent": {
+    "umami": "Vi använder Umami-tjänsten för analys. Detta sker helt anonymt och kräver några cookies. Ytterligare information: {analyticsLink}."
+  },
+  "analyticsTitle": "Analytics",
   "content": "Nedan beskrivs hur applikationen hanterar sekretess och datainsamling.",
   "cookiesTitle": "Kakor",
-  "cookiesContent": "Applikationen använder inte några cookies för att lagra dina uppgifter. Dina svar och preferenser lagras i din webbläsares lokala lagring för en bättre användarupplevelse. Dessa data kan endast nås av din enhet, inte av applikationens utgivare.",
+  "cookiesContent": "Applikationen använder inga cookies för att lagra dina uppgifter. Dina svar och preferenser lagras i din webbläsares lokala lagring (local storage) för en bättre användarupplevelse. Dessa data kan endast nås av din enhet, inte av applikationens utgivare.",
   "dataTitle": "Insamling av användningsdata",
-  "dataContent": "<p>Den här versionen av valkompassen för ungdomar är skapad som en del av forskningsprojektet YouthVAA, som studerar hur ungdomar använder valkompasser och hur valkompasser bättre kan passa ungdomars behov.</p> <p>Användningsdata samlas in anonymt för forskningsändamål och för att förbättra applikationen med hjälp av Google Analytics. Uppgifterna kan inte kopplas till någon enskild person.</p> <p>De uppgifter som samlas in inkluderar dina svar på frågorna, den tid som spenderas på att svara på frågorna och i andra avsnitt och de resultat som visas.</p> <",
-  "dataConsentIntro": "Om du inte vill dela med dig av dina uppgifter, vänligen kryssa i rutan nedan.",
+  "dataContent": "Vi skulle vilja samla in användningsdata anonymt för forskningsändamål och för att förbättra applikationen. Datan som ska samlas in inkluderar dina svar på frågorna, den tid som ägnas åt att svara på frågorna och i andra avsnitt och de visade resultaten, men data kan inte kopplas till dig.",
+  "dataContentPlatform": {
+    "umami": "Vi använder Umami-tjänsten för datainsamling. Den använder inte cookies. Ytterligare information: {analyticsLink}."
+  },
+  "dataConsentIntro": {
+    "denied": "Du har nekat datainsamling {consentDate, date, ::dMyyyy}. Du kan ändra dina inställningar nedan.",
+    "granted": "Du har samtyckt till datainsamling {consentDate, date, ::dMyyyy}. Du kan ändra dina inställningar nedan.",
+    "indetermined": "Du kan samtycka till eller neka datainsamling genom att välja ett av alternativen nedan.",
+    "popup": "Kan vi samla in dina uppgifter helt anonymt för forskningsändamål och för att förbättra applikationen? Vi använder inte cookies, och uppgifterna kan inte kopplas till dig."
+  },
   "dataConsentInfoButton": "Ytterligare information om insamling av användningsdata",
-  "dataConsentLabel": "Jag vill inte dela med mig av mina anonymiserade uppgifter för forskning.",
+  "dataConsentLabel": {
+    "denied": "Jag vill inte dela mina data",
+    "granted": "Ja, mina data kan samlas in"
+  },
   "heroEmoji": "🛡️",
   "returnButton": "Återvänd hem",
   "title": "Integritet"

@@ -3,6 +3,7 @@ import I18n from '@sveltekit-i18n/base';
 import parser, {type Config} from '@sveltekit-i18n/parser-icu';
 import IntlMessageFormat from 'intl-messageformat';
 import {logDebugError} from '$lib/utils/logger';
+import {ucFirst} from '$lib/utils/text/ucFirst';
 import settings from '$lib/config/settings.json';
 import {derived, get} from 'svelte/store';
 import {DEFAULT_PAYLOAD_KEYS, staticTranslations, type TranslationsPayload} from './translations';
@@ -184,6 +185,9 @@ function updateDefaultPayload() {
     defaultPayload[key] = t(path);
   }
   defaultPayload.adminEmail = settings.admin.email;
+  defaultPayload.analyticsLink = settings.analytics?.platform?.infoUrl
+    ? `<a href="${settings.analytics.platform.infoUrl}" target="_blank">${ucFirst(settings.analytics.platform.name)}</a>`
+    : '—';
 }
 
 locale.subscribe((l) => {
