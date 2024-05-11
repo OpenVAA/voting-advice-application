@@ -1,67 +1,86 @@
 <script lang="ts">
+  import {createEventDispatcher} from 'svelte';
   import {t} from '$lib/i18n';
   import {concatClass} from '$lib/utils/components';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {setDataConsent, userPreferences} from '$lib/utils/stores';
-  import {Modal} from '$lib/components/modal';
+  import {setDataConsent, settings, userPreferences} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
-  import type {DataConsentProps} from './DataConsent.type';
+  import {DataConsentInfoButton} from './';
+  import type {DataConsentEvents, DataConsentProps} from './DataConsent.type';
 
   type $$Props = DataConsentProps;
 
-  export let infoModal: $$Props['infoModal'] = true;
+  export let description: $$Props['description'] = 'modal';
 
-  let closeModal: () => void;
-  let openModal: () => void;
+  const dispatchEvent = createEventDispatcher<DataConsentEvents>();
 
-  function onChange(this: HTMLInputElement) {
-    const consentGiven = !this.checked;
-    if (consentGiven !== $userPreferences.dataCollection?.consent) setDataConsent(consentGiven);
+  function onChange(consent: UserDataCollectionConsent) {
+    if (consent !== $userPreferences.dataCollection?.consent) setDataConsent(consent);
+    dispatchEvent('change', {consent});
   }
 </script>
 
 <!--
 @component
-Show a checkbox for opting out of data collection and a possibly a button that opens a modal displaying information about data collection.
+Show buttons opting in or out of data collection and possibly information about data collection.
 
 ### Properties
 
-- `infoModal`: Whether to show an info button that opens a modal displaying information about data collection. @default `true`
-- Any valid attributes of a `<label>` element.
+- `description`: Whether and how to show the data consent description. @default `modal`
+  - `none`: Don’t show the description.
+  - `inline`: Show the consent description above the buttons.
+  - `modal`: Show a button that opens the description in a modal.
+- Any valid attributes of a `<div>` element.
+
+### Events
+
+- `change`: Fired when the user changes their data collection consent. The event `detail` cóntains:
+  - `consent`: the new consent value.
 
 ### Usage
 
 ```tsx
 <DataConsent/>
-<DataConsent enable/>
-
+<DataConsent description="none"/>
 ```
 -->
 
-<label {...concatClass($$restProps, 'label cursor-pointer px-0 py-0 my-md')}>
-  <input
-    on:change={onChange}
-    checked={$userPreferences.dataCollection?.consent === false}
-    type="checkbox"
-    class="checkbox-neutral checkbox bg-base-100" />
-  <div class="small-label label-text ms-md flex flex-row items-center hyphens-none text-neutral">
-    {$t('privacy.dataConsentLabel')}
-    {#if infoModal}
-      <Button
-        variant="icon"
-        icon="info"
-        on:click={openModal}
-        text={$t('privacy.dataConsentInfoButton')}
-        class="inline" />
-    {/if}
-  </div>
-</label>
-
-{#if infoModal}
-  <Modal bind:closeModal bind:openModal title={$t('privacy.dataTitle')}>
-    {@html sanitizeHtml($t('privacy.dataContent'))}
-    <div slot="actions" class="mx-auto flex w-full max-w-md flex-col">
-      <Button on:click={closeModal} text={$t('common.close')} variant="main" />
+<div {...concatClass($$restProps, 'grid justify-items-center')}>
+  {#if description === 'inline' && $settings.analytics.platform}
+    <div>
+      <p>{@html sanitizeHtml($t('privacy.dataContent'))}</p>
+      <p>
+        {@html sanitizeHtml($t(`privacy.dataContentPlatform.${$settings.analytics.platform.name}`))}
+      </p>
     </div>
-  </Modal>
-{/if}
+    <p class="mt-md text-center font-bold">
+      {$t(
+        `privacy.dataConsentIntro.${$userPreferences.dataCollection?.consent ?? 'indetermined'}`,
+        {consentDate: new Date($userPreferences.dataCollection?.date ?? '')}
+      )}
+    </p>
+  {/if}
+  <Button
+    on:click={() => onChange('granted')}
+    variant="main"
+    iconPos="left"
+    disabled={$userPreferences.dataCollection?.consent === 'granted'}
+    icon={$userPreferences.dataCollection?.consent === 'granted' ? 'check' : undefined}
+    text={$t('privacy.dataConsentLabel.granted')} />
+  <Button
+    on:click={() => onChange('denied')}
+    color="warning"
+    iconPos="left"
+    disabled={$userPreferences.dataCollection?.consent === 'denied'}
+    icon={$userPreferences.dataCollection?.consent === 'denied' ? 'check' : undefined}
+    text={$t('privacy.dataConsentLabel.denied')} />
+  <!-- <Button 
+    on:click={() => onChange('indetermined')}
+    color="secondary"
+    iconPos="left"
+    icon={$userPreferences.dataCollection?.consent == null || $userPreferences.dataCollection?.consent === 'indetermined' ? 'check' : undefined}
+    text="ZXXX"/> -->
+  {#if description === 'modal'}
+    <DataConsentInfoButton color="neutral" variant="normal" />
+  {/if}
+</div>

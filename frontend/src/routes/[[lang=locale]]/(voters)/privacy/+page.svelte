@@ -40,23 +40,19 @@
     <div>
       {@html sanitizeHtml($t('privacy.content'))}
     </div>
-
+    {#if $settings.analytics?.platform}
+      <h2>{$t('privacy.analyticsTitle')}</h2>
+      <div>
+        {@html sanitizeHtml($t(`privacy.analyticsContent.${$settings.analytics.platform.name}`))}
+      </div>
+    {/if}
     <h2>{$t('privacy.cookiesTitle')}</h2>
-
     <div>
       {@html sanitizeHtml($t('privacy.cookiesContent'))}
     </div>
-
-    {#if $settings.research.collectUsageData}
+    {#if $settings.analytics.trackEvents}
       <h2>{$t('privacy.dataTitle')}</h2>
-
-      <div>
-        {@html sanitizeHtml($t('privacy.dataContent'))}
-      </div>
-
-      <p class="mt-md">{$t('privacy.dataConsentIntro')}</p>
-
-      <DataConsent infoModal={false} />
+      <DataConsent description="inline" class="rounded-lg bg-base-300 p-lg" />
     {/if}
   </div>
 

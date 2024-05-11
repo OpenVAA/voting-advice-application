@@ -1,12 +1,27 @@
 {
+  "analyticsContent": {
+    "umami": "We use the Umami service for analytics. This happens completely anonymously and does require any cookies. Further info: {analyticsLink}."
+  },
+  "analyticsTitle": "Analytics",
   "content": "The privacy and data collection of the application is outlined below.",
   "cookiesTitle": "Cookies",
-  "cookiesContent": "The application does not use any cookies to store your data. Your answers and preferences are stored in your browser’s local storage for a better user experience. This data can only be accessed by your device, not by the application’s publisher.",
+  "cookiesContent": "The application does not use cookies to store your data. Your answers and preferences are stored in your browser’s local storage for a better user experience. This data can only be accessed by your device, not by the application’s publisher.",
   "dataTitle": "Collecting Usage Data",
-  "dataContent": "<p>Usage data is collected anonymously for research purposes and to improve the application using Google Analytics. The data cannot be connected to any one person. The data collected includes your answers to the questions, the time spent answering the questions and in other sections and the results viewed.</p>",
-  "dataConsentIntro": "If you do not want to share your data, please check the box below.",
+  "dataContent": "We would like to collected usage data anonymously for research purposes and to improve the application. The data to collect includes your answers to the questions, the time spent answering the questions and in other sections and the results viewed, but the data cannot be connected to you.",
+  "dataContentPlatform": {
+    "umami": "We use the Umami service for data collection. It does not employ cookies. Further info: {analyticsLink}."
+  },
+  "dataConsentIntro": {
+    "denied": "You have denied data collection {consentDate, date, ::yyyyMMd}. You can change your preference below.",
+    "granted": "You have consented to data collection {consentDate, date, ::yyyyMMd}.  You can change your preference below.",
+    "indetermined": "You can consent to or deny data collection by choosing one of the options below.",
+    "popup": "Could we collect your data completely anonymously for research purposes and to improve the application? We do not use cookies, and the data cannot be connected to you."
+  },
   "dataConsentInfoButton": "Further information collecting usage data",
-  "dataConsentLabel": "I do not want to share my anonymized data for research.",
+  "dataConsentLabel": {
+    "denied": "I don’t want to share my data",
+    "granted": "Yes, I agree to share my data"
+  },
   "heroEmoji": "🛡️",
   "returnButton": "Return Home",
   "title": "Privacy"

@@ -56,6 +56,7 @@ export const ICONS = {
   play: ['material', 'play_arrow'],
   previewProfile: ['material', 'switch_account'],
   previous: ['material', 'arrow_back_ios'],
+  privacy: ['material', 'security'],
   profile: ['material', 'face'],
   removeFromList: ['material', 'playlist_remove'],
   replay: ['material', 'replay'],
