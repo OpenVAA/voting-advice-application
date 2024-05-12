@@ -86,7 +86,6 @@ export function startEvent(name: TrackingEvent['name'], data: TrackingEvent['dat
  * Submit all unsubmitted compound events started with `startEvent` and the `pageview` event.
  */
 export function submitAllEvents() {
-  console.info(`Submitting ${unsubmittedEvents.length} events`);
   if (shouldTrack() && (pageviewEvent || unsubmittedEvents?.length)) {
     const events: Record<string, TrackingEvent['data']> = {};
     // This shouldn't happen
@@ -112,7 +111,6 @@ export function submitAllEvents() {
  * Reset all unsubmitted events, including the `pageview` event.
  */
 export function resetAllEvents() {
-  console.info('resest eventes');
   pageviewEvent = undefined;
   unsubmittedEvents = [];
 }
