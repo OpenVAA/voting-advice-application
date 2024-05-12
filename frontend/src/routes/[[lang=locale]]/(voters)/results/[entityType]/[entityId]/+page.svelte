@@ -2,7 +2,7 @@
   import {error} from '@sveltejs/kit';
   import {afterNavigate, goto} from '$app/navigation';
   import {locale, t} from '$lib/i18n';
-  import {track} from '$lib/utils/analytics/track';
+  import {startEvent} from '$lib/utils/analytics/track';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {
     candidateRankings,
@@ -68,10 +68,10 @@
           // Find out the rank of this entity
           $entities.then((all) => {
             const rank = all.findIndex((a) => a.entity.id == e.entity.id);
-            track(`results_ranked_${entityType}`, {id, score: e.score, rank});
+            startEvent(`results_ranked_${entityType}`, {id, score: e.score, rank});
           });
         } else {
-          track(`results_browse_${entityType}`, {id});
+          startEvent(`results_browse_${entityType}`, {id});
         }
       });
     }

@@ -1,6 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {track} from '$lib/utils/analytics/track';
+  import {startEvent} from '$lib/utils/analytics/track';
   import {concatClass} from '$lib/utils/components';
   import {appType} from '$lib/utils/stores';
   import {Icon} from '$lib/components/icon';
@@ -33,7 +33,7 @@
     drawerOpen = true;
     // We need a small timeout for drawerCloseButton to be focusable
     setTimeout(() => document.getElementById('drawerCloseButton')?.focus(), 50);
-    track('menu_open');
+    startEvent('menu_open');
   }
 
   /**

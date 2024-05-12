@@ -1,8 +1,9 @@
 <script lang="ts">
-  import {onDestroy, onMount} from 'svelte';
+  import {onMount} from 'svelte';
   import {fade} from 'svelte/transition';
+  import {beforeNavigate} from '$app/navigation';
   import {locale, t} from '$lib/i18n';
-  import {startEvent, submitEvent, type TrackingEvent} from '$lib/utils/analytics/track';
+  import {startEvent, type TrackingEvent} from '$lib/utils/analytics/track';
   import {concatClass} from '$lib/utils/components';
   import {sanitizeHtml} from '$lib/utils/sanitize';
   import {Button} from '$lib/components/button';
@@ -142,33 +143,33 @@
   let event: TrackingEvent<VideoTrackingEventData> | undefined = undefined;
 
   /**
-   * Start a new video event
+   * Start a new video event if none exists
    */
   function startVideoEvent() {
-    if (event) submitEvent(event);
-    event = startEvent(
-      'video',
-      {
-        startAt: duration && currentTime ? currentTime / duration : 0,
-        startMuted: muted,
-        startWithTranscript: transcriptVisible,
-        startWithCaptions: showCaptions
-      },
-      // Add the rest of data when submitting the event
-      (current) => {
-        event = undefined;
-        current.data = {
-          ...current.data,
-          src: video?.currentSrc,
-          duration,
-          endAt: atEnd ? 'end' : duration !== 0 ? currentTime / duration : 0,
-          endMuted: muted,
-          endWithTranscript: transcriptVisible,
-          endWithCaptions: showCaptions
-        };
-        return current;
-      }
-    );
+    if (event) return;
+    event = startEvent('video', {
+      startMuted: muted,
+      startWithTranscript: transcriptVisible,
+      startWithCaptions: showCaptions
+    });
+  }
+
+  /**
+   * Finalize the current video event
+   */
+  function endVideoEvent() {
+    if (!event) return;
+    event.data = {
+      ...event.data,
+      src: video?.currentSrc,
+      duration,
+      endAt: atEnd ? 'end' : duration !== 0 ? currentTime / duration : 0,
+      endMuted: muted,
+      endWithTranscript: transcriptVisible,
+      endWithCaptions: showCaptions
+    };
+    // Delete the reference to the video event, it will still be contained in the unsubmitted events in the tracking module
+    event = undefined;
   }
 
   /**
@@ -188,15 +189,8 @@
     }
   }
 
-  /**
-   * Submit the current video event
-   */
-  function submitVideoEvent() {
-    if (event) submitEvent(event);
-  }
-
+  beforeNavigate(endVideoEvent);
   onMount(startVideoEvent);
-  onDestroy(submitVideoEvent);
 
   ////////////////////////////////////////////////////////////////////////////////
   // CONTROL FUNCTIONS
@@ -332,9 +326,9 @@
    * Call this function after changing the video contents, i.e. sources, captions, poster and transcript.
    */
   export function reload(props: CustomVideoProps) {
-    // Submit any tracking event we have created
-    submitVideoEvent();
     if (!video) return;
+    // End the current video tracking event if it exists
+    endVideoEvent();
     // Hide text track before reloading to prevent duplicate rendering on Chrome
     const tracksShown = !textTracksHidden;
     if (tracksShown) toggleCaptions(false);

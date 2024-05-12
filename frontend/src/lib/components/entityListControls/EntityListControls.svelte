@@ -10,7 +10,7 @@
   import {TextPropertyFilter} from '$lib/voter/vaa-filters';
   import {TextEntityFilter} from '../entityFilters/text';
   import InfoBadge from '../infoBadge/infoBadge.svelte';
-  import {track} from '$lib/utils/analytics/track';
+  import {startEvent} from '$lib/utils/analytics/track';
 
   type $$Props = EntityListControlsProps;
 
@@ -68,7 +68,7 @@
   /** Reset and close the filters dialog */
   function resetFilters() {
     filterGroup?.reset();
-    if (filterGroup) track('filters_reset');
+    if (filterGroup) startEvent('filters_reset');
     closeFiltersModal();
   }
 
@@ -80,7 +80,7 @@
       .filter((f) => f.active)
       .map((f) => f.name)
       .join(',');
-    if (activeFilters) track('filters_active', {activeFilters});
+    if (activeFilters) startEvent('filters_active', {activeFilters});
   }
 </script>
 

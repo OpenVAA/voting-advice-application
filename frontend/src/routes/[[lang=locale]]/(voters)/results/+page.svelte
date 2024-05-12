@@ -1,7 +1,7 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
+  import {startEvent} from '$lib/utils/analytics/track';
   import {t} from '$lib/i18n';
-  import {track} from '$lib/utils/analytics/track';
   import {candidateFilters} from '$lib/utils/filters';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {
@@ -37,7 +37,7 @@
   let resultsAvailableSync = false;
   $resultsAvailable.then((v) => {
     resultsAvailableSync = v;
-    track(v ? 'results_ranked' : 'results_browse', {
+    startEvent(v ? 'results_ranked' : 'results_browse', {
       section: sections[$activeTab],
       numAnswers: Object.keys($answeredQuestions).length
     });
@@ -152,7 +152,7 @@
       <Tabs
         tabs={sections.map((entityType) => $t(`common.${entityType}.plural`))}
         bind:activeIndex={$activeTab}
-        on:change={({detail}) => track('results_changeTab', {section: sections[detail.index]})}
+        on:change={({detail}) => startEvent('results_changeTab', {section: sections[detail.index]})}
         class="mx-10" />
     {/if}
 

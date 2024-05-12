@@ -91,8 +91,6 @@ export type VideoTrackingEventData = TrackingEvent['data'] &
     /** Jump steps as a comma-separeted list, '1,-1,1,' */
     jump: string;
     src: string;
-    /** As a fraction of duration [0,1] */
-    startAt: number;
     startMuted: boolean;
     startWithCaptions: boolean;
     startWithTranscript: boolean;
