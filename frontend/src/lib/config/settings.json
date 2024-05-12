@@ -87,6 +87,7 @@
       "candidate": ["submatches"],
       "party": ["candidates"]
     },
+    "showFeedbackPopup": 180,
     "sections": ["candidate", "party"]
   }
 }
