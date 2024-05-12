@@ -1,111 +1,169 @@
 import {get, writable} from 'svelte/store';
 import {browser} from '$app/environment';
+import {page} from '$app/stores';
+import {getUUID} from '$lib/utils/components';
 import {logDebugError} from '$lib/utils/logger';
 import {settings, userPreferences} from '$lib/utils/stores';
 
 /**
- * In order for tracking to do anything, set the value of this store to a function that will send the events.
+ * Contains the current pageview event, which will be automatically submitted containing any other submitted events when the user leaves the page or hides or closes the window.
  */
-export const sendTrackingEvent = writable<(e: TrimmedTrackingEvent) => void | undefined>(undefined);
-
-/**
- * Track an analytics event.
- */
-export function track(name: TrackingEvent['name'], data: TrackingEvent['data'] = {}) {
-  if (
-    !browser ||
-    !get(settings).analytics.trackEvents ||
-    get(userPreferences).dataCollection?.consent !== 'granted'
-  )
-    return;
-  const send = get(sendTrackingEvent);
-  if (!send) return;
-  const trimmedData: TrimmedTrackingEvent['data'] = {};
-  for (const [key, value] of Object.entries(data)) {
-    if (value == null) continue;
-    if (typeof value === 'boolean') {
-      trimmedData[key] = value ? 'true' : 'false';
-      continue;
+let pageviewEvent:
+  | {
+      href: string;
+      from?: string;
+      start?: number;
     }
-    trimmedData[key] = value;
-  }
-  logDebugError({name, data: trimmedData});
-  send({name, data: trimmedData});
-}
+  | undefined = undefined;
 
 /**
  * Contains any unsubmitted compound events. These will be automatically submitted when the user leaves the app.
  */
-let unsubmittedEvents: {
-  event: TrackingEvent;
-  onSubmit?: (event: TrackingEvent) => TrackingEvent;
-}[] = [];
+let unsubmittedEvents: TrackingEvent[] = [];
 
 /**
- * Use this function to start an analytics event into which you want to add data to later.
+ * Holds the current vaa session id, which is stored in sessionStorage
+ */
+let sessionId: string | null = null;
+
+/**
+ * Whether we should track events.
+ * @returns true if we should track events
+ */
+export function shouldTrack() {
+  return (
+    browser &&
+    get(settings).analytics.trackEvents &&
+    get(userPreferences).dataCollection?.consent === 'granted'
+  );
+}
+
+/**
+ * In order for tracking to do anything, set the value of this store to a function that will send the events.
+ */
+export const sendTrackingEvent =
+  writable<(e: TrackingEvent<Record<string, JSONData>>) => void | undefined>(undefined);
+
+/**
+ * Track an analytics event and send it immediately. For most purposes, it's better to use the `startEvent` function instead, which will collect the events by page and only submit them when the page is unloaded.
+ */
+export function track(name: TrackingEvent['name'], data: TrackingEvent['data'] = {}) {
+  if (!shouldTrack()) return;
+  const send = get(sendTrackingEvent);
+  if (!send) return;
+  const dataToSend = purgeNullish({vaaSessionId: getSessionId(), ...data});
+  logDebugError({name, data: dataToSend});
+  send({name, data: dataToSend});
+}
+
+/**
+ * Call at the start of a page view to create an event that will be automatically submitted when the user leaves the page or hides or closes the window.
+ * @param route The route of the page
+ * @param from Optional route from which the page was loaded
+ */
+export function startPageview(href: string, from?: string | null) {
+  if (pageviewEvent) logDebugError('Pageview already started');
+  pageviewEvent = {
+    href,
+    from: from ?? undefined,
+    start: Date.now()
+  };
+}
+
+/**
+ * Start an analytics event into which you want to add data to later, and which will be automatically submitted as part of the `pageview` event when the user leaves the page or hides or closes the window.
  * @param name Event name
  * @param data Initial event data
- * @param onSubmit A callback that will be called before the event is submitted and which you can use to modify the event.
  * @returns The event object that can be used to add data to.
  */
-export function startEvent(
-  name: TrackingEvent['name'],
-  data: TrackingEvent['data'] = {},
-  onSubmit?: (event: TrackingEvent) => TrackingEvent
-) {
+export function startEvent(name: TrackingEvent['name'], data: TrackingEvent['data'] = {}) {
   const event = {name, data};
-  unsubmittedEvents.push({event, onSubmit});
+  unsubmittedEvents.push(event);
   return event;
 }
 
 /**
- * Submit a specific compound event you started with `startEvent`.
- * @param event The event object returned by `startEvent`.
+ * Submit all unsubmitted compound events started with `startEvent` and the `pageview` event.
  */
-export function submitEvent(event: TrackingEvent) {
-  submitAllEvents(event);
+export function submitAllEvents() {
+  console.info(`Submitting ${unsubmittedEvents.length} events`);
+  if (shouldTrack() && (pageviewEvent || unsubmittedEvents?.length)) {
+    const events: Record<string, TrackingEvent['data']> = {};
+    // This shouldn't happen
+    if (!pageviewEvent) pageviewEvent = {href: get(page)?.url?.href ?? ''};
+    // Prefix a number to all subevent names
+    for (let i = 0; i < unsubmittedEvents.length; i++) {
+      // We limit the max events to 50 (umami's limit) minus the ones we're adding by default
+      if (i >= 50 - 5) {
+        logDebugError(`Too many unsubmitted events: ${unsubmittedEvents.length}`);
+        break;
+      }
+      const {name, data} = unsubmittedEvents[i];
+      events[`${i < 10 ? '0' : ''}${i}__${name}`] = data;
+    }
+    const {href, from, start} = pageviewEvent;
+    const duration = start ? Date.now() - start : undefined;
+    track('pageview', {href, from, start, duration, ...events});
+  }
+  resetAllEvents();
 }
 
 /**
- * Submit all unsubmitted compound events started with `startEvent`.
- * @param onlyEvent If specified, will only submit that event, in which case it's equal to calling `submitEvent(event)`.
- * @returns
+ * Reset all unsubmitted events, including the `pageview` event.
  */
-export function submitAllEvents(onlyEvent?: TrackingEvent) {
-  for (const eventObj of unsubmittedEvents) {
-    const {onSubmit, event} = eventObj;
-    // Only submit the event if it's the one we're looking for
-    if (onlyEvent && onlyEvent !== event) continue;
-    const {name, data} = onSubmit ? onSubmit(event) : event;
-    track(name, data);
-    // If we were looking for a specific event, delete it and return
-    if (onlyEvent) {
-      unsubmittedEvents.splice(unsubmittedEvents.indexOf(eventObj), 1);
-      return;
+export function resetAllEvents() {
+  console.info('resest eventes');
+  pageviewEvent = undefined;
+  unsubmittedEvents = [];
+}
+
+/**
+ * Gets the vaaSessionId value from sessionStorage or generates a new one if it doesn't exist.
+ * @returns vaaSessionId
+ */
+export function getSessionId() {
+  if (!sessionId) {
+    if (browser && sessionStorage) {
+      try {
+        sessionId = sessionStorage.getItem('vaaSessionId');
+        if (!sessionId) {
+          sessionId = getUUID();
+          sessionStorage.setItem('vaaSessionId', sessionId);
+        }
+      } catch (e) {
+        logDebugError(e);
+      }
+    } else {
+      sessionId = getUUID();
     }
   }
-  unsubmittedEvents = [];
+  return sessionId;
+}
+
+/**
+ * A helper to remove any nullish properties from an object so that it can be sent as JSON.
+ */
+function purgeNullish(data: TrackingEvent['data']) {
+  const out: Record<string, JSONData> = {};
+  for (const [key, value] of Object.entries(data)) {
+    if (value == null) continue;
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      out[key] = purgeNullish(value);
+    } else {
+      out[key] = value;
+    }
+  }
+  return out;
 }
 
 /**
  * The interface for an analytics event.
  */
 export interface TrackingEvent<
-  Data extends Record<string, string | number | boolean | undefined | null> = Record<
-    string,
-    string | number | boolean | undefined | null
-  >
+  Data extends Record<string, JSONData | undefined> = Record<string, JSONData | undefined>
 > {
   name: TrackingEventName;
   data: Data;
-}
-
-/**
- * A simple format for an analytics event into which `TrackingEvent`s are converted before submitting to the `sendTrackingEvent` function.
- */
-export interface TrimmedTrackingEvent {
-  name: TrackingEventName;
-  data: Record<string, string | number>;
 }
 
 export type TrackingEventName =
@@ -121,6 +179,7 @@ export type TrackingEventName =
   | 'filters_reset' // <EntityListControls>
   | 'maintenance_shown' // <MaintenancePage>
   | 'menu_open' // <Page>
+  | 'pageview' // $lib/utils/analytics/track.ts
   | 'question_next' // /(voter)/questions/[questionId]/+page.svelte
   | 'question_previous' // /(voter)/questions/[questionId]/+page.svelte
   | 'question_skip' // /(voter)/questions/[questionId]/+page.svelte
