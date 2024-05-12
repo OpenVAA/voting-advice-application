@@ -1,10 +1,11 @@
 {
   "descriptionLabel": "Ytterligare kommentarer",
-  "descriptionPlaceholder": "Skriv dina kommentarer eller förslag här",
+  "descriptionPlaceholder": "Dina kommentarer eller förslag",
   "emailIntro": "Om du vill kan du också nå oss via e-post på",
   "error": "Vi är oerhört ledsna, det uppstod ett fel när din feedback skickades.",
   "errorEmailIntro": "Vi ber dig att skicka din feedback via e-post genom att klicka på knappen nedan. All feedback du redan skrivit inkluderas automatiskt i e-postmeddelandet.",
   "errorEmailSubject": "Feedack",
+  "popupTitle": "Vad tycker du om valkompassen?",
   "ratingLabel": "Totalt betyg för appen",
   "ratingValueLabel": "{rating, plural, =0 {Inget betyg} other {Betyg # av {ratingMax}}}",
   "sendButton": "Skicka feedback",
