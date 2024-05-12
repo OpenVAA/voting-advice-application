@@ -152,6 +152,36 @@ export function setDataConsent(consent: UserDataCollectionConsent): void {
 }
 
 /**
+ * Set the user's feedback status together with the date of update.
+ * @param status The value for the status
+ */
+export function setFeedbackStatus(status: UserFeedbackStatus): void {
+  userPreferences.update((d) => ({
+    ...d,
+    feedback: {status, date: new Date().toISOString()}
+  }));
+}
+
+/**
+ * A store that will be true, if the user should be shown the feedback popup.
+ */
+export const showFeedbackPopup: Writable<boolean> = writable(false);
+
+let feedbackTimeout: NodeJS.Timeout | undefined;
+
+/**
+ * Start the countdown for the feedback popup, after which it will be shown on next page load.
+ * This will do nothing, if the user has already given their feedback.
+ * @param delay The delay in seconds. @default 180 (3 minutes)
+ */
+export function startFeedbackPopupCountdown(delay = 3 * 60) {
+  if (feedbackTimeout) return;
+  feedbackTimeout = setTimeout(() => {
+    if (get(userPreferences).feedback?.status !== 'received') showFeedbackPopup.set(true);
+  }, delay * 1000);
+}
+
+/**
  * Utility store for the election as part of `PageData`.
  */
 export const election: Readable<ElectionProps | undefined> = derived(

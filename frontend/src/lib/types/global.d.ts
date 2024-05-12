@@ -131,6 +131,7 @@ declare global {
         party: Array<'candidates' | 'submatches' | AppSettingsQuestionRef>;
       };
       sections: Array<Exclude<EntityType, 'all'>>;
+      showFeedbackPopup?: number;
     };
     publisher?: {
       name: string;
@@ -173,12 +174,21 @@ declare global {
       consent: UserDataConsent;
       date: string;
     };
+    feedback: {
+      status: UserFeedbackStatus;
+      date: string;
+    };
   }
 
   /**
-   * The possible values for user's data collection consent
+   * The possible values for a user's data collection consent
    */
   type UserDataCollectionConsent = 'denied' | 'granted' | 'indetermined';
+
+  /**
+   * The possible values for the status of asking for a user's feedback.
+   */
+  type UserFeedbackStatus = 'received' | 'indetermined';
 
   /**
    * The properties of a Candidate object that can be passed onto the

@@ -1,16 +1,31 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
   import {afterNavigate, onNavigate} from '$app/navigation';
-  import {settings, userPreferences} from '$lib/utils/stores';
+  import {settings, showFeedbackPopup, userPreferences} from '$lib/utils/stores';
   import {DataConsentPopup} from '$lib/components/dataConsent/popup';
+  import {FeedbackPopup} from '$lib/components/feedback/popup';
   import {startPageview, submitAllEvents} from '$lib/utils/analytics/track';
+
+  let doShowFeedbackPopup = false;
 
   onNavigate(() => submitAllEvents());
   onDestroy(() => submitAllEvents());
-  afterNavigate(({from, to}) => startPageview(to?.url?.href ?? '', from?.url?.href));
+  afterNavigate(({from, to}) => {
+    startPageview(to?.url?.href ?? '', from?.url?.href);
+    if ($showFeedbackPopup) {
+      setTimeout(() => (doShowFeedbackPopup = true), 225);
+      $showFeedbackPopup = false;
+    } else {
+      doShowFeedbackPopup = false;
+    }
+  });
 </script>
 
 <slot />
+
+{#if doShowFeedbackPopup}
+  <FeedbackPopup />
+{/if}
 
 <!-- Handle analytics loading -->
 {#if $settings.analytics?.platform}

@@ -379,6 +379,12 @@
           "items": {
             "enum": ["candidate", "party"]
           }
+        },
+        "showFeedbackPopup": {
+          "description": "If defined, a feedback popup will be shown when the user has reached the results section after the number of seconds given by this value. The popup will not be shown, if the user has already given some feedback.",
+          "type": "integer",
+          "minimum": 0,
+          "default": 180
         }
       }
     }

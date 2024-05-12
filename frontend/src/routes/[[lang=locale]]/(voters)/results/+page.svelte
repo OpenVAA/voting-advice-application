@@ -13,7 +13,8 @@
     opinionQuestions,
     partyRankings,
     resultsAvailable,
-    settings
+    settings,
+    startFeedbackPopupCountdown
   } from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import type {EntityCardProps} from '$lib/components/entityCard';
@@ -41,6 +42,8 @@
       section: sections[$activeTab],
       numAnswers: Object.keys($answeredQuestions).length
     });
+    if ($settings.results.showFeedbackPopup != null)
+      startFeedbackPopupCountdown($settings.results.showFeedbackPopup);
   });
 
   /**
