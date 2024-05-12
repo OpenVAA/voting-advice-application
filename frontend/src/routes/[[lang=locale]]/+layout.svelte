@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {openFeedbackModal, settings} from '$lib/utils/stores';
-  import {FeedbackModal} from '$lib/components/feedbackModal';
+  import {FeedbackModal} from '$lib/components/feedback/modal';
   import {Loading} from '$lib/components/loading';
   import {MaintenancePage} from '$lib/templates/maintenance';
   import '../../app.css';

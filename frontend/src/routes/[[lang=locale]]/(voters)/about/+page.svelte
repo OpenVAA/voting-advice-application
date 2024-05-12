@@ -2,9 +2,10 @@
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {openFeedbackModal, settings} from '$lib/utils/stores';
+  import {settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {Feedback} from '$lib/components/feedback';
   import {HeroEmoji} from '$lib/components/heroEmoji';
   import {BasicPage} from '$lib/templates/basicPage';
 </script>
@@ -20,9 +21,9 @@
   </HeadingGroup>
 
   <svelte:fragment slot="banner">
-    {#if $settings.header.showFeedback && $openFeedbackModal}
+    {#if $settings.header.showFeedback}
       <Button
-        on:click={$openFeedbackModal}
+        href="#feedback-form"
         variant="icon"
         icon="feedback"
         text={$t('navigation.sendFeedback')} />
@@ -45,13 +46,8 @@
     )}
   {/if}
 
-  {#if $openFeedbackModal}
-    <h2 class="mb-md mt-lg">{$t('about.feedbackTitle')}</h2>
-    <p>
-      {$t('about.feedbackContent')}
-    </p>
-    <Button on:click={$openFeedbackModal} text={$t('navigation.sendFeedback')} />
-  {/if}
+  <h2 id="feedback-form" class="mb-md mt-lg">{$t('about.feedbackTitle')}</h2>
+  <Feedback />
 
   {#if $settings.appVersion.source}
     <h2 class="mb-md mt-lg">{$t('about.sourceTitle')}</h2>
