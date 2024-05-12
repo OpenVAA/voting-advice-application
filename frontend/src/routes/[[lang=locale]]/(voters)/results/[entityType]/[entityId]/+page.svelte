@@ -49,7 +49,6 @@
       entity = $entities.then((d) => {
         const res = d.find((r) => r.entity.id == id);
         if (res) title = res.entity.name;
-        console.info('res');
         return res;
       });
       if ($settings.entityDetails.contents[entityType].includes('candidates')) {
@@ -62,6 +61,7 @@
       } else {
         candidatesOrUndef = Promise.resolve(undefined);
       }
+      // Tracking
       entity.then((e) => {
         if (!e) return;
         if ('score' in e) {
