@@ -28,8 +28,8 @@ Show a popup with a data consent form, if data consent has not been given yet.
 
 {#if !$userPreferences.dataCollection?.consent || $userPreferences.dataCollection?.consent === 'indetermined'}
   <Alert bind:closeAlert title={$t('privacy.dataTitle')} icon="privacy" {...$$restProps}>
-    <div class="grid grid-flow-col">
-      <p class="mt-md">
+    <div class="grid grid-flow-row sm:grid-flow-col">
+      <p class="my-0">
         {$t('privacy.dataConsentIntro.popup')}
       </p>
       <DataConsentInfoButton class="!inline" />
