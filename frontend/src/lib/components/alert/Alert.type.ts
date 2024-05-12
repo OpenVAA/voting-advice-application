@@ -7,7 +7,7 @@ export type AlertProps = SvelteHTMLElements['dialog'] & {
    */
   title: string;
   /**
-   * The icon of the alert. @default info
+   * Possible icon of the alert. @default undefined
    */
   icon?: IconName;
   /**

@@ -88,13 +88,16 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
   aria-describedby={contentId}
   {...concatClass(
     $$restProps,
-    'alert fixed z-30 w-auto shadow-xl transition-all !pr-[2rem] ' +
+    'alert fixed z-30 w-auto justify-items-stretch shadow-xl transition-all sm:!pr-[2rem] ' +
+      (icon ? '' : 'sm:grid-cols-[minmax(auto,1fr)_auto] ') +
       'bottom-0 left-0 right-0 pb-safelgb pl-safelgl rounded-b-none ' +
       'sm:bottom-safelgb sm:left-safelgl sm:right-safelgr sm:p-lg sm:rounded-b-[var(--rounded-box,1rem)]'
   )}
   class:vaa-alert-hidden={!isOpen}>
-  <Icon name={icon ?? 'info'} />
-  <div id={contentId}>
+  {#if icon}
+    <Icon name={icon} class="justify-self-center" />
+  {/if}
+  <div id={contentId} class="w-full">
     <slot />
   </div>
   <div>
