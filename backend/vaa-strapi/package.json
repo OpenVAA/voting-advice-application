@@ -21,6 +21,7 @@
     ]
   },
   "dependencies": {
+    "@koa/router": "12",
     "@strapi/plugin-documentation": "^4.20.4",
     "@strapi/plugin-i18n": "^4.20.4",
     "@strapi/plugin-users-permissions": "^4.20.4",
@@ -32,6 +33,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^5.3.4",
     "strapi-plugin-import-export-entries": "file:./strapi-plugin-import-export-entries",
+    "strapi-plugin-rest-cache": "^4.2.9",
     "styled-components": "^5.3.11"
   },
   "author": {

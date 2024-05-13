@@ -14,3 +14,8 @@ export enum API {
   QuestionType = 'api::question-type.question-type',
   User = 'plugin::users-permissions.user'
 }
+
+/**
+ * By default all api endpoints are cached except the following. See ../../config/plugins.ts
+ */
+export const NO_CACHE = [API.AppLabel, API.AppSettings, API.User];

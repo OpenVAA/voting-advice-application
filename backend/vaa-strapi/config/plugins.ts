@@ -1,3 +1,5 @@
+import {API, NO_CACHE} from '../src/functions/utils/api';
+
 export default ({env}) => ({
   email: {
     config: {
@@ -19,5 +21,23 @@ export default ({env}) => ({
   'import-export-entries': {
     enabled: true,
     resolve: './strapi-plugin-import-export-entries'
+  },
+  'rest-cache': {
+    config: {
+      provider: {
+        name: 'memory',
+        options: {
+          max: 2 * 32767, // default is 32767
+          maxAge: 8 * 60 * 60 * 1000, // 8 hours
+          updateAgeOnGet: true
+        }
+      },
+      strategy: {
+        debug: false,
+        enableEtag: true,
+        maxAge: 8 * 60 * 60 * 1000, // 8 hours
+        contentTypes: Object.values(API).filter((a) => !NO_CACHE.includes(a))
+      }
+    }
   }
 });
