@@ -13,3 +13,12 @@ export const API = {
   QuestionType: 'api::question-type.question-type',
   User: 'plugin::users-permissions.user'
 } as const;
+
+/**
+ * By default all api endpoints are cached except the following. See ../../config/plugins.ts
+ */
+export const NO_CACHE: ReadonlyArray<(typeof API)[keyof typeof API]> = [
+  API.AppCustomization,
+  API.AppSettings,
+  API.User
+] as const;

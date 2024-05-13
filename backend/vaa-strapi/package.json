@@ -34,6 +34,7 @@
     "react-router-dom": "^5.3.4",
     "strapi-plugin-import-export-entries": "file:./strapi-plugin-import-export-entries",
     "strapi-plugin-multi-select": "^1.2.3",
+    "strapi-plugin-rest-cache": "^4.2.9",
     "styled-components": "^5.3.11",
     "vaa-shared": "1.0.0"
   },
