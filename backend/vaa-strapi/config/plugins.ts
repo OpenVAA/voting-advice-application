@@ -1,3 +1,4 @@
+import {API, NO_CACHE} from '../src/functions/utils/api';
 const aws = require('@aws-sdk/client-ses');
 
 export default ({env}) => {
@@ -79,6 +80,24 @@ export default ({env}) => {
     'candidate-admin': {
       enabled: true,
       resolve: './src/plugins/candidate-admin'
+    },
+    'rest-cache': {
+      config: {
+        provider: {
+          name: 'memory',
+          options: {
+            max: 2 * 32767, // default is 32767
+            maxAge: 8 * 60 * 60 * 1000, // 8 hours
+            updateAgeOnGet: true
+          }
+        },
+        strategy: {
+          debug: false,
+          enableEtag: true,
+          maxAge: 8 * 60 * 60 * 1000, // 8 hours
+          contentTypes: Object.values(API).filter((a) => !NO_CACHE.includes(a))
+        }
+      }
     }
   };
 };
