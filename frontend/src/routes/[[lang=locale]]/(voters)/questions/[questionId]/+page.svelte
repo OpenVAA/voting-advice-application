@@ -1,5 +1,4 @@
 <script lang="ts">
-  import {error} from '@sveltejs/kit';
   import {goto} from '$app/navigation';
   import {t} from '$lib/i18n';
   import {logDebugError} from '$lib/utils/logger';
@@ -26,6 +25,7 @@
   import type {PageData} from './$types';
   import {Loading} from '$lib/components/loading';
   import {startEvent} from '$lib/utils/analytics/track';
+  import {browser} from '$app/environment';
 
   export let data: PageData;
 
@@ -60,7 +60,11 @@
     const previousQuestion = question;
     questionId = newQuestionId === FIRST_QUESTION_ID ? questions[0].id : newQuestionId;
     question = questions.find((q) => q.id == questionId);
-    if (!question) throw error(404, `No question with id ${questionId}`);
+    if (!question) {
+      logDebugError(`No question with id ${questionId}`);
+      if (newQuestionId !== FIRST_QUESTION_ID && browser) return goto($getRoute(Route.Questions));
+      return;
+    }
     // Update the index because we need it in the goto-functions
     questionIndex = questions.indexOf(question);
     // Only perform updates if the question has actually changed
