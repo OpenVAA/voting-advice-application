@@ -102,7 +102,10 @@ export function setVoterAnswer(questionId: string, value?: AnswerProps['value'])
       startEvent('answer_delete', {questionId});
       delete d[questionId];
     } else {
-      startEvent('answer', {questionId});
+      startEvent('answer', {
+        questionId,
+        value: typeof value === 'number' || typeof value === 'boolean' ? value : `${value}`
+      });
       d[questionId] = {value};
     }
     return d;
