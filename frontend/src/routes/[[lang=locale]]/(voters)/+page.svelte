@@ -4,6 +4,7 @@
   import {election, resetVoterAnswers, settings} from '$lib/utils/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {SurveyBanner} from '$lib/components/survey';
   import {FrontPage} from '$lib/templates/frontPage';
 </script>
 
@@ -31,4 +32,8 @@
     >{$t('actionLabels.electionInfo')}</a>
   <a href={$getRoute(Route.About)} class="btn btn-ghost w-full max-w-md"
     >{$t('actionLabels.howItWorks')}</a>
+
+  {#if $settings.analytics.survey?.showIn?.includes('frontpage')}
+    <SurveyBanner class="mt-lg" />
+  {/if}
 </FrontPage>
