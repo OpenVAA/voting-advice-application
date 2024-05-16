@@ -1,11 +1,13 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
+  import {surveyLink} from '$lib/utils/analytics/survey';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {
     answeredQuestions,
     openFeedbackModal,
     resetVoterAnswers,
-    resultsAvailable
+    resultsAvailable,
+    settings
   } from '$lib/utils/stores';
   import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
   import LanguageSelection from './LanguageSelection.svelte';
@@ -57,9 +59,19 @@ A template part that outputs the navigation menu for the Voter App for use in th
     <NavItem href={$getRoute(Route.Info)} icon="info" text={$t('actionLabels.electionInfo')} />
     <NavItem href={$getRoute(Route.About)} icon="info" text={$t('actionLabels.howItWorks')} />
     <NavItem href={$getRoute(Route.Privacy)} icon="info" text={$t('privacy.title')} />
-    {#if $openFeedbackModal}
-      <NavItem on:click={$openFeedbackModal} icon="feedback" text={$t('navigation.sendFeedback')} />
-    {/if}
   </NavGroup>
+  {#if $settings.analytics.survey?.showIn?.includes('navigation') || $openFeedbackModal}
+    <NavGroup>
+      {#if $settings.analytics.survey?.showIn?.includes('navigation')}
+        <NavItem href={$surveyLink} target="_blank" icon="research" text={$t('survey.button')} />
+      {/if}
+      {#if $openFeedbackModal}
+        <NavItem
+          on:click={$openFeedbackModal}
+          icon="feedback"
+          text={$t('navigation.sendFeedback')} />
+      {/if}
+    </NavGroup>
+  {/if}
   <LanguageSelection />
 </Navigation>

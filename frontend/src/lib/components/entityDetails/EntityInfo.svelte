@@ -7,6 +7,7 @@
   import {settings} from '$lib/utils/stores';
   import {InfoAnswer} from '$lib/components/infoAnswer';
   import {PartyTag} from '$lib/components/partyTag';
+  import {SurveyBanner} from '$lib/components/survey';
   import InfoItem from './InfoItem.svelte';
   import type {EntityDetailsProps} from './EntityDetails.type';
 
@@ -85,6 +86,9 @@ Used to show an entity's basic info in an `EntityDetails` component.
         </InfoItem>
       </div>
     {/if}
+  {/if}
+  {#if $settings.analytics.survey?.showIn?.includes('entityDetails')}
+    <SurveyBanner class="mt-lg" />
   {/if}
 </div>
 
