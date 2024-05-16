@@ -165,6 +165,29 @@
             }
           }
         },
+        "survey": {
+          "description": "Settings related to a user survey. If not defined, no survey will be shown.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["linkTemplate", "showIn"],
+          "default": null,
+          "properties": {
+            "linkTemplate": {
+              "description": "The link to the survey. This is passed to the translation function, which will replace `{sessionId}` with the URL-encoded session id if available or an empty string otherwise.",
+              "type": "string",
+              "minLength": 1
+            },
+            "showIn": {
+              "description": "Where the survey prompt should be shown.",
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "enum": ["frontpage", "entityDetails", "navigation"]
+              }
+            }
+          }
+        },
         "trackEvents": {
           "description": "Whether to collect anonymous usage data about all UI actions, including answers to statements. This will only have an effect if the analytics platform is defined.",
           "type": "boolean",
