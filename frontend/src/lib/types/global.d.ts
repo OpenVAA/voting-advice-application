@@ -104,6 +104,10 @@ declare global {
         code: string;
         infoUrl: string;
       };
+      survey?: {
+        linkTemplate: string;
+        showIn: Array<'frontpage' | 'entityDetails' | 'navigation'>;
+      };
       trackEvents: boolean;
     };
     entityDetails: {
@@ -178,6 +182,10 @@ declare global {
       status: UserFeedbackStatus;
       date: string;
     };
+    survey: {
+      status: UserFeedbackStatus;
+      date: string;
+    };
   }
 
   /**
@@ -186,7 +194,7 @@ declare global {
   type UserDataCollectionConsent = 'denied' | 'granted' | 'indetermined';
 
   /**
-   * The possible values for the status of asking for a user's feedback.
+   * The possible values for the status of asking for a user's feedback or filling out a survey.
    */
   type UserFeedbackStatus = 'received' | 'indetermined';
 

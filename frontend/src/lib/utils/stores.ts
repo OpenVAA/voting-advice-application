@@ -166,6 +166,17 @@ export function setFeedbackStatus(status: UserFeedbackStatus): void {
 }
 
 /**
+ * Set the user's survey filling status together with the date of update.
+ * @param status The value for the status
+ */
+export function setSurveyStatus(status: UserFeedbackStatus): void {
+  userPreferences.update((d) => ({
+    ...d,
+    survey: {status, date: new Date().toISOString()}
+  }));
+}
+
+/**
  * A store that will be true, if the user should be shown the feedback popup.
  */
 export const showFeedbackPopup: Writable<boolean> = writable(false);
