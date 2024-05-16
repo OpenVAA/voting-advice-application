@@ -20,6 +20,7 @@ const keys = [
   'privacy',
   'questions',
   'results',
+  'survey',
   'viewTexts'
 ];
 const locales = {en: 'English', fi: 'Suomi', sv: 'Svenska'};

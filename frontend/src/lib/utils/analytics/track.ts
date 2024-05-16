@@ -1,4 +1,4 @@
-import {get, writable} from 'svelte/store';
+import {get, readable, writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import {page} from '$app/stores';
 import {getUUID} from '$lib/utils/components';
@@ -20,11 +20,6 @@ let pageviewEvent:
  * Contains any unsubmitted compound events. These will be automatically submitted when the user leaves the app.
  */
 let unsubmittedEvents: TrackingEvent[] = [];
-
-/**
- * Holds the current vaa session id, which is stored in sessionStorage
- */
-let sessionId: string | null = null;
 
 /**
  * Whether we should track events.
@@ -51,7 +46,7 @@ export function track(name: TrackingEvent['name'], data: TrackingEvent['data'] =
   if (!shouldTrack()) return;
   const send = get(sendTrackingEvent);
   if (!send) return;
-  const dataToSend = purgeNullish({vaaSessionId: getSessionId(), ...data});
+  const dataToSend = purgeNullish({vaaSessionId: get(sessionId), ...data});
   logDebugError({name, data: dataToSend});
   send({name, data: dataToSend});
 }
@@ -117,25 +112,25 @@ export function resetAllEvents() {
 
 /**
  * Gets the vaaSessionId value from sessionStorage or generates a new one if it doesn't exist.
- * @returns vaaSessionId
  */
-export function getSessionId() {
-  if (!sessionId) {
-    if (browser && sessionStorage) {
-      try {
-        sessionId = sessionStorage.getItem('vaaSessionId');
-        if (!sessionId) {
-          sessionId = getUUID();
-          sessionStorage.setItem('vaaSessionId', sessionId);
-        }
-      } catch (e) {
-        logDebugError(e);
+export const sessionId = readable(getSessionId());
+
+function getSessionId() {
+  let id: string | null | undefined;
+  if (browser && sessionStorage) {
+    try {
+      id = sessionStorage.getItem('vaaSessionId');
+      if (!id) {
+        id = getUUID();
+        sessionStorage.setItem('vaaSessionId', id);
       }
-    } else {
-      sessionId = getUUID();
+    } catch (e) {
+      logDebugError(e);
     }
+  } else {
+    id = getUUID();
   }
-  return sessionId;
+  return id as string;
 }
 
 /**
@@ -190,4 +185,5 @@ export type TrackingEventName =
   | 'results_ranked_candidate' // /(voter)/results/[entityType]/[entityId]/+page.svelte
   | 'results_ranked_party' // /(voter)/results/[entityType]/[entityId]/+page.svelte
   | 'results_ranked' // /(voter)/results/+page.svelte
+  | 'survey_opened' // <SurveyBanner>
   | 'video'; // <Video>
