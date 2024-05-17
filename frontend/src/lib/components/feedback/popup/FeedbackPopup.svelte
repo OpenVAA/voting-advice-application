@@ -75,7 +75,8 @@ Show a popup asking for user feedback.
   <div slot="actions">
     <Button
       on:click={onSubmit}
-      variant="main"
+      color={canSubmit ? 'primary' : 'warning'}
+      variant={canSubmit ? 'main' : 'normal'}
       text={status === 'sending'
         ? $t('feedback.sendButtonSending')
         : status === 'sent'
