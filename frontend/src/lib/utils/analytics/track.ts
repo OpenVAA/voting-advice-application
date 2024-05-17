@@ -159,6 +159,7 @@ export type TrackingEventName =
   | 'question_next' // /(voter)/questions/[questionId]/+page.svelte
   | 'question_previous' // /(voter)/questions/[questionId]/+page.svelte
   | 'question_skip' // /(voter)/questions/[questionId]/+page.svelte
+  | 'question_startFrom' // /(voter)/questions/[questionId]/+page.svelte
   | 'questionInfo_collapse' // <QuestionInfo>
   | 'questionInfo_expand' // <QuestionInfo>
   | 'results_browse_candidate' // /(voter)/results/[entityType]/[entityId]/+page.svelte
