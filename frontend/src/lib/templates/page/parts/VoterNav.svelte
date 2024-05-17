@@ -56,9 +56,9 @@ A template part that outputs the navigation menu for the Voter App for use in th
       text={resultsAvailableSync ? $t('navigation.results') : $t('navigation.browseEntities')} />
   </NavGroup>
   <NavGroup>
-    <NavItem href={$getRoute(Route.Info)} icon="info" text={$t('actionLabels.electionInfo')} />
+    <NavItem href={$getRoute(Route.Info)} icon="election" text={$t('actionLabels.electionInfo')} />
     <NavItem href={$getRoute(Route.About)} icon="info" text={$t('actionLabels.howItWorks')} />
-    <NavItem href={$getRoute(Route.Privacy)} icon="info" text={$t('privacy.title')} />
+    <NavItem href={$getRoute(Route.Privacy)} icon="privacy" text={$t('privacy.title')} />
   </NavGroup>
   {#if $settings.analytics.survey?.showIn?.includes('navigation') || $openFeedbackModal}
     <NavGroup>
