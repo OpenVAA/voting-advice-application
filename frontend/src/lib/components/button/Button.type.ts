@@ -19,28 +19,15 @@ export type ButtonProps = LinkOrButtonElementProps & {
    * Whether the button is disabled. This can also be used with buttons rendered as `<a>` elements.
    */
   disabled?: boolean | null;
-} & (
-    | {
-        /**
-         * Type of the button, which defines it's appearance. @default 'normal'
-         */
-        variant: 'main';
-        /**
-         * Position of the icon in the button. Only relevant if `icon` is not `null` and `variant` is not `icon`. Note that `top` and `bottom` are not supported if `variant='main'`. @default 'right' if `variant='main'`, otherwise `left`
-         */
-        iconPos?: 'left' | 'right';
-      }
-    | {
-        /**
-         * Type of the button, which defines it's appearance. @default 'normal'
-         */
-        variant?: 'icon' | 'normal' | 'responsive-icon' | 'secondary' | null;
-        /**
-         * Position of the icon in the button. Only relevant if `icon` is not `null` and `variant` is not `icon`. Note that `top` and `bottom` are not supported if `variant='main'`. @default 'right' if `variant='main'`, otherwise `left`
-         */
-        iconPos?: 'left' | 'right' | 'top' | 'bottom';
-      }
-  );
+  /**
+   * Type of the button, which defines it's appearance. @default 'normal'
+   */
+  variant?: 'main' | 'icon' | 'normal' | 'responsive-icon' | 'secondary' | null;
+  /**
+   * Position of the icon in the button. Only relevant if `icon` is not `null` and `variant` is not `icon`. Note that `top` and `bottom` are not supported if `variant='main'`. @default 'right' if `variant='main'`, otherwise `left`
+   */
+  iconPos?: 'left' | 'right' | 'top' | 'bottom';
+};
 
 /**
  * The base properties of a navigation item must be either those of an `<a>` element with the `href` attribute, or a `<button>` element, preferably with the `on:click` event handler.
