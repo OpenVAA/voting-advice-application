@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {browser} from '$app/environment';
   import {goto} from '$app/navigation';
   import {t} from '$lib/i18n';
   import {logDebugError} from '$lib/utils/logger';
@@ -25,7 +26,7 @@
   import type {PageData} from './$types';
   import {Loading} from '$lib/components/loading';
   import {startEvent} from '$lib/utils/analytics/track';
-  import {browser} from '$app/environment';
+  import {firstQuestionId} from './page-stores';
 
   export let data: PageData;
 
@@ -56,6 +57,11 @@
 
   async function updateQuestion(newQuestionId: string) {
     questions = await $opinionQuestions;
+    // Check if we this question is defined as the one to start from (using a search param, see `./+page.ts`)
+    if (data.setQuestionAsFirst && newQuestionId !== FIRST_QUESTION_ID)
+      $firstQuestionId = newQuestionId;
+    // If a first question is saved in session storage, move it as first and maintain the original question order otherwise
+    if ($firstQuestionId) questions = questions.sort((q) => (q.id === $firstQuestionId ? -1 : 0));
     // Save the current question so that we only rebuild the page if the question has actually changed either due to being a different one or a locale change
     const previousQuestion = question;
     questionId = newQuestionId === FIRST_QUESTION_ID ? questions[0].id : newQuestionId;
