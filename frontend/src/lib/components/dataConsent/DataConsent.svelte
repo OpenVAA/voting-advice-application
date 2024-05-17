@@ -3,7 +3,7 @@
   import {t} from '$lib/i18n';
   import {concatClass} from '$lib/utils/components';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {setDataConsent, settings, userPreferences} from '$lib/utils/stores';
+  import {setDataConsent, settings, userPreferences} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import {DataConsentInfoButton} from './';
   import type {DataConsentEvents, DataConsentProps} from './DataConsent.type';

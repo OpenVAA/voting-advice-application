@@ -1,6 +1,6 @@
 import {derived} from 'svelte/store';
 import {parse} from '$lib/i18n';
-import {settings} from '$lib/utils/stores';
+import {settings} from '$lib/stores';
 import {sessionId} from './track';
 
 /**

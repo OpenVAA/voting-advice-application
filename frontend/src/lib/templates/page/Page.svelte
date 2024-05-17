@@ -2,7 +2,7 @@
   import {t} from '$lib/i18n';
   import {startEvent} from '$lib/utils/analytics/track';
   import {concatClass} from '$lib/utils/components';
-  import {appType} from '$lib/utils/stores';
+  import {appType} from '$lib/stores';
   import {Icon} from '$lib/components/icon';
   import {NavItem, setNavigationContext} from '$lib/components/navigation';
   import {AppLogo} from '../parts/appLogo';

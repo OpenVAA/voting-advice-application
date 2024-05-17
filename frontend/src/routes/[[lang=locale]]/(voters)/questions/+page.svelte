@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
-  import {openFeedbackModal, opinionQuestions, settings} from '$lib/utils/stores';
+  import {openFeedbackModal, opinionQuestions, settings} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import {HeroEmoji} from '$lib/components/heroEmoji';
   import {Icon} from '$lib/components/icon';

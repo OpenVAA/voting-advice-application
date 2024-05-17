@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {concatClass} from '$lib/utils/components';
-  import {settings} from '$lib/utils/stores';
+  import {settings} from '$lib/stores';
   import {OpenVAALogo} from '$lib/components/openVAALogo';
   import type {FooterProps} from './Footer.type';
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {userPreferences} from '$lib/utils/stores';
+  import {userPreferences} from '$lib/stores';
   import {Alert} from '$lib/components/alert';
   import {DataConsent, DataConsentInfoButton} from '../';
   import type {DataConsentPopupProps} from './DataConsentPopup.type';

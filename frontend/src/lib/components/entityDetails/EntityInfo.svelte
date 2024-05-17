@@ -4,7 +4,7 @@
   import {getAnswer} from '$lib/utils/answers';
   import {getEntityType, isCandidate, isParty} from '$lib/utils/entities';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {settings} from '$lib/utils/stores';
+  import {settings} from '$lib/stores';
   import {InfoAnswer} from '$lib/components/infoAnswer';
   import {PartyTag} from '$lib/components/partyTag';
   import {SurveyBanner} from '$lib/components/survey';
