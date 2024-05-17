@@ -75,22 +75,32 @@ function _getRoute(
     | {route: Route; id?: string; locale?: string; params?: Record<string, string>}
     | {locale: string; id?: never; route?: never; params?: never}
 ): string {
+  // Shorthand function call
   if (typeof options === 'string') options = {route: options};
+
   let locale = options.locale;
   const {route, params} = options;
   let {id} = options;
+
+  // Not route defined, so we just swap the locale
   if (locale && route == null) {
     const $page = get(page);
     const url = $page.url.pathname;
     const currentLocale = $page.params.lang;
-    return url.replace(RegExp(`^/${currentLocale}`), locale === 'none' ? '' : `/${locale}`);
+    return (
+      url.replace(RegExp(`^/${currentLocale}`), locale === 'none' ? '' : `/${locale}`) +
+      $page.url.search
+    );
   } else if (route == null) {
     throw error(500, 'Either a route or a locale must be specified');
   }
+
+  // Build a new route
   locale ??= get(page).params.lang;
   if (locale === 'none') locale = '';
   const parts = ['']; // This will add the initial slash
   if (locale) parts.push(locale);
+
   // If the questions.showIntroPage setting is false, we bypass the intro page
   if (route === Route.Questions && id == null && !get(settings).questions?.showIntroPage) {
     parts.push(Route.Question);
@@ -98,6 +108,7 @@ function _getRoute(
   } else if (route !== '') {
     parts.push(route);
   }
+
   if (id) parts.push(id);
   let url = parts.join('/');
   if (params) url += `?${new URLSearchParams(params).toString()}`;
