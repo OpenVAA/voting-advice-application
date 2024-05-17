@@ -4,7 +4,7 @@
   import {Breakpoints} from '$lib/utils/breakpoints';
   import {concatProps} from '$lib/utils/components';
   import {darkMode} from '$lib/utils/darkMode';
-  import {appType} from '$lib/utils/stores';
+  import {appType} from '$lib/stores';
   import type {AuthContext} from '$lib/utils/authenticationStore';
   import {Page} from '../page';
   import type {BasicPageProps} from './BasicPage.type';

@@ -2,7 +2,7 @@
   import {t} from '$lib/i18n';
   import {concatClass} from '$lib/utils/components';
   import {darkMode} from '$lib/utils/darkMode';
-  import {settings} from '$lib/utils/stores';
+  import {settings} from '$lib/stores';
   import type {AppLogoProps} from './AppLogo.type';
 
   type $$Props = AppLogoProps;

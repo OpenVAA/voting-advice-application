@@ -2,7 +2,7 @@
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {election, openFeedbackModal, settings} from '$lib/utils/stores';
+  import {election, openFeedbackModal, settings} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {HeroEmoji} from '$lib/components/heroEmoji';

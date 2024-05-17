@@ -15,7 +15,7 @@
     resultsAvailable,
     settings,
     startFeedbackPopupCountdown
-  } from '$lib/utils/stores';
+  } from '$lib/stores';
   import {Button} from '$lib/components/button';
   import type {EntityCardProps} from '$lib/components/entityCard';
   import {EntityList} from '$lib/components/entityList';

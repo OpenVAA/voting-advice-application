@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {appType} from '$lib/utils/stores';
+  import {appType} from '$lib/stores';
   $appType = 'candidate';
 </script>
 

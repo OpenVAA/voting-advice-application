@@ -11,7 +11,7 @@
     opinionQuestions,
     partyRankings,
     settings
-  } from '$lib/utils/stores';
+  } from '$lib/stores/index.js';
   import {Button} from '$lib/components/button';
   import {EntityDetails} from '$lib/components/entityDetails';
   import {Loading} from '$lib/components/loading';

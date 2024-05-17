@@ -4,7 +4,7 @@
   import {startEvent} from '$lib/utils/analytics/track';
   import {getEntityType, parseMaybeRanked} from '$lib/utils/entities';
   import {Route, getRoute} from '$lib/utils/navigation';
-  import {settings} from '$lib/utils/stores';
+  import {settings} from '$lib/stores';
   import {EntityCard, type EntityCardProps} from '$lib/components/entityCard';
   import {Tabs} from '$lib/components/tabs';
   import {EntityInfo, EntityOpinions, EntitySubentities} from './';

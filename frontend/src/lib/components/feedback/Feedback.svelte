@@ -4,7 +4,7 @@
   import {t} from '$lib/i18n';
   import {track} from '$lib/utils/analytics/track';
   import {concatClass} from '$lib/utils/components';
-  import {setFeedbackStatus, settings} from '$lib/utils/stores';
+  import {setFeedbackStatus, settings} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import type {FeedbacProps} from './Feedback.type';
 

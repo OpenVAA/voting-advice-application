@@ -1,7 +1,7 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
   import {afterNavigate, onNavigate} from '$app/navigation';
-  import {settings, showFeedbackPopup, userPreferences} from '$lib/utils/stores';
+  import {settings, showFeedbackPopup, userPreferences} from '$lib/stores';
   import {DataConsentPopup} from '$lib/components/dataConsent/popup';
   import {FeedbackPopup} from '$lib/components/feedback/popup';
   import {startPageview, submitAllEvents} from '$lib/utils/analytics/track';

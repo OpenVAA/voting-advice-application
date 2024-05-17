@@ -2,7 +2,7 @@
   import {t} from '$lib/i18n';
   import {logDebugError} from '$lib/utils/logger';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {settings} from '$lib/utils/stores';
+  import {settings} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import {Modal} from '$lib/components/modal';
   import type {DataConsentInfoButtonProps} from './DataConsentInfoButton.type';

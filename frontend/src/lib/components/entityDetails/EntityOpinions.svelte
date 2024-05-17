@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {isCandidate} from '$lib/utils/entities';
-  import {answeredQuestions, settings} from '$lib/utils/stores';
+  import {answeredQuestions, settings} from '$lib/stores';
   import {CategoryTag} from '$lib/components/categoryTag';
   import {LikertResponseButtons, QuestionOpenAnswer} from '$lib/components/questions';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';

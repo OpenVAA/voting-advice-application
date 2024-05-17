@@ -3,7 +3,7 @@
   import {surveyLink} from '$lib/utils/analytics/survey';
   import {startEvent} from '$lib/utils/analytics/track';
   import {concatClass} from '$lib/utils/components';
-  import {setSurveyStatus, settings, userPreferences} from '$lib/utils/stores';
+  import {setSurveyStatus, settings, userPreferences} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import type {SurveyBannerProps} from './SurveyBanner.type';
 
