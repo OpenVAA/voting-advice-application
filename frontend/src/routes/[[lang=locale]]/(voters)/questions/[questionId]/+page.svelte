@@ -3,14 +3,14 @@
   import {t} from '$lib/i18n';
   import {logDebugError} from '$lib/utils/logger';
   import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
-  import {openFeedbackModal, settings} from '$lib/utils/stores';
+  import {openFeedbackModal, settings} from '$lib/stores';
   import {
     answeredQuestions,
     deleteVoterAnswer,
     opinionQuestions,
     resultsAvailable,
     setVoterAnswer
-  } from '$lib/utils/stores';
+  } from '$lib/stores';
   import {Button} from '$lib/components/button';
   import {CategoryTag} from '$lib/components/categoryTag';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';

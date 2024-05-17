@@ -7,7 +7,8 @@ import {startEvent, track} from '$lib/utils/analytics/track';
 import {logDebugError} from '$lib/utils/logger';
 import {wrap} from '$lib/utils/entities';
 import {match, matchParties} from '$lib/utils/matching';
-import {sortCandidates, sortParties} from './sort';
+import {sortCandidates, sortParties} from '$lib/utils/sort';
+import {localStorageWritable} from '$lib/utils/storage';
 
 /**
  * Contains the currently effective app settings.
@@ -21,75 +22,10 @@ export const settings: Readable<AppSettings> = derived(
       : localSettings) as AppSettings
 );
 
-type LocallyStoredValue<T> = {
-  version: number;
-  data: T;
-};
-
-/**
- * Save a value to local storage to prevent them from disappearing on page refresh.
- * The function will automatically append the app version to the data so that it may be deprecated.
- * @param key The key to store the value under.
- * @param value The value to store.
- */
-function saveItemToLocalStorage<T = JSONData>(key: string, value: T): void {
-  const toStore: LocallyStoredValue<T> = {
-    version: get(settings).appVersion.version,
-    data: value
-  };
-  localStorage.setItem(key, JSON.stringify(toStore));
-}
-
-/**
- * Get a value stored in local storage to prevent them from disappearing on page refresh.
- * The function will automatically check whether the stored data version is up to date.
- */
-function getItemFromLocalStorage<T = JSONData>(key: string): T | undefined {
-  let item: T | undefined;
-  if (browser && localStorage) {
-    const itemInLocalStorage = localStorage.getItem(key);
-    if (itemInLocalStorage) {
-      const stored = JSON.parse(itemInLocalStorage) as LocallyStoredValue<T>;
-      // Check that stored data is versioned and the version is greater than or equal to the required version
-      if (
-        stored &&
-        typeof stored === 'object' &&
-        stored.version != null &&
-        stored.version >= get(settings).appVersion.requireUserDataVersion
-      ) {
-        item = stored.data;
-      } else {
-        localStorage.removeItem(key);
-      }
-    }
-  }
-  return item;
-}
-
-function subscribeToLocalStorage<T = JSONData>(item: Writable<T>, key: string): void {
-  if (browser && localStorage) {
-    item.subscribe((value) => saveItemToLocalStorage(key, value));
-  }
-}
-
-function createStoreValueAndSubscribeToLocalStorage<T = JSONData>(
-  key: string,
-  defaultValue: T
-): Writable<T> {
-  const storedValue = getItemFromLocalStorage<T>(key);
-  // TODO: Check that the storedValue matches the defaultValue's type
-  const storeValue = writable(storedValue == null ? defaultValue : storedValue) as Writable<T>;
-  subscribeToLocalStorage(storeValue, key);
-  return storeValue;
-}
-
 /**
  * A store for the voter's answers which is maintained in local storage.
  */
-export const answeredQuestions = createStoreValueAndSubscribeToLocalStorage(
-  'answeredQuestions',
-  {} as AnswerDict
-);
+export const answeredQuestions = localStorageWritable('answeredQuestions', {} as AnswerDict);
 
 /**
  * Set a voter's answer value
@@ -135,10 +71,7 @@ export function resetVoterAnswers(): void {
 /**
  * A store for the voter's usage preferences which is maintained in local storage.
  */
-export const userPreferences = createStoreValueAndSubscribeToLocalStorage(
-  'userPreferences',
-  {} as UserPreferences
-);
+export const userPreferences = localStorageWritable('userPreferences', {} as UserPreferences);
 
 /**
  * Set the user's data consent together with the date of giving or denying the consent.

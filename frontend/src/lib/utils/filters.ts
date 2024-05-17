@@ -5,7 +5,7 @@
 
 import {type Readable, derived} from 'svelte/store';
 import {t, locale} from '$lib/i18n';
-import {parties, infoQuestions} from '$lib/utils/stores';
+import {parties, infoQuestions} from '$lib/stores';
 import {
   Filter,
   FilterGroup,

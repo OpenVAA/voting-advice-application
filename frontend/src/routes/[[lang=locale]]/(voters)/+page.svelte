@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {election, resetVoterAnswers, settings} from '$lib/utils/stores';
+  import {election, resetVoterAnswers, settings} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {SurveyBanner} from '$lib/components/survey';

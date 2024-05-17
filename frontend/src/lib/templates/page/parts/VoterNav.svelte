@@ -8,7 +8,7 @@
     resetVoterAnswers,
     resultsAvailable,
     settings
-  } from '$lib/utils/stores';
+  } from '$lib/stores';
   import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
   import LanguageSelection from './LanguageSelection.svelte';
 

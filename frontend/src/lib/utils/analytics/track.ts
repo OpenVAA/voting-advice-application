@@ -1,9 +1,10 @@
-import {get, readable, writable} from 'svelte/store';
+import {get, writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import {page} from '$app/stores';
+import {settings, userPreferences} from '$lib/stores';
+import {sessionStorageWritable} from '$lib/utils/storage';
 import {getUUID} from '$lib/utils/components';
 import {logDebugError} from '$lib/utils/logger';
-import {settings, userPreferences} from '$lib/utils/stores';
 
 /**
  * Contains the current pageview event, which will be automatically submitted containing any other submitted events when the user leaves the page or hides or closes the window.
@@ -113,25 +114,7 @@ export function resetAllEvents() {
 /**
  * Gets the vaaSessionId value from sessionStorage or generates a new one if it doesn't exist.
  */
-export const sessionId = readable(getSessionId());
-
-function getSessionId() {
-  let id: string | null | undefined;
-  if (browser && sessionStorage) {
-    try {
-      id = sessionStorage.getItem('vaaSessionId');
-      if (!id) {
-        id = getUUID();
-        sessionStorage.setItem('vaaSessionId', id);
-      }
-    } catch (e) {
-      logDebugError(e);
-    }
-  } else {
-    id = getUUID();
-  }
-  return id as string;
-}
+export const sessionId = sessionStorageWritable('vaaSessionId', getUUID());
 
 /**
  * A helper to remove any nullish properties from an object so that it can be sent as JSON.
@@ -160,10 +143,10 @@ export interface TrackingEvent<
 }
 
 export type TrackingEventName =
-  | 'answer_delete' // $lib/utils/stores.ts
-  | 'answer_resetAll' // $lib/utils/stores.ts
-  | 'answer' // $lib/utils/stores.ts
-  | 'dataConsent_granted' // $lib/utils/stores.ts
+  | 'answer_delete' // $lib/stores.ts
+  | 'answer_resetAll' // $lib/stores.ts
+  | 'answer' // $lib/stores.ts
+  | 'dataConsent_granted' // $lib/stores.ts
   | 'entityCard_expandSubcards' // <EntityCard>
   | 'entityDetails_changeTab' // <EntityDetails>
   | 'feedback_error' // <FeedbackModal>
