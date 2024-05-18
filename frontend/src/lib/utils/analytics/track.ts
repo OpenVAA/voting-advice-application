@@ -143,10 +143,10 @@ export interface TrackingEvent<
 }
 
 export type TrackingEventName =
-  | 'answer_delete' // $lib/utils/stores.ts
-  | 'answer_resetAll' // $lib/utils/stores.ts
-  | 'answer' // $lib/utils/stores.ts
-  | 'dataConsent_granted' // $lib/utils/stores.ts
+  | 'answer_delete' // $lib/stores.ts
+  | 'answer_resetAll' // $lib/stores.ts
+  | 'answer' // $lib/stores.ts
+  | 'dataConsent_granted' // $lib/stores.ts
   | 'entityCard_expandSubcards' // <EntityCard>
   | 'entityDetails_changeTab' // <EntityDetails>
   | 'feedback_error' // <FeedbackModal>
