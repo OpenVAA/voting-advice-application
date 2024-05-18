@@ -18,6 +18,7 @@ declare namespace App {
     entityType?: EntityType;
     parties?: Promise<PartyProps[]>;
     questionId?: string;
+    // `setQuestionAsFirst` will be set to `true` on the `/(voter)/questions/[questionId]` route if a `start` search param is present (regardless of its value)
     setQuestionAsFirst?: boolean;
     opinionQuestions?: Promise<QuestionProps[]>;
     // TODO: This is a temporary fix for the candidate app and will be corrected when this branc is merged into main
