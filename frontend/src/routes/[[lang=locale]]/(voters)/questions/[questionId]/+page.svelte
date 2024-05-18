@@ -58,8 +58,10 @@
   async function updateQuestion(newQuestionId: string) {
     questions = await $opinionQuestions;
     // Check if we this question is defined as the one to start from (using a search param, see `./+page.ts`)
-    if (data.setQuestionAsFirst && newQuestionId != null && newQuestionId !== FIRST_QUESTION_ID)
+    if (data.setQuestionAsFirst && newQuestionId != null && newQuestionId !== FIRST_QUESTION_ID) {
       $firstQuestionId = newQuestionId;
+      startEvent('question_startFrom', {questionId: newQuestionId});
+    }
     // If a first question is saved in session storage, move it as first and maintain the original question order otherwise
     if ($firstQuestionId) questions = questions.sort((q) => (q.id === $firstQuestionId ? -1 : 0));
     // Save the current question so that we only rebuild the page if the question has actually changed either due to being a different one or a locale change
