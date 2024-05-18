@@ -47,7 +47,7 @@
     "score": "{score}%"
   },
   "video": {
-    "error": "Videota ei voitu ladata. Voit kokeilla ladata sivun uudelleen tai valita oikeasta yläkulmasta tekstinäkymän videon sijaan.",
+    "error": "Anteeksi, videon lataamisessa näyttää olevan hankaluuksia. Voit kokeilla ladata sivun uudelleen tai vaihtaa alta tekstinäkymään videon sijaan.",
     "jumpBack": "Hyppää taaksepäin",
     "jumpForward": "Hyppää eteenpäin",
     "captions": "Kuvailevat tekstitykset",

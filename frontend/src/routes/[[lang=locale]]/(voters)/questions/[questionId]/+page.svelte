@@ -192,7 +192,7 @@
         {/if}
       </svelte:fragment>
 
-      <div slot="video">
+      <svelte:fragment slot="video">
         {#if videoProps}
           <Video
             bind:atEnd
@@ -202,7 +202,7 @@
             hideControls={['transcript']}
             {...videoProps} />
         {/if}
-      </div>
+      </svelte:fragment>
 
       <svelte:fragment slot="heading">
         <HeadingGroup id={headingId} class="relative">

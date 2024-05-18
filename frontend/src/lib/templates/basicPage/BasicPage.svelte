@@ -150,7 +150,9 @@ Instead, you have to use a wrapper. Note that this will also always result in th
       <div
         bind:clientHeight={videoHeight}
         bind:clientWidth={videoWidth}
-        class="-ml-safelgl -mr-safelgr -mt-lg {hasVideo ? 'grow' : ''} sm:mt-[1.75rem] sm:grow-0">
+        class="-ml-safelgl -mr-safelgr -mt-lg flex w-screen justify-center sm:w-full {hasVideo
+          ? 'grow'
+          : ''} sm:mt-[1.75rem] sm:grow-0">
         <slot name="video" />
       </div>
     {/if}
