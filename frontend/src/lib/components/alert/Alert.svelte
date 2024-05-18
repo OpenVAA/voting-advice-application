@@ -1,5 +1,6 @@
 <script lang="ts">
   import {createEventDispatcher, onMount} from 'svelte';
+  import {t} from '$lib/i18n';
   import {concatClass, getUUID} from '$lib/utils/components';
   import {Button} from '$lib/components/button';
   import {Icon} from '$lib/components/icon';
@@ -107,8 +108,10 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
       <Button on:click={closeAlert} text="Dismiss" class="-mt-[1rem] sm:mt-0" />
     {/if}
   </div>
-  <button on:click={closeAlert} class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2"
-    >✕</button>
+  <button on:click={closeAlert} class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
+    <span aria-hidden="true">✕</span>
+    <span class="sr-only">{$t('common.close')}</span>
+  </button>
 </div>
 
 <style lang="postcss">
