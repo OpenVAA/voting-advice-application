@@ -90,7 +90,7 @@ function _getRoute(
     const currentLocale = $page.params.lang;
     return (
       url.replace(RegExp(`^/${currentLocale}`), locale === 'none' ? '' : `/${locale}`) +
-        $page.url.search ?? ''
+      $page.url.search
     );
   } else if (route == null) {
     throw error(500, 'Either a route or a locale must be specified');
