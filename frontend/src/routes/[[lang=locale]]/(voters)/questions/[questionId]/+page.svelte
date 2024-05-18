@@ -58,7 +58,7 @@
   async function updateQuestion(newQuestionId: string) {
     questions = await $opinionQuestions;
     // Check if we this question is defined as the one to start from (using a search param, see `./+page.ts`)
-    if (data.setQuestionAsFirst && newQuestionId !== FIRST_QUESTION_ID)
+    if (data.setQuestionAsFirst && newQuestionId != null && newQuestionId !== FIRST_QUESTION_ID)
       $firstQuestionId = newQuestionId;
     // If a first question is saved in session storage, move it as first and maintain the original question order otherwise
     if ($firstQuestionId) questions = questions.sort((q) => (q.id === $firstQuestionId ? -1 : 0));
