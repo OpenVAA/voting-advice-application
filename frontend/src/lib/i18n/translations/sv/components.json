@@ -47,7 +47,7 @@
     "score": "{score}%"
   },
   "video": {
-    "error": "Det uppstod ett fel vid inläsningen av den här videon. Du kan försöka ladda om sidan eller växla till en textvy genom att trycka på ikonen i det övre högra hörnet.",
+    "error": "Tyvärr, det verkar vara några problem med videon. Du kan försöka ladda om sidan eller använda knappen nedan för att växla till en textvy.",
     "jumpBack": "Hoppa tillbaka",
     "jumpForward": "Hoppa framåt",
     "captions": "Bildtexter",

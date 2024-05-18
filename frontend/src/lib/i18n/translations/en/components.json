@@ -47,7 +47,7 @@
     "score": "{score}%"
   },
   "video": {
-    "error": "There was an error loading this video. You can try to reload the page or switch to a text view by tapping the icon in the top-right corner.",
+    "error": "Sorry, there seems to be some trouble with the video. You can try to reload the page or use the button below to switch to a text view.",
     "jumpBack": "Jump back",
     "jumpForward": "Jump forward",
     "captions": "Captions",

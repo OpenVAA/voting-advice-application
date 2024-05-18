@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {onMount} from 'svelte';
+  import {onDestroy, onMount} from 'svelte';
   import {fade} from 'svelte/transition';
   import {beforeNavigate} from '$app/navigation';
   import {locale, t} from '$lib/i18n';
@@ -21,9 +21,13 @@
    */
   const DEFAULT_SKIP_AMOUNT = 10;
   /**
-   * The time in ms to wait for a loading error to be resolved before an error message is shown
+   * The time in ms to wait for a loading error to be resolved before an error message is shown. The same time out is also used to check for silent errors, i.e., when the video should be playing but is not.
    */
   const ERROR_DELAY = 4000;
+  /**
+   * The frequency with which to check for errors in playback.
+   */
+  const ERROR_CHECK_INTERVAL = 1005;
   /**
    * A small eps in seconds used to determine whether we treat the video is being at the end
    */
@@ -81,13 +85,98 @@
    * For more criteria, see https://stackoverflow.com/questions/6877403/how-to-tell-if-a-video-element-is-currently-playing
    */
   let playing: boolean;
-  $: playing = currentTime > 0 && !boundPaused;
+  $: playing = !!video && currentTime > 0 && !boundPaused && !video.ended && video.readyState > 2;
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // ERROR DETECTION
+  ////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * For error detection:
+   * 1. Whenever play/pause is toggled, we save the expected state in the `shouldPlay` variable
+   * 2. We set an interval which checks whether the video is playing at that time and saves the latest timepoint when it was playing. If `shouldPlay` is `true` and the latest confirmed playing timepoint is older than `ERROR_DELAY`, we show an error message.
+   */
 
   /**
    * The current loading status of the video. The `error-pending` status is used when an error has occurred but we're still waiting for it to be resolved.
    */
   let status: 'waiting' | 'error' | 'error-pending' | 'normal' = 'normal';
-  let errorTimeout: NodeJS.Timeout | undefined;
+  /**
+   * Allow the user to hide the error message
+   */
+  let hideError = false;
+  /**
+   * An interval which checks whether the video is playing at that time and saves the latest timepoint when it was playing.
+   */
+  let errorCheckInterval: NodeJS.Timeout | undefined;
+  /**
+   * Whether the video should be playing now
+   */
+  let shouldPlay: boolean;
+  /**
+   * The last known time and video `currentTime` when the video was playing or the time the component was mounted. We need both to double-check that the video is actually playing, because even our compex `playing` detector fails in some configurations, uh
+   */
+  let lastPlaying = {
+    time: -1,
+    videoTime: -1
+  };
+  onMount(() => setShouldPlay(autoPlay));
+
+  /**
+   * Call when explicitly toggling play/paused to use `errorCheckInterval` to check whether we should show an error message.
+   * This is automatically called by `setPaused()`.
+   * @param value Whether the video should be playing
+   */
+  function setShouldPlay(value = true) {
+    if (!value) {
+      clearErrorChecking();
+      return;
+    }
+    shouldPlay = value;
+    if (!errorCheckInterval) initErrorChecking();
+  }
+
+  /**
+   * Call to reset the error checking regime
+   */
+  function initErrorChecking() {
+    clearErrorChecking();
+    hideError = false;
+    shouldPlay = !!autoPlay;
+    lastPlaying = {
+      time: Date.now(),
+      videoTime: currentTime
+    };
+    errorCheckInterval = setInterval(() => {
+      if (transcriptVisible) {
+        clearErrorChecking();
+        return;
+      }
+      // We can't use `playing` to decide whether the video is actually playing, so we'll assume the timepoint has to have changed
+      if (currentTime != lastPlaying.videoTime) {
+        lastPlaying = {
+          time: Date.now(),
+          videoTime: currentTime
+        };
+      }
+      if (!shouldPlay || Date.now() - lastPlaying.time < ERROR_DELAY) {
+        status = 'normal';
+        return;
+      }
+      status = 'error';
+      addToEvent({shouldPlayError: true});
+    }, ERROR_CHECK_INTERVAL);
+  }
+
+  // Cleanup
+  function clearErrorChecking() {
+    if (errorCheckInterval) clearTimeout(errorCheckInterval);
+    status = 'normal';
+    errorCheckInterval = undefined;
+    shouldPlay = false;
+  }
+  $: if (atEnd) clearErrorChecking();
+  onDestroy(clearErrorChecking);
 
   ////////////////////////////////////////////////////////////////////////////////
   // TRANSCRIPT
@@ -271,8 +360,8 @@
     if (show == null) show = !transcriptVisible;
     if (show === transcriptVisible) return;
     if (show && !transcript) transcript = buildTranscript();
-    setPaused(show || atEnd);
     transcriptVisible = show;
+    setPaused(show || atEnd);
     addToEvent((data) => ({
       toggleTranscript: `${data.toggleTranscript ?? ''}${show ? 'true' : 'false'},`
     }));
@@ -306,7 +395,7 @@
     // On Safari, there's a strange bug if the timepoint is passed is not precise enough, which sometimes causes the player to freeze. Therefore, we add a tiny fraction to the value.
     // We also need to deduct a small margin from duration, bc otherwise the video will start again
     video.currentTime = Math.max(0, Math.min(timepoint, duration - END_EPS)) + 1e-10;
-    if (!playing) setPaused(false);
+    setPaused(false);
   }
 
   /**
@@ -320,10 +409,12 @@
     } else {
       video.play().catch(); // Closely repeated pause/play calls may result in a DOM error
     }
+    setShouldPlay(!paused);
   }
 
   /**
    * Call this function after changing the video contents, i.e. sources, captions, poster and transcript.
+   * TODO: Convert this to an init function which is always called, even on first use of the component
    */
   export function reload(props: CustomVideoProps) {
     if (!video) return;
@@ -340,6 +431,7 @@
     transcript = props.transcript ?? '';
     atEnd = false;
     seekTarget = undefined;
+    clearErrorChecking();
     setTimeout(() => {
       video?.load();
       if (transcriptVisible && !transcript) transcript = buildTranscript();
@@ -427,20 +519,6 @@
   function isAtEnd(timepoint: number) {
     return duration - timepoint <= END_EPS;
   }
-
-  /**
-   * Set a timeout for showing an error message when an error occurs.
-   */
-  function onError() {
-    status = 'error-pending';
-    // Clear any existing timeout, because onError would be called again only if the error has been cleared in the meantime
-    if (errorTimeout) clearTimeout(errorTimeout);
-    errorTimeout = setTimeout(() => {
-      if (status !== 'error-pending') return;
-      status = 'error';
-      addToEvent({error: true});
-    }, ERROR_DELAY);
-  }
 </script>
 
 <!--
@@ -514,10 +592,10 @@ User choices are stored in the `videoPreferences` store so that they persist acr
 <div
   {...concatClass(
     $$restProps,
-    `relative select-none touch-manipulation aspect-[var(--video-aspectRatio)] overflow-hidden
-   max-h-[36rem] rounded-b-md sm:rounded-t-md bg-accent sm:bg-transparent`
+    'relative select-none touch-manipulation aspect-[var(--video-aspectRatio)] overflow-hidden rounded-b-md sm:rounded-t-md bg-accent'
   )}
   style:--video-aspectRatio={aspectRatio}
+  style:max-height="min(36rem, calc(100vw / var(--video-aspectRatio))"
   style:min-width="min(100%, calc(36rem * var(--video-aspectRatio)))">
   <!-- Show video button if transcript visible -->
   {#if !hideControls.includes('transcript')}
@@ -544,7 +622,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
   </div>
 
   <!-- Video -->
-  <div class:hidden={transcriptVisible}>
+  <div class="h-full w-full" class:hidden={transcriptVisible}>
     <video
       bind:this={video}
       bind:currentTime
@@ -554,7 +632,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
       on:canplay={() => (status = 'normal')}
       on:playing={() => (status = 'normal')}
       on:waiting={() => (status = 'waiting')}
-      on:error={onError}
+      on:error={() => (status = 'error-pending')}
       on:ended={() => addToEvent({ended: true})}
       on:ended
       autoplay={autoPlay && !transcriptVisible}
@@ -565,7 +643,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
       preload="auto"
       {title}
       aria-label={title}
-      class="relative object-contain">
+      class="relative w-full object-contain">
       {#each sources as src}
         <source {src} type={getVideoType(src)} />
       {/each}
@@ -695,18 +773,29 @@ User choices are stored in the `videoPreferences` store so that they persist acr
     <Loading
       inline
       size="md"
-      class="absolute right-[0.8rem] top-[3.1rem] !text-white transition-all duration-sm {status !==
-      'waiting'
-        ? 'opacity-0'
-        : ''}" />
+      class="absolute right-[0.8rem] top-[3.1rem] !text-white transition-all duration-sm
+        {status === 'waiting' || status === 'error-pending' ? '' : 'opacity-0'}" />
 
     <!-- Error message -->
-    {#if status === 'error'}
+    {#if status === 'error' && !hideError}
       <div
+        role="status"
+        aria-live="polite"
         transition:fade
-        class="absolute left-[0.8rem] right-[0.8rem] top-[3.1rem] rounded-md bg-base-100 p-md text-warning">
+        class="absolute left-[0.8rem] right-[0.8rem] top-[3.1rem] grid justify-items-center rounded-md bg-base-100 p-md text-warning">
         <Icon name="warning" />
-        {$t('components.video.error')}
+        <div class="mt-sm text-center">
+          {$t('components.video.error')}
+        </div>
+        <Button
+          on:click={() => toggleTranscript(true)}
+          text={$t('components.video.showTranscript')} />
+        <button
+          on:click={() => (hideError = true)}
+          class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
+          <span aria-hidden="true">✕</span>
+          <span class="sr-only">{$t('common.close')}</span>
+        </button>
       </div>
     {/if}
   </div>
