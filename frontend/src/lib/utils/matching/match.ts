@@ -7,13 +7,12 @@ import {error} from '@sveltejs/kit';
 import {
   type MatchingOptions,
   MatchingAlgorithm,
-  MISSING_VALUE,
-  MultipleChoiceQuestion,
   DistanceMetric,
   MissingValueDistanceMethod,
   type MatchableQuestionGroup
 } from '$voter/vaa-matching';
-import {logDebugError} from '$lib/utils/logger';
+import {LikertQuestion} from './LikertQuestion';
+import {imputePartyAnswers} from './imputePartyAnswers';
 
 /**
  * Run the matching algorithm as an async process.
@@ -122,34 +121,12 @@ export async function matchParties(
   if (matchingType !== 'answersOnly') {
     for (const party of parties) {
       originalAnswers[party.id] = party.answers;
-      party.answers = {...party.answers};
-      const partyCands = candidates.filter((c) => c.party?.id === party.id);
-      for (const qid of Object.keys(answeredQuestions)) {
-        if (party.answers[qid] != null) continue;
-        const answers = partyCands
-          .map((c) => c.answers[qid]?.value)
-          .filter((v) => {
-            if (v == null) return false;
-            if (typeof v !== 'number') {
-              logDebugError(
-                `Matching.matchParties: Invalid answer type ${typeof v} (only numbers allowd). Value: ${v}.`
-              );
-              return false;
-            }
-            return true;
-          }) as number[];
-        // Calculate party answers
-        party.answers[qid] = {
-          value:
-            answers.length === 0
-              ? MISSING_VALUE
-              : matchingType === 'mean'
-                ? mean(answers)
-                : matchingType === 'median'
-                  ? median(answers)
-                  : error(500, `Matching.matchParties: Invalid matching type ${matchingType}.`)
-        };
-      }
+      party.answers = imputePartyAnswers(
+        party,
+        candidates,
+        Object.keys(answeredQuestions),
+        matchingType
+      );
     }
   }
   const res = match(allQuestions, answeredQuestions, parties, options);
@@ -160,43 +137,4 @@ export async function matchParties(
     }
   }
   return res;
-}
-
-/**
- * Calculates the mean of a list of numbers.
- */
-export function mean(values: number[]) {
-  if (values.length === 0) error(500, 'Cannot calculate mean of an empty list.');
-  return values.reduce((a, b) => a + b, 0) / values.length;
-}
-
-/**
- * Calculates the median of a list of numbers.
- * Orig. author jdmdevdotnet: https://stackoverflow.com/questions/45309447/calculating-median-javascript
- */
-export function median(values: number[]) {
-  if (values.length === 0) error(500, 'Cannot calculate median of an empty list.');
-  values = [...values].sort((a, b) => a - b);
-  const half = Math.floor(values.length / 2);
-  return values.length % 2 ? values[half] : (values[half - 1] + values[half]) / 2;
-}
-
-/**
- * Options for a dummy question object for matching.
- */
-interface LikertQuestionOptions {
-  id: ConstructorParameters<typeof MultipleChoiceQuestion>[0];
-  values: ConstructorParameters<typeof MultipleChoiceQuestion>[1];
-  category?: QuestionCategoryProps;
-}
-
-/**
- * A dummy question object for matching.
- */
-class LikertQuestion extends MultipleChoiceQuestion {
-  public readonly category: QuestionCategoryProps | undefined;
-  constructor({id, values, category}: LikertQuestionOptions) {
-    super(id, values);
-    this.category = category;
-  }
 }
