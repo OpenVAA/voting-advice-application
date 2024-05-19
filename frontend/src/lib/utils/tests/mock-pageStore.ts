@@ -4,12 +4,18 @@ import {writable} from 'svelte/store';
 
 type PageStore = {
   params: {lang?: string};
-  url: {pathname: string};
+  url: {
+    pathname: string;
+    search: string;
+  };
 };
 
 const mockIsAnonymousWritable = writable<PageStore>({
   params: {lang: 'en'},
-  url: {pathname: '/'}
+  url: {
+    pathname: '/',
+    search: ''
+  }
 });
 
 export const mockIsPageStore = {
@@ -18,6 +24,6 @@ export const mockIsPageStore = {
   mockSetSubscribeValue: (value: PageStore): void => mockIsAnonymousWritable.set(value),
   mockSetLocale: (lang?: string): void =>
     mockIsAnonymousWritable.update((page) => ({...page, ...{params: {lang}}})),
-  mockSetPathname: (pathname: string): void =>
-    mockIsAnonymousWritable.update((page) => ({...page, ...{url: {pathname}}}))
+  mockSetPathnameAndSearch: (pathname: string, search: string): void =>
+    mockIsAnonymousWritable.update((page) => ({...page, ...{url: {pathname, search}}}))
 };
