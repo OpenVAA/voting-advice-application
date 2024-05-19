@@ -1,6 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {openFeedbackModal, settings} from '$lib/stores';
+  import localSettings from '$lib/config/settings.json';
+  import {openFeedbackModal} from '$lib/stores';
   import {FeedbackModal} from '$lib/components/feedback/modal';
   import {Loading} from '$lib/components/loading';
   import {MaintenancePage} from '$lib/templates/maintenance';
@@ -13,7 +14,7 @@
   $: underMaintenance = data.appSettings.underMaintenance ?? false;
 
   const fontUrl =
-    $settings?.font?.url ??
+    localSettings.font?.url ??
     'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap';
 </script>
 
@@ -21,11 +22,11 @@
   <title>{underMaintenance ? $t('maintenance.title') : $t('viewTexts.appTitle')}</title>
   <meta
     name="theme-color"
-    content={$settings?.colors?.light?.['base-300'] ?? '#d1ebee'}
+    content={localSettings?.colors?.light?.['base-300'] ?? '#d1ebee'}
     media="(prefers-color-scheme: light)" />
   <meta
     name="theme-color"
-    content={$settings?.colors?.dark?.['base-300'] ?? '#1f2324'}
+    content={localSettings?.colors?.dark?.['base-300'] ?? '#1f2324'}
     media="(prefers-color-scheme: dark)" />
   {#if fontUrl.indexOf('fonts.googleapis') !== -1}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
