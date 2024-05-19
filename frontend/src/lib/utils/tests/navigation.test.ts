@@ -10,7 +10,7 @@ beforeAll(() => {
     page.mockSetLocale('en');
     return {page};
   });
-  vi.mock('$app/environment', () => ({browser: false}));
+  vi.mock('$app/environment', () => ({browser: true}));
 });
 
 test('getRoute', () => {
@@ -32,7 +32,12 @@ test('getRoute', () => {
   );
   const subpath = 'help';
   const pathname = `/${defaultLocale}/${subpath}`;
-  mockIsPageStore.mockSetPathname(pathname);
+  mockIsPageStore.mockSetPathnameAndSearch(pathname, '');
   expect(get(getRoute)({locale}), 'Switch locale without route').toEqual(`/${locale}/${subpath}`);
   expect(get(getRoute)({locale: 'none'}), 'Get route with no locale').toEqual(`/${subpath}`);
+  const search = '?value=10';
+  mockIsPageStore.mockSetPathnameAndSearch(pathname, search);
+  expect(get(getRoute)({locale}), 'Switch locale without route and with a search param').toEqual(
+    `/${locale}/${subpath}${search}`
+  );
 });
