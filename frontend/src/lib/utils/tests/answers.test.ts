@@ -1,6 +1,7 @@
 import {expect, test} from 'vitest';
 import {t, locale, defaultLocale, loadTranslations} from '$lib/i18n';
 import {getAnswer, getLikertAnswer, getAnswerForDisplay, DATE_FORMATS} from '../answers';
+import {MockCandidate, MockParty, MockQuestionCategory} from './mock-objects';
 
 const DATE = new Date();
 
@@ -16,13 +17,7 @@ function makeLabels(count = 4) {
   return labels;
 }
 
-const category: QuestionCategoryProps = {
-  id: 'c1',
-  name: 'X',
-  shortName: 'X',
-  type: 'info',
-  order: 0
-};
+const category = new MockQuestionCategory('c1');
 
 const QST: Record<string, QuestionProps> = {
   Likert: {
@@ -31,6 +26,7 @@ const QST: Record<string, QuestionProps> = {
     shortName: 'X',
     type: 'singleChoiceOrdinal',
     values: makeLabels(),
+    entityType: 'candidate',
     category
   },
   SingleCategorical: {
@@ -39,6 +35,7 @@ const QST: Record<string, QuestionProps> = {
     shortName: 'X',
     type: 'singleChoiceCategorical',
     values: makeLabels(),
+    entityType: 'candidate',
     category
   },
   MultiCategorical: {
@@ -47,6 +44,7 @@ const QST: Record<string, QuestionProps> = {
     shortName: 'X',
     type: 'multipleChoiceCategorical',
     values: makeLabels(),
+    entityType: 'candidate',
     category
   },
   PrefOrder: {
@@ -55,6 +53,7 @@ const QST: Record<string, QuestionProps> = {
     shortName: 'X',
     type: 'preferenceOrder',
     values: makeLabels(),
+    entityType: 'candidate',
     category
   },
   Date: {
@@ -63,6 +62,7 @@ const QST: Record<string, QuestionProps> = {
     shortName: 'X',
     type: 'date',
     dateType: 'monthDay',
+    entityType: 'candidate',
     category
   },
   Boolean: {
@@ -70,6 +70,7 @@ const QST: Record<string, QuestionProps> = {
     text: 'X',
     shortName: 'X',
     type: 'boolean',
+    entityType: 'candidate',
     category
   },
   Text: {
@@ -77,6 +78,7 @@ const QST: Record<string, QuestionProps> = {
     text: 'X',
     shortName: 'X',
     type: 'text',
+    entityType: 'candidate',
     category
   },
   Number: {
@@ -84,6 +86,7 @@ const QST: Record<string, QuestionProps> = {
     text: 'X',
     shortName: 'X',
     type: 'number',
+    entityType: 'candidate',
     category
   },
   Missing: {
@@ -91,6 +94,7 @@ const QST: Record<string, QuestionProps> = {
     text: 'X',
     shortName: 'X',
     type: 'multipleChoiceCategorical',
+    entityType: 'candidate',
     category
   },
   EmptyMultiCategorical: {
@@ -99,6 +103,7 @@ const QST: Record<string, QuestionProps> = {
     shortName: 'X',
     type: 'multipleChoiceCategorical',
     values: makeLabels(),
+    entityType: 'candidate',
     category
   }
 };
@@ -148,20 +153,7 @@ Object.values(ANS).forEach(
   ({questionId, value, openAnswer}) => (answers[questionId] = {value, openAnswer})
 );
 
-const CND: CandidateProps = {
-  electionRound: 1,
-  firstName: 'John',
-  lastName: 'Doe',
-  id: '1',
-  party: {
-    id: 'p1',
-    name: 'X',
-    shortName: 'X',
-    answers: {},
-    info: 'X'
-  },
-  answers
-};
+const CND = new MockCandidate('1', new MockParty('p1'), answers);
 
 test('getAnswer', () => {
   expect(getAnswer(CND, QST.Likert)?.value, 'Has answer').toEqual(ANS.Likert.value);
