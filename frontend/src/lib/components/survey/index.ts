@@ -1,2 +1,2 @@
-export {default as SurveyBanner} from './SurveyBanner.svelte';
-export * from './SurveyBanner.type';
+export {default as SurveyButton} from './SurveyButton.svelte';
+export * from './SurveyButton.type';
