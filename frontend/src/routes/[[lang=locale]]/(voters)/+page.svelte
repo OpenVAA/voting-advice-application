@@ -4,7 +4,7 @@
   import {election, resetVoterAnswers, settings} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {SurveyBanner} from '$lib/components/survey';
+  import {SurveyBanner} from '$lib/components/survey/banner';
   import {FrontPage} from '$lib/templates/frontPage';
 </script>
 

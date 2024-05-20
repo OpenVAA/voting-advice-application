@@ -7,7 +7,7 @@
   import {settings} from '$lib/stores';
   import {InfoAnswer} from '$lib/components/infoAnswer';
   import {PartyTag} from '$lib/components/partyTag';
-  import {SurveyBanner} from '$lib/components/survey';
+  import {SurveyBanner} from '$lib/components/survey/banner';
   import InfoItem from './InfoItem.svelte';
   import type {EntityDetailsProps} from './EntityDetails.type';
 
