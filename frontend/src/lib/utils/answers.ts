@@ -24,7 +24,7 @@ export function getLikertAnswer(entity: EntityProps, question: QuestionProps) {
   if (question.type !== 'singleChoiceOrdinal') {
     logDebugError(`getLikertAnswer: Question ${question.id} is not a Likert question.`);
     return {
-      answer: undefined,
+      value: undefined,
       openAnswer: undefined
     };
   }
