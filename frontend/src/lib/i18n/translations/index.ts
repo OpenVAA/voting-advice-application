@@ -20,6 +20,7 @@ const keys = [
   'privacy',
   'questions',
   'results',
+  'statistics',
   'survey',
   'viewTexts'
 ];
