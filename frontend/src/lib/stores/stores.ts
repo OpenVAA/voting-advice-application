@@ -129,6 +129,25 @@ export function startFeedbackPopupCountdown(delay = 3 * 60) {
 }
 
 /**
+ * A store that will be true, if the user should be shown the survey popup.
+ */
+export const showSurveyPopup: Writable<boolean> = writable(false);
+
+let surveyTimeout: NodeJS.Timeout | undefined;
+
+/**
+ * Start the countdown for the survey popup, after which it will be shown on next page load.
+ * This will do nothing, if the user has already opened the survey.
+ * @param delay The delay in seconds. @default 300 (5 minutes)
+ */
+export function startSurveyPopupCountdown(delay = 5 * 60) {
+  if (surveyTimeout) return;
+  surveyTimeout = setTimeout(() => {
+    if (get(userPreferences).survey?.status !== 'received') showSurveyPopup.set(true);
+  }, delay * 1000);
+}
+
+/**
  * Utility store for the election as part of `PageData`.
  */
 export const election: Readable<ElectionProps | undefined> = derived(

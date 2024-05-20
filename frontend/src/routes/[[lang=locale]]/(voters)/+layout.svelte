@@ -1,12 +1,14 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
   import {afterNavigate, onNavigate} from '$app/navigation';
-  import {settings, showFeedbackPopup, userPreferences} from '$lib/stores';
+  import {settings, showFeedbackPopup, showSurveyPopup, userPreferences} from '$lib/stores';
+  import {startPageview, submitAllEvents} from '$lib/utils/analytics/track';
   import {DataConsentPopup} from '$lib/components/dataConsent/popup';
   import {FeedbackPopup} from '$lib/components/feedback/popup';
-  import {startPageview, submitAllEvents} from '$lib/utils/analytics/track';
+  import {SurveyPopup} from '$lib/components/survey/popup';
 
   let doShowFeedbackPopup = false;
+  let doShowSurveyPopup = false;
 
   onNavigate(() => submitAllEvents());
   onDestroy(() => submitAllEvents());
@@ -18,6 +20,12 @@
     } else {
       doShowFeedbackPopup = false;
     }
+    if ($showSurveyPopup) {
+      setTimeout(() => (doShowSurveyPopup = true), 225);
+      $showSurveyPopup = false;
+    } else {
+      doShowSurveyPopup = false;
+    }
   });
 </script>
 
@@ -25,6 +33,10 @@
 
 {#if doShowFeedbackPopup}
   <FeedbackPopup />
+{/if}
+
+{#if doShowSurveyPopup}
+  <SurveyPopup />
 {/if}
 
 <!-- Handle analytics loading -->
