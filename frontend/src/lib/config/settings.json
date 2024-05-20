@@ -60,7 +60,7 @@
     },
     "survey": {
       "linkTemplate": "https://polscihelsinki.eu.qualtrics.com/jfe/form/SV_8va9vZJTfeT4Pwa?vaaID={sessionId}",
-      "showIn": ["frontpage", "entityDetails", "navigation"]
+      "showIn": ["frontpage", "entityDetails", "navigation", "resultsPopup"]
     },
     "trackEvents": true
   },
