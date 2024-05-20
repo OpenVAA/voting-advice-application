@@ -178,12 +178,12 @@
               "minLength": 1
             },
             "showIn": {
-              "description": "Where the survey prompt should be shown.",
+              "description": "Where the survey prompt should be shown. The `resultsPopup` option means that the survey will be shown in a popup after a timeout starting when the user reaches the results page. Use `results.showSurveyPopup` to set the delay.",
               "type": "array",
               "minItems": 1,
               "uniqueItems": true,
               "items": {
-                "enum": ["frontpage", "entityDetails", "navigation"]
+                "enum": ["frontpage", "entityDetails", "navigation", "resultsPopup"]
               }
             }
           }
@@ -404,10 +404,16 @@
           }
         },
         "showFeedbackPopup": {
-          "description": "If defined, a feedback popup will be shown when the user has reached the results section after the number of seconds given by this value. The popup will not be shown, if the user has already given some feedback.",
+          "description": "If defined, a feedback popup will be shown on the next page load, when the user has reached the results section and the number of seconds given by this value has passed. The popup will not be shown, if the user has already given some feedback.",
           "type": "integer",
           "minimum": 0,
           "default": 180
+        },
+        "showSurveyPopup": {
+          "description": "The delay in seconds after which a survey popup will be shown on the next page load, when the user has reached the results section. The popup will only be shown if the relevant `analytics.survey` settings are defined and if the user has not already opened the survey.",
+          "type": "integer",
+          "minimum": 0,
+          "default": 300
         }
       }
     }
