@@ -14,7 +14,8 @@
     partyRankings,
     resultsAvailable,
     settings,
-    startFeedbackPopupCountdown
+    startFeedbackPopupCountdown,
+    startSurveyPopupCountdown
   } from '$lib/stores';
   import {Button} from '$lib/components/button';
   import type {EntityCardProps} from '$lib/components/entityCard';
@@ -44,6 +45,11 @@
     });
     if ($settings.results.showFeedbackPopup != null)
       startFeedbackPopupCountdown($settings.results.showFeedbackPopup);
+    if (
+      $settings.analytics.survey?.showIn &&
+      $settings.analytics.survey.showIn.includes('resultsPopup')
+    )
+      startSurveyPopupCountdown($settings.results.showSurveyPopup);
   });
 
   /**

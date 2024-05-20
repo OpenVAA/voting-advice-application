@@ -106,7 +106,7 @@ declare global {
       };
       survey?: {
         linkTemplate: string;
-        showIn: Array<'frontpage' | 'entityDetails' | 'navigation'>;
+        showIn: Array<'frontpage' | 'entityDetails' | 'navigation' | 'resultsPopup'>;
       };
       trackEvents: boolean;
     };
@@ -136,6 +136,7 @@ declare global {
       };
       sections: Array<Exclude<EntityType, 'all'>>;
       showFeedbackPopup?: number;
+      showSurveyPopup?: number;
     };
     publisher?: {
       name: string;

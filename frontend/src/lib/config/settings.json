@@ -88,6 +88,7 @@
       "party": ["candidates"]
     },
     "showFeedbackPopup": 180,
+    "showSurveyPopup": 500,
     "sections": ["candidate", "party"]
   }
 }
