@@ -6,7 +6,7 @@ The project is coordinated by the Finnish non-profit association [OpenVAA](https
 
 ## 🚧 Project status: Alpha
 
-The project is currently in an alpha phase, with a lot of new features added to prepare for the 2024 EU Elections, in which the first publicly available VAAs built with OpenVAA are released. You can try out the first of these at nuortenvaalikone.openvaa.org (available in Finnish, Swedish and English).
+The project is currently in an alpha phase, with a lot of new features added to prepare for the 2024 EU Elections, in which the first publicly available VAAs built with OpenVAA are released. You can try out the first of these at [nuortenvaalikone.openvaa.org](nuortenvaalikone.openvaa.org) (available in Finnish, Swedish and English).
 
 After the EU Elections are over (9th June, 2024), we will concentrate on reworking the existing repository into a more developer-friendly and robust format, as well as add some crucial missing features, which were postponed as unnecessary for the first releases.
 
