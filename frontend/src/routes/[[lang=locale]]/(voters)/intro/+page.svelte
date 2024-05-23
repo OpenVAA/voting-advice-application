@@ -20,10 +20,10 @@
   let nextButtonText = '';
 
   // Load the first video
-  loadVideo();
+  loadVideo(true);
 
   // Update page on locale change
-  locale.subscribe(loadVideo);
+  locale.subscribe(() => loadVideo());
 
   function jump(steps: number) {
     currentIndex += steps;
@@ -32,7 +32,7 @@
     loadVideo();
   }
 
-  function loadVideo() {
+  function loadVideo(noReload = false) {
     const introVideoProps = introVideos[currentIndex]?.[$locale as keyof LocalizedIntroVideoProps];
     if (introVideoProps == null) error(500, 'No video content for this intro index');
     const currentProps = videoProps;
@@ -51,8 +51,8 @@
     } else {
       nextButtonText = $t('intro.continue');
     }
-    // Reload the video, if we're updating the existing video component
-    if (currentIndex > 0) reload(videoProps);
+    // Reload the video, unless this was the initial load event
+    if (!noReload) reload(videoProps);
   }
 
   let loadingNext = false;
