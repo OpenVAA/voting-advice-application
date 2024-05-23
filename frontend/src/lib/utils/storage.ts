@@ -1,3 +1,4 @@
+import {error} from '@sveltejs/kit';
 import {get, writable} from 'svelte/store';
 import type {Writable} from 'svelte/store';
 import {browser} from '$app/environment';
@@ -53,10 +54,10 @@ function storageWritable<T = JSONData>(
 /**
  * Get an item from storage. If the `type` is `localStorage`, the version number saved with the item is checked and the data is expired if it does match the required version defined in `settings`.
  */
-function getItemFromStorage<T = JSONData>(type: StorageType, key: string): T | undefined {
-  let item: T | undefined;
+function getItemFromStorage<T = JSONData>(type: StorageType, key: string): T | null {
+  let item: T | null = null;
   const storage = getStorage(type);
-  if (!storage) return undefined;
+  if (!storage) return null;
   const savedItem = storage.getItem(key);
   if (savedItem) {
     let savedValue: T | null;
@@ -92,25 +93,27 @@ function getItemFromStorage<T = JSONData>(type: StorageType, key: string): T | u
  */
 function saveItemToStorage<T = JSONData>(type: StorageType, key: string, value: T): void {
   const storage = getStorage(type);
-  if (!storage) return undefined;
+  if (!storage) return;
   const toStore =
     type === 'localStorage'
       ? ({
           version: get(settings).appVersion.version,
           data: value
         } as LocallyStoredValue<T>)
-      : value;
+      : value ?? null; // Convert `undefined` to `null` because when read back it'd be treated as a string
   storage.setItem(key, JSON.stringify(toStore));
 }
 
 /**
  * Get the `localStorage` or `sessionStorage` object if available.
  */
-function getStorage(type: StorageType): Storage | undefined {
-  if (!browser) return undefined;
+function getStorage(type: StorageType): Storage | null {
+  if (!browser) return null;
   if (type === 'localStorage') {
     return localStorage;
   } else if (type === 'sessionStorage') {
     return sessionStorage;
+  } else {
+    error(500, `Invalid storage type: ${type}`);
   }
 }
