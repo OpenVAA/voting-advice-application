@@ -10,6 +10,10 @@ export type LikertResponseButtonsProps = SvelteHTMLElements['fieldset'] & {
    */
   options: QuestionProps['values'];
   /**
+   * Whether to disable all the buttons. @default false
+   */
+  disabled?: boolean;
+  /**
    * The same component can be used both for answering the questions and displaying answers. @default 'answer'
    */
   mode?: 'answer' | 'display';

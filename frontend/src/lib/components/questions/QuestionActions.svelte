@@ -8,6 +8,7 @@
   type $$Props = QuestionActionsProps;
 
   export let answered: $$Props['answered'] = false;
+  export let disabled: $$Props['disabled'] = false;
   export let disablePrevious: $$Props['disablePrevious'] = false;
   export let variant: $$Props['variant'] = 'default';
   export let separateSkip: $$Props['separateSkip'] = false;
@@ -37,6 +38,7 @@ Display the question's secondary actions, such as skip.
 ### Properties
 
 - `answered`: Set to `true` if the question has already been answered. This controls which actions are shown. @default `false`
+- `disabled`: Whether to disable all the actions. @default `false`
 - `disablePrevious`:  Whether to disable the previous button. @default `false`
 - `variant`: Use to switch between looser and tighter layouts. @default `'default'`
 - `separateSkip`: Whether to separate `skip` and `next` actions both as events and button symbols. @default `false`
@@ -75,6 +77,7 @@ If `separateSkip` is set to `true`, the `next` event is switched to a `skip` eve
     on:click={onNext}
     style="grid-row: 1; grid-column: 3"
     color="secondary"
+    {disabled}
     variant={variant === 'icon' ? 'icon' : 'secondary'}
     iconPos={variant === 'tight' ? 'right' : 'top'}
     class={variant === 'icon' || variant === 'tight' ? 'content-end' : ''}
@@ -82,7 +85,7 @@ If `separateSkip` is set to `true`, the `next` event is switched to a `skip` eve
     text={nextLabel ?? (answered || !separateSkip ? $t('questions.next') : $t('questions.skip'))} />
   <Button
     on:click={onDelete}
-    disabled={answered ? undefined : true}
+    disabled={!disabled && answered ? undefined : true}
     class="transition-opacity delay-500 disabled:opacity-0"
     style="grid-row: 1; grid-column: 2"
     color="secondary"
@@ -92,7 +95,7 @@ If `separateSkip` is set to `true`, the `next` event is switched to a `skip` eve
     text={$t('questions.remove')} />
   <Button
     on:click={onPrevious}
-    disabled={disablePrevious}
+    disabled={disabled || disablePrevious}
     style="grid-row: 1; grid-column: 1"
     color="secondary"
     variant={variant === 'icon' ? 'icon' : 'secondary'}
