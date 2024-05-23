@@ -12,6 +12,7 @@
 
   export let name: $$Props['name'];
   export let options: $$Props['options'];
+  export let disabled: $$Props['disabled'] = false;
   export let selectedKey: $$Props['selectedKey'] = undefined;
   export let entityKey: $$Props['entityKey'] = undefined;
   export let entityLabel: $$Props['entityLabel'] = '';
@@ -59,12 +60,16 @@
   // 3. Listen to `keyup` events of the `<input>` elements
   //    - For a nicer keyboard UX, also listen to `space` and `enter` keys and and submit the answer if they are pressed inside the radio group
 
-  const dispatch = createEventDispatcher();
+  const dispatch = createEventDispatcher<{
+    reselect: LikertResponseButtonsEventDetail;
+    change: LikertResponseButtonsEventDetail;
+  }>();
 
   /**
    * Used to check for changes to the radio buttons or clicks on them. These include keyboard interactions using the arrow keys as well.
    */
   function onClick(event: MouseEvent, value: AnswerOption['key']) {
+    if (disabled) return;
     let keyboard: boolean;
     if ('pointerType' in event) {
       // `pointerType` is the main way of finding out whether the user is using a keyboard
@@ -86,6 +91,7 @@
    * Dispatch the `change`/`reselect` event if the user presses the space or enter key when in the radio group
    */
   function onKeyUp(event: KeyboardEvent, value: AnswerOption['key']) {
+    if (disabled) return;
     if (event.key === ' ' || event.key === 'Spacebar' || event.key === 'Enter') {
       selected = value;
       dispatchEvent(value);
@@ -96,6 +102,7 @@
    * Dispatch the `change`/`reselect` event using the value of the radio group when the user leaves the radio group using the keyboard.
    */
   function onGroupFocusOut() {
+    if (disabled) return;
     dispatchEvent();
   }
 
@@ -143,6 +150,7 @@ Keyboard navigation works in the following way:
 
 - `name`: The `name` of the radio group. Usually the question's id
 - `options`: The `key`-`label` pairs of the radio buttons
+- `disabled`: Whether to disable all the buttons. @default `false`
 - `mode`: The same component can be used both for answering the questions and displaying answers. @default `'answer'`
 - `selectedKey`: The initially selected key of the radio group.
 - `entityKey`: The answer key of the entity in display mode.

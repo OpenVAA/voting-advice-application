@@ -36,6 +36,8 @@
    */
   const DELAY_M_MS = 350;
 
+  /** Use to disable the response buttons when an answer is set but we're still waiting for the next page to load */
+  let disabled = false;
   let questions: QuestionProps[];
   let questionId: string;
   let question: QuestionProps | undefined;
@@ -52,12 +54,16 @@
   let toggleTranscript: (show?: boolean) => void;
   let videoProps: CustomVideoProps | undefined;
 
-  // Set questionId and prepare question data reactively when the route param changes
-  $: updateQuestion(data.questionId);
+  // Set questionId and prepare question data reactively when the route param or question data (mainly on locale change) changes
+  // NB. Because `opinionQuestions` is (currently) derived from `page` it will update every time `data.questionId` changes, and in practice we could only call `updateQuestion` when it changes. We'll, however, trigger the update by changes from both to not lose the updates if `opinionQuestions` is derived otherwise in the future. Even though it's called twice, `updateQuestion` will not perform any updates if the question hasn't actually changed.
+  $: updateQuestion(data.questionId, $opinionQuestions);
 
-  async function updateQuestion(newQuestionId: string) {
-    questions = await $opinionQuestions;
-    // Check if we this question is defined as the one to start from (using a search param, see `./+page.ts`)
+  async function updateQuestion(
+    newQuestionId: string,
+    promisedQuestions: Promise<QuestionProps[]>
+  ) {
+    questions = await promisedQuestions;
+    // Check if this question is defined as the one to start from (using a search param, see `./+page.ts`)
     if (data.setQuestionAsFirst && newQuestionId != null && newQuestionId !== FIRST_QUESTION_ID) {
       $firstQuestionId = newQuestionId;
       startEvent('question_startFrom', {questionId: newQuestionId});
@@ -77,6 +83,8 @@
     questionIndex = questions.indexOf(question);
     // Only perform updates if the question has actually changed
     if (question !== previousQuestion) {
+      // Enable buttons
+      disabled = false;
       // Track whether the previous question has video content
       const previousHadVideo = videoProps != null;
       // Check if this question has video content
@@ -95,6 +103,7 @@
 
   /** Save voter answer in a store and go to next question */
   function answerQuestion({detail}: CustomEvent<LikertResponseButtonsEventDetail>) {
+    disabled = true;
     setVoterAnswer(detail.id, detail.value);
     logDebugError(
       `Answered question ${detail.id} with value ${detail.value}. Store length: ${
@@ -221,6 +230,7 @@
         {#if type === 'singleChoiceOrdinal'}
           <LikertResponseButtons
             aria-labelledby={headingId}
+            {disabled}
             name={id}
             options={values}
             {selectedKey}
@@ -232,6 +242,7 @@
         {/if}
         <QuestionActions
           answered={selectedKey != null}
+          {disabled}
           nextLabel={questionIndex === questions.length - 1 && selectedKey != null
             ? $t('actionLabels.results')
             : undefined}

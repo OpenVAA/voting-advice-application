@@ -6,6 +6,10 @@ export type QuestionActionsProps = SvelteHTMLElements['div'] & {
    */
   answered?: boolean;
   /**
+   * Whether to disable all the actions. @default false
+   */
+  disabled?: boolean;
+  /**
    * Whether to disable the previous button. @default false
    */
   disablePrevious?: boolean;
