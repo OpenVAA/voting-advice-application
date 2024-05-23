@@ -215,7 +215,7 @@ Show a form for sending feedback.
     <div class="flex w-full flex-col items-center">
       <Button
         on:click={submit}
-        disabled={canSubmit}
+        disabled={!canSubmit}
         variant="main"
         text={status === 'sent'
           ? $t('feedback.sendButtonThanks')
