@@ -5,6 +5,10 @@
     "requireUserDataVersion": 1,
     "source": "https://github.com/OpenVAA/voting-advice-application"
   },
+  "dataProvider": {
+    "type": "strapi",
+    "supportsCandidateApp": true
+  },
   "admin": {
     "email": "error@openvaa.org"
   },

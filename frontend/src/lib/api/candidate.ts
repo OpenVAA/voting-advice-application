@@ -1,5 +1,6 @@
 import {get} from 'svelte/store';
 import {constants} from '$lib/utils/constants';
+import {candidateContext} from '$lib/utils/candidateStore';
 import type {Question, Answer, Language, User, Photo} from '$lib/types/candidateAttributes';
 import type {
   StrapiAnswerData,
@@ -7,8 +8,8 @@ import type {
   StrapiGenderData,
   StrapiResponse,
   StrapiQuestionData
-} from '$lib/api/getData.type';
-import {candidateContext} from '$lib/utils/candidateStore';
+} from './dataProvider/strapi';
+import { parseQuestionCategory } from './dataProvider/strapi/utils';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
@@ -200,7 +201,7 @@ export const getLikertQuestions = async (): Promise<Record<string, Question> | u
       text: attr.text,
       info: attr.info,
       shortName: attr.shortName,
-      category: question.attributes.category.data.attributes.name,
+      category: parseQuestionCategory(attr.category.data),
       type: settings.type
     };
     if ('values' in settings)

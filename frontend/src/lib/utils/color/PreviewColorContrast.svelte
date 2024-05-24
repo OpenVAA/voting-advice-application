@@ -1,12 +1,9 @@
 <script lang="ts">
-  import {
-    adjustContrast,
-    calcContrast,
-    parseColor,
-    luminance,
-    rgbToHex,
-    type RGB
-  } from '$lib/utils/color/color';
+  import {adjustContrast, calcContrast} from './adjustContrast';
+  import {luminance} from './luminance';
+  import {parseColor} from './parseColor';
+  import type {RGB} from './rgb';
+  import {rgbToHex} from './rgbToHex';
 
   let origColor = '#000000';
   let parsedColor = '';

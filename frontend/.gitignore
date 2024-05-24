@@ -10,3 +10,6 @@ coverage
 vite.config.ts.*.mjs
 *.log
 package-lock.json
+
+# Locally stored data files
+/data
