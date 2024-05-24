@@ -1,4 +1,9 @@
 {
+  "notSupported": {
+    "title": "Kandidatappen inte tillgänglig",
+    "content": "Denna valkompassversion stöder inte kandidatappen.",
+    "emoji": "🐣"
+  },
   "navbar": {
     "start": "SV Start",
     "basicInfo": "SV Basic Info",
