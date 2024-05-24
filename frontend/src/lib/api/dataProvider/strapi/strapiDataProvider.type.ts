@@ -260,6 +260,7 @@ export interface StrapiQuestionCategoryData {
     questions: {
       data: StrapiQuestionData[];
     };
+    customData: JSONData;
   };
 }
 

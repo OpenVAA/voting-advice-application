@@ -9,7 +9,7 @@ import type {
   StrapiLanguageData,
   StrapiGenderData,
   StrapiResponse
-} from '$lib/api/getData.type';
+} from './dataProvider/strapi';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);

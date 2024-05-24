@@ -13,7 +13,7 @@
   import Field from '$lib/components/common/form/Field.svelte';
   import {BasicPage} from '$lib/templates/basicPage';
   import AvatarSelect from './AvatarSelect.svelte';
-  import type {StrapiGenderData, StrapiLanguageData} from '$lib/api/getData.type';
+  import type {StrapiGenderData, StrapiLanguageData} from '$lib/api/strapi/strapiDataProvider.type';
   import type {Language} from '$lib/types/candidateAttributes';
   import {TextArea} from '$candidate/components/textArea';
   import {PreventNavigation} from '$lib/components/preventNavigation';

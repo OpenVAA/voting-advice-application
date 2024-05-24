@@ -4,18 +4,19 @@ import parser, {type Config} from '@sveltekit-i18n/parser-icu';
 import IntlMessageFormat from 'intl-messageformat';
 import {logDebugError} from '$lib/utils/logger';
 import {ucFirst} from '$lib/utils/text/ucFirst';
-import settings from '$lib/config/settings.json';
+import localSettings from '$lib/config/settings.json';
 import {derived, get} from 'svelte/store';
 import {DEFAULT_PAYLOAD_KEYS, staticTranslations, type TranslationsPayload} from './translations';
 import {matchLocale, purgeTranslations} from './utils';
 
-const dbLocaleProps = settings.supportedLocales;
-let initError: string | undefined = undefined;
-let dbLocales: string[] = [];
-let dbDefaultLocale: string | undefined;
+// We don't want to use the implicit json file typing
+const settings = localSettings as AppSettings;
+
+const {supportedLocales} = settings;
+let defaultLocale = '';
 /** Language names for translations */
 const langNames: Record<string, string> = {};
-/** Mapping of soft locale matches from db locales to static ones */
+/** Mapping of soft locale matches from locales defined in settings to the static ones */
 const localeMatches: Record<string, string> = {};
 /** Items to add to all translation payloads */
 const defaultPayload: Partial<TranslationsPayload> = {};
@@ -24,45 +25,35 @@ const defaultPayload: Partial<TranslationsPayload> = {};
 // 1. Load supported locales
 /////////////////////////////////////////////////////
 
-// NB. Because getData is only available on the server side, we have to use a local settings file for supported languages. See README.md for another solution.
+if (!supportedLocales?.length) error(500, 'Could not load supported locales from settings');
 
-if (!dbLocaleProps?.length) {
-  initError = 'Could not load supported locales from settings';
-} else {
-  for (const {code, name, isDefault} of dbLocaleProps) {
-    if (code == undefined || typeof code !== 'string') {
-      initError = 'Error in supported locales settings';
-      dbLocales = [];
-      dbDefaultLocale = undefined;
-      break;
-    }
-    dbLocales.push(code);
-    langNames[code] = name;
-    if (isDefault) dbDefaultLocale = code;
-  }
-}
-
-// If we got locales from settings, build a map of locale matches between database locales and static ones (e.g. 'en-UK' => 'en')
 const staticDefaultLocale = Object.keys(staticTranslations)[0];
-if (dbLocales.length) {
-  for (const l of dbLocales)
-    localeMatches[l] = matchLocale(l, Object.keys(staticTranslations)) ?? staticDefaultLocale;
-} else {
-  // Otherwise just use an identity map
-  for (const l in staticTranslations) localeMatches[l] = l;
+
+for (const {code, name, isDefault} of supportedLocales) {
+  if (code == undefined || typeof code !== 'string')
+    error(500, `Invalid locale code in supported locales settings: ${code}`);
+  // For translations
+  langNames[code] = name;
+  // For a map of locale matches between supported locales and static ones (e.g. 'en-UK' => 'en')
+  localeMatches[code] = matchLocale(code, Object.keys(staticTranslations)) ?? staticDefaultLocale;
+  if (isDefault) defaultLocale = code;
 }
 
-const defaultLocale = dbDefaultLocale ?? staticDefaultLocale;
+if (!defaultLocale) {
+  logDebugError(
+    `[/lib/i18n/init] Using the first locale as default because no locale has isDefault set: ${supportedLocales[0].code}`
+  );
+  defaultLocale = supportedLocales[0].code;
+}
 
 /////////////////////////////////////////////////////
 // 2. Load static translations
 /////////////////////////////////////////////////////
 
 // Update language name translations for those missing
-for (const dbLoc in localeMatches) {
-  if (!(dbLoc in langNames)) {
-    const statLoc = localeMatches[dbLoc];
-    langNames[dbLoc] = statLoc in staticTranslations ? staticTranslations[statLoc].name : dbLoc;
+for (const [l, statLoc] of Object.entries(localeMatches)) {
+  if (!(l in langNames)) {
+    langNames[l] = statLoc in staticTranslations ? staticTranslations[statLoc].name : l;
   }
 }
 
@@ -193,11 +184,3 @@ function updateDefaultPayload() {
 locale.subscribe((l) => {
   if (l) updateDefaultPayload();
 });
-
-/////////////////////////////////////////////////////
-// 6. Finally throw an error if we couldn't load translations from settings
-/////////////////////////////////////////////////////
-
-if (initError) {
-  throw error(500, initError);
-}

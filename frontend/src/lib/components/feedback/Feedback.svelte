@@ -1,6 +1,6 @@
 <script lang="ts">
   import {createEventDispatcher, onDestroy} from 'svelte';
-  import {sendFeedback} from '$lib/api/feedback';
+  import {sendFeedback} from '$lib/api/sendFeedback';
   import {t} from '$lib/i18n';
   import {track} from '$lib/utils/analytics/track';
   import {concatClass} from '$lib/utils/components';
@@ -192,7 +192,7 @@ Show a form for sending feedback.
       </p>
     {/if}
   {:else}
-    <div>
+    <div class="grid gap-md">
       <p class="mb-0 text-center text-warning">
         {$t('feedback.error')}
         {#if $settings.admin.email}

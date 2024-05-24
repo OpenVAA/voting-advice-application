@@ -1,5 +1,5 @@
 import settings from '$lib/config/settings.json';
-import {adjustContrast} from '$lib/utils/color';
+import {adjustContrast} from './adjustContrast';
 
 const bg = settings.colors?.light?.['base-300'] ?? 'd1ebee';
 const bgDark = settings.colors?.dark?.['base-300'] ?? '1f2324';
