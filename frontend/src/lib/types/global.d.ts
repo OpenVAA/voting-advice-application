@@ -85,6 +85,10 @@ declare global {
       requireUserDataVersion: number;
       source: string;
     };
+    dataProvider: {
+      type: 'local' | 'strapi';
+      supportsCandidateApp: boolean;
+    };
     colors: {
       light: {[name: string]: string};
       dark: {[name: string]: string};
@@ -321,7 +325,7 @@ declare global {
 
   /**
    * Question type settings
-   * Make sure these align with those in `lib/api/getData.types.ts` and the mock data generator
+   * Make sure these align with the types defined for the `DataProvider` implementations in `lib/api/dataProvider/` and the mock data generator
    */
   type QuestionSettingsProps =
     | {

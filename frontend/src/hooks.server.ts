@@ -1,4 +1,5 @@
 import type {Handle, HandleServerError} from '@sveltejs/kit';
+import {API_ROOT} from '$lib/api/api';
 import {defaultLocale, loadTranslations, locales} from '$lib/i18n';
 import {matchLocale, parseAcceptedLanguages} from '$lib/i18n/utils';
 import {logDebugError} from '$lib/utils/logger';
@@ -19,7 +20,7 @@ export const handle: Handle = (async ({event, resolve}) => {
     : pathname;
   if (cleanPath === '') cleanPath = '/';
 
-  debug('Route: START', {params, pathname, isDataRequest});
+  debug('Route: START', {params, pathname, isDataRequest, route});
 
   //////////////////////////////////////////////////////////////////////////
   // 1. Handle non-route requests
@@ -27,7 +28,7 @@ export const handle: Handle = (async ({event, resolve}) => {
 
   // If this request is not a route request, resolve normally
   // NB. If defining API routes that should return json, test cleanPath here and resolve
-  if (route?.id == null) {
+  if (route?.id == null || pathname == null || pathname.startsWith(API_ROOT)) {
     debug('Route: RESOLVE non-route request');
     return resolve(event);
   }

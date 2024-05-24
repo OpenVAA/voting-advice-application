@@ -1,5 +1,5 @@
 import {error} from '@sveltejs/kit';
-import {getAppSettings, getElection} from '$lib/api/getData';
+import {dataProvider} from '$lib/api/getData';
 import {loadTranslations, locale} from '$lib/i18n';
 import type {LayoutServerLoad} from './$types';
 
@@ -14,6 +14,8 @@ export const load = (async ({locals, params}) => {
   if (effectiveLocale !== locale.get()) locale.set(effectiveLocale);
 
   await loadTranslations(effectiveLocale);
+
+  const {getAppSettings, getElection} = await dataProvider;
 
   // Get app settings and possibly enter maintenance mode. `getAppSettings` will resolve to `undefined` if the database connection could not be made.
   let appSettings = await getAppSettings({locale: effectiveLocale});

@@ -60,6 +60,39 @@
         }
       }
     },
+    "dataProvider": {
+      "description": "Settings defining the data provider to use, which may be a database interface or one using local files.",
+      "oneOf": [
+        {
+          "description": "Strapi data provider. Using this also requires settings some ENV variables.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "supportsCandidateApp"],
+          "properties": {
+            "type": {
+              "const": "strapi"
+            },
+            "supportsCandidateApp": {
+              "const": true
+            }
+          }
+        },
+        {
+          "description": "A local file data provider which reads the data from disk. Does not support the Candidate App.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "supportsCandidateApp"],
+          "properties": {
+            "type": {
+              "const": "local"
+            },
+            "supportsCandidateApp": {
+              "const": false
+            }
+          }
+        }
+      ]
+    },
     "colors": {
       "description": "The main DaisyUI colors used by the application. These have to be defined separately for both the light (default) and dark themes. Only some of the named colors are used in the application: e.g., 'warning' is also used for 'error'.",
       "type": "object",
