@@ -1,4 +1,9 @@
 {
+  "notSupported": {
+    "title": "Ehdokkaiden sovellus ei ole käytössä",
+    "content": "Tämä vaalikoneen versio ei valitettavasti mahdollista ehdokkaiden sovelluksen käyttöä.",
+    "emoji": "🐣"
+  },
   "navbar": {
     "start": "Alku",
     "basicInfo": "Perustiedot",
