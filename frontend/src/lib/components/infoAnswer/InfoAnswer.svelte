@@ -3,6 +3,7 @@
   import {getAnswerForDisplay} from '$lib/utils/answers';
   import {concatClass} from '$lib/utils/components';
   import {parseMaybeRanked} from '$lib/utils/entities';
+  import {getLinkText} from '$lib/utils/links';
   import {logDebugError} from '$lib/utils/logger';
   import {ucFirst} from '$lib/utils/text/ucFirst';
   import type {InfoAnswerProps} from './InfoAnswer.type';
@@ -21,6 +22,11 @@
     const sureEntity = parseMaybeRanked(entity)?.entity;
     answer = sureEntity ? getAnswerForDisplay(sureEntity, question) : undefined;
     asTag = format === 'tag';
+  }
+
+  function logError(msg: string): string {
+    logDebugError(msg);
+    return $t('common.missingAnswer');
   }
 </script>
 
@@ -77,15 +83,24 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
     {...concatClass($$restProps, 'vaa-tag hyphens-none')}>
     {question.text}
   </a>
+{:else if question.type === 'linkList' && Array.isArray(answer)}
+  {#each answer as link}
+    <a
+      href={link}
+      target="_blank"
+      rel="noopener noreferrer"
+      {...concatClass($$restProps, 'vaa-tag hyphens-none mb-sm')}>
+      {getLinkText(link)}
+    </a>
+  {/each}
 {:else if typeof answer === 'string'}
   <span class:vaa-tag={asTag} {...$$restProps}>
     {ucFirst(answer)}
   </span>
 {:else}
-  {logDebugError(
+  {logError(
     `InfoAnswer: Error displaying answer for question ${question.id}: ${answer} (${typeof answer})`
   )}
-  {$t('common.missingAnswer')}
 {/if}
 
 <style lang="postcss">

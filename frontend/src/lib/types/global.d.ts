@@ -38,7 +38,7 @@ declare global {
    * Properties of a Candidate's or Party's answer to a question.
    */
   interface AnswerProps {
-    value: string | boolean | number | number[] | Date | undefined | null;
+    value: string | string[] | boolean | number | number[] | Date | undefined | null;
     openAnswer?: string;
   }
 
@@ -350,6 +350,9 @@ declare global {
       }
     | {
         type: 'link';
+      }
+    | {
+        type: 'linkList';
       }
     | {
         type: 'singleChoiceOrdinal';
