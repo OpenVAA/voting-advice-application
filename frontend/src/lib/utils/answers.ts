@@ -1,5 +1,6 @@
 import {locale, t} from '$lib/i18n';
 import {logDebugError} from '$lib/utils/logger';
+import {checkUrl} from './links';
 
 // Utilities for getting Answers to Questions from Candidates and formatting them
 // TODO: These will be deprecated when we get proper Classes defs and methods for Question objects using the vaa-data module.
@@ -65,7 +66,17 @@ export function getAnswerForDisplay(
     const labels = getChoiceLabels(question, answer.value);
     return labels?.length ? labels : undefined;
   }
-  if (['text', 'number', 'link'].includes(qt)) return `${answer.value}`;
+  if (qt === 'linkList') {
+    if (!Array.isArray(answer.value)) {
+      logDebugError(`Invalid linkList value ${answer} for question ${question.id}`);
+      return undefined;
+    }
+    return answer.value.map((v) => `${v}`).filter((v) => checkUrl(v) != null);
+  }
+  if (qt === 'link') {
+    return checkUrl(`${answer.value}`);
+  }
+  if (['text', 'number'].includes(qt)) return `${answer.value}`;
   throw new Error(`Question type ${question.type} not implemented`);
 }
 
