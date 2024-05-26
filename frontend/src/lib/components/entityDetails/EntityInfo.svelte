@@ -66,8 +66,8 @@ Used to show an entity's basic info in an `EntityDetails` component.
   {#if questions?.length}
     {@const nonLinkQuestions = questions.filter((q) => q.type !== 'link')}
     {@const linkQuestions = questions.filter((q) => q.type === 'link')}
-    {#if nonLinkQuestions.length}
-      <div class="infoGroup" role="group">
+    <div class="infoGroup" role="group">
+      {#if nonLinkQuestions.length}
         {#each nonLinkQuestions as question}
           {#if $settings.entityDetails.showMissingAnswers[entityType] || getAnswer(entity, question) != null}
             <InfoItem label={question.text}>
@@ -75,17 +75,16 @@ Used to show an entity's basic info in an `EntityDetails` component.
             </InfoItem>
           {/if}
         {/each}
-      </div>
-    {/if}
-    {#if linkQuestions.length}
-      <div class="infoGroup" role="group">
+      {/if}
+      {#if linkQuestions.length}
         <InfoItem label={$t('components.entityInfo.links')}>
           {#each linkQuestions as question}
             <InfoAnswer {entity} {question} hideMissing class="mb-sm" />
           {/each}
         </InfoItem>
-      </div>
-    {/if}
+        ´
+      {/if}
+    </div>
   {/if}
   {#if $settings.analytics.survey?.showIn?.includes('entityDetails')}
     <SurveyBanner class="mt-lg" />
