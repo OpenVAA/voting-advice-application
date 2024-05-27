@@ -1,4 +1,3 @@
-import type {Color} from '$lib/components/shared/colors';
 import type {SvelteHTMLElements} from 'svelte/elements';
 export type StretchBackgroundProps = SvelteHTMLElements['div'] & {
   /**

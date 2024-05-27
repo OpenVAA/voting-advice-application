@@ -425,12 +425,32 @@ declare global {
     questionGroup: QuestionCategoryProps;
   }
 
-  export type CandidateDetailsCardProps = {
-    /**
-     *  Defines whether component is used to show candidate's preview or if it is
-     * used in the voter side to render both candidate's and voters answers.
-     * */
-
-    candidateView?: boolean;
-  };
+  /**
+   * These are all the DaisyUI colors supported by the application.
+   * These can be used in utility classes like ``fill-${color}``,
+   * but be sure to check `tailwind.config.cjs` for the classes
+   * that are safelisted for use.
+   */
+  type Color =
+    | 'current'
+    | 'primary'
+    | 'secondary'
+    | 'accent'
+    | 'neutral'
+    | 'base-100'
+    | 'base-200'
+    | 'base-300'
+    | 'info'
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'base-content'
+    | 'primary-content'
+    | 'secondary-content'
+    | 'accent-content'
+    | 'info-content'
+    | 'success-content'
+    | 'warning-content'
+    | 'error-content'
+    | 'white';
 }

@@ -1,5 +1,3 @@
-import type {Color} from '$lib/components/shared/colors';
-
 export type ExpanderProps = {
   /**
    * Title is seen as the text in the expander's visible part, and it is mandatory.
