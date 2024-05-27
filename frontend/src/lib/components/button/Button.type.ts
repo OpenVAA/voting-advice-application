@@ -1,6 +1,5 @@
 import type {SvelteHTMLElements} from 'svelte/elements';
 import type {IconName} from '$lib/components/icon';
-import type {Color} from '$lib/components/shared/colors';
 
 export type ButtonProps = LinkOrButtonElementProps & {
   /**

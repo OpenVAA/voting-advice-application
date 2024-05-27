@@ -1,5 +1,4 @@
 import type {SvelteHTMLElements} from 'svelte/elements';
-import type {Color} from '$lib/components/shared/colors';
 
 export type OpenVAALogoProps = SvelteHTMLElements['svg'] & {
   /**
