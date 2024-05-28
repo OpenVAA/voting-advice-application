@@ -32,7 +32,7 @@ export function compareElectionSymbols(
     return 0;
   } else if (!b.electionSymbol) return -1;
   const [aInt, bInt] = [parseInt(a.electionSymbol), parseInt(b.electionSymbol)];
-  return `${aInt}` === a.electionSymbol && `${aInt}` === b.electionSymbol
+  return `${aInt}` === a.electionSymbol && `${bInt}` === b.electionSymbol
     ? aInt - bInt
     : a.electionSymbol.localeCompare(b.electionSymbol, locale.get());
 }
