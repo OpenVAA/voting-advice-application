@@ -71,7 +71,7 @@ export async function match<E extends EntityProps>(
     // Create answer subgroups
     // We only consider those subgroups that the voter has answered
     const answeredIds = new Set(Object.keys(voter.answers));
-    const categories = [
+    let categories = [
       ...new Set(
         questions
           .filter((q) => answeredIds.has(q.id))
@@ -79,6 +79,13 @@ export async function match<E extends EntityProps>(
           .filter((c) => c != null)
       )
     ] as QuestionCategoryProps[];
+    // Filter out categories with duplicated ids, because there might be copies of the category objects before we have the fully fledged vaa-data model in use
+    const catIds = new Set<string>();
+    categories = categories.filter((c) => {
+      if (catIds.has(c.id)) return false;
+      catIds.add(c.id);
+      return true;
+    });
     // If there's only one category, there's no need to create subgroups
     if (categories.length > 1) {
       matchingOptions = {
