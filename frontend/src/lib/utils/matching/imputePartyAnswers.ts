@@ -48,7 +48,7 @@ export function imputeGroupAnswer(
     if (v == null) return false;
     if (typeof v !== 'number') {
       logDebugError(
-        `Matching.matchParties: Invalid answer type ${typeof v} (only numbers allowd). Value: ${v}.`
+        `Matching.imputeGroupAnswer: Invalid answer type ${typeof v} (only numbers allowd). Value: ${v}.`
       );
       return false;
     }
