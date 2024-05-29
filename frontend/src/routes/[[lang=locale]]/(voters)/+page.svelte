@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {election, resetVoterAnswers, settings} from '$lib/stores';
+  import {election, settings} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {SurveyBanner} from '$lib/components/survey/banner';
@@ -16,11 +16,7 @@
 
   <img slot="hero" class="bg-white" src={$settings.poster?.url ?? '/images/hero.png'} alt="" />
 
-  <Button
-    variant="main"
-    href={$getRoute(Route.Intro)}
-    on:click={resetVoterAnswers}
-    text={$t('actionLabels.startButton')} />
+  <Button variant="main" href={$getRoute(Route.Intro)} text={$t('actionLabels.startButton')} />
 
   <p class="mt-lg text-center">
     {$t('viewTexts.frontpageIngress', {
