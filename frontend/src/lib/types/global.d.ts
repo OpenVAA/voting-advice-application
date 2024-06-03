@@ -322,6 +322,11 @@ declare global {
     info?: string;
     color?: string;
     colorDark?: string;
+    /**
+     * The questions that belong to this category. This will, however, only be initialised by the app stores, not immediately by the getData API.
+     * NB. This is a tempoary solution in advance of the `vaa-data` module.
+     */
+    questions?: QuestionProps[];
   }
 
   type QuestionCategoryType = 'info' | 'opinion';
