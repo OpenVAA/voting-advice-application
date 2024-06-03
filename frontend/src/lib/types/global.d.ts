@@ -129,6 +129,10 @@ declare global {
       partyMatching: AppSettingsGroupMatchingType;
     };
     questions: {
+      categoryIntros?: {
+        allowSkip?: boolean;
+        show: boolean;
+      };
       showCategoryTags: boolean;
       showIntroPage: boolean;
       showResultsLink: boolean;
