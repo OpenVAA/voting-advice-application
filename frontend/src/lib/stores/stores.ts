@@ -9,7 +9,7 @@ import {wrap} from '$lib/utils/entities';
 import {match, matchParties} from '$lib/utils/matching';
 import {sortCandidates, sortParties} from '$lib/utils/sort';
 import {localStorageWritable} from '$lib/utils/storage';
-import {extractCategories} from '$lib/utils/questions';
+import {extractCategories, filterVisible} from '$lib/utils/questions';
 
 /**
  * Contains the currently effective app settings.
@@ -179,7 +179,7 @@ export const parties: Readable<Promise<PartyProps[]>> = derived(
  */
 export const infoQuestions: Readable<Promise<QuestionProps[]>> = derived(
   page,
-  ($page) => $page.data.infoQuestions ?? Promise.resolve([]),
+  ($page) => $page.data.infoQuestions?.then((qq) => filterVisible(qq ?? [])) ?? Promise.resolve([]),
   Promise.resolve([])
 );
 
@@ -188,7 +188,8 @@ export const infoQuestions: Readable<Promise<QuestionProps[]>> = derived(
  */
 export const opinionQuestions: Readable<Promise<QuestionProps[]>> = derived(
   page,
-  ($page) => $page.data.opinionQuestions ?? Promise.resolve([]),
+  ($page) =>
+    $page.data.opinionQuestions?.then((qq) => filterVisible(qq ?? [])) ?? Promise.resolve([]),
   Promise.resolve([])
 );
 
