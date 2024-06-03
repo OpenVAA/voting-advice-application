@@ -1,4 +1,6 @@
-export type ExpanderProps = {
+import type {SvelteHTMLElements} from 'svelte/elements';
+
+export type ExpanderProps = SvelteHTMLElements['div'] & {
   /**
    * Title is seen as the text in the expander's visible part, and it is mandatory.
    * Title will also be used as a 'aria-label' for a checkbow on which the

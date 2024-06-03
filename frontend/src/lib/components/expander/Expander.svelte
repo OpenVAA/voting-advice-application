@@ -1,5 +1,6 @@
 <script lang="ts">
   import {createEventDispatcher} from 'svelte';
+  import {concatClass} from '$lib/utils/components';
   import {Icon} from '$lib/components/icon';
   import type {ExpanderProps} from './Expander.type';
 
@@ -114,7 +115,7 @@ You should not try to use a variant and customize at the same time.
 ```
 -->
 
-<div class={collapseClasses}>
+<div {...concatClass($$restProps, collapseClasses)}>
   <input type="checkbox" aria-label="open ${title}" on:click={toggleExpanded} checked={expanded} />
   <div class={titleClasses}>
     {title}
