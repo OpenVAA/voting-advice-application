@@ -320,6 +320,27 @@
       "additionalProperties": false,
       "required": ["showCategoryTags", "showIntroPage"],
       "properties": {
+        "categoryIntros": {
+          "description": "Settings related to the optional category intro pages.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["show"],
+          "default": {
+            "show": false
+          },
+          "properties": {
+            "allowSkip": {
+              "description": "Whether to allow the user to skip the whole category.",
+              "type": "boolean",
+              "default": true
+            },
+            "show": {
+              "description": "Whether to show category intro pages before the first question of each category.",
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
         "showCategoryTags": {
           "description": "Whether to show the category tag along the question text.",
           "type": "boolean",
