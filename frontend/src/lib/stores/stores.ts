@@ -9,6 +9,7 @@ import {wrap} from '$lib/utils/entities';
 import {match, matchParties} from '$lib/utils/matching';
 import {sortCandidates, sortParties} from '$lib/utils/sort';
 import {localStorageWritable} from '$lib/utils/storage';
+import {extractCategories} from '$lib/utils/questions';
 
 /**
  * Contains the currently effective app settings.
@@ -204,6 +205,15 @@ export const allQuestions: Readable<Promise<Record<string, QuestionProps>>> = de
     );
   },
   Promise.resolve({})
+);
+
+/**
+ * Utility store for opinion question catetgories as part of `PageData`.
+ */
+export const opinionQuestionCategories: Readable<Promise<QuestionCategoryProps[]>> = derived(
+  opinionQuestions,
+  ($opinionQuestions) => $opinionQuestions.then((qq) => extractCategories(qq)),
+  Promise.resolve([])
 );
 
 /**
