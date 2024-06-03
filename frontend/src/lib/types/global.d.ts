@@ -282,6 +282,7 @@ declare global {
     info?: string;
     filterable?: boolean;
     fillingInfo?: string;
+    hidden?: boolean;
     type: QuestionSettingsProps['type'];
     values?: AnswerOption[];
     min?: number | Date;
