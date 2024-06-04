@@ -32,6 +32,7 @@ export enum Route {
   Party = 'parties',
   Privacy = 'privacy',
   Question = 'questions',
+  QuestionCategory = 'questions/category',
   Questions = 'questions',
   ResultCandidate = 'results/candidate',
   ResultParty = 'results/party',
@@ -102,8 +103,8 @@ function _getRoute(
   const parts = ['']; // This will add the initial slash
   if (locale) parts.push(locale);
 
-  // If the questions.showIntroPage setting is false, we bypass the intro page
-  if (route === Route.Questions && id == null && !get(settings).questions?.showIntroPage) {
+  // If the `questions.questionsIntro.show` setting is false, we bypass the intro page
+  if (route === Route.Questions && id == null && !get(settings).questions?.questionsIntro?.show) {
     parts.push(Route.Question);
     id = FIRST_QUESTION_ID;
   } else if (route !== '') {

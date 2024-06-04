@@ -16,7 +16,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('questions.questionsTitle')}</title>
+  <title>{$t('questions.title')}</title>
 </svelte:head>
 
 {#if !$basicInfoFilledStore}

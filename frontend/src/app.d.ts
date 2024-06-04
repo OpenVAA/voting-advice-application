@@ -13,6 +13,7 @@ declare namespace App {
     // as empty arrays in the global data load /+layout.server.ts
     appSettings?: Partial<AppSettings>;
     candidates?: Promise<CandidateProps[]>;
+    categoryId?: string;
     election?: ElectionProps;
     entityId?: string;
     entityType?: EntityType;
