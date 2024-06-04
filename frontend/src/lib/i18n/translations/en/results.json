@@ -3,7 +3,8 @@
   "candidatesTotal": "of {numTotal}",
   "heroEmoji": "🎊",
   "ingress": {
-    "browse": "These are the {candidatePlural} and {partyPlural} standing in these elections, ordered by election symbol or name. You can use the filters to narrow them down.",
+    "browse": "<p>These are the {candidatePlural} and {partyPlural} standing in these elections, ordered by election symbol or name. You can use the filters to narrow them down.</p><p>If you want to find the {candidatePlural} and {partyPlural} that agree with you the most,{questionsLink} first.</p> ",
+    "questionsLinkText": "answer at least {numQuestions, plural, =1 {one question} other {# questions}}",
     "results": "These are the {candidatePlural} and {partyPlural} standing in these elections. The best matches are first on the list. To narrow down the results, you can also use the filters."
   },
   "partiesShown": "{numShown, plural, =1 {1 {partySingular}} other {# {partyPlural}}}",
