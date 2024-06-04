@@ -1194,6 +1194,7 @@ export interface ApiQuestionCategoryQuestionCategory extends Schema.CollectionTy
     type: Attribute.Enumeration<['opinion', 'info']> & Attribute.DefaultTo<'opinion'>;
     color: Attribute.String;
     colorDark: Attribute.String;
+    customData: Attribute.JSON;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
