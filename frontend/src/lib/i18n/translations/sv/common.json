@@ -7,6 +7,7 @@
   },
   "clearInput": "Klart",
   "close": "Stäng",
+  "continue": "Fortsätt",
   "electionSymbol": {
     "candidate": "Valnummer",
     "party": "Valsymbol"
@@ -20,6 +21,7 @@
     "singular": "parti",
     "plural": "partier"
   },
+  "question": "Fråga",
   "thanksNo": "Nej tack",
   "unaffiliated": "Utan anknytning",
   "website": "Webbsida"

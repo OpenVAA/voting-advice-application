@@ -5,5 +5,6 @@
   "default": "Something went wrong, sorry!",
   "general": "Something went wrong",
   "heroEmoji": "🙊",
-  "noQuestions": "There are no questions yet"
+  "noQuestions": "There are no questions yet",
+  "unsupportedQuestion": "This question cannot be shown, sorry!"
 }

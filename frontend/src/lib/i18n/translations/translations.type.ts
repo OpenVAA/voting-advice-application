@@ -12,6 +12,7 @@ export type TranslationsPayload = Partial<{
   electionDate: Date;
   filters: string;
   minPasswordLength: number;
+  minQuestions: number;
   minutes: number;
   numActiveFilters: number;
   numCandidates: number;
@@ -27,6 +28,7 @@ export type TranslationsPayload = Partial<{
   partyPlural: string;
   partySingular: string;
   publisher: string;
+  questionsLink: string;
   rating: number;
   ratingMax: number;
   score: string | number;
