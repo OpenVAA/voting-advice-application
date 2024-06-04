@@ -1,9 +1,7 @@
 {
-  "appTitle": "Nuorten Vaalikone",
+  "appTitle": "Vaalikone",
   "frontpageIngress": "Vaalikoneen avulla voit etsiä ehdokkaita ja puolueita vaaleissa {electionDate, date, ::dMyyyy} sen mukaan, miten paljon he ovat samaa mieltä kanssasi.",
-  "madeWith": "Rakennettu käyttäen",
-  "publishedBy": "Julkaisija: {publisher}",
-  "questionsTip": "Vinkki: Jos et piittaa jostakin kysymyksestä, voit ohittaa sen.",
-  "yourOpinionsIngress": "Vastaa seuraavaksi {numStatements} kysymykseen politiikasta ja arvoista, joihin ehdokkaat ovat myös vastanneet. Kun olet vastannut niihin, vaalikone etsii sinulle {candidatePlural} ja {partyPlural}, jotka ovat eniten samaa mieltä kanssasi. Kysymykset on jaettu {numCategories} ryhmään. Voit vastata kaikkiin niihin tai valita ne, joista olet kiinnostunut.",
-  "yourOpinionsTitle": "Kerro mielipiteesi"
+  "madeWithPrefix": "Rakennettu",
+  "madeWithSuffix": ":n avulla",
+  "publishedBy": "Julkaisija: {publisher}"
 }
