@@ -65,6 +65,11 @@ export type VideoProps = SvelteHTMLElements['div'] & {
 };
 
 /**
+ * The actions and icons for the combined play/pause/replay button.
+ */
+export type PlayButtonAction = 'play' | 'pause' | 'replay';
+
+/**
  * Whether the video or the transcript is visible.
  */
 export type VideoMode = 'video' | 'text';
