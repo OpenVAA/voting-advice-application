@@ -1,16 +1,21 @@
 {
   "bothHaventAnswered": "Neither you nor {entity} has answered this question",
+  "categoryIntroQuestions": "{numQuestions, plural, =-1 {} =1 {1 question} other {# questions}}",
   "entityHasntAnswered": "{entity} hasn’t answered this question",
   "heroEmoji": "💬",
   "infoDescription": "Background information on the question",
+  "ingressWithoutCategories": "Next, answer {numQuestions} questions regarding politics and values.",
+  "ingressWithCategories": "The questions are divided into {numCategories} categories. You answer to all of them or the pick the ones you want. {minQuestions, plural, =0 {} =1 {} other {However, select enough categories to get at least # questions in total.}}",
   "next": "Next question",
   "notFound": "Question not found",
   "previous": "Previous",
-  "questionsTitle": "Your Opinions",
+  "title": "Your Opinions",
   "readMore": "Read More",
   "remove": "Delete answer",
   "skip": "Skip",
-  "startAnswering": "Start answering",
+  "skipCategory": "Skip This Category",
+  "skipToResults": "Skip to Results",
+  "start": "Answer {numQuestions} Questions",
   "youHaventAnswered": "You haven't answered this question",
   "yourAnswer": "You"
 }

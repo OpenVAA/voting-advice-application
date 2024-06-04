@@ -8,6 +8,7 @@
   },
   "clearInput": "Clear",
   "close": "Close",
+  "continue": "Continue",
   "electionSymbol": {
     "candidate": "Election Number",
     "party": "Election Symbol"
@@ -21,6 +22,7 @@
     "singular": "party",
     "plural": "parties"
   },
+  "question": "Question",
   "thanksNo": "No Thanks",
   "unaffiliated": "Unaffiliated",
   "website": "Website"

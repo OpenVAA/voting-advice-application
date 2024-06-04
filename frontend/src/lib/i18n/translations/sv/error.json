@@ -5,5 +5,6 @@
   "default": "Något gick fel, förlåt!",
   "general": "Något gick fel",
   "heroEmoji": "🙊",
-  "noQuestions": "Det finns inga frågor ännu"
+  "noQuestions": "Det finns inga frågor ännu",
+  "unsupportedQuestion": "Ursäkta, denna frågan kan inte visas!"
 }
