@@ -10,7 +10,7 @@
   import {Icon} from '$lib/components/icon';
   import {Loading} from '$lib/components/loading';
   import {videoPreferences} from './component-stores';
-  import type {VideoMode, VideoProps, VideoTrackingEventData} from './Video.type';
+  import type {PlayButtonAction, VideoMode, VideoProps, VideoTrackingEventData} from './Video.type';
 
   ////////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
@@ -191,11 +191,6 @@
   ////////////////////////////////////////////////////////////////////////////////
 
   /**
-   * The actions and icons for the combined play/pause/replay button.
-   */
-  type PlayButtonAction = 'play' | 'pause' | 'replay';
-
-  /**
    * The current action of the combined play/pause/replay button.
    */
   let playButtonAction: PlayButtonAction = 'play';
@@ -317,7 +312,7 @@
 
   /**
    * Toggle video playback or replay.
-   * @param action The action to perform: `'play'`, `'pause'` or `'replay'`. @default Toggle between `'play'` and `'pause'`.
+   * @param action The action to perform: `'play'`, `'pause'` or `'replay'`. Default: Toggle between `'play'` and `'pause'`.
    */
   export function togglePlay(action?: PlayButtonAction) {
     if (action == null) action = playButtonAction;
@@ -541,13 +536,13 @@ User choices are stored in the `videoPreferences` store so that they persist acr
 - `poster`: The poster image URL for the video.
 - `aspectRatio`: The aspect ratio of the video. This is needed so that the component can be sized correctly even before the data is loaded.
 - `transcript`: The transcript text for the video as a HTML string. If empty, `captions` will be used instead.
-- `hideControls`: The controls to hide. All are shown if the list is not defined. @default `undefined`
-- `autoPlay`: Whether to autoPlay the video. @default `true`
-- `autoUnmute`: Whether to automatically try to unmute the video when the user interacts with it. @default `true`
-- `showCaptions`: Whether to show captions by default. @default `true`
-- `showTranscript`: Whether to show the transcript instead of the video by default. @default `false`
-- `skipByCue`: Whether to skip using the captions' cues. @default `true`
-- `skipAmount`: The amount in seconds to skip if not using cues. @default `10`
+- `hideControls`: The controls to hide. All are shown if the list is not defined. Default: `undefined`
+- `autoPlay`: Whether to autoPlay the video. Default: `true`
+- `autoUnmute`: Whether to automatically try to unmute the video when the user interacts with it. Default: `true`
+- `showCaptions`: Whether to show captions by default. Default: `true`
+- `showTranscript`: Whether to show the transcript instead of the video by default. Default: `false`
+- `skipByCue`: Whether to skip using the captions' cues. Default: `true`
+- `skipAmount`: The amount in seconds to skip if not using cues. Default: `10`
 
 ### Bindable properties
 
