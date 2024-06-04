@@ -3,7 +3,8 @@
   "candidatesTotal": "av {numTotal}",
   "heroEmoji": "🎊",
   "ingress": {
-    "browse": "Detta är de kandidaterna och partierna som ställer upp i dessa val. Du kan använda filtren för att begränsa dem.",
+    "browse": "<p>Detta är kandidaterna och partierna som ställer upp i dessa val, sorterade efter valsymbol eller namn. Du kan använda filtren för att begränsa dem.</p><p>Om du vill för att hitta de kandidaterna och partierna som håller med dig mest, {questionsLink} först.</p> ",
+    "questionsLinkText": "svara minst {numQuestions, plural, =1 {en fråga} other {# frågor}}",
     "results": "Detta är de kandidaterna och partierna som ställer upp i dessa val. De bästa matchningarna är först på listan. För att begränsa resultaten kan du också använda filtren."
   },
   "partiesShown": "{numShown, plural, =1 {1 {partySingular}} other {# {partyPlural}}}",

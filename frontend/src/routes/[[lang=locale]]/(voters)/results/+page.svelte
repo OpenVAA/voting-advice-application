@@ -1,9 +1,6 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
-  import {startEvent} from '$lib/utils/analytics/track';
   import {t} from '$lib/i18n';
-  import {candidateFilters} from '$lib/utils/filters';
-  import {getRoute, Route} from '$lib/utils/navigation';
   import {
     allQuestions,
     answeredQuestions,
@@ -17,6 +14,10 @@
     startFeedbackPopupCountdown,
     startSurveyPopupCountdown
   } from '$lib/stores';
+  import {startEvent} from '$lib/utils/analytics/track';
+  import {candidateFilters} from '$lib/utils/filters';
+  import {getRoute, Route} from '$lib/utils/navigation';
+  import {sanitizeHtml} from '$lib/utils/sanitize';
   import {Button} from '$lib/components/button';
   import type {EntityCardProps} from '$lib/components/entityCard';
   import {EntityList} from '$lib/components/entityList';
@@ -150,9 +151,22 @@
       text={$t('actionLabels.yourList')} />
   </svelte:fragment>
 
-  <p class="text-center">
-    {resultsAvailableSync ? $t('results.ingress.results') : $t('results.ingress.browse')}
-  </p>
+  <div class="mb-xl text-center">
+    {#if resultsAvailableSync}
+      {$t('results.ingress.results')}
+    {:else}
+      {@html sanitizeHtml(
+        $t('results.ingress.browse', {
+          questionsLink: `<a href="${$getRoute(Route.Questions)}">${$t(
+            'results.ingress.questionsLinkText',
+            {
+              numQuestions: $settings.matching.minimumAnswers
+            }
+          )}</a>`
+        })
+      )}
+    {/if}
+  </div>
 
   <StretchBackground padding="medium" bgColor="base-300" toBottom class="min-h-[75vh]">
     <!-- We need to add mx-10 below to match the margins to the basic page margins, except for the EntityList components which we want to give more width -->
