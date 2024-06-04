@@ -3,7 +3,7 @@
   import {getRoute, Route} from '$lib/utils/navigation';
   import {openFeedbackModal, settings} from '$lib/stores';
   import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {HeadingGroup} from '$lib/components/headingGroup';
   import {HeroEmoji} from '$lib/components/heroEmoji';
   import {BasicPage} from '$lib/templates/basicPage';
 </script>
@@ -14,7 +14,7 @@
   </svelte:fragment>
 
   <HeadingGroup slot="heading">
-    <PreHeading class="text-primary">{$t('viewTexts.appTitle')}</PreHeading>
+    <!-- <PreHeading class="text-primary">{$t('viewTexts.appTitle')}</PreHeading> -->
     <h1>{$t('intro.title')}</h1>
   </HeadingGroup>
 
