@@ -11,7 +11,7 @@ import {logDebugError} from '$lib/utils/logger';
 import type {RequestHandler} from './$types';
 
 export const POST: RequestHandler = async ({request}) => {
-  logDebugError('Receiving feedback via the local API');
+  logDebugError('[/api/feedback/+server.ts] Receiving feedback via the local API');
 
   try {
     const data: FeedbackData = await request.json().catch((e) => {
@@ -27,13 +27,12 @@ export const POST: RequestHandler = async ({request}) => {
       dateString = new Date().toISOString();
     }
 
-    const dirname = process.cwd();
     const baseName = `feedback_${dateString.replaceAll(':', '.')}`;
-    let fp = path.join(dirname, DataFolder.Feedback, `${baseName}.json`);
+    let fp = path.join(process.cwd(), DataFolder.Feedback, `${baseName}.json`);
 
     let suffix = 0;
     while (fs.existsSync(fp)) {
-      fp = path.join(dirname, DataFolder.Feedback, `${baseName}_${++suffix}.json`);
+      fp = path.join(process.cwd(), DataFolder.Feedback, `${baseName}_${++suffix}.json`);
       if (suffix > 50)
         throw new Error(`Too many retries when trying to find an unused filename: ${fp}`);
     }
