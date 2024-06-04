@@ -1,3 +1,5 @@
+import {onDestroy} from 'svelte';
+
 /** Create a unique identifier for use as an element ID. */
 export function getUUID(): string {
   return crypto?.randomUUID ? crypto.randomUUID() : (Math.random() * 10e15).toString(16);
@@ -43,3 +45,10 @@ export function concatClass<T extends {class?: string | null}>(props: T, classes
 type StringProps<T extends object> = {
   [K in keyof T]: T[K] extends string ? T[K] : never;
 };
+
+/**
+ * Wrap subscriptions inside call to automatically clear them when the component is destroyed
+ */
+export function clearOnDestroy(...subs: Array<() => void>) {
+  onDestroy(() => subs.forEach((f) => f()));
+}
