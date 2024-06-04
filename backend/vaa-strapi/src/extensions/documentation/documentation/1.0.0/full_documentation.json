@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2024-05-07T16:42:00.972Z"
+    "x-generation-date": "2024-06-03T15:28:31.909Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
@@ -2114,6 +2114,7 @@
                                                                         "colorDark": {
                                                                           "type": "string"
                                                                         },
+                                                                        "customData": {},
                                                                         "createdAt": {
                                                                           "type": "string",
                                                                           "format": "date-time"
@@ -6028,6 +6029,7 @@
                                                                                     "colorDark": {
                                                                                       "type": "string"
                                                                                     },
+                                                                                    "customData": {},
                                                                                     "createdAt": {
                                                                                       "type": "string",
                                                                                       "format": "date-time"
@@ -8770,6 +8772,7 @@
                                                                                                                   "colorDark": {
                                                                                                                     "type": "string"
                                                                                                                   },
+                                                                                                                  "customData": {},
                                                                                                                   "createdAt": {
                                                                                                                     "type": "string",
                                                                                                                     "format": "date-time"
@@ -11426,6 +11429,7 @@
                                                                                                                   "colorDark": {
                                                                                                                     "type": "string"
                                                                                                                   },
+                                                                                                                  "customData": {},
                                                                                                                   "createdAt": {
                                                                                                                     "type": "string",
                                                                                                                     "format": "date-time"
@@ -13944,6 +13948,7 @@
                                                                                                                               "colorDark": {
                                                                                                                                 "type": "string"
                                                                                                                               },
+                                                                                                                              "customData": {},
                                                                                                                               "createdAt": {
                                                                                                                                 "type": "string",
                                                                                                                                 "format": "date-time"
@@ -16880,6 +16885,7 @@
                                                                                                                   "colorDark": {
                                                                                                                     "type": "string"
                                                                                                                   },
+                                                                                                                  "customData": {},
                                                                                                                   "createdAt": {
                                                                                                                     "type": "string",
                                                                                                                     "format": "date-time"
@@ -20692,6 +20698,7 @@
                                                                                                                 "colorDark": {
                                                                                                                   "type": "string"
                                                                                                                 },
+                                                                                                                "customData": {},
                                                                                                                 "createdAt": {
                                                                                                                   "type": "string",
                                                                                                                   "format": "date-time"
@@ -23713,6 +23720,7 @@
                                                                           "colorDark": {
                                                                             "type": "string"
                                                                           },
+                                                                          "customData": {},
                                                                           "createdAt": {
                                                                             "type": "string",
                                                                             "format": "date-time"
@@ -26112,6 +26120,7 @@
                                                                                                                   "colorDark": {
                                                                                                                     "type": "string"
                                                                                                                   },
+                                                                                                                  "customData": {},
                                                                                                                   "createdAt": {
                                                                                                                     "type": "string",
                                                                                                                     "format": "date-time"
@@ -30402,6 +30411,7 @@
                                                                                                                   "colorDark": {
                                                                                                                     "type": "string"
                                                                                                                   },
+                                                                                                                  "customData": {},
                                                                                                                   "createdAt": {
                                                                                                                     "type": "string",
                                                                                                                     "format": "date-time"
@@ -31251,6 +31261,7 @@
           "colorDark": {
             "type": "string"
           },
+          "customData": {},
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -33123,6 +33134,7 @@
                                                                                                       "colorDark": {
                                                                                                         "type": "string"
                                                                                                       },
+                                                                                                      "customData": {},
                                                                                                       "createdAt": {
                                                                                                         "type": "string",
                                                                                                         "format": "date-time"
