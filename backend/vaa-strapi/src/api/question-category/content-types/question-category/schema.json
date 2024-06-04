@@ -55,6 +55,9 @@
     },
     "colorDark": {
       "type": "string"
+    },
+    "customData": {
+      "type": "json"
     }
   }
 }

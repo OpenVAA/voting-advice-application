@@ -332,6 +332,11 @@ declare global {
      * NB. This is a tempoary solution in advance of the `vaa-data` module.
      */
     questions?: QuestionProps[];
+    customData?:
+      | (JSONData & {
+          emoji?: string;
+        })
+      | null;
   }
 
   type QuestionCategoryType = 'info' | 'opinion';
