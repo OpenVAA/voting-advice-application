@@ -30,8 +30,12 @@ export type PageProps = SvelteHTMLElements['div'] & {
   headerClass?: string;
 
   /**
-   * Optional class string to add to the `<div>` tag wrapping the page's
-   * main content.
+   * Optional class string to add to the `<div>` tag wrapping the page's contents.
+   */
+  drawerContentClass?: string;
+
+  /**
+   * Optional class string to add to the `<main>` tag.
    */
   mainClass?: string;
 

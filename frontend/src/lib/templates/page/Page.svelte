@@ -16,6 +16,7 @@
   export let mainId: $$Props['mainId'] = 'mainContent';
   export let navId: $$Props['navId'] = 'pageNav';
   export let headerClass: $$Props['headerClass'] = undefined;
+  export let drawerContentClass: $$Props['drawerContentClass'] = undefined;
   export let mainClass: $$Props['mainClass'] = undefined;
   export let invertLogo: $$Props['invertLogo'] = false;
   export let progress: $$Props['progress'] = undefined;
@@ -142,7 +143,7 @@ the Drawer component.
     aria-label={$t('header.toggleMenu')} />
 
   <!-- Drawer content -->
-  <div class="drawer-content flex flex-col">
+  <div class="drawer-content flex flex-col {drawerContentClass ?? ''}">
     <header
       class="min-h-header relative flex items-center justify-between bg-base-300 pr-6 pt-safet {headerClass ??
         ''}">

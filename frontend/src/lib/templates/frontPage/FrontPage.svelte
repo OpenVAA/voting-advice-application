@@ -57,6 +57,14 @@ is based on.
   </p>
 </FrontPage>
 
+<FrontPage 
+  title="Page with full background image"
+  class="bg-cover bg-center
+         bg-[url('path-to-image.jpg')]
+         dark:bg-[url('path-to-image-dark.jpg')]"
+  mainClass="bg-base-300 grow-0 mt-0 mx-auto rounded-t-lg max-w-xl">
+ ...
+</FrontPage>
 ```
 -->
 
@@ -64,8 +72,9 @@ is based on.
   {title}
   {...concatProps($$restProps, {
     class: 'bg-base-300',
-    headerClass: '!absolute w-full bg-transparent',
-    mainClass: '!p-0'
+    headerClass: '!absolute top-0 w-full bg-transparent',
+    drawerContentClass: 'justify-end',
+    mainClass: '!p-0 min-h-[60vh] sm:min-h-[65vh]'
   })}>
   <!-- Header -->
   <slot name="header" slot="banner" />
