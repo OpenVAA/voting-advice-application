@@ -318,7 +318,7 @@
       "description": "Settings related to the question view.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["showCategoryTags", "showIntroPage"],
+      "required": ["showCategoryTags", "questionsIntro"],
       "properties": {
         "categoryIntros": {
           "description": "Settings related to the optional category intro pages.",
@@ -341,13 +341,30 @@
             }
           }
         },
+        "questionsIntro": {
+          "description": "Settings related to the optional questions intro page, shown before going to questions.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["show"],
+          "default": {
+            "allowCategorySelection": true,
+            "show": true
+          },
+          "properties": {
+            "allowCategorySelection": {
+              "description": "Whether to allow the user to select which categories to answer if there are more than one.",
+              "type": "boolean",
+              "default": true
+            },
+            "show": {
+              "description": "Whether to show the questions intro page.",
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
         "showCategoryTags": {
           "description": "Whether to show the category tag along the question text.",
-          "type": "boolean",
-          "default": true
-        },
-        "showIntroPage": {
-          "description": "Whether to show the questions intro page before going to questions.",
           "type": "boolean",
           "default": true
         },

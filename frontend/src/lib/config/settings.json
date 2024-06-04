@@ -82,8 +82,15 @@
     "partyMatching": "median"
   },
   "questions": {
+    "categoryIntros": {
+      "allowSkip": true,
+      "show": true
+    },
+    "questionsIntro": {
+      "allowCategorySelection": true,
+      "show": true
+    },
     "showCategoryTags": true,
-    "showIntroPage": true,
     "showResultsLink": true
   },
   "results": {

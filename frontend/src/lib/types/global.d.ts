@@ -133,8 +133,11 @@ declare global {
         allowSkip?: boolean;
         show: boolean;
       };
+      questionsIntro: {
+        allowCategorySelection?: boolean;
+        show: boolean;
+      };
       showCategoryTags: boolean;
-      showIntroPage: boolean;
       showResultsLink: boolean;
     };
     results: {
@@ -327,11 +330,7 @@ declare global {
     info?: string;
     color?: string;
     colorDark?: string;
-    /**
-     * The questions that belong to this category. This will, however, only be initialised by the app stores, not immediately by the getData API.
-     * NB. This is a tempoary solution in advance of the `vaa-data` module.
-     */
-    questions?: QuestionProps[];
+    questions: QuestionProps[];
     customData?:
       | (JSONData & {
           emoji?: string;
