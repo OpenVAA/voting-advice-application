@@ -4,11 +4,11 @@
   import {locale, t} from '$lib/i18n';
   import {getInfoQuestions, getOpinionQuestions, getNominatedCandidates} from '$lib/api/getData';
   import type {CandidateContext} from '$lib/utils/candidateStore';
-  import { Route, getRoute } from '$lib/utils/navigation';
-  import { Button } from '$lib/components/button';
+  import {Route, getRoute} from '$lib/utils/navigation';
+  import {Button} from '$lib/components/button';
   import {EntityDetails} from '$lib/components/entityDetails';
   import {Icon} from '$lib/components/icon';
-  import { Loading } from '$lib/components/loading';
+  import {Loading} from '$lib/components/loading';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import {SingleCardPage} from '$lib/templates/singleCardPage';
 
@@ -67,7 +67,7 @@
     <Loading showLabel />
   {:then}
     {#if candidate}
-    <EntityDetails content={candidate} {opinionQuestions} {infoQuestions} />
+      <EntityDetails content={candidate} {opinionQuestions} {infoQuestions} />
     {:else}
       <div class="w-full text-center text-warning">{$t('candidateApp.preview.notFound')}</div>
     {/if}

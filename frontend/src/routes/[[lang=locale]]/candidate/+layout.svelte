@@ -8,7 +8,7 @@
 </script>
 
 {#if localSettings.dataProvider.supportsCandidateApp}
-  {#await import('$lib/candidate/components/candidateContext') then {CandidateContextProvider} }
+  {#await import('$lib/candidate/components/candidateContext') then { CandidateContextProvider }}
     <svelte:component this={CandidateContextProvider}>
       <slot />
     </svelte:component>

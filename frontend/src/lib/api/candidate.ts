@@ -9,7 +9,7 @@ import type {
   StrapiResponse,
   StrapiQuestionData
 } from './dataProvider/strapi';
-import { parseQuestionCategory } from './dataProvider/strapi/utils';
+import {parseQuestionCategory} from './dataProvider/strapi/utils';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
