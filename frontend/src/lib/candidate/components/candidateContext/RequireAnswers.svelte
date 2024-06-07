@@ -5,7 +5,7 @@
 
   const candidateContext = getContext<CandidateContext>('candidate');
   const {answersStore, questionsStore} = candidateContext;
-  
+
   const getQuestionsAndAnswers = async () => {
     await Promise.all([candidateContext.loadAnswerData(), candidateContext.loadQuestionData()]);
   };

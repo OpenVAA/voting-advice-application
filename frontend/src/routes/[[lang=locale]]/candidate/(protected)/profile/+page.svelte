@@ -13,7 +13,10 @@
   import {MultilangTextInput} from '$candidate/components/textArea';
   import {PreventNavigation} from '$lib/components/preventNavigation';
   import {getContext} from 'svelte';
-  import type {StrapiGenderData, StrapiLanguageData} from '$lib/api/dataProvider/strapi/strapiDataProvider.type';
+  import type {
+    StrapiGenderData,
+    StrapiLanguageData
+  } from '$lib/api/dataProvider/strapi/strapiDataProvider.type';
   import type {Language} from '$lib/types/candidateAttributes';
   import Warning from '$lib/components/warning/Warning.svelte';
   import InputContainer from './InputContainer.svelte';
