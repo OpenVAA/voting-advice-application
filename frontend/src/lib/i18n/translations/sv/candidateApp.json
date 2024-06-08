@@ -1,4 +1,7 @@
 {
+  "common": {
+    "logOut": "Logga ut"
+  },
   "notSupported": {
     "title": "Kandidatappen inte tillgänglig",
     "content": "Denna valkompassversion stöder inte kandidatappen.",
@@ -14,7 +17,6 @@
     "feedback": "SV Send feedback",
     "electionInformation": "SV Information About the Elections",
     "useInformation": "SV How Does This App Work?",
-    "logOut": "SV Logout",
     "close": "SV Close",
     "cancel": "SV Cancel"
   },
@@ -143,7 +145,6 @@
     "title": "SV You're Ready to Roll!",
     "description": "SV You have filled all of the information needed for the Election Compass. You can still edit your answers and even log in later to do that.",
     "tip": "SV If you want to see how the voters will see your profile, you can preview it.",
-    "logOut": "SV Log Out",
     "previewYourProfile": "SV Preview Your Profile",
     "editYourOpinions": "SV Edit Your Opinions"
   },

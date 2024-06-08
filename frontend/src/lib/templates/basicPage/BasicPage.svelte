@@ -128,13 +128,13 @@ Instead, you have to use a wrapper. Note that this will also always result in th
         ? 'white'
         : 'oklch(var(--p))'}>
       {#if showLogoutButton}
-        <LogoutButton />
+        <LogoutButton variant="icon" />
       {/if}
       <slot name="banner" />
     </div>
   </svelte:fragment>
 
-  <!-- Default slot for Page starts -->
+  <!-- Default slot for <Page> starts -->
 
   <!-- Note -->
   {#if $$slots.note}
@@ -188,8 +188,10 @@ Instead, you have to use a wrapper. Note that this will also always result in th
 </Page>
 
 <style lang="postcss">
-  :global(.vaa-basicPage-actions a:not([disabled])),
-  :global(.vaa-basicPage-actions button:not([disabled])) {
+  :global(.vaa-basicPage-actions > a:not([disabled])),
+  :global(.vaa-basicPage-actions > * > a:not([disabled])),
+  :global(.vaa-basicPage-actions > button:not([disabled])),
+  :global(.vaa-basicPage-actions > * > button:not([disabled])) {
     /* !text is valid class prefix */
     @apply !text-[var(--headerIcon-color)];
   }

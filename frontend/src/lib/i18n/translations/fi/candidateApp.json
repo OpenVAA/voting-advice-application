@@ -1,4 +1,7 @@
 {
+  "common": {
+    "logOut": "Kirjaudu ulos"
+  },
   "notSupported": {
     "title": "Ehdokkaiden sovellus ei ole käytössä",
     "content": "Tämä vaalikoneen versio ei valitettavasti mahdollista ehdokkaiden sovelluksen käyttöä.",
@@ -14,7 +17,6 @@
     "feedback": "Anna palautetta",
     "electionInformation": "Tietoa vaaleista",
     "useInformation": "Miten tämä sovellus toimii?",
-    "logOut": "Kirjaudu ulos",
     "close": "Sulje",
     "cancel": "Peruuta"
   },
@@ -131,9 +133,9 @@
   "questions": {
     "title": "Mielipiteesi",
     "start": "Kerro mielipiteesi",
-    "instructions": "Seuraavaksi sovellus kysyy mielipidettäsi {numQuestions} väittämään poliittisista kysymyksistä ja arvoista. Kun äänestäjät käyttävät vaalikompassia, he vastaavat myös samoihin väittämiin ja näkevät, kuinka hyvin heidän mielipiteensä vastaavat sinun mielipiteitäsi.",
+    "instructions": "Seuraavaksi sovellus kysyy mielipidettäsi {numQuestions} väittämään poliittisista kysymyksistä ja arvoista. Kun äänestäjät käyttävät vaalikonetta, he vastaavat myös samoihin väittämiin ja näkevät, kuinka hyvin heidän mielipiteensä vastaavat sinun mielipiteitäsi.",
     "tip": "Näet kaikki vastauksesi tällä sivulla, kun palaat siihen myöhemmin.",
-    "warning": "Sinulla on vielä {numUnansweredQuestions} vastaamattomia kysymyksiä. Tietosi eivät näy Vaalikompassissa ennen kuin olet vastannut kaikkiin kysymyksiin.",
+    "warning": "Sinulla on vielä {numUnansweredQuestions, plural, =1 {yksi vastaamaton kysymys} other {# vastaamatonta kysymystä}}. Tietosi eivät näy vaalikoneessa ennen kuin olet vastannut kaikkiin kysymyksiin.",
     "info": "Näet kaikki mielipiteesi alla ja voit muokata niitä napauttamalla niitä.",
     "answerButton": "Vastaa tähän kysymykseen",
     "notAnswered": "Et vastannut tähän kysymykseen",
@@ -155,7 +157,7 @@
   },
   "homePage": {
     "greeting": "Hei, {username}!",
-    "explanation": "Voidaksesi esiintyä vaalikoneessa sinun on annettava joitakin perustietoja itsestäsi ja vastattava poliittisiin mielipidekysymyksiin.",
+    "explanation": "Näkyäksesi vaalikoneessa sinun on annettava joitakin perustietoja itsestäsi ja vastattava poliittisiin mielipidekysymyksiin.",
     "buttonText": "Jatka",
     "basicInfoButton": "Täytä perustietosi",
     "basicInfoButtonEdit": "Muokkaa perustietojasi",
@@ -165,7 +167,6 @@
     "questionsButtonEdit": "Muokkaa mielipiteitäsi",
     "questionsButtonView": "Tarkastele mielipiteitäsi",
     "previewButton": "Esikatsele profiiliasi",
-    "logOut": "Kirjaudu ulos",
     "editingNotAllowedNote": "Vastausten muokkaaminen ei ole enää mahdollista, mutta voit silti tarkastella niitä. Ota yhteyttä ylläpitäjään, jos tiedoissa on virheitä.",
     "editingNotAllowedPartiallyFilled": "Koska et vastannut kaikkiin kysymyksiin, profiiliasi ei näytetä.",
     "ready": "Olet valmis!",
