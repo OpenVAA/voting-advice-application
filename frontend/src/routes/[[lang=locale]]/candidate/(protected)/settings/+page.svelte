@@ -11,7 +11,7 @@
   import {PasswordField} from '$lib/candidate/components/passwordField';
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
-  import type {StrapiLanguageData} from '$lib/api/getData.type';
+  import type {StrapiLanguageData} from '$lib/api/dataProvider/strapi';
   import type {Language} from '$lib/types/candidateAttributes';
 
   const {userStore, loadUserData} = getContext<CandidateContext>('candidate');
