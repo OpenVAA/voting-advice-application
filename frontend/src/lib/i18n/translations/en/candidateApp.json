@@ -1,4 +1,7 @@
 {
+  "common": {
+    "logOut": "Log Out"
+  },
   "notSupported": {
     "title": "Candidate Application Not Available",
     "content": "This Election Compass version does not support the Candidate Application.",
@@ -14,7 +17,6 @@
     "feedback": "Send feedback",
     "electionInformation": "Information About the Elections",
     "useInformation": "How Does This App Work?",
-    "logOut": "Logout",
     "close": "Close",
     "cancel": "Cancel"
   },
@@ -165,7 +167,6 @@
     "questionsButtonEdit": "Edit your opinions",
     "questionsButtonView": "View your opinions",
     "previewButton": "Preview your profile",
-    "logOut": "Log Out",
     "editingNotAllowedNote": "Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data.",
     "editingNotAllowedPartiallyFilled": "Because you didn’t answer all of the questions, your profile won’t be shown.",
     "ready": "You're Ready to Roll!",

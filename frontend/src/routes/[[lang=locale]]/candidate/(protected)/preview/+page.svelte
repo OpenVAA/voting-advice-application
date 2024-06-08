@@ -54,7 +54,7 @@
     {$t('candidateApp.preview.tip')}
   </svelte:fragment>
   <svelte:fragment slot="banner">
-    <LogoutButton />
+    <LogoutButton variant="icon" />
     <Button
       slot="banner"
       class="!text-neutral"
