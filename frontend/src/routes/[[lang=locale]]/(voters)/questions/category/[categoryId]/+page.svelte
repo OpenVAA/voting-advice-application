@@ -1,15 +1,13 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
-  import {locale, t} from '$lib/i18n';
+  import {t} from '$lib/i18n';
   import {
     openFeedbackModal,
     opinionQuestionCategories,
-    opinionQuestions,
     resultsAvailable,
     settings
   } from '$lib/stores';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {clearOnDestroy} from '$lib/utils/components';
   import {Button} from '$lib/components/button';
   import {CategoryTag} from '$lib/components/categoryTag';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
@@ -37,18 +35,12 @@
   let resultsAvailableSync = false;
   $: $resultsAvailable.then((d) => (resultsAvailableSync = d));
 
-  clearOnDestroy(
-    locale.subscribe(() => update(data.categoryId)),
-    opinionQuestions.subscribe(() => update(data.categoryId)),
-    opinionQuestionCategories.subscribe(() => update(data.categoryId))
-  );
+  // Prepare category data reactively when the route param or question categories (triggered by locale changes) change
+  $: update(data.categoryId, $opinionQuestionCategories);
 
-  // Prepare category data reactively when the route param changes
-  $: update(data.categoryId);
-
-  async function update(categoryId: string) {
-    const qq = await $opinionQuestions;
-    const cc = await $opinionQuestionCategories;
+  async function update(categoryId: string, promisedCategories: Promise<QuestionCategoryProps[]>) {
+    const cc = await promisedCategories;
+    const qq = cc.map((c) => c.questions).flat();
     category = cc.find((c) => c.id === categoryId);
     if (!category) error(500, `Category not found: ${categoryId}`);
     questions = filterAndSortQuestions(qq, $firstQuestionId, $selectedCategories);
