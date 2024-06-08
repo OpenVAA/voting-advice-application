@@ -28,7 +28,7 @@
   $: {
     // 1. Base classes
     classes =
-      'btn relative flex flex-nowrap min-h-touch min-w-touch h-auto flex items-center gap-y-6 gap-x-4';
+      'btn relative flex flex-nowrap min-h-touch min-w-touch h-auto flex items-center gap-y-6 gap-x-6';
     labelClass = 'vaa-button-label first-letter:uppercase';
 
     // 2. Variant-defined classes
@@ -145,13 +145,29 @@ Reactivity is not supported for the properties: `variant`, `iconPos`.
   disabled={disabled || undefined}
   {...concatClass($$restProps, classes)}>
   {#if icon}
-    <Icon name={icon} />
+    <div class="relative">
+      <Icon name={icon} />
+      {#if $$slots.badge && variant !== 'main'}
+        <div class="absolute -end-6 -top-8">
+          <slot name="badge" />
+        </div>
+      {/if}
+    </div>
   {/if}
   {#if variant !== 'icon'}
-    <div class={labelClass}>{text.charAt(0).toUpperCase() + text.slice(1)}</div>
+    <div class={labelClass}>
+      <span class="relative">
+        {text.charAt(0).toUpperCase() + text.slice(1)}
+        {#if $$slots.badge && !icon && variant !== 'main'}
+          <div class="absolute -end-20 -top-8">
+            <slot name="badge" />
+          </div>
+        {/if}
+      </span>
+    </div>
   {/if}
-  {#if $$slots.badge}
-    <div class="absolute -end-6 top-0">
+  {#if $$slots.badge && variant === 'main'}
+    <div class="absolute -end-6 -top-12">
       <slot name="badge" />
     </div>
   {/if}
