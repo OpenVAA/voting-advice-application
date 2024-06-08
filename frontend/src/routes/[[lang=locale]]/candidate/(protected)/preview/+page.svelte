@@ -2,7 +2,7 @@
   import {getContext} from 'svelte';
   import {afterNavigate, goto} from '$app/navigation';
   import {locale, t} from '$lib/i18n';
-  import {getInfoQuestions, getOpinionQuestions, getNominatedCandidates} from '$lib/api/getData';
+  import {dataProvider} from '$lib/api/getData';
   import type {CandidateContext} from '$lib/utils/candidateStore';
   import {Route, getRoute} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
@@ -20,6 +20,7 @@
   let loadData: Promise<void>;
 
   const fetchData = async () => {
+    const {getInfoQuestions, getOpinionQuestions, getNominatedCandidates} = await dataProvider;
     const [infoRes, opinionRes, candidateRes] = await Promise.all([
       getInfoQuestions({locale: $locale}),
       getOpinionQuestions({locale: $locale}),
