@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {Button} from '$lib/components/button';
-  export let id = 'password';
+  export let id: string | undefined = undefined;
   export let password = '';
   export let autocomplete = '';
   export let externalLabel = false;
@@ -10,7 +10,7 @@
   /** variable used to refer to the input box in code to change its type*/
   let inputbox: HTMLInputElement;
   /** function that hides and reveals the password and changes the icon of the button*/
-  const changeRevealed = () => {
+  const toggleRevealed = () => {
     passwordRevealed = !passwordRevealed;
     inputbox.type = passwordRevealed ? 'text' : 'password';
   };
@@ -18,11 +18,10 @@
 
 <!--
 @component
-PasswordField is an input box for password that comes with a button
-to reveal and hide the password
+PasswordField is an input box for password that comes with a button to reveal and hide the password
 
 ### Properties
-- `id` : id for the input
+- `id` : optional id for the input
 - `password` : value of the password, bindable
 - `autoComplete` : autocomplete value for password input
 - `externalLabel` : whether the label is outside the component and should not be rendered inside
@@ -37,7 +36,6 @@ to reveal and hide the password
   {#if !externalLabel}
     <label for={id} class="hidden">{$t('candidate.password')}</label>
   {/if}
-
   <input
     {id}
     type="password"
@@ -54,7 +52,7 @@ to reveal and hide the password
     text={passwordRevealed
       ? $t('candidateApp.passwordButton.hidePassword')
       : $t('candidateApp.passwordButton.revealPassword')}
-    class="absolute inset-y-0 right-0"
+    class="!absolute inset-y-0 right-0"
     icon={passwordRevealed ? 'hide' : 'show'}
-    on:click={changeRevealed} />
+    on:click={toggleRevealed} />
 </div>
