@@ -119,9 +119,11 @@
     icon="profile"
     iconPos="left"
     href={$getRoute(Route.CandAppProfile)}>
-    {#if basicInfoQuestionsLeft && basicInfoQuestionsLeft > 0}
-      <InfoBadge text={basicInfoQuestionsLeft} classes="-left-4 -top-4" />
-    {/if}
+    <svelte:fragment slot="badge">
+      {#if basicInfoQuestionsLeft && basicInfoQuestionsLeft > 0}
+        <InfoBadge text={basicInfoQuestionsLeft} />
+      {/if}
+    </svelte:fragment>
   </Button>
   <Button
     text={nextAction.buttonTextQuestion}
@@ -129,17 +131,18 @@
     iconPos="left"
     disabled={!basicInfoFilled}
     href={$getRoute(Route.CandAppQuestions)}>
-    {#if opinionQuestionsLeft && opinionQuestionsLeft > 0}
-      <InfoBadge text={opinionQuestionsLeft} disabled={!basicInfoFilled} classes="-left-4 -top-4" />
-    {/if}
+    <svelte:fragment slot="badge">
+      {#if opinionQuestionsLeft && opinionQuestionsLeft > 0}
+        <InfoBadge text={opinionQuestionsLeft} disabled={!basicInfoFilled} />
+      {/if}
+    </svelte:fragment>
   </Button>
   <Button
     text={$t('candidateApp.homePage.previewButton')}
     icon="previewProfile"
     iconPos="left"
     disabled={!(basicInfoFilled && opinionQuestionsFilled)}
-    href={$getRoute(Route.CandAppPreview)}>
-  </Button>
+    href={$getRoute(Route.CandAppPreview)} />
 
   <div class="flex w-full flex-col items-center justify-center" slot="primaryActions">
     <Button
@@ -148,6 +151,6 @@
       icon="next"
       href={nextAction.href} />
 
-    <LogoutButton />
+    <LogoutButton variant="normal" icon={undefined} />
   </div>
 </BasicPage>
