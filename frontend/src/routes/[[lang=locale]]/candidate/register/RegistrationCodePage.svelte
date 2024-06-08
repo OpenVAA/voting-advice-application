@@ -42,7 +42,7 @@ In addition, shows a warning to the user if another user is already logged in.
 
   <HeadingGroup slot="heading">
     <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
-    <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
+    <h1 class="text-3xl font-normal">{$page.data.election?.name}</h1>
   </HeadingGroup>
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onRegistration}>
     <p class="max-w-md text-center">
