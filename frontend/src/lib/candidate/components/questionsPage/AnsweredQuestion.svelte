@@ -5,6 +5,7 @@
   import {t, locale} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {translate} from '$lib/i18n/utils/translate';
+  import {CategoryTag} from '$lib/components/categoryTag';
   import {QuestionOpenAnswer} from '$lib/components/questions';
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
@@ -38,9 +39,7 @@ open answers and a button to navigate to the questions page.
 
 {#if answers?.[question.id]}
   <div class="pb-20 pt-20">
-    <div class="text-accent">
-      {translate(question.category)}
-    </div>
+    <CategoryTag category={question.category} />
 
     <Expander title={translate(question.text)} variant="question">
       {translate(question.info)}
