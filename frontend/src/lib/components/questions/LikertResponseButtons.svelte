@@ -185,7 +185,7 @@ Keyboard navigation works in the following way:
   mode="display"
   selectedKey={$voterAnswers[question.id]}
   entityKey={candidateAnswer}
-  entityLabel={$t('candidate.candidateAnswerLabel')} />
+  entityLabel={$t('candidateApp.common.candidateAnswerLabel')} />
 ```
 -->
 

@@ -34,14 +34,14 @@ PasswordField is an input box for password that comes with a button to reveal an
 
 <div class="relative">
   {#if !externalLabel}
-    <label for={id} class="hidden">{$t('candidate.password')}</label>
+    <label for={id} class="hidden">{$t('candidateApp.common.password')}</label>
   {/if}
   <input
     {id}
     type="password"
     name="password"
     class="input w-full"
-    placeholder={$t('candidate.password_placeholder')}
+    placeholder={$t('candidateApp.common.passwordPlaceholder')}
     bind:value={password}
     bind:this={inputbox}
     {autocomplete}

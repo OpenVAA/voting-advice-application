@@ -51,12 +51,12 @@ Candidate login page. This component also takes care of the login process.
 ```
 -->
 
-<FrontPage title={$t('candidate.sign_in_title')}>
+<FrontPage title={$t('candidateApp.common.logInTitle')}>
   <img slot="hero" class="bg-white" src="/images/hero-candidate.png" alt="" />
 
   <HeadingGroup slot="heading">
     <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
-    <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
+    <h1 class="text-3xl font-normal">{$page.data.election?.name}</h1>
   </HeadingGroup>
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onLogin}>
     {#if showPasswordSetMessage}
@@ -65,15 +65,15 @@ Candidate login page. This component also takes care of the login process.
       </p>
     {/if}
     <p class="max-w-md text-center">
-      {$t('candidate.enter_email_and_password')}
+      {$t('candidateApp.common.enterEmailAndPassword')}
     </p>
-    <label for="email" class="hidden">{$t('candidate.email')}</label>
+    <label for="email" class="hidden">{$t('candidateApp.common.email')}</label>
     <input
       type="email"
       name="email"
       id="email"
       class="input mb-md w-full max-w-md"
-      placeholder={$t('candidate.email_placeholder')}
+      placeholder={$t('candidateApp.common.emailPlaceholder')}
       bind:value={email}
       autocomplete="email"
       required />
@@ -81,11 +81,13 @@ Candidate login page. This component also takes care of the login process.
       <PasswordField bind:password autocomplete="current-password" id="password" />
     </div>
     {#if wrongCredentials}
-      <p class="text-center text-error">{$t('candidate.wrong_email_or_password')}</p>
+      <p class="text-center text-error">{$t('candidateApp.common.wrongEmailOrPassword')}</p>
     {/if}
-    <Button type="submit" text={$t('candidate.sign_in_button')} variant="main" />
-    <Button href={$getRoute(Route.CandAppForgotPassword)} text={$t('candidate.forgot_password')} />
-    <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
-    <Button href={$getRoute(Route.Home)} text={$t('candidate.election_compass_for_voters')} />
+    <Button type="submit" text={$t('candidateApp.common.logIn')} variant="main" />
+    <Button
+      href={$getRoute(Route.CandAppForgotPassword)}
+      text={$t('candidateApp.common.forgotPassword')} />
+    <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
+    <Button href={$getRoute(Route.Home)} text={$t('candidateApp.common.voterApp')} />
   </form>
 </FrontPage>

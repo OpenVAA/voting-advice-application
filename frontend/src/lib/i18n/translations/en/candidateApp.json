@@ -1,6 +1,18 @@
 {
   "common": {
-    "logOut": "Log Out"
+    "logOut": "Log Out",
+    "contactSupport": "Contact Support",
+    "voterApp": "Election Compass for Voters",
+    "email": "Email",
+    "emailPlaceholder": "example@email.com",
+    "enterEmailAndPassword": "Enter the email and password you've received from your party to edit your data and opinions.",
+    "forgotPassword": "Forgot Password?",
+    "list": "List",
+    "password": "Password",
+    "passwordPlaceholder": "E.g. CP23-174a-f4%&-aHAB",
+    "logIn": "Sign in",
+    "logInTitle": "Sign in",
+    "wrongEmailOrPassword": "Wrong email or password"
   },
   "notSupported": {
     "title": "Candidate Application Not Available",
@@ -169,7 +181,7 @@
     "previewButton": "Preview your profile",
     "editingNotAllowedNote": "Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data.",
     "editingNotAllowedPartiallyFilled": "Because you didn’t answer all of the questions, your profile won’t be shown.",
-    "ready": "You're Ready to Roll!",
+    "ready": "You’re Ready to Roll!",
     "description": "You have filled all of the information needed for the Election Compass. You can still edit your answers and even log in later to do that.",
     "tip": "If you want to see how the voters will see your profile, you can preview it."
   },
