@@ -1,4 +1,8 @@
 import { expect, chromium, FullConfig } from '@playwright/test';
+// Import Route directly so that other imports are not bundled in
+import { Route } from '../frontend/src/lib/utils/navigation/route';
+import candidateAppTranslations from '../frontend/src/lib/i18n/translations/en/candidateApp.json';
+
 import { STORAGE_STATE } from '../playwright.config';
 
 async function globalSetup(config: FullConfig) {
@@ -6,13 +10,13 @@ async function globalSetup(config: FullConfig) {
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
-  await page.goto(`${baseURL!}/candidate`);
-  await page.getByLabel('Email').fill('first.last@example.com');
-  await page.getByLabel(/^Password$/).fill('password');
-  await page.getByText('Sign in').click();
+  await page.goto(`${baseURL!}/${Route.CandAppHome}`);
+  await page.getByLabel(candidateAppTranslations.common.email, {exact: true}).fill('first.last@example.com');
+  await page.getByLabel(candidateAppTranslations.common.password, {exact: true}).fill('password');
+  await page.getByText(candidateAppTranslations.common.logIn, {exact: true}).click();
 
   // Wait until the page actually signs in.
-  await expect(page.getByText('You\'re Ready to Roll!')).toBeVisible();
+  await expect(page.getByText(candidateAppTranslations.homePage.ready, {exact: true})).toBeVisible();
 
   await page.context().storageState({ path: STORAGE_STATE });
 }
