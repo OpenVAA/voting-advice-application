@@ -45,7 +45,7 @@ A compact text input field.
     {headerText}
   </label>
 {:else}
-  <slot name="header" field={undefined} />
+  <slot name="header" />
 {/if}
 
 <div class="flex w-full pr-6">
