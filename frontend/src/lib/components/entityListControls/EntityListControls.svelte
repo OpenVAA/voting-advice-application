@@ -1,16 +1,16 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
   import {locale, t} from '$lib/i18n';
+  import {TextPropertyFilter} from '$lib/voter/vaa-filters';
+  import {startEvent} from '$lib/utils/analytics/track';
   import {concatClass} from '$lib/utils/components';
   import {Button} from '$lib/components/button';
+  import {InfoBadge} from '$lib/components/infoBadge';
   import {Modal} from '$lib/components/modal';
   import {EntityFilters} from '$lib/components/entityFilters';
   import {Icon} from '$lib/components/icon';
-  import type {EntityListControlsProps} from './EntityListControls.type';
-  import {TextPropertyFilter} from '$lib/voter/vaa-filters';
   import {TextEntityFilter} from '../entityFilters/text';
-  import InfoBadge from '../infoBadge/infoBadge.svelte';
-  import {startEvent} from '$lib/utils/analytics/track';
+  import type {EntityListControlsProps} from './EntityListControls.type';
 
   type $$Props = EntityListControlsProps;
 
