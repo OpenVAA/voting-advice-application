@@ -48,7 +48,7 @@ Used to show an entity's basic info in an `EntityDetails` component.
         </div>
       {/if}
       {#if isCandidate(entity)}
-        <InfoItem label={$t('candidate.list')}>
+        <InfoItem label={$t('candidateApp.common.list')}>
           {#if entity.party}
             <PartyTag party={entity.party} variant="full" />
           {:else}

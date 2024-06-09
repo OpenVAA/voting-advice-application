@@ -1,6 +1,18 @@
 {
   "common": {
-    "logOut": "Kirjaudu ulos"
+    "logOut": "Kirjaudu ulos",
+    "contactSupport": "Ota yhteys tukeen",
+    "voterApp": "Äänestäjien vaalikone",
+    "email": "Sähköposti",
+    "emailPlaceholder": "esimerkki@osoite.fi",
+    "enterEmailAndPassword": "Syötä puolueelta saamasi sähköposti ja salasana, niin voit täyttää tietosi",
+    "forgotPassword": "Unohditko salasanan?",
+    "list": "Vaalilista",
+    "password": "Salasana",
+    "passwordPlaceholder": "Esim. CP23-174a-f4%&-aHAB",
+    "logIn": "Kirjaudu",
+    "logInTitle": "Kirjaudu",
+    "wrongEmailOrPassword": "Väärä sähköposti tai salasana"
   },
   "notSupported": {
     "title": "Ehdokkaiden sovellus ei ole käytössä",

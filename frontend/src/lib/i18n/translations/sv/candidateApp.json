@@ -1,6 +1,18 @@
 {
   "common": {
-    "logOut": "Logga ut"
+    "logOut": "Logga ut",
+    "contactSupport": "Kontakta support",
+    "voterApp": "Valkompass för väljare",
+    "email": "E-post",
+    "emailPlaceholder": "example@email.com",
+    "enterEmailAndPassword": "Ange den e-postadress och det lösenord som du har fått från ditt parti för att redigera dina uppgifter och åsikter.",
+    "forgotPassword": "Glömt lösenord?",
+    "list": "Lista",
+    "password": "Lösenord",
+    "passwordPlaceholder": "T.ex. CP23-174a-f4%&-aHAB",
+    "logIn": "Registrera dig",
+    "logInTitle": "Registrera dig",
+    "wrongEmailOrPassword": "Fel e-post eller lösenord"
   },
   "notSupported": {
     "title": "Kandidatappen inte tillgänglig",

@@ -66,5 +66,5 @@ a second confirmation password input field, a button for submitting the password
     disabled={!disableSetButton}
     variant="main"
     text={$t('candidateApp.setPassword.setPassword')} />
-  <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidate.contact_support')} />
+  <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
 </form>

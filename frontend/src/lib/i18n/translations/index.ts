@@ -6,7 +6,6 @@ const keys = [
   'about',
   'aria',
   'actionLabels',
-  'candidate',
   'candidateApp',
   'common',
   'components',

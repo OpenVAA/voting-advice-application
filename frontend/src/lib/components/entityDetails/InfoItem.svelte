@@ -18,7 +18,7 @@ Used to show a label-content pair in a Candidate's basic information.
 ### Usage
 
 ```tsx
-<InfoItem label={$t('candidate.firstNameLabel')}>
+<InfoItem label={$t('candidateApp.common.firstNameLabel')}>
   {candidate.firstName}
 </InfoItem>
 ```
