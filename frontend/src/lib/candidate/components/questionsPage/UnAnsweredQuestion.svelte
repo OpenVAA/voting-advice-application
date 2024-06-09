@@ -1,5 +1,6 @@
 <script lang="ts">
   import {Button} from '$lib/components/button';
+  import {CategoryTag} from '$lib/components/categoryTag';
   import {Expander} from '$lib/components/expander';
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
@@ -31,9 +32,7 @@ Renders an unanswered question on the summary page. Consists of the questions ti
 -->
 
 <div class="pt-40">
-  <div class="text-accent">
-    {translate(question.category)}
-  </div>
+  <CategoryTag category={question.category} />
 
   <Expander title={translate(question.text)} variant="question" titleClass="text-warning">
     {translate(question.info)}
