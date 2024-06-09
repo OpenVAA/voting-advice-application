@@ -117,11 +117,11 @@ Usage with local saving:
 
 <div class="relative w-full">
   {#if headerText}
-    <div class="mx-10 mt-10">
-      <label for={id} class="text-m uppercase text-secondary">{headerText}</label>
+    <div class="m-md mb-0">
+      <label for={id} class="small-label">{headerText}</label>
     </div>
   {:else}
-    <slot name="header" field={undefined} />
+    <slot name="header" />
   {/if}
 
   <textarea
@@ -130,12 +130,12 @@ Usage with local saving:
     {placeholder}
     disabled={disabled && !locked}
     readonly={locked}
-    class="textarea w-full resize-none p-6 !outline-none disabled:bg-base-300 {bgColor} {lockedClass}"
+    class="textarea w-full resize-none px-md py-6 !outline-none disabled:bg-base-300 {bgColor} {lockedClass}"
     bind:value={text}
     on:focusout={saveToLocalStorage} />
 
   {#if locked}
-    <div class="absolute bottom-0 right-0 m-10">
+    <div class="absolute bottom-0 right-0 m-md">
       <Icon name="locked" class="my-auto flex-shrink-0 text-secondary" />
     </div>
   {/if}

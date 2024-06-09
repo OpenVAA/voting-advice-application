@@ -218,14 +218,14 @@ In addition to the question, includes a Likert scale and a text area for comment
           variant="main"
           text={$t('candidateApp.questions.return')} />
       {:else if editMode}
-        <div class="flex justify-center gap-12">
+        <div class="grid w-full grid-cols-[1fr] justify-items-center">
           <Button
             on:click={saveAndReturn}
             variant="main"
             text={$t('candidateApp.questions.saveAndReturn')} />
           <Button
             on:click={cancelAndReturn}
-            variant="main"
+            color="warning"
             text={$t('candidateApp.questions.cancel')} />
         </div>
       {:else}
