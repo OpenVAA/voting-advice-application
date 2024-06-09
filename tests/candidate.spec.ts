@@ -1,13 +1,20 @@
 import { test, expect } from '@playwright/test';
+// Import Route directly so that other imports are not bundled in
+import { Route } from '../frontend/src/lib/utils/navigation/route';
+import candidateAppTranslations from '../frontend/src/lib/i18n/translations/en/candidateApp.json';
+import headerTranslations from '../frontend/src/lib/i18n/translations/en/header.json';
+
+const LOCALE = 'en';
 
 test.beforeEach(async ({ page, baseURL }) => {
-  await page.goto(`${baseURL}/en/candidate`);
+  await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
 });
 
 test('should log out', async ({ page }) => {
-  await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/en\/candidate/);
+  const urlRe = new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE}\/${Route.CandAppHome}`);
+  await expect(page).toHaveURL(urlRe);
 
-  await page.getByTitle('Logout').click();
+  await page.getByTitle(candidateAppTranslations.common.logOut, {exact: true}).click();
 
   // TODO: Handle the logout dialog
   /*
@@ -19,17 +26,17 @@ test('should log out', async ({ page }) => {
   await logoutButton.click();
   */
 
-  await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/en\/candidate/);
-  await expect(page.getByText('Sign in')).toBeVisible();
+  await expect(page).toHaveURL(urlRe);
+  await expect(page.getByText(candidateAppTranslations.common.logIn, {exact: true})).toBeVisible();
 });
 
 test('should navigate', async ({ page }) => {
-  await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/en\/candidate/);
-  await expect(page.getByRole('button', { name: 'Close menu' })).not.toBeVisible();
-  await page.getByLabel('Open menu').click();
-  await expect(page.getByRole('button', { name: 'Close menu' })).toBeVisible();
-  await page.getByRole('link', { name: 'Basic Info' }).click();
-  await expect(page).toHaveURL(/(http[s]?:\/\/)?(.*)\/en\/candidate\/profile/);
-  await expect(page.getByRole('button', { name: 'Close menu' })).not.toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Basic Information' })).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE}\/${Route.CandAppHome}`));
+  await expect(page.getByRole('button', { name: headerTranslations.closeMenu, exact: true })).not.toBeVisible();
+  await page.getByLabel(headerTranslations.openMenu).click();
+  await expect(page.getByRole('button', { name: headerTranslations.closeMenu, exact: true })).toBeVisible();
+  await page.getByRole('link', { name: candidateAppTranslations.navbar.basicInfo, exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE}\/${Route.CandAppProfile}`));
+  await expect(page.getByRole('button', { name: headerTranslations.closeMenu, exact: true })).not.toBeVisible();
+  await expect(page.getByRole('heading', { name: candidateAppTranslations.basicInfo.title, exact: true })).toBeVisible();
 });
