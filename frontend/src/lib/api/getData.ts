@@ -16,7 +16,8 @@ import type {
   LocalizedStrapiData,
   StrapiQuestionCategoryData,
   StrapiImageData,
-  StrapiAppSettingsData
+  StrapiAppSettingsData,
+  StrapiFeedbackData
 } from './getData.type';
 
 // To build REST queries, one can use https://docs.strapi.io/dev-docs/api/rest/interactive-query-builder
@@ -506,4 +507,13 @@ const parseImage = (image: StrapiImageData): ImageProps => {
         : url
     }
   };
+};
+
+/**
+ * Get feedback collected in Strapi
+ */
+export const getFeeback = (): Promise<StrapiFeedbackData['attributes'][]> => {
+  return getData<StrapiFeedbackData[]>('api/feedbacks').then((result) =>
+    result.map((d) => d.attributes)
+  );
 };
