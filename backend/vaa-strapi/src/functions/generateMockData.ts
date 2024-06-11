@@ -23,6 +23,7 @@ import {dropAllCollections} from './utils/drop';
 import {createRelationsForAvailableLocales} from './utils/i18n';
 import mockQuestions from './mockData/mockQuestions.json';
 import mockCategories from './mockData/mockCategories.json';
+import mockUser from './mockData/mockUser.json';
 
 const locales: Locale[] = [
   {
@@ -981,9 +982,9 @@ async function createCandidateUsers() {
   const candidate = await strapi.db.query(API.Candidate).findOne({});
   await strapi.entityService.create(API.User, {
     data: {
-      username: 'first.last',
-      email: 'first.last@example.com',
-      password: 'password',
+      username: mockUser.username,
+      email: mockUser.email,
+      password: mockUser.password,
       provider: 'local',
       confirmed: true,
       blocked: false,
