@@ -15,8 +15,7 @@ test.describe.serial('settings page should work expectedly', () => {
     //Go to setting and change language to en
     await page.goto(`${baseURL}/${LOCALE_FI}/${Route.CandAppSettings}`);
     await page.getByLabel(candidateAppTranslationsFi.settings.fields.language, {exact: true}).selectOption(LOCALE_EN);
-    const settingsUrlRe = new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE_EN}\/${Route.CandAppSettings}`);
-    await expect(page).toHaveURL(settingsUrlRe);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE_EN}\/${Route.CandAppSettings}`);
 
     //Log out
     await page.getByLabel(candidateAppTranslationsEn.common.logOut, {exact: true}).click();
@@ -25,15 +24,13 @@ test.describe.serial('settings page should work expectedly', () => {
     await page.getByLabel(headerTranslations.openMenu, {exact: true}).click();
     await page.getByRole('link', { name: candidateAppTranslationsFi.languages.Finnish, exact: true }).click();
 
-    const candidateUrlReFi = new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE_FI}\/${Route.CandAppHome}`)
-    await expect(page).toHaveURL(candidateUrlReFi);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE_FI}\/${Route.CandAppHome}`);
 
     //Sign in and expect language to automatically change to en
     await page.getByPlaceholder(candidateAppTranslationsFi.common.emailPlaceholder, {exact: true}).fill(mockUser.email);
     await page.getByPlaceholder(candidateAppTranslationsFi.common.passwordPlaceholder, {exact: true}).fill(mockUser.password);
     await page.getByRole('button', { name: candidateAppTranslationsFi.common.logIn, exact: true }).click();
-    const candidateUrlReEn = new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE_EN}\/${Route.CandAppHome}`)
-    await expect(page).toHaveURL(candidateUrlReEn);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE_EN}\/${Route.CandAppHome}`);
 
   });
 

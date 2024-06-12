@@ -10,9 +10,8 @@ test.beforeEach(async ({ page, baseURL }) => {
   await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
 });
 
-test('should log out', async ({ page }) => {
-  const urlRe = new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE}\/${Route.CandAppHome}`);
-  await expect(page).toHaveURL(urlRe);
+test('should log out', async ({ page, baseURL }) => {
+  await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
 
   await page.getByTitle(candidateAppTranslations.common.logOut, {exact: true}).click();
 
@@ -26,17 +25,17 @@ test('should log out', async ({ page }) => {
   await logoutButton.click();
   */
 
-  await expect(page).toHaveURL(urlRe);
+  await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
   await expect(page.getByText(candidateAppTranslations.common.logIn, {exact: true})).toBeVisible();
 });
 
-test('should navigate', async ({ page }) => {
-  await expect(page).toHaveURL(new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE}\/${Route.CandAppHome}`));
+test('should navigate', async ({ page, baseURL }) => {
+  await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
   await expect(page.getByRole('button', { name: headerTranslations.closeMenu, exact: true })).not.toBeVisible();
   await page.getByLabel(headerTranslations.openMenu).click();
   await expect(page.getByRole('button', { name: headerTranslations.closeMenu, exact: true })).toBeVisible();
   await page.getByRole('link', { name: candidateAppTranslations.navbar.basicInfo, exact: true }).click();
-  await expect(page).toHaveURL(new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE}\/${Route.CandAppProfile}`));
+  await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppProfile}`);
   await expect(page.getByRole('button', { name: headerTranslations.closeMenu, exact: true })).not.toBeVisible();
   await expect(page.getByRole('heading', { name: candidateAppTranslations.basicInfo.title, exact: true })).toBeVisible();
 });
