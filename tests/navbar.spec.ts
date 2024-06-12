@@ -17,13 +17,11 @@ test.describe.serial('nav bar buttons should work expectedly', () => {
     //Check that nav buttons change page to correct locale
     await page.getByLabel(headerTranslationsEn.openMenu, {exact: true}).click();
     await page.getByRole('link', { name: candidateAppTranslationsFi.languages.Finnish, exact: true }).click();
-    const candidateUrlReFi = new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE_FI}\/${Route.CandAppHome}`)
-    await expect(page).toHaveURL(candidateUrlReFi);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE_FI}/${Route.CandAppHome}`);
 
     await page.getByLabel(headerTranslationsFi.openMenu, {exact: true}).click();
     await page.getByRole('link', { name: candidateAppTranslationsEn.languages.English, exact: true }).click();
-    const candidateUrlReEn = new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE_EN}\/${Route.CandAppHome}`)
-    await expect(page).toHaveURL(candidateUrlReEn);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE_EN}/${Route.CandAppHome}`);
 
   });
 
@@ -34,33 +32,27 @@ test.describe.serial('nav bar buttons should work expectedly', () => {
     //Check that nav links go to correct pages
     await page.getByLabel(headerTranslationsEn.openMenu, {exact: true}).click();
     await page.getByRole('link', { name: candidateAppTranslationsEn.navbar.basicInfo, exact: true }).click();
-    const profileUrlRe = new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE_EN}\/${Route.CandAppProfile}`);
-    await expect(page).toHaveURL(profileUrlRe);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE_EN}/${Route.CandAppProfile}`);
 
     await page.getByLabel(headerTranslationsEn.openMenu, {exact: true}).click();
     await page.getByRole('link', { name: candidateAppTranslationsEn.navbar.yourOpinions, exact: true }).click();
-    const questionsUrlRe = new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE_EN}\/${Route.CandAppQuestions}`);
-    await expect(page).toHaveURL(questionsUrlRe);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE_EN}/${Route.CandAppQuestions}`);
 
     await page.getByLabel(headerTranslationsEn.openMenu, {exact: true}).click();
     await page.getByRole('link', { name: candidateAppTranslationsEn.navbar.settings, exact: true }).click();
-    const settingsUrlRe = new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE_EN}\/${Route.CandAppSettings}`);
-    await expect(page).toHaveURL(settingsUrlRe);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE_EN}/${Route.CandAppSettings}`);
 
     await page.getByLabel(headerTranslationsEn.openMenu, {exact: true}).click();
     await page.getByRole('link', { name: candidateAppTranslationsEn.navbar.preview, exact: true }).click();
-    const previewUrlRe = new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE_EN}\/${Route.CandAppPreview}`);
-    await expect(page).toHaveURL(previewUrlRe);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE_EN}/${Route.CandAppPreview}`);
 
     await page.getByLabel(headerTranslationsEn.openMenu, {exact: true}).click();
     await page.getByRole('link', { name: candidateAppTranslationsEn.navbar.help, exact: true }).click();
-    const helpUrlRe = new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE_EN}\/${Route.CandAppHelp}`);
-    await expect(page).toHaveURL(helpUrlRe);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE_EN}/${Route.CandAppHelp}`);
 
     await page.getByLabel(headerTranslationsEn.openMenu, {exact: true}).click();
     await page.getByRole('link', { name: candidateAppTranslationsEn.navbar.start, exact: true }).click();
-    const candidateUrlRe = new RegExp(`(http[s]?:\/\/)?(.*)\/${LOCALE_EN}\/${Route.CandAppHome}`);
-    await expect(page).toHaveURL(candidateUrlRe);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE_EN}/${Route.CandAppHome}`);
 
   });
 });
