@@ -150,7 +150,7 @@ export async function generateMockData() {
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting strapi admin');
-    createStrapiAdmin();
+    await createStrapiAdmin();
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting genders ...');
@@ -301,48 +301,48 @@ async function createGenders() {
 }
 
 async function createElectionAppLabel() {
-  const actionLabels = {
-    electionInfo: 'Information About the Elections',
-    help: 'Help',
-    home: 'home',
-    howItWorks: 'How Does This App Work?',
-    opinions: 'Opinions',
-    results: 'Results',
-    startButton: 'Start Finding The Best Candidates!',
-    startQuestions: 'Start the Questionnaire',
-    yourList: 'Your List'
-  };
-  const viewTexts = {
-    appTitle: 'Election Compass',
-    frontpageIngress:
-      'With this application you can compare candidates in the elections on {electionDate, date, ::yyyyMMdd} based on their opinions, parties and other data.',
-    madeWith: 'Made with',
-    publishedBy: 'Published by {publisher}',
-    questionsTip: 'Tip: If you don’t care about an issue, you can skip it.',
-    yourOpinionsIngress:
-      'Next, the app will ask your opinions on {numStatements} statements about political issues and values, which the candidates have also answered. After you’ve answered them, the app will find the candidates that best agree with your opinions. The statements are grouped into {numCategories} categories. You can answer all of them or only select those you find important.',
-    yourOpinionsTitle: 'Tell Your Opinions'
-  };
-
-  const strapiObjects: HasId[] = await Promise.all(
-    locales.map(
-      async (l) =>
-        await strapi.entityService.create(API.AppLabel, {
-          data: {
-            actionLabels: fakeTranslate(l, actionLabels),
-            viewTexts: fakeTranslate(l, viewTexts),
-            locale: l.code,
-            publishedAt: new Date()
-          }
-        })
-    )
-  );
-
-  await createRelationsForAvailableLocales(API.AppLabel, strapiObjects);
+  // This should create labels dynamically so that they match the translation files either completely or at least the most often modified parts
+  // Before this is done, it's better not to create labels at all
+  // const actionLabels = {
+  //   electionInfo: 'Information About the Elections',
+  //   help: 'Help',
+  //   home: 'home',
+  //   howItWorks: 'How Does This App Work?',
+  //   opinions: 'Opinions',
+  //   results: 'Results',
+  //   startButton: 'Start Finding The Best Candidates!',
+  //   startQuestions: 'Start the Questionnaire',
+  //   yourList: 'Your List'
+  // };
+  // const viewTexts = {
+  //   appTitle: 'Election Compass',
+  //   frontpageIngress:
+  //     'With this application you can compare candidates in the elections on {electionDate, date, ::yyyyMMdd} based on their opinions, parties and other data.',
+  //   madeWith: 'Made with',
+  //   publishedBy: 'Published by {publisher}',
+  //   questionsTip: 'Tip: If you don’t care about an issue, you can skip it.',
+  //   yourOpinionsIngress:
+  //     'Next, the app will ask your opinions on {numStatements} statements about political issues and values, which the candidates have also answered. After you’ve answered them, the app will find the candidates that best agree with your opinions. The statements are grouped into {numCategories} categories. You can answer all of them or only select those you find important.',
+  //   yourOpinionsTitle: 'Tell Your Opinions'
+  // };
+  // const strapiObjects: HasId[] = await Promise.all(
+  //   locales.map(
+  //     async (l) =>
+  //       await strapi.entityService.create(API.AppLabel, {
+  //         data: {
+  //           actionLabels: fakeTranslate(l, actionLabels),
+  //           viewTexts: fakeTranslate(l, viewTexts),
+  //           locale: l.code,
+  //           publishedAt: new Date()
+  //         }
+  //       })
+  //   )
+  // );
+  // await createRelationsForAvailableLocales(API.AppLabel, strapiObjects);
 }
 
 async function createElection() {
-  let AppLabel = await strapi.db.query(API.AppLabel).findOne({
+  let appLabel = await strapi.db.query(API.AppLabel).findOne({
     where: {
       locale: locales[0].code
     }
@@ -370,7 +370,7 @@ async function createElection() {
       electionDate,
       electionType,
       info,
-      electionAppLabel: AppLabel.id,
+      electionAppLabel: appLabel ? appLabel.id : null,
       publishedAt: new Date(),
       canEditQuestions: true
     }
