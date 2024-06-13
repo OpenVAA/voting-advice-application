@@ -3,6 +3,9 @@ export default ({env}) => ({
     config: {
       jwt: {
         expiresIn: '4h'
+      },
+      register: {
+        allowedFields: ['candidate']
       }
     }
   },
