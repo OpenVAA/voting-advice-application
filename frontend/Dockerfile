@@ -15,7 +15,7 @@ COPY shared /usr/src/app/src/shared
 FROM base as development
 EXPOSE 5173
 
-CMD yarn dev -- --host
+CMD yarn dev --host
 
 FROM base as build
 RUN yarn build

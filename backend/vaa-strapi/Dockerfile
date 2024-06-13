@@ -27,17 +27,19 @@ FROM strapi as development
 
 ARG NODE_ENV=development
 ENV NODE_ENV=${NODE_ENV}
+ENV STRAPI_DISABLE_REMOTE_DATA_TRANSFER=true
 
 EXPOSE 1337
-RUN yarn build -- --ignore-prompts
+RUN yarn build --ignore-prompts
 CMD yarn dev --ignore-prompts
 
 FROM strapi as production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
+ENV STRAPI_DISABLE_REMOTE_DATA_TRANSFER=true
 
 EXPOSE 1337
 
-RUN yarn build -- --ignore-prompts
+RUN yarn build --ignore-prompts
 CMD yarn start
