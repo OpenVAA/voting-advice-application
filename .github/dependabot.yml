@@ -11,8 +11,7 @@ updates:
       interval: "monthly"
     target-branch: "main"
     labels:
-      - "npm dependencies"
-      - "backend"
+      - "type: dependencies"
     # Create PRs for security updates only
     open-pull-requests-limit: 0
 
@@ -22,11 +21,10 @@ updates:
       interval: "monthly"
     target-branch: "main"
     labels:
-      - "yarn dependencies"
-      - "frontend"
+      - "type: dependencies"
     # Create PRs for security updates only
     open-pull-requests-limit: 0
-      
+
   # Maintain dependencies for GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -37,4 +35,3 @@ updates:
       - "Github Actions"
     # Create PRs for security updates only
     open-pull-requests-limit: 0
-

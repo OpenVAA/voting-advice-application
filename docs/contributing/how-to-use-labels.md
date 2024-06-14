@@ -5,7 +5,7 @@ Labels can help you find an issue you'd like to help with. On the other hand, la
 Currently, the labels divide into four categories:
 
 - Category: [CATEGORY] => This category lets us know what category the issue belongs to. Fox example, if the issue contains only security related changes, the label will be `category: security`.
-- Status: [STATE] => This category lets us know what state the issue is in right now.
+- Status: [STATE of ISSUE] => This category lets us know what state the issue is in right now.
 - Type: [TYPE OF ISSUE] => This category lets us know what type of issue this is. For example, if the issue is a bug, the label will be `type: bug`, or if the issue is a new feature, the label will be `type: feature`.
 - Scope: [SCOPE] => This category describes the scope of this issue. For example, suppose that the issue involves the voter side of the app. Then the appropriate label would be `scope: voter`.
 
