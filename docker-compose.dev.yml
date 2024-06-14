@@ -43,6 +43,12 @@ services:
       - "127.0.0.1:1080:1080"
     environment:
       - MAILDEV_IP=0.0.0.0
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:1080/healthz || exit 1
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 15s
 
 volumes:
   postgres:
