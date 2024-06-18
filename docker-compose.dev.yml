@@ -13,8 +13,8 @@ services:
       file: ./backend/vaa-strapi/docker-compose.dev.yml
       service: strapi
     environment:
-      HOST: ${HOST}
-      PORT: ${PORT}
+      STRAPI_HOST: ${STRAPI_HOST}
+      STRAPI_PORT: ${STRAPI_PORT}
       APP_KEYS: ${APP_KEYS}
       API_TOKEN_SALT: ${API_TOKEN_SALT}
       ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET}
@@ -40,11 +40,12 @@ services:
   maildev:
     image: maildev/maildev:2.1.0
     ports:
-      - "127.0.0.1:1080:1080"
+      - "${MAILDEV_PORT}:${MAILDEV_PORT}"
     environment:
       - MAILDEV_IP=0.0.0.0
+      - MAILDEV_WEB_PORT=${MAILDEV_PORT}
     healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:1080/healthz || exit 1
+      test: wget --no-verbose --tries=1 --spider http://127.0.0.1:${MAILDEV_PORT}/healthz || exit 1
       interval: 30s
       timeout: 30s
       retries: 3

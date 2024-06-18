@@ -11,8 +11,8 @@ services:
       file: ./backend/vaa-strapi/docker-compose.yml
       service: strapi
     environment:
-      HOST: ${HOST}
-      PORT: ${PORT}
+      STRAPI_HOST: ${STRAPI_HOST}
+      STRAPI_PORT: ${STRAPI_PORT}
       APP_KEYS: ${APP_KEYS}
       API_TOKEN_SALT: ${API_TOKEN_SALT}
       ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET}

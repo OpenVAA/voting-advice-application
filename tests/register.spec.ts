@@ -7,7 +7,10 @@ import ariaTranslations from '../frontend/src/lib/i18n/translations/en/aria.json
 import questionsTranslations from '../frontend/src/lib/i18n/translations/en/questions.json';
 import mockQuestions from '../backend/vaa-strapi/src/functions/mockData/mockQuestions.json';
 
-const strapiURL = process.env.STRAPI_URL || "http://localhost:1337";
+const strapiPort = process.env.STRAPI_PORT || "1337";
+const strapiURL = `http://localhost:${strapiPort}`;
+const maildevPort = process.env.MAILDEV_PORT || "1080";
+const maildevURL = `http://localhost:${maildevPort}/#/`;
 const LOCALE = 'en';
 
 const userFirstName = "Alice";
@@ -102,7 +105,7 @@ test.describe.serial("should complete the registration process", () => {
     await page.waitForTimeout(5000);
 
     // Navigate to maildev and open registration link
-    await page.goto("http://localhost:1080/#/");
+    await page.goto(maildevURL);
     await page
       .getByRole("link", { name: `Subject To: ${userEmail}` })
       .first()
