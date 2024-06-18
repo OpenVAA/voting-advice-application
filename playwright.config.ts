@@ -5,7 +5,7 @@ import path from 'path';
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
  */
-// require('dotenv').config();
+require('dotenv').config();
 
 export const STORAGE_STATE = path.join(__dirname, 'playwright/.auth/user.json');
 
@@ -32,7 +32,7 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on',
 
-    baseURL: process.env.APP_URL || 'http://localhost:5173',
+    baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173',
     storageState: STORAGE_STATE,
   },
 
