@@ -5,9 +5,9 @@
   import {t} from '$lib/i18n';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {questionsStore} = getContext<CandidateContext>('candidate');
+  const {likertQuestionsStore} = getContext<CandidateContext>('candidate');
 
-  $: questions = $questionsStore;
+  $: questions = $likertQuestionsStore;
   $: questionId = $page.params.questionId;
   $: currentQuestion = questions?.[questionId];
 </script>
