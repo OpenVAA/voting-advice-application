@@ -19,7 +19,7 @@
     basicInfoFilledStore,
     opinionQuestionsFilledStore,
     nofUnansweredOpinionQuestionsStore,
-    questionsStore,
+    likertQuestionsStore,
     answersStore,
     progressStore,
     questionsLockedStore
@@ -27,7 +27,7 @@
 
   $: questionsLocked = $questionsLockedStore;
 
-  let questions = get(questionsStore) ?? [];
+  let questions = get(likertQuestionsStore) ?? [];
 
   let opinionQuestionsLeft: number | undefined;
   nofUnansweredOpinionQuestionsStore?.subscribe((value) => {
