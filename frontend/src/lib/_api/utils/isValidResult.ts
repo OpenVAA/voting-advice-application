@@ -11,7 +11,7 @@ export function isValidResult(
   if (!result) error = 'Result is nullish';
   if (result instanceof Error) error = result.message ?? 'Error';
   if (!Array.isArray(result) || result.length === 0) error = 'Result is empty';
-  if (error) {
+  if (error !== undefined) {
     logDebugError(`Invalid result from DataProvider: ${error}`);
     return false;
   }
