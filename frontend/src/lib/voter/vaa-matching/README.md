@@ -51,9 +51,15 @@ The process of computing a match goes roughly as follows. (This is a simplified 
 8. The [`Matches`](./src/match/match.ts) are returned and may be passed on to UI components. They are ordered by ascending match distance.
 
 [^1]: The questions have to implement a [`normalizeValue()`](./src/question/matchableQuestion.ts) method, because otherwise we don't know how to compare the answer values, whose type is unspecified, to each other.
+
 [^2]: Some question types, such as ranked preference questions, create multiple subdimensions with a total weight of 1.
+
 [^3]: Actually, [`normalizeValue()`](./src/question/matchableQuestion.ts) can also return an array of numbers if the question is such that creates multiple subdimensions.
+
 [^4]: To be precise, it's the average weighted by the weights of the dimensions, which may differ from 1 in case of questions creating subdimensions.
+
 [^5]: The `Voter`'s coordinates cannot be `undefined`.
+
 [^6]: There are several methods to this, which are defined in the constructor options to the [`MatchingAlgorithm`](./src/algorithms/matchingAlgorithm.ts).
+
 [^7]: And in case of subcategory matching, they also contain [`subMatches`](./src/match/subMatch.ts) for each category.
