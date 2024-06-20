@@ -228,6 +228,7 @@ test.describe.serial("should complete the registration process", () => {
     await page.getByRole("button", { name: candidateAppTranslationsEn.textarea.show, exact: true }).click();
     await page.getByLabel(candidateAppTranslationsFi.languages.Finnish, {exact: true}).fill("Lorem ipsum in Finnish");
     await page.getByRole("button", { name: candidateAppTranslationsEn.questions.saveAndContinue, exact: true }).click();
+    await page.waitForTimeout(500); //Wait so that UI has time to change (otherwise doesn't work all the time)
 
     // Answer to all remaining questions
     while (await page.getByText(fullyDisagree).isVisible()) {
