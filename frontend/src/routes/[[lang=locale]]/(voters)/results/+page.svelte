@@ -1,5 +1,6 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
+  import type {Snapshot} from './$types';
   import {t} from '$lib/i18n';
   import {
     allQuestions,
@@ -27,7 +28,15 @@
   import {StretchBackground} from '$lib/components/stretchBackground';
   import {Tabs} from '$lib/components/tabs';
   import {BasicPage} from '$lib/templates/basicPage';
-  import {activeTab} from './page-stores';
+
+  /**
+   * The currently active tab in the results. We want this to persist between opening entity details and returning to the results.
+   */
+  let activeTab = 0;
+  export const snapshot: Snapshot<number> = {
+    capture: () => activeTab,
+    restore: (value) => (activeTab = value)
+  };
 
   // Which entity sections to show
   const sections = $settings.results.sections as EntityType[];
@@ -41,7 +50,7 @@
   $resultsAvailable.then((v) => {
     resultsAvailableSync = v;
     startEvent(v ? 'results_ranked' : 'results_browse', {
-      section: sections[$activeTab],
+      section: sections[activeTab],
       numAnswers: Object.keys($answeredQuestions).length
     });
     if ($settings.results.showFeedbackPopup != null)
@@ -174,13 +183,13 @@
     {#if sections.length > 1}
       <Tabs
         tabs={sections.map((entityType) => $t(`common.${entityType}.plural`))}
-        bind:activeIndex={$activeTab}
+        bind:activeIndex={activeTab}
         on:change={({detail}) => startEvent('results_changeTab', {section: sections[detail.index]})}
         class="mx-10" />
     {/if}
 
     <!-- Candidates -->
-    {#if sections[$activeTab] === 'candidate'}
+    {#if sections[activeTab] === 'candidate'}
       {#await Promise.all( [$candidateRankings, $candidateFilters, $opinionQuestions, $infoQuestions] )}
         <Loading showLabel class="mt-lg" />
       {:then [allCandidates, candidateFilters]}
@@ -202,7 +211,7 @@
       {/await}
 
       <!-- Parties -->
-    {:else if sections[$activeTab] === 'party'}
+    {:else if sections[activeTab] === 'party'}
       <!-- Instead of candidateRankings we just create a Promise that resolves to undefined if subcards are not to be shown. In that case allCandidates will be undefined, and parseParty will not add subcards. -->
       {#await Promise.all( [$partyRankings, $settings.results.cardContents.party.includes('candidates') ? $candidateRankings : Promise.resolve(undefined), $opinionQuestions, $infoQuestions] )}
         <Loading showLabel class="mt-lg" />
