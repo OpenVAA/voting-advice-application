@@ -26,166 +26,165 @@ const comment = "Lorem ipsum";
 const fullyAgree = "Fully agree";
 const fullyDisagree = "Fully disagree";
 
-test.describe.serial("should complete the registration process", () => {
-  test("logout", async ({ page, baseURL }) => {
-    await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
-    await page.getByLabel(candidateAppTranslationsEn.common.logOut, {exact: true}).click();
+test.describe.configure({ mode: 'serial' });
+
+test("should log into Strapi and import candidates", async ({ page, baseURL }) => {
+  await page.goto(`${strapiURL}/admin`);
+  await page.getByLabel("Email*").fill("admin@example.com");
+  await page.getByLabel("Password*").fill("admin");
+  await page.getByRole("button", { name: "Login" }).click();
+  
+  await expect(page.getByText("Strapi Dashboard")).toBeVisible();
+  
+  // Navigate to the Parties in Content Manager
+  await page.getByRole("link", { name: "Content Manager" }).click();
+  await page.getByRole("link", { name: "Parties" }).click();
+  const partyRow = page.getByRole("row").nth(1);
+  const partyCell = partyRow.getByRole("gridcell").nth(1)
+  const partyId = await partyCell.innerText()
+  expect(partyId).not.toBeNull();
+
+  // Navigate to the Elections in Content Manager
+  await page.getByRole("link", { name: "Elections" }).click();
+  const electionRow = page.getByRole("row").nth(1);
+  const electionCell = electionRow.getByRole("gridcell").nth(1)
+  const electionId = await electionCell.innerText()
+  expect(electionId).not.toBeNull();
+
+  // Navigate to the Constituencies in Content Manager
+  await page.getByRole("link", { name: "Constituencies" }).click();
+  const contituencyRow = page.getByRole("row").nth(1);
+  const contituencyCell = contituencyRow.getByRole("gridcell").nth(1)
+  const contituencyId = await contituencyCell.innerText()
+  expect(contituencyId).not.toBeNull();
+  
+  page.on("filechooser", async (fileChooser) => {
+    await fileChooser.setFiles(path.join(__dirname, "candidate-import.csv"));
   });
+  
+  // Navigate to the Candidates in Content Manager
+  await page.getByRole("link", { name: "Candidates" }).click();
+  await page.getByRole("button", { name: "Import" }).click();
+  await page.locator("label").click();
+  
+  // Enter the CSV data
+  await page.locator(".view-line").first().click();
+  await page.getByLabel("Editor content;Press Alt+F1").fill(
+    `firstName,lastName,party,email,published
+    ${userFirstName},${userLastName},${partyId},${userEmail},true
+    Bob,Bobsson,${partyId},bob@example.com,false
+    Carol,Carolsson,${partyId},carol@example.com,false`,
+  );
+  await page
+  .getByLabel("Import", { exact: true })
+  .getByRole("button", { name: "Import" })
+  .click();
+  
+  // Check that the import was successful
+  await expect(
+    page.getByText("Your data has been imported").first(),
+  ).toBeVisible();
+  await page
+  .getByRole("button", { name: "Close", exact: true })
+  .first()
+  .click();
+  
+  // Reload the page to see the imported candidates (just in case)
+  await page.reload();
+  
+  // Navigate to the Nominations in Content Manager
+  await page.getByRole("link", { name: "Nominations" }).click();
+  await page.getByRole("button", { name: "Import" }).click();
+  await page.locator("label").click();
+  
+  // Enter the CSV data
+  await page.locator(".view-line").first().click();
+  await page.getByLabel("Editor content;Press Alt+F1").fill(
+    `election,constituency,email,party,electionSymbol,published
+    ${electionId},${contituencyId},${userEmail},${partyId},0,true`
+  );
+  await page
+  .getByLabel("Import", { exact: true })
+  .getByRole("button", { name: "Import" })
+  .click();
+  
+  // Check that the import was successful
+  await expect(
+    page.getByText("Your data has been imported").first(),
+  ).toBeVisible();
+  await page
+  .getByRole("button", { name: "Close", exact: true })
+  .first()
+  .click();
 
-  test("should log into Strapi and import candidates", async ({ page, baseURL }) => {
-    await page.goto(`${strapiURL}/admin`);
-    await page.getByLabel("Email*").fill("admin@example.com");
-    await page.getByLabel("Password*").fill("admin");
-    await page.getByRole("button", { name: "Login" }).click();
-    
-    await expect(page.getByText("Strapi Dashboard")).toBeVisible();
-    
-    // Navigate to the Parties in Content Manager
-    await page.getByRole("link", { name: "Content Manager" }).click();
-    await page.getByRole("link", { name: "Parties" }).click();
-    const partyRow = page.getByRole("row").nth(1);
-    const partyCell = partyRow.getByRole("gridcell").nth(1)
-    const partyId = await partyCell.innerText()
-    expect(partyId).not.toBeNull();
+  // Navigate to the imported candidate
+  await page.getByRole("link", { name: "Candidates" }).click();
+  await page.getByLabel('Search', { exact: true }).click();
+  await page.getByPlaceholder('Search').fill(userFirstName);
+  await page.keyboard.press('Enter');
+  await page.getByText(userEmail).first().click();
 
-    // Navigate to the Elections in Content Manager
-    await page.getByRole("link", { name: "Elections" }).click();
-    const electionRow = page.getByRole("row").nth(1);
-    const electionCell = electionRow.getByRole("gridcell").nth(1)
-    const electionId = await electionCell.innerText()
-    expect(electionId).not.toBeNull();
+  // Send registration email
+  await page.getByRole("button", { name: "Send registration email" }).click();
+  await page.getByLabel("Email subject").fill("Subject");
+  await page.getByRole("button", { name: "Send", exact: true }).click();
+  await page.getByText("Registration email was sent").click();
 
-    // Navigate to the Constituencies in Content Manager
-    await page.getByRole("link", { name: "Constituencies" }).click();
-    const contituencyRow = page.getByRole("row").nth(1);
-    const contituencyCell = contituencyRow.getByRole("gridcell").nth(1)
-    const contituencyId = await contituencyCell.innerText()
-    expect(contituencyId).not.toBeNull();
-    
-    page.on("filechooser", async (fileChooser) => {
-      await fileChooser.setFiles(path.join(__dirname, "candidate-import.csv"));
-    });
-    
-    // Navigate to the Candidates in Content Manager
-    await page.getByRole("link", { name: "Candidates" }).click();
-    await page.getByRole("button", { name: "Import" }).click();
-    await page.locator("label").click();
-    
-    // Enter the CSV data
-    await page.locator(".view-line").first().click();
-    await page.getByLabel("Editor content;Press Alt+F1").fill(
-      `firstName,lastName,party,email,published
-      ${userFirstName},${userLastName},${partyId},${userEmail},true
-      Bob,Bobsson,${partyId},bob@example.com,false
-      Carol,Carolsson,${partyId},carol@example.com,false`,
-    );
-    await page
-    .getByLabel("Import", { exact: true })
-    .getByRole("button", { name: "Import" })
-    .click();
-    
-    // Check that the import was successful
-    await expect(
-      page.getByText("Your data has been imported").first(),
-    ).toBeVisible();
-    await page
-    .getByRole("button", { name: "Close", exact: true })
+  // Wait for 5 seconds to allow the email to be sent
+  await page.waitForTimeout(5000);
+
+  // Navigate to maildev and open registration link
+  await page.goto(maildevURL);
+  await page
+    .getByRole("link", { name: `Subject To: ${userEmail}` })
     .first()
     .click();
-    
-    // Reload the page to see the imported candidates (just in case)
-    await page.reload();
-    
-    // Navigate to the Nominations in Content Manager
-    await page.getByRole("link", { name: "Nominations" }).click();
-    await page.getByRole("button", { name: "Import" }).click();
-    await page.locator("label").click();
-    
-    // Enter the CSV data
-    await page.locator(".view-line").first().click();
-    await page.getByLabel("Editor content;Press Alt+F1").fill(
-      `election,constituency,email,party,electionSymbol,published
-      ${electionId},${contituencyId},${userEmail},${partyId},0,true`
-    );
-    await page
-    .getByLabel("Import", { exact: true })
-    .getByRole("button", { name: "Import" })
-    .click();
-    
-    // Check that the import was successful
-    await expect(
-      page.getByText("Your data has been imported").first(),
-    ).toBeVisible();
-    await page
-    .getByRole("button", { name: "Close", exact: true })
-    .first()
-    .click();
+  const link = await page
+    .frameLocator("iframe >> nth=0")
+    .getByRole("link", { name: `${baseURL}/${LOCALE}` })
+    .getAttribute("href");
+  if (!link) throw new Error("Link not found");
+  await page.goto(link);
 
-    // Navigate to the imported candidate
-    await page.getByRole("link", { name: "Candidates" }).click();
-    await page.getByLabel('Search', { exact: true }).click();
-    await page.getByPlaceholder('Search').fill(userFirstName);
-    await page.keyboard.press('Enter');
-    await page.getByText(userEmail).first().click();
+  // Complete the registration process
+  // Check that the candidate name is correct
+  await expect(
+    page.getByRole("heading", { name: candidateAppTranslationsEn.setPassword.greeting.replace('{username}', userFirstName), exact: true }),
+  ).toBeVisible({ timeout: 20000 });
+  await page.locator("#password").fill(userPassword);
+  await page.locator("#passwordConfirmation").fill("Password1!a");
+  // Test password mismatch
+  await page.getByRole("button", { name: candidateAppTranslationsEn.setPassword.setPassword, exact: true }).click();
+  await expect(page.getByText(candidateAppTranslationsEn.setPassword.passwordsDontMatch, {exact: true})).toBeVisible();
+  // Correct the password
+  await page.locator("#passwordConfirmation").fill(userPassword);
+  await page.getByRole("button", { name: candidateAppTranslationsEn.setPassword.setPassword, exact: true }).click();
 
-    // Send registration email
-    await page.getByRole("button", { name: "Send registration email" }).click();
-    await page.getByLabel("Email subject").fill("Subject");
-    await page.getByRole("button", { name: "Send", exact: true }).click();
-    await page.getByText("Registration email was sent").click();
+  // Check that the password was set by logging in
+  await expect(page.getByText(candidateAppTranslationsEn.setPassword.passwordSetSuccesfully, {exact: true})).toBeVisible();
+  expect(await page.getByPlaceholder(candidateAppTranslationsEn.common.emailPlaceholder, {exact: true}).inputValue()).toBe(
+    userEmail,
+  );
+  await page.getByPlaceholder(candidateAppTranslationsEn.common.passwordPlaceholder, {exact: true}).fill(userPassword);
+  await page.getByRole("button", { name: candidateAppTranslationsEn.common.logIn, exact: true }).click();
 
-    // Wait for 5 seconds to allow the email to be sent
-    await page.waitForTimeout(5000);
+  // Check that the login was successful
+  await expect(page.getByText(candidateAppTranslationsEn.homePage.greeting.replace('{username}', userFirstName), {exact: true})).toBeVisible();
+});
 
-    // Navigate to maildev and open registration link
-    await page.goto(maildevURL);
-    await page
-      .getByRole("link", { name: `Subject To: ${userEmail}` })
-      .first()
-      .click();
-    const link = await page
-      .frameLocator("iframe >> nth=0")
-      .getByRole("link", { name: `${baseURL}/${LOCALE}` })
-      .getAttribute("href");
-    if (!link) throw new Error("Link not found");
-    await page.goto(link);
-
-    // Complete the registration process
-    // Check that the candidate name is correct
-    await expect(
-      page.getByRole("heading", { name: candidateAppTranslationsEn.setPassword.greeting.replace('{username}', userFirstName), exact: true }),
-    ).toBeVisible({ timeout: 20000 });
-    await page.locator("#password").fill(userPassword);
-    await page.locator("#passwordConfirmation").fill("Password1!a");
-    // Test password mismatch
-    await page.getByRole("button", { name: candidateAppTranslationsEn.setPassword.setPassword, exact: true }).click();
-    await expect(page.getByText(candidateAppTranslationsEn.setPassword.passwordsDontMatch, {exact: true})).toBeVisible();
-    // Correct the password
-    await page.locator("#passwordConfirmation").fill(userPassword);
-    await page.getByRole("button", { name: candidateAppTranslationsEn.setPassword.setPassword, exact: true }).click();
-
-    // Check that the password was set by logging in
-    await expect(page.getByText(candidateAppTranslationsEn.setPassword.passwordSetSuccesfully, {exact: true})).toBeVisible();
-    expect(await page.getByPlaceholder(candidateAppTranslationsEn.common.emailPlaceholder, {exact: true}).inputValue()).toBe(
-      userEmail,
-    );
-    await page.getByPlaceholder(candidateAppTranslationsEn.common.passwordPlaceholder, {exact: true}).fill(userPassword);
-    await page.getByRole("button", { name: candidateAppTranslationsEn.common.logIn, exact: true }).click();
-
-    // Check that the login was successful
-    await expect(page.getByText(candidateAppTranslationsEn.homePage.greeting.replace('{username}', userFirstName), {exact: true})).toBeVisible();
-  });
-
-  test("should succesfully set basic info", async ({ page, baseURL }) => {
+test.describe("when logged in with imported user", () => {
+  test.beforeEach(async ({ page, baseURL }) => {
     // Log the default user out
     await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
     await page.getByLabel(candidateAppTranslationsEn.common.logOut, {exact: true}).click();
 
-    // Log in with the created user
+    // Log in with the imported user
     await page.getByPlaceholder(candidateAppTranslationsEn.common.emailPlaceholder, {exact: true}).fill(userEmail);
     await page.getByPlaceholder(candidateAppTranslationsEn.common.passwordPlaceholder, {exact: true}).fill(userPassword);
     await page.getByText(candidateAppTranslationsEn.common.logIn, {exact: true}).click();
+  })
 
+  test("should succesfully set basic info", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppProfile}`);
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppProfile}`);
 
@@ -236,15 +235,6 @@ test.describe.serial("should complete the registration process", () => {
   });
 
   test("should succesfully answer opinion questions", async ({ page, baseURL }) => {
-    // Log the default user out
-    await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
-    await page.getByLabel(candidateAppTranslationsEn.common.logOut, {exact: true}).click();
-
-    // Log in with the created user
-    await page.getByPlaceholder(candidateAppTranslationsEn.common.emailPlaceholder, {exact: true}).fill(userEmail);
-    await page.getByPlaceholder(candidateAppTranslationsEn.common.passwordPlaceholder, {exact: true}).fill(userPassword);
-    await page.getByText(candidateAppTranslationsEn.common.logIn, {exact: true}).click();
-
     await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
     await page.reload(); //Reload to make sure correct data is loaded to page
 
@@ -320,15 +310,6 @@ test.describe.serial("should complete the registration process", () => {
   });
 
   test("your opinions page should work correctly", async ({ page, baseURL }) => {
-    // Log the default user out
-    await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
-    await page.getByLabel(candidateAppTranslationsEn.common.logOut, {exact: true}).click();
-
-    // Log in with the created user
-    await page.getByPlaceholder(candidateAppTranslationsEn.common.emailPlaceholder, {exact: true}).fill(userEmail);
-    await page.getByPlaceholder(candidateAppTranslationsEn.common.passwordPlaceholder, {exact: true}).fill(userPassword);
-    await page.getByText(candidateAppTranslationsEn.common.logIn, {exact: true}).click();
-
     // Go to questions page
     await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
     await page.reload(); //Reload to make sure correct data is loaded to page
@@ -383,15 +364,6 @@ test.describe.serial("should complete the registration process", () => {
   });
 
   test("preview page should work correctly", async ({ page, baseURL }) => {
-    // Log the default user out
-    await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
-    await page.getByLabel(candidateAppTranslationsEn.common.logOut, {exact: true}).click();
-
-    // Log in with the created user
-    await page.getByPlaceholder(candidateAppTranslationsEn.common.emailPlaceholder, {exact: true}).fill(userEmail);
-    await page.getByPlaceholder(candidateAppTranslationsEn.common.passwordPlaceholder, {exact: true}).fill(userPassword);
-    await page.getByText(candidateAppTranslationsEn.common.logIn, {exact: true}).click();
-
     // Go to preview page
     await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppPreview}`);
     await page.reload(); //Reload to make sure correct data is loaded to page
