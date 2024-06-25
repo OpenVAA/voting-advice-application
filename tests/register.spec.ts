@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { faker } from "@faker-js/faker";
 import path from "path";
 import { Route } from '../frontend/src/lib/utils/navigation/route';
 import candidateAppTranslationsEn from '../frontend/src/lib/i18n/translations/en/candidateApp.json';
@@ -13,9 +14,9 @@ const maildevPort = process.env.MAILDEV_PORT || "1080";
 const maildevURL = `http://localhost:${maildevPort}/#/`;
 const LOCALE = 'en';
 
-const userFirstName = "Alice";
-const userLastName = "Alisson";
-const userEmail = "alice@example.com";
+const userFirstName = faker.person.firstName();
+const userLastName = faker.person.lastName();
+const userEmail = `${userFirstName}.${userLastName}@example.com`.toLowerCase();
 const userPassword = "Password1!";
 const userGender = "Male";
 const userManifesto =
@@ -46,54 +47,86 @@ test.describe.serial("should complete the registration process", () => {
     const partyCell = partyRow.getByRole("gridcell").nth(1)
     const partyId = await partyCell.innerText()
     expect(partyId).not.toBeNull();
-    
-    // Navigate to the Nominations in Content Manager
-    await page.getByRole("link", { name: "Content Manager" }).click();
-    await page.getByRole("link", { name: "Nominations" }).click();
-    const nominationRow = page.getByRole("row").nth(1);
-    const nominationCell = nominationRow.getByRole("gridcell").nth(1)
-    const nominationId = await nominationCell.innerText()
-    expect(nominationId).not.toBeNull();
+
+    // Navigate to the Elections in Content Manager
+    await page.getByRole("link", { name: "Elections" }).click();
+    const electionRow = page.getByRole("row").nth(1);
+    const electionCell = electionRow.getByRole("gridcell").nth(1)
+    const electionId = await electionCell.innerText()
+    expect(electionId).not.toBeNull();
+
+    // Navigate to the Constituencies in Content Manager
+    await page.getByRole("link", { name: "Constituencies" }).click();
+    const contituencyRow = page.getByRole("row").nth(1);
+    const contituencyCell = contituencyRow.getByRole("gridcell").nth(1)
+    const contituencyId = await contituencyCell.innerText()
+    expect(contituencyId).not.toBeNull();
     
     page.on("filechooser", async (fileChooser) => {
       await fileChooser.setFiles(path.join(__dirname, "candidate-import.csv"));
     });
-
+    
     // Navigate to the Candidates in Content Manager
     await page.getByRole("link", { name: "Candidates" }).click();
     await page.getByRole("button", { name: "Import" }).click();
     await page.locator("label").click();
-
+    
     // Enter the CSV data
     await page.locator(".view-line").first().click();
     await page.getByLabel("Editor content;Press Alt+F1").fill(
       `firstName,lastName,party,email,published
-    ${userFirstName},${userLastName},${partyId},${userEmail},true
-    Bob,Bobsson,${partyId},bob@example.com,false
-    Carol,Carolsson,${partyId},carol@example.com,false`,
+      ${userFirstName},${userLastName},${partyId},${userEmail},true
+      Bob,Bobsson,${partyId},bob@example.com,false
+      Carol,Carolsson,${partyId},carol@example.com,false`,
     );
     await page
-      .getByLabel("Import", { exact: true })
-      .getByRole("button", { name: "Import" })
-      .click();
-
+    .getByLabel("Import", { exact: true })
+    .getByRole("button", { name: "Import" })
+    .click();
+    
     // Check that the import was successful
     await expect(
       page.getByText("Your data has been imported").first(),
     ).toBeVisible();
     await page
-      .getByRole("button", { name: "Close", exact: true })
-      .first()
-      .click();
-
+    .getByRole("button", { name: "Close", exact: true })
+    .first()
+    .click();
+    
     // Reload the page to see the imported candidates (just in case)
     await page.reload();
+    
+    // Navigate to the Nominations in Content Manager
+    await page.getByRole("link", { name: "Nominations" }).click();
+    await page.getByRole("button", { name: "Import" }).click();
+    await page.locator("label").click();
+    
+    // Enter the CSV data
+    await page.locator(".view-line").first().click();
+    await page.getByLabel("Editor content;Press Alt+F1").fill(
+      `election,constituency,email,party,electionSymbol,published
+      ${electionId},${contituencyId},${userEmail},${partyId},0,true`
+    );
+    await page
+    .getByLabel("Import", { exact: true })
+    .getByRole("button", { name: "Import" })
+    .click();
+    
+    // Check that the import was successful
+    await expect(
+      page.getByText("Your data has been imported").first(),
+    ).toBeVisible();
+    await page
+    .getByRole("button", { name: "Close", exact: true })
+    .first()
+    .click();
 
-    // Navigate to the imported candidate and assign a nomination to it
+    // Navigate to the imported candidate
+    await page.getByRole("link", { name: "Candidates" }).click();
+    await page.getByLabel('Search', { exact: true }).click();
+    await page.getByPlaceholder('Search').fill(userFirstName);
+    await page.keyboard.press('Enter');
     await page.getByText(userEmail).first().click();
-    await page.getByLabel("nomination").click();
-    await page.getByLabel(nominationId).click();
-    await page.getByRole("button", { name: "Save" }).click();
 
     // Send registration email
     await page.getByRole("button", { name: "Send registration email" }).click();
@@ -148,7 +181,7 @@ test.describe.serial("should complete the registration process", () => {
     await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
     await page.getByLabel(candidateAppTranslationsEn.common.logOut, {exact: true}).click();
 
-    // Log in with the created user Alice
+    // Log in with the created user
     await page.getByPlaceholder(candidateAppTranslationsEn.common.emailPlaceholder, {exact: true}).fill(userEmail);
     await page.getByPlaceholder(candidateAppTranslationsEn.common.passwordPlaceholder, {exact: true}).fill(userPassword);
     await page.getByText(candidateAppTranslationsEn.common.logIn, {exact: true}).click();
@@ -207,7 +240,7 @@ test.describe.serial("should complete the registration process", () => {
     await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
     await page.getByLabel(candidateAppTranslationsEn.common.logOut, {exact: true}).click();
 
-    // Log in with the created user Alice
+    // Log in with the created user
     await page.getByPlaceholder(candidateAppTranslationsEn.common.emailPlaceholder, {exact: true}).fill(userEmail);
     await page.getByPlaceholder(candidateAppTranslationsEn.common.passwordPlaceholder, {exact: true}).fill(userPassword);
     await page.getByText(candidateAppTranslationsEn.common.logIn, {exact: true}).click();
@@ -291,7 +324,7 @@ test.describe.serial("should complete the registration process", () => {
     await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
     await page.getByLabel(candidateAppTranslationsEn.common.logOut, {exact: true}).click();
 
-    // Log in with the created user Alice
+    // Log in with the created user
     await page.getByPlaceholder(candidateAppTranslationsEn.common.emailPlaceholder, {exact: true}).fill(userEmail);
     await page.getByPlaceholder(candidateAppTranslationsEn.common.passwordPlaceholder, {exact: true}).fill(userPassword);
     await page.getByText(candidateAppTranslationsEn.common.logIn, {exact: true}).click();
@@ -354,7 +387,7 @@ test.describe.serial("should complete the registration process", () => {
     await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
     await page.getByLabel(candidateAppTranslationsEn.common.logOut, {exact: true}).click();
 
-    // Log in with the created user Alice
+    // Log in with the created user
     await page.getByPlaceholder(candidateAppTranslationsEn.common.emailPlaceholder, {exact: true}).fill(userEmail);
     await page.getByPlaceholder(candidateAppTranslationsEn.common.passwordPlaceholder, {exact: true}).fill(userPassword);
     await page.getByText(candidateAppTranslationsEn.common.logIn, {exact: true}).click();
