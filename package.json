@@ -4,15 +4,15 @@
     "dev:attach": "docker compose -f docker-compose.dev.yml up --force-recreate --build",
     "dev:down": "docker compose -f docker-compose.dev.yml down --remove-orphans",
     "dev:stop": "docker compose -f docker-compose.dev.yml stop",
-    "prepare": "husky install",
+    "prepare": "husky",
     "prod": "docker compose -f docker-compose.yml -p vaa-prod up -d --build",
     "test": "playwright test"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
-    "@playwright/test": "^1.41.1",
-    "@types/node": "^20.11.10",
+    "@playwright/test": "^1.45.0",
+    "@types/node": "^20.14.8",
     "dotenv": "^16.4.5",
-    "husky": "^8.0.2"
+    "husky": "^9.0.11"
   }
 }
