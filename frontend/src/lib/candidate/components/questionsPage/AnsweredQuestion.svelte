@@ -16,7 +16,8 @@
   export let question: $$Props['question'];
   export let categoryQuestions: $$Props['categoryQuestions'];
 
-  const {answersStore, questionsLockedStore} = getContext<CandidateContext>('candidate');
+  const {opinionAnswerStore: answersStore, questionsLockedStore} =
+    getContext<CandidateContext>('candidate');
 
   $: questionsLocked = $questionsLockedStore;
 

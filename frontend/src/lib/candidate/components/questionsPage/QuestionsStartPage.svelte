@@ -8,8 +8,8 @@
   import {getRoute, Route} from '$lib/utils/navigation';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {questionsStore} = getContext<CandidateContext>('candidate');
-  const questions = get(questionsStore) ?? [];
+  const {likertQuestionsStore} = getContext<CandidateContext>('candidate');
+  const questions = get(likertQuestionsStore) ?? [];
 
   // The number of questions to be answered.
   const numQuestions = Object.values(questions).length;
