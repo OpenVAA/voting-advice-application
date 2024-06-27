@@ -10,7 +10,14 @@
   const dateMin = '1800-01-01';
   const dateMax = new Date().toISOString().split('T')[0];
 
-  let selectedValue: AnswerOption;
+  // let selectedOption: Date;
+
+  export let value: AnswePropsValue = '';
+
+  //ensure that the date is in the correct format
+  if (value && typeof value === 'string') {
+    value = value.slice(0, 10);
+  }
 </script>
 
 <Field>
@@ -26,7 +33,7 @@
         min={dateMin}
         max={dateMax}
         id="birthday"
-        bind:value={selectedValue} />
+        bind:value />
     </div>
   </InputContainer>
 </Field>

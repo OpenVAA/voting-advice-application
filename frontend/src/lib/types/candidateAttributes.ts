@@ -102,6 +102,10 @@ export interface Answer {
   openAnswer: LocalizedString | null; // Optional free-form answer
 }
 
+export type candidateAnswer = AnswerProps & {
+  id: string;
+};
+
 export interface Question {
   id: string;
   text: LocalizedString;

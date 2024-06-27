@@ -35,10 +35,24 @@ declare global {
   type AnswerDict = Record<string, AnswerProps>;
 
   /**
+   * The possible values for an answer to a question.
+   */
+  type AnswePropsValue =
+    | string
+    | string[]
+    | boolean
+    | number
+    | number[]
+    | Date
+    | LocalizedString
+    | undefined
+    | null;
+
+  /**
    * Properties of a Candidate's or Party's answer to a question.
    */
   interface AnswerProps {
-    value: string | string[] | boolean | number | number[] | Date | undefined | null;
+    value: AnswerPropsValue;
     openAnswer?: string;
   }
 

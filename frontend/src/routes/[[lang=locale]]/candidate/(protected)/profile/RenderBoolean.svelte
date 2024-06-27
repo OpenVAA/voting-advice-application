@@ -9,8 +9,12 @@
   export let disclaimerClass: string;
   export let inputClass: string;
   export let questionsLocked: boolean | undefined;
+  export let checked: AnswePropsValue = false;
 
-  let selectedValue: boolean;
+  let selectedChecked = false;
+  if (typeof checked === 'boolean') {
+    selectedChecked = checked;
+  }
 </script>
 
 <FieldGroup>
@@ -24,7 +28,7 @@
           id="unaffiliated"
           type="checkbox"
           class="toggle toggle-primary mr-8"
-          bind:checked={selectedValue} />
+          bind:checked={selectedChecked} />
       {:else}
         <input id="unaffiliated" disabled value="yes" class={inputClass} />
       {/if}

@@ -20,7 +20,7 @@
     opinionQuestionsFilledStore,
     nofUnansweredOpinionQuestionsStore,
     likertQuestionsStore,
-    answersStore,
+    opinionAnswerStore,
     progressStore,
     questionsLockedStore
   } = getContext<CandidateContext>('candidate');
@@ -44,7 +44,7 @@
     basicInfoFilled = value;
   });
 
-  $: answers = $answersStore;
+  $: answers = $opinionAnswerStore;
 
   let questionsByCategory: Record<string, Array<Question>>;
 

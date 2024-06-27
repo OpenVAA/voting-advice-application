@@ -1,7 +1,14 @@
 import {get} from 'svelte/store';
 import {constants} from '$lib/utils/constants';
 import {candidateContext} from '$lib/utils/candidateStore';
-import type {Question, Answer, Language, User, Photo} from '$lib/types/candidateAttributes';
+import type {
+  Question,
+  Answer,
+  Language,
+  User,
+  Photo,
+  candidateAnswer
+} from '$lib/types/candidateAttributes';
 import type {
   StrapiAnswerData,
   StrapiLanguageData,
@@ -175,6 +182,56 @@ export const changePassword = (currentPassword: string, password: string) => {
   });
 };
 
+// /**
+//  * Get all questions that have a likert scale.
+//  */
+// export const getQuestions = async (): Promise<QuestionProps[]> => {
+//   const res = await request(
+//     getUrl('api/questions', {
+//       'populate[questionType]': 'true',
+//       'populate[category]': 'true'
+//     })
+//   );
+
+//   if (!res?.ok) throw Error(res?.statusText);
+
+//   const questionData: StrapiResponse<StrapiQuestionData[]> = await res.json();
+
+//   const questions: QuestionProps[] = questionData.data.map((question) => {
+//     const attr = question.attributes;
+//     const settings = attr.questionType?.data.attributes.settings;
+//     const props: QuestionProps = {
+//       id: `${question.id}`,
+//       text: attr.text,
+//       info: attr.info,
+//       shortName: attr.shortName,
+//       category: parseQuestionCategory(attr.category.data),
+//       type: settings.type
+//     };
+//   });
+
+//   questionData.data.forEach((question) => {
+//     const attr = question.attributes;
+//     const settings = attr.questionType?.data.attributes.settings;
+//     const props: Question = {
+//       id: `${question.id}`,
+//       text: attr.text,
+//       info: attr.info,
+//       shortName: attr.shortName,
+//       category: parseQuestionCategory(attr.category.data),
+//       type: settings.type
+//     };
+//     if ('values' in settings)
+//       props.values = settings.values.map(({key, label}) => ({
+//         key,
+//         label
+//       }));
+
+//     questions[question.id] = props;
+//   });
+//   return questions;
+// };
+
 /**
  * Get questions that have a likert scale.
  */
@@ -220,7 +277,7 @@ export const getLikertQuestions = async (): Promise<Record<string, Question> | u
  */
 export const addAnswer = (
   questionId: string,
-  answerKey: AnswerOption['key'],
+  answerKey: AnswerProps['value'],
   openAnswer?: LocalizedString
 ): Promise<Response | undefined> => {
   return request(getUrl('api/answers'), {
@@ -244,7 +301,7 @@ export const addAnswer = (
  */
 export const updateAnswer = (
   answerId: string,
-  answerKey: AnswerOption['key'],
+  answerKey: AnswerProps['value'],
   openAnswer?: LocalizedString
 ): Promise<Response | undefined> => {
   return request(getUrl(`api/answers/${answerId}`), {
@@ -276,7 +333,7 @@ export const deleteAnswer = (answerId: string): Promise<Response | undefined> =>
 /**
  * Get all the answers for the logged in user.
  */
-export const getExistingAnswers = async (): Promise<Record<string, Answer> | undefined> => {
+export const getExistingOpinionAnswers = async (): Promise<Record<string, Answer> | undefined> => {
   const user = get(candidateContext.userStore)?.candidate;
   const candidateId = user?.id;
 
@@ -304,6 +361,48 @@ export const getExistingAnswers = async (): Promise<Record<string, Answer> | und
       openAnswer: answer.attributes.openAnswer
     };
   });
+
+  return answers;
+};
+
+/**
+ * Get all the answers for the logged in user.
+ */
+export const getExistingInfoAnswers = async (): Promise<
+  Record<string, candidateAnswer> | undefined
+> => {
+  const user = get(candidateContext.userStore)?.candidate;
+  const candidateId = user?.id;
+
+  if (!candidateId) return;
+
+  const res = await request(
+    getUrl('api/answers', {
+      'populate[question][populate][category]': 'true',
+      'filters[candidate][id][$eq]': candidateId.toString(),
+      'filters[question][category][type][$eq]': 'info'
+    })
+  );
+
+  if (!res?.ok) return;
+
+  const answerData: StrapiResponse<StrapiAnswerData[]> = await res.json();
+
+  // Parse the data into a more usable format where the question ID is the key
+  const answers: Record<string, candidateAnswer> = {};
+
+  answerData.data.forEach((answer) => {
+    answers[answer.attributes.question.data.id] = {
+      id: `${answer.id}`,
+      value: answer.attributes.value as AnswerProps['value']
+    };
+    // answers[answer.attributes.question.data.id] = {
+    //   id: `${answer.id}`,
+    //   value: answer.attributes.value,
+    //   openAnswer: answer.attributes.openAnswer
+    // };
+  });
+  console.info('Answers fron candidate.ts', answers);
 
   return answers;
 };

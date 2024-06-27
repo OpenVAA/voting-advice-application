@@ -6,8 +6,7 @@
   export let labelClass: string;
   export let selectClass: string;
   export let questionsLocked: boolean | undefined;
-
-  let selectedValue: AnswerOption;
+  export let value: AnswePropsValue;
 </script>
 
 <Field>
@@ -19,10 +18,11 @@
       disabled={questionsLocked}
       id={question.id}
       class={selectClass}
-      bind:value={selectedValue}
+      bind:value
       style="text-align-last: right; direction: rtl;">
+      <option disabled selected value style="display: none;" />
       {#each question.values ?? [] as option}
-        <option value={option.label}>{option.label}</option>
+        <option value={option.key}>{option.label}</option>
       {/each}
     </select>
   </InputContainer>

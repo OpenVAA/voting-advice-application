@@ -4,10 +4,16 @@
   import {Loading} from '$lib/components/loading';
 
   const candidateContext = getContext<CandidateContext>('candidate');
-  const {answersStore, questionsStore} = candidateContext;
+  const {opinionAnswerStore, likertQuestionsStore, allQuestionsStore, infoAnswerStore} =
+    candidateContext;
 
   const getQuestionsAndAnswers = async () => {
-    await Promise.all([candidateContext.loadAnswerData(), candidateContext.loadQuestionData()]);
+    await Promise.all([
+      candidateContext.loadOpinionAnswerData(),
+      candidateContext.loadInfoAnswerData(),
+      candidateContext.loadLikertQuestionData(),
+      candidateContext.loadAllQuestionData()
+    ]);
   };
 </script>
 
@@ -28,7 +34,7 @@ Require candidate answers to be loaded to view the children of this component.
 ```
 -->
 
-{#if $answersStore && $questionsStore}
+{#if $opinionAnswerStore && $likertQuestionsStore && $allQuestionsStore && $infoAnswerStore}
   <slot />
 {:else}
   {#await getQuestionsAndAnswers()}

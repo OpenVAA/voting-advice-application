@@ -11,34 +11,55 @@
     $token && candidateContext.loadUserData();
   });
 
-  candidateContext.userStore.subscribe((user) => {
-    let {gender, motherTongues, birthday, manifesto} = {
-      gender: {
-        id: undefined
-      },
-      manifesto: {},
-      ...user?.candidate
-    };
-    const allFilled =
-      !!gender?.id &&
-      !!motherTongues &&
-      motherTongues.length > 0 &&
-      !!birthday &&
-      Object.values(manifesto).some((value) => value !== '');
-    candidateContext.basicInfoFilledStore.set(allFilled);
+  const updateInfoAnswerRelations = () => {
+    const infoAnswers = get(candidateContext.infoAnswerStore);
 
-    const nofBasicQuestionsFilled = [
-      !!gender?.id,
-      !!motherTongues && motherTongues.length > 0,
-      !!birthday,
-      Object.values(manifesto).some((value) => value !== '')
-    ].filter((n) => n).length;
-    candidateContext.nofUnansweredBasicInfoQuestionsStore.set(4 - nofBasicQuestionsFilled);
-  });
+    if (infoAnswers) {
+      const allFilled = Object.values(infoAnswers).every((value) => {
+        return value.value === false || !!value.value;
+      });
+
+      candidateContext.basicInfoFilledStore.set(allFilled);
+
+      const nofBasicQuestionsFilled = Object.values(infoAnswers).filter((value) => {
+        return value.value === false || !!value.value;
+      }).length;
+      candidateContext.nofUnansweredBasicInfoQuestionsStore.set(4 - nofBasicQuestionsFilled);
+    }
+  };
+
+  candidateContext.infoAnswerStore.subscribe(updateInfoAnswerRelations);
+
+  // $: infoAnswers = candidateContext.infoAnswerStore;
+
+  // candidateContext.userStore.subscribe((user) => {
+  //   let {gender, motherTongues, birthday, manifesto} = {
+  //     gender: {
+  //       id: undefined
+  //     },
+  //     manifesto: {},
+  //     ...user?.candidate
+  //   };
+  //   const allFilled =
+  //     !!gender?.id &&
+  //     !!motherTongues &&
+  //     motherTongues.length > 0 &&
+  //     !!birthday &&
+  //     Object.values(manifesto).some((value) => value !== '');
+  //   candidateContext.basicInfoFilledStore.set(allFilled);
+
+  //   const nofBasicQuestionsFilled = [
+  //     !!gender?.id,
+  //     !!motherTongues && motherTongues.length > 0,
+  //     !!birthday,
+  //     Object.values(manifesto).some((value) => value !== '')
+  //   ].filter((n) => n).length;
+  //   candidateContext.nofUnansweredBasicInfoQuestionsStore.set(4 - nofBasicQuestionsFilled);
+  // });
 
   const updateNofUnansweredQuestions = () => {
-    const answers = get(candidateContext.answersStore);
-    const questions = get(candidateContext.questionsStore);
+    const answers = get(candidateContext.opinionAnswerStore);
+    const questions = get(candidateContext.likertQuestionsStore);
     if (answers && questions) {
       candidateContext.nofUnansweredOpinionQuestionsStore.set(
         Object.entries(questions).length - Object.entries(answers).length
@@ -49,8 +70,8 @@
   };
 
   const updateProgress = () => {
-    const answers = get(candidateContext.answersStore);
-    const questions = get(candidateContext.questionsStore);
+    const answers = get(candidateContext.opinionAnswerStore);
+    const questions = get(candidateContext.likertQuestionsStore);
 
     if (answers && questions) {
       const answeredQuestions = Object.entries(answers).length;
@@ -63,11 +84,11 @@
     }
   };
 
-  candidateContext.answersStore.subscribe(updateNofUnansweredQuestions);
-  candidateContext.questionsStore.subscribe(updateNofUnansweredQuestions);
+  candidateContext.opinionAnswerStore.subscribe(updateNofUnansweredQuestions);
+  candidateContext.likertQuestionsStore.subscribe(updateNofUnansweredQuestions);
 
-  candidateContext.answersStore.subscribe(updateProgress);
-  candidateContext.questionsStore.subscribe(updateProgress);
+  candidateContext.opinionAnswerStore.subscribe(updateProgress);
+  candidateContext.likertQuestionsStore.subscribe(updateProgress);
 </script>
 
 <!--

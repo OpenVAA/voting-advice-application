@@ -16,7 +16,22 @@
   // html element for selecting html language
   let selectElement: HTMLSelectElement;
 
-  let selectedOptions: AnswerOption[] = [];
+  let selectedValues = [];
+
+  export let values: AnswePropsValue = Array<number>();
+
+  let selectedOptions: Array<AnswerOption>;
+
+  if (Array.isArray(values)) {
+    selectedValues = values;
+    selectedOptions = values.map((value) => {
+      return {
+        key: Number(value),
+        label: questionOptions?.find((q) => q.key === value)?.label ?? ''
+      };
+    });
+  }
+
   // handle the change when a language is selected
   const handleLanguageSelect = (e: Event) => {
     const selected = questionOptions
@@ -24,6 +39,7 @@
       : undefined;
     if (selected && questionOptions) {
       selectedOptions = [...selectedOptions, selected];
+      selectedValues = [...selectedValues, selected.key];
       selectElement.selectedIndex = 0;
     }
   };
@@ -62,7 +78,10 @@
           title="remove"
           type="button"
           id={option.label}
-          on:click={() => (selectedOptions = selectedOptions?.filter((m) => m.key !== option.key))}>
+          on:click={() => {
+            selectedOptions = selectedOptions?.filter((m) => m.key !== option.key);
+            selectedValues = selectedValues.filter((v) => v !== option.key);
+          }}>
           <Icon name="close" class={iconClass} />
         </button>
       {:else}

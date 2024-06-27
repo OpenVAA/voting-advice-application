@@ -1,8 +1,15 @@
-import {authenticate, me} from '$lib/api/candidate';
-import type {Question, Answer, User, Progress} from '$lib/types/candidateAttributes';
+import {authenticate, getExistingInfoAnswers, me} from '$lib/api/candidate';
+import type {
+  Question,
+  Answer,
+  User,
+  Progress,
+  candidateAnswer
+} from '$lib/types/candidateAttributes';
 import {writable, type Writable} from 'svelte/store';
-import {getExistingAnswers} from '$lib/api/candidate';
+import {getExistingOpinionAnswers} from '$lib/api/candidate';
 import {getLikertQuestions} from '$lib/api/candidate';
+import {dataProvider} from '$lib/api/getData';
 
 export interface CandidateContext {
   // Authentication
@@ -14,11 +21,15 @@ export interface CandidateContext {
   loadLocalStorage: () => void;
   emailOfNewUserStore: Writable<string | null | undefined>;
   // Answers
-  answersStore: Writable<Record<string, Answer> | undefined>;
-  loadAnswerData: () => Promise<void>;
+  opinionAnswerStore: Writable<Record<string, Answer> | undefined>;
+  loadOpinionAnswerData: () => Promise<void>;
+  infoAnswerStore: Writable<Record<string, candidateAnswer> | undefined>;
+  loadInfoAnswerData: () => Promise<void>;
   // Questions
-  questionsStore: Writable<Record<string, Question> | undefined>;
-  loadQuestionData: () => Promise<void>;
+  likertQuestionsStore: Writable<Record<string, Question> | undefined>;
+  loadLikertQuestionData: () => Promise<void>;
+  allQuestionsStore: Writable<QuestionProps[]> | undefined;
+  loadAllQuestionData: () => Promise<void>;
   // Custom util
   basicInfoFilledStore: Writable<boolean | undefined>;
   nofUnansweredBasicInfoQuestionsStore: Writable<number | undefined>;
@@ -31,8 +42,10 @@ export interface CandidateContext {
 const userStore = writable<User | null>(null);
 const tokenStore = writable<string | null | undefined>(undefined);
 const emailOfNewUserStore = writable<string | undefined>(undefined);
-const answersStore = writable<Record<string, Answer> | undefined>(undefined);
-const questionsStore = writable<Record<string, Question> | undefined>(undefined);
+const opinionAnswerStore = writable<Record<string, Answer> | undefined>(undefined);
+const infoAnswerStore = writable<Record<string, candidateAnswer> | undefined>(undefined);
+const likertQuestionsStore = writable<Record<string, Question> | undefined>(undefined);
+const allQuestionsStore = writable<QuestionProps[]>(undefined);
 const basicInfoFilledStore = writable<boolean | undefined>(undefined);
 const nofUnansweredBasicInfoQuestionsStore = writable<number | undefined>(undefined);
 const opinionQuestionsFilledStore = writable<boolean | undefined>(undefined);
@@ -76,20 +89,37 @@ const logOut = async () => {
   localStorage.clear();
 };
 
-const loadAnswerData = async () => {
-  const answers = await getExistingAnswers();
+const loadOpinionAnswerData = async () => {
+  const answers = await getExistingOpinionAnswers();
 
   if (!answers) return;
 
-  answersStore.set(answers);
+  opinionAnswerStore.set(answers);
 };
 
-const loadQuestionData = async () => {
+const loadInfoAnswerData = async () => {
+  const answers = await getExistingInfoAnswers();
+
+  if (!answers) return;
+
+  infoAnswerStore.set(answers);
+};
+
+const loadLikertQuestionData = async () => {
   const questions = await getLikertQuestions();
 
   if (!questions) return;
 
-  questionsStore.set(questions);
+  likertQuestionsStore.set(questions);
+};
+
+const loadAllQuestionData = async () => {
+  const provider = await dataProvider;
+  const questions = await provider.getQuestions({locale: 'en'});
+
+  if (!questions) return;
+
+  allQuestionsStore.set(questions);
 };
 
 export const candidateContext: CandidateContext = {
@@ -99,10 +129,14 @@ export const candidateContext: CandidateContext = {
   loadUserData,
   logOut,
   emailOfNewUserStore,
-  answersStore,
-  loadAnswerData,
-  questionsStore,
-  loadQuestionData,
+  opinionAnswerStore,
+  loadOpinionAnswerData,
+  infoAnswerStore,
+  loadInfoAnswerData,
+  likertQuestionsStore,
+  loadLikertQuestionData,
+  allQuestionsStore,
+  loadAllQuestionData,
   loadLocalStorage,
   basicInfoFilledStore,
   nofUnansweredOpinionQuestionsStore,

@@ -20,10 +20,10 @@
   export let questions: $$Props['questions'];
   export let editMode: $$Props['editMode'] = false;
 
-  const {answersStore, progressStore, questionsLockedStore} =
+  const {opinionAnswerStore, progressStore, questionsLockedStore} =
     getContext<CandidateContext>('candidate');
 
-  $: answers = $answersStore;
+  $: answers = $opinionAnswerStore;
   $: answer = answers?.[questionId]; // undefined if not answered
 
   $: questionId = currentQuestion.id;
@@ -111,7 +111,7 @@
         key,
         openAnswer
       };
-      answersStore.set(answers);
+      opinionAnswerStore.set(answers);
     }
   };
 
