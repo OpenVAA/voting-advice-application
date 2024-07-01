@@ -1,8 +1,8 @@
-import settings from './src/lib/config/settings.json';
+import { staticSettings } from './src/shared/settings/staticSettings';
 
 // Utility for getting a color from the settings with a backup value
 function getColor(name, defaultValue, theme = 'light') {
-  return settings.colors?.[theme]?.[name] ?? defaultValue;
+  return staticSettings.colors?.[theme]?.[name] ?? defaultValue;
 } 
 
 // Other DaisyUI variables: https://daisyui.com/docs/themes/
@@ -102,8 +102,8 @@ module.exports = {
     },
     fontFamily: {
       base: [
-        settings.font?.name ?? 'Inter',
-        ...(fontFallbacks[settings.font?.style ?? 'sans'] ?? fontFallbacks.sans),
+        staticSettings.font?.name ?? 'Inter',
+        ...(fontFallbacks[staticSettings.font?.style ?? 'sans'] ?? fontFallbacks.sans),
         ...emojiFonts
       ],
       emoji: emojiFonts

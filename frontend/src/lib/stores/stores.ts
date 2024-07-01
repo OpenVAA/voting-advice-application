@@ -2,7 +2,8 @@ import {derived, get, writable} from 'svelte/store';
 import type {Readable, Writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import {page} from '$app/stores';
-import localSettings from '$lib/config/settings.json';
+import {staticSettings} from '$shared/settings/staticSettings';
+import {dynamicSettings} from '$shared/settings/dynamicSettings';
 import {startEvent, track} from '$lib/utils/analytics/track';
 import {logDebugError} from '$lib/utils/logger';
 import {wrap} from '$lib/utils/entities';
@@ -19,8 +20,8 @@ export const settings: Readable<AppSettings> = derived(
   [page],
   ([$page]) =>
     ($page?.data?.appSettings
-      ? Object.assign(localSettings, $page.data.appSettings)
-      : localSettings) as AppSettings
+      ? Object.assign({...staticSettings, ...dynamicSettings}, $page.data.appSettings)
+      : {...staticSettings, ...dynamicSettings}) as AppSettings
 );
 
 /**
