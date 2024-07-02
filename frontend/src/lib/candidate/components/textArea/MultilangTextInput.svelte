@@ -89,7 +89,7 @@ Input field variant
 ```
 -->
 
-<div class="m-12 w-full">
+<div class=" w-full">
   {#if headerText && !compact}
     <label for={id} class="small-label mx-10 my-6 p-0">{headerText}</label>
   {:else}

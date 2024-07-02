@@ -12,7 +12,6 @@ import type {
 import type {
   StrapiAnswerData,
   StrapiLanguageData,
-  StrapiGenderData,
   StrapiResponse,
   StrapiQuestionData
 } from './dataProvider/strapi';
@@ -413,14 +412,6 @@ export const getLanguages = async (): Promise<StrapiLanguageData[] | undefined> 
       'populate[language]': 'true'
     })
   );
-  if (!res?.ok) return undefined;
-
-  const resJson = await res.json();
-  return resJson.data;
-};
-
-export const getGenders = async (): Promise<StrapiGenderData[] | undefined> => {
-  const res = await request(getUrl('api/genders'));
   if (!res?.ok) return undefined;
 
   const resJson = await res.json();

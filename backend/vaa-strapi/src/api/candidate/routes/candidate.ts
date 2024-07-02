@@ -48,6 +48,7 @@ export default factories.createCoreRouter('api::candidate.candidate', {
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([]),
         // Allow only updating the following fields
+        //TODO: move to the new question and answer model
         restrictBody(['gender', 'birthday', 'unaffiliated', 'photo', 'manifesto', 'motherTongues', 'otherLanguages', 'politicalExperience', 'appLanguage']),
         // Allow modification only when the current election allows it
         electionCanEditQuestions,

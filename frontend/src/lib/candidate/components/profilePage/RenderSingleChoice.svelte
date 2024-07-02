@@ -9,6 +9,33 @@
   export let value: AnswePropsValue;
 </script>
 
+<!--
+@component
+A component for rendering a single choice question.
+
+### Bindable variables
+
+- `value`: The selected value.
+
+### Properties
+
+- `question`: The question object.
+- `labelClass`: A class that defines label styles.
+- `selectClass`: A class that defines select styles.
+- `questionsLocked`: A boolean value that indicates if the questions are locked.
+
+### Usage
+
+```tsx
+<RenderSingleChoice
+  question={question}
+  labelClass="text-lg"
+  selectClass="text-lg"
+  questionsLocked={questionsLocked}
+  bind:value={value} />
+```
+-->
+
 <Field>
   <label for={question.id} class={labelClass}>
     {question.text}

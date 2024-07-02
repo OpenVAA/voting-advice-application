@@ -30,33 +30,6 @@
 
   candidateContext.infoAnswerStore.subscribe(updateInfoAnswerRelations);
 
-  // $: infoAnswers = candidateContext.infoAnswerStore;
-
-  // candidateContext.userStore.subscribe((user) => {
-  //   let {gender, motherTongues, birthday, manifesto} = {
-  //     gender: {
-  //       id: undefined
-  //     },
-  //     manifesto: {},
-  //     ...user?.candidate
-  //   };
-  //   const allFilled =
-  //     !!gender?.id &&
-  //     !!motherTongues &&
-  //     motherTongues.length > 0 &&
-  //     !!birthday &&
-  //     Object.values(manifesto).some((value) => value !== '');
-  //   candidateContext.basicInfoFilledStore.set(allFilled);
-
-  //   const nofBasicQuestionsFilled = [
-  //     !!gender?.id,
-  //     !!motherTongues && motherTongues.length > 0,
-  //     !!birthday,
-  //     Object.values(manifesto).some((value) => value !== '')
-  //   ].filter((n) => n).length;
-  //   candidateContext.nofUnansweredBasicInfoQuestionsStore.set(4 - nofBasicQuestionsFilled);
-  // });
-
   const updateNofUnansweredQuestions = () => {
     const answers = get(candidateContext.opinionAnswerStore);
     const questions = get(candidateContext.likertQuestionsStore);

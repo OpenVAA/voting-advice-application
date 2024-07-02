@@ -8,14 +8,47 @@
   export let labelClass: string;
   export let disclaimerClass: string;
   export let inputClass: string;
-  export let questionsLocked: boolean | undefined;
+  export let questionsLocked: boolean | undefined = false;
   export let checked: AnswePropsValue = false;
 
-  let selectedChecked = false;
+  let isChecked = false;
   if (typeof checked === 'boolean') {
-    selectedChecked = checked;
+    isChecked = checked;
+  }
+
+  $: {
+    checked = isChecked;
   }
 </script>
+
+<!--
+@component
+A component for rendering a boolean question.
+
+### Bindable variables
+
+- `checked`: A boolean value that indicates if the checkbox is checked or not.
+
+### Properties
+
+- `question`: The question object.
+- `labelClass`: A class that defines label styles.
+- `disclaimerClass`: A class that defines disclaimer styles.
+- `inputClass`: A class that defines input styles.
+- `questionsLocked`: A boolean value that indicates if the questions are locked.
+
+### Usage
+
+```tsx
+<RenderBoolean
+  question={question}
+  labelClass="text-lg"
+  disclaimerClass="text-sm"
+  inputClass="text-lg"
+  questionsLocked={questionsLocked}
+  bind:checked={checked} />
+```
+-->
 
 <FieldGroup>
   <Field>
@@ -28,7 +61,7 @@
           id="unaffiliated"
           type="checkbox"
           class="toggle toggle-primary mr-8"
-          bind:checked={selectedChecked} />
+          bind:checked={isChecked} />
       {:else}
         <input id="unaffiliated" disabled value="yes" class={inputClass} />
       {/if}

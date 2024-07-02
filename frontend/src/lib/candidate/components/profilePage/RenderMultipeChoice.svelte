@@ -16,15 +16,12 @@
   // html element for selecting html language
   let selectElement: HTMLSelectElement;
 
-  let selectedValues = [];
-
-  export let values: AnswePropsValue = Array<number>();
+  export let selectedValues: AnswePropsValue = Array<number>();
 
   let selectedOptions: Array<AnswerOption>;
 
-  if (Array.isArray(values)) {
-    selectedValues = values;
-    selectedOptions = values.map((value) => {
+  if (Array.isArray(selectedValues)) {
+    selectedOptions = selectedValues.map((value) => {
       return {
         key: Number(value),
         label: questionOptions?.find((q) => q.key === value)?.label ?? ''
@@ -39,11 +36,42 @@
       : undefined;
     if (selected && questionOptions) {
       selectedOptions = [...selectedOptions, selected];
-      selectedValues = [...selectedValues, selected.key];
+      selectedValues = selectedOptions.map((option) => option.key);
       selectElement.selectedIndex = 0;
     }
   };
 </script>
+
+<!--
+@component
+A component for rendering a multiple choice question.
+
+### Bindable variables
+
+- `selectedValues`: An array that contains the selected values.
+
+### Properties
+
+- `question`: The question object.
+- `labelClass`: A class that defines label styles.
+- `selectClass`: A class that defines select styles.
+- `buttonContainerClass`: A class that defines button container styles.
+- `iconClass`: A class that defines icon styles.
+- `questionsLocked`: A boolean value that indicates if the questions are locked.
+
+### Usage
+
+```tsx
+<RenderMultipleChoice
+  question={question}
+  labelClass="text-lg"
+  selectClass="text-lg"
+  buttonContainerClass="text-lg"
+  iconClass="text-lg"
+  questionsLocked={questionsLocked}
+  bind:selectedValues={selectedValues} />
+```
+-->
 
 <Field>
   <label for={question.id} class={labelClass}>
@@ -80,7 +108,7 @@
           id={option.label}
           on:click={() => {
             selectedOptions = selectedOptions?.filter((m) => m.key !== option.key);
-            selectedValues = selectedValues.filter((v) => v !== option.key);
+            selectedValues = selectedOptions.map((option) => option.key);
           }}>
           <Icon name="close" class={iconClass} />
         </button>

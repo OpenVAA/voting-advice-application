@@ -153,10 +153,6 @@ export async function generateMockData() {
     await createStrapiAdmin();
     console.info('Done!');
     console.info('#######################################');
-    console.info('inserting genders ...');
-    await createGenders();
-    console.info('Done!');
-    console.info('#######################################');
     console.info('inserting election app labels...');
     await createElectionAppLabel();
     console.info('Done!');
@@ -273,33 +269,6 @@ async function createLanguages() {
   });
 }
 
-async function createGenders() {
-  await strapi.db.query(API.Gender).createMany({
-    data: [
-      {
-        name: 'male',
-        publishedAt: new Date()
-      },
-      {
-        name: 'female',
-        publishedAt: new Date()
-      },
-      {
-        name: 'nonBinary',
-        publishedAt: new Date()
-      },
-      {
-        name: 'other',
-        publishedAt: new Date()
-      },
-      {
-        name: 'preferNotToSay',
-        publishedAt: new Date()
-      }
-    ]
-  });
-}
-
 async function createElectionAppLabel() {
   // This should create labels dynamically so that they match the translation files either completely or at least the most often modified parts
   // Before this is done, it's better not to create labels at all
@@ -406,8 +375,6 @@ async function createCandidates(length: number) {
 
   const parties = await strapi.db.query(API.Party).findMany({});
 
-  const genders = await strapi.db.query(API.Gender).findMany({});
-
   for (let i = 0; i <= length; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
@@ -420,7 +387,6 @@ async function createCandidates(length: number) {
       })
       .toISOString()
       .split('T')[0];
-    const gender = faker.helpers.arrayElement(genders);
     const manifesto = faker.lorem.paragraph(8);
     // TODO: Remove these attrs later
     const politicalExperience = faker.lorem.paragraph(3);
@@ -434,7 +400,6 @@ async function createCandidates(length: number) {
         party: party.id,
         publishedAt: new Date(),
         birthday,
-        gender,
         politicalExperience,
         unaffiliated: false,
         motherTongues: [motherTongue.id],

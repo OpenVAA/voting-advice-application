@@ -316,18 +316,6 @@ export interface StrapiCandidateData {
     };
     firstName: string;
     lastName: string;
-    birthday: string;
-    unaffiliated: boolean;
-    manifesto: LocalizedString;
-    gender?: {
-      data: StrapiGenderData;
-    };
-    motherTongues?: {
-      data: StrapiLanguageData[];
-    };
-    otherLanguages?: {
-      data: StrapiLanguageData[];
-    };
     party: {
       data: StrapiPartyData;
     };
@@ -379,13 +367,6 @@ export interface StrapiLanguageData {
   id: number;
   attributes: {
     localisationCode: string;
-    name: string;
-  };
-}
-
-export interface StrapiGenderData {
-  id: number;
-  attributes: {
     name: string;
   };
 }
