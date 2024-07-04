@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {get, writable} from 'svelte/store';
+  import {writable} from 'svelte/store';
   import {t} from '$lib/i18n';
   import {translate} from '$lib/i18n/utils/translate';
   import {Field, FieldGroup} from '$lib/components/common/form';
@@ -12,7 +12,7 @@
   import {Button} from '$lib/components/button';
   import {goto} from '$app/navigation';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import type {candidateAnswer} from '$lib/types/candidateAttributes';
+  import type {candidateAnswer, User} from '$lib/types/candidateAttributes';
   import {addAnswer, updateAnswer} from '$lib/api/candidate';
   import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
   import RenderSingleChoice from '$lib/candidate/components/profilePage/RenderSingleChoice.svelte';
@@ -42,7 +42,11 @@
     basicInfoFilledStore
   } = getContext<CandidateContext>('candidate');
 
-  const user = get(userStore);
+  let user = null as User | null;
+  userStore.subscribe((value) => {
+    user = value;
+  });
+
   $: questionsLocked = $questionsLockedStore;
   $: opinionQuestionsFilled = $opinionQuestionsFilledStore;
   $: basicInfoFilled = $basicInfoFilledStore;
@@ -73,6 +77,7 @@
   let dirty = false;
 
   // Check if the form is dirty
+  ///TODO: triggers because of date modification
   $: {
     const answersLoaded = Object.values(unsavedInfoAnswers).every(
       (infoAnswer) => infoAnswer.value !== undefined
@@ -82,9 +87,12 @@
       previousStateHash = previousStateHash ?? getCurrentHash();
       const currentStateHash = getCurrentHash();
       dirty = currentStateHash !== previousStateHash;
+      // console.log(JSON.stringify(unsavedInfoAnswers));
+      // console.log('dirty', dirty);
     }
   }
 
+  // console.log(infoQuestions);
   // follow allFilledPrivate to check if all the questions are answered.
   // TODO: we should be able to define which questions are mandatory
   $: allFilledPrivate = Object.entries(unsavedInfoAnswers).every((value) => {
@@ -103,10 +111,10 @@
   let nomination = user?.candidate?.nomination;
   let photo = user?.candidate?.photo;
 
+  let uploadPhoto: () => Promise<void>;
+
   // the dot symbol for separating info string
   const dot = '\u22C5';
-
-  let uploadPhoto: () => Promise<void>;
 
   let errorMessage = '';
   let errorTimeout: NodeJS.Timeout;
@@ -139,6 +147,9 @@
       })
     );
     await uploadPhoto();
+    if (user?.candidate) {
+      user.candidate.photo = photo;
+    }
 
     loading = false;
 
@@ -269,7 +280,11 @@
         </FieldGroup>
 
         <FieldGroup>
-          <AvatarSelect bind:photo bind:uploadPhoto disabled={questionsLocked} />
+          <AvatarSelect
+            bind:photo
+            bind:uploadPhoto
+            disabled={questionsLocked}
+            photoChanged={() => (dirty = true)} />
         </FieldGroup>
 
         {#each infoQuestions as question}

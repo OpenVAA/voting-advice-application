@@ -380,13 +380,11 @@ async function createCandidates(length: number) {
     const lastName = faker.person.lastName();
     const party: HasId = faker.helpers.arrayElement(parties);
     const email = `${firstName}.${lastName}@example.com`;
-    const birthday = faker.date
-      .between({
-        from: '1950-01-01T00:00:00.000Z',
-        to: '2010-01-01T00:00:00.000Z'
-      })
-      .toISOString()
-      .split('T')[0];
+    const birthdayHelper = faker.date.between({
+      from: '1950-01-01T00:00:00.000Z',
+      to: '2010-01-01T00:00:00.000Z'
+    });
+    const birthday = birthdayHelper.toISOString().slice(0, 10);
     const manifesto = faker.lorem.paragraph(8);
     // TODO: Remove these attrs later
     const politicalExperience = faker.lorem.paragraph(3);

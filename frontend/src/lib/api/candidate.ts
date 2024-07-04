@@ -107,14 +107,7 @@ export const me = async (): Promise<User | undefined> => {
   return data;
 };
 
-export const updateBasicInfo = async (
-  manifesto?: LocalizedString,
-  birthday?: string,
-  genderID?: number,
-  photo?: Photo,
-  unaffiliated?: boolean,
-  motherTongues?: Language[]
-) => {
+export const updatePhoto = async (photo: Photo) => {
   const user = get(candidateContext.userStore);
   const candidate = user?.candidate;
 
@@ -126,12 +119,7 @@ export const updateBasicInfo = async (
     method: 'PUT',
     body: JSON.stringify({
       data: {
-        manifesto,
-        birthday,
-        gender: genderID,
-        unaffiliated,
-        photo: photo?.id,
-        motherTongues
+        photo: photo?.id
       }
     }),
     headers: {
@@ -395,13 +383,7 @@ export const getExistingInfoAnswers = async (): Promise<
       id: `${answer.id}`,
       value: answer.attributes.value as AnswerProps['value']
     };
-    // answers[answer.attributes.question.data.id] = {
-    //   id: `${answer.id}`,
-    //   value: answer.attributes.value,
-    //   openAnswer: answer.attributes.openAnswer
-    // };
   });
-  console.info('Answers fron candidate.ts', answers);
 
   return answers;
 };
