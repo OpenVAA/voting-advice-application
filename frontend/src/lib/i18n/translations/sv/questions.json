@@ -9,7 +9,7 @@
   "next": "Nästa fråga",
   "notFound": "Frågan hittades inte",
   "previous": "Föregående",
-  "questionsTitle": "Dina åsikter",
+  "title": "Dina åsikter",
   "readMore": "Läs mer om",
   "remove": "Radera svar",
   "skip": "Hoppa över",
@@ -17,5 +17,6 @@
   "skipToResults": "Hoppa till resultat",
   "start": "Börja svara på frågor",
   "youHaventAnswered": "Du har inte svarat på denna fråga",
-  "yourAnswer": "Du"
+  "yourAnswer": "Du",
+  "cannotEditWarning": "Det går inte längre att redigera dina svar, men du kan fortfarande se dem. Kontakta administratören om det finns några fel i uppgifterna."
 }

@@ -1,6 +1,7 @@
 {
   "answerNo": "Nej",
   "answerYes": "Ja",
+  "cancel": "Avbryt",
   "candidate": {
     "singular": "kandidat",
     "plural": "kandidater"

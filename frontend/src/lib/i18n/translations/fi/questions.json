@@ -17,5 +17,6 @@
   "skipToResults": "Hyppää tuloksiin",
   "start": "Vastaa {numQuestions} kysymykseen",
   "youHaventAnswered": "Et ole vastannut tähän kysymykseen",
-  "yourAnswer": "Sinä"
+  "yourAnswer": "Sinä",
+  "cannotEditWarning": "Vastaustesi muokkaaminen ei ole enää mahdollista, mutta voit silti tarkastella niitä. Ota yhteyttä ylläpitäjään, jos tiedoissasi on virheitä."
 }
