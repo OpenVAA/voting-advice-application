@@ -39,8 +39,8 @@
   },
   "logoutModal": {
     "title": "SV Some of Your Data Is Still Missing",
-    "body": "SV There {remainingInfoAmount, plural, =1 {is still one item} other {are still # items}} of basic info and {remainingOpinionNumber, plural, =1 {one opinion} other {# opinions}} to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
-    "bodyBasicInfoReady": "SV There {remainingOpinionNumber, plural, =1 {is still one opinion} other {are still # opinions}} to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
+    "itemsLeft": "SV There {basicInfoQuestionsLeft, plural, =1 {is still one item} other {are still # items}} of basic info and {opinionQuestionsLeft, plural, =1 {one opinion} other {# opinions}} to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
+    "questionsLeft": "SV There {opinionQuestionsLeft, plural, =1 {is still one opinion} other {are still # opinions}} to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
     "confirmation": "SV Are you sure you want to logout? You will be automatically logged out after {timeLeft} seconds.",
     "continueEnteringData": "SV Continue Entering Data"
   },
@@ -68,7 +68,10 @@
     "nominationsDescription": "SV These are the constituencies where you're nominated along with the election list and possible election symbol. If a nomination is marked 'Pending', your election symbol might not yet be defined.",
     "electionManifesto": "SV Election manifesto",
     "nominations": "SV Nominations",
-    "tapToAddPhoto": "SV Tap to add photo"
+    "tapToAddPhoto": "SV Tap to add photo",
+    "saveAndContinue": "SV Save and Continue",
+    "return": "SV Return",
+    "saveAndReturn": "SV Save and Return"
   },
   "settings": {
     "title": "SV Settings",
@@ -79,6 +82,7 @@
     },
     "emailDescription": "SV We use this email to connect to you and for password reset. It will not be shown on your public profile.",
     "languageDescription": "SV Use this application in this language. It will not be shown on your public profile.",
+    "changeLanguageError": "SV An error occurred while changing the application language.",
     "accountPassword": "SV Account Password",
     "currentPassword": "SV Current Password",
     "currentPasswordDescription": "SV Enter your existing account password that you want to change.",
@@ -125,7 +129,8 @@
     "wrongRegistrationCode": "SV Wrong registration code",
     "registerButton": "SV Register",
     "submitPlaceholder": "SV E.g. CP23-174a-f4%&-aHAB",
-    "title": "SV Registration"
+    "title": "SV Registration",
+    "loggedInWarning": "SV A user is currently logged in. Log out before proceeding."
   },
   "resetPassword": {
     "createNewPassword": "SV Set a new password",
@@ -137,28 +142,26 @@
     "emailSentText": "SV A reset password link has been sent to your email. Please check your inbox and click the link to set your new password.",
     "errorText": "SV Internal error. Try again later or contact the administrator."
   },
-  "opinions": {
-    "title": "SV Enter your opinions",
+  "questions": {
+    "title": "SV Your opinions",
+    "start": "SV Enter your opinions",
     "instructions": "SV Next, the app will ask your opinions on {numQuestions} statements about political issues and values. When voters use the Election Compass, they will also answer the same statements and see how well their opinions agree with the yours.",
     "tip": "SV You can see all your anwers on this page when you come back to it later.",
-    "continue": "SV Continue",
-    "commentOnThisIssue": "SV Comment on this issue",
-    "answerSaveError": "SV Saving answer failed",
-    "answerDeleteError": "SV Deleting answer failed"
-  },
-  "allQuestions": {
-    "title": "SV Your opinions",
     "warning": "SV You still have {numUnansweredQuestions} unanswered questions. Your data won't be shown in the Election Compass until you have answered all of them.",
     "info": "SV You can see all of your opinions below and edit them by tapping on them.",
     "answerButton": "SV Answer this question",
-    "commentOnThisIssue": "SV Comment on this issue"
-  },
-  "allDataFilled": {
-    "title": "SV You're Ready to Roll!",
-    "description": "SV You have filled all of the information needed for the Election Compass. You can still edit your answers and even log in later to do that.",
-    "tip": "SV If you want to see how the voters will see your profile, you can preview it.",
-    "previewYourProfile": "SV Preview Your Profile",
-    "editYourOpinions": "SV Edit Your Opinions"
+    "notAnswered": "SV You didn't answer this question.",
+    "commentOnThisIssue": "SV Comment on this issue",
+    "enterMissingAnswer": "SV Enter Missing Answers",
+    "editYourAnswer": "SV Edit Your Answer",
+    "viewYourAnswer": "SV View Your Answer",
+    "continue": "SV Continue",
+    "return": "SV Return",
+    "cancel": "SV Cancel",
+    "saveAndContinue": "SV Save and Continue",
+    "saveAndReturn": "SV Save and Return",
+    "answerSaveError": "SV Saving answer failed",
+    "editingAllowedNote": "SV Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data."
   },
   "passwordButton": {
     "hidePassword": "SV Hide pasprettier-plugin-sveltesword",
@@ -167,11 +170,65 @@
   "homePage": {
     "greeting": "SV Hello, {userName}!",
     "explanation": "SV In order to appear in the Election Compass, you have to enter some basic information about yourself as well as answer opinion statements concerning political issues.",
-    "buttonText": "SV Continue"
+    "buttonText": "SV Continue",
+    "basicInfoButton": "SV Enter your basic information",
+    "basicInfoButtonEdit": "SV Edit your basic information",
+    "basicInfoButtonView": "SV View your basic information",
+    "basicInfoButtonPrimaryActions": "SV Fill Basic Information",
+    "questionsButton": "SV Tell your opinions",
+    "questionsButtonEdit": "SV Edit your opinions",
+    "questionsButtonView": "SV View your opinions",
+    "previewButton": "SV Preview your profile",
+    "editingNotAllowedNote": "SV Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data.",
+    "editingNotAllowedPartiallyFilled": "SV Because you didn’t answer all of the questions, your profile won’t be shown.",
+    "ready": "SV You’re Ready to Roll!",
+    "description": "SV You have filled all of the information needed for the Election Compass. You can still edit your answers and even log in later to do that.",
+    "tip": "SV If you want to see how the voters will see your profile, you can preview it."
   },
   "preview": {
     "title": "SV Preview",
     "notFound": "SV Profile not found",
-    "tip": "SV This is a preview of how your profile will look to voters."
+    "tip": "SV This is a preview of how your profile will look to voters.",
+    "close": "SV Close preview"
+  },
+  "help": {
+    "title": "SV Help",
+    "description": "SV Here you can find answers to the most common questions with using this application.",
+    "continueFilling": "SV Continue Filling",
+    "questions": {
+      "question1": {
+        "question": "SV My name is wrong but I can't change it",
+        "answer": "SV Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question2": {
+        "question": "SV My profile is not visible in the Election Compass",
+        "answer": "SV Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question3": {
+        "question": "SV I don't want to tell my opinion on some issues",
+        "answer": "SV Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question4": {
+        "question": "SV My party is not listed",
+        "answer": "SV Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      },
+      "question5": {
+        "question": "SV I don't have a profile picture to upload",
+        "answer": "SV Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere."
+      }
+    }
+  },
+  "textarea": {
+    "hide": "SV Hide translations for this field",
+    "show": "SV Show translations for this field",
+    "info": "SV You can supply your own translations for the languages the application is available in. If you don’t write your own translations, your original response will be shown."
+  },
+  "error": {
+    "userNoCandidateError": "SV Error: The logged in user has no candidate info tied to it. Please contact the system administrator.",
+    "candidateNoNominationError": "SV Error: The candidate associated with the logged in user has no nomination. Please contact the system administrator.",
+    "nominationNoElectionError": "SV Error: The nominatinon associated with the candidate has no election. Please contact the system administrator."
+  },
+  "other": {
+    "unsavedChanges": "SV You have unsaved changes. Are you sure you want to leave this page?"
   }
 }
