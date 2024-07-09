@@ -178,9 +178,7 @@ test.describe("when logged in with imported user", () => {
   test.beforeEach(async ({ page, baseURL }) => {
     // Log the default user out
     await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
-    await page
-      .getByLabel(candidateAppTranslationsEn.common.logOut, { exact: true })
-      .click();
+    await page.getByLabel(candidateAppTranslationsEn.common.logOut, {exact: true}).click();
 
     // Log in with the imported user
     await page.getByPlaceholder(candidateAppTranslationsEn.common.emailPlaceholder, {exact: true}).fill(userEmail);
@@ -190,29 +188,15 @@ test.describe("when logged in with imported user", () => {
 
   test("should succesfully set basic info", async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppProfile}`);
-    await expect(page).toHaveURL(
-      `${baseURL}/${LOCALE}/${Route.CandAppProfile}`
-    );
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppProfile}`);
 
     // Upload a profile picture
     page.on("filechooser", async (fileChooser) => {
       await fileChooser.setFiles(path.join(__dirname, "test_image_black.png"));
     });
-    await page
-      .getByText(candidateAppTranslationsEn.basicInfo.tapToAddPhoto, {
-        exact: true,
-      })
-      .click();
-    await page
-      .getByLabel(candidateAppTranslationsEn.basicInfo.fields.gender, {
-        exact: true,
-      })
-      .selectOption(userGender);
-    await page
-      .getByLabel(candidateAppTranslationsEn.basicInfo.fields.birthday, {
-        exact: true,
-      })
-      .fill("1990-01-01");
+    await page.getByText(candidateAppTranslationsEn.basicInfo.tapToAddPhoto, {exact: true}).click();
+    await page.getByLabel(candidateAppTranslationsEn.basicInfo.fields.gender, {exact: true}).selectOption(userGender);
+    await page.getByLabel(candidateAppTranslationsEn.basicInfo.fields.birthday, {exact: true}).fill("1990-01-01");
 
     const motherTongueField = page.getByTestId("motherTongue");
     const saveButton = page.getByTestId("submitButton");
@@ -221,58 +205,35 @@ test.describe("when logged in with imported user", () => {
     await expect(saveButton).toBeDisabled();
 
     // Fill manifesto
-    await page
-      .getByLabel(candidateAppTranslationsEn.basicInfo.electionManifesto, {
-        exact: true,
-      })
-      .fill(userManifesto);
+    await page.getByLabel(candidateAppTranslationsEn.basicInfo.electionManifesto, {exact: true}).fill(userManifesto);
 
     // Button should still be disabled because no language is set
     await expect(saveButton).toBeDisabled();
 
-    await motherTongueField.selectOption(
-      candidateAppTranslationsEn.languages.Finnish
-    );
+    await motherTongueField.selectOption(candidateAppTranslationsEn.languages.Finnish);
 
     // Button should now be visible with a language selected
     await expect(saveButton).toBeEnabled();
 
     // Also test the other languages
-    await motherTongueField.selectOption(
-      candidateAppTranslationsEn.languages.Spanish
-    );
-    await motherTongueField.selectOption(
-      candidateAppTranslationsEn.languages.English
-    );
+    await motherTongueField.selectOption(candidateAppTranslationsEn.languages.Spanish);
+    await motherTongueField.selectOption(candidateAppTranslationsEn.languages.English);
 
     await expect(
-      page
-        .locator("form div")
-        .filter({ hasText: candidateAppTranslationsEn.languages.Finnish })
-        .nth(3)
+      page.locator("form div").filter({ hasText: candidateAppTranslationsEn.languages.Finnish }).nth(3),
     ).toBeVisible();
     await expect(
-      page
-        .locator("form div")
-        .filter({ hasText: candidateAppTranslationsEn.languages.English })
-        .nth(3)
+      page.locator("form div").filter({ hasText: candidateAppTranslationsEn.languages.English }).nth(3),
     ).toBeVisible();
     await expect(
-      page
-        .locator("form div")
-        .filter({ hasText: candidateAppTranslationsEn.languages.Spanish })
-        .nth(3)
+      page.locator("form div").filter({ hasText: candidateAppTranslationsEn.languages.Spanish }).nth(3),
     ).toBeVisible();
-    await page
-      .getByLabel(candidateAppTranslationsEn.languages.English, { exact: true })
-      .click();
+    await page.getByLabel(candidateAppTranslationsEn.languages.English, {exact: true}).click();
 
     // Now submit the form
     await expect(saveButton).toBeVisible();
     await saveButton.click();
-    await expect(page).toHaveURL(
-      `${baseURL}/${LOCALE}/${Route.CandAppQuestions}`
-    );
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
   });
 
   test("should succesfully answer opinion questions", async ({ page, baseURL }) => {
@@ -280,22 +241,11 @@ test.describe("when logged in with imported user", () => {
     await page.reload(); //Reload to make sure correct data is loaded to page
 
     // Expect correct texts on questions page
-    await expect(
-      page.getByText(candidateAppTranslationsEn.questions.start, {
-        exact: true,
-      })
-    ).toBeVisible();
-    await page
-      .getByRole("button", {
-        name: candidateAppTranslationsEn.questions.continue,
-        exact: true,
-      })
-      .click();
+    await expect(page.getByText(candidateAppTranslationsEn.questions.start, {exact: true})).toBeVisible();
+    await page.getByRole("button", { name: candidateAppTranslationsEn.questions.continue, exact: true }).click();
 
     // Expect Read More expander to exist
-    await expect(
-      page.getByText(questionsTranslations.readMore, { exact: true })
-    ).toBeVisible();
+    await expect(page.getByText(questionsTranslations.readMore, {exact: true})).toBeVisible();
 
     // Answer first question and give comments
     await page.getByLabel(fullyAgree).click();
@@ -309,121 +259,56 @@ test.describe("when logged in with imported user", () => {
     while (await page.getByText(fullyDisagree).isVisible()) {
       await page.getByLabel(fullyAgree).click();
       await page.waitForTimeout(500); //Wait so that UI has time to change (otherwise doesn't work all the time)
-      await page
-        .getByRole("button", {
-          name: candidateAppTranslationsEn.questions.saveAndContinue,
-          exact: true,
-        })
-        .click();
+      await page.getByRole("button", { name: candidateAppTranslationsEn.questions.saveAndContinue, exact: true }).click();
       await page.waitForTimeout(500); //Wait so that UI has time to change (otherwise doesn't work all the time)
     }
 
     // Expect to be at "You're Ready to Roll" page
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
-    await expect(
-      page.getByRole("heading", {
-        name: candidateAppTranslationsEn.homePage.ready,
-        exact: true,
-      })
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: candidateAppTranslationsEn.homePage.ready, exact: true })).toBeVisible();
 
     // Expect buttons to be visible and enabled
+    await expect( page.getByRole("button", { name: candidateAppTranslationsEn.homePage.basicInfoButtonEdit, exact: true }) ).toBeEnabled();
+    await expect(page.getByRole("button", { name: candidateAppTranslationsEn.homePage.questionsButtonEdit, exact: true })).toBeEnabled();
+    await expect(page.getByRole("button", { name: candidateAppTranslationsEn.homePage.previewButton, exact: true }).first()).toBeEnabled();
     await expect(
-      page.getByRole("button", {
-        name: candidateAppTranslationsEn.homePage.basicInfoButtonEdit,
-        exact: true,
-      })
-    ).toBeEnabled();
-    await expect(
-      page.getByRole("button", {
-        name: candidateAppTranslationsEn.homePage.questionsButtonEdit,
-        exact: true,
-      })
+      page
+        .getByLabel(ariaTranslations.primaryActionsLabel, {exact: true})
+        .getByRole("button", { name: candidateAppTranslationsEn.homePage.previewButton, exact: true }),
     ).toBeEnabled();
     await expect(
       page
-        .getByRole("button", {
-          name: candidateAppTranslationsEn.homePage.previewButton,
-          exact: true,
-        })
-        .first()
-    ).toBeEnabled();
-    await expect(
-      page
-        .getByLabel(ariaTranslations.primaryActionsLabel, { exact: true })
-        .getByRole("button", {
-          name: candidateAppTranslationsEn.homePage.previewButton,
-          exact: true,
-        })
-    ).toBeEnabled();
-    await expect(
-      page
-        .getByLabel(ariaTranslations.primaryActionsLabel, { exact: true })
-        .getByRole("button", {
-          name: candidateAppTranslationsEn.common.logOut,
-          exact: true,
-        })
+        .getByLabel(ariaTranslations.primaryActionsLabel, {exact: true})
+        .getByRole("button", { name: candidateAppTranslationsEn.common.logOut, exact: true }),
     ).toBeEnabled();
 
     // Check that buttons take to correct pages
-    await page
-      .getByRole("button", {
-        name: candidateAppTranslationsEn.homePage.basicInfoButtonEdit,
-        exact: true,
-      })
-      .click();
-    await expect(page).toHaveURL(
-      `${baseURL}/${LOCALE}/${Route.CandAppProfile}`
-    );
+    await page.getByRole("button", { name: candidateAppTranslationsEn.homePage.basicInfoButtonEdit, exact: true }).click();
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppProfile}`);
     const candidateUrl = `${baseURL}/${LOCALE}/${Route.CandAppHome}`;
     await page.goto(candidateUrl);
 
-    await page
-      .getByRole("button", {
-        name: candidateAppTranslationsEn.homePage.questionsButtonEdit,
-        exact: true,
-      })
-      .click();
-    await expect(page).toHaveURL(
-      `${baseURL}/${LOCALE}/${Route.CandAppQuestions}`
-    );
+    await page.getByRole("button", { name: candidateAppTranslationsEn.homePage.questionsButtonEdit, exact: true }).click();
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
+    await page.goto(candidateUrl);
+
+    await page.getByRole("button", { name: candidateAppTranslationsEn.homePage.previewButton, exact: true }).first().click();
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppPreview}`);
     await page.goto(candidateUrl);
 
     await page
-      .getByRole("button", {
-        name: candidateAppTranslationsEn.homePage.previewButton,
-        exact: true,
-      })
-      .first()
+      .getByLabel(ariaTranslations.primaryActionsLabel, {exact: true})
+      .getByRole("button", { name: candidateAppTranslationsEn.homePage.previewButton, exact: true })
       .click();
-    await expect(page).toHaveURL(
-      `${baseURL}/${LOCALE}/${Route.CandAppPreview}`
-    );
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppPreview}`);
     await page.goto(candidateUrl);
 
     await page
-      .getByLabel(ariaTranslations.primaryActionsLabel, { exact: true })
-      .getByRole("button", {
-        name: candidateAppTranslationsEn.homePage.previewButton,
-        exact: true,
-      })
-      .click();
-    await expect(page).toHaveURL(
-      `${baseURL}/${LOCALE}/${Route.CandAppPreview}`
-    );
-    await page.goto(candidateUrl);
-
-    await page
-      .getByLabel(ariaTranslations.primaryActionsLabel, { exact: true })
-      .getByRole("button", {
-        name: candidateAppTranslationsEn.common.logOut,
-        exact: true,
-      })
+      .getByLabel(ariaTranslations.primaryActionsLabel, {exact: true})
+      .getByRole("button", { name: candidateAppTranslationsEn.common.logOut, exact: true })
       .click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}\/${Route.CandAppHome}`);
-    await expect(
-      page.getByText(candidateAppTranslationsEn.common.logIn, { exact: true })
-    ).toBeVisible();
+    await expect(page.getByText(candidateAppTranslationsEn.common.logIn, {exact: true})).toBeVisible();
   });
 
   test("your opinions page should work correctly", async ({ page, baseURL }) => {
@@ -432,97 +317,51 @@ test.describe("when logged in with imported user", () => {
     await page.reload(); //Reload to make sure correct data is loaded to page
 
     // Expect correct heading and no warning
-    await expect(
-      page.getByRole("heading", {
-        name: candidateAppTranslationsEn.questions.title,
-        exact: true,
-      })
-    ).toBeVisible();
-    await expect(
-      page.getByText(
-        candidateAppTranslationsEn.questions.warning.replace(
-          "{numUnansweredQuestions}",
-          "0"
-        )
-      )
-    ).toBeHidden();
-    await expect(
-      page.getByRole("button", {
-        name: candidateAppTranslationsEn.questions.enterMissingAnswer,
-        exact: true,
-      })
-    ).toBeHidden();
+    await expect( page.getByRole("heading", { name: candidateAppTranslationsEn.questions.title, exact: true }),).toBeVisible();
+    await expect(page.getByText(candidateAppTranslationsEn.questions.warning.replace('{numUnansweredQuestions}', '0'))).toBeHidden();
+    await expect( page.getByRole("button", { name: candidateAppTranslationsEn.questions.enterMissingAnswer, exact: true })).toBeHidden();
 
     // Open first category
     await page.getByRole("checkbox").first().click();
 
     // Expect correct answer and comment text to be shown
-    await expect(
-      page.getByText(questionsTranslations.yourAnswer, { exact: true }).first()
-    ).toBeVisible();
+    await expect(page.getByText(questionsTranslations.yourAnswer, { exact: true }).first()).toBeVisible();
     await expect(page.getByText(fullyAgree).first()).toBeVisible();
     await expect(page.getByText(comment)).toBeVisible();
 
     // Go edit answer
     await page
-      .getByRole("button", {
-        name: candidateAppTranslationsEn.questions.editYourAnswer,
-        exact: true,
-      })
+      .getByRole("button", { name: candidateAppTranslationsEn.questions.editYourAnswer, exact: true })
       .first()
       .click();
 
     // Expect correct data for first question
-    await expect(
-      page.getByRole("heading", { name: mockQuestions[0].en, exact: true })
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: mockQuestions[0].en, exact: true })).toBeVisible();
     await expect(page.getByLabel(fullyAgree)).toBeChecked();
 
     // Check that button goes back to correct page
-    await page
-      .getByRole("button", {
-        name: candidateAppTranslationsEn.questions.saveAndReturn,
-        exact: true,
-      })
-      .click();
-    await expect(page).toHaveURL(
-      `${baseURL}/${LOCALE}/${Route.CandAppQuestions}`
-    );
+    await page.getByRole("button", { name: candidateAppTranslationsEn.questions.saveAndReturn, exact: true}).click();
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
 
     // Go back and test cancel button
     await page.getByRole("checkbox").first().click();
     await page
-      .getByRole("button", {
-        name: candidateAppTranslationsEn.questions.editYourAnswer,
-        exact: true,
-      })
+      .getByRole("button", { name: candidateAppTranslationsEn.questions.editYourAnswer, exact: true })
       .first()
       .click();
 
     // Change opinion and press cancel
     await page.waitForTimeout(500);
     await page.getByLabel(fullyDisagree).click();
-    await page
-      .getByRole("button", {
-        name: candidateAppTranslationsEn.questions.cancel,
-        exact: true,
-      })
-      .click();
+    await page.getByRole("button", { name: candidateAppTranslationsEn.questions.cancel, exact: true }).click();
 
     // Expect button to go to correct page and opinion to be unchanged
-    await expect(page).toHaveURL(
-      `${baseURL}/${LOCALE}/${Route.CandAppQuestions}`
-    );
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
     await page.getByRole("checkbox").first().click();
     await expect(page.getByText(fullyAgree).first()).toBeVisible();
 
     // Expect return button to go to correct page
-    await page
-      .getByRole("button", {
-        name: candidateAppTranslationsEn.questions.return,
-        exact: true,
-      })
-      .click();
+    await page.getByRole("button", { name: candidateAppTranslationsEn.questions.return, exact: true }).click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
   });
 
@@ -532,20 +371,14 @@ test.describe("when logged in with imported user", () => {
     await page.reload(); //Reload to make sure correct data is loaded to page
 
     // Expect correct title and button
-    await expect(
-      page.getByText(candidateAppTranslationsEn.preview.tip, { exact: true })
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", {
-        name: candidateAppTranslationsEn.preview.close,
-        exact: true,
-      })
-    ).toBeEnabled();
+    await expect(page.getByText(candidateAppTranslationsEn.preview.tip, {exact: true})).toBeVisible();
+    await expect(page.getByRole("button", { name: candidateAppTranslationsEn.preview.close, exact: true })).toBeEnabled();
 
     // Expect correct data for the candidate
     await expect(
-      page.getByRole("heading", { name: `${userFirstName} ${userLastName}` })
+      page.getByRole("heading", { name: `${userFirstName} ${userLastName}` }),
     ).toBeVisible();
+    // These are not checked because currently preview doesn't show basic info for imported candidates
 
     await expect(
       page.getByText(candidateAppTranslationsEn.languages.Finnish, {
@@ -557,6 +390,8 @@ test.describe("when logged in with imported user", () => {
         exact: true,
       })
     ).toBeVisible();
+
+
     await expect(
       page.getByText(candidateAppTranslationsEn.genders.male, {exact: true})
     ).toBeVisible();
@@ -567,12 +402,7 @@ test.describe("when logged in with imported user", () => {
     await expect(page.getByText(userBirthday, {exact: true})).toBeVisible();
 
     // Expect close button to take to start page
-    await page
-      .getByRole("button", {
-        name: candidateAppTranslationsEn.preview.close,
-        exact: true,
-      })
-      .click();
+    await page.getByRole("button", { name: candidateAppTranslationsEn.preview.close, exact: true }).click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
   });
 });
