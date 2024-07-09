@@ -8,6 +8,7 @@ import localSettings from '$lib/config/settings.json';
 import {derived, get} from 'svelte/store';
 import {DEFAULT_PAYLOAD_KEYS, staticTranslations, type TranslationsPayload} from './translations';
 import {matchLocale, purgeTranslations} from './utils';
+import type {TranslationKey} from '$types';
 
 // We don't want to use the implicit json file typing
 const settings = localSettings as AppSettings;
@@ -87,7 +88,7 @@ const i18n = new I18n(config);
  * @returns The translated and interpolated string or `key` if there was an error.
  */
 export const t = {
-  ...derived(i18n.t, ($t) => (key: string, payload?: TranslationsPayload) => {
+  ...derived(i18n.t, ($t) => (key: TranslationKey, payload?: TranslationsPayload) => {
     let parsed: string | undefined;
     try {
       parsed = $t(key, {...defaultPayload, ...payload});
