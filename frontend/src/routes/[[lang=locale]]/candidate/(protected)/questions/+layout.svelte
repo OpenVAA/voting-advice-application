@@ -6,13 +6,13 @@
   import {getRoute, Route} from '$lib/utils/navigation';
   import {LoadingSpinner} from '$candidate/components/loadingSpinner';
 
-  const {basicInfoFilledStore, likertQuestionsStore} = getContext<CandidateContext>('candidate');
+  const {basicInfoFilledStore, opinionQuestionsStore} = getContext<CandidateContext>('candidate');
 
   $: if (!$basicInfoFilledStore) {
     goto($getRoute(Route.CandAppProfile));
   }
 
-  $: questions = $likertQuestionsStore;
+  $: questions = $opinionQuestionsStore;
 </script>
 
 <svelte:head>

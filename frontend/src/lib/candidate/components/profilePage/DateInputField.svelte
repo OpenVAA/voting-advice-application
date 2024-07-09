@@ -3,7 +3,6 @@
   import InputContainer from './InputContainer.svelte';
 
   export let question: QuestionProps;
-  export let labelClass: string;
   export let inputClass: string;
   export let questionsLocked: boolean | undefined;
 
@@ -29,16 +28,14 @@ A component for rendering a Date question.
 ### Properties
 
 - `question`: The question object.
-- `labelClass`: A class that defines label styles.
 - `inputClass`: A class that defines input styles.
 - `questionsLocked`: A boolean value that indicates if the questions are locked.
 
 ### Usage
 
 ```tsx
-<RenderDate
+<DateInputField
   question={question}
-  labelClass="text-lg"
   inputClass="text-lg"
   questionsLocked={questionsLocked}
   bind:value={value} />
@@ -46,7 +43,9 @@ A component for rendering a Date question.
 -->
 
 <Field>
-  <label for="birthday" class={labelClass}>
+  <label
+    for="birthday"
+    class="label-sm label pointer-events-none mx-6 my-2 whitespace-nowrap text-secondary">
     {question.text}
   </label>
   <InputContainer locked={questionsLocked}>

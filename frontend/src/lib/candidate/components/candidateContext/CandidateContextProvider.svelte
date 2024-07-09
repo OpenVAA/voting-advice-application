@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type {CandidateAnswer} from '$lib/types/candidateAttributes';
   import {candidateContext} from '$lib/utils/candidateStore';
   import {onMount, setContext} from 'svelte';
   import {get} from 'svelte/store';
@@ -11,28 +12,49 @@
     $token && candidateContext.loadUserData();
   });
 
-  const updateInfoAnswerRelations = () => {
-    const infoAnswers = get(candidateContext.infoAnswerStore);
+  let infoAnswers: Record<string, CandidateAnswer> | undefined;
+  let infoQuestions: QuestionProps[] | undefined;
 
-    if (infoAnswers) {
-      const allFilled = Object.values(infoAnswers).every((value) => {
-        return value.value === false || !!value.value;
-      });
+  candidateContext.infoAnswerStore.subscribe((value) => {
+    infoAnswers = value;
+    updateInfoAnswerRelations();
+  });
+  candidateContext.infoQuestionsStore.subscribe((value) => {
+    infoQuestions = value;
+    updateInfoAnswerRelations();
+  });
 
-      candidateContext.basicInfoFilledStore.set(allFilled);
+  function updateInfoAnswerRelations() {
+    if (!infoQuestions || !infoAnswers) return;
 
-      const nofBasicQuestionsFilled = Object.values(infoAnswers).filter((value) => {
-        return value.value === false || !!value.value;
-      }).length;
-      candidateContext.nofUnansweredBasicInfoQuestionsStore.set(4 - nofBasicQuestionsFilled);
-    }
-  };
+    const requiredInfoQuestions = infoQuestions.filter((question) => question.required);
+    const requiredInfoQuestionsMap = requiredInfoQuestions.map((question) => {
+      if (infoAnswers?.[question.id]) {
+        const answer = infoAnswers[question.id].value;
+        if (question.type === 'boolean') {
+          return answer !== undefined;
+        } else if (question.type === 'singleChoiceCategorical') {
+          return answer !== '';
+        } else if (question.type === 'multipleChoiceCategorical') {
+          return answer.length > 0;
+        } else if (question.type === 'text') {
+          return Object.entries(answer).some((value) => value[1] !== '');
+        } else if (question.type === 'date') {
+          return answer !== '';
+        }
+      } else return false;
+    });
+    const allFilled = requiredInfoQuestionsMap.every((question) => question);
+    const nofBasicQuestionsFilled = requiredInfoQuestionsMap.filter((value) => value).length;
+    const infoQuestionsLeft = requiredInfoQuestions.length - nofBasicQuestionsFilled;
 
-  candidateContext.infoAnswerStore.subscribe(updateInfoAnswerRelations);
+    candidateContext.nofUnansweredBasicInfoQuestionsStore.set(infoQuestionsLeft);
+    candidateContext.basicInfoFilledStore.set(allFilled);
+  }
 
-  const updateNofUnansweredQuestions = () => {
+  const updateNofUnansweredOpinionQuestions = () => {
     const answers = get(candidateContext.opinionAnswerStore);
-    const questions = get(candidateContext.likertQuestionsStore);
+    const questions = get(candidateContext.opinionQuestionsStore);
     if (answers && questions) {
       candidateContext.nofUnansweredOpinionQuestionsStore.set(
         Object.entries(questions).length - Object.entries(answers).length
@@ -44,7 +66,7 @@
 
   const updateProgress = () => {
     const answers = get(candidateContext.opinionAnswerStore);
-    const questions = get(candidateContext.likertQuestionsStore);
+    const questions = get(candidateContext.opinionQuestionsStore);
 
     if (answers && questions) {
       const answeredQuestions = Object.entries(answers).length;
@@ -57,11 +79,11 @@
     }
   };
 
-  candidateContext.opinionAnswerStore.subscribe(updateNofUnansweredQuestions);
-  candidateContext.likertQuestionsStore.subscribe(updateNofUnansweredQuestions);
+  candidateContext.opinionAnswerStore.subscribe(updateNofUnansweredOpinionQuestions);
+  candidateContext.opinionQuestionsStore.subscribe(updateNofUnansweredOpinionQuestions);
 
   candidateContext.opinionAnswerStore.subscribe(updateProgress);
-  candidateContext.likertQuestionsStore.subscribe(updateProgress);
+  candidateContext.opinionQuestionsStore.subscribe(updateProgress);
 </script>
 
 <!--

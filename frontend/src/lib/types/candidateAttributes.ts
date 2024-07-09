@@ -102,7 +102,7 @@ export interface Answer {
   openAnswer: LocalizedString | null; // Optional free-form answer
 }
 
-export type candidateAnswer = AnswerProps & {
+export type CandidateAnswer = AnswerProps & {
   id: string;
 };
 

@@ -53,7 +53,7 @@ A component for rendering a text question.
 ### Usage
 
 ```tsx
-<RenderTextQuestions
+<TextInputField
   question={question}
   questionsLocked={questionsLocked}
   bind:text={text}

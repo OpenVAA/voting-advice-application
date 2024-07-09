@@ -5,7 +5,6 @@
   import InputContainer from './InputContainer.svelte';
 
   export let question: QuestionProps;
-  export let labelClass: string;
   export let selectClass: string;
   export let buttonContainerClass: string;
   export let iconClass: string;
@@ -53,7 +52,6 @@ A component for rendering a multiple choice question.
 ### Properties
 
 - `question`: The question object.
-- `labelClass`: A class that defines label styles.
 - `selectClass`: A class that defines select styles.
 - `buttonContainerClass`: A class that defines button container styles.
 - `iconClass`: A class that defines icon styles.
@@ -62,9 +60,8 @@ A component for rendering a multiple choice question.
 ### Usage
 
 ```tsx
-<RenderMultipleChoice
+<MultipleChoiceInputField
   question={question}
-  labelClass="text-lg"
   selectClass="text-lg"
   buttonContainerClass="text-lg"
   iconClass="text-lg"
@@ -74,7 +71,9 @@ A component for rendering a multiple choice question.
 -->
 
 <Field>
-  <label for={question.id} class={labelClass}>
+  <label
+    for={question.id}
+    class="label-sm label pointer-events-none mx-6 my-2 whitespace-nowrap text-secondary">
     {selectedOptions.length > 0
       ? $t('candidateApp.basicInfo.addAnother')
       : $t('candidateApp.basicInfo.selectFirst')}
@@ -97,7 +96,9 @@ A component for rendering a multiple choice question.
 </Field>
 {#each selectedOptions ?? [] as option}
   <Field>
-    <label for={option.label} class={labelClass}>
+    <label
+      for={option.label}
+      class="label-sm label pointer-events-none mx-6 my-2 whitespace-nowrap text-secondary">
       {option.label}
     </label>
     <div class={buttonContainerClass}>

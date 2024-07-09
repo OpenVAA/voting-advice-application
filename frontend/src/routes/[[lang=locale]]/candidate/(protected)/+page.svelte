@@ -13,35 +13,19 @@
   const {
     userStore,
     basicInfoFilledStore,
-    nofUnansweredBasicInfoQuestionsStore: nofUnansweredBasicInfoQuestions,
+    nofUnansweredBasicInfoQuestionsStore,
     opinionQuestionsFilledStore,
-    nofUnansweredOpinionQuestionsStore: nofUnansweredOpinionQuestions,
+    nofUnansweredOpinionQuestionsStore,
     questionsLockedStore
   } = getContext<CandidateContext>('candidate');
   const user = get(userStore);
   const username = user?.candidate?.firstName;
 
   $: questionsLocked = $questionsLockedStore;
-
-  let opinionQuestionsLeft: number | undefined;
-  nofUnansweredOpinionQuestions?.subscribe((value) => {
-    opinionQuestionsLeft = value;
-  });
-
-  let opinionQuestionsFilled: boolean | undefined;
-  opinionQuestionsFilledStore?.subscribe((value) => {
-    opinionQuestionsFilled = value;
-  });
-
-  let basicInfoQuestionsLeft: number | undefined;
-  nofUnansweredBasicInfoQuestions?.subscribe((value) => {
-    basicInfoQuestionsLeft = value;
-  });
-
-  let basicInfoFilled: boolean | undefined;
-  basicInfoFilledStore?.subscribe((value) => {
-    basicInfoFilled = value;
-  });
+  $: opinionQuestionsLeft = $nofUnansweredOpinionQuestionsStore;
+  $: opinionQuestionsFilled = $opinionQuestionsFilledStore;
+  $: basicInfoQuestionsLeft = $nofUnansweredBasicInfoQuestionsStore;
+  $: basicInfoFilled = $basicInfoFilledStore;
 
   const getNextAction = () => {
     if (basicInfoFilled && opinionQuestionsFilled) {

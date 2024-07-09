@@ -235,6 +235,7 @@ export interface StrapiQuestionData {
     fillingInfo: LocalizedString;
     filterable: boolean | null;
     order: number | null;
+    required: boolean | null;
     category: {
       data: StrapiQuestionCategoryData;
     };

@@ -12,14 +12,14 @@
   import {Button} from '$lib/components/button';
   import {goto} from '$app/navigation';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import type {candidateAnswer, User} from '$lib/types/candidateAttributes';
+  import type {CandidateAnswer, User} from '$lib/types/candidateAttributes';
   import {addAnswer, updateAnswer} from '$lib/api/candidate';
   import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
-  import RenderSingleChoice from '$lib/candidate/components/profilePage/RenderSingleChoice.svelte';
-  import RenderBoolean from '$lib/candidate/components/profilePage/RenderBoolean.svelte';
-  import RenderTextQuestions from '$lib/candidate/components/profilePage/RenderTextQuestions.svelte';
-  import RenderDate from '$lib/candidate/components/profilePage/RenderDate.svelte';
-  import RenderMultipeChoice from '$lib/candidate/components/profilePage/RenderMultipeChoice.svelte';
+  import SingleChoiceInputField from '$lib/candidate/components/profilePage/SingleChoiceInputField.svelte';
+  import BooleanInputField from '$lib/candidate/components/profilePage/BooleanInputField.svelte';
+  import TextInputField from '$lib/candidate/components/profilePage/TextInputField.svelte';
+  import DateInputField from '$lib/candidate/components/profilePage/DateInputField.svelte';
+  import MultipleChoiceInputField from '$lib/candidate/components/profilePage/MultipleChoiceInputField.svelte';
   import InputContainer from '$lib/candidate/components/profilePage/InputContainer.svelte';
 
   const labelClass =
@@ -77,7 +77,6 @@
   let dirty = false;
 
   // Check if the form is dirty
-  ///TODO: triggers because of date modification
   $: {
     const answersLoaded = Object.values(unsavedInfoAnswers).every(
       (infoAnswer) => infoAnswer.value !== undefined
@@ -87,17 +86,32 @@
       previousStateHash = previousStateHash ?? getCurrentHash();
       const currentStateHash = getCurrentHash();
       dirty = currentStateHash !== previousStateHash;
-      // console.log(JSON.stringify(unsavedInfoAnswers));
-      // console.log('dirty', dirty);
     }
   }
 
-  // console.log(infoQuestions);
-  // follow allFilledPrivate to check if all the questions are answered.
-  // TODO: we should be able to define which questions are mandatory
-  $: allFilledPrivate = Object.entries(unsavedInfoAnswers).every((value) => {
-    return value[1].value === false || !!value[1].value;
-  });
+  // follow allFilledPrivate to check if all the required questions are answered.
+  let allFilledPrivate = false;
+  $: {
+    if (infoQuestions.length > 0) {
+      const requiredQuestions = infoQuestions.filter((question) => question.required);
+      allFilledPrivate = requiredQuestions.every((question) => {
+        if (unsavedInfoAnswers[question.id].value !== undefined) {
+          const answer = unsavedInfoAnswers[question.id].value;
+          if (question.type === 'boolean') {
+            return answer !== undefined;
+          } else if (question.type === 'singleChoiceCategorical') {
+            return answer !== '';
+          } else if (question.type === 'multipleChoiceCategorical') {
+            return answer.length > 0;
+          } else if (question.type === 'text') {
+            return Object.entries(answer).some((value) => value[1] !== '');
+          } else if (question.type === 'date') {
+            return answer !== '';
+          }
+        } else return false;
+      });
+    }
+  }
 
   // basic information
   const basicInfoFields = ['firstName', 'lastName', 'party'];
@@ -153,12 +167,12 @@
 
     loading = false;
 
-    if (!opinionQuestionsFilled && !questionsLocked) await goto($getRoute(Route.CandAppQuestions));
+    if (opinionQuestionsFilled && !questionsLocked) await goto($getRoute(Route.CandAppQuestions));
     else await goto($getRoute(Route.CandAppHome));
   };
 
   const updateInfoAnswerStore = (
-    answerId: candidateAnswer['id'],
+    answerId: CandidateAnswer['id'],
     question: QuestionProps,
     value: AnswerProps['value']
   ) => {
@@ -177,9 +191,6 @@
     if (savedInfoAnswers && !savedInfoAnswers[question.id]) {
       // New answer
 
-      if (!unsavedInfoAnswers[question.id].value) {
-        return;
-      }
       const response = await addAnswer(question.id, unsavedInfoAnswers[question.id].value);
       if (!response?.ok) {
         showError($t('candidateApp.questions.answerSaveError'));
@@ -294,48 +305,44 @@
             </p>
 
             {#if question.type === 'singleChoiceCategorical'}
-              <RenderSingleChoice
+              <SingleChoiceInputField
                 {question}
                 {selectClass}
-                {labelClass}
                 {questionsLocked}
                 bind:value={unsavedInfoAnswers[question.id].value} />
             {:else if question.type === 'multipleChoiceCategorical'}
-              <RenderMultipeChoice
+              <MultipleChoiceInputField
                 {question}
-                {labelClass}
                 {questionsLocked}
                 {selectClass}
                 {buttonContainerClass}
                 {iconClass}
                 bind:selectedValues={unsavedInfoAnswers[question.id].value} />
             {:else if question.type === 'boolean'}
-              <RenderBoolean
+              <BooleanInputField
                 {question}
-                {labelClass}
                 {disclaimerClass}
                 {inputClass}
                 {questionsLocked}
                 bind:checked={unsavedInfoAnswers[question.id].value} />
             {:else if question.type === 'text'}
               {#if savedInfoAnswers[question.id]}
-                <RenderTextQuestions
+                <TextInputField
                   {question}
                   {questionsLocked}
                   bind:clearLocalStorage
                   bind:text={unsavedInfoAnswers[question.id].value}
                   bind:previousText={savedInfoAnswers[question.id].value} />
               {:else}
-                <RenderTextQuestions
+                <TextInputField
                   {question}
                   {questionsLocked}
                   bind:clearLocalStorage
                   bind:text={unsavedInfoAnswers[question.id].value} />
               {/if}
             {:else if question.type === 'date'}
-              <RenderDate
+              <DateInputField
                 {question}
-                {labelClass}
                 {questionsLocked}
                 {inputClass}
                 bind:value={unsavedInfoAnswers[question.id].value} />

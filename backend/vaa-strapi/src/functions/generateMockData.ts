@@ -370,26 +370,12 @@ async function createParties(length: number) {
 }
 
 async function createCandidates(length: number) {
-  // TODO: Remove languages later
-  const languages = await strapi.db.query(API.Language).findMany({});
-
   const parties = await strapi.db.query(API.Party).findMany({});
-
   for (let i = 0; i <= length; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const party: HasId = faker.helpers.arrayElement(parties);
     const email = `${firstName}.${lastName}@example.com`;
-    const birthdayHelper = faker.date.between({
-      from: '1950-01-01T00:00:00.000Z',
-      to: '2010-01-01T00:00:00.000Z'
-    });
-    const birthday = birthdayHelper.toISOString().slice(0, 10);
-    const manifesto = faker.lorem.paragraph(8);
-    // TODO: Remove these attrs later
-    const politicalExperience = faker.lorem.paragraph(3);
-    const motherTongue: any = faker.helpers.arrayElement(languages);
-    const otherLanguage: any = faker.helpers.arrayElement(languages);
     await strapi.db.query(API.Candidate).create({
       data: {
         firstName,
@@ -397,12 +383,7 @@ async function createCandidates(length: number) {
         email,
         party: party.id,
         publishedAt: new Date(),
-        birthday,
-        politicalExperience,
-        unaffiliated: false,
-        motherTongues: [motherTongue.id],
-        otherLanguages: [otherLanguage.id],
-        manifesto: fakeLocalized((_, l) => fakeTranslate(l, manifesto))
+        unaffiliated: false
       }
     });
 
@@ -884,12 +865,15 @@ async function createAnswers(entityType: Omit<EntityType, 'all'>) {
         case 'date':
           if (settings.min) {
             if (settings.max) {
-              value = faker.date.between({from: settings.min, to: settings.max});
+              value = faker.date
+                .between({from: settings.min, to: settings.max})
+                .toISOString()
+                .split('T')[0];
             } else {
-              value = faker.date.future({refDate: settings.min});
+              value = faker.date.future({refDate: settings.min}).toISOString().split('T')[0];
             }
           } else {
-            value = faker.date.past({refDate: settings.max});
+            value = faker.date.past({refDate: settings.max}).toISOString().split('T')[0];
           }
           break;
         case 'singleChoiceCategorical':

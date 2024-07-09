@@ -5,7 +5,6 @@
   import InputContainer from './InputContainer.svelte';
 
   export let question: QuestionProps;
-  export let labelClass: string;
   export let disclaimerClass: string;
   export let inputClass: string;
   export let questionsLocked: boolean | undefined = false;
@@ -32,7 +31,6 @@ A component for rendering a boolean question.
 ### Properties
 
 - `question`: The question object.
-- `labelClass`: A class that defines label styles.
 - `disclaimerClass`: A class that defines disclaimer styles.
 - `inputClass`: A class that defines input styles.
 - `questionsLocked`: A boolean value that indicates if the questions are locked.
@@ -40,9 +38,8 @@ A component for rendering a boolean question.
 ### Usage
 
 ```tsx
-<RenderBoolean
+<BooleanInputField
   question={question}
-  labelClass="text-lg"
   disclaimerClass="text-sm"
   inputClass="text-lg"
   questionsLocked={questionsLocked}
@@ -52,7 +49,9 @@ A component for rendering a boolean question.
 
 <FieldGroup>
   <Field>
-    <label for="unaffiliated" class={labelClass}>
+    <label
+      for="unaffiliated"
+      class="label-sm label pointer-events-none mx-6 my-2 whitespace-nowrap text-secondary">
       {question.text}
     </label>
     <InputContainer locked={questionsLocked}>

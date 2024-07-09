@@ -7,7 +7,7 @@ import type {
   Language,
   User,
   Photo,
-  candidateAnswer
+  CandidateAnswer
 } from '$lib/types/candidateAttributes';
 import type {
   StrapiAnswerData,
@@ -16,6 +16,9 @@ import type {
   StrapiQuestionData
 } from './dataProvider/strapi';
 import {parseQuestionCategory} from './dataProvider/strapi/utils';
+import {dataProvider} from '$lib/api/dataProvider/strapi/strapiDataProvider';
+import {locale} from '$lib/i18n';
+import type {GetQuestionsOptionsBase} from './dataProvider';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
@@ -169,60 +172,22 @@ export const changePassword = (currentPassword: string, password: string) => {
   });
 };
 
-// /**
-//  * Get all questions that have a likert scale.
-//  */
-// export const getQuestions = async (): Promise<QuestionProps[]> => {
-//   const res = await request(
-//     getUrl('api/questions', {
-//       'populate[questionType]': 'true',
-//       'populate[category]': 'true'
-//     })
-//   );
+/**
+ * Get all questions that are info questions.
+ */
+export const getInfoQuestions = async (): Promise<QuestionProps[]> => {
+  const currentLocale: GetQuestionsOptionsBase = {locale: get(locale)};
 
-//   if (!res?.ok) throw Error(res?.statusText);
+  const questionsPromise = dataProvider.getInfoQuestions(currentLocale);
+  const questions = await questionsPromise;
 
-//   const questionData: StrapiResponse<StrapiQuestionData[]> = await res.json();
-
-//   const questions: QuestionProps[] = questionData.data.map((question) => {
-//     const attr = question.attributes;
-//     const settings = attr.questionType?.data.attributes.settings;
-//     const props: QuestionProps = {
-//       id: `${question.id}`,
-//       text: attr.text,
-//       info: attr.info,
-//       shortName: attr.shortName,
-//       category: parseQuestionCategory(attr.category.data),
-//       type: settings.type
-//     };
-//   });
-
-//   questionData.data.forEach((question) => {
-//     const attr = question.attributes;
-//     const settings = attr.questionType?.data.attributes.settings;
-//     const props: Question = {
-//       id: `${question.id}`,
-//       text: attr.text,
-//       info: attr.info,
-//       shortName: attr.shortName,
-//       category: parseQuestionCategory(attr.category.data),
-//       type: settings.type
-//     };
-//     if ('values' in settings)
-//       props.values = settings.values.map(({key, label}) => ({
-//         key,
-//         label
-//       }));
-
-//     questions[question.id] = props;
-//   });
-//   return questions;
-// };
+  return questions;
+};
 
 /**
  * Get questions that have a likert scale.
  */
-export const getLikertQuestions = async (): Promise<Record<string, Question> | undefined> => {
+export const getOpinionQuestions = async (): Promise<Record<string, Question> | undefined> => {
   const res = await request(
     getUrl('api/questions', {
       'populate[questionType]': 'true',
@@ -356,7 +321,7 @@ export const getExistingOpinionAnswers = async (): Promise<Record<string, Answer
  * Get all the answers for the logged in user.
  */
 export const getExistingInfoAnswers = async (): Promise<
-  Record<string, candidateAnswer> | undefined
+  Record<string, CandidateAnswer> | undefined
 > => {
   const user = get(candidateContext.userStore)?.candidate;
   const candidateId = user?.id;
@@ -376,7 +341,7 @@ export const getExistingInfoAnswers = async (): Promise<
   const answerData: StrapiResponse<StrapiAnswerData[]> = await res.json();
 
   // Parse the data into a more usable format where the question ID is the key
-  const answers: Record<string, candidateAnswer> = {};
+  const answers: Record<string, CandidateAnswer> = {};
 
   answerData.data.forEach((answer) => {
     answers[answer.attributes.question.data.id] = {

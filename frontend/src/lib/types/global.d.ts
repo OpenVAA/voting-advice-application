@@ -295,6 +295,7 @@ declare global {
     text: string;
     shortName: string;
     order?: number;
+    required?: boolean;
     category: QuestionCategoryProps;
     entityType: EntityType;
     info?: string;

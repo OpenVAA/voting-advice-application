@@ -1,15 +1,14 @@
-import {authenticate, getExistingInfoAnswers, me} from '$lib/api/candidate';
+import {authenticate, getExistingInfoAnswers, getInfoQuestions, me} from '$lib/api/candidate';
 import type {
   Question,
   Answer,
   User,
   Progress,
-  candidateAnswer
+  CandidateAnswer
 } from '$lib/types/candidateAttributes';
 import {writable, type Writable} from 'svelte/store';
 import {getExistingOpinionAnswers} from '$lib/api/candidate';
-import {getLikertQuestions} from '$lib/api/candidate';
-import {dataProvider} from '$lib/api/getData';
+import {getOpinionQuestions} from '$lib/api/candidate';
 
 export interface CandidateContext {
   // Authentication
@@ -23,13 +22,13 @@ export interface CandidateContext {
   // Answers
   opinionAnswerStore: Writable<Record<string, Answer> | undefined>;
   loadOpinionAnswerData: () => Promise<void>;
-  infoAnswerStore: Writable<Record<string, candidateAnswer> | undefined>;
+  infoAnswerStore: Writable<Record<string, CandidateAnswer> | undefined>;
   loadInfoAnswerData: () => Promise<void>;
   // Questions
-  likertQuestionsStore: Writable<Record<string, Question> | undefined>;
-  loadLikertQuestionData: () => Promise<void>;
-  allQuestionsStore: Writable<QuestionProps[]> | undefined;
-  loadAllQuestionData: () => Promise<void>;
+  opinionQuestionsStore: Writable<Record<string, Question> | undefined>;
+  loadOpinionQuestionData: () => Promise<void>;
+  infoQuestionsStore: Writable<QuestionProps[] | undefined>;
+  loadInfoQuestionData: () => Promise<void>;
   // Custom util
   basicInfoFilledStore: Writable<boolean | undefined>;
   nofUnansweredBasicInfoQuestionsStore: Writable<number | undefined>;
@@ -43,9 +42,9 @@ const userStore = writable<User | null>(null);
 const tokenStore = writable<string | null | undefined>(undefined);
 const emailOfNewUserStore = writable<string | undefined>(undefined);
 const opinionAnswerStore = writable<Record<string, Answer> | undefined>(undefined);
-const infoAnswerStore = writable<Record<string, candidateAnswer> | undefined>(undefined);
-const likertQuestionsStore = writable<Record<string, Question> | undefined>(undefined);
-const allQuestionsStore = writable<QuestionProps[]>(undefined);
+const infoAnswerStore = writable<Record<string, CandidateAnswer> | undefined>(undefined);
+const opinionQuestionsStore = writable<Record<string, Question> | undefined>(undefined);
+const infoQuestionsStore = writable<QuestionProps[] | undefined>(undefined);
 const basicInfoFilledStore = writable<boolean | undefined>(undefined);
 const nofUnansweredBasicInfoQuestionsStore = writable<number | undefined>(undefined);
 const opinionQuestionsFilledStore = writable<boolean | undefined>(undefined);
@@ -105,21 +104,20 @@ const loadInfoAnswerData = async () => {
   infoAnswerStore.set(answers);
 };
 
-const loadLikertQuestionData = async () => {
-  const questions = await getLikertQuestions();
+const loadOpinionQuestionData = async () => {
+  const questions = await getOpinionQuestions();
 
   if (!questions) return;
 
-  likertQuestionsStore.set(questions);
+  opinionQuestionsStore.set(questions);
 };
 
-const loadAllQuestionData = async () => {
-  const provider = await dataProvider;
-  const questions = await provider.getQuestions({locale: 'en'});
+const loadInfoQuestionData = async () => {
+  const questions = await getInfoQuestions();
 
   if (!questions) return;
 
-  allQuestionsStore.set(questions);
+  infoQuestionsStore.set(questions);
 };
 
 export const candidateContext: CandidateContext = {
@@ -133,10 +131,10 @@ export const candidateContext: CandidateContext = {
   loadOpinionAnswerData,
   infoAnswerStore,
   loadInfoAnswerData,
-  likertQuestionsStore,
-  loadLikertQuestionData,
-  allQuestionsStore,
-  loadAllQuestionData,
+  opinionQuestionsStore,
+  loadOpinionQuestionData,
+  infoQuestionsStore,
+  loadInfoQuestionData,
   loadLocalStorage,
   basicInfoFilledStore,
   nofUnansweredOpinionQuestionsStore,
