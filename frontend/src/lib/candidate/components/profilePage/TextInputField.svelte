@@ -67,6 +67,7 @@ A component for rendering a text question.
   id={question.text}
   {localStorageId}
   {previouslySavedMultilang}
+  headerText={question.text}
   placeholder="—"
   bind:multilangText={text}
   bind:this={textArea} />

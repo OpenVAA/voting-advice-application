@@ -161,7 +161,7 @@
 
     loading = false;
 
-    if (opinionQuestionsFilled && !questionsLocked) await goto($getRoute(Route.CandAppQuestions));
+    if (!opinionQuestionsFilled && !questionsLocked) await goto($getRoute(Route.CandAppQuestions));
     else await goto($getRoute(Route.CandAppHome));
   };
 
@@ -290,49 +290,43 @@
         </FieldGroup>
 
         {#each infoQuestions as question}
-          <FieldGroup>
-            <p class={headerClass} slot="header">
-              {question.text}
-            </p>
-
-            {#if question.type === 'singleChoiceCategorical'}
-              <SingleChoiceInputField
+          {#if question.type === 'singleChoiceCategorical'}
+            <SingleChoiceInputField
+              {question}
+              {questionsLocked}
+              bind:value={unsavedInfoAnswers[question.id].value} />
+          {:else if question.type === 'multipleChoiceCategorical'}
+            <MultipleChoiceInputField
+              {question}
+              {questionsLocked}
+              bind:selectedValues={unsavedInfoAnswers[question.id].value} />
+          {:else if question.type === 'boolean'}
+            <BooleanInputField
+              {question}
+              {questionsLocked}
+              disclaimer={$t('candidateApp.basicInfo.unaffiliatedDescription')}
+              bind:checked={unsavedInfoAnswers[question.id].value} />
+          {:else if question.type === 'text'}
+            {#if savedInfoAnswers[question.id]}
+              <TextInputField
                 {question}
                 {questionsLocked}
-                bind:value={unsavedInfoAnswers[question.id].value} />
-            {:else if question.type === 'multipleChoiceCategorical'}
-              <MultipleChoiceInputField
+                bind:clearLocalStorage
+                bind:text={unsavedInfoAnswers[question.id].value}
+                bind:previousText={savedInfoAnswers[question.id].value} />
+            {:else}
+              <TextInputField
                 {question}
                 {questionsLocked}
-                bind:selectedValues={unsavedInfoAnswers[question.id].value} />
-            {:else if question.type === 'boolean'}
-              <BooleanInputField
-                {question}
-                {questionsLocked}
-                disclaimer={$t('candidateApp.basicInfo.unaffiliatedDescription')}
-                bind:checked={unsavedInfoAnswers[question.id].value} />
-            {:else if question.type === 'text'}
-              {#if savedInfoAnswers[question.id]}
-                <TextInputField
-                  {question}
-                  {questionsLocked}
-                  bind:clearLocalStorage
-                  bind:text={unsavedInfoAnswers[question.id].value}
-                  bind:previousText={savedInfoAnswers[question.id].value} />
-              {:else}
-                <TextInputField
-                  {question}
-                  {questionsLocked}
-                  bind:clearLocalStorage
-                  bind:text={unsavedInfoAnswers[question.id].value} />
-              {/if}
-            {:else if question.type === 'date'}
-              <DateInputField
-                {question}
-                {questionsLocked}
-                bind:value={unsavedInfoAnswers[question.id].value} />
+                bind:clearLocalStorage
+                bind:text={unsavedInfoAnswers[question.id].value} />
             {/if}
-          </FieldGroup>
+          {:else if question.type === 'date'}
+            <DateInputField
+              {question}
+              {questionsLocked}
+              bind:value={unsavedInfoAnswers[question.id].value} />
+          {/if}
         {/each}
 
         <Button

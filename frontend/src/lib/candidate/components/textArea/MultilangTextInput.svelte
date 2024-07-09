@@ -91,7 +91,7 @@ Input field variant
 
 <div class=" w-full">
   {#if headerText && !compact}
-    <label for={id} class="small-label mx-10 my-6 p-0">{headerText}</label>
+    <label for={id} class="small-label mx-6 my-6 p-0">{headerText}</label>
   {:else}
     <slot name="header" />
   {/if}
@@ -122,7 +122,7 @@ Input field variant
 
       {#if translationsShown}
         {#each $locales.filter((locale) => locale !== $currentLocale) as locale}
-          <Field>
+          <Field id={translationsShown ? id + '-' + $currentLocale : id}>
             {#if compact}
               <InputField
                 id={id + '-' + locale}

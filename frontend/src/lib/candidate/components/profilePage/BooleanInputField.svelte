@@ -30,7 +30,6 @@ A component for rendering a boolean question.
 
 - `question`: The question object.
 - `disclaimer`: The disclaimer text.
-- `inputClass`: A class that defines input styles.
 - `questionsLocked`: A boolean value that indicates if the questions are locked.
 
 ### Usage
@@ -45,6 +44,9 @@ A component for rendering a boolean question.
 -->
 
 <FieldGroup>
+  <p slot="header" class="small-label mx-6 my-0 p-0 uppercase">
+    {question.text}
+  </p>
   <Field id={question.id} label={question.text}>
     <InputContainer locked={questionsLocked}>
       {#if !questionsLocked}

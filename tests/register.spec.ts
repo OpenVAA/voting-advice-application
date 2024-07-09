@@ -20,7 +20,7 @@ const userLastName = faker.person.lastName();
 const userEmail = `${userFirstName}.${userLastName}@example.com`.toLowerCase();
 const userPassword = "Password1!";
 const userGender = "Male";
-const userBirthday = "Birthday Mon Jan 01 1990"
+const userBirthday = "January 1"
 const userManifesto =
   "Lorem ipsum dolor sit amet, consectetur adipisci elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 const comment = "Lorem ipsum";
@@ -198,7 +198,8 @@ test.describe("when logged in with imported user", () => {
     await page.getByLabel(candidateAppTranslationsEn.basicInfo.fields.gender, {exact: true}).selectOption(userGender);
     await page.getByLabel(candidateAppTranslationsEn.basicInfo.fields.birthday, {exact: true}).fill("1990-01-01");
 
-    const motherTongueField = page.getByTestId("motherTongue");
+    const motherTongueField = page.getByTestId("15");
+    const otherTonugesField = page.getByTestId("16");
     const saveButton = page.getByTestId("submitButton");
 
     // Button should not be clickable with 0 languages picked and manifesto not set
@@ -216,8 +217,8 @@ test.describe("when logged in with imported user", () => {
     await expect(saveButton).toBeEnabled();
 
     // Also test the other languages
-    await motherTongueField.selectOption(candidateAppTranslationsEn.languages.Spanish);
-    await motherTongueField.selectOption(candidateAppTranslationsEn.languages.English);
+    await otherTonugesField.selectOption(candidateAppTranslationsEn.languages.Spanish);
+    await otherTonugesField.selectOption(candidateAppTranslationsEn.languages.English);
 
     await expect(
       page.locator("form div").filter({ hasText: candidateAppTranslationsEn.languages.Finnish }).nth(3),
