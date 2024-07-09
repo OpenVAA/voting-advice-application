@@ -15,9 +15,9 @@
     "test": "vitest run tests",
     "test:watch": "vitest tests",
     "coverage": "vitest run tests --coverage",
-    "prettier": "prettier --write .",
     "prettier:check": "prettier --check .",
-    "algorithm-example": "ts-node-esm --experimentalSpecifierResolution node src/matching/examples/example.ts"
+    "algorithm-example": "ts-node-esm --experimentalSpecifierResolution node src/matching/examples/example.ts",
+    "generateTranslationKeyType": "node --no-warnings=ExperimentalWarning --loader ts-node/esm tools/translationKey/generateTranslationKeyType.ts && prettier --write src/lib/types/generated/translationKey.ts"
   },
   "lint-staged": {
     "**/*.{svelte,css,html,js,json,md,ts,xml,yaml,yml}": [
