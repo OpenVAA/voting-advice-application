@@ -3,7 +3,6 @@
   import InputContainer from './InputContainer.svelte';
 
   export let question: QuestionProps;
-  export let selectClass: string;
   export let questionsLocked: boolean | undefined;
   export let value: AnswePropsValue;
 </script>
@@ -19,7 +18,6 @@ A component for rendering a single choice question.
 ### Properties
 
 - `question`: The question object.
-- `selectClass`: A class that defines select styles.
 - `questionsLocked`: A boolean value that indicates if the questions are locked.
 
 ### Usage
@@ -27,23 +25,17 @@ A component for rendering a single choice question.
 ```tsx
 <SingleChoiceInputField
   question={question}
-  selectClass="text-lg"
   questionsLocked={questionsLocked}
   bind:value={value} />
 ```
 -->
 
-<Field>
-  <label
-    for={question.id}
-    class="label-sm label pointer-events-none mx-6 my-2 whitespace-nowrap text-secondary">
-    {question.text}
-  </label>
+<Field id={question.id} label={question.text}>
   <InputContainer locked={questionsLocked}>
     <select
       disabled={questionsLocked}
       id={question.id}
-      class={selectClass}
+      class="select select-sm w-full text-right text-primary disabled:border-none disabled:bg-base-100"
       bind:value
       style="text-align-last: right; direction: rtl;">
       <option disabled selected value style="display: none;" />

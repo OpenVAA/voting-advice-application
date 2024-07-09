@@ -1,12 +1,10 @@
 <script lang="ts">
   import Field from '$lib/components/common/form/Field.svelte';
   import FieldGroup from '$lib/components/common/form/FieldGroup.svelte';
-  import {t} from '$lib/i18n';
   import InputContainer from './InputContainer.svelte';
 
   export let question: QuestionProps;
-  export let disclaimerClass: string;
-  export let inputClass: string;
+  export let disclaimer: string | undefined = '';
   export let questionsLocked: boolean | undefined = false;
   export let checked: AnswePropsValue = false;
 
@@ -31,7 +29,7 @@ A component for rendering a boolean question.
 ### Properties
 
 - `question`: The question object.
-- `disclaimerClass`: A class that defines disclaimer styles.
+- `disclaimer`: The disclaimer text.
 - `inputClass`: A class that defines input styles.
 - `questionsLocked`: A boolean value that indicates if the questions are locked.
 
@@ -40,33 +38,31 @@ A component for rendering a boolean question.
 ```tsx
 <BooleanInputField
   question={question}
-  disclaimerClass="text-sm"
-  inputClass="text-lg"
+  disclaimer="This is a disclaimer"
   questionsLocked={questionsLocked}
   bind:checked={checked} />
 ```
 -->
 
 <FieldGroup>
-  <Field>
-    <label
-      for="unaffiliated"
-      class="label-sm label pointer-events-none mx-6 my-2 whitespace-nowrap text-secondary">
-      {question.text}
-    </label>
+  <Field id={question.id} label={question.text}>
     <InputContainer locked={questionsLocked}>
       {#if !questionsLocked}
         <input
-          id="unaffiliated"
+          id={question.id}
           type="checkbox"
           class="toggle toggle-primary mr-8"
           bind:checked={isChecked} />
       {:else}
-        <input id="unaffiliated" disabled value="yes" class={inputClass} />
+        <input
+          id={question.id}
+          disabled
+          value="yes"
+          class="input input-sm input-ghost flex w-full justify-end pr-2 text-right disabled:border-none disabled:bg-base-100" />
       {/if}
     </InputContainer>
   </Field>
-  <p class={disclaimerClass} slot="footer">
-    {$t('candidateApp.basicInfo.unaffiliatedDescription')}
+  <p class="mx-6 my-0 p-0 text-sm text-secondary" slot="footer">
+    {disclaimer}
   </p>
 </FieldGroup>

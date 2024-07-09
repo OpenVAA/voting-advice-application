@@ -11,13 +11,7 @@ export interface Candidate {
   id: number;
   firstName: string;
   lastName: string;
-  gender: Gender;
-  birthday: string;
   photo?: Photo;
-  manifesto: LocalizedString;
-  motherTongues: Language[];
-  unaffiliated: boolean;
-  politicalExperience: string;
   email: string;
   nomination: Nomination;
   locale: string;
@@ -28,11 +22,6 @@ export interface Candidate {
 export interface Language {
   id: number;
   localisationCode: string;
-  name: string;
-}
-
-export interface Gender {
-  id: number;
   name: string;
 }
 

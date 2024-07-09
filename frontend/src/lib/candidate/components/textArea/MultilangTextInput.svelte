@@ -99,7 +99,7 @@ Input field variant
   <FieldGroup>
     {#if multilangText}
       <!-- Current locale text area is always shown -->
-      <Field>
+      <Field id={translationsShown ? id + '-' + $currentLocale : id}>
         {#if compact}
           <InputField
             bind:text={multilangText[$currentLocale]}

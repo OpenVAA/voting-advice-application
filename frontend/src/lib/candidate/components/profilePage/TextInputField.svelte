@@ -18,7 +18,7 @@
     }
   };
 
-  export let previousText: AnswePropsValue = ''; // Used to detect changes in the manifesto
+  export let previousText: AnswePropsValue = ''; // Used to detect changes in the text value
   let previouslySavedMultilang: LocalizedString = {};
 
   if (

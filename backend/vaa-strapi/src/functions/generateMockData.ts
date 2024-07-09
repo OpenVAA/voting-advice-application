@@ -786,27 +786,33 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
   const infoQuestions = [
     {
       text: 'Mother tongue',
-      type: 'Language'
+      type: 'Language',
+      order: 2
     },
     {
       text: 'Other languages',
-      type: 'MultiLanguage'
+      type: 'MultiLanguage',
+      order: 3
     },
     {
       text: 'Gender',
-      type: 'Gender'
+      type: 'Gender',
+      order: 1
     },
     {
       text: 'Unaffiliated',
-      type: 'Boolean'
+      type: 'Boolean',
+      order: 4
     },
     {
       text: 'Election manifesto',
-      type: 'Text'
+      type: 'Text',
+      order: 5
     },
     {
       text: 'Birthday',
-      type: 'Date'
+      type: 'Date',
+      order: 0
     }
   ];
   for (const question of infoQuestions) {
@@ -820,6 +826,7 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
         allowOpen: false,
         questionType: typeId,
         category: infoCategoryId,
+        order: question.order,
         entityType: 'candidate',
         publishedAt: new Date()
       }

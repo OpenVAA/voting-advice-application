@@ -3,7 +3,6 @@
   import InputContainer from './InputContainer.svelte';
 
   export let question: QuestionProps;
-  export let inputClass: string;
   export let questionsLocked: boolean | undefined;
 
   const dateMin = '1800-01-01';
@@ -36,27 +35,22 @@ A component for rendering a Date question.
 ```tsx
 <DateInputField
   question={question}
-  inputClass="text-lg"
   questionsLocked={questionsLocked}
   bind:value={value} />
 ```
 -->
 
-<Field>
-  <label
-    for="birthday"
-    class="label-sm label pointer-events-none mx-6 my-2 whitespace-nowrap text-secondary">
-    {question.text}
-  </label>
+<Field id={question.id} label={question.text}>
   <InputContainer locked={questionsLocked}>
-    <div class={inputClass}>
+    <div
+      class="input input-sm input-ghost flex w-full justify-end pr-2 text-right disabled:border-none disabled:bg-base-100">
       <input
         disabled={questionsLocked}
         class="dark:bg-black"
         type="date"
         min={dateMin}
         max={dateMax}
-        id="birthday"
+        id={question.id}
         bind:value />
     </div>
   </InputContainer>

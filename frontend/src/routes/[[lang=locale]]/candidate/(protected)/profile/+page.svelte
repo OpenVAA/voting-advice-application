@@ -22,16 +22,10 @@
   import MultipleChoiceInputField from '$lib/candidate/components/profilePage/MultipleChoiceInputField.svelte';
   import InputContainer from '$lib/candidate/components/profilePage/InputContainer.svelte';
 
-  const labelClass =
-    'pointer-events-none label-sm whitespace-nowrap label mx-6 my-2 text-secondary';
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
   const headerClass = 'uppercase mx-6 my-0 p-0 small-label';
-  const selectClass =
-    'select select-sm w-full text-right text-primary disabled:bg-base-100 disabled:border-none';
   const inputClass =
     'input-ghost flex justify-end text-right input input-sm w-full pr-2 disabled:border-none disabled:bg-base-100';
-  const iconClass = 'text-secondary my-auto flex-shrink-0';
-  const buttonContainerClass = 'pr-6';
 
   // get the user and necessary information from CandidateContext
   const {
@@ -246,10 +240,7 @@
       <div class="flex flex-col items-center gap-16">
         <FieldGroup>
           {#each basicInfoFields as field}
-            <Field>
-              <label for={field} class={labelClass}>
-                {$t(`candidateApp.basicInfo.fields.${field}`)}
-              </label>
+            <Field id={field} label={$t(`candidateApp.basicInfo.fields.${field}`)}>
               <InputContainer locked>
                 <input
                   type="text"
@@ -269,11 +260,11 @@
             {$t('candidateApp.basicInfo.nominations')}
           </p>
           {#if nomination}
-            <Field>
-              <label for="nomination" class={labelClass}
-                >{`${translate(nomination.constituency?.shortName)} ${dot} ${translate(nomination.party.shortName)} ${
-                  nomination.electionSymbol ? dot + ' ' + nomination.electionSymbol : ''
-                }`}</label>
+            <Field
+              id="nomination"
+              label={`${translate(nomination.constituency?.shortName)} ${dot} ${translate(nomination.party.shortName)} ${
+                nomination.electionSymbol ? dot + ' ' + nomination.electionSymbol : ''
+              }`}>
               <InputContainer locked>
                 <input
                   disabled
@@ -307,23 +298,18 @@
             {#if question.type === 'singleChoiceCategorical'}
               <SingleChoiceInputField
                 {question}
-                {selectClass}
                 {questionsLocked}
                 bind:value={unsavedInfoAnswers[question.id].value} />
             {:else if question.type === 'multipleChoiceCategorical'}
               <MultipleChoiceInputField
                 {question}
                 {questionsLocked}
-                {selectClass}
-                {buttonContainerClass}
-                {iconClass}
                 bind:selectedValues={unsavedInfoAnswers[question.id].value} />
             {:else if question.type === 'boolean'}
               <BooleanInputField
                 {question}
-                {disclaimerClass}
-                {inputClass}
                 {questionsLocked}
+                disclaimer={$t('candidateApp.basicInfo.unaffiliatedDescription')}
                 bind:checked={unsavedInfoAnswers[question.id].value} />
             {:else if question.type === 'text'}
               {#if savedInfoAnswers[question.id]}
@@ -344,7 +330,6 @@
               <DateInputField
                 {question}
                 {questionsLocked}
-                {inputClass}
                 bind:value={unsavedInfoAnswers[question.id].value} />
             {/if}
           </FieldGroup>

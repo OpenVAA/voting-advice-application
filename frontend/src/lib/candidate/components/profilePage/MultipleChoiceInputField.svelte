@@ -5,9 +5,6 @@
   import InputContainer from './InputContainer.svelte';
 
   export let question: QuestionProps;
-  export let selectClass: string;
-  export let buttonContainerClass: string;
-  export let iconClass: string;
   export let questionsLocked: boolean | undefined;
 
   const questionOptions = question.values;
@@ -52,9 +49,6 @@ A component for rendering a multiple choice question.
 ### Properties
 
 - `question`: The question object.
-- `selectClass`: A class that defines select styles.
-- `buttonContainerClass`: A class that defines button container styles.
-- `iconClass`: A class that defines icon styles.
 - `questionsLocked`: A boolean value that indicates if the questions are locked.
 
 ### Usage
@@ -62,29 +56,23 @@ A component for rendering a multiple choice question.
 ```tsx
 <MultipleChoiceInputField
   question={question}
-  selectClass="text-lg"
-  buttonContainerClass="text-lg"
-  iconClass="text-lg"
   questionsLocked={questionsLocked}
   bind:selectedValues={selectedValues} />
 ```
 -->
 
-<Field>
-  <label
-    for={question.id}
-    class="label-sm label pointer-events-none mx-6 my-2 whitespace-nowrap text-secondary">
-    {selectedOptions.length > 0
-      ? $t('candidateApp.basicInfo.addAnother')
-      : $t('candidateApp.basicInfo.selectFirst')}
-  </label>
+<Field
+  id={question.id}
+  label={selectedOptions.length > 0
+    ? $t('candidateApp.basicInfo.addAnother')
+    : $t('candidateApp.basicInfo.selectFirst')}>
   <InputContainer locked={questionsLocked}>
     <select
       disabled={questionsLocked}
       bind:this={selectElement}
       id={question.id}
       data-testid={question.id}
-      class={selectClass}
+      class="select select-sm w-full text-right text-primary disabled:border-none disabled:bg-base-100"
       on:change={handleLanguageSelect}
       style="text-align-last: right; direction: rtl;">
       <option disabled selected value style="display: none;" />
@@ -95,13 +83,8 @@ A component for rendering a multiple choice question.
   </InputContainer>
 </Field>
 {#each selectedOptions ?? [] as option}
-  <Field>
-    <label
-      for={option.label}
-      class="label-sm label pointer-events-none mx-6 my-2 whitespace-nowrap text-secondary">
-      {option.label}
-    </label>
-    <div class={buttonContainerClass}>
+  <Field id={option.label} label={option.label}>
+    <div class="pr-6">
       {#if !questionsLocked}
         <button
           title="remove"
@@ -111,10 +94,10 @@ A component for rendering a multiple choice question.
             selectedOptions = selectedOptions?.filter((m) => m.key !== option.key);
             selectedValues = selectedOptions.map((option) => option.key);
           }}>
-          <Icon name="close" class={iconClass} />
+          <Icon name="close" class="my-auto flex-shrink-0 text-secondary" />
         </button>
       {:else}
-        <Icon name="locked" class={iconClass} />
+        <Icon name="locked" class="my-auto flex-shrink-0 text-secondary" />
       {/if}
     </div>
   </Field>
