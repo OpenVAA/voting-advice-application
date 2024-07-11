@@ -4,12 +4,15 @@
   import Icon from '$lib/components/icon/Icon.svelte';
   import {t} from '$lib/i18n';
   import InputContainer from './InputContainer.svelte';
+  import type {inputFieldProps} from './InputField.type';
 
-  export let question: QuestionProps;
-  export let footerText: string | undefined = '';
-  export let headerText: string | undefined = question.text;
-  export let questionsLocked: boolean | undefined;
-  export let selectedValues: AnswePropsValue = Array<number>();
+  type $$Props = inputFieldProps;
+
+  export let question: $$Props['question'];
+  export let footerText: $$Props['footerText'] = '';
+  export let headerText: $$Props['headerText'] = question.text;
+  export let questionsLocked: $$Props['questionsLocked'] = false;
+  export let selectedValues: $$Props['value'] = Array<number>();
 
   const questionOptions = question.values;
 

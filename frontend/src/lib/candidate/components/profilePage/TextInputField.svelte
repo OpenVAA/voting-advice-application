@@ -1,11 +1,14 @@
 <script lang="ts">
   import MultilangTextInput from '$lib/candidate/components/textArea/MultilangTextInput.svelte';
   import {locales} from '$lib/i18n';
+  import type {inputFieldProps} from './InputField.type';
 
-  export let question: QuestionProps;
-  export let header: string | undefined = question.text;
-  export let questionsLocked: boolean | undefined;
-  export let text: LocalizedString = {};
+  type $$Props = inputFieldProps;
+
+  export let question: $$Props['question'];
+  export let headerText: $$Props['headerText'] = question.text;
+  export let questionsLocked: $$Props['questionsLocked'] = false;
+  export let text: $$Props['value'] = {};
 
   let textArea: MultilangTextInput; // Used to clear the local storage from the parent component
   let localStorageId = `candidate-app-${question.text}`;
@@ -70,7 +73,7 @@ A component for a text question that can be answered.
   id={question.text}
   {localStorageId}
   {previouslySavedMultilang}
-  headerText={header}
+  {headerText}
   placeholder="—"
   bind:multilangText={text}
   bind:this={textArea} />

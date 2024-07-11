@@ -2,12 +2,15 @@
   import Field from '$lib/components/common/form/Field.svelte';
   import FieldGroup from '$lib/components/common/form/FieldGroup.svelte';
   import InputContainer from './InputContainer.svelte';
+  import type {inputFieldProps} from './InputField.type';
 
-  export let question: QuestionProps;
-  export let footerText: string | undefined = '';
-  export let headerText: string | undefined = question.text;
-  export let questionsLocked: boolean | undefined = false;
-  export let checked: AnswePropsValue = false;
+  type $$Props = inputFieldProps;
+
+  export let question: $$Props['question'];
+  export let footerText: $$Props['footerText'] = '';
+  export let headerText: $$Props['headerText'] = question.text;
+  export let questionsLocked: $$Props['questionsLocked'] = false;
+  export let checked: $$Props['value'] = false;
 
   let isChecked = false;
   if (typeof checked === 'boolean') {
