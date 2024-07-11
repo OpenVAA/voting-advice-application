@@ -16,12 +16,11 @@
   export let question: $$Props['question'];
   export let categoryQuestions: $$Props['categoryQuestions'];
 
-  const {opinionAnswerStore: answersStore, questionsLockedStore} =
-    getContext<CandidateContext>('candidate');
+  const {opinionAnswerStore, questionsLockedStore} = getContext<CandidateContext>('candidate');
 
   $: questionsLocked = $questionsLockedStore;
 
-  $: answers = $answersStore;
+  $: answers = $opinionAnswerStore;
 </script>
 
 <!--

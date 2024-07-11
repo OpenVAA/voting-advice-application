@@ -14,17 +14,14 @@ Meant to be mainly used with two chidlren that are aligned on both ends of the f
 
 - `customStyle`: A custom style passed on to the parent component.
 - `bgColor`: The background color of the field.
-- `id`: The id of the field for label.
-- `label`: The label of the field.
-
-You should not try to use a variant and customize at the same time.
+- `id`: The id of the field used for labeling. Optional.
+- `label`: The label of the field. Label will not be shown if it's empty. Optional.
 
 ### Usage
 
 ```tsx
 <FieldGroup>
-  <Field>
-    <label for="input_1"> Label for input </label>  
+  <Field id="input_1" label="label">
     <input id="input_1"/>
   </Field>
 </FieldGroup>
@@ -37,8 +34,6 @@ You should not try to use a variant and customize at the same time.
       for={id}
       class="label-sm label pointer-events-none mx-6 my-2 whitespace-nowrap text-secondary"
       >{label}</label>
-  {:else if id && label && label?.length === 0}
-    <label for={id} class="hidden"></label>
   {/if}
   <slot />
 </div>

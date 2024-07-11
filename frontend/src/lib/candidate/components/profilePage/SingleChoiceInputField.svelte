@@ -4,13 +4,15 @@
   import InputContainer from './InputContainer.svelte';
 
   export let question: QuestionProps;
+  export let footerText: string | undefined = '';
+  export let headerText: string | undefined = question.text;
   export let questionsLocked: boolean | undefined;
   export let value: AnswePropsValue;
 </script>
 
 <!--
 @component
-A component for rendering a single choice question.
+A component for a single choice question that can be answered.
 
 ### Bindable variables
 
@@ -19,6 +21,8 @@ A component for rendering a single choice question.
 ### Properties
 
 - `question`: The question object.
+- `headerText`: The header text. Defaults to the question's text. Optional.
+- `footerText`: The footer text. Defaults to empty string. Optional.
 - `questionsLocked`: A boolean value that indicates if the questions are locked.
 
 ### Usage
@@ -33,7 +37,7 @@ A component for rendering a single choice question.
 
 <FieldGroup>
   <p slot="header" class="small-label mx-6 my-0 p-0 uppercase">
-    {question.text}
+    {headerText}
   </p>
   <Field id={question.id} label={question.text}>
     <InputContainer locked={questionsLocked}>

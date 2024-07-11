@@ -382,65 +382,9 @@ async function createCandidates(length: number) {
         lastName,
         email,
         party: party.id,
-        publishedAt: new Date(),
-        unaffiliated: false
+        publishedAt: new Date()
       }
     });
-
-    // TODO: Remove when custom basic info questions are online
-    //
-    // // Political experience attribute
-    // const textQuestionType = await strapi.db.query(API.QuestionType).findOne({
-    //   where: {
-    //     name: 'Text answer'
-    //   }
-    // });
-
-    // const politicalExperienceData = {
-    //   displayName: 'Political experience',
-    //   questionType: textQuestionType.id,
-    //   candidate: candidate.id,
-    //   publishedAt: new Date(),
-    //   key: 'politicalExperience',
-    //   value: politicalExperience
-    // };
-
-    // const politicalExperienceMainLocale = await strapi.entityService.create(
-    //   CANDIDATE_ATTRIBUTE_API,
-    //   {
-    //     data: politicalExperienceData
-    //   }
-    // );
-
-    // // Gender attribute
-
-    // const genderQuestionType = await strapi.db.query(API.QuestionType).findOne({
-    //   where: {
-    //     name: 'Gender'
-    //   }
-    // });
-
-    // const genderTypeValues: {key: number}[] = genderQuestionType.settings.values;
-    // const answer = faker.helpers.arrayElement(genderTypeValues).key;
-
-    // const genderData = {
-    //   displayName: 'Gender',
-    //   questionType: genderQuestionType.id,
-    //   candidate: candidateMainLocale.id,
-    //   locale: mainLocale.code,
-    //   publishedAt: new Date(),
-    //   key: 'gender',
-    //   value: answer.toString()
-    // };
-
-    // /**
-    //  * TODO: In theory, this doesn't need localization because the label is
-    //  * obtained from the question type settings. However, for consistency with
-    //  * other attributes, it is localized.
-    //  **/
-    // const genderMainLocale = await strapi.entityService.create(CANDIDATE_ATTRIBUTE_API, {
-    //   data: genderData
-    // });
   }
 }
 

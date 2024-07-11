@@ -173,7 +173,7 @@ export const changePassword = (currentPassword: string, password: string) => {
 };
 
 /**
- * Get all questions that are info questions.
+ * Get all info questions.
  */
 export const getInfoQuestions = async (): Promise<QuestionProps[]> => {
   const currentLocale: GetQuestionsOptionsBase = {locale: get(locale)};
@@ -185,7 +185,7 @@ export const getInfoQuestions = async (): Promise<QuestionProps[]> => {
 };
 
 /**
- * Get questions that have a likert scale.
+ * Get all opinion questions.
  */
 export const getOpinionQuestions = async (): Promise<Record<string, Question> | undefined> => {
   const res = await request(
@@ -283,7 +283,7 @@ export const deleteAnswer = (answerId: string): Promise<Response | undefined> =>
 };
 
 /**
- * Get all the answers for the logged in user.
+ * Get all opinion answers for the logged in user.
  */
 export const getExistingOpinionAnswers = async (): Promise<Record<string, Answer> | undefined> => {
   const user = get(candidateContext.userStore)?.candidate;
@@ -318,7 +318,7 @@ export const getExistingOpinionAnswers = async (): Promise<Record<string, Answer
 };
 
 /**
- * Get all the answers for the logged in user.
+ * Get all info answers for the logged in user.
  */
 export const getExistingInfoAnswers = async (): Promise<
   Record<string, CandidateAnswer> | undefined

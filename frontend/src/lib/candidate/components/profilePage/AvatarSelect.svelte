@@ -10,6 +10,7 @@
   export let disabled: boolean = false;
   export let photo: Photo | undefined;
   export let photoChanged: undefined | (() => void) = undefined;
+
   let photoUrl = photo
     ? new URL(constants.PUBLIC_BACKEND_URL + photo.formats.thumbnail.url)
     : undefined;
@@ -89,12 +90,15 @@ image defined in the `photo` object.
 - `photo`: A photo object fetched fromn strapi. See `$lib/types/candidateAttributes.ts`.
 
 ### Bindable functions
+
 - `uploadPhoto()`: A function that deletes the image defined in `photo` and uploads the new image.
   Also updates the `photo` object.
 
 ### Properties
 
 - `maxFileSize`: An optional property to set the max accepted file size in bytes. Defaults to 5 MB.
+- `disabled`: A boolean value that indicates if the component is disabled.
+- `photoChanged`: A function for letting the parent component know that the photo has changed.
 
 ### Usage
 

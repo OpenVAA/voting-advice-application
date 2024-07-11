@@ -51,7 +51,12 @@ export function getAnswerForDisplay(
   const {value} = getAnswer(entity, question) ?? {};
   if (value == null || value === '') return undefined;
   const qt = question.type;
+<<<<<<< HEAD
   if (qt === 'boolean') return t.get(value ? 'common.answerYes' : 'common.answerNo');
+=======
+  if (qt === 'boolean')
+    return t.get((answer.value as boolean) ? 'common.answerYes' : 'common.answerNo');
+>>>>>>> b22779a8 (fix: better code quality)
   if (qt === 'date') {
     const format =
       question.dateType && question.dateType in DATE_FORMATS

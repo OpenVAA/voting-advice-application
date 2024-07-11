@@ -28,7 +28,7 @@
     if (!infoQuestions || !infoAnswers) return;
 
     const requiredInfoQuestions = infoQuestions.filter((question) => question.required);
-    const requiredInfoQuestionsMap = requiredInfoQuestions.map((question) => {
+    const requiredQuestionsMapToFilled = requiredInfoQuestions.map((question) => {
       if (infoAnswers?.[question.id]) {
         const answer = infoAnswers[question.id].value;
         if (question.type === 'boolean') {
@@ -44,15 +44,15 @@
         }
       } else return false;
     });
-    const allFilled = requiredInfoQuestionsMap.every((question) => question);
-    const nofBasicQuestionsFilled = requiredInfoQuestionsMap.filter((value) => value).length;
+    const allFilled = requiredQuestionsMapToFilled.every((question) => question);
+    const nofBasicQuestionsFilled = requiredQuestionsMapToFilled.filter((value) => value).length;
     const infoQuestionsLeft = requiredInfoQuestions.length - nofBasicQuestionsFilled;
 
-    candidateContext.nofUnansweredBasicInfoQuestionsStore.set(infoQuestionsLeft);
+    candidateContext.nofUnansweredInfoQuestionsStore.set(infoQuestionsLeft);
     candidateContext.basicInfoFilledStore.set(allFilled);
   }
 
-  const updateNofUnansweredOpinionQuestions = () => {
+  const updateOpinionAnswerRelations = () => {
     const answers = get(candidateContext.opinionAnswerStore);
     const questions = get(candidateContext.opinionQuestionsStore);
     if (answers && questions) {
@@ -79,8 +79,8 @@
     }
   };
 
-  candidateContext.opinionAnswerStore.subscribe(updateNofUnansweredOpinionQuestions);
-  candidateContext.opinionQuestionsStore.subscribe(updateNofUnansweredOpinionQuestions);
+  candidateContext.opinionAnswerStore.subscribe(updateOpinionAnswerRelations);
+  candidateContext.opinionQuestionsStore.subscribe(updateOpinionAnswerRelations);
 
   candidateContext.opinionAnswerStore.subscribe(updateProgress);
   candidateContext.opinionQuestionsStore.subscribe(updateProgress);

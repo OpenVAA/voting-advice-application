@@ -740,21 +740,8 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
       Attribute.Private;
     firstName: Attribute.String & Attribute.Required;
     lastName: Attribute.String & Attribute.Required;
-    birthday: Attribute.String;
-    unaffiliated: Attribute.Boolean & Attribute.Required;
     photo: Attribute.Media;
     manifesto: Attribute.JSON;
-    motherTongues: Attribute.Relation<
-      'api::candidate.candidate',
-      'oneToMany',
-      'api::language.language'
-    >;
-    otherLanguages: Attribute.Relation<
-      'api::candidate.candidate',
-      'oneToMany',
-      'api::language.language'
-    >;
-    politicalExperience: Attribute.Text & Attribute.Required;
     party: Attribute.Relation<'api::candidate.candidate', 'manyToOne', 'api::party.party'>;
     answers: Attribute.Relation<'api::candidate.candidate', 'oneToMany', 'api::answer.answer'>;
     nomination: Attribute.Relation<

@@ -19,7 +19,7 @@
   let timeLeft = logoutModalTimer;
 
   const {
-    nofUnansweredBasicInfoQuestionsStore,
+    nofUnansweredInfoQuestionsStore: nofUnansweredBasicInfoQuestionsStore,
     opinionQuestionsFilledStore,
     nofUnansweredOpinionQuestionsStore,
     basicInfoFilledStore,

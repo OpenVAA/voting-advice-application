@@ -3,6 +3,7 @@
   import {locales} from '$lib/i18n';
 
   export let question: QuestionProps;
+  export let header: string | undefined = question.text;
   export let questionsLocked: boolean | undefined;
   export let text: LocalizedString = {};
 
@@ -33,7 +34,7 @@
 
 <!--
 @component
-A component for rendering a text question.
+A component for a text question that can be answered.
 
 ### Bindable variables
 
@@ -46,6 +47,7 @@ A component for rendering a text question.
 ### Properties
 
 - `question`: The question object.
+- `headerText`: The header text. Defaults to the question's text. Optional.
 - `questionsLocked`: A boolean value that indicates if the questions are locked.
 - `previousText`: The previous text value. Optional.
 
@@ -56,9 +58,10 @@ A component for rendering a text question.
 <TextInputField
   question={question}
   questionsLocked={questionsLocked}
+  previousText={previousText}
   bind:text={text}
   bind:clearLocalStorage={clearLocalStorage}
-  previousText={previousText} />
+   />
 ```
 -->
 
@@ -67,7 +70,7 @@ A component for rendering a text question.
   id={question.text}
   {localStorageId}
   {previouslySavedMultilang}
-  headerText={question.text}
+  headerText={header}
   placeholder="—"
   bind:multilangText={text}
   bind:this={textArea} />

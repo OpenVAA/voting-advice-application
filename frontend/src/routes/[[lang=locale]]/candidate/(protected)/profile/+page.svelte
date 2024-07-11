@@ -51,7 +51,7 @@
   let infoQuestions = Array<QuestionProps>();
 
   const selectedAnswers = writable<AnswerDict>({});
-  const unsavedInfoAnswers = $selectedAnswers;
+  $: unsavedInfoAnswers = $selectedAnswers;
 
   // initialize infoQuestions and unsavedInfoAnswers
   infoQuestionsPromise.then((questions) => {
@@ -304,7 +304,7 @@
             <BooleanInputField
               {question}
               {questionsLocked}
-              disclaimer={$t('candidateApp.basicInfo.unaffiliatedDescription')}
+              footerText={$t('candidateApp.basicInfo.unaffiliatedDescription')}
               bind:checked={unsavedInfoAnswers[question.id].value} />
           {:else if question.type === 'text'}
             {#if savedInfoAnswers[question.id]}

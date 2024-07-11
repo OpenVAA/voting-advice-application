@@ -31,7 +31,7 @@ export interface CandidateContext {
   loadInfoQuestionData: () => Promise<void>;
   // Custom util
   basicInfoFilledStore: Writable<boolean | undefined>;
-  nofUnansweredBasicInfoQuestionsStore: Writable<number | undefined>;
+  nofUnansweredInfoQuestionsStore: Writable<number | undefined>;
   opinionQuestionsFilledStore: Writable<boolean | undefined>;
   nofUnansweredOpinionQuestionsStore: Writable<number | undefined>;
   progressStore: Writable<Progress | undefined>;
@@ -46,7 +46,7 @@ const infoAnswerStore = writable<Record<string, CandidateAnswer> | undefined>(un
 const opinionQuestionsStore = writable<Record<string, Question> | undefined>(undefined);
 const infoQuestionsStore = writable<QuestionProps[] | undefined>(undefined);
 const basicInfoFilledStore = writable<boolean | undefined>(undefined);
-const nofUnansweredBasicInfoQuestionsStore = writable<number | undefined>(undefined);
+const nofUnansweredInfoQuestionsStore = writable<number | undefined>(undefined);
 const opinionQuestionsFilledStore = writable<boolean | undefined>(undefined);
 const nofUnansweredOpinionQuestionsStore = writable<number | undefined>(undefined);
 const progressStore = writable<Progress | undefined>(undefined);
@@ -139,7 +139,7 @@ export const candidateContext: CandidateContext = {
   basicInfoFilledStore,
   nofUnansweredOpinionQuestionsStore,
   opinionQuestionsFilledStore,
-  nofUnansweredBasicInfoQuestionsStore,
+  nofUnansweredInfoQuestionsStore,
   progressStore,
   questionsLockedStore
 };

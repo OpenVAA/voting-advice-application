@@ -13,7 +13,7 @@
   const {
     userStore,
     basicInfoFilledStore,
-    nofUnansweredBasicInfoQuestionsStore,
+    nofUnansweredInfoQuestionsStore: nofUnansweredBasicInfoQuestionsStore,
     opinionQuestionsFilledStore,
     nofUnansweredOpinionQuestionsStore,
     questionsLockedStore

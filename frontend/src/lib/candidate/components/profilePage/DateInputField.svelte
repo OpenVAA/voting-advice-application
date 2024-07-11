@@ -4,6 +4,8 @@
   import InputContainer from './InputContainer.svelte';
 
   export let question: QuestionProps;
+  export let footerText: string | undefined = '';
+  export let headerText: string | undefined = question.text;
   export let questionsLocked: boolean | undefined;
   export let value: AnswePropsValue = '';
 
@@ -18,7 +20,7 @@
 
 <!--
 @component
-A component for rendering a Date question.
+A component for a date question that can be answered.
 
 ### Bindable variables
 
@@ -27,7 +29,8 @@ A component for rendering a Date question.
 ### Properties
 
 - `question`: The question object.
-- `inputClass`: A class that defines input styles.
+- `headerText`: The header text. Defaults to the question's text. Optional.
+- `footerText`: The footer text. Defaults to empty string. Optional.
 - `questionsLocked`: A boolean value that indicates if the questions are locked.
 
 ### Usage
@@ -42,15 +45,14 @@ A component for rendering a Date question.
 
 <FieldGroup>
   <p slot="header" class="small-label mx-6 my-0 p-0 uppercase">
-    {question.text}
+    {headerText}
   </p>
   <Field id={question.id} label={question.text}>
     <InputContainer locked={questionsLocked}>
-      <div
-        class="input input-sm input-ghost flex w-full justify-end pr-2 text-right disabled:border-none disabled:bg-base-100">
+      <div class="w-full">
         <input
           disabled={questionsLocked}
-          class="dark:bg-black"
+          class="input input-sm input-ghost flex w-full justify-end pr-12 text-right disabled:border-none disabled:bg-transparent"
           type="date"
           min={dateMin}
           max={dateMax}
