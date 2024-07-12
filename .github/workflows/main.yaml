@@ -48,6 +48,9 @@ jobs:
       - name: "Run ESlint check on frontend"
         run: yarn lint
 
+      - name: "Check that TranslationKey type is up to date"
+        run: yarn generateTranslationKeyType && git diff --exit-code
+
       - name: "Run Frontend tests"
         run: yarn test
 
