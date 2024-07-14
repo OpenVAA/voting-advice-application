@@ -42,10 +42,11 @@
   }
 
   /**
-   * We use this to determine if we arrived via an external link or from within the app.
+   * We determine if we arrived via an external link or from within the app, so we can use `history.back()`. However, if we changed the locale, we shouldn't use back() either.
    */
-  let externalReferrer = true;
-  afterNavigate((n) => (externalReferrer = n.from?.route == null));
+  let useBack = false;
+  let initialLocale = $locale;
+  afterNavigate((n) => (useBack = n.from?.route != null && initialLocale === $locale));
 </script>
 
 <SingleCardPage title={$t('candidateApp.preview.title')}>
@@ -60,7 +61,7 @@
       class="!text-neutral"
       variant="icon"
       icon="close"
-      on:click={() => (externalReferrer ? goto($getRoute(Route.CandAppHome)) : history.back())}
+      on:click={() => (useBack ? history.back() : goto($getRoute(Route.CandAppHome)))}
       text={$t('candidateApp.preview.close')} />
   </svelte:fragment>
 
