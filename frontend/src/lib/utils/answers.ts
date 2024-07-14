@@ -32,7 +32,7 @@ export function getLikertAnswer(entity: EntityProps, question: QuestionProps) {
   const answer = getAnswer(entity, question);
   return answer
     ? {
-        value: answer.value as number,
+        value: parseInt(answer.value),
         openAnswer: answer.openAnswer
       }
     : undefined;
@@ -48,36 +48,36 @@ export function getAnswerForDisplay(
   entity: EntityProps,
   question: QuestionProps
 ): string | string[] | undefined {
-  const answer = getAnswer(entity, question);
-  if (answer == null || answer.value === '') return undefined;
+  const {value} = getAnswer(entity, question) ?? {};
+  if (value == null || value === '') return undefined;
   const qt = question.type;
-  if (qt === 'boolean')
-    return t.get((answer.value as boolean) ? 'common.answerYes' : 'common.answerNo');
+  if (qt === 'boolean') return t.get(value ? 'common.answerYes' : 'common.answerNo');
   if (qt === 'date') {
     const format =
       question.dateType && question.dateType in DATE_FORMATS
         ? DATE_FORMATS[question.dateType]
         : DATE_FORMATS.yearMonthDay;
-    return new Date(answer.value as Date).toLocaleDateString(locale.get(), format);
+    const date = new Date(value);
+    return `${date}` == 'Invalid Date' ? undefined : date.toLocaleDateString(locale.get(), format);
   }
   if (['singleChoiceOrdinal', 'singleChoiceCategorical'].includes(qt))
-    return getChoiceLabel(question, answer.value);
+    return getChoiceLabel(question, value);
   if (['multipleChoiceCategorical', 'preferenceOrder'].includes(qt)) {
-    const labels = getChoiceLabels(question, answer.value);
+    const labels = getChoiceLabels(question, value);
     return labels?.length ? labels : undefined;
   }
   if (qt === 'linkList') {
-    if (!Array.isArray(answer.value)) {
-      logDebugError(`Invalid linkList value ${answer} for question ${question.id}`);
+    if (!Array.isArray(value)) {
+      logDebugError(`Invalid linkList value ${value} for question ${question.id}`);
       return undefined;
     }
-    return answer.value.map((v) => `${v}`).filter((v) => checkUrl(v) != null);
+    return value.map((v) => `${v}`).filter((v) => checkUrl(v) != null);
   }
   if (qt === 'link') {
-    return checkUrl(`${answer.value}`);
+    return checkUrl(`${value}`);
   }
-  if (['text', 'number'].includes(qt)) return `${answer.value}`;
-  throw new Error(`Question type ${question.type} not implemented`);
+  if (['text', 'number'].includes(qt)) return `${value}`;
+  throw new Error(`Question type ${qt} not implemented`);
 }
 
 /**
