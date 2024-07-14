@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {concatClass} from '$lib/utils/components';
-  import {Icon} from '$lib/components/icon';
-  import type {PartyTagProps} from './PartyTag.type';
+  import type { PartyTagProps } from './PartyTag.type';
+  import { Icon } from '$lib/components/icon';
+  import { concatClass } from '$lib/utils/components';
 
   type $$Props = PartyTagProps;
 

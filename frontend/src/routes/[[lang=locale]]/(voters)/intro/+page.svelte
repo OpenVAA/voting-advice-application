@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {openFeedbackModal, settings} from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup} from '$lib/components/headingGroup';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {BasicPage} from '$lib/templates/basicPage';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup } from '$lib/components/headingGroup';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { t } from '$lib/i18n';
+  import { openFeedbackModal, settings } from '$lib/stores';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { getRoute, Route } from '$lib/utils/navigation';
 </script>
 
 <BasicPage title={$t('intro.title')}>

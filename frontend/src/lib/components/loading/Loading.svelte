@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {concatClass} from '$lib/utils/components';
-  import type {LoadingProps} from './Loading.type';
+  import type { LoadingProps } from './Loading.type';
+  import { t } from '$lib/i18n';
+  import { concatClass } from '$lib/utils/components';
 
   type $$Props = LoadingProps;
 

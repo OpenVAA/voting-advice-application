@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {concatProps} from '$lib/utils/components';
-  import type {IconProps} from './Icon.type';
-  import {ICONS} from './icons';
+  import type { IconProps } from './Icon.type';
+  import { ICONS } from './icons';
+  import { concatProps } from '$lib/utils/components';
 
   type $$Props = IconProps;
   export let name: $$Props['name'];

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {page} from '$app/stores';
-  import {t} from '$lib/i18n';
-  import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {BasicPage} from '$lib/templates/basicPage/';
+  import { page } from '$app/stores';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { t } from '$lib/i18n';
+  import { BasicPage } from '$lib/templates/basicPage/';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
 
   let title: string;
   $: {

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import {onDestroy} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {concatClass} from '$lib/utils/components';
-  import {Button} from '$lib/components/button';
-  import {EntityCard} from '$lib/components/entityCard';
-  import type {EntityListProps} from './EntityList.type';
+  import { onDestroy } from 'svelte';
+  import type { EntityListProps } from './EntityList.type';
+  import { Button } from '$lib/components/button';
+  import { EntityCard } from '$lib/components/entityCard';
+  import { t } from '$lib/i18n';
+  import { concatClass } from '$lib/utils/components';
 
   type $$Props = EntityListProps;
 
@@ -67,7 +67,7 @@
     scrollTimeout = setTimeout(() => {
       const target = div?.querySelectorAll(`.${PAGE_CLASS}`)?.[index];
       if (target instanceof HTMLElement) {
-        target.scrollIntoView({behavior: 'smooth'});
+        target.scrollIntoView({ behavior: 'smooth' });
         target.focus();
       }
     }, SCROLL_DELAY);

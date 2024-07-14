@@ -1,9 +1,9 @@
-import {imputeMissingValues, MISSING_VALUE} from '../missingValue';
-import type {MatchingSpace} from '../space/matchingSpace';
-import type {MatchingSpacePosition} from '../space/position';
-import type {UnsignedNormalizedDistance} from './distance';
-import {DistanceMetric, directionalDistance, manhattanDistance} from './metric';
-import type {DistanceMeasurementOptions, GlobalAndSubspaceDistances} from './measure.type';
+import { imputeMissingValues, MISSING_VALUE } from '../missingValue';
+import type { MatchingSpace } from '../space/matchingSpace';
+import type { MatchingSpacePosition } from '../space/position';
+import type { UnsignedNormalizedDistance } from './distance';
+import type { DistanceMeasurementOptions, GlobalAndSubspaceDistances } from './measure.type';
+import { DistanceMetric, directionalDistance, manhattanDistance } from './metric';
 
 export function measureDistance(
   a: MatchingSpacePosition,
@@ -15,7 +15,7 @@ export function measureDistance(
   a: MatchingSpacePosition,
   b: MatchingSpacePosition,
   options: DistanceMeasurementOptions,
-  subspaces: MatchingSpace[]
+  subspaces: Array<MatchingSpace>
 ): GlobalAndSubspaceDistances;
 
 /**
@@ -38,7 +38,7 @@ export function measureDistance(
   a: MatchingSpacePosition,
   b: MatchingSpacePosition,
   options: DistanceMeasurementOptions,
-  subspaces?: MatchingSpace[]
+  subspaces?: Array<MatchingSpace>
 ): UnsignedNormalizedDistance | GlobalAndSubspaceDistances {
   if (a.dimensions === 0) throw new Error("a doesn't have any elements!");
   if (a.dimensions !== b.dimensions) throw new Error('a and b have different number of elements!');

@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getAnswerForDisplay} from '$lib/utils/answers';
-  import {concatClass} from '$lib/utils/components';
-  import {parseMaybeRanked} from '$lib/utils/entities';
-  import {getLinkText} from '$lib/utils/links';
-  import {logDebugError} from '$lib/utils/logger';
-  import {ucFirst} from '$lib/utils/text/ucFirst';
-  import type {InfoAnswerProps} from './InfoAnswer.type';
+  import type { InfoAnswerProps } from './InfoAnswer.type';
+  import { t } from '$lib/i18n';
+  import { getAnswerForDisplay } from '$lib/utils/answers';
+  import { concatClass } from '$lib/utils/components';
+  import { parseMaybeRanked } from '$lib/utils/entities';
+  import { getLinkText } from '$lib/utils/links';
+  import { logDebugError } from '$lib/utils/logger';
+  import { ucFirst } from '$lib/utils/text/ucFirst';
 
   type $$Props = InfoAnswerProps;
 
@@ -15,7 +15,7 @@
   export let format: $$Props['format'] = 'default';
   export let hideMissing: $$Props['hideMissing'] = false;
 
-  let answer: string | string[] | undefined;
+  let answer: string | Array<string> | undefined;
   let asTag: boolean;
 
   $: {

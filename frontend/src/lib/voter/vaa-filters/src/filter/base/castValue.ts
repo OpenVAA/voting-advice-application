@@ -1,4 +1,4 @@
-import type {FilterOptions} from './filter.type';
+import type { FilterOptions } from './filter.type';
 
 /**
  * Cast a non-missing value to the correct data type.
@@ -9,7 +9,7 @@ import type {FilterOptions} from './filter.type';
  * @returns The value cast to the correct data type or an array of that type
  */
 export function castValue<V>(value: unknown, type: FilterOptions['type'], multiple?: false): V;
-export function castValue<V>(value: unknown, type: FilterOptions['type'], multiple: true): V[];
+export function castValue<V>(value: unknown, type: FilterOptions['type'], multiple: true): Array<V>;
 export function castValue<V>(value: unknown, type: FilterOptions['type'], multiple = false) {
   if (multiple) {
     if (!Array.isArray(value)) throw new Error(`Value for type ${type} is not an array.`);

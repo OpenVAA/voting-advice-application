@@ -1,7 +1,7 @@
-import {type ExtractEntity, type FilterableEntity, type MaybeWrapped} from '../../entity';
-import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
-import type {PropertyFilterOptions} from '../base';
-import {EnumeratedFilter} from './enumeratedFilter';
+import { type ExtractEntity, type FilterableEntity, type MaybeWrapped } from '../../entity';
+import { MISSING_VALUE, type MaybeMissing } from '../../missingValue';
+import type { PropertyFilterOptions } from '../base';
+import { EnumeratedFilter } from './enumeratedFilter';
 
 /**
  * A filter for properties which are objects with a string-index label and key for filtering, e.g. party objects of candidates.
@@ -36,8 +36,8 @@ export class ObjectFilter<
     } & ObjOptions<O>,
     public locale: string
   ) {
-    super({property, subProperty: keyProperty, name, type: 'string'});
-    this.objOptions = {keyProperty, labelProperty, objects};
+    super({ property, subProperty: keyProperty, name, type: 'string' });
+    this.objOptions = { keyProperty, labelProperty, objects };
   }
 
   /**
@@ -75,5 +75,5 @@ export class ObjectFilter<
 type ObjOptions<O> = {
   keyProperty: keyof O & string;
   labelProperty: keyof O & string;
-  objects: O[];
+  objects: Array<O>;
 };

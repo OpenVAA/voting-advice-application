@@ -19,7 +19,7 @@
     "prettier",
     "plugin:svelte/prettier"
   ],
-  "plugins": ["@typescript-eslint"],
+  "plugins": ["@typescript-eslint", "import"],
   "ignorePatterns": ["*.cjs", "ios/*", "android/*"],
   "overrides": [
     {
@@ -31,7 +31,17 @@
     }
   ],
   "settings": {
-    "svelte/typescript": true
+    "svelte/typescript": true,
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts", ".tsx"]
+    },
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true,
+
+        "project": "./tsconfig.json"
+      }
+    }
   },
   "env": {
     "browser": true,
@@ -40,9 +50,38 @@
     "jest": true
   },
   "rules": {
-    "no-console": ["error", {"allow": ["warn", "error", "info"]}],
+    "no-console": ["error", { "allow": ["warn", "error", "info"] }],
     "no-undef": "off",
-    "quotes": ["error", "single", {"avoidEscape": true, "allowTemplateLiterals": false}],
-    "@typescript-eslint/no-duplicate-enum-values": "off"
+    "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": false }],
+    "@typescript-eslint/no-duplicate-enum-values": "off",
+    "@typescript-eslint/array-type": [
+      "error",
+      {
+        "default": "generic"
+      }
+    ],
+    // "no-restricted-syntax": [
+    //   "error",
+    //   {
+    //     "selector": "TSEnumDeclaration",
+    //     "message": "Use const assertion or a string union type instead."
+    //   }
+    // ],
+    "import/order": [
+      "warn",
+      {
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        },
+        "newlines-between": "never",
+        "pathGroups": [
+          {
+            "pattern": "~/**",
+            "group": "external"
+          }
+        ]
+      }
+    ]
   }
 }

@@ -1,4 +1,4 @@
-import type {Question} from '$lib/types/candidateAttributes';
+import type { Question } from '$lib/types/candidateAttributes';
 
 export type RenderQuestionProps = {
   /**
@@ -9,5 +9,5 @@ export type RenderQuestionProps = {
   /**
    * All the questions belonging to the same category
    */
-  categoryQuestions: Question[];
+  categoryQuestions: Array<Question>;
 };

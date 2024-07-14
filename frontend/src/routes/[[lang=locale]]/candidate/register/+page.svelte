@@ -1,8 +1,8 @@
 <script lang="ts">
-  import {page} from '$app/stores';
-  import {checkRegistrationKey} from '$lib/api/candidate';
   import PasswordSetPage from './PasswordSetPage.svelte';
   import RegistrationCodePage from './RegistrationCodePage.svelte';
+  import { page } from '$app/stores';
+  import { checkRegistrationKey } from '$lib/api/candidate';
 
   let username = '';
   let email = '';

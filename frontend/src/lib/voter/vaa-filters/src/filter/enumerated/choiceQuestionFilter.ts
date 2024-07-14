@@ -1,8 +1,8 @@
-import type {EntityWithAnswers, MaybeWrapped} from '../../entity';
-import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
-import {KEY_PROP, LABEL_PROP, type Choice, KEY_TYPE, type ChoiceQuestion} from '../../question';
-import type {FilterOptions} from '../base';
-import {EnumeratedFilter} from './enumeratedFilter';
+import type { EntityWithAnswers, MaybeWrapped } from '../../entity';
+import { MISSING_VALUE, type MaybeMissing } from '../../missingValue';
+import { KEY_PROP, LABEL_PROP, type Choice, KEY_TYPE, type ChoiceQuestion } from '../../question';
+import type { FilterOptions } from '../base';
+import { EnumeratedFilter } from './enumeratedFilter';
 
 /**
  * A filter for single or multiple choice questions
@@ -24,7 +24,7 @@ export class ChoiceQuestionFilter<
    * @param name  Optional name for use when displaying the filter
    */
   constructor(
-    {question, name}: {question: ChoiceQuestion; name?: string},
+    { question, name }: { question: ChoiceQuestion; name?: string },
     public locale: string
   ) {
     super({

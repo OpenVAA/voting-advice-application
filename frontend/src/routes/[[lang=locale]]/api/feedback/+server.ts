@@ -4,13 +4,13 @@
 
 import fs from 'fs';
 import path from 'path';
-import {error, json} from '@sveltejs/kit';
-import type {FeedbackData} from '$lib/api/dataProvider';
-import {DataFolder} from '$lib/api/dataProvider/local';
-import {logDebugError} from '$lib/utils/logger';
-import type {RequestHandler} from './$types';
+import { error, json } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+import type { FeedbackData } from '$lib/api/dataProvider';
+import { DataFolder } from '$lib/api/dataProvider/local';
+import { logDebugError } from '$lib/utils/logger';
 
-export const POST: RequestHandler = async ({request}) => {
+export const POST: RequestHandler = async ({ request }) => {
   logDebugError('[/api/feedback/+server.ts] Receiving feedback via the local API');
 
   try {
@@ -39,9 +39,9 @@ export const POST: RequestHandler = async ({request}) => {
 
     fs.writeFileSync(fp, JSON.stringify(data, null, 2));
   } catch (e) {
-    if (e instanceof Error) error(400, {message: e.message});
-    error(400, {message: `An unknown error occured while writing feedback to disk: ${e}`});
+    if (e instanceof Error) error(400, { message: e.message });
+    error(400, { message: `An unknown error occured while writing feedback to disk: ${e}` });
   }
 
-  return json({ok: true});
+  return json({ ok: true });
 };

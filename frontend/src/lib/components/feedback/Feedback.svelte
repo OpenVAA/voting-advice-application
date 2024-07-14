@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {createEventDispatcher, onDestroy} from 'svelte';
-  import {sendFeedback} from '$lib/api/sendFeedback';
-  import {t} from '$lib/i18n';
-  import {track} from '$lib/utils/analytics/track';
-  import {concatClass} from '$lib/utils/components';
-  import {setFeedbackStatus, settings} from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import type {FeedbacProps} from './Feedback.type';
+  import { createEventDispatcher, onDestroy } from 'svelte';
+  import type { FeedbacProps } from './Feedback.type';
+  import { sendFeedback } from '$lib/api/sendFeedback';
+  import { Button } from '$lib/components/button';
+  import { t } from '$lib/i18n';
+  import { setFeedbackStatus, settings } from '$lib/stores';
+  import { track } from '$lib/utils/analytics/track';
+  import { concatClass } from '$lib/utils/components';
 
   type $$Props = FeedbacProps;
 
@@ -51,12 +51,12 @@
     status = 'sending';
     sendFeedback(rating, description).then((res) => {
       if (!res?.ok) {
-        track('feedback_error', {rating, description});
+        track('feedback_error', { rating, description });
         status = 'error';
         dispatch('error');
         return;
       }
-      track('feedback_sent', {rating, description});
+      track('feedback_sent', { rating, description });
       status = 'sent';
       dispatch('sent');
     });
@@ -152,17 +152,17 @@ Show a form for sending feedback.
     <div class="rating">
       <input
         on:click={() => (rating = undefined)}
-        aria-label={$t('feedback.ratingValueLabel', {rating: 0, ratingMax: MAX_RATING})}
+        aria-label={$t('feedback.ratingValueLabel', { rating: 0, ratingMax: MAX_RATING })}
         value={0}
         type="radio"
         name="rating"
         disabled={status !== 'default'}
         checked
         class="rating-hidden" />
-      {#each Array.from({length: MAX_RATING}, (_, i) => i + 1) as value}
+      {#each Array.from({ length: MAX_RATING }, (_, i) => i + 1) as value}
         <input
           on:click={() => (rating = value)}
-          aria-label={$t('feedback.ratingValueLabel', {rating: value, ratingMax: MAX_RATING})}
+          aria-label={$t('feedback.ratingValueLabel', { rating: value, ratingMax: MAX_RATING })}
           {value}
           type="radio"
           name="rating"

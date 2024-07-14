@@ -1,6 +1,6 @@
-import type {MaybeWrapped} from '../entity';
-import type {Filter} from '../filter';
-import {LogicOp, combineResults} from './combineResults';
+import type { MaybeWrapped } from '../entity';
+import type { Filter } from '../filter';
+import { LogicOp, combineResults } from './combineResults';
 
 /**
  * Use to combine a group of filters and subscribe to changes in their combined results using the `onChange` callback.
@@ -23,7 +23,7 @@ export class FilterGroup<T extends MaybeWrapped> {
     /**
      * The already initialised filters to combine.
      */
-    public filters: Filter<T, unknown>[],
+    public filters: Array<Filter<T, unknown>>,
     /**
      * And or Or logic operator to use in combination. @default LogicOp.And
      */
@@ -42,11 +42,11 @@ export class FilterGroup<T extends MaybeWrapped> {
    * @input A list of entities.
    * @returns Filtered targets
    */
-  apply<U extends T>(targets: U[]) {
+  apply<U extends T>(targets: Array<U>) {
     return combineResults(
       this.filters.map((f) => f.apply(targets)),
       this._logicOp
-    ) as U[];
+    ) as Array<U>;
   }
 
   /////////////////////////////////////////////////////////////////////////////////

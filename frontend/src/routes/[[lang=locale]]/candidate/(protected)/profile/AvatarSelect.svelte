@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {onDestroy, onMount} from 'svelte';
-  import {uploadFiles} from '$lib/api/candidate';
-  import {constants} from '$lib/utils/constants';
-  import {t} from '$lib/i18n';
-  import {Field} from '$lib/components/common/form';
-  import {Icon} from '$lib/components/icon';
-  import type {Photo} from '$lib/types/candidateAttributes';
+  import { onDestroy, onMount } from 'svelte';
+  import { uploadFiles } from '$lib/api/candidate';
+  import { Field } from '$lib/components/common/form';
+  import { Icon } from '$lib/components/icon';
+  import { t } from '$lib/i18n';
+  import type { Photo } from '$lib/types/candidateAttributes';
+  import { constants } from '$lib/utils/constants';
 
   export let disabled: boolean = false;
   export let photo: Photo | undefined;
@@ -68,7 +68,7 @@
       // if (photo && res?.status === 200) {
       //   await deleteFile(photo.id);
       // }
-      const uploadedPhotos: Photo[] = await res?.json();
+      const uploadedPhotos: Array<Photo> = await res?.json();
       photo = uploadedPhotos[0];
       imageHasChanged = false;
     }

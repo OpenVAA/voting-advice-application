@@ -1,18 +1,18 @@
-import {error} from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import I18n from '@sveltekit-i18n/base';
-import parser, {type Config} from '@sveltekit-i18n/parser-icu';
+import parser, { type Config } from '@sveltekit-i18n/parser-icu';
 import IntlMessageFormat from 'intl-messageformat';
-import {logDebugError} from '$lib/utils/logger';
-import {ucFirst} from '$lib/utils/text/ucFirst';
+import { derived, get } from 'svelte/store';
+import { DEFAULT_PAYLOAD_KEYS, staticTranslations, type TranslationsPayload } from './translations';
+import { matchLocale, purgeTranslations } from './utils';
 import localSettings from '$lib/config/settings.json';
-import {derived, get} from 'svelte/store';
-import {DEFAULT_PAYLOAD_KEYS, staticTranslations, type TranslationsPayload} from './translations';
-import {matchLocale, purgeTranslations} from './utils';
+import { logDebugError } from '$lib/utils/logger';
+import { ucFirst } from '$lib/utils/text/ucFirst';
 
 // We don't want to use the implicit json file typing
 const settings = localSettings as AppSettings;
 
-const {supportedLocales} = settings;
+const { supportedLocales } = settings;
 let defaultLocale = '';
 /** Language names for translations */
 const langNames: Record<string, string> = {};
@@ -29,7 +29,7 @@ if (!supportedLocales?.length) error(500, 'Could not load supported locales from
 
 const staticDefaultLocale = Object.keys(staticTranslations)[0];
 
-for (const {code, name, isDefault} of supportedLocales) {
+for (const { code, name, isDefault } of supportedLocales) {
   if (code == undefined || typeof code !== 'string')
     error(500, `Invalid locale code in supported locales settings: ${code}`);
   // For translations
@@ -59,9 +59,9 @@ for (const [l, statLoc] of Object.entries(localeMatches)) {
 
 const config: Config<TranslationsPayload> = {
   // log: { level: import.meta.env.DEV ? 'debug' : 'warn' },
-  parser: parser({ignoreTag: true}),
+  parser: parser({ ignoreTag: true }),
   // Add language names as default translations for all locales under the 'lang' key
-  translations: Object.fromEntries(Object.keys(localeMatches).map((l) => [l, {lang: langNames}])),
+  translations: Object.fromEntries(Object.keys(localeMatches).map((l) => [l, { lang: langNames }])),
   // Define loaders so that we use the dbLocales names for ones matched in static locales
   loaders: Object.entries(localeMatches)
     .map(([dbLoc, statLoc]) =>
@@ -90,14 +90,14 @@ export const t = {
   ...derived(i18n.t, ($t) => (key: string, payload?: TranslationsPayload) => {
     let parsed: string | undefined;
     try {
-      parsed = $t(key, {...defaultPayload, ...payload});
+      parsed = $t(key, { ...defaultPayload, ...payload });
     } catch (e) {
       logDebugError(e);
     }
     return parsed == null ? key : parsed;
   }),
   get: (key: string, payload?: TranslationsPayload) =>
-    get(i18n.t)(key, {...defaultPayload, ...payload})
+    get(i18n.t)(key, { ...defaultPayload, ...payload })
 };
 
 export const {
@@ -111,7 +111,7 @@ export const {
   setLocale
 } = i18n;
 
-export {defaultLocale};
+export { defaultLocale };
 
 /////////////////////////////////////////////////////
 // 4. Utility function exports
@@ -129,7 +129,7 @@ export function addDynamicTranslations(
   translations: Parameters<typeof addTranslations>[0]
 ) {
   if (dynamicTranslationsAdded[loc]) return;
-  addTranslations(purgeTranslations({[loc]: translations}));
+  addTranslations(purgeTranslations({ [loc]: translations }));
   dynamicTranslationsAdded[loc] = true;
 }
 

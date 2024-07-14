@@ -1,11 +1,11 @@
-import {MultipleChoiceQuestion} from '$voter/vaa-matching';
+import { MultipleChoiceQuestion } from '$voter/vaa-matching';
 
 /**
  * A dummy question object for matching.
  */
 export class LikertQuestion extends MultipleChoiceQuestion {
   public readonly category: QuestionCategoryProps;
-  constructor({id, values, category}: LikertQuestionOptions) {
+  constructor({ id, values, category }: LikertQuestionOptions) {
     super(id, values);
     this.category = category;
   }

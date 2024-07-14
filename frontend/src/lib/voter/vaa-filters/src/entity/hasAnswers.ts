@@ -1,5 +1,5 @@
-import type {WrappedEntity, FilterableEntity} from './filterableEntity';
-import type {FilterableQuestion} from '../question/filterableQuestion';
+import type { FilterableQuestion } from '../question/filterableQuestion';
+import type { WrappedEntity, FilterableEntity } from './filterableEntity';
 
 /**
  * Either a wrapped or a naked entity that has answers.

@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {createEventDispatcher} from 'svelte';
-  import {logDebugError} from '$lib/utils/logger';
-  import {onKeyboardFocusOut} from '$lib/utils/onKeyboardFocusOut';
+  import { createEventDispatcher } from 'svelte';
   import type {
     LikertResponseButtonsEventDetail,
     LikertResponseButtonsProps
   } from './LikertResponseButtons.type';
+  import { t } from '$lib/i18n';
+  import { logDebugError } from '$lib/utils/logger';
+  import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
 
   type $$Props = LikertResponseButtonsProps;
 
@@ -121,7 +121,7 @@
     dispatch(
       // Check whether the selected value has changed or not
       selectedKey != null && value == selectedKey ? 'reselect' : 'change',
-      {id: name, value} as LikertResponseButtonsEventDetail
+      { id: name, value } as LikertResponseButtonsEventDetail
     );
   }
 </script>

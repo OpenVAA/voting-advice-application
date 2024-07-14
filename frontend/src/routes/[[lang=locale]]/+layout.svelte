@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
+  import { FeedbackModal } from '$lib/components/feedback/modal';
+  import { Loading } from '$lib/components/loading';
   import localSettings from '$lib/config/settings.json';
-  import {openFeedbackModal} from '$lib/stores';
-  import {FeedbackModal} from '$lib/components/feedback/modal';
-  import {Loading} from '$lib/components/loading';
-  import {MaintenancePage} from '$lib/templates/maintenance';
+  import { t } from '$lib/i18n';
+  import { openFeedbackModal } from '$lib/stores';
+  import { MaintenancePage } from '$lib/templates/maintenance';
   import '../../app.css';
-  import type {LayoutData} from './$types';
+  import type { LayoutData } from './$types';
 
   export let data: LayoutData;
 

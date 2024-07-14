@@ -1,6 +1,7 @@
 <script lang="ts">
-  import {concatClass} from '$lib/utils/components';
-  import {Expander} from '$lib/components/expander';
+  import type { EntityFiltersProps } from './EntityFilters.type';
+  import { Expander } from '$lib/components/expander';
+  import { concatClass } from '$lib/utils/components';
   import {
     ObjectFilter,
     ChoiceQuestionFilter,
@@ -8,7 +9,6 @@
     NumericFilter,
     NumericQuestionFilter
   } from '$voter/vaa-filters';
-  import type {EntityFiltersProps} from './EntityFilters.type';
 
   type $$Props = EntityFiltersProps;
 

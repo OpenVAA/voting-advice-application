@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {Button} from '$lib/components/button';
-  import {PasswordField} from '$candidate/components/passwordField';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {PasswordValidator} from '$candidate/components/passwordValidator';
+  import { PasswordField } from '$candidate/components/passwordField';
+  import { PasswordValidator } from '$candidate/components/passwordValidator';
+  import { Button } from '$lib/components/button';
+  import { t } from '$lib/i18n';
+  import { getRoute, Route } from '$lib/utils/navigation';
 
   export let password = '';
   export let passwordConfirmation = '';

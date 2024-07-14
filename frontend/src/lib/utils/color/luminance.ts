@@ -1,4 +1,4 @@
-import type {RGB} from './rgb';
+import type { RGB } from './rgb';
 
 /** Luminance factors for rgb channels */
 export const LUM_F = [0.2126, 0.7152, 0.0722];

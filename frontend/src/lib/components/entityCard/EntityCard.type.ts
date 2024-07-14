@@ -1,5 +1,5 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
-import type {InfoAnswerProps} from '../infoAnswer';
+import type { SvelteHTMLElements } from 'svelte/elements';
+import type { InfoAnswerProps } from '../infoAnswer';
 export type EntityCardProps = SvelteHTMLElements['article'] & {
   /**
    * The action to take when the card is clicked. If the card has subentites, the action will only be triggered by clicking the content above them.
@@ -16,7 +16,7 @@ export type EntityCardProps = SvelteHTMLElements['article'] & {
   /**
    * Possible question whose answers should be shown in the card, along with possibly options for their display.
    */
-  questions?: {
+  questions?: Array<{
     /**
      * The question whose answer is shown.
      */
@@ -29,11 +29,11 @@ export type EntityCardProps = SvelteHTMLElements['article'] & {
      * How to format the answer. See `<InfoAnswer>` for details. @default 'default'
      */
     format?: InfoAnswerProps['format'];
-  }[];
+  }>;
   /**
    * Possible sub-entities of the entity to show in the card, e.g. candidates for a party.
    */
-  subcards?: EntityCardProps[];
+  subcards?: Array<EntityCardProps>;
   /**
    * The maximum number of sub-entities to show. If there are more a button will be shown for displaying the remaining ones. @default 3
    */

@@ -1,6 +1,6 @@
-import {locale, t} from '$lib/i18n';
-import {logDebugError} from '$lib/utils/logger';
-import {checkUrl} from './links';
+import { checkUrl } from './links';
+import { locale, t } from '$lib/i18n';
+import { logDebugError } from '$lib/utils/logger';
 
 // Utilities for getting Answers to Questions from Candidates and formatting them
 // TODO: These will be deprecated when we get proper Classes defs and methods for Question objects using the vaa-data module.
@@ -47,7 +47,7 @@ export function getLikertAnswer(entity: EntityProps, question: QuestionProps) {
 export function getAnswerForDisplay(
   entity: EntityProps,
   question: QuestionProps
-): string | string[] | undefined {
+): string | Array<string> | undefined {
   const answer = getAnswer(entity, question);
   if (answer == null || answer.value === '') return undefined;
   const qt = question.type;
@@ -104,12 +104,12 @@ function getChoiceLabel(question: QuestionProps, answer: AnswerProps['value']): 
 function getChoiceLabels(
   question: QuestionProps,
   answers: AnswerProps['value']
-): string[] | undefined {
+): Array<string> | undefined {
   if (!Array.isArray(answers)) {
     logDebugError(`Invalid question answers (${answers}) for question ${question.id}`);
     return undefined;
   }
-  return answers.map((a) => getChoiceLabel(question, a)).filter((l) => l != null) as string[];
+  return answers.map((a) => getChoiceLabel(question, a)).filter((l) => l != null) as Array<string>;
 }
 
 /**

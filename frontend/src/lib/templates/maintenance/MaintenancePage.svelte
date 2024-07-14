@@ -1,8 +1,8 @@
 <script lang="ts">
-  import {onMount} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {track} from '$lib/utils/analytics/track';
-  import {ErrorPage} from '../error';
+  import { onMount } from 'svelte';
+  import { ErrorPage } from '../error';
+  import { t } from '$lib/i18n';
+  import { track } from '$lib/utils/analytics/track';
 
   onMount(() => track('maintenance_shown'));
 </script>

@@ -1,6 +1,6 @@
-import type {SignedNormalizedDistance} from '../distance';
-import type {MISSING_VALUE} from '../missingValue';
-import type {MatchingSpace} from './matchingSpace';
+import type { SignedNormalizedDistance } from '../distance';
+import type { MISSING_VALUE } from '../missingValue';
+import type { MatchingSpace } from './matchingSpace';
 
 /**
  * A coordinate in a space defined by SignedNormalizedDistances that may be missing
@@ -12,7 +12,7 @@ export type MatchingSpaceCoordinate = SignedNormalizedDistance | typeof MISSING_
  */
 export class MatchingSpacePosition {
   constructor(
-    public coordinates: MatchingSpaceCoordinate[],
+    public coordinates: Array<MatchingSpaceCoordinate>,
     public readonly space?: MatchingSpace
   ) {
     if (space && space.dimensions !== coordinates.length)

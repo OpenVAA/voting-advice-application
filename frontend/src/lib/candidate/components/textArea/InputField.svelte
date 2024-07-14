@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type {TextAreaProps} from './TextArea.type';
-  import {Icon} from '$lib/components/icon';
+  import type { TextAreaProps } from './TextArea.type';
+  import { Icon } from '$lib/components/icon';
 
   type $$Props = TextAreaProps;
 

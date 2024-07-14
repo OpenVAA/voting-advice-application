@@ -1,16 +1,16 @@
 <script lang="ts">
-  import {getContext} from 'svelte';
-  import {page} from '$app/stores';
-  import {t} from '$lib/i18n';
-  import {goto} from '$app/navigation';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {PasswordField} from '$lib/candidate/components/passwordField';
-  import {FrontPage} from '$lib/templates/frontPage';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { PasswordField } from '$lib/candidate/components/passwordField';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { t } from '$lib/i18n';
+  import { FrontPage } from '$lib/templates/frontPage';
+  import type { CandidateContext } from '$lib/utils/candidateStore';
+  import { getRoute, Route } from '$lib/utils/navigation';
 
-  const {userStore, logIn, emailOfNewUserStore} = getContext<CandidateContext>('candidate');
+  const { userStore, logIn, emailOfNewUserStore } = getContext<CandidateContext>('candidate');
 
   let email = '';
   let password = '';
@@ -29,7 +29,7 @@
     } else {
       // If user has chosen an app language, change to that language
       if (appLanguageCode) {
-        await goto($getRoute({locale: appLanguageCode}));
+        await goto($getRoute({ locale: appLanguageCode }));
       }
     }
   };

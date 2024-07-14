@@ -1,19 +1,19 @@
 <script lang="ts">
-  import {Button} from '$lib/components/button';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Expander} from '$lib/components/expander';
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {getContext} from 'svelte';
-  import {get} from 'svelte/store';
-  import {Warning} from '$lib/components/warning';
+  import { getContext } from 'svelte';
+  import { get } from 'svelte/store';
   import {
     QuestionsStartPage,
     AnsweredQuestion,
     UnAnsweredQuestion
   } from '$lib/candidate/components/questionsPage';
-  import type {Question} from '$lib/types/candidateAttributes';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import { Button } from '$lib/components/button';
+  import { Expander } from '$lib/components/expander';
+  import { Warning } from '$lib/components/warning';
+  import { t } from '$lib/i18n';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import type { Question } from '$lib/types/candidateAttributes';
+  import type { CandidateContext } from '$lib/utils/candidateStore';
+  import { getRoute, Route } from '$lib/utils/navigation';
 
   const {
     basicInfoFilledStore,
@@ -101,11 +101,11 @@
     </p>
     {#if opinionQuestionsLeft != 0 && !loading && !questionsLocked}
       <div class="pb-6 text-center text-warning">
-        {$t('candidateApp.questions.warning', {numUnansweredQuestions: opinionQuestionsLeft})}
+        {$t('candidateApp.questions.warning', { numUnansweredQuestions: opinionQuestionsLeft })}
       </div>
       <div class="flex w-full justify-center pb-40 pt-20">
         <Button
-          href={$getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion?.id})}
+          href={$getRoute({ route: Route.CandAppQuestions, id: nextUnansweredQuestion?.id })}
           text={$t('candidateApp.questions.enterMissingAnswer')}
           variant="main"
           icon="next" />
@@ -133,7 +133,7 @@
       <Button
         text={$t('candidateApp.questions.return')}
         variant="main"
-        href={$getRoute({route: Route.CandAppHome})} />
+        href={$getRoute({ route: Route.CandAppHome })} />
     </div>
   </BasicPage>
 {/if}

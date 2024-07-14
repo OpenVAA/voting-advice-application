@@ -1,22 +1,22 @@
 <script lang="ts">
-  import {Button} from '$lib/components/button';
-  import {Expander} from '$lib/components/expander';
-  import {LikertResponseButtons} from '$lib/components/questions';
-  import {t, locale} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {translate} from '$lib/i18n/utils/translate';
-  import {CategoryTag} from '$lib/components/categoryTag';
-  import {QuestionOpenAnswer} from '$lib/components/questions';
-  import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
-  import type {RenderQuestionProps} from './Question.type';
+  import { getContext } from 'svelte';
+  import type { RenderQuestionProps } from './Question.type';
+  import { Button } from '$lib/components/button';
+  import { CategoryTag } from '$lib/components/categoryTag';
+  import { Expander } from '$lib/components/expander';
+  import { LikertResponseButtons } from '$lib/components/questions';
+  import { QuestionOpenAnswer } from '$lib/components/questions';
+  import { t, locale } from '$lib/i18n';
+  import { translate } from '$lib/i18n/utils/translate';
+  import type { CandidateContext } from '$lib/utils/candidateStore';
+  import { getRoute, Route } from '$lib/utils/navigation';
 
   type $$Props = RenderQuestionProps;
 
   export let question: $$Props['question'];
   export let categoryQuestions: $$Props['categoryQuestions'];
 
-  const {answersStore, questionsLockedStore} = getContext<CandidateContext>('candidate');
+  const { answersStore, questionsLockedStore } = getContext<CandidateContext>('candidate');
 
   $: questionsLocked = $questionsLockedStore;
 
@@ -50,7 +50,7 @@ open answers and a button to navigate to the questions page.
       <LikertResponseButtons
         name={question.id}
         mode="display"
-        options={question.values?.map(({key, label}) => ({
+        options={question.values?.map(({ key, label }) => ({
           key,
           label: translate(label, $locale)
         }))}
@@ -67,7 +67,7 @@ open answers and a button to navigate to the questions page.
           text={!questionsLocked
             ? $t('candidateApp.questions.editYourAnswer')
             : $t('candidateApp.questions.viewYourAnswer')}
-          href={$getRoute({route: Route.CandAppQuestionEdit, id: question.id})}
+          href={$getRoute({ route: Route.CandAppQuestionEdit, id: question.id })}
           icon={!questionsLocked ? 'create' : 'show'}
           iconPos="left" />
       </div>

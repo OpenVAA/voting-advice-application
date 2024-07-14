@@ -1,6 +1,6 @@
-import {expect, test} from 'vitest';
-import {defaultLocale} from '../';
-import {canonize, isLocale, matchLocale, parseAcceptedLanguages, translate} from '../utils';
+import { expect, test } from 'vitest';
+import { defaultLocale } from '../';
+import { canonize, isLocale, matchLocale, parseAcceptedLanguages, translate } from '../utils';
 
 test('canonize and isLocale', () => {
   // Locale names are based on the examples in the RFC:

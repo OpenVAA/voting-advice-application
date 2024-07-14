@@ -3,13 +3,13 @@
  * TODO: Test all required functions.
  */
 
-import {describe, test, expect, vi, type Mock} from 'vitest';
-import {loadTranslations, locale, locales} from '$lib/i18n';
-import type * as environment from '$app/environment';
-import {constants} from '$lib/utils/constants';
-import {dataProvider} from '$lib/api/dataProvider/strapi';
+import { describe, test, expect, vi, type Mock } from 'vitest';
 import allPartiesResponse from './data/allParties.response.json';
 import allPartiesResult from './data/allParties.result.json';
+import type * as environment from '$app/environment';
+import { dataProvider } from '$lib/api/dataProvider/strapi';
+import { loadTranslations, locale, locales } from '$lib/i18n';
+import { constants } from '$lib/utils/constants';
 
 const LOCALE = 'fi';
 
@@ -37,11 +37,11 @@ describe('Test mock processing of data that should be fetched from the backend',
   locale.set(LOCALE);
   await loadTranslations(LOCALE);
   console.info(locale.get(), locales.get());
-  const {getAllParties} = await dataProvider;
+  const { getAllParties } = await dataProvider;
 
   test('getAllParties', async () => {
     (fetch as Mock).mockResolvedValue(createFetchResponse(allPartiesResponse));
-    const response = await getAllParties({loadAnswers: true, locale: LOCALE});
+    const response = await getAllParties({ loadAnswers: true, locale: LOCALE });
     expect(fetch).toHaveBeenCalledWith(
       `${constants.BACKEND_URL}/api/parties?populate%5Blogo%5D=true&populate%5Bcandidates%5D=false&populate%5Banswers%5D%5Bpopulate%5D%5Bquestion%5D=true&pagination%5BpageSize%5D=1000`
     );
@@ -50,5 +50,5 @@ describe('Test mock processing of data that should be fetched from the backend',
 });
 
 function createFetchResponse(data: unknown) {
-  return {json: () => new Promise((resolve) => resolve(data))};
+  return { json: () => new Promise((resolve) => resolve(data)) };
 }

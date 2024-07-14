@@ -4,9 +4,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {error} from '@sveltejs/kit';
-import {locales} from '$lib/i18n';
-import {logDebugError} from '$lib/utils/logger';
+import { error } from '@sveltejs/kit';
 import type {
   GetAllPartiesOptions,
   GetAnyQuestionsOptions,
@@ -17,11 +15,13 @@ import type {
   GetQuestionsOptionsBase,
   DataProvider
 } from '../dataProvider';
-import {filterById} from './utils/filterById';
-import {DataFolder} from './dataFolder';
-import {setFeedback} from './setFeedback';
-import {ensureColors} from '$lib/utils/color/ensureColors';
-import type {LocalQuestionCategoryProps, LocalQuestionProps} from './localDataProvider.type';
+import { DataFolder } from './dataFolder';
+import type { LocalQuestionCategoryProps, LocalQuestionProps } from './localDataProvider.type';
+import { setFeedback } from './setFeedback';
+import { filterById } from './utils/filterById';
+import { locales } from '$lib/i18n';
+import { ensureColors } from '$lib/utils/color/ensureColors';
+import { logDebugError } from '$lib/utils/logger';
 
 ///////////////////////////////////////////////////////
 // LIMITED SUPPORT
@@ -70,7 +70,9 @@ function readFile<T>(filename: string): Promise<T> {
 /**
  * Parse a list of `QuestionProps` objects from a promised list of `LocalQuestionProps` objects.
  */
-function parseQuestions(questions: Promise<LocalQuestionProps[]>): Promise<QuestionProps[]> {
+function parseQuestions(
+  questions: Promise<Array<LocalQuestionProps>>
+): Promise<Array<QuestionProps>> {
   return Promise.all([questions, getAllQuestionCategories()]).then(([qsts, cats]) => {
     const qstProps = qsts.map((q) => parseQuestion(cats, q));
     // Link the questions to the categories
@@ -86,8 +88,8 @@ function parseQuestions(questions: Promise<LocalQuestionProps[]>): Promise<Quest
  * NB. The categories do not contain questions yet and must be supplied with those later.
  */
 function getAllQuestionCategories(): Promise<Record<string, QuestionCategoryProps>> {
-  return readFile<LocalQuestionCategoryProps[]>('questionCategories.json').then((categories) =>
-    Object.fromEntries(categories.map((c) => [c.id, {...c, questions: []}]))
+  return readFile<Array<LocalQuestionCategoryProps>>('questionCategories.json').then((categories) =>
+    Object.fromEntries(categories.map((c) => [c.id, { ...c, questions: [] }]))
   );
 }
 
@@ -100,7 +102,7 @@ function parseQuestion(
   questionCategories: Record<string, QuestionCategoryProps>,
   question: LocalQuestionProps
 ): QuestionProps {
-  const {categoryId, ...rest} = question;
+  const { categoryId, ...rest } = question;
   const category = questionCategories[categoryId];
   if (category == null) {
     error(
@@ -108,7 +110,7 @@ function parseQuestion(
       `No question category found with id ${question.categoryId} for question ${JSON.stringify(question)}`
     );
   }
-  return {...rest, category};
+  return { ...rest, category };
 }
 
 ///////////////////////////////////////////////////////
@@ -141,7 +143,7 @@ function getElection(options?: GetElectionOptions): Promise<ElectionProps> {
  * This is a redundant and will likely be made obsolete. Use the other question getters instead.
  * NB. The implementation is also inefficient when getting all questions, bc `getAllQuestionCategories` is called twice.
  */
-function getQuestions(options?: GetAnyQuestionsOptions): Promise<QuestionProps[]> {
+function getQuestions(options?: GetAnyQuestionsOptions): Promise<Array<QuestionProps>> {
   warnOnUnsupportedOptions(options);
   if (options?.categoryType == null || options?.categoryType === 'all')
     return Promise.all([getInfoQuestions(options), getOpinionQuestions(options)]).then(
@@ -156,27 +158,27 @@ function getQuestions(options?: GetAnyQuestionsOptions): Promise<QuestionProps[]
  * Get all the info questions.
  * @returns A Promise with an array of `QuestionProps`
  */
-function getInfoQuestions(options?: GetQuestionsOptionsBase): Promise<QuestionProps[]> {
+function getInfoQuestions(options?: GetQuestionsOptionsBase): Promise<Array<QuestionProps>> {
   warnOnUnsupportedOptions(options);
-  return parseQuestions(readFile<LocalQuestionProps[]>('infoQuestions.json'));
+  return parseQuestions(readFile<Array<LocalQuestionProps>>('infoQuestions.json'));
 }
 
 /**
  * Get all the opinion questions.
  * @returns A Promise with an array of `QuestionProps`
  */
-function getOpinionQuestions(options?: GetQuestionsOptionsBase): Promise<QuestionProps[]> {
+function getOpinionQuestions(options?: GetQuestionsOptionsBase): Promise<Array<QuestionProps>> {
   warnOnUnsupportedOptions(options);
-  return parseQuestions(readFile<LocalQuestionProps[]>('opinionQuestions.json'));
+  return parseQuestions(readFile<Array<LocalQuestionProps>>('opinionQuestions.json'));
 }
 
 /**
  * Get all the parties, regardless whether they are nominated, have nominations or not.
  * @returns A Promise with an array of `PartyProps`
  */
-function getAllParties(options?: GetAllPartiesOptions): Promise<PartyProps[]> {
+function getAllParties(options?: GetAllPartiesOptions): Promise<Array<PartyProps>> {
   warnOnUnsupportedOptions(options);
-  return readFile<PartyProps[]>('parties.json')
+  return readFile<Array<PartyProps>>('parties.json')
     .then((parties) => filterById(parties, options))
     .then((parties) =>
       parties.map((p) => ({
@@ -190,7 +192,7 @@ function getAllParties(options?: GetAllPartiesOptions): Promise<PartyProps[]> {
  * Get all the nominated parties or parties nominating candidates.
  * @returns A Promise with an array of `PartyProps`
  */
-function getNominatingParties(options?: GetNominatingPartiesOptions): Promise<PartyProps[]> {
+function getNominatingParties(options?: GetNominatingPartiesOptions): Promise<Array<PartyProps>> {
   warnOnUnsupportedOptions(options);
   return getAllParties(options);
 }
@@ -201,9 +203,9 @@ function getNominatingParties(options?: GetNominatingPartiesOptions): Promise<Pa
  */
 function getNominatedCandidates(
   options?: GetNominatedCandidatesOptions
-): Promise<CandidateProps[]> {
+): Promise<Array<CandidateProps>> {
   warnOnUnsupportedOptions(options);
-  return readFile<CandidateProps[]>('candidates.json').then((candidates) =>
+  return readFile<Array<CandidateProps>>('candidates.json').then((candidates) =>
     filterById(candidates, options)
   );
 }

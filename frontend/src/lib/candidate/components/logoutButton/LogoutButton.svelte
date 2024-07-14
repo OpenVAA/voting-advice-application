@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {TimedModal} from '$lib/components/modal/timed';
-  import {goto} from '$app/navigation';
-  import {Button} from '$lib/components/button';
-  import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
-  import type {LogoutButtonProps} from './LogoutButton.type';
+  import { getContext } from 'svelte';
+  import type { LogoutButtonProps } from './LogoutButton.type';
+  import { goto } from '$app/navigation';
+  import { Button } from '$lib/components/button';
+  import { TimedModal } from '$lib/components/modal/timed';
+  import { t } from '$lib/i18n';
+  import type { CandidateContext } from '$lib/utils/candidateStore';
+  import { getRoute, Route } from '$lib/utils/navigation';
 
   type $$props = LogoutButtonProps;
 
@@ -91,11 +91,11 @@ Allows user to log out. Displays modal notification if the user hasn't filled al
     </p>
   {:else}
     <p>
-      {$t('candidateApp.logoutModal.questionsLeft', {opinionQuestionsLeft})}
+      {$t('candidateApp.logoutModal.questionsLeft', { opinionQuestionsLeft })}
     </p>
   {/if}
   <p>
-    {$t('candidateApp.logoutModal.confirmation', {timeLeft})}
+    {$t('candidateApp.logoutModal.confirmation', { timeLeft })}
   </p>
   <!-- </div> -->
   <div slot="actions" class="flex w-full flex-col items-center">

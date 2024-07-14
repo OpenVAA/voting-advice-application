@@ -1,7 +1,15 @@
 <script lang="ts">
-  import {error} from '@sveltejs/kit';
-  import type {Snapshot} from './$types';
-  import {t} from '$lib/i18n';
+  import { error } from '@sveltejs/kit';
+  import type { Snapshot } from './$types';
+  import { Button } from '$lib/components/button';
+  import type { EntityCardProps } from '$lib/components/entityCard';
+  import { EntityList } from '$lib/components/entityList';
+  import { EntityListControls } from '$lib/components/entityListControls';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { Loading } from '$lib/components/loading';
+  import { StretchBackground } from '$lib/components/stretchBackground';
+  import { Tabs } from '$lib/components/tabs';
+  import { t } from '$lib/i18n';
   import {
     allQuestions,
     answeredQuestions,
@@ -15,19 +23,11 @@
     startFeedbackPopupCountdown,
     startSurveyPopupCountdown
   } from '$lib/stores';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {candidateFilters} from '$lib/utils/filters';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {Button} from '$lib/components/button';
-  import type {EntityCardProps} from '$lib/components/entityCard';
-  import {EntityList} from '$lib/components/entityList';
-  import {EntityListControls} from '$lib/components/entityListControls';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {Loading} from '$lib/components/loading';
-  import {StretchBackground} from '$lib/components/stretchBackground';
-  import {Tabs} from '$lib/components/tabs';
-  import {BasicPage} from '$lib/templates/basicPage';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { startEvent } from '$lib/utils/analytics/track';
+  import { candidateFilters } from '$lib/utils/filters';
+  import { getRoute, Route } from '$lib/utils/navigation';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
 
   /**
    * The currently active tab in the results. We want this to persist between opening entity details and returning to the results.
@@ -39,12 +39,12 @@
   };
 
   // Which entity sections to show
-  const sections = $settings.results.sections as EntityType[];
+  const sections = $settings.results.sections as Array<EntityType>;
   if (!sections?.length) error(500, 'No sections to show');
 
   // These will hold the filtered entities returned by EntityListControls
-  let filteredCandidates: WrappedEntity<CandidateProps>[] = [];
-  let filteredParties: WrappedEntity<PartyProps>[] = [];
+  let filteredCandidates: Array<WrappedEntity<CandidateProps>> = [];
+  let filteredParties: Array<WrappedEntity<PartyProps>> = [];
 
   let resultsAvailableSync = false;
   $resultsAvailable.then((v) => {
@@ -65,7 +65,7 @@
   /**
    * The possible additional card props to add to cards on EntityLists. Currenltly, this only includes possible extra questions.
    */
-  let additionalEcProps: Record<string, Partial<EntityCardProps>> = {candidate: {}, party: {}};
+  let additionalEcProps: Record<string, Partial<EntityCardProps>> = { candidate: {}, party: {} };
 
   $: updateAdditionalEcProps($allQuestions, $settings);
 
@@ -77,11 +77,11 @@
     for (const type in additionalEcProps) {
       const questionSettings = currentSettings.results.cardContents[
         type as keyof AppSettings['results']['cardContents']
-      ].filter((c) => typeof c === 'object' && c.question != null) as AppSettingsQuestionRef[];
+      ].filter((c) => typeof c === 'object' && c.question != null) as Array<AppSettingsQuestionRef>;
       if (questionSettings.length) {
         const questions: EntityCardProps['questions'] = [];
         for (const qs of questionSettings) {
-          const {question, ...rest} = qs;
+          const { question, ...rest } = qs;
           if (allQuestionsSync[question])
             questions.push({
               question: allQuestionsSync[question],
@@ -113,12 +113,12 @@
    */
   function parseParty(
     party: WrappedEntity<PartyProps>,
-    allCandidates?: WrappedEntity<CandidateProps>[],
+    allCandidates?: Array<WrappedEntity<CandidateProps>>,
     maxSubcards = 3
   ): EntityCardProps {
     return {
       content: party,
-      action: $getRoute({route: Route.ResultParty, id: party.entity.id}),
+      action: $getRoute({ route: Route.ResultParty, id: party.entity.id }),
       subcards: allCandidates?.length
         ? allCandidates.filter((c) => c.entity.party?.id === party.entity.id).map(parseCandidate)
         : undefined,
@@ -129,7 +129,7 @@
 
   /** Shorthand for building a candidate link route */
   function candidateRoute(candidate: WrappedEntity<CandidateProps>) {
-    return $getRoute({route: Route.ResultCandidate, id: candidate.entity.id});
+    return $getRoute({ route: Route.ResultCandidate, id: candidate.entity.id });
   }
 </script>
 
@@ -184,7 +184,8 @@
       <Tabs
         tabs={sections.map((entityType) => $t(`common.${entityType}.plural`))}
         bind:activeIndex={activeTab}
-        on:change={({detail}) => startEvent('results_changeTab', {section: sections[detail.index]})}
+        on:change={({ detail }) =>
+          startEvent('results_changeTab', { section: sections[detail.index] })}
         class="mx-10" />
     {/if}
 
@@ -194,10 +195,10 @@
         <Loading showLabel class="mt-lg" />
       {:then [allCandidates, candidateFilters]}
         <h2 class="mx-10 mb-md mt-md">
-          {$t('results.candidatesShown', {numShown: filteredCandidates.length})}
+          {$t('results.candidatesShown', { numShown: filteredCandidates.length })}
           {#if filteredCandidates.length !== allCandidates.length}
             <span class="font-normal text-secondary"
-              >{$t('results.candidatesTotal', {numTotal: allCandidates.length})}</span>
+              >{$t('results.candidatesTotal', { numTotal: allCandidates.length })}</span>
           {/if}
         </h2>
         {#if candidateFilters}
@@ -217,10 +218,10 @@
         <Loading showLabel class="mt-lg" />
       {:then [allParties, allCandidatesOrUndef]}
         <h2 class="mx-10 mb-md mt-md">
-          {$t('results.partiesShown', {numShown: filteredParties.length})}
+          {$t('results.partiesShown', { numShown: filteredParties.length })}
           {#if filteredParties.length !== allParties.length}
             <span class="font-normal text-secondary"
-              >{$t('results.partiesTotal', {numTotal: allParties.length})}</span>
+              >{$t('results.partiesTotal', { numTotal: allParties.length })}</span>
           {/if}
         </h2>
         <EntityListControls

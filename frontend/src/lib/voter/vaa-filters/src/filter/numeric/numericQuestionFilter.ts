@@ -1,6 +1,6 @@
-import {type MaybeWrapped, type EntityWithAnswers} from '../../entity';
-import {type NumericQuestion} from '../../question';
-import {NumericFilter} from './numericFilter';
+import { type MaybeWrapped, type EntityWithAnswers } from '../../entity';
+import { type NumericQuestion } from '../../question';
+import { NumericFilter } from './numericFilter';
 
 /**
  * A filter for numeric questions.
@@ -13,7 +13,7 @@ export class NumericQuestionFilter<
    * @param question The numeric question
    * @param name  Optional name for use when displaying the filter
    */
-  constructor({question, name}: {question: NumericQuestion; name?: string}) {
-    super({question, name});
+  constructor({ question, name }: { question: NumericQuestion; name?: string }) {
+    super({ question, name });
   }
 }

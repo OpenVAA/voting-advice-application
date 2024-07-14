@@ -19,7 +19,7 @@ import {
   WRAPPED_ENTITY_KEY,
   ChoiceQuestionFilter
 } from '../';
-import {matchRules, ruleIsActive, copyRules} from '../src/filter/rules';
+import { matchRules, ruleIsActive, copyRules } from '../src/filter/rules';
 
 const LOCALE = 'en';
 
@@ -106,7 +106,7 @@ describe('Filter basics', () => {
   const targets = Object.values(people);
 
   test('TextPropertyFilter', () => {
-    const filter = new TextPropertyFilter({property: 'name'}, LOCALE);
+    const filter = new TextPropertyFilter({ property: 'name' }, LOCALE);
     expect(filter.apply(targets), 'Match all by default').toEqual(targets);
     filter.include = 'Bart';
     expect(filter.apply(targets), 'Exact match').toEqual([people['Bart']]);
@@ -140,7 +140,7 @@ describe('Filter basics', () => {
   test('TextPropertyFilter: Missing values', () => {
     const nameless = new NamedEntity(undefined);
     const targetsWithMissing = [...targets, nameless];
-    const filter = new TextPropertyFilter({property: 'name'}, LOCALE);
+    const filter = new TextPropertyFilter({ property: 'name' }, LOCALE);
     expect(filter.apply(targetsWithMissing), 'Include missing by default').toEqual(
       targetsWithMissing
     );
@@ -158,7 +158,7 @@ describe('Filter basics', () => {
   });
 
   test('onChange', () => {
-    const filter = new TextPropertyFilter({property: 'name'}, LOCALE);
+    const filter = new TextPropertyFilter({ property: 'name' }, LOCALE);
     const handler = vi.fn((f) => f);
     filter.onChange(handler);
     filter.include = 'Bart';
@@ -184,13 +184,13 @@ describe('Filter basics', () => {
       targets.map((p) => [p.name, wrap(p)])
     );
     const wrappedTargets = Object.values(wrappedPeople);
-    const filter = new TextPropertyFilter<WrappedEntity<NamedEntity>>({property: 'name'}, LOCALE);
+    const filter = new TextPropertyFilter<WrappedEntity<NamedEntity>>({ property: 'name' }, LOCALE);
     filter.include = 'Bart';
     expect(filter.apply(wrappedTargets), 'Include wrapped').toEqual([wrappedPeople['Bart']]);
   });
 
   test('Active filter', () => {
-    const filter = new TextPropertyFilter({property: 'name'}, LOCALE);
+    const filter = new TextPropertyFilter({ property: 'name' }, LOCALE);
     expect(filter.active, 'Not active by default').toBe(false);
     filter.include = 'Bart';
     expect(filter.active, 'Active if changed').toBe(true);
@@ -212,7 +212,7 @@ test('TextQuestionFilter', () => {
     ])
   );
   const targets = Object.values(people);
-  const filter = new TextQuestionFilter({question}, LOCALE);
+  const filter = new TextQuestionFilter({ question }, LOCALE);
   filter.include = 'Bart';
   expect(filter.apply(targets), 'Exact match').toEqual([people['Bart']]);
   filter.include = 'a';
@@ -222,23 +222,23 @@ test('TextQuestionFilter', () => {
 });
 
 test('ChoiceQuestionFilter', () => {
-  const choices: Choice[] = [
-    {key: 0, label: 'M'}, // 3rd in alhabetical order in the 'fi' locale
-    {key: 1, label: 'A'}, // 1st
-    {key: 2, label: 'Ä'}, // 4th
-    {key: 3, label: 'E'}, // 2nd
-    {key: 4, label: 'X'} // Should not be included because not present in answers
+  const choices: Array<Choice> = [
+    { key: 0, label: 'M' }, // 3rd in alhabetical order in the 'fi' locale
+    { key: 1, label: 'A' }, // 1st
+    { key: 2, label: 'Ä' }, // 4th
+    { key: 3, label: 'E' }, // 2nd
+    { key: 4, label: 'X' } // Should not be included because not present in answers
   ];
   const question = new ChoiceQuestion('rightId', choices);
   const answers = [0, 1, 1, 2, 3];
-  const people: AnsweringEntity[] = answers.map(
+  const people: Array<AnsweringEntity> = answers.map(
     (a) =>
       new AnsweringEntity({
         wrongId: undefined,
         rightId: a
       })
   );
-  const filter = new ChoiceQuestionFilter({question}, 'fi');
+  const filter = new ChoiceQuestionFilter({ question }, 'fi');
   expect(filter.active, 'Not active by default').toBe(false);
   expect(filter.apply(people), 'Include all by default').toEqual(people);
   filter.include = [0];
@@ -262,22 +262,22 @@ test('ChoiceQuestionFilter', () => {
 });
 
 test('ChoiceQuestionFilter: missing values', () => {
-  const choices: Choice[] = [
-    {key: 0, label: 'M'}, // 3rd in alhabetical order in the 'fi' locale
-    {key: 1, label: 'A'}, // 1st
-    {key: 2, label: 'Ä'}, // 4th
-    {key: 3, label: 'E'} // 2nd
+  const choices: Array<Choice> = [
+    { key: 0, label: 'M' }, // 3rd in alhabetical order in the 'fi' locale
+    { key: 1, label: 'A' }, // 1st
+    { key: 2, label: 'Ä' }, // 4th
+    { key: 3, label: 'E' } // 2nd
   ];
   const question = new ChoiceQuestion('rightId', choices);
   const answers = [0, 1, 1, 2, undefined];
-  const people: AnsweringEntity[] = answers.map(
+  const people: Array<AnsweringEntity> = answers.map(
     (a) =>
       new AnsweringEntity({
         wrongId: undefined,
         rightId: a
       })
   );
-  const filter = new ChoiceQuestionFilter({question}, 'fi');
+  const filter = new ChoiceQuestionFilter({ question }, 'fi');
   expect(filter.apply(people), 'Include all by default').toEqual(people);
   filter.include = [0];
   expect(filter.apply(people), 'Do not include missing').toEqual([people[0]]);
@@ -307,11 +307,11 @@ test('ChoiceQuestionFilter: missing values', () => {
 });
 
 test('ChoiceQuestionFilter: multipleVAlues', () => {
-  const choices: Choice[] = [
-    {key: 0, label: 'M'}, // 3rd in alhabetical order in the 'fi' locale
-    {key: 1, label: 'A'}, // 1st
-    {key: 2, label: 'Ä'}, // 4th
-    {key: 3, label: 'E'} // 2nd
+  const choices: Array<Choice> = [
+    { key: 0, label: 'M' }, // 3rd in alhabetical order in the 'fi' locale
+    { key: 1, label: 'A' }, // 1st
+    { key: 2, label: 'Ä' }, // 4th
+    { key: 3, label: 'E' } // 2nd
   ];
   const question = new ChoiceQuestion('rightId', choices, true);
   const answers = [
@@ -320,14 +320,14 @@ test('ChoiceQuestionFilter: multipleVAlues', () => {
     [2, 3],
     [0, 1, 2, 3]
   ];
-  const people: AnsweringEntity[] = answers.map(
+  const people: Array<AnsweringEntity> = answers.map(
     (a) =>
       new AnsweringEntity({
         wrongId: undefined,
         rightId: a
       })
   );
-  const filter = new ChoiceQuestionFilter({question}, 'fi');
+  const filter = new ChoiceQuestionFilter({ question }, 'fi');
   expect(filter.active, 'Not active by default').toBe(false);
   expect(filter.apply(people), 'Include all by default').toEqual(people);
   filter.include = [0];
@@ -341,7 +341,7 @@ test('ChoiceQuestionFilter: multipleVAlues', () => {
   filter.reset();
   expect(filter.active, 'Not active if reset').toBe(false);
   const singleQuestion = new ChoiceQuestion('rightId', choices, false);
-  const singleFilter = new ChoiceQuestionFilter({question: singleQuestion}, 'fi');
+  const singleFilter = new ChoiceQuestionFilter({ question: singleQuestion }, 'fi');
   expect(
     () => singleFilter.apply(people),
     'Disallow casting of arrays to single value types'
@@ -350,14 +350,14 @@ test('ChoiceQuestionFilter: multipleVAlues', () => {
 
 test('ObjectFilter', () => {
   const partyData = [
-    {id: '0', name: 'M party'}, // 3rd in alhabetical order in the 'fi' locale
-    {id: '1', name: 'A party'}, // 1st
-    {id: '2', name: 'Ä party'}, // 4th
-    {id: '3', name: 'E party'} // 2nd
+    { id: '0', name: 'M party' }, // 3rd in alhabetical order in the 'fi' locale
+    { id: '1', name: 'A party' }, // 1st
+    { id: '2', name: 'Ä party' }, // 4th
+    { id: '3', name: 'E party' } // 2nd
   ];
   const parties = partyData.map((d) => new Party(d.id, d.name));
   const memberships = [0, 1, 1, 2, 3];
-  const people: PartyMember[] = memberships.map((m) => new PartyMember(parties[m]));
+  const people: Array<PartyMember> = memberships.map((m) => new PartyMember(parties[m]));
   const filter = new ObjectFilter<PartyMember, Party>(
     {
       property: 'party',
@@ -392,14 +392,14 @@ test('ObjectFilter', () => {
 test('NumericQuestionFilter', () => {
   const ages = [10, 40, 50, 90];
   const question = new NumericQuestion('rightId');
-  const people: AnsweringEntity[] = ages.map(
+  const people: Array<AnsweringEntity> = ages.map(
     (a) =>
       new AnsweringEntity({
         wrongId: undefined,
         rightId: a
       })
   );
-  const filter = new NumericQuestionFilter({question});
+  const filter = new NumericQuestionFilter({ question });
   expect(filter.active, 'Not active by default').toBe(false);
   expect(filter.apply(people), 'Include all by default').toEqual(people);
   filter.min = 20;
@@ -412,24 +412,24 @@ test('NumericQuestionFilter', () => {
   filter.reset();
   filter.max = 45;
   expect(filter.apply(people), 'Max match').toEqual([people[0], people[1]]);
-  expect(filter.parseValues(people), 'Min and max values').toEqual({min: 10, max: 90});
+  expect(filter.parseValues(people), 'Min and max values').toEqual({ min: 10, max: 90 });
   filter.reset();
   expect(filter.active, 'Not active if reset').toBe(false);
 });
 
 test('FilterGroup', () => {
   const partyData = [
-    {id: '0', name: 'M party'}, // 3rd in alhabetical order in the 'fi' locale
-    {id: '1', name: 'A party'}, // 1st
-    {id: '2', name: 'Ä party'}, // 4th
-    {id: '3', name: 'E party'} // 2nd
+    { id: '0', name: 'M party' }, // 3rd in alhabetical order in the 'fi' locale
+    { id: '1', name: 'A party' }, // 1st
+    { id: '2', name: 'Ä party' }, // 4th
+    { id: '3', name: 'E party' } // 2nd
   ];
   const parties = partyData.map((d) => new Party(d.id, d.name));
   const memberships = [0, 1, 2, 3];
   const ages = [10, 40, 50, 90];
   const question = new NumericQuestion('age');
-  const people: AnsweringPartyMember[] = memberships.map(
-    (m, i) => new AnsweringPartyMember({age: ages[i]}, parties[m])
+  const people: Array<AnsweringPartyMember> = memberships.map(
+    (m, i) => new AnsweringPartyMember({ age: ages[i] }, parties[m])
   );
   const partyFilter = new ObjectFilter<AnsweringPartyMember, Party>(
     {
@@ -440,7 +440,7 @@ test('FilterGroup', () => {
     },
     'fi'
   );
-  const ageFilter = new NumericQuestionFilter({question});
+  const ageFilter = new NumericQuestionFilter({ question });
   const group = new FilterGroup([partyFilter, ageFilter]);
   expect(group.active, 'Not active by default').toBe(false);
   expect(group.apply(people), 'Include all by default').toEqual(people);
@@ -475,7 +475,7 @@ class NamedEntity implements FilterableEntity {
 class AnsweringEntity implements EntityWithAnswers {
   answers: AnswerDict = {};
   constructor(answers: Record<string, AnswerValue['value']>) {
-    Object.entries(answers).forEach(([id, value]) => (this.answers[id] = {value}));
+    Object.entries(answers).forEach(([id, value]) => (this.answers[id] = { value }));
   }
 }
 
@@ -534,7 +534,7 @@ class ChoiceQuestion implements IChoiceQuestion {
 
   constructor(
     public id: string,
-    public values: Choice[],
+    public values: Array<Choice>,
     public isMultiple: boolean = false
   ) {
     this.type = isMultiple ? 'multipleChoiceCategorical' : 'singleChoiceCategorical';

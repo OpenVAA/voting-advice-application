@@ -1,9 +1,9 @@
 // Provides utilities for ensuring color contrasts for accessibility purposes
 
-import {parseColor} from './parseColor';
-import {rgbToHex} from './rgbToHex';
-import {setLuminance, luminance} from './luminance';
-import type {RGB} from './rgb';
+import { setLuminance, luminance } from './luminance';
+import { parseColor } from './parseColor';
+import type { RGB } from './rgb';
+import { rgbToHex } from './rgbToHex';
 
 /** Added to luminances when calculating the contrast */
 const CONTRAST_EPS = 0.05;
@@ -35,7 +35,7 @@ export function adjustContrast(
     if (!res) return undefined;
     bgColor = res;
   }
-  const {contrast, colorL, bgL} = calcContrast(color, bgColor);
+  const { contrast, colorL, bgL } = calcContrast(color, bgColor);
   if (contrast < minContrast) {
     // Select the direction of luminance adjustment primarily based on which color is lighter
     const bgDarker = colorL > bgL;
@@ -62,7 +62,7 @@ export function calcContrast(color: RGB, bgColor: RGB) {
     colorL > bgL
       ? (colorL + CONTRAST_EPS) / (bgL + CONTRAST_EPS)
       : (bgL + CONTRAST_EPS) / (colorL + CONTRAST_EPS);
-  return {contrast, colorL, bgL};
+  return { contrast, colorL, bgL };
 }
 
 /**

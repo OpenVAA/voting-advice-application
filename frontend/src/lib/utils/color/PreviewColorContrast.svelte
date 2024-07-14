@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {adjustContrast, calcContrast} from './adjustContrast';
-  import {luminance} from './luminance';
-  import {parseColor} from './parseColor';
-  import type {RGB} from './rgb';
-  import {rgbToHex} from './rgbToHex';
+  import { adjustContrast, calcContrast } from './adjustContrast';
+  import { luminance } from './luminance';
+  import { parseColor } from './parseColor';
+  import type { RGB } from './rgb';
+  import { rgbToHex } from './rgbToHex';
 
   let origColor = '#000000';
   let parsedColor = '';

@@ -1,9 +1,9 @@
-import type {LayoutLoad} from './$types';
-import {addDynamicTranslations, locale, setRoute} from '$lib/i18n/init';
+import type { LayoutLoad } from './$types';
+import { addDynamicTranslations, locale, setRoute } from '$lib/i18n/init';
 
-export const load: LayoutLoad = (async ({data}) => {
+export const load: LayoutLoad = (async ({ data }) => {
   const appLabels = data.election?.appLabels;
-  const {currentLocale, route} = data.i18n;
+  const { currentLocale, route } = data.i18n;
   // Add possible app labels translations
   if (appLabels) addDynamicTranslations(currentLocale, appLabels);
   if (currentLocale !== locale.get()) locale.set(currentLocale);

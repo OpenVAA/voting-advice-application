@@ -1,4 +1,4 @@
-import {getContext, setContext} from 'svelte';
+import { getContext, setContext } from 'svelte';
 
 /**
  * Get the context object that should contain a callback for closing the navigation menu.

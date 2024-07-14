@@ -1,9 +1,11 @@
 <script lang="ts">
-  import {error} from '@sveltejs/kit';
-  import {afterNavigate, goto} from '$app/navigation';
-  import {locale, t} from '$lib/i18n';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import { error } from '@sveltejs/kit';
+  import type { Readable } from 'svelte/store';
+  import { afterNavigate, goto } from '$app/navigation';
+  import { Button } from '$lib/components/button';
+  import { EntityDetails } from '$lib/components/entityDetails';
+  import { Loading } from '$lib/components/loading';
+  import { locale, t } from '$lib/i18n';
   import {
     candidateRankings,
     infoQuestions,
@@ -12,25 +14,23 @@
     partyRankings,
     settings
   } from '$lib/stores/index.js';
-  import {Button} from '$lib/components/button';
-  import {EntityDetails} from '$lib/components/entityDetails';
-  import {Loading} from '$lib/components/loading';
-  import {SingleCardPage} from '$lib/templates/singleCardPage';
-  import type {Readable} from 'svelte/store';
+  import { SingleCardPage } from '$lib/templates/singleCardPage';
+  import { startEvent } from '$lib/utils/analytics/track';
+  import { getRoute, Route } from '$lib/utils/navigation';
 
   export let data;
 
   let entityType: Exclude<EntityType, 'all'>;
   let id: string;
   /** A party's candidates for displaying on a separate tab in EntityDetails or undefined if not applicable */
-  let candidatesOrUndef: Promise<WrappedEntity[] | RankingProps[] | undefined>;
+  let candidatesOrUndef: Promise<Array<WrappedEntity> | Array<RankingProps> | undefined>;
   let entity: Promise<WrappedEntity | RankingProps | undefined>;
   let title = '';
-  let entities: Readable<Promise<WrappedEntity[] | RankingProps[]>>;
+  let entities: Readable<Promise<Array<WrappedEntity> | Array<RankingProps>>>;
 
   // We need to set these reactively to get the most recent param data. We should, however, check that data has actually changed before reloading anything.
   $: {
-    const current = {id, entityType};
+    const current = { id, entityType };
     id = data.entityId;
     entityType = data.entityType as Exclude<EntityType, 'all'>;
 
@@ -68,10 +68,10 @@
           // Find out the rank of this entity
           $entities.then((all) => {
             const rank = all.findIndex((a) => a.entity.id == e.entity.id);
-            startEvent(`results_ranked_${entityType}`, {id, score: e.score, rank});
+            startEvent(`results_ranked_${entityType}`, { id, score: e.score, rank });
           });
         } else {
-          startEvent(`results_browse_${entityType}`, {id});
+          startEvent(`results_browse_${entityType}`, { id });
         }
       });
     }

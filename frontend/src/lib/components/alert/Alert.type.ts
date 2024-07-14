@@ -1,5 +1,5 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
-import type {IconName} from '../icon';
+import type { SvelteHTMLElements } from 'svelte/elements';
+import type { IconName } from '../icon';
 
 export type AlertProps = SvelteHTMLElements['dialog'] & {
   /**

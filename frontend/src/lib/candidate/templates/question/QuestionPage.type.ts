@@ -1,4 +1,4 @@
-import type {Question} from '$lib/types/candidateAttributes';
+import type { Question } from '$lib/types/candidateAttributes';
 
 export type QuestionPageProps = {
   /**

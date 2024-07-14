@@ -1,1 +1,1 @@
-export type {HasMatchableAnswers} from './hasMatchableAnswers';
+export type { HasMatchableAnswers } from './hasMatchableAnswers';

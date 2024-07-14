@@ -1,23 +1,23 @@
 <script lang="ts">
-  import {get} from 'svelte/store';
-  import {goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
-  import {translate} from '$lib/i18n/utils/translate';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {getLanguages, getGenders, updateBasicInfo} from '$lib/api/candidate';
-  import {Icon} from '$lib/components/icon';
-  import {Button} from '$lib/components/button';
-  import {Field, FieldGroup} from '$lib/components/common/form';
-  import {BasicPage} from '$lib/templates/basicPage';
+  import { getContext } from 'svelte';
+  import { get } from 'svelte/store';
   import AvatarSelect from './AvatarSelect.svelte';
-  import {MultilangTextInput} from '$candidate/components/textArea';
-  import {PreventNavigation} from '$lib/components/preventNavigation';
-  import {getContext} from 'svelte';
-  import type {StrapiGenderData, StrapiLanguageData} from '$lib/api/dataProvider/strapi';
-  import type {Language} from '$lib/types/candidateAttributes';
-  import Warning from '$lib/components/warning/Warning.svelte';
   import InputContainer from './InputContainer.svelte';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import { goto } from '$app/navigation';
+  import { MultilangTextInput } from '$candidate/components/textArea';
+  import { getLanguages, getGenders, updateBasicInfo } from '$lib/api/candidate';
+  import type { StrapiGenderData, StrapiLanguageData } from '$lib/api/dataProvider/strapi';
+  import { Button } from '$lib/components/button';
+  import { Field, FieldGroup } from '$lib/components/common/form';
+  import { Icon } from '$lib/components/icon';
+  import { PreventNavigation } from '$lib/components/preventNavigation';
+  import Warning from '$lib/components/warning/Warning.svelte';
+  import { t } from '$lib/i18n';
+  import { translate } from '$lib/i18n/utils/translate';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import type { Language } from '$lib/types/candidateAttributes';
+  import type { CandidateContext } from '$lib/utils/candidateStore';
+  import { getRoute, Route } from '$lib/utils/navigation';
 
   const basicInfoFields = ['firstName', 'lastName', 'party'];
 
@@ -47,7 +47,7 @@
 
   let loading = false;
 
-  let {gender, motherTongues, birthday, photo, unaffiliated, manifesto, nomination} = {
+  let { gender, motherTongues, birthday, photo, unaffiliated, manifesto, nomination } = {
     gender: {
       id: undefined
     },
@@ -141,10 +141,10 @@
   };
 
   // fetch languages from backend
-  let allLanguages: StrapiLanguageData[] | undefined;
+  let allLanguages: Array<StrapiLanguageData> | undefined;
   getLanguages().then((languages) => (allLanguages = languages));
 
-  let allGenders: StrapiGenderData[] | undefined;
+  let allGenders: Array<StrapiGenderData> | undefined;
   getGenders().then((genders) => (allGenders = genders));
 
   // map the languages to their respective locales for easier use

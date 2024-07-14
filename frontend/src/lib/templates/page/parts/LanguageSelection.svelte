@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {locale as currentLocale, locales, t} from '$lib/i18n';
-  import {getRoute} from '$lib/utils/navigation';
-  import {NavGroup, NavItem} from '$lib/components/navigation';
+  import { NavGroup, NavItem } from '$lib/components/navigation';
+  import { locale as currentLocale, locales, t } from '$lib/i18n';
+  import { getRoute } from '$lib/utils/navigation';
 </script>
 
 <!--
@@ -24,7 +24,7 @@ A template part that language selection options for the navigation menu if these
   <NavGroup title={$t('navigation.selectLanguage')}>
     {#each $locales as locale}
       <NavItem
-        href={$getRoute({locale})}
+        href={$getRoute({ locale })}
         icon="language"
         text={$t(`lang.${locale}`)}
         disabled={locale === $currentLocale} />

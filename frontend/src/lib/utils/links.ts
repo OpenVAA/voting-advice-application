@@ -1,6 +1,6 @@
-import {t} from '$lib/i18n';
-import {logDebugError} from '$lib/utils/logger';
-import {ucFirst} from '$lib/utils/text/ucFirst';
+import { t } from '$lib/i18n';
+import { logDebugError } from '$lib/utils/logger';
+import { ucFirst } from '$lib/utils/text/ucFirst';
 
 /**
  * Ensures an url is valid.

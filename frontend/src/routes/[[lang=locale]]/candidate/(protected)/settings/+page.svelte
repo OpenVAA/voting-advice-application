@@ -1,20 +1,20 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {goto} from '$app/navigation';
-  import {getRoute} from '$lib/utils/navigation';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Icon} from '$lib/components/icon';
-  import {PasswordValidator} from '$candidate/components/passwordValidator';
-  import {Button} from '$lib/components/button';
-  import {validatePassword} from '$shared/utils/passwordValidation';
-  import {changePassword, getLanguages, updateAppLanguage} from '$lib/api/candidate';
-  import {PasswordField} from '$lib/candidate/components/passwordField';
-  import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
-  import type {StrapiLanguageData} from '$lib/api/dataProvider/strapi';
-  import type {Language} from '$lib/types/candidateAttributes';
+  import { validatePassword } from '$shared/utils/passwordValidation';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { PasswordValidator } from '$candidate/components/passwordValidator';
+  import { changePassword, getLanguages, updateAppLanguage } from '$lib/api/candidate';
+  import type { StrapiLanguageData } from '$lib/api/dataProvider/strapi';
+  import { PasswordField } from '$lib/candidate/components/passwordField';
+  import { Button } from '$lib/components/button';
+  import { Icon } from '$lib/components/icon';
+  import { t } from '$lib/i18n';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import type { Language } from '$lib/types/candidateAttributes';
+  import type { CandidateContext } from '$lib/utils/candidateStore';
+  import { getRoute } from '$lib/utils/navigation';
 
-  const {userStore, loadUserData} = getContext<CandidateContext>('candidate');
+  const { userStore, loadUserData } = getContext<CandidateContext>('candidate');
   $: user = $userStore;
 
   // TODO: consider refactoring this as this uses same classes as profile/+page.svelte?
@@ -41,7 +41,7 @@
   });
 
   // Fetch languages from backend
-  let allLanguages: StrapiLanguageData[] | undefined;
+  let allLanguages: Array<StrapiLanguageData> | undefined;
   getLanguages().then((languages) => (allLanguages = languages));
 
   // Handle the change when the app language is changed
@@ -64,7 +64,7 @@
       try {
         await updateAppLanguage(languageObj);
         await loadUserData(); // Reload user data so it's up to date
-        await goto($getRoute({locale: languageObj.localisationCode})); // Change page language to the chosen one
+        await goto($getRoute({ locale: languageObj.localisationCode })); // Change page language to the chosen one
       } catch (error) {
         languageErrorMessage = $t('candidateApp.settings.changeLanguageError');
       }

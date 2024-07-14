@@ -1,13 +1,13 @@
-import {expect, test} from 'vitest';
-import {t, locale, defaultLocale, loadTranslations} from '$lib/i18n';
-import {getAnswer, getLikertAnswer, getAnswerForDisplay, DATE_FORMATS} from '../answers';
-import {MockCandidate, MockParty, MockQuestionCategory} from './mock-objects';
+import { expect, test } from 'vitest';
+import { getAnswer, getLikertAnswer, getAnswerForDisplay, DATE_FORMATS } from '../answers';
+import { MockCandidate, MockParty, MockQuestionCategory } from './mock-objects';
+import { t, locale, defaultLocale, loadTranslations } from '$lib/i18n';
 
 const DATE = new Date();
 
 /** Make unique labels */
 function makeLabels(count = 4) {
-  const labels: AnswerOption[] = [];
+  const labels: Array<AnswerOption> = [];
   for (let i = 1; i < count + 1; i++) {
     labels.push({
       key: i,
@@ -108,7 +108,7 @@ const QST: Record<string, QuestionProps> = {
   }
 };
 
-const ANS: Record<string, AnswerProps & {questionId: string}> = {
+const ANS: Record<string, AnswerProps & { questionId: string }> = {
   Likert: {
     questionId: QST.Likert.id,
     value: 1,
@@ -150,7 +150,7 @@ const ANS: Record<string, AnswerProps & {questionId: string}> = {
 
 const answers = {} as AnswerDict;
 Object.values(ANS).forEach(
-  ({questionId, value, openAnswer}) => (answers[questionId] = {value, openAnswer})
+  ({ questionId, value, openAnswer }) => (answers[questionId] = { value, openAnswer })
 );
 
 const CND = new MockCandidate('1', new MockParty('p1'), answers);
@@ -177,12 +177,12 @@ test('getAnswerForDisplay', async () => {
     QST.SingleCategorical.values?.find((a) => a.key === ANS.SingleCategorical.value)?.label
   );
   expect(getAnswerForDisplay(CND, QST.MultiCategorical), 'Display MultiCategorical answer').toEqual(
-    (ANS.MultiCategorical.value as number[]).map(
+    (ANS.MultiCategorical.value as Array<number>).map(
       (a) => QST.MultiCategorical.values?.find((v) => v.key === a)?.label
     )
   );
   expect(getAnswerForDisplay(CND, QST.PrefOrder), 'Display PrefOrder answer').toEqual(
-    (ANS.PrefOrder.value as number[]).map(
+    (ANS.PrefOrder.value as Array<number>).map(
       (a) => QST.PrefOrder.values?.find((v) => v.key === a)?.label
     )
   );

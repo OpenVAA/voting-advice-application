@@ -3,8 +3,8 @@ import {
   assertSignedNormalized,
   type SignedNormalizedDistance
 } from '../distance';
-import {MissingValueBias} from './bias';
-import {MissingValueDistanceMethod} from './distanceMethod';
+import { MissingValueBias } from './bias';
+import { MissingValueDistanceMethod } from './distanceMethod';
 
 /**
  * Options passed to imputeMissingValues

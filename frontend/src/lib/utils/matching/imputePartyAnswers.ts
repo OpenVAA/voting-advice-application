@@ -1,8 +1,8 @@
-import {error} from '@sveltejs/kit';
-import {MISSING_VALUE} from '$voter/vaa-matching';
-import {logDebugError} from '$lib/utils/logger';
-import {mean} from './mean';
-import {median} from './median';
+import { error } from '@sveltejs/kit';
+import { mean } from './mean';
+import { median } from './median';
+import { logDebugError } from '$lib/utils/logger';
+import { MISSING_VALUE } from '$voter/vaa-matching';
 
 /**
  * Impute the answers for a party based on its candidates, using the specified `matchingType`. Any pre-existing answers by the party will be preserved.
@@ -14,12 +14,12 @@ import {median} from './median';
  */
 export function imputePartyAnswers(
   party: PartyProps,
-  candidates: CandidateProps[],
-  questionIds: string[],
+  candidates: Array<CandidateProps>,
+  questionIds: Array<string>,
   matchingType: Exclude<AppSettingsGroupMatchingType, 'none' | 'answersOnly'>
 ) {
   // Set existing answers as a base
-  const answers: AnswerDict = {...party.answers};
+  const answers: AnswerDict = { ...party.answers };
 
   const partyCands = candidates.filter((c) => c.party?.id === party.id);
 
@@ -27,7 +27,7 @@ export function imputePartyAnswers(
     // Don't overwrite an explicit answer
     if (answers[qid] != null) continue;
     const answerValues = partyCands.map((c) => c.answers[qid]?.value);
-    answers[qid] = {value: imputeGroupAnswer(answerValues, matchingType)};
+    answers[qid] = { value: imputeGroupAnswer(answerValues, matchingType) };
   }
 
   return answers;
@@ -40,7 +40,7 @@ export function imputePartyAnswers(
  * @returns The answer value or `MISSING_VALUE` if there are no valid answers in the group.
  */
 export function imputeGroupAnswer(
-  answers: AnswerProps['value'][],
+  answers: Array<AnswerProps['value']>,
   matchingType: Exclude<AppSettingsGroupMatchingType, 'none' | 'answersOnly'>
 ): AnswerProps['value'] {
   // Filter values
@@ -53,7 +53,7 @@ export function imputeGroupAnswer(
       return false;
     }
     return true;
-  }) as number[];
+  }) as Array<number>;
 
   // No valid values
   if (!values.length) return MISSING_VALUE;

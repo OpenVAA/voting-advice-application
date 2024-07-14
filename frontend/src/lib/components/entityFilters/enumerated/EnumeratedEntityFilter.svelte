@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {onDestroy} from 'svelte';
-  import {isMissing, type Choice, MISSING_VALUE, type MaybeMissing} from '$voter/vaa-filters';
-  import {t} from '$lib/i18n';
-  import {concatProps, getUUID} from '$lib/utils/components';
-  import {logDebugError} from '$lib/utils/logger';
-  import type {EnumeratedEntityFilterProps} from './EnumeratedEntityFilter.type';
-  import {Icon} from '$lib/components/icon';
+  import { onDestroy } from 'svelte';
+  import type { EnumeratedEntityFilterProps } from './EnumeratedEntityFilter.type';
+  import { Icon } from '$lib/components/icon';
+  import { t } from '$lib/i18n';
+  import { concatProps, getUUID } from '$lib/utils/components';
+  import { logDebugError } from '$lib/utils/logger';
+  import { isMissing, type Choice, MISSING_VALUE, type MaybeMissing } from '$voter/vaa-filters';
 
   type $$Props = EnumeratedEntityFilterProps;
 
@@ -20,7 +20,7 @@
 
   // Initialize values and possibly saved filter state
   const values = filter.parseValues(targets);
-  let selected: string[] | MaybeMissing<number>[];
+  let selected: Array<string> | Array<MaybeMissing<number>>;
   updateSelected();
 
   /** Track whether `toggleSelectAll()` will select or deselect all */
@@ -66,7 +66,7 @@
   /**
    * Convert possibly missing values for use in `<input>` elements
    */
-  function convertMissingForInputs(filterValues: MaybeMissing<string | number>[]) {
+  function convertMissingForInputs(filterValues: Array<MaybeMissing<string | number>>) {
     return filterValues.map((v) => (isMissing(isMissing) ? missingValue : v));
   }
 

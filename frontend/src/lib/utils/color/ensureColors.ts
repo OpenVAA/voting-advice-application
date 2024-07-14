@@ -1,5 +1,5 @@
+import { adjustContrast } from './adjustContrast';
 import settings from '$lib/config/settings.json';
-import {adjustContrast} from './adjustContrast';
 
 const bg = settings.colors?.light?.['base-300'] ?? 'd1ebee';
 const bgDark = settings.colors?.dark?.['base-300'] ?? '1f2324';
@@ -13,7 +13,7 @@ const bgDark = settings.colors?.dark?.['base-300'] ?? '1f2324';
 export function ensureColors(
   color?: string,
   colorDark?: string
-): {color: string; colorDark: string} {
+): { color: string; colorDark: string } {
   if (color) {
     color = adjustContrast(color, bg) ?? color;
   } else {
@@ -26,5 +26,5 @@ export function ensureColors(
   } else {
     colorDark = '';
   }
-  return {color, colorDark};
+  return { color, colorDark };
 }

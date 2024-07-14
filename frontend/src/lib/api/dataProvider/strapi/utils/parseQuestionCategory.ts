@@ -1,7 +1,7 @@
-import {translate} from '$lib/i18n/utils/translate';
-import {ensureColors} from '../../../../utils/color/ensureColors';
-import type {StrapiQuestionCategoryData} from '../strapiDataProvider.type';
-import {parseCustomData} from './parseCustomData';
+import { ensureColors } from '../../../../utils/color/ensureColors';
+import type { StrapiQuestionCategoryData } from '../strapiDataProvider.type';
+import { parseCustomData } from './parseCustomData';
+import { translate } from '$lib/i18n/utils/translate';
 
 /**
  * Parse StrapiQuestionCategory data into a `QuestionCategoryProps` object, which must be supplied with the actual `questions` later.

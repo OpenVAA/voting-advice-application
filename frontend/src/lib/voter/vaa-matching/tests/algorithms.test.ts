@@ -1,5 +1,4 @@
-import {MatchingAlgorithm} from '../src/algorithms';
-import type {HasMatchableAnswers} from '../src/entity';
+import { MatchingAlgorithm } from '../src/algorithms';
 import {
   directionalDistance,
   type DistanceMeasurementOptions,
@@ -10,16 +9,17 @@ import {
   type SignedNormalizedDistance,
   type UnsignedNormalizedDistance
 } from '../src/distance';
-import type {Match} from '../src/match';
+import type { HasMatchableAnswers } from '../src/entity';
+import type { AnswerDict } from '../src/entity/hasMatchableAnswers';
+import type { Match } from '../src/match';
 import {
   imputeMissingValues,
   MISSING_VALUE,
   MissingValueBias,
   MissingValueDistanceMethod
 } from '../src/missingValue';
-import {type MatchableQuestion, MultipleChoiceQuestion} from '../src/question';
-import {createSubspace, MatchingSpace, MatchingSpacePosition} from '../src/space';
-import type {AnswerDict} from '../src/entity/hasMatchableAnswers';
+import { type MatchableQuestion, MultipleChoiceQuestion } from '../src/question';
+import { createSubspace, MatchingSpace, MatchingSpacePosition } from '../src/space';
 
 // For convenience
 const maxDist = NORMALIZED_DISTANCE_EXTENT;
@@ -51,7 +51,7 @@ describe('single coordinate distance measurements', () => {
 });
 
 describe('imputeMissingValues', () => {
-  const refVals: SignedNormalizedDistance[] = [minVal, 0.3 * minVal, 0, 0.5 * maxVal, maxVal];
+  const refVals: Array<SignedNormalizedDistance> = [minVal, 0.3 * minVal, 0, 0.5 * maxVal, maxVal];
   describe('MissingValueDistanceMethod.Neutral', () => {
     const opts = {
       missingValueMethod: MissingValueDistanceMethod.Neutral,
@@ -137,7 +137,7 @@ describe('imputeMissingValues', () => {
 describe('measureDistance', () => {
   const weights = [1, 2, 3];
   const ms = new MatchingSpace(weights);
-  const mdOpts: DistanceMeasurementOptions[] = [
+  const mdOpts: Array<DistanceMeasurementOptions> = [
     {
       metric: DistanceMetric.Directional,
       missingValueOptions: {
@@ -269,7 +269,7 @@ describe('matchingAlgorithm', () => {
   test('throw if there are duplicate questions', () => {
     const likertScale = 5;
     const values = [0, 0.5, 1];
-    const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+    const { questions, voter, candidates, algorithm } = createMatchesAndEntities(
       createLikertValues(likertScale, values),
       [createLikertValues(likertScale, values)],
       likertScale,
@@ -283,7 +283,7 @@ describe('matchingAlgorithm', () => {
   test('throw if voter answers are missing', () => {
     const likertScale = 5;
     const values = [0, 0.5, 1];
-    const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+    const { questions, voter, candidates, algorithm } = createMatchesAndEntities(
       createLikertValues(likertScale, values),
       [createLikertValues(likertScale, values)],
       likertScale,
@@ -298,7 +298,7 @@ describe('matchingAlgorithm', () => {
     const likertScale = 5;
     const values = [0, 0.5, 1];
     const coords = values.map((v) => v * maxDist - maxVal);
-    const {questions, candidates, algorithm} = createMatchesAndEntities(
+    const { questions, candidates, algorithm } = createMatchesAndEntities(
       createLikertValues(likertScale, values),
       [createLikertValues(likertScale, values)],
       likertScale,
@@ -319,7 +319,7 @@ describe('matchingAlgorithm', () => {
     const valuesMissing = [MISSING_VALUE, MISSING_VALUE, MISSING_VALUE];
     test('MissingValueDistanceMethod.Neutral', () => {
       const dist = (maxDist * (0.25 + 0 + 0.5)) / 3;
-      const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+      const { questions, voter, candidates, algorithm } = createMatchesAndEntities(
         createLikertValues(likertScale, values),
         [valuesMissing],
         likertScale,
@@ -330,7 +330,7 @@ describe('matchingAlgorithm', () => {
     });
     test('MissingValueDistanceMethod.Neutral', () => {
       const dist = (maxDist * (0.75 + 0.5 + 1)) / 3;
-      const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+      const { questions, voter, candidates, algorithm } = createMatchesAndEntities(
         createLikertValues(likertScale, values),
         [valuesMissing],
         likertScale,
@@ -341,7 +341,7 @@ describe('matchingAlgorithm', () => {
     });
     test('MissingValueDistanceMethod.AbsoluteMaximum', () => {
       const dist = maxDist;
-      const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+      const { questions, voter, candidates, algorithm } = createMatchesAndEntities(
         createLikertValues(likertScale, values),
         [valuesMissing],
         likertScale,
@@ -357,7 +357,7 @@ describe('matchingAlgorithm', () => {
       const voterValues = [0.5, 1, 0];
       const candValues = [0, 0.5, 1];
       const dist = (maxDist * (0.5 + 0.5 + 1)) / 3;
-      const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+      const { questions, voter, candidates, algorithm } = createMatchesAndEntities(
         createLikertValues(likertScale, voterValues),
         [createLikertValues(likertScale, candValues)],
         likertScale,
@@ -376,7 +376,7 @@ describe('matchingAlgorithm', () => {
       factors = factors.map((v) => ((1 - v) / 2) * maxDist);
       // Add up and divide by dims
       const dist = factors.reduce((a, b) => a + b, 0) / 3;
-      const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+      const { questions, voter, candidates, algorithm } = createMatchesAndEntities(
         createLikertValues(likertScale, voterValues),
         [createLikertValues(likertScale, candValues)],
         likertScale,
@@ -415,21 +415,21 @@ describe('matchingAlgorithm', () => {
       const likertScale = 5;
       const voterValues = [0, 0, 0, 0, 0.5];
       const candValues = [0, 0, 1, 1, 1];
-      const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+      const { questions, voter, candidates, algorithm } = createMatchesAndEntities(
         createLikertValues(likertScale, voterValues),
         [createLikertValues(likertScale, candValues)],
         likertScale,
         DistanceMetric.Manhattan,
         MissingValueDistanceMethod.Neutral
       );
-      const subsetA = {matchableQuestions: questions.slice(0, 1)};
+      const subsetA = { matchableQuestions: questions.slice(0, 1) };
       const subsetADist = 0;
-      const subsetB = {matchableQuestions: questions.slice(2, 3)};
+      const subsetB = { matchableQuestions: questions.slice(2, 3) };
       const subsetBDist = maxDist;
-      const subsetC = {matchableQuestions: questions.slice(0, 4)};
+      const subsetC = { matchableQuestions: questions.slice(0, 4) };
       const subsetCDist = maxDist * (1 - 0.5);
       const questionGroups = [subsetA, subsetB, subsetC];
-      const match = algorithm.match(questions, voter, candidates, {questionGroups})[0];
+      const match = algorithm.match(questions, voter, candidates, { questionGroups })[0];
       expect(match.subMatches?.length).toBeCloseTo(questionGroups.length);
       expect(match.subMatches?.[0].distance).toBeCloseTo(subsetADist);
       expect(match.subMatches?.[0].questionGroup).toBe(subsetA);
@@ -439,7 +439,7 @@ describe('matchingAlgorithm', () => {
         const likertScale = 5;
         const voterValues = [0, 0, 1];
         const candValues = [0, 0, 1];
-        const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+        const { questions, voter, candidates, algorithm } = createMatchesAndEntities(
           createLikertValues(likertScale, voterValues),
           [createLikertValues(likertScale, candValues)],
           likertScale,
@@ -447,7 +447,7 @@ describe('matchingAlgorithm', () => {
           MissingValueDistanceMethod.Neutral
         );
         // A subset that includes only the question the voter has not answered
-        const subset = {matchableQuestions: questions.slice(-1)};
+        const subset = { matchableQuestions: questions.slice(-1) };
         // Remove the voter's answer to the question
         const lastQuestionId = subset.matchableQuestions[0].id;
         delete voter.answers[lastQuestionId];
@@ -479,17 +479,17 @@ describe('matchingAlgorithm', () => {
  * @returns A dict of all generated objects
  */
 function createMatchesAndEntities(
-  voterAnswers: (number | undefined)[],
-  candidateAnswers: (number | undefined)[][],
+  voterAnswers: Array<number | undefined>,
+  candidateAnswers: Array<Array<number | undefined>>,
   likertScale: number,
   distanceMetric: DistanceMetric,
   missingValueMethod: MissingValueDistanceMethod
 ): {
-  questions: MultipleChoiceQuestion[];
+  questions: Array<MultipleChoiceQuestion>;
   voter: Candidate;
-  candidates: Candidate[];
+  candidates: Array<Candidate>;
   algorithm: MatchingAlgorithm;
-  matches: Match<Candidate>[];
+  matches: Array<Match<Candidate>>;
 } {
   const numQuestions = voterAnswers.length;
   // Create dummy questions
@@ -501,7 +501,7 @@ function createMatchesAndEntities(
   // Matching algorithm
   const algorithm = new MatchingAlgorithm({
     distanceMetric,
-    missingValueOptions: {missingValueMethod}
+    missingValueOptions: { missingValueMethod }
   });
   // Get matches
   const matches = algorithm.match(questions, voter, candidates);
@@ -528,7 +528,7 @@ class Candidate implements HasMatchableAnswers {
  * @param values The normalised values
  * @returns Array of values
  */
-function createLikertValues(scale: number, values: UnsignedNormalizedDistance[]) {
+function createLikertValues(scale: number, values: Array<UnsignedNormalizedDistance>) {
   return values.map((v) => 1 + v * (scale - 1));
 }
 
@@ -540,12 +540,12 @@ function createLikertValues(scale: number, values: UnsignedNormalizedDistance[])
  * @returns An answer dict
  */
 function createAnswers(
-  questions: MatchableQuestion[],
-  answerValues: (number | undefined)[]
+  questions: Array<MatchableQuestion>,
+  answerValues: Array<number | undefined>
 ): AnswerDict {
   const answers = {} as AnswerDict;
   for (let i = 0; i < questions.length; i++) {
-    answers[questions[i].id] = {value: answerValues[i]};
+    answers[questions[i].id] = { value: answerValues[i] };
   }
   return answers;
 }
@@ -557,8 +557,8 @@ function createAnswers(
  * @param likertScale The likert scale, e.g. 5
  * @returns Array of questions
  */
-function createQuestions(numQuestions: number, likertScale: number): MultipleChoiceQuestion[] {
-  return Array.from({length: numQuestions}, (_, i) =>
+function createQuestions(numQuestions: number, likertScale: number): Array<MultipleChoiceQuestion> {
+  return Array.from({ length: numQuestions }, (_, i) =>
     MultipleChoiceQuestion.fromLikert(`qst${i}`, likertScale)
   );
 }
@@ -571,9 +571,9 @@ function createQuestions(numQuestions: number, likertScale: number): MultipleCho
  * @returns Array of candidates
  */
 function createCandidates(
-  questions: MultipleChoiceQuestion[],
-  candidateAnswers: (number | undefined)[][]
-): Candidate[] {
+  questions: Array<MultipleChoiceQuestion>,
+  candidateAnswers: Array<Array<number | undefined>>
+): Array<Candidate> {
   return candidateAnswers.map((o) => new Candidate(createAnswers(questions, o)));
 }
 
@@ -584,8 +584,8 @@ function createCandidates(
  * @returns A candidate
  */
 function createVoter(
-  questions: MultipleChoiceQuestion[],
-  voterAnswers: (number | undefined)[]
+  questions: Array<MultipleChoiceQuestion>,
+  voterAnswers: Array<number | undefined>
 ): Candidate {
   return new Candidate(createAnswers(questions, voterAnswers));
 }

@@ -1,6 +1,6 @@
-import {setContext, getContext} from 'svelte';
-import type {Writable} from 'svelte/store';
-import {type StorageType, storageWritable} from './storage';
+import { setContext, getContext } from 'svelte';
+import type { Writable } from 'svelte/store';
+import { type StorageType, storageWritable } from './storage';
 
 /**
  * Create a context object whose values are persisted in `localStorage` or `sessionStorage`. Note that the `Context` is actually set only when the returned `get` or `set` functions are called for the first time, because `Context`s can only be created during component initialization.
@@ -36,7 +36,7 @@ export function createStorageContext<C extends StorageContextContent>(
       ctx[key].set(value);
     }
   };
-  return {get, set};
+  return { get, set };
 }
 
 /**

@@ -1,20 +1,20 @@
 <script lang="ts">
-  import {Button} from '$lib/components/button';
-  import {CategoryTag} from '$lib/components/categoryTag';
-  import {Expander} from '$lib/components/expander';
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {getContext} from 'svelte';
-  import {translate} from '$lib/i18n/utils';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
-  import type {RenderQuestionProps} from './Question.type';
+  import { getContext } from 'svelte';
+  import type { RenderQuestionProps } from './Question.type';
+  import { Button } from '$lib/components/button';
+  import { CategoryTag } from '$lib/components/categoryTag';
+  import { Expander } from '$lib/components/expander';
+  import { t } from '$lib/i18n';
+  import { translate } from '$lib/i18n/utils';
+  import type { CandidateContext } from '$lib/utils/candidateStore';
+  import { getRoute, Route } from '$lib/utils/navigation';
 
   type $$Props = RenderQuestionProps;
 
   export let question: $$Props['question'];
   export let categoryQuestions: $$Props['categoryQuestions'];
 
-  const {questionsLockedStore} = getContext<CandidateContext>('candidate');
+  const { questionsLockedStore } = getContext<CandidateContext>('candidate');
   $: questionsLocked = $questionsLockedStore;
 </script>
 
@@ -42,7 +42,7 @@ Renders an unanswered question on the summary page. Consists of the questions ti
   {#if !questionsLocked}
     <a
       class="flex justify-center py-20 pb-40"
-      href={$getRoute({route: Route.CandAppQuestions, id: question.id})}>
+      href={$getRoute({ route: Route.CandAppQuestions, id: question.id })}>
       <Button
         text={$t('candidateApp.questions.answerButton')}
         class="w-full max-w-md bg-base-300" />

@@ -1,5 +1,5 @@
-import {MISSING_VALUE} from '../../missingValue';
-import type {Rules, Rule} from './rules.type';
+import { MISSING_VALUE } from '../../missingValue';
+import type { Rules, Rule } from './rules.type';
 
 /**
  * Create a copy of the filter's rules.

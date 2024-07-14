@@ -1,8 +1,8 @@
 <script lang="ts">
-  import {createEventDispatcher, onDestroy} from 'svelte';
-  import {tweened} from 'svelte/motion';
-  import {Modal} from '../';
-  import type {TimedModalProps} from './TimedModal.type';
+  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { tweened } from 'svelte/motion';
+  import { Modal } from '../';
+  import type { TimedModalProps } from './TimedModal.type';
 
   type $$Props = TimedModalProps;
   const DEFAULT_DURATION = 30;
@@ -25,7 +25,7 @@
   let _closeModal: () => void;
 
   // Used for progress bar animation
-  let progressBarTimer = tweened(timerDuration, {duration: 0});
+  let progressBarTimer = tweened(timerDuration, { duration: 0 });
   // Timeout for triggering onTimeout()
   let timeout: NodeJS.Timeout | undefined;
 
@@ -63,7 +63,7 @@
   function stopTimeout() {
     if (timeout) clearTimeout(timeout);
     timeout = undefined;
-    progressBarTimer.set($progressBarTimer, {duration: 0});
+    progressBarTimer.set($progressBarTimer, { duration: 0 });
   }
 </script>
 

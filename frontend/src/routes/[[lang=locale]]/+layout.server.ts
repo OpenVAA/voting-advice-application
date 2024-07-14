@@ -1,11 +1,11 @@
-import {error} from '@sveltejs/kit';
-import {dataProvider} from '$lib/api/getData';
-import {loadTranslations, locale} from '$lib/i18n';
-import type {LayoutServerLoad} from './$types';
+import { error } from '@sveltejs/kit';
+import type { LayoutServerLoad } from './$types';
+import { dataProvider } from '$lib/api/getData';
+import { loadTranslations, locale } from '$lib/i18n';
 
-export const load = (async ({locals, params}) => {
+export const load = (async ({ locals, params }) => {
   // Get language from locals (see hooks.server.ts)
-  const {currentLocale, preferredLocale, route} = locals;
+  const { currentLocale, preferredLocale, route } = locals;
 
   // In theory, we could just use currentLocale but we must explicitly use params.lang to rerun load on param changes
   const effectiveLocale = params.lang ?? currentLocale;
@@ -15,18 +15,18 @@ export const load = (async ({locals, params}) => {
 
   await loadTranslations(effectiveLocale);
 
-  const {getAppSettings, getElection} = await dataProvider;
+  const { getAppSettings, getElection } = await dataProvider;
 
   // Get app settings and possibly enter maintenance mode. `getAppSettings` will resolve to `undefined` if the database connection could not be made.
-  let appSettings = await getAppSettings({locale: effectiveLocale});
+  let appSettings = await getAppSettings({ locale: effectiveLocale });
   if (!appSettings) {
-    appSettings = {underMaintenance: true};
+    appSettings = { underMaintenance: true };
   }
 
   let election: ElectionProps | undefined;
   if (!appSettings.underMaintenance) {
     // Get basic data and translations
-    election = await getElection({locale: effectiveLocale});
+    election = await getElection({ locale: effectiveLocale });
     if (!election) {
       throw error(500, 'Error loading election');
     }

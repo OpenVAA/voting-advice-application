@@ -1,7 +1,7 @@
-import {NORMALIZED_DISTANCE_EXTENT} from '../distance';
-import {MISSING_VALUE} from '../missingValue';
-import type {MatchingSpaceCoordinate} from '../space';
-import type {MatchableQuestion} from './matchableQuestion';
+import { NORMALIZED_DISTANCE_EXTENT } from '../distance';
+import { MISSING_VALUE } from '../missingValue';
+import type { MatchingSpaceCoordinate } from '../space';
+import type { MatchableQuestion } from './matchableQuestion';
 
 interface MultipleChoiceValue {
   value: number;
@@ -23,7 +23,7 @@ export class MultipleChoiceQuestion implements MatchableQuestion {
    */
   constructor(
     readonly id: string,
-    readonly values: MultipleChoiceValue[]
+    readonly values: Array<MultipleChoiceValue>
   ) {
     this.id = id;
     this.values = values;
@@ -61,7 +61,7 @@ export class MultipleChoiceQuestion implements MatchableQuestion {
    */
   static fromLikert(id: string, scale: number) {
     if (!Number.isSafeInteger(scale)) throw new Error('Scale must be an integer.');
-    const values = Array.from({length: scale}, (_, i) => ({value: i + 1}));
+    const values = Array.from({ length: scale }, (_, i) => ({ value: i + 1 }));
     return new MultipleChoiceQuestion(id, values);
   }
 }

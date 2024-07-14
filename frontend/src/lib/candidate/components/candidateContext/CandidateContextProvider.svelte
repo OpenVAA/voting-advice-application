@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {candidateContext} from '$lib/utils/candidateStore';
-  import {onMount, setContext} from 'svelte';
-  import {get} from 'svelte/store';
+  import { onMount, setContext } from 'svelte';
+  import { get } from 'svelte/store';
+  import { candidateContext } from '$lib/utils/candidateStore';
 
   setContext('candidate', candidateContext);
   const token = candidateContext.tokenStore;
@@ -12,7 +12,7 @@
   });
 
   candidateContext.userStore.subscribe((user) => {
-    let {gender, motherTongues, birthday, manifesto} = {
+    let { gender, motherTongues, birthday, manifesto } = {
       gender: {
         id: undefined
       },

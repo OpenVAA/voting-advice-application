@@ -1,5 +1,5 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
-import type {IconName} from '$lib/components/icon';
+import type { SvelteHTMLElements } from 'svelte/elements';
+import type { IconName } from '$lib/components/icon';
 
 /**
  * The properties of a navigation item.
@@ -28,4 +28,4 @@ export type NavItemProps = LinkOrButtonElementProps & {
  */
 type LinkOrButtonElementProps =
   | WithRequired<SvelteHTMLElements['a'], 'href'>
-  | (SvelteHTMLElements['button'] & {href?: null});
+  | (SvelteHTMLElements['button'] & { href?: null });

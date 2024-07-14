@@ -11,14 +11,14 @@ declare global {
   /*
    * The format for JSON structure.
    */
-  type JSONData = null | string | number | boolean | {[x: string]: JSONData} | Array<JSONData>;
+  type JSONData = null | string | number | boolean | { [x: string]: JSONData } | Array<JSONData>;
 
   /**
    * Make specific properties of an interface required. Works the same way as
    * `Required<Type>` but only applies to keys listed.
    * Source: https://stackoverflow.com/questions/69327990/how-can-i-make-one-property-non-optional-in-a-typescript-type
    */
-  type WithRequired<Type, Key extends keyof Type> = Type & {[Prop in Key]-?: Type[Prop]};
+  type WithRequired<Type, Key extends keyof Type> = Type & { [Prop in Key]-?: Type[Prop] };
 
   /**
    * The properties of a multiple choice option in a Question.
@@ -38,7 +38,7 @@ declare global {
    * Properties of a Candidate's or Party's answer to a question.
    */
   interface AnswerProps {
-    value: string | string[] | boolean | number | number[] | Date | undefined | null;
+    value: string | Array<string> | boolean | number | Array<number> | Date | undefined | null;
     openAnswer?: string;
   }
 
@@ -90,8 +90,8 @@ declare global {
       supportsCandidateApp: boolean;
     };
     colors: {
-      light: {[name: string]: string};
-      dark: {[name: string]: string};
+      light: { [name: string]: string };
+      dark: { [name: string]: string };
     };
     font: {
       name: string;
@@ -115,7 +115,7 @@ declare global {
       trackEvents: boolean;
     };
     entityDetails: {
-      contents: Record<Exclude<EntityType, 'all'>, AppSettingsEntityDetailsContent[]>;
+      contents: Record<Exclude<EntityType, 'all'>, Array<AppSettingsEntityDetailsContent>>;
       showMissingElectionSymbol: Record<Exclude<EntityType, 'all'>, boolean>;
       showMissingAnswers: Record<Exclude<EntityType, 'all'>, boolean>;
     };
@@ -265,10 +265,10 @@ declare global {
     photo?: ImageProps;
     color?: string;
     colorDark?: string;
-    memberCandidateIds?: string[];
-    memberCandidates?: CandidateProps[];
-    nominatedCandidateIds?: string[];
-    nominatedCandidates?: CandidateProps[];
+    memberCandidateIds?: Array<string>;
+    memberCandidates?: Array<CandidateProps>;
+    nominatedCandidateIds?: Array<string>;
+    nominatedCandidates?: Array<CandidateProps>;
   }
 
   /**
@@ -288,7 +288,7 @@ declare global {
     fillingInfo?: string;
     hidden?: boolean;
     type: QuestionSettingsProps['type'];
-    values?: AnswerOption[];
+    values?: Array<AnswerOption>;
     min?: number | Date;
     max?: number | Date;
     notLocalizable?: boolean;
@@ -306,7 +306,7 @@ declare global {
    */
   interface CustomVideoProps {
     title: string;
-    sources: string[];
+    sources: Array<string>;
     captions: string;
     poster: string;
     aspectRatio: number;
@@ -327,7 +327,7 @@ declare global {
     info?: string;
     color?: string;
     colorDark?: string;
-    questions: QuestionProps[];
+    questions: Array<QuestionProps>;
     customData?:
       | (JSONData & {
           emoji?: string;
@@ -371,24 +371,24 @@ declare global {
       }
     | {
         type: 'singleChoiceOrdinal';
-        values: AnswerOption[];
+        values: Array<AnswerOption>;
         display?: 'vertical' | 'horizontal';
       }
     | {
         type: 'singleChoiceCategorical';
-        values: AnswerOption[];
+        values: Array<AnswerOption>;
         display?: 'vertical' | 'horizontal';
       }
     | {
         type: 'multipleChoiceCategorical';
-        values: AnswerOption[];
+        values: Array<AnswerOption>;
         display?: 'vertical' | 'horizontal';
         min?: number;
         max?: number;
       }
     | {
         type: 'preferenceOrder';
-        values: AnswerOption[];
+        values: Array<AnswerOption>;
         min?: number;
         max?: number;
       };
@@ -421,7 +421,7 @@ declare global {
    */
   interface RankingProps<T extends EntityProps = EntityProps> extends WrappedEntity<T> {
     score: number;
-    subMatches?: SubMatchProps[];
+    subMatches?: Array<SubMatchProps>;
   }
 
   /**

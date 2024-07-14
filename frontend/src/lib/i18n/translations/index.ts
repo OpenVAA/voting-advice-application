@@ -1,4 +1,4 @@
-import type {Translations} from '@sveltekit-i18n/base';
+import type { Translations } from '@sveltekit-i18n/base';
 export * from './translations.type';
 
 /* Be sure to update these arrays every time you add a new locale to `./translations` */
@@ -23,7 +23,7 @@ const keys = [
   'survey',
   'viewTexts'
 ];
-const locales = {en: 'English', fi: 'Suomi', sv: 'Svenska'};
+const locales = { en: 'English', fi: 'Suomi', sv: 'Svenska' };
 
 /**
  * Add any payload key / translation key pairs that should be included in the default translations payloads here. They will be available to all translations by default. In addition to these, some values are added from settings. See `init.ts` for more details.
@@ -41,10 +41,10 @@ export const DEFAULT_PAYLOAD_KEYS = {
 export const staticTranslations: {
   [locale: string]: {
     name: string;
-    loaders: {
+    loaders: Array<{
       key: string;
       loader: () => Promise<Translations.Input>;
-    }[];
+    }>;
   };
 } = {};
 

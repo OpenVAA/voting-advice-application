@@ -1,22 +1,22 @@
 <script lang="ts">
-  import {error} from '@sveltejs/kit';
-  import {t} from '$lib/i18n';
+  import { error } from '@sveltejs/kit';
+  import { getQuestionsContext } from '../../questions.context';
+  import { filterAndSortQuestions } from '../../questions.utils';
+  import type { PageData } from './$types';
+  import { Button } from '$lib/components/button';
+  import { CategoryTag } from '$lib/components/categoryTag';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { Loading } from '$lib/components/loading';
+  import { t } from '$lib/i18n';
   import {
     openFeedbackModal,
     opinionQuestionCategories,
     resultsAvailable,
     settings
   } from '$lib/stores';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {Button} from '$lib/components/button';
-  import {CategoryTag} from '$lib/components/categoryTag';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {Loading} from '$lib/components/loading';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {getQuestionsContext} from '../../questions.context';
-  import {filterAndSortQuestions} from '../../questions.utils';
-  import type {PageData} from './$types';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { getRoute, Route } from '$lib/utils/navigation';
 
   /**
    * A page for showing a category's introduction page.
@@ -25,12 +25,12 @@
 
   export let data: PageData;
 
-  const {firstQuestionId, selectedCategories} = getQuestionsContext();
+  const { firstQuestionId, selectedCategories } = getQuestionsContext();
   let category: QuestionCategoryProps | undefined;
   let nextQuestionId: string | undefined;
   let progress = 0;
   let nextCategoryId: string | undefined;
-  let questions: QuestionProps[];
+  let questions: Array<QuestionProps>;
   /** Synced version so that we don't have to await for this explicitly */
   let resultsAvailableSync = false;
   $: $resultsAvailable.then((d) => (resultsAvailableSync = d));
@@ -38,7 +38,10 @@
   // Prepare category data reactively when the route param or question categories (triggered by locale changes) change
   $: update(data.categoryId, $opinionQuestionCategories);
 
-  async function update(categoryId: string, promisedCategories: Promise<QuestionCategoryProps[]>) {
+  async function update(
+    categoryId: string,
+    promisedCategories: Promise<Array<QuestionCategoryProps>>
+  ) {
     const cc = await promisedCategories;
     const qq = cc.map((c) => c.questions).flat();
     category = cc.find((c) => c.id === categoryId);
@@ -57,7 +60,7 @@
 {#if !category}
   <Loading class="mt-lg" />
 {:else}
-  {@const {customData, name, info} = category}
+  {@const { customData, name, info } = category}
 
   <BasicPage title={name} progressMin={0} progressMax={questions.length + 1} {progress}>
     <svelte:fragment slot="banner">
@@ -88,7 +91,9 @@
       <HeadingGroup class="relative">
         <h1><CategoryTag {category} /></h1>
         <PreHeading class="text-secondary">
-          {$t('questions.categoryIntroQuestions', {numQuestions: category.questions?.length ?? -1})}
+          {$t('questions.categoryIntroQuestions', {
+            numQuestions: category.questions?.length ?? -1
+          })}
         </PreHeading>
       </HeadingGroup>
     </svelte:fragment>
@@ -101,7 +106,7 @@
       <Button
         variant="main"
         disabled={!nextQuestionId}
-        href={$getRoute({route: Route.Question, id: nextQuestionId})}
+        href={$getRoute({ route: Route.Question, id: nextQuestionId })}
         text={$t('common.continue')} />
       {#if $settings.questions.categoryIntros?.allowSkip}
         <Button
@@ -109,8 +114,8 @@
           color="secondary"
           href={$getRoute(
             nextCategoryId
-              ? {route: Route.QuestionCategory, id: nextCategoryId}
-              : {route: Route.Results}
+              ? { route: Route.QuestionCategory, id: nextCategoryId }
+              : { route: Route.Results }
           )}
           text={nextCategoryId ? $t('questions.skipCategory') : $t('questions.skipToResults')}
           class="justify-center" />

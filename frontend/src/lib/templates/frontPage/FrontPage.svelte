@@ -1,8 +1,8 @@
 <script lang="ts">
-  import {concatProps} from '$lib/utils/components';
-  import {Footer} from '../parts/footer';
-  import {Page} from '../page';
-  import type {FrontPageProps} from './FrontPage.type';
+  import { Page } from '../page';
+  import { Footer } from '../parts/footer';
+  import type { FrontPageProps } from './FrontPage.type';
+  import { concatProps } from '$lib/utils/components';
 
   type $$Props = FrontPageProps;
 

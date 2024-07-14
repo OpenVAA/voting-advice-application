@@ -1,10 +1,21 @@
 <script lang="ts">
-  import {browser} from '$app/environment';
-  import {goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {logDebugError} from '$lib/utils/logger';
-  import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
+  import { getQuestionsContext } from '../questions.context';
+  import { filterAndSortQuestions } from '../questions.utils';
+  import type { PageData } from './$types';
+  import { browser } from '$app/environment';
+  import { goto } from '$app/navigation';
+  import { Button } from '$lib/components/button';
+  import { CategoryTag } from '$lib/components/categoryTag';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { Loading } from '$lib/components/loading';
+  import {
+    LikertResponseButtons,
+    QuestionActions,
+    QuestionInfo,
+    type LikertResponseButtonsEventDetail
+  } from '$lib/components/questions';
+  import { type VideoMode, Video } from '$lib/components/video';
+  import { t } from '$lib/i18n';
   import {
     answeredQuestions,
     deleteVoterAnswer,
@@ -15,21 +26,10 @@
     settings,
     setVoterAnswer
   } from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {CategoryTag} from '$lib/components/categoryTag';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {Loading} from '$lib/components/loading';
-  import {
-    LikertResponseButtons,
-    QuestionActions,
-    QuestionInfo,
-    type LikertResponseButtonsEventDetail
-  } from '$lib/components/questions';
-  import {type VideoMode, Video} from '$lib/components/video';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {getQuestionsContext} from '../questions.context';
-  import {filterAndSortQuestions} from '../questions.utils';
-  import type {PageData} from './$types';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { startEvent } from '$lib/utils/analytics/track';
+  import { logDebugError } from '$lib/utils/logger';
+  import { FIRST_QUESTION_ID, getRoute, Route } from '$lib/utils/navigation';
 
   /**
    * A page for displaying a single opinion question or a question category intro.
@@ -47,14 +47,14 @@
    */
   const DELAY_M_MS = 350;
 
-  let {questionId} = data;
-  const {setQuestionAsFirst} = data;
-  const {firstQuestionId, selectedCategories} = getQuestionsContext();
+  let { questionId } = data;
+  const { setQuestionAsFirst } = data;
+  const { firstQuestionId, selectedCategories } = getQuestionsContext();
 
   /** Use to disable the response buttons when an answer is set but we're still waiting for the next page to load */
   let disabled = false;
   let question: QuestionProps | undefined;
-  let questions: QuestionProps[];
+  let questions: Array<QuestionProps>;
   let questionIndex: number;
   let selectedKey: AnswerOption['key'] | undefined;
 
@@ -76,7 +76,7 @@
     $firstQuestionId = questionId;
     // Also, clear any possible selected categories, although there should under normal circumstances be none
     $selectedCategories = null;
-    startEvent('question_startFrom', {questionId: questionId});
+    startEvent('question_startFrom', { questionId: questionId });
   }
 
   // 2. SORT AND FILTER QUESTIONS
@@ -101,7 +101,7 @@
   /**
    * Update the current question and related variables.
    */
-  function updateQuestion(newQuestionId: string, questions: QuestionProps[]) {
+  function updateQuestion(newQuestionId: string, questions: Array<QuestionProps>) {
     if (!questions?.length) return;
 
     // Save the current question so that we only rebuild the page if the question has actually changed either due to being a different one or a locale change
@@ -135,7 +135,7 @@
   }
 
   /** Save voter answer in a store and go to next question */
-  function answerQuestion({detail}: CustomEvent<LikertResponseButtonsEventDetail>) {
+  function answerQuestion({ detail }: CustomEvent<LikertResponseButtonsEventDetail>) {
     disabled = true;
     setVoterAnswer(detail.id, detail.value);
     logDebugError(
@@ -169,13 +169,13 @@
       steps > 0 && // Show category intro only when moving forward
       getIndexInCategory(questions[newIndex]) === 0 // And for the first question in the category
     ) {
-      url = $getRoute({route: Route.QuestionCategory, id: questions[newIndex].category.id});
+      url = $getRoute({ route: Route.QuestionCategory, id: questions[newIndex].category.id });
     } else {
-      url = $getRoute({route: Route.Question, id: questions[newIndex].id});
+      url = $getRoute({ route: Route.Question, id: questions[newIndex].id });
       // Disable scrolling when moving between questions for a smoother experience
       noScroll = true;
     }
-    goto(url, {noScroll});
+    goto(url, { noScroll });
   }
 
   /**
@@ -217,7 +217,7 @@
 {#if !(questions?.length && question)}
   <Loading class="mt-lg" />
 {:else}
-  {@const {id, text, type, values, category, info, customData} = question}
+  {@const { id, text, type, values, category, info, customData } = question}
   {@const headingId = `questionHeading-${id}`}
 
   <BasicPage
@@ -316,16 +316,16 @@
         previousLabel={questionIndex === 0 ? $t('header.back') : undefined}
         separateSkip={true}
         on:previous={() => {
-          startEvent('question_previous', {questionIndex});
+          startEvent('question_previous', { questionIndex });
           jumpQuestion(-1);
         }}
         on:delete={deleteAnswer}
         on:next={() => {
-          startEvent('question_next', {questionIndex});
+          startEvent('question_next', { questionIndex });
           jumpQuestion(+1);
         }}
         on:skip={() => {
-          startEvent('question_skip', {questionIndex});
+          startEvent('question_skip', { questionIndex });
           jumpQuestion(+1);
         }} />
     </svelte:fragment>

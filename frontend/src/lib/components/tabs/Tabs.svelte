@@ -1,19 +1,19 @@
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte';
-  import {concatClass} from '$lib/utils/components';
-  import {ucFirst} from '$lib/utils/text/ucFirst';
-  import type {TabsProps} from './Tabs.type';
+  import { createEventDispatcher } from 'svelte';
+  import type { TabsProps } from './Tabs.type';
+  import { concatClass } from '$lib/utils/components';
+  import { ucFirst } from '$lib/utils/text/ucFirst';
 
   type $$Props = TabsProps;
 
   export let tabs: $$Props['tabs'] = [];
   export let activeIndex: $$Props['activeIndex'] = 0;
 
-  const dispatch = createEventDispatcher<{change: {index: number}}>();
+  const dispatch = createEventDispatcher<{ change: { index: number } }>();
 
   function activate(index: number) {
     activeIndex = index;
-    dispatch('change', {index});
+    dispatch('change', { index });
   }
 </script>
 

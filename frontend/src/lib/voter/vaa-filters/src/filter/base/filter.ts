@@ -1,8 +1,8 @@
-import {getEntity, type MaybeWrapped, hasAnswers, type ExtractEntity} from '../../entity';
-import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
-import {ruleIsActive, matchRules, copyRules, type Rules, type Rule} from '../rules';
-import {castValue} from './castValue';
-import type {FilterOptions} from './filter.type';
+import { getEntity, type MaybeWrapped, hasAnswers, type ExtractEntity } from '../../entity';
+import { MISSING_VALUE, type MaybeMissing } from '../../missingValue';
+import { ruleIsActive, matchRules, copyRules, type Rules, type Rule } from '../rules';
+import { castValue } from './castValue';
+import type { FilterOptions } from './filter.type';
 
 /**
  * The abstract base class for all filters.
@@ -50,7 +50,7 @@ export abstract class Filter<T extends MaybeWrapped, V> {
    * @param entity A non-wrapped entity.
    * @returns The value to filter on or `MISSING_VALUE` or an array of these if `this.options.multipleValues` is true.
    */
-  getValue(entity: ExtractEntity<T>): MaybeMissing<V> | MaybeMissing<V>[] {
+  getValue(entity: ExtractEntity<T>): MaybeMissing<V> | Array<MaybeMissing<V>> {
     let value: unknown;
     if (this.options.question) {
       if (!hasAnswers(entity)) throw new Error('Entity does not have answers.');
@@ -80,7 +80,7 @@ export abstract class Filter<T extends MaybeWrapped, V> {
    * @input A list of entities.
    * @returns Filtered targets
    */
-  apply<U extends T>(targets: U[]) {
+  apply<U extends T>(targets: Array<U>) {
     // We perform the testing on the raw entities even if they are wrapped.
     return targets.filter((t) => this.test(getEntity(t)));
   }
@@ -92,7 +92,7 @@ export abstract class Filter<T extends MaybeWrapped, V> {
    */
   test(entity: ExtractEntity<T>) {
     return this.options.multipleValues
-      ? this.testValues(this.getValue(entity) as MaybeMissing<V>[])
+      ? this.testValues(this.getValue(entity) as Array<MaybeMissing<V>>)
       : this.testValue(this.getValue(entity) as MaybeMissing<V>);
   }
 
@@ -192,7 +192,7 @@ export abstract class Filter<T extends MaybeWrapped, V> {
    * @param values An array of possibly missing values
    * @returns true if the value passes the filter.
    */
-  testValues(values: MaybeMissing<V>[]): boolean {
+  testValues(values: Array<MaybeMissing<V>>): boolean {
     throw new Error(`Multiple values are not supported by this filter: ${values.join(', ')}`);
   }
 }

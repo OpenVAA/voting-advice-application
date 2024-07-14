@@ -1,14 +1,14 @@
 <script lang="ts">
-  import {getContext} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {appType} from '$lib/stores';
-  import {Breakpoints} from '$lib/utils/breakpoints';
-  import {concatProps} from '$lib/utils/components';
-  import {darkMode} from '$lib/utils/darkMode';
-  import {Page} from '../page';
-  import type {BasicPageProps} from './BasicPage.type';
-  import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import { getContext } from 'svelte';
+  import { Page } from '../page';
+  import type { BasicPageProps } from './BasicPage.type';
+  import { LogoutButton } from '$lib/candidate/components/logoutButton';
+  import { t } from '$lib/i18n';
+  import { appType } from '$lib/stores';
+  import { Breakpoints } from '$lib/utils/breakpoints';
+  import type { CandidateContext } from '$lib/utils/candidateStore';
+  import { concatProps } from '$lib/utils/components';
+  import { darkMode } from '$lib/utils/darkMode';
 
   type $$Props = BasicPageProps;
 

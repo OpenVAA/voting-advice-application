@@ -8,7 +8,7 @@ import {
   type MatchableQuestionGroup,
   type MatchingOptions
 } from '..';
-import type {AnswerDict} from '../src/entity/hasMatchableAnswers';
+import type { AnswerDict } from '../src/entity/hasMatchableAnswers';
 
 /**
  * Simple example.
@@ -24,12 +24,12 @@ function main(
   subGroup = 0
 ): void {
   // Create dummy questions
-  const questions = Array.from({length: numQuestions}, (i: number) =>
+  const questions = Array.from({ length: numQuestions }, (i: number) =>
     MultipleChoiceQuestion.fromLikert(`q${i}`, likertScale)
   );
 
   // Create answer subgroup
-  const matchingOptions: MatchingOptions<MatchableQuestionGroup & {label: string}> = {};
+  const matchingOptions: MatchingOptions<MatchableQuestionGroup & { label: string }> = {};
   if (subGroup > 0) {
     if (subGroup > numQuestions) throw new Error("subGroup can't be larger than numQuestions!");
     matchingOptions.questionGroups = [
@@ -41,7 +41,7 @@ function main(
   }
 
   // Create dummy candidates with dummy answers
-  const candidates = Array.from({length: numCandidates}, (_, i) => {
+  const candidates = Array.from({ length: numCandidates }, (_, i) => {
     const value = randomCandAnswer
       ? () => Math.floor(Math.random() * likertScale) + 1
       : (i % likertScale) + 1;
@@ -93,7 +93,7 @@ function main(
  * @returns Answer dict
  */
 function createAnswers(
-  questions: MatchableQuestion[],
+  questions: Array<MatchableQuestion>,
   answerValue: number | ((index: number) => number),
   missing = 0
 ): AnswerDict {

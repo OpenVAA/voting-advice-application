@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {concatProps} from '$lib/utils/components';
-  import {ScoreGauge} from '$lib/components/scoreGauge';
-  import type {SubMatchesProps} from './SubMatches.type';
+  import type { SubMatchesProps } from './SubMatches.type';
+  import { ScoreGauge } from '$lib/components/scoreGauge';
+  import { concatProps } from '$lib/utils/components';
 
   type $$Props = SubMatchesProps;
 
@@ -30,7 +30,7 @@ Display an entity's sub-matches.
 ```
 -->
 
-<div {...concatProps($$restProps, {class: 'grid gap-x-md gap-y-sm', style})}>
+<div {...concatProps($$restProps, { class: 'grid gap-x-md gap-y-sm', style })}>
   {#each matches as { score, questionGroup }}
     <ScoreGauge
       {score}

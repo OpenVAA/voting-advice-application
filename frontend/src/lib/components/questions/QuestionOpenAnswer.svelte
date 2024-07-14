@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {onMount} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {concatClass, getUUID} from '$lib/utils/components';
+  import { onMount } from 'svelte';
+  import { t } from '$lib/i18n';
+  import { concatClass, getUUID } from '$lib/utils/components';
 
   let el: HTMLDivElement;
   let collapsible = false;

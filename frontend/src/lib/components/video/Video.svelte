@@ -1,16 +1,21 @@
 <script lang="ts">
-  import {onDestroy, onMount} from 'svelte';
-  import {fade} from 'svelte/transition';
-  import {beforeNavigate} from '$app/navigation';
-  import {locale, t} from '$lib/i18n';
-  import {startEvent, type TrackingEvent} from '$lib/utils/analytics/track';
-  import {concatClass} from '$lib/utils/components';
-  import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {Button} from '$lib/components/button';
-  import {Icon} from '$lib/components/icon';
-  import {Loading} from '$lib/components/loading';
-  import {videoPreferences} from './component-stores';
-  import type {PlayButtonAction, VideoMode, VideoProps, VideoTrackingEventData} from './Video.type';
+  import { onDestroy, onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
+  import { videoPreferences } from './component-stores';
+  import type {
+    PlayButtonAction,
+    VideoMode,
+    VideoProps,
+    VideoTrackingEventData
+  } from './Video.type';
+  import { beforeNavigate } from '$app/navigation';
+  import { Button } from '$lib/components/button';
+  import { Icon } from '$lib/components/icon';
+  import { Loading } from '$lib/components/loading';
+  import { locale, t } from '$lib/i18n';
+  import { startEvent, type TrackingEvent } from '$lib/utils/analytics/track';
+  import { concatClass } from '$lib/utils/components';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
 
   ////////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
@@ -164,7 +169,7 @@
         return;
       }
       status = 'error';
-      addToEvent({shouldPlayError: true});
+      addToEvent({ shouldPlayError: true });
     }, ERROR_CHECK_INTERVAL);
   }
 
@@ -269,7 +274,7 @@
     if (typeof data === 'function') {
       event!.data = data(event!.data);
     } else {
-      event!.data = {...event!.data, ...data};
+      event!.data = { ...event!.data, ...data };
     }
   }
 
@@ -377,7 +382,7 @@
       return gotoAndPlay(effectiveTime + (skipAmount ?? DEFAULT_SKIP_AMOUNT) * steps);
     const cue = (atEnd ? cues.length : findCue(effectiveTime)) + steps;
     seekTarget = cue < 0 ? 0 : cue >= cues.length ? duration : cues[cue].startTime;
-    addToEvent((data) => ({jump: `${data.jump ?? ''}${steps},`}));
+    addToEvent((data) => ({ jump: `${data.jump ?? ''}${steps},` }));
     return gotoAndPlay(seekTarget);
   }
 
@@ -455,7 +460,7 @@
   function buildTranscript() {
     const track = getTrack();
     if (!track?.cues) return;
-    const blocks: string[] = [];
+    const blocks: Array<string> = [];
     // Sometimes the cues continue from the previous cue, so we need may need to concatenate them
     let combined = '';
     for (const cue of [...track.cues].filter(
@@ -628,7 +633,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
       on:playing={() => (status = 'normal')}
       on:waiting={() => (status = 'waiting')}
       on:error={() => (status = 'error-pending')}
-      on:ended={() => addToEvent({ended: true})}
+      on:ended={() => addToEvent({ ended: true })}
       on:ended
       autoplay={autoPlay && !transcriptVisible}
       {poster}

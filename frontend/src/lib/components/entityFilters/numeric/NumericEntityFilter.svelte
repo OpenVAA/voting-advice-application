@@ -1,8 +1,8 @@
 <script lang="ts">
-  import {onDestroy} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {concatClass} from '$lib/utils/components';
-  import type {NumericEntityFilterProps} from './NumericEntityFilter.type';
+  import { onDestroy } from 'svelte';
+  import type { NumericEntityFilterProps } from './NumericEntityFilter.type';
+  import { t } from '$lib/i18n';
+  import { concatClass } from '$lib/utils/components';
 
   type $$Props = NumericEntityFilterProps;
 

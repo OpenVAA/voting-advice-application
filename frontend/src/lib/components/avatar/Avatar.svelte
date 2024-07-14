@@ -1,8 +1,8 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {concatProps} from '$lib/utils/components';
-  import {abbreviate} from '$lib/utils/text/abbreviate';
-  import type {AvatarProps} from './Avatar.type';
+  import type { AvatarProps } from './Avatar.type';
+  import { t } from '$lib/i18n';
+  import { concatProps } from '$lib/utils/components';
+  import { abbreviate } from '$lib/utils/text/abbreviate';
 
   type $$Props = AvatarProps;
   export let name: $$Props['name'];
@@ -87,7 +87,7 @@ Display either a photo or a initials-based avatar for an entity.
 ```
 -->
 
-<figure {...concatProps($$restProps, {class: classes, style: styles})}>
+<figure {...concatProps($$restProps, { class: classes, style: styles })}>
   {#if image}
     {#if linkFullImage}
       <a

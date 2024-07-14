@@ -2,8 +2,8 @@
 // For a more comprehensive mediaQuery solution, see
 // https://github.com/fedorovvvv/svelte-media-queries
 
-import {browser} from '$app/environment';
-import {readable, type Readable} from 'svelte/store';
+import { readable, type Readable } from 'svelte/store';
+import { browser } from '$app/environment';
 
 /**
  * The value of this store is `true` if the user prefers dark mode.

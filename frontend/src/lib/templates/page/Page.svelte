@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {concatClass} from '$lib/utils/components';
-  import {appType} from '$lib/stores';
-  import {Icon} from '$lib/components/icon';
-  import {NavItem, setNavigationContext} from '$lib/components/navigation';
-  import {AppLogo} from '../parts/appLogo';
-  import {CandidateNav, VoterNav} from './parts';
-  import type {PageProps} from './Page.type';
+  import { AppLogo } from '../parts/appLogo';
+  import type { PageProps } from './Page.type';
+  import { CandidateNav, VoterNav } from './parts';
+  import { Icon } from '$lib/components/icon';
+  import { NavItem, setNavigationContext } from '$lib/components/navigation';
+  import { t } from '$lib/i18n';
+  import { appType } from '$lib/stores';
+  import { startEvent } from '$lib/utils/analytics/track';
+  import { concatClass } from '$lib/utils/components';
 
   type $$Props = PageProps;
 
@@ -49,7 +49,7 @@
   /**
    * Create a context which can be used by the nested navigation components to close the drawer
    */
-  setNavigationContext({close: closeDrawer});
+  setNavigationContext({ close: closeDrawer });
 
   // TODO: Fix progress bar color on iOS Safari:
   // see https://stackoverflow.com/questions/38622911/styling-meter-bar-for-mozilla-and-safari

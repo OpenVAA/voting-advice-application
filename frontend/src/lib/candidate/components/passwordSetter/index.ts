@@ -1,1 +1,1 @@
-export {default as PasswordSetter} from './PasswordSetter.svelte';
+export { default as PasswordSetter } from './PasswordSetter.svelte';

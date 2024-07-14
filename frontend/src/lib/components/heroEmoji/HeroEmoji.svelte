@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {concatClass} from '$lib/utils/components';
-  import type {HeroEmojiProps} from './HeroEmoji.type';
+  import type { HeroEmojiProps } from './HeroEmoji.type';
+  import { concatClass } from '$lib/utils/components';
 
   type $$Props = HeroEmojiProps;
 

@@ -1,4 +1,4 @@
-import type {FilterOptions} from '../filter';
+import type { FilterOptions } from '../filter';
 
 /**
  * The property name of a multiple choice key.

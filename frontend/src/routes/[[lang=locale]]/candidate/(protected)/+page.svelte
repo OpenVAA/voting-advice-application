@@ -1,14 +1,14 @@
 <script lang="ts">
-  import {t, locale} from '$lib/i18n';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Button} from '$lib/components/button';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {getContext} from 'svelte';
-  import {get} from 'svelte/store';
-  import {InfoBadge} from '$lib/components/infoBadge';
-  import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import {Warning} from '$lib/components/warning';
-  import {type CandidateContext} from '$lib/utils/candidateStore';
+  import { getContext } from 'svelte';
+  import { get } from 'svelte/store';
+  import { LogoutButton } from '$lib/candidate/components/logoutButton';
+  import { Button } from '$lib/components/button';
+  import { InfoBadge } from '$lib/components/infoBadge';
+  import { Warning } from '$lib/components/warning';
+  import { t, locale } from '$lib/i18n';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { type CandidateContext } from '$lib/utils/candidateStore';
+  import { getRoute, Route } from '$lib/utils/navigation';
 
   const {
     userStore,
@@ -60,7 +60,7 @@
       };
     } else if (basicInfoFilled && !opinionQuestionsFilled) {
       return {
-        title: $t('candidateApp.homePage.greeting', {username}),
+        title: $t('candidateApp.homePage.greeting', { username }),
         explanation: $t('candidateApp.homePage.explanation'),
         buttonTextBasicInfo: !questionsLocked
           ? $t('candidateApp.homePage.basicInfoButtonEdit')
@@ -75,7 +75,7 @@
       };
     }
     return {
-      title: $t('candidateApp.homePage.greeting', {username}),
+      title: $t('candidateApp.homePage.greeting', { username }),
       explanation: $t('candidateApp.homePage.explanation'),
       buttonTextBasicInfo: !questionsLocked
         ? $t('candidateApp.homePage.basicInfoButton')

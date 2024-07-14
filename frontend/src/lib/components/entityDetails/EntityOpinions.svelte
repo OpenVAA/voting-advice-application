@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {isCandidate} from '$lib/utils/entities';
-  import {answeredQuestions, appType, settings} from '$lib/stores';
-  import {CategoryTag} from '$lib/components/categoryTag';
-  import {LikertResponseButtons, QuestionOpenAnswer} from '$lib/components/questions';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {getLikertAnswer} from '$lib/utils/answers';
-  import type {EntityDetailsProps} from './EntityDetails.type';
+  import type { EntityDetailsProps } from './EntityDetails.type';
+  import { CategoryTag } from '$lib/components/categoryTag';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { LikertResponseButtons, QuestionOpenAnswer } from '$lib/components/questions';
+  import { t } from '$lib/i18n';
+  import { answeredQuestions, appType, settings } from '$lib/stores';
+  import { getLikertAnswer } from '$lib/utils/answers';
+  import { isCandidate } from '$lib/utils/entities';
 
   export let entity: EntityProps;
   export let questions: EntityDetailsProps['opinionQuestions'];
@@ -42,7 +42,7 @@ Used to show an entity's opinions in an `EntityDetails` component.
 
 <div class="grid p-lg">
   {#each questions as question}
-    {@const {id, text, type, values, category, customData} = question}
+    {@const { id, text, type, values, category, customData } = question}
     {@const answer = getLikertAnswer(entity, question)}
     {@const voterAnswer = getVoterLikertAnswer(question)}
     {@const headingId = `questionHeading-${id}`}
@@ -58,12 +58,12 @@ Used to show an entity's opinions in an `EntityDetails` component.
       {#if $appType === 'candidate'}
         {#if answer == null}
           <div class="small-label mb-16 text-center">
-            {$t('questions.entityHasntAnswered', {entity: shortName})}
+            {$t('questions.entityHasntAnswered', { entity: shortName })}
           </div>
         {/if}
       {:else if voterAnswer == null && answer == null}
         <div class="small-label mb-16 text-center">
-          {$t('questions.bothHaventAnswered', {entity: shortName})}
+          {$t('questions.bothHaventAnswered', { entity: shortName })}
         </div>
       {:else if voterAnswer == null && answer == null}
         <div class="small-label mb-16 text-center">
@@ -75,7 +75,7 @@ Used to show an entity's opinions in an `EntityDetails` component.
         </div>
       {:else if answer == null}
         <div class="small-label mb-16 text-center">
-          {$t('questions.entityHasntAnswered', {entity: shortName})}
+          {$t('questions.entityHasntAnswered', { entity: shortName })}
         </div>
       {/if}
 

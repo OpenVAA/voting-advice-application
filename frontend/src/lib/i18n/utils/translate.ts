@@ -1,5 +1,5 @@
-import {defaultLocale, locale as currentLocale} from '../';
-import {matchLocale} from './matchLocale';
+import { defaultLocale, locale as currentLocale } from '../';
+import { matchLocale } from './matchLocale';
 
 /**
  * Return the correct string for the `locale` using soft-matching from the supplied `LocalizedString` object.

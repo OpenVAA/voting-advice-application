@@ -1,4 +1,4 @@
-import {onDestroy} from 'svelte';
+import { onDestroy } from 'svelte';
 
 /** Create a unique identifier for use as an element ID. */
 export function getUUID(): string {
@@ -16,7 +16,7 @@ export function getUUID(): string {
  */
 export function concatProps<T extends object>(props: T, defaults: Partial<StringProps<T>>) {
   // Make a shallow copy of props so as not to alter its values
-  const merged = {...props};
+  const merged = { ...props };
   for (const k in defaults) {
     merged[k] = (
       k in merged && typeof merged[k] === 'string'
@@ -35,8 +35,8 @@ export function concatProps<T extends object>(props: T, defaults: Partial<String
  * @returns The merged props, based on a shallow copy of `props` with
  *   `classes` joined with possible `props.class`
  */
-export function concatClass<T extends {class?: string | null}>(props: T, classes: string) {
-  return concatProps(props, {class: classes} as Partial<StringProps<T>>);
+export function concatClass<T extends { class?: string | null }>(props: T, classes: string) {
+  return concatProps(props, { class: classes } as Partial<StringProps<T>>);
 }
 
 /**

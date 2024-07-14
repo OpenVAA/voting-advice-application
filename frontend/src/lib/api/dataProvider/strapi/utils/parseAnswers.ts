@@ -1,5 +1,5 @@
-import {translate} from '$lib/i18n/utils/translate';
-import type {StrapiAnswerData} from '../strapiDataProvider.type';
+import type { StrapiAnswerData } from '../strapiDataProvider.type';
+import { translate } from '$lib/i18n/utils/translate';
 
 /**
  * Parse Strapi Answer data.
@@ -8,7 +8,7 @@ import type {StrapiAnswerData} from '../strapiDataProvider.type';
  * @param locale Optional locale to use for translating localized strings
  * @returns The Answers as AnswerProps
  */
-export function parseAnswers(answers: StrapiAnswerData[], locale?: string): AnswerDict {
+export function parseAnswers(answers: Array<StrapiAnswerData>, locale?: string): AnswerDict {
   const dict = {} as AnswerDict;
   answers.forEach((a) => {
     const questionId = a.attributes.question?.data?.id;

@@ -1,5 +1,5 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
-import type {ObjectFilter, ChoiceQuestionFilter} from '$voter/vaa-filters';
+import type { SvelteHTMLElements } from 'svelte/elements';
+import type { ObjectFilter, ChoiceQuestionFilter } from '$voter/vaa-filters';
 
 export type EnumeratedEntityFilterProps = SvelteHTMLElements['form'] & {
   /**
@@ -9,5 +9,5 @@ export type EnumeratedEntityFilterProps = SvelteHTMLElements['form'] & {
   /**
    * The targets of the filter objects.
    */
-  targets: MaybeRanked[];
+  targets: Array<MaybeRanked>;
 };

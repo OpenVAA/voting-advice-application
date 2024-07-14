@@ -1,12 +1,12 @@
 <script lang="ts">
-  import type {CandidateContext} from '$lib/utils/candidateStore';
-  import {getContext} from 'svelte';
-  import {goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {LoadingSpinner} from '$candidate/components/loadingSpinner';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { LoadingSpinner } from '$candidate/components/loadingSpinner';
+  import { t } from '$lib/i18n';
+  import type { CandidateContext } from '$lib/utils/candidateStore';
+  import { getRoute, Route } from '$lib/utils/navigation';
 
-  const {basicInfoFilledStore, questionsStore} = getContext<CandidateContext>('candidate');
+  const { basicInfoFilledStore, questionsStore } = getContext<CandidateContext>('candidate');
 
   $: if (!$basicInfoFilledStore) {
     goto($getRoute(Route.CandAppProfile));

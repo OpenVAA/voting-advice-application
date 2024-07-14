@@ -1,5 +1,5 @@
-import {MatchingSpace} from './matchingSpace';
-import type {MatchableQuestion} from '../question';
+import type { MatchableQuestion } from '../question';
+import { MatchingSpace } from './matchingSpace';
 
 /**
  * A utility function to create a subspace for a subset of questions
@@ -14,12 +14,15 @@ import type {MatchableQuestion} from '../question';
  * of the questions overlap, all of the dimensions of the subspace
  * will have zero length.
  */
-export function createSubspace(allQuestions: MatchableQuestion[], subset: MatchableQuestion[]) {
-  const dimensionWeights: number[] = [];
+export function createSubspace(
+  allQuestions: Array<MatchableQuestion>,
+  subset: Array<MatchableQuestion>
+) {
+  const dimensionWeights: Array<number> = [];
   for (const question of allQuestions) {
     const dims = question.normalizedDimensions ?? 1;
     const included = subset.indexOf(question) > -1;
-    dimensionWeights.push(...Array.from({length: dims}, () => (included ? 1 / dims : 0)));
+    dimensionWeights.push(...Array.from({ length: dims }, () => (included ? 1 / dims : 0)));
   }
   return new MatchingSpace(dimensionWeights);
 }

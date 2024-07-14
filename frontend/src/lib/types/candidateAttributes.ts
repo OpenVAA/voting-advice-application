@@ -15,7 +15,7 @@ export interface Candidate {
   birthday: string;
   photo?: Photo;
   manifesto: LocalizedString;
-  motherTongues: Language[];
+  motherTongues: Array<Language>;
   unaffiliated: boolean;
   politicalExperience: string;
   email: string;
@@ -110,7 +110,7 @@ export interface Question {
   info?: LocalizedString;
   fillingInfo?: string;
   type: QuestionSettingsProps['type'];
-  values?: QuestionChoiceProps[];
+  values?: Array<QuestionChoiceProps>;
   min?: number | Date;
   max?: number | Date;
   notLocalizable?: boolean;

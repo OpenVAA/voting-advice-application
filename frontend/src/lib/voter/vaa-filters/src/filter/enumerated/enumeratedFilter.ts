@@ -1,7 +1,7 @@
-import {getEntity, type MaybeWrapped} from '../../entity';
-import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
-import {Filter} from '../base/filter';
-import {intersect} from './intersect';
+import { getEntity, type MaybeWrapped } from '../../entity';
+import { MISSING_VALUE, type MaybeMissing } from '../../missingValue';
+import { Filter } from '../base/filter';
+import { intersect } from './intersect';
 
 /**
  * The abstract base class for filters with enumerated values that can be listed, such as questions with enumerated choices.
@@ -12,8 +12,8 @@ export abstract class EnumeratedFilter<
   O extends object = object
 > extends Filter<T, V> {
   protected _rules: {
-    exclude?: MaybeMissing<V>[];
-    include?: MaybeMissing<V>[];
+    exclude?: Array<MaybeMissing<V>>;
+    include?: Array<MaybeMissing<V>>;
   } = {};
 
   /////////////////////////////////////////////////////////////////////////////////
@@ -25,11 +25,11 @@ export abstract class EnumeratedFilter<
    * @input A list of entities.
    * @returns An array of the values, their counts and possible other properties.
    */
-  parseValues(targets: T[]): Array<ReturnType<typeof this.processValueForDisplay>> {
+  parseValues(targets: Array<T>): Array<ReturnType<typeof this.processValueForDisplay>> {
     const values = new Map<MaybeMissing<V>, number>();
     targets.forEach((t) => {
       const valueOrArray = this.getValue(getEntity(t));
-      let valueArray: MaybeMissing<V>[];
+      let valueArray: Array<MaybeMissing<V>>;
       if (this.options.multipleValues) {
         if (!Array.isArray(valueOrArray))
           throw new Error(`Filter expected multiple values, but got ${valueOrArray}`);
@@ -50,7 +50,7 @@ export abstract class EnumeratedFilter<
   /**
    * Sort the values and return them.
    */
-  sortValues(values: MaybeMissing<V>[]) {
+  sortValues(values: Array<MaybeMissing<V>>) {
     return values.sort((a, b) => {
       if (a === MISSING_VALUE) {
         if (b === MISSING_VALUE) return 0;
@@ -65,19 +65,19 @@ export abstract class EnumeratedFilter<
   // RULES
   /////////////////////////////////////////////////////////////////////////////////
 
-  get exclude(): MaybeMissing<V>[] {
+  get exclude(): Array<MaybeMissing<V>> {
     return this._rules.exclude ?? [];
   }
 
-  get include(): MaybeMissing<V>[] {
+  get include(): Array<MaybeMissing<V>> {
     return this._rules.include ?? [];
   }
 
-  set exclude(values: MaybeMissing<V>[] | undefined) {
+  set exclude(values: Array<MaybeMissing<V>> | undefined) {
     this.setRule('exclude', values);
   }
 
-  set include(values: MaybeMissing<V>[] | undefined) {
+  set include(values: Array<MaybeMissing<V>> | undefined) {
     this.setRule('include', values);
   }
 
@@ -89,10 +89,10 @@ export abstract class EnumeratedFilter<
     return true;
   }
 
-  testValues(values: MaybeMissing<V>[]) {
+  testValues(values: Array<MaybeMissing<V>>) {
     if (!this.options.multipleValues)
       throw new Error(`Multiple values are not supported by this filter: ${values.join(', ')}`);
-    const {exclude, include} = this._rules;
+    const { exclude, include } = this._rules;
     if (exclude?.length && intersect(exclude, values)) return false;
     if (include?.length && !intersect(include, values)) return false;
     return true;

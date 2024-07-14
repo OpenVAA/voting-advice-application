@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {EntityList} from '$lib/components/entityList';
-  import type {EntityCardProps} from '$lib/components/entityCard/EntityCard.type';
+  import type { EntityCardProps } from '$lib/components/entityCard/EntityCard.type';
+  import { EntityList } from '$lib/components/entityList';
+  import { t } from '$lib/i18n';
 
-  export let subcards: EntityCardProps[];
+  export let subcards: Array<EntityCardProps>;
 </script>
 
 <!--

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {concatClass} from '$lib/utils/components';
-  import type {ElectionSymbolProps} from './ElectionSymbol.type';
+  import type { ElectionSymbolProps } from './ElectionSymbol.type';
+  import { concatClass } from '$lib/utils/components';
 
   type $$Props = ElectionSymbolProps;
 

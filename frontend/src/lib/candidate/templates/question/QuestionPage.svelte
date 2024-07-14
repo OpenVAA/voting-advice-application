@@ -1,26 +1,26 @@
 <script lang="ts">
-  import {goto} from '$app/navigation';
-  import {t, locale} from '$lib/i18n';
-  import {translate} from '$lib/i18n/utils/translate';
-  import {getContext} from 'svelte';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {addAnswer, updateAnswer} from '$lib/api/candidate';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Button} from '$lib/components/button';
-  import {CategoryTag} from '$lib/components/categoryTag';
-  import {LikertResponseButtons, QuestionInfo} from '$lib/components/questions';
-  import {MultilangTextInput} from '$candidate/components/textArea';
-  import {Warning} from '$lib/components/warning';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
-  import type {QuestionPageProps} from './QuestionPage.type';
+  import { getContext } from 'svelte';
+  import type { QuestionPageProps } from './QuestionPage.type';
+  import { goto } from '$app/navigation';
+  import { MultilangTextInput } from '$candidate/components/textArea';
+  import { addAnswer, updateAnswer } from '$lib/api/candidate';
+  import { Button } from '$lib/components/button';
+  import { CategoryTag } from '$lib/components/categoryTag';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { LikertResponseButtons, QuestionInfo } from '$lib/components/questions';
+  import { Warning } from '$lib/components/warning';
+  import { t, locale } from '$lib/i18n';
+  import { translate } from '$lib/i18n/utils/translate';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import type { CandidateContext } from '$lib/utils/candidateStore';
+  import { getRoute, Route } from '$lib/utils/navigation';
 
   type $$Props = QuestionPageProps;
   export let currentQuestion: $$Props['currentQuestion'];
   export let questions: $$Props['questions'];
   export let editMode: $$Props['editMode'] = false;
 
-  const {answersStore, progressStore, questionsLockedStore} =
+  const { answersStore, progressStore, questionsLockedStore } =
     getContext<CandidateContext>('candidate');
 
   $: answers = $answersStore;
@@ -44,7 +44,7 @@
     selectedKey = likertValue ? parseInt(likertValue) : answer?.key;
   }
 
-  const saveLikertToLocal = ({detail}: CustomEvent) => {
+  const saveLikertToLocal = ({ detail }: CustomEvent) => {
     selectedKey = detail.value;
     localStorage.setItem(likertLocal, detail.value);
   };
@@ -132,7 +132,7 @@
       goto($getRoute(Route.CandAppHome));
       return;
     }
-    goto($getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion.id}));
+    goto($getRoute({ route: Route.CandAppQuestions, id: nextUnansweredQuestion.id }));
   };
 
   const cancelAndReturn = () => {
@@ -142,7 +142,7 @@
 
   $: category = currentQuestion.category;
   $: info = translate(currentQuestion.info, $locale);
-  $: options = currentQuestion.values?.map(({key, label}) => ({
+  $: options = currentQuestion.values?.map(({ key, label }) => ({
     key,
     label: translate(label, $locale)
   }));

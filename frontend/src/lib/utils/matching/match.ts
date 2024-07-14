@@ -3,7 +3,10 @@
  *
  * NB. This is a temporary implementation which will be replaced with a proper one when the `vaa-data` model is implemented. The model will allow the passing of its consituent objects directly to the matching algorithm without need for constructing mediating objects, such as `LikertQuestion`s below.
  */
-import {error} from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
+import { extractCategories } from '../questions';
+import { imputePartyAnswers } from './imputePartyAnswers';
+import { LikertQuestion } from './LikertQuestion';
 import {
   type MatchingOptions,
   MatchingAlgorithm,
@@ -11,9 +14,6 @@ import {
   MissingValueDistanceMethod,
   type MatchableQuestionGroup
 } from '$voter/vaa-matching';
-import {LikertQuestion} from './LikertQuestion';
-import {imputePartyAnswers} from './imputePartyAnswers';
-import {extractCategories} from '../questions';
 
 /**
  * Run the matching algorithm as an async process.
@@ -24,13 +24,13 @@ import {extractCategories} from '../questions';
  * @returns The matching results as entities wrapped in ranking properties
  */
 export async function match<E extends EntityProps>(
-  allQuestions: QuestionProps[],
+  allQuestions: Array<QuestionProps>,
   answeredQuestions: AnswerDict,
-  entities: E[],
+  entities: Array<E>,
   options: {
     subMatches?: boolean;
   } = {}
-): Promise<RankingProps<E>[]> {
+): Promise<Array<RankingProps<E>>> {
   // Create the algorithm instance
   const algorithm = new MatchingAlgorithm({
     distanceMetric: DistanceMetric.Manhattan,
@@ -40,7 +40,7 @@ export async function match<E extends EntityProps>(
   });
 
   // Convert question data into proper question objects
-  const questions = [] as LikertQuestion[];
+  const questions = [] as Array<LikertQuestion>;
   allQuestions.forEach((q) => {
     if (q.category.type !== 'opinion') return;
     if (q.type !== 'singleChoiceOrdinal' || !q.values)
@@ -51,14 +51,14 @@ export async function match<E extends EntityProps>(
     questions.push(
       new LikertQuestion({
         id: q.id,
-        values: q.values.map((o) => ({value: o.key})),
+        values: q.values.map((o) => ({ value: o.key })),
         category: q.category
       })
     );
   });
 
   // Create voter object
-  const voter = {answers: answeredQuestions};
+  const voter = { answers: answeredQuestions };
 
   // Check that we still have some answers
   if (Object.keys(voter.answers).length === 0) {
@@ -99,14 +99,14 @@ export async function match<E extends EntityProps>(
  * @returns The matching results as entities wrapped in ranking properties
  */
 export async function matchParties(
-  allQuestions: QuestionProps[],
+  allQuestions: Array<QuestionProps>,
   answeredQuestions: AnswerDict,
-  candidates: CandidateProps[],
-  parties: PartyProps[],
+  candidates: Array<CandidateProps>,
+  parties: Array<PartyProps>,
   options?: Parameters<typeof match>[3] & {
     matchingType?: Exclude<AppSettingsGroupMatchingType, 'none'>;
   }
-): Promise<RankingProps<PartyProps>[]> {
+): Promise<Array<RankingProps<PartyProps>>> {
   const matchingType = options?.matchingType ?? 'median';
   // Save original answers here, if we will be adding computed averages to the answers dictionary.
   // NB. In the full vaa-data model, this will be handled by a getter function

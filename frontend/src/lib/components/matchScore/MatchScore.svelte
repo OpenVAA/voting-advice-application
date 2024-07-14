@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {concatClass} from '$lib/utils/components';
-  import type {MatchScoreProps} from './MatchScore.type';
+  import type { MatchScoreProps } from './MatchScore.type';
+  import { t } from '$lib/i18n';
+  import { concatClass } from '$lib/utils/components';
 
   type $$Props = MatchScoreProps;
 
@@ -28,7 +28,7 @@ Display an entity's match score.
 -->
 
 <div {...concatClass($$restProps, 'flex min-w-[3.125rem] flex-col items-center')}>
-  <span class="text-lg font-bold">{$t('components.matchScore.score', {score})}</span>
+  <span class="text-lg font-bold">{$t('components.matchScore.score', { score })}</span>
   {#if showLabel && label !== ''}
     <span class="text-center text-xs text-secondary"
       >{label ?? $t('components.matchScore.label')}</span>

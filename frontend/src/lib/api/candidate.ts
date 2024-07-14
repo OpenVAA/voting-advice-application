@@ -1,7 +1,4 @@
-import {get} from 'svelte/store';
-import {constants} from '$lib/utils/constants';
-import {candidateContext} from '$lib/utils/candidateStore';
-import type {Question, Answer, Language, User, Photo} from '$lib/types/candidateAttributes';
+import { get } from 'svelte/store';
 import type {
   StrapiAnswerData,
   StrapiLanguageData,
@@ -9,7 +6,10 @@ import type {
   StrapiResponse,
   StrapiQuestionData
 } from './dataProvider/strapi';
-import {parseQuestionCategory} from './dataProvider/strapi/utils';
+import { parseQuestionCategory } from './dataProvider/strapi/utils';
+import type { Question, Answer, Language, User, Photo } from '$lib/types/candidateAttributes';
+import { candidateContext } from '$lib/utils/candidateStore';
+import { constants } from '$lib/utils/constants';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
@@ -25,7 +25,7 @@ export const authenticate = (identifier: string, password: string): Promise<Resp
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({identifier, password})
+    body: JSON.stringify({ identifier, password })
   });
 };
 
@@ -35,7 +35,7 @@ export const register = (registrationKey: string, password: string): Promise<Res
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({registrationKey, password})
+    body: JSON.stringify({ registrationKey, password })
   });
 };
 
@@ -45,7 +45,7 @@ export const requestForgotPasswordLink = (email: string): Promise<Response> => {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({email})
+    body: JSON.stringify({ email })
   });
 };
 
@@ -70,11 +70,11 @@ export const checkRegistrationKey = (registrationKey: string): Promise<Response>
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({registrationKey})
+    body: JSON.stringify({ registrationKey })
   });
 };
 
-type UserData = User & {error: unknown};
+type UserData = User & { error: unknown };
 
 /**
  * Get the current user's data, including candidate information
@@ -107,7 +107,7 @@ export const updateBasicInfo = async (
   genderID?: number,
   photo?: Photo,
   unaffiliated?: boolean,
-  motherTongues?: Language[]
+  motherTongues?: Array<Language>
 ) => {
   const user = get(candidateContext.userStore);
   const candidate = user?.candidate;
@@ -189,7 +189,7 @@ export const getLikertQuestions = async (): Promise<Record<string, Question> | u
 
   if (!res?.ok) throw Error(res?.statusText);
 
-  const questionData: StrapiResponse<StrapiQuestionData[]> = await res.json();
+  const questionData: StrapiResponse<Array<StrapiQuestionData>> = await res.json();
 
   const questions: Record<string, Question> = {};
 
@@ -205,7 +205,7 @@ export const getLikertQuestions = async (): Promise<Record<string, Question> | u
       type: settings.type
     };
     if ('values' in settings)
-      props.values = settings.values.map(({key, label}) => ({
+      props.values = settings.values.map(({ key, label }) => ({
         key,
         label
       }));
@@ -292,7 +292,7 @@ export const getExistingAnswers = async (): Promise<Record<string, Answer> | und
 
   if (!res?.ok) return;
 
-  const answerData: StrapiResponse<StrapiAnswerData[]> = await res.json();
+  const answerData: StrapiResponse<Array<StrapiAnswerData>> = await res.json();
 
   // Parse the data into a more usable format where the question ID is the key
   const answers: Record<string, Answer> = {};
@@ -308,7 +308,7 @@ export const getExistingAnswers = async (): Promise<Record<string, Answer> | und
   return answers;
 };
 
-export const getLanguages = async (): Promise<StrapiLanguageData[] | undefined> => {
+export const getLanguages = async (): Promise<Array<StrapiLanguageData> | undefined> => {
   const res = await request(
     getUrl('api/languages', {
       'populate[language]': 'true'
@@ -320,7 +320,7 @@ export const getLanguages = async (): Promise<StrapiLanguageData[] | undefined> 
   return resJson.data;
 };
 
-export const getGenders = async (): Promise<StrapiGenderData[] | undefined> => {
+export const getGenders = async (): Promise<Array<StrapiGenderData> | undefined> => {
   const res = await request(getUrl('api/genders'));
   if (!res?.ok) return undefined;
 
@@ -328,7 +328,7 @@ export const getGenders = async (): Promise<StrapiGenderData[] | undefined> => {
   return resJson.data;
 };
 
-export const uploadFiles = (files: File[]) => {
+export const uploadFiles = (files: Array<File>) => {
   const formData = new FormData();
   files.forEach((file) => formData.append('files', file));
   return request(getUrl('/api/upload/'), {
@@ -338,7 +338,7 @@ export const uploadFiles = (files: File[]) => {
 };
 
 export const deleteFile = (id: number) => {
-  return request(getUrl(`/api/upload/files/${id}`), {method: 'DELETE'});
+  return request(getUrl(`/api/upload/files/${id}`), { method: 'DELETE' });
 };
 
 export const request = async (url: string, options: RequestInit = {}) => {

@@ -1,1 +1,1 @@
-export {default as QuestionPage} from './QuestionPage.svelte';
+export { default as QuestionPage } from './QuestionPage.svelte';
