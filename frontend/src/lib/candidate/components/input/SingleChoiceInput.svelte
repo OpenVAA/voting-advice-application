@@ -1,16 +1,24 @@
 <script lang="ts">
-  import Field from '$lib/components/common/form/Field.svelte';
-  import FieldGroup from '$lib/components/common/form/FieldGroup.svelte';
+  import {Field, FieldGroup} from '$lib/components/common/form';
   import InputContainer from './InputContainer.svelte';
-  import type {inputFieldProps} from './InputField.type';
 
-  type $$Props = inputFieldProps;
+  import type {InputFieldProps} from './InputField.type';
+
+  type $$Props = InputFieldProps<number>;
 
   export let question: $$Props['question'];
   export let footerText: $$Props['footerText'] = '';
   export let headerText: $$Props['headerText'] = question.text;
-  export let questionsLocked: $$Props['questionsLocked'] = false;
+  export let locked: $$Props['locked'] = false;
   export let value: $$Props['value'];
+
+  const questionOptions = question.values;
+
+  if (!questionOptions || questionOptions.length === 0) {
+    throw new Error(
+      `Could not find options for question with id '${'id' in question ? question.id : 'n/a'}'`
+    );
+  }
 </script>
 
 <!--
@@ -31,7 +39,7 @@ A component for a single choice question that can be answered.
 ### Usage
 
 ```tsx
-<SingleChoiceInputField
+<SingleChoiceInput
   question={question}
   questionsLocked={questionsLocked}
   bind:value={value} />
@@ -39,20 +47,20 @@ A component for a single choice question that can be answered.
 -->
 
 <FieldGroup>
-  <p slot="header" class="small-label mx-6 my-0 p-0 uppercase">
+  <p slot="header" class="small-label mx-6 my-0 p-0">
     {headerText}
   </p>
   <Field id={question.id} label={question.text}>
-    <InputContainer locked={questionsLocked}>
+    <InputContainer {locked}>
       <select
-        disabled={questionsLocked}
+        disabled={locked}
         id={question.id}
         data-testid={question.id}
         class="select select-sm w-full text-right text-primary disabled:border-none disabled:bg-base-100"
         bind:value
         style="text-align-last: right; direction: rtl;">
         <option disabled selected value style="display: none;" />
-        {#each question.values ?? [] as option}
+        {#each questionOptions as option}
           <option value={option.key}>{option.label}</option>
         {/each}
       </select>

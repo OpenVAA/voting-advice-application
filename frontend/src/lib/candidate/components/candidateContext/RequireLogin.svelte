@@ -7,9 +7,9 @@
   import {t} from '$lib/i18n';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {userStore, tokenStore} = getContext<CandidateContext>('candidate');
+  const {user, token} = getContext<CandidateContext>('candidate');
   export let showLogin = false;
-  $: candidate = $userStore?.candidate;
+  $: candidate = $user?.candidate;
   $: nomination = candidate?.nomination;
   $: election = nomination?.election;
 
@@ -47,7 +47,7 @@ Shows an error message if there is no candidate associated with the user.
 ```
 -->
 
-{#if $userStore}
+{#if $user}
   {#if !error}
     <slot />
   {:else}
@@ -57,7 +57,7 @@ Shows an error message if there is no candidate associated with the user.
       </Warning>
     </BasicPage>
   {/if}
-{:else if ($tokenStore === undefined || ($tokenStore && !$userStore)) && showLogin}
+{:else if ($token === undefined || ($token && !$user)) && showLogin}
   <LoadingSpinner />
 {:else if showLogin}
   <LoginPage />

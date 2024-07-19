@@ -27,6 +27,8 @@
 -->
 
 <div
-  class={`${baseClasses} ${disabled ? 'border-0 bg-black text-white opacity-20' : 'badge-warning'} ${classes}`}>
+  class="{baseClasses} {disabled
+    ? 'border-0 bg-black text-white opacity-20'
+    : 'badge-warning'} {classes}">
   <span class="m-0 p-0">{text}</span>
 </div>

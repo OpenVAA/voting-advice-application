@@ -2,25 +2,21 @@
   import {Button} from '$lib/components/button';
   import {Expander} from '$lib/components/expander';
   import {LikertResponseButtons} from '$lib/components/questions';
-  import {t, locale} from '$lib/i18n';
+  import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {translate} from '$lib/i18n/utils/translate';
   import {CategoryTag} from '$lib/components/categoryTag';
   import {QuestionOpenAnswer} from '$lib/components/questions';
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
   import type {RenderQuestionProps} from './Question.type';
+  import {translate} from '$lib/i18n/utils';
 
   type $$Props = RenderQuestionProps;
 
   export let question: $$Props['question'];
   export let categoryQuestions: $$Props['categoryQuestions'];
 
-  const {opinionAnswerStore, questionsLockedStore} = getContext<CandidateContext>('candidate');
-
-  $: questionsLocked = $questionsLockedStore;
-
-  $: answers = $opinionAnswerStore;
+  const {opinionAnswers, questionsLocked} = getContext<CandidateContext>('candidate');
 </script>
 
 <!--
@@ -37,12 +33,12 @@ open answers and a button to navigate to the questions page.
 ```
 -->
 
-{#if answers?.[question.id]}
+{#if $opinionAnswers?.[question.id]}
   <div class="pb-20 pt-20">
     <CategoryTag category={question.category} />
 
-    <Expander title={translate(question.text)} variant="question">
-      {translate(question.info)}
+    <Expander title={question.text} variant="question">
+      {question.info}
     </Expander>
 
     <div class="pt-10">
@@ -52,23 +48,24 @@ open answers and a button to navigate to the questions page.
         mode="display"
         options={question.values?.map(({key, label}) => ({
           key,
-          label: translate(label, $locale)
+          label
         }))}
-        selectedKey={answers[question.id].key} />
+        selectedKey={$opinionAnswers[question.id].value} />
 
-      {#if translate(answers[question.id].openAnswer) !== ''}
+      {#if translate($opinionAnswers[question.id].openAnswer)}
         <div class="pt-10">
-          <QuestionOpenAnswer>{translate(answers[question.id].openAnswer)}</QuestionOpenAnswer>
+          <QuestionOpenAnswer
+            >{translate($opinionAnswers[question.id].openAnswer)}</QuestionOpenAnswer>
         </div>
       {/if}
 
       <div class="flex justify-center py-20 pb-40">
         <Button
-          text={!questionsLocked
+          text={!$questionsLocked
             ? $t('candidateApp.questions.editYourAnswer')
             : $t('candidateApp.questions.viewYourAnswer')}
           href={$getRoute({route: Route.CandAppQuestionEdit, id: question.id})}
-          icon={!questionsLocked ? 'create' : 'show'}
+          icon={!$questionsLocked ? 'create' : 'show'}
           iconPos="left" />
       </div>
     </div>

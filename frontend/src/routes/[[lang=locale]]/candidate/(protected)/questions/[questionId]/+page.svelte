@@ -5,15 +5,14 @@
   import {t} from '$lib/i18n';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {opinionQuestionsStore} = getContext<CandidateContext>('candidate');
+  const {opinionQuestions} = getContext<CandidateContext>('candidate');
 
-  $: questions = $opinionQuestionsStore;
   $: questionId = $page.params.questionId;
-  $: currentQuestion = questions?.[questionId];
+  $: currentQuestion = $opinionQuestions?.find((question) => question.id === questionId);
 </script>
 
-{#if questions && currentQuestion}
-  <QuestionPage {questions} {currentQuestion} />
+{#if $opinionQuestions && currentQuestion}
+  <QuestionPage questions={$opinionQuestions} {currentQuestion} />
 {:else}
   {$t('questions.notFound')}
 {/if}

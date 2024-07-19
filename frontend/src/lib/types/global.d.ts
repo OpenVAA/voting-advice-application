@@ -37,7 +37,7 @@ declare global {
   /**
    * The possible values for an answer to a question.
    */
-  type AnswePropsValue =
+  type AnswerPropsValue =
     | string
     | string[]
     | boolean
@@ -51,8 +51,8 @@ declare global {
   /**
    * Properties of a Candidate's or Party's answer to a question.
    */
-  interface AnswerProps {
-    value: AnswerPropsValue;
+  interface AnswerProps<TValue extends AnswerPropsValue = AnswerPropsValue> {
+    value: TValue;
     openAnswer?: string;
   }
 

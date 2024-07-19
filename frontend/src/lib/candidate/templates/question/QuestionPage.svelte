@@ -1,7 +1,6 @@
 <script lang="ts">
   import {goto} from '$app/navigation';
-  import {t, locale} from '$lib/i18n';
-  import {translate} from '$lib/i18n/utils/translate';
+  import {t} from '$lib/i18n';
   import {getContext} from 'svelte';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {addAnswer, updateAnswer} from '$lib/api/candidate';
@@ -20,14 +19,12 @@
   export let questions: $$Props['questions'];
   export let editMode: $$Props['editMode'] = false;
 
-  const {opinionAnswerStore, progressStore, questionsLockedStore} =
+  const {opinionAnswers, progress, questionsLocked, unansweredOpinionQuestions} =
     getContext<CandidateContext>('candidate');
 
-  $: answers = $opinionAnswerStore;
-  $: answer = answers?.[questionId]; // undefined if not answered
+  $: answer = $opinionAnswers?.[questionId]; // undefined if not answered
 
   $: questionId = currentQuestion.id;
-  $: questionsLocked = $questionsLockedStore;
 
   // Local storage keys, depend on the question id
   $: likertLocal = `candidate-app-question-${questionId}-likert`;
@@ -41,7 +38,7 @@
   // Set the selected key on page load, local storage takes precedence
   $: {
     const likertValue = localStorage.getItem(likertLocal);
-    selectedKey = likertValue ? parseInt(likertValue) : answer?.key;
+    selectedKey = likertValue ? parseInt(likertValue) : answer?.value;
   }
 
   const saveLikertToLocal = ({detail}: CustomEvent) => {
@@ -87,7 +84,7 @@
     } else {
       // Editing existing answer
 
-      const likertAnswer = selectedKey ?? answer.key;
+      const likertAnswer = selectedKey ?? answer.value;
       const response = await updateAnswer(answer.id, likertAnswer, openAnswer);
       if (!response?.ok) {
         showError($t('candidateApp.questions.answerSaveError'));
@@ -102,16 +99,15 @@
 
   const updateAnswerStore = (
     answerId: string,
-    key: AnswerOption['key'],
+    value: AnswerProps['value'],
     openAnswer: LocalizedString
   ) => {
-    if (answers) {
-      answers[questionId] = {
-        id: answerId,
-        key,
+    if ($opinionAnswers) {
+      $opinionAnswers[questionId] = {
+        id: String(answerId),
+        value: value,
         openAnswer
       };
-      opinionAnswerStore.set(answers);
     }
   };
 
@@ -123,16 +119,13 @@
   const saveAndContinue = async () => {
     await saveToServer();
 
-    const nextUnansweredQuestion = Object.values(questions).find(
-      (question) => !answers?.[question.id]
-    );
-
-    if (!nextUnansweredQuestion) {
+    if ($unansweredOpinionQuestions && $unansweredOpinionQuestions.length === 0) {
       // All questions answered
       goto($getRoute(Route.CandAppHome));
       return;
     }
-    goto($getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion.id}));
+    const nextUnansweredQuestion = ($unansweredOpinionQuestions ?? [])[0].id;
+    goto($getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion}));
   };
 
   const cancelAndReturn = () => {
@@ -141,10 +134,10 @@
   };
 
   $: category = currentQuestion.category;
-  $: info = translate(currentQuestion.info, $locale);
+  $: info = currentQuestion.info;
   $: options = currentQuestion.values?.map(({key, label}) => ({
     key,
-    label: translate(label, $locale)
+    label: label
   }));
 </script>
 
@@ -155,7 +148,7 @@ In addition to the question, includes a Likert scale and a text area for comment
 
 ### Properties
 - `currentQuestion` (required): The question to display.
-- `questions` (required): Record of all questions.
+- `questions` (required): Array of all questions.
 - `editMode` (optional): Whether the page is in edit mode. Changes the buttons displayed.
 
 ### Usage
@@ -167,20 +160,20 @@ In addition to the question, includes a Likert scale and a text area for comment
 
 {#key currentQuestion}
   <BasicPage
-    title={translate(currentQuestion.text, $locale)}
+    title={currentQuestion.text}
     class="bg-base-200"
-    progress={$progressStore?.progress}
-    progressMax={$progressStore?.max}>
-    <Warning display={!!questionsLocked} slot="note">{$t('questions.cannotEditWarning')}</Warning>
+    progress={$progress?.progress}
+    progressMax={$progress?.max}>
+    <Warning display={!!$questionsLocked} slot="note">{$t('questions.cannotEditWarning')}</Warning>
 
     <HeadingGroup slot="heading" id="hgroup-{questionId}">
       {#if category}
         <PreHeading><CategoryTag {category} /></PreHeading>
       {/if}
-      <h1>{translate(currentQuestion.text, $locale)}</h1>
+      <h1>{currentQuestion.text}</h1>
     </HeadingGroup>
 
-    {#if info !== ''}
+    {#if info && info !== ''}
       <QuestionInfo {info} />
     {/if}
 
@@ -189,7 +182,7 @@ In addition to the question, includes a Likert scale and a text area for comment
         <LikertResponseButtons
           aria-labelledby="hgroup-{questionId}"
           name={questionId}
-          mode={!questionsLocked ? 'answer' : 'display'}
+          mode={!$questionsLocked ? 'answer' : 'display'}
           {options}
           {selectedKey}
           on:change={saveLikertToLocal} />
@@ -203,7 +196,7 @@ In addition to the question, includes a Likert scale and a text area for comment
         localStorageId={openAnswerLocal}
         previouslySavedMultilang={answer?.openAnswer ?? undefined}
         disabled={!selectedKey}
-        locked={!!questionsLocked}
+        locked={!!$questionsLocked}
         placeholder="—"
         bind:multilangText={openAnswer}
         bind:this={openAnswerTextArea} />
@@ -212,7 +205,7 @@ In addition to the question, includes a Likert scale and a text area for comment
         <p class="text-error">{errorMessage}</p>
       {/if}
 
-      {#if !!questionsLocked}
+      {#if !!$questionsLocked}
         <Button
           on:click={() => goto($getRoute(Route.CandAppQuestions))}
           variant="main"

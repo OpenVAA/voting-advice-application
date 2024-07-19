@@ -705,11 +705,12 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
 
   const constituencyPctg = options.constituencyPctg ?? 0.1;
   // Create Opinion questions
-  for (const question of mockQuestions) {
+  mockQuestions.forEach(async (question, index) => {
     const text = fakeLocalized((faker) => faker.lorem.sentence(), question);
     const questionType = faker.helpers.arrayElement(likertTypes);
     const info = fakeLocalized((faker) => faker.lorem.sentences(3));
-    const category = faker.helpers.arrayElement(opinionCategories);
+    const category = opinionCategories[index % opinionCategories.length];
+    // const category = faker.helpers.arrayElement(opinionCategories);
     const constituency =
       Math.random() < constituencyPctg ? faker.helpers.arrayElement(constituencies) : null;
     await strapi.db.query(API.Question).create({
@@ -723,7 +724,7 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
         publishedAt: new Date()
       }
     });
-  }
+  });
   // Create other questions:
   // Languages, gender, election manifesto, unaffiliated
   const infoCategoryId = questionCategories.filter((cat) => cat.type === 'info')[0]?.id;

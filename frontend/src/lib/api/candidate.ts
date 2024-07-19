@@ -1,24 +1,10 @@
 import {get} from 'svelte/store';
 import {constants} from '$lib/utils/constants';
 import {candidateContext} from '$lib/utils/candidateStore';
-import type {
-  Question,
-  Answer,
-  Language,
-  User,
-  Photo,
-  CandidateAnswer
-} from '$lib/types/candidateAttributes';
-import type {
-  StrapiAnswerData,
-  StrapiLanguageData,
-  StrapiResponse,
-  StrapiQuestionData
-} from './dataProvider/strapi';
-import {parseQuestionCategory} from './dataProvider/strapi/utils';
+import type {Language, User, Photo, CandidateAnswer} from '$lib/types/candidateAttributes';
+import type {StrapiAnswerData, StrapiLanguageData, StrapiResponse} from './dataProvider/strapi';
 import {dataProvider} from '$lib/api/dataProvider/strapi/strapiDataProvider';
 import {locale} from '$lib/i18n';
-import type {GetQuestionsOptionsBase} from './dataProvider';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
@@ -28,7 +14,7 @@ function getUrl(path: string, search: Record<string, string> = {}) {
   return url.toString();
 }
 
-export const authenticate = (identifier: string, password: string): Promise<Response> => {
+export function authenticate(identifier: string, password: string): Promise<Response> {
   return fetch(getUrl('api/auth/local'), {
     method: 'POST',
     headers: {
@@ -36,9 +22,9 @@ export const authenticate = (identifier: string, password: string): Promise<Resp
     },
     body: JSON.stringify({identifier, password})
   });
-};
+}
 
-export const register = (registrationKey: string, password: string): Promise<Response> => {
+export function register(registrationKey: string, password: string): Promise<Response> {
   return fetch(getUrl('api/auth/candidate/register'), {
     method: 'POST',
     headers: {
@@ -46,9 +32,9 @@ export const register = (registrationKey: string, password: string): Promise<Res
     },
     body: JSON.stringify({registrationKey, password})
   });
-};
+}
 
-export const requestForgotPasswordLink = (email: string): Promise<Response> => {
+export function requestForgotPasswordLink(email: string): Promise<Response> {
   return fetch(getUrl('api/auth/forgot-password'), {
     method: 'POST',
     headers: {
@@ -56,9 +42,9 @@ export const requestForgotPasswordLink = (email: string): Promise<Response> => {
     },
     body: JSON.stringify({email})
   });
-};
+}
 
-export const resetPassword = (code: string, password: string): Promise<Response> => {
+export function resetPassword(code: string, password: string): Promise<Response> {
   return fetch(getUrl('api/auth/reset-password'), {
     method: 'POST',
     headers: {
@@ -71,9 +57,9 @@ export const resetPassword = (code: string, password: string): Promise<Response>
       passwordConfirmation: password
     })
   });
-};
+}
 
-export const checkRegistrationKey = (registrationKey: string): Promise<Response> => {
+export function checkRegistrationKey(registrationKey: string): Promise<Response> {
   return fetch(getUrl('api/auth/candidate/check'), {
     method: 'POST',
     headers: {
@@ -81,14 +67,14 @@ export const checkRegistrationKey = (registrationKey: string): Promise<Response>
     },
     body: JSON.stringify({registrationKey})
   });
-};
+}
 
 type UserData = User & {error: unknown};
 
 /**
  * Get the current user's data, including candidate information
  */
-export const me = async (): Promise<User | undefined> => {
+export async function me(): Promise<User | undefined> {
   const res = await request(
     getUrl('api/users/me', {
       'populate[candidate][populate][nomination][populate][party]': 'true',
@@ -108,10 +94,10 @@ export const me = async (): Promise<User | undefined> => {
   if (data?.error) return;
 
   return data;
-};
+}
 
-export const updatePhoto = async (photo: Photo) => {
-  const user = get(candidateContext.userStore);
+export async function updatePhoto(photo: Photo) {
+  const user = get(candidateContext.user);
   const candidate = user?.candidate;
 
   if (!candidate) {
@@ -129,13 +115,13 @@ export const updatePhoto = async (photo: Photo) => {
       'Content-Type': 'application/json'
     }
   });
-};
+}
 
 /**
  * Change the user's preferred language for the app.
  */
-export const updateAppLanguage = async (language: Language) => {
-  const user = get(candidateContext.userStore);
+export async function updateAppLanguage(language: Language) {
+  const user = get(candidateContext.user);
   const candidate = user?.candidate;
 
   if (!candidate) {
@@ -153,12 +139,12 @@ export const updateAppLanguage = async (language: Language) => {
       'Content-Type': 'application/json'
     }
   });
-};
+}
 
 /**
  * Change the user's password to a new one.
  */
-export const changePassword = (currentPassword: string, password: string) => {
+export async function changePassword(currentPassword: string, password: string) {
   return request(getUrl('api/auth/change-password'), {
     method: 'POST',
     body: JSON.stringify({
@@ -170,68 +156,30 @@ export const changePassword = (currentPassword: string, password: string) => {
       'Content-Type': 'application/json'
     }
   });
-};
+}
 
 /**
  * Get all info questions.
  */
-export const getInfoQuestions = async (): Promise<QuestionProps[]> => {
-  const currentLocale: GetQuestionsOptionsBase = {locale: get(locale)};
-
-  const questionsPromise = dataProvider.getInfoQuestions(currentLocale);
-  const questions = await questionsPromise;
-
-  return questions;
-};
+export async function getInfoQuestions(): Promise<QuestionProps[]> {
+  return await dataProvider.getInfoQuestions({locale: locale.get()});
+}
 
 /**
  * Get all opinion questions.
  */
-export const getOpinionQuestions = async (): Promise<Record<string, Question> | undefined> => {
-  const res = await request(
-    getUrl('api/questions', {
-      'populate[questionType]': 'true',
-      'populate[category]': 'true',
-      'filters[questionType][name][$startsWith]': 'Likert'
-    })
-  );
-
-  if (!res?.ok) throw Error(res?.statusText);
-
-  const questionData: StrapiResponse<StrapiQuestionData[]> = await res.json();
-
-  const questions: Record<string, Question> = {};
-
-  questionData.data.forEach((question) => {
-    const attr = question.attributes;
-    const settings = attr.questionType?.data.attributes.settings;
-    const props: Question = {
-      id: `${question.id}`,
-      text: attr.text,
-      info: attr.info,
-      shortName: attr.shortName,
-      category: parseQuestionCategory(attr.category.data),
-      type: settings.type
-    };
-    if ('values' in settings)
-      props.values = settings.values.map(({key, label}) => ({
-        key,
-        label
-      }));
-
-    questions[question.id] = props;
-  });
-  return questions;
-};
+export async function getOpinionQuestions(): Promise<QuestionProps[]> {
+  return await dataProvider.getOpinionQuestions({locale: locale.get()});
+}
 
 /**
  * Add answer to a question for the logged in user.
  */
-export const addAnswer = (
+export function addAnswer(
   questionId: string,
-  answerKey: AnswerProps['value'],
+  value: AnswerProps['value'],
   openAnswer?: LocalizedString
-): Promise<Response | undefined> => {
+): Promise<Response | undefined> {
   return request(getUrl('api/answers'), {
     method: 'POST',
     headers: {
@@ -240,22 +188,22 @@ export const addAnswer = (
     body: JSON.stringify({
       data: {
         question: Number(questionId),
-        value: answerKey,
+        value: value,
         openAnswer
       }
     })
   });
-};
+}
 
 /**
  * Update an existing answer for the logged in user.
  * The answer id is sufficient to identify the answer and question.
  */
-export const updateAnswer = (
+export async function updateAnswer(
   answerId: string,
-  answerKey: AnswerProps['value'],
+  value: AnswerProps['value'],
   openAnswer?: LocalizedString
-): Promise<Response | undefined> => {
+): Promise<Response | undefined> {
   return request(getUrl(`api/answers/${answerId}`), {
     method: 'PUT',
     headers: {
@@ -263,30 +211,30 @@ export const updateAnswer = (
     },
     body: JSON.stringify({
       data: {
-        value: answerKey,
+        value: value,
         openAnswer
       }
     })
   });
-};
+}
 
 /**
  * Delete an existing answer for the logged in user.
  */
-export const deleteAnswer = (answerId: string): Promise<Response | undefined> => {
+export async function deleteAnswer(answerId: string): Promise<Response | undefined> {
   return request(getUrl(`api/answers/${answerId}`), {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json'
     }
   });
-};
+}
 
 /**
  * Get all opinion answers for the logged in user.
  */
-export const getExistingOpinionAnswers = async (): Promise<Record<string, Answer> | undefined> => {
-  const user = get(candidateContext.userStore)?.candidate;
+export async function getOpinionAnswers(): Promise<Record<string, CandidateAnswer> | undefined> {
+  const user = get(candidateContext.user)?.candidate;
   const candidateId = user?.id;
 
   if (!candidateId) return;
@@ -304,26 +252,24 @@ export const getExistingOpinionAnswers = async (): Promise<Record<string, Answer
   const answerData: StrapiResponse<StrapiAnswerData[]> = await res.json();
 
   // Parse the data into a more usable format where the question ID is the key
-  const answers: Record<string, Answer> = {};
+  const answers: Record<string, CandidateAnswer> = {};
 
   answerData.data.forEach((answer) => {
     answers[answer.attributes.question.data.id] = {
       id: `${answer.id}`,
-      key: answer.attributes.value as number,
+      value: answer.attributes.value,
       openAnswer: answer.attributes.openAnswer
     };
   });
 
   return answers;
-};
+}
 
 /**
  * Get all info answers for the logged in user.
  */
-export const getExistingInfoAnswers = async (): Promise<
-  Record<string, CandidateAnswer> | undefined
-> => {
-  const user = get(candidateContext.userStore)?.candidate;
+export async function getInfoAnswers(): Promise<Record<string, CandidateAnswer> | undefined> {
+  const user = get(candidateContext.user)?.candidate;
   const candidateId = user?.id;
 
   if (!candidateId) return;
@@ -331,7 +277,7 @@ export const getExistingInfoAnswers = async (): Promise<
   const res = await request(
     getUrl('api/answers', {
       'populate[question][populate][category]': 'true',
-      'filters[candidate][id][$eq]': candidateId.toString(),
+      'filters[candidate][id][$eq]': `${candidateId}`,
       'filters[question][category][type][$eq]': 'info'
     })
   );
@@ -351,9 +297,9 @@ export const getExistingInfoAnswers = async (): Promise<
   });
 
   return answers;
-};
+}
 
-export const getLanguages = async (): Promise<StrapiLanguageData[] | undefined> => {
+export async function getLanguages(): Promise<StrapiLanguageData[] | undefined> {
   const res = await request(
     getUrl('api/languages', {
       'populate[language]': 'true'
@@ -363,23 +309,23 @@ export const getLanguages = async (): Promise<StrapiLanguageData[] | undefined> 
 
   const resJson = await res.json();
   return resJson.data;
-};
+}
 
-export const uploadFiles = (files: File[]) => {
+export async function uploadFiles(files: File[]) {
   const formData = new FormData();
   files.forEach((file) => formData.append('files', file));
   return request(getUrl('/api/upload/'), {
     method: 'POST',
     body: formData
   });
-};
+}
 
-export const deleteFile = (id: number) => {
+export async function deleteFile(id: number) {
   return request(getUrl(`/api/upload/files/${id}`), {method: 'DELETE'});
-};
+}
 
-export const request = async (url: string, options: RequestInit = {}) => {
-  const token = candidateContext.tokenStore;
+export async function request(url: string, options: RequestInit = {}) {
+  const token = candidateContext.token;
 
   // Allow providing headers, but with an enforced Authorization header
   if (!options.headers) options.headers = {};
@@ -389,4 +335,4 @@ export const request = async (url: string, options: RequestInit = {}) => {
     console.error('Error in getting data from backend:', error);
     return undefined;
   });
-};
+}

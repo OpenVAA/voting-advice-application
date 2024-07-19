@@ -15,6 +15,7 @@ const maildevPort = process.env.MAILDEV_PORT || "1080";
 const maildevURL = `http://localhost:${maildevPort}/#/`;
 const LOCALE = 'en';
 
+//TODO: These need to be matched to mock data
 const userFirstName = faker.person.firstName();
 const userLastName = faker.person.lastName();
 const userEmail = `${userFirstName}.${userLastName}@example.com`.toLowerCase();
@@ -394,7 +395,7 @@ test.describe("when logged in with imported user", () => {
 
 
     await expect(
-      page.getByText(candidateAppTranslationsEn.genders.male, {exact: true})
+      page.getByText(userGender, {exact: true})
     ).toBeVisible();
     await expect(page.getByText(`${commonTranslations.unaffiliated} ${commonTranslations.answerNo}`, {exact: true})).toBeVisible();
     await expect(

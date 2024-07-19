@@ -1,15 +1,13 @@
-import type {Question} from '$lib/types/candidateAttributes';
-
 export type QuestionPageProps = {
   /**
    * Shown question
    */
-  currentQuestion: Question;
+  currentQuestion: QuestionProps;
 
   /**
    * All questions
    */
-  questions: Record<string, Question>;
+  questions: QuestionProps[];
 
   /**
    * Edit mode for the question page.

@@ -18,8 +18,8 @@
 
   let password = '';
   let passwordConfirmation = '';
-  const {emailOfNewUserStore, userStore, logOut} = getContext<CandidateContext>('candidate');
-  $: loggedIn = $userStore;
+  const {newUserEmail, user, logOut} = getContext<CandidateContext>('candidate');
+  $: loggedIn = $user;
 
   let validPassword = false;
   let errorMessage = '';
@@ -50,7 +50,7 @@
     if (loggedIn) {
       await logOut();
     }
-    emailOfNewUserStore.set(email);
+    newUserEmail.set(email);
     errorMessage = '';
     goto($getRoute(Route.CandAppHome));
   };
@@ -78,7 +78,7 @@ Shows an error message if the registration is not successful.
 <FrontPage title={$t('candidateApp.registration.title')}>
   <HeadingGroup slot="heading">
     <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
-    <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
+    <h1 class="text-3xl font-normal">{$page.data.election?.name}</h1>
     <h1 class="my-24 text-2xl font-normal">
       {$t('candidateApp.setPassword.greeting', {username})}
     </h1>

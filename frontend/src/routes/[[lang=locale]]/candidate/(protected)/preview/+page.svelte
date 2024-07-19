@@ -12,7 +12,7 @@
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import {SingleCardPage} from '$lib/templates/singleCardPage';
 
-  const {userStore} = getContext<CandidateContext>('candidate');
+  const {user} = getContext<CandidateContext>('candidate');
 
   let infoQuestions: QuestionProps[];
   let opinionQuestions: QuestionProps[];
@@ -27,7 +27,7 @@
       getNominatedCandidates({
         loadAnswers: true,
         locale: $locale,
-        id: $userStore?.candidate?.id.toString()
+        id: $user?.candidate?.id.toString()
       })
     ]);
 

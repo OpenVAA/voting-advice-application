@@ -5,93 +5,76 @@
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {getContext} from 'svelte';
-  import {get} from 'svelte/store';
   import {Warning} from '$lib/components/warning';
   import {
     QuestionsStartPage,
     AnsweredQuestion,
     UnAnsweredQuestion
   } from '$lib/candidate/components/questionsPage';
-  import type {Question} from '$lib/types/candidateAttributes';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
   const {
-    basicInfoFilledStore,
-    opinionQuestionsFilledStore,
-    nofUnansweredOpinionQuestionsStore,
-    opinionQuestionsStore,
-    opinionAnswerStore,
-    progressStore,
-    questionsLockedStore
+    opinionQuestions,
+    opinionAnswers,
+    progress,
+    questionsLocked,
+    unansweredRequiredInfoQuestions,
+    unansweredOpinionQuestions
   } = getContext<CandidateContext>('candidate');
 
-  $: questionsLocked = $questionsLockedStore;
-
-  let questions = get(opinionQuestionsStore) ?? [];
-
-  let opinionQuestionsLeft: number | undefined;
-  nofUnansweredOpinionQuestionsStore?.subscribe((value) => {
-    opinionQuestionsLeft = value;
-  });
-
-  let opinionQuestionsFilled: boolean | undefined;
-  opinionQuestionsFilledStore?.subscribe((value) => {
-    opinionQuestionsFilled = value;
-  });
-
-  let basicInfoFilled: boolean | undefined;
-  basicInfoFilledStore?.subscribe((value) => {
-    basicInfoFilled = value;
-  });
-
-  $: answers = $opinionAnswerStore;
-
-  let questionsByCategory: Record<string, Array<Question>>;
+  let questionsByCategory: Record<string, Array<QuestionProps>> | undefined;
 
   let loading = true;
   let unansweredCategories: Array<string> | undefined;
 
-  $: questionsByCategory = Object.values(questions).reduce(
+  $: questionsByCategory = $opinionQuestions?.reduce(
     (acc, question) => {
       if (!question.category) {
         return acc;
       }
       const category = question.category.name;
-      if (!acc[category]) {
+      if (acc && !acc[category]) {
         acc[category] = [];
       }
-      acc[category].push(question);
+      if (acc) {
+        acc[category].push(question);
+      }
       return acc;
     },
     {} as typeof questionsByCategory
   );
 
   $: {
-    if (questions) {
+    if ($opinionQuestions) {
       loading = true;
 
-      if (answers) {
+      if ($opinionAnswers) {
         loading = false;
-        unansweredCategories = Object.keys(questionsByCategory).filter(
-          (category) => !questionsByCategory[category].every((question) => answers?.[question.id])
-        );
+        if (questionsByCategory) {
+          unansweredCategories = Object.keys(questionsByCategory).filter(
+            (category) =>
+              !questionsByCategory[category].every((question) => $opinionAnswers?.[question.id])
+          );
+        }
       }
     }
   }
 
-  $: nextUnansweredQuestion = Object.values(questions).find((question) => !answers?.[question.id]);
+  $: nextUnansweredQuestion = ($opinionQuestions ?? []).find(
+    (question) => !$opinionAnswers?.[question.id]
+  );
 </script>
 
-{#if answers && !questionsLocked && Object.entries(answers).length === 0}
+{#if $opinionAnswers && !$questionsLocked && Object.entries($opinionAnswers).length === 0}
   <QuestionsStartPage />
 {:else}
   <BasicPage
     title={$t('candidateApp.questions.title')}
-    progress={$progressStore?.progress}
-    progressMax={$progressStore?.max}>
-    <Warning display={!!questionsLocked} slot="note">
+    progress={$progress?.progress}
+    progressMax={$progress?.max}>
+    <Warning display={!!$questionsLocked} slot="note">
       <p>{$t('candidateApp.questions.editingAllowedNote')}</p>
-      {#if !opinionQuestionsFilled || !basicInfoFilled}
+      {#if ($unansweredOpinionQuestions && $unansweredOpinionQuestions.length !== 0) || ($unansweredRequiredInfoQuestions && $unansweredRequiredInfoQuestions.length !== 0)}
         <p>{$t('candidateApp.homePage.editingNotAllowedPartiallyFilled')}</p>
       {/if}
     </Warning>
@@ -99,9 +82,11 @@
     <p class="pb-20 text-center">
       {$t('candidateApp.questions.info')}
     </p>
-    {#if opinionQuestionsLeft != 0 && !loading && !questionsLocked}
+    {#if $unansweredOpinionQuestions && $unansweredOpinionQuestions.length !== 0 && !loading && !$questionsLocked}
       <div class="pb-6 text-center text-warning">
-        {$t('candidateApp.questions.warning', {numUnansweredQuestions: opinionQuestionsLeft})}
+        {$t('candidateApp.questions.warning', {
+          numUnansweredQuestions: $unansweredOpinionQuestions?.length
+        })}
       </div>
       <div class="flex w-full justify-center pb-40 pt-20">
         <Button
@@ -112,14 +97,14 @@
       </div>
     {/if}
 
-    {#each Object.entries(questionsByCategory) as [category, categoryQuestions]}
+    {#each Object.entries(questionsByCategory ?? []) as [category, categoryQuestions]}
       <div class="edgetoedge-x">
         <Expander
           title={category || ''}
           variant="category"
           defaultExpanded={unansweredCategories?.includes(category ?? '')}>
           {#each categoryQuestions as question}
-            {#if answers?.[question.id]}
+            {#if $opinionAnswers?.[question.id]}
               <AnsweredQuestion {question} {categoryQuestions} />
             {:else}
               <UnAnsweredQuestion {question} {categoryQuestions} />

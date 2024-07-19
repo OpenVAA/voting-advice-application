@@ -9,7 +9,7 @@
 
   export let disabled: boolean = false;
   export let photo: Photo | undefined;
-  export let photoChanged: undefined | (() => void) = undefined;
+  export let onChange: (() => void) | undefined = undefined;
 
   let photoUrl = photo
     ? new URL(constants.PUBLIC_BACKEND_URL + photo.formats.thumbnail.url)
@@ -52,7 +52,7 @@
         imageHasChanged = true;
         image = file;
         let reader = new FileReader();
-        photoChanged?.();
+        onChange?.();
 
         reader.onload = (e) => {
           photoUrl = e.target?.result ? new URL(e.target?.result?.toString()) : undefined;
@@ -107,7 +107,7 @@ let uploadPhoto: () => Promise<void>;
   let photo: Photo = {
     ...
   }
-  <AvatarSelect bind:photo bind:uploadPhoto maxFileSize={5 * 1024 * 1024}/>
+  <PhotoInput bind:photo bind:uploadPhoto maxFileSize={5 * 1024 * 1024}/>
 ```
 -->
 

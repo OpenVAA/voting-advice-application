@@ -6,22 +6,21 @@
   import {getRoute, Route} from '$lib/utils/navigation';
   import {LoadingSpinner} from '$candidate/components/loadingSpinner';
 
-  const {basicInfoFilledStore, opinionQuestionsStore} = getContext<CandidateContext>('candidate');
+  const {opinionQuestions, unansweredRequiredInfoQuestions} =
+    getContext<CandidateContext>('candidate');
 
-  $: if (!$basicInfoFilledStore) {
+  $: if ($unansweredRequiredInfoQuestions?.length !== 0) {
     goto($getRoute(Route.CandAppProfile));
   }
-
-  $: questions = $opinionQuestionsStore;
 </script>
 
 <svelte:head>
   <title>{$t('questions.title')}</title>
 </svelte:head>
 
-{#if !$basicInfoFilledStore}
+{#if $unansweredRequiredInfoQuestions?.length !== 0}
   <LoadingSpinner />
-{:else if !questions || !Object.values(questions).length}
+{:else if !$opinionQuestions || !Object.values($opinionQuestions).length}
   <p>{$t('error.noQuestions')}</p>
 {:else}
   <slot />

@@ -1,13 +1,11 @@
-import type {Question} from '$lib/types/candidateAttributes';
-
 export type RenderQuestionProps = {
   /**
    * The question to be rendered
    */
-  question: Question;
+  question: QuestionProps;
 
   /**
    * All the questions belonging to the same category
    */
-  categoryQuestions: Question[];
+  categoryQuestions: QuestionProps[];
 };

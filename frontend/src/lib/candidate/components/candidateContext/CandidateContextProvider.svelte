@@ -2,10 +2,9 @@
   import type {CandidateAnswer} from '$lib/types/candidateAttributes';
   import {candidateContext} from '$lib/utils/candidateStore';
   import {onMount, setContext} from 'svelte';
-  import {get} from 'svelte/store';
 
   setContext('candidate', candidateContext);
-  const token = candidateContext.tokenStore;
+  const token = candidateContext.token;
 
   onMount(() => {
     candidateContext.loadLocalStorage();
@@ -15,75 +14,83 @@
   let infoAnswers: Record<string, CandidateAnswer> | undefined;
   let infoQuestions: QuestionProps[] | undefined;
 
-  candidateContext.infoAnswerStore.subscribe((value) => {
+  candidateContext.infoAnswers.subscribe((value) => {
     infoAnswers = value;
-    updateInfoAnswerRelations();
+    updateInfoAnswerStatistics();
   });
-  candidateContext.infoQuestionsStore.subscribe((value) => {
+  candidateContext.infoQuestions.subscribe((value) => {
     infoQuestions = value;
-    updateInfoAnswerRelations();
+    updateInfoAnswerStatistics();
   });
 
-  function updateInfoAnswerRelations() {
-    if (!infoQuestions || !infoAnswers) return;
-
-    const requiredInfoQuestions = infoQuestions.filter((question) => question.required);
-    const requiredQuestionsMapToFilled = requiredInfoQuestions.map((question) => {
-      if (infoAnswers?.[question.id]) {
-        const answer = infoAnswers[question.id].value;
-        if (question.type === 'boolean') {
-          return answer !== undefined;
-        } else if (question.type === 'singleChoiceCategorical') {
-          return answer !== '';
-        } else if (question.type === 'multipleChoiceCategorical') {
-          return answer.length > 0;
-        } else if (question.type === 'text') {
-          return Object.entries(answer).some((value) => value[1] !== '');
-        } else if (question.type === 'date') {
-          return answer !== '';
-        }
-      } else return false;
-    });
-    const allFilled = requiredQuestionsMapToFilled.every((question) => question);
-    const nofBasicQuestionsFilled = requiredQuestionsMapToFilled.filter((value) => value).length;
-    const infoQuestionsLeft = requiredInfoQuestions.length - nofBasicQuestionsFilled;
-
-    candidateContext.nofUnansweredInfoQuestionsStore.set(infoQuestionsLeft);
-    candidateContext.basicInfoFilledStore.set(allFilled);
+  function answerIsEmpty(question: QuestionProps, answer: AnswerPropsValue) {
+    if (infoAnswers?.[question.id]) {
+      if (question.type === 'boolean') {
+        return answer === null;
+      } else if (
+        question.type === 'singleChoiceCategorical' ||
+        question.type === 'singleChoiceOrdinal'
+      ) {
+        return answer === '' || answer === null;
+      } else if (question.type === 'multipleChoiceCategorical') {
+        return answer && Array.isArray(answer) && answer.length === 0;
+      } else if (question.type === 'text' || question.type === 'link') {
+        return (
+          answer && !Object.entries(answer).some((value) => value[1] !== '' && value[1] !== null)
+        );
+      } else if (question.type === 'date') {
+        return answer === '' || answer === null;
+      }
+    } else return false;
   }
 
-  const updateOpinionAnswerRelations = () => {
-    const answers = get(candidateContext.opinionAnswerStore);
-    const questions = get(candidateContext.opinionQuestionsStore);
-    if (answers && questions) {
-      candidateContext.nofUnansweredOpinionQuestionsStore.set(
-        Object.entries(questions).length - Object.entries(answers).length
-      );
-      const allFilled = Object.entries(questions).length - Object.entries(answers).length === 0;
-      candidateContext.opinionQuestionsFilledStore.set(allFilled);
-    }
-  };
+  function updateInfoAnswerStatistics() {
+    if (!infoQuestions || !infoAnswers) return;
 
-  const updateProgress = () => {
-    const answers = get(candidateContext.opinionAnswerStore);
-    const questions = get(candidateContext.opinionQuestionsStore);
+    const unanswered = infoQuestions.filter((question) => {
+      if (!question.required) return false;
+      if (!infoAnswers?.[question.id]) return true;
+      const answer = infoAnswers?.[question.id].value;
+      return answerIsEmpty(question, answer);
+    });
 
-    if (answers && questions) {
-      const answeredQuestions = Object.entries(answers).length;
-      const totalQuestions = Object.entries(questions).length;
+    candidateContext.unansweredRequiredInfoQuestions.set(unanswered);
+  }
 
-      candidateContext.progressStore.set({
+  let opinionAnswers: Record<string, CandidateAnswer> | undefined;
+  let opinionQuestions: QuestionProps[] | undefined;
+
+  candidateContext.opinionAnswers.subscribe((value) => {
+    opinionAnswers = value;
+    updateOpinionAnswerStatistics();
+    updateProgress();
+  });
+
+  candidateContext.opinionQuestions.subscribe((value) => {
+    opinionQuestions = value;
+    updateOpinionAnswerStatistics();
+    updateProgress();
+  });
+
+  function updateOpinionAnswerStatistics() {
+    if (!opinionAnswers || !opinionQuestions) return;
+    const unanswered = opinionQuestions.filter((question) => {
+      return opinionAnswers && !Object.keys(opinionAnswers).includes(question.id);
+    });
+    candidateContext.unansweredOpinionQuestions.set(unanswered);
+  }
+
+  function updateProgress() {
+    if (opinionAnswers && opinionQuestions) {
+      const answeredQuestions = Object.entries(opinionAnswers).length;
+      const totalQuestions = opinionQuestions.length;
+
+      candidateContext.progress.set({
         progress: answeredQuestions,
         max: totalQuestions
       });
     }
-  };
-
-  candidateContext.opinionAnswerStore.subscribe(updateOpinionAnswerRelations);
-  candidateContext.opinionQuestionsStore.subscribe(updateOpinionAnswerRelations);
-
-  candidateContext.opinionAnswerStore.subscribe(updateProgress);
-  candidateContext.opinionQuestionsStore.subscribe(updateProgress);
+  }
 </script>
 
 <!--

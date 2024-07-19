@@ -1,13 +1,13 @@
 <script lang="ts">
   import MultilangTextInput from '$lib/candidate/components/textArea/MultilangTextInput.svelte';
   import {locales} from '$lib/i18n';
-  import type {inputFieldProps} from './InputField.type';
+  import type {InputFieldProps} from './InputField.type';
 
-  type $$Props = inputFieldProps;
+  type $$Props = InputFieldProps<LocalizedString>;
 
   export let question: $$Props['question'];
   export let headerText: $$Props['headerText'] = question.text;
-  export let questionsLocked: $$Props['questionsLocked'] = false;
+  export let locked: $$Props['locked'] = false;
   export let text: $$Props['value'] = {};
 
   let textArea: MultilangTextInput; // Used to clear the local storage from the parent component
@@ -22,7 +22,7 @@
     }
   };
 
-  export let previousText: AnswePropsValue = ''; // Used to detect changes in the text value
+  export let previousText: AnswerPropsValue = ''; // Used to detect changes in the text value
   let previouslySavedMultilang: LocalizedString = {};
 
   if (
@@ -58,7 +58,7 @@ A component for a text question that can be answered.
 ### Usage
 
 ```tsx
-<TextInputField
+<TextInput
   question={question}
   questionsLocked={questionsLocked}
   previousText={previousText}
@@ -69,7 +69,7 @@ A component for a text question that can be answered.
 -->
 
 <MultilangTextInput
-  locked={questionsLocked}
+  {locked}
   id={question.text}
   {localStorageId}
   {previouslySavedMultilang}

@@ -1,25 +1,16 @@
 <script lang="ts">
-  import Field from '$lib/components/common/form/Field.svelte';
-  import FieldGroup from '$lib/components/common/form/FieldGroup.svelte';
+  import {Field, FieldGroup} from '$lib/components/common/form';
+  import {t} from '$lib/i18n';
   import InputContainer from './InputContainer.svelte';
-  import type {inputFieldProps} from './InputField.type';
+  import type {InputFieldProps} from './InputField.type';
 
-  type $$Props = inputFieldProps;
+  type $$Props = InputFieldProps<boolean>;
 
   export let question: $$Props['question'];
   export let footerText: $$Props['footerText'] = '';
   export let headerText: $$Props['headerText'] = question.text;
-  export let questionsLocked: $$Props['questionsLocked'] = false;
+  export let locked: $$Props['locked'] = false;
   export let checked: $$Props['value'] = false;
-
-  let isChecked = false;
-  if (typeof checked === 'boolean') {
-    isChecked = checked;
-  }
-
-  $: {
-    checked = isChecked;
-  }
 </script>
 
 <!--
@@ -41,7 +32,7 @@ A component for a boolean question that can be answered.
 ### Usage
 
 ```tsx
-<BooleanInputField
+<BooleanInput
   question={question}
   disclaimer="This is a disclaimer"
   questionsLocked={questionsLocked}
@@ -50,22 +41,18 @@ A component for a boolean question that can be answered.
 -->
 
 <FieldGroup>
-  <p slot="header" class="small-label mx-6 my-0 p-0 uppercase">
+  <p slot="header" class="small-label mx-6 my-0 p-0">
     {headerText}
   </p>
   <Field id={question.id} label={question.text}>
-    <InputContainer locked={questionsLocked}>
-      {#if !questionsLocked}
-        <input
-          id={question.id}
-          type="checkbox"
-          class="toggle toggle-primary mr-8"
-          bind:checked={isChecked} />
+    <InputContainer {locked}>
+      {#if !locked}
+        <input id={question.id} type="checkbox" class="toggle toggle-primary mr-8" bind:checked />
       {:else}
         <input
           id={question.id}
           disabled
-          value={isChecked ? 'Yes' : 'No'}
+          value={$t(`common.${checked ? 'answerYes' : 'answerNo'}`)}
           class="input input-sm input-ghost flex w-full justify-end pr-6 text-right disabled:border-none disabled:bg-base-100" />
       {/if}
     </InputContainer>

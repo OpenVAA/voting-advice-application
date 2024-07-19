@@ -10,7 +10,7 @@
   import {FrontPage} from '$lib/templates/frontPage';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {userStore, logIn, emailOfNewUserStore} = getContext<CandidateContext>('candidate');
+  const {user, logIn, newUserEmail} = getContext<CandidateContext>('candidate');
 
   let email = '';
   let password = '';
@@ -19,7 +19,7 @@
 
   // Variable for the user's chosen app language
   let appLanguageCode = '';
-  userStore.subscribe((user) => {
+  user.subscribe((user) => {
     appLanguageCode = user?.candidate?.appLanguage?.localisationCode ?? '';
   });
 
@@ -33,10 +33,10 @@
       }
     }
   };
-  if ($emailOfNewUserStore != null) {
-    email = $emailOfNewUserStore;
+  if ($newUserEmail != null) {
+    email = $newUserEmail;
     showPasswordSetMessage = true;
-    emailOfNewUserStore.set(null);
+    $newUserEmail = null;
   }
 </script>
 

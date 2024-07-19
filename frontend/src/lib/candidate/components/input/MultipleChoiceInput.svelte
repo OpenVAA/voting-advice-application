@@ -1,25 +1,30 @@
 <script lang="ts">
-  import Field from '$lib/components/common/form/Field.svelte';
-  import FieldGroup from '$lib/components/common/form/FieldGroup.svelte';
+  import {Field, FieldGroup} from '$lib/components/common/form';
   import Icon from '$lib/components/icon/Icon.svelte';
   import {t} from '$lib/i18n';
   import InputContainer from './InputContainer.svelte';
-  import type {inputFieldProps} from './InputField.type';
+  import type {InputFieldProps} from './InputField.type';
 
-  type $$Props = inputFieldProps;
+  type $$Props = InputFieldProps<number[]>;
 
   export let question: $$Props['question'];
   export let footerText: $$Props['footerText'] = '';
   export let headerText: $$Props['headerText'] = question.text;
-  export let questionsLocked: $$Props['questionsLocked'] = false;
+  export let locked: $$Props['locked'] = false;
   export let selectedValues: $$Props['value'] = Array<number>();
-
-  const questionOptions = question.values;
 
   // html element for selecting html language
   let selectElement: HTMLSelectElement;
 
-  let selectedOptions: Array<AnswerOption>;
+  let selectedOptions = Array<AnswerOption>();
+
+  const questionOptions = question.values;
+
+  if (!questionOptions || questionOptions.length === 0) {
+    throw new Error(
+      `Could not find options for question with id '${'id' in question ? question.id : 'n/a'}'`
+    );
+  }
 
   if (Array.isArray(selectedValues)) {
     selectedOptions = selectedValues.map((value) => {
@@ -61,7 +66,7 @@ A component for a multiple choice question that can be answered.
 ### Usage
 
 ```tsx
-<MultipleChoiceInputField
+<MultipleChoiceInput
   question={question}
   questionsLocked={questionsLocked}
   bind:selectedValues={selectedValues} />
@@ -69,7 +74,7 @@ A component for a multiple choice question that can be answered.
 -->
 
 <FieldGroup>
-  <p slot="header" class="small-label mx-6 my-0 p-0 uppercase">
+  <p slot="header" class="small-label mx-6 my-0 p-0">
     {headerText}
   </p>
   <Field
@@ -77,9 +82,9 @@ A component for a multiple choice question that can be answered.
     label={selectedOptions.length > 0
       ? $t('candidateApp.basicInfo.addAnother')
       : $t('candidateApp.basicInfo.selectFirst')}>
-    <InputContainer locked={questionsLocked}>
+    <InputContainer {locked}>
       <select
-        disabled={questionsLocked}
+        disabled={locked}
         bind:this={selectElement}
         id={question.id}
         data-testid={question.id}
@@ -87,22 +92,22 @@ A component for a multiple choice question that can be answered.
         on:change={handleLanguageSelect}
         style="text-align-last: right; direction: rtl;">
         <option disabled selected value style="display: none;" />
-        {#each question.values ?? [] as option}
+        {#each questionOptions ?? [] as option}
           <option value={option.label}>{option.label}</option>
         {/each}
       </select>
     </InputContainer>
   </Field>
-  {#each selectedOptions ?? [] as option}
+  {#each selectedOptions as option}
     <Field id={option.label} label={option.label}>
       <div class="pr-6">
-        {#if !questionsLocked}
+        {#if !locked}
           <button
             title="remove"
             type="button"
             id={option.label}
             on:click={() => {
-              selectedOptions = selectedOptions?.filter((m) => m.key !== option.key);
+              selectedOptions = selectedOptions.filter((m) => m.key !== option.key);
               selectedValues = selectedOptions.map((option) => option.key);
             }}>
             <Icon name="close" class="my-auto flex-shrink-0 text-secondary" />

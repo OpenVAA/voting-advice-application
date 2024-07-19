@@ -14,8 +14,7 @@
   import type {StrapiLanguageData} from '$lib/api/dataProvider/strapi';
   import type {Language} from '$lib/types/candidateAttributes';
 
-  const {userStore, loadUserData} = getContext<CandidateContext>('candidate');
-  $: user = $userStore;
+  const {user, loadUserData} = getContext<CandidateContext>('candidate');
 
   // TODO: consider refactoring this as this uses same classes as profile/+page.svelte?
   const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';
@@ -35,10 +34,7 @@
   $: disableSetButton = !validPassword || passwordConfirmation.length === 0;
 
   // Variable for the user's chosen app language. Keep it updated if changed.
-  let appLanguageCode = '';
-  userStore.subscribe((updatedUser) => {
-    appLanguageCode = updatedUser?.candidate?.appLanguage?.localisationCode ?? '';
-  });
+  $: appLanguageCode = $user?.candidate?.appLanguage?.localisationCode;
 
   // Fetch languages from backend
   let allLanguages: StrapiLanguageData[] | undefined;
@@ -119,7 +115,7 @@
           {$t('candidateApp.settings.fields.email')}
         </label>
         <div class="w-6/12 text-right text-secondary">
-          <input disabled type="text" id="email" value={user?.email} class={inputClass} />
+          <input disabled type="text" id="email" value={$user?.email} class={inputClass} />
         </div>
         <Icon name="locked" class="text-secondary" />
       </div>

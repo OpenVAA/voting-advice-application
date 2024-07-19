@@ -99,7 +99,7 @@ Input field variant
   <FieldGroup>
     {#if multilangText}
       <!-- Current locale text area is always shown -->
-      <Field id={translationsShown ? id + '-' + $currentLocale : id}>
+      <Field {id}>
         {#if compact}
           <InputField
             bind:text={multilangText[$currentLocale]}
@@ -122,10 +122,10 @@ Input field variant
 
       {#if translationsShown}
         {#each $locales.filter((locale) => locale !== $currentLocale) as locale}
-          <Field id={translationsShown ? id + '-' + $currentLocale : id}>
+          <Field id="{id}-{locale}">
             {#if compact}
               <InputField
-                id={id + '-' + locale}
+                id="{id}-{locale}"
                 bind:text={multilangText[locale]}
                 headerText={$t(`lang.${locale}`)}
                 {placeholder}
@@ -133,7 +133,7 @@ Input field variant
                 {locked} />
             {:else}
               <TextArea
-                id={id + '-' + locale}
+                id="{id}-{locale}"
                 bind:text={multilangText[locale]}
                 headerText={$t(`lang.${locale}`)}
                 localStorageId={localStorageId + '-' + locale}

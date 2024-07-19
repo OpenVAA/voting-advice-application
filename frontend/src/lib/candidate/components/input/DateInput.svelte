@@ -1,15 +1,14 @@
 <script lang="ts">
-  import Field from '$lib/components/common/form/Field.svelte';
-  import FieldGroup from '$lib/components/common/form/FieldGroup.svelte';
+  import {Field, FieldGroup} from '$lib/components/common/form';
   import InputContainer from './InputContainer.svelte';
-  import type {inputFieldProps} from './InputField.type';
+  import type {InputFieldProps} from './InputField.type';
 
-  type $$Props = inputFieldProps;
+  type $$Props = InputFieldProps<string>;
 
   export let question: $$Props['question'];
   export let footerText: $$Props['footerText'] = '';
   export let headerText: $$Props['headerText'] = question.text;
-  export let questionsLocked: $$Props['questionsLocked'] = false;
+  export let locked: $$Props['locked'] = false;
   export let value: $$Props['value'] = '';
 
   const dateMin = '1800-01-01';
@@ -39,7 +38,7 @@ A component for a date question that can be answered.
 ### Usage
 
 ```tsx
-<DateInputField
+<DateInput
   question={question}
   questionsLocked={questionsLocked}
   bind:value={value} />
@@ -47,14 +46,14 @@ A component for a date question that can be answered.
 -->
 
 <FieldGroup>
-  <p slot="header" class="small-label mx-6 my-0 p-0 uppercase">
+  <p slot="header" class="small-label mx-6 my-0 p-0">
     {headerText}
   </p>
   <Field id={question.id} label={question.text}>
-    <InputContainer locked={questionsLocked}>
+    <InputContainer {locked}>
       <div class="w-full">
         <input
-          disabled={questionsLocked}
+          disabled={locked}
           class="input input-sm input-ghost flex w-full justify-end pr-12 text-right disabled:border-none disabled:bg-transparent"
           type="date"
           min={dateMin}

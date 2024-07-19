@@ -1,4 +1,4 @@
-export type inputFieldProps = {
+export type InputFieldProps<TValue extends AnswerProps['value']> = {
   /**
    * The question that is to be answered.
    */
@@ -14,9 +14,9 @@ export type inputFieldProps = {
   /**
    * Boolean value indicating whether the input field is disabled.
    */
-  questionsLocked: boolean;
+  locked: boolean;
   /**
    * The answer to the question.
    */
-  value: AnswePropsValue;
+  value: TValue;
 };

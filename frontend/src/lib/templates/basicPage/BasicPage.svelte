@@ -25,7 +25,7 @@
   let hasVideo = false;
   $: hasVideo = videoWidth > 0 && videoHeight > 0;
 
-  const userStore = getContext<CandidateContext>('candidate')?.userStore;
+  const userStore = getContext<CandidateContext>('candidate')?.user;
 
   // We are in the candidate application and the user has logged in
   // TODO: Figure out a way to define this LogoutButton part only within the

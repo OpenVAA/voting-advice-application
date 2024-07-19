@@ -8,8 +8,12 @@
   import {getRoute, Route} from '$lib/utils/navigation';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {opinionQuestionsStore} = getContext<CandidateContext>('candidate');
-  const questions = get(opinionQuestionsStore) ?? [];
+  const {opinionQuestions} = getContext<CandidateContext>('candidate');
+  const questions = get(opinionQuestions);
+
+  if (!questions || Object.values(questions).length === 0) {
+    throw new Error('No questions found');
+  }
 
   // The number of questions to be answered.
   const numQuestions = Object.values(questions).length;

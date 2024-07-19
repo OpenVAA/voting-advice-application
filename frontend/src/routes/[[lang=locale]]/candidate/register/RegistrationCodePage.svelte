@@ -13,8 +13,8 @@
   export let registrationCode = '';
   export let wrongCode = false;
 
-  const {userStore} = getContext<CandidateContext>('candidate');
-  $: loggedIn = $userStore;
+  const {user} = getContext<CandidateContext>('candidate');
+  $: loggedIn = $user;
 
   const onRegistration = async () => {
     await goto($getRoute({route: Route.CandAppRegister, params: {registrationCode}}));

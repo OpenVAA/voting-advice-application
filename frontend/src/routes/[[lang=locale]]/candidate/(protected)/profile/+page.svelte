@@ -4,23 +4,22 @@
   import {translate} from '$lib/i18n/utils/translate';
   import {Field, FieldGroup} from '$lib/components/common/form';
   import {BasicPage} from '$lib/templates/basicPage';
-  import AvatarSelect from '$lib/candidate/components/profilePage/AvatarSelect.svelte';
   import {getContext} from 'svelte';
   import Warning from '$lib/components/warning/Warning.svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
-  import {infoQuestions as infoQuestionsStore} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import {goto} from '$app/navigation';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import type {CandidateAnswer, User} from '$lib/types/candidateAttributes';
+  import type {CandidateAnswer} from '$lib/types/candidateAttributes';
   import {addAnswer, updateAnswer} from '$lib/api/candidate';
   import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
-  import SingleChoiceInputField from '$lib/candidate/components/profilePage/SingleChoiceInputField.svelte';
-  import BooleanInputField from '$lib/candidate/components/profilePage/BooleanInputField.svelte';
-  import TextInputField from '$lib/candidate/components/profilePage/TextInputField.svelte';
-  import DateInputField from '$lib/candidate/components/profilePage/DateInputField.svelte';
-  import MultipleChoiceInputField from '$lib/candidate/components/profilePage/MultipleChoiceInputField.svelte';
-  import InputContainer from '$lib/candidate/components/profilePage/InputContainer.svelte';
+  import InputContainer from '$candidate/components/input/InputContainer.svelte';
+  import PhotoInput from '$candidate/components/input/PhotoInput.svelte';
+  import SingleChoiceInput from '$candidate/components/input/SingleChoiceInput.svelte';
+  import MultipleChoiceInput from '$candidate/components/input/MultipleChoiceInput.svelte';
+  import BooleanInput from '$candidate/components/input/BooleanInput.svelte';
+  import TextInput from '$candidate/components/input/TextInput.svelte';
+  import DateInput from '$candidate/components/input/DateInput.svelte';
 
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
   const headerClass = 'uppercase mx-6 my-0 p-0 small-label';
@@ -29,42 +28,32 @@
 
   // get the user and necessary information from CandidateContext
   const {
-    userStore,
-    infoAnswerStore,
-    questionsLockedStore,
-    opinionQuestionsFilledStore,
-    basicInfoFilledStore
+    user,
+    infoAnswers,
+    questionsLocked,
+    infoQuestions,
+    unansweredOpinionQuestions,
+    unansweredRequiredInfoQuestions
   } = getContext<CandidateContext>('candidate');
-
-  let user = null as User | null;
-  userStore.subscribe((value) => {
-    user = value;
-  });
-
-  $: questionsLocked = $questionsLockedStore;
-  $: opinionQuestionsFilled = $opinionQuestionsFilledStore;
-  $: basicInfoFilled = $basicInfoFilledStore;
-  $: savedInfoAnswers = $infoAnswerStore;
-
-  // infoQuestionsStore are loaded from +layout.server.ts
-  let infoQuestionsPromise = $infoQuestionsStore;
-  let infoQuestions = Array<QuestionProps>();
 
   const selectedAnswers = writable<AnswerDict>({});
   $: unsavedInfoAnswers = $selectedAnswers;
 
   // initialize infoQuestions and unsavedInfoAnswers
-  infoQuestionsPromise.then((questions) => {
-    infoQuestions = questions;
-    infoQuestions.forEach((question) => {
-      if (savedInfoAnswers?.[question.id]) {
-        unsavedInfoAnswers[question.id] = {value: savedInfoAnswers[question.id].value};
-      } else {
-        // Initialize unsavedInfoAnswers with undefined values for type consistency
-        unsavedInfoAnswers[question.id] = {value: undefined};
-      }
-    });
-  });
+  let unsavedInfoAnswersInitialized = false;
+  $: {
+    if ($infoQuestions && !unsavedInfoAnswersInitialized) {
+      $infoQuestions.forEach((question) => {
+        if ($infoAnswers?.[question.id]) {
+          unsavedInfoAnswers[question.id] = {value: $infoAnswers[question.id].value};
+        } else {
+          // Initialize unsavedInfoAnswers with undefined values for type consistency
+          unsavedInfoAnswers[question.id] = {value: undefined};
+        }
+      });
+      unsavedInfoAnswersInitialized = true;
+    }
+  }
 
   // Hash form state in order to detect changes
   let previousStateHash: string | undefined;
@@ -86,8 +75,8 @@
   // follow allFilledPrivate to check if all the required questions are answered.
   let allFilledPrivate = false;
   $: {
-    if (infoQuestions.length > 0) {
-      const requiredQuestions = infoQuestions.filter((question) => question.required);
+    if ($infoQuestions && $infoQuestions.length > 0) {
+      const requiredQuestions = $infoQuestions.filter((question) => question.required);
       allFilledPrivate = requiredQuestions.every((question) => {
         if (unsavedInfoAnswers[question.id].value !== undefined) {
           const answer = unsavedInfoAnswers[question.id].value;
@@ -96,9 +85,9 @@
           } else if (question.type === 'singleChoiceCategorical') {
             return answer !== '';
           } else if (question.type === 'multipleChoiceCategorical') {
-            return answer.length > 0;
+            return answer && Array.isArray(answer) && answer.length > 0;
           } else if (question.type === 'text') {
-            return Object.entries(answer).some((value) => value[1] !== '');
+            return answer && Object.entries(answer).some((value) => value[1] !== '');
           } else if (question.type === 'date') {
             return answer !== '';
           }
@@ -111,13 +100,13 @@
   const basicInfoFields = ['firstName', 'lastName', 'party'];
 
   const basicInfoData: Record<string, string | number | undefined> = {
-    firstName: user?.candidate?.firstName,
-    lastName: user?.candidate?.lastName,
-    party: translate(user?.candidate?.party?.shortName)
+    firstName: $user?.candidate?.firstName,
+    lastName: $user?.candidate?.lastName,
+    party: translate($user?.candidate?.party?.shortName)
   };
 
-  let nomination = user?.candidate?.nomination;
-  let photo = user?.candidate?.photo;
+  let nomination = $user?.candidate?.nomination;
+  let photo = $user?.candidate?.photo;
 
   let uploadPhoto: () => Promise<void>;
 
@@ -138,7 +127,7 @@
   let loading = false;
 
   const submitForm = async () => {
-    if (questionsLocked) {
+    if ($questionsLocked) {
       await goto($getRoute(Route.CandAppHome));
       return;
     }
@@ -149,19 +138,22 @@
 
     loading = true;
 
+    if (!$infoQuestions) return;
+
     await Promise.all(
-      infoQuestions.map((question) => {
+      $infoQuestions.map((question) => {
         saveToServer(question);
       })
     );
     await uploadPhoto();
-    if (user?.candidate) {
-      user.candidate.photo = photo;
+    if ($user?.candidate) {
+      $user.candidate.photo = photo;
     }
 
     loading = false;
 
-    if (!opinionQuestionsFilled && !questionsLocked) await goto($getRoute(Route.CandAppQuestions));
+    if ($unansweredOpinionQuestions?.length !== 0 && !$questionsLocked)
+      await goto($getRoute(Route.CandAppQuestions));
     else await goto($getRoute(Route.CandAppHome));
   };
 
@@ -170,19 +162,18 @@
     question: QuestionProps,
     value: AnswerProps['value']
   ) => {
-    if (savedInfoAnswers) {
-      savedInfoAnswers[question.id] = {
+    if ($infoAnswers) {
+      $infoAnswers[question.id] = {
         id: answerId,
         value
       };
-      infoAnswerStore.set(savedInfoAnswers);
     }
   };
 
   let clearLocalStorage: () => void;
 
   const saveToServer = async (question: QuestionProps) => {
-    if (savedInfoAnswers && !savedInfoAnswers[question.id]) {
+    if ($infoAnswers && !$infoAnswers[question.id]) {
       // New answer
 
       const response = await addAnswer(question.id, unsavedInfoAnswers[question.id].value);
@@ -195,11 +186,11 @@
       const data = await response.json();
       const answerId = data.data.id;
       updateInfoAnswerStore(answerId, question, unsavedInfoAnswers[question.id].value);
-    } else if (savedInfoAnswers) {
+    } else if ($infoAnswers) {
       // Editing existing answer
 
-      const savedAnswer = savedInfoAnswers[question.id];
-      const unsavedAnswer = unsavedInfoAnswers[question.id] ?? savedInfoAnswers[question.id];
+      const savedAnswer = $infoAnswers[question.id];
+      const unsavedAnswer = unsavedInfoAnswers[question.id] ?? $infoAnswers[question.id];
       const response = await updateAnswer(savedAnswer.id, unsavedAnswer.value);
 
       if (!response?.ok) {
@@ -215,23 +206,23 @@
   let submitButtonText = '';
 
   $: {
-    if (!opinionQuestionsFilled && !questionsLocked)
+    if ($unansweredOpinionQuestions?.length !== 0 && !$questionsLocked)
       submitButtonText = $t('candidateApp.basicInfo.saveAndContinue');
-    else if (questionsLocked) submitButtonText = $t('candidateApp.basicInfo.return');
+    else if ($questionsLocked) submitButtonText = $t('candidateApp.basicInfo.return');
     else submitButtonText = $t('candidateApp.basicInfo.saveAndReturn');
   }
 </script>
 
-{#if savedInfoAnswers && infoQuestions.length > 0}
+{#if $infoAnswers && $infoQuestions && $infoQuestions.length > 0}
   <BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
-    <Warning display={!!questionsLocked} slot="note">
+    <Warning display={!!$questionsLocked} slot="note">
       <p>{$t('candidateApp.homePage.editingNotAllowedNote')}</p>
-      {#if !opinionQuestionsFilled || !basicInfoFilled}
+      {#if $unansweredOpinionQuestions?.length !== 0 || $unansweredRequiredInfoQuestions?.length !== 0}
         <p>{$t('candidateApp.homePage.editingNotAllowedPartiallyFilled')}</p>
       {/if}
     </Warning>
 
-    <PreventNavigation active={dirty && !loading && !questionsLocked} />
+    <PreventNavigation active={dirty && !loading && !$questionsLocked} />
     <form on:submit|preventDefault={submitForm}>
       <p class="text-center">
         {$t('candidateApp.basicInfo.instructions')}
@@ -282,49 +273,49 @@
         </FieldGroup>
 
         <FieldGroup>
-          <AvatarSelect
+          <PhotoInput
             bind:photo
             bind:uploadPhoto
-            disabled={questionsLocked}
-            photoChanged={() => (dirty = true)} />
+            disabled={$questionsLocked}
+            onChange={() => (dirty = true)} />
         </FieldGroup>
 
-        {#each infoQuestions as question}
+        {#each $infoQuestions as question}
           {#if question.type === 'singleChoiceCategorical'}
-            <SingleChoiceInputField
+            <SingleChoiceInput
               {question}
-              {questionsLocked}
+              locked={!!$questionsLocked}
               bind:value={unsavedInfoAnswers[question.id].value} />
           {:else if question.type === 'multipleChoiceCategorical'}
-            <MultipleChoiceInputField
+            <MultipleChoiceInput
               {question}
-              {questionsLocked}
+              locked={!!$questionsLocked}
               bind:selectedValues={unsavedInfoAnswers[question.id].value} />
           {:else if question.type === 'boolean'}
-            <BooleanInputField
+            <BooleanInput
               {question}
-              {questionsLocked}
+              locked={!!$questionsLocked}
               footerText={$t('candidateApp.basicInfo.unaffiliatedDescription')}
               bind:checked={unsavedInfoAnswers[question.id].value} />
           {:else if question.type === 'text'}
-            {#if savedInfoAnswers[question.id]}
-              <TextInputField
+            {#if $infoAnswers[question.id]}
+              <TextInput
                 {question}
-                {questionsLocked}
+                locked={!!$questionsLocked}
                 bind:clearLocalStorage
                 bind:text={unsavedInfoAnswers[question.id].value}
-                bind:previousText={savedInfoAnswers[question.id].value} />
+                bind:previousText={$infoAnswers[question.id].value} />
             {:else}
-              <TextInputField
+              <TextInput
                 {question}
-                {questionsLocked}
+                locked={!!$questionsLocked}
                 bind:clearLocalStorage
                 bind:text={unsavedInfoAnswers[question.id].value} />
             {/if}
           {:else if question.type === 'date'}
-            <DateInputField
+            <DateInput
               {question}
-              {questionsLocked}
+              locked={!!$questionsLocked}
               bind:value={unsavedInfoAnswers[question.id].value} />
           {/if}
         {/each}
