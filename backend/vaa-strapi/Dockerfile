@@ -1,10 +1,10 @@
-FROM node:18-alpine3.18 as base
+FROM node:18-alpine3.18 AS base
 
 RUN apk add --no-cache python3 make g++ yarn
 
 WORKDIR /opt/
 
-FROM base as import-export
+FROM base AS import-export
 
 WORKDIR /opt/strapi-plugin-import-export-entries/
 
@@ -12,7 +12,7 @@ COPY backend/vaa-strapi/strapi-plugin-import-export-entries/ .
 RUN yarn install
 RUN yarn build
 
-FROM base as strapi
+FROM base AS strapi
 
 WORKDIR /opt/
 
@@ -23,7 +23,7 @@ RUN yarn install
 COPY backend/vaa-strapi/ .
 COPY shared src/shared/
 
-FROM strapi as development
+FROM strapi AS development
 
 ARG NODE_ENV=development
 ENV NODE_ENV=${NODE_ENV}
@@ -33,7 +33,7 @@ EXPOSE 1337
 RUN yarn build --ignore-prompts
 CMD yarn dev --ignore-prompts
 
-FROM strapi as production
+FROM strapi AS production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}

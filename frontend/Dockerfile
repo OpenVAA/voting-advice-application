@@ -1,5 +1,5 @@
 # --- Copy source files to Docker ---
-FROM node:18-alpine as base
+FROM node:18-alpine AS base
 WORKDIR /usr/src/app
 
 # Install packages and cache the results
@@ -12,15 +12,15 @@ RUN yarn
 COPY frontend .
 COPY shared /usr/src/app/src/shared
 
-FROM base as development
+FROM base AS development
 EXPOSE 5173
 
 CMD yarn dev --host
 
-FROM base as build
+FROM base AS build
 RUN yarn build
 
-FROM node:18-alpine as production
+FROM node:18-alpine AS production
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 WORKDIR /usr/src/app
