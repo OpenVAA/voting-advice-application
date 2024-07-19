@@ -30,8 +30,6 @@ services:
       timeout: 30s
       retries: 3
       start_period: 45s
-    depends_on:
-      - 'postgres'
   postgres:
     image: postgres:15
     environment:
