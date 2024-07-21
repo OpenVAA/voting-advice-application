@@ -1,9 +1,9 @@
-import type {CandidateData} from '$lib/_vaa-data/candidate.type';
-import type {DataObjectData} from '$lib/_vaa-data/dataObject.type';
+import type {Id} from '$lib/_vaa-data';
+import type {DataCollectionTypes} from './dataCollections';
 import type {DataProviderError} from './dataProviderError';
 
 /**
- * The DataProvider interface defines the Voter App API calls for getting data and saving feedback.
+ * The DataProvider type defines the Voter App API calls for getting data and saving feedback.
  */
 export interface DataProvider<TType extends DataProviderType = 'client'> {
   /**
@@ -11,13 +11,18 @@ export interface DataProvider<TType extends DataProviderType = 'client'> {
    */
   init: (config: DataProviderConfig) => void;
 
-  /**
-   * Get the default `Election` object or one matching the `id`.
-   * @returns A Promise with `ElectionProps`
-   */
+  getElectionsData: (
+    options?: GetDataOptions['elections']
+  ) => GetDataReturnType<'elections', TType>;
+  getConstituenciesData: (
+    options?: GetDataOptions['constituencies']
+  ) => GetDataReturnType<'constituencies', TType>;
+  getNominationsData: (
+    options?: GetDataOptions['nominations']
+  ) => GetDataReturnType<'nominations', TType>;
   getCandidatesData: (
-    options?: GetNominatedCandidatesOptions
-  ) => GetDataReturnType<TType, CandidateData>;
+    options?: GetDataOptions['candidates']
+  ) => GetDataReturnType<'candidates', TType>;
 }
 
 export type DataProviderConfig = {
@@ -28,116 +33,121 @@ export type DataProviderConfig = {
 };
 
 /**
- * All the names of the getData methods available on the `DataProvider` interface.
- */
-export type GetDataMethod = keyof DataProvider & `get${string}`;
-
-/**
  * Constructs the type of the return value of the `getData` methods, which are JSON strings on the server and serializable objects on the client.
  */
-type GetDataReturnType<TType extends DataProviderType, TData extends DataObjectData> = Promise<
-  (TType extends 'server' ? JsonString : TData[]) | DataProviderError
+export type GetDataReturnType<
+  TCollection extends keyof DataCollectionTypes,
+  TType extends DataProviderType = 'client'
+> = Promise<
+  (TType extends 'server' ? JsonString : DataCollectionTypes[TCollection][]) | DataProviderError
 >;
+
+/**
+ * All the names of the getData methods available on the `DataProvider` type.
+ */
+
+export type GetDataMethod = keyof DataProvider & `get${string}`;
 
 export type JsonString = string;
 
 export type DataProviderType = 'client' | 'server';
 
+export type GetDataOptions = {
+  candidates: GetNominatedCandidatesOptions;
+  constituencies: GetConstituenciesOptions;
+  elections: GetElectionsOptions;
+  nominations: GetNominationsOptions;
+};
+
 /**
  * The base for all of the options passed to DataProvider methods.
  */
-export interface GetDataOptionsBase extends Record<string, string | boolean | undefined> {
+export type GetDataOptionsBase = Record<string, string | boolean | undefined> & {
   /**
    * The locale for any localized content. All localized content must be converted to this locale.
    */
   locale?: string;
-}
+};
 
-export interface GetElectionOptions extends GetDataOptionsBase, FilterById {}
+export type GetElectionsOptions = GetDataOptionsBase & FilterById;
 
-export interface GetNominatedCandidatesOptions
-  extends GetDataOptionsBase,
-    FilterById,
-    FilterByElection,
-    FilterByConstituency,
-    LoadAnswers {
-  /**
-   * Restrict the candidates to those that are members of the party with this id.
-   */
-  memberOfPartyId?: string;
-  /**
-   * Restrict the candidates to those that are nominated by the party with this id.
-   */
-  nominatingPartyId?: string;
-}
+export type GetConstituenciesOptions = GetDataOptionsBase & FilterById;
 
-export interface GetAllPartiesOptions
-  extends GetDataOptionsBase,
-    FilterById,
-    LoadAnswers,
-    LoadMembers {}
+export type GetNominationsOptions = GetDataOptionsBase & FilterByElection & FilterByConstituency;
 
-export interface GetNominatingPartiesOptions
-  extends GetDataOptionsBase,
-    FilterById,
-    FilterByElection,
-    FilterByConstituency,
-    LoadAnswers,
-    LoadMembers {
-  /**
-   * Whether to also load the candidates nominated by each party.
-   */
-  loadNominations?: boolean;
-}
+export type GetNominatedCandidatesOptions = GetDataOptionsBase &
+  FilterById &
+  FilterByElection &
+  FilterByConstituency &
+  LoadAnswers;
 
-export interface GetQuestionsOptionsBase extends GetDataOptionsBase, FilterByElection {}
+// export type GetAllPartiesOptions
+//   = GetDataOptionsBase,
+//     FilterById,
+//     LoadAnswers,
+//     LoadMembers {}
 
-export interface GetAnyQuestionsOptions extends GetQuestionsOptionsBase {
-  /**
-   * The category type of the questions to load.
-   */
-  categoryType?: QuestionCategoryType | 'all';
-}
+// export type GetNominatingPartiesOptions
+//   = GetDataOptionsBase,
+//     FilterById,
+//     FilterByElection,
+//     FilterByConstituency,
+//     LoadAnswers,
+//     LoadMembers {
+//   /**
+//    * Whether to also load the candidates nominated by each party.
+//    */
+//   loadNominations?: boolean;
+// }
 
-export interface FilterById {
+// export type GetQuestionsOptionsBase = GetDataOptionsBase, FilterByElection {}
+
+// export type GetAnyQuestionsOptions = GetQuestionsOptionsBase {
+//   /**
+//    * The category type of the questions to load.
+//    */
+//   categoryType?: QuestionCategoryType | 'all';
+// }
+
+export type FilterById = {
   /**
    * The id of a single object to load.
    */
-  id?: string;
-}
+  id?: Id;
+};
 
-export interface FilterByElection {
+export type FilterByElection = {
   /**
    * The id of the election to restrict results to.
    */
-  electionId?: string;
-}
+  electionId?: Id;
+};
 
-export interface FilterByConstituency {
+export type FilterByConstituency = {
   /**
    * The id of the constituency to restrict results to.
    */
-  constituencyId?: string;
-}
+  constituencyId?: Id;
+};
 
-export interface LoadAnswers {
+export type LoadAnswers = {
   /**
    * Whether to also load the entities' answers to questions.
    */
   loadAnswers?: boolean;
-}
+};
 
-export interface LoadMembers {
+export type LoadMembers = {
   /**
    * Whether to also load the group's members, e.g. a party's member candidates.
    */
   loadMembers?: boolean;
-}
+};
 
 /**
  * Feedback send to from the app's feedback components.
  */
-export interface FeedbackData {
+export type FeedbackData = {
   /**
    * Between 1 and 5.
    */
@@ -158,4 +168,4 @@ export interface FeedbackData {
    * Auto-filled `userAgent` string.
    */
   userAgent?: string;
-}
+};

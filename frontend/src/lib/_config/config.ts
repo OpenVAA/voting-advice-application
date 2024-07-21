@@ -4,7 +4,6 @@ console.info('[debug] congfig.ts: module loaded');
 
 export const APP_CONFIG: AppConfig = {
   dataProvider: {
-    adapter: 'local', // 'local' or 'strapi'
-    type: 'server' // 'client' or'server'
+    adapter: 'local'
   }
 } as const;

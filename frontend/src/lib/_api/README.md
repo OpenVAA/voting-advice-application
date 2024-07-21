@@ -1,3 +1,44 @@
+# TODO
+
+- getNominations({loadCandidates, loadParties}): {nominations: NominationData[], candidates: CandidateData[], parties: PartyData[]}
+- getCandidates(- no nomination or election filters)
+- Consider electionId and constituencyId for NominationData
+- Lang change with two Promises
+- rework `Match`, `Nomination<TEntity>`, `Entity`
+- test with both providers
+- figure out `Feedback`
+- Convert `vaa-matching` `entity` to `target`
+
+# Trying out
+
+1. Navigate to `/_test/`.
+2. Edit the options in `$lib/_config/config.ts`. Valid options for `adapter` are 'local' and 'strapi'.
+
+# Localized data for Candidate App
+
+We might not need to deal with locales in `vaa-data` at all, because what we're mostly concerned is the possibility of using `DataProvider` to get data without translating it.
+
+```ts
+export interface DataProvider {
+  getCandidateData<TLocale extends string | undefined | null>({
+    locale
+  }: {
+    locale: TLocale;
+  }): TLocale extends string ? CandidateData[] : Localized<CandidateData[]>;
+  // If `locale` is not defined, do not translate the object
+}
+
+export type Localized<TData> = {
+  [Key in keyof TData]: Key extends IdRef
+    ? TData[Key]
+    : TData[Key] extends string
+      ? LocalizedString | string
+      : TData[Key];
+};
+
+type IdRef = 'id' | `${string}Id` | `${string}Ids`;
+```
+
 # Data loading
 
 ## Loading cascade
@@ -32,7 +73,7 @@ flowchart TD
   Contains all stores common to all applications, specifically:
   { vaaData: Writable&lt;DataRoot&gt; }"]
   ---|"Provided data from +layout.svelte,
-  which is converted by vaaData.provideCandidateData(data: CandidateData[])
+  which is converted by vaaData.provideCandidateData(data: Array<CandidateData>)
   from CandidateData POJOs to Candidate objects"|B["/routes/[lang]/(voters)/_test/+layout.svelte
   Receives the promised data loaded by +layout.ts and provides it
   to vaaData in the global context."];
@@ -76,3 +117,16 @@ flowchart TD
 Files on orange background are only accessible on the server.
 
 \* This could actually be changed so that the universal DataProvider would be used instead, because it might be useful to always expose the API routes.
+
+# Contexts
+
+| Context      |  Consumer                                             | Depends on         | Contents                                                                             |
+| ------------ | ----------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------ |
+| `i18n`       | Other contexts                                        | —                  | `t`, `locale`, `locales` from `$lib/i18n`                                            |
+| `vaa-data`   | Other contexts                                        | `i18n`             | `Readable<dataRoot>`                                                                 |
+| `components` |  Any component                                        | `i18n`             | Contents of `i18n` for now                                                           |
+| `app`        | Any part of the app or dynamic components             | `i18n`, `vaa-data` | Contents of `i18n` and `vaa-data`                                                    |
+| `voter`      | Any part of the Voter App or voter components         | `app`              | Contents of `app` and voter-specific stores, such as `answers`                       |
+| `candidate`  | Any part of the Candidate App or candidate components | `app`              | Contents of `app` and candidate-specific functions, such as `DataWriter` API methods |
+
+# Route parameters

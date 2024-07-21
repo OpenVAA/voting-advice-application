@@ -1,0 +1,17 @@
+[
+  {
+    "id": "1",
+    "name": "Helsinki (molemmat vaalit)",
+    "electionId": ["1", "2"]
+  },
+  {
+    "id": "2",
+    "name": "Tampere (vain vaali 1)",
+    "electionId": ["1"]
+  },
+  {
+    "id": "3",
+    "name": "Turku (vain vaali 2)",
+    "electionId": ["2"]
+  }
+]

@@ -3,7 +3,7 @@
  */
 
 import {error} from '@sveltejs/kit';
-import {DATA_COLLECTIONS} from '$lib/_api/dataCollections';
+import {DATA_COLLECTIONS, isDataCollection} from '$lib/_api/dataCollections';
 import type {GetDataOptionsBase} from '$lib/_api/dataProvider.type';
 import {serverDataProvider} from '$lib/server/_api/serverDataProvider';
 import type {RequestHandler} from './$types';
@@ -17,7 +17,7 @@ export const GET: RequestHandler = async ({fetch, params, url}) => {
   provider.init({fetch});
 
   const {collection} = params;
-  if (!collection || !(collection in DATA_COLLECTIONS)) error(500, 'No valid collection provided');
+  if (!isDataCollection(collection)) error(500, 'No valid collection provided');
 
   const getDataMethod = DATA_COLLECTIONS[collection];
   const options = Object.fromEntries(url.searchParams.entries());

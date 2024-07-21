@@ -1,9 +1,11 @@
 import {dataProvider} from '$lib/_api/dataProvider';
+import type {LayoutLoad} from './$types';
 
-export async function load({fetch}) {
+export const load: LayoutLoad = (async ({fetch, params}) => {
+  const {lang} = params;
   const provider = await dataProvider;
   provider.init({fetch});
   return {
-    candidatesData: provider.getCandidatesData()
+    electionsData: provider.getElectionsData({locale: lang})
   };
-}
+}) satisfies LayoutLoad;

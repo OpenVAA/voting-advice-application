@@ -1,9 +1,12 @@
-import type {CandidateData, _AnswerDict} from './candidate.type';
-import {DataObject} from './dataObject';
-import type {DataAccessor} from './dataObject.type';
-import type {DataRoot} from './dataRoot';
+import {
+  type Answers,
+  type CandidateData,
+  type DataAccessor,
+  type DataRoot,
+  Entity
+} from './internal';
 
-export class Candidate extends DataObject implements DataAccessor<CandidateData> {
+export class Candidate extends Entity implements DataAccessor<CandidateData> {
   constructor(
     public readonly data: CandidateData,
     public readonly parent: DataRoot
@@ -11,16 +14,8 @@ export class Candidate extends DataObject implements DataAccessor<CandidateData>
     super(data, parent);
   }
 
-  get answers(): _AnswerDict {
-    return this.data.answers ?? 0;
-  }
-
-  get electionRound(): number {
-    return this.data.electionRound ?? 0;
-  }
-
-  get electionSymbol(): string {
-    return this.data.electionSymbol ?? '';
+  get answers(): Answers {
+    return this.data.answers ?? {};
   }
 
   get firstName(): string {
@@ -31,23 +26,11 @@ export class Candidate extends DataObject implements DataAccessor<CandidateData>
     return this.data.lastName;
   }
 
-  get name() {
-    return `${this.firstName} ${this.lastName}`;
+  get name(): string {
+    return this.data.name ?? this.root.format.name(this);
   }
 
-  get shortName() {
-    return initials(this.name);
+  get shortName(): string {
+    return this.data.shortName ?? this.root.format.initials(this);
   }
-
-  get photo(): ImageProps | null {
-    return this.data.photo ?? null;
-  }
-}
-
-function initials(text: string) {
-  if (!text) return '';
-  return text
-    .split(/ +/)
-    .map((word) => `${word.substring(0, 1)}.`)
-    .join(' ');
 }

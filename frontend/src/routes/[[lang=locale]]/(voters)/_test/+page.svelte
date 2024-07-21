@@ -1,18 +1,24 @@
 <script lang="ts">
-  import {getGlobalContext} from '$lib/_contexts/global';
+  import {getAppContext} from '$lib/_contexts/app';
   import {Loading} from '$lib/components/loading';
-  const {vaaData} = getGlobalContext();
+  import {BasicPage} from '$lib/templates/basicPage';
+  import TestComponent from './TestComponent.svelte';
+
+  const {dataRoot, locale} = getAppContext();
 </script>
 
-<a href="/_test/page-2">Page 2</a>
-
-{#if !$vaaData.candidates.length}
-  <Loading />
-{:else}
-  <h1>Candidates</h1>
-  <ol>
-    {#each $vaaData.candidates as candidate}
-      <li>{candidate.name}</li>
-    {/each}
-  </ol>
-{/if}
+<BasicPage title="Test">
+  {#if $dataRoot.elections}
+    <h1>App Root</h1>
+    <p>This page only has access to the App context</p>
+    <TestComponent key="common.party.singular" />
+    <h2>Choose Election</h2>
+    <ol>
+      {#each $dataRoot.elections as { id, name }}
+        <li><a href="/{$locale}/_test/{id}">{name}</a></li>
+      {/each}
+    </ol>
+  {:else}
+    <Loading />
+  {/if}
+</BasicPage>

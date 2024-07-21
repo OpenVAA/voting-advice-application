@@ -1,10 +1,11 @@
 import {browser} from '$app/environment';
 import {constants} from '$lib/utils/constants';
 import type {CandidateData} from '$lib/_vaa-data/candidate.type';
-import {
-  type DataProvider,
-  type DataProviderConfig,
-  type GetNominatedCandidatesOptions
+import type {
+  DataProvider,
+  DataProviderConfig,
+  GetDataOptions,
+  GetDataReturnType
 } from '../../dataProvider.type';
 import {DataProviderError} from '../../dataProviderError';
 import {parseAnswers, parseImage} from './utils';
@@ -13,8 +14,12 @@ import type {
   StrapiError,
   StrapiNominationData,
   StrapiResponse,
-  StrapiObject
+  StrapiObject,
+  StrapiElectionData,
+  StrapiConstituencyData
 } from './strapiDataProvider.type';
+import {translate} from '$lib/i18n/utils';
+import {formatId} from '$lib/_api/utils/formatId';
 
 console.info('[debug] strapiDataProvider.ts: module loaded');
 
@@ -29,16 +34,85 @@ export class StrapiDataProvider implements DataProvider {
     this.fetch = config.fetch;
   }
 
+  async getElectionsData({
+    id,
+    locale
+  }: GetDataOptions['elections'] = {}): GetDataReturnType<'elections'> {
+    const params = new URLSearchParams();
+    if (id) params.set('filters[id][$eq]', id);
+    return this.getData<StrapiElectionData>(STRAPI_API.elections, params)
+      .then((result) =>
+        result.map((item) => {
+          const attr = item.attributes;
+          const name = translate(attr.name, locale);
+          const shortName = translate(attr.shortName, locale);
+          return {
+            id: formatId(item.id),
+            name,
+            shortName: shortName ? shortName : name
+          };
+        })
+      )
+      .catch((e) => e);
+  }
+
+  async getConstituenciesData({
+    id,
+    locale
+  }: GetDataOptions['constituencies'] = {}): GetDataReturnType<'constituencies'> {
+    const params = new URLSearchParams();
+    if (id) params.set('filters[id][$eq]', id);
+    return this.getData<StrapiConstituencyData>(STRAPI_API.constituencies, params)
+      .then((result) =>
+        result.map((item) => {
+          const attr = item.attributes;
+          const name = translate(attr.name, locale);
+          const shortName = translate(attr.shortName, locale);
+          return {
+            id: formatId(item.id),
+            name,
+            shortName: shortName ? shortName : name
+          };
+        })
+      )
+      .catch((e) => e);
+  }
+
+  async getNominationsData({
+    electionId,
+    constituencyId
+    // locale
+  }: GetDataOptions['nominations'] = {}): GetDataReturnType<'nominations'> {
+    const params = new URLSearchParams({
+      'populate[candidate]': 'true',
+      'populate[party]': 'true'
+    });
+    if (constituencyId != null) params.set('filters[constituency][id][$eq]', constituencyId);
+    if (electionId != null) params.set('filters[election][id][$eq]', electionId);
+    return this.getData<StrapiNominationData>(STRAPI_API.nominations, params)
+      .then((result) =>
+        result.map((item) => {
+          const attr = item.attributes;
+          return {
+            candidateId: formatId(attr.candidate.data?.id),
+            partyId: formatId(attr.party.data?.id),
+            electionSymbol: attr.electionSymbol ?? undefined
+          };
+        })
+      )
+      .catch((e) => e);
+  }
+
   async getCandidatesData({
     id,
     electionId,
     constituencyId,
     locale,
-    memberOfPartyId,
-    nominatingPartyId,
     loadAnswers
-  }: GetNominatedCandidatesOptions = {}): Promise<CandidateData[] | DataProviderError> {
-    console.info('[debug] strapiDataProvider.ts: StrapiDataProvider.getCandidatesData() called');
+  }: GetDataOptions['candidates'] = {}): GetDataReturnType<'candidates'> {
+    console.info(
+      `[debug] strapiDataProvider.ts: StrapiDataProvider.getCandidatesData() called with locale: ${locale ?? '-'}`
+    );
     const params = new URLSearchParams({
       // We need a specific calls to populate relations, * only goes one-level deep
       'populate[election]': 'true',
@@ -56,28 +130,26 @@ export class StrapiDataProvider implements DataProvider {
     // else {params.set('filters[candidate][id][$notNull]', 'true');}
     if (constituencyId != null) params.set('filters[constituency][id][$eq]', constituencyId);
     if (electionId != null) params.set('filters[election][id][$eq]', electionId);
-    if (memberOfPartyId != null) params.set('filters[candidate][party][id][$eq]', memberOfPartyId);
-    if (nominatingPartyId != null) params.set('filters[party][id][$eq]', nominatingPartyId);
+    // if (memberOfPartyId != null) params.set('filters[candidate][party][id][$eq]', memberOfPartyId);
+    // if (nominatingPartyId != null) params.set('filters[party][id][$eq]', nominatingPartyId);
     return this.getData<StrapiNominationData>(STRAPI_API.candidates, params)
       .then((result) =>
         result
-          .filter((nom) => nom.attributes.candidate?.data != null)
-          .map((nom) => {
-            const cnd = nom.attributes.candidate.data;
-            const id = `${cnd.id}`;
+          .filter((item) => item.attributes.candidate?.data != null)
+          .map((item) => {
+            const cnd = item.attributes.candidate.data;
+            const id = formatId(cnd.id);
             const attr = cnd.attributes;
             const {firstName, lastName} = attr;
             const out: CandidateData = {
               id,
-              electionRound: nom.attributes.electionRound,
-              electionSymbol: nom.attributes.electionSymbol,
-              firstName,
+              firstName: (locale ?? '?') + firstName,
               lastName,
               answers:
                 loadAnswers && attr.answers?.data ? parseAnswers(attr.answers.data, locale) : {}
             };
             const photo = attr.photo?.data?.attributes;
-            if (photo) out.photo = parseImage(photo);
+            if (photo) out.image = parseImage(photo);
             return out;
           })
       )

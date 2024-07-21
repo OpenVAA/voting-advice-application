@@ -1,13 +1,12 @@
-import type {SerializableValue} from './data.type';
-import type {DataObjectData} from './dataObject.type';
+import type {EntityData} from './internal';
 
-export interface CandidateData extends DataObjectData {
-  answers: _AnswerDict;
-  electionRound?: number;
-  electionSymbol?: string;
+export interface CandidateData extends EntityData {
+  // From EntityData
+  // - order?: number;
+  // - id: Id;
+  // - name?: string;
+  // - answers?: Answers;
+  // - photo?: ImageProps | null;
   firstName: string;
   lastName: string;
-  photo?: ImageProps | null;
 }
-
-export type _AnswerDict = Record<string, SerializableValue>;

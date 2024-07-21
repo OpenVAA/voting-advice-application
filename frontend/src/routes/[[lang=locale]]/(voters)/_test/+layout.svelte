@@ -1,31 +1,38 @@
 <script lang="ts">
-  import {browser} from '$app/environment';
   import {isValidResult} from '$lib/_api/utils/isValidResult';
-  import {getGlobalContext} from '$lib/_contexts/global';
+  import {initAppContext} from '$lib/_contexts/app';
+  import {initComponentsContext} from '$lib/_contexts/components';
+  import {initI18nContext} from '$lib/_contexts/i18n';
+  import {initVaaDataContext} from '$lib/_contexts/vaaData';
+  import {updateView} from '$lib/_utils/updateView';
+  import type {LayoutData} from './$types';
+  import {Loading} from '$lib/components/loading';
 
-  export let data;
+  export let data: LayoutData;
 
-  const {vaaData} = getGlobalContext();
+  // Initialize globally used contexts in the outermost layout
+  initI18nContext();
+  initVaaDataContext();
+  initComponentsContext();
 
-  let error = false;
+  const {dataRoot} = initAppContext();
 
-  console.info('[debug] /_test/+layout.svelte: Module loaded', browser);
+  let ready: boolean | undefined = undefined;
+  let error: Error | undefined = undefined;
 
-  data.candidatesData.then((result) => {
-    if (!isValidResult(result)) {
-      error = true;
-      return;
-    }
-    console.info(
-      `[debug] /_test/+layout.svelte: Providing ${result.length} candidate data objects to vaaData`
-    );
-    $vaaData.provideCandidateData(result);
-  });
+  $: updateView([data.electionsData], ([data]) => {
+    if (!isValidResult(data)) throw new Error('Error loading election data');
+    $dataRoot.provideElectionData(data);
+    return true;
+  })
+    .then((ok) => (ready = ok))
+    .catch((e) => (error = e));
 </script>
 
-{#if !error}
+{#if error}
+  <h1>Error: {error.message}</h1>
+{:else if ready}
   <slot />
 {:else}
-  <!-- Replace with an error component -->
-  <h1>Error loading data</h1>
+  <Loading />
 {/if}

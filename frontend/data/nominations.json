@@ -1,0 +1,56 @@
+[
+  {
+    "electionSymbol": "1a",
+    "candidateId": "1",
+    "electionId": "1",
+    "constituencyId": "1"
+  },
+  {
+    "electionSymbol": "1b",
+    "candidateId": "1",
+    "electionId": "2",
+    "constituencyId": "1"
+  },
+  {
+    "electionSymbol": "2",
+    "candidateId": "2",
+    "electionId": "1",
+    "constituencyId": "1"
+  },
+  {
+    "electionSymbol": "3",
+    "candidateId": "3",
+    "electionId": "1",
+    "constituencyId": "2"
+  },
+  {
+    "electionSymbol": "4",
+    "candidateId": "4",
+    "electionId": "1",
+    "constituencyId": "2"
+  },
+  {
+    "electionSymbol": "5",
+    "candidateId": "5",
+    "electionId": "2",
+    "constituencyId": "1"
+  },
+  {
+    "electionSymbol": "6",
+    "candidateId": "6",
+    "electionId": "2",
+    "constituencyId": "1"
+  },
+  {
+    "electionSymbol": "7",
+    "candidateId": "7",
+    "electionId": "2",
+    "constituencyId": "3"
+  },
+  {
+    "electionSymbol": "8",
+    "candidateId": "8",
+    "electionId": "2",
+    "constituencyId": "3"
+  }
+]

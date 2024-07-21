@@ -1,5 +1,8 @@
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
+
+import type {CandidateData, ConstituencyData, ElectionData, NominationData} from '$lib/_vaa-data';
+
 // and what to do when importing types
 declare namespace App {
   interface Locals {
@@ -8,6 +11,17 @@ declare namespace App {
     preferredLocale?: string;
   }
   interface PageData {
+    // For _test route
+    constituenciesData?: Promise<ConstituencyData[]>;
+    electionsData?: Promise<Array<ElectionData>>;
+    /** Nominations and entities are packaged into one `Promise` because they're both needed at the same time, and staggered updates (e.g., nominations updated before candidates) may cause errors */
+    nominationsData?: Promise<{
+      candidates: Array<CandidateData>;
+      nominations: NominationData[];
+    }>;
+    constituencyId?: string; // Should be string | Array<string>
+    electionId?: string; // Should be string | Array<string>
+
     // Most of these properties are required so we don't need unnecessary
     // null checks every time we use them. We'll initiliaze the Array types
     // as empty arrays in the global data load /+layout.server.ts

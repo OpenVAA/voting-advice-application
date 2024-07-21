@@ -1,4 +1,4 @@
-import type {_AnswerDict} from '$lib/_vaa-data/candidate.type';
+import type {Answers} from '$lib/_vaa-data/candidate.type';
 import type {SerializableValue} from '$lib/_vaa-data/data.type';
 import {translate} from '$lib/i18n/utils/translate';
 import type {StrapiAnswerData} from '../strapiDataProvider.type';
@@ -10,8 +10,8 @@ import type {StrapiAnswerData} from '../strapiDataProvider.type';
  * @param locale Optional locale to use for translating localized strings
  * @returns The Answers as AnswerProps
  */
-export function parseAnswers(answers: StrapiAnswerData[], locale?: string): _AnswerDict {
-  const dict = {} as _AnswerDict;
+export function parseAnswers(answers: StrapiAnswerData[], locale?: string): Answers {
+  const dict = {} as Answers;
   answers.forEach((a) => {
     const questionId = a.attributes.question?.data?.id;
     if (questionId == null) return;
