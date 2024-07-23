@@ -8,10 +8,11 @@
   type $$Props = InputFieldProps<number[]>;
 
   export let question: $$Props['question'];
-  export let footerText: $$Props['footerText'] = '';
   export let headerText: $$Props['headerText'] = question.text;
   export let locked: $$Props['locked'] = false;
-  export let selectedValues: $$Props['value'] = Array<number>();
+  export let value: $$Props['value'] = Array<number>();
+  export let onChange: ((question: QuestionProps, value: $$Props['value']) => void) | undefined =
+    undefined;
 
   // html element for selecting html language
   let selectElement: HTMLSelectElement;
@@ -26,24 +27,25 @@
     );
   }
 
-  if (Array.isArray(selectedValues)) {
-    selectedOptions = selectedValues.map((value) => {
+  if (Array.isArray(value)) {
+    selectedOptions = value.map((val) => {
       return {
-        key: Number(value),
-        label: questionOptions?.find((q) => q.key === value)?.label ?? ''
+        key: Number(val),
+        label: questionOptions?.find((q) => q.key === val)?.label ?? ''
       };
     });
   }
 
   // handle the change when a language is selected
-  const handleLanguageSelect = (e: Event) => {
+  const onLanguageSelect = (e: Event) => {
     const selected = questionOptions
       ? questionOptions.find((q) => q.label === (e.target as HTMLSelectElement).value)
       : undefined;
     if (selected && questionOptions) {
       selectedOptions = [...selectedOptions, selected];
-      selectedValues = selectedOptions.map((option) => option.key);
+      value = selectedOptions.map((option) => option.key);
       selectElement.selectedIndex = 0;
+      onChange?.(question, value);
     }
   };
 </script>
@@ -52,24 +54,23 @@
 @component
 A component for a multiple choice question that can be answered.
 
-### Bindable variables
-
-- `selectedValues`: An array that contains the selected values.
-
 ### Properties
 
 - `question`: The question object.
 - `headerText`: The header text. Defaults to the question's text. Optional.
 - `footerText`: The footer text. Defaults to empty string. Optional.
-- `questionsLocked`: A boolean value that indicates if the questions are locked.
+- `locked`: A boolean value that indicates if the questions are locked.
+- `value`: An array that contains the selected values.
+- `onChange`: A function that is called when the value changes.
 
 ### Usage
 
 ```tsx
 <MultipleChoiceInput
   question={question}
-  questionsLocked={questionsLocked}
-  bind:selectedValues={selectedValues} />
+  locked={locked}
+  values={selectedValues}
+  onChange={onChange} />
 ```
 -->
 
@@ -89,7 +90,7 @@ A component for a multiple choice question that can be answered.
         id={question.id}
         data-testid={question.id}
         class="select select-sm w-full text-right text-primary disabled:border-none disabled:bg-base-100"
-        on:change={handleLanguageSelect}
+        on:change={onLanguageSelect}
         style="text-align-last: right; direction: rtl;">
         <option disabled selected value style="display: none;" />
         {#each questionOptions ?? [] as option}
@@ -108,7 +109,7 @@ A component for a multiple choice question that can be answered.
             id={option.label}
             on:click={() => {
               selectedOptions = selectedOptions.filter((m) => m.key !== option.key);
-              selectedValues = selectedOptions.map((option) => option.key);
+              value = selectedOptions.map((option) => option.key);
             }}>
             <Icon name="close" class="my-auto flex-shrink-0 text-secondary" />
           </button>

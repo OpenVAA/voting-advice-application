@@ -27,7 +27,7 @@
       getNominatedCandidates({
         loadAnswers: true,
         locale: $locale,
-        id: $user?.candidate?.id.toString()
+        id: `${$user?.candidate?.id}`
       })
     ]);
 

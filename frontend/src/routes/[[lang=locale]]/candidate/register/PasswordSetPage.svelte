@@ -19,7 +19,6 @@
   let password = '';
   let passwordConfirmation = '';
   const {newUserEmail, user, logOut} = getContext<CandidateContext>('candidate');
-  $: loggedIn = $user;
 
   let validPassword = false;
   let errorMessage = '';
@@ -47,7 +46,7 @@
       errorMessage = $t('candidateApp.setPassword.registrationError');
       return;
     }
-    if (loggedIn) {
+    if ($user) {
       await logOut();
     }
     newUserEmail.set(email);
@@ -83,7 +82,7 @@ Shows an error message if the registration is not successful.
       {$t('candidateApp.setPassword.greeting', {username})}
     </h1>
   </HeadingGroup>
-  {#if loggedIn}
+  {#if $user}
     <p class="text-center text-warning">{$t('candidateApp.registration.loggedInWarning')}</p>
     <div class="center pb-10">
       <LogoutButton stayOnPage={true} buttonVariant="main" />

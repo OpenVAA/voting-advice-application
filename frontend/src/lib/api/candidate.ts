@@ -187,7 +187,7 @@ export function addAnswer(
     },
     body: JSON.stringify({
       data: {
-        question: Number(questionId),
+        question: questionId,
         value: value,
         openAnswer
       }
@@ -242,7 +242,7 @@ export async function getOpinionAnswers(): Promise<Record<string, CandidateAnswe
   const res = await request(
     getUrl('api/answers', {
       'populate[question][populate][category]': 'true',
-      'filters[candidate][id][$eq]': candidateId.toString(),
+      'filters[candidate][id][$eq]': `${candidateId}`,
       'filters[question][category][type][$eq]': 'opinion'
     })
   );

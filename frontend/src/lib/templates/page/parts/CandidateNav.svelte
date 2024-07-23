@@ -7,7 +7,8 @@
   import LanguageSelection from './LanguageSelection.svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {unansweredRequiredInfoQuestions} = getContext<CandidateContext>('candidate') ?? {};
+  const {unansweredRequiredInfoQuestions, unansweredOpinionQuestions} =
+    getContext<CandidateContext>('candidate') ?? {};
 </script>
 
 <!--
@@ -46,9 +47,9 @@ A template part that outputs the navigation menu for the Candidate App for use i
       icon="opinion"
       text={$t('candidateApp.navbar.yourOpinions')}
       disabled={$unansweredRequiredInfoQuestions?.length !== 0}>
-      {#if $unansweredRequiredInfoQuestions && $unansweredRequiredInfoQuestions.length > 0}
+      {#if $unansweredRequiredInfoQuestions && $unansweredOpinionQuestions && $unansweredOpinionQuestions.length > 0}
         <InfoBadge
-          text={String($unansweredRequiredInfoQuestions.length)}
+          text={String($unansweredOpinionQuestions.length)}
           disabled={$unansweredRequiredInfoQuestions.length !== 0}
           classes="-left-8 -top-4" />
       {/if}

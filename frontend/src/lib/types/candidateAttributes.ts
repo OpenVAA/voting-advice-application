@@ -92,9 +92,9 @@ export interface Answer {
 }
 
 export type CandidateAnswer = {
-  id: string;
-  value: AnswerPropsValue;
-  openAnswer?: LocalizedString | null;
+  id: string; // Id of the answer in the database
+  value: AnswerPropsValue; // Selected answer option
+  openAnswer?: LocalizedString | null; // Optional free-form answer
 };
 
 export interface Question {

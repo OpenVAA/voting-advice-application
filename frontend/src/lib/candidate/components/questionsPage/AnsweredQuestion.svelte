@@ -34,6 +34,7 @@ open answers and a button to navigate to the questions page.
 -->
 
 {#if $opinionAnswers?.[question.id]}
+  {@const answer = $opinionAnswers[question.id]}
   <div class="pb-20 pt-20">
     <CategoryTag category={question.category} />
 
@@ -43,19 +44,21 @@ open answers and a button to navigate to the questions page.
 
     <div class="pt-10">
       <!-- This gives empty form label error from Wave Extension for every empty dot, but fix should come from LikertResponseButton -->
-      <LikertResponseButtons
-        name={question.id}
-        mode="display"
-        options={question.values?.map(({key, label}) => ({
-          key,
-          label
-        }))}
-        selectedKey={$opinionAnswers[question.id].value} />
 
-      {#if translate($opinionAnswers[question.id].openAnswer)}
+      {#if typeof answer.value === 'number' || answer.value == null}
+        <LikertResponseButtons
+          name={question.id}
+          mode="display"
+          options={question.values?.map(({key, label}) => ({
+            key,
+            label
+          }))}
+          selectedKey={answer.value} />
+      {/if}
+
+      {#if translate(answer.openAnswer)}
         <div class="pt-10">
-          <QuestionOpenAnswer
-            >{translate($opinionAnswers[question.id].openAnswer)}</QuestionOpenAnswer>
+          <QuestionOpenAnswer>{translate(answer.openAnswer)}</QuestionOpenAnswer>
         </div>
       {/if}
 

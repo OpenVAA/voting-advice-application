@@ -6,10 +6,11 @@
   type $$Props = InputFieldProps<string>;
 
   export let question: $$Props['question'];
-  export let footerText: $$Props['footerText'] = '';
   export let headerText: $$Props['headerText'] = question.text;
   export let locked: $$Props['locked'] = false;
   export let value: $$Props['value'] = '';
+  export let onChange: ((question: QuestionProps, value: $$Props['value']) => void) | undefined =
+    undefined;
 
   const dateMin = '1800-01-01';
   const dateMax = new Date().toISOString().split('T')[0];
@@ -24,24 +25,23 @@
 @component
 A component for a date question that can be answered.
 
-### Bindable variables
-
-- `value`: A boolean value that indicates the date that has been selected.
-
 ### Properties
 
 - `question`: The question object.
 - `headerText`: The header text. Defaults to the question's text. Optional.
-- `footerText`: The footer text. Defaults to empty string. Optional.
-- `questionsLocked`: A boolean value that indicates if the questions are locked.
+- `footerText`: The footer text. Optional.
+- `locked`: A boolean value that indicates if the questions are locked.
+- `value`: The selected value.
+- `onChange`: A function that is called when the value changes.
 
 ### Usage
 
 ```tsx
 <DateInput
   question={question}
-  questionsLocked={questionsLocked}
-  bind:value={value} />
+  locked={locked}
+  value={value}
+  onChange={onChange} />
 ```
 -->
 
@@ -59,7 +59,12 @@ A component for a date question that can be answered.
           min={dateMin}
           max={dateMax}
           id={question.id}
-          bind:value />
+          bind:value
+          on:change={() => {
+            if (value) {
+              onChange?.(question, value);
+            }
+          }} />
       </div>
     </InputContainer>
   </Field>

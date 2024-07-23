@@ -7,10 +7,11 @@
   type $$Props = InputFieldProps<number>;
 
   export let question: $$Props['question'];
-  export let footerText: $$Props['footerText'] = '';
   export let headerText: $$Props['headerText'] = question.text;
   export let locked: $$Props['locked'] = false;
-  export let value: $$Props['value'];
+  export let value: $$Props['value'] = null;
+  export let onChange: ((question: QuestionProps, value: $$Props['value']) => void) | undefined =
+    undefined;
 
   const questionOptions = question.values;
 
@@ -25,27 +26,25 @@
 @component
 A component for a single choice question that can be answered.
 
-### Bindable variables
-
-- `value`: The selected value.
-
 ### Properties
 
 - `question`: The question object.
 - `headerText`: The header text. Defaults to the question's text. Optional.
 - `footerText`: The footer text. Defaults to empty string. Optional.
-- `questionsLocked`: A boolean value that indicates if the questions are locked.
+- `locked`: A boolean value that indicates if the questions are locked.
+- `value`: The selected value.
+- `onChange`: A function that is called when the value changes.
 
 ### Usage
 
 ```tsx
 <SingleChoiceInput
   question={question}
-  questionsLocked={questionsLocked}
-  bind:value={value} />
+  locked={locked}
+  value={value}
+  onChange={onChange} />
 ```
 -->
-
 <FieldGroup>
   <p slot="header" class="small-label mx-6 my-0 p-0">
     {headerText}
@@ -58,6 +57,11 @@ A component for a single choice question that can be answered.
         data-testid={question.id}
         class="select select-sm w-full text-right text-primary disabled:border-none disabled:bg-base-100"
         bind:value
+        on:change={() => {
+          if (value) {
+            onChange?.(question, value);
+          }
+        }}
         style="text-align-last: right; direction: rtl;">
         <option disabled selected value style="display: none;" />
         {#each questionOptions as option}

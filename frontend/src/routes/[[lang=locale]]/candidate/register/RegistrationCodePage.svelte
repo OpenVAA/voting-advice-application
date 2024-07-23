@@ -14,7 +14,6 @@
   export let wrongCode = false;
 
   const {user} = getContext<CandidateContext>('candidate');
-  $: loggedIn = $user;
 
   const onRegistration = async () => {
     await goto($getRoute({route: Route.CandAppRegister, params: {registrationCode}}));
@@ -48,7 +47,7 @@ In addition, shows a warning to the user if another user is already logged in.
     <p class="max-w-md text-center">
       {$t('candidateApp.registration.enterCode')}
     </p>
-    {#if loggedIn}
+    {#if $user}
       <p class="text-center text-warning">{$t('candidateApp.registration.loggedInWarning')}</p>
       <div class="center pb-10">
         <LogoutButton buttonVariant="main" stayOnPage={true} />

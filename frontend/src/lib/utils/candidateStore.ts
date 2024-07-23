@@ -1,8 +1,9 @@
 import {authenticate, getInfoAnswers, getInfoQuestions, me} from '$lib/api/candidate';
 import type {User, Progress, CandidateAnswer} from '$lib/types/candidateAttributes';
-import {writable, type Writable} from 'svelte/store';
+import {derived, writable, type Writable, type Readable} from 'svelte/store';
 import {getOpinionAnswers} from '$lib/api/candidate';
 import {getOpinionQuestions} from '$lib/api/candidate';
+import {answerIsEmpty} from './answers';
 
 export interface CandidateContext {
   // Authentication
@@ -24,9 +25,9 @@ export interface CandidateContext {
   infoQuestions: Writable<QuestionProps[] | undefined>;
   loadInfoQuestionData: () => Promise<void>;
   // Custom utility
-  unansweredRequiredInfoQuestions: Writable<QuestionProps[] | undefined>;
-  unansweredOpinionQuestions: Writable<QuestionProps[] | undefined>;
-  progress: Writable<Progress | undefined>;
+  unansweredRequiredInfoQuestions: Readable<QuestionProps[] | undefined>;
+  unansweredOpinionQuestions: Readable<QuestionProps[] | undefined>;
+  progress: Readable<Progress | undefined>;
   questionsLocked: Writable<boolean | undefined>;
 }
 
@@ -37,10 +38,43 @@ const opinionAnswers = writable<Record<string, CandidateAnswer> | undefined>(und
 const infoAnswers = writable<Record<string, CandidateAnswer> | undefined>(undefined);
 const opinionQuestions = writable<QuestionProps[] | undefined>(undefined);
 const infoQuestions = writable<QuestionProps[] | undefined>(undefined);
-const unansweredRequiredInfoQuestions = writable<QuestionProps[] | undefined>(undefined);
-const unansweredOpinionQuestions = writable<QuestionProps[] | undefined>(undefined);
-const progress = writable<Progress | undefined>(undefined);
+
 const questionsLocked = writable<boolean | undefined>(undefined);
+
+const unansweredRequiredInfoQuestions = derived(
+  [infoQuestions, infoAnswers],
+  ([$infoQuestions, $infoAnswers]) => {
+    if (!$infoQuestions || !$infoAnswers) return;
+    const requiredQuestions = $infoQuestions.filter((question) => question.required);
+    return requiredQuestions.filter((question) => {
+      if (!$infoAnswers?.[question.id]) return true;
+      const answer = $infoAnswers[question.id];
+      return answerIsEmpty(question, {value: answer.value});
+    });
+  }
+);
+
+const unansweredOpinionQuestions = derived(
+  [opinionQuestions, opinionAnswers],
+  ([$opinionQuestions, $opinionAnswers]) => {
+    if (!$opinionAnswers || !$opinionQuestions) return;
+    return $opinionQuestions.filter((question) => {
+      return $opinionAnswers && !Object.keys($opinionAnswers).includes(question.id);
+    });
+  }
+);
+
+const progress = derived(
+  [opinionAnswers, opinionQuestions],
+  ([$opinionAnswers, $opinionQuestions]) => {
+    if ($opinionAnswers && $opinionQuestions) {
+      return {
+        progress: Object.entries($opinionAnswers).length,
+        max: $opinionQuestions.length
+      };
+    }
+  }
+);
 
 const logIn = async (email: string, password: string) => {
   const response = await authenticate(email, password);

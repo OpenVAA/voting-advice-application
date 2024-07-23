@@ -8,40 +8,43 @@
   export let question: $$Props['question'];
   export let headerText: $$Props['headerText'] = question.text;
   export let locked: $$Props['locked'] = false;
-  export let text: $$Props['value'] = {};
+  export let value: $$Props['value'] = {};
+  export let previousValue: $$Props['previousValue'] = {};
+  export let onChange: ((question: QuestionProps, value: $$Props['value']) => void) | undefined =
+    undefined;
 
   let textArea: MultilangTextInput; // Used to clear the local storage from the parent component
   let localStorageId = `candidate-app-${question.text}`;
 
-  export const clearLocalStorage = () => {
+  export function clearLocalStorage() {
     if (!localStorageId) {
       return;
     }
     for (const locale of $locales) {
       localStorage.removeItem(localStorageId + '-' + locale);
     }
-  };
+  }
 
-  export let previousText: AnswerPropsValue = ''; // Used to detect changes in the text value
   let previouslySavedMultilang: LocalizedString = {};
+  if (previousValue) {
+    previouslySavedMultilang = previousValue;
+  }
 
-  if (
-    typeof previousText === 'object' &&
-    previousText !== null &&
-    !Array.isArray(previousText) &&
-    previousText instanceof Date === false
-  ) {
-    previouslySavedMultilang = previousText;
+  let multilangText: LocalizedString = {};
+  if (value) {
+    multilangText = value;
+  }
+
+  $: {
+    if (multilangText) {
+      onChange?.(question, multilangText);
+    }
   }
 </script>
 
 <!--
 @component
 A component for a text question that can be answered.
-
-### Bindable variables
-
-- `text`: The text value.
 
 ### Bindable function
 
@@ -51,8 +54,10 @@ A component for a text question that can be answered.
 
 - `question`: The question object.
 - `headerText`: The header text. Defaults to the question's text. Optional.
-- `questionsLocked`: A boolean value that indicates if the questions are locked.
+- `locked`: A boolean value that indicates if the questions are locked.
+- `value`: The text value.
 - `previousText`: The previous text value. Optional.
+- `onChange`: A function that is called when the value changes.
 
 
 ### Usage
@@ -60,10 +65,11 @@ A component for a text question that can be answered.
 ```tsx
 <TextInput
   question={question}
-  questionsLocked={questionsLocked}
+  locked={locked}
   previousText={previousText}
-  bind:text={text}
   bind:clearLocalStorage={clearLocalStorage}
+  value={value}
+  onChange={onChange}
    />
 ```
 -->
@@ -75,5 +81,5 @@ A component for a text question that can be answered.
   {previouslySavedMultilang}
   {headerText}
   placeholder="—"
-  bind:multilangText={text}
+  bind:multilangText
   bind:this={textArea} />

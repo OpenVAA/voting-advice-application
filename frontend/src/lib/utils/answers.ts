@@ -51,12 +51,7 @@ export function getAnswerForDisplay(
   const {value} = getAnswer(entity, question) ?? {};
   if (value == null || value === '') return undefined;
   const qt = question.type;
-<<<<<<< HEAD
   if (qt === 'boolean') return t.get(value ? 'common.answerYes' : 'common.answerNo');
-=======
-  if (qt === 'boolean')
-    return t.get((answer.value as boolean) ? 'common.answerYes' : 'common.answerNo');
->>>>>>> b22779a8 (fix: better code quality)
   if (qt === 'date') {
     const format =
       question.dateType && question.dateType in DATE_FORMATS
@@ -141,3 +136,40 @@ export const DATE_FORMATS: Record<DateType, Intl.DateTimeFormatOptions> = {
     weekday: 'long'
   }
 };
+
+/**
+ * Check wheter an answer to a question in empty.
+ * @param question The Question object
+ * @param answer The Candidate's answer
+ * @returns A boolean value indicating whether the answer is empty
+ */
+export function answerIsEmpty(
+  question: QuestionProps,
+  answer: AnswerProps<AnswerPropsValue>
+): boolean {
+  const answerValue = answer.value;
+  if (answer) {
+    if (question.type === 'boolean') {
+      return answerValue == null;
+    } else if (
+      question.type === 'singleChoiceCategorical' ||
+      question.type === 'singleChoiceOrdinal'
+    ) {
+      return answerValue === '' || answerValue == null;
+    } else if (question.type === 'multipleChoiceCategorical') {
+      return Array.isArray(answerValue) && answerValue.length === 0;
+    } else if (question.type === 'text' || question.type === 'link') {
+      if (answerValue) {
+        return Object.values(answerValue).some((value) => value === '');
+      } else {
+        return true;
+      }
+    } else if (question.type === 'date') {
+      return answerValue === '' || answerValue == null;
+    } else {
+      throw new Error(`Unknown question type: ${question.type}`);
+    }
+  } else {
+    return false;
+  }
+}

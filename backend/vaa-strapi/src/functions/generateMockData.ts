@@ -876,7 +876,7 @@ async function createCandidateUsers() {
   }
 
   console.warn(
-    'The application is running in development mode - creating a default user for the first candidate'
+    'The application is running in development mode - creating a default user for the first candidate and a user for testing'
   );
 
   const authenticated = await strapi.query('plugin::users-permissions.role').findOne({
@@ -885,23 +885,43 @@ async function createCandidateUsers() {
     }
   });
 
-  const candidate = await strapi.db.query(API.Candidate).findOne({});
+  const candidate = await strapi.db.query(API.Candidate).findMany({});
   await strapi.entityService.create(API.User, {
     data: {
-      username: mockUser.username,
-      email: mockUser.email,
-      password: mockUser.password,
+      username: mockUser[0].username,
+      email: mockUser[0].email,
+      password: mockUser[0].password,
       provider: 'local',
       confirmed: true,
       blocked: false,
       role: authenticated.id,
-      candidate: candidate.id
+      candidate: candidate[0].id
+    }
+  });
+
+  await strapi.entityService.create(API.User, {
+    data: {
+      username: mockUser[1].username,
+      email: mockUser[1].email,
+      password: mockUser[1].password,
+      provider: 'local',
+      confirmed: true,
+      blocked: false,
+      role: authenticated.id,
+      candidate: candidate[1].id
     }
   });
 
   // Disable registration key for the candidate we chose as they're already registered
   await strapi.query(API.User).update({
-    where: {id: candidate.id},
+    where: {id: candidate[0].id},
+    data: {
+      registrationKey: null
+    }
+  });
+
+  await strapi.query(API.User).update({
+    where: {id: candidate[1].id},
     data: {
       registrationKey: null
     }

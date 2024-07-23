@@ -380,7 +380,6 @@ test.describe("when logged in with imported user", () => {
     await expect(
       page.getByRole("heading", { name: `${userFirstName} ${userLastName}` }),
     ).toBeVisible();
-    // These are not checked because currently preview doesn't show basic info for imported candidates
 
     await expect(
       page.getByText(candidateAppTranslationsEn.languages.Finnish, {
@@ -388,9 +387,7 @@ test.describe("when logged in with imported user", () => {
       })
     ).toBeVisible();
     await expect(
-      page.getByText(candidateAppTranslationsEn.languages.Spanish, {
-        exact: true,
-      })
+      page.getByText(`${candidateAppTranslationsEn.languages.Spanish} • ${candidateAppTranslationsEn.languages.English}`, {exact: true})
     ).toBeVisible();
 
 
