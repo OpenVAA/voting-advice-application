@@ -21,7 +21,7 @@ export class Election extends NamedObject implements DataAccessor<ElectionData> 
   /**
    * Provide constituency data to the Election. Can only be called once unless reset.
    */
-  provideConstituencyData(data: Readonly<Array<ConstituencyData>>): Collection<Constituency> {
+  provideConstituencyData(data: Readonly<Array<ConstituencyData>>): void {
     if (!this.children.constituencies)
       console.info(`[debug] Election.provideConstituencyData() with ${data.length} constituencies`);
     if (!this.children.constituencies)
@@ -31,6 +31,5 @@ export class Election extends NamedObject implements DataAccessor<ElectionData> 
             .sort(order)
             .map((d) => new Constituency(d, this)))
       );
-    return this.constituencies!;
   }
 }

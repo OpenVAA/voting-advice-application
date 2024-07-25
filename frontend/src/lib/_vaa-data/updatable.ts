@@ -1,4 +1,4 @@
-import type {CanUpdate, Collection, UpdateHandler} from './internal';
+import type {CanUpdate, MaybeCollection, UpdateHandler} from './internal';
 
 /**
  * A base class for `DataRoot` and `DataObject` classes that implements update subsriptions and `onUpdate` event propagation to an object's ancestors.
@@ -7,7 +7,7 @@ export abstract class Updatable implements CanUpdate {
   /**
    * All child collections of the object should be placed here. Be sure to provide getters for the collections that return copies of the original collections.
    */
-  protected children: Record<string, Collection | undefined> = {};
+  protected children: Record<string, MaybeCollection> = {};
   protected numTransactions = 0;
   protected subscriptions = new Array<UpdateHandler<typeof this>>();
 
@@ -57,12 +57,19 @@ export abstract class Updatable implements CanUpdate {
   }
 
   /**
-   * Reset this object and all its descendants. This should be called when the data provided to this object is no longer valid, e.g., when the root locale is changed.
+   * Reset this object. This should be called when the data provided to this object is no longer valid, e.g., when the root locale is changed.
    */
   reset(): void {
     console.info(`[debug] ${this.constructor.name}.reset()`);
     this.update(() => {
-      // Object.values(this.children).forEach((collection) => collection?.filter((o) => o instanceof Updatable).forEach((o) => o.reset()));
+      // TODO: Figure out if we need this
+      // // Reset descendants
+      // Object.values(this.children)
+      //   .filter((coll) => coll)
+      //   .forEach((coll) => (coll instanceof Map ? [...coll.values()] : coll!)
+      //     .filter((o) => o instanceof Updatable)
+      //     .forEach((o) => o.reset())
+      //   );
       this.children = {};
     });
   }

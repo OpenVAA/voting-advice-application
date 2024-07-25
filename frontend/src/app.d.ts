@@ -12,12 +12,12 @@ declare namespace App {
   }
   interface PageData {
     // For _test route
-    constituenciesData?: Promise<ConstituencyData[]>;
+    constituenciesData?: Promise<Array<ConstituencyData>>;
     electionsData?: Promise<Array<ElectionData>>;
     /** Nominations and entities are packaged into one `Promise` because they're both needed at the same time, and staggered updates (e.g., nominations updated before candidates) may cause errors */
     nominationsData?: Promise<{
       candidates: Array<CandidateData>;
-      nominations: NominationData[];
+      nominations: Array<NominationData>;
     }>;
     constituencyId?: string; // Should be string | Array<string>
     electionId?: string; // Should be string | Array<string>

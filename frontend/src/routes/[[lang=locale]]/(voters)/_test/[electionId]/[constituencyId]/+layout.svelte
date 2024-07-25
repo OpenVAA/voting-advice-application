@@ -2,7 +2,7 @@
   import {isValidResult} from '$lib/_api/utils/isValidResult';
   import {getVoterContext} from '$lib/_contexts/voter';
   import type {LayoutData} from './$types';
-  import {updateView} from '$lib/_utils/updateView';
+  import {awaitAll} from '$lib/_utils/awaitAll';
   import {Loading} from '$lib/components/loading';
 
   export let data: LayoutData;
@@ -13,7 +13,8 @@
   let error: Error | undefined = undefined;
 
   $: $constituencyId = data.constituencyId;
-  $: updateView([data.nominationsData, $constituency], ([nominationsData, constituency]) => {
+  $: awaitAll([data.nominationsData, $constituency], ([nominationsData, constituency]) => {
+    if (nominationsData instanceof Error) throw nominationsData; //new Error('Error loading nominations and entities data');
     const {nominations, candidates} = nominationsData;
     if (!isValidResult(candidates, {allowEmpty: true}))
       throw new Error('Error loading candidate data');

@@ -1,6 +1,6 @@
 <script lang="ts">
   import {initVoterContext} from '$lib/_contexts/voter';
-  import {updateView} from '$lib/_utils/updateView';
+  import {awaitAll} from '$lib/_utils/awaitAll';
   import {Loading} from '$lib/components/loading';
   import type {LayoutData} from './$types';
   import {isValidResult} from '$lib/_api/utils/isValidResult';
@@ -13,7 +13,7 @@
   let error: Error | undefined = undefined;
 
   $: $electionId = data.electionId;
-  $: updateView([data.constituenciesData, $election], ([data, election]) => {
+  $: awaitAll([data.constituenciesData, $election], ([data, election]) => {
     if (!isValidResult(data)) throw new Error('Error loading constituency data');
     election.provideConstituencyData(data);
     return true;

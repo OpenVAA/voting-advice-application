@@ -5,12 +5,13 @@ export const load: LayoutLoad = (async ({fetch, params}) => {
   const {electionId, constituencyId, lang} = params;
   const provider = await dataProvider;
   provider.init({fetch});
-  const nominationsData = Promise.all([
-    provider.getNominationsData({electionId, constituencyId, locale: lang}),
-    provider.getCandidatesData({electionId, constituencyId, locale: lang})
-  ]).then(([nominations, candidates]) => ({nominations, candidates}));
   return {
-    nominationsData,
+    nominationsData: provider.getNominationsData({
+      electionId,
+      constituencyId,
+      locale: lang,
+      loadAllEntities: true
+    }),
     constituencyId
   };
 }) satisfies LayoutLoad;

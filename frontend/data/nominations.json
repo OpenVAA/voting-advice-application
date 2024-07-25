@@ -1,54 +1,54 @@
 [
   {
-    "electionSymbol": "1a",
+    "electionSymbol": "E1C1",
     "candidateId": "1",
     "electionId": "1",
     "constituencyId": "1"
   },
   {
-    "electionSymbol": "1b",
+    "electionSymbol": "E2C1",
     "candidateId": "1",
     "electionId": "2",
     "constituencyId": "1"
   },
   {
-    "electionSymbol": "2",
+    "electionSymbol": "E1C1",
     "candidateId": "2",
     "electionId": "1",
     "constituencyId": "1"
   },
   {
-    "electionSymbol": "3",
+    "electionSymbol": "E1C2",
     "candidateId": "3",
     "electionId": "1",
     "constituencyId": "2"
   },
   {
-    "electionSymbol": "4",
+    "electionSymbol": "E1C2",
     "candidateId": "4",
     "electionId": "1",
     "constituencyId": "2"
   },
   {
-    "electionSymbol": "5",
+    "electionSymbol": "E2C1",
     "candidateId": "5",
     "electionId": "2",
     "constituencyId": "1"
   },
   {
-    "electionSymbol": "6",
+    "electionSymbol": "E2C1",
     "candidateId": "6",
     "electionId": "2",
     "constituencyId": "1"
   },
   {
-    "electionSymbol": "7",
+    "electionSymbol": "E2C3",
     "candidateId": "7",
     "electionId": "2",
     "constituencyId": "3"
   },
   {
-    "electionSymbol": "8",
+    "electionSymbol": "E2C3",
     "candidateId": "8",
     "electionId": "2",
     "constituencyId": "3"

@@ -6,6 +6,7 @@ export const DATA_COLLECTIONS: Record<keyof DataCollectionTypes, GetDataMethod> 
   constituencies: 'getConstituenciesData',
   elections: 'getElectionsData',
   nominations: 'getNominationsData'
+  // parties: 'getPartiesData',
 } as const;
 
 export type DataCollectionTypes = {
@@ -13,6 +14,7 @@ export type DataCollectionTypes = {
   constituencies: ConstituencyData;
   elections: ElectionData;
   nominations: NominationData;
+  // parties: PartyData;
 };
 
 export function isDataCollection(collection?: string): collection is keyof DataCollectionTypes {

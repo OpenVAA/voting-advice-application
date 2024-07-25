@@ -8,27 +8,17 @@ import type {
   GetDataReturnType
 } from '../../dataProvider.type';
 import {DataProviderError} from '../../dataProviderError';
-import {parseAnswers, parseImage} from './utils';
-import {STRAPI_API, type StrapiApi} from './strapiApi';
-import type {
-  StrapiError,
-  StrapiNominationData,
-  StrapiResponse,
-  StrapiObject,
-  StrapiElectionData,
-  StrapiConstituencyData
-} from './strapiDataProvider.type';
+import {STRAPI_API} from './strapiApi';
+import type {StrapiError, StrapiResponse, StrapiCollectionTypes} from './strapiDataProvider.type';
 import {translate} from '$lib/i18n/utils';
-import {formatId} from '$lib/_api/utils/formatId';
-
-console.info('[debug] strapiDataProvider.ts: module loaded');
+import {formatId} from '../../utils/formatId';
+import type {Id, NominationData} from '$lib/_vaa-data';
+import {parseCandidate} from './utils';
 
 export class StrapiDataProvider implements DataProvider {
   public fetch: typeof fetch | undefined;
 
-  constructor() {
-    console.info('[debug] strapiDataProvider.ts: StrapiDataProvider constructor called');
-  }
+  constructor() {}
 
   init(config: DataProviderConfig): void {
     this.fetch = config.fetch;
@@ -40,7 +30,7 @@ export class StrapiDataProvider implements DataProvider {
   }: GetDataOptions['elections'] = {}): GetDataReturnType<'elections'> {
     const params = new URLSearchParams();
     if (id) params.set('filters[id][$eq]', id);
-    return this.getData<StrapiElectionData>(STRAPI_API.elections, params)
+    return this.getData('elections', params)
       .then((result) =>
         result.map((item) => {
           const attr = item.attributes;
@@ -62,7 +52,7 @@ export class StrapiDataProvider implements DataProvider {
   }: GetDataOptions['constituencies'] = {}): GetDataReturnType<'constituencies'> {
     const params = new URLSearchParams();
     if (id) params.set('filters[id][$eq]', id);
-    return this.getData<StrapiConstituencyData>(STRAPI_API.constituencies, params)
+    return this.getData('constituencies', params)
       .then((result) =>
         result.map((item) => {
           const attr = item.attributes;
@@ -80,33 +70,54 @@ export class StrapiDataProvider implements DataProvider {
 
   async getNominationsData({
     electionId,
-    constituencyId
-    // locale
+    constituencyId,
+    loadAllEntities,
+    loadAnswers,
+    loadCandidates,
+    // loadParties,
+    locale
   }: GetDataOptions['nominations'] = {}): GetDataReturnType<'nominations'> {
+    loadCandidates ||= loadAllEntities;
+    // loadParties ||= loadAllEntities;
+    const populateAnswers = loadAnswers ? '[populate][answers]' : '';
     const params = new URLSearchParams({
-      'populate[candidate]': 'true',
-      'populate[party]': 'true'
+      [`populate[candidate]${populateAnswers}`]: loadCandidates ? 'true' : 'false'
+      // [`populate[party]${populateAnswers}`]: loadParties ? 'true' : 'false',
     });
     if (constituencyId != null) params.set('filters[constituency][id][$eq]', constituencyId);
     if (electionId != null) params.set('filters[election][id][$eq]', electionId);
-    return this.getData<StrapiNominationData>(STRAPI_API.nominations, params)
-      .then((result) =>
-        result.map((item) => {
+    return this.getData('nominations', params)
+      .then((result) => {
+        const nominations = new Array<NominationData>();
+        const candidates: Record<Id, CandidateData> = {};
+        // const parties = Record<Id, PartyData> = {};
+        for (const item of result) {
           const attr = item.attributes;
-          return {
-            candidateId: formatId(attr.candidate.data?.id),
-            partyId: formatId(attr.party.data?.id),
+          const cnd = attr.candidate?.data;
+          const candidateId = formatId(cnd?.id);
+          const party = attr.party?.data;
+          const partyId = formatId(party?.id);
+          nominations.push({
+            candidateId,
+            partyId,
             electionSymbol: attr.electionSymbol ?? undefined
-          };
-        })
-      )
+          });
+          if (loadCandidates && candidateId && !(candidateId in candidates))
+            candidates[candidateId] = parseCandidate(cnd, {locale, loadAnswers});
+          // if (loadParties && partyId && !(partyId in parties))
+          //   parties[partyId] = parseParty(party, { locale, loadAnswers });
+        }
+        return {
+          nominations,
+          candidates: loadCandidates ? Object.values(candidates) : undefined
+          // parties: loadParties ? Object.values(parties) : undefined,
+        };
+      })
       .catch((e) => e);
   }
 
   async getCandidatesData({
     id,
-    electionId,
-    constituencyId,
     locale,
     loadAnswers
   }: GetDataOptions['candidates'] = {}): GetDataReturnType<'candidates'> {
@@ -114,63 +125,29 @@ export class StrapiDataProvider implements DataProvider {
       `[debug] strapiDataProvider.ts: StrapiDataProvider.getCandidatesData() called with locale: ${locale ?? '-'}`
     );
     const params = new URLSearchParams({
-      // We need a specific calls to populate relations, * only goes one-level deep
-      'populate[election]': 'true',
-      'populate[constituency]': 'true',
-      'populate[party][populate][logo]': 'true',
-      // Not used currently, would be memberOf property
-      // 'populate[candidate][populate][party]': 'true',
-      'populate[candidate][populate][photo]': 'true',
-      'populate[candidate][populate][answers][populate][question]': loadAnswers ? 'true' : 'false'
+      'populate[photo]': 'true',
+      'populate[answers][populate][question]': loadAnswers ? 'true' : 'false'
     });
-    if (id) {
-      params.set('filters[candidate][id][$eq]', id);
-    }
-    // Checking for missing relations is tricky, $notNull has very strange bugs, which may be fixed in 4.23.0 and we can't use the filter below. We'll instead filter the results after the fact. See: https://github.com/strapi/strapi/issues/12225
-    // else {params.set('filters[candidate][id][$notNull]', 'true');}
-    if (constituencyId != null) params.set('filters[constituency][id][$eq]', constituencyId);
-    if (electionId != null) params.set('filters[election][id][$eq]', electionId);
-    // if (memberOfPartyId != null) params.set('filters[candidate][party][id][$eq]', memberOfPartyId);
-    // if (nominatingPartyId != null) params.set('filters[party][id][$eq]', nominatingPartyId);
-    return this.getData<StrapiNominationData>(STRAPI_API.candidates, params)
-      .then((result) =>
-        result
-          .filter((item) => item.attributes.candidate?.data != null)
-          .map((item) => {
-            const cnd = item.attributes.candidate.data;
-            const id = formatId(cnd.id);
-            const attr = cnd.attributes;
-            const {firstName, lastName} = attr;
-            const out: CandidateData = {
-              id,
-              firstName: (locale ?? '?') + firstName,
-              lastName,
-              answers:
-                loadAnswers && attr.answers?.data ? parseAnswers(attr.answers.data, locale) : {}
-            };
-            const photo = attr.photo?.data?.attributes;
-            if (photo) out.image = parseImage(photo);
-            return out;
-          })
-      )
+    if (id) params.set('filters[candidate][id][$eq]', id);
+    return this.getData('candidates', params)
+      .then((result) => result.map((item) => parseCandidate(item, {locale, loadAnswers})))
       .catch((e) => e);
   }
 
-  // TODO: This now requires the data always to be an array. Check if we should relax this requirement.
-  protected async getData<TData extends StrapiObject>(
-    endpoint: StrapiApi,
-    params?: URLSearchParams
-  ): Promise<TData[]> {
+  protected async getData<
+    TCollection extends keyof StrapiCollectionTypes,
+    TData = Array<StrapiCollectionTypes[TCollection]>
+  >(collection: TCollection, params?: URLSearchParams): Promise<TData> {
     if (!this.fetch)
       throw new Error('You must provide a fetch function before calling any get methods.');
     const url = `${
       browser ? constants.PUBLIC_BACKEND_URL : constants.BACKEND_URL
-    }/${endpoint}?${params}`;
+    }/${STRAPI_API[collection]}?${params}`;
     console.info(`[debug] strapiDataProvider.ts: StrapiDataProvider.getData() url: ${url}`);
     return this.fetch(url)
       .then((response) => {
         if (!response.ok) throw new Error(`Response: ${response.status} / ${response.statusText}`);
-        return response.json().then((parsed: StrapiResponse<TData[]> | StrapiError) => {
+        return response.json().then((parsed: StrapiResponse<TData> | StrapiError) => {
           if ('error' in parsed) throw new Error(`Strapi error: ${JSON.stringify(parsed)}`);
           return parsed.data;
         });

@@ -6,7 +6,7 @@ import {logDebugError} from '$lib/utils/logger';
  * @param options.allowEmpty Whether to allow an empty array as result. Default is `false`.
  */
 export function isValidResult(
-  result: Array<DataObjectData> | Error,
+  result: Array<DataObjectData> | Error | null | undefined,
   options?: {allowEmpty: boolean}
 ): result is Array<DataObjectData> {
   let error: string | undefined;

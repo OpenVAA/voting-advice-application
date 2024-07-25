@@ -1,11 +1,10 @@
 /**
- * A utility that performs `callback` when all of the inputs are either resolved if `Promise`s or not nullish if other object.
- * Use this in a reactive block to await for all inputs and listen to changes in stores.
- * @param inputs An array of `Promise`s or other values, usually store values
+ * Performs `callback` when all of the inputs are either resolved if `Promise`s or not nullish if other objects. Use this in a reactive block to await for all inputs and listen to changes in stores.
+ * @param inputs An array of `Promise`s and other values, usually store values
  * @param callback A function that receives the resolved values
- * @returns the result of `callback` or `undefined` if all inputs are not yet resolved
+ * @returns A `Promise` with either the result of `callback` or `undefined` if some inputs are nullish
  */
-export async function updateView<TInputs extends Inputs, TReturn>(
+export async function awaitAll<TInputs extends Inputs, TReturn>(
   inputs: TInputs,
   callback: (data: Resolved<TInputs>) => TReturn
 ): Promise<TReturn | undefined> {

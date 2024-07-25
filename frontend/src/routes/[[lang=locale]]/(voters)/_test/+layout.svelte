@@ -4,7 +4,7 @@
   import {initComponentsContext} from '$lib/_contexts/components';
   import {initI18nContext} from '$lib/_contexts/i18n';
   import {initVaaDataContext} from '$lib/_contexts/vaaData';
-  import {updateView} from '$lib/_utils/updateView';
+  import {awaitAll} from '$lib/_utils/awaitAll';
   import type {LayoutData} from './$types';
   import {Loading} from '$lib/components/loading';
 
@@ -20,7 +20,7 @@
   let ready: boolean | undefined = undefined;
   let error: Error | undefined = undefined;
 
-  $: updateView([data.electionsData], ([data]) => {
+  $: awaitAll([data.electionsData], ([data]) => {
     if (!isValidResult(data)) throw new Error('Error loading election data');
     $dataRoot.provideElectionData(data);
     return true;

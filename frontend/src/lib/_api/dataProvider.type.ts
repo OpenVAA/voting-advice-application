@@ -38,14 +38,22 @@ export type DataProviderConfig = {
 export type GetDataReturnType<
   TCollection extends keyof DataCollectionTypes,
   TType extends DataProviderType = 'client'
-> = Promise<
-  (TType extends 'server' ? JsonString : DataCollectionTypes[TCollection][]) | DataProviderError
->;
+> = Promise<(TType extends 'server' ? JsonString : DataContent<TCollection>) | DataProviderError>;
+
+export type DataContent<TCollection extends keyof DataCollectionTypes> =
+  TCollection extends 'nominations'
+    ? NominationsAndEntities
+    : Array<DataCollectionTypes[TCollection]>;
+
+export type NominationsAndEntities = {
+  nominations: Array<DataCollectionTypes['nominations']>;
+  candidates?: Array<DataCollectionTypes['candidates']>;
+  // parties?: Array<DataCollectionTypes['parties']>;
+};
 
 /**
  * All the names of the getData methods available on the `DataProvider` type.
  */
-
 export type GetDataMethod = keyof DataProvider & `get${string}`;
 
 export type JsonString = string;
@@ -53,7 +61,7 @@ export type JsonString = string;
 export type DataProviderType = 'client' | 'server';
 
 export type GetDataOptions = {
-  candidates: GetNominatedCandidatesOptions;
+  candidates: GetEntitiesOptions;
   constituencies: GetConstituenciesOptions;
   elections: GetElectionsOptions;
   nominations: GetNominationsOptions;
@@ -73,13 +81,13 @@ export type GetElectionsOptions = GetDataOptionsBase & FilterById;
 
 export type GetConstituenciesOptions = GetDataOptionsBase & FilterById;
 
-export type GetNominationsOptions = GetDataOptionsBase & FilterByElection & FilterByConstituency;
-
-export type GetNominatedCandidatesOptions = GetDataOptionsBase &
-  FilterById &
+export type GetNominationsOptions = GetDataOptionsBase &
   FilterByElection &
   FilterByConstituency &
+  LoadEntities &
   LoadAnswers;
+
+export type GetEntitiesOptions = GetDataOptionsBase & FilterById & LoadAnswers;
 
 // export type GetAllPartiesOptions
 //   = GetDataOptionsBase,
@@ -129,6 +137,24 @@ export type FilterByConstituency = {
    */
   constituencyId?: Id;
 };
+
+export type LoadEntities =
+  | {
+      /**
+       * Whether to also load all referenced entities when getting nomination data.
+       */
+      loadAllEntities: boolean;
+    }
+  | {
+      /**
+       * Whether to also load all referenced candidates when getting nomination data.
+       */
+      loadCandidates?: boolean;
+      /**
+       * Whether to also load all referenced parties when getting nomination data.
+       */
+      // loadParties?: boolean;
+    };
 
 export type LoadAnswers = {
   /**

@@ -1,4 +1,14 @@
 /**
+ * The Strapi data types matching the DataProvider collections
+ */
+export type StrapiCollectionTypes = {
+  candidates: StrapiCandidateData;
+  constituencies: StrapiConstituencyData;
+  elections: StrapiElectionData;
+  nominations: StrapiNominationData;
+};
+
+/**
  * The basic format for Strapi responses
  */
 export type StrapiResponse<TData> = {

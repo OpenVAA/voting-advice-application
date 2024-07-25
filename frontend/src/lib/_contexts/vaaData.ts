@@ -22,10 +22,9 @@ export function initVaaDataContext(): VaaDataContext {
     error(500, 'initVaaDataContext() called for a second time');
   const {locale} = getI18nContext();
   const dataRoot = new DataRoot();
-  // TODO: Track locale changes
   locale.subscribe((value) => {
     console.info('[debug] vaaDataContext: dataRoot: reset due to locale change.', value);
-    // dataRoot.reset();
+    dataRoot.reset();
   });
   const dataRootStore = readable<DataRoot>(dataRoot, (set) => {
     // Reassign `dataRoot` when its contents change to trigger update of `dataRootStore`

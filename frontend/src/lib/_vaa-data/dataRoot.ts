@@ -1,5 +1,12 @@
 import {Candidate, Election, Updatable} from './internal';
-import type {CandidateData, ElectionData, Id, Collection, Party} from './internal';
+import type {
+  CandidateData,
+  ElectionData,
+  Id,
+  Collection,
+  Party,
+  MappedCollection
+} from './internal';
 import {order} from './order';
 
 /*
@@ -15,9 +22,9 @@ export class DataRoot extends Updatable {
   };
 
   protected children: {
-    candidates?: Collection<Candidate>;
     elections?: Collection<Election>;
-    parties?: Collection<Party>;
+    candidates?: MappedCollection<Candidate>;
+    parties?: MappedCollection<Party>;
   } = {};
 
   constructor() {
@@ -25,7 +32,9 @@ export class DataRoot extends Updatable {
   }
 
   get candidates(): Collection<Candidate> | undefined {
-    return this.children.candidates ? [...this.children.candidates] : undefined;
+    return this.children.candidates
+      ? [...this.children.candidates.values()].sort(order)
+      : undefined;
   }
 
   get elections(): Collection<Election> | undefined {
@@ -33,33 +42,33 @@ export class DataRoot extends Updatable {
   }
 
   getCandidate(id: Id): Candidate | undefined {
-    return this.children.candidates?.find((o) => `${o.id}` === `${id}`);
+    return this.children.candidates?.get(`${id}`);
   }
 
   getParty(id: Id): Party | undefined {
-    return this.children.parties?.find((o) => `${o.id}` === `${id}`);
+    return this.children.parties?.get(`${id}`);
   }
 
   /**
    * Provide election data to the DataRoot. Can only be called once unless reset.
    */
-  provideElectionData(data: Readonly<Array<ElectionData>>): Collection<Election> {
+  provideElectionData(data: Readonly<Array<ElectionData>>): void {
     if (!this.children.elections)
       console.info(`[debug] DataRoot.provideElectionData() with ${data.length} elections`);
     if (!this.children.elections)
       this.update(
         () => (this.children.elections = [...data].sort(order).map((d) => new Election(d, this)))
       );
-    return this.elections!;
   }
 
   /**
    * Provide the candidate data to the DataRoot. Note that already existing candidates will not be replaced.
    */
-  provideCandidateData(data: Readonly<Array<CandidateData>>): Collection<Candidate> {
+  provideCandidateData(data: Readonly<Array<CandidateData>>): void {
     if (this.children.candidates) {
-      const ids = this.children.candidates?.map((c) => c.id) ?? [];
-      data = data.filter((d) => !ids.includes(d.id));
+      data = data.filter((d) => !this.children.candidates!.has(`${d.id}`));
+    } else {
+      this.children.candidates = new Map();
     }
     if (data.length)
       console.info(
@@ -68,14 +77,9 @@ export class DataRoot extends Updatable {
       );
     // TODO: Link parties and other entities to the candidates
     if (data.length)
-      this.update(
-        () =>
-          (this.children.candidates = [
-            ...(this.children.candidates ?? []),
-            ...data.map((d) => new Candidate(d, this))
-          ].sort(order))
+      this.update(() =>
+        data.forEach((d) => this.children.candidates!.set(`${d.id}`, new Candidate(d, this)))
       );
-    return this.candidates!;
   }
 }
 

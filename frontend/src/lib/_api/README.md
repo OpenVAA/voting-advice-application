@@ -1,11 +1,7 @@
 # TODO
 
-- getNominations({loadCandidates, loadParties}): {nominations: NominationData[], candidates: CandidateData[], parties: PartyData[]}
-- getCandidates(- no nomination or election filters)
+- locale change for dataRoot: check duplicate updates on server, check invalidate bc cached Promises seem to be returned when changing locale back to an earlier one => consider whole locale change logic
 - Consider electionId and constituencyId for NominationData
-- Lang change with two Promises
-- rework `Match`, `Nomination<TEntity>`, `Entity`
-- test with both providers
 - figure out `Feedback`
 - Convert `vaa-matching` `entity` to `target`
 
@@ -13,6 +9,57 @@
 
 1. Navigate to `/_test/`.
 2. Edit the options in `$lib/_config/config.ts`. Valid options for `adapter` are 'local' and 'strapi'.
+
+# `Match`, `Nomination`, wrapped and naked `Entity`
+
+Entity cards, details and lists should accept `Entities` either in their naked form or possibly under multiple wraps.
+
+```ts
+type MaybeWrappedEntity<TEntity extends Entity = Entity> =
+  | TEntity
+  | Match<TEntity>
+  | Nomination<TEntity>
+  | Match<Nomination<TEntity>>;
+
+interface EntityCardProps<TEntity extends Entity = Entity> {
+  content: MaybeWrappedEntity<TEntity>;
+}
+
+function parseEntity<TEntity extends Entity = Entity>(
+  maybeWrapped: MaybeWrappedEntity<TEntity>
+): ParsedEntity<TEntity> {
+  let entity: TEntity | undefined = undefined;
+  let nomination: Nomination<TEntity> | undefined = undefined;
+  let match: Match<TEntity> | Match<Nomination<TEntity>> | undefined = undefined;
+  let current: MaybeWrappedEntity<TEntity> = maybeWrapped;
+  while (current) {
+    if (current instanceof Match) {
+      match = current;
+      current = match.entity;
+    } else if (current instanceof Nomination) {
+      nomination = current;
+      current = match.entity;
+    } else if (current instanceof Entity) {
+      entity = current;
+      break;
+    } else {
+      throw new Error(`Unknown entity or wrapper type: ${current.prototype.name}`);
+    }
+  }
+  if (!entity) throw new Error('No entity found in wrapped entity');
+  return {
+    entity,
+    nomination,
+    match
+  };
+}
+
+type ParsedEntity<TEntity extends Entity = Entity> = {
+  entity: TEntity;
+  nomination: Nomination<TEntity> | undefined;
+  match: Match<TEntity> | Match<Nomination<TEntity>> | undefined;
+};
+```
 
 # Localized data for Candidate App
 
@@ -28,6 +75,9 @@ export interface DataProvider {
   // If `locale` is not defined, do not translate the object
 }
 
+/**
+ * Convert the `string` types in `TData` (usually a `vaa-data` `DataObjectData` type) to `LocalizedString` with the exception of id references.
+ */
 export type Localized<TData> = {
   [Key in keyof TData]: Key extends IdRef
     ? TData[Key]
@@ -36,6 +86,10 @@ export type Localized<TData> = {
       : TData[Key];
 };
 
+/**
+ * Rererence to another object by id or this object's own id.
+ * @example 'id', 'candidateId', 'constituencyIds'
+ */
 type IdRef = 'id' | `${string}Id` | `${string}Ids`;
 ```
 
@@ -47,86 +101,164 @@ Below is description of the data cascade on the `/_test/` route. See the individ
 
 The basic paradigm is:
 
-- `+page.svelte` files access election data (questions, candidates etc.) via the `vaa-data: DataRoot` store contained in `GlobalContext` (retrieved with `$lib/_contexts/global: getGlobalContext()`).
-- `+layout.svelte` files await for the data loaded by universal `+layout.ts` loaders and provide it to the `GlobalContext.vaaData` `DataRoot`. The `DataRoot` converts the data into fully-fletched data objects with methods etc.
+- `+page.svelte` files access election data (questions, candidates etc.) via the `vaa-data: DataRoot` store contained in `VaaDataContext` or contexts subsuming it.
+- `+layout.svelte` files await for the data loaded by universal `+layout.ts` loaders and provide it to the `VaaDataContext.vaaData` `DataRoot` store. The `DataRoot` converts the data into fully-fletched data objects with methods etc.
 - `+layout.ts` universal loaders import a `DataProvider` from `$lib/_api/dataProvider` and use it to get data as promises.
 - `$lib/_api/dataProvider` exports the correct `DataProvider` implementation based on the configuration.
 - The specific `DataProvider` implementations may either
   - directly access the database, or
   - if they can only run on the server circulate the calls via the generic `ApiRouteDataProvider`—`/routes/api/data/[collection]/+server.ts`—`$lib/server/_api/serverDataProvider` chain, the last part of which exports the correct `ServerDataProvider` implementation.
 
-The whole process is described in the flowchart.
+The whole process is described in the flowchart below.
 
 ```mermaid
 ---
-title: Data cascade for the /_test/ route
+title: Data cascade for the `/_test/[electionId]/[constituencyId]` route
 ---
 flowchart TD
 
-  A["/routes/[lang]/(voters)/_test/+page.svelte
-  Displays the data accessible via the vaaData store of the global context.
-  NB. Candidate.name is a getter method only available in proper Candidate objects."]
-  ---|"const {vaaData} = getGlobalContext();
-  {#each $vaaData.candidates as candidate}
-    {candidate.name}
-  {/each}"|A2["$lib/_api/contexts/global.ts
-  Contains all stores common to all applications, specifically:
-  { vaaData: Writable&lt;DataRoot&gt; }"]
-  ---|"Provided data from +layout.svelte,
-  which is converted by vaaData.provideCandidateData(data: Array<CandidateData>)
-  from CandidateData POJOs to Candidate objects"|B["/routes/[lang]/(voters)/_test/+layout.svelte
-  Receives the promised data loaded by +layout.ts and provides it
-  to vaaData in the global context."];
+  %% Block Definitions
 
-  B
-  ---|"export let data;
-  const {candidatesData} = data;
-  const {vaaData} = getGlobalContext()
-  candidatesData.then(d => $vaaData.provideCandidateData(d))"|C["/routes/[lang]/(voters)/_test/+layout.ts
-  Universal loader loads the data using DataProvider
-  (agnostic to the implementation defined in config)."]
-  ---|"const provider = await dataProvider;
-  return { candidatesData: provider.getCandidatesData() }"|D["$lib/_api/dataProvider.ts
+  PAGE["Nominations Page
+  /routes/[lang]/(voters)/_test/[electionId]/[constituencyId]/+page.svelte
+  Displays the candidates nominated for the selected election in the selected constituency."]:::svelte
+
+  LAYOUT_SV_C["Constituency Layout
+  /routes/[lang]/(voters)/_test/[electionId]/[constituencyId]/+layout.svelte
+  Receives the promised data and provides it"]:::svelte
+
+  LAYOUT_TS_C["Constituency Layout Loader
+  /routes/[lang]/(voters)/_test/[electionId]/[constituencyId]/+layout.ts
+  Universally loads NominationData[] for the constituency
+  and election in the route params"]
+
+  LAYOUT_SV_E["Election Layout
+  /routes/[lang]/(voters)/_test/[electionId]/+layout.svelte
+  Receives the promised data and provides it"]:::svelte
+
+  LAYOUT_TS_E["Election Layout Loader
+  /routes/[lang]/(voters)/_test/[electionId]/+layout.ts
+  Universally loads ConstituencyData[] for the election in the route param"]
+
+  LAYOUT_SV["Outermost Layout
+  /routes/[lang]/(voters)/_test/+layout.svelte
+  Receives the promised data and provides it"]:::svelte
+
+  LAYOUT_TS["Outermost Layout Loader
+  /routes/[lang]/(voters)/_test/+layout.ts
+  Universally loads ElectionData[]"]
+
+  CTX_VOTER["VoterContext
+  $lib/_api/contexts/voter"]:::ctx
+
+  CTX_APP["AppContext
+  $lib/_api/contexts/app"]:::ctx
+
+  CTX_COMP["ComponentsContext
+  $lib/_api/contexts/components"]:::ctx
+
+  CTX_VAA["VaaDataContext
+  $lib/_api/contexts/vaaData"]:::ctx
+
+  CTX_I18N["I18nContext
+  $lib/_api/contexts/i18n"]:::ctx
+
+  DP["DataProvider
+  $lib/_api/dataProvider.ts
   Imports lazily the correct DataProvider implementation based on config
-  and exports is as a promise resolving to `{ dataProvider: DataProvider }`."];
+  and exports is as a promise resolving to `{ dataProvider: DataProvider }`."]
 
-  D
-  ---|"import depending on /$lib/_config/config.ts"|E["$lib/_api/providers/strapi/strapiDataProvider.ts
+  %% Connections
+
+  PAGE---|"getVoterContext()"|CTX_VOTER
+  PAGE-.-|"In &lt;slot&gt;"| LAYOUT_SV_C
+
+  subgraph Layouts
+  LAYOUT_SV_C---|"Gets data.nominationsData"| LAYOUT_TS_C
+  LAYOUT_SV_C-.-|"In &lt;slot&gt;"| LAYOUT_SV_E
+  LAYOUT_TS_C-.-|"Can access data"| LAYOUT_TS_E
+
+  LAYOUT_SV_E---|"Gets data.constituenciesData"| LAYOUT_TS_E
+  LAYOUT_SV_E-.-|"In &lt;slot&gt;"| LAYOUT_SV
+  LAYOUT_TS_E-.-|"Can access data"| LAYOUT_TS
+
+  LAYOUT_SV---|"Gets data.electionsData"| LAYOUT_TS
+  end
+
+  subgraph Contexts
+  CTX_VOTER---|"getAppContext()"| CTX_APP
+  CTX_APP---|"getVaaDataContext()"| CTX_VAA
+  CTX_APP---|"getI18nContext()"| CTX_I18N
+  CTX_COMP---|"getI18nContext()"| CTX_I18N
+  end
+
+  CTX_VOTER---|"Initiated by
+  Provided nominationsData and candidatesData by*
+  constituencyId store set by"| LAYOUT_SV_C
+  CTX_VOTER---|"Initiated by
+  Provided constituencyData by*
+  electionId store set by"| LAYOUT_SV_E
+  CTX_VAA---|"Initiated by
+  Provided electionData by"| LAYOUT_SV
+  CTX_I18N---|"Initiated by"| LAYOUT_SV
+
+  LAYOUT_TS_C---|"(await dataProvider).getNominationsData()"| DP
+  LAYOUT_TS_E---|"(await dataProvider).getConstituenciesData()"| DP
+  LAYOUT_TS---|"(await dataProvider).getElectionsData()"| DP
+
+
+
+  %% Data Provider roots
+
+  subgraph DataProviders
+  DP
+  ---|"import depending on /$lib/_config/config.ts"|DP_STRAPI["$lib/_api/providers/strapi/strapiDataProvider.ts
   A specific implementation to connect to a Strapi backend"]
-  ---|"getCandidatesData() → fetch()"|F["Strapi backend"];
+  ---|"getCandidatesData() → fetch()"|STRAPI["Strapi backend"]:::ssr;
 
-  D
-  ---|"import depending on /$lib/_config/config.ts"|G["$lib/_api/providers/apiRoute/apiRouteDataProvider.ts
+  DP
+  ---|"import depending on /$lib/_config/config.ts"|DP_API["$lib/_api/providers/apiRoute/apiRouteDataProvider.ts
   A generic wrapper for all DataProvider implementations
   that rely on the server and are, thus, accessible via the API routes"]
-  ---|"getCandidatesData() → fetch()"|H["/routes/api/data/[collection]/+server.ts
+  ---|"getCandidatesData() → fetch()"|API["/routes/api/data/[collection]/+server.ts
   A generic API route (GET) request handler,
   which loads the data using ServerDataProvider
   (agnostic to the implementation defined in config,
-  but returns an error if the config doesn't support server loading*)"]:::ssr
-  ---|"serverDataProvider.getCandidatesData()"|I["$lib/server/_api/providers/serverDataProvider.ts
+  but returns an error if the config doesn't support server loading**)"]:::ssr
+  ---|"serverDataProvider.getCandidatesData()"|DP_SERVER["$lib/server/_api/providers/serverDataProvider.ts
   Imports lazily the correct ServerDataProvider implementation based on config
   and exports is as a promise resolving to `{ serverDataProvider: ServerDataProvider }`."]:::ssr
-  ---|"import depending on /$lib/_config/config.ts"|J["$lib/server/_api/providers/local/localServerDataProvider.ts
+  ---|"import depending on /$lib/_config/config.ts"|DP_SERVER_LOCAL["$lib/server/_api/providers/local/localServerDataProvider.ts
   A specific implementation to read locally saved json files."]:::ssr
-  ---|"getCandidatesData() → read()"|K["/data/candidates.json"]:::ssr;
+  ---|"getCandidatesData() → read()"|JSON["/data/candidates.json"]:::ssr;
+  end
 
-  classDef ssr fill:#f96
+  subgraph Legend
+  L1["Svelte component"]:::svelte
+  L2["Context"]:::ctx
+  L3["SSR-only"]:::ssr
+  L4["Other module"]
+  end
+
+  classDef ctx fill:#afa
+  classDef svelte fill:#aaf
+  classDef ssr fill:#faa
 ```
 
-Files on orange background are only accessible on the server.
-
-\* This could actually be changed so that the universal DataProvider would be used instead, because it might be useful to always expose the API routes.
+\* The data are provided to the `dataRoot` or its descendants which `VoterContext` gets from `VaaDataContext`.
+\*\* This could actually be changed so that the universal DataProvider would be used instead, because it might be useful to always expose the API routes.
 
 # Contexts
 
-| Context      |  Consumer                                             | Depends on         | Contents                                                                             |
-| ------------ | ----------------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------ |
-| `i18n`       | Other contexts                                        | —                  | `t`, `locale`, `locales` from `$lib/i18n`                                            |
-| `vaa-data`   | Other contexts                                        | `i18n`             | `Readable<dataRoot>`                                                                 |
-| `components` |  Any component                                        | `i18n`             | Contents of `i18n` for now                                                           |
-| `app`        | Any part of the app or dynamic components             | `i18n`, `vaa-data` | Contents of `i18n` and `vaa-data`                                                    |
-| `voter`      | Any part of the Voter App or voter components         | `app`              | Contents of `app` and voter-specific stores, such as `answers`                       |
-| `candidate`  | Any part of the Candidate App or candidate components | `app`              | Contents of `app` and candidate-specific functions, such as `DataWriter` API methods |
+| Context      |  Consumer                                             | Depends on         | Contents                                                                                            | Initiated by        |
+| ------------ | ----------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------- | ------------------- |
+| `i18n`       | Other contexts                                        | —                  | `t`, `locale`, `locales` from `$lib/i18n`                                                           | `/[lang]`           |
+| `vaa-data`   | Other contexts                                        | `i18n`             | `Readable<dataRoot>`                                                                                | `/[lang]`           |
+| `components` | Any component\*                                       | `i18n`             | Contents of `i18n` for now                                                                          | `/[lang]`           |
+| `app`        | Any part of the app or dynamic components             | `i18n`, `vaa-data` | Contents of `i18n` and `vaa-data`                                                                   | `/[lang]`           |
+| `voter`      | Any part of the Voter App or voter components         | `app`              | Contents of `app` and voter-specific stores, such as `answers`, `constituencyId` and `constituency` | `/[lang]/(voter)`   |
+| `candidate`  | Any part of the Candidate App or candidate components | `app`              | Contents of `app` and candidate-specific functions, such as `DataWriter` API methods                | `/[lang]/candidate` |
+
+\* `ComponentContext` should be imported in such a way that another context that implements the same functions can easily be provided if the components are used elsewhere.
 
 # Route parameters

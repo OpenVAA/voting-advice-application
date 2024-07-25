@@ -27,7 +27,7 @@ export class Constituency extends NamedObject implements DataAccessor<Constituen
   /**
    * Provide constituency data to the Election. Can only be called once unless reset.
    */
-  provideNominationData(data: Readonly<Array<NominationData>>): Collection<Nomination> {
+  provideNominationData(data: Readonly<Array<NominationData>>): void {
     if (!this.children.nominations)
       console.info(`[debug] Constituency.provideNominationData() with ${data.length} nominations`);
     if (!this.children.nominations)
@@ -35,6 +35,5 @@ export class Constituency extends NamedObject implements DataAccessor<Constituen
         () =>
           (this.children.nominations = [...data].sort(order).map((d) => new Nomination(d, this)))
       );
-    return this.nominations!;
   }
 }
