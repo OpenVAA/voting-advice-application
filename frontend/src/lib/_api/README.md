@@ -1,3 +1,17 @@
+## WHY:
+
+- Advances #249
+- Advances #513
+- Advances #529
+- Advances #536
+- Advances #537
+
+## What has been changed (if possible, add screenshots, gifs, etc. )
+
+Prepares for refactoring data API connections, state management and the internal data model.
+
+The proposed new modules are all prefixed with an underscore.
+
 # Trying out
 
 1. Navigate to `/_test/`
@@ -84,15 +98,15 @@ flowchart TD
   %% Connections
 
   PAGE---|"getVoterContext()"|CTX_VOTER
-  PAGE-.-|"In &lt;slot&gt;"| LAYOUT_SV_C
+  PAGE-.-|"In &lt;slot&gt; of"| LAYOUT_SV_C
 
   subgraph Layouts
   LAYOUT_SV_C---|"Gets data.nominationsData"| LAYOUT_TS_C
-  LAYOUT_SV_C-.-|"In &lt;slot&gt;"| LAYOUT_SV_E
+  LAYOUT_SV_C-.-|"In &lt;slot&gt; of"| LAYOUT_SV_E
   LAYOUT_TS_C-.-|"Can access data"| LAYOUT_TS_E
 
   LAYOUT_SV_E---|"Gets data.constituenciesData"| LAYOUT_TS_E
-  LAYOUT_SV_E-.-|"In &lt;slot&gt;"| LAYOUT_SV
+  LAYOUT_SV_E-.-|"In &lt;slot&gt; of"| LAYOUT_SV
   LAYOUT_TS_E-.-|"Can access data"| LAYOUT_TS
 
   LAYOUT_SV---|"Gets data.electionsData"| LAYOUT_TS
@@ -105,8 +119,7 @@ flowchart TD
   CTX_COMP---|"getI18nContext()"| CTX_I18N
   end
 
-  CTX_VOTER---|"Initiated by
-  Provided nominationsData and candidatesData by*
+  CTX_VOTER---|"Provided nominationsData and candidatesData by*
   constituencyId store set by"| LAYOUT_SV_C
   CTX_VOTER---|"Initiated by
   Provided constituencyData by*
@@ -321,3 +334,17 @@ type IdProp = 'id' | `${string}Id` | `${string}Ids`;
 - Consider electionId and constituencyId for NominationData
 - Convert `vaa-matching` `entity` to `target`
 - Locale change for dataRoot: check duplicate updates on server, check invalidate bc cached Promises seem to be returned when changing locale back to an earlier one => consider whole locale change logic
+
+## Check off each of the following tasks as they are completed
+
+- [ ] I have reviewed the changes myself in this PR. Please check the [self-review document](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/contributing/self-review.md)
+- [ ] I have added or edited unit tests.
+- [ ] I have run the unit tests successfully.
+- [ ] I have run the e2e tests successfully.
+- [ ] I have tested this change on my own device.
+- [ ] I have tested this change on other devices (Using Browserstack is recommended).
+- [ ] I have tested my changes using the [WAVE extension](https://wave.webaim.org/extension/)
+- [ ] I have added documentation where necessary.
+- [ ] Is there an existing issue linked to this PR?
+
+**Clean up your git commit history before submitting the pull request!**
