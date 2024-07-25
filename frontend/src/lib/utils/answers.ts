@@ -21,21 +21,25 @@ export function getAnswer(entity: EntityProps, question: QuestionProps): AnswerP
  * @param question The Question object
  * @returns An `AnswerProps` object with an integer answer
  */
-export function getLikertAnswer(entity: EntityProps, question: QuestionProps) {
+export function getLikertAnswer(
+  entity: EntityProps,
+  question: QuestionProps
+): AnswerProps<number> | undefined {
   if (question.type !== 'singleChoiceOrdinal') {
     logDebugError(`getLikertAnswer: Question ${question.id} is not a Likert question.`);
-    return {
-      value: undefined,
-      openAnswer: undefined
-    };
+    return undefined;
   }
   const answer = getAnswer(entity, question);
-  return answer
-    ? {
-        value: parseInt(answer.value),
-        openAnswer: answer.openAnswer
-      }
-    : undefined;
+  if (answer?.value == null) return undefined;
+  const value = typeof answer.value === 'number' ? answer.value : parseInt(`${answer?.value}`);
+  if (isNaN(value)) {
+    logDebugError(`getLikertAnswer: Answer ${answer.value} to ${question.id} is not a number.`);
+    return undefined;
+  }
+  return {
+    value,
+    openAnswer: answer.openAnswer
+  };
 }
 
 /**
@@ -57,8 +61,17 @@ export function getAnswerForDisplay(
       question.dateType && question.dateType in DATE_FORMATS
         ? DATE_FORMATS[question.dateType]
         : DATE_FORMATS.yearMonthDay;
-    const date = new Date(value);
-    return `${date}` == 'Invalid Date' ? undefined : date.toLocaleDateString(locale.get(), format);
+    let date: Date | undefined;
+    if (value instanceof Date) {
+      date = value;
+    } else if (typeof value === 'string' || typeof value === 'number') {
+      date = new Date(value);
+    }
+    if (date == null || isNaN(date.getTime())) {
+      logDebugError(`Invalid date value ${value} for question ${question.id}`);
+      return undefined;
+    }
+    return date.toLocaleDateString(locale.get(), format);
   }
   if (['singleChoiceOrdinal', 'singleChoiceCategorical'].includes(qt))
     return getChoiceLabel(question, value);
@@ -143,10 +156,7 @@ export const DATE_FORMATS: Record<DateType, Intl.DateTimeFormatOptions> = {
  * @param answer The Candidate's answer
  * @returns A boolean value indicating whether the answer is empty
  */
-export function answerIsEmpty(
-  question: QuestionProps,
-  answer: AnswerProps<AnswerPropsValue>
-): boolean {
+export function answerIsEmpty(question: QuestionProps, answer: AnswerProps): boolean {
   const answerValue = answer.value;
   if (answer) {
     if (question.type === 'boolean') {
