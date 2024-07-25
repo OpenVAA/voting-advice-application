@@ -75,7 +75,7 @@ export function initVoterContext(): VoterContext {
         .map(([k, v]) => k + ':' + v.value)
         .join(', ')}`
     );
-    return Promise.resolve(nominations.map((n) => new Match<Nomination>(0, n)));
+    return Promise.resolve(nominations.map((n) => new Match<Nomination>(Math.random(), n)));
   }
 
   return setContext<VoterContext>(VOTER_CONTEXT_NAME, {

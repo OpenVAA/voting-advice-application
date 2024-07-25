@@ -1,4 +1,4 @@
-import {optionsToUrlParams} from '../../utils/optionsToUrlParams';
+import {optionsToUrlParams} from '../../../utils/optionsToUrlParams';
 import type {
   DataContent,
   DataProvider,
@@ -6,8 +6,8 @@ import type {
   GetDataOptions,
   GetDataOptionsBase,
   GetDataReturnType
-} from '../../dataProvider.type';
-import {API_ROUTES} from './apiRoutes';
+} from '../../../dataProvider.type';
+import {API_ROUTES} from '../apiRoutes';
 import {DataProviderError} from '$lib/_api/dataProviderError';
 import type {DataCollectionTypes} from '$lib/_api/dataCollections';
 

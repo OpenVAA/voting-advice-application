@@ -7,10 +7,10 @@ const {adapter} = APP_CONFIG.dataProvider;
 
 switch (adapter) {
   case 'strapi':
-    module = import('./providers/strapi');
+    module = import('./adapters/strapi/provider');
     break;
   case 'local':
-    module = import('./providers/apiRoute');
+    module = import('./adapters/apiRoute/provider');
     break;
   default:
     throw new Error(`Unsupported data provider: ${adapter}`);

@@ -7,7 +7,7 @@ const {adapter} = APP_CONFIG.dataProvider;
 
 switch (adapter) {
   case 'local':
-    module = import('./providers/local');
+    module = import('$lib/_api/adapters/localServer/provider');
     break;
   default:
     module = Promise.resolve({serverDataProvider: null});

@@ -1,7 +1,7 @@
 import type {Answers} from '$lib/_vaa-data/candidate.type';
 import type {SerializableValue} from '$lib/_vaa-data/data.type';
 import {translate} from '$lib/i18n/utils/translate';
-import type {StrapiAnswerData} from '../strapiDataProvider.type';
+import type {StrapiAnswerData} from '../../strapiData.type';
 
 /**
  * Parse Strapi Answer data.

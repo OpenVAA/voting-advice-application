@@ -1,4 +1,4 @@
-import type {StrapiCollectionTypes} from './strapiDataProvider.type';
+import type {StrapiCollectionTypes} from './strapiData.type';
 
 export const STRAPI_API: Record<keyof StrapiCollectionTypes, string> = {
   candidates: 'api/candidates',

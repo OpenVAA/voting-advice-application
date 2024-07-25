@@ -1,7 +1,7 @@
 import type {GetDataOptions} from '$lib/_api/dataProvider.type';
 import {formatId} from '$lib/_api/utils/formatId';
 import type {CandidateData} from '$lib/_vaa-data';
-import type {StrapiCandidateData} from '../strapiDataProvider.type';
+import type {StrapiCandidateData} from '../../strapiData.type';
 import {parseAnswers} from './parseAnswers';
 import {parseImage} from './parseImage';
 

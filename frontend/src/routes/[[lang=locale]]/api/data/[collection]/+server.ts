@@ -5,7 +5,7 @@
 import {error} from '@sveltejs/kit';
 import {DATA_COLLECTIONS, isDataCollection} from '$lib/_api/dataCollections';
 import type {GetDataOptionsBase} from '$lib/_api/dataProvider.type';
-import {serverDataProvider} from '$lib/server/_api/serverDataProvider';
+import {serverDataProvider} from '$lib/_api/serverDataProvider.server';
 import type {RequestHandler} from './$types';
 
 export const GET: RequestHandler = async ({fetch, params, url}) => {

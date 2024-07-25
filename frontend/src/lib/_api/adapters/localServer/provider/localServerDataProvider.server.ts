@@ -10,8 +10,8 @@ import type {
 } from '$lib/_api/dataProvider.type';
 import {DataProviderError} from '$lib/_api/dataProviderError';
 import type {DataObjectData} from '$lib/_vaa-data/dataObject.type';
-import type {ServerDataProvider} from '../../serverDataProvider.type';
-import {DATA_PATHS, type DataPath} from './dataPaths';
+import type {ServerDataProvider} from '$lib/server/_api/serverDataProvider.type';
+import {DATA_PATHS, type DataPath} from '../dataPaths';
 
 console.info('[debug] localServerDataProvider.ts: module loaded');
 

@@ -6,12 +6,12 @@ import type {
   DataProviderConfig,
   GetDataOptions,
   GetDataReturnType
-} from '../../dataProvider.type';
-import {DataProviderError} from '../../dataProviderError';
-import {STRAPI_API} from './strapiApi';
-import type {StrapiError, StrapiResponse, StrapiCollectionTypes} from './strapiDataProvider.type';
+} from '../../../dataProvider.type';
+import {DataProviderError} from '../../../dataProviderError';
+import {STRAPI_API} from '../strapiApi';
+import type {StrapiError, StrapiResponse, StrapiCollectionTypes} from '../strapiData.type';
 import {translate} from '$lib/i18n/utils';
-import {formatId} from '../../utils/formatId';
+import {formatId} from '../../../utils/formatId';
 import type {Id, NominationData} from '$lib/_vaa-data';
 import {parseCandidate} from './utils';
 
