@@ -81,8 +81,8 @@ flowchart TD
   CTX_APP["AppContext
   $lib/_api/contexts/app"]:::ctx
 
-  CTX_COMP["ComponentsContext
-  $lib/_api/contexts/components"]:::ctx
+  CTX_COMP["ComponentContext
+  $lib/_api/contexts/component"]:::ctx
 
   CTX_VAA["VaaDataContext
   $lib/_api/contexts/vaaData"]:::ctx
@@ -176,16 +176,100 @@ flowchart TD
 
 ## Contexts
 
-| Context      |  Consumer                                             | Depends on         | Contents                                                                                            | Initiated by        |
-| ------------ | ----------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------- | ------------------- |
-| `i18n`       | Other contexts                                        | —                  | `t`, `locale`, `locales` from `$lib/i18n`                                                           | `/[lang]`           |
-| `vaa-data`   | Other contexts                                        | `i18n`             | `Readable<dataRoot>`                                                                                | `/[lang]`           |
-| `components` | Any component\*                                       | `i18n`             | Contents of `i18n` for now                                                                          | `/[lang]`           |
-| `app`        | Any part of the app or dynamic components             | `i18n`, `vaa-data` | Contents of `i18n` and `vaa-data`                                                                   | `/[lang]`           |
-| `voter`      | Any part of the Voter App or voter components         | `app`              | Contents of `app` and voter-specific stores, such as `answers`, `constituencyId` and `constituency` | `/[lang]/(voter)`   |
-| `candidate`  | Any part of the Candidate App or candidate components | `app`              | Contents of `app` and candidate-specific functions, such as `DataWriter` API methods                | `/[lang]/candidate` |
+All of the data and state variables used by the app and components are contained in [Svelte contexts](https://svelte.dev/docs/svelte#setcontext).
+
+| Context                                                        |  Consumer                                             | Includes          | Own contents                                                                                                                                                                                                                                                                                                                                                                           | Initiated by        |
+| -------------------------------------------------------------- | ----------------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| [`I18nContext`](/frontend/src/lib/_contexts/i18n.ts)           | Other contexts                                        | —                 | — `t`<br> — `locale`<br> — `locales` from `$lib/i18n`                                                                                                                                                                                                                                                                                                                                  | `/[lang]`           |
+| [`VaaDataContext`](/frontend/src/lib/_contexts/vaaData.ts)     | Other contexts                                        | `I18n`            | — `dataRoot: Readable<dataRoot>`                                                                                                                                                                                                                                                                                                                                                       | `/[lang]`           |
+| [`ComponentContext`](/frontend/src/lib/_contexts/component.ts) | Any component\*                                       | `I18n`            | None currently, but the context is separate because the components might be moved later to a separate module                                                                                                                                                                                                                                                                           | `/[lang]`           |
+| [`AppContext`](/frontend/src/lib/_contexts/app.ts)             | Any part of the app or dynamic components             | `I18n`, `VaaData` | — `appSettings: SettingsStore`<br>— `appType: Writable<AppType>`<br> — `userPreferences: Writable<UserPreferences>`<br> — `feedback: DialogService<Feedback>`<br> — `survey: DialogService<Survey>`<br> — `progress: Writable<number \| undefined>`<br> — `getRoute: Readable<RouteGetter>`<br> — `darkMode: Readable<boolean>`<br> — `track`, `startPageview`, `startEvent` etc.      | `/[lang]`           |
+| [`VoterContext`](/frontend/src/lib/_contexts/voter/context.ts) | Any part of the Voter App or voter components         | `App`             | — `electionId: Writable<id>`<br> — `election: Readable<Election>`<br> — `constituencyId: Writable<id>`<br> — `constituency: Readable<Constituency>`<br> — `algorithm: MatchingAlgorithm`<br> — `answers: AnswerStore`<br> — `matchedCandidates: Readable<Promise<Array<Match<Nomination>>>>`<br> — `entityFilters: Readable<Promise<FilterGroup<MaybeRanked<CandidateProps>>>` • MAYBE | `/[lang]/(voter)`   |
+| [`CandidateContext`](/frontend/src/lib/_contexts/candidate.ts) | Any part of the Candidate App or candidate components | `App`             | — TBA<br> — `logout: DialogService<LogoutModal>`                                                                                                                                                                                                                                                                                                                                       | `/[lang]/candidate` |
 
 \* `ComponentContext` should be imported in such a way that another context that implements the same functions can easily be provided if the components are used elsewhere.
+
+> Some of the contents or the Candidate context are not implemented yet in this PR. Some of them are described below.
+
+### `RouteGetter`
+
+```ts
+// getRoute.ts
+import {derived} from 'svelte/store';
+import {page} from '$app/stores';
+
+export const getRoute = derived(
+  page,
+  ({params, url}) =>
+    (options: GetRouteOptions) =>
+      buildRoute(options, {params, url}),
+  (options: GetRouteOptions) => buildRoute(options)
+);
+
+type GetRouteOptions = Parameters<typeof buildRoute>[0];
+
+// buildRoute.ts
+export function buildRoute(
+  routeOptions: RouteOptions | Route,
+  current?: {
+    params: Record<string, string>;
+    url: URL;
+  }
+): string {
+  let route = '';
+  // Build route here
+  return route;
+}
+
+export type RouteOptions = {
+  route: Route;
+  locale?: string | null;
+};
+
+// route.ts
+export const ROUTE = {
+  // Define routes here
+} as const;
+
+export type Route = keyof typeof ROUTE;
+```
+
+### `SettingsStore`
+
+```ts
+/**
+ * An extended store for handling settings merged from default settings, locally defined overrides and those accessed via `DataProvider`.
+ */
+type SettingsStore = Readable<AppSettings> & {
+  /**
+   * Merge `settings` into the settings. Nullish values will be skipped.
+   */
+  extend: (settings: Partial<AppSettings>) => AppSettings;
+};
+```
+
+### `DialogService`
+
+```ts
+/**
+ * Used to control showing and hiding dialogs which exist on the top level of the app. These include dialogs for feedback, user survey and logging out.
+ */
+type DialogService<TComponent> = {
+  /**
+   * Store indicating whether the popup is open.
+   */
+  open: Readable<boolean>;
+  /**
+   * Open the popup and return a promise resolving to the component when it's open.
+   * @param force Force opening the popup even if showing it is prevented by user preferences
+   */
+  show: (force?: boolean) => Promise<TComponent>;
+  /**
+   * Open the popup after `delay` seconds.
+   */
+  startCountdown: (delay?: number) => Promise<TComponent>;
+};
+```
 
 ## Route parameters
 
@@ -198,6 +282,84 @@ NB. In the future, multiple election selection needs to be implemented, in which
 `/en/_test/election/1/2/constituency/3`
 
 This will make the server folder structure a bit cumbersome, and we still would need to disallow `constituency` as an id, but maybe that's okay.
+
+# Candidate App
+
+The Candidate App will follow the same paradigm and will therefore demand quite a bit of reorganising. As an example, setting a Candidate’s answer to one of the info question on the profile page could proceed thus:
+
+```ts
+// /candidate/profile/+page.svelte
+
+const { answers } = getCandidateContext();
+
+const current: Record<Id, Answer<LocalizedString>> = $answers;
+
+// $lib/contexts/candidate/context.ts
+
+const answers = new CandidateAnswerStore();
+
+// $lib/contexts/candidate/candidateAnswerStore.ts
+
+import { dataWriter } from '$lib/api/dataWriter';
+
+// Maybe create an ExtendedStore class which this and the Voter's `AnswerStore` implement
+class CandidateAnswerStore implements Readable<CandidateAnswers> {
+  readonly subscribe: Writable<CandidateAnswers>['subscribe'];
+  protected update: Writable<CandidateAnswers>['update'];
+  protected set: Writable<CandidateAnswers>['set'];
+
+  constructor() {
+    const {update, set, subscribe} = writable<Answers>(Object.freeze(answers));
+    this.update = update;
+    this.set = set;
+    this.subscribe = subscribe;
+    this.load();
+  }
+
+  load(): Promise<void | Error> {
+    return dataWriter.getAnswers()
+      .then((answers) => this.set(() => Object.freeze(answers)))
+      .catch((e) => e);
+  }
+
+  /** Set an answer, which will be saved in localStorage but not yet in the backend unless `save` is `true` */
+  setAnswer(questionId: Id, answer: Omit<CandidateAnswer, 'unsaved'>, save = false): void {
+    // Implement using this.set
+  }
+
+  /** Save all unsaved answers. Resolves to `true` if any were saved. */
+  save(): Promise<boolean | Error> {
+    const answers = get(this);
+    const unsaved = Object.fromEntries(Object.entries(answers).filter(([,answer]) => answer.unsaved);
+    if (!Object.keys(unsaved).length) return Promise.resolve(false);
+    return dataWriter.setAnswers(unsaved)
+      .then(() => this.set(() =>
+        Object.freeze(
+          Object.fromEntries(
+            Object.entries(answers).map(([key, value]) => ([key, {...value, unsaved: false}]))
+          )
+        )
+      ))
+      .catch((e) => e);
+  }
+
+  /** Reset all answers to their saved values */
+  reset(): void {
+    // Implement
+  }
+}
+
+type CandidateAnswers = Record<Id, CandidateAnswer>;
+
+// Instead of a separate type, we probably want to define a parameterized common Answer used for both Voters and Candidates
+type CandidateAnswer = {
+  value: SerializableValue; // or more specific
+  openAnswer?: LocalizedString;
+  unsaved?: boolean;
+}
+```
+
+The `DataWriter` imported functions the same way as `DataProvider` but also handles authentication.
 
 # Further Considerations
 
@@ -334,6 +496,7 @@ type IdProp = 'id' | `${string}Id` | `${string}Ids`;
 - Consider electionId and constituencyId for NominationData
 - Convert `vaa-matching` `entity` to `target`
 - Locale change for dataRoot: check duplicate updates on server, check invalidate bc cached Promises seem to be returned when changing locale back to an earlier one => consider whole locale change logic
+- Make sure `StrapiDataProvider.getCandidatesData({id})` uses a direct `id` route instead of a filter to bypass pagination issues.
 
 ## Check off each of the following tasks as they are completed
 

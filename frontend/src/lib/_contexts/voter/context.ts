@@ -13,12 +13,12 @@ import {AnswerStore} from './answerStore';
 import {Voter} from './voter';
 import {createDataObjectStore} from './createDataObjectStore';
 
-export const VOTER_CONTEXT_NAME = 'voter';
+const VOTER_CONTEXT_KEY = Symbol();
 
 export function getVoterContext(): VoterContext {
-  if (!hasContext(VOTER_CONTEXT_NAME))
+  if (!hasContext(VOTER_CONTEXT_KEY))
     error(500, 'getVoterContext() called before initVoterContext()');
-  return getContext<VoterContext>(VOTER_CONTEXT_NAME);
+  return getContext<VoterContext>(VOTER_CONTEXT_KEY);
 }
 
 /**
@@ -27,7 +27,7 @@ export function getVoterContext(): VoterContext {
  */
 export function initVoterContext(): VoterContext {
   console.info('[debug] initVoterContext()');
-  if (hasContext(VOTER_CONTEXT_NAME)) error(500, 'initVoterContext() called for a second time');
+  if (hasContext(VOTER_CONTEXT_KEY)) error(500, 'initVoterContext() called for a second time');
   const appContext = getAppContext();
   const {dataRoot} = appContext;
 
@@ -78,7 +78,7 @@ export function initVoterContext(): VoterContext {
     return Promise.resolve(nominations.map((n) => new Match<Nomination>(Math.random(), n)));
   }
 
-  return setContext<VoterContext>(VOTER_CONTEXT_NAME, {
+  return setContext<VoterContext>(VOTER_CONTEXT_KEY, {
     answers,
     election,
     electionId,

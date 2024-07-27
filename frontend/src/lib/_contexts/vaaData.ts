@@ -4,12 +4,12 @@ import {readable, type Readable} from 'svelte/store';
 import {DataRoot} from '$lib/_vaa-data';
 import {getI18nContext} from './i18n';
 
-export const VAA_DATA_CONTEXT_NAME = 'vaa-data';
+const VAA_DATA_CONTEXT_KEY = Symbol();
 
 export function getVaaDataContext(): VaaDataContext {
-  if (!hasContext(VAA_DATA_CONTEXT_NAME))
+  if (!hasContext(VAA_DATA_CONTEXT_KEY))
     error(500, 'getVaaDataContext() called before initVaaDataContext()');
-  return getContext<VaaDataContext>(VAA_DATA_CONTEXT_NAME);
+  return getContext<VaaDataContext>(VAA_DATA_CONTEXT_KEY);
 }
 
 /**
@@ -18,8 +18,7 @@ export function getVaaDataContext(): VaaDataContext {
  */
 export function initVaaDataContext(): VaaDataContext {
   console.info('[debug] initVaaDataContext()');
-  if (hasContext(VAA_DATA_CONTEXT_NAME))
-    error(500, 'initVaaDataContext() called for a second time');
+  if (hasContext(VAA_DATA_CONTEXT_KEY)) error(500, 'initVaaDataContext() called for a second time');
   const {locale} = getI18nContext();
   const dataRoot = new DataRoot();
   locale.subscribe((value) => {
@@ -34,7 +33,7 @@ export function initVaaDataContext(): VaaDataContext {
     });
     return unsubscribe;
   });
-  return setContext<VaaDataContext>(VAA_DATA_CONTEXT_NAME, {dataRoot: dataRootStore});
+  return setContext<VaaDataContext>(VAA_DATA_CONTEXT_KEY, {dataRoot: dataRootStore});
 }
 
 export type VaaDataContext = {

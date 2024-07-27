@@ -2,12 +2,12 @@ import {error} from '@sveltejs/kit';
 import {setContext, getContext, hasContext} from 'svelte';
 import {getI18nContext, type I18nContext} from './i18n';
 
-export const COMPONENTS_CONTEXT_NAME = 'components';
+const COMPONENT_CONTEXT_KEY = Symbol();
 
 export function getComponentsContext() {
-  if (!hasContext(COMPONENTS_CONTEXT_NAME))
+  if (!hasContext(COMPONENT_CONTEXT_KEY))
     error(500, 'GetComponentsContext() called before initComponentsContext()');
-  return getContext<ComponentsContext>(COMPONENTS_CONTEXT_NAME);
+  return getContext<ComponentsContext>(COMPONENT_CONTEXT_KEY);
 }
 
 /**
@@ -16,9 +16,9 @@ export function getComponentsContext() {
  */
 export function initComponentsContext(): ComponentsContext {
   console.info('[debug] initComponentsContext()');
-  if (hasContext(COMPONENTS_CONTEXT_NAME))
+  if (hasContext(COMPONENT_CONTEXT_KEY))
     error(500, 'InitComponentsContext() called for a second time');
-  return setContext<ComponentsContext>(COMPONENTS_CONTEXT_NAME, {...getI18nContext()});
+  return setContext<ComponentsContext>(COMPONENT_CONTEXT_KEY, {...getI18nContext()});
 }
 
 export type ComponentsContext = I18nContext;
