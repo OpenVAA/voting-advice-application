@@ -51,7 +51,7 @@ export function getLikertAnswer(
 export function getAnswerForDisplay(
   entity: EntityProps,
   question: QuestionProps
-): string | string[] | undefined {
+): string | Array<string> | undefined {
   const {value} = getAnswer(entity, question) ?? {};
   if (value == null || value === '') return undefined;
   const qt = question.type;
@@ -117,12 +117,12 @@ function getChoiceLabel(question: QuestionProps, answer: AnswerProps['value']): 
 function getChoiceLabels(
   question: QuestionProps,
   answers: AnswerProps['value']
-): string[] | undefined {
+): Array<string> | undefined {
   if (!Array.isArray(answers)) {
     logDebugError(`Invalid question answers (${answers}) for question ${question.id}`);
     return undefined;
   }
-  return answers.map((a) => getChoiceLabel(question, a)).filter((l) => l != null) as string[];
+  return answers.map((a) => getChoiceLabel(question, a)).filter((l) => l != null) as Array<string>;
 }
 
 /**
@@ -180,6 +180,6 @@ export function answerIsEmpty(question: QuestionProps, answer: AnswerProps): boo
       throw new Error(`Unknown question type: ${question.type}`);
     }
   } else {
-    return false;
+    return true;
   }
 }

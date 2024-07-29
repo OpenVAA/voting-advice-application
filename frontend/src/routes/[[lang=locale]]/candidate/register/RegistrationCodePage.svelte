@@ -8,7 +8,7 @@
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {FrontPage} from '$lib/templates/frontPage';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
 
   export let registrationCode = '';
   export let wrongCode = false;

@@ -8,7 +8,7 @@
   import {Page} from '../page';
   import type {BasicPageProps} from './BasicPage.type';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
 
   type $$Props = BasicPageProps;
 

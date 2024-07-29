@@ -5,10 +5,6 @@
   export let text: $$Props['text'] = '';
   export let classes: $$Props['classes'] = '';
   export let disabled: $$Props['disabled'] = false;
-
-  let baseClasses = 'badge badge-sm px-[0.25rem]';
-
-  classes = ` font-bold relative text-[0.8rem] d-flex justify-center items-center ${classes}`;
 </script>
 
 <!--
@@ -27,8 +23,9 @@
 -->
 
 <div
-  class="{baseClasses} {disabled
+  class="badge badge-sm px-[0.25rem] {disabled
     ? 'border-0 bg-black text-white opacity-20'
-    : 'badge-warning'} {classes}">
+    : 'badge-warning'}
+     d-flex relative items-center justify-center text-[0.8rem] font-bold {classes}">
   <span class="m-0 p-0">{text}</span>
 </div>

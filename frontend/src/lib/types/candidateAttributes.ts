@@ -85,16 +85,13 @@ export interface Constituency {
   type: string;
 }
 
-export interface Answer {
-  id: string; // Id of the answer in the database
-  key: AnswerOption['key']; // Selected answer option
-  openAnswer: LocalizedString | null; // Optional free-form answer
-}
-
 export type CandidateAnswer = {
-  id: string; // Id of the answer in the database
-  value: AnswerPropsValue; // Selected answer option
-  openAnswer?: LocalizedString | null; // Optional free-form answer
+  /**Id of the answer in the database */
+  id: string;
+  /**Selected answer option */
+  value: AnswerPropsValue;
+  /**Optional free-form answer */
+  openAnswer?: LocalizedString | null;
 };
 
 export interface Question {
@@ -105,7 +102,7 @@ export interface Question {
   info?: LocalizedString;
   fillingInfo?: string;
   type: QuestionSettingsProps['type'];
-  values?: QuestionChoiceProps[];
+  values?: Array<QuestionChoiceProps>;
   min?: number | Date;
   max?: number | Date;
   notLocalizable?: boolean;

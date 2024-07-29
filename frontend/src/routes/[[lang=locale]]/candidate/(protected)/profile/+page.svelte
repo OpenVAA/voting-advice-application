@@ -6,7 +6,7 @@
   import {BasicPage} from '$lib/templates/basicPage';
   import {getContext} from 'svelte';
   import Warning from '$lib/components/warning/Warning.svelte';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
   import {Button} from '$lib/components/button';
   import {goto} from '$app/navigation';
   import {getRoute, Route} from '$lib/utils/navigation';
@@ -21,7 +21,7 @@
     BooleanInput,
     TextInput,
     DateInput
-  } from '$candidate/components/input/index';
+  } from '$candidate/components/input';
   import {answerIsEmpty} from '$lib/utils/answers';
 
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
@@ -63,15 +63,9 @@
 
   // Check if the form is dirty
   $: {
-    const answersLoaded = Object.values($unsavedInfoAnswers).every(
-      (infoAnswer) => infoAnswer.value !== undefined
-    );
-    if (Object.entries($unsavedInfoAnswers).length > 0 && answersLoaded && !dirty) {
-      const getCurrentHash = () => JSON.stringify($unsavedInfoAnswers);
-      previousStateHash = previousStateHash ?? getCurrentHash();
-      const currentStateHash = getCurrentHash();
-      dirty = currentStateHash !== previousStateHash;
-    }
+    const currentStateHash = JSON.stringify(Object.values($unsavedInfoAnswers));
+    previousStateHash = previousStateHash ?? currentStateHash;
+    dirty = currentStateHash !== previousStateHash;
   }
 
   // follow allFilledPrivate to check if all the required questions are answered.
@@ -86,7 +80,11 @@
   }
 
   // basic information
-  const basicInfoFields = ['firstName', 'lastName', 'party'];
+  const basicInfoFields: Array<'firstName' | 'lastName' | 'party'> = [
+    'firstName',
+    'lastName',
+    'party'
+  ];
 
   const basicInfoData: Record<string, string | number | undefined> = {
     firstName: $user?.candidate?.firstName,
@@ -98,9 +96,6 @@
   let photo = $user?.candidate?.photo;
 
   let uploadPhoto: () => Promise<void>;
-
-  // the dot symbol for separating info string
-  const dot = '\u22C5';
 
   let errorMessage = '';
   let errorTimeout: NodeJS.Timeout;
@@ -162,13 +157,9 @@
   let clearLocalStorage: () => void;
 
   const saveToServer = async (question: QuestionProps) => {
-    if (
-      $infoAnswers &&
-      !$infoAnswers[question.id] &&
-      $unsavedInfoAnswers[question.id].value !== undefined
-    ) {
+    if (!$infoAnswers || !$unsavedInfoAnswers[question.id].value === undefined) return;
+    if ($infoAnswers[question.id] === undefined) {
       // New answer
-
       const response = await addAnswer(question.id, $unsavedInfoAnswers[question.id].value);
       if (!response?.ok) {
         showError($t('candidateApp.questions.answerSaveError'));
@@ -179,11 +170,10 @@
       const data = await response.json();
       const answerId = data.data.id;
       updateInfoAnswerStore(answerId, question, $unsavedInfoAnswers[question.id].value);
-    } else if ($infoAnswers && $unsavedInfoAnswers[question.id].value !== undefined) {
+    } else if ($unsavedInfoAnswers[question.id].value !== undefined) {
       // Editing existing answer
-
       const savedAnswer = $infoAnswers[question.id];
-      const unsavedAnswer = $unsavedInfoAnswers[question.id] ?? $infoAnswers[question.id];
+      const unsavedAnswer = $unsavedInfoAnswers[question.id];
       const response = await updateAnswer(savedAnswer.id, unsavedAnswer.value);
 
       if (!response?.ok) {
@@ -199,7 +189,7 @@
   let submitButtonText = '';
 
   $: {
-    if ($unansweredOpinionQuestions?.length !== 0 && !$questionsLocked)
+    if ($unansweredOpinionQuestions?.length && !$questionsLocked)
       submitButtonText = $t('candidateApp.basicInfo.saveAndContinue');
     else if ($questionsLocked) submitButtonText = $t('candidateApp.basicInfo.return');
     else submitButtonText = $t('candidateApp.basicInfo.saveAndReturn');
@@ -214,8 +204,8 @@
     );
   }
 
-  function onChange(question: QuestionProps, value: AnswerPropsValue) {
-    $unsavedInfoAnswers[question.id].value = value;
+  function onChange(details: {questionId: string; value: AnswerPropsValue}) {
+    $unsavedInfoAnswers[details.questionId].value = details.value;
   }
 </script>
 
@@ -259,8 +249,10 @@
           {#if nomination}
             <Field
               id="nomination"
-              label={`${translate(nomination.constituency?.shortName)} ${dot} ${translate(nomination.party.shortName)} ${
-                nomination.electionSymbol ? dot + ' ' + nomination.electionSymbol : ''
+              label={`${translate(nomination.constituency?.shortName)} ${$t('common.multipleAnswerSeparator')} ${translate(nomination.party.shortName)} ${
+                nomination.electionSymbol
+                  ? `${$t('common.multipleAnswerSeparator')} ${nomination.electionSymbol}`
+                  : ''
               }`}>
               <InputContainer locked>
                 <input
@@ -289,13 +281,26 @@
         {#each $infoQuestions as question}
           {@const value = $unsavedInfoAnswers[question.id].value}
           {#if question.type === 'singleChoiceCategorical' && (typeof value === 'number' || value == null)}
-            <SingleChoiceInput {question} locked={!!$questionsLocked} {value} {onChange} />
+            <SingleChoiceInput
+              questionId={question.id}
+              questionOptions={question.values}
+              headerText={question.text}
+              locked={$questionsLocked}
+              {value}
+              {onChange} />
           {:else if question.type === 'multipleChoiceCategorical' && ((Array.isArray(value) && value.every((v) => typeof v === 'number')) || value == null)}
-            <MultipleChoiceInput {question} locked={!!$questionsLocked} {value} {onChange} />
+            <MultipleChoiceInput
+              questionId={question.id}
+              questionOptions={question.values}
+              headerText={question.text}
+              locked={$questionsLocked}
+              {value}
+              {onChange} />
           {:else if question.type === 'boolean' && (typeof value === 'boolean' || value == null)}
             <BooleanInput
-              {question}
-              locked={!!$questionsLocked}
+              questionId={question.id}
+              headerText={question.text}
+              locked={$questionsLocked}
               footerText={$t('candidateApp.basicInfo.unaffiliatedDescription')}
               value={value ? value : false}
               {onChange} />
@@ -303,22 +308,33 @@
             {@const previousValue = $infoAnswers[question.id]?.value}
             {#if $infoAnswers[question.id] && (isLocalizedString(previousValue) || previousValue == null)}
               <TextInput
-                {question}
-                locked={!!$questionsLocked}
+                questionId={question.id}
+                headerText={question.text}
+                locked={$questionsLocked}
                 bind:clearLocalStorage
                 {value}
                 {previousValue}
                 {onChange} />
             {:else}
               <TextInput
-                {question}
+                questionId={question.id}
+                headerText={question.text}
                 {value}
-                locked={!!$questionsLocked}
+                locked={$questionsLocked}
                 bind:clearLocalStorage
                 {onChange} />
             {/if}
           {:else if question.type === 'date' && (typeof value === 'string' || value == null)}
-            <DateInput {question} locked={!!$questionsLocked} {value} {onChange} />
+            <DateInput
+              questionId={question.id}
+              headerText={question.text}
+              locked={$questionsLocked}
+              {value}
+              {onChange} />
+          {:else}
+            {showError(
+              $t('candidateApp.basicInfo.questionInvalidError', {questionId: question.id})
+            )}
           {/if}
         {/each}
 

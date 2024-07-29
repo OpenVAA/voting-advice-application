@@ -2,7 +2,11 @@ export type InputFieldProps<TValue extends AnswerProps['value']> = {
   /**
    * The question that is to be answered.
    */
-  question: QuestionProps;
+  questionId: string;
+  /**
+   * The options for the question that is to be answered.
+   */
+  questionOptions?: Array<AnswerOption>;
   /**
    * Footer text to be displayed below the input field.
    */
@@ -14,13 +18,15 @@ export type InputFieldProps<TValue extends AnswerProps['value']> = {
   /**
    * Boolean value indicating whether the input field is disabled.
    */
-  locked: boolean;
+  locked?: boolean;
   /**
    * The answer to the question.
    */
   value?: TValue | null;
-
+  /**
+   * The previous value of the question.
+   */
   previousValue?: TValue | null;
 
-  onChange: (question: QuestionProps, value: TValue | null | undefined) => void;
+  onChange: (details: {questionId: string; value: TValue | null | undefined}) => void;
 };

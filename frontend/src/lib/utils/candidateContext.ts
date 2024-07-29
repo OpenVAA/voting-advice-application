@@ -20,13 +20,13 @@ export interface CandidateContext {
   infoAnswers: Writable<Record<string, CandidateAnswer> | undefined>;
   loadInfoAnswerData: () => Promise<void>;
   // Questions
-  opinionQuestions: Writable<QuestionProps[] | undefined>;
+  opinionQuestions: Writable<Array<QuestionProps> | undefined>;
   loadOpinionQuestionData: () => Promise<void>;
-  infoQuestions: Writable<QuestionProps[] | undefined>;
+  infoQuestions: Writable<Array<QuestionProps> | undefined>;
   loadInfoQuestionData: () => Promise<void>;
   // Custom utility
-  unansweredRequiredInfoQuestions: Readable<QuestionProps[] | undefined>;
-  unansweredOpinionQuestions: Readable<QuestionProps[] | undefined>;
+  unansweredRequiredInfoQuestions: Readable<Array<QuestionProps> | undefined>;
+  unansweredOpinionQuestions: Readable<Array<QuestionProps> | undefined>;
   progress: Readable<Progress | undefined>;
   questionsLocked: Writable<boolean | undefined>;
 }
@@ -36,8 +36,8 @@ const token = writable<string | null | undefined>(undefined);
 const newUserEmail = writable<string | undefined>(undefined);
 const opinionAnswers = writable<Record<string, CandidateAnswer> | undefined>(undefined);
 const infoAnswers = writable<Record<string, CandidateAnswer> | undefined>(undefined);
-const opinionQuestions = writable<QuestionProps[] | undefined>(undefined);
-const infoQuestions = writable<QuestionProps[] | undefined>(undefined);
+const opinionQuestions = writable<Array<QuestionProps> | undefined>(undefined);
+const infoQuestions = writable<Array<QuestionProps> | undefined>(undefined);
 
 const questionsLocked = writable<boolean | undefined>(undefined);
 
@@ -46,11 +46,9 @@ const unansweredRequiredInfoQuestions = derived(
   ([$infoQuestions, $infoAnswers]) => {
     if (!$infoQuestions || !$infoAnswers) return;
     const requiredQuestions = $infoQuestions.filter((question) => question.required);
-    return requiredQuestions.filter((question) => {
-      if (!$infoAnswers?.[question.id]) return true;
-      const answer = $infoAnswers[question.id];
-      return answerIsEmpty(question, {value: answer.value});
-    });
+    return requiredQuestions.filter((question) =>
+      answerIsEmpty(question, {value: $infoAnswers?.[question.id]?.value})
+    );
   }
 );
 
@@ -58,9 +56,9 @@ const unansweredOpinionQuestions = derived(
   [opinionQuestions, opinionAnswers],
   ([$opinionQuestions, $opinionAnswers]) => {
     if (!$opinionAnswers || !$opinionQuestions) return;
-    return $opinionQuestions.filter((question) => {
-      return $opinionAnswers && !Object.keys($opinionAnswers).includes(question.id);
-    });
+    return $opinionQuestions.filter(
+      (question) => $opinionAnswers && !Object.keys($opinionAnswers).includes(question.id)
+    );
   }
 );
 
@@ -69,7 +67,7 @@ const progress = derived(
   ([$opinionAnswers, $opinionQuestions]) => {
     if ($opinionAnswers && $opinionQuestions) {
       return {
-        progress: Object.entries($opinionAnswers).length,
+        progress: Object.keys($opinionAnswers).length,
         max: $opinionQuestions.length
       };
     }
@@ -106,22 +104,22 @@ const loadUserData = async () => {
   user.set(currentUser);
 };
 
-const logOut = async () => {
+async function logOut() {
   user.set(null);
   token.set(null);
   localStorage.clear();
-};
+}
 
-const loadOpinionAnswerData = async () => {
+async function loadOpinionAnswerData() {
   const answers = await getOpinionAnswers();
 
   if (!answers) {
     throw new Error('Could not find opinion answer data');
   }
   opinionAnswers.set(answers);
-};
+}
 
-const loadInfoAnswerData = async () => {
+async function loadInfoAnswerData() {
   const answers = await getInfoAnswers();
 
   if (!answers) {
@@ -129,9 +127,9 @@ const loadInfoAnswerData = async () => {
   }
 
   infoAnswers.set(answers);
-};
+}
 
-const loadOpinionQuestionData = async () => {
+async function loadOpinionQuestionData() {
   const questions = await getOpinionQuestions();
 
   if (!questions) {
@@ -139,9 +137,9 @@ const loadOpinionQuestionData = async () => {
   }
 
   opinionQuestions.set(questions);
-};
+}
 
-const loadInfoQuestionData = async () => {
+async function loadInfoQuestionData() {
   const questions = await getInfoQuestions();
 
   if (!questions) {
@@ -149,7 +147,7 @@ const loadInfoQuestionData = async () => {
   }
 
   infoQuestions.set(questions);
-};
+}
 
 export const candidateContext: CandidateContext = {
   user,

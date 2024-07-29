@@ -7,16 +7,19 @@
 
   type $$Props = InputFieldProps<boolean>;
 
-  export let question: $$Props['question'];
+  export let questionId: $$Props['questionId'];
   export let footerText: $$Props['footerText'] = '';
-  export let headerText: $$Props['headerText'] = question.text;
+  export let headerText: $$Props['headerText'] = '';
   export let locked: $$Props['locked'] = false;
   export let value: $$Props['value'] = false;
-  export let onChange: ((question: QuestionProps, value: $$Props['value']) => void) | undefined =
-    undefined;
+  export let onChange:
+    | ((details: {questionId: string; value: $$Props['value']}) => void)
+    | undefined = undefined;
+
+  let inputValue = value;
 
   onMount(() => {
-    onChange?.(question, value);
+    onChange?.({questionId, value: inputValue});
   });
 </script>
 
@@ -49,24 +52,22 @@ A component for a boolean question that can be answered.
   <p slot="header" class="small-label mx-6 my-0 p-0">
     {headerText}
   </p>
-  <Field id={question.id} label={question.text}>
+  <Field id={questionId} label={headerText}>
     <InputContainer {locked}>
       {#if !locked}
         <input
-          id={question.id}
+          id={questionId}
           type="checkbox"
           class="toggle toggle-primary mr-8"
-          bind:checked={value}
+          bind:checked={inputValue}
           on:change={() => {
-            if (value) {
-              onChange?.(question, value);
-            }
+            onChange?.({questionId, value: inputValue});
           }} />
       {:else}
         <input
-          id={question.id}
+          id={questionId}
           disabled
-          value={$t(`common.${value ? 'answerYes' : 'answerNo'}`)}
+          value={$t(`common.${inputValue ? 'answerYes' : 'answerNo'}`)}
           class="input input-sm input-ghost flex w-full justify-end pr-6 text-right disabled:border-none disabled:bg-base-100" />
       {/if}
     </InputContainer>

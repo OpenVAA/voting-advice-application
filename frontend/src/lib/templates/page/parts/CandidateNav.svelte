@@ -5,7 +5,7 @@
   import {InfoBadge} from '$lib/components/infoBadge';
   import {getContext} from 'svelte';
   import LanguageSelection from './LanguageSelection.svelte';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
 
   const {unansweredRequiredInfoQuestions, unansweredOpinionQuestions} =
     getContext<CandidateContext>('candidate') ?? {};

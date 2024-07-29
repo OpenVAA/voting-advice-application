@@ -5,16 +5,17 @@
 
   type $$Props = InputFieldProps<LocalizedString>;
 
-  export let question: $$Props['question'];
-  export let headerText: $$Props['headerText'] = question.text;
+  export let questionId: $$Props['questionId'];
+  export let headerText: $$Props['headerText'] = '';
   export let locked: $$Props['locked'] = false;
   export let value: $$Props['value'] = {};
   export let previousValue: $$Props['previousValue'] = {};
-  export let onChange: ((question: QuestionProps, value: $$Props['value']) => void) | undefined =
-    undefined;
+  export let onChange:
+    | ((details: {questionId: string; value: $$Props['value']}) => void)
+    | undefined = undefined;
 
   let textArea: MultilangTextInput; // Used to clear the local storage from the parent component
-  let localStorageId = `candidate-app-${question.text}`;
+  let localStorageId = `candidate-app-${questionId}`;
 
   export function clearLocalStorage() {
     if (!localStorageId) {
@@ -37,7 +38,7 @@
 
   $: {
     if (multilangText) {
-      onChange?.(question, multilangText);
+      onChange?.({questionId, value: multilangText});
     }
   }
 </script>
@@ -76,7 +77,7 @@ A component for a text question that can be answered.
 
 <MultilangTextInput
   {locked}
-  id={question.text}
+  id={questionId}
   {localStorageId}
   {previouslySavedMultilang}
   {headerText}

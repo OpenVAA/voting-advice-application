@@ -7,7 +7,7 @@
   import {CategoryTag} from '$lib/components/categoryTag';
   import {QuestionOpenAnswer} from '$lib/components/questions';
   import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {RenderQuestionProps} from './Question.type';
   import {translate} from '$lib/i18n/utils';
 
@@ -45,7 +45,7 @@ open answers and a button to navigate to the questions page.
     <div class="pt-10">
       <!-- This gives empty form label error from Wave Extension for every empty dot, but fix should come from LikertResponseButton -->
 
-      {#if typeof answer.value === 'number' || answer.value == null}
+      {#if typeof answer.value === 'number'}
         <LikertResponseButtons
           name={question.id}
           mode="display"
@@ -54,6 +54,10 @@ open answers and a button to navigate to the questions page.
             label
           }))}
           selectedKey={answer.value} />
+      {:else}
+        <p class="text-center text-error">
+          {$t('candidateApp.questions.answerInvalidError', {questionId: question.id})}
+        </p>
       {/if}
 
       {#if translate(answer.openAnswer)}
@@ -76,4 +80,8 @@ open answers and a button to navigate to the questions page.
       <hr />
     {/if}
   </div>
+{:else}
+  <p class="text-center text-error">
+    {$t('candidateApp.questions.answerNotFoundError', {questionId: question.id})}
+  </p>
 {/if}

@@ -8,7 +8,7 @@
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {PasswordField} from '$lib/candidate/components/passwordField';
   import {FrontPage} from '$lib/templates/frontPage';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
 
   const {user, logIn, newUserEmail} = getContext<CandidateContext>('candidate');
 

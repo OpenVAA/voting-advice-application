@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {candidateContext} from '$lib/utils/candidateStore';
+  import {candidateContext} from '$lib/utils/candidateContext';
   import {onMount, setContext} from 'svelte';
 
   setContext('candidate', candidateContext);

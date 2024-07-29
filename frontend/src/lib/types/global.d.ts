@@ -39,10 +39,10 @@ declare global {
    */
   type AnswerPropsValue =
     | string
-    | string[]
+    | Array<string>
     | boolean
     | number
-    | number[]
+    | Array<number>
     | Date
     | LocalizedString
     | undefined

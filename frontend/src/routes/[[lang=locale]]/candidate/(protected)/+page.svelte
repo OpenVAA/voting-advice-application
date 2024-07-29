@@ -7,7 +7,7 @@
   import {InfoBadge} from '$lib/components/infoBadge';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import {Warning} from '$lib/components/warning';
-  import {type CandidateContext} from '$lib/utils/candidateStore';
+  import {type CandidateContext} from '$lib/utils/candidateContext';
 
   const {user, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, questionsLocked} =
     getContext<CandidateContext>('candidate');
@@ -96,8 +96,8 @@
     iconPos="left"
     href={$getRoute(Route.CandAppProfile)}>
     <svelte:fragment slot="badge">
-      {#if $unansweredRequiredInfoQuestions && $unansweredRequiredInfoQuestions?.length > 0}
-        <InfoBadge text={String($unansweredRequiredInfoQuestions?.length)} />
+      {#if $unansweredRequiredInfoQuestions && $unansweredRequiredInfoQuestions.length > 0}
+        <InfoBadge text={String($unansweredRequiredInfoQuestions.length)} />
       {/if}
     </svelte:fragment>
   </Button>
@@ -111,8 +111,7 @@
       {#if $unansweredOpinionQuestions && $unansweredOpinionQuestions?.length > 0}
         <InfoBadge
           text={$unansweredOpinionQuestions.length}
-          disabled={$unansweredRequiredInfoQuestions &&
-            $unansweredRequiredInfoQuestions.length !== 0} />
+          disabled={$unansweredRequiredInfoQuestions?.length !== 0} />
       {/if}
     </svelte:fragment>
   </Button>
@@ -120,8 +119,7 @@
     text={$t('candidateApp.homePage.previewButton')}
     icon="previewProfile"
     iconPos="left"
-    disabled={$unansweredRequiredInfoQuestions?.length !== 0 ||
-      $unansweredOpinionQuestions?.length !== 0}
+    disabled={$unansweredRequiredInfoQuestions?.length !== 0}
     href={$getRoute(Route.CandAppPreview)} />
 
   <div class="flex w-full flex-col items-center justify-center" slot="primaryActions">

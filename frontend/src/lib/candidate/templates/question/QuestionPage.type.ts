@@ -5,11 +5,6 @@ export type QuestionPageProps = {
   currentQuestion: QuestionProps;
 
   /**
-   * All questions
-   */
-  questions: QuestionProps[];
-
-  /**
    * Edit mode for the question page.
    * If true, the page shows "Save and Return" and "Cancel" buttons. In this case the user comes from the question summary.
    * After making changes, the user is taken back to the summary.

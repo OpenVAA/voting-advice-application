@@ -5,25 +5,26 @@
   import InputContainer from './InputContainer.svelte';
   import type {InputFieldProps} from './InputField.type';
 
-  type $$Props = InputFieldProps<number[]>;
+  type $$Props = InputFieldProps<Array<number>>;
 
-  export let question: $$Props['question'];
-  export let headerText: $$Props['headerText'] = question.text;
+  export let questionId: $$Props['questionId'];
+  export let questionOptions: $$Props['questionOptions'] = Array<AnswerOption>();
+  export let headerText: $$Props['headerText'] = '';
   export let locked: $$Props['locked'] = false;
-  export let value: $$Props['value'] = Array<number>();
-  export let onChange: ((question: QuestionProps, value: $$Props['value']) => void) | undefined =
-    undefined;
+  export let value: $$Props['value'] = [];
+  export let onChange:
+    | ((details: {questionId: string; value: $$Props['value']}) => void)
+    | undefined = undefined;
 
+  $: selectableOptions = questionOptions?.filter((option) => !value?.includes(option.key));
   // html element for selecting html language
   let selectElement: HTMLSelectElement;
 
   let selectedOptions = Array<AnswerOption>();
 
-  const questionOptions = question.values;
-
   if (!questionOptions || questionOptions.length === 0) {
     throw new Error(
-      `Could not find options for question with id '${'id' in question ? question.id : 'n/a'}'`
+      `Could not find options for question with id '${questionId ? questionId : 'n/a'}'`
     );
   }
 
@@ -39,13 +40,13 @@
   // handle the change when a language is selected
   const onLanguageSelect = (e: Event) => {
     const selected = questionOptions
-      ? questionOptions.find((q) => q.label === (e.target as HTMLSelectElement).value)
+      ? questionOptions.find((q) => q.label === (e.currentTarget as HTMLSelectElement).value)
       : undefined;
     if (selected && questionOptions) {
       selectedOptions = [...selectedOptions, selected];
       value = selectedOptions.map((option) => option.key);
       selectElement.selectedIndex = 0;
-      onChange?.(question, value);
+      onChange?.({questionId, value});
     }
   };
 </script>
@@ -79,7 +80,7 @@ A component for a multiple choice question that can be answered.
     {headerText}
   </p>
   <Field
-    id={question.id}
+    id={questionId}
     label={selectedOptions.length > 0
       ? $t('candidateApp.basicInfo.addAnother')
       : $t('candidateApp.basicInfo.selectFirst')}>
@@ -87,13 +88,13 @@ A component for a multiple choice question that can be answered.
       <select
         disabled={locked}
         bind:this={selectElement}
-        id={question.id}
-        data-testid={question.id}
+        id={questionId}
+        data-testid={questionId}
         class="select select-sm w-full text-right text-primary disabled:border-none disabled:bg-base-100"
         on:change={onLanguageSelect}
         style="text-align-last: right; direction: rtl;">
         <option disabled selected value style="display: none;" />
-        {#each questionOptions ?? [] as option}
+        {#each selectableOptions ?? [] as option}
           <option value={option.label}>{option.label}</option>
         {/each}
       </select>
@@ -110,6 +111,7 @@ A component for a multiple choice question that can be answered.
             on:click={() => {
               selectedOptions = selectedOptions.filter((m) => m.key !== option.key);
               value = selectedOptions.map((option) => option.key);
+              onChange?.({questionId, value});
             }}>
             <Icon name="close" class="my-auto flex-shrink-0 text-secondary" />
           </button>

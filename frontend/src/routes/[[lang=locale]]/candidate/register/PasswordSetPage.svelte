@@ -10,7 +10,7 @@
   import {PasswordSetter} from '$lib/candidate/components/passwordSetter';
   import {getContext} from 'svelte';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
 
   export let username: string;
   export let registrationCode: string;

@@ -5,7 +5,7 @@
   import {goto} from '$app/navigation';
   import {Button} from '$lib/components/button';
   import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {LogoutButtonProps} from './LogoutButton.type';
 
   type $$props = LogoutButtonProps;
@@ -73,14 +73,14 @@ Allows user to log out. Displays modal notification if the user hasn't filled al
   {#if $unansweredOpinionQuestions && $unansweredRequiredInfoQuestions?.length === 0}
     <p>
       {$t('candidateApp.logoutModal.questionsLeft', {
-        opinionQuestionsLeft: $unansweredOpinionQuestions.length
+        opinionQuestionsLeft: $unansweredOpinionQuestions.length ?? 0
       })}
     </p>
   {:else}
     <p>
       {$t('candidateApp.logoutModal.itemsLeft', {
-        infoQuestionsLeft: $unansweredRequiredInfoQuestions?.length,
-        opinionQuestionsLeft: $unansweredOpinionQuestions?.length
+        infoQuestionsLeft: $unansweredRequiredInfoQuestions?.length ?? 0,
+        opinionQuestionsLeft: $unansweredOpinionQuestions?.length ?? 0
       })}
     </p>
   {/if}

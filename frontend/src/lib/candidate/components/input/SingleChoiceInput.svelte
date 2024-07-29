@@ -6,18 +6,20 @@
 
   type $$Props = InputFieldProps<number>;
 
-  export let question: $$Props['question'];
-  export let headerText: $$Props['headerText'] = question.text;
+  export let questionId: $$Props['questionId'];
+  export let questionOptions: $$Props['questionOptions'] = Array<AnswerOption>();
+  export let headerText: $$Props['headerText'] = '';
   export let locked: $$Props['locked'] = false;
-  export let value: $$Props['value'] = null;
-  export let onChange: ((question: QuestionProps, value: $$Props['value']) => void) | undefined =
-    undefined;
+  export let value: $$Props['value'] = undefined;
+  export let onChange:
+    | ((details: {questionId: string; value: $$Props['value']}) => void)
+    | undefined = undefined;
 
-  const questionOptions = question.values;
+  let inputValue = value;
 
   if (!questionOptions || questionOptions.length === 0) {
     throw new Error(
-      `Could not find options for question with id '${'id' in question ? question.id : 'n/a'}'`
+      `Could not find options for question with id '${questionId ? questionId : 'n/a'}'`
     );
   }
 </script>
@@ -49,18 +51,16 @@ A component for a single choice question that can be answered.
   <p slot="header" class="small-label mx-6 my-0 p-0">
     {headerText}
   </p>
-  <Field id={question.id} label={question.text}>
+  <Field id={questionId} label={headerText}>
     <InputContainer {locked}>
       <select
         disabled={locked}
-        id={question.id}
-        data-testid={question.id}
+        id={questionId}
+        data-testid={questionId}
         class="select select-sm w-full text-right text-primary disabled:border-none disabled:bg-base-100"
-        bind:value
+        bind:value={inputValue}
         on:change={() => {
-          if (value) {
-            onChange?.(question, value);
-          }
+          onChange?.({questionId, value: inputValue});
         }}
         style="text-align-last: right; direction: rtl;">
         <option disabled selected value style="display: none;" />

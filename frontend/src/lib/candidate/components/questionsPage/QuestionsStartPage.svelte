@@ -6,21 +6,21 @@
   import {get} from 'svelte/store';
   import {Button} from '$lib/components/button';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
 
-  const {opinionQuestions} = getContext<CandidateContext>('candidate');
+  const {opinionQuestions, unansweredOpinionQuestions} = getContext<CandidateContext>('candidate');
   const questions = get(opinionQuestions);
 
-  if (!questions || Object.values(questions).length === 0) {
+  if (!questions || Object.keys(questions).length === 0) {
     throw new Error('No questions found');
   }
 
   // The number of questions to be answered.
-  const numQuestions = Object.values(questions).length;
+  const numQuestions = Object.keys(questions).length;
   // The url of the first question where the user is navigated to after the start page.
   const firstQuestionUrl = $getRoute({
     route: Route.CandAppQuestions,
-    id: Object.values(questions)[0].id
+    id: $unansweredOpinionQuestions?.[0]?.id
   });
 </script>
 

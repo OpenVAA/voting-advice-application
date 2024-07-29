@@ -387,7 +387,7 @@ test.describe("when logged in with imported user", () => {
       })
     ).toBeVisible();
     await expect(
-      page.getByText(`${candidateAppTranslationsEn.languages.Spanish} • ${candidateAppTranslationsEn.languages.English}`, {exact: true})
+      page.getByText(`${candidateAppTranslationsEn.languages.Spanish}`, {exact: true})
     ).toBeVisible();
 
 

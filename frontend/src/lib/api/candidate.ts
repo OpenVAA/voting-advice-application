@@ -1,6 +1,6 @@
 import {get} from 'svelte/store';
 import {constants} from '$lib/utils/constants';
-import {candidateContext} from '$lib/utils/candidateStore';
+import {candidateContext} from '$lib/utils/candidateContext';
 import type {Language, User, Photo, CandidateAnswer} from '$lib/types/candidateAttributes';
 import type {StrapiAnswerData, StrapiLanguageData, StrapiResponse} from './dataProvider/strapi';
 import {dataProvider} from '$lib/api/dataProvider/strapi/strapiDataProvider';
@@ -161,14 +161,14 @@ export async function changePassword(currentPassword: string, password: string) 
 /**
  * Get all info questions.
  */
-export async function getInfoQuestions(): Promise<QuestionProps[]> {
+export async function getInfoQuestions(): Promise<Array<QuestionProps>> {
   return await dataProvider.getInfoQuestions({locale: locale.get()});
 }
 
 /**
  * Get all opinion questions.
  */
-export async function getOpinionQuestions(): Promise<QuestionProps[]> {
+export async function getOpinionQuestions(): Promise<Array<QuestionProps>> {
   return await dataProvider.getOpinionQuestions({locale: locale.get()});
 }
 
@@ -249,7 +249,7 @@ export async function getOpinionAnswers(): Promise<Record<string, CandidateAnswe
 
   if (!res?.ok) return;
 
-  const answerData: StrapiResponse<StrapiAnswerData[]> = await res.json();
+  const answerData: StrapiResponse<Array<StrapiAnswerData>> = await res.json();
 
   // Parse the data into a more usable format where the question ID is the key
   const answers: Record<string, CandidateAnswer> = {};
@@ -284,7 +284,7 @@ export async function getInfoAnswers(): Promise<Record<string, CandidateAnswer> 
 
   if (!res?.ok) return;
 
-  const answerData: StrapiResponse<StrapiAnswerData[]> = await res.json();
+  const answerData: StrapiResponse<Array<StrapiAnswerData>> = await res.json();
 
   // Parse the data into a more usable format where the question ID is the key
   const answers: Record<string, CandidateAnswer> = {};
@@ -299,7 +299,7 @@ export async function getInfoAnswers(): Promise<Record<string, CandidateAnswer> 
   return answers;
 }
 
-export async function getLanguages(): Promise<StrapiLanguageData[] | undefined> {
+export async function getLanguages(): Promise<Array<StrapiLanguageData> | undefined> {
   const res = await request(
     getUrl('api/languages', {
       'populate[language]': 'true'
@@ -311,7 +311,7 @@ export async function getLanguages(): Promise<StrapiLanguageData[] | undefined> 
   return resJson.data;
 }
 
-export async function uploadFiles(files: File[]) {
+export async function uploadFiles(files: Array<File>) {
   const formData = new FormData();
   files.forEach((file) => formData.append('files', file));
   return request(getUrl('/api/upload/'), {

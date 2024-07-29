@@ -71,7 +71,7 @@
       // if (photo && res?.status === 200) {
       //   await deleteFile(photo.id);
       // }
-      const uploadedPhotos: Photo[] = await res?.json();
+      const uploadedPhotos: Array<Photo> = await res?.json();
       const uploadedPhoto = uploadedPhotos[0];
       await updatePhoto(uploadedPhoto);
       photo = uploadedPhoto;

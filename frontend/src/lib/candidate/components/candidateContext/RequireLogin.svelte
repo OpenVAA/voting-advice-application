@@ -5,7 +5,7 @@
   import {Warning} from '$lib/components/warning/index';
   import {LoadingSpinner} from '$candidate/components/loadingSpinner';
   import {t} from '$lib/i18n';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
 
   const {user, token} = getContext<CandidateContext>('candidate');
   export let showLogin = false;

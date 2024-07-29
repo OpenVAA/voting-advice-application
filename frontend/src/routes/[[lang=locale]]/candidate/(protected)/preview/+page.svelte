@@ -3,7 +3,7 @@
   import {afterNavigate, goto} from '$app/navigation';
   import {locale, t} from '$lib/i18n';
   import {dataProvider} from '$lib/api/getData';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
   import {Route, getRoute} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
   import {EntityDetails} from '$lib/components/entityDetails';
@@ -14,8 +14,8 @@
 
   const {user} = getContext<CandidateContext>('candidate');
 
-  let infoQuestions: QuestionProps[];
-  let opinionQuestions: QuestionProps[];
+  let infoQuestions: Array<QuestionProps>;
+  let opinionQuestions: Array<QuestionProps>;
   let candidate: CandidateProps | undefined;
   let loadData: Promise<void>;
 

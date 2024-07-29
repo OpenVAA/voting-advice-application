@@ -11,12 +11,11 @@
   import {LikertResponseButtons, QuestionInfo} from '$lib/components/questions';
   import {MultilangTextInput} from '$candidate/components/textArea';
   import {Warning} from '$lib/components/warning';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {QuestionPageProps} from './QuestionPage.type';
 
   type $$Props = QuestionPageProps;
   export let currentQuestion: $$Props['currentQuestion'];
-  export let questions: $$Props['questions'];
   export let editMode: $$Props['editMode'] = false;
 
   const {opinionAnswers, progress, questionsLocked, unansweredOpinionQuestions} =
@@ -119,12 +118,12 @@
   const saveAndContinue = async () => {
     await saveToServer();
 
-    if ($unansweredOpinionQuestions && $unansweredOpinionQuestions.length === 0) {
+    if ($unansweredOpinionQuestions?.length === 0) {
       // All questions answered
       goto($getRoute(Route.CandAppHome));
       return;
     }
-    const nextUnansweredQuestion = ($unansweredOpinionQuestions ?? [])[0].id;
+    const nextUnansweredQuestion = $unansweredOpinionQuestions?.[0]?.id;
     goto($getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion}));
   };
 

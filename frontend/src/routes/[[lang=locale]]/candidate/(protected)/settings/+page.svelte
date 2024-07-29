@@ -10,7 +10,7 @@
   import {changePassword, getLanguages, updateAppLanguage} from '$lib/api/candidate';
   import {PasswordField} from '$lib/candidate/components/passwordField';
   import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {StrapiLanguageData} from '$lib/api/dataProvider/strapi';
   import type {Language} from '$lib/types/candidateAttributes';
 
@@ -37,7 +37,7 @@
   $: appLanguageCode = $user?.candidate?.appLanguage?.localisationCode;
 
   // Fetch languages from backend
-  let allLanguages: StrapiLanguageData[] | undefined;
+  let allLanguages: Array<StrapiLanguageData> | undefined;
   getLanguages().then((languages) => (allLanguages = languages));
 
   // Handle the change when the app language is changed

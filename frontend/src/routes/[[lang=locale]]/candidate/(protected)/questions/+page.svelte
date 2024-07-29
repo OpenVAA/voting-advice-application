@@ -11,7 +11,7 @@
     AnsweredQuestion,
     UnAnsweredQuestion
   } from '$lib/candidate/components/questionsPage';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
 
   const {
     opinionQuestions,
@@ -22,27 +22,31 @@
     unansweredOpinionQuestions
   } = getContext<CandidateContext>('candidate');
 
-  let questionsByCategory: Record<string, Array<QuestionProps>> | undefined;
+  let questionsByCategory: Record<string, Array<QuestionProps>>;
 
   let loading = true;
-  let unansweredCategories: Array<string> | undefined;
+  let unansweredCategories = Array<string>();
 
-  $: questionsByCategory = $opinionQuestions?.reduce(
-    (acc, question) => {
-      if (!question.category) {
-        return acc;
-      }
-      const category = question.category.name;
-      if (acc && !acc[category]) {
-        acc[category] = [];
-      }
-      if (acc) {
-        acc[category].push(question);
-      }
-      return acc;
-    },
-    {} as typeof questionsByCategory
-  );
+  $: {
+    if ($opinionQuestions) {
+      questionsByCategory = $opinionQuestions.reduce(
+        (acc, question) => {
+          if (!question.category) {
+            return acc;
+          }
+          const category = question.category.name;
+
+          if (acc[category]) {
+            acc[category].push(question);
+          } else {
+            acc[category] = [question];
+          }
+          return acc;
+        },
+        {} as NonNullable<typeof questionsByCategory>
+      );
+    }
+  }
 
   $: {
     if ($opinionQuestions) {
@@ -53,19 +57,19 @@
         if (questionsByCategory) {
           unansweredCategories = Object.keys(questionsByCategory).filter(
             (category) =>
-              !questionsByCategory[category].every((question) => $opinionAnswers?.[question.id])
+              !questionsByCategory?.[category].every((question) => $opinionAnswers?.[question.id])
           );
         }
       }
     }
   }
 
-  $: nextUnansweredQuestion = ($opinionQuestions ?? []).find(
+  $: nextUnansweredQuestion = $opinionQuestions?.find(
     (question) => !$opinionAnswers?.[question.id]
   );
 </script>
 
-{#if $opinionAnswers && !$questionsLocked && Object.entries($opinionAnswers).length === 0}
+{#if $opinionAnswers && !$questionsLocked && Object.keys($opinionAnswers).length === 0}
   <QuestionsStartPage />
 {:else}
   <BasicPage
@@ -74,7 +78,7 @@
     progressMax={$progress?.max}>
     <Warning display={!!$questionsLocked} slot="note">
       <p>{$t('candidateApp.questions.editingAllowedNote')}</p>
-      {#if ($unansweredOpinionQuestions && $unansweredOpinionQuestions.length !== 0) || ($unansweredRequiredInfoQuestions && $unansweredRequiredInfoQuestions.length !== 0)}
+      {#if $unansweredOpinionQuestions?.length !== 0 || $unansweredRequiredInfoQuestions?.length !== 0}
         <p>{$t('candidateApp.homePage.editingNotAllowedPartiallyFilled')}</p>
       {/if}
     </Warning>
@@ -82,7 +86,7 @@
     <p class="pb-20 text-center">
       {$t('candidateApp.questions.info')}
     </p>
-    {#if $unansweredOpinionQuestions && $unansweredOpinionQuestions.length !== 0 && !loading && !$questionsLocked}
+    {#if $unansweredOpinionQuestions?.length !== 0 && !loading && !$questionsLocked}
       <div class="pb-6 text-center text-warning">
         {$t('candidateApp.questions.warning', {
           numUnansweredQuestions: $unansweredOpinionQuestions?.length
@@ -97,12 +101,12 @@
       </div>
     {/if}
 
-    {#each Object.entries(questionsByCategory ?? []) as [category, categoryQuestions]}
+    {#each Object.entries(questionsByCategory) as [category, categoryQuestions]}
       <div class="edgetoedge-x">
         <Expander
           title={category || ''}
           variant="category"
-          defaultExpanded={unansweredCategories?.includes(category ?? '')}>
+          defaultExpanded={unansweredCategories.includes(category ?? '')}>
           {#each categoryQuestions as question}
             {#if $opinionAnswers?.[question.id]}
               <AnsweredQuestion {question} {categoryQuestions} />

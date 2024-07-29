@@ -3,7 +3,7 @@
   import {page} from '$app/stores';
   import {QuestionPage} from '$candidate/templates/question';
   import {t} from '$lib/i18n';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
 
   const {opinionQuestions} = getContext<CandidateContext>('candidate');
 
@@ -12,7 +12,7 @@
 </script>
 
 {#if $opinionQuestions && currentQuestion}
-  <QuestionPage questions={$opinionQuestions} {currentQuestion} editMode={true} />
+  <QuestionPage {currentQuestion} editMode={true} />
 {:else}
-  {$t('question.notFound')}
+  {$t('candidateApp.questions.questionNotFoundError', {questionID: currentQuestion?.id})}
 {/if}

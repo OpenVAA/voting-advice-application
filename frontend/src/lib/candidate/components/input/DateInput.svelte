@@ -5,19 +5,31 @@
 
   type $$Props = InputFieldProps<string>;
 
-  export let question: $$Props['question'];
-  export let headerText: $$Props['headerText'] = question.text;
+  export let questionId: $$Props['questionId'];
+  export let headerText: $$Props['headerText'] = '';
   export let locked: $$Props['locked'] = false;
   export let value: $$Props['value'] = '';
-  export let onChange: ((question: QuestionProps, value: $$Props['value']) => void) | undefined =
-    undefined;
+  export let onChange:
+    | ((details: {questionId: string; value: $$Props['value']}) => void)
+    | undefined = undefined;
+
+  let inputValue = value;
 
   const dateMin = '1800-01-01';
   const dateMax = new Date().toISOString().split('T')[0];
 
   //ensure that the date is in the correct format
   if (value && typeof value === 'string') {
-    value = value.slice(0, 10);
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+      value = date.toISOString().split('T')[0];
+    } else {
+      // Invalid value, use an empty date
+      value = '';
+    }
+  } else {
+    // Invalid value, use an empty date
+    value = '';
   }
 </script>
 
@@ -49,7 +61,7 @@ A component for a date question that can be answered.
   <p slot="header" class="small-label mx-6 my-0 p-0">
     {headerText}
   </p>
-  <Field id={question.id} label={question.text}>
+  <Field id={questionId} label={headerText}>
     <InputContainer {locked}>
       <div class="w-full">
         <input
@@ -58,12 +70,10 @@ A component for a date question that can be answered.
           type="date"
           min={dateMin}
           max={dateMax}
-          id={question.id}
-          bind:value
+          id={questionId}
+          bind:value={inputValue}
           on:change={() => {
-            if (value) {
-              onChange?.(question, value);
-            }
+            onChange?.({questionId, value: inputValue});
           }} />
       </div>
     </InputContainer>
