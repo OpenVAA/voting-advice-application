@@ -29,7 +29,7 @@
   <a href={$getRoute(Route.About)} class="btn btn-ghost w-full max-w-md"
     >{$t('actionLabels.howItWorks')}</a>
 
-  {#if $settings.analytics.survey?.showIn?.includes('frontpage')}
+  {#if $settings.survey?.showIn?.includes('frontpage')}
     <SurveyBanner class="mt-lg" />
   {/if}
 </FrontPage>

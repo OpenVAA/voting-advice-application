@@ -7,14 +7,14 @@
  */
 
 import {error} from '@sveltejs/kit';
-import localSettings from '$lib/config/settings.json';
+import {mergedStaticSettings} from '$shared/settings';
 import type {DataProvider} from './dataProvider/dataProvider';
 
 let dpPromise: Promise<{dataProvider: DataProvider}>;
 
-if (localSettings.dataProvider.type === 'strapi') {
+if (mergedStaticSettings.dataProvider.type === 'strapi') {
   dpPromise = import('./dataProvider/strapi');
-} else if (localSettings.dataProvider.type === 'local') {
+} else if (mergedStaticSettings.dataProvider.type === 'local') {
   dpPromise = import('./dataProvider/local');
 } else {
   throw error(500, 'Could not load data provider');

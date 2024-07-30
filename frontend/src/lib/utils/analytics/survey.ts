@@ -9,7 +9,7 @@ import {sessionId} from './track';
 export const surveyLink = derived(
   [settings, sessionId],
   ([$settings, $sessionId]) => {
-    const linkTemplate = $settings.analytics.survey?.linkTemplate;
+    const linkTemplate = $settings.survey?.linkTemplate;
     return linkTemplate ? parse(linkTemplate, {sessionId: $sessionId ?? ''}) : undefined;
   },
   ''

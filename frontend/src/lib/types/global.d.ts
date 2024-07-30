@@ -1,3 +1,5 @@
+import type {DynamicSettings, StaticSettings} from '$shared/settings/settings.type';
+
 export {};
 
 declare global {
@@ -76,111 +78,7 @@ declare global {
   /**
    * The application settings, combined from both local settings and those retrieved from the database.
    */
-  interface AppSettings {
-    admin: {
-      email: string;
-    };
-    appVersion: {
-      version: number;
-      requireUserDataVersion: number;
-      source: string;
-    };
-    dataProvider: {
-      type: 'local' | 'strapi';
-      supportsCandidateApp: boolean;
-    };
-    colors: {
-      light: {[name: string]: string};
-      dark: {[name: string]: string};
-    };
-    font: {
-      name: string;
-      url: string;
-    };
-    supportedLocales: Array<{
-      code: string;
-      name: string;
-      isDefault?: boolean;
-    }>;
-    analytics: {
-      platform?: {
-        name: AppSettingsAnalyticsPlatform;
-        code: string;
-        infoUrl: string;
-      };
-      survey?: {
-        linkTemplate: string;
-        showIn: Array<'frontpage' | 'entityDetails' | 'navigation' | 'resultsPopup'>;
-      };
-      trackEvents: boolean;
-    };
-    entityDetails: {
-      contents: Record<Exclude<EntityType, 'all'>, AppSettingsEntityDetailsContent[]>;
-      showMissingElectionSymbol: Record<Exclude<EntityType, 'all'>, boolean>;
-      showMissingAnswers: Record<Exclude<EntityType, 'all'>, boolean>;
-    };
-    header: {
-      showFeedback: boolean;
-      showHelp: boolean;
-    };
-    underMaintenance?: boolean;
-    matching: {
-      minimumAnswers: number;
-      partyMatching: AppSettingsGroupMatchingType;
-    };
-    questions: {
-      categoryIntros?: {
-        allowSkip?: boolean;
-        show: boolean;
-      };
-      questionsIntro: {
-        allowCategorySelection?: boolean;
-        show: boolean;
-      };
-      showCategoryTags: boolean;
-      showResultsLink: boolean;
-    };
-    results: {
-      cardContents: {
-        candidate: Array<'submatches' | AppSettingsQuestionRef>;
-        party: Array<'candidates' | 'submatches' | AppSettingsQuestionRef>;
-      };
-      sections: Array<Exclude<EntityType, 'all'>>;
-      showFeedbackPopup?: number;
-      showSurveyPopup?: number;
-    };
-    publisher?: {
-      name: string;
-      logo?: ImageProps;
-      logoDark?: ImageProps;
-    };
-    poster?: ImageProps;
-    posterCandidateApp?: ImageProps;
-  }
-
-  /**
-   * The supported analytics platforms.
-   */
-  type AppSettingsAnalyticsPlatform = 'umami';
-
-  /**
-   * A reference to a question in `AppSettings`.
-   */
-  type AppSettingsQuestionRef = {
-    question: string;
-    hideLabel?: boolean;
-    format?: 'default' | 'tag';
-  };
-
-  /**
-   * A entity details' content type in `AppSettings`.
-   */
-  type AppSettingsEntityDetailsContent = 'candidates' | 'info' | 'opinions';
-
-  /**
-   * The method for performing group, i.e. party, maching in `AppSettings`.
-   */
-  type AppSettingsGroupMatchingType = 'none' | 'answersOnly' | 'mean' | 'median';
+  type AppSettings = StaticSettings & DynamicSettings;
 
   /**
    * The persistent preferences that can be set by the user.
