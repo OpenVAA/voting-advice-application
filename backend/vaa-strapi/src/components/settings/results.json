@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_settings_results",
+  "info": {
+    "displayName": "Results",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "cardContents": {
+      "displayName": "Results - Card Contents",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.results-card-contents",
+      "required": true
+    },
+    "sections": {
+      "type": "customField",
+      "options": ["candidate", "party"],
+      "customField": "plugin::multi-select.multi-select",
+      "required": true
+    },
+    "showFeedbackPopup": {
+      "type": "integer"
+    },
+    "showSurveyPopup": {
+      "type": "integer"
+    }
+  }
+}

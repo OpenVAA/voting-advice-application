@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_settings_questions_intros",
+  "info": {
+    "displayName": "Questions - Intro",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "allowCategorySelection": {
+      "type": "boolean"
+    },
+    "show": {
+      "type": "boolean",
+      "required": true
+    }
+  }
+}
