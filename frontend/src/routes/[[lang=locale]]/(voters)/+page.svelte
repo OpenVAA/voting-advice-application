@@ -10,24 +10,22 @@
 
 <FrontPage title={$election?.name ?? ''}>
   <HeadingGroup slot="heading">
-    <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
+    <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
     <h1 class="text-3xl font-normal">{$election?.name ?? ''}</h1>
   </HeadingGroup>
 
   <img slot="hero" class="bg-white" src={$settings.poster?.url ?? '/images/hero.png'} alt="" />
 
-  <Button variant="main" href={$getRoute(Route.Intro)} text={$t('actionLabels.startButton')} />
+  <Button variant="main" href={$getRoute(Route.Intro)} text={$t('dynamic.frontPage.startButton')} />
 
   <p class="mt-lg text-center">
-    {$t('viewTexts.frontpageIngress', {
+    {$t('dynamic.frontPage.ingress', {
       electionDate: new Date($election?.electionDate ?? '')
     })}
   </p>
 
-  <a href={$getRoute(Route.Info)} class="btn btn-ghost w-full max-w-md"
-    >{$t('actionLabels.electionInfo')}</a>
-  <a href={$getRoute(Route.About)} class="btn btn-ghost w-full max-w-md"
-    >{$t('actionLabels.howItWorks')}</a>
+  <a href={$getRoute(Route.Info)} class="btn btn-ghost w-full max-w-md">{$t('info.title')}</a>
+  <a href={$getRoute(Route.About)} class="btn btn-ghost w-full max-w-md">{$t('about.title')}</a>
 
   {#if $settings.analytics.survey?.showIn?.includes('frontpage')}
     <SurveyBanner class="mt-lg" />

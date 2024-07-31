@@ -4,6 +4,7 @@
   import {t} from '$lib/i18n';
   import {type ValidationDetail, validatePasswordDetails, minPasswordLength} from 'vaa-shared';
   import {onMount} from 'svelte';
+  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
   export let password = '';
   export let username = '';
   export let validPassword = false;
@@ -21,7 +22,9 @@
 
       // Localize validation messages
       for (const key in validationDetails) {
-        validationDetails[key].message = $t(validationDetails[key].message, {minPasswordLength});
+        validationDetails[key].message = $t(assertTranslationKey(validationDetails[key].message), {
+          minPasswordLength
+        });
       }
     }, 200);
   }

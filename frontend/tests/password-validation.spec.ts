@@ -36,14 +36,16 @@ describe('Password Validation', () => {
       const result = validatePasswordDetails('short');
       expect(result.status).toBe(false);
       expect(result.details.length.status).toBe(false);
-      expect(result.details.length.message).toBe('candidateApp.passwordValidation.length');
+      expect(result.details.length.message).toBe('candidateApp.register.passwordValidation.length');
     });
 
     it('should return a warning for a password with repeated characters', () => {
       const result = validatePasswordDetails('aaaaaaBBB123!');
       expect(result.status).toBe(true);
       expect(result.details.repetition.status).toBe(false);
-      expect(result.details.repetition.message).toBe('candidateApp.passwordValidation.repetition');
+      expect(result.details.repetition.message).toBe(
+        'candidateApp.register.passwordValidation.repetition'
+      );
     });
   });
 });

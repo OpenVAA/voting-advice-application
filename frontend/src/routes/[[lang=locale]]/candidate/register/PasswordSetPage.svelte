@@ -74,16 +74,16 @@ Shows an error message if the registration is not successful.
   ```
 -->
 
-<FrontPage title={$t('candidateApp.registration.title')}>
+<FrontPage title={$t('candidateApp.register.title')}>
   <HeadingGroup slot="heading">
-    <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
+    <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
     <h1 class="text-3xl font-normal">{$page.data.election?.name}</h1>
     <h1 class="my-24 text-2xl font-normal">
-      {$t('candidateApp.setPassword.greeting', {username})}
+      {$t('candidateApp.common.greeting', {username})}
     </h1>
   </HeadingGroup>
   {#if $user}
-    <p class="text-center text-warning">{$t('candidateApp.registration.loggedInWarning')}</p>
+    <p class="text-center text-warning">{$t('candidateApp.register.loggedInWarning')}</p>
     <div class="center pb-10">
       <LogoutButton stayOnPage={true} buttonVariant="main" />
     </div>

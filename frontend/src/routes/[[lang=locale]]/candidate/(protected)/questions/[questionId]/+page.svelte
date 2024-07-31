@@ -14,5 +14,5 @@
 {#if $opinionQuestions && currentQuestion}
   <QuestionPage {currentQuestion} />
 {:else}
-  {$t('candidateApp.questions.questionNotFoundError', {questionID: currentQuestion?.id})}
+  {$t('candidateApp.questions.error.questionNotFound', {questionID: currentQuestion?.id})}
 {/if}

@@ -58,24 +58,24 @@ Used to show an entity's opinions in an `EntityDetails` component.
       {#if $appType === 'candidate'}
         {#if answer == null}
           <div class="small-label mb-16 text-center">
-            {$t('questions.entityHasntAnswered', {entity: shortName})}
+            {$t('questions.answers.entityHasntAnswered', {entity: shortName})}
           </div>
         {/if}
       {:else if voterAnswer == null && answer == null}
         <div class="small-label mb-16 text-center">
-          {$t('questions.bothHaventAnswered', {entity: shortName})}
+          {$t('questions.answers.bothHaventAnswered', {entity: shortName})}
         </div>
       {:else if voterAnswer == null && answer == null}
         <div class="small-label mb-16 text-center">
-          {$t('questions.youHaventAnswered')}
+          {$t('questions.answers.youHaventAnswered')}
         </div>
       {:else if voterAnswer == null}
         <div class="small-label mb-16 text-center">
-          {$t('questions.youHaventAnswered')}
+          {$t('questions.answers.youHaventAnswered')}
         </div>
       {:else if answer == null}
         <div class="small-label mb-16 text-center">
-          {$t('questions.entityHasntAnswered', {entity: shortName})}
+          {$t('questions.answers.entityHasntAnswered', {entity: shortName})}
         </div>
       {/if}
 
