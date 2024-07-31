@@ -38,7 +38,7 @@ Display a prompt for filling out a user survey if the setting is enabled and the
     )}>
     <SurveyButton bind:clicked />
     {#if variant !== 'compact'}
-      <div class="text-center text-sm text-secondary">{$t('survey.info')}</div>
+      <div class="text-center text-sm text-secondary">{$t('dynamic.survey.info')}</div>
     {/if}
   </div>
 {/if}

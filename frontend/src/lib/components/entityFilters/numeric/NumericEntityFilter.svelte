@@ -62,7 +62,7 @@ Render a numeric filter for entities.
 {#if range}
   <form {...concatClass($$restProps, '')}>
     <label class="label">
-      <span class="text-label min-w-[6rem]">{$t('components.entityFilters.numeric.minLabel')}</span>
+      <span class="text-label min-w-[6rem]">{$t('entityFilters.numeric.minLabel')}</span>
       <input
         bind:value={min}
         on:change={setMin}
@@ -73,7 +73,7 @@ Render a numeric filter for entities.
       <span class="w-[5rem] text-end">{min}</span>
     </label>
     <label class="label">
-      <span class="text-label min-w-[6rem]">{$t('components.entityFilters.numeric.maxLabel')}</span>
+      <span class="text-label min-w-[6rem]">{$t('entityFilters.numeric.maxLabel')}</span>
       <input
         bind:value={max}
         on:change={setMax}
@@ -85,5 +85,5 @@ Render a numeric filter for entities.
     </label>
   </form>
 {:else}
-  <div class="w-full text-center text-warning">{$t('components.entityFilters.numeric.error')}</div>
+  <div class="w-full text-center text-warning">{$t('entityFilters.error')}</div>
 {/if}

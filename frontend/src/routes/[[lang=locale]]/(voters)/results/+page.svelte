@@ -28,6 +28,7 @@
   import {StretchBackground} from '$lib/components/stretchBackground';
   import {Tabs} from '$lib/components/tabs';
   import {BasicPage} from '$lib/templates/basicPage';
+  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
 
   /**
    * The currently active tab in the results. We want this to persist between opening entity details and returning to the results.
@@ -135,7 +136,7 @@
 
 <BasicPage title={resultsAvailableSync ? $t('results.title.results') : $t('results.title.browse')}>
   <svelte:fragment slot="hero">
-    <HeroEmoji emoji={$t('results.heroEmoji')} />
+    <HeroEmoji emoji={$t('dynamic.results.heroEmoji')} />
   </svelte:fragment>
 
   <svelte:fragment slot="banner">
@@ -144,28 +145,24 @@
         on:click={$openFeedbackModal}
         variant="icon"
         icon="feedback"
-        text={$t('navigation.sendFeedback')} />
+        text={$t('feedback.send')} />
     {/if}
     {#if $settings.header.showHelp}
-      <Button
-        href={$getRoute(Route.Help)}
-        variant="icon"
-        icon="help"
-        text={$t('actionLabels.help')} />
+      <Button href={$getRoute(Route.Help)} variant="icon" icon="help" text={$t('help.title')} />
     {/if}
     <Button
       on:click={() => console.info('Show favourites')}
       variant="icon"
       icon="list"
-      text={$t('actionLabels.yourList')} />
+      text={$t('yourList.title')} />
   </svelte:fragment>
 
   <div class="mb-xl text-center">
     {#if resultsAvailableSync}
-      {$t('results.ingress.results')}
+      {$t('dynamic.results.ingress.results')}
     {:else}
       {@html sanitizeHtml(
-        $t('results.ingress.browse', {
+        $t('dynamic.results.ingress.browse', {
           questionsLink: `<a href="${$getRoute(Route.Questions)}">${$t(
             'results.ingress.questionsLinkText',
             {
@@ -182,7 +179,7 @@
 
     {#if sections.length > 1}
       <Tabs
-        tabs={sections.map((entityType) => $t(`common.${entityType}.plural`))}
+        tabs={sections.map((entityType) => $t(assertTranslationKey(`common.${entityType}.plural`)))}
         bind:activeIndex={activeTab}
         on:change={({detail}) => startEvent('results_changeTab', {section: sections[detail.index]})}
         class="mx-10" />
@@ -194,10 +191,10 @@
         <Loading showLabel class="mt-lg" />
       {:then [allCandidates, candidateFilters]}
         <h2 class="mx-10 mb-md mt-md">
-          {$t('results.candidatesShown', {numShown: filteredCandidates.length})}
+          {$t('results.candidates.numShown', {numShown: filteredCandidates.length})}
           {#if filteredCandidates.length !== allCandidates.length}
             <span class="font-normal text-secondary"
-              >{$t('results.candidatesTotal', {numTotal: allCandidates.length})}</span>
+              >{$t('results.candidates.total', {numTotal: allCandidates.length})}</span>
           {/if}
         </h2>
         {#if candidateFilters}
@@ -217,10 +214,10 @@
         <Loading showLabel class="mt-lg" />
       {:then [allParties, allCandidatesOrUndef]}
         <h2 class="mx-10 mb-md mt-md">
-          {$t('results.partiesShown', {numShown: filteredParties.length})}
+          {$t('results.parties.numShown', {numShown: filteredParties.length})}
           {#if filteredParties.length !== allParties.length}
             <span class="font-normal text-secondary"
-              >{$t('results.partiesTotal', {numTotal: allParties.length})}</span>
+              >{$t('results.parties.total', {numTotal: allParties.length})}</span>
           {/if}
         </h2>
         <EntityListControls

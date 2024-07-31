@@ -150,14 +150,16 @@ Input field variant
   </FieldGroup>
 
   {#if translationsShown}
-    <p class="px-6 text-sm">{$t('candidateApp.textarea.info')}</p>
+    <p class="px-6 text-sm">{$t('components.multiLangInput.info')}</p>
   {/if}
 
   <!-- Toggle whether translations are shown -->
   <Button
     type="button"
     on:click={() => (translationsShown = !translationsShown)}
-    text={translationsShown ? $t('candidateApp.textarea.hide') : $t('candidateApp.textarea.show')}
+    text={translationsShown
+      ? $t('components.multiLangInput.hide')
+      : $t('components.multiLangInput.show')}
     variant="normal"
     icon={translationsShown ? 'hide' : 'language'}
     {disabled}

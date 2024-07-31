@@ -19,16 +19,16 @@
       $unansweredOpinionQuestions?.length === 0
     ) {
       return {
-        title: $t('candidateApp.homePage.ready'),
-        explanation: $t('candidateApp.homePage.description'),
-        tip: $t('candidateApp.homePage.tip'),
+        title: $t('candidateApp.home.ready'),
+        explanation: $t('candidateApp.home.ingress.ready'),
+        tip: $t('candidateApp.home.previewTip'),
         buttonTextBasicInfo: !$questionsLocked
-          ? $t('candidateApp.homePage.basicInfoButtonEdit')
-          : $t('candidateApp.homePage.basicInfoButtonView'),
+          ? $t('candidateApp.home.basicInfo.edit')
+          : $t('candidateApp.home.basicInfo.view'),
         buttonTextQuestion: !$questionsLocked
-          ? $t('candidateApp.homePage.questionsButtonEdit')
-          : $t('candidateApp.homePage.questionsButtonView'),
-        buttonTextPrimaryActions: $t('candidateApp.homePage.previewButton'),
+          ? $t('candidateApp.home.questions.edit')
+          : $t('candidateApp.home.questions.view'),
+        buttonTextPrimaryActions: $t('candidateApp.home.preview'),
         href: $getRoute(Route.CandAppPreview)
       };
     } else if (
@@ -36,32 +36,32 @@
       $unansweredOpinionQuestions?.length !== 0
     ) {
       return {
-        title: $t('candidateApp.homePage.greeting', {username}),
-        explanation: $t('candidateApp.homePage.explanation'),
+        title: $t('candidateApp.common.greeting', {username}),
+        explanation: $t('candidateApp.home.ingress.notDone'),
         buttonTextBasicInfo: !$questionsLocked
-          ? $t('candidateApp.homePage.basicInfoButtonEdit')
-          : $t('candidateApp.homePage.basicInfoButtonView'),
+          ? $t('candidateApp.home.basicInfo.edit')
+          : $t('candidateApp.home.basicInfo.view'),
         buttonTextQuestion: !$questionsLocked
-          ? $t('candidateApp.homePage.questionsButton')
-          : $t('candidateApp.homePage.questionsButtonView'),
+          ? $t('candidateApp.home.questions.enter')
+          : $t('candidateApp.home.questions.view'),
         buttonTextPrimaryActions: !$questionsLocked
-          ? $t('candidateApp.homePage.questionsButton')
-          : $t('candidateApp.homePage.questionsButtonView'),
+          ? $t('candidateApp.home.questions.enter')
+          : $t('candidateApp.home.questions.view'),
         href: $getRoute(Route.CandAppQuestions)
       };
     }
     return {
-      title: $t('candidateApp.homePage.greeting', {username}),
-      explanation: $t('candidateApp.homePage.explanation'),
+      title: $t('candidateApp.common.greeting', {username}),
+      explanation: $t('candidateApp.home.ingress.notDone'),
       buttonTextBasicInfo: !$questionsLocked
-        ? $t('candidateApp.homePage.basicInfoButton')
-        : $t('candidateApp.homePage.basicInfoButtonView'),
+        ? $t('candidateApp.home.basicInfo.enter')
+        : $t('candidateApp.home.basicInfo.view'),
       buttonTextQuestion: !$questionsLocked
-        ? $t('candidateApp.homePage.questionsButton')
-        : $t('candidateApp.homePage.questionsButtonView'),
+        ? $t('candidateApp.home.questions.enter')
+        : $t('candidateApp.home.questions.view'),
       buttonTextPrimaryActions: !$questionsLocked
-        ? $t('candidateApp.homePage.basicInfoButtonPrimaryActions')
-        : $t('candidateApp.homePage.basicInfoButtonView'),
+        ? $t('candidateApp.home.basicInfo.enter')
+        : $t('candidateApp.home.basicInfo.view'),
       href: $getRoute(Route.CandAppProfile)
     };
   };
@@ -76,9 +76,9 @@
 
 <BasicPage title={nextAction.title}>
   <Warning display={!!$questionsLocked} slot="note">
-    <p>{$t('candidateApp.homePage.editingNotAllowedNote')}</p>
+    <p>{$t('candidateApp.common.editingNotAllowed')}</p>
     {#if $unansweredRequiredInfoQuestions?.length !== 0 || $unansweredOpinionQuestions?.length !== 0}
-      <p>{$t('candidateApp.homePage.editingNotAllowedPartiallyFilled')}</p>
+      <p>{$t('candidateApp.common.editingNotAllowedPartiallyFilled')}</p>
     {/if}
   </Warning>
 
@@ -116,7 +116,7 @@
     </svelte:fragment>
   </Button>
   <Button
-    text={$t('candidateApp.homePage.previewButton')}
+    text={$t('candidateApp.home.preview')}
     icon="previewProfile"
     iconPos="left"
     disabled={$unansweredRequiredInfoQuestions?.length !== 0}

@@ -116,7 +116,7 @@ let uploadPhoto: () => Promise<void>;
     ? 'height: 60px; padding-right: 0.5rem;;'
     : 'height: 60px; padding-right: 0;'}>
   <span class={labelClass}>
-    {$t('candidateApp.basicInfo.fields.portrait')}
+    {$t('common.candidatePortrait')}
   </span>
 
   <div class="flex">
@@ -141,7 +141,7 @@ let uploadPhoto: () => Promise<void>;
         </div>
       {:else if !disabled}
         <div class="pr-8">
-          {$t('candidateApp.basicInfo.tapToAddPhoto')}
+          {$t('components.photoInput.tapToAddPhoto')}
           <Icon name="photo" />
         </div>
       {/if}

@@ -8,7 +8,7 @@ Used for a pre-title, or kicker, above the main title of a page within a `Headin
 
 ### Properties
 
-- `aria-roledescription`: The Aria role description of the `<p>` element representing the pre-title. @default $t('aria.preHeading')
+- `aria-roledescription`: The Aria role description of the `<p>` element representing the pre-title. @default $t('components.preHeading.roleDescription')
 - Any valid attributes of a `<p>` element.
 
 ### Slots
@@ -22,6 +22,6 @@ Used for a pre-title, or kicker, above the main title of a page within a `Headin
 ```
 -->
 
-<p aria-roledescription={$t('aria.preHeading')} {...$$restProps}>
+<p aria-roledescription={$t('components.preHeading.roleDescription')} {...$$restProps}>
   <slot />
 </p>

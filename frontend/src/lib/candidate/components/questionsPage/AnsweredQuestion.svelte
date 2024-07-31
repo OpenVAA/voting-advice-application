@@ -56,7 +56,7 @@ open answers and a button to navigate to the questions page.
           selectedKey={answer.value} />
       {:else}
         <p class="text-center text-error">
-          {$t('candidateApp.questions.answerInvalidError', {questionId: question.id})}
+          {$t('candidateApp.questions.error.invalidAnswer', {questionId: question.id})}
         </p>
       {/if}
 
@@ -69,8 +69,8 @@ open answers and a button to navigate to the questions page.
       <div class="flex justify-center py-20 pb-40">
         <Button
           text={!$questionsLocked
-            ? $t('candidateApp.questions.editYourAnswer')
-            : $t('candidateApp.questions.viewYourAnswer')}
+            ? $t('candidateApp.questions.editAnswer')
+            : $t('candidateApp.questions.viewAnswer')}
           href={$getRoute({route: Route.CandAppQuestionEdit, id: question.id})}
           icon={!$questionsLocked ? 'create' : 'show'}
           iconPos="left" />
@@ -82,6 +82,6 @@ open answers and a button to navigate to the questions page.
   </div>
 {:else}
   <p class="text-center text-error">
-    {$t('candidateApp.questions.answerNotFoundError', {questionId: question.id})}
+    {$t('candidateApp.questions.error.answerNotFound', {questionId: question.id})}
   </p>
 {/if}

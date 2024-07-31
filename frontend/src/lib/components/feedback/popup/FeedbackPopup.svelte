@@ -78,11 +78,11 @@ Show a popup asking for user feedback.
       color={canSubmit ? 'primary' : 'warning'}
       variant={canSubmit ? 'main' : 'normal'}
       text={status === 'sending'
-        ? $t('feedback.sendButtonSending')
+        ? $t('feedback.sending')
         : status === 'sent'
-          ? $t('feedback.sendButtonThanks')
+          ? $t('feedback.thanks')
           : canSubmit
-            ? $t('feedback.sendButton')
+            ? $t('feedback.send')
             : $t('common.close')}
       class="min-w-full sm:min-w-[12rem]" />
   </div>

@@ -12,7 +12,7 @@
   };
 
   beforeNavigate((e) => {
-    if (active && !window.confirm($t('candidateApp.other.unsavedChanges'))) {
+    if (active && !window.confirm($t('components.preventNavigation.unsavedChanges'))) {
       e.cancel();
     }
   });

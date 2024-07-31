@@ -122,7 +122,7 @@ Show a list of entities with pagination and defined actions.
             class="mt-lg self-center {i <= currentPage ? '!sr-only' : ''}"
             disabled={i <= currentPage}
             variant="main"
-            text={$t('components.entityList.showMore')} />
+            text={$t('entityList.showMore')} />
         {/if}
       </div>
     {/if}
