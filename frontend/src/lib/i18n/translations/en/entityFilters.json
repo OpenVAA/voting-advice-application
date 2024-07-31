@@ -1,0 +1,18 @@
+{
+  "applyAndClose": "Close filters",
+  "error": "The filter couldn’t be loaded, sorry!",
+  "filterButtonLabel": "Filter",
+  "filters": "Filters",
+  "missingValue": "No answer",
+  "numeric": {
+    "maxLabel": "Maximum",
+    "minLabel": "Minimum"
+  },
+  "reset": "Reset filters",
+  "selectAll": "Select all",
+  "text": {
+    "ariaLabel": "Text:",
+    "placeholder": "Text to search for"
+  },
+  "unselectAll": "Unselect all"
+}

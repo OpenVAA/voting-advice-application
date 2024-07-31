@@ -1,16 +1,18 @@
 {
-  "candidatesShown": "{numShown, plural, =1 {1 {candidateSingular}} other {# {candidatePlural}}}",
-  "candidatesTotal": "of {numTotal}",
-  "heroEmoji": "🎊",
-  "ingress": {
-    "browse": "<p>These are the {candidatePlural} and {partyPlural} standing in these elections, ordered by election symbol or name. You can use the filters to narrow them down.</p><p>If you want to find the {candidatePlural} and {partyPlural} that agree with you the most,{questionsLink} first.</p> ",
-    "questionsLinkText": "answer at least {numQuestions, plural, =1 {one question} other {# questions}}",
-    "results": "These are the {candidatePlural} and {partyPlural} standing in these elections. The best matches are first on the list. To narrow down the results, you can also use the filters."
+  "candidates": {
+    "numShown": "{numShown, plural, =1 {1 {candidateSingular}} other {# {candidatePlural}}}",
+    "total": "of {numTotal}"
   },
-  "partiesShown": "{numShown, plural, =1 {1 {partySingular}} other {# {partyPlural}}}",
-  "partiesTotal": "of {numTotal}",
+  "ingress": {
+    "answerMinQuestions": "If you want to find the {candidatePlural} and {partyPlural} that agree with you the most, {questionsLink} first.",
+    "questionsLinkText": "answer at least {numQuestions, plural, =1 {one question} other {# questions}}"
+  },
+  "parties": {
+    "numShown": "{numShown, plural, =1 {1 {partySingular}} other {# {partyPlural}}}",
+    "total": "of {numTotal}"
+  },
   "title": {
     "browse": "Browse {candidatePlural} and {partyPlural}",
-    "results": "Your Results"
+    "results": "Results"
   }
 }
