@@ -1,0 +1,9 @@
+{
+  "continue": "Jatka",
+  "heroEmoji": "🚀",
+  "ingress": "Vaalikone auttaa sinua löytämään kanssasi eniten samaa mieltä olevat {candidatePlural} ja {partyPlural} näissä vaaleissa.",
+  "listItemDetails": "Tarkastele ehdokkaita ja puolueita tarkemmin",
+  "listItemOpinions": "Kerro mielipiteesi",
+  "listItemResults": "Näe kanssasi eniten samaa mieltä olevat {candidatePlural} ja {partyPlural}",
+  "title": "Aloitetaan!"
+}

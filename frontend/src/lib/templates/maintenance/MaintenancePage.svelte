@@ -24,5 +24,5 @@ The template for showing an under maintenance page.
 
 <ErrorPage
   title={$t('maintenance.title')}
-  content={$t('dynamic.maintenance.content')}
-  emoji={$t('dynamic.maintenance.heroEmoji')} />
+  content={$t('maintenance.content')}
+  emoji={$t('maintenance.heroEmoji')} />

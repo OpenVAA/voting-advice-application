@@ -153,6 +153,10 @@ export async function generateMockData() {
     await createStrapiAdmin();
     console.info('Done!');
     console.info('#######################################');
+    console.info('inserting genders ...');
+    await createGenders();
+    console.info('Done!');
+    console.info('#######################################');
     console.info('inserting election app labels...');
     await createElectionAppLabel();
     console.info('Done!');
@@ -269,6 +273,33 @@ async function createLanguages() {
   });
 }
 
+async function createGenders() {
+  await strapi.db.query(API.Gender).createMany({
+    data: [
+      {
+        name: 'male',
+        publishedAt: new Date()
+      },
+      {
+        name: 'female',
+        publishedAt: new Date()
+      },
+      {
+        name: 'nonBinary',
+        publishedAt: new Date()
+      },
+      {
+        name: 'other',
+        publishedAt: new Date()
+      },
+      {
+        name: 'preferNotToSay',
+        publishedAt: new Date()
+      }
+    ]
+  });
+}
+
 async function createElectionAppLabel() {
   // This should create labels dynamically so that they match the translation files either completely or at least the most often modified parts
   // Before this is done, it's better not to create labels at all
@@ -370,21 +401,102 @@ async function createParties(length: number) {
 }
 
 async function createCandidates(length: number) {
+  // TODO: Remove languages later
+  const languages = await strapi.db.query(API.Language).findMany({});
+
   const parties = await strapi.db.query(API.Party).findMany({});
+
+  const genders = await strapi.db.query(API.Gender).findMany({});
+
   for (let i = 0; i <= length; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const party: HasId = faker.helpers.arrayElement(parties);
     const email = `${firstName}.${lastName}@example.com`;
+    const birthday = faker.date
+      .between({
+        from: '1950-01-01T00:00:00.000Z',
+        to: '2010-01-01T00:00:00.000Z'
+      })
+      .toISOString()
+      .split('T')[0];
+    const gender = faker.helpers.arrayElement(genders);
+    const manifesto = faker.lorem.paragraph(8);
+    // TODO: Remove these attrs later
+    const politicalExperience = faker.lorem.paragraph(3);
+    const motherTongue: any = faker.helpers.arrayElement(languages);
+    const otherLanguage: any = faker.helpers.arrayElement(languages);
     await strapi.db.query(API.Candidate).create({
       data: {
         firstName,
         lastName,
         email,
         party: party.id,
-        publishedAt: new Date()
+        publishedAt: new Date(),
+        birthday,
+        gender,
+        politicalExperience,
+        unaffiliated: false,
+        motherTongues: [motherTongue.id],
+        otherLanguages: [otherLanguage.id],
+        manifesto: fakeLocalized((_, l) => fakeTranslate(l, manifesto))
       }
     });
+
+    // TODO: Remove when custom basic info questions are online
+    //
+    // // Political experience attribute
+    // const textQuestionType = await strapi.db.query(API.QuestionType).findOne({
+    //   where: {
+    //     name: 'Text answer'
+    //   }
+    // });
+
+    // const politicalExperienceData = {
+    //   displayName: 'Political experience',
+    //   questionType: textQuestionType.id,
+    //   candidate: candidate.id,
+    //   publishedAt: new Date(),
+    //   key: 'politicalExperience',
+    //   value: politicalExperience
+    // };
+
+    // const politicalExperienceMainLocale = await strapi.entityService.create(
+    //   CANDIDATE_ATTRIBUTE_API,
+    //   {
+    //     data: politicalExperienceData
+    //   }
+    // );
+
+    // // Gender attribute
+
+    // const genderQuestionType = await strapi.db.query(API.QuestionType).findOne({
+    //   where: {
+    //     name: 'Gender'
+    //   }
+    // });
+
+    // const genderTypeValues: {key: number}[] = genderQuestionType.settings.values;
+    // const answer = faker.helpers.arrayElement(genderTypeValues).key;
+
+    // const genderData = {
+    //   displayName: 'Gender',
+    //   questionType: genderQuestionType.id,
+    //   candidate: candidateMainLocale.id,
+    //   locale: mainLocale.code,
+    //   publishedAt: new Date(),
+    //   key: 'gender',
+    //   value: answer.toString()
+    // };
+
+    // /**
+    //  * TODO: In theory, this doesn't need localization because the label is
+    //  * obtained from the question type settings. However, for consistency with
+    //  * other attributes, it is localized.
+    //  **/
+    // const genderMainLocale = await strapi.entityService.create(CANDIDATE_ATTRIBUTE_API, {
+    //   data: genderData
+    // });
   }
 }
 
@@ -705,12 +817,11 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
 
   const constituencyPctg = options.constituencyPctg ?? 0.1;
   // Create Opinion questions
-  mockQuestions.forEach(async (question, index) => {
+  for (const question of mockQuestions) {
     const text = fakeLocalized((faker) => faker.lorem.sentence(), question);
     const questionType = faker.helpers.arrayElement(likertTypes);
     const info = fakeLocalized((faker) => faker.lorem.sentences(3));
-    const category = opinionCategories[index % opinionCategories.length];
-    // const category = faker.helpers.arrayElement(opinionCategories);
+    const category = faker.helpers.arrayElement(opinionCategories);
     const constituency =
       Math.random() < constituencyPctg ? faker.helpers.arrayElement(constituencies) : null;
     await strapi.db.query(API.Question).create({
@@ -724,46 +835,34 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
         publishedAt: new Date()
       }
     });
-  });
+  }
   // Create other questions:
   // Languages, gender, election manifesto, unaffiliated
   const infoCategoryId = questionCategories.filter((cat) => cat.type === 'info')[0]?.id;
   const infoQuestions = [
     {
       text: 'Mother tongue',
-      type: 'Language',
-      order: 2,
-      required: true
+      type: 'Language'
     },
     {
       text: 'Other languages',
-      type: 'MultiLanguage',
-      order: 3,
-      required: false
+      type: 'MultiLanguage'
     },
     {
       text: 'Gender',
-      type: 'Gender',
-      order: 1,
-      required: true
+      type: 'Gender'
     },
     {
       text: 'Unaffiliated',
-      type: 'Boolean',
-      order: 4,
-      required: true
+      type: 'Boolean'
     },
     {
       text: 'Election manifesto',
-      type: 'Text',
-      order: 5,
-      required: true
+      type: 'Text'
     },
     {
       text: 'Birthday',
-      type: 'Date',
-      order: 0,
-      required: true
+      type: 'Date'
     }
   ];
   for (const question of infoQuestions) {
@@ -777,8 +876,6 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
         allowOpen: false,
         questionType: typeId,
         category: infoCategoryId,
-        order: question.order,
-        required: question.required,
         entityType: 'candidate',
         publishedAt: new Date()
       }
@@ -824,15 +921,12 @@ async function createAnswers(entityType: Omit<EntityType, 'all'>) {
         case 'date':
           if (settings.min) {
             if (settings.max) {
-              value = faker.date
-                .between({from: settings.min, to: settings.max})
-                .toISOString()
-                .split('T')[0];
+              value = faker.date.between({from: settings.min, to: settings.max});
             } else {
-              value = faker.date.future({refDate: settings.min}).toISOString().split('T')[0];
+              value = faker.date.future({refDate: settings.min});
             }
           } else {
-            value = faker.date.past({refDate: settings.max}).toISOString().split('T')[0];
+            value = faker.date.past({refDate: settings.max});
           }
           break;
         case 'singleChoiceCategorical':
@@ -876,7 +970,7 @@ async function createCandidateUsers() {
   }
 
   console.warn(
-    'The application is running in development mode - creating a default user for the first candidate and a user for testing'
+    'The application is running in development mode - creating a default user for the first candidate'
   );
 
   const authenticated = await strapi.query('plugin::users-permissions.role').findOne({
@@ -885,43 +979,23 @@ async function createCandidateUsers() {
     }
   });
 
-  const candidate = await strapi.db.query(API.Candidate).findMany({});
+  const candidate = await strapi.db.query(API.Candidate).findOne({});
   await strapi.entityService.create(API.User, {
     data: {
-      username: mockUser[0].username,
-      email: mockUser[0].email,
-      password: mockUser[0].password,
+      username: mockUser.username,
+      email: mockUser.email,
+      password: mockUser.password,
       provider: 'local',
       confirmed: true,
       blocked: false,
       role: authenticated.id,
-      candidate: candidate[0].id
-    }
-  });
-
-  await strapi.entityService.create(API.User, {
-    data: {
-      username: mockUser[1].username,
-      email: mockUser[1].email,
-      password: mockUser[1].password,
-      provider: 'local',
-      confirmed: true,
-      blocked: false,
-      role: authenticated.id,
-      candidate: candidate[1].id
+      candidate: candidate.id
     }
   });
 
   // Disable registration key for the candidate we chose as they're already registered
   await strapi.query(API.User).update({
-    where: {id: candidate[0].id},
-    data: {
-      registrationKey: null
-    }
-  });
-
-  await strapi.query(API.User).update({
-    where: {id: candidate[1].id},
+    where: {id: candidate.id},
     data: {
       registrationKey: null
     }

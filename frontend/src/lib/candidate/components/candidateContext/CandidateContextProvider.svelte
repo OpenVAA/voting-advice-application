@@ -1,14 +1,73 @@
 <script lang="ts">
-  import {candidateContext} from '$lib/utils/candidateContext';
+  import {candidateContext} from '$lib/utils/candidateStore';
   import {onMount, setContext} from 'svelte';
+  import {get} from 'svelte/store';
 
   setContext('candidate', candidateContext);
-  const token = candidateContext.token;
+  const token = candidateContext.tokenStore;
 
   onMount(() => {
     candidateContext.loadLocalStorage();
     $token && candidateContext.loadUserData();
   });
+
+  candidateContext.userStore.subscribe((user) => {
+    let {gender, motherTongues, birthday, manifesto} = {
+      gender: {
+        id: undefined
+      },
+      manifesto: {},
+      ...user?.candidate
+    };
+    const allFilled =
+      !!gender?.id &&
+      !!motherTongues &&
+      motherTongues.length > 0 &&
+      !!birthday &&
+      Object.values(manifesto).some((value) => value !== '');
+    candidateContext.basicInfoFilledStore.set(allFilled);
+
+    const nofBasicQuestionsFilled = [
+      !!gender?.id,
+      !!motherTongues && motherTongues.length > 0,
+      !!birthday,
+      Object.values(manifesto).some((value) => value !== '')
+    ].filter((n) => n).length;
+    candidateContext.nofUnansweredBasicInfoQuestionsStore.set(4 - nofBasicQuestionsFilled);
+  });
+
+  const updateNofUnansweredQuestions = () => {
+    const answers = get(candidateContext.answersStore);
+    const questions = get(candidateContext.questionsStore);
+    if (answers && questions) {
+      candidateContext.nofUnansweredOpinionQuestionsStore.set(
+        Object.entries(questions).length - Object.entries(answers).length
+      );
+      const allFilled = Object.entries(questions).length - Object.entries(answers).length === 0;
+      candidateContext.opinionQuestionsFilledStore.set(allFilled);
+    }
+  };
+
+  const updateProgress = () => {
+    const answers = get(candidateContext.answersStore);
+    const questions = get(candidateContext.questionsStore);
+
+    if (answers && questions) {
+      const answeredQuestions = Object.entries(answers).length;
+      const totalQuestions = Object.entries(questions).length;
+
+      candidateContext.progressStore.set({
+        progress: answeredQuestions,
+        max: totalQuestions
+      });
+    }
+  };
+
+  candidateContext.answersStore.subscribe(updateNofUnansweredQuestions);
+  candidateContext.questionsStore.subscribe(updateNofUnansweredQuestions);
+
+  candidateContext.answersStore.subscribe(updateProgress);
+  candidateContext.questionsStore.subscribe(updateProgress);
 </script>
 
 <!--

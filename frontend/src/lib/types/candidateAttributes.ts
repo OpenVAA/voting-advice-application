@@ -11,7 +11,13 @@ export interface Candidate {
   id: number;
   firstName: string;
   lastName: string;
+  gender: Gender;
+  birthday: string;
   photo?: Photo;
+  manifesto: LocalizedString;
+  motherTongues: Language[];
+  unaffiliated: boolean;
+  politicalExperience: string;
   email: string;
   nomination: Nomination;
   locale: string;
@@ -22,6 +28,11 @@ export interface Candidate {
 export interface Language {
   id: number;
   localisationCode: string;
+  name: string;
+}
+
+export interface Gender {
+  id: number;
   name: string;
 }
 
@@ -85,14 +96,11 @@ export interface Constituency {
   type: string;
 }
 
-export type CandidateAnswer = {
-  /**Id of the answer in the database */
-  id: string;
-  /**Selected answer option */
-  value: AnswerPropsValue;
-  /**Optional free-form answer */
-  openAnswer?: LocalizedString | null;
-};
+export interface Answer {
+  id: string; // Id of the answer in the database
+  key: AnswerOption['key']; // Selected answer option
+  openAnswer: LocalizedString | null; // Optional free-form answer
+}
 
 export interface Question {
   id: string;
@@ -102,7 +110,7 @@ export interface Question {
   info?: LocalizedString;
   fillingInfo?: string;
   type: QuestionSettingsProps['type'];
-  values?: Array<QuestionChoiceProps>;
+  values?: QuestionChoiceProps[];
   min?: number | Date;
   max?: number | Date;
   notLocalizable?: boolean;

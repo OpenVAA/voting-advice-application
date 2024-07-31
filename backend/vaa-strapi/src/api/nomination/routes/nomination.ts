@@ -19,6 +19,9 @@ export default factories.createCoreRouter('api::nomination.nomination', {
           'candidate',
           'candidate.populate.party',
           'candidate.populate.photo',
+          'candidate.populate.gender',
+          'candidate.populate.motherTongues',
+          'candidate.populate.otherLanguages',
           'candidate.populate.answers.populate.question',
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
@@ -44,6 +47,9 @@ export default factories.createCoreRouter('api::nomination.nomination', {
           'candidate',
           'candidate.populate.party',
           'candidate.populate.photo',
+          'candidate.populate.gender',
+          'candidate.populate.motherTongues',
+          'candidate.populate.otherLanguages',
           'candidate.populate.answers.populate.question',
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations

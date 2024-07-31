@@ -8,34 +8,34 @@
 
 <BasicPage title={$t('candidateApp.help.title')}>
   <div class="text-center">
-    <p class="pb-lg">{$t('candidateApp.help.ingress')}</p>
+    <p class="pb-lg">{$t('candidateApp.help.description')}</p>
   </div>
 
-  <Expander title={$t('xxx.help.questions.question1.question')} variant="question-help">
-    {$t('xxx.help.questions.question1.answer')}
+  <Expander title={$t('candidateApp.help.questions.question1.question')} variant="question-help">
+    {$t('candidateApp.help.questions.question1.answer')}
   </Expander>
 
-  <Expander title={$t('xxx.help.questions.question2.question')} variant="question-help">
-    {$t('xxx.help.questions.question2.answer')}
+  <Expander title={$t('candidateApp.help.questions.question2.question')} variant="question-help">
+    {$t('candidateApp.help.questions.question2.answer')}
   </Expander>
 
-  <Expander title={$t('xxx.help.questions.question3.question')} variant="question-help">
-    {$t('xxx.help.questions.question3.answer')}
+  <Expander title={$t('candidateApp.help.questions.question3.question')} variant="question-help">
+    {$t('candidateApp.help.questions.question3.answer')}
   </Expander>
 
-  <Expander title={$t('xxx.help.questions.question4.question')} variant="question-help">
-    {$t('xxx.help.questions.question4.answer')}
+  <Expander title={$t('candidateApp.help.questions.question4.question')} variant="question-help">
+    {$t('candidateApp.help.questions.question4.answer')}
   </Expander>
 
-  <Expander title={$t('xxx.help.questions.question5.question')} variant="question-help">
-    {$t('xxx.help.questions.question5.answer')}
+  <Expander title={$t('candidateApp.help.questions.question5.question')} variant="question-help">
+    {$t('candidateApp.help.questions.question5.answer')}
   </Expander>
 
   <svelte:fragment slot="primaryActions">
     <Button
       icon="next"
       variant="main"
-      text={$t('candidateApp.common.continueFilling')}
+      text={$t('candidateApp.help.continueFilling')}
       href={$getRoute(Route.CandAppHome)} />
   </svelte:fragment>
 </BasicPage>

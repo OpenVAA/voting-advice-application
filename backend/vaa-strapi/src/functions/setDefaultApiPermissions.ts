@@ -7,6 +7,7 @@ export async function setDefaultApiPermissions() {
   const contentTypes = [
     'api::answer.answer',
     'api::app-setting.app-setting',
+    'api::candidate-attribute.candidate-attribute',
     'api::candidate.candidate',
     'api::constituency.constituency',
     'api::election-app-label.election-app-label',
@@ -16,7 +17,8 @@ export async function setDefaultApiPermissions() {
     'api::party.party',
     'api::question-category.question-category',
     'api::question-type.question-type',
-    'api::question.question'
+    'api::question.question',
+    'api::gender.gender'
   ];
 
   for (const contentType of contentTypes) {

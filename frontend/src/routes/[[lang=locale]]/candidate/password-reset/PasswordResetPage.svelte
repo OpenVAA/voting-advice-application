@@ -1,4 +1,5 @@
 <script lang="ts">
+  import {page} from '$app/stores';
   import {goto} from '$app/navigation';
   import {t} from '$lib/i18n';
   import {resetPassword} from '$lib/api/candidate';
@@ -29,7 +30,7 @@
 
     const response = await resetPassword(code, password);
     if (!response.ok) {
-      errorMessage = $t('candidateApp.resetPassword.failed');
+      errorMessage = $t('candidateApp.resetPassword.passwordResetError');
       return;
     }
 
@@ -55,9 +56,10 @@
   ```
 -->
 
-<FrontPage title={$t('dynamic.appName')}>
+<FrontPage title={$t('viewTexts.appTitle')}>
   <HeadingGroup slot="heading">
-    <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
+    <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
+    <h1 class="text-xl font-normal">{$page.data.election.name}</h1>
     <h1 class="my-24 text-2xl font-normal">{$t('candidateApp.resetPassword.createNewPassword')}</h1>
   </HeadingGroup>
   <form class="flex-nowarp flex flex-col items-center">

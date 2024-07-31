@@ -1,27 +1,22 @@
 {
-  "additionalActions": "Lisää toimintoja tähän kysymykseen liittyen",
-  "answers": {
-    "bothHaventAnswered": "Sinä ja {entity} ette ole vastanneet tähän kysymykseen",
-    "entityHasntAnswered": "{entity} ei ole vastannut tähän kysymykseen",
-    "youHaventAnswered": "Et ole vastannut tähän kysymykseen",
-    "yourAnswer": "Sinä"
-  },
-  "category": {
-    "numQuestions": "{numQuestions, plural, =-1 {} =1 {1 kysymys} other {# kysymystä}}",
-    "skip": "Ohita tämä teema"
-  },
+  "bothHaventAnswered": "Sinä ja {entity} ette ole vastanneet tähän kysymykseen",
+  "categoryIntroQuestions": "{numQuestions, plural, =-1 {} =1 {1 kysymys} other {# kysymystä}}",
+  "entityHasntAnswered": "{entity} ei ole vastannut tähän kysymykseen",
+  "heroEmoji": "💬",
   "infoDescription": "Taustatietoja tästä kysymyksestä",
-  "intro": {
-    "ingress": {
-      "withCategories": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. {minQuestions, plural, =0 {} =1 {} other {Valitse kuitenkin teemat siten, että niissä on ainakin # kysymystä.}}",
-      "withoutCategories": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista."
-    },
-    "start": "Vastaa {numQuestions} kysymykseen"
-  },
+  "ingressWithoutCategories": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista.",
+  "ingressWithCategories": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. {minQuestions, plural, =0 {} =1 {} other {Valitse kuitenkin teemat siten, että niissä on ainakin # kysymystä.}}",
   "next": "Seuraava",
+  "notFound": "Kysymystä ei löytynyt",
   "previous": "Edellinen",
+  "title": "Mielipiteesi",
+  "readMore": "Lue lisää",
   "remove": "Poista vastaus",
   "skip": "Ohita",
+  "skipCategory": "Ohita tämä teema",
   "skipToResults": "Hyppää tuloksiin",
-  "title": "Mielipiteesi"
+  "start": "Vastaa {numQuestions} kysymykseen",
+  "youHaventAnswered": "Et ole vastannut tähän kysymykseen",
+  "yourAnswer": "Sinä",
+  "cannotEditWarning": "Vastaustesi muokkaaminen ei ole enää mahdollista, mutta voit silti tarkastella niitä. Ota yhteyttä ylläpitäjään, jos tiedoissasi on virheitä."
 }

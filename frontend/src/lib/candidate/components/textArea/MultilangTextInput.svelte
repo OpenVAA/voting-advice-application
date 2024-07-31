@@ -89,9 +89,9 @@ Input field variant
 ```
 -->
 
-<div class="w-full">
+<div class="m-12 w-full">
   {#if headerText && !compact}
-    <label for={id} class="small-label mx-6 my-6 p-0">{headerText}</label>
+    <label for={id} class="small-label mx-10 my-6 p-0">{headerText}</label>
   {:else}
     <slot name="header" />
   {/if}
@@ -99,7 +99,7 @@ Input field variant
   <FieldGroup>
     {#if multilangText}
       <!-- Current locale text area is always shown -->
-      <Field {id}>
+      <Field>
         {#if compact}
           <InputField
             bind:text={multilangText[$currentLocale]}
@@ -122,10 +122,10 @@ Input field variant
 
       {#if translationsShown}
         {#each $locales.filter((locale) => locale !== $currentLocale) as locale}
-          <Field id="{id}-{locale}">
+          <Field>
             {#if compact}
               <InputField
-                id="{id}-{locale}"
+                id={id + '-' + locale}
                 bind:text={multilangText[locale]}
                 headerText={$t(`lang.${locale}`)}
                 {placeholder}
@@ -133,7 +133,7 @@ Input field variant
                 {locked} />
             {:else}
               <TextArea
-                id="{id}-{locale}"
+                id={id + '-' + locale}
                 bind:text={multilangText[locale]}
                 headerText={$t(`lang.${locale}`)}
                 localStorageId={localStorageId + '-' + locale}
@@ -150,16 +150,14 @@ Input field variant
   </FieldGroup>
 
   {#if translationsShown}
-    <p class="px-6 text-sm">{$t('components.multiLangInput.info')}</p>
+    <p class="px-6 text-sm">{$t('candidateApp.textarea.info')}</p>
   {/if}
 
   <!-- Toggle whether translations are shown -->
   <Button
     type="button"
     on:click={() => (translationsShown = !translationsShown)}
-    text={translationsShown
-      ? $t('components.multiLangInput.hide')
-      : $t('components.multiLangInput.show')}
+    text={translationsShown ? $t('candidateApp.textarea.hide') : $t('candidateApp.textarea.show')}
     variant="normal"
     icon={translationsShown ? 'hide' : 'language'}
     {disabled}

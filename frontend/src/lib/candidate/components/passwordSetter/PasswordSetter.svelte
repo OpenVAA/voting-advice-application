@@ -45,7 +45,7 @@ a second confirmation password input field, a button for submitting the password
   class="m-0 flex w-full flex-col flex-nowrap items-center"
   on:submit|preventDefault={buttonPressed}>
   <p class="m-0 text-center">
-    {$t('candidateApp.setPassword.ingress')}
+    {$t('candidateApp.setPassword.description')}
   </p>
   <PasswordValidator bind:validPassword {password} />
   <div class="mb-md flex w-full max-w-md flex-col gap-6">

@@ -1,67 +1,28 @@
 {
-  "answer": {
-    "no": "No",
-    "yes": "Yes"
-  },
-  "back": "Back",
+  "answerNo": "No",
+  "answerYes": "Yes",
   "cancel": "Cancel",
   "candidate": {
-    "plural": "candidates",
-    "singular": "candidate"
+    "singular": "candidate",
+    "plural": "candidates"
   },
-  "candidatePortrait": "Portrait",
-  "clear": "Clear",
+  "clearInput": "Clear",
   "close": "Close",
-  "closeDialog": "Close dialog",
-  "closeMenu": "Close menu",
   "continue": "Continue",
-  "electionList": "List",
   "electionSymbol": {
     "candidate": "Election Number",
     "party": "Election Symbol"
   },
-  "expandOrCollapse": "Expand or collapse this section",
-  "firstName": "First Name",
-  "home": "home",
   "info": "Info",
-  "language": {
-    "select": "Select Language"
-  },
-  "lastName": "Surname",
   "loading": "Loading…",
-  "login": "Sign in",
-  "logout": "Log Out",
-  "madeWithPrefix": "Made with",
-  "madeWithSuffix": "",
   "missingAnswer": "—",
   "multipleAnswerSeparator": " • ",
-  "openCloseMenu": "Toggle menu",
-  "openMenu": "Open menu",
   "openVAA": "OpenVAA",
   "party": {
-    "plural": "parties",
-    "singular": "Party"
+    "singular": "party",
+    "plural": "parties"
   },
-  "pending": "pending",
-  "primaryActions": "Primary actions",
-  "privacy": {
-    "dataCollection": {
-      "content": "We would like to collected usage data anonymously for research purposes and to improve the application. The data to collect includes your answers to the questions, the time spent answering the questions and in other sections and the results viewed, but the data cannot be connected to you.",
-      "title": "Collecting Usage Data"
-    }
-  },
-  "progress": "Progress",
-  "publishedBy": "Published by {publisher}",
   "question": "Question",
-  "readMore": "Read More",
-  "resetAnswers": "Clear your answers",
-  "return": "Return",
-  "returnHome": "Return Home",
-  "saveAndContinue": "Save and Continue",
-  "saveAndReturn": "Save and Return",
-  "selectFirst": "Select first",
-  "showFullImage": "Show full image",
-  "skipToMain": "Skip to main content",
   "thanksNo": "No Thanks",
   "unaffiliated": "Unaffiliated",
   "website": "Website"

@@ -1,4 +1,5 @@
 {
-  "allCandidates": "Alla {candidatePlural}",
-  "title": "Statistik"
+  "title": "Statistik",
+  "heroEmoji": "🧮",
+  "allCandidates": "Alla {candidatePlural}"
 }

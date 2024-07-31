@@ -83,7 +83,7 @@
    */
   function getErrorEmail() {
     const subject = encodeURIComponent(
-      `${$t('feedback.error.emailSubject')}: ${$t('dynamic.appName')}`
+      `${$t('feedback.errorEmailSubject')}: ${$t('viewTexts.appTitle')}`
     );
     const start = `mailto:${$settings.admin.email}?subject=${encodeURIComponent(subject)}`;
     let end = `\n\nDate: ${new Date()}`;
@@ -147,12 +147,12 @@ Show a form for sending feedback.
   <!-- Rating -->
   <fieldset class="flex justify-center">
     <legend class="mb-md w-full text-center" class:sr-only={variant === 'compact'}>
-      {$t('feedback.rating.label')}
+      {$t('feedback.ratingLabel')}
     </legend>
     <div class="rating">
       <input
         on:click={() => (rating = undefined)}
-        aria-label={$t('feedback.rating.valueLabel', {rating: 0, ratingMax: MAX_RATING})}
+        aria-label={$t('feedback.ratingValueLabel', {rating: 0, ratingMax: MAX_RATING})}
         value={0}
         type="radio"
         name="rating"
@@ -162,7 +162,7 @@ Show a form for sending feedback.
       {#each Array.from({length: MAX_RATING}, (_, i) => i + 1) as value}
         <input
           on:click={() => (rating = value)}
-          aria-label={$t('feedback.rating.valueLabel', {rating: value, ratingMax: MAX_RATING})}
+          aria-label={$t('feedback.ratingValueLabel', {rating: value, ratingMax: MAX_RATING})}
           {value}
           type="radio"
           name="rating"
@@ -177,11 +177,11 @@ Show a form for sending feedback.
     bind:value={description}
     on:focus={() => (textareaExpanded = true)}
     disabled={status !== 'default'}
-    aria-label={$t('feedback.description.label')}
+    aria-label={$t('feedback.descriptionLabel')}
     class="textarea textarea-bordered h-[1rem] w-full resize-none"
     class:resize-y={textareaExpanded}
     class:min-h-[6rem]={textareaExpanded}
-    placeholder={$t('feedback.description.placeholder')}></textarea>
+    placeholder={$t('feedback.descriptionPlaceholder')}></textarea>
 
   <!-- Email info and error -->
   {#if status !== 'error'}
@@ -194,9 +194,9 @@ Show a form for sending feedback.
   {:else}
     <div class="grid gap-md">
       <p class="mb-0 text-center text-warning">
-        {$t('feedback.error.message')}
+        {$t('feedback.error')}
         {#if $settings.admin.email}
-          {$t('feedback.error.emailIntro')}
+          {$t('feedback.errorEmailIntro')}
         {/if}
       </p>
       {#if $settings.admin.email}
@@ -218,12 +218,12 @@ Show a form for sending feedback.
         disabled={!canSubmit}
         variant="main"
         text={status === 'sent'
-          ? $t('feedback.thanks')
+          ? $t('feedback.sendButtonThanks')
           : status === 'sending'
-            ? $t('feedback.sending')
+            ? $t('feedback.sendButtonSending')
             : status === 'error'
               ? $t('common.close')
-              : $t('feedback.send')} />
+              : $t('feedback.sendButton')} />
       <Button
         on:click={() => dispatch('cancel')}
         disabled={status !== 'default'}

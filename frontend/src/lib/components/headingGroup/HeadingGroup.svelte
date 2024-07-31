@@ -9,7 +9,7 @@ and the main title.
 
 ### Properties
 
-- `aria-roledescription`: The Aria role description of the `<hgroup>` element representing the pre-title. @default $t('components.headingGroup.roleDescription')
+- `aria-roledescription`: The Aria role description of the `<hgroup>` element representing the pre-title. @default $t('aria.headingGroup')
 - `role`: The Aria role of the `<hgroup>` element. @default 'group'
 - Any valid attributes of a `<hgroup>` element.
 
@@ -27,9 +27,6 @@ and the main title.
 ```
 -->
 
-<hgroup
-  aria-roledescription={$t('components.headingGroup.roleDescription')}
-  role="group"
-  {...$$restProps}>
+<hgroup aria-roledescription={$t('aria.headingGroup')} role="group" {...$$restProps}>
   <slot />
 </hgroup>

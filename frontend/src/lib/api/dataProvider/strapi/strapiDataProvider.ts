@@ -339,7 +339,6 @@ function getQuestions({electionId, locale, categoryType}: GetAnyQuestionsOptions
         const props: QuestionProps = {
           id: `${qst.id}`,
           order: attr.order ?? 0,
-          required: attr.required ?? true,
           text,
           info: translate(attr.info, locale),
           shortName: shortName ? shortName : text,

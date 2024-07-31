@@ -1,0 +1,43 @@
+{
+  "kind": "collectionType",
+  "collectionName": "candidate_attributes",
+  "info": {
+    "singularName": "candidate-attribute",
+    "pluralName": "candidate-attributes",
+    "displayName": "Candidate Attributes",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "questionType": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::question-type.question-type"
+    },
+    "candidate": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::candidate.candidate",
+      "inversedBy": "candidateAttributes"
+    },
+    "name": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "shortName": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "info": {
+      "pluginOptions": {},
+      "type": "json"
+    },
+    "fillingInfo": {
+      "pluginOptions": {},
+      "type": "json"
+    }
+  }
+}

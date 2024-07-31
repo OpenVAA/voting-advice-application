@@ -1,21 +1,15 @@
 {
-  "description": {
-    "label": "Muut kommentit",
-    "placeholder": "Muut kommentit tai ehdotukset"
-  },
+  "descriptionLabel": "Muut kommentit",
+  "descriptionPlaceholder": "Muut kommentit tai ehdotukset",
   "emailIntro": "Voit halutessasi myös lähettää meille sähköpostia osoitteeseen",
-  "error": {
-    "emailIntro": "Voisitko ystävällisesti lähettää palautteesi sähköpostilla klikkaamalla alta. Jo kirjoittamasi viesti kopioidaan automaattisesti mukaan.",
-    "emailSubject": "Palaute",
-    "message": "Anteeksi, palautteen lähettämisessä tapahtui virhe."
-  },
+  "error": "Anteeksi, palautteen lähettämisessä tapahtui virhe.",
+  "errorEmailIntro": "Voisitko ystävällisesti lähettää palautteesi sähköpostilla klikkaamalla alta. Jo kirjoittamasi viesti kopioidaan automaattisesti mukaan.",
+  "errorEmailSubject": "Palaute",
   "popupTitle": "Mitä mieltä olet vaalikoneesta?",
-  "rating": {
-    "label": "Yleisarvio vaalikoneesta",
-    "valueLabel": "{rating, plural, =0 {Ei arviota} other {Arvio # maksimista {ratingMax}}}"
-  },
-  "send": "Anna palautetta",
-  "sending": "Lähetetään…",
-  "thanks": "Kiitos palautteestasi!",
+  "ratingLabel": "Yleisarvio vaalikoneesta",
+  "ratingValueLabel": "{rating, plural, =0 {Ei arviota} other {Arvio # maksimista {ratingMax}}}",
+  "sendButton": "Lähetä palaute",
+  "sendButtonSending": "Lähetetään…",
+  "sendButtonThanks": "Kiitos palautteestasi!",
   "title": "Palaute"
 }

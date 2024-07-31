@@ -92,14 +92,14 @@
         on:click={$openFeedbackModal}
         variant="icon"
         icon="feedback"
-        text={$t('feedback.send')} />
+        text={$t('navigation.sendFeedback')} />
     {/if}
     <Button
       class="!text-neutral"
       variant="icon"
       icon="close"
       on:click={() => (useBack ? history.back() : goto($getRoute(Route.Results)))}
-      text={$t('common.back')} />
+      text={$t('header.back')} />
   </svelte:fragment>
   {#await Promise.all([entity, candidatesOrUndef, $opinionQuestions, $infoQuestions])}
     <Loading showLabel />

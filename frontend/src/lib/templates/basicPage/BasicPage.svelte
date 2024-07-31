@@ -8,7 +8,7 @@
   import {Page} from '../page';
   import type {BasicPageProps} from './BasicPage.type';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
   type $$Props = BasicPageProps;
 
@@ -25,7 +25,7 @@
   let hasVideo = false;
   $: hasVideo = videoWidth > 0 && videoHeight > 0;
 
-  const userStore = getContext<CandidateContext>('candidate')?.user;
+  const userStore = getContext<CandidateContext>('candidate')?.userStore;
 
   // We are in the candidate application and the user has logged in
   // TODO: Figure out a way to define this LogoutButton part only within the
@@ -74,7 +74,7 @@ Instead, you have to use a wrapper. Note that this will also always result in th
 - `title`: The required page `title`.
 - `noteClass`: Optional class string to add to the `<div>` tag wrapping the `note` slot.
 - `noteRole`: Aria role for the `note` slot. @default 'note'
-- `primaryActionsLabel`: Optional `aria-label` for the section that contains the primary page actions. @default $t('common.primaryActions')
+- `primaryActionsLabel`: Optional `aria-label` for the section that contains the primary page actions. @default $t('aria.primaryActionsLabel')
 - `titleClass`: Optional class string to add to the `<div>` tag wrapping the `title` slot.
 - Any valid properties of the `Page` template.
 
@@ -181,7 +181,7 @@ Instead, you have to use a wrapper. Note that this will also always result in th
   {#if $$slots.primaryActions}
     <section
       class="flex w-full max-w-xl flex-col items-center justify-end"
-      aria-label={primaryActionsLabel ?? $t('common.primaryActions')}>
+      aria-label={primaryActionsLabel ?? $t('aria.primaryActionsLabel')}>
       <slot name="primaryActions" />
     </section>
   {/if}

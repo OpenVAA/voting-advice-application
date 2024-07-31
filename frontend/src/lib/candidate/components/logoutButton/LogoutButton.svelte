@@ -5,7 +5,7 @@
   import {goto} from '$app/navigation';
   import {Button} from '$lib/components/button';
   import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
   import type {LogoutButtonProps} from './LogoutButton.type';
 
   type $$props = LogoutButtonProps;
@@ -18,14 +18,26 @@
   let closeModal: () => void;
   let timeLeft = logoutModalTimer;
 
-  const {unansweredOpinionQuestions, unansweredRequiredInfoQuestions, logOut} =
-    getContext<CandidateContext>('candidate');
+  const {
+    nofUnansweredBasicInfoQuestionsStore,
+    opinionQuestionsFilledStore,
+    nofUnansweredOpinionQuestionsStore,
+    basicInfoFilledStore,
+    logOut
+  } = getContext<CandidateContext>('candidate');
+
+  let basicInfoQuestionsLeft: number | undefined;
+  nofUnansweredBasicInfoQuestionsStore?.subscribe((value) => {
+    basicInfoQuestionsLeft = value;
+  });
+
+  let opinionQuestionsLeft: number | undefined;
+  nofUnansweredOpinionQuestionsStore?.subscribe((value) => {
+    opinionQuestionsLeft = value;
+  });
 
   const triggerLogout = () => {
-    if (
-      $unansweredOpinionQuestions?.length !== 0 ||
-      $unansweredRequiredInfoQuestions?.length !== 0
-    ) {
+    if (!$opinionQuestionsFilledStore || !$basicInfoFilledStore) {
       openModal();
     } else {
       logout();
@@ -58,7 +70,7 @@ Allows user to log out. Displays modal notification if the user hasn't filled al
 <Button
   on:click={triggerLogout}
   icon="logout"
-  text={$t('common.logout')}
+  text={$t('candidateApp.common.logOut')}
   color="warning"
   {...$$restProps} />
 
@@ -70,29 +82,30 @@ Allows user to log out. Displays modal notification if the user hasn't filled al
   title={$t('candidateApp.logoutModal.title')}
   timerDuration={logoutModalTimer}>
   <!-- <div class="notification max-w-md text-center"> -->
-  {#if $unansweredOpinionQuestions && $unansweredRequiredInfoQuestions?.length === 0}
+  {#if !$basicInfoFilledStore}
     <p>
-      {$t('candidateApp.logoutModal.questionsLeft', {
-        opinionQuestionsLeft: $unansweredOpinionQuestions.length ?? 0
+      {$t('candidateApp.logoutModal.itemsLeft', {
+        basicInfoQuestionsLeft,
+        opinionQuestionsLeft
       })}
     </p>
   {:else}
     <p>
-      {$t('candidateApp.logoutModal.itemsLeft', {
-        infoQuestionsLeft: $unansweredRequiredInfoQuestions?.length ?? 0,
-        opinionQuestionsLeft: $unansweredOpinionQuestions?.length ?? 0
-      })}
+      {$t('candidateApp.logoutModal.questionsLeft', {opinionQuestionsLeft})}
     </p>
   {/if}
   <p>
-    {$t('candidateApp.logoutModal.ingress', {timeLeft})}
+    {$t('candidateApp.logoutModal.confirmation', {timeLeft})}
   </p>
   <!-- </div> -->
   <div slot="actions" class="flex w-full flex-col items-center">
-    <Button on:click={closeModal} text={$t('candidateApp.logoutModal.continue')} variant="main" />
+    <Button
+      on:click={closeModal}
+      text={$t('candidateApp.logoutModal.continueEnteringData')}
+      variant="main" />
     <Button
       on:click={logout}
-      text={$t('common.logout')}
+      text={$t('candidateApp.common.logOut')}
       class="w-full hover:bg-warning hover:text-warning-content"
       color="warning" />
   </div>

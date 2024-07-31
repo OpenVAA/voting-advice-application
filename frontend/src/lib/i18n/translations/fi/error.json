@@ -4,6 +4,7 @@
   "content": "<p>Olemme todella pahoillamme harmista. Voit koettaa palata takaisin ja ladata sivun uudelleen ja katsoa, toistuuko ongelma.</p><p>Jos tilanne ei korjaannu, pyydämme ystävällisesti lähettämään sähköpostia osoitteeseen {adminEmail} ja kuvailemaan mahdollisimman tarkasti, mitä tapahtui. Kiitos etukäteen!</p>",
   "default": "Jotakin meni pieleen, anteeksi!",
   "general": "Jotakin meni pieleen, anteeksi",
+  "heroEmoji": "🙊",
   "noQuestions": "Vaalikoneessa ei vielä ole kysymksiä.",
   "unsupportedQuestion": "Tätä kysymystä ei voida näyttää, anteeksi!"
 }

@@ -54,7 +54,7 @@ Display a button for filling out a user survey.
   variant="normal"
   color="accent"
   disabled={clicked}
-  text={clicked ? $t('dynamic.survey.thanks') : $t('dynamic.survey.button')}
+  text={clicked ? $t('survey.thanks') : $t('survey.button')}
   icon="research"
   iconPos="left"
   {...concatClass($$restProps, 'justify-center')} />

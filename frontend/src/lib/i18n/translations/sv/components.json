@@ -1,51 +1,71 @@
 {
-  "headingGroup": {
-    "roleDescription": "Rubrikgrupp"
+  "entityCard": {
+    "hideAllCandidates": "Kollapsad lista",
+    "showAllCandidates": "Visa alla {numCandidates} kandidater"
+  },
+  "entityDetails": {
+    "tabs": {
+      "info": "Information",
+      "opinions": "Yttranden",
+      "candidates": "{candidatePlural}"
+    }
+  },
+  "entityFilters": {
+    "applyAndClose": "Stäng filter",
+    "error": "Filtret kunde inte laddas, ledsen!",
+    "filterButtonLabel": "Filter",
+    "filters": "Filter",
+    "missingValue": "Inget svar",
+    "numeric": {
+      "maxLabel": "Maximum",
+      "minLabel": "Åtminstone"
+    },
+    "reset": "Återställ filter",
+    "selectAll": "Välj alla",
+    "text": {
+      "ariaLabel": "Text:",
+      "placeholder": "Text att söka efter"
+    },
+    "titles": {
+      "party": "Partiet"
+    },
+    "unselectAll": "Välj bort alla"
+  },
+  "entityInfo": {
+    "links": "Länkar"
+  },
+  "entityList": {
+    "showMore": "Visa mer"
+  },
+  "entityListControls": {
+    "noFilterResults": "Filtren gav inga träffar. Du kan försöka ändra dem.",
+    "noSearchResults": "Sökningen gav inga träffar. Du kan försöka ändra det.",
+    "searchPlaceholder": "Sök efter namn"
   },
   "matchScore": {
     "label": "matchning",
     "score": "{score}%"
   },
-  "multiLangInput": {
-    "hide": "SV Hide translations for this field",
-    "info": "SV You can supply your own translations for the languages the application is available in. If you don’t write your own translations, your original response will be shown.",
-    "show": "SV Show translations for this field"
-  },
-  "passwordInput": {
-    "hidePassword": "SV Hide pasprettier-plugin-sveltesword",
-    "password": "Lösenord",
-    "placeholder": "T.ex. CP23-174a-f4%&-aHAB",
-    "showPassword": "SV Reveal password"
-  },
-  "photoInput": {
-    "tapToAddPhoto": "SV Tap to add photo"
-  },
-  "preHeading": {
-    "roleDescription": "Förtexter"
-  },
-  "preventNavigation": {
-    "unsavedChanges": "SV You have unsaved changes. Are you sure you want to leave this page?"
-  },
   "video": {
-    "captions": "Bildtexter",
     "error": "Tyvärr, det verkar vara några problem med videon. Du kan försöka ladda om sidan eller använda knappen nedan för att växla till en textvy.",
-    "hideCaptions": "Dölj undertexter",
     "jumpBack": "Hoppa tillbaka",
     "jumpForward": "Hoppa framåt",
-    "mute": "Mute",
-    "pause": "Paus",
-    "play": "Spela",
-    "progessbarLabel": "Återstående tid",
-    "replay": "Replay",
-    "showCaptions": "Visa undertexter",
-    "showTranscript": "Visa video som text",
-    "showVideo": "Visa video",
+    "captions": "Bildtexter",
     "subtitles": "Undertexter",
+    "mute": "Mute",
+    "unmute": "Avslöja",
+    "play": "Spela",
+    "pause": "Paus",
+    "replay": "Replay",
+    "hideCaptions": "Dölj undertexter",
+    "showCaptions": "Visa undertexter",
+    "progessbarLabel": "Återstående tid",
+    "unsupportedWarning": "Tyvärr stöder inte din webbläsare den här typen av video.",
     "timeLeft": "{minuter, plural, =0 {} =1 {en minut} other {# minuter}} {sekunder, plural, =0 {} =1 {en sekund} other {# sekunder}} kvar",
     "transcript": "Text",
+    "video": "Video",
     "transcriptToggleLabel": "Växla mellan video och text",
-    "unmute": "Avslöja",
-    "unsupportedWarning": "Tyvärr stöder inte din webbläsare den här typen av video.",
-    "video": "Video"
+    "showTranscript": "Visa video som text",
+    "showVideo": "Visa video"
   }
 }

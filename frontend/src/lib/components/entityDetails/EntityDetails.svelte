@@ -10,7 +10,6 @@
   import {EntityInfo, EntityOpinions, EntitySubentities} from './';
   import type {EntityDetailsProps} from './EntityDetails.type';
   import {concatClass} from '$lib/utils/components';
-  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
 
   type $$Props = EntityDetailsProps;
 
@@ -62,7 +61,7 @@
           error(500, `Unknown tab content ${c}`);
       }
     }
-    tabs = tabContents.map((c) => $t(assertTranslationKey(`components.entityDetails.tabs.${c}`)));
+    tabs = tabContents.map((c) => $t(`components.entityDetails.tabs.${c}`));
   }
 </script>
 

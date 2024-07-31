@@ -3,8 +3,12 @@
 
   type $$Props = InfoBadgeProps;
   export let text: $$Props['text'] = '';
-  export let classes: $$Props['classes'] = '';
+  export let classes: $$Props['classes'] = 'badge';
   export let disabled: $$Props['disabled'] = false;
+
+  let baseClasses = `badge badge-sm ${disabled ? 'bg-black text-white border-0 opacity-20' : 'badge-warning'} px-[0.25rem] font-bold relative text-[0.8rem] d-flex justify-center items-center`;
+
+  const finalClasses = `${baseClasses} ${classes}`;
 </script>
 
 <!--
@@ -22,10 +26,4 @@
 
 -->
 
-<div
-  class="badge badge-sm px-[0.25rem] {disabled
-    ? 'border-0 bg-black text-white opacity-20'
-    : 'badge-warning'}
-     d-flex relative items-center justify-center text-[0.8rem] font-bold {classes}">
-  <span class="m-0 p-0">{text}</span>
-</div>
+<div class={finalClasses}><span class="m-0 p-0">{text}</span></div>

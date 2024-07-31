@@ -5,19 +5,19 @@
   import {Warning} from '$lib/components/warning/index';
   import {LoadingSpinner} from '$candidate/components/loadingSpinner';
   import {t} from '$lib/i18n';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {user, token} = getContext<CandidateContext>('candidate');
+  const {userStore, tokenStore} = getContext<CandidateContext>('candidate');
   export let showLogin = false;
-  $: candidate = $user?.candidate;
+  $: candidate = $userStore?.candidate;
   $: nomination = candidate?.nomination;
   $: election = nomination?.election;
 
   let error: string | undefined;
   $: {
-    if (!candidate) error = $t('candidateApp.error.userNoCandidate');
-    else if (!nomination) error = $t('candidateApp.error.candidateNoNomination');
-    else if (!election) error = $t('candidateApp.error.nominationNoElection');
+    if (!candidate) error = $t('candidateApp.error.userNoCandidateError');
+    else if (!nomination) error = $t('candidateApp.error.candidateNoNominationError');
+    else if (!election) error = $t('candidateApp.error.nominationNoElectionError');
     else error = undefined;
   }
 </script>
@@ -47,7 +47,7 @@ Shows an error message if there is no candidate associated with the user.
 ```
 -->
 
-{#if $user}
+{#if $userStore}
   {#if !error}
     <slot />
   {:else}
@@ -57,7 +57,7 @@ Shows an error message if there is no candidate associated with the user.
       </Warning>
     </BasicPage>
   {/if}
-{:else if ($token === undefined || ($token && !$user)) && showLogin}
+{:else if ($tokenStore === undefined || ($tokenStore && !$userStore)) && showLogin}
   <LoadingSpinner />
 {:else if showLogin}
   <LoginPage />

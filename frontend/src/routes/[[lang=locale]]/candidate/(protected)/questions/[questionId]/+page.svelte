@@ -3,16 +3,17 @@
   import {page} from '$app/stores';
   import {QuestionPage} from '$candidate/templates/question';
   import {t} from '$lib/i18n';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {opinionQuestions} = getContext<CandidateContext>('candidate');
+  const {questionsStore} = getContext<CandidateContext>('candidate');
 
+  $: questions = $questionsStore;
   $: questionId = $page.params.questionId;
-  $: currentQuestion = $opinionQuestions?.find((question) => question.id === questionId);
+  $: currentQuestion = questions?.[questionId];
 </script>
 
-{#if $opinionQuestions && currentQuestion}
-  <QuestionPage {currentQuestion} />
+{#if questions && currentQuestion}
+  <QuestionPage {questions} {currentQuestion} />
 {:else}
-  {$t('candidateApp.questions.error.questionNotFound', {questionID: currentQuestion?.id})}
+  {$t('questions.notFound')}
 {/if}

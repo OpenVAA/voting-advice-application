@@ -122,12 +122,12 @@ the Drawer component.
 
 <!-- Page title -->
 <svelte:head>
-  <title>{title} – {$t('dynamic.appName')}</title>
+  <title>{title} – {$t('viewTexts.appTitle')}</title>
 </svelte:head>
 
 <!-- Skip links for screen readers and keyboard users. We use tabindex="1" so that's it's available before any alerts injected by layouts. -->
 <!-- svelte-ignore a11y-positive-tabindex -->
-<a href="#{mainId}" tabindex="1" class="sr-only focus:not-sr-only">{$t('common.skipToMain')}</a>
+<a href="#{mainId}" tabindex="1" class="sr-only focus:not-sr-only">{$t('aria.skipToMain')}</a>
 
 <!-- Drawer container -->
 <div {...concatClass($$restProps, 'drawer')}>
@@ -140,7 +140,7 @@ the Drawer component.
     class="drawer-toggle"
     tabindex="-1"
     aria-hidden="true"
-    aria-label={$t('common.openCloseMenu')} />
+    aria-label={$t('header.toggleMenu')} />
 
   <!-- Drawer content -->
   <div class="drawer-content flex flex-col {drawerContentClass ?? ''}">
@@ -152,7 +152,7 @@ the Drawer component.
         bind:this={drawerOpenElement}
         aria-expanded={drawerOpen}
         aria-controls={navId}
-        aria-label={$t('common.openMenu')}
+        aria-label={$t('header.openMenu')}
         class="btn btn-ghost drawer-button flex cursor-pointer items-center gap-md {invertLogo
           ? 'text-primary-content'
           : 'text-neutral'}">
@@ -171,7 +171,7 @@ the Drawer component.
           value={progress}
           min={progressMin}
           max={progressMax}
-          title={$t('common.progress')}
+          title={$t('header.progressTitle')}
           class="absolute left-0 top-0 h-4 w-full translate-y-[-1px]" />
       {/if}
     </header>
@@ -196,7 +196,7 @@ the Drawer component.
       <NavItem
         on:click={closeDrawer}
         icon="close"
-        text={$t('common.closeMenu')}
+        text={$t('header.closeMenu')}
         class="pt-16"
         id="drawerCloseButton" />
     </svelte:component>

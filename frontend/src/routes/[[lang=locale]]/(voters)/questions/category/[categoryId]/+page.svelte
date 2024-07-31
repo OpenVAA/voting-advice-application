@@ -66,7 +66,7 @@
           on:click={$openFeedbackModal}
           variant="icon"
           icon="feedback"
-          text={$t('feedback.send')} />
+          text={$t('navigation.sendFeedback')} />
       {/if}
       {#if $settings.questions.showResultsLink}
         <Button
@@ -74,7 +74,7 @@
           disabled={resultsAvailableSync ? null : true}
           variant="responsive-icon"
           icon="results"
-          text={$t('results.title.results')} />
+          text={$t('actionLabels.results')} />
       {/if}
     </svelte:fragment>
 
@@ -88,7 +88,7 @@
       <HeadingGroup class="relative">
         <h1><CategoryTag {category} /></h1>
         <PreHeading class="text-secondary">
-          {$t('questions.category.numQuestions', {numQuestions: category.questions?.length ?? -1})}
+          {$t('questions.categoryIntroQuestions', {numQuestions: category.questions?.length ?? -1})}
         </PreHeading>
       </HeadingGroup>
     </svelte:fragment>
@@ -112,7 +112,7 @@
               ? {route: Route.QuestionCategory, id: nextCategoryId}
               : {route: Route.Results}
           )}
-          text={nextCategoryId ? $t('questions.category.skip') : $t('questions.skipToResults')}
+          text={nextCategoryId ? $t('questions.skipCategory') : $t('questions.skipToResults')}
           class="justify-center" />
       {/if}
     </svelte:fragment>

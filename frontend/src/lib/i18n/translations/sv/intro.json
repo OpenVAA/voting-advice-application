@@ -1,0 +1,9 @@
+{
+  "continue": "Hoppa till frågor",
+  "heroEmoji": "🚀",
+  "ingress": "Denna applikation hjälper dig att hitta den {candidatePlural} och {partyPlural} som bäst matchar dina åsikter i valet.",
+  "listItemDetails": "Studera dem i detalj",
+  "listItemOpinions": "Ange dina åsikter",
+  "listItemResults": "Se de {candidatePlural} och {partyPlural} som bäst överensstämmer med dig",
+  "title": "Låt oss börja!"
+}

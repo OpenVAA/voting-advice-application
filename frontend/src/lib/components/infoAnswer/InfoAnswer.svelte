@@ -15,7 +15,7 @@
   export let format: $$Props['format'] = 'default';
   export let hideMissing: $$Props['hideMissing'] = false;
 
-  let answer: string | Array<string> | undefined;
+  let answer: string | string[] | undefined;
   let asTag: boolean;
 
   $: {

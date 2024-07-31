@@ -65,33 +65,33 @@ function passwordValidation(password: string, username: string): Record<string, 
   const result: Record<string, ValidationDetail> = {
     length: {
       status: password.length >= minPasswordLength,
-      message: 'candidateApp.register.passwordValidation.length'
+      message: 'candidateApp.passwordValidation.length'
     },
     uppercase: {
       status: containsCharacter(password, (char) => isLetter(char) && char === char.toUpperCase()),
-      message: 'candidateApp.register.passwordValidation.uppercase'
+      message: 'candidateApp.passwordValidation.uppercase'
     },
     lowercase: {
       status: containsCharacter(password, (char) => isLetter(char) && char === char.toLowerCase()),
-      message: 'candidateApp.register.passwordValidation.lowercase'
+      message: 'candidateApp.passwordValidation.lowercase'
     },
     number: {
       status: containsCharacter(password, (char) => /[0-9]/.test(char)),
-      message: 'candidateApp.register.passwordValidation.number'
+      message: 'candidateApp.passwordValidation.number'
     },
     symbol: {
       status: containsCharacter(password, (char) => !isLetter(char) && !/[0-9]/.test(char)),
-      message: 'candidateApp.register.passwordValidation.symbol'
+      message: 'candidateApp.passwordValidation.symbol'
     },
     username: {
       status: username === '' || !password.toLowerCase().includes(username.toLowerCase()),
-      message: 'candidateApp.register.passwordValidation.username',
+      message: 'candidateApp.passwordValidation.username',
       negative: true,
       enforced: true
     },
     repetition: {
       status: !checkRepetition(password),
-      message: 'candidateApp.register.passwordValidation.repetition',
+      message: 'candidateApp.passwordValidation.repetition',
       negative: true
     }
   };

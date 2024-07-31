@@ -48,7 +48,7 @@
 
 <BasicPage title={$t('statistics.title')}>
   <svelte:fragment slot="hero">
-    <HeroEmoji emoji={$t('dynamic.statistics.heroEmoji')} />
+    <HeroEmoji emoji={$t('statistics.heroEmoji')} />
   </svelte:fragment>
 
   {#await Promise.all([$candidateRankings, $partyRankings, $opinionQuestions])}
@@ -63,7 +63,7 @@
           {#if type === 'singleChoiceOrdinal' && values}
             {#if voterAnswer == null}
               <div class="small-label mb-16 text-center">
-                {$t('questions.answers.youHaventAnswered')}
+                {$t('questions.youHaventAnswered')}
               </div>
             {/if}
 

@@ -35,24 +35,10 @@ declare global {
   type AnswerDict = Record<string, AnswerProps>;
 
   /**
-   * The possible values for an answer to a question.
-   */
-  type AnswerPropsValue =
-    | string
-    | Array<string>
-    | boolean
-    | number
-    | Array<number>
-    | Date
-    | LocalizedString
-    | undefined
-    | null;
-
-  /**
    * Properties of a Candidate's or Party's answer to a question.
    */
-  interface AnswerProps<TValue extends AnswerPropsValue = AnswerPropsValue> {
-    value: TValue;
+  interface AnswerProps {
+    value: string | string[] | boolean | number | number[] | Date | undefined | null;
     openAnswer?: string;
   }
 
@@ -295,7 +281,6 @@ declare global {
     text: string;
     shortName: string;
     order?: number;
-    required?: boolean;
     category: QuestionCategoryProps;
     entityType: EntityType;
     info?: string;

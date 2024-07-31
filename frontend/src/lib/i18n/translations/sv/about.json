@@ -1,17 +1,13 @@
 {
   "content": "<p>Valkompassen fungerar genom att jämföra de åsikter du anger med dem som ges av {candidatePlural} och {partyPlural}. Resultaten ges en matchningspoäng, vilket är procentandelen av hur nära du håller med dem.</p><ul><li>En poäng på 100 innebär att du instämmer helt i alla frågor som du har besvarat.</li><li>En poäng på 0 innebär att du inte håller med om alla frågor.</li><li>En poäng mellan dessa två ytterligheter innebär att du håller med om vissa frågor och inte håller med om andra.</li></ul>",
-  "feedback": {
-    "title": "Respons"
-  },
-  "partyMatching": {
-    "content": "{partyMatchingMethod, select, answersOnly {<p>Partipoängen beräknas utifrån de svar som partierna har lämnat.</p>} mean {<p>Partipoängen beräknas utifrån de svar som partierna har lämnat eller - om sådana saknas - från medelvärdet av deras kandidaters svar.</p>} median {<p>Partiernas poäng beräknas utifrån de svar som de har gett eller - om dessa saknas - från medianen av deras kandidaters svar.</p>} other {<p>Partiernas poäng beräknas utifrån de svar som de har gett eller - om dessa saknas - från deras kandidaters svar.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Observera att kandidater kan vara oense med sitt parti i vissa frågor, och de beräknade partisvaren kan därför skilja sig från partiernas officiella ställningstaganden.</p>}}",
-    "title": "Matchning av partier"
-  },
+  "feedbackTitle": "Respons",
+  "feedbackContent": "Du kan skicka feedback om valkompassen genom att använda feedbackformuläret.",
+  "heroEmoji": "⚙️",
+  "partyMatchingTitle": "Matchning av partier",
+  "partyMatchingContent": "{partyMatchingMethod, select, answersOnly {<p>Partipoängen beräknas utifrån de svar som partierna har lämnat.</p>} mean {<p>Partipoängen beräknas utifrån de svar som partierna har lämnat eller - om sådana saknas - från medelvärdet av deras kandidaters svar.</p>} median {<p>Partiernas poäng beräknas utifrån de svar som de har gett eller - om dessa saknas - från medianen av deras kandidaters svar.</p>} other {<p>Partiernas poäng beräknas utifrån de svar som de har gett eller - om dessa saknas - från deras kandidaters svar.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Observera att kandidater kan vara oense med sitt parti i vissa frågor, och de beräknade partisvaren kan därför skilja sig från partiernas officiella ställningstaganden.</p>}}",
   "returnButton": "Återvänd hem",
-  "source": {
-    "content": "Källkoden för applikationen finns tillgänglig på",
-    "sitename": "GitHub",
-    "title": "Källkod"
-  },
+  "sourceTitle": "Källkod",
+  "sourceContent": "Källkoden för applikationen finns tillgänglig på",
+  "sourceSitename": "GitHub",
   "title": "Hur fungerar den här appen?"
 }

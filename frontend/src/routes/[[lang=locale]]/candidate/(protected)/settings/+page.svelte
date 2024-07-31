@@ -10,12 +10,12 @@
   import {changePassword, getLanguages, updateAppLanguage} from '$lib/api/candidate';
   import {PasswordField} from '$lib/candidate/components/passwordField';
   import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
   import type {StrapiLanguageData} from '$lib/api/dataProvider/strapi';
   import type {Language} from '$lib/types/candidateAttributes';
-  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
 
-  const {user, loadUserData} = getContext<CandidateContext>('candidate');
+  const {userStore, loadUserData} = getContext<CandidateContext>('candidate');
+  $: user = $userStore;
 
   // TODO: consider refactoring this as this uses same classes as profile/+page.svelte?
   const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';
@@ -35,10 +35,13 @@
   $: disableSetButton = !validPassword || passwordConfirmation.length === 0;
 
   // Variable for the user's chosen app language. Keep it updated if changed.
-  $: appLanguageCode = $user?.candidate?.appLanguage?.localisationCode;
+  let appLanguageCode = '';
+  userStore.subscribe((updatedUser) => {
+    appLanguageCode = updatedUser?.candidate?.appLanguage?.localisationCode ?? '';
+  });
 
   // Fetch languages from backend
-  let allLanguages: Array<StrapiLanguageData> | undefined;
+  let allLanguages: StrapiLanguageData[] | undefined;
   getLanguages().then((languages) => (allLanguages = languages));
 
   // Handle the change when the app language is changed
@@ -63,7 +66,7 @@
         await loadUserData(); // Reload user data so it's up to date
         await goto($getRoute({locale: languageObj.localisationCode})); // Change page language to the chosen one
       } catch (error) {
-        languageErrorMessage = $t('candidateApp.settings.error.changeLanguage');
+        languageErrorMessage = $t('candidateApp.settings.changeLanguageError');
       }
     }
   };
@@ -72,25 +75,25 @@
     successMessage = '';
 
     if (password !== passwordConfirmation) {
-      errorMessage = $t('candidateApp.settings.password.dontMatch');
+      errorMessage = $t('candidateApp.settings.passwordsDontMatch');
       return;
     }
 
     if (currentPassword === password) {
-      errorMessage = $t('candidateApp.settings.password.areSame');
+      errorMessage = $t('candidateApp.settings.passwordIsTheSame');
       return;
     }
 
     // Additional check before backend validation
     if (!validatePassword(password)) {
-      errorMessage = $t('candidateApp.settings.password.notValid');
+      errorMessage = $t('candidateApp.settings.passwordNotValid');
       return;
     }
 
     const response = await changePassword(currentPassword, password);
     // Ideally, we would also want to check if the current password was wrong, but Strapi does not return this information :/
     if (!response?.ok) {
-      errorMessage = $t('candidateApp.settings.error.changePassword');
+      errorMessage = $t('candidateApp.settings.changePasswordError');
       return;
     }
 
@@ -100,23 +103,23 @@
     passwordConfirmation = '';
 
     errorMessage = '';
-    successMessage = $t('candidateApp.settings.password.updated');
+    successMessage = $t('candidateApp.settings.passwordUpdated');
   };
 </script>
 
 <BasicPage title={$t('candidateApp.settings.title')} mainClass="bg-base-200">
   <div class="text-center">
-    <p>{$t('candidateApp.settings.ingress')}</p>
+    <p>{$t('candidateApp.settings.instructions')}</p>
   </div>
 
   <div class="mt-16 w-full">
     <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
       <div class="flex items-center justify-between bg-base-100 px-4">
         <label for="email" class={labelClass}>
-          {$t('candidateApp.common.email')}
+          {$t('candidateApp.settings.fields.email')}
         </label>
         <div class="w-6/12 text-right text-secondary">
-          <input disabled type="text" id="email" value={$user?.email} class={inputClass} />
+          <input disabled type="text" id="email" value={user?.email} class={inputClass} />
         </div>
         <Icon name="locked" class="text-secondary" />
       </div>
@@ -130,7 +133,7 @@
     <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
       <div class="flex items-center justify-between bg-base-100 px-4">
         <label for="language" class={labelClass}>
-          {$t('candidateApp.settings.language')}
+          {$t('candidateApp.settings.fields.language')}
         </label>
         <div class="w-6/12 text-right text-secondary">
           <select
@@ -142,7 +145,7 @@
               <option
                 value={option.attributes.localisationCode}
                 selected={option.attributes.localisationCode === appLanguageCode}>
-                {$t(assertTranslationKey(`xxx.languages.${option.attributes.name}`))}</option>
+                {$t(`candidateApp.languages.${option.attributes.name}`)}</option>
             {/each}
           </select>
         </div>
@@ -164,7 +167,7 @@
 
   <div class="mt-32 w-full">
     <p class={headerClass}>
-      {$t('candidateApp.settings.password.title')}
+      {$t('candidateApp.settings.accountPassword')}
     </p>
   </div>
 
@@ -175,7 +178,7 @@
       <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
         <div class="flex items-center justify-between bg-base-100">
           <label for="currentPassword" class={labelClass}>
-            {$t('candidateApp.settings.password.current')}
+            {$t('candidateApp.settings.currentPassword')}
           </label>
           <div class="w-6/12 text-right text-secondary">
             <PasswordField
@@ -187,7 +190,7 @@
         </div>
       </div>
       <p class={disclaimerClass}>
-        {$t('candidateApp.settings.password.currentDescription')}
+        {$t('candidateApp.settings.currentPasswordDescription')}
       </p>
     </div>
 
@@ -197,7 +200,7 @@
       <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
         <div class="flex items-center justify-between bg-base-100">
           <label for="newPassword" class={labelClass}>
-            {$t('candidateApp.settings.password.new')}
+            {$t('candidateApp.settings.newPassword')}
           </label>
           <div class="w-6/12 text-right text-secondary">
             <PasswordField
@@ -214,7 +217,7 @@
       <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
         <div class="flex items-center justify-between bg-base-100">
           <label for="newPasswordConfirmation" class={labelClass}>
-            {$t('candidateApp.settings.password.newConfirmation')}
+            {$t('candidateApp.settings.newPasswordConfirmation')}
           </label>
           <div class="w-6/12 text-right text-secondary">
             <PasswordField
@@ -232,7 +235,7 @@
       variant="main"
       disabled={disableSetButton}
       class="my-10"
-      text={$t('candidateApp.settings.password.update')} />
+      text={$t('candidateApp.settings.updatePassword')} />
 
     {#if errorMessage}
       <p class="text-center text-error">

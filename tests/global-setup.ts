@@ -2,11 +2,9 @@ import { expect, chromium, FullConfig } from '@playwright/test';
 // Import Route directly so that other imports are not bundled in
 import { Route } from '../frontend/src/lib/utils/navigation/route';
 import candidateAppTranslations from '../frontend/src/lib/i18n/translations/en/candidateApp.json';
-import mockUsers from '../backend/vaa-strapi/src/functions/mockData/mockUser.json';
+import mockUser from '../backend/vaa-strapi/src/functions/mockData/mockUser.json';
 
 import { STORAGE_STATE } from '../playwright.config';
-
-const mockUser = mockUsers[1]
 
 async function globalSetup(config: FullConfig) {
   const { baseURL } = config.projects[0].use;
