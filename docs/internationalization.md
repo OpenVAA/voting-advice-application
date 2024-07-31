@@ -80,7 +80,7 @@ import {page} from '$app/stores';
 
 ## Localization in Strapi
 
-Strapi's built-in i18n plugin is only used to translate `AppLabels`. For all other translations, a proprietary `json`-based format is used instead of regular text fields. (This format is defined in [`global.d.ts`](../frontend/src/lib/types/global.d.ts) as `LocalizedString`.) The example below also demonstrates the use of [ICU message format](https://formatjs.io/docs/intl-messageformat/) value interpolation.
+Strapi's built-in i18n plugin is not used because it creates objects with different ids for each locale. Thus,a proprietary `json`-based format is used for translated strings instead of regular text fields. (This format is defined in [`global.d.ts`](../frontend/src/lib/types/global.d.ts) as `LocalizedString`.) The example below also demonstrates the use of [ICU message format](https://formatjs.io/docs/intl-messageformat/) value interpolation.
 
 ```json
 {
@@ -90,14 +90,11 @@ Strapi's built-in i18n plugin is only used to translate `AppLabels`. For all oth
 }
 ```
 
-The functions in [`getData`](../frontend/src/lib/api/getData.ts) handle the translations based on an optional `locale` parameter accepted by all of them. This defaults to the current locale. The functions either:
-
-1. Use Strapi's built-in i18n plugin (only for `AppLabels`)
-2. Pick the requested language (or the best match) from the `json` fields and return them as strings
+The methods offered by [`DataProvider`](../frontend/src/lib/api/dataProvider.ts) handle the translations based on an optional `locale` parameter accepted by all of them. This defaults to the current locale. The functions pick the requested language (or the best match) from the `json` fields and return them as strings
 
 ## Local translations
 
-Local translations are stored in `$lib/i18n/translations` and organized by language and key. The same 'paths' are used to access both local translations and those fetched from the database with the database ones overriding local ones.
+Local translations are stored in `$lib/i18n/translations` and organized by language and key.
 
 ## Locale routes
 
@@ -146,14 +143,13 @@ The locale selection process works as follows.
 1. Receive `currentLocale` and `route` from `locals` and `params.lang`:
 2. Set the locale to `params.lang ?? currentLocale`. (In theory, we could just use `currentLocale` but we must explicitly use `params.lang` to rerun `load` on param changes.)
 3. Load all the globally needed data from Strapi using the correct `locale` parameter
-   1. `getElection` uses Strapi's own `i18n` plugin to localize `appLabels` contained in the `Election` object
 4. Load local translations with `$lib/i18n.loadTranslations`
 5. Pass `currentLocale`, `preferredLocale` and `route` in `data.i18n`
 
 [`+layout.ts`](../../routes/[[lang=locale]]/+layout.ts) runs twice and sets translations up for SSR and CSR:
 
 1. Receive `currentLocale` and `route`from `data.i18n` as well as the `appLabels`
-2. Add `appLabels` as dynamic translations for use with `i18n`. The `addDynamicTranslations` function will make sure it is only done once per locale.
+2. Add `TBA` as dynamic translations for use with `i18n`. The `addDynamicTranslations` function will make sure it is only done once per locale.
 3. Set current locale to `currentLocale`
 4. Set the translations route to `setRoute` (which is used for separating translations into multiple files based on the route, but must be called even if no such are used)
 
@@ -164,49 +160,6 @@ In the frontend `svelte` files:
 3. The locale can be changed using `$lib/utils/navigation: $getRoute({locale: 'foo'})`
 4. The `$data.i18n.preferredLocale` can be matched against `$lib/i18n: locale` to show a notification to the user if their preferred locale is available
 
-## For future consideration: Fetching supported locales from the database
+## Supported locales
 
-Currently, the supported locales are defined locally in [`$lib/config/settings.json`](..frontend/lib/config/settings.json). This is redundant because we could also get the from Strapi. However, due to `getData` being only available on the server side, we run into complications with this. Below, is a solution that does that, but it involves passing more data via the `$page` store and does not seem worth the added complexity.
-
-```ts
-// $lib/i18n/init.ts
-
-// NB. This becomes very complicated due to getData being only available
-// on the server side. This can be simplified by either creating a public
-// api for locales or by just saving the supported locales on a local
-// config file and not using api/i18n/locales at all.
-// Now we also need export defaultLocale and localeMatches and pass those
-// into page.data in /+layout.server.ts.
-
-if (!browser) {
-  // SSR: We may use the getData api
-  try {
-    await import('$lib/api/getData').then((getData) => {
-      if (!getData.supportedLocales.length) throw new Error('No supported locales found');
-      dbLocales = getData.supportedLocales.map((l) => l.code);
-      dbDefaultLocale = getData.defaultLocale;
-    });
-  } catch (e) {
-    // We'll throw this at the end of initialization so that we have the static
-    // translations available for error messages
-    dbError = e;
-  }
-  // If we got locales from the database, build a map of locale matches between
-  // database locales and static ones (e.g. 'en-UK' => 'en')
-  const staticDefaultLocale = Object.keys(staticTranslations)[0];
-  if (dbLocales.length) {
-    for (const l of dbLocales)
-      localeMatches[l] = matchLocale(l, Object.keys(staticTranslations)) ?? staticDefaultLocale;
-  } else {
-    // Otherwise just use an identity map
-    for (const l in staticTranslations) localeMatches[l] = l;
-  }
-  defaultLocale = dbDefaultLocale ?? staticDefaultLocale;
-} else {
-  // CSR: We can't use getData but supported locales are initialized by now
-  console.info(get(page));
-  const i18nData = get(page).data.i18n;
-  defaultLocale = i18nData.defaultLocale;
-  localeMatches = i18nData.localeMatches;
-}
-```
+Ssupported locales are defined locally in [`$lib/config/settings.json`](..frontend/lib/config/settings.json).
