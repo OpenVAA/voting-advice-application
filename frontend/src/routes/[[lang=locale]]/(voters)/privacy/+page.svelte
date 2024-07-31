@@ -8,15 +8,16 @@
   import {HeroEmoji} from '$lib/components/heroEmoji';
   import {BasicPage} from '$lib/templates/basicPage';
   import {DataConsent} from '$lib/components/dataConsent';
+  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
 </script>
 
 <BasicPage title={$t('privacy.title')}>
   <svelte:fragment slot="hero">
-    <HeroEmoji emoji={$t('privacy.heroEmoji')} />
+    <HeroEmoji emoji={$t('dynamic.privacy.heroEmoji')} />
   </svelte:fragment>
 
   <HeadingGroup slot="heading">
-    <PreHeading class="text-primary">{$t('viewTexts.appTitle')}</PreHeading>
+    <PreHeading class="text-primary">{$t('dynamic.appName')}</PreHeading>
     <h1>{$t('privacy.title')}</h1>
   </HeadingGroup>
 
@@ -26,38 +27,40 @@
         on:click={$openFeedbackModal}
         variant="icon"
         icon="feedback"
-        text={$t('navigation.sendFeedback')} />
+        text={$t('feedback.send')} />
     {/if}
     <Button
       class="!text-neutral"
       variant="icon"
       icon="close"
       href={$getRoute(Route.Home)}
-      text={$t('privacy.returnButton')} />
+      text={$t('common.returnHome')} />
   </svelte:fragment>
 
   <div class="grid">
     <div>
-      {@html sanitizeHtml($t('privacy.content'))}
+      {@html sanitizeHtml($t('dynamic.privacy.content'))}
     </div>
     {#if $settings.analytics?.platform}
-      <h2>{$t('privacy.analyticsTitle')}</h2>
+      <h2>{$t('privacy.analytics.title')}</h2>
       <div>
-        {@html sanitizeHtml($t(`privacy.analyticsContent.${$settings.analytics.platform.name}`))}
+        {@html sanitizeHtml(
+          $t(assertTranslationKey(`privacy.analyticsContent.${$settings.analytics.platform.name}`))
+        )}
       </div>
     {/if}
-    <h2>{$t('privacy.cookiesTitle')}</h2>
+    <h2>{$t('privacy.cookies.title')}</h2>
     <div>
-      {@html sanitizeHtml($t('privacy.cookiesContent'))}
+      {@html sanitizeHtml($t('privacy.cookies.content'))}
     </div>
     {#if $settings.analytics.trackEvents}
-      <h2>{$t('privacy.dataTitle')}</h2>
+      <h2>{$t('common.privacy.dataCollection.title')}</h2>
       <DataConsent description="inline" class="rounded-lg bg-base-300 p-lg" />
     {/if}
   </div>
 
   <svelte:fragment slot="primaryActions">
-    <Button variant="main" href={$getRoute(Route.Home)} text={$t('privacy.returnButton')} />
+    <Button variant="main" href={$getRoute(Route.Home)} text={$t('common.returnHome')} />
   </svelte:fragment>
 </BasicPage>
 

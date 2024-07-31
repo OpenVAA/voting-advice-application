@@ -19,7 +19,7 @@
 </script>
 
 <svelte:head>
-  <title>{underMaintenance ? $t('maintenance.title') : $t('viewTexts.appTitle')}</title>
+  <title>{underMaintenance ? $t('maintenance.title') : $t('dynamic.appName')}</title>
   <meta
     name="theme-color"
     content={localSettings?.colors?.light?.['base-300'] ?? '#d1ebee'}

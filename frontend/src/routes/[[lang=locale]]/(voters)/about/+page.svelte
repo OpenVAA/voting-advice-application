@@ -12,21 +12,17 @@
 
 <BasicPage title={$t('about.title')}>
   <svelte:fragment slot="hero">
-    <HeroEmoji emoji={$t('about.heroEmoji')} />
+    <HeroEmoji emoji={$t('dynamic.about.heroEmoji')} />
   </svelte:fragment>
 
   <HeadingGroup slot="heading">
-    <PreHeading class="text-primary">{$t('viewTexts.appTitle')}</PreHeading>
+    <PreHeading class="text-primary">{$t('dynamic.appName')}</PreHeading>
     <h1>{$t('about.title')}</h1>
   </HeadingGroup>
 
   <svelte:fragment slot="banner">
     {#if $settings.header.showFeedback}
-      <Button
-        href="#feedback-form"
-        variant="icon"
-        icon="feedback"
-        text={$t('navigation.sendFeedback')} />
+      <Button href="#feedback-form" variant="icon" icon="feedback" text={$t('feedback.send')} />
     {/if}
     <Button
       slot="banner"
@@ -40,24 +36,24 @@
   {@html sanitizeHtml($t('about.content'))}
 
   {#if $settings.matching.partyMatching !== 'none'}
-    <h2 class="mb-md mt-xl">{$t('about.partyMatchingTitle')}</h2>
+    <h2 class="mb-md mt-xl">{$t('about.partyMatching.title')}</h2>
     {@html sanitizeHtml(
-      $t('about.partyMatchingContent', {partyMatchingMethod: $settings.matching.partyMatching})
+      $t('about.partyMatching.content', {partyMatchingMethod: $settings.matching.partyMatching})
     )}
   {/if}
 
-  <h2 id="feedback-form" class="mb-md mt-lg">{$t('about.feedbackTitle')}</h2>
+  <h2 id="feedback-form" class="mb-md mt-lg">{$t('about.feedback.title')}</h2>
   <Feedback />
 
   {#if $settings.appVersion.source}
-    <h2 class="mb-md mt-lg">{$t('about.sourceTitle')}</h2>
+    <h2 class="mb-md mt-lg">{$t('about.source.title')}</h2>
     <p>
-      {$t('about.sourceContent')}
+      {$t('about.source.content')}
       <a
         href={$settings.appVersion.source}
         target="_blank"
         class="small-label me-md inline-block rounded-[1rem] bg-base-300 px-md py-sm"
-        >{$t('about.sourceSitename')}</a>
+        >{$t('about.source.sitename')}</a>
     </p>
   {/if}
 

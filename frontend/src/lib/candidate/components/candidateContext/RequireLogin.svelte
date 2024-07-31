@@ -15,9 +15,9 @@
 
   let error: string | undefined;
   $: {
-    if (!candidate) error = $t('candidateApp.error.userNoCandidateError');
-    else if (!nomination) error = $t('candidateApp.error.candidateNoNominationError');
-    else if (!election) error = $t('candidateApp.error.nominationNoElectionError');
+    if (!candidate) error = $t('candidateApp.error.userNoCandidate');
+    else if (!nomination) error = $t('candidateApp.error.candidateNoNomination');
+    else if (!election) error = $t('candidateApp.error.nominationNoElection');
     else error = undefined;
   }
 </script>

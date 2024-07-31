@@ -36,19 +36,19 @@ In addition, shows a warning to the user if another user is already logged in.
 ```
 -->
 
-<FrontPage title={$t('candidateApp.registration.title')}>
+<FrontPage title={$t('candidateApp.register.title')}>
   <img slot="hero" class="bg-white" src="/images/hero-candidate.png" alt="" />
 
   <HeadingGroup slot="heading">
-    <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
+    <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
     <h1 class="text-3xl font-normal">{$page.data.election?.name}</h1>
   </HeadingGroup>
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onRegistration}>
     <p class="max-w-md text-center">
-      {$t('candidateApp.registration.enterCode')}
+      {$t('candidateApp.register.enterCode')}
     </p>
     {#if $user}
-      <p class="text-center text-warning">{$t('candidateApp.registration.loggedInWarning')}</p>
+      <p class="text-center text-warning">{$t('candidateApp.register.loggedInWarning')}</p>
       <div class="center pb-10">
         <LogoutButton buttonVariant="main" stayOnPage={true} />
       </div>
@@ -58,16 +58,16 @@ In addition, shows a warning to the user if another user is already logged in.
       name="registration-code"
       id="registration-code"
       class="input mb-md w-full max-w-md"
-      placeholder={$t('candidateApp.registration.submitPlaceholder')}
+      placeholder={$t('candidateApp.register.codePlaceholder')}
       bind:value={registrationCode}
-      aria-label={$t('candidateApp.registration.registrationCode')}
+      aria-label={$t('candidateApp.register.code')}
       required />
     {#if wrongCode}
       <p class="text-center text-error">
-        {$t('candidateApp.registration.wrongRegistrationCode')}
+        {$t('candidateApp.register.wrongRegistrationCode')}
       </p>
     {/if}
-    <Button type="submit" text={$t('candidateApp.registration.registerButton')} variant="main" />
+    <Button type="submit" text={$t('candidateApp.register.register')} variant="main" />
     <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
     <Button href={$getRoute(Route.Home)} text={$t('candidateApp.common.voterApp')} />
   </form>
