@@ -1,0 +1,19 @@
+{
+  "basicInfo": {
+    "edit": "Muokkaa perustietojasi",
+    "enter": "Täytä perustietosi",
+    "view": "Tarkastele perustietojasi"
+  },
+  "ingress": {
+    "notDone": "Näkyäksesi vaalikoneessa sinun on annettava joitakin perustietoja itsestäsi ja vastattava poliittisiin mielipidekysymyksiin.",
+    "ready": "Olet täyttänyt kaikki vaalikoneen tarvittavat tiedot. Voit vielä muokata vastauksiasi ja jopa kirjautua sisään myöhemmin sitä varten."
+  },
+  "preview": "Esikatsele profiiliasi",
+  "previewTip": "Jos haluat nähdä, miten äänestäjät näkevät profiilisi, voit esikatsella sitä.",
+  "questions": {
+    "edit": "Muokkaa mielipiteitäsi",
+    "enter": "Kerro mielipiteesi",
+    "view": "Tarkastele mielipiteitäsi"
+  },
+  "ready": "Olet valmis!"
+}

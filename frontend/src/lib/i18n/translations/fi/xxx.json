@@ -1,0 +1,77 @@
+{
+  "about": {
+    "feedback": {
+      "content": "Voit lähettää palautetta vaalikoneesta palautelomakkeen avulla."
+    }
+  },
+  "basicInfo": {
+    "fields": {
+      "gender": "Sukupuoli",
+      "motherTongue": "Äidinkieli"
+    },
+    "unaffiliatedDescription": "Aseta tämä päälle, jos et ole sen osapuolen jäsen, jonka listalla olet."
+  },
+  "candidateApp": {
+    "basicInfo": {
+      "error": {
+        "sendingData": "Tietoja lähetettäessä tapahtui virhe!"
+      }
+    },
+    "home": {
+      "continue": "Jatka"
+    },
+    "setPassword": {
+      "confirm": "Vahvista salasana"
+    }
+  },
+  "entityFilters": {
+    "titles": {
+      "party": "Puolue"
+    }
+  },
+  "genders": {
+    "female": "Nainen",
+    "male": "Mies",
+    "nonBinary": "Ei-binäärinen",
+    "other": "Muu",
+    "preferNotToSay": "En halua kertoa"
+  },
+  "help": {
+    "questions": {
+      "question1": {
+        "answer": "FI - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere.",
+        "question": "FI - My name is wrong but I can't change it"
+      },
+      "question2": {
+        "answer": "FI - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere.",
+        "question": "FI - My profile is not visible in the Election Compass"
+      },
+      "question3": {
+        "answer": "FI - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere.",
+        "question": "FI - I don't want to tell my opinion on some issues"
+      },
+      "question4": {
+        "answer": "FI - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere.",
+        "question": "FI - My party is not listed"
+      },
+      "question5": {
+        "answer": "FI - Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Pellentesque sit amet porttitor eget dolor morbi. Ullamcorper sit amet risus nullam eget felis eget nunc. Congue quisque egestas diam in. Accumsan lacus vel facilisis volutpat est velit egestas dui. Ultrices dui sapien eget mi proin sed libero enim. Enim nulla aliquet porttitor lacus luctus accumsan tortor posuere.",
+        "question": "FI - I don't have a profile picture to upload"
+      }
+    }
+  },
+  "languages": {
+    "English": "Englanti",
+    "Finnish": "Suomi",
+    "Spanish": "Espanja"
+  },
+  "questions": {
+    "notFound": "Kysymystä ei löytynyt"
+  },
+  "resetPassword": {
+    "emailPlaceholder": "Sähköpostiosoite"
+  },
+  "setPassword": {
+    "password": "Salasana"
+  }
+}

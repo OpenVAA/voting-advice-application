@@ -1,0 +1,8 @@
+{
+  "links": "Links",
+  "tabs": {
+    "candidates": "{candidatePlural}",
+    "info": "Basic Info",
+    "opinions": "Opinions"
+  }
+}

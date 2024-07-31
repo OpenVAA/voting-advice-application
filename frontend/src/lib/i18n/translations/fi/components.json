@@ -1,71 +1,51 @@
 {
-  "entityCard": {
-    "hideAllCandidates": "Pienennä lista",
-    "showAllCandidates": "Näytä kaikki {numCandidates} ehdokasta"
-  },
-  "entityDetails": {
-    "tabs": {
-      "info": "Perustiedot",
-      "opinions": "Mielipiteet",
-      "candidates": "{candidatePlural}"
-    }
-  },
-  "entityFilters": {
-    "applyAndClose": "Sulje suodattimet",
-    "error": "Suodatinta ei voitu ladata, pahoittelut!",
-    "filterButtonLabel": "Suodata",
-    "filters": "Suodattimet",
-    "numeric": {
-      "maxLabel": "Enintään",
-      "minLabel": "Vähintään"
-    },
-    "missingValue": "Ei vastausta",
-    "reset": "Nollaa suodattimet",
-    "selectAll": "Valitse kaikki",
-    "text": {
-      "ariaLabel": "Hakusana:",
-      "placeholder": "Hakusana"
-    },
-    "titles": {
-      "party": "Puolue"
-    },
-    "unselectAll": "Poista valinta kaikista"
-  },
-  "entityInfo": {
-    "links": "Linkit"
-  },
-  "entityList": {
-    "showMore": "Näytä lisää"
-  },
-  "entityListControls": {
-    "noFilterResults": "Suodattimilla ei löytynyt yhtään tulosta. Koeta muuttaa niitä.",
-    "noSearchResults": "Haulla ei löytynyt yhtään tulosta. Koeta muuttaa sitä.",
-    "searchPlaceholder": "Etsi nimellä"
+  "headingGroup": {
+    "roleDescription": "Otsikkoryhmä"
   },
   "matchScore": {
     "label": "sopivuus",
     "score": "{score}%"
   },
+  "multiLangInput": {
+    "hide": "Piilota kentän käännökset",
+    "info": "Voit antaa omat käännökset kielille, joilla sovellus on saatavilla. Jos et kirjoita omia käännöksiäsi, alkuperäinen vastaus näytetään.",
+    "show": "Näytä kentän käännökset"
+  },
+  "passwordInput": {
+    "hidePassword": "Piilota salasana",
+    "password": "Salasana",
+    "placeholder": "Esim. CP23-174a-f4%&-aHAB",
+    "showPassword": "Näytä salasana"
+  },
+  "photoInput": {
+    "tapToAddPhoto": "Paina lisätäksesi valokuvan"
+  },
+  "preHeading": {
+    "roleDescription": "Otsikon esirivi"
+  },
+  "preventNavigation": {
+    "unsavedChanges": "Sinulla on tallentamattomia muutoksia. Haluatko varmasti jatkaa?"
+  },
   "video": {
+    "captions": "Kuvailevat tekstitykset",
     "error": "Anteeksi, videon lataamisessa näyttää olevan hankaluuksia. Voit kokeilla ladata sivun uudelleen tai vaihtaa alta tekstinäkymään videon sijaan.",
+    "hideCaptions": "Piilota tekstitykset",
     "jumpBack": "Hyppää taaksepäin",
     "jumpForward": "Hyppää eteenpäin",
-    "captions": "Kuvailevat tekstitykset",
-    "subtitles": "Tekstitykset",
     "mute": "Äänet pois",
-    "unmute": "Äänet päälle",
-    "play": "Toista",
     "pause": "Tauota",
-    "replay": "Toista uudelleen",
-    "hideCaptions": "Piilota tekstitykset",
-    "showCaptions": "Näytä tekstitykset",
+    "play": "Toista",
     "progessbarLabel": "Aikaa jäljellä",
-    "unsupportedWarning": "Selaimesi ei valitettavasti voi näyttää tätä videota.",
+    "replay": "Toista uudelleen",
+    "showCaptions": "Näytä tekstitykset",
+    "showTranscript": "Näytä video tekstinä",
+    "showVideo": "Näytä video",
+    "subtitles": "Tekstitykset",
     "timeLeft": "{minutes, plural, =0 {} =1 {yksi minuutti} other {# minuuttia}} {seconds, plural, =0 {} =1 {yksi sekunta} other {# sekuntia}} jäljellä",
     "transcript": "Teksti",
-    "video": "Video",
     "transcriptToggleLabel": "Vaihda teksti- ja videonäkymän välillä",
-    "showTranscript": "Näytä video tekstinä",
-    "showVideo": "Näytä video"
+    "unmute": "Äänet päälle",
+    "unsupportedWarning": "Selaimesi ei valitettavasti voi näyttää tätä videota.",
+    "video": "Video"
   }
 }

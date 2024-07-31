@@ -1,0 +1,18 @@
+{
+  "applyAndClose": "Stäng filter",
+  "error": "Filtret kunde inte laddas, ledsen!",
+  "filterButtonLabel": "Filter",
+  "filters": "Filter",
+  "missingValue": "Inget svar",
+  "numeric": {
+    "maxLabel": "Maximum",
+    "minLabel": "Åtminstone"
+  },
+  "reset": "Återställ filter",
+  "selectAll": "Välj alla",
+  "text": {
+    "ariaLabel": "Text:",
+    "placeholder": "Text att söka efter"
+  },
+  "unselectAll": "Välj bort alla"
+}
