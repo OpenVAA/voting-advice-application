@@ -1,3 +1,6 @@
 {
-  "title": "Tietoa näistä vaaleista"
+  "content": "Vaalipäivä on {electionDate, date, ::dMyyyy}.",
+  "heroEmoji": "🗳️",
+  "returnButton": "Palaa etusivulle",
+  "title": "Tietoa vaaleista"
 }

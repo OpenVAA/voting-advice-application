@@ -8,7 +8,6 @@
     minPasswordLength
   } from '$shared/utils/passwordValidation';
   import {onMount} from 'svelte';
-  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
   export let password = '';
   export let username = '';
   export let validPassword = false;
@@ -26,9 +25,7 @@
 
       // Localize validation messages
       for (const key in validationDetails) {
-        validationDetails[key].message = $t(assertTranslationKey(validationDetails[key].message), {
-          minPasswordLength
-        });
+        validationDetails[key].message = $t(validationDetails[key].message, {minPasswordLength});
       }
     }, 200);
   }

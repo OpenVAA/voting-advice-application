@@ -1,28 +1,28 @@
 {
-  "analytics": {
-    "content": {
-      "umami": "Käytämme Umami-palvelua sovelluksen toiminnan mittaamiseen. Tämä tapahtuu täysin nimettömästi eikä edellytä evästeiden käyttöä. Lisätietoja: {analyticsLink}."
-    },
-    "title": "Analytiikka"
+  "analyticsContent": {
+    "umami": "Käytämme Umami-palvelua sovelluksen toiminnan mittaamiseen. Tämä tapahtuu täysin nimettömästi eikä edellytä evästeiden käyttöä. Lisätietoja: {analyticsLink}."
   },
-  "cookies": {
-    "content": "Sovellus ei käytä evästeitä tietojen tallentamiseen. Vastauksesi ja asetuksesi tallennetaan selaimesi paikalliseen säilöön (local storage) sovelluksen käyttömukavuuden parantamiseksi. Näitä tietoja voi lukea ainoastaan sinun laitteesi, ei siis esimerkiksi vaalikoneen julkaisija.",
-    "title": "Evästeet"
+  "analyticsTitle": "Analytiikka",
+  "content": "Tälle sivulle on koottu sovelluksen yksityisyyteen ja tiedon keräämiseen liittyviä tietoja.",
+  "cookiesTitle": "Evästeet",
+  "cookiesContent": "Sovellus ei käytä evästeitä tietojen tallentamiseen. Vastauksesi ja asetuksesi tallennetaan selaimesi paikalliseen säilöön (local storage) sovelluksen käyttömukavuuden parantamiseksi. Näitä tietoja voi lukea ainoastaan sinun laitteesi, ei siis esimerkiksi vaalikoneen julkaisija.",
+  "dataTitle": "Vastausten ja käyttötietojen kerääminen",
+  "dataContent": "Haluaisimme kerätä koneen käyttötietoja täysin nimettömästi tutkimusta ja sovelluksen kehittämistä varten. Kerättäviin tietoihin sisältyvät muun muassa vaalikonevastaukset, vastaamiseen käytetty aika ja mitä tuloksia on katseltu, mutta tietoja ei voi yhdistää sinuun.",
+  "dataContentPlatform": {
+    "umami": "Keräämiseen käytetetään Umami-alustaa, eikä se edellytä evästeiden käyttöä. Lisätietoja: {analyticsLink}."
   },
-  "dataCollection": {
-    "platform": {
-      "umami": "Keräämiseen käytetetään Umami-alustaa, eikä se edellytä evästeiden käyttöä. Lisätietoja: {analyticsLink}."
-    }
-  },
-  "dataConsentInfoButton": "Lisätietoja käyttötietojen keräämisestä",
   "dataConsentIntro": {
     "denied": "Olet kieltänyt tietojesi keräämisen {consentDate, date, ::dMyyyy}. Voit muokata valintaasi alla.",
     "granted": "Olet sallinut tietojesi keräämisen {consentDate, date, ::dMyyyy}. Voit muokata valintaasi alla.",
-    "indetermined": "Voit antaa suostumuksesi tai kieltää tietojen keräämisen valitsemalla alla olevista vaihtoehdoista."
+    "indetermined": "Voit antaa suostumuksesi tai kieltää tietojen keräämisen valitsemalla alla olevista vaihtoehdoista.",
+    "popup": "Voisimmeko kerätä tietoja vaalikoneen käytöstäsi täysin nimettömästi tutkimusta ja vaalikoneiden kehittämistä varten? Emme käytä tähän evästeitä eikä tietoja voi yhdistää sinuun."
   },
+  "dataConsentInfoButton": "Lisätietoja käyttötietojen keräämisestä",
   "dataConsentLabel": {
     "denied": "En halua, että tietojani kerätään",
     "granted": "Kyllä, sallin keräämisen"
   },
+  "heroEmoji": "🛡️",
+  "returnButton": "Palaa etusivulle",
   "title": "Yksityisyys"
 }

@@ -1,4 +1,5 @@
 {
-  "allCandidates": "Kaikki {candidatePlural}",
-  "title": "Tilastotietoja"
+  "title": "Tilastotietoja",
+  "heroEmoji": "🧮",
+  "allCandidates": "Kaikki {candidatePlural}"
 }

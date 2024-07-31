@@ -2,21 +2,25 @@
   import {Button} from '$lib/components/button';
   import {Expander} from '$lib/components/expander';
   import {LikertResponseButtons} from '$lib/components/questions';
-  import {t} from '$lib/i18n';
+  import {t, locale} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
+  import {translate} from '$lib/i18n/utils/translate';
   import {CategoryTag} from '$lib/components/categoryTag';
   import {QuestionOpenAnswer} from '$lib/components/questions';
   import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
   import type {RenderQuestionProps} from './Question.type';
-  import {translate} from '$lib/i18n/utils';
 
   type $$Props = RenderQuestionProps;
 
   export let question: $$Props['question'];
   export let categoryQuestions: $$Props['categoryQuestions'];
 
-  const {opinionAnswers, questionsLocked} = getContext<CandidateContext>('candidate');
+  const {answersStore, questionsLockedStore} = getContext<CandidateContext>('candidate');
+
+  $: questionsLocked = $questionsLockedStore;
+
+  $: answers = $answersStore;
 </script>
 
 <!--
@@ -33,46 +37,38 @@ open answers and a button to navigate to the questions page.
 ```
 -->
 
-{#if $opinionAnswers?.[question.id]}
-  {@const answer = $opinionAnswers[question.id]}
+{#if answers?.[question.id]}
   <div class="pb-20 pt-20">
     <CategoryTag category={question.category} />
 
-    <Expander title={question.text} variant="question">
-      {question.info}
+    <Expander title={translate(question.text)} variant="question">
+      {translate(question.info)}
     </Expander>
 
     <div class="pt-10">
       <!-- This gives empty form label error from Wave Extension for every empty dot, but fix should come from LikertResponseButton -->
+      <LikertResponseButtons
+        name={question.id}
+        mode="display"
+        options={question.values?.map(({key, label}) => ({
+          key,
+          label: translate(label, $locale)
+        }))}
+        selectedKey={answers[question.id].key} />
 
-      {#if typeof answer.value === 'number'}
-        <LikertResponseButtons
-          name={question.id}
-          mode="display"
-          options={question.values?.map(({key, label}) => ({
-            key,
-            label
-          }))}
-          selectedKey={answer.value} />
-      {:else}
-        <p class="text-center text-error">
-          {$t('candidateApp.questions.error.invalidAnswer', {questionId: question.id})}
-        </p>
-      {/if}
-
-      {#if translate(answer.openAnswer)}
+      {#if translate(answers[question.id].openAnswer) !== ''}
         <div class="pt-10">
-          <QuestionOpenAnswer>{translate(answer.openAnswer)}</QuestionOpenAnswer>
+          <QuestionOpenAnswer>{translate(answers[question.id].openAnswer)}</QuestionOpenAnswer>
         </div>
       {/if}
 
       <div class="flex justify-center py-20 pb-40">
         <Button
-          text={!$questionsLocked
-            ? $t('candidateApp.questions.editAnswer')
-            : $t('candidateApp.questions.viewAnswer')}
+          text={!questionsLocked
+            ? $t('candidateApp.questions.editYourAnswer')
+            : $t('candidateApp.questions.viewYourAnswer')}
           href={$getRoute({route: Route.CandAppQuestionEdit, id: question.id})}
-          icon={!$questionsLocked ? 'create' : 'show'}
+          icon={!questionsLocked ? 'create' : 'show'}
           iconPos="left" />
       </div>
     </div>
@@ -80,8 +76,4 @@ open answers and a button to navigate to the questions page.
       <hr />
     {/if}
   </div>
-{:else}
-  <p class="text-center text-error">
-    {$t('candidateApp.questions.error.answerNotFound', {questionId: question.id})}
-  </p>
 {/if}

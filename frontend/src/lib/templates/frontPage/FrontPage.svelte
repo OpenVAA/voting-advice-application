@@ -43,7 +43,7 @@ is based on.
 ```tsx
 <FrontPage title="General Elections 2066">
   <svelte:fragment slot="heading">
-    <p>{$t('dynamic.appName')}</p>
+    <p>{$t('viewTexts.appTitle')}</p>
     <h1>{$page.data.election.name}</h1>
   </svelte:fragment>
 

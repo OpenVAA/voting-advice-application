@@ -55,7 +55,7 @@ Display a Candidate's or Party's open answer to a question.
       }}
       aria-controls={id}
       class="absolute bottom-0 left-0 right-0 top-0 focus:ring-2 focus:ring-inset focus:ring-neutral">
-      <span class="opacity-0">{$t('common.expandOrCollapse')}</span>
+      <span class="opacity-0">{$t('aria.toggleExpandableContent')}</span>
     </button>
   {/if}
   <span

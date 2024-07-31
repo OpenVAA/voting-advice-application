@@ -35,7 +35,7 @@ NB. Use this component only in cases of irrecoverable errors, as the template wi
   class="flex w-full flex-grow flex-col items-center justify-center bg-base-300 pb-safelgb pl-safelgl pr-safelgr pt-lg sm:items-center">
   <!-- Hero image -->
   <figure role="presentation">
-    <HeroEmoji emoji={emoji ?? $t('dynamic.error.heroEmoji')} />
+    <HeroEmoji emoji={emoji ?? $t('error.heroEmoji')} />
   </figure>
 
   <!-- Title block -->

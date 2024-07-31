@@ -1,45 +1,27 @@
 import type {Translations} from '@sveltekit-i18n/base';
 export * from './translations.type';
 
-/**
- * Be sure to update these arrays every time you add a new locale to `./translations`.
- * Translations under the key `xxx` are scheduled for removal.
- */
+/* Be sure to update these arrays every time you add a new locale to `./translations` */
 export const keys = [
   'about',
-  'candidateApp.basicInfo',
-  'candidateApp.common',
-  'candidateApp.error',
-  'candidateApp.help',
-  'candidateApp.home',
-  'candidateApp.info',
-  'candidateApp.login',
-  'candidateApp.logoutModal',
-  'candidateApp.notSupported',
-  'candidateApp.preview',
-  'candidateApp.questions',
-  'candidateApp.register',
-  'candidateApp.resetPassword',
-  'candidateApp.setPassword',
-  'candidateApp.settings',
+  'aria',
+  'actionLabels',
+  'candidateApp',
   'common',
   'components',
-  'dynamic',
-  'entityCard',
-  'entityDetails',
-  'entityFilters',
-  'entityList',
   'error',
   'feedback',
-  'help',
+  'header',
   'info',
+  'intro',
   'maintenance',
+  'navigation',
   'privacy',
   'questions',
   'results',
   'statistics',
-  'xxx',
-  'yourList'
+  'survey',
+  'viewTexts'
 ];
 export const locales = {en: 'English', fi: 'Suomi', sv: 'Svenska'};
 

@@ -109,7 +109,7 @@ Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
     {#if searchFilter}
       <TextEntityFilter
         filter={searchFilter}
-        placeholder={$t('entityList.controls.searchPlaceholder')}
+        placeholder={$t('components.entityListControls.searchPlaceholder')}
         variant="discrete" />
     {/if}
     <!-- 
@@ -129,7 +129,7 @@ Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
           icon="filter"
           iconPos="left"
           class="!w-auto"
-          text={$t('entityFilters.filterButtonLabel')}>
+          text={$t('components.entityFilters.filterButtonLabel')}>
           <InfoBadge text={numActiveFilters} slot="badge" />
         </Button>
       {:else}
@@ -138,7 +138,7 @@ Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
           icon="filter"
           iconPos="left"
           class="!w-auto"
-          text={$t('entityFilters.filterButtonLabel')} />
+          text={$t('components.entityFilters.filterButtonLabel')} />
       {/if}
     {/if}
   </div>
@@ -148,12 +148,12 @@ Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
         class="my-lg flex flex-col items-center text-center text-secondary"
         on:click={openFilters}>
         <Icon name="info" />
-        {$t('entityList.controls.noFilterResults')}
+        {$t('components.entityListControls.noFilterResults')}
       </button>
     {:else}
       <div class="my-lg flex flex-col items-center text-center text-secondary">
         <Icon name="info" />
-        {$t('entityList.controls.noSearchResults')}
+        {$t('components.entityListControls.noSearchResults')}
       </div>
     {/if}
   {/if}
@@ -161,7 +161,7 @@ Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
 
 {#if filterGroup}
   <Modal
-    title={$t('entityFilters.filters')}
+    title={$t('components.entityFilters.filters')}
     boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]"
     on:close={trackActiveFilters}
     bind:openModal={openFiltersModal}
@@ -170,13 +170,13 @@ Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
     <div class="flex w-full flex-col items-center" slot="actions">
       <Button
         on:click={closeFiltersModal}
-        text={$t('entityFilters.applyAndClose')}
+        text={$t('components.entityFilters.applyAndClose')}
         variant="main" />
       <Button
         on:click={resetFilters}
         color="warning"
         disabled={!numActiveFilters}
-        text={$t('entityFilters.reset')} />
+        text={$t('components.entityFilters.reset')} />
     </div>
   </Modal>
 {/if}

@@ -1,21 +1,15 @@
 {
-  "description": {
-    "label": "Further comments",
-    "placeholder": "Further comments or suggestions"
-  },
+  "descriptionLabel": "Further comments",
+  "descriptionPlaceholder": "Further comments or suggestions",
   "emailIntro": "If you wish, you can also reach us by email at",
-  "error": {
-    "emailIntro": "We kindly ask you to send your feedback via email by clicking the button below. Any feedback you already wrote is automatically included in the email.",
-    "emailSubject": "Feedack",
-    "message": "We’re terribly sorry, there was an error sending your feedback."
-  },
+  "error": "We’re terribly sorry, there was an error sending your feedback.",
+  "errorEmailIntro": "We kindly ask you to send your feedback via email by clicking the button below. Any feedback you already wrote is automatically included in the email.",
+  "errorEmailSubject": "Feedack",
   "popupTitle": "Could you rate the Election Compass?",
-  "rating": {
-    "label": "Overall rating for the app",
-    "valueLabel": "{rating, plural, =0 {No rating} other {Rating # out of {ratingMax}}}"
-  },
-  "send": "Send feedback",
-  "sending": "Sending…",
-  "thanks": "Thanks for Your Feedback!",
+  "ratingLabel": "Overall rating for the app",
+  "ratingValueLabel": "{rating, plural, =0 {No rating} other {Rating # out of {ratingMax}}}",
+  "sendButton": "Send Feedback",
+  "sendButtonSending": "Sending…",
+  "sendButtonThanks": "Thanks for Your Feedback!",
   "title": "Feedback"
 }

@@ -71,7 +71,7 @@ If `separateSkip` is set to `true`, the `next` event is switched to a `skip` eve
 
 <div
   role="group"
-  aria-label={$t('questions.additionalActions')}
+  aria-label={$t('aria.additionalQuestionActionsLabel')}
   {...concatClass($$restProps, 'mt-lg grid w-full grid-cols-3 items-stretch gap-md')}>
   <Button
     on:click={onNext}

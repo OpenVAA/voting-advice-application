@@ -5,6 +5,7 @@ export enum API {
   Candidate = 'api::candidate.candidate',
   Constituency = 'api::constituency.constituency',
   Election = 'api::election.election',
+  Gender = 'api::gender.gender',
   Language = 'api::language.language',
   Nomination = 'api::nomination.nomination',
   Party = 'api::party.party',

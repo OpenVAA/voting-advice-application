@@ -217,10 +217,10 @@ Keyboard navigation works in the following way:
       {@const style = `grid-${vertical ? 'row' : 'column'}: ${i + 1};`}
       {#if selectedKey == key && entityKey == key}
         <div class="display-label text-primary" {style}>
-          {$t('questions.answers.yourAnswer')} & {entityLabel}
+          {$t('questions.yourAnswer')} & {entityLabel}
         </div>
       {:else if selectedKey == key}
-        <div class="display-label text-primary" {style}>{$t('questions.answers.yourAnswer')}</div>
+        <div class="display-label text-primary" {style}>{$t('questions.yourAnswer')}</div>
       {:else if entityKey == key}
         <div class="display-label" {style}>{entityLabel}</div>
       {/if}

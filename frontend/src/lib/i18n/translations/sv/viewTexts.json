@@ -1,0 +1,7 @@
+{
+  "appTitle": "Valkompassen",
+  "frontpageIngress": "Valkompassen ger kandidater och partier poäng efter hur väl de överensstämmer med dina åsikter. Valet hålls den {electionDate, date, ::ddMMyyyy}.",
+  "madeWithPrefix": "Gjord med",
+  "madeWithSuffix": "",
+  "publishedBy": "Publicerad av {publisher}"
+}

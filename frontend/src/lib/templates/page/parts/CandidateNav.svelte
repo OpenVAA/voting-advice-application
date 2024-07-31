@@ -5,10 +5,17 @@
   import {InfoBadge} from '$lib/components/infoBadge';
   import {getContext} from 'svelte';
   import LanguageSelection from './LanguageSelection.svelte';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
 
-  const {unansweredRequiredInfoQuestions, unansweredOpinionQuestions} =
-    getContext<CandidateContext>('candidate') ?? {};
+  const {
+    basicInfoFilledStore: basicInfoFilled,
+    nofUnansweredOpinionQuestionsStore: nofUnansweredQuestions
+  } = getContext<CandidateContext>('candidate') ?? {};
+
+  let allFilled: boolean | undefined;
+  basicInfoFilled?.subscribe((value) => {
+    allFilled = value;
+  });
 </script>
 
 <!--
@@ -37,47 +44,51 @@ A template part that outputs the navigation menu for the Candidate App for use i
     <NavItem
       href={$getRoute(Route.CandAppHome)}
       icon="home"
-      text={$t('candidateApp.common.home')} />
+      text={$t('candidateApp.navbar.start')} />
     <NavItem
       href={$getRoute(Route.CandAppProfile)}
       icon="profile"
-      text={$t('candidateApp.basicInfo.title')} />
+      text={$t('candidateApp.navbar.basicInfo')} />
     <NavItem
       href={$getRoute(Route.CandAppQuestions)}
       icon="opinion"
-      text={$t('candidateApp.questions.title')}
-      disabled={$unansweredRequiredInfoQuestions?.length !== 0}>
-      {#if $unansweredRequiredInfoQuestions && $unansweredOpinionQuestions && $unansweredOpinionQuestions.length > 0}
-        <InfoBadge
-          text={String($unansweredOpinionQuestions.length)}
-          disabled={$unansweredRequiredInfoQuestions.length !== 0}
-          classes="-left-8 -top-4" />
+      text={$t('candidateApp.navbar.yourOpinions')}
+      disabled={!allFilled}>
+      {#if $nofUnansweredQuestions && $nofUnansweredQuestions > 0}
+        <InfoBadge text={$nofUnansweredQuestions} disabled={!allFilled} classes="-left-8 -top-4" />
       {/if}
     </NavItem>
     <NavItem
       href={$getRoute(Route.CandAppSettings)}
       icon="settings"
-      text={$t('candidateApp.settings.title')} />
+      text={$t('candidateApp.navbar.settings')} />
     <NavItem
       href={$getRoute(Route.CandAppPreview)}
       icon="previewProfile"
-      text={$t('candidateApp.preview.title')} />
-    <NavItem href={$getRoute(Route.CandAppHelp)} icon="help" text={$t('candidateApp.help.title')} />
+      text={$t('candidateApp.navbar.preview')} />
+    <NavItem
+      href={$getRoute(Route.CandAppHelp)}
+      icon="help"
+      text={$t('candidateApp.navbar.help')} />
   </NavGroup>
   <NavGroup>
-    <NavItem href={$getRoute(Route.CandAppInfo)} icon="info" disabled text={$t('info.title')} />
+    <NavItem
+      href={$getRoute(Route.CandAppInfo)}
+      icon="info"
+      disabled
+      text={$t('candidateApp.navbar.electionInformation')} />
     <NavItem
       href={$getRoute(Route.CandAppFAQ)}
       icon="info"
       disabled
-      text={$t('candidateApp.info.title')} />
+      text={$t('candidateApp.navbar.useInformation')} />
   </NavGroup>
   <NavGroup>
     <NavItem
       href={$getRoute(Route.CandAppFeedback)}
       icon="feedback"
       disabled
-      text={$t('feedback.send')} />
+      text={$t('candidateApp.navbar.feedback')} />
   </NavGroup>
   <LanguageSelection />
 </Navigation>

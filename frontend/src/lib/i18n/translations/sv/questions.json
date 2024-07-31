@@ -1,27 +1,22 @@
 {
-  "additionalActions": "Ytterligare åtgärder för denna fråga",
-  "answers": {
-    "bothHaventAnswered": "Varken du eller {entity} har svarat på denna fråga",
-    "entityHasntAnswered": "{entity} har inte svarat på denna fråga",
-    "youHaventAnswered": "Du har inte svarat på denna fråga",
-    "yourAnswer": "Du"
-  },
-  "category": {
-    "numQuestions": "{numQuestions, plural, =-1 {} =1 {1 fråga} other {# frågor}}",
-    "skip": "Hoppa över den här kategorin"
-  },
+  "bothHaventAnswered": "Varken du eller {entity} har svarat på denna fråga",
+  "categoryIntroQuestions": "{numQuestions, plural, =-1 {} =1 {1 fråga} other {# frågor}}",
+  "entityHasntAnswered": "{entity} har inte svarat på denna fråga",
+  "heroEmoji": "💬",
   "infoDescription": "Bakgrundsinformation om frågan",
-  "intro": {
-    "ingress": {
-      "withCategories": "Frågorna är indelade i {numCategories} kategorier. Du kan svarar på dem alla eller välja de du vill ha. {minQuestions, plural, =0 {} =1 {} other {Välj dock tillräckligt många kategorier för att få minst # frågor totalt.}}",
-      "withoutCategories": "Svara sedan på {numQuestions} frågor om politik och värderingar."
-    },
-    "start": "Börja svara på frågor"
-  },
+  "ingressWithoutCategories": "Svara sedan på {numQuestions} frågor om politik och värderingar.",
+  "ingressWithCategories": "Frågorna är indelade i {numCategories} kategorier. Du kan svarar på dem alla eller välja de du vill ha. {minQuestions, plural, =0 {} =1 {} other {Välj dock tillräckligt många kategorier för att få minst # frågor totalt.}}",
   "next": "Nästa fråga",
+  "notFound": "Frågan hittades inte",
   "previous": "Föregående",
+  "title": "Dina åsikter",
+  "readMore": "Läs mer om",
   "remove": "Radera svar",
   "skip": "Hoppa över",
+  "skipCategory": "Hoppa över den här kategorin",
   "skipToResults": "Hoppa till resultat",
-  "title": "Yttranden"
+  "start": "Börja svara på frågor",
+  "youHaventAnswered": "Du har inte svarat på denna fråga",
+  "yourAnswer": "Du",
+  "cannotEditWarning": "Det går inte längre att redigera dina svar, men du kan fortfarande se dem. Kontakta administratören om det finns några fel i uppgifterna."
 }

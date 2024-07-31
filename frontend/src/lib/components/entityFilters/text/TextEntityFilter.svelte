@@ -47,7 +47,7 @@ Render a text filter for entities.
 ### Properties
 
 - `filter`: The text filter object to render.
-- `placeholder`: The placeholder text. @default `$t('entityFilters.text.placeholder')`
+- `placeholder`: The placeholder text. @default `$t('components.entityFilters.text.placeholder')`
 - Any valid attributes of a `<form>` element
 
 ### Usage
@@ -59,19 +59,19 @@ Render a text filter for entities.
 
 <form {...concatClass($$restProps, '')}>
   <label class={labelClass}>
-    <span class="sr-only">{$t('entityFilters.text.ariaLabel')}</span>
+    <span class="sr-only">{$t('components.entityFilters.text.ariaLabel')}</span>
     <input
       bind:value
       type="text"
       class="max-w-[8rem]"
-      placeholder={placeholder ?? $t('entityFilters.text.placeholder')} />
+      placeholder={placeholder ?? $t('components.entityFilters.text.placeholder')} />
     {#if value === ''}
       <Icon name="search" />
     {:else}
       <button
         on:click={() => (value = '')}
-        aria-label={$t('common.clear')}
-        title={$t('common.clear')}>
+        aria-label={$t('common.clearInput')}
+        title={$t('common.clearInput')}>
         <Icon name="close" />
       </button>
     {/if}

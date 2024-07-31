@@ -1,51 +1,71 @@
 {
-  "headingGroup": {
-    "roleDescription": "Heading group"
+  "entityCard": {
+    "hideAllCandidates": "Collapse list",
+    "showAllCandidates": "Show all {numCandidates} candidates"
+  },
+  "entityDetails": {
+    "tabs": {
+      "info": "Basic Info",
+      "opinions": "Opinions",
+      "candidates": "{candidatePlural}"
+    }
+  },
+  "entityFilters": {
+    "applyAndClose": "Close filters",
+    "error": "The filter couldn’t be loaded, sorry!",
+    "filterButtonLabel": "Filter",
+    "filters": "Filters",
+    "numeric": {
+      "maxLabel": "Maximum",
+      "minLabel": "Minimum"
+    },
+    "missingValue": "No answer",
+    "reset": "Reset filters",
+    "selectAll": "Select all",
+    "text": {
+      "ariaLabel": "Text:",
+      "placeholder": "Text to search for"
+    },
+    "titles": {
+      "party": "Party"
+    },
+    "unselectAll": "Unselect all"
+  },
+  "entityInfo": {
+    "links": "Links"
+  },
+  "entityList": {
+    "showMore": "Show more"
+  },
+  "entityListControls": {
+    "noFilterResults": "The filters yielded no matches. You can try changing them.",
+    "noSearchResults": "The search yielded no matches. You can try changing it.",
+    "searchPlaceholder": "Search by name"
   },
   "matchScore": {
     "label": "match",
     "score": "{score}%"
   },
-  "multiLangInput": {
-    "hide": "Hide translations for this field",
-    "info": "You can supply your own translations for the languages the application is available in. If you don’t write your own translations, your original response will be shown.",
-    "show": "Show translations for this field"
-  },
-  "passwordInput": {
-    "hidePassword": "Hide password",
-    "password": "Password",
-    "placeholder": "E.g. CP23-174a-f4%&-aHAB",
-    "showPassword": "Reveal password"
-  },
-  "photoInput": {
-    "tapToAddPhoto": "Tap to add photo"
-  },
-  "preHeading": {
-    "roleDescription": "Pre-title"
-  },
-  "preventNavigation": {
-    "unsavedChanges": "You have unsaved changes. Are you sure you want to leave this page?"
-  },
   "video": {
-    "captions": "Captions",
     "error": "Sorry, there seems to be some trouble with the video. You can try to reload the page or use the button below to switch to a text view.",
-    "hideCaptions": "Hide subtitles",
     "jumpBack": "Jump back",
     "jumpForward": "Jump forward",
-    "mute": "Mute",
-    "pause": "Pause",
-    "play": "Play",
-    "progessbarLabel": "Time remaining",
-    "replay": "Replay",
-    "showCaptions": "Show subtitles",
-    "showTranscript": "Show video as text",
-    "showVideo": "Show video",
+    "captions": "Captions",
     "subtitles": "Subtitles",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "play": "Play",
+    "pause": "Pause",
+    "replay": "Replay",
+    "hideCaptions": "Hide subtitles",
+    "showCaptions": "Show subtitles",
+    "progessbarLabel": "Time remaining",
+    "unsupportedWarning": "Unfortunately, your browser does not support this kind of video.",
     "timeLeft": "{minutes, plural, =0 {} =1 {one minutes} other {# minutes}} {seconds, plural, =0 {} =1 {one second} other {# seconds}} left",
     "transcript": "Text",
+    "video": "Video",
     "transcriptToggleLabel": "Switch between video and text",
-    "unmute": "Unmute",
-    "unsupportedWarning": "Unfortunately, your browser does not support this kind of video.",
-    "video": "Video"
+    "showTranscript": "Show video as text",
+    "showVideo": "Show video"
   }
 }

@@ -1,0 +1,7 @@
+{
+  "appTitle": "Vaalikone",
+  "frontpageIngress": "Vaalikoneen avulla voit etsiä ehdokkaita ja puolueita vaaleissa {electionDate, date, ::dMyyyy} sen mukaan, miten paljon he ovat samaa mieltä kanssasi.",
+  "madeWithPrefix": "Rakennettu",
+  "madeWithSuffix": ":n avulla",
+  "publishedBy": "Julkaisija: {publisher}"
+}

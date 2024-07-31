@@ -1,18 +1,16 @@
 {
-  "candidates": {
-    "numShown": "{numShown, plural, =1 {1 ehdokas} other {# ehdokasta}}",
-    "total": "({numTotal})"
-  },
+  "candidatesShown": "{numShown, plural, =1 {1 ehdokas} other {# ehdokasta}}",
+  "candidatesTotal": "({numTotal})",
+  "heroEmoji": "🎊",
   "ingress": {
-    "answerMinQuestions": "Jos haluat löytää eniten kanssasi samaa mieltä olevat {candidatePlural} ja {partyPlural}, {questionsLink} ensin.",
-    "questionsLinkText": "vastaa ainakin {numQuestions, plural, =1 {yhteen kysymykseen} other {# kysymykseen}}"
+    "browse": "<p>Alla ovat näiden vaalien {candidatePlural} ja {partyPlural} järjestettynä vaalinumeron tai nimen mukaan. Voit käyttää suodattimia näiden karsimiseen.</p><p>Jos haluat löytää eniten kanssasi samaa mieltä olevat {candidatePlural} ja {partyPlural}, {questionsLink} ensin.</p>",
+    "questionsLinkText": "vastaa ainakin {numQuestions, plural, =1 {yhteen kysymykseen} other {# kysymykseen}}",
+    "results": "Alla ovat näiden vaalien {candidatePlural} ja {partyPlural}. Eniten samaa mieltä kanssasi olevat ovat ensimmäisenä listalla. Voit lisäksi käyttää suodattimia tulosten karsimiseen."
   },
-  "parties": {
-    "numShown": "{numShown, plural, =1 {1 puolue} other {# puoluetta}}",
-    "total": "({numTotal})"
-  },
+  "partiesShown": "{numShown, plural, =1 {1 puolue} other {# puoluetta}}",
+  "partiesTotal": "({numTotal})",
   "title": {
-    "browse": "Selaa ehdokkaita ja puolueita",
-    "results": "Tuloksesi"
+    "browse": "Vaalien {candidatePlural} ja {partyPlural}",
+    "results": "Sinun tuloksesi"
   }
 }

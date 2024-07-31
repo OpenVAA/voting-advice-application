@@ -44,16 +44,16 @@ Show a popup asking for user feedback.
 ```
 -->
 
-<Alert bind:closeAlert title={$t('dynamic.survey.title')} {...$$restProps}>
+<Alert bind:closeAlert title={$t('survey.title')} {...$$restProps}>
   <div class="justify-self-stretch">
     <h3 class="mb-sm mt-0 text-center">
-      {$t('dynamic.survey.popupTitle')}
+      {$t('survey.popupTitle')}
     </h3>
   </div>
   <div slot="actions">
     <SurveyButton on:click={onClick} variant="main" />
     <p class="my-sm text-sm">
-      {$t('dynamic.survey.popupInfo')}
+      {$t('survey.popupInfo')}
     </p>
     <Button on:click={closeAlert} text={$t('common.thanksNo')} color="warning" />
   </div>

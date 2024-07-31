@@ -21,25 +21,21 @@ export function getAnswer(entity: EntityProps, question: QuestionProps): AnswerP
  * @param question The Question object
  * @returns An `AnswerProps` object with an integer answer
  */
-export function getLikertAnswer(
-  entity: EntityProps,
-  question: QuestionProps
-): AnswerProps<number> | undefined {
+export function getLikertAnswer(entity: EntityProps, question: QuestionProps) {
   if (question.type !== 'singleChoiceOrdinal') {
     logDebugError(`getLikertAnswer: Question ${question.id} is not a Likert question.`);
-    return undefined;
+    return {
+      value: undefined,
+      openAnswer: undefined
+    };
   }
   const answer = getAnswer(entity, question);
-  if (answer?.value == null) return undefined;
-  const value = typeof answer.value === 'number' ? answer.value : parseInt(`${answer?.value}`);
-  if (isNaN(value)) {
-    logDebugError(`getLikertAnswer: Answer ${answer.value} to ${question.id} is not a number.`);
-    return undefined;
-  }
-  return {
-    value,
-    openAnswer: answer.openAnswer
-  };
+  return answer
+    ? {
+        value: parseInt(answer.value),
+        openAnswer: answer.openAnswer
+      }
+    : undefined;
 }
 
 /**
@@ -51,7 +47,7 @@ export function getLikertAnswer(
 export function getAnswerForDisplay(
   entity: EntityProps,
   question: QuestionProps
-): string | Array<string> | undefined {
+): string | string[] | undefined {
   const {value} = getAnswer(entity, question) ?? {};
   if (value == null || value === '') return undefined;
   const qt = question.type;
@@ -61,17 +57,8 @@ export function getAnswerForDisplay(
       question.dateType && question.dateType in DATE_FORMATS
         ? DATE_FORMATS[question.dateType]
         : DATE_FORMATS.yearMonthDay;
-    let date: Date | undefined;
-    if (value instanceof Date) {
-      date = value;
-    } else if (typeof value === 'string' || typeof value === 'number') {
-      date = new Date(value);
-    }
-    if (date == null || isNaN(date.getTime())) {
-      logDebugError(`Invalid date value ${value} for question ${question.id}`);
-      return undefined;
-    }
-    return date.toLocaleDateString(locale.get(), format);
+    const date = new Date(value);
+    return `${date}` == 'Invalid Date' ? undefined : date.toLocaleDateString(locale.get(), format);
   }
   if (['singleChoiceOrdinal', 'singleChoiceCategorical'].includes(qt))
     return getChoiceLabel(question, value);
@@ -117,12 +104,12 @@ function getChoiceLabel(question: QuestionProps, answer: AnswerProps['value']): 
 function getChoiceLabels(
   question: QuestionProps,
   answers: AnswerProps['value']
-): Array<string> | undefined {
+): string[] | undefined {
   if (!Array.isArray(answers)) {
     logDebugError(`Invalid question answers (${answers}) for question ${question.id}`);
     return undefined;
   }
-  return answers.map((a) => getChoiceLabel(question, a)).filter((l) => l != null) as Array<string>;
+  return answers.map((a) => getChoiceLabel(question, a)).filter((l) => l != null) as string[];
 }
 
 /**
@@ -149,37 +136,3 @@ export const DATE_FORMATS: Record<DateType, Intl.DateTimeFormatOptions> = {
     weekday: 'long'
   }
 };
-
-/**
- * Check wheter an answer to a question in empty.
- * @param question The Question object
- * @param answer The Candidate's answer
- * @returns A boolean value indicating whether the answer is empty
- */
-export function answerIsEmpty(question: QuestionProps, answer: AnswerProps): boolean {
-  const answerValue = answer.value;
-  if (answer) {
-    if (question.type === 'boolean') {
-      return answerValue == null;
-    } else if (
-      question.type === 'singleChoiceCategorical' ||
-      question.type === 'singleChoiceOrdinal'
-    ) {
-      return answerValue === '' || answerValue == null;
-    } else if (question.type === 'multipleChoiceCategorical') {
-      return Array.isArray(answerValue) && answerValue.length === 0;
-    } else if (question.type === 'text' || question.type === 'link') {
-      if (answerValue) {
-        return Object.values(answerValue).some((value) => value === '');
-      } else {
-        return true;
-      }
-    } else if (question.type === 'date') {
-      return answerValue === '' || answerValue == null;
-    } else {
-      throw new Error(`Unknown question type: ${question.type}`);
-    }
-  } else {
-    return true;
-  }
-}

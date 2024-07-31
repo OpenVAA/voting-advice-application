@@ -1,6 +1,7 @@
 <script lang="ts">
   import {goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
+  import {t, locale} from '$lib/i18n';
+  import {translate} from '$lib/i18n/utils/translate';
   import {getContext} from 'svelte';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {addAnswer, updateAnswer} from '$lib/api/candidate';
@@ -11,19 +12,22 @@
   import {LikertResponseButtons, QuestionInfo} from '$lib/components/questions';
   import {MultilangTextInput} from '$candidate/components/textArea';
   import {Warning} from '$lib/components/warning';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
   import type {QuestionPageProps} from './QuestionPage.type';
 
   type $$Props = QuestionPageProps;
   export let currentQuestion: $$Props['currentQuestion'];
+  export let questions: $$Props['questions'];
   export let editMode: $$Props['editMode'] = false;
 
-  const {opinionAnswers, progress, questionsLocked, unansweredOpinionQuestions} =
+  const {answersStore, progressStore, questionsLockedStore} =
     getContext<CandidateContext>('candidate');
 
-  $: answer = $opinionAnswers?.[questionId]; // undefined if not answered
+  $: answers = $answersStore;
+  $: answer = answers?.[questionId]; // undefined if not answered
 
   $: questionId = currentQuestion.id;
+  $: questionsLocked = $questionsLockedStore;
 
   // Local storage keys, depend on the question id
   $: likertLocal = `candidate-app-question-${questionId}-likert`;
@@ -37,7 +41,7 @@
   // Set the selected key on page load, local storage takes precedence
   $: {
     const likertValue = localStorage.getItem(likertLocal);
-    selectedKey = likertValue ? parseInt(likertValue) : answer?.value;
+    selectedKey = likertValue ? parseInt(likertValue) : answer?.key;
   }
 
   const saveLikertToLocal = ({detail}: CustomEvent) => {
@@ -83,7 +87,7 @@
     } else {
       // Editing existing answer
 
-      const likertAnswer = selectedKey ?? answer.value;
+      const likertAnswer = selectedKey ?? answer.key;
       const response = await updateAnswer(answer.id, likertAnswer, openAnswer);
       if (!response?.ok) {
         showError($t('candidateApp.questions.answerSaveError'));
@@ -98,15 +102,16 @@
 
   const updateAnswerStore = (
     answerId: string,
-    value: AnswerProps['value'],
+    key: AnswerOption['key'],
     openAnswer: LocalizedString
   ) => {
-    if ($opinionAnswers) {
-      $opinionAnswers[questionId] = {
-        id: String(answerId),
-        value: value,
+    if (answers) {
+      answers[questionId] = {
+        id: answerId,
+        key,
         openAnswer
       };
+      answersStore.set(answers);
     }
   };
 
@@ -118,13 +123,16 @@
   const saveAndContinue = async () => {
     await saveToServer();
 
-    if ($unansweredOpinionQuestions?.length === 0) {
+    const nextUnansweredQuestion = Object.values(questions).find(
+      (question) => !answers?.[question.id]
+    );
+
+    if (!nextUnansweredQuestion) {
       // All questions answered
       goto($getRoute(Route.CandAppHome));
       return;
     }
-    const nextUnansweredQuestion = $unansweredOpinionQuestions?.[0]?.id;
-    goto($getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion}));
+    goto($getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion.id}));
   };
 
   const cancelAndReturn = () => {
@@ -133,10 +141,10 @@
   };
 
   $: category = currentQuestion.category;
-  $: info = currentQuestion.info;
+  $: info = translate(currentQuestion.info, $locale);
   $: options = currentQuestion.values?.map(({key, label}) => ({
     key,
-    label: label
+    label: translate(label, $locale)
   }));
 </script>
 
@@ -147,7 +155,7 @@ In addition to the question, includes a Likert scale and a text area for comment
 
 ### Properties
 - `currentQuestion` (required): The question to display.
-- `questions` (required): Array of all questions.
+- `questions` (required): Record of all questions.
 - `editMode` (optional): Whether the page is in edit mode. Changes the buttons displayed.
 
 ### Usage
@@ -159,21 +167,20 @@ In addition to the question, includes a Likert scale and a text area for comment
 
 {#key currentQuestion}
   <BasicPage
-    title={currentQuestion.text}
+    title={translate(currentQuestion.text, $locale)}
     class="bg-base-200"
-    progress={$progress?.progress}
-    progressMax={$progress?.max}>
-    <Warning display={!!$questionsLocked} slot="note"
-      >{$t('candidateApp.common.editingNotAllowed')}</Warning>
+    progress={$progressStore?.progress}
+    progressMax={$progressStore?.max}>
+    <Warning display={!!questionsLocked} slot="note">{$t('questions.cannotEditWarning')}</Warning>
 
     <HeadingGroup slot="heading" id="hgroup-{questionId}">
       {#if category}
         <PreHeading><CategoryTag {category} /></PreHeading>
       {/if}
-      <h1>{currentQuestion.text}</h1>
+      <h1>{translate(currentQuestion.text, $locale)}</h1>
     </HeadingGroup>
 
-    {#if info && info !== ''}
+    {#if info !== ''}
       <QuestionInfo {info} />
     {/if}
 
@@ -182,7 +189,7 @@ In addition to the question, includes a Likert scale and a text area for comment
         <LikertResponseButtons
           aria-labelledby="hgroup-{questionId}"
           name={questionId}
-          mode={!$questionsLocked ? 'answer' : 'display'}
+          mode={!questionsLocked ? 'answer' : 'display'}
           {options}
           {selectedKey}
           on:change={saveLikertToLocal} />
@@ -192,11 +199,11 @@ In addition to the question, includes a Likert scale and a text area for comment
 
       <MultilangTextInput
         id="openAnswer"
-        headerText={$t('candidateApp.questions.openAnswerPrompt')}
+        headerText={$t('candidateApp.questions.commentOnThisIssue')}
         localStorageId={openAnswerLocal}
         previouslySavedMultilang={answer?.openAnswer ?? undefined}
         disabled={!selectedKey}
-        locked={!!$questionsLocked}
+        locked={!!questionsLocked}
         placeholder="—"
         bind:multilangText={openAnswer}
         bind:this={openAnswerTextArea} />
@@ -205,15 +212,21 @@ In addition to the question, includes a Likert scale and a text area for comment
         <p class="text-error">{errorMessage}</p>
       {/if}
 
-      {#if !!$questionsLocked}
+      {#if !!questionsLocked}
         <Button
           on:click={() => goto($getRoute(Route.CandAppQuestions))}
           variant="main"
-          text={$t('common.return')} />
+          text={$t('candidateApp.questions.return')} />
       {:else if editMode}
         <div class="grid w-full grid-cols-[1fr] justify-items-center">
-          <Button on:click={saveAndReturn} variant="main" text={$t('common.saveAndReturn')} />
-          <Button on:click={cancelAndReturn} color="warning" text={$t('common.cancel')} />
+          <Button
+            on:click={saveAndReturn}
+            variant="main"
+            text={$t('candidateApp.questions.saveAndReturn')} />
+          <Button
+            on:click={cancelAndReturn}
+            color="warning"
+            text={$t('candidateApp.questions.cancel')} />
         </div>
       {:else}
         <Button
@@ -221,7 +234,7 @@ In addition to the question, includes a Likert scale and a text area for comment
           variant="main"
           icon="next"
           disabled={!selectedKey}
-          text={$t('common.saveAndContinue')} />
+          text={$t('candidateApp.questions.saveAndContinue')} />
       {/if}
     </svelte:fragment>
   </BasicPage>

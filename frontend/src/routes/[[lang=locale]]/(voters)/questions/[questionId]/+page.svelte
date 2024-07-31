@@ -233,7 +233,7 @@
           on:click={$openFeedbackModal}
           variant="icon"
           icon="feedback"
-          text={$t('feedback.send')} />
+          text={$t('navigation.sendFeedback')} />
       {/if}
       {#if $settings.questions.showResultsLink}
         <Button
@@ -241,7 +241,7 @@
           disabled={resultsAvailableSync ? null : true}
           variant="responsive-icon"
           icon="results"
-          text={$t('results.title.results')} />
+          text={$t('actionLabels.results')} />
       {/if}
       {#if videoProps}
         <Button
@@ -311,9 +311,9 @@
         answered={selectedKey != null}
         {disabled}
         nextLabel={questionIndex === questions.length - 1 && selectedKey != null
-          ? $t('results.title.results')
+          ? $t('actionLabels.results')
           : undefined}
-        previousLabel={questionIndex === 0 ? $t('common.back') : undefined}
+        previousLabel={questionIndex === 0 ? $t('header.back') : undefined}
         separateSkip={true}
         on:previous={() => {
           startEvent('question_previous', {questionIndex});

@@ -1,26 +1,27 @@
 <script lang="ts">
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import type {CandidateContext} from '$lib/utils/candidateStore';
   import {getContext} from 'svelte';
   import {goto} from '$app/navigation';
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {LoadingSpinner} from '$candidate/components/loadingSpinner';
 
-  const {opinionQuestions, unansweredRequiredInfoQuestions} =
-    getContext<CandidateContext>('candidate');
+  const {basicInfoFilledStore, questionsStore} = getContext<CandidateContext>('candidate');
 
-  $: if ($unansweredRequiredInfoQuestions?.length) {
+  $: if (!$basicInfoFilledStore) {
     goto($getRoute(Route.CandAppProfile));
   }
+
+  $: questions = $questionsStore;
 </script>
 
 <svelte:head>
   <title>{$t('questions.title')}</title>
 </svelte:head>
 
-{#if $unansweredRequiredInfoQuestions?.length}
+{#if !$basicInfoFilledStore}
   <LoadingSpinner />
-{:else if !$opinionQuestions || !Object.values($opinionQuestions).length}
+{:else if !questions || !Object.values(questions).length}
   <p>{$t('error.noQuestions')}</p>
 {:else}
   <slot />

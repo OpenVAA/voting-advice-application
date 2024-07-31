@@ -1,8 +1,0 @@
-{
-  "controls": {
-    "noFilterResults": "The filters yielded no matches. You can try changing them.",
-    "noSearchResults": "The search yielded no matches. You can try changing it.",
-    "searchPlaceholder": "Search by name"
-  },
-  "showMore": "Show more"
-}
