@@ -1,28 +1,67 @@
 {
-  "answerNo": "Ei",
-  "answerYes": "Kyllä",
+  "answer": {
+    "no": "Ei",
+    "yes": "Kyllä"
+  },
+  "back": "Palaa",
   "cancel": "Peruuta",
   "candidate": {
-    "singular": "ehdokas",
-    "plural": "ehdokkaat"
+    "plural": "ehdokkaat",
+    "singular": "ehdokas"
   },
-  "clearInput": "Tyhjennä",
+  "candidatePortrait": "Omakuva",
+  "clear": "Tyhjennä",
   "close": "Sulje",
+  "closeDialog": "Sulje valintaikkuna",
+  "closeMenu": "Sulje valikko",
   "continue": "Jatka",
+  "electionList": "Vaalilista",
   "electionSymbol": {
     "candidate": "Ehdokasnumero",
     "party": "Vaalisymboli"
   },
+  "expandOrCollapse": "Laajenna tai pienennä tämä sisältö",
+  "firstName": "Etunimi",
+  "home": "Alkuun",
   "info": "Lisätietoja",
+  "language": {
+    "select": "Valitse kieli"
+  },
+  "lastName": "Sukunimi",
   "loading": "Ladataan…",
+  "login": "Kirjaudu",
+  "logout": "Kirjaudu ulos",
+  "madeWithPrefix": "Rakennettu",
+  "madeWithSuffix": ":n avulla",
   "missingAnswer": "—",
   "multipleAnswerSeparator": " • ",
+  "openCloseMenu": "Avaa tai sulje valikko",
+  "openMenu": "Avaa valikko",
   "openVAA": "OpenVAA",
   "party": {
-    "singular": "puolue",
-    "plural": "puolueet"
+    "plural": "puolueet",
+    "singular": "Puolue"
   },
+  "pending": "odottaa",
+  "primaryActions": "Ensijaiset toiminnot",
+  "privacy": {
+    "dataCollection": {
+      "content": "Haluaisimme kerätä koneen käyttötietoja täysin nimettömästi tutkimusta ja sovelluksen kehittämistä varten. Kerättäviin tietoihin sisältyvät muun muassa vaalikonevastaukset, vastaamiseen käytetty aika ja mitä tuloksia on katseltu, mutta tietoja ei voi yhdistää sinuun.",
+      "title": "Vastausten ja käyttötietojen kerääminen"
+    }
+  },
+  "progress": "Eteneminen",
+  "publishedBy": "Julkaisija: {publisher}",
   "question": "Kysymys",
+  "readMore": "Lue lisää",
+  "resetAnswers": "Tyhjennä vastauksesi",
+  "return": "Palaa",
+  "returnHome": "Palaa etusivulle",
+  "saveAndContinue": "Tallenna ja jatka",
+  "saveAndReturn": "Tallenna ja palaa",
+  "selectFirst": "Valitse ensimmäinen",
+  "showFullImage": "Näytä täysikokoinen kuva",
+  "skipToMain": "Hyppää sisältöön",
   "thanksNo": "Ei kiitos",
   "unaffiliated": "Sitoutumaton",
   "website": "Verkkosivusto"

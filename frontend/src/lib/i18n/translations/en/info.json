@@ -1,6 +1,3 @@
 {
-  "content": "The election <b>date</b> is {electionDate, date, ::yyyyMMdd}.",
-  "heroEmoji": "🗳️",
-  "returnButton": "Return Home",
-  "title": "Information"
+  "title": "Information About the Elections"
 }

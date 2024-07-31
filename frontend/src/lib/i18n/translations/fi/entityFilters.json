@@ -1,0 +1,18 @@
+{
+  "applyAndClose": "Sulje suodattimet",
+  "error": "Suodatinta ei voitu ladata, pahoittelut!",
+  "filterButtonLabel": "Suodata",
+  "filters": "Suodattimet",
+  "missingValue": "Ei vastausta",
+  "numeric": {
+    "maxLabel": "Enintään",
+    "minLabel": "Vähintään"
+  },
+  "reset": "Nollaa suodattimet",
+  "selectAll": "Valitse kaikki",
+  "text": {
+    "ariaLabel": "Hakusana:",
+    "placeholder": "Hakusana"
+  },
+  "unselectAll": "Poista valinta kaikista"
+}

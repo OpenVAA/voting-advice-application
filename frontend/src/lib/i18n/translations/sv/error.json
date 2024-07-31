@@ -4,7 +4,6 @@
   "content": "<p>Vi är mycket ledsna för besväret. Du kan försöka gå tillbaka och ladda om sidan och se om problemet kvarstår.</p> <p>Om du fortfarande upplever problemet, vänligen skicka ett e-postmeddelande till {adminEmail} och beskriv problemet. Tack så mycket!</p>",
   "default": "Något gick fel, förlåt!",
   "general": "Något gick fel",
-  "heroEmoji": "🙊",
   "noQuestions": "Det finns inga frågor ännu",
   "unsupportedQuestion": "Ursäkta, denna frågan kan inte visas!"
 }
