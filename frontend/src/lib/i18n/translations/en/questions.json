@@ -1,22 +1,27 @@
 {
-  "bothHaventAnswered": "Neither you nor {entity} has answered this question",
-  "categoryIntroQuestions": "{numQuestions, plural, =-1 {} =1 {1 question} other {# questions}}",
-  "entityHasntAnswered": "{entity} hasn’t answered this question",
-  "heroEmoji": "💬",
+  "additionalActions": "Further actions for this question",
+  "answers": {
+    "bothHaventAnswered": "Neither you nor {entity} has answered this question",
+    "entityHasntAnswered": "{entity} hasn’t answered this question",
+    "youHaventAnswered": "You haven't answered this question",
+    "yourAnswer": "You"
+  },
+  "category": {
+    "numQuestions": "{numQuestions, plural, =-1 {} =1 {1 question} other {# questions}}",
+    "skip": "Skip This Category"
+  },
   "infoDescription": "Background information on the question",
-  "ingressWithoutCategories": "Next, answer {numQuestions} questions regarding politics and values.",
-  "ingressWithCategories": "The questions are divided into {numCategories} categories. You answer to all of them or the pick the ones you want. {minQuestions, plural, =0 {} =1 {} other {However, select enough categories to get at least # questions in total.}}",
+  "intro": {
+    "ingress": {
+      "withCategories": "The questions are divided into {numCategories} categories. You answer to all of them or the pick the ones you want. {minQuestions, plural, =0 {} =1 {} other {However, select enough categories to get at least # questions in total.}}",
+      "withoutCategories": "Next, answer {numQuestions} questions regarding politics and values."
+    },
+    "start": "Answer {numQuestions} Questions"
+  },
   "next": "Next question",
-  "notFound": "Question not found",
   "previous": "Previous",
-  "title": "Your Opinions",
-  "readMore": "Read More",
   "remove": "Delete answer",
   "skip": "Skip",
-  "skipCategory": "Skip This Category",
   "skipToResults": "Skip to Results",
-  "start": "Answer {numQuestions} Questions",
-  "youHaventAnswered": "You haven't answered this question",
-  "yourAnswer": "You",
-  "cannotEditWarning": "Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data."
+  "title": "Opinions"
 }

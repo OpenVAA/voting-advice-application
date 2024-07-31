@@ -1,0 +1,8 @@
+{
+  "links": "Länkar",
+  "tabs": {
+    "candidates": "{candidatePlural}",
+    "info": "Information",
+    "opinions": "Yttranden"
+  }
+}
