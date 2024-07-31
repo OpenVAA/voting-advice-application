@@ -67,7 +67,7 @@ A component for a boolean question that can be answered.
         <input
           id={questionId}
           disabled
-          value={$t(`common.${inputValue ? 'answerYes' : 'answerNo'}`)}
+          value={$t(inputValue ? 'common.answer.yes' : 'common.answer.no')}
           class="input input-sm input-ghost flex w-full justify-end pr-6 text-right disabled:border-none disabled:bg-base-100" />
       {/if}
     </InputContainer>

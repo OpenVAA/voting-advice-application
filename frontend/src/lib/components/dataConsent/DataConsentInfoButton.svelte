@@ -38,9 +38,9 @@ Show a button that opens a modal describing the data the app collects.
   text={$t('privacy.dataConsentInfoButton')}
   {...$$restProps} />
 
-<Modal bind:closeModal bind:openModal title={$t('privacy.dataTitle')}>
+<Modal bind:closeModal bind:openModal title={$t('common.privacy.dataCollection.title')}>
   {#if $settings.analytics?.platform?.name}
-    <p>{@html sanitizeHtml($t('privacy.dataContent'))}</p>
+    <p>{@html sanitizeHtml($t('common.privacy.dataCollection.content'))}</p>
     <p>
       {@html sanitizeHtml($t(`privacy.dataContentPlatform.${$settings.analytics.platform.name}`))}
     </p>

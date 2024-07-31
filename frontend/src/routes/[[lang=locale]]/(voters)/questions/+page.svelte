@@ -56,7 +56,7 @@
   </svelte:fragment> -->
 
   <svelte:fragment slot="hero">
-    <HeroEmoji emoji={$t('questions.heroEmoji')} />
+    <HeroEmoji emoji={$t('dynamic.questions.heroEmoji')} />
   </svelte:fragment>
 
   <svelte:fragment slot="banner">
@@ -65,14 +65,10 @@
         on:click={$openFeedbackModal}
         variant="icon"
         icon="feedback"
-        text={$t('navigation.sendFeedback')} />
+        text={$t('feedback.send')} />
     {/if}
     {#if $settings.header.showHelp}
-      <Button
-        href={$getRoute(Route.Help)}
-        variant="icon"
-        icon="help"
-        text={$t('actionLabels.help')} />
+      <Button href={$getRoute(Route.Help)} variant="icon" icon="help" text={$t('help.title')} />
     {/if}
   </svelte:fragment>
 
@@ -80,11 +76,11 @@
     <Loading />
   {:else if !$settings.questions.questionsIntro.allowCategorySelection || categoriesSync.length < 2}
     <p class="text-center">
-      {$t('questions.ingressWithoutCategories', {numQuestions: questionsSync.length})}
+      {$t('questions.intro.ingress.withoutCategories', {numQuestions: questionsSync.length})}
     </p>
   {:else}
     <p class="text-center">
-      {$t('questions.ingressWithCategories', {
+      {$t('questions.intro.ingress.withCategories', {
         numCategories: categoriesSync.length,
         minQuestions: $settings.matching.minimumAnswers
       })}
@@ -115,6 +111,6 @@
       )}
       variant="main"
       icon="next"
-      text={$t('questions.start', {numQuestions: numSelectedQuestions})} />
+      text={$t('questions.intro.start', {numQuestions: numSelectedQuestions})} />
   </svelte:fragment>
 </BasicPage>

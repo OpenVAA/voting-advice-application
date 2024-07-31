@@ -93,8 +93,8 @@ Display either a photo or a initials-based avatar for an entity.
       <a
         href={image.url}
         target="_blank"
-        title={$t('aria.showFullImage')}
-        aria-label={$t('aria.showFullImage')}>
+        title={$t('common.showFullImage')}
+        aria-label={$t('common.showFullImage')}>
         <img
           class="border-bg-300 h-full w-full border-md object-cover"
           src={image.thumbnail.url}

@@ -168,13 +168,13 @@ A modal dialog.
     <form method="dialog">
       <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
         <span aria-hidden="true">✕</span>
-        <span class="sr-only">{$t('aria.closeDialog')}</span>
+        <span class="sr-only">{$t('common.closeDialog')}</span>
       </button>
     </form>
   </div>
   {#if closeOnBackdropClick}
     <div class="modal-backdrop" aria-hidden="true">
-      <button on:click={closeModal} tabindex="-1">{$t('aria.closeDialog')}</button>
+      <button on:click={closeModal} tabindex="-1">{$t('common.closeDialog')}</button>
     </div>
   {/if}
 </dialog>

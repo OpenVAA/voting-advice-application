@@ -11,7 +11,7 @@
 
 <BasicPage title={$t('info.title')}>
   <svelte:fragment slot="hero">
-    <HeroEmoji emoji={$t('info.heroEmoji')} />
+    <HeroEmoji emoji={$t('dynamic.info.heroEmoji')} />
   </svelte:fragment>
 
   <HeadingGroup slot="heading">
@@ -25,7 +25,7 @@
         on:click={$openFeedbackModal}
         variant="icon"
         icon="feedback"
-        text={$t('navigation.sendFeedback')} />
+        text={$t('feedback.send')} />
     {/if}
     <Button
       slot="banner"
@@ -33,18 +33,18 @@
       variant="icon"
       icon="close"
       href={$getRoute(Route.Home)}
-      text={$t('info.returnButton')} />
+      text={$t('common.returnHome')} />
   </svelte:fragment>
 
   <div>
     {@html sanitizeHtml(
-      $t('info.content', {
+      $t('dynamic.info.content', {
         electionDate: new Date($election?.electionDate ?? '')
       })
     )}
   </div>
 
   <svelte:fragment slot="primaryActions">
-    <Button variant="main" href={$getRoute(Route.Home)} text={$t('info.returnButton')} />
+    <Button variant="main" href={$getRoute(Route.Home)} text={$t('common.returnHome')} />
   </svelte:fragment>
 </BasicPage>

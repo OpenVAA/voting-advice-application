@@ -217,8 +217,8 @@ In nested cards, the layout and rendering of contents varies from that of a pare
               color="secondary"
               class="max-w-none"
               text={showAllSubcards
-                ? $t('components.entityCard.hideAllCandidates')
-                : $t('components.entityCard.showAllCandidates', {
+                ? $t('entityCard.hideAllCandidates')
+                : $t('entityCard.showAllCandidates', {
                     numCandidates: subcards.length
                   })} />
           </div>

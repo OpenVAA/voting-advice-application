@@ -163,7 +163,8 @@ In addition to the question, includes a Likert scale and a text area for comment
     class="bg-base-200"
     progress={$progress?.progress}
     progressMax={$progress?.max}>
-    <Warning display={!!$questionsLocked} slot="note">{$t('questions.cannotEditWarning')}</Warning>
+    <Warning display={!!$questionsLocked} slot="note"
+      >{$t('candidateApp.common.editingNotAllowed')}</Warning>
 
     <HeadingGroup slot="heading" id="hgroup-{questionId}">
       {#if category}
@@ -191,7 +192,7 @@ In addition to the question, includes a Likert scale and a text area for comment
 
       <MultilangTextInput
         id="openAnswer"
-        headerText={$t('candidateApp.questions.commentOnThisIssue')}
+        headerText={$t('candidateApp.questions.openAnswerPrompt')}
         localStorageId={openAnswerLocal}
         previouslySavedMultilang={answer?.openAnswer ?? undefined}
         disabled={!selectedKey}
@@ -208,17 +209,11 @@ In addition to the question, includes a Likert scale and a text area for comment
         <Button
           on:click={() => goto($getRoute(Route.CandAppQuestions))}
           variant="main"
-          text={$t('candidateApp.questions.return')} />
+          text={$t('common.return')} />
       {:else if editMode}
         <div class="grid w-full grid-cols-[1fr] justify-items-center">
-          <Button
-            on:click={saveAndReturn}
-            variant="main"
-            text={$t('candidateApp.questions.saveAndReturn')} />
-          <Button
-            on:click={cancelAndReturn}
-            color="warning"
-            text={$t('candidateApp.questions.cancel')} />
+          <Button on:click={saveAndReturn} variant="main" text={$t('common.saveAndReturn')} />
+          <Button on:click={cancelAndReturn} color="warning" text={$t('common.cancel')} />
         </div>
       {:else}
         <Button
@@ -226,7 +221,7 @@ In addition to the question, includes a Likert scale and a text area for comment
           variant="main"
           icon="next"
           disabled={!selectedKey}
-          text={$t('candidateApp.questions.saveAndContinue')} />
+          text={$t('common.saveAndContinue')} />
       {/if}
     </svelte:fragment>
   </BasicPage>

@@ -82,7 +82,7 @@
    * @param object party object or choice
    */
   function getLabel(object: PartyProps | Choice | undefined): string | undefined {
-    if (!object) return $t('components.entityFilters.missingValue');
+    if (!object) return $t('entityFilters.missingValue');
     if ('name' in object) return object.name;
     if ('label' in object) return object.label;
     logDebugError(
@@ -134,9 +134,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
           <Icon name={allSelected ? 'uncheckAll' : 'checkAll'} />
         </div>
         <span class="label-text w-full pt-2 text-left text-primary">
-          {allSelected
-            ? $t('components.entityFilters.unselectAll')
-            : $t('components.entityFilters.selectAll')}
+          {allSelected ? $t('entityFilters.unselectAll') : $t('entityFilters.selectAll')}
         </span>
       </button>
     </div>

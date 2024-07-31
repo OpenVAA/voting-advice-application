@@ -23,6 +23,7 @@
     DateInput
   } from '$candidate/components/input';
   import {answerIsEmpty} from '$lib/utils/answers';
+  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
 
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
   const headerClass = 'uppercase mx-6 my-0 p-0 small-label';
@@ -190,9 +191,9 @@
 
   $: {
     if ($unansweredOpinionQuestions?.length && !$questionsLocked)
-      submitButtonText = $t('candidateApp.basicInfo.saveAndContinue');
-    else if ($questionsLocked) submitButtonText = $t('candidateApp.basicInfo.return');
-    else submitButtonText = $t('candidateApp.basicInfo.saveAndReturn');
+      submitButtonText = $t('common.saveAndContinue');
+    else if ($questionsLocked) submitButtonText = $t('common.return');
+    else submitButtonText = $t('common.saveAndReturn');
   }
 
   function isLocalizedString(value: AnswerPropsValue): value is LocalizedString {
@@ -212,9 +213,9 @@
 {#if $infoAnswers && $infoQuestions && $infoQuestions.length > 0}
   <BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
     <Warning display={!!$questionsLocked} slot="note">
-      <p>{$t('candidateApp.homePage.editingNotAllowedNote')}</p>
+      <p>{$t('candidateApp.common.editingNotAllowed')}</p>
       {#if $unansweredOpinionQuestions?.length !== 0 || $unansweredRequiredInfoQuestions?.length !== 0}
-        <p>{$t('candidateApp.homePage.editingNotAllowedPartiallyFilled')}</p>
+        <p>{$t('candidateApp.common.editingNotAllowedPartiallyFilled')}</p>
       {/if}
     </Warning>
 
@@ -227,7 +228,9 @@
       <div class="flex flex-col items-center gap-16">
         <FieldGroup>
           {#each basicInfoFields as field}
-            <Field id={field} label={$t(`candidateApp.basicInfo.fields.${field}`)}>
+            <Field
+              id={field}
+              label={$t(assertTranslationKey(`candidateApp.basicInfo.fields.${field}`))}>
               <InputContainer locked>
                 <input
                   type="text"
@@ -244,7 +247,7 @@
         </FieldGroup>
         <FieldGroup>
           <p class={headerClass} slot="header">
-            {$t('candidateApp.basicInfo.nominations')}
+            {$t('candidateApp.basicInfo.nominations.title')}
           </p>
           {#if nomination}
             <Field
@@ -259,14 +262,14 @@
                   disabled
                   type="text"
                   id="nomination"
-                  value={nomination.electionSymbol ? null : $t('candidateApp.basicInfo.pending')}
+                  value={nomination.electionSymbol ? null : $t('common.pending')}
                   class={inputClass} />
               </InputContainer>
             </Field>
           {/if}
 
           <p class={disclaimerClass} slot="footer">
-            {$t('candidateApp.basicInfo.nominationsDescription')}
+            {$t('candidateApp.basicInfo.nominations.description')}
           </p>
         </FieldGroup>
 
@@ -301,7 +304,7 @@
               questionId={question.id}
               headerText={question.text}
               locked={$questionsLocked}
-              footerText={$t('candidateApp.basicInfo.unaffiliatedDescription')}
+              footerText={$t('xxx.basicInfo.unaffiliatedDescription')}
               value={value ? value : false}
               {onChange} />
           {:else if question.type === 'text' && (isLocalizedString(value) || value == null)}
@@ -333,7 +336,7 @@
               {onChange} />
           {:else}
             {showError(
-              $t('candidateApp.basicInfo.questionInvalidError', {questionId: question.id})
+              $t('candidateApp.basicInfo.error.invalidQuestion', {questionId: question.id})
             )}
           {/if}
         {/each}

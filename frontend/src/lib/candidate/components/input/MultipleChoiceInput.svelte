@@ -83,7 +83,7 @@ A component for a multiple choice question that can be answered.
     id={questionId}
     label={selectedOptions.length > 0
       ? $t('candidateApp.basicInfo.addAnother')
-      : $t('candidateApp.basicInfo.selectFirst')}>
+      : $t('common.selectFirst')}>
     <InputContainer {locked}>
       <select
         disabled={locked}

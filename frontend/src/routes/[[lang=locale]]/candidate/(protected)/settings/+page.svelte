@@ -13,6 +13,7 @@
   import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {StrapiLanguageData} from '$lib/api/dataProvider/strapi';
   import type {Language} from '$lib/types/candidateAttributes';
+  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
 
   const {user, loadUserData} = getContext<CandidateContext>('candidate');
 
@@ -62,7 +63,7 @@
         await loadUserData(); // Reload user data so it's up to date
         await goto($getRoute({locale: languageObj.localisationCode})); // Change page language to the chosen one
       } catch (error) {
-        languageErrorMessage = $t('candidateApp.settings.changeLanguageError');
+        languageErrorMessage = $t('candidateApp.settings.error.changeLanguage');
       }
     }
   };
@@ -71,25 +72,25 @@
     successMessage = '';
 
     if (password !== passwordConfirmation) {
-      errorMessage = $t('candidateApp.settings.passwordsDontMatch');
+      errorMessage = $t('candidateApp.settings.password.dontMatch');
       return;
     }
 
     if (currentPassword === password) {
-      errorMessage = $t('candidateApp.settings.passwordIsTheSame');
+      errorMessage = $t('candidateApp.settings.password.areSame');
       return;
     }
 
     // Additional check before backend validation
     if (!validatePassword(password)) {
-      errorMessage = $t('candidateApp.settings.passwordNotValid');
+      errorMessage = $t('candidateApp.settings.password.notValid');
       return;
     }
 
     const response = await changePassword(currentPassword, password);
     // Ideally, we would also want to check if the current password was wrong, but Strapi does not return this information :/
     if (!response?.ok) {
-      errorMessage = $t('candidateApp.settings.changePasswordError');
+      errorMessage = $t('candidateApp.settings.error.changePassword');
       return;
     }
 
@@ -99,20 +100,20 @@
     passwordConfirmation = '';
 
     errorMessage = '';
-    successMessage = $t('candidateApp.settings.passwordUpdated');
+    successMessage = $t('candidateApp.settings.password.updated');
   };
 </script>
 
 <BasicPage title={$t('candidateApp.settings.title')} mainClass="bg-base-200">
   <div class="text-center">
-    <p>{$t('candidateApp.settings.instructions')}</p>
+    <p>{$t('candidateApp.settings.ingress')}</p>
   </div>
 
   <div class="mt-16 w-full">
     <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
       <div class="flex items-center justify-between bg-base-100 px-4">
         <label for="email" class={labelClass}>
-          {$t('candidateApp.settings.fields.email')}
+          {$t('candidateApp.common.email')}
         </label>
         <div class="w-6/12 text-right text-secondary">
           <input disabled type="text" id="email" value={$user?.email} class={inputClass} />
@@ -129,7 +130,7 @@
     <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
       <div class="flex items-center justify-between bg-base-100 px-4">
         <label for="language" class={labelClass}>
-          {$t('candidateApp.settings.fields.language')}
+          {$t('candidateApp.settings.language')}
         </label>
         <div class="w-6/12 text-right text-secondary">
           <select
@@ -141,7 +142,7 @@
               <option
                 value={option.attributes.localisationCode}
                 selected={option.attributes.localisationCode === appLanguageCode}>
-                {$t(`candidateApp.languages.${option.attributes.name}`)}</option>
+                {$t(assertTranslationKey(`xxx.languages.${option.attributes.name}`))}</option>
             {/each}
           </select>
         </div>
@@ -163,7 +164,7 @@
 
   <div class="mt-32 w-full">
     <p class={headerClass}>
-      {$t('candidateApp.settings.accountPassword')}
+      {$t('candidateApp.settings.password.title')}
     </p>
   </div>
 
@@ -174,7 +175,7 @@
       <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
         <div class="flex items-center justify-between bg-base-100">
           <label for="currentPassword" class={labelClass}>
-            {$t('candidateApp.settings.currentPassword')}
+            {$t('candidateApp.settings.password.current')}
           </label>
           <div class="w-6/12 text-right text-secondary">
             <PasswordField
@@ -186,7 +187,7 @@
         </div>
       </div>
       <p class={disclaimerClass}>
-        {$t('candidateApp.settings.currentPasswordDescription')}
+        {$t('candidateApp.settings.password.currentDescription')}
       </p>
     </div>
 
@@ -196,7 +197,7 @@
       <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
         <div class="flex items-center justify-between bg-base-100">
           <label for="newPassword" class={labelClass}>
-            {$t('candidateApp.settings.newPassword')}
+            {$t('candidateApp.settings.password.new')}
           </label>
           <div class="w-6/12 text-right text-secondary">
             <PasswordField
@@ -213,7 +214,7 @@
       <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
         <div class="flex items-center justify-between bg-base-100">
           <label for="newPasswordConfirmation" class={labelClass}>
-            {$t('candidateApp.settings.newPasswordConfirmation')}
+            {$t('candidateApp.settings.password.newConfirmation')}
           </label>
           <div class="w-6/12 text-right text-secondary">
             <PasswordField
@@ -231,7 +232,7 @@
       variant="main"
       disabled={disableSetButton}
       class="my-10"
-      text={$t('candidateApp.settings.updatePassword')} />
+      text={$t('candidateApp.settings.password.update')} />
 
     {#if errorMessage}
       <p class="text-center text-error">

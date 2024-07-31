@@ -37,15 +37,15 @@ A template part that outputs the navigation menu for the Candidate App for use i
     <NavItem
       href={$getRoute(Route.CandAppHome)}
       icon="home"
-      text={$t('candidateApp.navbar.start')} />
+      text={$t('candidateApp.common.home')} />
     <NavItem
       href={$getRoute(Route.CandAppProfile)}
       icon="profile"
-      text={$t('candidateApp.navbar.basicInfo')} />
+      text={$t('candidateApp.basicInfo.title')} />
     <NavItem
       href={$getRoute(Route.CandAppQuestions)}
       icon="opinion"
-      text={$t('candidateApp.navbar.yourOpinions')}
+      text={$t('candidateApp.questions.title')}
       disabled={$unansweredRequiredInfoQuestions?.length !== 0}>
       {#if $unansweredRequiredInfoQuestions && $unansweredOpinionQuestions && $unansweredOpinionQuestions.length > 0}
         <InfoBadge
@@ -57,34 +57,27 @@ A template part that outputs the navigation menu for the Candidate App for use i
     <NavItem
       href={$getRoute(Route.CandAppSettings)}
       icon="settings"
-      text={$t('candidateApp.navbar.settings')} />
+      text={$t('candidateApp.settings.title')} />
     <NavItem
       href={$getRoute(Route.CandAppPreview)}
       icon="previewProfile"
-      text={$t('candidateApp.navbar.preview')} />
-    <NavItem
-      href={$getRoute(Route.CandAppHelp)}
-      icon="help"
-      text={$t('candidateApp.navbar.help')} />
+      text={$t('candidateApp.preview.title')} />
+    <NavItem href={$getRoute(Route.CandAppHelp)} icon="help" text={$t('candidateApp.help.title')} />
   </NavGroup>
   <NavGroup>
-    <NavItem
-      href={$getRoute(Route.CandAppInfo)}
-      icon="info"
-      disabled
-      text={$t('candidateApp.navbar.electionInformation')} />
+    <NavItem href={$getRoute(Route.CandAppInfo)} icon="info" disabled text={$t('info.title')} />
     <NavItem
       href={$getRoute(Route.CandAppFAQ)}
       icon="info"
       disabled
-      text={$t('candidateApp.navbar.useInformation')} />
+      text={$t('candidateApp.info.title')} />
   </NavGroup>
   <NavGroup>
     <NavItem
       href={$getRoute(Route.CandAppFeedback)}
       icon="feedback"
       disabled
-      text={$t('candidateApp.navbar.feedback')} />
+      text={$t('feedback.send')} />
   </NavGroup>
   <LanguageSelection />
 </Navigation>
