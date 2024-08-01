@@ -108,6 +108,8 @@ const QST: Record<string, QuestionProps> = {
   }
 };
 
+category.questions = Object.values(QST);
+
 const ANS: Record<string, AnswerProps & {questionId: string}> = {
   Likert: {
     questionId: QST.Likert.id,
@@ -195,7 +197,7 @@ test('getAnswerForDisplay', async () => {
   // We need to init the translations
   await loadTranslations(defaultLocale, '');
   expect(getAnswerForDisplay(CND, QST.Boolean), 'Display Boolean answer').toEqual(
-    t.get(ANS.Boolean.value ? 'common.answerYes' : 'common.answerNo')
+    t.get(ANS.Boolean.value ? 'common.answer.yes' : 'common.answer.no')
   );
   expect(getAnswerForDisplay(CND, QST.Text), 'Display Text answer').toEqual(ANS.Text.value);
   expect(getAnswerForDisplay(CND, QST.Number), 'Display Number answer').toStrictEqual(
