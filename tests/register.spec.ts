@@ -1,12 +1,13 @@
 import { test, expect } from "@playwright/test";
 import { faker } from "@faker-js/faker";
 import path from "path";
-import { Route } from '../frontend/src/lib/utils/navigation/route';
-import candidateAppTranslationsEn from '../frontend/src/lib/i18n/translations/en/candidateApp.json';
-import candidateAppTranslationsFi from '../frontend/src/lib/i18n/translations/fi/candidateApp.json';
-import ariaTranslations from '../frontend/src/lib/i18n/translations/en/aria.json';
-import questionsTranslations from '../frontend/src/lib/i18n/translations/en/questions.json';
-import mockQuestions from '../backend/vaa-strapi/src/functions/mockData/mockQuestions.json';
+import { Route } from "../frontend/src/lib/utils/navigation/route";
+import candidateAppTranslationsEn from "../frontend/src/lib/i18n/translations/en/candidateApp.json";
+import candidateAppTranslationsFi from "../frontend/src/lib/i18n/translations/fi/candidateApp.json";
+import ariaTranslations from "../frontend/src/lib/i18n/translations/en/aria.json";
+import questionsTranslations from "../frontend/src/lib/i18n/translations/en/questions.json";
+import mockQuestions from "../backend/vaa-strapi/src/functions/mockData/mockQuestions.json";
+import commonTranslations from "../frontend/src/lib/i18n/translations/en/common.json";
 
 const strapiPort = process.env.STRAPI_PORT || "1337";
 const strapiURL = `http://localhost:${strapiPort}`;
@@ -14,11 +15,13 @@ const maildevPort = process.env.MAILDEV_PORT || "1080";
 const maildevURL = `http://localhost:${maildevPort}/#/`;
 const LOCALE = 'en';
 
+//TODO: These need to be matched to mock data
 const userFirstName = faker.person.firstName();
 const userLastName = faker.person.lastName();
 const userEmail = `${userFirstName}.${userLastName}@example.com`.toLowerCase();
 const userPassword = "Password1!";
 const userGender = "Male";
+const userBirthday = "January 1"
 const userManifesto =
   "Lorem ipsum dolor sit amet, consectetur adipisci elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 const comment = "Lorem ipsum";
@@ -196,8 +199,9 @@ test.describe("when logged in with imported user", () => {
     await page.getByLabel(candidateAppTranslationsEn.basicInfo.fields.gender, {exact: true}).selectOption(userGender);
     await page.getByLabel(candidateAppTranslationsEn.basicInfo.fields.birthday, {exact: true}).fill("1990-01-01");
 
-    const motherTongueField = page.getByTestId("motherTongue");
-    const saveButton = page.getByTestId("submitButton");
+    const motherTongueField = page.getByLabel(candidateAppTranslationsEn.basicInfo.fields.motherTongue);
+
+    const saveButton = page.locator("#submitButton");
 
     // Button should not be clickable with 0 languages picked and manifesto not set
     await expect(saveButton).toBeDisabled();
@@ -214,8 +218,10 @@ test.describe("when logged in with imported user", () => {
     await expect(saveButton).toBeEnabled();
 
     // Also test the other languages
-    await motherTongueField.selectOption(candidateAppTranslationsEn.languages.Spanish);
-    await motherTongueField.selectOption(candidateAppTranslationsEn.languages.English);
+    const otherTonugesFieldSelectFirst = page.getByLabel(candidateAppTranslationsEn.basicInfo.selectFirst);
+    await otherTonugesFieldSelectFirst.selectOption(candidateAppTranslationsEn.languages.Spanish);
+    const otherTonguesFieldSelectAnother= page.getByLabel(candidateAppTranslationsEn.basicInfo.addAnother);
+    await otherTonguesFieldSelectAnother.selectOption(candidateAppTranslationsEn.languages.English);
 
     await expect(
       page.locator("form div").filter({ hasText: candidateAppTranslationsEn.languages.Finnish }).nth(3),
@@ -376,19 +382,25 @@ test.describe("when logged in with imported user", () => {
     await expect(
       page.getByRole("heading", { name: `${userFirstName} ${userLastName}` }),
     ).toBeVisible();
-    // These are not checked because currently preview doesn't show basic info for imported candidates
-    // TODO: fix these not to be hardcoded
-    /*
+
     await expect(
-      page.getByText("Mother Tongues Finnish • Spanish"),
+      page.getByText(candidateAppTranslationsEn.languages.Finnish, {
+        exact: true,
+      })
     ).toBeVisible();
-    await expect(page.getByText(`Gender ${userGender}`)).toBeVisible();
-    await expect(page.getByText("Unaffiliated No")).toBeVisible();
     await expect(
-      page.getByText(`Election Manifesto ${userManifesto}`),
+      page.getByText(`${candidateAppTranslationsEn.languages.Spanish}`, {exact: true})
     ).toBeVisible();
-    await expect(page.getByText("Birthday Mon Jan 01 1990")).toBeVisible();
-    */
+
+
+    await expect(
+      page.getByText(userGender, {exact: true})
+    ).toBeVisible();
+    await expect(page.getByText(`${commonTranslations.unaffiliated} ${commonTranslations.answerNo}`, {exact: true})).toBeVisible();
+    await expect(
+      page.getByText(`${candidateAppTranslationsEn.basicInfo.electionManifesto} ${userManifesto}`, {exact: true})
+    ).toBeVisible();
+    await expect(page.getByText(userBirthday, {exact: true})).toBeVisible();
 
     // Expect close button to take to start page
     await page.getByRole("button", { name: candidateAppTranslationsEn.preview.close, exact: true }).click();

@@ -87,7 +87,6 @@ A component for a multiple choice question that can be answered.
         disabled={locked}
         bind:this={selectElement}
         id={questionId}
-        data-testid={questionId}
         class="select select-sm w-full text-right text-primary disabled:border-none disabled:bg-base-100"
         on:change={onLanguageSelect}
         style="text-align-last: right; direction: rtl;">

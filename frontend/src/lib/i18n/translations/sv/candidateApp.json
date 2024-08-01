@@ -56,6 +56,7 @@
       "electionNumber": "SV Election Number",
       "gender": "SV Gender",
       "motherTongue": "SV Mother Tongue",
+      "otherLanguages": "SV Other Languages",
       "birthday": "SV Birthday",
       "portrait": "SV Portrait",
       "unaffiliated": "SV Unaffiliated"

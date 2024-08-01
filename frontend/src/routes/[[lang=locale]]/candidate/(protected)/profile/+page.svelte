@@ -342,7 +342,7 @@
           disabled={!allFilledPrivate}
           text={submitButtonText}
           type="submit"
-          data-testid="submitButton"
+          id="submitButton"
           variant="main"
           icon="next"
           slot="primaryActions" />
