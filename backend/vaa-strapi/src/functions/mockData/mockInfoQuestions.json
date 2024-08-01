@@ -1,0 +1,98 @@
+[
+  {
+    "text": {
+      "en": "Mother tongue",
+      "fi": "FI Mother tongue",
+      "es-CO": "ES-CO Mother tongue"
+    },
+    "info": {
+      "en": "Lorem ipsum.",
+      "fi": "FI Lorem ipsum.",
+      "es-CO": "ES-CO Lorem ipsum."
+    },
+    "type": "Language",
+    "order": 2,
+    "required": true,
+    "entityType": "candidate"
+  },
+  {
+    "text": {
+      "en": "Other languages",
+      "fi": "FI Other languages",
+      "es-CO": "ES-CO Other languages"
+    },
+    "info": {
+      "en": "Lorem ipsum.",
+      "fi": "FI Lorem ipsum.",
+      "es-CO": "ES-CO Lorem ipsum."
+    },
+    "type": "MultiLanguage",
+    "order": 3,
+    "required": false,
+    "entityType": "candidate"
+  },
+  {
+    "text": {
+      "en": "Gender",
+      "fi": "FI Gender",
+      "es-CO": "ES-CO Gender"
+    },
+    "info": {
+      "en": "Lorem ipsum.",
+      "fi": "FI Lorem ipsum.",
+      "es-CO": "ES-CO Lorem ipsum."
+    },
+    "type": "Gender",
+    "order": 1,
+    "required": true,
+    "entityType": "candidate"
+  },
+  {
+    "text": {
+      "en": "Unaffiliated",
+      "fi": "FI Unaffiliated",
+      "es-CO": "ES-CO Unaffiliated"
+    },
+    "info": {
+      "en": "Lorem ipsum.",
+      "fi": "FI Lorem ipsum.",
+      "es-CO": "ES-CO Lorem ipsum."
+    },
+    "type": "Boolean",
+    "order": 4,
+    "required": true,
+    "entityType": "candidate"
+  },
+  {
+    "text": {
+      "en": "Election manifesto",
+      "fi": "FI Election manifesto",
+      "es-CO": "ES-CO Election manifesto"
+    },
+    "info": {
+      "en": "Lorem ipsum.",
+      "fi": "FI Lorem ipsum.",
+      "es-CO": "ES-CO Lorem ipsum."
+    },
+    "type": "Text",
+    "order": 5,
+    "required": true,
+    "entityType": "candidate"
+  },
+  {
+    "text": {
+      "en": "Birthday",
+      "fi": "FI Birthday",
+      "es-CO": "ES-CO Birthday"
+    },
+    "info": {
+      "en": "Lorem ipsum.",
+      "fi": "FI Lorem ipsum.",
+      "es-CO": "ES-CO Lorem ipsum."
+    },
+    "type": "Date",
+    "order": 0,
+    "required": true,
+    "entityType": "candidate"
+  }
+]
