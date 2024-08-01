@@ -16,7 +16,8 @@ export class MockQuestionCategory implements QuestionCategoryProps {
     public name = 'X',
     public shortName = 'X',
     public type: QuestionCategoryProps['type'] = 'opinion',
-    public order = 0
+    public order = 0,
+    public questions = new Array<QuestionProps>()
   ) {}
 }
 
