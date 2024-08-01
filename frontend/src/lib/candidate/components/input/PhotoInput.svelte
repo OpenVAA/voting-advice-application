@@ -1,6 +1,6 @@
 <script lang="ts">
   import {onDestroy, onMount} from 'svelte';
-  import {uploadFiles} from '$lib/api/candidate';
+  import {updatePhoto, uploadFiles} from '$lib/api/candidate';
   import {constants} from '$lib/utils/constants';
   import {t} from '$lib/i18n';
   import {Field} from '$lib/components/common/form';
@@ -9,6 +9,8 @@
 
   export let disabled: boolean = false;
   export let photo: Photo | undefined;
+  export let onChange: (() => void) | undefined = undefined;
+
   let photoUrl = photo
     ? new URL(constants.PUBLIC_BACKEND_URL + photo.formats.thumbnail.url)
     : undefined;
@@ -50,6 +52,7 @@
         imageHasChanged = true;
         image = file;
         let reader = new FileReader();
+        onChange?.();
 
         reader.onload = (e) => {
           photoUrl = e.target?.result ? new URL(e.target?.result?.toString()) : undefined;
@@ -64,12 +67,14 @@
     if (image && imageHasChanged) {
       const res = await uploadFiles([image]);
 
-      // Deleting file disabled, because at the moment it does not work with access control
+      // TODO: Deleting file disabled, because at the moment it does not work with access control
       // if (photo && res?.status === 200) {
       //   await deleteFile(photo.id);
       // }
-      const uploadedPhotos: Photo[] = await res?.json();
-      photo = uploadedPhotos[0];
+      const uploadedPhotos: Array<Photo> = await res?.json();
+      const uploadedPhoto = uploadedPhotos[0];
+      await updatePhoto(uploadedPhoto);
+      photo = uploadedPhoto;
       imageHasChanged = false;
     }
   };
@@ -85,12 +90,15 @@ image defined in the `photo` object.
 - `photo`: A photo object fetched fromn strapi. See `$lib/types/candidateAttributes.ts`.
 
 ### Bindable functions
+
 - `uploadPhoto()`: A function that deletes the image defined in `photo` and uploads the new image.
   Also updates the `photo` object.
 
 ### Properties
 
 - `maxFileSize`: An optional property to set the max accepted file size in bytes. Defaults to 5 MB.
+- `disabled`: A boolean value that indicates if the component is disabled.
+- `photoChanged`: A function for letting the parent component know that the photo has changed.
 
 ### Usage
 
@@ -99,7 +107,7 @@ let uploadPhoto: () => Promise<void>;
   let photo: Photo = {
     ...
   }
-  <AvatarSelect bind:photo bind:uploadPhoto maxFileSize={5 * 1024 * 1024}/>
+  <PhotoInput bind:photo bind:uploadPhoto maxFileSize={5 * 1024 * 1024}/>
 ```
 -->
 

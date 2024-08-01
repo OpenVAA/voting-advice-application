@@ -5,7 +5,7 @@
   import {goto} from '$app/navigation';
   import {Button} from '$lib/components/button';
   import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {LogoutButtonProps} from './LogoutButton.type';
 
   type $$props = LogoutButtonProps;
@@ -18,26 +18,14 @@
   let closeModal: () => void;
   let timeLeft = logoutModalTimer;
 
-  const {
-    nofUnansweredBasicInfoQuestionsStore,
-    opinionQuestionsFilledStore,
-    nofUnansweredOpinionQuestionsStore,
-    basicInfoFilledStore,
-    logOut
-  } = getContext<CandidateContext>('candidate');
-
-  let basicInfoQuestionsLeft: number | undefined;
-  nofUnansweredBasicInfoQuestionsStore?.subscribe((value) => {
-    basicInfoQuestionsLeft = value;
-  });
-
-  let opinionQuestionsLeft: number | undefined;
-  nofUnansweredOpinionQuestionsStore?.subscribe((value) => {
-    opinionQuestionsLeft = value;
-  });
+  const {unansweredOpinionQuestions, unansweredRequiredInfoQuestions, logOut} =
+    getContext<CandidateContext>('candidate');
 
   const triggerLogout = () => {
-    if (!$opinionQuestionsFilledStore || !$basicInfoFilledStore) {
+    if (
+      $unansweredOpinionQuestions?.length !== 0 ||
+      $unansweredRequiredInfoQuestions?.length !== 0
+    ) {
       openModal();
     } else {
       logout();
@@ -82,16 +70,18 @@ Allows user to log out. Displays modal notification if the user hasn't filled al
   title={$t('candidateApp.logoutModal.title')}
   timerDuration={logoutModalTimer}>
   <!-- <div class="notification max-w-md text-center"> -->
-  {#if !$basicInfoFilledStore}
+  {#if $unansweredOpinionQuestions && $unansweredRequiredInfoQuestions?.length === 0}
     <p>
-      {$t('candidateApp.logoutModal.itemsLeft', {
-        basicInfoQuestionsLeft,
-        opinionQuestionsLeft
+      {$t('candidateApp.logoutModal.questionsLeft', {
+        opinionQuestionsLeft: $unansweredOpinionQuestions.length ?? 0
       })}
     </p>
   {:else}
     <p>
-      {$t('candidateApp.logoutModal.questionsLeft', {opinionQuestionsLeft})}
+      {$t('candidateApp.logoutModal.itemsLeft', {
+        infoQuestionsLeft: $unansweredRequiredInfoQuestions?.length ?? 0,
+        opinionQuestionsLeft: $unansweredOpinionQuestions?.length ?? 0
+      })}
     </p>
   {/if}
   <p>

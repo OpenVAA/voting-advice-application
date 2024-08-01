@@ -39,7 +39,7 @@
   },
   "logoutModal": {
     "title": "Some of Your Data Is Still Missing",
-    "itemsLeft": "There {basicInfoQuestionsLeft, plural, =1 {is still one item} other {are still # items}} of basic info and {opinionQuestionsLeft, plural, =1 {one opinion} other {# opinions}} to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
+    "itemsLeft": "There {infoQuestionsLeft, plural, =1 {is still one item} other {are still # items}} of basic info and {opinionQuestionsLeft, plural, =1 {one opinion} other {# opinions}} to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
     "questionsLeft": "There {opinionQuestionsLeft, plural, =1 {is still one opinion} other {are still # opinions}} to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
     "confirmation": "Are you sure you want to logout? You will be automatically logged out after {timeLeft} seconds.",
     "continueEnteringData": "Continue Entering Data"
@@ -61,6 +61,7 @@
       "unaffiliated": "Unaffiliated"
     },
     "errorMessage": "An error occurred when sending data!",
+    "questionInvalidError": "Question type or answer type is invalid for question {questionId}",
     "pending": "pending",
     "addAnother": "Add another",
     "selectFirst": "Select first",
@@ -161,6 +162,9 @@
     "saveAndContinue": "Save and Continue",
     "saveAndReturn": "Save and Return",
     "answerSaveError": "Saving answer failed",
+    "questionNotFoundError": "Question not found for question {questionId}",
+    "answerNotFoundError": "Answer not found for question {questionId}",
+    "answerInvalidError": "Answer is invalid for question {questionId}",
     "editingAllowedNote": "Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data."
   },
   "passwordButton": {

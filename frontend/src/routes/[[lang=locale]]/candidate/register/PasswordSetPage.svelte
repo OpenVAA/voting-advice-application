@@ -10,7 +10,7 @@
   import {PasswordSetter} from '$lib/candidate/components/passwordSetter';
   import {getContext} from 'svelte';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
 
   export let username: string;
   export let registrationCode: string;
@@ -18,8 +18,7 @@
 
   let password = '';
   let passwordConfirmation = '';
-  const {emailOfNewUserStore, userStore, logOut} = getContext<CandidateContext>('candidate');
-  $: loggedIn = $userStore;
+  const {newUserEmail, user, logOut} = getContext<CandidateContext>('candidate');
 
   let validPassword = false;
   let errorMessage = '';
@@ -47,10 +46,10 @@
       errorMessage = $t('candidateApp.setPassword.registrationError');
       return;
     }
-    if (loggedIn) {
+    if ($user) {
       await logOut();
     }
-    emailOfNewUserStore.set(email);
+    newUserEmail.set(email);
     errorMessage = '';
     goto($getRoute(Route.CandAppHome));
   };
@@ -78,12 +77,12 @@ Shows an error message if the registration is not successful.
 <FrontPage title={$t('candidateApp.registration.title')}>
   <HeadingGroup slot="heading">
     <PreHeading class="text-2xl font-bold text-primary">{$t('viewTexts.appTitle')}</PreHeading>
-    <h1 class="text-3xl font-normal">{$page.data.election.name}</h1>
+    <h1 class="text-3xl font-normal">{$page.data.election?.name}</h1>
     <h1 class="my-24 text-2xl font-normal">
       {$t('candidateApp.setPassword.greeting', {username})}
     </h1>
   </HeadingGroup>
-  {#if loggedIn}
+  {#if $user}
     <p class="text-center text-warning">{$t('candidateApp.registration.loggedInWarning')}</p>
     <div class="center pb-10">
       <LogoutButton stayOnPage={true} buttonVariant="main" />

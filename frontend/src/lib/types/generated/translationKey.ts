@@ -38,6 +38,7 @@ export type TranslationKey =
   | 'candidateApp.basicInfo.fields.gender'
   | 'candidateApp.basicInfo.fields.lastName'
   | 'candidateApp.basicInfo.fields.motherTongue'
+  | 'candidateApp.basicInfo.fields.otherLanguages'
   | 'candidateApp.basicInfo.fields.party'
   | 'candidateApp.basicInfo.fields.portrait'
   | 'candidateApp.basicInfo.fields.unaffiliated'

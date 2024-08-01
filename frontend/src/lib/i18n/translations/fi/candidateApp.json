@@ -39,7 +39,7 @@
   },
   "logoutModal": {
     "title": "Osa tiedoistasi puuttuu edelleen",
-    "itemsLeft": "Täytettävänä on vielä {basicInfoQuestionsLeft, plural, =1 {perustieto} other {# perustietoa}} ja {opinionQuestionsLeft, plural, =1 {yksi mielipide} other {# mielipidettä}}. Tietosi eivät näy vaalikoneessa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
+    "itemsLeft": "Täytettävänä on vielä {infoQuestionsLeft, plural, =1 {perustieto} other {# perustietoa}} ja {opinionQuestionsLeft, plural, =1 {yksi mielipide} other {# mielipidettä}}. Tietosi eivät näy vaalikoneessa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
     "questionsLeft": "Täytettävä on vielä {opinionQuestionsLeft, plural, =1 {yksi mielipide} other {# mielipidettä}}. Tietosi eivät näy vaalikoneessa ennen kuin olet täyttänyt nämä kohdat, mutta voit kirjautua sisään myöhemmin jatkaaksesi.",
     "confirmation": "Oletko varma, että haluat kirjautua ulos? Sinut kirjataan automaattisesti ulos {timeLeft} sekunnin kuluttua.",
     "continueEnteringData": "Jatka tietojen syöttämistä"
@@ -61,6 +61,7 @@
       "unaffiliated": "Sitoutumaton"
     },
     "errorMessage": "Tietoja lähetettäessä tapahtui virhe!",
+    "questionInvalidError": "Kysymyksen tai vastauksen tyyppi oli virheellinen kysymykselle {questionId}",
     "pending": "odottaa",
     "addAnother": "Lisää uusi",
     "selectFirst": "Valitse ensimmäinen",
@@ -161,6 +162,9 @@
     "saveAndContinue": "Tallenna ja jatka",
     "saveAndReturn": "Tallenna ja palaa",
     "answerSaveError": "Vastauksen tallentaminen epäonnistui",
+    "questionNotFoundError": "Kymystä {questionId} ei löytynyt",
+    "answerNotFoundError": "Vastausta kysymykselle {questionId} ei löytynyt",
+    "answerInvalidError": "Tallennettu vastaus kysymykseen {questionId} aiheutti virheen",
     "editingAllowedNote": "Vastausten muokkaaminen ei ole enää mahdollista, mutta voit silti tarkastella niitä. Ota yhteyttä ylläpitäjään, jos tiedoissa on virheitä."
   },
   "passwordButton": {

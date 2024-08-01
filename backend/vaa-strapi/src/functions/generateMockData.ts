@@ -10,7 +10,7 @@
  * and also it is not possible to create localizations using the bulk insert.
  */
 
-import {type Faker, faker, fakerES, fakerFI} from '@faker-js/faker';
+import {type Faker, faker, fakerES, fakerFI, fakerSV} from '@faker-js/faker';
 import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
 import {API} from './utils/api';
 import type {
@@ -39,10 +39,10 @@ const locales: Locale[] = [
     faker: fakerFI
   },
   {
-    code: 'es-CO',
-    name: 'Spanish (Colombia) (es-CO)',
+    code: 'sv',
+    name: 'Swedish (sv)',
     localeObject: undefined,
-    faker: fakerES
+    faker: fakerSV
   }
 ];
 
@@ -261,8 +261,8 @@ async function createLanguages() {
         publishedAt: new Date()
       },
       {
-        name: 'Spanish',
-        localisationCode: 'es',
+        name: 'Swedish',
+        localisationCode: 'sv',
         publishedAt: new Date()
       }
     ]
