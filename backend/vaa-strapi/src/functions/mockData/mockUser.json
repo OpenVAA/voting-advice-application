@@ -1,5 +1,12 @@
-{
-  "username": "firs.last",
-  "email": "first.last@example.com",
-  "password": "Password1!"
-}
+[
+  {
+    "username": "first.last",
+    "email": "first.last@example.com",
+    "password": "Password1!"
+  },
+  {
+    "username": "test.test",
+    "email": "test.test@example.com",
+    "password": "Password1!"
+  }
+]

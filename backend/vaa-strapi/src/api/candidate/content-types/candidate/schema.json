@@ -43,42 +43,12 @@
       "type": "string",
       "required": true
     },
-    "birthday": {
-      "type": "string",
-      "required": false
-    },
-    "unaffiliated": {
-      "type": "boolean",
-      "required": false
-    },
     "photo": {
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": [
-        "images"
-      ],
+      "allowedTypes": ["images"],
       "pluginOptions": {}
-    },
-    "manifesto": {
-      "pluginOptions": {},
-      "type": "json",
-      "required": false
-    },
-    "motherTongues": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::language.language"
-    },
-    "otherLanguages": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::language.language"
-    },
-    "politicalExperience": {
-      "pluginOptions": {},
-      "type": "text",
-      "required": false
     },
     "party": {
       "type": "relation",
@@ -97,17 +67,6 @@
       "relation": "oneToOne",
       "target": "api::nomination.nomination",
       "inversedBy": "candidate"
-    },
-    "candidateAttributes": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::candidate-attribute.candidate-attribute",
-      "mappedBy": "candidate"
-    },
-    "gender": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::gender.gender"
     },
     "appLanguage": {
       "type": "relation",

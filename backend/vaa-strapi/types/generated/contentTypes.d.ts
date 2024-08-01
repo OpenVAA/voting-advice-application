@@ -740,21 +740,8 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
       Attribute.Private;
     firstName: Attribute.String & Attribute.Required;
     lastName: Attribute.String & Attribute.Required;
-    birthday: Attribute.String;
-    unaffiliated: Attribute.Boolean & Attribute.Required;
     photo: Attribute.Media;
     manifesto: Attribute.JSON;
-    motherTongues: Attribute.Relation<
-      'api::candidate.candidate',
-      'oneToMany',
-      'api::language.language'
-    >;
-    otherLanguages: Attribute.Relation<
-      'api::candidate.candidate',
-      'oneToMany',
-      'api::language.language'
-    >;
-    politicalExperience: Attribute.Text & Attribute.Required;
     party: Attribute.Relation<'api::candidate.candidate', 'manyToOne', 'api::party.party'>;
     answers: Attribute.Relation<'api::candidate.candidate', 'oneToMany', 'api::answer.answer'>;
     nomination: Attribute.Relation<
@@ -762,12 +749,6 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
       'oneToOne',
       'api::nomination.nomination'
     >;
-    candidateAttributes: Attribute.Relation<
-      'api::candidate.candidate',
-      'oneToMany',
-      'api::candidate-attribute.candidate-attribute'
-    >;
-    gender: Attribute.Relation<'api::candidate.candidate', 'oneToOne', 'api::gender.gender'>;
     appLanguage: Attribute.Relation<
       'api::candidate.candidate',
       'oneToOne',
@@ -779,50 +760,6 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
     createdBy: Attribute.Relation<'api::candidate.candidate', 'oneToOne', 'admin::user'> &
       Attribute.Private;
     updatedBy: Attribute.Relation<'api::candidate.candidate', 'oneToOne', 'admin::user'> &
-      Attribute.Private;
-  };
-}
-
-export interface ApiCandidateAttributeCandidateAttribute extends Schema.CollectionType {
-  collectionName: 'candidate_attributes';
-  info: {
-    singularName: 'candidate-attribute';
-    pluralName: 'candidate-attributes';
-    displayName: 'Candidate Attributes';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    questionType: Attribute.Relation<
-      'api::candidate-attribute.candidate-attribute',
-      'oneToOne',
-      'api::question-type.question-type'
-    >;
-    candidate: Attribute.Relation<
-      'api::candidate-attribute.candidate-attribute',
-      'manyToOne',
-      'api::candidate.candidate'
-    >;
-    name: Attribute.JSON;
-    shortName: Attribute.JSON;
-    info: Attribute.JSON;
-    fillingInfo: Attribute.JSON;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::candidate-attribute.candidate-attribute',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::candidate-attribute.candidate-attribute',
-      'oneToOne',
-      'admin::user'
-    > &
       Attribute.Private;
   };
 }
@@ -1000,29 +937,6 @@ export interface ApiFeedbackFeedback extends Schema.CollectionType {
     createdBy: Attribute.Relation<'api::feedback.feedback', 'oneToOne', 'admin::user'> &
       Attribute.Private;
     updatedBy: Attribute.Relation<'api::feedback.feedback', 'oneToOne', 'admin::user'> &
-      Attribute.Private;
-  };
-}
-
-export interface ApiGenderGender extends Schema.CollectionType {
-  collectionName: 'genders';
-  info: {
-    singularName: 'gender';
-    pluralName: 'genders';
-    displayName: 'Genders';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    name: Attribute.String;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<'api::gender.gender', 'oneToOne', 'admin::user'> &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<'api::gender.gender', 'oneToOne', 'admin::user'> &
       Attribute.Private;
   };
 }
@@ -1264,12 +1178,10 @@ declare module '@strapi/types' {
       'api::answer.answer': ApiAnswerAnswer;
       'api::app-setting.app-setting': ApiAppSettingAppSetting;
       'api::candidate.candidate': ApiCandidateCandidate;
-      'api::candidate-attribute.candidate-attribute': ApiCandidateAttributeCandidateAttribute;
       'api::constituency.constituency': ApiConstituencyConstituency;
       'api::election.election': ApiElectionElection;
       'api::election-app-label.election-app-label': ApiElectionAppLabelElectionAppLabel;
       'api::feedback.feedback': ApiFeedbackFeedback;
-      'api::gender.gender': ApiGenderGender;
       'api::language.language': ApiLanguageLanguage;
       'api::nomination.nomination': ApiNominationNomination;
       'api::party.party': ApiPartyParty;
