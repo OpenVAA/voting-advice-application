@@ -5,10 +5,12 @@ import candidateAppTranslationsEn from '../frontend/src/lib/i18n/translations/en
 import candidateAppTranslationsFi from '../frontend/src/lib/i18n/translations/fi/candidateApp.json';
 import headerTranslationsEn from '../frontend/src/lib/i18n/translations/en/header.json';
 import headerTranslationsFi from '../frontend/src/lib/i18n/translations/fi/header.json';
-import mockUser from '../backend/vaa-strapi/src/functions/mockData/mockUser.json';
+import mockUsers from '../backend/vaa-strapi/src/functions/mockData/mockUser.json';
 
 const LOCALE_EN = 'en';
 const LOCALE_FI = 'fi';
+
+const mockUser = mockUsers[1];
 
 test.describe.configure({ mode: 'serial' });
 
