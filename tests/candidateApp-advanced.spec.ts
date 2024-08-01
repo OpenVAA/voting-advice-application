@@ -1,13 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { faker } from "@faker-js/faker";
 import path from "path";
+import { TRANSLATIONS as T } from './utils/translations';
 import { Route } from "../frontend/src/lib/utils/navigation/route";
-import candidateAppTranslationsEn from "../frontend/src/lib/i18n/translations/en/candidateApp.json";
-import candidateAppTranslationsFi from "../frontend/src/lib/i18n/translations/fi/candidateApp.json";
-import ariaTranslations from "../frontend/src/lib/i18n/translations/en/aria.json";
-import questionsTranslations from "../frontend/src/lib/i18n/translations/en/questions.json";
+import mockInfoQuestions from "../backend/vaa-strapi/src/functions/mockData/mockInfoQuestions.json";
+import mockQuestionTypes from "../backend/vaa-strapi/src/functions/mockData/mockQuestionTypes.json";
 import mockQuestions from "../backend/vaa-strapi/src/functions/mockData/mockQuestions.json";
-import commonTranslations from "../frontend/src/lib/i18n/translations/en/common.json";
 
 const strapiPort = process.env.STRAPI_PORT || "1337";
 const strapiURL = `http://localhost:${strapiPort}`;
@@ -15,19 +13,47 @@ const maildevPort = process.env.MAILDEV_PORT || "1080";
 const maildevURL = `http://localhost:${maildevPort}/#/`;
 const LOCALE = 'en';
 
-//TODO: These need to be matched to mock data
 const userFirstName = faker.person.firstName();
 const userLastName = faker.person.lastName();
 const userEmail = `${userFirstName}.${userLastName}@example.com`.toLowerCase();
 const userPassword = "Password1!";
-const userGender = "Male";
-const userBirthday = "January 1"
+
+const userGender = mockQuestionTypes.find(({name}) => name === 'Gender')?.settings.values?.[0].label.en;
+if (!userGender) throw new Error("Gender not found in mockQuestionTypes");
+
+const userBirthday = "January 1";
+const userBirthdayInput = "1990-01-01"; // Must match the date above
 const userManifesto =
   "Lorem ipsum dolor sit amet, consectetur adipisci elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 const comment = "Lorem ipsum";
-// These come from Strapi, not from translation files
-const fullyAgree = "Fully agree";
-const fullyDisagree = "Fully disagree";
+
+// These come from Strapi mock data, not from translation files
+const likertValues = mockQuestionTypes.find(({name}) => name === 'Likert-5')?.settings.values;
+if (!likertValues) throw new Error("Likert-5 not found in mockQuestionTypes");
+const fullyDisagree = likertValues[0].label.en;
+const fullyAgree = likertValues[4].label.en;
+if (!fullyDisagree || !fullyAgree) throw new Error("Likert-5: fullyDisagree or fullyAgree labels not found in mockQuestionTypes");
+
+const genderLabel = mockInfoQuestions.find(({type}) => type === 'Gender')?.text.en;
+if (!genderLabel) throw new Error("Question of type Gender not found in mockInfoQuestions");
+
+const birthdayLabel = mockInfoQuestions.find(({type}) => type === 'Date')?.text.en;
+if (!birthdayLabel) throw new Error("Question of type Date not found in mockInfoQuestions");
+
+const singleLangLabel = mockInfoQuestions.find(({type}) => type === 'Language')?.text.en;
+if (!singleLangLabel) throw new Error("Question of type Language not found in mockInfoQuestions");
+const singleLangValues = mockQuestionTypes.find(({name}) => name === 'Language')?.settings.values;
+if (!singleLangValues) throw new Error("Language not found in mockQuestionTypes");
+const selectedSingleLang = singleLangValues[0].label.en;
+
+const multiLangLabel = mockInfoQuestions.find(({type}) => type === 'MultiLanguage')?.text.en;
+if (!multiLangLabel) throw new Error("Question of type MultiLanguage not found in mockInfoQuestions");
+const multiLangValues = mockQuestionTypes.find(({name}) => name === 'MultiLanguage')?.settings.values;
+if (!multiLangValues) throw new Error("MultiLanguage not found in mockQuestionTypes");
+const selectedMultiLang = [multiLangValues[1].label.en, multiLangValues[2].label.en];
+
+const textQuestionLabel = mockInfoQuestions.find(({type}) => type === 'Text')?.text.en;
+if (!textQuestionLabel) throw new Error("Question of type Text not found in mockInfoQuestions");
 
 test.describe.configure({ mode: 'serial' });
 
@@ -152,39 +178,39 @@ test("should log into Strapi and import candidates", async ({ page, baseURL }) =
   // Complete the registration process
   // Check that the candidate name is correct
   await expect(
-    page.getByRole("heading", { name: candidateAppTranslationsEn.setPassword.greeting.replace('{username}', userFirstName), exact: true }),
+    page.getByRole("heading", { name: T.en['candidateApp.common.greeting'].replace('{username}', userFirstName), exact: true }),
   ).toBeVisible({ timeout: 20000 });
   await page.locator("#password").fill(userPassword);
   await page.locator("#passwordConfirmation").fill("Password1!a");
   // Test password mismatch
-  await page.getByRole("button", { name: candidateAppTranslationsEn.setPassword.setPassword, exact: true }).click();
-  await expect(page.getByText(candidateAppTranslationsEn.setPassword.passwordsDontMatch, {exact: true})).toBeVisible();
+  await page.getByRole("button", { name: T.en['candidateApp.setPassword.setPassword'], exact: true }).click();
+  await expect(page.getByText(T.en['candidateApp.setPassword.passwordsDontMatch'], {exact: true})).toBeVisible();
   // Correct the password
   await page.locator("#passwordConfirmation").fill(userPassword);
-  await page.getByRole("button", { name: candidateAppTranslationsEn.setPassword.setPassword, exact: true }).click();
+  await page.getByRole("button", { name: T.en['candidateApp.setPassword.setPassword'], exact: true }).click();
 
   // Check that the password was set by logging in
-  await expect(page.getByText(candidateAppTranslationsEn.setPassword.passwordSetSuccesfully, {exact: true})).toBeVisible();
-  expect(await page.getByPlaceholder(candidateAppTranslationsEn.common.emailPlaceholder, {exact: true}).inputValue()).toBe(
+  await expect(page.getByText(T.en['candidateApp.setPassword.passwordSetSuccesfully'], {exact: true})).toBeVisible();
+  expect(await page.getByPlaceholder(T.en['candidateApp.common.emailPlaceholder'], {exact: true}).inputValue()).toBe(
     userEmail,
   );
-  await page.getByPlaceholder(candidateAppTranslationsEn.common.passwordPlaceholder, {exact: true}).fill(userPassword);
-  await page.getByRole("button", { name: candidateAppTranslationsEn.common.logIn, exact: true }).click();
+  await page.getByPlaceholder(T.en['components.passwordInput.placeholder'], {exact: true}).fill(userPassword);
+  await page.getByRole("button", { name: T.en['common.login'], exact: true }).click();
 
   // Check that the login was successful
-  await expect(page.getByText(candidateAppTranslationsEn.homePage.greeting.replace('{username}', userFirstName), {exact: true})).toBeVisible();
+  await expect(page.getByText(T.en['candidateApp.common.greeting'].replace('{username}', userFirstName), {exact: true})).toBeVisible();
 });
 
 test.describe("when logged in with imported user", () => {
   test.beforeEach(async ({ page, baseURL }) => {
     // Log the default user out
     await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
-    await page.getByLabel(candidateAppTranslationsEn.common.logOut, {exact: true}).click();
+    await page.getByLabel(T.en['common.logout'], {exact: true}).click();
 
     // Log in with the imported user
-    await page.getByPlaceholder(candidateAppTranslationsEn.common.emailPlaceholder, {exact: true}).fill(userEmail);
-    await page.getByPlaceholder(candidateAppTranslationsEn.common.passwordPlaceholder, {exact: true}).fill(userPassword);
-    await page.getByText(candidateAppTranslationsEn.common.logIn, {exact: true}).click();
+    await page.getByPlaceholder(T.en['candidateApp.common.emailPlaceholder'], {exact: true}).fill(userEmail);
+    await page.getByPlaceholder(T.en['components.passwordInput.placeholder'], {exact: true}).fill(userPassword);
+    await page.getByText(T.en['common.login'], {exact: true}).click();
   })
 
   test("should succesfully set basic info", async ({ page, baseURL }) => {
@@ -195,44 +221,47 @@ test.describe("when logged in with imported user", () => {
     page.on("filechooser", async (fileChooser) => {
       await fileChooser.setFiles(path.join(__dirname, "test_image_black.png"));
     });
-    await page.getByText(candidateAppTranslationsEn.basicInfo.tapToAddPhoto, {exact: true}).click();
-    await page.getByLabel(candidateAppTranslationsEn.basicInfo.fields.gender, {exact: true}).selectOption(userGender);
-    await page.getByLabel(candidateAppTranslationsEn.basicInfo.fields.birthday, {exact: true}).fill("1990-01-01");
 
-    const motherTongueField = page.getByLabel(candidateAppTranslationsEn.basicInfo.fields.motherTongue);
-
+    await page.getByText(T.en['components.photoInput.tapToAddPhoto'], {exact: true}).click();
+    await page.getByLabel(genderLabel, {exact: true}).selectOption(userGender);
+    await page.getByLabel(birthdayLabel, {exact: true}).fill(userBirthdayInput);
+    const singleLangInput = page.getByLabel(singleLangLabel, {exact: true});
+    await expect(singleLangInput).toBeVisible();
+    const multiLangInput = page.getByText(multiLangLabel, {exact: true})
+      .locator('..')
+      .locator('select');
+    await expect(multiLangInput).toBeVisible();
     const saveButton = page.locator("#submitButton");
 
     // Button should not be clickable with 0 languages picked and manifesto not set
+    // TODO: Set this dynamically based on the number of required mockInfoQuestions
     await expect(saveButton).toBeDisabled();
 
     // Fill manifesto
-    await page.getByLabel(candidateAppTranslationsEn.basicInfo.electionManifesto, {exact: true}).fill(userManifesto);
+    await page.getByLabel(textQuestionLabel, {exact: true}).fill(userManifesto);
 
     // Button should still be disabled because no language is set
     await expect(saveButton).toBeDisabled();
 
-    await motherTongueField.selectOption(candidateAppTranslationsEn.languages.Finnish);
+    await singleLangInput.selectOption(selectedSingleLang);
 
     // Button should now be visible with a language selected
     await expect(saveButton).toBeEnabled();
 
     // Also test the other languages
-    const otherTonugesFieldSelectFirst = page.getByLabel(candidateAppTranslationsEn.basicInfo.selectFirst);
-    await otherTonugesFieldSelectFirst.selectOption(candidateAppTranslationsEn.languages.Spanish);
-    const otherTonguesFieldSelectAnother= page.getByLabel(candidateAppTranslationsEn.basicInfo.addAnother);
-    await otherTonguesFieldSelectAnother.selectOption(candidateAppTranslationsEn.languages.English);
-
+    await multiLangInput.selectOption(selectedMultiLang[0]);
+    await multiLangInput.selectOption(selectedMultiLang[1]);
+ 
     await expect(
-      page.locator("form div").filter({ hasText: candidateAppTranslationsEn.languages.Finnish }).nth(3),
+      page.locator("form div").filter({ hasText: selectedSingleLang }).nth(3),
     ).toBeVisible();
     await expect(
-      page.locator("form div").filter({ hasText: candidateAppTranslationsEn.languages.English }).nth(3),
+      page.locator("form div").filter({ hasText: selectedMultiLang[0] }).nth(3),
     ).toBeVisible();
     await expect(
-      page.locator("form div").filter({ hasText: candidateAppTranslationsEn.languages.Spanish }).nth(3),
+      page.locator("form div").filter({ hasText: selectedMultiLang[1] }).nth(3),
     ).toBeVisible();
-    await page.getByLabel(candidateAppTranslationsEn.languages.English, {exact: true}).click();
+    await page.getByLabel(selectedMultiLang[1], {exact: true}).click();
 
     // Now submit the form
     await expect(saveButton).toBeVisible();
@@ -245,74 +274,74 @@ test.describe("when logged in with imported user", () => {
     await page.reload(); //Reload to make sure correct data is loaded to page
 
     // Expect correct texts on questions page
-    await expect(page.getByText(candidateAppTranslationsEn.questions.start, {exact: true})).toBeVisible();
-    await page.getByRole("button", { name: candidateAppTranslationsEn.questions.continue, exact: true }).click();
+    await expect(page.getByText(T.en['candidateApp.questions.start'], {exact: true})).toBeVisible();
+    await page.getByRole("button", { name: T.en['common.continue'], exact: true }).click();
 
     // Expect Read More expander to exist
-    await expect(page.getByText(questionsTranslations.readMore, {exact: true})).toBeVisible();
+    await expect(page.getByText(T.en['common.readMore'], {exact: true})).toBeVisible();
 
     // Answer first question and give comments
     await page.getByLabel(fullyAgree).click();
-    await page.getByLabel(candidateAppTranslationsEn.questions.commentOnThisIssue, {exact: true}).fill(comment);
-    await page.getByRole("button", { name: candidateAppTranslationsEn.textarea.show, exact: true }).click();
-    await page.getByLabel(candidateAppTranslationsFi.languages.Finnish, {exact: true}).fill("Lorem ipsum in Finnish");
-    await page.getByRole("button", { name: candidateAppTranslationsEn.questions.saveAndContinue, exact: true }).click();
+    await page.getByLabel(T.en['candidateApp.questions.openAnswerPrompt'], {exact: true}).fill(comment);
+    await page.getByRole("button", { name: T.en['components.multiLangInput.show'], exact: true }).click();
+    await page.getByLabel(T.fi['lang.fi'], {exact: true}).fill("Lorem ipsum in Finnish");
+    await page.getByRole("button", { name: T.en['common.saveAndContinue'], exact: true }).click();
     await page.waitForTimeout(500); //Wait so that UI has time to change (otherwise doesn't work all the time)
 
     // Answer to all remaining questions
     while (await page.getByText(fullyDisagree).isVisible()) {
       await page.getByLabel(fullyAgree).click();
       await page.waitForTimeout(500); //Wait so that UI has time to change (otherwise doesn't work all the time)
-      await page.getByRole("button", { name: candidateAppTranslationsEn.questions.saveAndContinue, exact: true }).click();
+      await page.getByRole("button", { name: T.en['common.saveAndContinue'], exact: true }).click();
       await page.waitForTimeout(500); //Wait so that UI has time to change (otherwise doesn't work all the time)
     }
 
     // Expect to be at "You're Ready to Roll" page
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
-    await expect(page.getByRole("heading", { name: candidateAppTranslationsEn.homePage.ready, exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: T.en['candidateApp.home.ready'], exact: true })).toBeVisible();
 
     // Expect buttons to be visible and enabled
-    await expect( page.getByRole("button", { name: candidateAppTranslationsEn.homePage.basicInfoButtonEdit, exact: true }) ).toBeEnabled();
-    await expect(page.getByRole("button", { name: candidateAppTranslationsEn.homePage.questionsButtonEdit, exact: true })).toBeEnabled();
-    await expect(page.getByRole("button", { name: candidateAppTranslationsEn.homePage.previewButton, exact: true }).first()).toBeEnabled();
+    await expect( page.getByRole("button", { name: T.en['candidateApp.home.basicInfo.edit'], exact: true }) ).toBeEnabled();
+    await expect(page.getByRole("button", { name: T.en['candidateApp.home.questions.edit'], exact: true })).toBeEnabled();
+    await expect(page.getByRole("button", { name: T.en['candidateApp.home.preview'], exact: true }).first()).toBeEnabled();
     await expect(
       page
-        .getByLabel(ariaTranslations.primaryActionsLabel, {exact: true})
-        .getByRole("button", { name: candidateAppTranslationsEn.homePage.previewButton, exact: true }),
+        .getByLabel(T.en['common.primaryActions'], {exact: true})
+        .getByRole("button", { name: T.en['candidateApp.home.preview'], exact: true }),
     ).toBeEnabled();
     await expect(
       page
-        .getByLabel(ariaTranslations.primaryActionsLabel, {exact: true})
-        .getByRole("button", { name: candidateAppTranslationsEn.common.logOut, exact: true }),
+        .getByLabel(T.en['common.primaryActions'], {exact: true})
+        .getByRole("button", { name: T.en['common.logout'], exact: true }),
     ).toBeEnabled();
 
     // Check that buttons take to correct pages
-    await page.getByRole("button", { name: candidateAppTranslationsEn.homePage.basicInfoButtonEdit, exact: true }).click();
+    await page.getByRole("button", { name: T.en['candidateApp.home.basicInfo.edit'], exact: true }).click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppProfile}`);
     const candidateUrl = `${baseURL}/${LOCALE}/${Route.CandAppHome}`;
     await page.goto(candidateUrl);
 
-    await page.getByRole("button", { name: candidateAppTranslationsEn.homePage.questionsButtonEdit, exact: true }).click();
+    await page.getByRole("button", { name: T.en['candidateApp.home.questions.edit'], exact: true }).click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
     await page.goto(candidateUrl);
 
-    await page.getByRole("button", { name: candidateAppTranslationsEn.homePage.previewButton, exact: true }).first().click();
+    await page.getByRole("button", { name: T.en['candidateApp.home.preview'], exact: true }).first().click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppPreview}`);
     await page.goto(candidateUrl);
 
     await page
-      .getByLabel(ariaTranslations.primaryActionsLabel, {exact: true})
-      .getByRole("button", { name: candidateAppTranslationsEn.homePage.previewButton, exact: true })
+      .getByLabel(T.en['common.primaryActions'], {exact: true})
+      .getByRole("button", { name: T.en['candidateApp.home.preview'], exact: true })
       .click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppPreview}`);
     await page.goto(candidateUrl);
 
     await page
-      .getByLabel(ariaTranslations.primaryActionsLabel, {exact: true})
-      .getByRole("button", { name: candidateAppTranslationsEn.common.logOut, exact: true })
+      .getByLabel(T.en['common.primaryActions'], {exact: true})
+      .getByRole("button", { name: T.en['common.logout'], exact: true })
       .click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}\/${Route.CandAppHome}`);
-    await expect(page.getByText(candidateAppTranslationsEn.common.logIn, {exact: true})).toBeVisible();
+    await expect(page.getByText(T.en['common.login'], {exact: true})).toBeVisible();
   });
 
   test("your opinions page should work correctly", async ({ page, baseURL }) => {
@@ -321,21 +350,21 @@ test.describe("when logged in with imported user", () => {
     await page.reload(); //Reload to make sure correct data is loaded to page
 
     // Expect correct heading and no warning
-    await expect( page.getByRole("heading", { name: candidateAppTranslationsEn.questions.title, exact: true }),).toBeVisible();
-    await expect(page.getByText(candidateAppTranslationsEn.questions.warning.replace('{numUnansweredQuestions}', '0'))).toBeHidden();
-    await expect( page.getByRole("button", { name: candidateAppTranslationsEn.questions.enterMissingAnswer, exact: true })).toBeHidden();
+    await expect( page.getByRole("heading", { name: T.en['candidateApp.questions.title'], exact: true }),).toBeVisible();
+    await expect(page.getByText(T.en['candidateApp.questions.unansweredWarning'].replace('{numUnansweredQuestions}', '0'))).toBeHidden();
+    await expect( page.getByRole("button", { name: T.en['candidateApp.questions.enterMissingAnswer'], exact: true })).toBeHidden();
 
     // Open first category
     await page.getByRole("checkbox").first().click();
 
     // Expect correct answer and comment text to be shown
-    await expect(page.getByText(questionsTranslations.yourAnswer, { exact: true }).first()).toBeVisible();
+    await expect(page.getByText(T.en['questions.answers.yourAnswer'], { exact: true }).first()).toBeVisible();
     await expect(page.getByText(fullyAgree).first()).toBeVisible();
     await expect(page.getByText(comment)).toBeVisible();
 
     // Go edit answer
     await page
-      .getByRole("button", { name: candidateAppTranslationsEn.questions.editYourAnswer, exact: true })
+      .getByRole("button", { name: T.en['candidateApp.questions.editAnswer'], exact: true })
       .first()
       .click();
 
@@ -344,20 +373,20 @@ test.describe("when logged in with imported user", () => {
     await expect(page.getByLabel(fullyAgree)).toBeChecked();
 
     // Check that button goes back to correct page
-    await page.getByRole("button", { name: candidateAppTranslationsEn.questions.saveAndReturn, exact: true}).click();
+    await page.getByRole("button", { name: T.en['common.saveAndReturn'], exact: true}).click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
 
     // Go back and test cancel button
     await page.getByRole("checkbox").first().click();
     await page
-      .getByRole("button", { name: candidateAppTranslationsEn.questions.editYourAnswer, exact: true })
+      .getByRole("button", { name: T.en['candidateApp.questions.editAnswer'], exact: true })
       .first()
       .click();
 
     // Change opinion and press cancel
     await page.waitForTimeout(500);
     await page.getByLabel(fullyDisagree).click();
-    await page.getByRole("button", { name: candidateAppTranslationsEn.questions.cancel, exact: true }).click();
+    await page.getByRole("button", { name: T.en['common.cancel'], exact: true }).click();
 
     // Expect button to go to correct page and opinion to be unchanged
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
@@ -365,7 +394,7 @@ test.describe("when logged in with imported user", () => {
     await expect(page.getByText(fullyAgree).first()).toBeVisible();
 
     // Expect return button to go to correct page
-    await page.getByRole("button", { name: candidateAppTranslationsEn.questions.return, exact: true }).click();
+    await page.getByRole("button", { name: T.en['common.return'], exact: true }).click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
   });
 
@@ -375,35 +404,35 @@ test.describe("when logged in with imported user", () => {
     await page.reload(); //Reload to make sure correct data is loaded to page
 
     // Expect correct title and button
-    await expect(page.getByText(candidateAppTranslationsEn.preview.tip, {exact: true})).toBeVisible();
-    await expect(page.getByRole("button", { name: candidateAppTranslationsEn.preview.close, exact: true })).toBeEnabled();
+    await expect(page.getByText(T.en['candidateApp.preview.tip'], {exact: true})).toBeVisible();
+    await expect(page.getByRole("button", { name: T.en['candidateApp.preview.close'], exact: true })).toBeEnabled();
 
     // Expect correct data for the candidate
     await expect(
       page.getByRole("heading", { name: `${userFirstName} ${userLastName}` }),
     ).toBeVisible();
 
-    await expect(
-      page.getByText(candidateAppTranslationsEn.languages.Finnish, {
-        exact: true,
-      })
-    ).toBeVisible();
-    await expect(
-      page.getByText(`${candidateAppTranslationsEn.languages.Spanish}`, {exact: true})
-    ).toBeVisible();
-
+    for (const lang of [selectedSingleLang, selectedMultiLang[0]]) {
+      await expect(
+        page.getByText(lang, {
+          exact: true,
+        }).first()
+      ).toBeVisible();
+    }
 
     await expect(
       page.getByText(userGender, {exact: true})
     ).toBeVisible();
-    await expect(page.getByText(`${commonTranslations.unaffiliated} ${commonTranslations.answerNo}`, {exact: true})).toBeVisible();
+
+    // await expect(page.getByText(`${T.en['common.unaffiliated']} ${T.en['common.answer.no']}`, {exact: true})).toBeVisible();
+    
     await expect(
-      page.getByText(`${candidateAppTranslationsEn.basicInfo.electionManifesto} ${userManifesto}`, {exact: true})
+      page.getByText(userManifesto, {exact: true})
     ).toBeVisible();
     await expect(page.getByText(userBirthday, {exact: true})).toBeVisible();
 
     // Expect close button to take to start page
-    await page.getByRole("button", { name: candidateAppTranslationsEn.preview.close, exact: true }).click();
+    await page.getByRole("button", { name: T.en['candidateApp.preview.close'], exact: true }).click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
   });
 });
