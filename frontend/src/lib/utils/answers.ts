@@ -156,30 +156,28 @@ export const DATE_FORMATS: Record<DateType, Intl.DateTimeFormatOptions> = {
  * @param answer The Candidate's answer
  * @returns A boolean value indicating whether the answer is empty
  */
-export function answerIsEmpty(question: QuestionProps, answer: AnswerProps): boolean {
+export function answerIsEmpty(question: QuestionProps, answer?: AnswerProps): boolean {
+  if (!answer) return true;
   const answerValue = answer.value;
-  if (answer) {
-    if (question.type === 'boolean') {
-      return answerValue == null;
-    } else if (
-      question.type === 'singleChoiceCategorical' ||
-      question.type === 'singleChoiceOrdinal'
-    ) {
-      return answerValue === '' || answerValue == null;
-    } else if (question.type === 'multipleChoiceCategorical') {
-      return Array.isArray(answerValue) && answerValue.length === 0;
-    } else if (question.type === 'text' || question.type === 'link') {
-      if (answerValue) {
-        return Object.values(answerValue).some((value) => value === '');
-      } else {
-        return true;
-      }
-    } else if (question.type === 'date') {
-      return answerValue === '' || answerValue == null;
-    } else {
-      throw new Error(`Unknown question type: ${question.type}`);
-    }
+  if (question.type === 'boolean') {
+    return answerValue == null;
+  } else if (
+    question.type === 'singleChoiceCategorical' ||
+    question.type === 'singleChoiceOrdinal'
+  ) {
+    return answerValue === '' || answerValue == null;
+  } else if (question.type === 'multipleChoiceCategorical') {
+    return Array.isArray(answerValue) && answerValue.length === 0;
+  } else if (question.type === 'text' || question.type === 'link') {
+    // Empty string or nullish object
+    if (!answerValue) return true;
+    // Localized string
+    if (typeof answerValue === 'object') return Object.values(answerValue).every((value) => !value);
+    // Non-empty string
+    return false;
+  } else if (question.type === 'date') {
+    return answerValue === '' || answerValue == null;
   } else {
-    return true;
+    throw new Error(`Unknown question type: ${question.type}`);
   }
 }

@@ -5,8 +5,7 @@
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {getContext} from 'svelte';
-  import {translate} from '$lib/i18n/utils';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {RenderQuestionProps} from './Question.type';
 
   type $$Props = RenderQuestionProps;
@@ -14,8 +13,7 @@
   export let question: $$Props['question'];
   export let categoryQuestions: $$Props['categoryQuestions'];
 
-  const {questionsLockedStore} = getContext<CandidateContext>('candidate');
-  $: questionsLocked = $questionsLockedStore;
+  const {questionsLocked} = getContext<CandidateContext>('candidate');
 </script>
 
 <!--
@@ -34,12 +32,12 @@ Renders an unanswered question on the summary page. Consists of the questions ti
 <div class="pt-40">
   <CategoryTag category={question.category} />
 
-  <Expander title={translate(question.text)} variant="question" titleClass="text-warning">
-    {translate(question.info)}
+  <Expander title={question.text} variant="question" titleClass="text-warning">
+    {question.info}
   </Expander>
 
   <!-- Navigate to unsanswered question -->
-  {#if !questionsLocked}
+  {#if !$questionsLocked}
     <a
       class="flex justify-center py-20 pb-40"
       href={$getRoute({route: Route.CandAppQuestions, id: question.id})}>

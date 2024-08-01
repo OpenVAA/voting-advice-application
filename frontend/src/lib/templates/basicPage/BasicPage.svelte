@@ -8,7 +8,7 @@
   import {Page} from '../page';
   import type {BasicPageProps} from './BasicPage.type';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import type {CandidateContext} from '$lib/utils/candidateStore';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
 
   type $$Props = BasicPageProps;
 
@@ -25,7 +25,7 @@
   let hasVideo = false;
   $: hasVideo = videoWidth > 0 && videoHeight > 0;
 
-  const userStore = getContext<CandidateContext>('candidate')?.userStore;
+  const userStore = getContext<CandidateContext>('candidate')?.user;
 
   // We are in the candidate application and the user has logged in
   // TODO: Figure out a way to define this LogoutButton part only within the

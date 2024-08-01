@@ -39,7 +39,7 @@
   },
   "logoutModal": {
     "title": "SV Some of Your Data Is Still Missing",
-    "itemsLeft": "SV There {basicInfoQuestionsLeft, plural, =1 {is still one item} other {are still # items}} of basic info and {opinionQuestionsLeft, plural, =1 {one opinion} other {# opinions}} to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
+    "itemsLeft": "SV There {infoQuestionsLeft, plural, =1 {is still one item} other {are still # items}} of basic info and {opinionQuestionsLeft, plural, =1 {one opinion} other {# opinions}} to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
     "questionsLeft": "SV There {opinionQuestionsLeft, plural, =1 {is still one opinion} other {are still # opinions}} to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
     "confirmation": "SV Are you sure you want to logout? You will be automatically logged out after {timeLeft} seconds.",
     "continueEnteringData": "SV Continue Entering Data"
@@ -61,6 +61,7 @@
       "unaffiliated": "SV Unaffiliated"
     },
     "errorMessage": "SV An error occurred when sending data!",
+    "questionInvalidError": "SV Question type or answer type is invalid for question {questionId}",
     "pending": "SV pending",
     "addAnother": "SV Add another",
     "selectFirst": "SV Select first",
@@ -161,6 +162,9 @@
     "saveAndContinue": "SV Save and Continue",
     "saveAndReturn": "SV Save and Return",
     "answerSaveError": "SV Saving answer failed",
+    "questionNotFoundError": "SV Question not found for question {questionId}",
+    "answerNotFoundError": "SV Answer not found for question {questionId}",
+    "answerInvalidError": "SV Answer is invalid for question {questionId}",
     "editingAllowedNote": "SV Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data."
   },
   "passwordButton": {
