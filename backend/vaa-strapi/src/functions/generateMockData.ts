@@ -20,8 +20,9 @@ import type {
   QuestionTypeSettings
 } from './utils/data.type';
 import {dropAllCollections} from './utils/drop';
-import {createRelationsForAvailableLocales} from './utils/i18n';
+import mockInfoQuestions from './mockData/mockInfoQuestions.json';
 import mockQuestions from './mockData/mockQuestions.json';
+import mockQuestionTypes from './mockData/mockQuestionTypes.json';
 import mockCategories from './mockData/mockCategories.json';
 import mockUser from './mockData/mockUser.json';
 
@@ -507,173 +508,11 @@ async function createQuestionCategories() {
 }
 
 async function createQuestionTypes() {
-  const questionTypes: {
+  for (const questionType of mockQuestionTypes as Array<{
     name: string;
     info: string;
     settings: QuestionTypeSettings;
-  }[] = [
-    {
-      name: 'Likert-4',
-      info: 'A Likert question with 4 options.',
-      settings: {
-        type: 'singleChoiceOrdinal',
-        values: [
-          {
-            key: 1,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Fully disagree'))
-          },
-          {
-            key: 2,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Disagree'))
-          },
-          {
-            key: 3,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Agree'))
-          },
-          {
-            key: 4,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Fully agree'))
-          }
-        ]
-      }
-    },
-    {
-      name: 'Likert-5',
-      info: 'A Likert question with 5 options.',
-      settings: {
-        type: 'singleChoiceOrdinal',
-        values: [
-          {
-            key: 1,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Fully disagree'))
-          },
-          {
-            key: 2,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Somewhat disagree'))
-          },
-          {
-            key: 3,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Neither agree nor disagree'))
-          },
-          {
-            key: 4,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Somewhat agree'))
-          },
-          {
-            key: 5,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Fully agree'))
-          }
-        ]
-      }
-    },
-    {
-      name: 'Text',
-      info: 'A basic text question.',
-      settings: {
-        type: 'text'
-      }
-    },
-    {
-      name: 'Date',
-      info: 'A date which is displayed without the year.',
-      settings: {
-        type: 'date',
-        dateType: 'monthDay'
-      }
-    },
-    {
-      name: 'Boolean',
-      info: 'A yes/no question.',
-      settings: {
-        type: 'boolean'
-      }
-    },
-    {
-      name: 'Gender',
-      info: 'A list of genders.',
-      settings: {
-        type: 'singleChoiceCategorical',
-        values: [
-          {
-            key: 1,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Female'))
-          },
-          {
-            key: 2,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Male'))
-          },
-          {
-            key: 3,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Non-binary'))
-          },
-          {
-            key: 4,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Prefer not to answer'))
-          }
-        ]
-      }
-    },
-    {
-      name: 'Language',
-      info: 'A single language choice question.',
-      settings: {
-        type: 'singleChoiceCategorical',
-        values: [
-          {
-            key: 0,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'English'))
-          },
-          {
-            key: 1,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Finnish'))
-          },
-          {
-            key: 2,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Spanish'))
-          },
-          {
-            key: 3,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Volapük'))
-          },
-          {
-            key: 4,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Finnish sign language'))
-          }
-        ]
-      }
-    },
-    {
-      name: 'MultiLanguage',
-      info: 'A multiple language choice question.',
-      settings: {
-        type: 'multipleChoiceCategorical',
-        values: [
-          {
-            key: 0,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'English'))
-          },
-          {
-            key: 1,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Finnish'))
-          },
-          {
-            key: 2,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Spanish'))
-          },
-          {
-            key: 3,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Volapük'))
-          },
-          {
-            key: 4,
-            label: fakeLocalized((_, l) => fakeTranslate(l, 'Finnish sign language'))
-          }
-        ]
-      }
-    }
-  ];
-
-  for (const questionType of questionTypes) {
+  }>) {
     await strapi.db.query(API.QuestionType).create({
       data: {
         ...questionType,
@@ -728,48 +567,8 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
   // Create other questions:
   // Languages, gender, election manifesto, unaffiliated
   const infoCategoryId = questionCategories.filter((cat) => cat.type === 'info')[0]?.id;
-  const infoQuestions = [
-    {
-      text: 'Mother tongue',
-      type: 'Language',
-      order: 2,
-      required: true
-    },
-    {
-      text: 'Other languages',
-      type: 'MultiLanguage',
-      order: 3,
-      required: false
-    },
-    {
-      text: 'Gender',
-      type: 'Gender',
-      order: 1,
-      required: true
-    },
-    {
-      text: 'Unaffiliated',
-      type: 'Boolean',
-      order: 4,
-      required: true
-    },
-    {
-      text: 'Election manifesto',
-      type: 'Text',
-      order: 5,
-      required: true
-    },
-    {
-      text: 'Birthday',
-      type: 'Date',
-      order: 0,
-      required: true
-    }
-  ];
-  for (const question of infoQuestions) {
-    const typeId = questionTypes.filter((qt) => qt.name === question.type)[0]?.id;
-    const text = fakeLocalized((_, l) => fakeTranslate(l, question.text));
-    const info = fakeLocalized((faker) => faker.lorem.sentences(3));
+  for (const {text, info, type, order, required, entityType} of mockInfoQuestions) {
+    const typeId = questionTypes.filter((qt) => qt.name === type)[0]?.id;
     await strapi.db.query(API.Question).create({
       data: {
         text,
@@ -777,9 +576,9 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
         allowOpen: false,
         questionType: typeId,
         category: infoCategoryId,
-        order: question.order,
-        required: question.required,
-        entityType: 'candidate',
+        order,
+        required,
+        entityType,
         publishedAt: new Date()
       }
     });
