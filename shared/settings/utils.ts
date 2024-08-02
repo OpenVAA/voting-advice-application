@@ -14,7 +14,7 @@ export function mergedDynamicSettings(
   if (dataProviderDynamicSettings) {
     // Null values are filtered to avoid overriding values of defaultDynamiSettings or dynamicSettings with null.
     const filtered = Object.fromEntries(
-      Object.entries(dataProviderDynamicSettings).filter(([key, value]) => value)
+      Object.entries(dataProviderDynamicSettings).filter(([, value]) => value)
     );
     return {...defaultDynamicSettings, ...dynamicSettings, ...filtered};
   }
