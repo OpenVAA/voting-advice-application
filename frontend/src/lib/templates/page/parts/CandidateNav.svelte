@@ -64,6 +64,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
       text={$t('candidateApp.preview.title')} />
     <NavItem href={$getRoute(Route.CandAppHelp)} icon="help" text={$t('candidateApp.help.title')} />
   </NavGroup>
+  <!-- 
   <NavGroup>
     <NavItem href={$getRoute(Route.CandAppInfo)} icon="info" disabled text={$t('info.title')} />
     <NavItem
@@ -71,7 +72,8 @@ A template part that outputs the navigation menu for the Candidate App for use i
       icon="info"
       disabled
       text={$t('candidateApp.info.title')} />
-  </NavGroup>
+  </NavGroup> 
+  -->
   <NavGroup>
     <NavItem
       href={$getRoute(Route.CandAppFeedback)}
