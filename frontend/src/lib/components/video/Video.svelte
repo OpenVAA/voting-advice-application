@@ -1,13 +1,6 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { fade } from 'svelte/transition';
-  import { videoPreferences } from './component-stores';
-  import type {
-    PlayButtonAction,
-    VideoMode,
-    VideoProps,
-    VideoTrackingEventData
-  } from './Video.type';
   import { beforeNavigate } from '$app/navigation';
   import { Button } from '$lib/components/button';
   import { Icon } from '$lib/components/icon';
@@ -16,6 +9,13 @@
   import { startEvent, type TrackingEvent } from '$lib/utils/analytics/track';
   import { concatClass } from '$lib/utils/components';
   import { sanitizeHtml } from '$lib/utils/sanitize';
+  import { videoPreferences } from './component-stores';
+  import type {
+    PlayButtonAction,
+    VideoMode,
+    VideoProps,
+    VideoTrackingEventData
+  } from './Video.type';
 
   ////////////////////////////////////////////////////////////////////////////////
   // CONSTANTS

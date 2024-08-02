@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { getNavigationContext } from './navigationContext';
-  import type { NavItemProps } from './NavItem.type';
   import { Icon } from '$lib/components/icon';
   import { concatClass } from '$lib/utils/components';
   import { ucFirst } from '$lib/utils/text/ucFirst';
+  import { getNavigationContext } from './navigationContext';
+  import type { NavItemProps } from './NavItem.type';
   type $$Props = NavItemProps;
 
   export let autoCloseNav: $$Props['autoCloseNav'] = true;

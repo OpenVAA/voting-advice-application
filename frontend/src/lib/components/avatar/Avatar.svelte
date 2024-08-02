@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { AvatarProps } from './Avatar.type';
   import { t } from '$lib/i18n';
   import { concatProps } from '$lib/utils/components';
   import { abbreviate } from '$lib/utils/text/abbreviate';
+  import type { AvatarProps } from './Avatar.type';
 
   type $$Props = AvatarProps;
   export let name: $$Props['name'];

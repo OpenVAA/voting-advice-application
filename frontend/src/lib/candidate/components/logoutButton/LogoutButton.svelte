@@ -1,12 +1,12 @@
 <script lang="ts">
   import { getContext } from 'svelte';
-  import type { LogoutButtonProps } from './LogoutButton.type';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
   import { TimedModal } from '$lib/components/modal/timed';
   import { t } from '$lib/i18n';
   import type { CandidateContext } from '$lib/utils/candidateStore';
   import { getRoute, Route } from '$lib/utils/navigation';
+  import type { LogoutButtonProps } from './LogoutButton.type';
 
   type $$props = LogoutButtonProps;
 

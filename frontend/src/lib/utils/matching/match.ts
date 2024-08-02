@@ -5,8 +5,6 @@
  */
 import { error } from '@sveltejs/kit';
 import { extractCategories } from '../questions';
-import { imputePartyAnswers } from './imputePartyAnswers';
-import { LikertQuestion } from './LikertQuestion';
 import {
   type MatchingOptions,
   MatchingAlgorithm,
@@ -14,6 +12,8 @@ import {
   MissingValueDistanceMethod,
   type MatchableQuestionGroup
 } from '$voter/vaa-matching';
+import { imputePartyAnswers } from './imputePartyAnswers';
+import { LikertQuestion } from './LikertQuestion';
 
 /**
  * Run the matching algorithm as an async process.

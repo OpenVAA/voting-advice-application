@@ -1,7 +1,5 @@
 <script lang="ts">
   import { error } from '@sveltejs/kit';
-  import type { EntityDetailsProps } from './EntityDetails.type';
-  import InfoItem from './InfoItem.svelte';
   import { InfoAnswer } from '$lib/components/infoAnswer';
   import { PartyTag } from '$lib/components/partyTag';
   import { SurveyBanner } from '$lib/components/survey/banner';
@@ -10,6 +8,8 @@
   import { getAnswer } from '$lib/utils/answers';
   import { getEntityType, isCandidate, isParty } from '$lib/utils/entities';
   import { sanitizeHtml } from '$lib/utils/sanitize';
+  import type { EntityDetailsProps } from './EntityDetails.type';
+  import InfoItem from './InfoItem.svelte';
 
   export let entity: EntityProps;
   export let questions: EntityDetailsProps['infoQuestions'];

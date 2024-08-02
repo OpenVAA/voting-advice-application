@@ -1,6 +1,5 @@
 <script lang="ts">
   import { error } from '@sveltejs/kit';
-  import type { Snapshot } from './$types';
   import { Button } from '$lib/components/button';
   import type { EntityCardProps } from '$lib/components/entityCard';
   import { EntityList } from '$lib/components/entityList';
@@ -28,6 +27,7 @@
   import { candidateFilters } from '$lib/utils/filters';
   import { getRoute, Route } from '$lib/utils/navigation';
   import { sanitizeHtml } from '$lib/utils/sanitize';
+  import type { Snapshot } from './$types';
 
   /**
    * The currently active tab in the results. We want this to persist between opening entity details and returning to the results.

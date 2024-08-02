@@ -1,5 +1,5 @@
-import type { LayoutServerLoad } from './$types';
 import { dataProvider } from '$lib/api/getData';
+import type { LayoutServerLoad } from './$types';
 
 export const load = (async ({ parent }) => {
   const locale = (await parent()).i18n.currentLocale;

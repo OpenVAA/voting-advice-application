@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type { FooterProps } from './Footer.type';
   import { OpenVAALogo } from '$lib/components/openVAALogo';
   import { t } from '$lib/i18n';
   import { settings } from '$lib/stores';
   import { concatClass } from '$lib/utils/components';
+  import type { FooterProps } from './Footer.type';
 
   type $$Props = FooterProps; // eslint-disable-line @typescript-eslint/no-unused-vars
 </script>

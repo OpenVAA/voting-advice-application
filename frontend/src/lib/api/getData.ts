@@ -7,8 +7,8 @@
  */
 
 import { error } from '@sveltejs/kit';
-import type { DataProvider } from './dataProvider/dataProvider';
 import localSettings from '$lib/config/settings.json';
+import type { DataProvider } from './dataProvider/dataProvider';
 
 let dpPromise: Promise<{ dataProvider: DataProvider }>;
 

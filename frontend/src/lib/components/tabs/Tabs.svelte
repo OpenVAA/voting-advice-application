@@ -1,8 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import type { TabsProps } from './Tabs.type';
   import { concatClass } from '$lib/utils/components';
   import { ucFirst } from '$lib/utils/text/ucFirst';
+  import type { TabsProps } from './Tabs.type';
 
   type $$Props = TabsProps;
 

@@ -67,6 +67,8 @@
     //     "message": "Use const assertion or a string union type instead."
     //   }
     // ],
+
+    // https://github.com/import-js/eslint-plugin-import/blob/main/docs/rules/order.md
     "import/order": [
       "warn",
       {
@@ -77,11 +79,31 @@
         "newlines-between": "never",
         "pathGroups": [
           {
-            "pattern": "~/**",
+            "pattern": "$/**",
             "group": "external"
+          },
+          {
+            "pattern": "./**",
+            "group": "internal",
+            "position": "after"
           }
         ]
       }
     ]
+
+    // "@typescript-eslint/naming-convention": [
+    //   "error",
+    //   {
+    //     // Generic type parameter must start with letter T, followed by any uppercase letter.
+    //     "selector": "typeParameter",
+    //     "format": ["PascalCase"],
+    //     "custom": { "regex": "^T[A-Z]", "match": true }
+    //   },
+    //   {
+    //     // Types must be pascalCase
+    //     "selector": "typeAlias",
+    //     "format": ["PascalCase"]
+    //   }
+    // ]
   }
 }

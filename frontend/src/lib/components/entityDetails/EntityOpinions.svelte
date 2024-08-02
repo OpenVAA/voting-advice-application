@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { EntityDetailsProps } from './EntityDetails.type';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { LikertResponseButtons, QuestionOpenAnswer } from '$lib/components/questions';
@@ -7,6 +6,7 @@
   import { answeredQuestions, appType, settings } from '$lib/stores';
   import { getLikertAnswer } from '$lib/utils/answers';
   import { isCandidate } from '$lib/utils/entities';
+  import type { EntityDetailsProps } from './EntityDetails.type';
 
   export let entity: EntityProps;
   export let questions: EntityDetailsProps['opinionQuestions'];

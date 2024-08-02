@@ -1,7 +1,5 @@
 <script lang="ts">
   import { error } from '@sveltejs/kit';
-  import type { EntityCardProps } from './EntityCard.type';
-  import EntityCardAction from './EntityCardAction.svelte';
   import { Avatar, type AvatarProps } from '$lib/components/avatar';
   import { Button } from '$lib/components/button';
   import { ElectionSymbol } from '$lib/components/electionSymbol';
@@ -14,6 +12,8 @@
   import { getAnswer } from '$lib/utils/answers';
   import { concatClass, getUUID } from '$lib/utils/components';
   import { isCandidate, isParty, parseMaybeRanked } from '$lib/utils/entities';
+  import type { EntityCardProps } from './EntityCard.type';
+  import EntityCardAction from './EntityCardAction.svelte';
 
   type $$Props = EntityCardProps;
 

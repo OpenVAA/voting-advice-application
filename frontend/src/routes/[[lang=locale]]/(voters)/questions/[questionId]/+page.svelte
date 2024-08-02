@@ -1,7 +1,6 @@
 <script lang="ts">
   import { getQuestionsContext } from '../questions.context';
   import { filterAndSortQuestions } from '../questions.utils';
-  import type { PageData } from './$types';
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -30,6 +29,7 @@
   import { startEvent } from '$lib/utils/analytics/track';
   import { logDebugError } from '$lib/utils/logger';
   import { FIRST_QUESTION_ID, getRoute, Route } from '$lib/utils/navigation';
+  import type { PageData } from './$types';
 
   /**
    * A page for displaying a single opinion question or a question category intro.

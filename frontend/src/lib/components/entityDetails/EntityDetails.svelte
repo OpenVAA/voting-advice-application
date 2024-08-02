@@ -1,7 +1,5 @@
 <script lang="ts">
   import { error } from '@sveltejs/kit';
-  import type { EntityDetailsProps } from './EntityDetails.type';
-  import { EntityInfo, EntityOpinions, EntitySubentities } from './';
   import { EntityCard, type EntityCardProps } from '$lib/components/entityCard';
   import { Tabs } from '$lib/components/tabs';
   import { t } from '$lib/i18n';
@@ -10,6 +8,8 @@
   import { concatClass } from '$lib/utils/components';
   import { getEntityType, parseMaybeRanked } from '$lib/utils/entities';
   import { Route, getRoute } from '$lib/utils/navigation';
+  import { EntityInfo, EntityOpinions, EntitySubentities } from './';
+  import type { EntityDetailsProps } from './EntityDetails.type';
 
   type $$Props = EntityDetailsProps;
 

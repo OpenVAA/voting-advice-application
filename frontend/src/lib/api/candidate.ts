@@ -1,4 +1,7 @@
 import { get } from 'svelte/store';
+import type { Question, Answer, Language, User, Photo } from '$lib/types/candidateAttributes';
+import { candidateContext } from '$lib/utils/candidateStore';
+import { constants } from '$lib/utils/constants';
 import type {
   StrapiAnswerData,
   StrapiLanguageData,
@@ -7,9 +10,6 @@ import type {
   StrapiQuestionData
 } from './dataProvider/strapi';
 import { parseQuestionCategory } from './dataProvider/strapi/utils';
-import type { Question, Answer, Language, User, Photo } from '$lib/types/candidateAttributes';
-import { candidateContext } from '$lib/utils/candidateStore';
-import { constants } from '$lib/utils/constants';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);

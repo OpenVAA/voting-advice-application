@@ -1,6 +1,5 @@
 <script lang="ts">
   import { getContext } from 'svelte';
-  import type { RenderQuestionProps } from './Question.type';
   import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { Expander } from '$lib/components/expander';
@@ -8,6 +7,7 @@
   import { translate } from '$lib/i18n/utils';
   import type { CandidateContext } from '$lib/utils/candidateStore';
   import { getRoute, Route } from '$lib/utils/navigation';
+  import type { RenderQuestionProps } from './Question.type';
 
   type $$Props = RenderQuestionProps;
 

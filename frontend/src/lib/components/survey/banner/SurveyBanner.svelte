@@ -1,9 +1,9 @@
 <script lang="ts">
   import { SurveyButton } from '..';
-  import type { SurveyBannerProps } from './SurveyBanner.type';
   import { t } from '$lib/i18n';
   import { settings, userPreferences } from '$lib/stores';
   import { concatClass } from '$lib/utils/components';
+  import type { SurveyBannerProps } from './SurveyBanner.type';
 
   type $$Props = SurveyBannerProps;
 

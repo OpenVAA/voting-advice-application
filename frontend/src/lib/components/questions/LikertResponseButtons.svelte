@@ -1,12 +1,12 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { t } from '$lib/i18n';
+  import { logDebugError } from '$lib/utils/logger';
+  import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
   import type {
     LikertResponseButtonsEventDetail,
     LikertResponseButtonsProps
   } from './LikertResponseButtons.type';
-  import { t } from '$lib/i18n';
-  import { logDebugError } from '$lib/utils/logger';
-  import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
 
   type $$Props = LikertResponseButtonsProps;
 

@@ -1,12 +1,12 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import type { DataConsentEvents, DataConsentProps } from './DataConsent.type';
-  import { DataConsentInfoButton } from './';
   import { Button } from '$lib/components/button';
   import { t } from '$lib/i18n';
   import { setDataConsent, settings, userPreferences } from '$lib/stores';
   import { concatClass } from '$lib/utils/components';
   import { sanitizeHtml } from '$lib/utils/sanitize';
+  import { DataConsentInfoButton } from './';
+  import type { DataConsentEvents, DataConsentProps } from './DataConsent.type';
 
   type $$Props = DataConsentProps;
 

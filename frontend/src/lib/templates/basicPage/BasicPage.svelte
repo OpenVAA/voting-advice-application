@@ -1,7 +1,6 @@
 <script lang="ts">
   import { getContext } from 'svelte';
   import { Page } from '../page';
-  import type { BasicPageProps } from './BasicPage.type';
   import { LogoutButton } from '$lib/candidate/components/logoutButton';
   import { t } from '$lib/i18n';
   import { appType } from '$lib/stores';
@@ -9,6 +8,7 @@
   import type { CandidateContext } from '$lib/utils/candidateStore';
   import { concatProps } from '$lib/utils/components';
   import { darkMode } from '$lib/utils/darkMode';
+  import type { BasicPageProps } from './BasicPage.type';
 
   type $$Props = BasicPageProps;
 

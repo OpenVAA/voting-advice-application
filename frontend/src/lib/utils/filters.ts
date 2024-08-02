@@ -4,7 +4,6 @@
  */
 
 import { type Readable, derived } from 'svelte/store';
-import { logDebugError } from './logger';
 import { t, locale } from '$lib/i18n';
 import { parties, infoQuestions } from '$lib/stores';
 import {
@@ -16,6 +15,7 @@ import {
   NumericQuestionFilter,
   type NumericQuestion
 } from '$voter/vaa-filters';
+import { logDebugError } from './logger';
 
 let candidateFilterGroup: FilterGroup<MaybeRanked<CandidateProps>> | undefined = undefined;
 let candidateFiltersLocale: string = '';

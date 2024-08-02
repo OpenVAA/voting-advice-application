@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { OpenVAALogoProps } from './OpenVAALogo.type';
   import { concatClass } from '$lib/utils/components';
+  import type { OpenVAALogoProps } from './OpenVAALogo.type';
 
   type $$Props = OpenVAALogoProps;
   export let title: $$Props['title'] = 'OpenVAA';

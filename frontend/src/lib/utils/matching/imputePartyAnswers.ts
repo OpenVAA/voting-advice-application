@@ -1,8 +1,8 @@
 import { error } from '@sveltejs/kit';
-import { mean } from './mean';
-import { median } from './median';
 import { logDebugError } from '$lib/utils/logger';
 import { MISSING_VALUE } from '$voter/vaa-matching';
+import { mean } from './mean';
+import { median } from './median';
 
 /**
  * Impute the answers for a party based on its candidates, using the specified `matchingType`. Any pre-existing answers by the party will be preserved.

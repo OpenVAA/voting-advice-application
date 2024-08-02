@@ -3,11 +3,11 @@ import I18n from '@sveltekit-i18n/base';
 import parser, { type Config } from '@sveltekit-i18n/parser-icu';
 import IntlMessageFormat from 'intl-messageformat';
 import { derived, get } from 'svelte/store';
-import { DEFAULT_PAYLOAD_KEYS, staticTranslations, type TranslationsPayload } from './translations';
-import { matchLocale, purgeTranslations } from './utils';
 import localSettings from '$lib/config/settings.json';
 import { logDebugError } from '$lib/utils/logger';
 import { ucFirst } from '$lib/utils/text/ucFirst';
+import { DEFAULT_PAYLOAD_KEYS, staticTranslations, type TranslationsPayload } from './translations';
+import { matchLocale, purgeTranslations } from './utils';
 
 // We don't want to use the implicit json file typing
 const settings = localSettings as AppSettings;

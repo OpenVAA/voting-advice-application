@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { CategoryTagProps } from './CategoryTag.type';
   import { concatProps } from '$lib/utils/components';
+  import type { CategoryTagProps } from './CategoryTag.type';
 
   type $$Props = CategoryTagProps;
 

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { ScoreGaugeProps } from './ScoreGauge.type';
   import { concatProps, getUUID } from '$lib/utils/components';
+  import type { ScoreGaugeProps } from './ScoreGauge.type';
 
   type $$Props = ScoreGaugeProps;
 

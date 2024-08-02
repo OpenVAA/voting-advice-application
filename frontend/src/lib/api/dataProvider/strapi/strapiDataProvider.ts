@@ -16,6 +16,12 @@ import type {
   GetQuestionsOptionsBase,
   DataProvider
 } from '../dataProvider';
+import { browser } from '$app/environment';
+import { locale as currentLocale, locales } from '$lib/i18n';
+import { matchLocale } from '$lib/i18n/utils/matchLocale';
+import { translate } from '$lib/i18n/utils/translate';
+import { constants } from '$lib/utils/constants';
+import { formatName } from '$lib/utils/internationalisation';
 import type {
   StrapiElectionData,
   StrapiError,
@@ -31,12 +37,6 @@ import type {
 import { parseParty, parseImage, parseQuestionCategory } from './utils';
 import { parseAnswers } from './utils/parseAnswers';
 import { parseCustomData } from './utils/parseCustomData';
-import { browser } from '$app/environment';
-import { locale as currentLocale, locales } from '$lib/i18n';
-import { matchLocale } from '$lib/i18n/utils/matchLocale';
-import { translate } from '$lib/i18n/utils/translate';
-import { constants } from '$lib/utils/constants';
-import { formatName } from '$lib/utils/internationalisation';
 
 /**
  * The default limit for query results. This is set to be very high, because we don't use pagination.

@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import type { EntityListProps } from './EntityList.type';
   import { Button } from '$lib/components/button';
   import { EntityCard } from '$lib/components/entityCard';
   import { t } from '$lib/i18n';
   import { concatClass } from '$lib/utils/components';
+  import type { EntityListProps } from './EntityList.type';
 
   type $$Props = EntityListProps;
 

@@ -1,10 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
-  import type { AlertProps } from './Alert.type';
   import { Button } from '$lib/components/button';
   import { Icon } from '$lib/components/icon';
   import { t } from '$lib/i18n';
   import { concatClass, getUUID } from '$lib/utils/components';
+  import type { AlertProps } from './Alert.type';
 
   type $$Props = AlertProps;
 

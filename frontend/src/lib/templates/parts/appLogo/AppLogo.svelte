@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type { AppLogoProps } from './AppLogo.type';
   import { t } from '$lib/i18n';
   import { settings } from '$lib/stores';
   import { concatClass } from '$lib/utils/components';
   import { darkMode } from '$lib/utils/darkMode';
+  import type { AppLogoProps } from './AppLogo.type';
 
   type $$Props = AppLogoProps;
   export let alt: $$Props['alt'] = undefined;

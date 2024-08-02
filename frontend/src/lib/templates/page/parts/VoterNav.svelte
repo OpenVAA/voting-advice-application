@@ -1,5 +1,4 @@
 <script lang="ts">
-  import LanguageSelection from './LanguageSelection.svelte';
   import { Navigation, NavGroup, NavItem } from '$lib/components/navigation';
   import { t } from '$lib/i18n';
   import {
@@ -11,6 +10,7 @@
   } from '$lib/stores';
   import { surveyLink } from '$lib/utils/analytics/survey';
   import { getRoute, Route } from '$lib/utils/navigation';
+  import LanguageSelection from './LanguageSelection.svelte';
 
   let resultsAvailableSync = false;
   $: $resultsAvailable.then((v) => (resultsAvailableSync = v));

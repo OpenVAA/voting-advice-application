@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { EntityFiltersProps } from './EntityFilters.type';
   import { Expander } from '$lib/components/expander';
   import { concatClass } from '$lib/utils/components';
   import {
@@ -9,6 +8,7 @@
     NumericFilter,
     NumericQuestionFilter
   } from '$voter/vaa-filters';
+  import type { EntityFiltersProps } from './EntityFilters.type';
 
   type $$Props = EntityFiltersProps;
 

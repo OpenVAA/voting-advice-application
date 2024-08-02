@@ -1,12 +1,12 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte';
-  import type { FeedbacProps } from './Feedback.type';
   import { sendFeedback } from '$lib/api/sendFeedback';
   import { Button } from '$lib/components/button';
   import { t } from '$lib/i18n';
   import { setFeedbackStatus, settings } from '$lib/stores';
   import { track } from '$lib/utils/analytics/track';
   import { concatClass } from '$lib/utils/components';
+  import type { FeedbacProps } from './Feedback.type';
 
   type $$Props = FeedbacProps;
 

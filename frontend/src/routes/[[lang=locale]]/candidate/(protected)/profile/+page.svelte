@@ -1,8 +1,6 @@
 <script lang="ts">
   import { getContext } from 'svelte';
   import { get } from 'svelte/store';
-  import AvatarSelect from './AvatarSelect.svelte';
-  import InputContainer from './InputContainer.svelte';
   import { goto } from '$app/navigation';
   import { MultilangTextInput } from '$candidate/components/textArea';
   import { getLanguages, getGenders, updateBasicInfo } from '$lib/api/candidate';
@@ -18,6 +16,8 @@
   import type { Language } from '$lib/types/candidateAttributes';
   import type { CandidateContext } from '$lib/utils/candidateStore';
   import { getRoute, Route } from '$lib/utils/navigation';
+  import AvatarSelect from './AvatarSelect.svelte';
+  import InputContainer from './InputContainer.svelte';
 
   const basicInfoFields = ['firstName', 'lastName', 'party'];
 

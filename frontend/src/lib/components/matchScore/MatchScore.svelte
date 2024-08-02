@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { MatchScoreProps } from './MatchScore.type';
   import { t } from '$lib/i18n';
   import { concatClass } from '$lib/utils/components';
+  import type { MatchScoreProps } from './MatchScore.type';
 
   type $$Props = MatchScoreProps;
 

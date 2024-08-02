@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { StretchBackgroundProps } from './StretchBackground.type';
   import { concatClass } from '$lib/utils/components';
+  import type { StretchBackgroundProps } from './StretchBackground.type';
 
   type $$Props = StretchBackgroundProps;
 

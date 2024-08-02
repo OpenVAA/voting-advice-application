@@ -1,6 +1,6 @@
-import { checkUrl } from './links';
 import { locale, t } from '$lib/i18n';
 import { logDebugError } from '$lib/utils/logger';
+import { checkUrl } from './links';
 
 // Utilities for getting Answers to Questions from Candidates and formatting them
 // TODO: These will be deprecated when we get proper Classes defs and methods for Question objects using the vaa-data module.

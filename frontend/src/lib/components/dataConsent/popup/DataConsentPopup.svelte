@@ -1,9 +1,9 @@
 <script lang="ts">
   import { DataConsent, DataConsentInfoButton } from '../';
-  import type { DataConsentPopupProps } from './DataConsentPopup.type';
   import { Alert } from '$lib/components/alert';
   import { t } from '$lib/i18n';
   import { userPreferences } from '$lib/stores';
+  import type { DataConsentPopupProps } from './DataConsentPopup.type';
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
   type $$Props = DataConsentPopupProps;

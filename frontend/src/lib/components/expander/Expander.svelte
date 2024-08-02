@@ -1,8 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import type { ExpanderProps } from './Expander.type';
   import { Icon } from '$lib/components/icon';
   import { concatClass } from '$lib/utils/components';
+  import type { ExpanderProps } from './Expander.type';
 
   type $$Props = ExpanderProps;
 

@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
-import type { LayoutServerLoad } from './$types';
 import { dataProvider } from '$lib/api/getData';
 import { loadTranslations, locale } from '$lib/i18n';
+import type { LayoutServerLoad } from './$types';
 
 export const load = (async ({ locals, params }) => {
   // Get language from locals (see hooks.server.ts)

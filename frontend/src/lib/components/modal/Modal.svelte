@@ -1,9 +1,9 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import type { ModalProps } from './Modal.type';
   import { t } from '$lib/i18n';
   import { attemptFocus, focusFirstDescendant } from '$lib/utils/aria/focus';
   import { concatClass, getUUID } from '$lib/utils/components';
+  import type { ModalProps } from './Modal.type';
 
   type $$Props = ModalProps;
 

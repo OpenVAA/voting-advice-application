@@ -1,7 +1,7 @@
 <script lang="ts">
   import { error } from '@sveltejs/kit';
-  import type { EntityCardActionProps } from './EntityCardAction.type';
   import { concatClass } from '$lib/utils/components';
+  import type { EntityCardActionProps } from './EntityCardAction.type';
 
   type $$Props = EntityCardActionProps;
 

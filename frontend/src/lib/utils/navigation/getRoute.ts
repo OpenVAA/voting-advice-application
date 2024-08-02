@@ -1,8 +1,8 @@
 import { error } from '@sveltejs/kit';
 import { get, derived } from 'svelte/store';
-import { Route } from './route';
 import { page } from '$app/stores';
 import { settings } from '$lib/stores';
+import { Route } from './route';
 
 /**
  * A special id used to mark the question to start from before question ids are available

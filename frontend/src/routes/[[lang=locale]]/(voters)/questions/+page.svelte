@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { getQuestionsContext } from './questions.context';
   import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeroEmoji } from '$lib/components/heroEmoji';
@@ -13,6 +12,7 @@
   } from '$lib/stores';
   import { BasicPage } from '$lib/templates/basicPage';
   import { FIRST_QUESTION_ID, getRoute, Route } from '$lib/utils/navigation';
+  import { getQuestionsContext } from './questions.context';
 
   const { firstQuestionId, selectedCategories } = getQuestionsContext();
 

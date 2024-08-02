@@ -1,6 +1,5 @@
 <script lang="ts">
   import { getContext } from 'svelte';
-  import type { QuestionPageProps } from './QuestionPage.type';
   import { goto } from '$app/navigation';
   import { MultilangTextInput } from '$candidate/components/textArea';
   import { addAnswer, updateAnswer } from '$lib/api/candidate';
@@ -14,6 +13,7 @@
   import { BasicPage } from '$lib/templates/basicPage';
   import type { CandidateContext } from '$lib/utils/candidateStore';
   import { getRoute, Route } from '$lib/utils/navigation';
+  import type { QuestionPageProps } from './QuestionPage.type';
 
   type $$Props = QuestionPageProps;
   export let currentQuestion: $$Props['currentQuestion'];

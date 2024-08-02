@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { ButtonProps } from './Button.type';
   import { Icon } from '$lib/components/icon';
   import { concatClass } from '$lib/utils/components';
+  import type { ButtonProps } from './Button.type';
 
   type $$Props = ButtonProps;
 

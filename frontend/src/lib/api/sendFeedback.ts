@@ -1,6 +1,6 @@
+import { browser } from '$app/environment';
 import type { FeedbackData } from './dataProvider/dataProvider';
 import { dataProvider } from './getData';
-import { browser } from '$app/environment';
 
 export async function sendFeedback(
   rating?: FeedbackData['rating'],

@@ -1,5 +1,5 @@
-import type { LayoutLoad } from './$types';
 import { addDynamicTranslations, locale, setRoute } from '$lib/i18n/init';
+import type { LayoutLoad } from './$types';
 
 export const load: LayoutLoad = (async ({ data }) => {
   const appLabels = data.election?.appLabels;
