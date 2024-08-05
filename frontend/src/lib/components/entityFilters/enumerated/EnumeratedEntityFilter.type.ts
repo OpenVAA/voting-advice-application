@@ -1,5 +1,5 @@
 import type { SvelteHTMLElements } from 'svelte/elements';
-import type { ObjectFilter, ChoiceQuestionFilter } from '$voter/vaa-filters';
+import type { ChoiceQuestionFilter, ObjectFilter } from '$voter/vaa-filters';
 
 export type EnumeratedEntityFilterProps = SvelteHTMLElements['form'] & {
   /**

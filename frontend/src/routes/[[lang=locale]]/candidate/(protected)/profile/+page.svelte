@@ -3,7 +3,7 @@
   import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
   import { MultilangTextInput } from '$candidate/components/textArea';
-  import { getLanguages, getGenders, updateBasicInfo } from '$lib/api/candidate';
+  import { getGenders, getLanguages, updateBasicInfo } from '$lib/api/candidate';
   import type { StrapiGenderData, StrapiLanguageData } from '$lib/api/dataProvider/strapi';
   import { Button } from '$lib/components/button';
   import { Field, FieldGroup } from '$lib/components/common/form';

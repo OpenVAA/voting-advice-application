@@ -1,4 +1,4 @@
-import { measureDistance, DistanceMetric } from '../distance';
+import { DistanceMetric, measureDistance } from '../distance';
 import type { HasMatchableAnswers } from '../entity';
 import { Match, SubMatch } from '../match';
 import { MISSING_VALUE, type MissingValueImputationOptions } from '../missingValue';
@@ -6,8 +6,8 @@ import type { MatchableQuestion, MatchableQuestionGroup } from '../question';
 import {
   createSubspace,
   MatchingSpace,
-  MatchingSpacePosition,
-  type MatchingSpaceCoordinate
+  type MatchingSpaceCoordinate,
+  MatchingSpacePosition
 } from '../space';
 import type { MatchingAlgorithmOptions, MatchingOptions } from './matchingAlgorithm.type';
 import type { MatchingSpaceProjector } from './matchingSpaceProjector';

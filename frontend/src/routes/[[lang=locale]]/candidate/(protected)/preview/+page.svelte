@@ -10,7 +10,7 @@
   import { locale, t } from '$lib/i18n';
   import { SingleCardPage } from '$lib/templates/singleCardPage';
   import type { CandidateContext } from '$lib/utils/candidateStore';
-  import { Route, getRoute } from '$lib/utils/navigation';
+  import { getRoute, Route } from '$lib/utils/navigation';
 
   const { userStore } = getContext<CandidateContext>('candidate');
 

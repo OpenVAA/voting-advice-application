@@ -1,6 +1,6 @@
 import type { MaybeWrapped } from '../entity';
 import type { Filter } from '../filter';
-import { LogicOp, combineResults } from './combineResults';
+import { combineResults, LogicOp } from './combineResults';
 
 /**
  * Use to combine a group of filters and subscribe to changes in their combined results using the `onChange` callback.

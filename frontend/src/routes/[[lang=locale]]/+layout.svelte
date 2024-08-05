@@ -1,11 +1,11 @@
 <script lang="ts">
+  import '../../app.css';
   import { FeedbackModal } from '$lib/components/feedback/modal';
   import { Loading } from '$lib/components/loading';
   import localSettings from '$lib/config/settings.json';
   import { t } from '$lib/i18n';
   import { openFeedbackModal } from '$lib/stores';
   import { MaintenancePage } from '$lib/templates/maintenance';
-  import '../../app.css';
   import type { LayoutData } from './$types';
 
   export let data: LayoutData;

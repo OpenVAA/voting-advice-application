@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { SurveyButton } from '..';
   import { Alert } from '$lib/components/alert';
   import { Button } from '$lib/components/button';
   import { t } from '$lib/i18n';
+  import { SurveyButton } from '..';
   import type { SurveyPopupProps } from './SurveyPopup.type';
 
   /* eslint-disable @typescript-eslint/no-unused-vars */

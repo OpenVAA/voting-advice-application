@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { validatePassword } from '$shared/utils/passwordValidation';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { resetPassword } from '$lib/api/candidate';
@@ -8,6 +7,7 @@
   import { t } from '$lib/i18n';
   import { FrontPage } from '$lib/templates/frontPage';
   import { getRoute, Route } from '$lib/utils/navigation';
+  import { validatePassword } from '$shared/utils/passwordValidation';
 
   export let code: string;
 

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { validatePassword } from '$shared/utils/passwordValidation';
   import { getContext } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
@@ -11,6 +10,7 @@
   import { FrontPage } from '$lib/templates/frontPage';
   import type { CandidateContext } from '$lib/utils/candidateStore';
   import { getRoute, Route } from '$lib/utils/navigation';
+  import { validatePassword } from '$shared/utils/passwordValidation';
 
   export let username: string;
   export let registrationCode: string;

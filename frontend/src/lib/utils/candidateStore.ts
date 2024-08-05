@@ -1,8 +1,6 @@
-import { writable, type Writable } from 'svelte/store';
-import { authenticate, me } from '$lib/api/candidate';
-import { getExistingAnswers } from '$lib/api/candidate';
-import { getLikertQuestions } from '$lib/api/candidate';
-import type { Question, Answer, User, Progress } from '$lib/types/candidateAttributes';
+import { type Writable, writable } from 'svelte/store';
+import { authenticate, getExistingAnswers, getLikertQuestions, me } from '$lib/api/candidate';
+import type { Answer, Progress, Question, User } from '$lib/types/candidateAttributes';
 
 export interface CandidateContext {
   // Authentication

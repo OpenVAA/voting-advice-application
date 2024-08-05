@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext } from 'svelte';
   import { InfoBadge } from '$lib/components/infoBadge';
-  import { Navigation, NavGroup, NavItem } from '$lib/components/navigation';
+  import { NavGroup, Navigation, NavItem } from '$lib/components/navigation';
   import { t } from '$lib/i18n';
   import type { CandidateContext } from '$lib/utils/candidateStore';
   import { getRoute, Route } from '$lib/utils/navigation';

@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { get, derived } from 'svelte/store';
+import { derived, get } from 'svelte/store';
 import { page } from '$app/stores';
 import { settings } from '$lib/stores';
 import { Route } from './route';

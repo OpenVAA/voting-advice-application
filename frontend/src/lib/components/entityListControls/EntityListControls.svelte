@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { TextEntityFilter } from '../entityFilters/text';
   import { Button } from '$lib/components/button';
   import { EntityFilters } from '$lib/components/entityFilters';
   import { Icon } from '$lib/components/icon';
@@ -10,6 +9,7 @@
   import { startEvent } from '$lib/utils/analytics/track';
   import { concatClass } from '$lib/utils/components';
   import { TextPropertyFilter } from '$lib/voter/vaa-filters';
+  import { TextEntityFilter } from '../entityFilters/text';
   import type { EntityListControlsProps } from './EntityListControls.type';
 
   type $$Props = EntityListControlsProps;

@@ -5,7 +5,7 @@
   import { Button } from '$lib/components/button';
   import { InfoBadge } from '$lib/components/infoBadge';
   import { Warning } from '$lib/components/warning';
-  import { t, locale } from '$lib/i18n';
+  import { locale, t } from '$lib/i18n';
   import { BasicPage } from '$lib/templates/basicPage';
   import { type CandidateContext } from '$lib/utils/candidateStore';
   import { getRoute, Route } from '$lib/utils/navigation';

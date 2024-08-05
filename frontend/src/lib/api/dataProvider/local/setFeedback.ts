@@ -1,6 +1,6 @@
+import { browser } from '$app/environment';
 import { API } from '../../api';
 import type { FeedbackData } from '../dataProvider';
-import { browser } from '$app/environment';
 
 /**
  * Save feedback to the local API as a fallback if the `setFeedback` method is not provided by the `DataProvider` used.

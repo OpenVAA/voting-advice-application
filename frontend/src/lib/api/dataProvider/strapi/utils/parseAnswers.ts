@@ -1,5 +1,5 @@
-import type { StrapiAnswerData } from '../strapiDataProvider.type';
 import { translate } from '$lib/i18n/utils/translate';
+import type { StrapiAnswerData } from '../strapiDataProvider.type';
 
 /**
  * Parse Strapi Answer data.

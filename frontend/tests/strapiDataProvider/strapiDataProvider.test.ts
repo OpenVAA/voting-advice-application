@@ -3,7 +3,7 @@
  * TODO: Test all required functions.
  */
 
-import { describe, test, expect, vi, type Mock } from 'vitest';
+import { describe, expect, type Mock, test, vi } from 'vitest';
 import type * as environment from '$app/environment';
 import { dataProvider } from '$lib/api/dataProvider/strapi';
 import { loadTranslations, locale, locales } from '$lib/i18n';

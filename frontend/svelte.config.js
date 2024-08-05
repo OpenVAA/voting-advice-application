@@ -1,5 +1,5 @@
-import path from 'path';
 import adapter from '@sveltejs/adapter-node';
+import path from 'path';
 import { sveltePreprocess } from 'svelte-preprocess';
 
 /** @type {import('@sveltejs/kit').Config} */
@@ -19,6 +19,11 @@ const config = {
       $voter: path.resolve('./src/lib/voter'),
       $candidate: path.resolve('./src/lib/candidate'),
       $shared: path.resolve('./src/shared')
+    }
+  },
+  compileOptions: {
+    postcss: {
+      configFilePath: './postcss.config.js'
     }
   }
 };

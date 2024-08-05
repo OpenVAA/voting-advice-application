@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Page } from '../page';
   import { concatClass } from '$lib/utils/components';
+  import { Page } from '../page';
   import type { SingleCardPageProps } from './SingleCardPage.type';
 
   type $$Props = SingleCardPageProps;

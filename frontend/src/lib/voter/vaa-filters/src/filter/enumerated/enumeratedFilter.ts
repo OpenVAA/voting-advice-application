@@ -1,5 +1,5 @@
 import { getEntity, type MaybeWrapped } from '../../entity';
-import { MISSING_VALUE, type MaybeMissing } from '../../missingValue';
+import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import { Filter } from '../base/filter';
 import { intersect } from './intersect';
 

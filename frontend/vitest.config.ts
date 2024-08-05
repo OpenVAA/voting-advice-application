@@ -1,6 +1,6 @@
-import path from 'path';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+import path from 'path';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({

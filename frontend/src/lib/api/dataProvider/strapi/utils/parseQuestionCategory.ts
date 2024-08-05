@@ -1,6 +1,6 @@
+import { translate } from '$lib/i18n/utils/translate';
 import { ensureColors } from '../../../../utils/color/ensureColors';
 import type { StrapiQuestionCategoryData } from '../strapiDataProvider.type';
-import { translate } from '$lib/i18n/utils/translate';
 import { parseCustomData } from './parseCustomData';
 
 /**

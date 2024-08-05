@@ -5,17 +5,6 @@
  */
 
 import { error } from '@sveltejs/kit';
-import type {
-  FeedbackData,
-  GetAllPartiesOptions,
-  GetAnyQuestionsOptions,
-  GetDataOptionsBase,
-  GetElectionOptions,
-  GetNominatedCandidatesOptions,
-  GetNominatingPartiesOptions,
-  GetQuestionsOptionsBase,
-  DataProvider
-} from '../dataProvider';
 import { browser } from '$app/environment';
 import { locale as currentLocale, locales } from '$lib/i18n';
 import { matchLocale } from '$lib/i18n/utils/matchLocale';
@@ -23,18 +12,29 @@ import { translate } from '$lib/i18n/utils/translate';
 import { constants } from '$lib/utils/constants';
 import { formatName } from '$lib/utils/internationalisation';
 import type {
+  DataProvider,
+  FeedbackData,
+  GetAllPartiesOptions,
+  GetAnyQuestionsOptions,
+  GetDataOptionsBase,
+  GetElectionOptions,
+  GetNominatedCandidatesOptions,
+  GetNominatingPartiesOptions,
+  GetQuestionsOptionsBase
+} from '../dataProvider';
+import type {
+  LocalizedStrapiData,
+  StrapiAppLabelsData,
+  StrapiAppSettingsData,
   StrapiElectionData,
   StrapiError,
+  StrapiFeedbackData,
   StrapiNominationData,
   StrapiPartyData,
-  StrapiResponse,
-  StrapiAppLabelsData,
-  LocalizedStrapiData,
   StrapiQuestionCategoryData,
-  StrapiAppSettingsData,
-  StrapiFeedbackData
+  StrapiResponse
 } from './strapiDataProvider.type';
-import { parseParty, parseImage, parseQuestionCategory } from './utils';
+import { parseImage, parseParty, parseQuestionCategory } from './utils';
 import { parseAnswers } from './utils/parseAnswers';
 import { parseCustomData } from './utils/parseCustomData';
 

@@ -1,13 +1,13 @@
 import { get } from 'svelte/store';
-import type { Question, Answer, Language, User, Photo } from '$lib/types/candidateAttributes';
+import type { Answer, Language, Photo, Question, User } from '$lib/types/candidateAttributes';
 import { candidateContext } from '$lib/utils/candidateStore';
 import { constants } from '$lib/utils/constants';
 import type {
   StrapiAnswerData,
-  StrapiLanguageData,
   StrapiGenderData,
-  StrapiResponse,
-  StrapiQuestionData
+  StrapiLanguageData,
+  StrapiQuestionData,
+  StrapiResponse
 } from './dataProvider/strapi';
 import { parseQuestionCategory } from './dataProvider/strapi/utils';
 

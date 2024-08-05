@@ -5,10 +5,10 @@
   import { LikertResponseButtons } from '$lib/components/questions';
   import { t } from '$lib/i18n';
   import {
+    answeredQuestions,
     candidateRankings,
-    partyRankings,
     opinionQuestions,
-    answeredQuestions
+    partyRankings
   } from '$lib/stores';
   import { BasicPage } from '$lib/templates/basicPage';
   import { getLikertAnswer } from '$lib/utils/answers';

@@ -2,11 +2,11 @@
   import { Expander } from '$lib/components/expander';
   import { concatClass } from '$lib/utils/components';
   import {
-    ObjectFilter,
     ChoiceQuestionFilter,
-    TextFilter,
     NumericFilter,
-    NumericQuestionFilter
+    NumericQuestionFilter,
+    ObjectFilter,
+    TextFilter
   } from '$voter/vaa-filters';
   import type { EntityFiltersProps } from './EntityFilters.type';
 

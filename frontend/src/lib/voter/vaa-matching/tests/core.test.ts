@@ -1,6 +1,6 @@
 import { NORMALIZED_DISTANCE_EXTENT, type SignedNormalizedDistance } from '../src/distance/';
 import { MISSING_VALUE } from '../src/missingValue';
-import { MatchingSpace, MatchingSpacePosition, type MatchingSpaceCoordinate } from '../src/space';
+import { MatchingSpace, type MatchingSpaceCoordinate, MatchingSpacePosition } from '../src/space';
 
 // For convenience
 const maxVal: SignedNormalizedDistance = NORMALIZED_DISTANCE_EXTENT / 2;

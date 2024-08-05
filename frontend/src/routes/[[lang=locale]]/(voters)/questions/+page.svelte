@@ -6,8 +6,8 @@
   import { t } from '$lib/i18n';
   import {
     openFeedbackModal,
-    opinionQuestions,
     opinionQuestionCategories,
+    opinionQuestions,
     settings
   } from '$lib/stores';
   import { BasicPage } from '$lib/templates/basicPage';

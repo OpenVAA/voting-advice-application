@@ -65,17 +65,9 @@ Used to show an entity's opinions in an `EntityDetails` component.
         <div class="small-label mb-16 text-center">
           {$t('questions.bothHaventAnswered', { entity: shortName })}
         </div>
-      {:else if voterAnswer == null && answer == null}
-        <div class="small-label mb-16 text-center">
-          {$t('questions.youHaventAnswered')}
-        </div>
       {:else if voterAnswer == null}
         <div class="small-label mb-16 text-center">
           {$t('questions.youHaventAnswered')}
-        </div>
-      {:else if answer == null}
-        <div class="small-label mb-16 text-center">
-          {$t('questions.entityHasntAnswered', { entity: shortName })}
         </div>
       {/if}
 

@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { getQuestionsContext } from '../questions.context';
-  import { filterAndSortQuestions } from '../questions.utils';
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
@@ -9,11 +7,11 @@
   import { Loading } from '$lib/components/loading';
   import {
     LikertResponseButtons,
+    type LikertResponseButtonsEventDetail,
     QuestionActions,
-    QuestionInfo,
-    type LikertResponseButtonsEventDetail
+    QuestionInfo
   } from '$lib/components/questions';
-  import { type VideoMode, Video } from '$lib/components/video';
+  import { Video, type VideoMode } from '$lib/components/video';
   import { t } from '$lib/i18n';
   import {
     answeredQuestions,
@@ -29,6 +27,8 @@
   import { startEvent } from '$lib/utils/analytics/track';
   import { logDebugError } from '$lib/utils/logger';
   import { FIRST_QUESTION_ID, getRoute, Route } from '$lib/utils/navigation';
+  import { getQuestionsContext } from '../questions.context';
+  import { filterAndSortQuestions } from '../questions.utils';
   import type { PageData } from './$types';
 
   /**

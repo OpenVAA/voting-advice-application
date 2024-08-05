@@ -7,7 +7,7 @@
   import { startEvent } from '$lib/utils/analytics/track';
   import { concatClass } from '$lib/utils/components';
   import { getEntityType, parseMaybeRanked } from '$lib/utils/entities';
-  import { Route, getRoute } from '$lib/utils/navigation';
+  import { getRoute, Route } from '$lib/utils/navigation';
   import { EntityInfo, EntityOpinions, EntitySubentities } from './';
   import type { EntityDetailsProps } from './EntityDetails.type';
 

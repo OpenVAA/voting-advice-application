@@ -2,7 +2,7 @@
 // For a more comprehensive mediaQuery solution, see
 // https://github.com/fedorovvvv/svelte-media-queries
 
-import { readable, type Readable } from 'svelte/store';
+import { type Readable, readable } from 'svelte/store';
 import { browser } from '$app/environment';
 
 /**

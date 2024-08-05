@@ -6,4 +6,4 @@ export {
 } from './distance';
 export { measureDistance } from './measure';
 export type { DistanceMeasurementOptions, GlobalAndSubspaceDistances } from './measure.type';
-export { directionalDistance, manhattanDistance, DistanceMetric } from './metric';
+export { directionalDistance, DistanceMetric, manhattanDistance } from './metric';

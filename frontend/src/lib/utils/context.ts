@@ -1,4 +1,4 @@
-import { setContext, getContext } from 'svelte';
+import { getContext, setContext } from 'svelte';
 import type { Writable } from 'svelte/store';
 import { type StorageType, storageWritable } from './storage';
 

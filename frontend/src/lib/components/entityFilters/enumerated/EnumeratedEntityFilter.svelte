@@ -4,7 +4,7 @@
   import { t } from '$lib/i18n';
   import { concatProps, getUUID } from '$lib/utils/components';
   import { logDebugError } from '$lib/utils/logger';
-  import { isMissing, type Choice, MISSING_VALUE, type MaybeMissing } from '$voter/vaa-filters';
+  import { type Choice, isMissing, type MaybeMissing, MISSING_VALUE } from '$voter/vaa-filters';
   import type { EnumeratedEntityFilterProps } from './EnumeratedEntityFilter.type';
 
   type $$Props = EnumeratedEntityFilterProps;

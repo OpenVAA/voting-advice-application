@@ -3,7 +3,7 @@ import type { MatchingSpace } from '../space/matchingSpace';
 import type { MatchingSpacePosition } from '../space/position';
 import type { UnsignedNormalizedDistance } from './distance';
 import type { DistanceMeasurementOptions, GlobalAndSubspaceDistances } from './measure.type';
-import { DistanceMetric, directionalDistance, manhattanDistance } from './metric';
+import { directionalDistance, DistanceMetric, manhattanDistance } from './metric';
 
 export function measureDistance(
   a: MatchingSpacePosition,

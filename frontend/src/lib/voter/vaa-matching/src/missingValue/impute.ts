@@ -1,6 +1,6 @@
 import {
-  NORMALIZED_DISTANCE_EXTENT,
   assertSignedNormalized,
+  NORMALIZED_DISTANCE_EXTENT,
   type SignedNormalizedDistance
 } from '../distance';
 import { MissingValueBias } from './bias';

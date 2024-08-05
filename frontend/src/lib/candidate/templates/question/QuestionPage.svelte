@@ -8,7 +8,7 @@
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { LikertResponseButtons, QuestionInfo } from '$lib/components/questions';
   import { Warning } from '$lib/components/warning';
-  import { t, locale } from '$lib/i18n';
+  import { locale, t } from '$lib/i18n';
   import { translate } from '$lib/i18n/utils/translate';
   import { BasicPage } from '$lib/templates/basicPage';
   import type { CandidateContext } from '$lib/utils/candidateStore';

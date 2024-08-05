@@ -1,6 +1,6 @@
-import type { StrapiPartyData } from '../strapiDataProvider.type';
 import { translate } from '$lib/i18n/utils/translate';
 import { ensureColors } from '$lib/utils/color/ensureColors';
+import type { StrapiPartyData } from '../strapiDataProvider.type';
 import { parseAnswers } from './parseAnswers';
 import { parseImage } from './parseImage';
 

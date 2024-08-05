@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { validatePassword } from '$shared/utils/passwordValidation';
   import { getContext } from 'svelte';
   import { goto } from '$app/navigation';
   import { PasswordValidator } from '$candidate/components/passwordValidator';
@@ -13,6 +12,7 @@
   import type { Language } from '$lib/types/candidateAttributes';
   import type { CandidateContext } from '$lib/utils/candidateStore';
   import { getRoute } from '$lib/utils/navigation';
+  import { validatePassword } from '$shared/utils/passwordValidation';
 
   const { userStore, loadUserData } = getContext<CandidateContext>('candidate');
   $: user = $userStore;

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { TextArea, InputField } from '$candidate/components/textArea';
+  import { InputField, TextArea } from '$candidate/components/textArea';
   import { Button } from '$lib/components/button';
   import { Field, FieldGroup } from '$lib/components/common/form';
   import { locale as currentLocale, locales, t } from '$lib/i18n';
-  import type { TextAreaProps, MultilangTextAreaProps } from './TextArea.type';
+  import type { MultilangTextAreaProps, TextAreaProps } from './TextArea.type';
 
   type $$Props = TextAreaProps & MultilangTextAreaProps;
   export let id: $$Props['id'];

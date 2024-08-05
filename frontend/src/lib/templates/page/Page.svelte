@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { AppLogo } from '../parts/appLogo';
   import { Icon } from '$lib/components/icon';
   import { NavItem, setNavigationContext } from '$lib/components/navigation';
   import { t } from '$lib/i18n';
   import { appType } from '$lib/stores';
   import { startEvent } from '$lib/utils/analytics/track';
   import { concatClass } from '$lib/utils/components';
+  import { AppLogo } from '../parts/appLogo';
   import type { PageProps } from './Page.type';
   import { CandidateNav, VoterNav } from './parts';
 

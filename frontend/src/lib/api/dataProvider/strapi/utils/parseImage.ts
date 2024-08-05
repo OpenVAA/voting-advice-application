@@ -1,5 +1,5 @@
-import type { StrapiImageData } from '../strapiDataProvider.type';
 import { constants } from '$lib/utils/constants';
+import type { StrapiImageData } from '../strapiDataProvider.type';
 
 /**
  * Parse image properties from Strapi, providing the full image url as a default for the thumbnail.

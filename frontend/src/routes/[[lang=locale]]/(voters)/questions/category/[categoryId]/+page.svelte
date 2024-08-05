@@ -1,7 +1,5 @@
 <script lang="ts">
   import { error } from '@sveltejs/kit';
-  import { getQuestionsContext } from '../../questions.context';
-  import { filterAndSortQuestions } from '../../questions.utils';
   import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
@@ -16,6 +14,8 @@
   } from '$lib/stores';
   import { BasicPage } from '$lib/templates/basicPage';
   import { getRoute, Route } from '$lib/utils/navigation';
+  import { getQuestionsContext } from '../../questions.context';
+  import { filterAndSortQuestions } from '../../questions.utils';
   import type { PageData } from './$types';
 
   /**

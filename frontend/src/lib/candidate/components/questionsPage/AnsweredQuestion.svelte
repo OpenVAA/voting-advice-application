@@ -3,9 +3,8 @@
   import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { Expander } from '$lib/components/expander';
-  import { LikertResponseButtons } from '$lib/components/questions';
-  import { QuestionOpenAnswer } from '$lib/components/questions';
-  import { t, locale } from '$lib/i18n';
+  import { LikertResponseButtons, QuestionOpenAnswer } from '$lib/components/questions';
+  import { locale, t } from '$lib/i18n';
   import { translate } from '$lib/i18n/utils/translate';
   import type { CandidateContext } from '$lib/utils/candidateStore';
   import { getRoute, Route } from '$lib/utils/navigation';

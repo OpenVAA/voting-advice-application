@@ -4,14 +4,14 @@
  * NB. This is a temporary implementation which will be replaced with a proper one when the `vaa-data` model is implemented. The model will allow the passing of its consituent objects directly to the matching algorithm without need for constructing mediating objects, such as `LikertQuestion`s below.
  */
 import { error } from '@sveltejs/kit';
-import { extractCategories } from '../questions';
 import {
-  type MatchingOptions,
-  MatchingAlgorithm,
   DistanceMetric,
-  MissingValueDistanceMethod,
-  type MatchableQuestionGroup
+  type MatchableQuestionGroup,
+  MatchingAlgorithm,
+  type MatchingOptions,
+  MissingValueDistanceMethod
 } from '$voter/vaa-matching';
+import { extractCategories } from '../questions';
 import { imputePartyAnswers } from './imputePartyAnswers';
 import { LikertQuestion } from './LikertQuestion';
 

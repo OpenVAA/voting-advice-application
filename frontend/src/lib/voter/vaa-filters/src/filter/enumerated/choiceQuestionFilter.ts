@@ -1,6 +1,6 @@
 import type { EntityWithAnswers, MaybeWrapped } from '../../entity';
-import { MISSING_VALUE, type MaybeMissing } from '../../missingValue';
-import { KEY_PROP, LABEL_PROP, type Choice, KEY_TYPE, type ChoiceQuestion } from '../../question';
+import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
+import { type Choice, type ChoiceQuestion, KEY_PROP, KEY_TYPE, LABEL_PROP } from '../../question';
 import type { FilterOptions } from '../base';
 import { EnumeratedFilter } from './enumeratedFilter';
 

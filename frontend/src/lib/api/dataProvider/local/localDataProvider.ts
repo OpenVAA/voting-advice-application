@@ -2,22 +2,22 @@
  * This is a severely limited implementation of the `DataProvider` that connects to locally stored JSON files.
  */
 
+import { error } from '@sveltejs/kit';
 import fs from 'fs';
 import path from 'path';
-import { error } from '@sveltejs/kit';
+import { locales } from '$lib/i18n';
+import { ensureColors } from '$lib/utils/color/ensureColors';
+import { logDebugError } from '$lib/utils/logger';
 import type {
+  DataProvider,
   GetAllPartiesOptions,
   GetAnyQuestionsOptions,
   GetDataOptionsBase,
   GetElectionOptions,
   GetNominatedCandidatesOptions,
   GetNominatingPartiesOptions,
-  GetQuestionsOptionsBase,
-  DataProvider
+  GetQuestionsOptionsBase
 } from '../dataProvider';
-import { locales } from '$lib/i18n';
-import { ensureColors } from '$lib/utils/color/ensureColors';
-import { logDebugError } from '$lib/utils/logger';
 import { DataFolder } from './dataFolder';
 import type { LocalQuestionCategoryProps, LocalQuestionProps } from './localDataProvider.type';
 import { setFeedback } from './setFeedback';

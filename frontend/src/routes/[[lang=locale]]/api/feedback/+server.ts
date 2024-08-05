@@ -2,9 +2,9 @@
  * An API route for receiving feedback, which is written as a JSON file in the `data/feedback` folder. This is accessed via the `$lib/api/feedback.ts: sendFeedback` function.
  */
 
+import { error, json } from '@sveltejs/kit';
 import fs from 'fs';
 import path from 'path';
-import { error, json } from '@sveltejs/kit';
 import type { FeedbackData } from '$lib/api/dataProvider';
 import { DataFolder } from '$lib/api/dataProvider/local';
 import { logDebugError } from '$lib/utils/logger';

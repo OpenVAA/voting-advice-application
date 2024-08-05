@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Navigation, NavGroup, NavItem } from '$lib/components/navigation';
+  import { NavGroup, Navigation, NavItem } from '$lib/components/navigation';
   import { t } from '$lib/i18n';
   import {
     answeredQuestions,

@@ -1,5 +1,5 @@
-import { derived, get, writable } from 'svelte/store';
 import type { Readable, Writable } from 'svelte/store';
+import { derived, get, writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { page } from '$app/stores';
 import localSettings from '$lib/config/settings.json';

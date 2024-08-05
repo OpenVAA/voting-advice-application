@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
-import { imputePartyAnswers, mean, median } from '../matching';
 import { MISSING_VALUE } from '$voter/vaa-matching';
+import { imputePartyAnswers, mean, median } from '../matching';
 import { MockCandidate, MockParty } from './mock-objects';
 
 test('Mean and median', () => {

@@ -1,25 +1,25 @@
 import {
+  type AnswerDict,
+  type AnswerValue,
   castValue,
+  type Choice,
+  type ChoiceQuestion as IChoiceQuestion,
+  ChoiceQuestionFilter,
+  type EntityWithAnswers,
+  type FilterableEntity,
   FilterGroup,
   LogicOp,
   MISSING_VALUE,
+  type NumericQuestion as INumericQuestion,
   NumericQuestionFilter,
   ObjectFilter,
   TextPropertyFilter,
-  TextQuestionFilter,
-  type AnswerDict,
-  type AnswerValue,
-  type Choice,
-  type EntityWithAnswers,
-  type FilterableEntity,
-  type ChoiceQuestion as IChoiceQuestion,
-  type NumericQuestion as INumericQuestion,
   type TextQuestion as ITextQuestion,
-  type WrappedEntity,
+  TextQuestionFilter,
   WRAPPED_ENTITY_KEY,
-  ChoiceQuestionFilter
+  type WrappedEntity
 } from '../';
-import { matchRules, ruleIsActive, copyRules } from '../src/filter/rules';
+import { copyRules, matchRules, ruleIsActive } from '../src/filter/rules';
 
 const LOCALE = 'en';
 

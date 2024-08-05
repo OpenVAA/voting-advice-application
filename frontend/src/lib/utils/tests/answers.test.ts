@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
-import { getAnswer, getLikertAnswer, getAnswerForDisplay, DATE_FORMATS } from '../answers';
-import { t, locale, defaultLocale, loadTranslations } from '$lib/i18n';
+import { defaultLocale, loadTranslations, locale, t } from '$lib/i18n';
+import { DATE_FORMATS, getAnswer, getAnswerForDisplay, getLikertAnswer } from '../answers';
 import { MockCandidate, MockParty, MockQuestionCategory } from './mock-objects';
 
 const DATE = new Date();
