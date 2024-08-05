@@ -11,7 +11,7 @@ import {
  * A base class for numeric filters.
  * NB. This could be refactored to inherit from a common parent of this and EnumeratedFilter and allow value counts.
  */
-export abstract class NumericFilter<T extends MaybeWrapped> extends Filter<T, number> {
+export abstract class NumericFilter<TEntity extends MaybeWrapped> extends Filter<TEntity, number> {
   protected _rules: {
     min?: number;
     max?: number;
@@ -38,7 +38,7 @@ export abstract class NumericFilter<T extends MaybeWrapped> extends Filter<T, nu
    * @input A list of entities.
    * @returns The min and max values.
    */
-  parseValues(targets: Array<T>) {
+  parseValues(targets: Array<TEntity>) {
     const values = targets
       .map((t) => this.getValue(getEntity(t)))
       .filter((v) => typeof v === 'number') as Array<number>;

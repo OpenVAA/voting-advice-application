@@ -8,11 +8,11 @@ import { EnumeratedFilter } from './enumeratedFilter';
  * TODO: This could be refactored to merge with `SingleChoiceQuestionFilter`.
  */
 export class ObjectFilter<
-  T extends MaybeWrapped<FilterableEntity>,
-  O extends object = object
-> extends EnumeratedFilter<T, string, O> {
+  TType extends MaybeWrapped<FilterableEntity>,
+  TObject extends object = object
+> extends EnumeratedFilter<TType, string, TObject> {
   /** Options specific to the objects */
-  objOptions: ObjOptions<O>;
+  objOptions: ObjOptions<TObject>;
 
   /**
    * Create a filter for properties which are objects with a string-index label and key for filtering, e.g. party objects of candidates.
@@ -31,9 +31,9 @@ export class ObjectFilter<
       objects,
       name
     }: {
-      property: keyof ExtractEntity<T> & PropertyFilterOptions['property'];
+      property: keyof ExtractEntity<TType> & PropertyFilterOptions['property'];
       name?: string;
-    } & ObjOptions<O>,
+    } & ObjOptions<TObject>,
     public locale: string
   ) {
     super({ property, subProperty: keyProperty, name, type: 'string' });
@@ -62,7 +62,7 @@ export class ObjectFilter<
   /**
    * Utility for getting a value's associated organisation
    */
-  getObject(value: string): O {
+  getObject(value: string): TObject {
     const org = this.objOptions.objects.find((o) => o[this.objOptions.keyProperty] === value);
     if (!org)
       throw new Error(
@@ -72,8 +72,8 @@ export class ObjectFilter<
   }
 }
 
-type ObjOptions<O> = {
-  keyProperty: keyof O & string;
-  labelProperty: keyof O & string;
-  objects: Array<O>;
+type ObjOptions<TObject> = {
+  keyProperty: keyof TObject & string;
+  labelProperty: keyof TObject & string;
+  objects: Array<TObject>;
 };

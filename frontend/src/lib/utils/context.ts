@@ -10,12 +10,12 @@ import { type StorageType, storageWritable } from './storage';
  * @returns An object with `get` and `set` functions for the context. The `set` function accepts a partial content object and only updates the values defined. Usually, only the `get` function is necessary, because the properties are stores that can be directly updated.
  */
 
-export function createStorageContext<C extends StorageContextContent>(
+export function createStorageContext<TContent extends StorageContextContent>(
   name: string,
-  content: C,
+  content: TContent,
   storageType: StorageType = 'sessionStorage'
 ) {
-  type S = StorageContext<C>;
+  type S = StorageContext<TContent>;
   const context = Object.fromEntries(
     Object.entries(content).map(([key, value]) => {
       return [key, storageWritable(storageType, `${name}.${key}`, value)];
@@ -30,7 +30,7 @@ export function createStorageContext<C extends StorageContextContent>(
     }
     return ctx;
   };
-  const set = (content: Partial<C>) => {
+  const set = (content: Partial<TContent>) => {
     const ctx = get();
     for (const [key, value] of Object.entries(content)) {
       ctx[key].set(value);
@@ -44,6 +44,6 @@ export function createStorageContext<C extends StorageContextContent>(
  */
 export type StorageContextContent = Record<string, unknown>;
 
-export type StorageContext<T extends StorageContextContent> = {
-  [K in keyof T]: Writable<T[K]>;
+export type StorageContext<TType extends StorageContextContent> = {
+  [K in keyof TType]: Writable<TType[K]>;
 };

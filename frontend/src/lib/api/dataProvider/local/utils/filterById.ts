@@ -6,10 +6,10 @@ import type { FilterById } from '../dataProvider';
  * @param options Any get data options
  * @returns Filtered data array
  */
-export function filterById<T extends { id: string }>(
-  data: Array<T>,
+export function filterById<TType extends { id: string }>(
+  data: Array<TType>,
   options?: FilterById
-): Array<T> {
+): Array<TType> {
   if (options?.id == null) return data;
   return data.filter((d) => d.id == options.id);
 }

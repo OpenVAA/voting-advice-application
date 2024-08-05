@@ -18,7 +18,7 @@ declare global {
    * `Required<Type>` but only applies to keys listed.
    * Source: https://stackoverflow.com/questions/69327990/how-can-i-make-one-property-non-optional-in-a-typescript-type
    */
-  type WithRequired<Type, Key extends keyof Type> = Type & { [Prop in Key]-?: Type[Prop] };
+  type WithRequired<TType, TKey extends keyof TType> = TType & { [Prop in TKey]-?: TType[Prop] };
 
   /**
    * The properties of a multiple choice option in a Question.
@@ -412,14 +412,14 @@ declare global {
   /**
    * Conforms to `vaa-filters.WrappedEntity`
    */
-  interface WrappedEntity<T extends EntityProps = EntityProps> {
-    entity: T;
+  interface WrappedEntity<TEntity extends EntityProps = EntityProps> {
+    entity: TEntity;
   }
 
   /**
    * Conforms to `vaa-matching.Match`
    */
-  interface RankingProps<T extends EntityProps = EntityProps> extends WrappedEntity<T> {
+  interface RankingProps<TEntity extends EntityProps = EntityProps> extends WrappedEntity<TEntity> {
     score: number;
     subMatches?: Array<SubMatchProps>;
   }
@@ -427,7 +427,10 @@ declare global {
   /**
    * A possibly ranked entity, accepted by all components consuming entities.
    */
-  type MaybeRanked<T extends EntityProps = EntityProps> = T | WrappedEntity<T> | RankingProps<T>;
+  type MaybeRanked<TEntity extends EntityProps = EntityProps> =
+    | TEntity
+    | WrappedEntity<TEntity>
+    | RankingProps<TEntity>;
 
   /**
    * The submatches of a `RankingProps`

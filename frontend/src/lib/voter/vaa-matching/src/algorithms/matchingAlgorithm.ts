@@ -55,12 +55,15 @@ export class MatchingAlgorithm {
    * @options Matching options, see. `MatchingOptions`.
    * @returns An array of Match objects
    */
-  match<E extends HasMatchableAnswers, G extends MatchableQuestionGroup = MatchableQuestionGroup>(
+  match<
+    TEntity extends HasMatchableAnswers,
+    TGroup extends MatchableQuestionGroup = MatchableQuestionGroup
+  >(
     questions: Array<MatchableQuestion>,
     referenceEntity: HasMatchableAnswers,
-    entities: ReadonlyArray<E>,
-    options: MatchingOptions<G> = {}
-  ): Array<Match<E, G>> {
+    entities: ReadonlyArray<TEntity>,
+    options: MatchingOptions<TGroup> = {}
+  ): Array<Match<TEntity, TGroup>> {
     if (questions.length === 0) throw new Error('Questions must not be empty');
     if (entities.length === 0) throw new Error('Entities must not be empty');
     // Check that questions contain no duplicate ids
@@ -95,7 +98,7 @@ export class MatchingAlgorithm {
       metric: this.distanceMetric,
       missingValueOptions: this.missingValueOptions
     };
-    const matches: Array<Match<E, G>> = [];
+    const matches: Array<Match<TEntity, TGroup>> = [];
     for (let i = 0; i < entities.length; i++) {
       if (options.questionGroups) {
         const distances = measureDistance(

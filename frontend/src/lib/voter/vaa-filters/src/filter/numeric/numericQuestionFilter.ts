@@ -6,8 +6,8 @@ import { NumericFilter } from './numericFilter';
  * A filter for numeric questions.
  */
 export class NumericQuestionFilter<
-  T extends MaybeWrapped<EntityWithAnswers>
-> extends NumericFilter<T> {
+  TType extends MaybeWrapped<EntityWithAnswers>
+> extends NumericFilter<TType> {
   /**
    * Create a numeric question filter.
    * @param question The numeric question

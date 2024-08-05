@@ -43,6 +43,6 @@ export function parseMaybeRanked(entity: MaybeRanked): {
 }
 
 /** Wrap an entity for easier use in contexts where rankings are expected */
-export function wrap<T extends EntityProps>(entity: T): WrappedEntity<T> {
+export function wrap<TEntity extends EntityProps>(entity: TEntity): WrappedEntity<TEntity> {
   return { entity };
 }

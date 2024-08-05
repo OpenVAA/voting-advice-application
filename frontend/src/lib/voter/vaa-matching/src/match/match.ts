@@ -8,8 +8,8 @@ import type { SubMatch } from './subMatch';
  * The class for an entity's matching result
  */
 export class Match<
-  E extends HasMatchableAnswers = HasMatchableAnswers,
-  G extends MatchableQuestionGroup = MatchableQuestionGroup
+  TEntity extends HasMatchableAnswers = HasMatchableAnswers,
+  TGroup extends MatchableQuestionGroup = MatchableQuestionGroup
 > extends MatchBase {
   /**
    * Create a new Match.
@@ -22,8 +22,8 @@ export class Match<
    */
   constructor(
     distance: UnsignedNormalizedDistance,
-    readonly entity: E,
-    readonly subMatches?: Array<SubMatch<G>>
+    readonly entity: TEntity,
+    readonly subMatches?: Array<SubMatch<TGroup>>
   ) {
     super(distance);
   }

@@ -52,10 +52,10 @@ const ITEM_LIMIT = 1000;
  * Generic data getter. In most cases, you should use the dedicated functions.
  * NB. If the `pagination[pageSize]` param is not set, the default value of `ITEM_LIMIT` is used.
  */
-function getData<T extends object>(
+function getData<TType extends object>(
   endpoint: string,
   params: URLSearchParams = new URLSearchParams({})
-): Promise<T> {
+): Promise<TType> {
   if (!params.has('pagination[pageSize]')) {
     params = new URLSearchParams(params);
     params.set('pagination[pageSize]', `${ITEM_LIMIT}`);
@@ -65,7 +65,7 @@ function getData<T extends object>(
   }/${endpoint}?${params}`;
   return fetch(url)
     .then((response) => {
-      return response.json().then((parsed: StrapiResponse<T> | StrapiError) => {
+      return response.json().then((parsed: StrapiResponse<TType> | StrapiError) => {
         if ('error' in parsed) throw new Error(`Error with getData: ${parsed?.error?.message}`);
         return parsed.data;
       });

@@ -23,14 +23,14 @@ import { LikertQuestion } from './LikertQuestion';
  * @param options.subMatches Whether to calculate the submatches for categories if there's more than one of them
  * @returns The matching results as entities wrapped in ranking properties
  */
-export async function match<E extends EntityProps>(
+export async function match<TEntity extends EntityProps>(
   allQuestions: Array<QuestionProps>,
   answeredQuestions: AnswerDict,
-  entities: Array<E>,
+  entities: Array<TEntity>,
   options: {
     subMatches?: boolean;
   } = {}
-): Promise<Array<RankingProps<E>>> {
+): Promise<Array<RankingProps<TEntity>>> {
   // Create the algorithm instance
   const algorithm = new MatchingAlgorithm({
     distanceMetric: DistanceMetric.Manhattan,

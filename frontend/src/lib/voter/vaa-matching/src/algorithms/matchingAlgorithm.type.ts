@@ -19,11 +19,11 @@ export interface MatchingAlgorithmOptions {
 /**
  * Options passed to the match method of a MatchingAlgorithm
  */
-export interface MatchingOptions<T extends MatchableQuestionGroup> {
+export interface MatchingOptions<TGroup extends MatchableQuestionGroup> {
   /** A list of question subgroups or categories in which distances are also
    * measured. Note that if these subgroups have no overlap with the the
    * `referenceEntity`'s question (or `questionList`) passed to `match`,
    * the `SubMatches` for them will have a score of zero but no error will
    * be thrown. */
-  questionGroups?: Array<T>;
+  questionGroups?: Array<TGroup>;
 }
