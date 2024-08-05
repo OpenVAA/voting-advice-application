@@ -86,7 +86,7 @@ Used to show an entity's basic info in an `EntityDetails` component.
       {/if}
     </div>
   {/if}
-  {#if $settings.analytics.survey?.showIn?.includes('entityDetails')}
+  {#if $settings.survey?.showIn?.includes('entityDetails')}
     <SurveyBanner class="mt-lg" />
   {/if}
 </div>

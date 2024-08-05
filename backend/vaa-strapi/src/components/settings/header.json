@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_settings_headers",
+  "info": {
+    "displayName": "Header",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "showFeedback": {
+      "type": "boolean"
+    },
+    "showHelp": {
+      "type": "boolean"
+    }
+  }
+}

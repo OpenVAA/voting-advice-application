@@ -2,6 +2,7 @@ import {error} from '@sveltejs/kit';
 import {dataProvider} from '$lib/api/getData';
 import {loadTranslations, locale} from '$lib/i18n';
 import type {LayoutServerLoad} from './$types';
+import {mergedDynamicSettings, mergedStaticSettings} from '$shared/settings';
 
 export const load = (async ({locals, params}) => {
   // Get language from locals (see hooks.server.ts)
@@ -18,9 +19,12 @@ export const load = (async ({locals, params}) => {
   const {getAppSettings, getElection} = await dataProvider;
 
   // Get app settings and possibly enter maintenance mode. `getAppSettings` will resolve to `undefined` if the database connection could not be made.
-  let appSettings = await getAppSettings({locale: effectiveLocale});
-  if (!appSettings) {
+  const dpAppSettings = await getAppSettings({locale: effectiveLocale});
+  let appSettings: Partial<AppSettings>;
+  if (!dpAppSettings) {
     appSettings = {underMaintenance: true};
+  } else {
+    appSettings = {...mergedDynamicSettings(dpAppSettings), ...mergedStaticSettings};
   }
 
   let election: ElectionProps | undefined;

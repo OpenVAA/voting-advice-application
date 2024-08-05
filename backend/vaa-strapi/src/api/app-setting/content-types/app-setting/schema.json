@@ -57,6 +57,42 @@
     "allowOverwrite": {
       "type": "boolean",
       "default": false
+    },
+    "header": {
+      "displayName": "Header",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.header"
+    },
+    "matching": {
+      "displayName": "Matching",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.matching"
+    },
+    "survey": {
+      "displayName": "Survey",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.survey"
+    },
+    "entityDetails": {
+      "displayName": "Entity Details",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.entity-details"
+    },
+    "questions": {
+      "displayName": "Questions",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.questions"
+    },
+    "results": {
+      "displayName": "Results",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.results"
     }
   }
 }

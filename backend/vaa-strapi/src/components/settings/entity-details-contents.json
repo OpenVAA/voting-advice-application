@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_settings_entity_details_contents",
+  "info": {
+    "displayName": "Entity Details - Contents",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "candidate": {
+      "type": "customField",
+      "options": ["info", "opinions"],
+      "customField": "plugin::multi-select.multi-select",
+      "required": true
+    },
+    "party": {
+      "type": "customField",
+      "options": ["candidates", "info", "opinions"],
+      "customField": "plugin::multi-select.multi-select",
+      "required": true
+    }
+  }
+}
