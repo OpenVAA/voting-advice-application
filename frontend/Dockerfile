@@ -1,35 +1,54 @@
 # --- Copy source files to Docker ---
 FROM node:18-alpine AS base
-WORKDIR /usr/src/app
+WORKDIR /opt
 
 # Install packages and cache the results
 # so we don't have to install everything when source code changes
-COPY frontend/package.json .
-COPY frontend/yarn.lock .
-RUN yarn
+COPY package.json .
+COPY yarn.lock .
+RUN yarn install --frozen-lockfile
 
-# Copy files from project root to Docker image
-COPY frontend .
-COPY shared /usr/src/app/src/shared
+FROM base AS shared
 
-FROM base AS development
+WORKDIR /opt
+
+COPY shared/ ./shared
+RUN yarn workspace vaa-shared install --frozen-lockfile
+RUN yarn workspace vaa-shared build
+
+FROM base AS frontend
+
+WORKDIR /opt
+
+COPY --from=shared /opt/shared ./shared
+COPY frontend/ ./frontend
+RUN yarn workspace vaa-frontend install --frozen-lockfile
+
+FROM frontend AS development
+
+WORKDIR /opt
+
 EXPOSE 5173
+CMD yarn workspace vaa-frontend dev --host
 
-CMD yarn dev --host
+FROM frontend AS build
 
-FROM base AS build
-RUN yarn build
+RUN yarn workspace vaa-frontend build
 
 FROM node:18-alpine AS production
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
-WORKDIR /usr/src/app
 
-COPY --from=build ./usr/src/app/package.json .
-COPY --from=build ./usr/src/app/yarn.lock .
-COPY --from=build ./usr/src/app/build .
+WORKDIR /opt
 
-RUN yarn install --production
+COPY --from=build ./opt/shared/build/esm ./shared/build/esm
+COPY --from=build ./opt/shared/package.json ./shared
+COPY --from=build ./opt/frontend/build ./frontend/build
+COPY --from=build ./opt/frontend/package.json ./frontend
+COPY --from=build ./opt/yarn.lock .
+COPY --from=build ./opt/package.json .
+
+RUN yarn workspace vaa-frontend install --production --frozen-lockfile
 
 EXPOSE 3000
-CMD node index.js
+CMD node ./frontend/build/index.js

@@ -1,4 +1,4 @@
-import {validatePassword, validatePasswordDetails} from '../src/shared/utils/passwordValidation';
+import {validatePassword, validatePasswordDetails} from 'vaa-shared';
 
 describe('Password Validation', () => {
   describe('validatePassword', () => {

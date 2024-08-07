@@ -10,7 +10,7 @@
     "sourceMap": true,
     "strict": true,
     "preserveSymlinks": true,
-    "types": ["vitest/globals"],
-    "moduleResolution": "Node"
-  }
+    "types": ["vitest/globals"]
+  },
+  "references": [{"path": "../shared/tsconfig.esm.json"}]
 }

@@ -40,6 +40,51 @@ You can run the whole application in a single Docker image, or run the frontend 
 - See [the frontend Readme](frontend/README.md) for instructions on running the frontend individually.
 - See [the backend Readme](/backend/vaa-strapi/README.md) for instructions on running the backend individually.
 
+The project consists of several yarn workspaces (each is a separate module):
+
+- vaa-shared
+- vaa-strapi
+- vaa-frontend
+
+All workspaces share a single `yarn.lock` file located at the project root.
+
+The workspaces can be addressed from any directory as follows:
+
+```bash
+yarn workspace [module-name] [script-name].
+```
+
+f.e. the shared module can be build by running:
+
+```bash
+yarn workspace vaa-shared build
+```
+
+## E2E tests
+
+The project uses Playwright for E2E testing. The tests rely on generated data which the local PosgresDB is being seeded with.
+
+To run the E2E tests start all the services locally:
+
+```bash
+yarn dev
+```
+
+... and then:
+
+```bash
+yarn playwright install
+yarn test
+```
+
+If you encounter any unexpected issues with the E2E tests, make sure to bring down the Docker stack properly to reseed the DB with the original mock data (more on mock data [here](./backend/vaa-strapi/README.md#mock-data)).
+
+To bring down the Docker stack properly (delete all containers, images and named volumes which include backend DB volume with potentially seeded mock data) run:
+
+```bash
+yarn dev:down
+```
+
 ## Maintaining dependencies
 The project uses [Dependabot](https://github.com/dependabot) to maintain security updates for its dependencies. Dependabot will create automated pull requests monthly to fix potential known security issues in application dependencies.
 
