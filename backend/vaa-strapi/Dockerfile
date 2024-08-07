@@ -1,27 +1,35 @@
-FROM node:18-alpine3.18 AS base
+FROM node:18-alpine AS base
 
-RUN apk add --no-cache python3 make g++ yarn
+WORKDIR /opt
 
-WORKDIR /opt/
+COPY package.json .
+COPY yarn.lock .
+RUN yarn install --frozen-lockfile
 
 FROM base AS import-export
 
-WORKDIR /opt/strapi-plugin-import-export-entries/
+WORKDIR /opt/strapi-plugin-import-export-entries
 
 COPY backend/vaa-strapi/strapi-plugin-import-export-entries/ .
-RUN yarn install
+RUN yarn install --frozen-lockfile
 RUN yarn build
+
+FROM base AS shared
+
+WORKDIR /opt
+
+COPY shared/ ./shared
+RUN yarn workspace vaa-shared install --frozen-lockfile
+RUN yarn workspace vaa-shared build
 
 FROM base AS strapi
 
-WORKDIR /opt/
+WORKDIR /opt
 
-COPY backend/vaa-strapi/package* .
-COPY backend/vaa-strapi/yarn* .
-COPY --from=import-export /opt/strapi-plugin-import-export-entries /opt/strapi-plugin-import-export-entries
-RUN yarn install
-COPY backend/vaa-strapi/ .
-COPY shared src/shared/
+COPY --from=import-export /opt/strapi-plugin-import-export-entries ./backend/vaa-strapi/strapi-plugin-import-export-entries
+COPY --from=shared /opt/shared ./shared
+COPY backend/vaa-strapi/ ./backend/vaa-strapi
+RUN yarn workspace vaa-strapi install --frozen-lockfile
 
 FROM strapi AS development
 
@@ -30,8 +38,8 @@ ENV NODE_ENV=${NODE_ENV}
 ENV STRAPI_DISABLE_REMOTE_DATA_TRANSFER=true
 
 EXPOSE 1337
-RUN yarn build --ignore-prompts
-CMD yarn dev --ignore-prompts
+RUN yarn workspace vaa-strapi build
+CMD yarn workspace vaa-strapi dev --ignore-prompts
 
 FROM strapi AS production
 
@@ -41,5 +49,5 @@ ENV STRAPI_DISABLE_REMOTE_DATA_TRANSFER=true
 
 EXPOSE 1337
 
-RUN yarn build --ignore-prompts
-CMD yarn start
+RUN yarn workspace vaa-strapi build
+CMD yarn workspace vaa-strapi start

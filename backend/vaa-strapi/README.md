@@ -1,16 +1,34 @@
 # VAA Strapi Backend
 
+## Preparing backend dependencies
+
+Backend module depends on `vaa-shared` and you need to build it prior to using `vaa-strapi` directly (no need if you use it via Docker):
+
+```bash
+yarn workspace vaa-shared install
+yarn workspace vaa-shared build
+```
+
+Backend module contains `strapi-plugin-import-export-entries` directory which is a separate git repository. In order to initialise it you need to run:
+
+```bash
+git submodule update --init --recursive
+```
+
+To build the submodule in `strapi-plugin-import-export-entries` directory run:
+
+```bash
+yarn install
+yarn build
+```
+
 ## Running the backend separately
 
-0. You should be running Strapi with Node version 16.18.0. Use of nvm is encouraged. **Additionally, you need Docker!**
+0. You should be running Strapi with Node version 18.20.4. Use of nvm is encouraged. **Additionally, you need Docker!**
 1. Install dependencies by running `yarn install`.
-2. Copy or rename the `.env.example` to `.env` before running any of the commands. You should be able to run the Strapi
-   instance with either `yarn start` or `yarn dev`.
-3. Make sure to run `docker-compose up` to start the Postgres container.
-4. Run `yarn dev` to run the Strapi server.
-
-A base "Election" Content-Type has been created to play around initially. Please feel free to extend/change it or add
-additional Content-Types.
+2. Copy or rename the `.env.example` to `.env` before running any of the commands.
+3. Run `docker compose -f docker-compose.dev.yml up postgres` to start Postgres container.
+4. Run `yarn dev` or `yarn start` to run the Strapi server directly.
 
 ## Re-generating Types
 
@@ -18,24 +36,25 @@ Run `yarn strapi ts:generate-types` to re-generate `types` folder.
 
 ## Mock data
 
-The app allows for fake data to be generated to Strapi using Faker.js. Enabling mock data generation in the environment variables will generate mock data
-to the database whenever the app is initialised or restarting.
+**NOTE: This feature must only be used for local development and testing (not on production).**
 
-Mock data contains example profiles for candidates, parties, questions an elections and is useful as an example of application usage as well as frontend development and testing backend capabilities.
-Mock data gets published automatically and is thus always ready to be used without requiring any user input.
+The backend DB can be seeded with generated mock data using Faker.js. The data contains example profiles for candidates, parties, questions, elections and is useful for demostration, development and testing purposes.
 
-To enable mock data generation, set the `GENERATE_MOCK_DATA_ON_INITIALISE` variable as true. This will create mock data if the database is empty,
-and give a warning if database is not empty and thus mock data could not be generated.
+Mock data can be seeded only once on initialising the backend DB or on each restart of the Strapi backend service. This behaviour is controled by variables in `.env` file:
 
-**Development builds only:**
+```bash
+GENERATE_MOCK_DATA_ON_INITIALISE=true
+GENERATE_MOCK_DATA_ON_RESTART=false
+```
 
-You can optionally set `GENERATE_MOCK_DATA_ON_RESTART` to true. This will generate new mock data on every time the Strapi instance is restarted.
-This feature is only enabled in development builds and is mostly intended to assist with development of mock data.
+To enable mock data generation, set the `GENERATE_MOCK_DATA_ON_INITIALISE` variable as true. This will create mock data if the database is empty or give a warning if database is not empty and thus mock data could not be generated.
+
+You can also set `GENERATE_MOCK_DATA_ON_RESTART` as true. This will generate new mock data every time the Strapi instance is restarted.
+
 **Please keep in mind that setting this variable as true will clear the database contents of existing candidates, parties, elections, and so on and should only be used for debugging purposes.**
 Setting `GENERATE_MOCK_DATA_ON_RESTART` as true will override `GENERATE_MOCK_DATA_ON_INITIALISE` setting.
 
-**Note: if you're running the whole project in Docker, change these values in the `.env` file
-in the project root, not in the `backend/vaa-strapi` folder.**
+**Note: you need to modify these variables in the relevant `.env` file (located either in the project's root directory or in `backend/vaa-strapi`) depending on how you choose to run the backend service locally.**
 
 ---
 
@@ -43,7 +62,7 @@ in the project root, not in the `backend/vaa-strapi` folder.**
 
 Strapi comes with a fully featured [Command Line Interface](https://docs.strapi.io/developer-docs/latest/developer-resources/cli/CLI.html) (CLI) which lets you scaffold and manage your project in seconds.
 
-### Develop
+### Development
 
 Start your Strapi application with auto-reload enabled. [Learn more](https://docs.strapi.io/developer-docs/latest/developer-resources/cli/CLI.html#strapi-develop)
 
