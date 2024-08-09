@@ -1,22 +1,22 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {goto} from '$app/navigation';
-  import {getRoute} from '$lib/utils/navigation';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Icon} from '$lib/components/icon';
-  import {PasswordValidator} from '$candidate/components/passwordValidator';
-  import {Button} from '$lib/components/button';
-  import {validatePassword} from 'vaa-shared';
-  import {changePassword, getLanguages, updateAppLanguage} from '$lib/api/candidate';
-  import {PasswordField} from '$lib/candidate/components/passwordField';
-  import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import type {StrapiLanguageData} from '$lib/api/dataProvider/strapi';
-  import type {Language} from '$lib/types/candidateAttributes';
+  import { getContext } from 'svelte';
+  import { validatePassword } from 'vaa-shared';
+  import { goto } from '$app/navigation';
+  import { PasswordValidator } from '$candidate/components/passwordValidator';
+  import { changePassword, getLanguages, updateAppLanguage } from '$lib/api/candidate';
+  import { PasswordField } from '$lib/candidate/components/passwordField';
+  import Button from '$lib/components/button/Button.svelte';
+  import { Icon } from '$lib/components/icon';
+  import { t } from '$lib/i18n';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { getRoute } from '$lib/utils/navigation';
+  import type { StrapiLanguageData } from '$lib/api/dataProvider/strapi';
+  import type { Language } from '$lib/types/candidateAttributes';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
 
-  const {user, loadUserData} = getContext<CandidateContext>('candidate');
+  const { user, loadUserData } = getContext<CandidateContext>('candidate');
 
-  // TODO: consider refactoring this as this uses same classes as profile/+page.svelte?
+  // TODO: consider refactoring this as this uses same classes as profile/+page.svelte
   const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
   const headerClass = 'uppercase mx-6 my-0 p-0 text-m text-secondary';
@@ -60,7 +60,7 @@
       try {
         await updateAppLanguage(languageObj);
         await loadUserData(); // Reload user data so it's up to date
-        await goto($getRoute({locale: languageObj.localisationCode})); // Change page language to the chosen one
+        await goto($getRoute({ locale: languageObj.localisationCode })); // Change page language to the chosen one
       } catch (error) {
         languageErrorMessage = $t('candidateApp.settings.changeLanguageError');
       }

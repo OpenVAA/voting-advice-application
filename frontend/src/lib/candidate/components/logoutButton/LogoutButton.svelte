@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {TimedModal} from '$lib/components/modal/timed';
-  import {goto} from '$app/navigation';
-  import {Button} from '$lib/components/button';
-  import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import type {LogoutButtonProps} from './LogoutButton.type';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { Button } from '$lib/components/button';
+  import { TimedModal } from '$lib/components/modal/timed';
+  import { t } from '$lib/i18n';
+  import { getRoute, Route } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { LogoutButtonProps } from './LogoutButton.type';
 
   type $$props = LogoutButtonProps;
 
@@ -18,7 +18,7 @@
   let closeModal: () => void;
   let timeLeft = logoutModalTimer;
 
-  const {unansweredOpinionQuestions, unansweredRequiredInfoQuestions, logOut} =
+  const { unansweredOpinionQuestions, unansweredRequiredInfoQuestions, logOut } =
     getContext<CandidateContext>('candidate');
 
   const triggerLogout = () => {
@@ -85,7 +85,7 @@ Allows user to log out. Displays modal notification if the user hasn't filled al
     </p>
   {/if}
   <p>
-    {$t('candidateApp.logoutModal.confirmation', {timeLeft})}
+    {$t('candidateApp.logoutModal.confirmation', { timeLeft })}
   </p>
   <!-- </div> -->
   <div slot="actions" class="flex w-full flex-col items-center">

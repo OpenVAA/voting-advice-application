@@ -1,1 +1,1 @@
-export {default as PreventNavigation} from './PreventNavigation.svelte';
+export { default as PreventNavigation } from './PreventNavigation.svelte';

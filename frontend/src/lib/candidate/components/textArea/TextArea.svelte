@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {onMount, onDestroy} from 'svelte';
-  import type {TextAreaProps} from './TextArea.type';
-  import {Icon} from '$lib/components/icon';
+  import { onDestroy, onMount } from 'svelte';
+  import { Icon } from '$lib/components/icon';
+  import type { TextAreaProps } from './TextArea.type';
 
   type $$Props = TextAreaProps;
 

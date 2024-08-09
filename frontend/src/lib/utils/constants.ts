@@ -1,4 +1,4 @@
-import {env} from '$env/dynamic/public';
+import { env } from '$env/dynamic/public';
 
 export const constants: Record<string, string> = {
   BACKEND_URL: import.meta.env.VITE_BACKEND_URL || process.env.VITE_BACKEND_URL || '',

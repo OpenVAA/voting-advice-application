@@ -1,4 +1,4 @@
-import type {RGB} from './rgb';
+import type { RGB } from './rgb';
 
 /**
  * Converts an RGB color value to hex.

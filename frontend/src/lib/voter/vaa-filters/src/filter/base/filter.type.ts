@@ -1,4 +1,4 @@
-import type {FilterableQuestion} from '../../question';
+import type { FilterableQuestion } from '../../question';
 
 /**
  * These options define how to get the filterable value from the target entity.

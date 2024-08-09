@@ -12,5 +12,5 @@
     "preserveSymlinks": true,
     "types": ["vitest/globals"]
   },
-  "references": [{"path": "../shared/tsconfig.esm.json"}]
+  "references": [{ "path": "../shared/tsconfig.esm.json" }]
 }

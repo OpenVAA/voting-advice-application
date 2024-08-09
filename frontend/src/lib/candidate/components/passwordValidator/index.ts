@@ -1,1 +1,1 @@
-export {default as PasswordValidator} from './PasswordValidator.svelte';
+export { default as PasswordValidator } from './PasswordValidator.svelte';

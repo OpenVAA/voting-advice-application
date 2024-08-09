@@ -42,7 +42,7 @@ export class MockCandidate implements CandidateProps {
 }
 
 export function makeLabels(count = 4) {
-  const labels: AnswerOption[] = [];
+  const labels: Array<AnswerOption> = [];
   for (let i = 1; i < count + 1; i++) {
     labels.push({
       key: i,

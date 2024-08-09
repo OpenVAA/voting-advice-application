@@ -1,10 +1,10 @@
 <script lang="ts">
-  import {onDestroy} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {Alert} from '$lib/components/alert';
-  import {Button} from '$lib/components/button';
-  import {Feedback, type SendingStatus} from '..';
-  import type {FeedbackPopupProps} from './FeedbackPopup.type';
+  import { onDestroy } from 'svelte';
+  import { Alert } from '$lib/components/alert';
+  import { Button } from '$lib/components/button';
+  import { t } from '$lib/i18n';
+  import { Feedback, type SendingStatus } from '..';
+  import type { FeedbackPopupProps } from './FeedbackPopup.type';
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
   type $$Props = FeedbackPopupProps;

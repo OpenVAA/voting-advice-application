@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {election, settings} from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {SurveyBanner} from '$lib/components/survey/banner';
-  import {FrontPage} from '$lib/templates/frontPage';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { SurveyBanner } from '$lib/components/survey/banner';
+  import { t } from '$lib/i18n';
+  import { election, settings } from '$lib/stores';
+  import { FrontPage } from '$lib/templates/frontPage';
+  import { getRoute, Route } from '$lib/utils/navigation';
 </script>
 
 <FrontPage title={$election?.name ?? ''}>

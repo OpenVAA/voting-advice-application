@@ -1,1 +1,1 @@
-export {default as LoginPage} from './LoginPage.svelte';
+export { default as LoginPage } from './LoginPage.svelte';

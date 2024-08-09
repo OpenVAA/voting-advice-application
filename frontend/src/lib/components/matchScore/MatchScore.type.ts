@@ -1,4 +1,4 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
+import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type MatchScoreProps = SvelteHTMLElements['div'] & {
   /**

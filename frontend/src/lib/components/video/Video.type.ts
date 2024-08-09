@@ -1,5 +1,5 @@
-import type {TrackingEvent} from '$lib/utils/analytics/track';
-import type {SvelteHTMLElements} from 'svelte/elements';
+import type { SvelteHTMLElements } from 'svelte/elements';
+import type { TrackingEvent } from '$lib/utils/analytics/track';
 
 export type VideoProps = SvelteHTMLElements['div'] & {
   /**
@@ -9,7 +9,7 @@ export type VideoProps = SvelteHTMLElements['div'] & {
   /**
    * The source URLs of the video.
    */
-  sources: string[];
+  sources: Array<string>;
   /**
    * The source URL for the video's captions.
    */
@@ -29,7 +29,7 @@ export type VideoProps = SvelteHTMLElements['div'] & {
   /**
    * The controls to hide. All are shown if the list is not defined. @default undefined
    */
-  hideControls?: VideoControl[];
+  hideControls?: Array<VideoControl>;
   /**
    * Whether to autoplay the video. @default true
    */

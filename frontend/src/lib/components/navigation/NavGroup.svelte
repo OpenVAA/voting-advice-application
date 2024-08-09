@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {concatClass} from '$lib/utils/components';
-  import type {NavGroupProps} from './NavGroup.type';
+  import { concatClass } from '$lib/utils/components';
+  import type { NavGroupProps } from './NavGroup.type';
 
   type $$Props = NavGroupProps;
 

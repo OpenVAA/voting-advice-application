@@ -1,11 +1,11 @@
 'use strict';
-import {validatePassword} from 'vaa-shared';
+import { validatePassword } from 'vaa-shared';
 
 const {
   yup,
   validateYupSchema,
   sanitize,
-  errors: {ValidationError, ApplicationError}
+  errors: { ValidationError, ApplicationError }
 } = require('@strapi/utils');
 
 const checkSchema = yup.object({
@@ -20,10 +20,10 @@ const registerSchema = yup.object({
 const validateRegisterBody = validateYupSchema(registerSchema);
 
 const sanitizeCandidate = (candidate, ctx) => {
-  const {auth} = ctx.state;
+  const { auth } = ctx.state;
   const candidateSchema = strapi.getModel('api::candidate.candidate');
 
-  return sanitize.contentAPI.output(candidate, candidateSchema, {auth});
+  return sanitize.contentAPI.output(candidate, candidateSchema, { auth });
 };
 
 module.exports = {
@@ -33,7 +33,7 @@ module.exports = {
 
     const candidate = await strapi.query('api::candidate.candidate').findOne({
       populate: ['user'],
-      where: {registrationKey: params.registrationKey}
+      where: { registrationKey: params.registrationKey }
     });
 
     if (!candidate) {
@@ -70,7 +70,7 @@ module.exports = {
 
     const candidate = await strapi.query('api::candidate.candidate').findOne({
       populate: ['user'],
-      where: {registrationKey: params.registrationKey}
+      where: { registrationKey: params.registrationKey }
     });
 
     if (!candidate) {
@@ -83,12 +83,12 @@ module.exports = {
       );
     }
 
-    const pluginStore = await strapi.store({type: 'plugin', name: 'users-permissions'});
-    const settings: any = await pluginStore.get({key: 'advanced'});
+    const pluginStore = await strapi.store({ type: 'plugin', name: 'users-permissions' });
+    const settings: any = await pluginStore.get({ key: 'advanced' });
 
     const role = await strapi
       .query('plugin::users-permissions.role')
-      .findOne({where: {type: settings.default_role}});
+      .findOne({ where: { type: settings.default_role } });
 
     if (!role) {
       throw new ApplicationError('Impossible to find the default role');
@@ -106,7 +106,7 @@ module.exports = {
     // TODO: this could be improved, specifically, there exists candidate per locale,
     // so we have to update based on email (unique) compared to relying on the ID
     await strapi.query('api::candidate.candidate').update({
-      where: {email: candidate.email},
+      where: { email: candidate.email },
       data: {
         registrationKey: null,
         user: user.id

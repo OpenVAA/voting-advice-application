@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {Button} from '$lib/components/button';
+  import { Button } from '$lib/components/button';
+  import { t } from '$lib/i18n';
   export let id: string | undefined = undefined;
   export let password = '';
   export let autocomplete = '';

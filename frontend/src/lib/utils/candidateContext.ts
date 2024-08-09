@@ -1,9 +1,9 @@
-import {authenticate, getInfoAnswers, getInfoQuestions, me} from '$lib/api/candidate';
-import type {User, Progress, CandidateAnswer} from '$lib/types/candidateAttributes';
-import {derived, writable, type Writable, type Readable} from 'svelte/store';
-import {getOpinionAnswers} from '$lib/api/candidate';
-import {getOpinionQuestions} from '$lib/api/candidate';
-import {answerIsEmpty} from './answers';
+import { derived, type Readable, type Writable, writable } from 'svelte/store';
+import { authenticate, getInfoAnswers, getInfoQuestions, me } from '$lib/api/candidate';
+import { getOpinionAnswers } from '$lib/api/candidate';
+import { getOpinionQuestions } from '$lib/api/candidate';
+import { answerIsEmpty } from './answers';
+import type { CandidateAnswer, Progress, User } from '$lib/types/candidateAttributes';
 
 export interface CandidateContext {
   // Authentication
@@ -47,7 +47,7 @@ const unansweredRequiredInfoQuestions = derived(
     if (!$infoQuestions || !$infoAnswers) return;
     const requiredQuestions = $infoQuestions.filter((question) => question.required);
     return requiredQuestions.filter((question) =>
-      answerIsEmpty(question, {value: $infoAnswers?.[question.id]?.value})
+      answerIsEmpty(question, { value: $infoAnswers?.[question.id]?.value })
     );
   }
 );

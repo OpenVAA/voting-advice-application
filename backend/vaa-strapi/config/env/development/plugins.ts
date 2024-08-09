@@ -1,4 +1,4 @@
-module.exports = ({env}) => ({
+module.exports = ({ env }) => ({
   email: {
     config: {
       // Use the bundled maildev instance part of docker-compose

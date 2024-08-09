@@ -8,6 +8,6 @@
     "allowJs": true,
 
     "outDir": "./build/cjs",
-    "tsBuildInfoFile": "./build/cjs/tsconfig.tsbuildinfo",
+    "tsBuildInfoFile": "./build/cjs/tsconfig.tsbuildinfo"
   }
 }

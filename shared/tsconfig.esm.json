@@ -1,11 +1,11 @@
 {
-  "extends": "./tsconfig.json", 
+  "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "ESNext",
     "target": "ESNext",
-		"moduleResolution": "Bundler",
+    "moduleResolution": "Bundler",
 
     "outDir": "./build/esm",
-    "tsBuildInfoFile": "./build/esm/tsconfig.tsbuildinfo",
+    "tsBuildInfoFile": "./build/esm/tsconfig.tsbuildinfo"
   }
 }

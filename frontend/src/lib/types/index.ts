@@ -1,1 +1,1 @@
-export {type TranslationKey} from './generated/translationKey';
+export { type TranslationKey } from './generated/translationKey';

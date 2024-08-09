@@ -24,7 +24,7 @@ function filterObject(obj, keys) {
 }
 
 export function restrictPopulate(allowedPopulate: string[]): any {
-  return async (ctx, config, {strapi}) => {
+  return async (ctx, config, { strapi }) => {
     const query = ctx.request.query;
 
     // Only allow the provided populate fields
@@ -53,7 +53,7 @@ export function restrictPopulate(allowedPopulate: string[]): any {
 }
 
 export function restrictFilters(allowedFilters: string[]): any {
-  return async (ctx, config, {strapi}) => {
+  return async (ctx, config, { strapi }) => {
     const query = ctx.request.query;
 
     // Only allow the provided filter fields
@@ -82,7 +82,7 @@ export function restrictFilters(allowedFilters: string[]): any {
 }
 
 export function restrictFields(allowedFields: string[]): any {
-  return async (ctx, config, {strapi}) => {
+  return async (ctx, config, { strapi }) => {
     const query = ctx.request.query;
 
     // Only allow the provided fields
@@ -108,7 +108,7 @@ export function restrictFields(allowedFields: string[]): any {
 }
 
 export function restrictBody(allowedFields: string[]): any {
-  return async (ctx, config, {strapi}) => {
+  return async (ctx, config, { strapi }) => {
     // Disallow providing non-allowed body fields
     if (ctx.request.body?.data) {
       for (const key in ctx.request.body.data) {
@@ -124,16 +124,16 @@ export function restrictBody(allowedFields: string[]): any {
 }
 
 export function restrictResourceOwnedByCandidate(contentType: string): any {
-  return async (ctx, config, {strapi}) => {
-    const {id} = ctx.params;
+  return async (ctx, config, { strapi }) => {
+    const { id } = ctx.params;
 
     const candidate = await strapi.query('api::candidate.candidate').findOne({
-      where: {user: {id: ctx.state.user.id}}
+      where: { user: { id: ctx.state.user.id } }
     });
 
     // Make sure we can find the resource belonging to our candidate
     const res = await strapi.db.query(contentType).findOne({
-      where: {id, candidate: candidate.id}
+      where: { id, candidate: candidate.id }
     });
 
     const exists = !!res;
@@ -145,11 +145,11 @@ export function restrictResourceOwnedByCandidate(contentType: string): any {
   };
 }
 
-export async function electionCanEditQuestions(ctx, config, {strapi}) {
+export async function electionCanEditQuestions(ctx, config, { strapi }) {
   if (!ctx.state.user) return false;
 
   const candidate = await strapi.db.query('api::candidate.candidate').findOne({
-    where: {user: {id: ctx.state.user.id}},
+    where: { user: { id: ctx.state.user.id } },
     populate: {
       nomination: {
         populate: {

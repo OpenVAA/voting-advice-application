@@ -1,4 +1,4 @@
-import type {MatchableQuestion} from '../question';
+import type { MatchableQuestion } from '../question';
 
 /**
  * Entities to be matched must implement this interface.

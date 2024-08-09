@@ -1,7 +1,7 @@
-import type {DistanceMetric} from '../distance';
-import type {MissingValueImputationOptions} from '../missingValue';
-import type {MatchingSpaceProjector} from './matchingSpaceProjector';
-import type {MatchableQuestionGroup} from '../question';
+import type { DistanceMetric } from '../distance';
+import type { MissingValueImputationOptions } from '../missingValue';
+import type { MatchableQuestionGroup } from '../question';
+import type { MatchingSpaceProjector } from './matchingSpaceProjector';
 
 /**
  * Constructor options passed to a matching algorithm
@@ -25,5 +25,5 @@ export interface MatchingOptions<T extends MatchableQuestionGroup> {
    * `referenceEntity`'s question (or `questionList`) passed to `match`,
    * the `SubMatches` for them will have a score of zero but no error will
    * be thrown. */
-  questionGroups?: T[];
+  questionGroups?: Array<T>;
 }

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   Button,
   ModalLayout,
@@ -9,10 +9,10 @@ import {
   TextInput,
   Typography
 } from '@strapi/design-system';
-import {Envelop} from '@strapi/icons';
-import {useNotification} from '@strapi/helper-plugin';
+import { Envelop } from '@strapi/icons';
+import { useNotification } from '@strapi/helper-plugin';
 
-export default function RegistrationEmailButton({instructions, confirmFunction}) {
+export default function RegistrationEmailButton({ instructions, confirmFunction }) {
   // Only show this button in candidate collection
   const pathname = window.location.pathname;
   if (!pathname.includes('candidate.candidate')) {

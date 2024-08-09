@@ -1,4 +1,4 @@
-import {MISSING_VALUE} from '../../missingValue';
+import { MISSING_VALUE } from '../../missingValue';
 
 /**
  * The types of rules are somewhat limited due to functions operating on them to check active status and copying rulesets.

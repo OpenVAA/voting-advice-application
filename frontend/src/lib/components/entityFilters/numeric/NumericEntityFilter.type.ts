@@ -1,5 +1,5 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
-import type {NumericFilter} from '$voter/vaa-filters';
+import type { SvelteHTMLElements } from 'svelte/elements';
+import type { NumericFilter } from '$voter/vaa-filters';
 
 export type NumericEntityFilterProps = SvelteHTMLElements['form'] & {
   /**
@@ -9,5 +9,5 @@ export type NumericEntityFilterProps = SvelteHTMLElements['form'] & {
   /**
    * The targets of the filter objects.
    */
-  targets: MaybeRanked[];
+  targets: Array<MaybeRanked>;
 };

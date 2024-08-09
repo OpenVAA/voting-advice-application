@@ -1,4 +1,4 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
+import type { SvelteHTMLElements } from 'svelte/elements';
 export type AppLogoProps = SvelteHTMLElements['div'] & {
   /**
    * The `alt` text for the logo image. If missing, the publisher name or 'OpenVAA' will be used, depending on the logo shown.

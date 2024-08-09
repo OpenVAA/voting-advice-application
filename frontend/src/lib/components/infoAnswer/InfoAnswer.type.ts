@@ -1,4 +1,4 @@
-import type {HTMLAttributes} from 'svelte/elements';
+import type { HTMLAttributes } from 'svelte/elements';
 
 /**
  * The type extends HTMLAttributes<HTMLElement> because we don't know ahead of time which element will be used.

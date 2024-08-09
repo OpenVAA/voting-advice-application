@@ -6,7 +6,7 @@ import mockUsers from '../backend/vaa-strapi/src/functions/mockData/mockUser.jso
 
 import { STORAGE_STATE } from '../playwright.config';
 
-const mockUser = mockUsers[1]
+const mockUser = mockUsers[1];
 
 async function globalSetup(config: FullConfig) {
   const { baseURL } = config.projects[0].use;
@@ -14,12 +14,18 @@ async function globalSetup(config: FullConfig) {
   const page = await browser.newPage();
 
   await page.goto(`${baseURL!}/${Route.CandAppHome}`);
-  await page.getByLabel(candidateAppTranslations.common.email, {exact: true}).fill(mockUser.email);
-  await page.getByLabel(candidateAppTranslations.common.password, {exact: true}).fill(mockUser.password);
-  await page.getByText(candidateAppTranslations.common.logIn, {exact: true}).click();
+  await page
+    .getByLabel(candidateAppTranslations.common.email, { exact: true })
+    .fill(mockUser.email);
+  await page
+    .getByLabel(candidateAppTranslations.common.password, { exact: true })
+    .fill(mockUser.password);
+  await page.getByText(candidateAppTranslations.common.logIn, { exact: true }).click();
 
   // Wait until the page actually signs in.
-  await expect(page.getByText(candidateAppTranslations.homePage.ready, {exact: true})).toBeVisible();
+  await expect(
+    page.getByText(candidateAppTranslations.homePage.ready, { exact: true })
+  ).toBeVisible();
 
   await page.context().storageState({ path: STORAGE_STATE });
 }

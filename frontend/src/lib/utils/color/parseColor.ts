@@ -1,5 +1,5 @@
-import {logDebugError} from '../logger';
-import type {RGB} from './rgb';
+import { logDebugError } from '../logger';
+import type { RGB } from './rgb';
 
 /**
  * Parses a color string and returns an RGB array.

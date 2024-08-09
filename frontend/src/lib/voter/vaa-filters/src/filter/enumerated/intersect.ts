@@ -5,6 +5,6 @@
  * @returns true if one or more elements are in common.
  */
 
-export function intersect(a: unknown[], b: unknown[]): boolean {
+export function intersect(a: Array<unknown>, b: Array<unknown>): boolean {
   return a.some((v) => b.includes(v));
 }

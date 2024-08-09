@@ -1,4 +1,4 @@
-import type {Translations} from '@sveltekit-i18n/base';
+import type { Translations } from '@sveltekit-i18n/base';
 
 /**
  * Remove nullish values from `translations` so that they will not overwrite existing translations.

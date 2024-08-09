@@ -1,24 +1,24 @@
 <script lang="ts">
-  import {goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
-  import {getContext} from 'svelte';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {addAnswer, updateAnswer} from '$lib/api/candidate';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Button} from '$lib/components/button';
-  import {CategoryTag} from '$lib/components/categoryTag';
-  import {LikertResponseButtons, QuestionInfo} from '$lib/components/questions';
-  import {MultilangTextInput} from '$candidate/components/textArea';
-  import {Warning} from '$lib/components/warning';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import type {QuestionPageProps} from './QuestionPage.type';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { MultilangTextInput } from '$candidate/components/textArea';
+  import { addAnswer, updateAnswer } from '$lib/api/candidate';
+  import { Button } from '$lib/components/button';
+  import { CategoryTag } from '$lib/components/categoryTag';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { LikertResponseButtons, QuestionInfo } from '$lib/components/questions';
+  import { Warning } from '$lib/components/warning';
+  import { t } from '$lib/i18n';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { getRoute, Route } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { QuestionPageProps } from './QuestionPage.type';
 
   type $$Props = QuestionPageProps;
   export let currentQuestion: $$Props['currentQuestion'];
   export let editMode: $$Props['editMode'] = false;
 
-  const {opinionAnswers, progress, questionsLocked, unansweredOpinionQuestions} =
+  const { opinionAnswers, progress, questionsLocked, unansweredOpinionQuestions } =
     getContext<CandidateContext>('candidate');
 
   $: answer = $opinionAnswers?.[questionId]; // undefined if not answered
@@ -45,7 +45,7 @@
     }
   }
 
-  const saveLikertToLocal = ({detail}: CustomEvent) => {
+  function saveLikertToLocal({ detail }: CustomEvent) {
     selectedKey = detail.value;
     localStorage.setItem(likertLocal, detail.value);
   };
@@ -129,8 +129,8 @@
       return;
     }
     const nextUnansweredQuestion = $unansweredOpinionQuestions?.[0]?.id;
-    goto($getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion}));
-  };
+    goto($getRoute({ route: Route.CandAppQuestions, id: nextUnansweredQuestion }));
+  }
 
   const cancelAndReturn = () => {
     removeLocalAnswerToQuestion();
@@ -139,7 +139,7 @@
 
   $: category = currentQuestion.category;
   $: info = currentQuestion.info;
-  $: options = currentQuestion.values?.map(({key, label}) => ({
+  $: options = currentQuestion.values?.map(({ key, label }) => ({
     key,
     label: label
   }));

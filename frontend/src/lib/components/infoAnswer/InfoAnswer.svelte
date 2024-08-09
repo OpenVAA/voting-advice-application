@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getAnswerForDisplay} from '$lib/utils/answers';
-  import {concatClass} from '$lib/utils/components';
-  import {parseMaybeRanked} from '$lib/utils/entities';
-  import {getLinkText} from '$lib/utils/links';
-  import {logDebugError} from '$lib/utils/logger';
-  import {ucFirst} from '$lib/utils/text/ucFirst';
-  import type {InfoAnswerProps} from './InfoAnswer.type';
+  import { t } from '$lib/i18n';
+  import { getAnswerForDisplay } from '$lib/utils/answers';
+  import { concatClass } from '$lib/utils/components';
+  import { parseMaybeRanked } from '$lib/utils/entities';
+  import { getLinkText } from '$lib/utils/links';
+  import { logDebugError } from '$lib/utils/logger';
+  import { ucFirst } from '$lib/utils/text/ucFirst';
+  import type { InfoAnswerProps } from './InfoAnswer.type';
 
   type $$Props = InfoAnswerProps;
 

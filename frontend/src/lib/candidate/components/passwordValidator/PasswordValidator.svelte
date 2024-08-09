@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {tweened} from 'svelte/motion';
-  import {cubicOut} from 'svelte/easing';
-  import {t} from '$lib/i18n';
-  import {type ValidationDetail, validatePasswordDetails, minPasswordLength} from 'vaa-shared';
-  import {onMount} from 'svelte';
+  import { onMount } from 'svelte';
+  import { cubicOut } from 'svelte/easing';
+  import { tweened } from 'svelte/motion';
+  import { minPasswordLength, validatePasswordDetails, type ValidationDetail } from 'vaa-shared';
+  import { t } from '$lib/i18n';
   export let password = '';
   export let username = '';
   export let validPassword = false;
@@ -15,13 +15,13 @@
   $: {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
-      const {details, status} = validatePasswordDetails(password, username);
+      const { details, status } = validatePasswordDetails(password, username);
       validationDetails = details;
       validPassword = status;
 
       // Localize validation messages
       for (const key in validationDetails) {
-        validationDetails[key].message = $t(validationDetails[key].message, {minPasswordLength});
+        validationDetails[key].message = $t(validationDetails[key].message, { minPasswordLength });
       }
     }, 200);
   }

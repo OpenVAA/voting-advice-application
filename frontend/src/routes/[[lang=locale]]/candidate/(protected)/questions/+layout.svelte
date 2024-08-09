@@ -1,12 +1,12 @@
 <script lang="ts">
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import {getContext} from 'svelte';
-  import {goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {LoadingSpinner} from '$candidate/components/loadingSpinner';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { LoadingSpinner } from '$candidate/components/loadingSpinner';
+  import { t } from '$lib/i18n';
+  import { getRoute, Route } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
 
-  const {opinionQuestions, unansweredRequiredInfoQuestions} =
+  const { opinionQuestions, unansweredRequiredInfoQuestions } =
     getContext<CandidateContext>('candidate');
 
   $: if ($unansweredRequiredInfoQuestions?.length) {

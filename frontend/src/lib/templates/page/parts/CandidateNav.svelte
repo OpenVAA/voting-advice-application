@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {t} from '$lib/i18n';
-  import {InfoBadge} from '$lib/components/infoBadge';
-  import {getContext} from 'svelte';
+  import { getContext } from 'svelte';
+  import { InfoBadge } from '$lib/components/infoBadge';
+  import { NavGroup, Navigation, NavItem } from '$lib/components/navigation';
+  import { t } from '$lib/i18n';
+  import { getRoute, Route } from '$lib/utils/navigation';
   import LanguageSelection from './LanguageSelection.svelte';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
 
-  const {unansweredRequiredInfoQuestions, unansweredOpinionQuestions} =
+  const { unansweredRequiredInfoQuestions, unansweredOpinionQuestions } =
     getContext<CandidateContext>('candidate') ?? {};
 </script>
 

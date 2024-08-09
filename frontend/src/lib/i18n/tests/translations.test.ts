@@ -1,7 +1,7 @@
-import {expect, test} from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import {keys, locales} from '../translations/index';
+import { expect, test } from 'vitest';
+import { keys, locales } from '../translations/index';
 
 /**
  * Recursive function which returns sorted array of flattened keys.

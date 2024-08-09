@@ -6,11 +6,11 @@
 import fs from 'fs';
 import mime from 'mime-types';
 import Path from 'path';
-import type {Common} from '@strapi/strapi';
-import {API} from './utils/api';
-import {deleteMedia, dropAllCollections, getAllMedia} from './utils/drop';
-import {createRelationsForAvailableLocales} from './utils/i18n';
-import type {HasId} from './utils/data.type';
+import type { Common } from '@strapi/strapi';
+import { API } from './utils/api';
+import { deleteMedia, dropAllCollections, getAllMedia } from './utils/drop';
+import { createRelationsForAvailableLocales } from './utils/i18n';
+import type { HasId } from './utils/data.type';
 
 /**
  * Load data from `folder`, if `AppSettings` do not exist or their `allowOverwrite` property is true. Warning! This will delete all existing data, including media files.
@@ -52,7 +52,7 @@ export async function loadData(folder: string, force = false) {
     }
   }
 
-  await strapi.db.transaction(async ({rollback, commit}) => {
+  await strapi.db.transaction(async ({ rollback, commit }) => {
     console.info('[loadData] Starting transaction...');
 
     // Get a list of all media files in the media library which will be deleted at the end of the transaction
@@ -68,7 +68,7 @@ export async function loadData(folder: string, force = false) {
       await dropAllCollections();
 
       console.info('[loadData] Creating Locales...');
-      await createLocales((await loadFile(folder, 'locales')) as {name: string; code: string}[]);
+      await createLocales((await loadFile(folder, 'locales')) as { name: string; code: string }[]);
 
       console.info('[loadData] Creating AppSettings...');
       if (
@@ -147,11 +147,11 @@ export async function loadData(folder: string, force = false) {
 // FUNCTIONS
 ////////////////////////////////////////////////////////////////////////
 
-async function createLocales(locales: {code: string; name: string}[]) {
+async function createLocales(locales: { code: string; name: string }[]) {
   const strapiLocales = await strapi.plugins.i18n.services.locales.find();
-  for (const {code, name} of locales) {
+  for (const { code, name } of locales) {
     if (strapiLocales.find((l) => l.code === code)) return;
-    await strapi.plugins.i18n.services.locales.create({code, name});
+    await strapi.plugins.i18n.services.locales.create({ code, name });
     console.info(`[loadData] Created locale '${code}'`);
   }
 }
@@ -244,7 +244,7 @@ async function create<T extends object>(
   const res = [];
   for (const item of data) {
     // Make a copy of item data for file upload purposes
-    let itemData = {...item};
+    let itemData = { ...item };
     const files = {} as Record<keyof T, FileUploadProps>;
     if (mediaFields?.length) {
       for (const key of mediaFields) {
@@ -255,7 +255,7 @@ async function create<T extends object>(
             const fullPath = Path.resolve(folder, path);
             const size = fs.statSync(fullPath).size;
             const type = mime.lookup(fullPath);
-            files[key] = {name, path: fullPath, size, type};
+            files[key] = { name, path: fullPath, size, type };
           } catch (e) {
             console.error(`[loadData] [create] Error reading media file '${itemData[key]}'`, e);
             throw e;
@@ -267,7 +267,7 @@ async function create<T extends object>(
     // Create the object
     const obj = await strapi.entityService
       .create(api, {
-        data: {...itemData, publishedAt: publish ? new Date() : undefined} as object,
+        data: { ...itemData, publishedAt: publish ? new Date() : undefined } as object,
         files
       })
       .catch((e) => {

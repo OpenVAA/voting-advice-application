@@ -1,4 +1,4 @@
-import type {Choice} from './choice';
+import type { Choice } from './choice';
 
 /**
  * Any filterable question.
@@ -24,7 +24,7 @@ export interface NumericQuestion extends QuestionBase {
  */
 export interface ChoiceQuestion extends QuestionBase {
   type: 'singleChoiceOrdinal' | 'singleChoiceCategorical' | 'multipleChoiceCategorical';
-  values: Choice[];
+  values: Array<Choice>;
 }
 
 /**

@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {LoginPage} from '$lib/candidate/templates/login';
-  import {getContext} from 'svelte';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Warning} from '$lib/components/warning/index';
-  import {LoadingSpinner} from '$candidate/components/loadingSpinner';
-  import {t} from '$lib/i18n';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import { getContext } from 'svelte';
+  import { LoadingSpinner } from '$candidate/components/loadingSpinner';
+  import { LoginPage } from '$lib/candidate/templates/login';
+  import { Warning } from '$lib/components/warning/index';
+  import { t } from '$lib/i18n';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
 
-  const {user, token} = getContext<CandidateContext>('candidate');
+  const { user, token } = getContext<CandidateContext>('candidate');
   export let showLogin = false;
   $: candidate = $user?.candidate;
   $: nomination = candidate?.nomination;
