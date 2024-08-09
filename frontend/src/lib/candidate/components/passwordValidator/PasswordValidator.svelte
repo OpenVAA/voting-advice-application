@@ -2,11 +2,7 @@
   import {tweened} from 'svelte/motion';
   import {cubicOut} from 'svelte/easing';
   import {t} from '$lib/i18n';
-  import {
-    type ValidationDetail,
-    validatePasswordDetails,
-    minPasswordLength
-  } from '$shared/utils/passwordValidation';
+  import {type ValidationDetail, validatePasswordDetails, minPasswordLength} from 'vaa-shared';
   import {onMount} from 'svelte';
   export let password = '';
   export let username = '';

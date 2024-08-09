@@ -36,11 +36,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
-          cache: 'yarn'
-          cache-dependency-path: ./frontend/yarn.lock
+          cache: "yarn"
+
+      - name: "Install shared module dependencies"
+        run: yarn workspace vaa-shared install --frozen-lockfile
+
+      - name: "Build shared module"
+        run: yarn workspace vaa-shared build
 
       - name: "Install Frontend dependencies"
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: "Run Prettier check on frontend"
         run: yarn prettier:check
@@ -74,7 +79,6 @@ jobs:
         with:
           node-version: 18.x
           cache: "yarn"
-          cache-dependency-path: ./backend/vaa-strapi/yarn.lock
 
       - name: Cache node modules
         id: cache-npm-backend-main
@@ -83,15 +87,21 @@ jobs:
           cache-name: cache-node-modules
         with:
           path: "backend/vaa-strapi/node_modules"
-          key: ${{ runner.os }}-backend-build-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-backend-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
+      - name: "Install shared module dependencies"
+        run: yarn workspace vaa-shared install --frozen-lockfile
+
+      - name: "Build shared module"
+        run: yarn workspace vaa-shared build
+
       - name: "Install Backend yarn dependencies"
         run: |
-          yarn install
+          yarn install --frozen-lockfile
 
       - name: "Run Prettier check on Backend"
         run: |
@@ -108,7 +118,7 @@ jobs:
       - name: "Install import-export-entries dependencies"
         run: |
           cd strapi-plugin-import-export-entries
-          yarn install
+          yarn install --frozen-lockfile
           cd ..
 
       - name: "Build import-export-entries"
@@ -138,7 +148,6 @@ jobs:
         with:
           node-version: 18.x
           cache: "yarn"
-          cache-dependency-path: ./yarn.lock
 
       - name: Cache node modules
         id: cache-npm-e2e-main
@@ -154,7 +163,7 @@ jobs:
             ${{ runner.os }}-
 
       - name: "Install yarn dependencies"
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: "Install playwright"
         run: yarn playwright install

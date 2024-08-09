@@ -99,7 +99,7 @@ function saveItemToStorage<T>(type: StorageType, key: string, value: T): void {
           version: get(settings).appVersion.version,
           data: value
         } as LocallyStoredValue<T>)
-      : value ?? null; // Convert `undefined` to `null` because when read back it'd be treated as a string
+      : (value ?? null); // Convert `undefined` to `null` because when read back it'd be treated as a string
   storage.setItem(key, JSON.stringify(toStore));
 }
 

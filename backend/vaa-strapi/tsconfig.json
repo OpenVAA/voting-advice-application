@@ -1,6 +1,7 @@
 {
   "extends": "@strapi/typescript-utils/tsconfigs/server",
   "compilerOptions": {
+    "moduleResolution": "Node10",
     "outDir": "dist",
     "rootDir": ".",
     "allowJs": true //enables the build without .ts files
@@ -17,5 +18,6 @@
     "src/plugins/**",
     "types/generated/**",
     "strapi-plugin-import-export-entries"
-  ]
+  ],
+  "references": [{"path": "../../shared/tsconfig.cjs.json"}]
 }
