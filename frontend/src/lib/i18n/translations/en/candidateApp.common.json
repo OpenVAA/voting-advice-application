@@ -1,0 +1,11 @@
+{
+  "contactSupport": "Contact Support",
+  "continueFilling": "Continue Filling",
+  "editingNotAllowed": "Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data.",
+  "editingNotAllowedPartiallyFilled": "Because you didn’t answer all of the questions, your profile won’t be shown.",
+  "email": "Email",
+  "emailPlaceholder": "example@email.com",
+  "greeting": "Hello, {username}!",
+  "home": "Start",
+  "voterApp": "Election Compass for Voters"
+}

@@ -58,7 +58,7 @@ Allows user to log out. Displays modal notification if the user hasn't filled al
 <Button
   on:click={triggerLogout}
   icon="logout"
-  text={$t('candidateApp.common.logOut')}
+  text={$t('common.logout')}
   color="warning"
   {...$$restProps} />
 
@@ -85,17 +85,14 @@ Allows user to log out. Displays modal notification if the user hasn't filled al
     </p>
   {/if}
   <p>
-    {$t('candidateApp.logoutModal.confirmation', {timeLeft})}
+    {$t('candidateApp.logoutModal.ingress', {timeLeft})}
   </p>
   <!-- </div> -->
   <div slot="actions" class="flex w-full flex-col items-center">
-    <Button
-      on:click={closeModal}
-      text={$t('candidateApp.logoutModal.continueEnteringData')}
-      variant="main" />
+    <Button on:click={closeModal} text={$t('candidateApp.logoutModal.continue')} variant="main" />
     <Button
       on:click={logout}
-      text={$t('candidateApp.common.logOut')}
+      text={$t('common.logout')}
       class="w-full hover:bg-warning hover:text-warning-content"
       color="warning" />
   </div>

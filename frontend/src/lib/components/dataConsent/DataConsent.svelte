@@ -7,6 +7,7 @@
   import {Button} from '$lib/components/button';
   import {DataConsentInfoButton} from './';
   import type {DataConsentEvents, DataConsentProps} from './DataConsent.type';
+  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
 
   type $$Props = DataConsentProps;
 
@@ -48,14 +49,20 @@ Show buttons opting in or out of data collection and possibly information about 
 <div {...concatClass($$restProps, 'grid justify-items-center')}>
   {#if description === 'inline' && $settings.analytics.platform}
     <div>
-      <p>{@html sanitizeHtml($t('privacy.dataContent'))}</p>
+      <p>{@html sanitizeHtml($t('common.privacy.dataCollection.content'))}</p>
       <p>
-        {@html sanitizeHtml($t(`privacy.dataContentPlatform.${$settings.analytics.platform.name}`))}
+        {@html sanitizeHtml(
+          $t(
+            assertTranslationKey(`privacy.dataContentPlatform.${$settings.analytics.platform.name}`)
+          )
+        )}
       </p>
     </div>
     <p class="mt-md text-center font-bold">
       {$t(
-        `privacy.dataConsentIntro.${$userPreferences.dataCollection?.consent ?? 'indetermined'}`,
+        assertTranslationKey(
+          `privacy.dataConsentIntro.${$userPreferences.dataCollection?.consent ?? 'indetermined'}`
+        ),
         {consentDate: new Date($userPreferences.dataCollection?.date ?? '')}
       )}
     </p>

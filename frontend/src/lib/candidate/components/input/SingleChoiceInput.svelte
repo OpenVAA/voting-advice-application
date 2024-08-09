@@ -46,9 +46,6 @@ A component for a single choice question that can be answered.
 ```
 -->
 <FieldGroup>
-  <p slot="header" class="small-label mx-6 my-0 p-0">
-    {headerText}
-  </p>
   <Field id={questionId} label={headerText}>
     <InputContainer {locked}>
       <select

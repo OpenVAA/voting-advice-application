@@ -8,14 +8,14 @@
   import {BasicPage} from '$lib/templates/basicPage';
 </script>
 
-<BasicPage title={$t('intro.title')}>
+<BasicPage title={$t('dynamic.intro.title')}>
   <svelte:fragment slot="hero">
-    <HeroEmoji emoji={$t('intro.heroEmoji')} />
+    <HeroEmoji emoji={$t('dynamic.intro.heroEmoji')} />
   </svelte:fragment>
 
   <HeadingGroup slot="heading">
-    <!-- <PreHeading class="text-primary">{$t('viewTexts.appTitle')}</PreHeading> -->
-    <h1>{$t('intro.title')}</h1>
+    <!-- <PreHeading class="text-primary">{$t('dynamic.appName')}</PreHeading> -->
+    <h1>{$t('dynamic.intro.title')}</h1>
   </HeadingGroup>
 
   <svelte:fragment slot="banner">
@@ -24,25 +24,21 @@
         on:click={$openFeedbackModal}
         variant="icon"
         icon="feedback"
-        text={$t('navigation.sendFeedback')} />
+        text={$t('feedback.send')} />
     {/if}
     {#if $settings.header.showHelp}
-      <Button
-        href={$getRoute(Route.Help)}
-        variant="icon"
-        icon="help"
-        text={$t('actionLabels.help')} />
+      <Button href={$getRoute(Route.Help)} variant="icon" icon="help" text={$t('help.title')} />
     {/if}
   </svelte:fragment>
 
   <p class="text-center">
-    {$t('intro.ingress')}
+    {$t('dynamic.intro.ingress')}
   </p>
   <ol class="list-circled w-fit">
     <!-- TODO: Make this list dynamic so that it only displays the actual steps this app version has. Constituency selection is an example that may or may not be used. -->
-    <li>{$t('intro.listItemOpinions')}</li>
-    <li>{$t('intro.listItemResults')}</li>
-    <li>{$t('intro.listItemDetails')}</li>
+    <li>{$t('dynamic.intro.list.opinions')}</li>
+    <li>{$t('dynamic.intro.list.results')}</li>
+    <li>{$t('dynamic.intro.list.details')}</li>
   </ol>
 
   <svelte:fragment slot="primaryActions">
@@ -50,7 +46,7 @@
       href={$getRoute(Route.Questions)}
       variant="main"
       icon="next"
-      text={$t('intro.continue')} />
+      text={$t('dynamic.intro.continue')} />
   </svelte:fragment>
 </BasicPage>
 

@@ -1,7 +1,0 @@
-{
-  "appTitle": "Election Compass",
-  "frontpageIngress": "With this application you can compare candidates in the elections on {electionDate, date, ::yyyyMMdd} based on their opinions, parties and other data.",
-  "madeWithPrefix": "Made with",
-  "madeWithSuffix": "",
-  "publishedBy": "Published by {publisher}"
-}

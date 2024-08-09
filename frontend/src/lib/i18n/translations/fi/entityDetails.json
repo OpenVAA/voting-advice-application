@@ -1,0 +1,8 @@
+{
+  "links": "Linkit",
+  "tabs": {
+    "candidates": "{candidatePlural}",
+    "info": "Perustiedot",
+    "opinions": "Mielipiteet"
+  }
+}

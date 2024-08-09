@@ -1,0 +1,19 @@
+{
+  "code": "SV registration code",
+  "codePlaceholder": "SV E.g. CP23-174a-f4%&-aHAB",
+  "enterCode": "SV Enter the registration code that you've received from your party to register your account.",
+  "loggedInWarning": "SV A user is currently logged in. Log out before proceeding.",
+  "passwordValidation": {
+    "commonPatterns": "SV Contains common sequences or patterns",
+    "length": "SV At least {minPasswordLength} characters",
+    "lowercase": "SV Lowercase letter",
+    "number": "SV Number",
+    "repetition": "SV Contains character repetition",
+    "symbol": "SV Symbol",
+    "uppercase": "SV Uppercase letter",
+    "username": "SV Avoid using your name in the password"
+  },
+  "register": "SV Register",
+  "title": "SV Registration",
+  "wrongRegistrationCode": "SV Wrong registration code"
+}

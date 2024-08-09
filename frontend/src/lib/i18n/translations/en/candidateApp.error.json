@@ -1,0 +1,5 @@
+{
+  "candidateNoNomination": "Error: The candidate associated with the logged in user has no nomination. Please contact the system administrator.",
+  "nominationNoElection": "Error: The nominatinon associated with the candidate has no election. Please contact the system administrator.",
+  "userNoCandidate": "Error: The logged in user has no candidate info tied to it. Please contact the system administrator."
+}

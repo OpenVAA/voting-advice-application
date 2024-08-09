@@ -1,29 +1,68 @@
 {
-  "answerNo": "Nej",
-  "answerYes": "Ja",
-  "cancel": "Avbryt",
-  "candidate": {
-    "singular": "kandidat",
-    "plural": "kandidater"
+  "answer": {
+    "no": "Nej",
+    "yes": "Ja"
   },
-  "clearInput": "Klart",
-  "close": "Stäng",
-  "continue": "Fortsätt",
+  "back": "Tillbaka",
+  "cancel": "SV Cancel",
+  "candidate": {
+    "plural": "kandidater",
+    "singular": "kandidat"
+  },
+  "candidatePortrait": "SV Portrait",
+  "clear": "Klart",
+  "close": "SV Close",
+  "closeDialog": "Stäng dialogrutan",
+  "closeMenu": "Stäng menyn",
+  "continue": "SV Continue",
+  "electionList": "Lista",
   "electionSymbol": {
     "candidate": "Valnummer",
     "party": "Valsymbol"
   },
+  "expandOrCollapse": "Expandera eller kollapsa detta avsnitt",
+  "firstName": "SV First Name",
+  "home": "hem",
   "info": "Information",
+  "language": {
+    "select": "Välj språk"
+  },
+  "lastName": "SV Surname",
   "loading": "Laddar…",
+  "login": "Registrera dig",
+  "logout": "Logga ut",
+  "madeWithPrefix": "Gjord med",
+  "madeWithSuffix": "",
   "missingAnswer": "—",
   "multipleAnswerSeparator": "•",
+  "openCloseMenu": "Växla meny",
+  "openMenu": "Öppna menyn",
   "openVAA": "OpenVAA",
   "party": {
-    "singular": "parti",
-    "plural": "partier"
+    "plural": "partier",
+    "singular": "SV Party"
   },
+  "pending": "SV pending",
+  "primaryActions": "Primära åtgärder",
+  "privacy": {
+    "dataCollection": {
+      "content": "Vi skulle vilja samla in användningsdata anonymt för forskningsändamål och för att förbättra applikationen. Datan som ska samlas in inkluderar dina svar på frågorna, den tid som ägnas åt att svara på frågorna och i andra avsnitt och de visade resultaten, men data kan inte kopplas till dig.",
+      "title": "Insamling av användningsdata"
+    }
+  },
+  "progress": "Framsteg",
+  "publishedBy": "Publicerad av {publisher}",
   "question": "Fråga",
+  "readMore": "Läs mer om",
+  "resetAnswers": "Klargör dina svar",
+  "return": "SV Return",
+  "returnHome": "Återvänd hem",
+  "saveAndContinue": "SV Save and Continue",
+  "saveAndReturn": "SV Save and Return",
+  "selectFirst": "SV Select first",
+  "showFullImage": "Visa hela bilden",
+  "skipToMain": "Hoppa till huvudinnehåll",
   "thanksNo": "Nej tack",
-  "unaffiliated": "Utan anknytning",
+  "unaffiliated": "SV Unaffiliated",
   "website": "Webbsida"
 }

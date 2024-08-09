@@ -74,7 +74,7 @@ Instead, you have to use a wrapper. Note that this will also always result in th
 - `title`: The required page `title`.
 - `noteClass`: Optional class string to add to the `<div>` tag wrapping the `note` slot.
 - `noteRole`: Aria role for the `note` slot. @default 'note'
-- `primaryActionsLabel`: Optional `aria-label` for the section that contains the primary page actions. @default $t('aria.primaryActionsLabel')
+- `primaryActionsLabel`: Optional `aria-label` for the section that contains the primary page actions. @default $t('common.primaryActions')
 - `titleClass`: Optional class string to add to the `<div>` tag wrapping the `title` slot.
 - Any valid properties of the `Page` template.
 
@@ -181,7 +181,7 @@ Instead, you have to use a wrapper. Note that this will also always result in th
   {#if $$slots.primaryActions}
     <section
       class="flex w-full max-w-xl flex-col items-center justify-end"
-      aria-label={primaryActionsLabel ?? $t('aria.primaryActionsLabel')}>
+      aria-label={primaryActionsLabel ?? $t('common.primaryActions')}>
       <slot name="primaryActions" />
     </section>
   {/if}

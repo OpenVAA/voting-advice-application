@@ -1,0 +1,253 @@
+[
+  {
+    "name": "Likert-4",
+    "info": "A Likert question with 4 options.",
+    "settings": {
+      "type": "singleChoiceOrdinal",
+      "values": [
+        {
+          "key": 1,
+          "label": {
+            "en": "Fully disagree",
+            "fi": "FI Fully disagree",
+            "es-CO": "ES-CO Fully disagree"
+          }
+        },
+        {
+          "key": 2,
+          "label": {
+            "en": "Disagree",
+            "fi": "FI Disagree",
+            "es-CO": "ES-CO Disagree"
+          }
+        },
+        {
+          "key": 3,
+          "label": {
+            "en": "Agree",
+            "fi": "FI Agree",
+            "es-CO": "ES-CO Agree"
+          }
+        },
+        {
+          "key": 4,
+          "label": {
+            "en": "Fully agree",
+            "fi": "FI Fully agree",
+            "es-CO": "ES-CO Fully agree"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "Likert-5",
+    "info": "A Likert question with 5 options.",
+    "settings": {
+      "type": "singleChoiceOrdinal",
+      "values": [
+        {
+          "key": 1,
+          "label": {
+            "en": "Fully disagree",
+            "fi": "FI Fully disagree",
+            "es-CO": "ES-CO Fully disagree"
+          }
+        },
+        {
+          "key": 2,
+          "label": {
+            "en": "Somewhat disagree",
+            "fi": "FI Somewhat disagree",
+            "es-CO": "ES-CO Somewhat disagree"
+          }
+        },
+        {
+          "key": 3,
+          "label": {
+            "en": "Neither agree nor disagree",
+            "fi": "FI Neither agree nor disagree",
+            "es-CO": "ES-CO Neither agree nor disagree"
+          }
+        },
+        {
+          "key": 4,
+          "label": {
+            "en": "Somewhat agree",
+            "fi": "FI Somewhat agree",
+            "es-CO": "ES-CO Somewhat agree"
+          }
+        },
+        {
+          "key": 5,
+          "label": {
+            "en": "Fully agree",
+            "fi": "FI Fully agree",
+            "es-CO": "ES-CO Fully agree"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "Text",
+    "info": "A basic text question.",
+    "settings": {
+      "type": "text"
+    }
+  },
+  {
+    "name": "Date",
+    "info": "A date which is displayed without the year.",
+    "settings": {
+      "type": "date",
+      "dateType": "monthDay"
+    }
+  },
+  {
+    "name": "Boolean",
+    "info": "A yes/no question.",
+    "settings": {
+      "type": "boolean"
+    }
+  },
+  {
+    "name": "Gender",
+    "info": "A list of genders.",
+    "settings": {
+      "type": "singleChoiceCategorical",
+      "values": [
+        {
+          "key": 1,
+          "label": {
+            "en": "Female",
+            "fi": "FI Female",
+            "es-CO": "ES-CO Female"
+          }
+        },
+        {
+          "key": 2,
+          "label": {
+            "en": "Male",
+            "fi": "FI Male",
+            "es-CO": "ES-CO Male"
+          }
+        },
+        {
+          "key": 3,
+          "label": {
+            "en": "Non-binary",
+            "fi": "FI Non-binary",
+            "es-CO": "ES-CO Non-binary"
+          }
+        },
+        {
+          "key": 4,
+          "label": {
+            "en": "Prefer not to answer",
+            "fi": "FI Prefer not to answer",
+            "es-CO": "ES-CO Prefer not to answer"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "Language",
+    "info": "A single language choice question.",
+    "settings": {
+      "type": "singleChoiceCategorical",
+      "values": [
+        {
+          "key": 0,
+          "label": {
+            "en": "English",
+            "fi": "FI English",
+            "es-CO": "ES-CO English"
+          }
+        },
+        {
+          "key": 1,
+          "label": {
+            "en": "Finnish",
+            "fi": "FI Finnish",
+            "es-CO": "ES-CO Finnish"
+          }
+        },
+        {
+          "key": 2,
+          "label": {
+            "en": "Spanish",
+            "fi": "FI Spanish",
+            "es-CO": "ES-CO Spanish"
+          }
+        },
+        {
+          "key": 3,
+          "label": {
+            "en": "Volapük",
+            "fi": "FI Volapük",
+            "es-CO": "ES-CO Volapük"
+          }
+        },
+        {
+          "key": 4,
+          "label": {
+            "en": "Finnish sign language",
+            "fi": "FI Finnish sign language",
+            "es-CO": "ES-CO Finnish sign language"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "MultiLanguage",
+    "info": "A multiple language choice question.",
+    "settings": {
+      "type": "multipleChoiceCategorical",
+      "values": [
+        {
+          "key": 0,
+          "label": {
+            "en": "English",
+            "fi": "FI English",
+            "es-CO": "ES-CO English"
+          }
+        },
+        {
+          "key": 1,
+          "label": {
+            "en": "Finnish",
+            "fi": "FI Finnish",
+            "es-CO": "ES-CO Finnish"
+          }
+        },
+        {
+          "key": 2,
+          "label": {
+            "en": "Spanish",
+            "fi": "FI Spanish",
+            "es-CO": "ES-CO Spanish"
+          }
+        },
+        {
+          "key": 3,
+          "label": {
+            "en": "Volapük",
+            "fi": "FI Volapük",
+            "es-CO": "ES-CO Volapük"
+          }
+        },
+        {
+          "key": 4,
+          "label": {
+            "en": "Finnish sign language",
+            "fi": "FI Finnish sign language",
+            "es-CO": "ES-CO Finnish sign language"
+          }
+        }
+      ]
+    }
+  }
+]

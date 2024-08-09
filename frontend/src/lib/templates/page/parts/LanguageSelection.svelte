@@ -2,6 +2,7 @@
   import {locale as currentLocale, locales, t} from '$lib/i18n';
   import {getRoute} from '$lib/utils/navigation';
   import {NavGroup, NavItem} from '$lib/components/navigation';
+  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
 </script>
 
 <!--
@@ -21,12 +22,12 @@ A template part that language selection options for the navigation menu if these
 
 <!-- Only show the language selection if there are multiple locales to choose from -->
 {#if $locales.length > 1}
-  <NavGroup title={$t('navigation.selectLanguage')}>
+  <NavGroup title={$t('common.language.select')}>
     {#each $locales as locale}
       <NavItem
         href={$getRoute({locale})}
         icon="language"
-        text={$t(`lang.${locale}`)}
+        text={$t(assertTranslationKey(`lang.${locale}`))}
         disabled={locale === $currentLocale} />
     {/each}
   </NavGroup>

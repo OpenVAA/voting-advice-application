@@ -40,7 +40,7 @@ Renders the question start page, which tells the user information on how to answ
     {$t('candidateApp.questions.tip')}
   </svelte:fragment>
   <p class="text-center">
-    {$t('candidateApp.questions.instructions', {numQuestions})}
+    {$t('candidateApp.questions.intro.ingress', {numQuestions})}
   </p>
 
   <Button
@@ -48,5 +48,5 @@ Renders the question start page, which tells the user information on how to answ
     href={firstQuestionUrl}
     variant="main"
     icon="next"
-    text={$t('candidateApp.questions.continue')} />
+    text={$t('common.continue')} />
 </BasicPage>

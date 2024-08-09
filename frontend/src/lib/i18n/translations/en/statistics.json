@@ -1,5 +1,4 @@
 {
-  "title": "Statistics",
-  "heroEmoji": "🧮",
-  "allCandidates": "All {candidatePlural}"
+  "allCandidates": "All {candidatePlural}",
+  "title": "Statistics"
 }

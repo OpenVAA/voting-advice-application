@@ -77,18 +77,18 @@
     progress={$progress?.progress}
     progressMax={$progress?.max}>
     <Warning display={!!$questionsLocked} slot="note">
-      <p>{$t('candidateApp.questions.editingAllowedNote')}</p>
+      <p>{$t('candidateApp.common.editingNotAllowed')}</p>
       {#if $unansweredOpinionQuestions?.length !== 0 || $unansweredRequiredInfoQuestions?.length !== 0}
-        <p>{$t('candidateApp.homePage.editingNotAllowedPartiallyFilled')}</p>
+        <p>{$t('candidateApp.common.editingNotAllowedPartiallyFilled')}</p>
       {/if}
     </Warning>
 
     <p class="pb-20 text-center">
-      {$t('candidateApp.questions.info')}
+      {$t('candidateApp.questions.ingress')}
     </p>
     {#if $unansweredOpinionQuestions?.length !== 0 && !loading && !$questionsLocked}
       <div class="pb-6 text-center text-warning">
-        {$t('candidateApp.questions.warning', {
+        {$t('candidateApp.questions.unansweredWarning', {
           numUnansweredQuestions: $unansweredOpinionQuestions?.length
         })}
       </div>
@@ -120,7 +120,7 @@
 
     <div class="flex w-full justify-center py-40">
       <Button
-        text={$t('candidateApp.questions.return')}
+        text={$t('common.return')}
         variant="main"
         href={$getRoute({route: Route.CandAppHome})} />
     </div>
