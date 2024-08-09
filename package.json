@@ -7,7 +7,8 @@
     "dev:stop": "docker compose -f docker-compose.dev.yml stop",
     "prepare": "husky",
     "prod": "docker compose -f docker-compose.yml -p vaa-prod up -d --build",
-    "test": "playwright test"
+    "test": "playwright test",
+    "lint:fix": "prettier --write . "
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
@@ -18,7 +19,8 @@
     "cheerio": "^1.0.0",
     "dotenv": "^16.4.5",
     "husky": "^9.1.3",
-    "mailparser": "^3.7.1"
+    "mailparser": "^3.7.1",
+    "prettier": "^3.3.3"
   },
   "workspaces": [
     "backend/vaa-strapi",
