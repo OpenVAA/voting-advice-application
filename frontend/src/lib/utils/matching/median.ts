@@ -5,7 +5,7 @@ import {error} from '@sveltejs/kit';
  * Orig. author jdmdevdotnet: https://stackoverflow.com/questions/45309447/calculating-median-javascript
  */
 
-export function median(values: number[]) {
+export function median(values: Array<number>) {
   if (values.length === 0) error(500, 'Cannot calculate median of an empty list.');
   values = [...values].sort((a, b) => a - b);
   const half = Math.floor(values.length / 2);

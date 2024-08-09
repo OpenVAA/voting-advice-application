@@ -1,7 +1,7 @@
 <script lang="ts">
+  import {NavGroup, NavItem} from '$lib/components/navigation';
   import {locale as currentLocale, locales, t} from '$lib/i18n';
   import {getRoute} from '$lib/utils/navigation';
-  import {NavGroup, NavItem} from '$lib/components/navigation';
 </script>
 
 <!--

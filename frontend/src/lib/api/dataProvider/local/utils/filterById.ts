@@ -6,7 +6,7 @@ import type {FilterById} from '../dataProvider';
  * @param options Any get data options
  * @returns Filtered data array
  */
-export function filterById<T extends {id: string}>(data: T[], options?: FilterById): T[] {
+export function filterById<T extends {id: string}>(data: Array<T>, options?: FilterById): Array<T> {
   if (options?.id == null) return data;
   return data.filter((d) => d.id == options.id);
 }

@@ -16,5 +16,5 @@ export interface MatchableQuestion {
   /**
    * Preference order questions return a list of distances, but Likert questions just one number
    */
-  normalizeValue(value: unknown): MatchingSpaceCoordinate | MatchingSpaceCoordinate[];
+  normalizeValue(value: unknown): MatchingSpaceCoordinate | Array<MatchingSpaceCoordinate>;
 }

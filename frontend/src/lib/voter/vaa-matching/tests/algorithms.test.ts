@@ -1,5 +1,4 @@
 import {MatchingAlgorithm} from '../src/algorithms';
-import type {HasMatchableAnswers} from '../src/entity';
 import {
   directionalDistance,
   type DistanceMeasurementOptions,
@@ -10,7 +9,6 @@ import {
   type SignedNormalizedDistance,
   type UnsignedNormalizedDistance
 } from '../src/distance';
-import type {Match} from '../src/match';
 import {
   imputeMissingValues,
   MISSING_VALUE,
@@ -19,7 +17,9 @@ import {
 } from '../src/missingValue';
 import {type MatchableQuestion, MultipleChoiceQuestion} from '../src/question';
 import {createSubspace, MatchingSpace, MatchingSpacePosition} from '../src/space';
+import type {HasMatchableAnswers} from '../src/entity';
 import type {AnswerDict} from '../src/entity/hasMatchableAnswers';
+import type {Match} from '../src/match';
 
 // For convenience
 const maxDist = NORMALIZED_DISTANCE_EXTENT;
@@ -51,7 +51,7 @@ describe('single coordinate distance measurements', () => {
 });
 
 describe('imputeMissingValues', () => {
-  const refVals: SignedNormalizedDistance[] = [minVal, 0.3 * minVal, 0, 0.5 * maxVal, maxVal];
+  const refVals: Array<SignedNormalizedDistance> = [minVal, 0.3 * minVal, 0, 0.5 * maxVal, maxVal];
   describe('MissingValueDistanceMethod.Neutral', () => {
     const opts = {
       missingValueMethod: MissingValueDistanceMethod.Neutral,
@@ -137,7 +137,7 @@ describe('imputeMissingValues', () => {
 describe('measureDistance', () => {
   const weights = [1, 2, 3];
   const ms = new MatchingSpace(weights);
-  const mdOpts: DistanceMeasurementOptions[] = [
+  const mdOpts: Array<DistanceMeasurementOptions> = [
     {
       metric: DistanceMetric.Directional,
       missingValueOptions: {
@@ -479,17 +479,17 @@ describe('matchingAlgorithm', () => {
  * @returns A dict of all generated objects
  */
 function createMatchesAndEntities(
-  voterAnswers: (number | undefined)[],
-  candidateAnswers: (number | undefined)[][],
+  voterAnswers: Array<number | undefined>,
+  candidateAnswers: Array<Array<number | undefined>>,
   likertScale: number,
   distanceMetric: DistanceMetric,
   missingValueMethod: MissingValueDistanceMethod
 ): {
-  questions: MultipleChoiceQuestion[];
+  questions: Array<MultipleChoiceQuestion>;
   voter: Candidate;
-  candidates: Candidate[];
+  candidates: Array<Candidate>;
   algorithm: MatchingAlgorithm;
-  matches: Match<Candidate>[];
+  matches: Array<Match<Candidate>>;
 } {
   const numQuestions = voterAnswers.length;
   // Create dummy questions
@@ -528,7 +528,7 @@ class Candidate implements HasMatchableAnswers {
  * @param values The normalised values
  * @returns Array of values
  */
-function createLikertValues(scale: number, values: UnsignedNormalizedDistance[]) {
+function createLikertValues(scale: number, values: Array<UnsignedNormalizedDistance>) {
   return values.map((v) => 1 + v * (scale - 1));
 }
 
@@ -540,8 +540,8 @@ function createLikertValues(scale: number, values: UnsignedNormalizedDistance[])
  * @returns An answer dict
  */
 function createAnswers(
-  questions: MatchableQuestion[],
-  answerValues: (number | undefined)[]
+  questions: Array<MatchableQuestion>,
+  answerValues: Array<number | undefined>
 ): AnswerDict {
   const answers = {} as AnswerDict;
   for (let i = 0; i < questions.length; i++) {
@@ -557,7 +557,7 @@ function createAnswers(
  * @param likertScale The likert scale, e.g. 5
  * @returns Array of questions
  */
-function createQuestions(numQuestions: number, likertScale: number): MultipleChoiceQuestion[] {
+function createQuestions(numQuestions: number, likertScale: number): Array<MultipleChoiceQuestion> {
   return Array.from({length: numQuestions}, (_, i) =>
     MultipleChoiceQuestion.fromLikert(`qst${i}`, likertScale)
   );
@@ -571,9 +571,9 @@ function createQuestions(numQuestions: number, likertScale: number): MultipleCho
  * @returns Array of candidates
  */
 function createCandidates(
-  questions: MultipleChoiceQuestion[],
-  candidateAnswers: (number | undefined)[][]
-): Candidate[] {
+  questions: Array<MultipleChoiceQuestion>,
+  candidateAnswers: Array<Array<number | undefined>>
+): Array<Candidate> {
   return candidateAnswers.map((o) => new Candidate(createAnswers(questions, o)));
 }
 
@@ -584,8 +584,8 @@ function createCandidates(
  * @returns A candidate
  */
 function createVoter(
-  questions: MultipleChoiceQuestion[],
-  voterAnswers: (number | undefined)[]
+  questions: Array<MultipleChoiceQuestion>,
+  voterAnswers: Array<number | undefined>
 ): Candidate {
   return new Candidate(createAnswers(questions, voterAnswers));
 }

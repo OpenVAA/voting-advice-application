@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {isCandidate} from '$lib/utils/entities';
-  import {answeredQuestions, appType, settings} from '$lib/stores';
   import {CategoryTag} from '$lib/components/categoryTag';
-  import {LikertResponseButtons, QuestionOpenAnswer} from '$lib/components/questions';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {LikertResponseButtons, QuestionOpenAnswer} from '$lib/components/questions';
+  import {t} from '$lib/i18n';
+  import {answeredQuestions, appType, settings} from '$lib/stores';
   import {getLikertAnswer} from '$lib/utils/answers';
+  import {isCandidate} from '$lib/utils/entities';
   import type {EntityDetailsProps} from './EntityDetails.type';
 
   export let entity: EntityProps;

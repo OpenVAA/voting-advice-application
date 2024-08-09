@@ -1,15 +1,15 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
-  import {t} from '$lib/i18n';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {getEntityType, parseMaybeRanked} from '$lib/utils/entities';
-  import {Route, getRoute} from '$lib/utils/navigation';
-  import {settings} from '$lib/stores';
   import {EntityCard, type EntityCardProps} from '$lib/components/entityCard';
   import {Tabs} from '$lib/components/tabs';
+  import {t} from '$lib/i18n';
+  import {settings} from '$lib/stores';
+  import {startEvent} from '$lib/utils/analytics/track';
+  import {concatClass} from '$lib/utils/components';
+  import {getEntityType, parseMaybeRanked} from '$lib/utils/entities';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import {EntityInfo, EntityOpinions, EntitySubentities} from './';
   import type {EntityDetailsProps} from './EntityDetails.type';
-  import {concatClass} from '$lib/utils/components';
 
   type $$Props = EntityDetailsProps;
 
@@ -20,11 +20,11 @@
 
   let entity: EntityProps;
   let entityType: EntityType | undefined;
-  let subcards: EntityCardProps[] | undefined;
+  let subcards: Array<EntityCardProps> | undefined;
   /** The tab content types */
-  let tabContents: AppSettingsEntityDetailsContent[];
+  let tabContents: Array<AppSettingsEntityDetailsContent>;
   /** The matching tab labels */
-  let tabs: string[];
+  let tabs: Array<string>;
   /** The currently active tab */
   let activeIndex = 0;
   /** Info questions filtered for the current entity type */

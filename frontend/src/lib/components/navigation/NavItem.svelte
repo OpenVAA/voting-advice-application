@@ -1,7 +1,7 @@
 <script lang="ts">
+  import {Icon} from '$lib/components/icon';
   import {concatClass} from '$lib/utils/components';
   import {ucFirst} from '$lib/utils/text/ucFirst';
-  import {Icon} from '$lib/components/icon';
   import {getNavigationContext} from './navigationContext';
   import type {NavItemProps} from './NavItem.type';
   type $$Props = NavItemProps;

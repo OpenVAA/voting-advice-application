@@ -1,4 +1,4 @@
-import {type StorageContextContent, createStorageContext} from '$lib/utils/context';
+import {createStorageContext, type StorageContextContent} from '$lib/utils/context';
 
 /**
  * The contents for a context object that contais session-persisted values needed for displaying the questions.
@@ -12,7 +12,7 @@ interface QuestionsContextContent extends StorageContextContent {
   /**
    * The ids of the categories the user has possibly selected.
    */
-  selectedCategories: string[] | null;
+  selectedCategories: Array<string> | null;
 }
 
 const {get} = createStorageContext<QuestionsContextContent>(

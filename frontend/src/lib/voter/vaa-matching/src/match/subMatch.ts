@@ -1,6 +1,6 @@
+import {MatchBase} from './matchBase';
 import type {UnsignedNormalizedDistance} from '../distance';
 import type {MatchableQuestionGroup} from '../question';
-import {MatchBase} from './matchBase';
 
 /**
  * The class for question-group-specific submatches within a Match.

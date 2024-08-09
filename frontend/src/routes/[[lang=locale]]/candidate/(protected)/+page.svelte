@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {t, locale} from '$lib/i18n';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Button} from '$lib/components/button';
-  import {getRoute, Route} from '$lib/utils/navigation';
   import {getContext} from 'svelte';
-  import {InfoBadge} from '$lib/components/infoBadge';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
+  import {Button} from '$lib/components/button';
+  import {InfoBadge} from '$lib/components/infoBadge';
   import {Warning} from '$lib/components/warning';
+  import {locale, t} from '$lib/i18n';
+  import {BasicPage} from '$lib/templates/basicPage';
   import {type CandidateContext} from '$lib/utils/candidateContext';
+  import {getRoute, Route} from '$lib/utils/navigation';
 
   const {user, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, questionsLocked} =
     getContext<CandidateContext>('candidate');

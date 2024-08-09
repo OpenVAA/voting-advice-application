@@ -1,12 +1,12 @@
 import {
   DistanceMetric,
-  MatchingAlgorithm,
-  MissingValueDistanceMethod,
-  MultipleChoiceQuestion,
   type HasMatchableAnswers,
   type MatchableQuestion,
   type MatchableQuestionGroup,
-  type MatchingOptions
+  MatchingAlgorithm,
+  type MatchingOptions,
+  MissingValueDistanceMethod,
+  MultipleChoiceQuestion
 } from '..';
 import type {AnswerDict} from '../src/entity/hasMatchableAnswers';
 
@@ -93,7 +93,7 @@ function main(
  * @returns Answer dict
  */
 function createAnswers(
-  questions: MatchableQuestion[],
+  questions: Array<MatchableQuestion>,
   answerValue: number | ((index: number) => number),
   missing = 0
 ): AnswerDict {

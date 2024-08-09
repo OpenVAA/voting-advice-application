@@ -1,10 +1,5 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
-  import {t} from '$lib/i18n';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {getAnswer} from '$lib/utils/answers';
-  import {concatClass, getUUID} from '$lib/utils/components';
-  import {isCandidate, isParty, parseMaybeRanked} from '$lib/utils/entities';
   import {Avatar, type AvatarProps} from '$lib/components/avatar';
   import {Button} from '$lib/components/button';
   import {ElectionSymbol} from '$lib/components/electionSymbol';
@@ -12,6 +7,11 @@
   import {MatchScore} from '$lib/components/matchScore';
   import {PartyTag} from '$lib/components/partyTag';
   import {SubMatches} from '$lib/components/subMatches';
+  import {t} from '$lib/i18n';
+  import {startEvent} from '$lib/utils/analytics/track';
+  import {getAnswer} from '$lib/utils/answers';
+  import {concatClass, getUUID} from '$lib/utils/components';
+  import {isCandidate, isParty, parseMaybeRanked} from '$lib/utils/entities';
   import EntityCardAction from './EntityCardAction.svelte';
   import type {EntityCardProps} from './EntityCard.type';
 

@@ -2,12 +2,12 @@
   import {getContext} from 'svelte';
   import {goto} from '$app/navigation';
   import {page} from '$app/stores';
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {t} from '$lib/i18n';
   import {FrontPage} from '$lib/templates/frontPage';
-  import {LogoutButton} from '$lib/candidate/components/logoutButton';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import type {CandidateContext} from '$lib/utils/candidateContext';
 
   export let registrationCode = '';

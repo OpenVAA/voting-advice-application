@@ -1,6 +1,6 @@
 import {error} from '@sveltejs/kit';
-import {MISSING_VALUE} from '$voter/vaa-matching';
 import {logDebugError} from '$lib/utils/logger';
+import {MISSING_VALUE} from '$voter/vaa-matching';
 import {mean} from './mean';
 import {median} from './median';
 
@@ -14,8 +14,8 @@ import {median} from './median';
  */
 export function imputePartyAnswers(
   party: PartyProps,
-  candidates: CandidateProps[],
-  questionIds: string[],
+  candidates: Array<CandidateProps>,
+  questionIds: Array<string>,
   matchingType: Exclude<AppSettingsGroupMatchingType, 'none' | 'answersOnly'>
 ) {
   // Set existing answers as a base
@@ -40,7 +40,7 @@ export function imputePartyAnswers(
  * @returns The answer value or `MISSING_VALUE` if there are no valid answers in the group.
  */
 export function imputeGroupAnswer(
-  answers: AnswerProps['value'][],
+  answers: Array<AnswerProps['value']>,
   matchingType: Exclude<AppSettingsGroupMatchingType, 'none' | 'answersOnly'>
 ): AnswerProps['value'] {
   // Filter values
@@ -53,7 +53,7 @@ export function imputeGroupAnswer(
       return false;
     }
     return true;
-  }) as number[];
+  }) as Array<number>;
 
   // No valid values
   if (!values.length) return MISSING_VALUE;

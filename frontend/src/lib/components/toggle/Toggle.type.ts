@@ -8,7 +8,7 @@ export type ToggleProps = SvelteHTMLElements['fieldset'] & {
   /**
    * The options for the toggle. Each must contain a `key` and a `label` property. If an `icon` property is provided, the option will be rendered as an icon button. The `label` is still required and will be used for a screen-reader-only label.
    */
-  options: ToggleOption[];
+  options: Array<ToggleOption>;
   /**
    * The currently selected option `key` of the toggle. Bind to this to get the currently selected value.
    */

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {TimedModal} from '$lib/components/modal/timed';
+  import {getContext} from 'svelte';
   import {goto} from '$app/navigation';
   import {Button} from '$lib/components/button';
-  import {getContext} from 'svelte';
+  import {TimedModal} from '$lib/components/modal/timed';
+  import {t} from '$lib/i18n';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {LogoutButtonProps} from './LogoutButton.type';
 

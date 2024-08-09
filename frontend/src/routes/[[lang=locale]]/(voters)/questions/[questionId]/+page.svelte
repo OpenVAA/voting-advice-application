@@ -1,10 +1,18 @@
 <script lang="ts">
   import {browser} from '$app/environment';
   import {goto} from '$app/navigation';
+  import {Button} from '$lib/components/button';
+  import {CategoryTag} from '$lib/components/categoryTag';
+  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {Loading} from '$lib/components/loading';
+  import {
+    LikertResponseButtons,
+    type LikertResponseButtonsEventDetail,
+    QuestionActions,
+    QuestionInfo
+  } from '$lib/components/questions';
+  import {Video, type VideoMode} from '$lib/components/video';
   import {t} from '$lib/i18n';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {logDebugError} from '$lib/utils/logger';
-  import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
   import {
     answeredQuestions,
     deleteVoterAnswer,
@@ -15,18 +23,10 @@
     settings,
     setVoterAnswer
   } from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {CategoryTag} from '$lib/components/categoryTag';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {Loading} from '$lib/components/loading';
-  import {
-    LikertResponseButtons,
-    QuestionActions,
-    QuestionInfo,
-    type LikertResponseButtonsEventDetail
-  } from '$lib/components/questions';
-  import {type VideoMode, Video} from '$lib/components/video';
   import {BasicPage} from '$lib/templates/basicPage';
+  import {startEvent} from '$lib/utils/analytics/track';
+  import {logDebugError} from '$lib/utils/logger';
+  import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
   import {getQuestionsContext} from '../questions.context';
   import {filterAndSortQuestions} from '../questions.utils';
   import type {PageData} from './$types';
@@ -54,7 +54,7 @@
   /** Use to disable the response buttons when an answer is set but we're still waiting for the next page to load */
   let disabled = false;
   let question: QuestionProps | undefined;
-  let questions: QuestionProps[];
+  let questions: Array<QuestionProps>;
   let questionIndex: number;
   let selectedKey: AnswerOption['key'] | undefined;
 
@@ -101,7 +101,7 @@
   /**
    * Update the current question and related variables.
    */
-  function updateQuestion(newQuestionId: string, questions: QuestionProps[]) {
+  function updateQuestion(newQuestionId: string, questions: Array<QuestionProps>) {
     if (!questions?.length) return;
 
     // Save the current question so that we only rebuild the page if the question has actually changed either due to being a different one or a locale change

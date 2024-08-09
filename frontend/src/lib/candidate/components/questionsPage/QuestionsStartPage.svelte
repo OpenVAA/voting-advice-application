@@ -1,10 +1,10 @@
 <script lang="ts">
-  import {Icon} from '$lib/components/icon';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {t} from '$lib/i18n';
   import {getContext} from 'svelte';
   import {get} from 'svelte/store';
   import {Button} from '$lib/components/button';
+  import {Icon} from '$lib/components/icon';
+  import {t} from '$lib/i18n';
+  import {BasicPage} from '$lib/templates/basicPage';
   import {getRoute, Route} from '$lib/utils/navigation';
   import type {CandidateContext} from '$lib/utils/candidateContext';
 

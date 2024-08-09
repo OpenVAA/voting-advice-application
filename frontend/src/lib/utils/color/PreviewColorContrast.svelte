@@ -2,8 +2,8 @@
   import {adjustContrast, calcContrast} from './adjustContrast';
   import {luminance} from './luminance';
   import {parseColor} from './parseColor';
-  import type {RGB} from './rgb';
   import {rgbToHex} from './rgbToHex';
+  import type {RGB} from './rgb';
 
   let origColor = '#000000';
   let parsedColor = '';

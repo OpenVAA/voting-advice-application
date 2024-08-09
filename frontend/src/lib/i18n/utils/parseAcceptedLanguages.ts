@@ -5,7 +5,7 @@
  * @param acceptLanguage The `Accept-Language` request header.
  * @returns An ordered list of preferred locale strings
  */
-export function parseAcceptedLanguages(acceptLanguage: string): string[] {
+export function parseAcceptedLanguages(acceptLanguage: string): Array<string> {
   return acceptLanguage
     .split(/\s*,\s*/)
     .map((l) => {

@@ -1,16 +1,16 @@
 <script lang="ts">
-  import {Button} from '$lib/components/button';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Expander} from '$lib/components/expander';
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
   import {getContext} from 'svelte';
-  import {Warning} from '$lib/components/warning';
   import {
-    QuestionsStartPage,
     AnsweredQuestion,
+    QuestionsStartPage,
     UnAnsweredQuestion
   } from '$lib/candidate/components/questionsPage';
+  import {Button} from '$lib/components/button';
+  import {Expander} from '$lib/components/expander';
+  import {Warning} from '$lib/components/warning';
+  import {t} from '$lib/i18n';
+  import {BasicPage} from '$lib/templates/basicPage';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import type {CandidateContext} from '$lib/utils/candidateContext';
 
   const {

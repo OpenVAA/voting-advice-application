@@ -5,7 +5,7 @@ export type SubMatchesProps = SvelteHTMLElements['div'] & {
   /**
    * The sub-matches of a `RankingProps`.
    */
-  matches: SubMatchProps[];
+  matches: Array<SubMatchProps>;
   /**
    * Variant layout, controlling the spacing of gauges. @default 'tight'
    */

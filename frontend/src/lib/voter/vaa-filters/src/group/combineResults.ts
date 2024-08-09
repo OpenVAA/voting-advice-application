@@ -17,9 +17,9 @@ export enum LogicOp {
  * @returns Combined results.
  */
 export function combineResults<E extends MaybeWrapped>(
-  results: E[][],
+  results: Array<Array<E>>,
   logicOperator = LogicOp.And
-): E[] {
+): Array<E> {
   if (!results.length) return [];
   if (logicOperator === LogicOp.Or) return Array.from(new Set(results.flat()));
   let out = results[0];

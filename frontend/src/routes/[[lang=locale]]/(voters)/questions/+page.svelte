@@ -1,24 +1,24 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
-  import {
-    openFeedbackModal,
-    opinionQuestions,
-    opinionQuestionCategories,
-    settings
-  } from '$lib/stores';
   import {Button} from '$lib/components/button';
+  import {CategoryTag} from '$lib/components/categoryTag';
   import {HeroEmoji} from '$lib/components/heroEmoji';
   import {Loading} from '$lib/components/loading';
+  import {t} from '$lib/i18n';
+  import {
+    openFeedbackModal,
+    opinionQuestionCategories,
+    opinionQuestions,
+    settings
+  } from '$lib/stores';
   import {BasicPage} from '$lib/templates/basicPage';
+  import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
   import {getQuestionsContext} from './questions.context';
-  import {CategoryTag} from '$lib/components/categoryTag';
 
   const {firstQuestionId, selectedCategories} = getQuestionsContext();
 
   // Await the necessary promises here and save their contents in synced variables
-  let questionsSync: QuestionProps[] | undefined;
-  let categoriesSync: QuestionCategoryProps[] | undefined;
+  let questionsSync: Array<QuestionProps> | undefined;
+  let categoriesSync: Array<QuestionCategoryProps> | undefined;
 
   // Reset firstQuestion if set
   $firstQuestionId = null;

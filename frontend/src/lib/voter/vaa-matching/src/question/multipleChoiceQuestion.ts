@@ -23,7 +23,7 @@ export class MultipleChoiceQuestion implements MatchableQuestion {
    */
   constructor(
     readonly id: string,
-    readonly values: MultipleChoiceValue[]
+    readonly values: Array<MultipleChoiceValue>
   ) {
     this.id = id;
     this.values = values;

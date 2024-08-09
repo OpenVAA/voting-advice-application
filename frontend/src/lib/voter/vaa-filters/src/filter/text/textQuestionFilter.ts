@@ -1,6 +1,6 @@
-import {type MaybeWrapped, type EntityWithAnswers} from '../../entity';
-import {type TextQuestion} from '../../question';
 import {TextFilter} from './textFilter';
+import {type EntityWithAnswers, type MaybeWrapped} from '../../entity';
+import {type TextQuestion} from '../../question';
 
 export class TextQuestionFilter<T extends MaybeWrapped<EntityWithAnswers>> extends TextFilter<T> {
   /**

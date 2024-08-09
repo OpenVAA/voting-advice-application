@@ -1,6 +1,6 @@
+import {TextFilter} from './textFilter';
 import {type ExtractEntity, type FilterableEntity, type MaybeWrapped} from '../../entity';
 import type {PropertyFilterOptions} from '../base';
-import {TextFilter} from './textFilter';
 
 export class TextPropertyFilter<T extends MaybeWrapped<FilterableEntity>> extends TextFilter<T> {
   /**

@@ -1,8 +1,8 @@
-import type {Handle, HandleServerError} from '@sveltejs/kit';
 import {API_ROOT} from '$lib/api/api';
 import {defaultLocale, loadTranslations, locales} from '$lib/i18n';
 import {matchLocale, parseAcceptedLanguages} from '$lib/i18n/utils';
 import {logDebugError} from '$lib/utils/logger';
+import type {Handle, HandleServerError} from '@sveltejs/kit';
 
 // Handle and handleError based on sveltekit-i18n examples: https://github.com/sveltekit-i18n/lib/blob/master/examples/locale-router-advanced/src/hooks.server.js
 

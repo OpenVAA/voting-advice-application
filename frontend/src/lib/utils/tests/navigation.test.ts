@@ -1,5 +1,5 @@
-import {beforeAll, expect, test} from 'vitest';
 import {get} from 'svelte/store';
+import {beforeAll, expect, test} from 'vitest';
 import {mockIsPageStore} from './mock-pageStore';
 import {getRoute} from '../navigation/getRoute';
 import {Route} from '../navigation/route';

@@ -41,10 +41,10 @@ export const DEFAULT_PAYLOAD_KEYS = {
 export const staticTranslations: {
   [locale: string]: {
     name: string;
-    loaders: {
+    loaders: Array<{
       key: string;
       loader: () => Promise<Translations.Input>;
-    }[];
+    }>;
   };
 } = {};
 

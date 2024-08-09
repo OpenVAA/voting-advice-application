@@ -1,15 +1,15 @@
 <script lang="ts">
+  import {getContext} from 'svelte';
   import {Button} from '$lib/components/button';
+  import {CategoryTag} from '$lib/components/categoryTag';
   import {Expander} from '$lib/components/expander';
   import {LikertResponseButtons} from '$lib/components/questions';
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {CategoryTag} from '$lib/components/categoryTag';
   import {QuestionOpenAnswer} from '$lib/components/questions';
-  import {getContext} from 'svelte';
+  import {t} from '$lib/i18n';
+  import {translate} from '$lib/i18n/utils';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {RenderQuestionProps} from './Question.type';
-  import {translate} from '$lib/i18n/utils';
 
   type $$Props = RenderQuestionProps;
 

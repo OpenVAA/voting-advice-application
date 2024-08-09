@@ -1,15 +1,15 @@
 <script lang="ts">
-  import {page} from '$app/stores';
+  import {getContext} from 'svelte';
   import {goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
+  import {page} from '$app/stores';
   import {register} from '$lib/api/candidate';
+  import {LogoutButton} from '$lib/candidate/components/logoutButton';
+  import {PasswordSetter} from '$lib/candidate/components/passwordSetter';
+  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {t} from '$lib/i18n';
+  import {FrontPage} from '$lib/templates/frontPage';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {validatePassword} from '$shared/utils/passwordValidation';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {FrontPage} from '$lib/templates/frontPage';
-  import {PasswordSetter} from '$lib/candidate/components/passwordSetter';
-  import {getContext} from 'svelte';
-  import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import type {CandidateContext} from '$lib/utils/candidateContext';
 
   export let username: string;

@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {concatClass} from '$lib/utils/components';
-  import {appType} from '$lib/stores';
   import {Icon} from '$lib/components/icon';
   import {NavItem, setNavigationContext} from '$lib/components/navigation';
-  import {AppLogo} from '../parts/appLogo';
+  import {t} from '$lib/i18n';
+  import {appType} from '$lib/stores';
+  import {startEvent} from '$lib/utils/analytics/track';
+  import {concatClass} from '$lib/utils/components';
   import {CandidateNav, VoterNav} from './parts';
+  import {AppLogo} from '../parts/appLogo';
   import type {PageProps} from './Page.type';
 
   type $$Props = PageProps;

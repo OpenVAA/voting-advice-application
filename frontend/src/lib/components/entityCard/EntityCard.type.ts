@@ -16,7 +16,7 @@ export type EntityCardProps = SvelteHTMLElements['article'] & {
   /**
    * Possible question whose answers should be shown in the card, along with possibly options for their display.
    */
-  questions?: {
+  questions?: Array<{
     /**
      * The question whose answer is shown.
      */
@@ -29,11 +29,11 @@ export type EntityCardProps = SvelteHTMLElements['article'] & {
      * How to format the answer. See `<InfoAnswer>` for details. @default 'default'
      */
     format?: InfoAnswerProps['format'];
-  }[];
+  }>;
   /**
    * Possible sub-entities of the entity to show in the card, e.g. candidates for a party.
    */
-  subcards?: EntityCardProps[];
+  subcards?: Array<EntityCardProps>;
   /**
    * The maximum number of sub-entities to show. If there are more a button will be shown for displaying the remaining ones. @default 3
    */

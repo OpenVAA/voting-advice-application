@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {concatProps} from '$lib/utils/components';
   import {ScoreGauge} from '$lib/components/scoreGauge';
+  import {concatProps} from '$lib/utils/components';
   import type {SubMatchesProps} from './SubMatches.type';
 
   type $$Props = SubMatchesProps;

@@ -2,13 +2,13 @@
   import {onDestroy, onMount} from 'svelte';
   import {fade} from 'svelte/transition';
   import {beforeNavigate} from '$app/navigation';
+  import {Button} from '$lib/components/button';
+  import {Icon} from '$lib/components/icon';
+  import {Loading} from '$lib/components/loading';
   import {locale, t} from '$lib/i18n';
   import {startEvent, type TrackingEvent} from '$lib/utils/analytics/track';
   import {concatClass} from '$lib/utils/components';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {Button} from '$lib/components/button';
-  import {Icon} from '$lib/components/icon';
-  import {Loading} from '$lib/components/loading';
   import {videoPreferences} from './component-stores';
   import type {PlayButtonAction, VideoMode, VideoProps, VideoTrackingEventData} from './Video.type';
 
@@ -455,7 +455,7 @@
   function buildTranscript() {
     const track = getTrack();
     if (!track?.cues) return;
-    const blocks: string[] = [];
+    const blocks: Array<string> = [];
     // Sometimes the cues continue from the previous cue, so we need may need to concatenate them
     let combined = '';
     for (const cue of [...track.cues].filter(

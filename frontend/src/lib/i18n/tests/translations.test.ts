@@ -1,6 +1,6 @@
-import {expect, test} from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import {expect, test} from 'vitest';
 import {keys, locales} from '../translations/index';
 
 /**

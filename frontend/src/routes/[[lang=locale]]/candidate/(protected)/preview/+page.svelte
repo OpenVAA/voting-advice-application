@@ -1,16 +1,16 @@
 <script lang="ts">
   import {getContext} from 'svelte';
   import {afterNavigate, goto} from '$app/navigation';
-  import {locale, t} from '$lib/i18n';
   import {dataProvider} from '$lib/api/getData';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import {Route, getRoute} from '$lib/utils/navigation';
+  import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import {Button} from '$lib/components/button';
   import {EntityDetails} from '$lib/components/entityDetails';
   import {Icon} from '$lib/components/icon';
   import {Loading} from '$lib/components/loading';
-  import {LogoutButton} from '$lib/candidate/components/logoutButton';
+  import {locale, t} from '$lib/i18n';
   import {SingleCardPage} from '$lib/templates/singleCardPage';
+  import {getRoute, Route} from '$lib/utils/navigation';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
 
   const {user} = getContext<CandidateContext>('candidate');
 

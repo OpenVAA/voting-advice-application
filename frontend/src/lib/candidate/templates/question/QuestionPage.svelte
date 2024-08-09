@@ -1,16 +1,16 @@
 <script lang="ts">
-  import {goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
   import {getContext} from 'svelte';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {goto} from '$app/navigation';
+  import {MultilangTextInput} from '$candidate/components/textArea';
   import {addAnswer, updateAnswer} from '$lib/api/candidate';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {BasicPage} from '$lib/templates/basicPage';
   import {Button} from '$lib/components/button';
   import {CategoryTag} from '$lib/components/categoryTag';
+  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {LikertResponseButtons, QuestionInfo} from '$lib/components/questions';
-  import {MultilangTextInput} from '$candidate/components/textArea';
   import {Warning} from '$lib/components/warning';
+  import {t} from '$lib/i18n';
+  import {BasicPage} from '$lib/templates/basicPage';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {QuestionPageProps} from './QuestionPage.type';
 

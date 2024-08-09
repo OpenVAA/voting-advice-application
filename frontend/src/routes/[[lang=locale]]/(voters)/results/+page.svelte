@@ -1,6 +1,12 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
-  import type {Snapshot} from './$types';
+  import {Button} from '$lib/components/button';
+  import {EntityList} from '$lib/components/entityList';
+  import {EntityListControls} from '$lib/components/entityListControls';
+  import {HeroEmoji} from '$lib/components/heroEmoji';
+  import {Loading} from '$lib/components/loading';
+  import {StretchBackground} from '$lib/components/stretchBackground';
+  import {Tabs} from '$lib/components/tabs';
   import {t} from '$lib/i18n';
   import {
     allQuestions,
@@ -15,19 +21,13 @@
     startFeedbackPopupCountdown,
     startSurveyPopupCountdown
   } from '$lib/stores';
+  import {BasicPage} from '$lib/templates/basicPage';
   import {startEvent} from '$lib/utils/analytics/track';
   import {candidateFilters} from '$lib/utils/filters';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {Button} from '$lib/components/button';
   import type {EntityCardProps} from '$lib/components/entityCard';
-  import {EntityList} from '$lib/components/entityList';
-  import {EntityListControls} from '$lib/components/entityListControls';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {Loading} from '$lib/components/loading';
-  import {StretchBackground} from '$lib/components/stretchBackground';
-  import {Tabs} from '$lib/components/tabs';
-  import {BasicPage} from '$lib/templates/basicPage';
+  import type {Snapshot} from './$types';
 
   /**
    * The currently active tab in the results. We want this to persist between opening entity details and returning to the results.
@@ -39,12 +39,12 @@
   };
 
   // Which entity sections to show
-  const sections = $settings.results.sections as EntityType[];
+  const sections = $settings.results.sections as Array<EntityType>;
   if (!sections?.length) error(500, 'No sections to show');
 
   // These will hold the filtered entities returned by EntityListControls
-  let filteredCandidates: WrappedEntity<CandidateProps>[] = [];
-  let filteredParties: WrappedEntity<PartyProps>[] = [];
+  let filteredCandidates: Array<WrappedEntity<CandidateProps>> = [];
+  let filteredParties: Array<WrappedEntity<PartyProps>> = [];
 
   let resultsAvailableSync = false;
   $resultsAvailable.then((v) => {
@@ -77,7 +77,7 @@
     for (const type in additionalEcProps) {
       const questionSettings = currentSettings.results.cardContents[
         type as keyof AppSettings['results']['cardContents']
-      ].filter((c) => typeof c === 'object' && c.question != null) as AppSettingsQuestionRef[];
+      ].filter((c) => typeof c === 'object' && c.question != null) as Array<AppSettingsQuestionRef>;
       if (questionSettings.length) {
         const questions: EntityCardProps['questions'] = [];
         for (const qs of questionSettings) {
@@ -113,7 +113,7 @@
    */
   function parseParty(
     party: WrappedEntity<PartyProps>,
-    allCandidates?: WrappedEntity<CandidateProps>[],
+    allCandidates?: Array<WrappedEntity<CandidateProps>>,
     maxSubcards = 3
   ): EntityCardProps {
     return {

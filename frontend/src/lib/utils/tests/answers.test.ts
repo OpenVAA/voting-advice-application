@@ -1,13 +1,13 @@
 import {expect, test} from 'vitest';
-import {t, locale, defaultLocale, loadTranslations} from '$lib/i18n';
-import {getAnswer, getLikertAnswer, getAnswerForDisplay, DATE_FORMATS} from '../answers';
+import {defaultLocale, loadTranslations, locale, t} from '$lib/i18n';
 import {MockCandidate, MockParty, MockQuestionCategory} from './mock-objects';
+import {DATE_FORMATS, getAnswer, getAnswerForDisplay, getLikertAnswer} from '../answers';
 
 const DATE = new Date();
 
 /** Make unique labels */
 function makeLabels(count = 4) {
-  const labels: AnswerOption[] = [];
+  const labels: Array<AnswerOption> = [];
   for (let i = 1; i < count + 1; i++) {
     labels.push({
       key: i,
@@ -177,12 +177,12 @@ test('getAnswerForDisplay', async () => {
     QST.SingleCategorical.values?.find((a) => a.key === ANS.SingleCategorical.value)?.label
   );
   expect(getAnswerForDisplay(CND, QST.MultiCategorical), 'Display MultiCategorical answer').toEqual(
-    (ANS.MultiCategorical.value as number[]).map(
+    (ANS.MultiCategorical.value as Array<number>).map(
       (a) => QST.MultiCategorical.values?.find((v) => v.key === a)?.label
     )
   );
   expect(getAnswerForDisplay(CND, QST.PrefOrder), 'Display PrefOrder answer').toEqual(
-    (ANS.PrefOrder.value as number[]).map(
+    (ANS.PrefOrder.value as Array<number>).map(
       (a) => QST.PrefOrder.values?.find((v) => v.key === a)?.label
     )
   );

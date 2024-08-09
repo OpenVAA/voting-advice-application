@@ -1,8 +1,8 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
   import {createEventDispatcher} from 'svelte';
-  import {concatClass} from '$lib/utils/components';
   import {Button} from '$lib/components/button';
+  import {t} from '$lib/i18n';
+  import {concatClass} from '$lib/utils/components';
   import type {QuestionActionsProps} from './QuestionActions.type';
 
   type $$Props = QuestionActionsProps;

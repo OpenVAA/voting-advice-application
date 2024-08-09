@@ -1,8 +1,8 @@
 // Provides utilities for ensuring color contrasts for accessibility purposes
 
+import {luminance, setLuminance} from './luminance';
 import {parseColor} from './parseColor';
 import {rgbToHex} from './rgbToHex';
-import {setLuminance, luminance} from './luminance';
 import type {RGB} from './rgb';
 
 /** Added to luminances when calculating the contrast */

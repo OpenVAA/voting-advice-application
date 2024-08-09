@@ -1,13 +1,13 @@
 <script lang="ts">
   import {getContext} from 'svelte';
-  import {page} from '$app/stores';
-  import {t} from '$lib/i18n';
   import {goto} from '$app/navigation';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {page} from '$app/stores';
+  import {PasswordField} from '$lib/candidate/components/passwordField';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {PasswordField} from '$lib/candidate/components/passwordField';
+  import {t} from '$lib/i18n';
   import {FrontPage} from '$lib/templates/frontPage';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import type {CandidateContext} from '$lib/utils/candidateContext';
 
   const {user, logIn, newUserEmail} = getContext<CandidateContext>('candidate');

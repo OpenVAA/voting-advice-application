@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
   import {createEventDispatcher} from 'svelte';
+  import {t} from '$lib/i18n';
   import {logDebugError} from '$lib/utils/logger';
   import {onKeyboardFocusOut} from '$lib/utils/onKeyboardFocusOut';
   import type {

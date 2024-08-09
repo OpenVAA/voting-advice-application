@@ -1,10 +1,10 @@
-import {
-  NORMALIZED_DISTANCE_EXTENT,
-  assertSignedNormalized,
-  type SignedNormalizedDistance
-} from '../distance';
 import {MissingValueBias} from './bias';
 import {MissingValueDistanceMethod} from './distanceMethod';
+import {
+  assertSignedNormalized,
+  NORMALIZED_DISTANCE_EXTENT,
+  type SignedNormalizedDistance
+} from '../distance';
 
 /**
  * Options passed to imputeMissingValues

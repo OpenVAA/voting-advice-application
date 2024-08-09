@@ -5,8 +5,8 @@ import {error} from '@sveltejs/kit';
  * @param questions An array of QuestionProps
  */
 export function extractCategories(
-  questions: {category: QuestionCategoryProps}[]
-): QuestionCategoryProps[] {
+  questions: Array<{category: QuestionCategoryProps}>
+): Array<QuestionCategoryProps> {
   const categories = Array.from(new Set(questions.map((q) => q.category)));
   const catIds = new Set<string>();
   for (const category of categories) {
@@ -20,6 +20,6 @@ export function extractCategories(
  * Performs basic filtering for questions.
  * @param questions
  */
-export function filterVisible(questions: QuestionProps[]): QuestionProps[] {
+export function filterVisible(questions: Array<QuestionProps>): Array<QuestionProps> {
   return questions.filter((q) => !q.hidden);
 }

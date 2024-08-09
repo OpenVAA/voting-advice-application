@@ -1,7 +1,7 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
-  import {t} from '$lib/i18n';
   import {Modal} from '$lib/components/modal';
+  import {t} from '$lib/i18n';
   import {Feedback} from '..';
   import type {FeedbackModalProps} from './FeedbackModal.type';
 

@@ -5,14 +5,14 @@
  */
 import {error} from '@sveltejs/kit';
 import {
-  type MatchingOptions,
-  MatchingAlgorithm,
   DistanceMetric,
-  MissingValueDistanceMethod,
-  type MatchableQuestionGroup
+  type MatchableQuestionGroup,
+  MatchingAlgorithm,
+  type MatchingOptions,
+  MissingValueDistanceMethod
 } from '$voter/vaa-matching';
-import {LikertQuestion} from './LikertQuestion';
 import {imputePartyAnswers} from './imputePartyAnswers';
+import {LikertQuestion} from './LikertQuestion';
 import {extractCategories} from '../questions';
 
 /**
@@ -24,13 +24,13 @@ import {extractCategories} from '../questions';
  * @returns The matching results as entities wrapped in ranking properties
  */
 export async function match<E extends EntityProps>(
-  allQuestions: QuestionProps[],
+  allQuestions: Array<QuestionProps>,
   answeredQuestions: AnswerDict,
-  entities: E[],
+  entities: Array<E>,
   options: {
     subMatches?: boolean;
   } = {}
-): Promise<RankingProps<E>[]> {
+): Promise<Array<RankingProps<E>>> {
   // Create the algorithm instance
   const algorithm = new MatchingAlgorithm({
     distanceMetric: DistanceMetric.Manhattan,
@@ -40,7 +40,7 @@ export async function match<E extends EntityProps>(
   });
 
   // Convert question data into proper question objects
-  const questions = [] as LikertQuestion[];
+  const questions = [] as Array<LikertQuestion>;
   allQuestions.forEach((q) => {
     if (q.category.type !== 'opinion') return;
     if (q.type !== 'singleChoiceOrdinal' || !q.values)
@@ -99,14 +99,14 @@ export async function match<E extends EntityProps>(
  * @returns The matching results as entities wrapped in ranking properties
  */
 export async function matchParties(
-  allQuestions: QuestionProps[],
+  allQuestions: Array<QuestionProps>,
   answeredQuestions: AnswerDict,
-  candidates: CandidateProps[],
-  parties: PartyProps[],
+  candidates: Array<CandidateProps>,
+  parties: Array<PartyProps>,
   options?: Parameters<typeof match>[3] & {
     matchingType?: Exclude<AppSettingsGroupMatchingType, 'none'>;
   }
-): Promise<RankingProps<PartyProps>[]> {
+): Promise<Array<RankingProps<PartyProps>>> {
   const matchingType = options?.matchingType ?? 'median';
   // Save original answers here, if we will be adding computed averages to the answers dictionary.
   // NB. In the full vaa-data model, this will be handled by a getter function

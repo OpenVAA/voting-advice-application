@@ -1,6 +1,6 @@
-import {type MaybeWrapped, type EntityWithAnswers} from '../../entity';
-import {type NumericQuestion} from '../../question';
 import {NumericFilter} from './numericFilter';
+import {type EntityWithAnswers, type MaybeWrapped} from '../../entity';
+import {type NumericQuestion} from '../../question';
 
 /**
  * A filter for numeric questions.

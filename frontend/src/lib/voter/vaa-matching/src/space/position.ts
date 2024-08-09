@@ -12,7 +12,7 @@ export type MatchingSpaceCoordinate = SignedNormalizedDistance | typeof MISSING_
  */
 export class MatchingSpacePosition {
   constructor(
-    public coordinates: MatchingSpaceCoordinate[],
+    public coordinates: Array<MatchingSpaceCoordinate>,
     public readonly space?: MatchingSpace
   ) {
     if (space && space.dimensions !== coordinates.length)

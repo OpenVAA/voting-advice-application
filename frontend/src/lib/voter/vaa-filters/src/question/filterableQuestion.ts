@@ -24,7 +24,7 @@ export interface NumericQuestion extends QuestionBase {
  */
 export interface ChoiceQuestion extends QuestionBase {
   type: 'singleChoiceOrdinal' | 'singleChoiceCategorical' | 'multipleChoiceCategorical';
-  values: Choice[];
+  values: Array<Choice>;
 }
 
 /**

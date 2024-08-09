@@ -1,5 +1,10 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
+  import {Button} from '$lib/components/button';
+  import {CategoryTag} from '$lib/components/categoryTag';
+  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {HeroEmoji} from '$lib/components/heroEmoji';
+  import {Loading} from '$lib/components/loading';
   import {t} from '$lib/i18n';
   import {
     openFeedbackModal,
@@ -7,13 +12,8 @@
     resultsAvailable,
     settings
   } from '$lib/stores';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {Button} from '$lib/components/button';
-  import {CategoryTag} from '$lib/components/categoryTag';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {Loading} from '$lib/components/loading';
   import {BasicPage} from '$lib/templates/basicPage';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import {getQuestionsContext} from '../../questions.context';
   import {filterAndSortQuestions} from '../../questions.utils';
   import type {PageData} from './$types';
@@ -30,7 +30,7 @@
   let nextQuestionId: string | undefined;
   let progress = 0;
   let nextCategoryId: string | undefined;
-  let questions: QuestionProps[];
+  let questions: Array<QuestionProps>;
   /** Synced version so that we don't have to await for this explicitly */
   let resultsAvailableSync = false;
   $: $resultsAvailable.then((d) => (resultsAvailableSync = d));
@@ -38,7 +38,10 @@
   // Prepare category data reactively when the route param or question categories (triggered by locale changes) change
   $: update(data.categoryId, $opinionQuestionCategories);
 
-  async function update(categoryId: string, promisedCategories: Promise<QuestionCategoryProps[]>) {
+  async function update(
+    categoryId: string,
+    promisedCategories: Promise<Array<QuestionCategoryProps>>
+  ) {
     const cc = await promisedCategories;
     const qq = cc.map((c) => c.questions).flat();
     category = cc.find((c) => c.id === categoryId);

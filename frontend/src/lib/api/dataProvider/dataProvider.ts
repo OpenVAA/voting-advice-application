@@ -18,37 +18,39 @@ export interface DataProvider {
   /**
    * This is a redundant and will likely be made obsolute. Use the other question getters instead.
    */
-  getQuestions: (options?: GetAnyQuestionsOptions) => Promise<QuestionProps[]>;
+  getQuestions: (options?: GetAnyQuestionsOptions) => Promise<Array<QuestionProps>>;
 
   /**
    * Get all the info questions.
    * @returns A Promise with an array of `QuestionProps`
    */
-  getInfoQuestions: (options?: GetQuestionsOptionsBase) => Promise<QuestionProps[]>;
+  getInfoQuestions: (options?: GetQuestionsOptionsBase) => Promise<Array<QuestionProps>>;
 
   /**
    * Get all the opinion questions.
    * @returns A Promise with an array of `QuestionProps`
    */
-  getOpinionQuestions: (options?: GetQuestionsOptionsBase) => Promise<QuestionProps[]>;
+  getOpinionQuestions: (options?: GetQuestionsOptionsBase) => Promise<Array<QuestionProps>>;
 
   /**
    * Get all the parties, regardless whether they are nominated, have nominations or not.
    * @returns A Promise with an array of `PartyProps`
    */
-  getAllParties: (options?: GetAllPartiesOptions) => Promise<PartyProps[]>;
+  getAllParties: (options?: GetAllPartiesOptions) => Promise<Array<PartyProps>>;
 
   /**
    * Get all the nominated parties or parties nominating candidates.
    * @returns A Promise with an array of `PartyProps`
    */
-  getNominatingParties: (options?: GetNominatingPartiesOptions) => Promise<PartyProps[]>;
+  getNominatingParties: (options?: GetNominatingPartiesOptions) => Promise<Array<PartyProps>>;
 
   /**
    * Get all the nominated candidates.
    * @returns A Promise with an array of `CandidateProps`
    */
-  getNominatedCandidates: (options?: GetNominatedCandidatesOptions) => Promise<CandidateProps[]>;
+  getNominatedCandidates: (
+    options?: GetNominatedCandidatesOptions
+  ) => Promise<Array<CandidateProps>>;
 
   /**
    * Optional method for receiving feedback. If this is not provided, the built-in feedback implementation will be used, which saves feedback as json files on the disk.

@@ -1,25 +1,25 @@
 import {
+  type AnswerDict,
+  type AnswerValue,
   castValue,
+  type Choice,
+  type ChoiceQuestion as IChoiceQuestion,
+  ChoiceQuestionFilter,
+  type EntityWithAnswers,
+  type FilterableEntity,
   FilterGroup,
   LogicOp,
   MISSING_VALUE,
+  type NumericQuestion as INumericQuestion,
   NumericQuestionFilter,
   ObjectFilter,
   TextPropertyFilter,
-  TextQuestionFilter,
-  type AnswerDict,
-  type AnswerValue,
-  type Choice,
-  type EntityWithAnswers,
-  type FilterableEntity,
-  type ChoiceQuestion as IChoiceQuestion,
-  type NumericQuestion as INumericQuestion,
   type TextQuestion as ITextQuestion,
-  type WrappedEntity,
+  TextQuestionFilter,
   WRAPPED_ENTITY_KEY,
-  ChoiceQuestionFilter
+  type WrappedEntity
 } from '../';
-import {matchRules, ruleIsActive, copyRules} from '../src/filter/rules';
+import {copyRules, matchRules, ruleIsActive} from '../src/filter/rules';
 
 const LOCALE = 'en';
 
@@ -222,7 +222,7 @@ test('TextQuestionFilter', () => {
 });
 
 test('ChoiceQuestionFilter', () => {
-  const choices: Choice[] = [
+  const choices: Array<Choice> = [
     {key: 0, label: 'M'}, // 3rd in alhabetical order in the 'fi' locale
     {key: 1, label: 'A'}, // 1st
     {key: 2, label: 'Ä'}, // 4th
@@ -231,7 +231,7 @@ test('ChoiceQuestionFilter', () => {
   ];
   const question = new ChoiceQuestion('rightId', choices);
   const answers = [0, 1, 1, 2, 3];
-  const people: AnsweringEntity[] = answers.map(
+  const people: Array<AnsweringEntity> = answers.map(
     (a) =>
       new AnsweringEntity({
         wrongId: undefined,
@@ -262,7 +262,7 @@ test('ChoiceQuestionFilter', () => {
 });
 
 test('ChoiceQuestionFilter: missing values', () => {
-  const choices: Choice[] = [
+  const choices: Array<Choice> = [
     {key: 0, label: 'M'}, // 3rd in alhabetical order in the 'fi' locale
     {key: 1, label: 'A'}, // 1st
     {key: 2, label: 'Ä'}, // 4th
@@ -270,7 +270,7 @@ test('ChoiceQuestionFilter: missing values', () => {
   ];
   const question = new ChoiceQuestion('rightId', choices);
   const answers = [0, 1, 1, 2, undefined];
-  const people: AnsweringEntity[] = answers.map(
+  const people: Array<AnsweringEntity> = answers.map(
     (a) =>
       new AnsweringEntity({
         wrongId: undefined,
@@ -307,7 +307,7 @@ test('ChoiceQuestionFilter: missing values', () => {
 });
 
 test('ChoiceQuestionFilter: multipleVAlues', () => {
-  const choices: Choice[] = [
+  const choices: Array<Choice> = [
     {key: 0, label: 'M'}, // 3rd in alhabetical order in the 'fi' locale
     {key: 1, label: 'A'}, // 1st
     {key: 2, label: 'Ä'}, // 4th
@@ -320,7 +320,7 @@ test('ChoiceQuestionFilter: multipleVAlues', () => {
     [2, 3],
     [0, 1, 2, 3]
   ];
-  const people: AnsweringEntity[] = answers.map(
+  const people: Array<AnsweringEntity> = answers.map(
     (a) =>
       new AnsweringEntity({
         wrongId: undefined,
@@ -357,7 +357,7 @@ test('ObjectFilter', () => {
   ];
   const parties = partyData.map((d) => new Party(d.id, d.name));
   const memberships = [0, 1, 1, 2, 3];
-  const people: PartyMember[] = memberships.map((m) => new PartyMember(parties[m]));
+  const people: Array<PartyMember> = memberships.map((m) => new PartyMember(parties[m]));
   const filter = new ObjectFilter<PartyMember, Party>(
     {
       property: 'party',
@@ -392,7 +392,7 @@ test('ObjectFilter', () => {
 test('NumericQuestionFilter', () => {
   const ages = [10, 40, 50, 90];
   const question = new NumericQuestion('rightId');
-  const people: AnsweringEntity[] = ages.map(
+  const people: Array<AnsweringEntity> = ages.map(
     (a) =>
       new AnsweringEntity({
         wrongId: undefined,
@@ -428,7 +428,7 @@ test('FilterGroup', () => {
   const memberships = [0, 1, 2, 3];
   const ages = [10, 40, 50, 90];
   const question = new NumericQuestion('age');
-  const people: AnsweringPartyMember[] = memberships.map(
+  const people: Array<AnsweringPartyMember> = memberships.map(
     (m, i) => new AnsweringPartyMember({age: ages[i]}, parties[m])
   );
   const partyFilter = new ObjectFilter<AnsweringPartyMember, Party>(
@@ -534,7 +534,7 @@ class ChoiceQuestion implements IChoiceQuestion {
 
   constructor(
     public id: string,
-    public values: Choice[],
+    public values: Array<Choice>,
     public isMultiple: boolean = false
   ) {
     this.type = isMultiple ? 'multipleChoiceCategorical' : 'singleChoiceCategorical';

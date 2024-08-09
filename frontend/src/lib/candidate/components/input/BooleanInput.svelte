@@ -1,7 +1,7 @@
 <script lang="ts">
+  import {onMount} from 'svelte';
   import {Field, FieldGroup} from '$lib/components/common/form';
   import {t} from '$lib/i18n';
-  import {onMount} from 'svelte';
   import InputContainer from './InputContainer.svelte';
   import type {InputFieldProps} from './InputField.type';
 

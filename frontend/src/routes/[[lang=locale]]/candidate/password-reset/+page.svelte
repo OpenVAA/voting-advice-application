@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {page} from '$app/stores';
   import {goto} from '$app/navigation';
+  import {page} from '$app/stores';
   import {getRoute, Route} from '$lib/utils/navigation';
   import PasswordResetPage from './PasswordResetPage.svelte';
 

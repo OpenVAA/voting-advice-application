@@ -1,13 +1,13 @@
 <script lang="ts">
+  import {Button} from '$lib/components/button';
+  import {Feedback} from '$lib/components/feedback';
+  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import {HeroEmoji} from '$lib/components/heroEmoji';
   import {t} from '$lib/i18n';
+  import {settings} from '$lib/stores';
+  import {BasicPage} from '$lib/templates/basicPage';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {settings} from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {Feedback} from '$lib/components/feedback';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {BasicPage} from '$lib/templates/basicPage';
 </script>
 
 <BasicPage title={$t('about.title')}>

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {concatClass} from '$lib/utils/components';
   import {Icon} from '$lib/components/icon';
+  import {concatClass} from '$lib/utils/components';
   import type {ToggleProps} from './Toggle.type';
 
   type $$Props = ToggleProps;

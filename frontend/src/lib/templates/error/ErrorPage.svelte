@@ -1,7 +1,7 @@
 <script lang="ts">
+  import {HeroEmoji} from '$lib/components/heroEmoji';
   import {t} from '$lib/i18n';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
   import type {ErrorPageProps} from './ErrorPage.type';
 
   type $$Props = ErrorPageProps;

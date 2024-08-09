@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {candidateContext} from '$lib/utils/candidateContext';
   import {onMount, setContext} from 'svelte';
+  import {candidateContext} from '$lib/utils/candidateContext';
 
   setContext('candidate', candidateContext);
   const token = candidateContext.token;

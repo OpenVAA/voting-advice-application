@@ -1,7 +1,6 @@
 <script lang="ts">
   import {Field, FieldGroup} from '$lib/components/common/form';
   import InputContainer from './InputContainer.svelte';
-
   import type {InputFieldProps} from './InputField.type';
 
   type $$Props = InputFieldProps<number>;

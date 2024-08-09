@@ -1,28 +1,28 @@
 <script lang="ts">
-  import {writable} from 'svelte/store';
-  import {t} from '$lib/i18n';
-  import {translate} from '$lib/i18n/utils/translate';
-  import {Field, FieldGroup} from '$lib/components/common/form';
-  import {BasicPage} from '$lib/templates/basicPage';
   import {getContext} from 'svelte';
-  import Warning from '$lib/components/warning/Warning.svelte';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import {Button} from '$lib/components/button';
+  import {writable} from 'svelte/store';
   import {goto} from '$app/navigation';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import type {CandidateAnswer} from '$lib/types/candidateAttributes';
-  import {addAnswer, updateAnswer} from '$lib/api/candidate';
-  import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
-  import InputContainer from '$candidate/components/input/InputContainer.svelte';
   import {
+    BooleanInput,
+    DateInput,
+    MultipleChoiceInput,
     PhotoInput,
     SingleChoiceInput,
-    MultipleChoiceInput,
-    BooleanInput,
-    TextInput,
-    DateInput
+    TextInput
   } from '$candidate/components/input';
+  import InputContainer from '$candidate/components/input/InputContainer.svelte';
+  import {addAnswer, updateAnswer} from '$lib/api/candidate';
+  import {Button} from '$lib/components/button';
+  import {Field, FieldGroup} from '$lib/components/common/form';
+  import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
+  import Warning from '$lib/components/warning/Warning.svelte';
+  import {t} from '$lib/i18n';
+  import {translate} from '$lib/i18n/utils/translate';
+  import {BasicPage} from '$lib/templates/basicPage';
   import {answerIsEmpty} from '$lib/utils/answers';
+  import {getRoute, Route} from '$lib/utils/navigation';
+  import type {CandidateAnswer} from '$lib/types/candidateAttributes';
+  import type {CandidateContext} from '$lib/utils/candidateContext';
 
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
   const headerClass = 'uppercase mx-6 my-0 p-0 small-label';
@@ -157,7 +157,7 @@
   let clearLocalStorage: () => void;
 
   const saveToServer = async (question: QuestionProps) => {
-    if (!$infoAnswers || !$unsavedInfoAnswers[question.id].value === undefined) return;
+    if (!$infoAnswers || $unsavedInfoAnswers[question.id].value === undefined) return;
     if ($infoAnswers[question.id] === undefined) {
       // New answer
       const response = await addAnswer(question.id, $unsavedInfoAnswers[question.id].value);

@@ -1,7 +1,6 @@
 <script lang="ts">
+  import {NavGroup, Navigation, NavItem} from '$lib/components/navigation';
   import {t} from '$lib/i18n';
-  import {surveyLink} from '$lib/utils/analytics/survey';
-  import {getRoute, Route} from '$lib/utils/navigation';
   import {
     answeredQuestions,
     openFeedbackModal,
@@ -9,7 +8,8 @@
     resultsAvailable,
     settings
   } from '$lib/stores';
-  import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
+  import {surveyLink} from '$lib/utils/analytics/survey';
+  import {getRoute, Route} from '$lib/utils/navigation';
   import LanguageSelection from './LanguageSelection.svelte';
 
   let resultsAvailableSync = false;

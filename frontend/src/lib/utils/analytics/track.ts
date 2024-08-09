@@ -2,9 +2,9 @@ import {get, writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import {page} from '$app/stores';
 import {settings, userPreferences} from '$lib/stores';
-import {sessionStorageWritable} from '$lib/utils/storage';
 import {getUUID} from '$lib/utils/components';
 import {logDebugError} from '$lib/utils/logger';
+import {sessionStorageWritable} from '$lib/utils/storage';
 
 /**
  * Contains the current pageview event, which will be automatically submitted containing any other submitted events when the user leaves the page or hides or closes the window.
@@ -20,7 +20,7 @@ let pageviewEvent:
 /**
  * Contains any unsubmitted compound events. These will be automatically submitted when the user leaves the app.
  */
-let unsubmittedEvents: TrackingEvent[] = [];
+let unsubmittedEvents: Array<TrackingEvent> = [];
 
 /**
  * Whether we should track events.

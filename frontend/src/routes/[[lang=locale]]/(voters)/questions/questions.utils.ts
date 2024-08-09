@@ -4,9 +4,9 @@ import {logDebugError} from '$lib/utils/logger';
  * Sort and filter `questions` by `selectedCategories` and `firstQuestionId`.
  */
 export function filterAndSortQuestions(
-  questions: QuestionProps[],
+  questions: Array<QuestionProps>,
   firstQuestionId: string | null,
-  selectedCategories: string[] | null
+  selectedCategories: Array<string> | null
 ) {
   let questionsOut = [...questions];
 

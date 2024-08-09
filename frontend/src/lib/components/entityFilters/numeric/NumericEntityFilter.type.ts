@@ -9,5 +9,5 @@ export type NumericEntityFilterProps = SvelteHTMLElements['form'] & {
   /**
    * The targets of the filter objects.
    */
-  targets: MaybeRanked[];
+  targets: Array<MaybeRanked>;
 };

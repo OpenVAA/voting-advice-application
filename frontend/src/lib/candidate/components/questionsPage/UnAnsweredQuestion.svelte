@@ -1,10 +1,10 @@
 <script lang="ts">
+  import {getContext} from 'svelte';
   import {Button} from '$lib/components/button';
   import {CategoryTag} from '$lib/components/categoryTag';
   import {Expander} from '$lib/components/expander';
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {RenderQuestionProps} from './Question.type';
 

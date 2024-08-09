@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {tweened} from 'svelte/motion';
+  import {onMount} from 'svelte';
   import {cubicOut} from 'svelte/easing';
+  import {tweened} from 'svelte/motion';
   import {t} from '$lib/i18n';
   import {
-    type ValidationDetail,
+    minPasswordLength,
     validatePasswordDetails,
-    minPasswordLength
+    type ValidationDetail
   } from '$shared/utils/passwordValidation';
-  import {onMount} from 'svelte';
   export let password = '';
   export let username = '';
   export let validPassword = false;
