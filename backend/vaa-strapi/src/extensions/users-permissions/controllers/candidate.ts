@@ -1,7 +1,5 @@
 'use strict';
-
-// unfortunately we can't use tsconfig paths, @see https://github.com/microsoft/TypeScript/issues/10866
-import {validatePassword} from '../../../shared/utils/passwordValidation';
+import {validatePassword} from 'vaa-shared';
 
 const {
   yup,

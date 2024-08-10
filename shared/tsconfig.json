@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "composite": true,
+    "declarationMap": true,
+
+    "rootDir": "./src",
+    "outDir": "./build"
+  },
+  "include": ["src/**/*"]
+}

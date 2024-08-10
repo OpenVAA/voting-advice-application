@@ -6,28 +6,39 @@ backend into a single image that can be built with just a few commands.
 ## Requirements
 
 - Docker
-- Node.js (if running the app outside of Docker; version 16.18.0 is recommended)
+- Node.js (if running the app outside of Docker; version 18.20.4 is recommended)
 - Ports 1337, 5173 and 5432 should be free for the application if using default settings
   -  These ports can be changed in the `.env` file if desired.
 
 ## Getting started
 
-To build the development Docker image, go to the project root folder make a copy of the `.env.example` file and rename 
-the copy as `.env`.
+Backend module contains `strapi-plugin-import-export-entries` directory which is a separate git repository. In order to initialise it you need to run:
 
-Then you need to install the git submodules by running `git submodule update --init --recursive`.
+```bash
+git submodule update --init --recursive
+```
 
-Finally, run `yarn install` and `yarn dev` in the project root folder.
-These commands will create a Docker image that has the frontend, the backend and a database in a single bundle.
+Then install dependencies for all workspaces:
+
+```bash
+yarn install
+```
+
+To build and run development Docker images for the entire stack (frontend, backend and DB), in the project's root directory:
+
+- Make a copy of the `.env.example` file and rename the copy as `.env`
+- Run `yarn dev`
+
+To bring down the Docker stack properly (delete all containers, images and named volumes which include backend DB volume with potentially seeded mock data) run:
+
+```bash
+yarn dev:down
+```
 
 **When running the project in Docker, only use the `.env` file in project root. You usually
 don't have to touch the separate .env files for frontend and backend.**
 
-If you'd like to have the Strapi backend to be filled with mock data e.g. previewing app functionality or frontend 
-development, set the `GENERATE_MOCK_DATA_ON_INITIALISE` variable as true.
-- You can optionally set `GENERATE_MOCK_DATA_ON_RESTART` to true. This will generate new mock data on every time the 
-Strapi instance is restarted. This feature is only enabled in development builds.
-- You can find more detailed info about the mock data in the [backend](../backend/vaa-strapi/README.md).
+If you want to seed backend DB with mock data (e.g. for demostration, development or testing purposes purposes), please follow the instructions [here](../backend/vaa-strapi/README.md#mock-data).
 
 ### Setting up the backend
 
@@ -43,6 +54,8 @@ need to be re-generated after making changes to the codebase. Hot reloading is e
 this can be enabled by adding the volume `- ./:/opt` as a mounted point in [docker-compose.dev.yml](../backend/vaa-strapi/docker-compose.dev.yml)
 and re-building the Docker container. However, this can make the development process slow at times, so it is not recommended to keep that on
 unless doing direct development on the backend source code.
+
+Note that changes in `vaa-shared` module are not going to be picked up by frontend's or backend's hot reloading capabilities and their Docker images need to be rebuilt in order for the changes to take effect.
 
 ## Stop The Containers
 

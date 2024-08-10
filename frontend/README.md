@@ -5,8 +5,20 @@ find [instructions on running the project with Docker here](../docs/docker-setup
 
 ## Run The Frontend
 
-Once you've cloned the project, install dependencies with `yarn install`. Then copy `.env.example`, rename it as `.env`
-and fill required environment variables there.
+Frontend module depends on `vaa-shared` and you need to build it prior to using `vaa-frontend` directly (no need if you use it via Docker):
+
+```bash
+yarn workspace vaa-shared install
+yarn workspace vaa-shared build
+```
+
+Install frontend dependencies:
+
+```bash
+yarn install
+```
+
+Then copy `.env.example`, rename it as `.env` and fill required environment variables there.
 
 ## Development
 

@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "vaa-frontend",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -67,6 +67,7 @@
     "@sveltekit-i18n/parser-icu": "^1.0.8",
     "intl-messageformat": "^10.5.14",
     "isomorphic-dompurify": "^2.12.0",
-    "sveltekit-i18n": "^2.4.2"
+    "sveltekit-i18n": "^2.4.2",
+    "vaa-shared": "1.0.0"
   }
 }
