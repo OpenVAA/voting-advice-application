@@ -1,5 +1,4 @@
-import type {SignedNormalizedDistance} from '../distance';
-import type {MISSING_VALUE} from '../missingValue';
+import type {SignedNormalizedDistance, MISSING_VALUE} from 'vaa-shared';
 import type {MatchingSpace} from './matchingSpace';
 
 /**

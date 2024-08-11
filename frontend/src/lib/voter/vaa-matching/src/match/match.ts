@@ -1,5 +1,5 @@
+import type {UnsignedNormalizedDistance} from 'vaa-shared';
 import type {HasMatchableAnswers} from '../entity';
-import type {UnsignedNormalizedDistance} from '../distance';
 import type {MatchableQuestionGroup} from '../question';
 import {MatchBase} from './matchBase';
 import type {SubMatch} from './subMatch';

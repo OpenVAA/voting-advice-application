@@ -1,8 +1,5 @@
-import {
-  assertUnsignedNormalized,
-  NORMALIZED_DISTANCE_EXTENT,
-  type UnsignedNormalizedDistance
-} from '../distance';
+import {NORMALIZED_DISTANCE_EXTENT, type UnsignedNormalizedDistance} from 'vaa-shared';
+import {assertUnsignedNormalized} from '../distance';
 
 /**
  * The base class for a matching result. In most cases, the subclass

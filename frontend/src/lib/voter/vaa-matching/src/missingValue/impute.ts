@@ -1,8 +1,5 @@
-import {
-  NORMALIZED_DISTANCE_EXTENT,
-  assertSignedNormalized,
-  type SignedNormalizedDistance
-} from '../distance';
+import {NORMALIZED_DISTANCE_EXTENT, type SignedNormalizedDistance} from 'vaa-shared';
+import {assertSignedNormalized} from '../distance';
 import {MissingValueBias} from './bias';
 import {MissingValueDistanceMethod} from './distanceMethod';
 

@@ -2,7 +2,7 @@ import {
   NORMALIZED_DISTANCE_EXTENT,
   type SignedNormalizedDistance,
   type UnsignedNormalizedDistance
-} from './distance';
+} from 'vaa-shared';
 
 /**
  * Assert that `value` is a `SignedNormalizedDistance` within the correct range.

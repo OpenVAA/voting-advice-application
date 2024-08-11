@@ -1,5 +1,4 @@
-import {NORMALIZED_DISTANCE_EXTENT} from '../distance';
-import {MISSING_VALUE} from '../missingValue';
+import {NORMALIZED_DISTANCE_EXTENT, MISSING_VALUE} from 'vaa-shared';
 import type {MatchingSpaceCoordinate} from '../space';
 import type {MatchableQuestion} from './matchableQuestion';
 

@@ -1,3 +1,9 @@
+import {
+  MISSING_VALUE,
+  NORMALIZED_DISTANCE_EXTENT,
+  type SignedNormalizedDistance,
+  type UnsignedNormalizedDistance
+} from 'vaa-shared';
 import {MatchingAlgorithm} from '../src/algorithms';
 import type {HasMatchableAnswers} from '../src/entity';
 import {
@@ -5,15 +11,11 @@ import {
   type DistanceMeasurementOptions,
   DistanceMetric,
   manhattanDistance,
-  measureDistance,
-  NORMALIZED_DISTANCE_EXTENT,
-  type SignedNormalizedDistance,
-  type UnsignedNormalizedDistance
+  measureDistance
 } from '../src/distance';
 import type {Match} from '../src/match';
 import {
   imputeMissingValues,
-  MISSING_VALUE,
   MissingValueBias,
   MissingValueDistanceMethod
 } from '../src/missingValue';

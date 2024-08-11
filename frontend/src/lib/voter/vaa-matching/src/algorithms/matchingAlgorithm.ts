@@ -1,7 +1,8 @@
+import {MISSING_VALUE} from 'vaa-shared';
 import type {HasMatchableAnswers} from '../entity';
 import {measureDistance, DistanceMetric} from '../distance';
 import {Match, SubMatch} from '../match';
-import {MISSING_VALUE, type MissingValueImputationOptions} from '../missingValue';
+import type {MissingValueImputationOptions} from '../missingValue';
 import {
   createSubspace,
   MatchingSpace,

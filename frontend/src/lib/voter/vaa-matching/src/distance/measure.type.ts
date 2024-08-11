@@ -1,5 +1,5 @@
+import type {UnsignedNormalizedDistance} from 'vaa-shared';
 import type {MissingValueImputationOptions} from '../missingValue';
-import type {UnsignedNormalizedDistance} from './distance';
 import type {DistanceMetric} from './metric';
 
 /**

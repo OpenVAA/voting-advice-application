@@ -1,7 +1,7 @@
-import {imputeMissingValues, MISSING_VALUE} from '../missingValue';
+import {MISSING_VALUE, type UnsignedNormalizedDistance} from 'vaa-shared';
+import {imputeMissingValues} from '../missingValue';
 import type {MatchingSpace} from '../space/matchingSpace';
 import type {MatchingSpacePosition} from '../space/position';
-import type {UnsignedNormalizedDistance} from './distance';
 import {DistanceMetric, directionalDistance, manhattanDistance} from './metric';
 import type {DistanceMeasurementOptions, GlobalAndSubspaceDistances} from './measure.type';
 

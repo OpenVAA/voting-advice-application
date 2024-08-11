@@ -1,5 +1,9 @@
 # Matching algorithms (`vaa-matching`)
 
+## Dependencies
+
+`vaa-shared`: Definitions related to matching space distances and object ids are shared between this and other `vaa` modules.
+
 ## Quick start
 
 1. Create question objects that implement [`MatchableQuestion`](./src/question/matchableQuestion.ts)
