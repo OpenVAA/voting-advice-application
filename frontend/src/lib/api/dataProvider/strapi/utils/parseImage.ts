@@ -5,8 +5,7 @@ import type {StrapiImageData} from '../strapiDataProvider.type';
 /**
  * Parse image properties from Strapi, providing the full image url as a default for the thumbnail.
  */
-
-export const parseImage = (image: StrapiImageData): ImageProps => {
+export function parseImage(image: StrapiImageData): ImageProps {
   const thumbnailUrl = image.formats?.thumbnail?.url || image.url;
 
   const absoluteUrl = isAbsoluteUrl(image.url)
@@ -22,4 +21,4 @@ export const parseImage = (image: StrapiImageData): ImageProps => {
       url: absoluteThumbnailUrl
     }
   };
-};
+}

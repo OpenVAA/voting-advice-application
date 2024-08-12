@@ -19,14 +19,14 @@
   export let placeholder: $$Props['placeholder'] = '';
   export let locked: $$Props['locked'] = false;
 
-  export const deleteLocal = () => {
+  export function deleteLocal() {
     if (!localStorageId) {
       return;
     }
     for (const locale of $locales) {
       localStorage.removeItem(localStorageId + '-' + locale);
     }
-  };
+  }
 
   // Locked indicates that the text can no longer be edited
   // but still allows the user to view entered text including translations whereas

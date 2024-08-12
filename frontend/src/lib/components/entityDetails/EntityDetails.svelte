@@ -37,8 +37,9 @@
     ({entity} = parseMaybeRanked(content));
     entityType = getEntityType(entity);
     if (!entityType) error(500, 'Unknown entity type');
-    const inclQuestion = (q: QuestionProps) =>
-      !q.entityType || q.entityType === entityType || q.entityType === 'all';
+    function inclQuestion(q: QuestionProps) {
+      return !q.entityType || q.entityType === entityType || q.entityType === 'all';
+    }
     filteredInfoQuestions = infoQuestions.filter(inclQuestion);
     filteredOpinionQuestions = opinionQuestions.filter(inclQuestion);
     tabContents = [];

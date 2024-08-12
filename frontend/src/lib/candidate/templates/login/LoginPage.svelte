@@ -25,7 +25,7 @@
     appLanguageCode = user?.candidate?.appLanguage?.localisationCode ?? '';
   });
 
-  const onLogin = async () => {
+  async function onLogin() {
     if (!(await logIn(email, password))) {
       wrongCredentials = true;
     } else {
@@ -34,7 +34,7 @@
         await goto($getRoute({locale: appLanguageCode}));
       }
     }
-  };
+  }
   if ($newUserEmail != null) {
     email = $newUserEmail;
     showPasswordSetMessage = true;

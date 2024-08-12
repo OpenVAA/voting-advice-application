@@ -9,7 +9,7 @@ import {keys, locales} from '../translations/index';
  * For example `{a: 'abc', b: {c: 'def'}}` is returned as `['<prefix>.a', '<prefix>.b.c']`
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const flattenKeys = (obj: any, prefix: string): Array<string> => {
+function flattenKeys(obj: any, prefix: string): Array<string> {
   const res = Array<string>();
   for (const key in obj) {
     if (typeof obj[key] !== 'object') {
@@ -19,17 +19,17 @@ const flattenKeys = (obj: any, prefix: string): Array<string> => {
     }
   }
   return res.sort();
-};
+}
 
 /**
  * Reads contents of translation file and returns sorted array of flattened keys.
  */
-const getFlattenedTranslationKeys = (locale: string, filename: string): Array<string> => {
+function getFlattenedTranslationKeys(locale: string, filename: string): Array<string> {
   const filePath = path.join(dirPath, locale, filename);
   const fileContentString = fs.readFileSync(filePath).toString();
   const fileContentJSON = JSON.parse(fileContentString);
   return flattenKeys(fileContentJSON, filename.replace('.json', ''));
-};
+}
 
 // Path to translation files from the frontend directory
 const dirPath = path.join('src', 'lib', 'i18n', 'translations');

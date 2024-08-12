@@ -36,7 +36,7 @@
   }
 
   // handle the change when a language is selected
-  const onLanguageSelect = (e: Event) => {
+  function onLanguageSelect(e: Event) {
     const selected = options
       ? options.find((q) => q.label === (e.currentTarget as HTMLSelectElement).value)
       : undefined;
@@ -46,7 +46,7 @@
       selectElement.selectedIndex = 0;
       onChange?.({questionId, value});
     }
-  };
+  }
 </script>
 
 <!--

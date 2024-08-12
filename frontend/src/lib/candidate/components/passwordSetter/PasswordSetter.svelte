@@ -13,7 +13,7 @@
 
   $: disableSetButton = validPassword && passwordConfirmation.length > 0;
   // Dispatcher used for a function that calls the submit button's function in parent component
-  export let buttonPressed = () => {};
+  export let buttonPressed: () => void;
 </script>
 
 <!--
