@@ -10,10 +10,10 @@
   /** variable used to refer to the input box in code to change its type*/
   let inputbox: HTMLInputElement;
   /** function that hides and reveals the password and changes the icon of the button*/
-  const toggleRevealed = () => {
+  function toggleRevealed() {
     passwordRevealed = !passwordRevealed;
     inputbox.type = passwordRevealed ? 'text' : 'password';
-  };
+  }
 </script>
 
 <!--

@@ -14,7 +14,9 @@ import {readable, type Readable} from 'svelte/store';
 export const darkMode: Readable<boolean> = readable(false, (set) => {
   if (!browser || !window) return;
   const query = window.matchMedia('(prefers-color-scheme: dark)');
-  const updateDarkMode = (query: MediaQueryList | MediaQueryListEvent) => set(query.matches);
+  function updateDarkMode(query: MediaQueryList | MediaQueryListEvent) {
+    return set(query.matches);
+  }
   // Set initial value
   updateDarkMode(query);
   // Listen for changes

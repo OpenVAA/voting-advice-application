@@ -7,12 +7,12 @@ import {parseImage} from './parseImage';
 /**
  * Parse Strapi Party data into a `PartyProps` object.
  */
-export const parseParty = (
+export function parseParty(
   party: StrapiPartyData,
   locale?: string,
   includeAnswers = false,
   includeMembers = false
-): PartyProps => {
+): PartyProps {
   const id = `${party.id}`;
   const attr = party.attributes;
   const name = translate(attr.name, locale);
@@ -30,4 +30,4 @@ export const parseParty = (
   if (photo) props.photo = parseImage(photo);
   if (includeMembers) props.memberCandidateIds = attr.candidates.data.map((c) => `${c.id}`);
   return props;
-};
+}

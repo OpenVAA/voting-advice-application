@@ -31,12 +31,12 @@
   const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';
 
   // function for clicking the portrait input field with space
-  const handlePortraitInput = (event: KeyboardEvent) => {
+  function handlePortraitInput(event: KeyboardEvent) {
     if (event.code === 'Space') {
       event.preventDefault(); // Prevent default behavior (e.g., scrolling the page)
       portraitInput?.click();
     }
-  };
+  }
 
   // add an event listener to the portrait label for keyboard navigation
   onMount(() => {
@@ -49,7 +49,7 @@
   });
 
   // change the profile image, does not upload it to strapi
-  const changePhoto = (e: Event) => {
+  function changePhoto(e: Event) {
     const target = e.target as HTMLInputElement;
     if (target.files) {
       const file = target.files[0];
@@ -65,10 +65,10 @@
         reader.readAsDataURL(file);
       }
     }
-  };
+  }
 
   // upload the current image file to strapi
-  export const uploadPhoto = async () => {
+  export async function uploadPhoto() {
     if (image && imageHasChanged) {
       const res = await uploadFiles([image]);
 
@@ -82,7 +82,7 @@
       photo = uploadedPhoto;
       imageHasChanged = false;
     }
-  };
+  }
 </script>
 
 <!--

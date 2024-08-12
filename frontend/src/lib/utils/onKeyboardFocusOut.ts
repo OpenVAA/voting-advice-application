@@ -22,15 +22,19 @@
  */
 export function onKeyboardFocusOut(node: HTMLElement, callback: () => void) {
   let focused = false;
-  const onKeyDown = (event: KeyboardEvent) => {
+  function onKeyDown(event: KeyboardEvent) {
     if (event.code === 'Tab') {
       setTimeout(() => {
         if (!focused) callback();
       }, 50);
     }
-  };
-  const onFocusOut = () => (focused = false);
-  const onFocusIn = () => (focused = true);
+  }
+  function onFocusOut() {
+    return (focused = false);
+  }
+  function onFocusIn() {
+    return (focused = true);
+  }
   node.addEventListener('keydown', onKeyDown);
   node.addEventListener('focusout', onFocusOut);
   node.addEventListener('focusin', onFocusIn);

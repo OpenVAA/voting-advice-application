@@ -5,11 +5,11 @@
 
   export let active: boolean = false;
 
-  const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+  function handleBeforeUnload(e: BeforeUnloadEvent) {
     if (active) {
       e.preventDefault();
     }
-  };
+  }
 
   beforeNavigate((e) => {
     if (active && !window.confirm($t('components.preventNavigation.unsavedChanges'))) {

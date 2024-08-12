@@ -11,7 +11,7 @@
   $: registrationCode = $page.url.searchParams.get('registrationCode');
   $: onRegistrationCodeChange(registrationCode);
 
-  const onRegistrationCodeChange = (registrationCode: string | null) => {
+  function onRegistrationCodeChange(registrationCode: string | null) {
     if (!registrationCode) return;
 
     loading = true;
@@ -31,7 +31,7 @@
       .finally(() => {
         loading = false;
       });
-  };
+  }
 </script>
 
 {#if registrationCode && validRegistrationCode && !loading}

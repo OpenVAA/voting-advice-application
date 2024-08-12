@@ -6,10 +6,10 @@ import {parseCustomData} from './parseCustomData';
 /**
  * Parse StrapiQuestionCategory data into a `QuestionCategoryProps` object, which must be supplied with the actual `questions` later.
  */
-export const parseQuestionCategory = (
+export function parseQuestionCategory(
   category: StrapiQuestionCategoryData,
   locale?: string
-): QuestionCategoryProps => {
+): QuestionCategoryProps {
   const id = `${category.id}`;
   const attr = category.attributes;
   const name = translate(attr.name, locale);
@@ -26,4 +26,4 @@ export const parseQuestionCategory = (
     questions: []
   };
   return props;
-};
+}

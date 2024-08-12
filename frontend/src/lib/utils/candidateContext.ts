@@ -84,7 +84,7 @@ const progress = derived(
   }
 );
 
-const logIn = async (email: string, password: string) => {
+async function logIn(email: string, password: string) {
   const response = await authenticate(email, password);
   if (!response.ok) return false;
   const data = await response.json();
@@ -92,13 +92,13 @@ const logIn = async (email: string, password: string) => {
   localStorage.setItem('token', data.jwt);
   await loadUserData();
   return true;
-};
+}
 
-const loadLocalStorage = () => {
+function loadLocalStorage() {
   token.set(localStorage.getItem('token'));
-};
+}
 
-const loadUserData = async () => {
+async function loadUserData() {
   const currentUser = await me();
   if (!currentUser) {
     logOut();
@@ -106,7 +106,7 @@ const loadUserData = async () => {
   }
   answersLocked.set(!!currentUser.candidate?.nomination?.election?.answersLocked);
   user.set(currentUser);
-};
+}
 
 function logOut() {
   user.set(null);
