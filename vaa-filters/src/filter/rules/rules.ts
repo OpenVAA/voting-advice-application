@@ -4,7 +4,7 @@ import type {Rules, Rule} from './rules.type';
 /**
  * Create a copy of the filter's rules.
  */
-export function copyRules<T extends Rules>(rules: T): T {
+export function copyRules<TRule extends Rules>(rules: TRule): TRule {
   const copy: Rules = {};
   for (const k in rules) {
     const v = rules[k];
@@ -23,7 +23,7 @@ export function copyRules<T extends Rules>(rules: T): T {
       copy[k] = v;
     }
   }
-  return copy as T;
+  return copy as TRule;
 }
 
 /**

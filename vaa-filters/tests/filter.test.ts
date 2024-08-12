@@ -501,7 +501,7 @@ class AnsweringPartyMember extends AnsweringEntity {
 /**
  * Create a wrapped entity.
  */
-function wrap<T extends FilterableEntity>(entity: T): WrappedEntity<T> {
+function wrap<TEntity extends FilterableEntity>(entity: TEntity): WrappedEntity<TEntity> {
   return {
     [WRAPPED_ENTITY_KEY]: entity
   };

@@ -58,12 +58,12 @@ function warnOnUnsupportedOptions(options: GetDataOptionsBase = {}) {
 // INTERNAL GETTERS AND UTILITIES
 ///////////////////////////////////////////////////////
 
-function readFile<T>(filename: string): Promise<T> {
+function readFile<TType>(filename: string): Promise<TType> {
   const fp = path.join(process.cwd(), DataFolder.Root, filename);
   logDebugError(`[localDataProvider] readFile: ${fp}`);
   return fs.promises
     .readFile(fp)
-    .then((data) => JSON.parse(data.toString()) as T)
+    .then((data) => JSON.parse(data.toString()) as TType)
     .catch((e) => error(500, `Error reading file ${filename}: ${'message' in e ? e.message : e}`));
 }
 

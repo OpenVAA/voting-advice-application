@@ -329,14 +329,14 @@ declare global {
   /**
    * Conforms to `vaa-filters.WrappedEntity`
    */
-  interface WrappedEntity<T extends EntityProps = EntityProps> {
-    entity: T;
+  interface WrappedEntity<TEntity extends EntityProps = EntityProps> {
+    entity: TEntity;
   }
 
   /**
    * Conforms to `vaa-matching.Match`
    */
-  interface RankingProps<T extends EntityProps = EntityProps> extends WrappedEntity<T> {
+  interface RankingProps<TEntity extends EntityProps = EntityProps> extends WrappedEntity<TEntity> {
     score: number;
     subMatches?: SubMatchProps[];
   }
@@ -344,7 +344,10 @@ declare global {
   /**
    * A possibly ranked entity, accepted by all components consuming entities.
    */
-  type MaybeRanked<T extends EntityProps = EntityProps> = T | WrappedEntity<T> | RankingProps<T>;
+  type MaybeRanked<TEntity extends EntityProps = EntityProps> =
+    | TEntity
+    | WrappedEntity<TEntity>
+    | RankingProps<TEntity>;
 
   /**
    * The submatches of a `RankingProps`

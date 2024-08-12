@@ -7,13 +7,13 @@ import {intersect} from './intersect';
  * The abstract base class for filters with enumerated values that can be listed, such as questions with enumerated choices.
  */
 export abstract class EnumeratedFilter<
-  T extends MaybeWrapped,
-  V,
-  O extends object = object
-> extends Filter<T, V> {
+  TEntity extends MaybeWrapped,
+  TValue,
+  TObject extends object = object
+> extends Filter<TEntity, TValue> {
   protected _rules: {
-    exclude?: MaybeMissing<V>[];
-    include?: MaybeMissing<V>[];
+    exclude?: Array<MaybeMissing<TValue>>;
+    include?: Array<MaybeMissing<TValue>>;
   } = {};
 
   /////////////////////////////////////////////////////////////////////////////////
@@ -25,11 +25,11 @@ export abstract class EnumeratedFilter<
    * @input A list of entities.
    * @returns An array of the values, their counts and possible other properties.
    */
-  parseValues(targets: T[]): Array<ReturnType<typeof this.processValueForDisplay>> {
-    const values = new Map<MaybeMissing<V>, number>();
+  parseValues(targets: Array<TEntity>): Array<ReturnType<typeof this.processValueForDisplay>> {
+    const values = new Map<MaybeMissing<TValue>, number>();
     targets.forEach((t) => {
       const valueOrArray = this.getValue(getEntity(t));
-      let valueArray: MaybeMissing<V>[];
+      let valueArray: Array<MaybeMissing<TValue>>;
       if (this.options.multipleValues) {
         if (!Array.isArray(valueOrArray))
           throw new Error(`Filter expected multiple values, but got ${valueOrArray}`);
@@ -50,14 +50,14 @@ export abstract class EnumeratedFilter<
   /**
    * Sort the values and return them.
    */
-  sortValues(values: MaybeMissing<V>[]) {
+  sortValues(values: Array<MaybeMissing<TValue>>) {
     return values.sort((a, b) => {
       if (a === MISSING_VALUE) {
         if (b === MISSING_VALUE) return 0;
         return 1;
       }
       if (b === MISSING_VALUE) return -1;
-      return this.compareValues(a as V, b as V);
+      return this.compareValues(a as TValue, b as TValue);
     });
   }
 
@@ -65,23 +65,23 @@ export abstract class EnumeratedFilter<
   // RULES
   /////////////////////////////////////////////////////////////////////////////////
 
-  get exclude(): MaybeMissing<V>[] {
+  get exclude(): Array<MaybeMissing<TValue>> {
     return this._rules.exclude ?? [];
   }
 
-  get include(): MaybeMissing<V>[] {
+  get include(): Array<MaybeMissing<TValue>> {
     return this._rules.include ?? [];
   }
 
-  set exclude(values: MaybeMissing<V>[] | undefined) {
+  set exclude(values: Array<MaybeMissing<TValue>> | undefined) {
     this.setRule('exclude', values);
   }
 
-  set include(values: MaybeMissing<V>[] | undefined) {
+  set include(values: Array<MaybeMissing<TValue>> | undefined) {
     this.setRule('include', values);
   }
 
-  testValue(value: MaybeMissing<V>) {
+  testValue(value: MaybeMissing<TValue>) {
     if (this.options.multipleValues)
       throw new Error(`Single values are not supported by this filter: ${value}`);
     if (this._rules.exclude?.includes(value)) return false;
@@ -89,7 +89,7 @@ export abstract class EnumeratedFilter<
     return true;
   }
 
-  testValues(values: MaybeMissing<V>[]) {
+  testValues(values: Array<MaybeMissing<TValue>>) {
     if (!this.options.multipleValues)
       throw new Error(`Multiple values are not supported by this filter: ${values.join(', ')}`);
     const {exclude, include} = this._rules;
@@ -105,18 +105,18 @@ export abstract class EnumeratedFilter<
   /**
    * Compare to values for sorting. Note that missing values are always sorted to the end and handled before this method is called.
    */
-  abstract compareValues(a: V, b: V): number;
+  abstract compareValues(a: TValue, b: TValue): number;
 
   /**
    * Process a value and its count for display.
    * @returns An object containing the value, its count, whether it is missing, and the associated object, e.g. a Choice or a Party.
    */
   abstract processValueForDisplay(
-    value: MaybeMissing<V>,
+    value: MaybeMissing<TValue>,
     count: number
   ): {
-    value: MaybeMissing<V>;
+    value: MaybeMissing<TValue>;
     count: number;
-    object?: O;
+    object?: TObject;
   };
 }
