@@ -53,7 +53,7 @@
 {/if}
 
 <!-- Ask for event tracking consent if we have no explicit answer -->
-{#if $settings.analytics.platform && $settings.analytics.trackEvents}
+{#if $settings.analytics?.platform && $settings.analytics?.trackEvents}
   {#if !$userPreferences.dataCollection?.consent || $userPreferences.dataCollection?.consent === 'indetermined'}
     <DataConsentPopup />
   {/if}

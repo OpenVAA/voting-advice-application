@@ -4,16 +4,13 @@ import parser, {type Config} from '@sveltekit-i18n/parser-icu';
 import IntlMessageFormat from 'intl-messageformat';
 import {logDebugError} from '$lib/utils/logger';
 import {ucFirst} from '$lib/utils/text/ucFirst';
-import localSettings from '$lib/config/settings.json';
+import {staticSettings} from 'vaa-shared';
 import {derived, get} from 'svelte/store';
 import {DEFAULT_PAYLOAD_KEYS, staticTranslations, type TranslationsPayload} from './translations';
 import {matchLocale, purgeTranslations} from './utils';
 import type {TranslationKey} from '$types';
 
-// We don't want to use the implicit json file typing
-const settings = localSettings as AppSettings;
-
-const {supportedLocales} = settings;
+const {supportedLocales} = staticSettings;
 let defaultLocale = '';
 /** Language names for translations */
 const langNames: Record<string, string> = {};
@@ -176,9 +173,9 @@ function updateDefaultPayload() {
   for (const [key, path] of Object.entries(DEFAULT_PAYLOAD_KEYS)) {
     defaultPayload[key] = t(path);
   }
-  defaultPayload.adminEmail = settings.admin.email;
-  defaultPayload.analyticsLink = settings.analytics?.platform?.infoUrl
-    ? `<a href="${settings.analytics.platform.infoUrl}" target="_blank">${ucFirst(settings.analytics.platform.name)}</a>`
+  defaultPayload.adminEmail = staticSettings.admin.email;
+  defaultPayload.analyticsLink = staticSettings.analytics?.platform?.infoUrl
+    ? `<a href="${staticSettings.analytics.platform.infoUrl}" target="_blank">${ucFirst(staticSettings.analytics.platform.name)}</a>`
     : '—';
 }
 

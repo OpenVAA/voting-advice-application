@@ -1,13 +1,13 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import localSettings from '$lib/config/settings.json';
+  import {staticSettings} from 'vaa-shared';
   import {appType} from '$lib/stores';
   import {ErrorPage} from '$lib/templates/error';
 
   $appType = 'candidate';
 </script>
 
-{#if localSettings.dataProvider.supportsCandidateApp}
+{#if staticSettings.dataProvider.supportsCandidateApp}
   {#await import('$lib/candidate/components/candidateContext') then { CandidateContextProvider }}
     <svelte:component this={CandidateContextProvider}>
       <slot />
