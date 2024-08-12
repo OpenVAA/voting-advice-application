@@ -56,10 +56,7 @@
     });
     if ($settings.results.showFeedbackPopup != null)
       startFeedbackPopupCountdown($settings.results.showFeedbackPopup);
-    if (
-      $settings.analytics.survey?.showIn &&
-      $settings.analytics.survey.showIn.includes('resultsPopup')
-    )
+    if ($settings.survey?.showIn && $settings.survey.showIn.includes('resultsPopup'))
       startSurveyPopupCountdown($settings.results.showSurveyPopup);
   });
 

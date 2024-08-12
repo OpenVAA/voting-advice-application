@@ -29,7 +29,7 @@ Display a prompt for filling out a user survey if the setting is enabled and the
 ```
 -->
 
-{#if clicked || ($settings.analytics?.survey && $userPreferences.survey?.status !== 'received')}
+{#if clicked || ($settings.survey && $userPreferences.survey?.status !== 'received')}
   <div
     {...concatClass(
       $$restProps,

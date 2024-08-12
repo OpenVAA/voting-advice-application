@@ -2,7 +2,6 @@ import {derived, get, writable} from 'svelte/store';
 import type {Readable, Writable} from 'svelte/store';
 import {browser} from '$app/environment';
 import {page} from '$app/stores';
-import localSettings from '$lib/config/settings.json';
 import {startEvent, track} from '$lib/utils/analytics/track';
 import {logDebugError} from '$lib/utils/logger';
 import {wrap} from '$lib/utils/entities';
@@ -10,17 +9,16 @@ import {match, matchParties} from '$lib/utils/matching';
 import {sortCandidates, sortParties} from '$lib/utils/sort';
 import {localStorageWritable} from '$lib/utils/storage';
 import {extractCategories, filterVisible} from '$lib/utils/questions';
+import {dynamicSettings, staticSettings} from 'vaa-shared';
 
 /**
  * Contains the currently effective app settings.
  * NB! Settings are overwritten by root key.
  */
-export const settings: Readable<AppSettings> = derived(
-  [page],
-  ([$page]) =>
-    ($page?.data?.appSettings
-      ? Object.assign(localSettings, $page.data.appSettings)
-      : localSettings) as AppSettings
+export const settings: Readable<AppSettings> = derived([page], ([$page]) =>
+  $page?.data?.appSettings
+    ? {...dynamicSettings, ...$page.data.appSettings, ...staticSettings}
+    : {...dynamicSettings, ...staticSettings}
 );
 
 /**

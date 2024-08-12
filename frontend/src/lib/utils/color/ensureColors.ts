@@ -1,8 +1,8 @@
-import settings from '$lib/config/settings.json';
+import {staticSettings} from 'vaa-shared';
 import {adjustContrast} from './adjustContrast';
 
-const bg = settings.colors?.light?.['base-300'] ?? 'd1ebee';
-const bgDark = settings.colors?.dark?.['base-300'] ?? '1f2324';
+const bg = staticSettings.colors?.light?.['base-300'] ?? 'd1ebee';
+const bgDark = staticSettings.colors?.dark?.['base-300'] ?? '1f2324';
 
 /**
  * Tries to ensure that `color` and `colorDark` have a sufficient contrast ratio on their respective backgrounds. If `colorDark` is `undefined`, it will be constructed from `color`, if available. In case either color cannot be constructed, an empty string is returned for it.

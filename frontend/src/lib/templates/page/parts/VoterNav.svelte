@@ -60,9 +60,9 @@ A template part that outputs the navigation menu for the Voter App for use in th
     <NavItem href={$getRoute(Route.About)} icon="info" text={$t('about.title')} />
     <NavItem href={$getRoute(Route.Privacy)} icon="privacy" text={$t('privacy.title')} />
   </NavGroup>
-  {#if $settings.analytics.survey?.showIn?.includes('navigation') || $openFeedbackModal}
+  {#if $settings.survey?.showIn?.includes('navigation') || $openFeedbackModal}
     <NavGroup>
-      {#if $settings.analytics.survey?.showIn?.includes('navigation')}
+      {#if $settings.survey?.showIn?.includes('navigation')}
         <NavItem
           href={$surveyLink}
           target="_blank"
