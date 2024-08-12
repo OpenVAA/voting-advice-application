@@ -21,16 +21,18 @@ export function createStorageContext<TContext extends StorageContextContent>(
       return [key, storageWritable(storageType, `${name}.${key}`, value)];
     })
   ) as S;
-  const init = () => setContext<S>(name, context);
-  const get = () => {
+  function init() {
+    return setContext<S>(name, context);
+  }
+  function get() {
     const ctx = getContext<S>(name);
     if (!ctx) {
       init();
       return context;
     }
     return ctx;
-  };
-  const set = (content: Partial<TContext>) => {
+  }
+  function set(content: Partial<TContext>) {
     const ctx = get();
     for (const [key, value] of Object.entries(content)) {
       ctx[key].set(value);

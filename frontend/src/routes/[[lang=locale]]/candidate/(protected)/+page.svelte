@@ -13,7 +13,7 @@
     getContext<CandidateContext>('candidate');
   const username = $user?.candidate?.firstName;
 
-  const getNextAction = () => {
+  function getNextAction() {
     if (
       $unansweredRequiredInfoQuestions?.length === 0 &&
       $unansweredOpinionQuestions?.length === 0
@@ -64,7 +64,7 @@
         : $t('candidateApp.homePage.basicInfoButtonView'),
       href: $getRoute(Route.CandAppProfile)
     };
-  };
+  }
 
   $: nextAction = {
     $locale, // Trigger reactivity when locale changes

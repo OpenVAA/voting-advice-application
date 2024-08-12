@@ -21,7 +21,7 @@
   const { unansweredOpinionQuestions, unansweredRequiredInfoQuestions, logOut } =
     getContext<CandidateContext>('candidate');
 
-  const triggerLogout = () => {
+  function triggerLogout() {
     if (
       $unansweredOpinionQuestions?.length !== 0 ||
       $unansweredRequiredInfoQuestions?.length !== 0
@@ -30,15 +30,15 @@
     } else {
       logout();
     }
-  };
+  }
 
-  const logout = async () => {
+  async function logout() {
     await logOut();
     closeModal();
     if (!stayOnPage) {
       await goto($getRoute(Route.CandAppHome));
     }
-  };
+  }
 </script>
 
 <!--

@@ -100,17 +100,17 @@
   let errorMessage = '';
   let errorTimeout: NodeJS.Timeout;
 
-  const showError = (message: string) => {
+  function showError(message: string) {
     errorMessage = message;
     clearTimeout(errorTimeout);
     errorTimeout = setTimeout(() => {
       errorMessage = '';
     }, 5000);
-  };
+  }
 
   let loading = false;
 
-  const submitForm = async () => {
+  async function submitForm() {
     if ($questionsLocked) {
       await goto($getRoute(Route.CandAppHome));
       return;
@@ -139,24 +139,24 @@
     if ($unansweredOpinionQuestions?.length !== 0 && !$questionsLocked)
       await goto($getRoute(Route.CandAppQuestions));
     else await goto($getRoute(Route.CandAppHome));
-  };
+  }
 
-  const updateInfoAnswerStore = (
+  function updateInfoAnswerStore(
     answerId: CandidateAnswer['id'],
     question: QuestionProps,
     value: AnswerProps['value']
-  ) => {
+  ) {
     if ($infoAnswers) {
       $infoAnswers[question.id] = {
         id: answerId,
         value
       };
     }
-  };
+  }
 
   let clearLocalStorage: () => void;
 
-  const saveToServer = async (question: QuestionProps) => {
+  async function saveToServer(question: QuestionProps) {
     if (!$infoAnswers || $unsavedInfoAnswers[question.id].value === undefined) return;
     if ($infoAnswers[question.id] === undefined) {
       // New answer
@@ -184,7 +184,7 @@
       }
       updateInfoAnswerStore(savedAnswer.id, question, unsavedAnswer.value);
     }
-  };
+  }
 
   let submitButtonText = '';
 

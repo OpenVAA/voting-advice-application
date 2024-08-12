@@ -9,12 +9,12 @@
   let statusMessage = ''; // Text to display when the send-button has been pressed: either email has been sent or internal error
   let email = '';
 
-  const onButtonPressed = async () => {
+  async function onButtonPressed() {
     const response = await requestForgotPasswordLink(email); // Request email to be sent in the backend
     statusMessage = response.ok
       ? $t('candidateApp.resetPassword.emailSentText')
       : $t('candidateApp.resetPassword.errorText');
-  };
+  }
 </script>
 
 <!-- Page for sending a reset email in case of a forgotten password. -->

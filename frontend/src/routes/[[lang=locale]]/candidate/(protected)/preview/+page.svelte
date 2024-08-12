@@ -34,7 +34,7 @@
     infoQuestions = infoRes;
     opinionQuestions = opinionRes;
     candidate = candidateRes[0];
-  };
+  }
 
   $: {
     loadData = fetchData();

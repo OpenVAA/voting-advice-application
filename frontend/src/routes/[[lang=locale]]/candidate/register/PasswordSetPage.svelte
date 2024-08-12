@@ -23,7 +23,7 @@
   let validPassword = false;
   let errorMessage = '';
 
-  const onSetButtonPressed = async () => {
+  async function onSetButtonPressed() {
     if (password !== passwordConfirmation) {
       errorMessage = $t('candidateApp.setPassword.passwordsDontMatch');
       return;
@@ -52,7 +52,7 @@
     newUserEmail.set(email);
     errorMessage = '';
     goto($getRoute(Route.CandAppHome));
-  };
+  }
 </script>
 
 <!--

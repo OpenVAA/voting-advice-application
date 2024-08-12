@@ -16,7 +16,7 @@
   let validPassword = false;
   let errorMessage = '';
 
-  const onButtonPress = async () => {
+  async function onButtonPress() {
     if (password !== passwordConfirmation) {
       errorMessage = $t('candidateApp.setPassword.passwordsDontMatch');
       return;
@@ -36,7 +36,7 @@
 
     errorMessage = '';
     await goto($getRoute(Route.CandAppHome));
-  };
+  }
 </script>
 
 <!--

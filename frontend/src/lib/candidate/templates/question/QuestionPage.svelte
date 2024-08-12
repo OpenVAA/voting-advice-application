@@ -48,26 +48,26 @@
   function saveLikertToLocal({ detail }: CustomEvent) {
     selectedKey = detail.value;
     localStorage.setItem(likertLocal, detail.value);
-  };
+  }
 
-  const removeLocalAnswerToQuestion = () => {
+  function removeLocalAnswerToQuestion() {
     localStorage.removeItem(likertLocal);
     openAnswerTextArea.deleteLocal();
     openAnswer = {};
-  };
+  }
 
   let errorMessage = '';
   let errorTimeout: NodeJS.Timeout;
 
-  const showError = (message: string) => {
+  function showError(message: string) {
     errorMessage = message;
     clearTimeout(errorTimeout);
     errorTimeout = setTimeout(() => {
       errorMessage = '';
     }, 5000);
-  };
+  }
 
-  const saveToServer = async () => {
+  async function saveToServer() {
     if (!answer) {
       // New answer
 
@@ -99,13 +99,13 @@
     }
 
     removeLocalAnswerToQuestion();
-  };
+  }
 
-  const updateAnswerStore = (
+  function updateAnswerStore(
     answerId: string,
     value: AnswerProps['value'],
     openAnswer: LocalizedString
-  ) => {
+  ) {
     if ($opinionAnswers) {
       $opinionAnswers[questionId] = {
         id: String(answerId),
@@ -113,14 +113,14 @@
         openAnswer
       };
     }
-  };
+  }
 
-  const saveAndReturn = async () => {
+  async function saveAndReturn() {
     await saveToServer();
     goto($getRoute(Route.CandAppQuestions));
-  };
+  }
 
-  const saveAndContinue = async () => {
+  async function saveAndContinue() {
     await saveToServer();
 
     if ($unansweredOpinionQuestions?.length === 0) {
@@ -132,10 +132,10 @@
     goto($getRoute({ route: Route.CandAppQuestions, id: nextUnansweredQuestion }));
   }
 
-  const cancelAndReturn = () => {
+  function cancelAndReturn() {
     removeLocalAnswerToQuestion();
     goto($getRoute(Route.CandAppQuestions));
-  };
+  }
 
   $: category = currentQuestion.category;
   $: info = currentQuestion.info;

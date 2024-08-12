@@ -42,7 +42,7 @@
     clearInterval(saveInterval);
   });
 
-  const saveToLocalStorage = () => {
+  function saveToLocalStorage() {
     if (!localStorageId) {
       return;
     }
@@ -54,19 +54,19 @@
     }
 
     localStorage.setItem(localStorageId, text.toString());
-  };
+  }
 
-  const removeFromLocalStorage = () => {
+  function removeFromLocalStorage() {
     if (!localStorageId) {
       return;
     }
     localStorage.removeItem(localStorageId);
-  };
+  }
 
   // Used to clear the local storage from a parent component
-  export const deleteLocal = () => {
+  export function deleteLocal() {
     removeFromLocalStorage();
-  };
+  }
 </script>
 
 <!--

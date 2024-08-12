@@ -41,7 +41,7 @@
   getLanguages().then((languages) => (allLanguages = languages));
 
   // Handle the change when the app language is changed
-  const handleLanguageSelect = async (e: Event) => {
+  async function handleLanguageSelect(e: Event) {
     languageErrorMessage = '';
 
     const chosenLanguage = allLanguages
@@ -65,9 +65,9 @@
         languageErrorMessage = $t('candidateApp.settings.changeLanguageError');
       }
     }
-  };
+  }
 
-  const onButtonPress = async () => {
+  async function onButtonPress() {
     successMessage = '';
 
     if (password !== passwordConfirmation) {
@@ -100,7 +100,7 @@
 
     errorMessage = '';
     successMessage = $t('candidateApp.settings.passwordUpdated');
-  };
+  }
 </script>
 
 <BasicPage title={$t('candidateApp.settings.title')} mainClass="bg-base-200">

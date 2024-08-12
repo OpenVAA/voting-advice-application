@@ -74,7 +74,7 @@ const progress = derived(
   }
 );
 
-const logIn = async (email: string, password: string) => {
+async function logIn(email: string, password: string) {
   const response = await authenticate(email, password);
   if (!response.ok) return false;
 
@@ -85,13 +85,13 @@ const logIn = async (email: string, password: string) => {
   await loadUserData();
 
   return true;
-};
+}
 
-const loadLocalStorage = () => {
+function loadLocalStorage() {
   token.set(localStorage.getItem('token'));
-};
+}
 
-const loadUserData = async () => {
+async function loadUserData() {
   const currentUser = await me();
   if (!currentUser) {
     logOut();
@@ -102,7 +102,7 @@ const loadUserData = async () => {
 
   questionsLocked.set(!canEditQuestions);
   user.set(currentUser);
-};
+}
 
 function logOut() {
   user.set(null);
