@@ -8,8 +8,8 @@ import {EnumeratedFilter} from './enumeratedFilter';
  * A filter for single or multiple choice questions
  */
 export class ChoiceQuestionFilter<
-  T extends MaybeWrapped<EntityWithAnswers>
-> extends EnumeratedFilter<T, Choice[typeof KEY_PROP], Choice> {
+  TEntity extends MaybeWrapped<EntityWithAnswers>
+> extends EnumeratedFilter<TEntity, Choice[typeof KEY_PROP], Choice> {
   declare readonly options: FilterOptions & {
     question: ChoiceQuestion;
     /** The type is always the type of the Choice key property */

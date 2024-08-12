@@ -16,10 +16,10 @@ export enum LogicOp {
  * @param logicOperator And or Or logic operator to use in combination. @default LogicOp.And
  * @returns Combined results.
  */
-export function combineResults<E extends MaybeWrapped>(
-  results: E[][],
+export function combineResults<TEntity extends MaybeWrapped>(
+  results: Array<Array<TEntity>>,
   logicOperator = LogicOp.And
-): E[] {
+): Array<TEntity> {
   if (!results.length) return [];
   if (logicOperator === LogicOp.Or) return Array.from(new Set(results.flat()));
   let out = results[0];

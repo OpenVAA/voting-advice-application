@@ -5,7 +5,7 @@ import {LogicOp, combineResults} from './combineResults';
 /**
  * Use to combine a group of filters and subscribe to changes in their combined results using the `onChange` callback.
  */
-export class FilterGroup<T extends MaybeWrapped> {
+export class FilterGroup<TEntity extends MaybeWrapped> {
   /**
    * The logic operator used to combine the results.
    */
@@ -23,7 +23,7 @@ export class FilterGroup<T extends MaybeWrapped> {
     /**
      * The already initialised filters to combine.
      */
-    public filters: Filter<T, unknown>[],
+    public filters: Array<Filter<TEntity, unknown>>,
     /**
      * And or Or logic operator to use in combination. @default LogicOp.And
      */
@@ -42,13 +42,11 @@ export class FilterGroup<T extends MaybeWrapped> {
    * @input A list of entities.
    * @returns Filtered targets
    */
-  apply<U extends T>(targets: U[]) {
-    return this.active
-      ? (combineResults(
-          this.filters.map((f) => f.apply(targets)),
-          this._logicOp
-        ) as U[])
-      : targets;
+  apply<TTarget extends TEntity>(targets: Array<TTarget>) {
+    return combineResults(
+      this.filters.map((f) => f.apply(targets)),
+      this._logicOp
+    ) as Array<TTarget>;
   }
 
   /////////////////////////////////////////////////////////////////////////////////

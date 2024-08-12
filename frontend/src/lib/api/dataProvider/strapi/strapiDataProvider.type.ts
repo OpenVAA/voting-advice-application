@@ -1,8 +1,8 @@
 /**
  * The basic format for Strapi responses
  */
-export type StrapiResponse<T> = {
-  data: T;
+export type StrapiResponse<TData> = {
+  data: TData;
 };
 
 /**

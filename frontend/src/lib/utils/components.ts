@@ -14,7 +14,10 @@ export function getUUID(): string {
  *   same values in `props`
  * @returns The merged props, based on a shallow copy of `props`
  */
-export function concatProps<T extends object>(props: T, defaults: Partial<StringProps<T>>) {
+export function concatProps<TObject extends object>(
+  props: TObject,
+  defaults: Partial<StringProps<TObject>>
+) {
   // Make a shallow copy of props so as not to alter its values
   const merged = {...props};
   for (const k in defaults) {
@@ -22,7 +25,7 @@ export function concatProps<T extends object>(props: T, defaults: Partial<String
       k in merged && typeof merged[k] === 'string'
         ? `${defaults[k] ?? ''} ${merged[k]}`
         : defaults[k]
-    ) as T[typeof k];
+    ) as TObject[typeof k];
   }
   return merged;
 }
@@ -42,8 +45,8 @@ export function concatClass<T extends {class?: string | null}>(props: T, classes
 /**
  * Extract the string properties of an object.
  */
-type StringProps<T extends object> = {
-  [K in keyof T]: T[K] extends string ? T[K] : never;
+type StringProps<TObject extends object> = {
+  [K in keyof TObject]: TObject[K] extends string ? TObject[K] : never;
 };
 
 /**

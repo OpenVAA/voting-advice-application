@@ -23,14 +23,14 @@ import {extractCategories} from '../questions';
  * @param options.subMatches Whether to calculate the submatches for categories if there's more than one of them
  * @returns The matching results as entities wrapped in ranking properties
  */
-export async function match<E extends EntityProps>(
-  allQuestions: QuestionProps[],
+export async function match<TEntity extends EntityProps>(
+  allQuestions: Array<QuestionProps>,
   answeredQuestions: AnswerDict,
-  entities: E[],
+  entities: Array<TEntity>,
   options: {
     subMatches?: boolean;
   } = {}
-): Promise<RankingProps<E>[]> {
+): Promise<Array<RankingProps<TEntity>>> {
   // Create the algorithm instance
   const algorithm = new MatchingAlgorithm({
     distanceMetric: DISTANCE_METRIC.Manhattan,
