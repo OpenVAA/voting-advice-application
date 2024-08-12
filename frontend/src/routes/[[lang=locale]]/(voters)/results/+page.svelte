@@ -24,7 +24,7 @@
   import { BasicPage } from '$lib/templates/basicPage';
   import { startEvent } from '$lib/utils/analytics/track';
   import { candidateFilters } from '$lib/utils/filters';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import type { EntityCardProps } from '$lib/components/entityCard';
   import type { Snapshot } from './$types';
@@ -118,7 +118,7 @@
   ): EntityCardProps {
     return {
       content: party,
-      action: $getRoute({ route: Route.ResultParty, id: party.entity.id }),
+      action: $getRoute({ route: ROUTE.ResultParty, id: party.entity.id }),
       subcards: allCandidates?.length
         ? allCandidates.filter((c) => c.entity.party?.id === party.entity.id).map(parseCandidate)
         : undefined,
@@ -129,7 +129,7 @@
 
   /** Shorthand for building a candidate link route */
   function candidateRoute(candidate: WrappedEntity<CandidateProps>) {
-    return $getRoute({ route: Route.ResultCandidate, id: candidate.entity.id });
+    return $getRoute({ route: ROUTE.ResultCandidate, id: candidate.entity.id });
   }
 </script>
 
@@ -148,7 +148,7 @@
     {/if}
     {#if $settings.header.showHelp}
       <Button
-        href={$getRoute(Route.Help)}
+        href={$getRoute(ROUTE.Help)}
         variant="icon"
         icon="help"
         text={$t('actionLabels.help')} />
@@ -166,7 +166,7 @@
     {:else}
       {@html sanitizeHtml(
         $t('results.ingress.browse', {
-          questionsLink: `<a href="${$getRoute(Route.Questions)}">${$t(
+          questionsLink: `<a href="${$getRoute(ROUTE.Questions)}">${$t(
             'results.ingress.questionsLinkText',
             {
               numQuestions: $settings.matching.minimumAnswers

@@ -15,7 +15,7 @@
   } from '$lib/stores/index.js';
   import { SingleCardPage } from '$lib/templates/singleCardPage';
   import { startEvent } from '$lib/utils/analytics/track';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import type { Readable } from 'svelte/store';
 
   export let data;
@@ -98,7 +98,7 @@
       class="!text-neutral"
       variant="icon"
       icon="close"
-      on:click={() => (useBack ? history.back() : goto($getRoute(Route.Results)))}
+      on:click={() => (useBack ? history.back() : goto($getRoute(ROUTE.Results)))}
       text={$t('header.back')} />
   </svelte:fragment>
   {#await Promise.all([entity, candidatesOrUndef, $opinionQuestions, $infoQuestions])}

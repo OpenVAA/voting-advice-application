@@ -8,7 +8,7 @@ import {
   type EntityWithAnswers,
   type FilterableEntity,
   FilterGroup,
-  LogicOp,
+  LOGIC_OP,
   MISSING_VALUE,
   type NumericQuestion as INumericQuestion,
   NumericQuestionFilter,
@@ -450,12 +450,12 @@ test('FilterGroup', () => {
   ageFilter.max = 50;
   expect(group.apply(people), 'Results from two filters').toEqual([people[1]]);
   expect(group.active, 'Active if filters active').toBe(true);
-  group.logicOperator = LogicOp.Or;
+  group.logicOperator = LOGIC_OP.Or;
   expect(group.apply(people), 'Change logic op to Or').toEqual([people[0], people[1], people[2]]);
   group.reset();
   expect(group.apply(people), 'Reset group').toEqual(people);
   expect(group.active, 'Not active if reset').toBe(false);
-  expect(group.logicOperator, 'Reset group').toEqual(LogicOp.And);
+  expect(group.logicOperator, 'Reset group').toEqual(LOGIC_OP.And);
 });
 
 //////////////////////////////////////////////////////////////////////////////////////////

@@ -10,7 +10,7 @@
   import { Warning } from '$lib/components/warning';
   import { t } from '$lib/i18n';
   import { BasicPage } from '$lib/templates/basicPage';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import type { CandidateContext } from '$lib/utils/candidateContext';
 
   const {
@@ -94,7 +94,7 @@
       </div>
       <div class="flex w-full justify-center pb-40 pt-20">
         <Button
-          href={$getRoute({ route: Route.CandAppQuestions, id: nextUnansweredQuestion?.id })}
+          href={$getRoute({ route: ROUTE.CandAppQuestions, id: nextUnansweredQuestion?.id })}
           text={$t('candidateApp.questions.enterMissingAnswer')}
           variant="main"
           icon="next" />
@@ -122,7 +122,7 @@
       <Button
         text={$t('candidateApp.questions.return')}
         variant="main"
-        href={$getRoute({ route: Route.CandAppHome })} />
+        href={$getRoute({ route: ROUTE.CandAppHome })} />
     </div>
   </BasicPage>
 {/if}

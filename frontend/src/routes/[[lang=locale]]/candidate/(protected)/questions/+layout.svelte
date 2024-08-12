@@ -3,14 +3,14 @@
   import { goto } from '$app/navigation';
   import { LoadingSpinner } from '$candidate/components/loadingSpinner';
   import { t } from '$lib/i18n';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import type { CandidateContext } from '$lib/utils/candidateContext';
 
   const { opinionQuestions, unansweredRequiredInfoQuestions } =
     getContext<CandidateContext>('candidate');
 
   $: if ($unansweredRequiredInfoQuestions?.length) {
-    goto($getRoute(Route.CandAppProfile));
+    goto($getRoute(ROUTE.CandAppProfile));
   }
 </script>
 

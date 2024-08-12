@@ -10,7 +10,7 @@
   import { Warning } from '$lib/components/warning';
   import { t } from '$lib/i18n';
   import { BasicPage } from '$lib/templates/basicPage';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import type { CandidateContext } from '$lib/utils/candidateContext';
   import type { QuestionPageProps } from './QuestionPage.type';
 
@@ -117,7 +117,7 @@
 
   async function saveAndReturn() {
     await saveToServer();
-    goto($getRoute(Route.CandAppQuestions));
+    goto($getRoute(ROUTE.CandAppQuestions));
   }
 
   async function saveAndContinue() {
@@ -125,16 +125,16 @@
 
     if ($unansweredOpinionQuestions?.length === 0) {
       // All questions answered
-      goto($getRoute(Route.CandAppHome));
+      goto($getRoute(ROUTE.CandAppHome));
       return;
     }
     const nextUnansweredQuestion = $unansweredOpinionQuestions?.[0]?.id;
-    goto($getRoute({ route: Route.CandAppQuestions, id: nextUnansweredQuestion }));
+    goto($getRoute({ route: ROUTE.CandAppQuestions, id: nextUnansweredQuestion }));
   }
 
   function cancelAndReturn() {
     removeLocalAnswerToQuestion();
-    goto($getRoute(Route.CandAppQuestions));
+    goto($getRoute(ROUTE.CandAppQuestions));
   }
 
   $: category = currentQuestion.category;
@@ -211,7 +211,7 @@ In addition to the question, includes a Likert scale and a text area for comment
 
       {#if !!$questionsLocked}
         <Button
-          on:click={() => goto($getRoute(Route.CandAppQuestions))}
+          on:click={() => goto($getRoute(ROUTE.CandAppQuestions))}
           variant="main"
           text={$t('candidateApp.questions.return')} />
       {:else if editMode}

@@ -4,7 +4,7 @@
   import { Button } from '$lib/components/button';
   import { TimedModal } from '$lib/components/modal/timed';
   import { t } from '$lib/i18n';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import type { CandidateContext } from '$lib/utils/candidateContext';
   import type { LogoutButtonProps } from './LogoutButton.type';
 
@@ -36,7 +36,7 @@
     await logOut();
     closeModal();
     if (!stayOnPage) {
-      await goto($getRoute(Route.CandAppHome));
+      await goto($getRoute(ROUTE.CandAppHome));
     }
   }
 </script>

@@ -2,7 +2,8 @@ import { error } from '@sveltejs/kit';
 import { derived, get } from 'svelte/store';
 import { page } from '$app/stores';
 import { settings } from '$lib/stores';
-import { Route } from './route';
+import { ROUTE } from './route';
+import type { Route } from './route';
 
 /**
  * A special id used to mark the question to start from before question ids are available
@@ -67,10 +68,10 @@ function _getRoute(
   if (locale) parts.push(locale);
 
   // If the `questions.questionsIntro.show` setting is false, we bypass the intro page
-  if (route === Route.Questions && id == null && !get(settings).questions?.questionsIntro?.show) {
-    parts.push(Route.Question);
+  if (route === ROUTE.Questions && id == null && !get(settings).questions?.questionsIntro?.show) {
+    parts.push(ROUTE.Question);
     id = FIRST_QUESTION_ID;
-  } else if (route !== '') {
+  } else if (route) {
     parts.push(route);
   }
 

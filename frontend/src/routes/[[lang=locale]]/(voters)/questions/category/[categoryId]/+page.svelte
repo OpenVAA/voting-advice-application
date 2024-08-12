@@ -13,7 +13,7 @@
     settings
   } from '$lib/stores';
   import { BasicPage } from '$lib/templates/basicPage';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import { getQuestionsContext } from '../../questions.context';
   import { filterAndSortQuestions } from '../../questions.utils';
   import type { PageData } from './$types';
@@ -73,7 +73,7 @@
       {/if}
       {#if $settings.questions.showResultsLink}
         <Button
-          href={$getRoute(Route.Results)}
+          href={$getRoute(ROUTE.Results)}
           disabled={resultsAvailableSync ? null : true}
           variant="responsive-icon"
           icon="results"
@@ -106,7 +106,7 @@
       <Button
         variant="main"
         disabled={!nextQuestionId}
-        href={$getRoute({ route: Route.Question, id: nextQuestionId })}
+        href={$getRoute({ route: ROUTE.Question, id: nextQuestionId })}
         text={$t('common.continue')} />
       {#if $settings.questions.categoryIntros?.allowSkip}
         <Button
@@ -114,8 +114,8 @@
           color="secondary"
           href={$getRoute(
             nextCategoryId
-              ? { route: Route.QuestionCategory, id: nextCategoryId }
-              : { route: Route.Results }
+              ? { route: ROUTE.QuestionCategory, id: nextCategoryId }
+              : { route: ROUTE.Results }
           )}
           text={nextCategoryId ? $t('questions.skipCategory') : $t('questions.skipToResults')}
           class="justify-center" />

@@ -1,6 +1,6 @@
 import { expect, chromium, FullConfig } from '@playwright/test';
 // Import Route directly so that other imports are not bundled in
-import { Route } from '../frontend/src/lib/utils/navigation/route';
+import { ROUTE } from '../frontend/src/lib/utils/navigation/route';
 import candidateAppTranslations from '../frontend/src/lib/i18n/translations/en/candidateApp.json';
 import mockUsers from '../backend/vaa-strapi/src/functions/mockData/mockUser.json';
 
@@ -13,7 +13,7 @@ async function globalSetup(config: FullConfig) {
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
-  await page.goto(`${baseURL!}/${Route.CandAppHome}`);
+  await page.goto(`${baseURL!}/${ROUTE.CandAppHome}`);
   await page
     .getByLabel(candidateAppTranslations.common.email, { exact: true })
     .fill(mockUser.email);

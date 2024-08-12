@@ -11,7 +11,7 @@
     settings
   } from '$lib/stores';
   import { BasicPage } from '$lib/templates/basicPage';
-  import { FIRST_QUESTION_ID, getRoute, Route } from '$lib/utils/navigation';
+  import { FIRST_QUESTION_ID, getRoute, ROUTE } from '$lib/utils/navigation';
   import { getQuestionsContext } from './questions.context';
 
   const { firstQuestionId, selectedCategories } = getQuestionsContext();
@@ -69,7 +69,7 @@
     {/if}
     {#if $settings.header.showHelp}
       <Button
-        href={$getRoute(Route.Help)}
+        href={$getRoute(ROUTE.Help)}
         variant="icon"
         icon="help"
         text={$t('actionLabels.help')} />
@@ -110,8 +110,8 @@
       disabled={!canContinue}
       href={$getRoute(
         $settings.questions.categoryIntros?.show && firstCategoryId
-          ? { route: Route.QuestionCategory, id: firstCategoryId }
-          : { route: Route.Question, id: FIRST_QUESTION_ID }
+          ? { route: ROUTE.QuestionCategory, id: firstCategoryId }
+          : { route: ROUTE.Question, id: FIRST_QUESTION_ID }
       )}
       variant="main"
       icon="next"

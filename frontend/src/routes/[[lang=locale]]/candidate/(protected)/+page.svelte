@@ -7,7 +7,7 @@
   import { locale, t } from '$lib/i18n';
   import { BasicPage } from '$lib/templates/basicPage';
   import { type CandidateContext } from '$lib/utils/candidateContext';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
 
   const { user, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, questionsLocked } =
     getContext<CandidateContext>('candidate');
@@ -29,7 +29,7 @@
           ? $t('candidateApp.homePage.questionsButtonEdit')
           : $t('candidateApp.homePage.questionsButtonView'),
         buttonTextPrimaryActions: $t('candidateApp.homePage.previewButton'),
-        href: $getRoute(Route.CandAppPreview)
+        href: $getRoute(ROUTE.CandAppPreview)
       };
     } else if (
       $unansweredRequiredInfoQuestions?.length === 0 &&
@@ -47,7 +47,7 @@
         buttonTextPrimaryActions: !$questionsLocked
           ? $t('candidateApp.homePage.questionsButton')
           : $t('candidateApp.homePage.questionsButtonView'),
-        href: $getRoute(Route.CandAppQuestions)
+        href: $getRoute(ROUTE.CandAppQuestions)
       };
     }
     return {
@@ -62,7 +62,7 @@
       buttonTextPrimaryActions: !$questionsLocked
         ? $t('candidateApp.homePage.basicInfoButtonPrimaryActions')
         : $t('candidateApp.homePage.basicInfoButtonView'),
-      href: $getRoute(Route.CandAppProfile)
+      href: $getRoute(ROUTE.CandAppProfile)
     };
   }
 
@@ -94,7 +94,7 @@
     text={nextAction.buttonTextBasicInfo}
     icon="profile"
     iconPos="left"
-    href={$getRoute(Route.CandAppProfile)}>
+    href={$getRoute(ROUTE.CandAppProfile)}>
     <svelte:fragment slot="badge">
       {#if $unansweredRequiredInfoQuestions && $unansweredRequiredInfoQuestions.length > 0}
         <InfoBadge text={String($unansweredRequiredInfoQuestions.length)} />
@@ -106,7 +106,7 @@
     icon="opinion"
     iconPos="left"
     disabled={$unansweredRequiredInfoQuestions?.length !== 0}
-    href={$getRoute(Route.CandAppQuestions)}>
+    href={$getRoute(ROUTE.CandAppQuestions)}>
     <svelte:fragment slot="badge">
       {#if $unansweredOpinionQuestions && $unansweredOpinionQuestions?.length > 0}
         <InfoBadge
@@ -120,7 +120,7 @@
     icon="previewProfile"
     iconPos="left"
     disabled={$unansweredRequiredInfoQuestions?.length !== 0}
-    href={$getRoute(Route.CandAppPreview)} />
+    href={$getRoute(ROUTE.CandAppPreview)} />
 
   <div class="flex w-full flex-col items-center justify-center" slot="primaryActions">
     <Button

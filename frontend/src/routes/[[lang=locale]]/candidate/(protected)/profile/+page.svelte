@@ -20,7 +20,7 @@
   import { translate } from '$lib/i18n/utils/translate';
   import { BasicPage } from '$lib/templates/basicPage';
   import { answerIsEmpty } from '$lib/utils/answers';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import type { CandidateAnswer } from '$lib/types/candidateAttributes';
   import type { CandidateContext } from '$lib/utils/candidateContext';
 
@@ -112,7 +112,7 @@
 
   async function submitForm() {
     if ($questionsLocked) {
-      await goto($getRoute(Route.CandAppHome));
+      await goto($getRoute(ROUTE.CandAppHome));
       return;
     }
 
@@ -137,8 +137,8 @@
     loading = false;
 
     if ($unansweredOpinionQuestions?.length !== 0 && !$questionsLocked)
-      await goto($getRoute(Route.CandAppQuestions));
-    else await goto($getRoute(Route.CandAppHome));
+      await goto($getRoute(ROUTE.CandAppQuestions));
+    else await goto($getRoute(ROUTE.CandAppHome));
   }
 
   function updateInfoAnswerStore(

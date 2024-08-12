@@ -25,7 +25,7 @@ A simple utility component for possibly wrapping content in an action handler.
 ### Usage
 
 ```tsx
-<EntityCardAction action={$getRoute({route: Route.candidates, id: candidate.id})}>
+<EntityCardAction action={$getRoute({route: ROUTE.candidates, id: candidate.id})}>
   Content here
 </EntityCardAction>
 ```

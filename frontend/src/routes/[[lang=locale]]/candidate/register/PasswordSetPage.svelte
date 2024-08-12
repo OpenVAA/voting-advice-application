@@ -9,7 +9,7 @@
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { t } from '$lib/i18n';
   import { FrontPage } from '$lib/templates/frontPage';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import type { CandidateContext } from '$lib/utils/candidateContext';
 
   export let username: string;
@@ -51,7 +51,7 @@
     }
     newUserEmail.set(email);
     errorMessage = '';
-    goto($getRoute(Route.CandAppHome));
+    goto($getRoute(ROUTE.CandAppHome));
   }
 </script>
 

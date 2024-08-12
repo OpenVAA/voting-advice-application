@@ -9,7 +9,7 @@
   import { Loading } from '$lib/components/loading';
   import { locale, t } from '$lib/i18n';
   import { SingleCardPage } from '$lib/templates/singleCardPage';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import type { CandidateContext } from '$lib/utils/candidateContext';
 
   const { user } = getContext<CandidateContext>('candidate');
@@ -61,7 +61,7 @@
       class="!text-neutral"
       variant="icon"
       icon="close"
-      on:click={() => (useBack ? history.back() : goto($getRoute(Route.CandAppHome)))}
+      on:click={() => (useBack ? history.back() : goto($getRoute(ROUTE.CandAppHome)))}
       text={$t('candidateApp.preview.close')} />
   </svelte:fragment>
 

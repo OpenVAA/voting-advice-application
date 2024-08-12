@@ -7,7 +7,7 @@
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { t } from '$lib/i18n';
   import { FrontPage } from '$lib/templates/frontPage';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
 
   export let code: string;
 
@@ -35,7 +35,7 @@
     }
 
     errorMessage = '';
-    await goto($getRoute(Route.CandAppHome));
+    await goto($getRoute(ROUTE.CandAppHome));
   }
 </script>
 

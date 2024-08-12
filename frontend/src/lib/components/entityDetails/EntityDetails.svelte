@@ -7,7 +7,7 @@
   import { startEvent } from '$lib/utils/analytics/track';
   import { concatClass } from '$lib/utils/components';
   import { getEntityType, parseMaybeRanked } from '$lib/utils/entities';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import { EntityInfo, EntityOpinions, EntitySubentities } from './';
   import type { EntityDetailsProps } from './EntityDetails.type';
 
@@ -55,7 +55,7 @@
           tabContents.push('candidates');
           subcards = subentities.map((e) => ({
             content: e,
-            action: $getRoute({ route: Route.ResultCandidate, id: parseMaybeRanked(e).entity.id })
+            action: $getRoute({ route: ROUTE.ResultCandidate, id: parseMaybeRanked(e).entity.id })
           }));
           break;
         default:

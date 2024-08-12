@@ -5,7 +5,7 @@
   import { Icon } from '$lib/components/icon';
   import { t } from '$lib/i18n';
   import { BasicPage } from '$lib/templates/basicPage';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import type { CandidateContext } from '$lib/utils/candidateContext';
 
   const { opinionQuestions, unansweredOpinionQuestions } =
@@ -20,7 +20,7 @@
   const numQuestions = Object.keys(questions).length;
   // The url of the first question where the user is navigated to after the start page.
   const firstQuestionUrl = $getRoute({
-    route: Route.CandAppQuestions,
+    route: ROUTE.CandAppQuestions,
     id: $unansweredOpinionQuestions?.[0]?.id
   });
 </script>

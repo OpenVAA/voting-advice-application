@@ -94,7 +94,7 @@ export default [
       ],
 
       'no-restricted-syntax': [
-        'warn',
+        'error',
         {
           selector: 'TSEnumDeclaration',
           message: 'Use const assertion or a string union type instead.'

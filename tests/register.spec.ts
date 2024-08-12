@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { faker } from '@faker-js/faker';
 import path from 'path';
-import { Route } from '../frontend/src/lib/utils/navigation/route';
+import { ROUTE } from '../frontend/src/lib/utils/navigation/route';
 import candidateAppTranslationsEn from '../frontend/src/lib/i18n/translations/en/candidateApp.json';
 import candidateAppTranslationsFi from '../frontend/src/lib/i18n/translations/fi/candidateApp.json';
 import ariaTranslations from '../frontend/src/lib/i18n/translations/en/aria.json';
@@ -184,7 +184,7 @@ test('should log into Strapi and import candidates', async ({ page, baseURL }) =
 test.describe('when logged in with imported user', () => {
   test.beforeEach(async ({ page, baseURL }) => {
     // Log the default user out
-    await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
+    await page.goto(`${baseURL}/${LOCALE}/${ROUTE.CandAppHome}`);
     await page.getByLabel(candidateAppTranslationsEn.common.logOut, { exact: true }).click();
 
     // Log in with the imported user
@@ -198,8 +198,8 @@ test.describe('when logged in with imported user', () => {
   });
 
   test('should succesfully set basic info', async ({ page, baseURL }) => {
-    await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppProfile}`);
-    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppProfile}`);
+    await page.goto(`${baseURL}/${LOCALE}/${ROUTE.CandAppProfile}`);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppProfile}`);
 
     // Upload a profile picture
     page.on('filechooser', async (fileChooser) => {
@@ -270,11 +270,11 @@ test.describe('when logged in with imported user', () => {
     // Now submit the form
     await expect(saveButton).toBeVisible();
     await saveButton.click();
-    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppQuestions}`);
   });
 
   test('should succesfully answer opinion questions', async ({ page, baseURL }) => {
-    await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
+    await page.goto(`${baseURL}/${LOCALE}/${ROUTE.CandAppQuestions}`);
     await page.reload(); //Reload to make sure correct data is loaded to page
 
     // Expect correct texts on questions page
@@ -321,7 +321,7 @@ test.describe('when logged in with imported user', () => {
     }
 
     // Expect to be at "You're Ready to Roll" page
-    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppHome}`);
     await expect(
       page.getByRole('heading', { name: candidateAppTranslationsEn.homePage.ready, exact: true })
     ).toBeVisible();
@@ -366,8 +366,8 @@ test.describe('when logged in with imported user', () => {
         exact: true
       })
       .click();
-    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppProfile}`);
-    const candidateUrl = `${baseURL}/${LOCALE}/${Route.CandAppHome}`;
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppProfile}`);
+    const candidateUrl = `${baseURL}/${LOCALE}/${ROUTE.CandAppHome}`;
     await page.goto(candidateUrl);
 
     await page
@@ -376,28 +376,28 @@ test.describe('when logged in with imported user', () => {
         exact: true
       })
       .click();
-    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppQuestions}`);
     await page.goto(candidateUrl);
 
     await page
       .getByRole('button', { name: candidateAppTranslationsEn.homePage.previewButton, exact: true })
       .first()
       .click();
-    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppPreview}`);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppPreview}`);
     await page.goto(candidateUrl);
 
     await page
       .getByLabel(ariaTranslations.primaryActionsLabel, { exact: true })
       .getByRole('button', { name: candidateAppTranslationsEn.homePage.previewButton, exact: true })
       .click();
-    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppPreview}`);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppPreview}`);
     await page.goto(candidateUrl);
 
     await page
       .getByLabel(ariaTranslations.primaryActionsLabel, { exact: true })
       .getByRole('button', { name: candidateAppTranslationsEn.common.logOut, exact: true })
       .click();
-    await expect(page).toHaveURL(`${baseURL}/${LOCALE}\/${Route.CandAppHome}`);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}\/${ROUTE.CandAppHome}`);
     await expect(
       page.getByText(candidateAppTranslationsEn.common.logIn, { exact: true })
     ).toBeVisible();
@@ -405,7 +405,7 @@ test.describe('when logged in with imported user', () => {
 
   test('your opinions page should work correctly', async ({ page, baseURL }) => {
     // Go to questions page
-    await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
+    await page.goto(`${baseURL}/${LOCALE}/${ROUTE.CandAppQuestions}`);
     await page.reload(); //Reload to make sure correct data is loaded to page
 
     // Expect correct heading and no warning
@@ -456,7 +456,7 @@ test.describe('when logged in with imported user', () => {
         exact: true
       })
       .click();
-    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppQuestions}`);
 
     // Go back and test cancel button
     await page.getByRole('checkbox').first().click();
@@ -476,7 +476,7 @@ test.describe('when logged in with imported user', () => {
       .click();
 
     // Expect button to go to correct page and opinion to be unchanged
-    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppQuestions}`);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppQuestions}`);
     await page.getByRole('checkbox').first().click();
     await expect(page.getByText(fullyAgree).first()).toBeVisible();
 
@@ -484,12 +484,12 @@ test.describe('when logged in with imported user', () => {
     await page
       .getByRole('button', { name: candidateAppTranslationsEn.questions.return, exact: true })
       .click();
-    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppHome}`);
   });
 
   test('preview page should work correctly', async ({ page, baseURL }) => {
     // Go to preview page
-    await page.goto(`${baseURL}/${LOCALE}/${Route.CandAppPreview}`);
+    await page.goto(`${baseURL}/${LOCALE}/${ROUTE.CandAppPreview}`);
     await page.reload(); //Reload to make sure correct data is loaded to page
 
     // Expect correct title and button
@@ -531,6 +531,6 @@ test.describe('when logged in with imported user', () => {
     await page
       .getByRole('button', { name: candidateAppTranslationsEn.preview.close, exact: true })
       .click();
-    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${Route.CandAppHome}`);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppHome}`);
   });
 });

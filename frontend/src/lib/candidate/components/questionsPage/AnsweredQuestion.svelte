@@ -7,7 +7,7 @@
   import { QuestionOpenAnswer } from '$lib/components/questions';
   import { t } from '$lib/i18n';
   import { translate } from '$lib/i18n/utils';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import type { CandidateContext } from '$lib/utils/candidateContext';
   import type { RenderQuestionProps } from './Question.type';
 
@@ -71,7 +71,7 @@ open answers and a button to navigate to the questions page.
           text={!$questionsLocked
             ? $t('candidateApp.questions.editYourAnswer')
             : $t('candidateApp.questions.viewYourAnswer')}
-          href={$getRoute({ route: Route.CandAppQuestionEdit, id: question.id })}
+          href={$getRoute({ route: ROUTE.CandAppQuestionEdit, id: question.id })}
           icon={!$questionsLocked ? 'create' : 'show'}
           iconPos="left" />
       </div>

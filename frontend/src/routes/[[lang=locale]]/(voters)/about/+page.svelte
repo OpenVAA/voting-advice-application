@@ -6,7 +6,7 @@
   import { t } from '$lib/i18n';
   import { settings } from '$lib/stores';
   import { BasicPage } from '$lib/templates/basicPage';
-  import { getRoute, Route } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import { sanitizeHtml } from '$lib/utils/sanitize';
 </script>
 
@@ -33,7 +33,7 @@
       class="!text-neutral"
       variant="icon"
       icon="close"
-      href={$getRoute(Route.Home)}
+      href={$getRoute(ROUTE.Home)}
       text={$t('about.returnButton')} />
   </svelte:fragment>
 
@@ -62,6 +62,6 @@
   {/if}
 
   <svelte:fragment slot="primaryActions">
-    <Button variant="main" href={$getRoute(Route.Home)} text={$t('about.returnButton')} />
+    <Button variant="main" href={$getRoute(ROUTE.Home)} text={$t('about.returnButton')} />
   </svelte:fragment>
 </BasicPage>
