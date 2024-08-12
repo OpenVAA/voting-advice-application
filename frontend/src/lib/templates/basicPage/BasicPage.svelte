@@ -2,7 +2,7 @@
   import {getContext} from 'svelte';
   import {t} from '$lib/i18n';
   import {appType} from '$lib/stores';
-  import {Breakpoints} from '$lib/utils/breakpoints';
+  import {BREAKPOINTS} from '$lib/utils/breakpoints';
   import {concatProps} from '$lib/utils/components';
   import {darkMode} from '$lib/utils/darkMode';
   import {Page} from '../page';
@@ -103,7 +103,7 @@ Instead, you have to use a wrapper. Note that this will also always result in th
     </p>
     
     <svelte:fragment slot="primaryActions">
-      <Button href={$getRoute(Route.Foo)} variant="main" icon="next" text="Continue"/>
+      <Button href={$getRoute(ROUTE.Foo)} variant="main" icon="next" text="Continue"/>
     </svelte:fragment>
     
   </BasicPage>
@@ -115,7 +115,7 @@ Instead, you have to use a wrapper. Note that this will also always result in th
 <!-- The complicated condition for invertLogo ensures that when video is present behind the header, the logo is always white. Invert would otherwise render the default logo in dark mode. -->
 <Page
   {title}
-  invertLogo={hasVideo && screenWidth < Breakpoints.sm && !$darkMode}
+  invertLogo={hasVideo && screenWidth < BREAKPOINTS.sm && !$darkMode}
   {...concatProps($$restProps, {
     mainClass: 'gap-y-lg',
     headerClass: hasVideo ? '!absolute w-full bg-transparent z-10' : undefined
@@ -124,7 +124,7 @@ Instead, you have to use a wrapper. Note that this will also always result in th
   <svelte:fragment slot="banner">
     <div
       class="vaa-basicPage-actions flex gap-0"
-      style:--headerIcon-color={hasVideo && screenWidth < Breakpoints.sm
+      style:--headerIcon-color={hasVideo && screenWidth < BREAKPOINTS.sm
         ? 'white'
         : 'oklch(var(--p))'}>
       {#if showLogoutButton}

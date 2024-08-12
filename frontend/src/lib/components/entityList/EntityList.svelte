@@ -100,7 +100,7 @@ Show a list of entities with pagination and defined actions.
 <EntityList 
   bind:itemsShown
   contents={candidates} 
-  actionCallBack={({id}) => $getRoute({route: Route.Candidate, id})}/>
+  actionCallBack={({id}) => $getRoute({route: ROUTE.Candidate, id})}/>
 ```
 -->
 

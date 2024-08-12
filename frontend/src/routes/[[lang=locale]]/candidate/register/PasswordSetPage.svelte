@@ -3,7 +3,7 @@
   import {goto} from '$app/navigation';
   import {t} from '$lib/i18n';
   import {register} from '$lib/api/candidate';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {validatePassword} from 'vaa-app-shared';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {FrontPage} from '$lib/templates/frontPage';
@@ -51,7 +51,7 @@
     }
     newUserEmail.set(email);
     errorMessage = '';
-    goto($getRoute(Route.CandAppHome));
+    goto($getRoute(ROUTE.CandAppHome));
   }
 </script>
 

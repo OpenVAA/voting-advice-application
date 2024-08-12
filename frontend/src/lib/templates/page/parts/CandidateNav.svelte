@@ -1,7 +1,7 @@
 <script lang="ts">
   import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
   import {openFeedbackModal} from '$lib/stores';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {t} from '$lib/i18n';
   import {InfoBadge} from '$lib/components/infoBadge';
   import {getContext} from 'svelte';
@@ -36,15 +36,15 @@ A template part that outputs the navigation menu for the Candidate App for use i
   <slot />
   <NavGroup>
     <NavItem
-      href={$getRoute(Route.CandAppHome)}
+      href={$getRoute(ROUTE.CandAppHome)}
       icon="home"
       text={$t('candidateApp.common.home')} />
     <NavItem
-      href={$getRoute(Route.CandAppProfile)}
+      href={$getRoute(ROUTE.CandAppProfile)}
       icon="profile"
       text={$t('candidateApp.basicInfo.title')} />
     <NavItem
-      href={$getRoute(Route.CandAppQuestions)}
+      href={$getRoute(ROUTE.CandAppQuestions)}
       icon="opinion"
       text={$t('candidateApp.questions.title')}
       disabled={$unansweredRequiredInfoQuestions?.length !== 0}>
@@ -56,20 +56,20 @@ A template part that outputs the navigation menu for the Candidate App for use i
       {/if}
     </NavItem>
     <NavItem
-      href={$getRoute(Route.CandAppSettings)}
+      href={$getRoute(ROUTE.CandAppSettings)}
       icon="settings"
       text={$t('candidateApp.settings.title')} />
     <NavItem
-      href={$getRoute(Route.CandAppPreview)}
+      href={$getRoute(ROUTE.CandAppPreview)}
       icon="previewProfile"
       text={$t('candidateApp.preview.title')} />
-    <NavItem href={$getRoute(Route.CandAppHelp)} icon="help" text={$t('candidateApp.help.title')} />
+    <NavItem href={$getRoute(ROUTE.CandAppHelp)} icon="help" text={$t('candidateApp.help.title')} />
   </NavGroup>
   <!-- 
   <NavGroup>
-    <NavItem href={$getRoute(Route.CandAppInfo)} icon="info" disabled text={$t('info.title')} />
+    <NavItem href={$getRoute(ROUTE.CandAppInfo)} icon="info" disabled text={$t('info.title')} />
     <NavItem
-      href={$getRoute(Route.CandAppFAQ)}
+      href={$getRoute(ROUTE.CandAppFAQ)}
       icon="info"
       disabled
       text={$t('candidateApp.info.title')} />

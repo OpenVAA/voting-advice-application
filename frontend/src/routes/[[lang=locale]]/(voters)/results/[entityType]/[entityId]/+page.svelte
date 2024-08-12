@@ -3,7 +3,7 @@
   import {afterNavigate, goto} from '$app/navigation';
   import {locale, t} from '$lib/i18n';
   import {startEvent} from '$lib/utils/analytics/track';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {
     candidateRankings,
     infoQuestions,
@@ -28,7 +28,7 @@
       feedback: 'hide',
       return: 'show',
       returnButtonLabel: $t('common.back'),
-      returnButtonCallback: () => (useBack ? history.back() : goto($getRoute(Route.Results)))
+      returnButtonCallback: () => (useBack ? history.back() : goto($getRoute(ROUTE.Results)))
     }
   });
 

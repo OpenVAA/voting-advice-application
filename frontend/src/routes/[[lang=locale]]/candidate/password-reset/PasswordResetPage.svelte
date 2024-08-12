@@ -2,7 +2,7 @@
   import {goto} from '$app/navigation';
   import {t} from '$lib/i18n';
   import {resetPassword} from '$lib/api/candidate';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {validatePassword} from 'vaa-app-shared';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {PasswordSetter} from '$lib/candidate/components/passwordSetter';
@@ -34,7 +34,7 @@
     }
 
     errorMessage = '';
-    await goto($getRoute(Route.CandAppHome));
+    await goto($getRoute(ROUTE.CandAppHome));
   }
 </script>
 

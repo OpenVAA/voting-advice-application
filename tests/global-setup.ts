@@ -1,6 +1,6 @@
 import { expect, chromium, FullConfig } from '@playwright/test';
-// Import Route directly so that other imports are not bundled in
-import { Route } from '../frontend/src/lib/utils/navigation/route';
+// Import ROUTE directly so that other imports are not bundled in
+import { ROUTE } from '../frontend/src/lib/utils/navigation/route';
 import { TRANSLATIONS as T } from './utils/translations';
 import mockUsers from '../backend/vaa-strapi/src/functions/mockData/mockUser.json';
 import { STORAGE_STATE } from '../playwright.config';
@@ -18,7 +18,7 @@ async function globalSetup(config: FullConfig) {
   try {
 
     await context.tracing.start({ screenshots: true, snapshots: true });
-    await page.goto(`${baseURL!}/${Route.CandAppHome}`);
+    await page.goto(`${baseURL!}/${ROUTE.CandAppHome}`);
     await page.getByLabel(T.en['candidateApp.common.email'], { exact: true }).fill(mockUser.email);
     await page.getByLabel(T.en['components.passwordInput.password'], { exact: true }).fill(mockUser.password);
     await page.getByText(T.en['common.login'], { exact: true }).click();

@@ -46,7 +46,7 @@ The item is rendered as an `<a>` element if `href` is supplied. Otherwise a `<bu
 ### Usage
 
 ```tsx
-<NavItem href={$getRoute(Route.Info)} icon="info" text="Show info"/>
+<NavItem href={$getRoute(ROUTE.Info)} icon="info" text="Show info"/>
 <NavItem on:click={(e) => foo(e)} text="Do foo"/>
 ```
 -->

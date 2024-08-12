@@ -2,7 +2,7 @@
   import {error} from '@sveltejs/kit';
   import {t} from '$lib/i18n';
   import {opinionQuestionCategories, settings} from '$lib/stores';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
   import {CategoryTag} from '$lib/components/categoryTag';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
@@ -84,7 +84,7 @@
       <Button
         variant="main"
         disabled={!nextQuestionId}
-        href={$getRoute({route: Route.Question, id: nextQuestionId})}
+        href={$getRoute({route: ROUTE.Question, id: nextQuestionId})}
         text={$t('common.continue')} />
       {#if $settings.questions.categoryIntros?.allowSkip}
         <Button
@@ -92,8 +92,8 @@
           color="secondary"
           href={$getRoute(
             nextCategoryId
-              ? {route: Route.QuestionCategory, id: nextCategoryId}
-              : {route: Route.Results}
+              ? {route: ROUTE.QuestionCategory, id: nextCategoryId}
+              : {route: ROUTE.Results}
           )}
           text={nextCategoryId ? $t('questions.category.skip') : $t('questions.skipToResults')}
           class="justify-center" />

@@ -4,7 +4,7 @@
   import {locale, t} from '$lib/i18n';
   import {dataProvider} from '$lib/api/getData';
   import type {CandidateContext} from '$lib/utils/candidateContext';
-  import {Route, getRoute} from '$lib/utils/navigation';
+  import {ROUTE, getRoute} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
   import {EntityDetails} from '$lib/components/entityDetails';
   import {Icon} from '$lib/components/icon';
@@ -61,7 +61,7 @@
       class="!text-neutral"
       variant="icon"
       icon="close"
-      on:click={() => (useBack ? history.back() : goto($getRoute(Route.CandAppHome)))}
+      on:click={() => (useBack ? history.back() : goto($getRoute(ROUTE.CandAppHome)))}
       text={$t('candidateApp.preview.close')} />
   </svelte:fragment>
 

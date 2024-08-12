@@ -3,7 +3,7 @@
   import {page} from '$app/stores';
   import {t} from '$lib/i18n';
   import {goto} from '$app/navigation';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {PasswordField} from '$lib/candidate/components/passwordField';
@@ -93,9 +93,9 @@ Candidate login page. This component also takes care of the login process.
     {/if}
     <Button type="submit" text={$t('common.login')} variant="main" />
     <Button
-      href={$getRoute(Route.CandAppForgotPassword)}
+      href={$getRoute(ROUTE.CandAppForgotPassword)}
       text={$t('candidateApp.login.forgotPassword')} />
     <Button href="mailto:{$settings.admin.email}" text={$t('candidateApp.common.contactSupport')} />
-    <Button href={$getRoute(Route.Home)} text={$t('candidateApp.common.voterApp')} />
+    <Button href={$getRoute(ROUTE.Home)} text={$t('candidateApp.common.voterApp')} />
   </form>
 </FrontPage>

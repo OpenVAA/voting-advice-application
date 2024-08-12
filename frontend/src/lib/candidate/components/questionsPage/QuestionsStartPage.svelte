@@ -5,7 +5,7 @@
   import {getContext} from 'svelte';
   import {get} from 'svelte/store';
   import {Button} from '$lib/components/button';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import type {CandidateContext} from '$lib/utils/candidateContext';
 
   const {opinionQuestions, unansweredOpinionQuestions} = getContext<CandidateContext>('candidate');
@@ -19,7 +19,7 @@
   const numQuestions = Object.keys(questions).length;
   // The url of the first question where the user is navigated to after the start page.
   const firstQuestionUrl = $getRoute({
-    route: Route.CandAppQuestions,
+    route: ROUTE.CandAppQuestions,
     id: $unansweredOpinionQuestions?.[0]?.id
   });
 </script>
