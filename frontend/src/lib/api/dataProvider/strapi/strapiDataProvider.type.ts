@@ -1,8 +1,8 @@
 /**
  * The basic format for Strapi responses
  */
-export type StrapiResponse<T> = {
-  data: T;
+export type StrapiResponse<TData> = {
+  data: TData;
 };
 
 /**
@@ -40,10 +40,10 @@ export interface LocaleProps {
 /**
  * Format for data localized in Strapi
  */
-export type LocalizedStrapiData<T> = T & {
+export type LocalizedStrapiData<TData> = TData & {
   attributes: {
     localizations: {
-      data: Array<T>;
+      data: Array<TData>;
     };
   };
 };

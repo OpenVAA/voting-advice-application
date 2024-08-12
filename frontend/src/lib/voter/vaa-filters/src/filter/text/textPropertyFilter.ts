@@ -2,7 +2,9 @@ import { TextFilter } from './textFilter';
 import { type ExtractEntity, type FilterableEntity, type MaybeWrapped } from '../../entity';
 import type { PropertyFilterOptions } from '../base';
 
-export class TextPropertyFilter<T extends MaybeWrapped<FilterableEntity>> extends TextFilter<T> {
+export class TextPropertyFilter<
+  TEntity extends MaybeWrapped<FilterableEntity>
+> extends TextFilter<TEntity> {
   /**
    * Create a filter for matching text to an entity's property.
    * @param property The property name
@@ -16,7 +18,7 @@ export class TextPropertyFilter<T extends MaybeWrapped<FilterableEntity>> extend
       subProperty,
       name
     }: {
-      property: keyof ExtractEntity<T> & PropertyFilterOptions['property'];
+      property: keyof ExtractEntity<TEntity> & PropertyFilterOptions['property'];
       subProperty?: PropertyFilterOptions['subProperty'];
       name?: string;
     },

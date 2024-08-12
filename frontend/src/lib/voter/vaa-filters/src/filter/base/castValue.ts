@@ -8,12 +8,20 @@ import type { FilterOptions } from './filter.type';
  * @param multiple Whether the value is an array of the type
  * @returns The value cast to the correct data type or an array of that type
  */
-export function castValue<V>(value: unknown, type: FilterOptions['type'], multiple?: false): V;
-export function castValue<V>(value: unknown, type: FilterOptions['type'], multiple: true): Array<V>;
-export function castValue<V>(value: unknown, type: FilterOptions['type'], multiple = false) {
+export function castValue<TValue>(
+  value: unknown,
+  type: FilterOptions['type'],
+  multiple?: false
+): TValue;
+export function castValue<TValue>(
+  value: unknown,
+  type: FilterOptions['type'],
+  multiple: true
+): Array<TValue>;
+export function castValue<TValue>(value: unknown, type: FilterOptions['type'], multiple = false) {
   if (multiple) {
     if (!Array.isArray(value)) throw new Error(`Value for type ${type} is not an array.`);
-    return value.map((v) => castValue<V>(v, type));
+    return value.map((v) => castValue<TValue>(v, type));
   }
   switch (type) {
     case 'string':

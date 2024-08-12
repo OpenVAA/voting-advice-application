@@ -7,7 +7,7 @@ import type { FilterOptions } from './filter.type';
 /**
  * The abstract base class for all filters.
  */
-export abstract class Filter<T extends MaybeWrapped, V> {
+export abstract class Filter<TEntity extends MaybeWrapped, TValue> {
   /**
    * All rules related to this filter should be stored here.
    */
@@ -50,7 +50,7 @@ export abstract class Filter<T extends MaybeWrapped, V> {
    * @param entity A non-wrapped entity.
    * @returns The value to filter on or `MISSING_VALUE` or an array of these if `this.options.multipleValues` is true.
    */
-  getValue(entity: ExtractEntity<T>): MaybeMissing<V> | Array<MaybeMissing<V>> {
+  getValue(entity: ExtractEntity<TEntity>): MaybeMissing<TValue> | Array<MaybeMissing<TValue>> {
     let value: unknown;
     if (this.options.question) {
       if (!hasAnswers(entity)) throw new Error('Entity does not have answers.');
@@ -65,10 +65,10 @@ export abstract class Filter<T extends MaybeWrapped, V> {
     return this.options.multipleValues
       ? value == null
         ? [MISSING_VALUE]
-        : castValue<V>(value, this.options.type, true)
+        : castValue<TValue>(value, this.options.type, true)
       : value == null
         ? MISSING_VALUE
-        : castValue<V>(value, this.options.type);
+        : castValue<TValue>(value, this.options.type);
   }
 
   /////////////////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ export abstract class Filter<T extends MaybeWrapped, V> {
    * @input A list of entities.
    * @returns Filtered targets
    */
-  apply<U extends T>(targets: Array<U>) {
+  apply<TType extends TEntity>(targets: Array<TType>) {
     // We perform the testing on the raw entities even if they are wrapped.
     return targets.filter((t) => this.test(getEntity(t)));
   }
@@ -90,10 +90,10 @@ export abstract class Filter<T extends MaybeWrapped, V> {
    * @param entity A non-wrapped entity.
    * @returns true if the entity passes the filter.
    */
-  test(entity: ExtractEntity<T>) {
+  test(entity: ExtractEntity<TEntity>) {
     return this.options.multipleValues
-      ? this.testValues(this.getValue(entity) as Array<MaybeMissing<V>>)
-      : this.testValue(this.getValue(entity) as MaybeMissing<V>);
+      ? this.testValues(this.getValue(entity) as Array<MaybeMissing<TValue>>)
+      : this.testValue(this.getValue(entity) as MaybeMissing<TValue>);
   }
 
   /////////////////////////////////////////////////////////////////////////////////
@@ -183,7 +183,7 @@ export abstract class Filter<T extends MaybeWrapped, V> {
    * @param value A possibly missing value
    * @returns true if the value passes the filter.
    */
-  testValue(value: MaybeMissing<V>): boolean {
+  testValue(value: MaybeMissing<TValue>): boolean {
     throw new Error(`Single values are not supported by this filter: ${value}`);
   }
 
@@ -192,7 +192,7 @@ export abstract class Filter<T extends MaybeWrapped, V> {
    * @param values An array of possibly missing values
    * @returns true if the value passes the filter.
    */
-  testValues(values: Array<MaybeMissing<V>>): boolean {
+  testValues(values: Array<MaybeMissing<TValue>>): boolean {
     throw new Error(`Multiple values are not supported by this filter: ${values.join(', ')}`);
   }
 }

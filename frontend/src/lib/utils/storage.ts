@@ -10,9 +10,9 @@ export type StorageType = 'localStorage' | 'sessionStorage';
 /**
  * Data saved in `localStorage` is accompanied by a version number, which can be checked agains to expire the data.
  */
-type LocallyStoredValue<T> = {
+type LocallyStoredValue<TData> = {
   version: number;
-  data: T;
+  data: TData;
 };
 
 /**
@@ -21,7 +21,7 @@ type LocallyStoredValue<T> = {
  * @param key The key to store the value under.
  * @param defaultValue The default value for the store.
  */
-export function localStorageWritable<T>(key: string, defaultValue: T) {
+export function localStorageWritable<TValue>(key: string, defaultValue: TValue) {
   return storageWritable('localStorage', key, defaultValue);
 }
 
@@ -31,7 +31,7 @@ export function localStorageWritable<T>(key: string, defaultValue: T) {
  * @param key The key to store the value under.
  * @param defaultValue The default value for the store.
  */
-export function sessionStorageWritable<T>(key: string, defaultValue: T) {
+export function sessionStorageWritable<TValue>(key: string, defaultValue: TValue) {
   return storageWritable('sessionStorage', key, defaultValue);
 }
 
@@ -42,10 +42,14 @@ export function sessionStorageWritable<T>(key: string, defaultValue: T) {
  * @param key The key to store the value under.
  * @param defaultValue The default value for the store.
  */
-export function storageWritable<T>(type: StorageType, key: string, defaultValue: T): Writable<T> {
-  const value = getItemFromStorage<T>(type, key);
+export function storageWritable<TValue>(
+  type: StorageType,
+  key: string,
+  defaultValue: TValue
+): Writable<TValue> {
+  const value = getItemFromStorage<TValue>(type, key);
   // TODO: Check that the value matches the defaultValue's type
-  const store = writable(value == null ? defaultValue : value) as Writable<T>;
+  const store = writable(value == null ? defaultValue : value) as Writable<TValue>;
   store.subscribe((value) => saveItemToStorage(type, key, value));
   return store;
 }
@@ -53,13 +57,13 @@ export function storageWritable<T>(type: StorageType, key: string, defaultValue:
 /**
  * Get an item from storage. If the `type` is `localStorage`, the version number saved with the item is checked and the data is expired if it does match the required version defined in `settings`.
  */
-function getItemFromStorage<T>(type: StorageType, key: string): T | null {
-  let item: T | null = null;
+function getItemFromStorage<TValue>(type: StorageType, key: string): TValue | null {
+  let item: TValue | null = null;
   const storage = getStorage(type);
   if (!storage) return null;
   const savedItem = storage.getItem(key);
   if (savedItem) {
-    let savedValue: T | null;
+    let savedValue: TValue | null;
     try {
       savedValue = JSON.parse(savedItem);
     } catch (e) {
@@ -76,12 +80,12 @@ function getItemFromStorage<T>(type: StorageType, key: string): T | null {
         typeof savedValue.version === 'number' &&
         savedValue.version >= get(settings).appVersion.requireUserDataVersion
       ) {
-        item = savedValue.data as T;
+        item = savedValue.data as TValue;
       } else {
         storage.removeItem(key);
       }
     } else {
-      item = savedValue as T;
+      item = savedValue as TValue;
     }
   }
   return item;
@@ -90,7 +94,7 @@ function getItemFromStorage<T>(type: StorageType, key: string): T | null {
 /**
  * Save an item to storage. If the `type` is `localStorage`, the data is versioned.
  */
-function saveItemToStorage<T>(type: StorageType, key: string, value: T): void {
+function saveItemToStorage<TValue>(type: StorageType, key: string, value: TValue): void {
   const storage = getStorage(type);
   if (!storage) return;
   const toStore =
@@ -98,7 +102,7 @@ function saveItemToStorage<T>(type: StorageType, key: string, value: T): void {
       ? ({
           version: get(settings).appVersion.version,
           data: value
-        } as LocallyStoredValue<T>)
+        } as LocallyStoredValue<TValue>)
       : (value ?? null); // Convert `undefined` to `null` because when read back it'd be treated as a string
   storage.setItem(key, JSON.stringify(toStore));
 }

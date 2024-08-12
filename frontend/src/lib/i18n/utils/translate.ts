@@ -17,8 +17,8 @@ export function translate(strings: LocalizedString | undefined | null, locale?: 
  * @param locale The target locale
  * @returns The localized content or `undefined`
  */
-export function translateObject<T extends Record<string, unknown> | null | undefined>(
-  obj: T,
+export function translateObject<TObject extends Record<string, unknown> | null | undefined>(
+  obj: TObject,
   locale?: string
 ) {
   if (!isTranslation(obj)) return undefined;

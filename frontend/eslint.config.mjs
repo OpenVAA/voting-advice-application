@@ -101,6 +101,21 @@ export default [
           default: 'generic'
         }
       ],
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {
+          selector: 'typeParameter',
+          format: ['PascalCase'],
+          custom: {
+            regex: '^T[A-Z]',
+            match: true
+          }
+        },
+        {
+          selector: 'typeAlias',
+          format: ['PascalCase']
+        }
+      ],
 
       'simple-import-sort/exports': 'error',
       'simple-import-sort/imports': [

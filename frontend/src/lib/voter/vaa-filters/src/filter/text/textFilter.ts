@@ -11,7 +11,7 @@ import {
  * A base class for filters that search for text.
  */
 
-export class TextFilter<T extends MaybeWrapped> extends Filter<T, string> {
+export class TextFilter<TEntity extends MaybeWrapped> extends Filter<TEntity, string> {
   protected _rules: {
     exclude?: string;
     include?: string;

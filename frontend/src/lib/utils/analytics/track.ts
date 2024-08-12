@@ -136,10 +136,10 @@ function purgeNullish(data: TrackingEvent['data']) {
  * The interface for an analytics event.
  */
 export interface TrackingEvent<
-  Data extends Record<string, JSONData | undefined> = Record<string, JSONData | undefined>
+  TData extends Record<string, JSONData | undefined> = Record<string, JSONData | undefined>
 > {
   name: TrackingEventName;
-  data: Data;
+  data: TData;
 }
 
 export type TrackingEventName =

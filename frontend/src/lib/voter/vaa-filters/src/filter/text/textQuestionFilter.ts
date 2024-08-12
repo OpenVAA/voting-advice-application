@@ -2,7 +2,9 @@ import { TextFilter } from './textFilter';
 import { type EntityWithAnswers, type MaybeWrapped } from '../../entity';
 import { type TextQuestion } from '../../question';
 
-export class TextQuestionFilter<T extends MaybeWrapped<EntityWithAnswers>> extends TextFilter<T> {
+export class TextQuestionFilter<
+  TEntity extends MaybeWrapped<EntityWithAnswers>
+> extends TextFilter<TEntity> {
   /**
    * Create a filter for matching a text question.
    * @param question The text question
