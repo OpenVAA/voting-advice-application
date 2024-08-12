@@ -10,7 +10,7 @@
  * and also it is not possible to create localizations using the bulk insert.
  */
 
-import {type Faker, faker, fakerES, fakerFI, fakerSV} from '@faker-js/faker';
+import {type Faker, faker, fakerFI, fakerSV} from '@faker-js/faker';
 import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
 import {API} from './utils/api';
 import type {
@@ -556,6 +556,7 @@ async function createQuestions(options: {constituencyPctg?: number} = {}) {
       data: {
         text,
         info,
+        order: index,
         allowOpen: true,
         questionType: questionType.id,
         category: category.id,
