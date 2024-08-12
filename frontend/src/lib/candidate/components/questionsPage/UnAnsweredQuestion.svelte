@@ -3,7 +3,7 @@
   import {CategoryTag} from '$lib/components/categoryTag';
   import {Expander} from '$lib/components/expander';
   import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {RenderQuestionProps} from './Question.type';
@@ -40,7 +40,7 @@ Renders an unanswered question on the summary page. Consists of the questions ti
   {#if !$answersLocked}
     <a
       class="flex justify-center py-20 pb-40"
-      href={$getRoute({route: Route.CandAppQuestions, id: question.id})}>
+      href={$getRoute({route: ROUTE.CandAppQuestions, id: question.id})}>
       <Button
         text={$t('candidateApp.questions.answerButton')}
         class="w-full max-w-md bg-base-300" />

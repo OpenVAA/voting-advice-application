@@ -1,8 +1,9 @@
-import {error} from '@sveltejs/kit';
-import {get, derived} from 'svelte/store';
-import {page} from '$app/stores';
-import {settings} from '$lib/stores';
-import {Route} from './route';
+import { error } from '@sveltejs/kit';
+import { derived, get } from 'svelte/store';
+import { page } from '$app/stores';
+import { settings } from '$lib/stores';
+import { ROUTE } from './route';
+import type { Route } from './route';
 
 /**
  * A special id used to mark the question to start from before question ids are available
@@ -18,10 +19,10 @@ export const FIRST_QUESTION_ID = '__first__';
  * @param params Optional query params to add to the url
  * @returns The url to navigate to
  *
- * @example `$getRoute(Route.Home)`: Go home
- * @example `$getRoute({route: Route.Candidate, id: 123})`: Show candidate with id 123
- * @example `$getRoute({route: Route.Candidates, locale: 'fi'})`: Show candidates page in Finnish
- * @example `$getRoute({route: Route.CandAppRegister, params: {registrationCode: '123}})`: Go to candidate registration page with the code prefilled
+ * @example `$getRoute(ROUTE.Home)`: Go home
+ * @example `$getRoute({route: ROUTE.Candidate, id: 123})`: Show candidate with id 123
+ * @example `$getRoute({route: ROUTE.Candidates, locale: 'fi'})`: Show candidates page in Finnish
+ * @example `$getRoute({route: ROUTE.CandAppRegister, params: {registrationCode: '123}})`: Go to candidate registration page with the code prefilled
  * @example `$getRoute({locale: 'fi'})`: Show current page in Finnish
  */
 export const getRoute = derived(page, () => _getRoute);
@@ -67,10 +68,10 @@ function _getRoute(
   if (locale) parts.push(locale);
 
   // If the `questions.questionsIntro.show` setting is false, we bypass the intro page
-  if (route === Route.Questions && id == null && !get(settings).questions?.questionsIntro?.show) {
-    parts.push(Route.Question);
+  if (route === ROUTE.Questions && id == null && !get(settings).questions?.questionsIntro?.show) {
+    parts.push(ROUTE.Question);
     id = FIRST_QUESTION_ID;
-  } else if (route !== '') {
+  } else if (route) {
     parts.push(route);
   }
 

@@ -2,7 +2,7 @@
   import {goto} from '$app/navigation';
   import {t} from '$lib/i18n';
   import {getContext} from 'svelte';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {addAnswer, updateAnswer} from '$lib/api/candidate';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {BasicPage} from '$lib/templates/basicPage';
@@ -129,7 +129,7 @@
 
   async function saveAndReturn() {
     await saveToServer();
-    goto($getRoute(Route.CandAppQuestions));
+    goto($getRoute(ROUTE.CandAppQuestions));
   }
 
   async function saveAndContinue() {
@@ -137,16 +137,16 @@
 
     if ($unansweredOpinionQuestions?.length === 0) {
       // All questions answered
-      goto($getRoute(Route.CandAppHome));
+      goto($getRoute(ROUTE.CandAppHome));
       return;
     }
     const nextUnansweredQuestion = $unansweredOpinionQuestions?.[0]?.id;
-    goto($getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion}));
+    goto($getRoute({route: ROUTE.CandAppQuestions, id: nextUnansweredQuestion}));
   };
 
   function cancelAndReturn() {
     removeLocalAnswerToQuestion();
-    goto($getRoute(Route.CandAppQuestions));
+    goto($getRoute(ROUTE.CandAppQuestions));
   };
 </script>
 
@@ -226,7 +226,7 @@ In addition to the question, includes a Likert scale and a text area for comment
 
       {#if !!$answersLocked}
         <Button
-          on:click={() => goto($getRoute(Route.CandAppQuestions))}
+          on:click={() => goto($getRoute(ROUTE.CandAppQuestions))}
           variant="main"
           text={$t('common.return')} />
       {:else if editMode}

@@ -2,7 +2,7 @@
   import {t} from '$lib/i18n';
   import {Button} from '$lib/components/button';
   import {PasswordField} from '$candidate/components/passwordField';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {PasswordValidator} from '$candidate/components/passwordValidator';
 
   export let password = '';
@@ -66,5 +66,5 @@ a second confirmation password input field, a button for submitting the password
     disabled={!disableSetButton}
     variant="main"
     text={$t('candidateApp.setPassword.setPassword')} />
-  <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
+  <Button href={$getRoute(ROUTE.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
 </form>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
   import {HeadingGroup} from '$lib/components/headingGroup';
   import {HeroEmoji} from '$lib/components/heroEmoji';
@@ -33,7 +33,7 @@
 
   <Button
     slot="primaryActions"
-    href={$getRoute(Route.Questions)}
+    href={$getRoute(ROUTE.Questions)}
     variant="main"
     icon="next"
     text={$t('dynamic.intro.continue')} />

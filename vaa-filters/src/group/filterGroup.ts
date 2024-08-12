@@ -1,6 +1,6 @@
-import type {MaybeWrapped} from '../entity';
-import type {Filter} from '../filter';
-import {LogicOp, combineResults} from './combineResults';
+import { combineResults, LOGIC_OP, type LogicOp } from './combineResults';
+import type { MaybeWrapped } from '../entity';
+import type { Filter } from '../filter';
 
 /**
  * Use to combine a group of filters and subscribe to changes in their combined results using the `onChange` callback.
@@ -27,7 +27,7 @@ export class FilterGroup<TEntity extends MaybeWrapped> {
     /**
      * And or Or logic operator to use in combination. @default LogicOp.And
      */
-    logicOperator: LogicOp = LogicOp.And
+    logicOperator: LogicOp = LOGIC_OP.And
   ) {
     this._logicOp = logicOperator;
     filters.forEach((f) => f.onChange(() => this.doOnChange()));
@@ -82,7 +82,7 @@ export class FilterGroup<TEntity extends MaybeWrapped> {
   reset() {
     this.withoutOnChange(() => {
       this.filters.forEach((f) => f.reset());
-      this.logicOperator = LogicOp.And;
+      this.logicOperator = LOGIC_OP.And;
     });
     this.doOnChange();
   }

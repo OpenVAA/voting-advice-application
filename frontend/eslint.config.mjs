@@ -93,6 +93,14 @@ export default [
         }
       ],
 
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'TSEnumDeclaration',
+          message: 'Use const assertion or a string union type instead.'
+        }
+      ],
+
       'func-style': ['error', 'declaration', {allowArrowFunctions: false}],
 
       '@typescript-eslint/no-duplicate-enum-values': 'off',

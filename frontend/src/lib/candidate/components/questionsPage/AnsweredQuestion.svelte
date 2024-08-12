@@ -3,7 +3,7 @@
   import {Expander} from '$lib/components/expander';
   import {LikertResponseButtons} from '$lib/components/questions';
   import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {CategoryTag} from '$lib/components/categoryTag';
   import {QuestionOpenAnswer} from '$lib/components/questions';
   import {getContext} from 'svelte';
@@ -71,7 +71,7 @@ open answers and a button to navigate to the questions page.
           text={!$answersLocked
             ? $t('candidateApp.questions.editAnswer')
             : $t('candidateApp.questions.viewAnswer')}
-          href={$getRoute({route: Route.CandAppQuestionEdit, id: question.id})}
+          href={$getRoute({route: ROUTE.CandAppQuestionEdit, id: question.id})}
           icon={!$answersLocked ? 'create' : 'show'}
           iconPos="left" />
       </div>

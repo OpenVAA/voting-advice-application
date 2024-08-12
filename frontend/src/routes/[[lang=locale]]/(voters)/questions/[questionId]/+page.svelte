@@ -4,7 +4,7 @@
   import {t} from '$lib/i18n';
   import {startEvent} from '$lib/utils/analytics/track';
   import {logDebugError} from '$lib/utils/logger';
-  import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
+  import {FIRST_QUESTION_ID, getRoute, ROUTE} from '$lib/utils/navigation';
   import {
     answeredQuestions,
     deleteVoterAnswer,
@@ -22,13 +22,14 @@
     QuestionInfo,
     type LikertResponseButtonsEventDetail
   } from '$lib/components/questions';
-  //import {type VideoMode, Video} from '$lib/components/video';
   import {getQuestionsContext} from '../questions.context';
   import {filterAndSortQuestions} from '../questions.utils';
   import Layout from '../../../Layout.svelte';
   import type {PageData} from './$types';
   import {getLayoutContext} from '$lib/contexts/layout';
   import {onDestroy} from 'svelte';
+  //import {type VideoMode, Video} from '$lib/components/video';
+
   /**
    * A page for displaying a single opinion question or a question category intro.
    * TODO:
@@ -113,7 +114,7 @@
       logDebugError(`No question with id ${questionId}. Resetting session stores…`);
       $firstQuestionId = null;
       $selectedCategories = null;
-      if (newQuestionId !== FIRST_QUESTION_ID && browser) return goto($getRoute(Route.Questions));
+      if (newQuestionId !== FIRST_QUESTION_ID && browser) return goto($getRoute(ROUTE.Questions));
       return;
     }
 
@@ -163,17 +164,17 @@
     let url: string;
     let noScroll = false;
     if (newIndex < 0) {
-      url = $getRoute($settings.questions.questionsIntro.show ? Route.Questions : Route.Intro);
+      url = $getRoute($settings.questions.questionsIntro.show ? ROUTE.Questions : ROUTE.Intro);
     } else if (newIndex >= questions.length) {
-      url = $getRoute(Route.Results);
+      url = $getRoute(ROUTE.Results);
     } else if (
       $settings.questions.categoryIntros?.show &&
       steps > 0 && // Show category intro only when moving forward
       getIndexInCategory(questions[newIndex]) === 0 // And for the first question in the category
     ) {
-      url = $getRoute({route: Route.QuestionCategory, id: questions[newIndex].category.id});
+      url = $getRoute({route: ROUTE.QuestionCategory, id: questions[newIndex].category.id});
     } else {
-      url = $getRoute({route: Route.Question, id: questions[newIndex].id});
+      url = $getRoute({route: ROUTE.Question, id: questions[newIndex].id});
       // Disable scrolling when moving between questions for a smoother experience
       noScroll = true;
     }

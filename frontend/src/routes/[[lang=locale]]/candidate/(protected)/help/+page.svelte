@@ -1,6 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {BasicPage} from '$lib/templates/basicPage';
   import {Button} from '$lib/components/button';
   import {Expander} from '$lib/components/expander';
@@ -35,6 +35,6 @@
       icon="next"
       variant="main"
       text={$t('candidateApp.common.continueFilling')}
-      href={$getRoute(Route.CandAppHome)} />
+      href={$getRoute(ROUTE.CandAppHome)} />
   </svelte:fragment>
 </BasicPage>

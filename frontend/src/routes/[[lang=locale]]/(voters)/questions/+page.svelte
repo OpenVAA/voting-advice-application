@@ -1,6 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
+  import {FIRST_QUESTION_ID, getRoute, ROUTE} from '$lib/utils/navigation';
   import {opinionQuestions, opinionQuestionCategories, settings} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import {HeroEmoji} from '$lib/components/heroEmoji';
@@ -52,10 +52,6 @@
 </script>
 
 <Layout title={$t('questions.title')}>
-  <!-- <svelte:fragment slot="note">
-    <Icon name="tip" />
-    {$t('XXX')}
-  </svelte:fragment> -->
 
   <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.questions.heroEmoji')} />
@@ -103,8 +99,8 @@
     disabled={!canContinue}
     href={$getRoute(
       $settings.questions.categoryIntros?.show && firstCategoryId
-        ? {route: Route.QuestionCategory, id: firstCategoryId}
-        : {route: Route.Question, id: FIRST_QUESTION_ID}
+        ? {route: ROUTE.QuestionCategory, id: firstCategoryId}
+        : {route: ROUTE.Question, id: FIRST_QUESTION_ID}
     )}
     variant="main"
     icon="next"

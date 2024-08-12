@@ -1,6 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {TimedModal} from '$lib/components/modal/timed';
   import {goto} from '$app/navigation';
   import {Button} from '$lib/components/button';
@@ -37,7 +37,7 @@
     await logOut();
     closeModal();
     if (!stayOnPage) {
-      await goto($getRoute(Route.CandAppHome));
+      await goto($getRoute(ROUTE.CandAppHome));
     }
   }
 </script>

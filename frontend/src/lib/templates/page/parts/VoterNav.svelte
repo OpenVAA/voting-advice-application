@@ -1,7 +1,7 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {surveyLink} from '$lib/utils/analytics/survey';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {
     answeredQuestions,
     openFeedbackModal,
@@ -35,7 +35,7 @@ A template part that outputs the navigation menu for the Voter App for use in th
 
 ```tsx
 <VoterNav>
-  <NavItem href={$getRoute(Route.Home)} icon="home" text={$t('common.home')} />
+  <NavItem href={$getRoute(ROUTE.Home)} icon="home" text={$t('common.home')} />
 </VoterNav>
 ```
 -->
@@ -43,22 +43,22 @@ A template part that outputs the navigation menu for the Voter App for use in th
 <Navigation slot="nav" on:keyboardFocusOut {...$$restProps}>
   <slot />
   <NavGroup>
-    <NavItem href={$getRoute(Route.Home)} icon="home" text={$t('common.home')} />
-    <NavItem href={$getRoute(Route.Questions)} icon="opinion" text={$t('questions.title')} />
+    <NavItem href={$getRoute(ROUTE.Home)} icon="home" text={$t('common.home')} />
+    <NavItem href={$getRoute(ROUTE.Questions)} icon="opinion" text={$t('questions.title')} />
     <NavItem
       disabled={!$answeredQuestions || Object.values($answeredQuestions).length === 0}
       on:click={() => resetVoterAnswers()}
       icon="close"
       text={$t('common.resetAnswers')} />
     <NavItem
-      href={$getRoute(Route.Results)}
+      href={$getRoute(ROUTE.Results)}
       icon="results"
       text={resultsAvailableSync ? $t('results.title.results') : $t('results.title.browse')} />
   </NavGroup>
   <NavGroup>
-    <NavItem href={$getRoute(Route.Info)} icon="election" text={$t('info.title')} />
-    <NavItem href={$getRoute(Route.About)} icon="info" text={$t('about.title')} />
-    <NavItem href={$getRoute(Route.Privacy)} icon="privacy" text={$t('privacy.title')} />
+    <NavItem href={$getRoute(ROUTE.Info)} icon="election" text={$t('info.title')} />
+    <NavItem href={$getRoute(ROUTE.About)} icon="info" text={$t('about.title')} />
+    <NavItem href={$getRoute(ROUTE.Privacy)} icon="privacy" text={$t('privacy.title')} />
   </NavGroup>
   {#if $settings.survey?.showIn?.includes('navigation') || $openFeedbackModal}
     <NavGroup>

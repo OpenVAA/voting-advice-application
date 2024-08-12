@@ -1,6 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {sanitizeHtml} from '$lib/utils/sanitize';
   import {election} from '$lib/stores';
   import {Button} from '$lib/components/button';
@@ -44,6 +44,6 @@
   <Button
     slot="primaryActions"
     variant="main"
-    href={$getRoute(Route.Home)}
+    href={$getRoute(ROUTE.Home)}
     text={$t('common.returnHome')} />
 </Layout>

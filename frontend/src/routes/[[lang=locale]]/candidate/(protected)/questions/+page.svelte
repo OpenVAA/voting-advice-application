@@ -3,7 +3,7 @@
   import {BasicPage} from '$lib/templates/basicPage';
   import {Expander} from '$lib/components/expander';
   import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import {getContext} from 'svelte';
   import {Warning} from '$lib/components/warning';
   import {
@@ -98,7 +98,7 @@
       </div>
       <div class="flex w-full justify-center pb-40 pt-20">
         <Button
-          href={$getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion?.id})}
+          href={$getRoute({route: ROUTE.CandAppQuestions, id: nextUnansweredQuestion?.id})}
           text={$t('candidateApp.questions.enterMissingAnswer')}
           variant="main"
           icon="next" />
@@ -128,7 +128,7 @@
       <Button
         text={$t('common.return')}
         variant="main"
-        href={$getRoute({route: Route.CandAppHome})} />
+        href={$getRoute({route: ROUTE.CandAppHome})} />
     </div>
   </BasicPage>
 {/if}

@@ -9,7 +9,7 @@
   import type {CandidateContext} from '$lib/utils/candidateContext';
   import {Button} from '$lib/components/button';
   import {goto} from '$app/navigation';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import {getRoute, ROUTE} from '$lib/utils/navigation';
   import type {CandidateAnswer, Nomination} from '$lib/types/candidateAttributes';
   import {addAnswer, updateAnswer} from '$lib/api/candidate';
   import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
@@ -119,7 +119,7 @@
 
   async function submitForm() {
     if ($answersLocked) {
-      await goto($getRoute(Route.CandAppHome));
+      await goto($getRoute(ROUTE.CandAppHome));
       return;
     }
 
@@ -144,8 +144,8 @@
     loading = false;
 
     if ($unansweredOpinionQuestions?.length !== 0 && !$answersLocked)
-      await goto($getRoute(Route.CandAppQuestions));
-    else await goto($getRoute(Route.CandAppHome));
+      await goto($getRoute(ROUTE.CandAppQuestions));
+    else await goto($getRoute(ROUTE.CandAppHome));
   }
 
   function updateInfoAnswerStore(
