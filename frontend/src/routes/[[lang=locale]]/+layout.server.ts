@@ -18,7 +18,7 @@ export const load = (async ({locals, params}) => {
   const {getAppSettings, getElection} = await dataProvider;
 
   // Get app settings and possibly enter maintenance mode. `getAppSettings` will resolve to `undefined` if the database connection could not be made.
-  let appSettings = await getAppSettings({locale: effectiveLocale});
+  let appSettings = await getAppSettings();
   if (!appSettings) {
     appSettings = {underMaintenance: true};
   }

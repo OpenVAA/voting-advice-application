@@ -111,32 +111,60 @@ export interface StrapiAppLabelsData {
 export interface StrapiAppSettingsData {
   id: string;
   attributes: {
-    publisherName: LocalizedString | null;
-    publisherLogo: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
-    publisherLogoDark: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
-    poster: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
-    posterCandidateApp: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
     underMaintenance?: boolean;
+    survey?: {
+      linkTemplate: string;
+      showIn: Array<'frontpage' | 'entityDetails' | 'navigation' | 'resultsPopup'>;
+    };
+    entityDetails?: {
+      contents: {
+        candidate: Array<'info' | 'opinions'>;
+        party: Array<'candidates' | 'info' | 'opinions'>;
+      };
+      showMissingElectionSymbol: {
+        candidate: boolean;
+        party: boolean;
+      };
+      showMissingAnswers: {
+        candidate: boolean;
+        party: boolean;
+      };
+    };
+    header?: {
+      showFeedback: boolean;
+      showHelp: boolean;
+    };
+    matching?: {
+      minimumAnswers: number;
+      partyMatching: 'none' | 'answersOnly' | 'mean' | 'median';
+    };
+    questions?: {
+      categoryIntros?: {
+        allowSkip?: boolean;
+        show: boolean;
+      };
+      questionsIntro: {
+        allowCategorySelection?: boolean;
+        show: boolean;
+      };
+      showCategoryTags: boolean;
+      showResultsLink?: boolean;
+    };
+    results: {
+      cardContents: {
+        candidate: Array<
+          'submatches' | {question: string; hideLabel?: boolean; format?: 'default' | 'tag'}
+        >;
+        party: Array<
+          | 'submatches'
+          | 'candidates'
+          | {question: string; hideLabel?: boolean; format?: 'default' | 'tag'}
+        >;
+      };
+      sections: Array<'candidate' | 'party'>;
+      showFeedbackPopup?: number;
+      showSurveyPopup?: number;
+    };
   };
 }
 

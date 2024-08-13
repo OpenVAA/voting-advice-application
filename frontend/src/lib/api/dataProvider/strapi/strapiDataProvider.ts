@@ -17,7 +17,6 @@ import type {
   FeedbackData,
   GetAllPartiesOptions,
   GetAnyQuestionsOptions,
-  GetDataOptionsBase,
   GetElectionOptions,
   GetNominatedCandidatesOptions,
   GetNominatingPartiesOptions,
@@ -84,34 +83,26 @@ function getData<T extends object>(
  * NB. `getAppSettings` can be used to test the database connection, because unlike the other `getData` functions, it will not throw if a connection could not be made but instead resolves to `undefined`.
  * @returns The app settings or `undefined` if there was an error
  */
-function getAppSettings({locale}: GetDataOptionsBase = {}): Promise<
-  Partial<AppSettings> | undefined
-> {
+function getAppSettings(): Promise<Partial<AppSettings> | undefined> {
   const params = new URLSearchParams({
-    'populate[poster]': 'true',
-    'populate[posterCandidateApp]': 'true',
-    'populate[publisherLogo]': 'true',
-    'populate[publisherLogoDark]': 'true'
+    'populate[header]': 'true',
+    'populate[matching]': 'true',
+    'populate[survey]': 'true',
+    'populate[entityDetails][populate][contents]': 'true',
+    'populate[entityDetails][populate][showMissingElectionSymbol]': 'true',
+    'populate[entityDetails][populate][showMissingAnswers]': 'true',
+    'populate[questions][populate][categoryIntros]': 'true',
+    'populate[questions][populate][questionsIntro]': 'true',
+    'populate[results][populate][cardContents]': 'true'
   });
   return getData<StrapiAppSettingsData[]>('api/app-settings', params)
     .then((result) => {
       if (result.length !== 1)
         error(500, `Expected one AppSettings object, but got ${result.length}`);
-      const attr = result[0].attributes;
-      const publisher: AppSettings['publisher'] = {
-        name: translate(attr.publisherName, locale)
-      };
-      if (attr.publisherLogo.data) publisher.logo = parseImage(attr.publisherLogo.data.attributes);
-      if (attr.publisherLogoDark.data)
-        publisher.logoDark = parseImage(attr.publisherLogoDark.data.attributes);
-      const poster = attr.poster?.data?.attributes;
-      const posterCandidateApp = attr.posterCandidateApp?.data?.attributes;
-      return {
-        publisher,
-        poster: poster ? parseImage(poster) : undefined,
-        posterCandidateApp: posterCandidateApp ? parseImage(posterCandidateApp) : undefined,
-        underMaintenance: attr.underMaintenance ?? false
-      };
+      const appSettings = Object.fromEntries(
+        Object.entries(result[0].attributes).filter(([, value]) => value)
+      );
+      return appSettings;
     })
     .catch(() => undefined);
 }
