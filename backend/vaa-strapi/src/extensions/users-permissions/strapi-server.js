@@ -7,6 +7,7 @@ import { restrictFilters, restrictPopulate } from '../../util/acl';
 
 const {
   errors: { ValidationError }
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- require is needed with Strapi
 } = require('@strapi/utils');
 
 // NOTE: Before adding permissions here, please make sure you've implemented the appropriate access control for the resource

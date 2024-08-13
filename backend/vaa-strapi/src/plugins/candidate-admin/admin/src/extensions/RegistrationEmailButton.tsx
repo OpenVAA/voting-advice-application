@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
 import {
   Button,
-  ModalLayout,
   ModalBody,
-  ModalHeader,
   ModalFooter,
+  ModalHeader,
+  ModalLayout,
   Textarea,
   TextInput,
   Typography
 } from '@strapi/design-system';
-import { Envelop } from '@strapi/icons';
 import { useNotification } from '@strapi/helper-plugin';
+import { Envelop } from '@strapi/icons';
+import React, { useState } from 'react';
 
 export default function RegistrationEmailButton({ instructions, confirmFunction }) {
   // Only show this button in candidate collection

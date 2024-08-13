@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- require might be needed
 const request = require('supertest');
 
 it('should return something', async () => {

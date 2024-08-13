@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Type (ctx, config, { strapi }) => Promise<boolean> would be correct, but it wasn't assignable to PolicyImplementation */
 // Helper functions used to make dealing with access control easier
 
 function filterObject(obj, keys) {
-  const recursive = (source, path) => {
+  function recursive(source, path) {
     const res = {};
 
     for (const key in source) {
@@ -18,13 +19,13 @@ function filterObject(obj, keys) {
     }
 
     return res;
-  };
+  }
 
   return recursive(obj, '');
 }
 
 export function restrictPopulate(allowedPopulate: string[]): any {
-  return async (ctx, config, { strapi }) => {
+  return async (ctx) => {
     const query = ctx.request.query;
 
     // Only allow the provided populate fields
@@ -53,7 +54,7 @@ export function restrictPopulate(allowedPopulate: string[]): any {
 }
 
 export function restrictFilters(allowedFilters: string[]): any {
-  return async (ctx, config, { strapi }) => {
+  return async (ctx) => {
     const query = ctx.request.query;
 
     // Only allow the provided filter fields
@@ -82,7 +83,7 @@ export function restrictFilters(allowedFilters: string[]): any {
 }
 
 export function restrictFields(allowedFields: string[]): any {
-  return async (ctx, config, { strapi }) => {
+  return async (ctx) => {
     const query = ctx.request.query;
 
     // Only allow the provided fields
@@ -108,7 +109,7 @@ export function restrictFields(allowedFields: string[]): any {
 }
 
 export function restrictBody(allowedFields: string[]): any {
-  return async (ctx, config, { strapi }) => {
+  return async (ctx) => {
     // Disallow providing non-allowed body fields
     if (ctx.request.body?.data) {
       for (const key in ctx.request.body.data) {
@@ -124,7 +125,7 @@ export function restrictBody(allowedFields: string[]): any {
 }
 
 export function restrictResourceOwnedByCandidate(contentType: string): any {
-  return async (ctx, config, { strapi }) => {
+  return async (ctx, _, { strapi }) => {
     const { id } = ctx.params;
 
     const candidate = await strapi.query('api::candidate.candidate').findOne({

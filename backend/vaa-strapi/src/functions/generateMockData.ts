@@ -10,20 +10,19 @@
  * and also it is not possible to create localizations using the bulk insert.
  */
 
-import { type Faker, faker, fakerES, fakerFI, fakerSV } from '@faker-js/faker';
-import { generateMockDataOnInitialise, generateMockDataOnRestart } from '../constants';
+import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
+import mockCategories from './mockData/mockCategories.json';
+import mockQuestions from './mockData/mockQuestions.json';
+import mockUser from './mockData/mockUser.json';
 import { API } from './utils/api';
+import { dropAllCollections } from './utils/drop';
+import { generateMockDataOnInitialise, generateMockDataOnRestart } from '../constants';
 import type {
   AnswerValue,
   EntityType,
   LocalizedString,
   QuestionTypeSettings
 } from './utils/data.type';
-import { dropAllCollections } from './utils/drop';
-import { createRelationsForAvailableLocales } from './utils/i18n';
-import mockQuestions from './mockData/mockQuestions.json';
-import mockCategories from './mockData/mockCategories.json';
-import mockUser from './mockData/mockUser.json';
 
 const locales: Locale[] = [
   {
@@ -311,7 +310,7 @@ async function createElectionAppLabel() {
 }
 
 async function createElection() {
-  let appLabel = await strapi.db.query(API.AppLabel).findOne({
+  const appLabel = await strapi.db.query(API.AppLabel).findOne({
     where: {
       locale: locales[0].code
     }
@@ -931,13 +930,18 @@ async function createCandidateUsers() {
  * Adds the locale code to any strings unless the locale is the default one.
  * Used to mark strings as translated if no proper translations are available.
  */
-function fakeTranslate<T extends string | Record<string, string>>(locale: Locale, target: T): T {
+function fakeTranslate<TTarget extends string | Record<string, string>>(
+  locale: Locale,
+  target: TTarget
+): TTarget {
   if (locale.code === locales[0].code) return target;
-  const translate = (s: string) => `${locale.code.toUpperCase()} ${s}`;
-  if (typeof target === 'string') return translate(target) as T;
+  function translate(s: string) {
+    return `${locale.code.toUpperCase()} ${s}`;
+  }
+  if (typeof target === 'string') return translate(target) as TTarget;
   return Object.fromEntries(
     Object.entries(target).map(([key, value]) => [key, translate(value)])
-  ) as T;
+  ) as TTarget;
 }
 
 /**

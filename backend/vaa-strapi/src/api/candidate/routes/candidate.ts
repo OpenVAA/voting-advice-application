@@ -3,7 +3,12 @@
  */
 
 import { factories } from '@strapi/strapi';
-import { restrictPopulate, restrictFilters, restrictBody, electionCanEditQuestions } from '../../../util/acl';
+import {
+  electionCanEditQuestions,
+  restrictBody,
+  restrictFilters,
+  restrictPopulate
+} from '../../../util/acl';
 
 export default factories.createCoreRouter('api::candidate.candidate', {
   only: ['find', 'findOne', 'update'], // Explicitly disabled create and delete
@@ -11,34 +16,28 @@ export default factories.createCoreRouter('api::candidate.candidate', {
     find: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([
-          'photo'
-        ]),
+        restrictPopulate(['photo']),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([
-          'candidate.id.$eq',
-          'question.category.type.$eq',
-        ]),
-      ],
+        restrictFilters(['candidate.id.$eq', 'question.category.type.$eq'])
+      ]
     },
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([
-          'photo'
-        ]),
+        restrictPopulate(['photo']),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
+        restrictFilters([])
+      ]
     },
     update: {
       policies: [
         // Allow only updating candidate itself
-        async (ctx: any, config, {strapi}) => {
-          const {id} = ctx.params;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- TODO: What is the correct type?
+        async (ctx: any, _, { strapi }) => {
+          const { id } = ctx.params;
 
           const candidate = await strapi.query('api::candidate.candidate').findOne({
-            where: {id, user: {id: ctx.state.user.id}}
+            where: { id, user: { id: ctx.state.user.id } }
           });
 
           return !!candidate;
@@ -50,8 +49,8 @@ export default factories.createCoreRouter('api::candidate.candidate', {
         // Allow only updating the following fields
         restrictBody(['photo', 'appLanguage']),
         // Allow modification only when the current election allows it
-        electionCanEditQuestions,
-      ],
-    },
-  },
+        electionCanEditQuestions
+      ]
+    }
+  }
 });

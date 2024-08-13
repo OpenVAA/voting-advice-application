@@ -6,10 +6,10 @@
 import fs from 'fs';
 import mime from 'mime-types';
 import Path from 'path';
-import type { Common } from '@strapi/strapi';
 import { API } from './utils/api';
 import { deleteMedia, dropAllCollections, getAllMedia } from './utils/drop';
 import { createRelationsForAvailableLocales } from './utils/i18n';
+import type { Common } from '@strapi/strapi';
 import type { HasId } from './utils/data.type';
 
 /**
@@ -122,7 +122,7 @@ export async function loadData(folder: string, force = false) {
 
       console.info('[loadData] Creating Answers...');
       if (!(await createFromFile(folder, 'answers', API.Answer))) throw new Error();
-    } catch (error) {
+    } catch {
       console.info('[loadData] - There was an error. Rolling back transaction...');
       await rollback();
       console.info('[loadData] Data loading aborted');
@@ -234,18 +234,18 @@ async function loadFile(folder: string, name: string): Promise<object[]> {
  * @returns The created objects
  * @throws Error
  */
-async function create<T extends object>(
+async function create<TObject extends object>(
   folder,
   api: Common.UID.ContentType,
-  data: T[],
+  data: TObject[],
   mediaFields?: string[],
   publish = true
 ): Promise<object[]> {
   const res = [];
   for (const item of data) {
     // Make a copy of item data for file upload purposes
-    let itemData = { ...item };
-    const files = {} as Record<keyof T, FileUploadProps>;
+    const itemData = { ...item };
+    const files = {} as Record<keyof TObject, FileUploadProps>;
     if (mediaFields?.length) {
       for (const key of mediaFields) {
         if (itemData[key]) {

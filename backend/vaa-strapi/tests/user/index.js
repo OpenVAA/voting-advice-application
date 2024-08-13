@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- require might be needed*/
 const request = require('supertest');
 
 // user mock data

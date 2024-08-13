@@ -1,5 +1,5 @@
-import type { Common } from '@strapi/strapi';
 import { HasId } from './data.type';
+import type { Common } from '@strapi/strapi';
 
 /** Creates relations between original entity and its translations */
 export async function createRelationsForAvailableLocales(

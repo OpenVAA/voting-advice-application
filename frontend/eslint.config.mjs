@@ -101,7 +101,7 @@ export default [
         }
       ],
 
-      'func-style': ['error', 'declaration', {allowArrowFunctions: false}],
+      'func-style': ['error', 'declaration', { allowArrowFunctions: false }],
 
       '@typescript-eslint/no-duplicate-enum-values': 'off',
 

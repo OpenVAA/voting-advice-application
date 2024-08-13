@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- require might be needed*/
 const Strapi = require('@strapi/strapi');
 const fs = require('fs');
 
