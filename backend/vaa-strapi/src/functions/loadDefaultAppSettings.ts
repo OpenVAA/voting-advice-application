@@ -1,6 +1,7 @@
 import {generateMockDataOnInitialise, generateMockDataOnRestart} from '../constants';
 import {dynamicSettings} from 'vaa-shared';
 import {API} from './utils/api';
+import {getCardContentsFromFile} from './utils/appSettings';
 
 export async function loadDefaultAppSettings() {
   if (generateMockDataOnInitialise || generateMockDataOnRestart) {
@@ -16,6 +17,10 @@ export async function loadDefaultAppSettings() {
     return;
   }
 
-  await strapi.entityService.create(API.AppSettings, {data: {...dynamicSettings}});
+  const cardContents = getCardContentsFromFile();
+
+  await strapi.entityService.create(API.AppSettings, {
+    data: {...dynamicSettings, results: {...dynamicSettings.results, ...cardContents}}
+  });
   console.info('[loadDefaultAppSettings] Default app settings loaded.');
 }

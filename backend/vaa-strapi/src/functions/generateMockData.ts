@@ -243,9 +243,12 @@ async function createStrapiAdmin() {
 }
 
 async function createAppSettings() {
+  const cardContents = getCardContentsFromFile();
+
   await strapi.entityService.create(API.AppSettings, {
     data: {
-      ...dynamicSettings
+      ...dynamicSettings,
+      results: {...dynamicSettings.results, ...cardContents}
     }
   });
 }

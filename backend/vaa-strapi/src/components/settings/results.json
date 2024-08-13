@@ -6,13 +6,6 @@
   },
   "options": {},
   "attributes": {
-    "cardContents": {
-      "displayName": "Results - Card Contents",
-      "type": "component",
-      "repeatable": false,
-      "component": "settings.results-card-contents",
-      "required": true
-    },
     "sections": {
       "type": "customField",
       "options": ["candidate", "party"],
@@ -24,6 +17,20 @@
     },
     "showSurveyPopup": {
       "type": "integer"
+    },
+    "candidateCardContents": {
+      "displayName": "Results - Candidate Card Contents",
+      "type": "component",
+      "repeatable": true,
+      "component": "settings.results-candidate-card-contents",
+      "required": true
+    },
+    "partyCardContents": {
+      "displayName": "Results - Party Card Contents",
+      "type": "component",
+      "repeatable": true,
+      "component": "settings.results-party-card-contents",
+      "required": true
     }
   }
 }

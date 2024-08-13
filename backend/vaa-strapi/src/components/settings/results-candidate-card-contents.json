@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_settings_results_candidate_card_contents",
+  "info": {
+    "displayName": "Results - Candidate Card Contents"
+  },
+  "options": {},
+  "attributes": {
+    "content": {
+      "type": "enumeration",
+      "enum": ["submatches", "question"],
+      "required": true
+    },
+    "question_id": {
+      "type": "string"
+    },
+    "question_hideLabel": {
+      "type": "boolean"
+    },
+    "question_format": {
+      "type": "enumeration",
+      "enum": ["default", "tag"]
+    }
+  }
+}
