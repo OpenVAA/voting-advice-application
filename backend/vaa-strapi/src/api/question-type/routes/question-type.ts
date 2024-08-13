@@ -2,8 +2,8 @@
  * question-type router
  */
 
-import {factories} from '@strapi/strapi';
-import {restrictPopulate, restrictFilters} from '../../../util/acl';
+import { factories } from '@strapi/strapi';
+import { restrictFilters, restrictPopulate } from '../../../util/acl';
 
 export default factories.createCoreRouter('api::question-type.question-type', {
   only: ['find', 'findOne'], // Explicitly disabled create, update, delete

@@ -3,7 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
-import { restrictPopulate, restrictFilters } from '../../../util/acl';
+import { restrictFilters, restrictPopulate } from '../../../util/acl';
 
 export default factories.createCoreRouter('api::party.party', {
   only: ['find', 'findOne'], // Explicitly disabled create, update, delete
@@ -11,26 +11,18 @@ export default factories.createCoreRouter('api::party.party', {
     find: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([
-          'logo',
-          'candidates',
-          'answers.populate.question',
-        ]),
+        restrictPopulate(['logo', 'candidates', 'answers.populate.question']),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
+        restrictFilters([])
+      ]
     },
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([
-          'logo',
-          'candidates',
-          'answers.populate.question',
-        ]),
+        restrictPopulate(['logo', 'candidates', 'answers.populate.question']),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
-    },
-  },
+        restrictFilters([])
+      ]
+    }
+  }
 });
