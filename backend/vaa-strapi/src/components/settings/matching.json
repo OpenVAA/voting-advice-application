@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_settings_matchings",
+  "info": {
+    "displayName": "Matching",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "minimumAnswers": {
+      "type": "integer",
+      "required": true
+    },
+    "partyMatching": {
+      "type": "enumeration",
+      "enum": ["none", "answersOnly", "mean", "median"],
+      "required": true
+    }
+  }
+}

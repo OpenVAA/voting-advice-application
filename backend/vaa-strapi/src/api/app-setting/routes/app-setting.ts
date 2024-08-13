@@ -2,8 +2,8 @@
  * app-setting router
  */
 
-import { factories } from '@strapi/strapi';
-import { restrictPopulate, restrictFilters } from '../../../util/acl';
+import {factories} from '@strapi/strapi';
+import {restrictPopulate, restrictFilters} from '../../../util/acl';
 
 export default factories.createCoreRouter('api::app-setting.app-setting', {
   only: ['find', 'findOne'], // Explicitly disabled create and delete
@@ -12,27 +12,43 @@ export default factories.createCoreRouter('api::app-setting.app-setting', {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([
-          'poster',
-          'posterCandidateApp',
-          'publisherLogo',
-          'publisherLogoDark',
+          'header',
+          'matching',
+          'survey',
+          'entityDetails',
+          'contents',
+          'showMissingElectionSymbol',
+          'showMissingAnswers',
+          'questions',
+          'categoryIntros',
+          'questionsIntro',
+          'results',
+          'cardContents'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
+        restrictFilters([])
+      ]
     },
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([
-          'poster',
-          'posterCandidateApp',
-          'publisherLogo',
-          'publisherLogoDark',
+          'header',
+          'matching',
+          'survey',
+          'entityDetails',
+          'contents',
+          'showMissingElectionSymbol',
+          'showMissingAnswers',
+          'questions',
+          'categoryIntros',
+          'questionsIntro',
+          'results',
+          'cardContents'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
-    },
-  },
+        restrictFilters([])
+      ]
+    }
+  }
 });

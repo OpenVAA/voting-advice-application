@@ -25,6 +25,8 @@ import mockQuestions from './mockData/mockQuestions.json';
 import mockQuestionTypes from './mockData/mockQuestionTypes.json';
 import mockCategories from './mockData/mockCategories.json';
 import mockUser from './mockData/mockUser.json';
+import {dynamicSettings} from 'vaa-shared';
+import {getCardContentsFromFile} from './utils/appSettings';
 
 const locales: Locale[] = [
   {
@@ -241,9 +243,9 @@ async function createStrapiAdmin() {
 }
 
 async function createAppSettings() {
-  await strapi.db.query(API.AppSettings).create({
+  await strapi.entityService.create(API.AppSettings, {
     data: {
-      publisherName: fakeLocalized((faker) => faker.company.name())
+      ...dynamicSettings
     }
   });
 }

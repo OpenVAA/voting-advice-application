@@ -1,0 +1,17 @@
+{
+  "collectionName": "components_settings_questions_category_intros",
+  "info": {
+    "displayName": "Questions - Category Intros",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "allowSkip": {
+      "type": "boolean"
+    },
+    "show": {
+      "type": "boolean",
+      "required": true
+    }
+  }
+}

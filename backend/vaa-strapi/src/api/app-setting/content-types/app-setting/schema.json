@@ -12,44 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "publisherName": {
-      "type": "json"
-    },
-    "publisherLogo": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "images"
-      ]
-    },
-    "publisherLogoDark": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "images"
-      ]
-    },
-    "customData": {
-      "type": "json"
-    },
-    "poster": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "images"
-      ]
-    },
-    "posterCandidateApp": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "images"
-      ]
-    },
     "underMaintenance": {
       "type": "boolean",
       "default": false
@@ -57,6 +19,47 @@
     "allowOverwrite": {
       "type": "boolean",
       "default": false
+    },
+    "header": {
+      "displayName": "Header",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.header",
+      "required": true
+    },
+    "matching": {
+      "displayName": "Matching",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.matching",
+      "required": true
+    },
+    "survey": {
+      "displayName": "Survey",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.survey"
+    },
+    "entityDetails": {
+      "displayName": "Entity Details",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.entity-details",
+      "required": true
+    },
+    "questions": {
+      "displayName": "Questions",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.questions",
+      "required": true
+    },
+    "results": {
+      "displayName": "Results",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.results",
+      "required": true
     }
   }
 }

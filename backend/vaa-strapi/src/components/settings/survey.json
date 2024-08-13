@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_settings_surveys",
+  "info": {
+    "displayName": "Survey",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "linkTemplate": {
+      "type": "string",
+      "required": true
+    },
+    "showIn": {
+      "type": "customField",
+      "options": ["frontpage", "entityDetails", "navigation", "resultsPopup"],
+      "customField": "plugin::multi-select.multi-select",
+      "required": true
+    }
+  }
+}
