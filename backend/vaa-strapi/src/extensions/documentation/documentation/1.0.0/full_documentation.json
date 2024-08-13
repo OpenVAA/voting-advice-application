@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2024-08-12T13:04:41.064Z"
+    "x-generation-date": "2024-08-16T11:21:42.577Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
@@ -3315,22 +3315,75 @@
           "id": {
             "type": "number"
           },
-          "cardContents": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "number"
-              },
-              "candidate": {},
-              "party": {}
-            }
-          },
           "sections": {},
           "showFeedbackPopup": {
             "type": "integer"
           },
           "showSurveyPopup": {
             "type": "integer"
+          },
+          "candidateCardContents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number"
+                },
+                "content": {
+                  "type": "string",
+                  "enum": [
+                    "submatches",
+                    "question"
+                  ]
+                },
+                "question_id": {
+                  "type": "string"
+                },
+                "question_hideLabel": {
+                  "type": "boolean"
+                },
+                "question_format": {
+                  "type": "string",
+                  "enum": [
+                    "default",
+                    "tag"
+                  ]
+                }
+              }
+            }
+          },
+          "partyCardContents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number"
+                },
+                "content": {
+                  "type": "string",
+                  "enum": [
+                    "submatches",
+                    "candidates",
+                    "question"
+                  ]
+                },
+                "question_id": {
+                  "type": "string"
+                },
+                "question_hideLabel": {
+                  "type": "boolean"
+                },
+                "question_format": {
+                  "type": "string",
+                  "enum": [
+                    "default",
+                    "tag"
+                  ]
+                }
+              }
+            }
           }
         }
       },
