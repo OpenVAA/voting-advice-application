@@ -1,12 +1,12 @@
-import globals from 'globals';
-import tsParser from '@typescript-eslint/parser';
-// import { FlatCompat } from '@eslint/eslintrc';
 import { fileURLToPath } from 'node:url';
-import js from '@eslint/js';
 import { FlatCompat } from '@eslint/eslintrc';
+import js from '@eslint/js';
+import typescriptEslint from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
+import globals from 'globals';
 
 const __filename = fileURLToPath(import.meta.url);
-// const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
   baseDirectory: __filename,
   recommendedConfig: js.configs.recommended,
@@ -20,12 +20,20 @@ export default [
       '**/build',
       '**/dist',
       '**/node_modules',
-      'src/api',
+      '**/*.json',
+      '**/config/*',
       '**/strapi-plugin-import-export-entries',
+      '**/generated',
       'config/email-templates'
     ]
   },
-  ...compat.extends('eslint:recommended', 'prettier'),
+  ...compat.extends('eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'),
+  {
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+      'simple-import-sort': simpleImportSort //https://github.com/lydell/eslint-plugin-simple-import-sort?tab=readme-ov-file
+    }
+  },
   {
     languageOptions: {
       globals: {
@@ -68,7 +76,54 @@ export default [
         }
       ],
 
-      'func-style': ['warn', 'declaration', { allowArrowFunctions: false }]
+      'func-style': ['warn', 'declaration', { allowArrowFunctions: false }],
+
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'TSEnumDeclaration',
+          message: 'Use const assertion or a string union type instead.'
+        }
+      ],
+
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {
+          selector: 'typeParameter',
+          format: ['PascalCase'],
+          custom: {
+            regex: '^T[A-Z]',
+            match: true
+          }
+        },
+        {
+          selector: 'typeAlias',
+          format: ['PascalCase']
+        }
+      ],
+      '@typescript-eslint/no-duplicate-enum-values': 'off',
+
+      'simple-import-sort/exports': 'error',
+      'simple-import-sort/imports': [
+        'error',
+        {
+          groups: [
+            [
+              '^\\u0000',
+              '^node:',
+              '^@?\\w',
+              '^',
+              '^\\./',
+              '^\\.\\./',
+              '^\\.',
+              '^node:.*\\u0000$',
+              '^@?\\w.*\\u0000$',
+              '^[^.].*\\u0000$',
+              '^\\..*\\u0000$'
+            ]
+          ]
+        }
+      ]
     }
   }
 ];
