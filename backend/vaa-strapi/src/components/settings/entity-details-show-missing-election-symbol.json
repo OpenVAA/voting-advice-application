@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_settings_entity_details_show_missing_election_symbols",
+  "info": {
+    "displayName": "Entity Details - Show Missing Election Symbol",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "candidate": {
+      "type": "boolean",
+      "required": true
+    },
+    "party": {
+      "type": "boolean",
+      "required": true
+    }
+  }
+}

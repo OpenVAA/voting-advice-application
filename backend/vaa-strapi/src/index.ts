@@ -4,6 +4,7 @@ import {loadDataFolder} from './constants';
 import {generateMockData} from './functions/generateMockData';
 import {loadData} from './functions/loadData';
 import {setDefaultApiPermissions} from './functions/setDefaultApiPermissions';
+import {loadDefaultAppSettings} from './functions/loadDefaultAppSettings';
 
 module.exports = {
   /**
@@ -36,5 +37,6 @@ module.exports = {
       console.error('There was an error running loadData or generateMockData!', e);
     }
     setDefaultApiPermissions();
+    loadDefaultAppSettings();
   }
 };

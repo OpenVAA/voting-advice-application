@@ -1,0 +1,31 @@
+{
+  "collectionName": "components_settings_entity_details",
+  "info": {
+    "displayName": "Entity Details",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "contents": {
+      "displayName": "Entity Details Contents",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.entity-details-contents",
+      "required": true
+    },
+    "showMissingElectionSymbol": {
+      "displayName": "Entity Details - Show Missing Election Symbol",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.entity-details-show-missing-election-symbol",
+      "required": true
+    },
+    "showMissingAnswers": {
+      "displayName": "Entity Details - Show Missing Answers",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.entity-details-show-missing-answers",
+      "required": true
+    }
+  }
+}
