@@ -1,19 +1,19 @@
 import {MISSING_VALUE, type UnsignedNormalizedDistance} from 'vaa-shared';
 import {imputeMissingValues} from '../missingValue';
 import type {MatchingSpace} from '../space/matchingSpace';
-import type {MatchingSpacePosition} from '../space/position';
+import type {Position} from '../space/position';
 import {DistanceMetric, directionalDistance, manhattanDistance} from './metric';
 import type {DistanceMeasurementOptions, GlobalAndSubspaceDistances} from './measure.type';
 
 export function measureDistance(
-  a: MatchingSpacePosition,
-  b: MatchingSpacePosition,
+  a: Position,
+  b: Position,
   options: DistanceMeasurementOptions
 ): UnsignedNormalizedDistance;
 
 export function measureDistance(
-  a: MatchingSpacePosition,
-  b: MatchingSpacePosition,
+  a: Position,
+  b: Position,
   options: DistanceMeasurementOptions,
   subspaces: ReadonlyArray<MatchingSpace>
 ): GlobalAndSubspaceDistances;
@@ -35,8 +35,8 @@ export function measureDistance(
  * is provided.
  */
 export function measureDistance(
-  a: MatchingSpacePosition,
-  b: MatchingSpacePosition,
+  a: Position,
+  b: Position,
   options: DistanceMeasurementOptions,
   subspaces?: ReadonlyArray<MatchingSpace>
 ): UnsignedNormalizedDistance | GlobalAndSubspaceDistances {

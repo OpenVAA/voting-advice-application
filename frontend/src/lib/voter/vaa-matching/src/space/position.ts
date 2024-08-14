@@ -4,7 +4,7 @@ import type {MatchingSpace} from './matchingSpace';
 /**
  * A position in a MatchingSpace
  */
-export class MatchingSpacePosition {
+export class Position {
   constructor(
     public coordinates: Array<Coordinate>,
     public readonly space?: MatchingSpace

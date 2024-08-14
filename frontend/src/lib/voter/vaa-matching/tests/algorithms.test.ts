@@ -22,7 +22,7 @@ import {
   MissingValueDistanceMethod
 } from '../src/missingValue';
 import {MultipleChoiceQuestion} from '../src/question';
-import {createSubspace, MatchingSpace, MatchingSpacePosition} from '../src/space';
+import {createSubspace, MatchingSpace, Position} from '../src/space';
 
 // For convenience
 const maxDist = NORMALIZED_DISTANCE_EXTENT;
@@ -155,9 +155,9 @@ describe('measureDistance', () => {
     }
   ];
   describe('Extreme distances', () => {
-    const posMin = new MatchingSpacePosition([minVal, minVal, minVal], ms);
-    const posMax = new MatchingSpacePosition([maxVal, maxVal, maxVal], ms);
-    const posMissing = new MatchingSpacePosition([MISSING_VALUE, MISSING_VALUE, MISSING_VALUE], ms);
+    const posMin = new Position([minVal, minVal, minVal], ms);
+    const posMax = new Position([maxVal, maxVal, maxVal], ms);
+    const posMissing = new Position([MISSING_VALUE, MISSING_VALUE, MISSING_VALUE], ms);
     test.each(mdOpts)('Max distance for $metric', (opts: DistanceMeasurementOptions) => {
       expect(measureDistance(posMin, posMax, opts)).toBeCloseTo(maxDist);
     });
@@ -187,8 +187,8 @@ describe('measureDistance', () => {
         missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
       }
     };
-    const posA = new MatchingSpacePosition([minVal, minVal, minVal], ms);
-    const posB = new MatchingSpacePosition([minVal, 0, maxVal], ms);
+    const posA = new Position([minVal, minVal, minVal], ms);
+    const posB = new Position([minVal, 0, maxVal], ms);
     const dist =
       (weights[0] * 0 + (weights[1] * maxDist) / 2 + weights[2] * maxDist) / ms.maxDistance;
     expect(measureDistance(posA, posB, opts)).toBeCloseTo(dist);
@@ -202,9 +202,9 @@ describe('measureDistance', () => {
       }
     };
     const f = 0.5;
-    const posA = new MatchingSpacePosition([f * minVal, minVal, minVal]);
-    const posB = new MatchingSpacePosition([f * minVal, 0, maxVal]);
-    const posC = new MatchingSpacePosition([f * maxVal, 0, maxVal]);
+    const posA = new Position([f * minVal, minVal, minVal]);
+    const posB = new Position([f * minVal, 0, maxVal]);
+    const posC = new Position([f * maxVal, 0, maxVal]);
     // Calculate first with factors on a scale from -1 to 1 (disagree to agree)
     // where minVal = -1 and maxVal = 1
     let factorsAB = [f * -1 * (f * -1), -1 * 0, -1 * 1];
@@ -223,9 +223,9 @@ describe('measureDistance', () => {
   });
   describe('Distances for missing values', () => {
     const f = 0.3;
-    const posMin = new MatchingSpacePosition([minVal, minVal, minVal]);
-    const posFract = new MatchingSpacePosition([f * minVal, f * minVal, f * maxVal]);
-    const posMissing = new MatchingSpacePosition([MISSING_VALUE, MISSING_VALUE, MISSING_VALUE]);
+    const posMin = new Position([minVal, minVal, minVal]);
+    const posFract = new Position([f * minVal, f * minVal, f * maxVal]);
+    const posMissing = new Position([MISSING_VALUE, MISSING_VALUE, MISSING_VALUE]);
     test('MissingValueDistanceMethod.Neutral', () => {
       const opts: DistanceMeasurementOptions = {
         metric: DistanceMetric.Manhattan,

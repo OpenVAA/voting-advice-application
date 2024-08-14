@@ -45,7 +45,7 @@ The process of computing a match goes roughly as follows. (This is a simplified 
 2. The `Voter` is queried for the questions they have answered by calling the getter `Voter.answers` and the questions they have not answered are removed from matching. If no questions remain, an error will be thrown.
 3. Before using the actual answers, we create the [`MatchingSpace`](./src/space/matchingSpace.ts) in which we position the `Entities`. Usually this is simply a space with `N` dimensions of equal weight, where `N` is the number of questions.[^2]
 4. To place them in the space, we iterate over each `Entity` and over each [`MatchableQuestion`](./question/mathcableQuestion.ts).
-   - The position is represented by an `N`-length array of numbers ([`MatchingSpacePosition`](./src/space/position.ts)) with possible subdimensions.
+   - The position is represented by an `N`-length array of numbers ([`Position`](./src/space/position.ts)) with possible subdimensions.
    - We build that get by getting the `Entity`'s answer to each question by querying their `answers` record with the question id.
    - The values we have are still of an unknown type, so we pass them to the question's [`normalizeValue()`](/shared/src/matching/matchableQuestion.ts) method, which returns either a [`Coordinate`](./src/space/matchingSpace.ts) (`number` or `undefined`).[^3]
 5. Now that the `Entities` are positioned in a normalized space, we can finally calculate the matches, that is, the normalized distances of the `Candidates` to the `Voter`.

@@ -4,7 +4,7 @@ import {
   MISSING_VALUE,
   type Coordinate
 } from 'vaa-shared';
-import {MatchingSpace, MatchingSpacePosition} from '../src/space';
+import {MatchingSpace, Position} from '../src/space';
 
 // For convenience
 const maxVal: SignedNormalizedDistance = NORMALIZED_DISTANCE_EXTENT / 2;
@@ -19,8 +19,8 @@ test('MatchingSpace', () => {
   expect(ms.maxDistance).toBe(6);
 });
 
-test('MatchingSpacePosition', () => {
-  const position = new MatchingSpacePosition(coords, ms);
+test('Position', () => {
+  const position = new Position(coords, ms);
   expect(position.dimensions).toBe(3);
-  expect(() => new MatchingSpacePosition(wrongCoords, ms)).toThrowError();
+  expect(() => new Position(wrongCoords, ms)).toThrowError();
 });

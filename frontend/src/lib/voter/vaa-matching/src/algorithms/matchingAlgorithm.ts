@@ -2,7 +2,7 @@ import {MISSING_VALUE, type Coordinate, type HasAnswers, type MatchableQuestion}
 import {measureDistance, DistanceMetric} from '../distance';
 import {Match, SubMatch} from '../match';
 import type {MissingValueImputationOptions} from '../missingValue';
-import {createSubspace, MatchingSpace, MatchingSpacePosition} from '../space';
+import {createSubspace, MatchingSpace, Position} from '../space';
 import type {MatchableQuestionGroup} from '../question';
 import type {MatchingSpaceProjector} from './matchingSpaceProjector';
 import type {MatchingAlgorithmOptions, MatchingOptions} from './matchingAlgorithm.type';
@@ -127,7 +127,7 @@ export class MatchingAlgorithm {
   projectToNormalizedSpace(
     questions: ReadonlyArray<MatchableQuestion>,
     entities: ReadonlyArray<HasAnswers>
-  ): Array<MatchingSpacePosition> {
+  ): Array<Position> {
     if (questions.length === 0) throw new Error('Questions must not be empty');
     if (entities.length === 0) throw new Error('Entities must not be empty');
     // Create MatchingSpace
@@ -138,7 +138,7 @@ export class MatchingAlgorithm {
     }
     const space = new MatchingSpace(dimensionWeights);
     // Create positions
-    const positions = new Array<MatchingSpacePosition>();
+    const positions = new Array<Position>();
     for (const entity of entities) {
       const coords = new Array<Coordinate>();
       for (const question of questions) {
@@ -147,7 +147,7 @@ export class MatchingAlgorithm {
         if (Array.isArray(value)) coords.push(...value);
         else coords.push(value);
       }
-      positions.push(new MatchingSpacePosition(coords, space));
+      positions.push(new Position(coords, space));
     }
     return positions;
   }
