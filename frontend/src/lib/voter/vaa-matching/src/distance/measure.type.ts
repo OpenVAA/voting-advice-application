@@ -18,5 +18,5 @@ export interface DistanceMeasurementOptions {
  */
 export type GlobalAndSubspaceDistances = {
   global: UnsignedNormalizedDistance;
-  subspaces: UnsignedNormalizedDistance[];
+  subspaces: Array<UnsignedNormalizedDistance>;
 };

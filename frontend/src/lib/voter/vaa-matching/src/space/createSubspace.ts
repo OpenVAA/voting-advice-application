@@ -14,8 +14,11 @@ import type {MatchableQuestion} from '../question';
  * of the questions overlap, all of the dimensions of the subspace
  * will have zero length.
  */
-export function createSubspace(allQuestions: MatchableQuestion[], subset: MatchableQuestion[]) {
-  const dimensionWeights: number[] = [];
+export function createSubspace(
+  allQuestions: ReadonlyArray<MatchableQuestion>,
+  subset: ReadonlyArray<MatchableQuestion>
+): MatchingSpace {
+  const dimensionWeights = new Array<number>();
   for (const question of allQuestions) {
     const dims = question.normalizedDimensions ?? 1;
     const included = subset.indexOf(question) > -1;

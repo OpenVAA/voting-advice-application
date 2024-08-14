@@ -6,8 +6,8 @@ const maxVal: SignedNormalizedDistance = NORMALIZED_DISTANCE_EXTENT / 2;
 const minVal: SignedNormalizedDistance = -maxVal;
 const weights = [1, 2, 3];
 const ms = new MatchingSpace(weights);
-const coords: MatchingSpaceCoordinate[] = [minVal, maxVal, MISSING_VALUE];
-const wrongCoords: MatchingSpaceCoordinate[] = [minVal, maxVal, MISSING_VALUE, maxVal];
+const coords: Array<MatchingSpaceCoordinate> = [minVal, maxVal, MISSING_VALUE];
+const wrongCoords: Array<MatchingSpaceCoordinate> = [minVal, maxVal, MISSING_VALUE, maxVal];
 
 test('MatchingSpace', () => {
   expect(ms.dimensions).toBe(3);

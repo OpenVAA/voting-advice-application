@@ -57,9 +57,9 @@ export class MatchingAlgorithm {
    * @returns An array of Match objects
    */
   match<E extends HasMatchableAnswers, G extends MatchableQuestionGroup = MatchableQuestionGroup>(
-    questions: MatchableQuestion[],
+    questions: ReadonlyArray<MatchableQuestion>,
     referenceEntity: HasMatchableAnswers,
-    entities: readonly E[],
+    entities: ReadonlyArray<E>,
     options: MatchingOptions<G> = {}
   ): Match<E, G>[] {
     if (questions.length === 0) throw new Error('Questions must not be empty');
@@ -85,7 +85,7 @@ export class MatchingAlgorithm {
     const referencePosition = positions.shift();
     if (!referencePosition) throw new Error('Reference position is undefined!');
     // Create possible matching subspaces for, e.g., category matches
-    let subspaces: MatchingSpace[] = [];
+    let subspaces = new Array<MatchingSpace>();
     if (options.questionGroups) {
       subspaces = options.questionGroups.map((g) =>
         createSubspace(questions, g.matchableQuestions)
@@ -96,7 +96,7 @@ export class MatchingAlgorithm {
       metric: this.distanceMetric,
       missingValueOptions: this.missingValueOptions
     };
-    const matches: Match<E, G>[] = [];
+    const matches = new Array<Match<E, G>>();
     for (let i = 0; i < entities.length; i++) {
       if (options.questionGroups) {
         const distances = measureDistance(
@@ -131,9 +131,9 @@ export class MatchingAlgorithm {
    * @returns An array of positions in the normalized MatchingSpace
    */
   projectToNormalizedSpace(
-    questions: readonly MatchableQuestion[],
-    entities: readonly HasMatchableAnswers[]
-  ): MatchingSpacePosition[] {
+    questions: ReadonlyArray<MatchableQuestion>,
+    entities: ReadonlyArray<HasMatchableAnswers>
+  ): Array<MatchingSpacePosition> {
     if (questions.length === 0) throw new Error('Questions must not be empty');
     if (entities.length === 0) throw new Error('Entities must not be empty');
     // Create MatchingSpace
@@ -144,9 +144,9 @@ export class MatchingAlgorithm {
     }
     const space = new MatchingSpace(dimensionWeights);
     // Create positions
-    const positions: MatchingSpacePosition[] = [];
+    const positions = new Array<MatchingSpacePosition>();
     for (const entity of entities) {
-      const coords: MatchingSpaceCoordinate[] = [];
+      const coords = new Array<MatchingSpaceCoordinate>();
       for (const question of questions) {
         const value = question.normalizeValue(entity.answers[question.id]?.value ?? MISSING_VALUE);
         // We need this check for preference order questions, which return a list of subdimension distances

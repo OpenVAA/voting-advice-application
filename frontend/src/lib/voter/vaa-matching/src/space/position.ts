@@ -1,17 +1,17 @@
-import type {SignedNormalizedDistance, MISSING_VALUE} from 'vaa-shared';
+import type {SignedNormalizedDistance, MissingValue} from 'vaa-shared';
 import type {MatchingSpace} from './matchingSpace';
 
 /**
  * A coordinate in a space defined by SignedNormalizedDistances that may be missing
  */
-export type MatchingSpaceCoordinate = SignedNormalizedDistance | typeof MISSING_VALUE;
+export type MatchingSpaceCoordinate = SignedNormalizedDistance | MissingValue;
 
 /**
  * A position in a MatchingSpace
  */
 export class MatchingSpacePosition {
   constructor(
-    public coordinates: MatchingSpaceCoordinate[],
+    public coordinates: Array<MatchingSpaceCoordinate>,
     public readonly space?: MatchingSpace
   ) {
     if (space && space.dimensions !== coordinates.length)

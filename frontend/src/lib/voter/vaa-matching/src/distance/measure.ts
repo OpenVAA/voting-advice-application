@@ -15,7 +15,7 @@ export function measureDistance(
   a: MatchingSpacePosition,
   b: MatchingSpacePosition,
   options: DistanceMeasurementOptions,
-  subspaces: MatchingSpace[]
+  subspaces: ReadonlyArray<MatchingSpace>
 ): GlobalAndSubspaceDistances;
 
 /**
@@ -38,7 +38,7 @@ export function measureDistance(
   a: MatchingSpacePosition,
   b: MatchingSpacePosition,
   options: DistanceMeasurementOptions,
-  subspaces?: MatchingSpace[]
+  subspaces?: ReadonlyArray<MatchingSpace>
 ): UnsignedNormalizedDistance | GlobalAndSubspaceDistances {
   if (a.dimensions === 0) throw new Error("a doesn't have any elements!");
   if (a.dimensions !== b.dimensions) throw new Error('a and b have different number of elements!');
@@ -53,7 +53,7 @@ export function measureDistance(
   }
   const sums = {
     global: 0,
-    subspaces: subspaces == null ? [] : subspaces.map(() => 0)
+    subspaces: subspaces == null ? new Array<number>() : subspaces.map(() => 0)
   };
   for (let i = 0; i < a.dimensions; i++) {
     // We might have to alter these values, if there are missing ones, hence the vars
