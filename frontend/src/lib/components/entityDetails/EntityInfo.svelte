@@ -70,7 +70,7 @@ Used to show an entity's basic info in an `EntityDetails` component.
       {#if nonLinkQuestions.length}
         {#each nonLinkQuestions as question}
           {#if $settings.entityDetails.showMissingAnswers[entityType] || getAnswer(entity, question) != null}
-            <InfoItem label={question.text}>
+            <InfoItem label={question.text} vertical={question.type === 'text'}>
               <InfoAnswer {entity} {question} />
             </InfoItem>
           {/if}
