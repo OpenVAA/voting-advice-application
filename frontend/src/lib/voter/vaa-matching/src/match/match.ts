@@ -1,5 +1,5 @@
 import type {UnsignedNormalizedDistance} from 'vaa-shared';
-import type {HasMatchableAnswers} from '../entity';
+import type {HasAnswers} from '../entity';
 import type {MatchableQuestionGroup} from '../question';
 import {MatchBase} from './matchBase';
 import type {SubMatch} from './subMatch';
@@ -8,7 +8,7 @@ import type {SubMatch} from './subMatch';
  * The class for an entity's matching result
  */
 export class Match<
-  TEntity extends HasMatchableAnswers = HasMatchableAnswers,
+  TEntity extends HasAnswers = HasAnswers,
   TGroup extends MatchableQuestionGroup = MatchableQuestionGroup
 > extends MatchBase {
   /**

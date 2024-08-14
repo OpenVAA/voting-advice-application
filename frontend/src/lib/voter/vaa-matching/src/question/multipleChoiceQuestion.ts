@@ -1,6 +1,9 @@
-import {NORMALIZED_DISTANCE_EXTENT, MISSING_VALUE} from 'vaa-shared';
-import type {MatchingSpaceCoordinate} from '../space';
-import type {MatchableQuestion} from './matchableQuestion';
+import {
+  type MatchableQuestion,
+  type MatchingSpaceCoordinate,
+  MISSING_VALUE,
+  NORMALIZED_DISTANCE_EXTENT
+} from 'vaa-shared';
 
 interface MultipleChoiceValue {
   value: number;

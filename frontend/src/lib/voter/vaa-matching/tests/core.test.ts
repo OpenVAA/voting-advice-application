@@ -1,5 +1,10 @@
-import {NORMALIZED_DISTANCE_EXTENT, type SignedNormalizedDistance, MISSING_VALUE} from 'vaa-shared';
-import {MatchingSpace, MatchingSpacePosition, type MatchingSpaceCoordinate} from '../src/space';
+import {
+  NORMALIZED_DISTANCE_EXTENT,
+  type SignedNormalizedDistance,
+  MISSING_VALUE,
+  type MatchingSpaceCoordinate
+} from 'vaa-shared';
+import {MatchingSpace, MatchingSpacePosition} from '../src/space';
 
 // For convenience
 const maxVal: SignedNormalizedDistance = NORMALIZED_DISTANCE_EXTENT / 2;

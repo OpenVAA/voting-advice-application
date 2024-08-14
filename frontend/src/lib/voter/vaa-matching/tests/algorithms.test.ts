@@ -1,11 +1,13 @@
 import {
   MISSING_VALUE,
   NORMALIZED_DISTANCE_EXTENT,
+  type AnswerDict,
   type SignedNormalizedDistance,
-  type UnsignedNormalizedDistance
+  type UnsignedNormalizedDistance,
+  type MatchableQuestion,
+  type HasAnswers
 } from 'vaa-shared';
 import {MatchingAlgorithm} from '../src/algorithms';
-import type {HasMatchableAnswers} from '../src/entity';
 import {
   directionalDistance,
   type DistanceMeasurementOptions,
@@ -19,9 +21,8 @@ import {
   MissingValueBias,
   MissingValueDistanceMethod
 } from '../src/missingValue';
-import {type MatchableQuestion, MultipleChoiceQuestion} from '../src/question';
+import {MultipleChoiceQuestion} from '../src/question';
 import {createSubspace, MatchingSpace, MatchingSpacePosition} from '../src/space';
-import type {AnswerDict} from '../src/entity/hasMatchableAnswers';
 
 // For convenience
 const maxDist = NORMALIZED_DISTANCE_EXTENT;
@@ -519,7 +520,7 @@ function createMatchesAndEntities(
 /**
  * A dummy candidate object for matching.
  */
-class Candidate implements HasMatchableAnswers {
+class Candidate implements HasAnswers {
   constructor(public answers: AnswerDict) {}
 }
 

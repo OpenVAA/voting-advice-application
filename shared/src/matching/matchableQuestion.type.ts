@@ -1,5 +1,5 @@
-import type {HasId} from 'vaa-shared';
-import type {MatchingSpaceCoordinate} from '../space';
+import type { MatchingSpaceCoordinate } from './distance.type';
+import type { HasId } from './id.type';
 
 /**
  * The interface for all question used for matching.

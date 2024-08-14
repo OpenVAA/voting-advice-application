@@ -1,9 +1,9 @@
-import type {MatchableQuestion} from '../question';
+import type {MatchableQuestion} from './matchableQuestion.type';
 
 /**
  * Entities to be matched must implement this interface.
  */
-export interface HasMatchableAnswers {
+export interface HasAnswers {
   answers: AnswerDict;
 }
 

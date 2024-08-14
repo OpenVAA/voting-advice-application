@@ -1,14 +1,12 @@
+import type {AnswerDict, HasAnswers, MatchableQuestion} from 'vaa-shared';
 import {
   DistanceMetric,
   MatchingAlgorithm,
   MissingValueDistanceMethod,
   MultipleChoiceQuestion,
-  type HasMatchableAnswers,
-  type MatchableQuestion,
   type MatchableQuestionGroup,
   type MatchingOptions
 } from '..';
-import type {AnswerDict} from '../src/entity/hasMatchableAnswers';
 
 /**
  * Simple example.
@@ -110,7 +108,7 @@ function createAnswers(
 /**
  * A dummy candidate object for matching.
  */
-class Candidate implements HasMatchableAnswers {
+class Candidate implements HasAnswers {
   constructor(
     public readonly name: string,
     public answers: AnswerDict

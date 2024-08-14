@@ -1,15 +1,14 @@
-import {MISSING_VALUE} from 'vaa-shared';
-import type {HasMatchableAnswers} from '../entity';
+import {
+  MISSING_VALUE,
+  type MatchingSpaceCoordinate,
+  type HasAnswers,
+  type MatchableQuestion
+} from 'vaa-shared';
 import {measureDistance, DistanceMetric} from '../distance';
 import {Match, SubMatch} from '../match';
 import type {MissingValueImputationOptions} from '../missingValue';
-import {
-  createSubspace,
-  MatchingSpace,
-  MatchingSpacePosition,
-  type MatchingSpaceCoordinate
-} from '../space';
-import type {MatchableQuestion, MatchableQuestionGroup} from '../question';
+import {createSubspace, MatchingSpace, MatchingSpacePosition} from '../space';
+import type {MatchableQuestionGroup} from '../question';
 import type {MatchingSpaceProjector} from './matchingSpaceProjector';
 import type {MatchingAlgorithmOptions, MatchingOptions} from './matchingAlgorithm.type';
 
@@ -56,9 +55,9 @@ export class MatchingAlgorithm {
    * @options Matching options, see. `MatchingOptions`.
    * @returns An array of Match objects
    */
-  match<E extends HasMatchableAnswers, G extends MatchableQuestionGroup = MatchableQuestionGroup>(
+  match<E extends HasAnswers, G extends MatchableQuestionGroup = MatchableQuestionGroup>(
     questions: ReadonlyArray<MatchableQuestion>,
-    referenceEntity: HasMatchableAnswers,
+    referenceEntity: HasAnswers,
     entities: ReadonlyArray<E>,
     options: MatchingOptions<G> = {}
   ): Match<E, G>[] {
@@ -132,7 +131,7 @@ export class MatchingAlgorithm {
    */
   projectToNormalizedSpace(
     questions: ReadonlyArray<MatchableQuestion>,
-    entities: ReadonlyArray<HasMatchableAnswers>
+    entities: ReadonlyArray<HasAnswers>
   ): Array<MatchingSpacePosition> {
     if (questions.length === 0) throw new Error('Questions must not be empty');
     if (entities.length === 0) throw new Error('Entities must not be empty');

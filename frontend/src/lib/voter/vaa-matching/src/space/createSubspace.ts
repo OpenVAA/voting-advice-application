@@ -1,5 +1,5 @@
+import type {MatchableQuestion} from 'vaa-shared';
 import {MatchingSpace} from './matchingSpace';
-import type {MatchableQuestion} from '../question';
 
 /**
  * A utility function to create a subspace for a subset of questions

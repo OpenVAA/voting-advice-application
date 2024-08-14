@@ -8,7 +8,7 @@ export type HasAnswers = EntityWithAnswers | WrappedEntity<EntityWithAnswers>;
 
 /**
  * An entity that has answers and ca be filred with the question filters, e.g. a candidate.
- * NB. This interface should align with the `HasMatchableAnswers` interface of the `vaa-matching` module.
+ * NB. This interface should align with the `HasAnswers` interface of the `vaa-matching` module.
  */
 export type EntityWithAnswers = FilterableEntity & {
   answers: AnswerDict;

@@ -1,10 +1,5 @@
-import type {SignedNormalizedDistance, MissingValue} from 'vaa-shared';
+import type {MatchingSpaceCoordinate} from 'vaa-shared';
 import type {MatchingSpace} from './matchingSpace';
-
-/**
- * A coordinate in a space defined by SignedNormalizedDistances that may be missing
- */
-export type MatchingSpaceCoordinate = SignedNormalizedDistance | MissingValue;
 
 /**
  * A position in a MatchingSpace
