@@ -1,9 +1,4 @@
-import {
-  MISSING_VALUE,
-  type MatchingSpaceCoordinate,
-  type HasAnswers,
-  type MatchableQuestion
-} from 'vaa-shared';
+import {MISSING_VALUE, type Coordinate, type HasAnswers, type MatchableQuestion} from 'vaa-shared';
 import {measureDistance, DistanceMetric} from '../distance';
 import {Match, SubMatch} from '../match';
 import type {MissingValueImputationOptions} from '../missingValue';
@@ -145,7 +140,7 @@ export class MatchingAlgorithm {
     // Create positions
     const positions = new Array<MatchingSpacePosition>();
     for (const entity of entities) {
-      const coords = new Array<MatchingSpaceCoordinate>();
+      const coords = new Array<Coordinate>();
       for (const question of questions) {
         const value = question.normalizeValue(entity.answers[question.id]?.value ?? MISSING_VALUE);
         // We need this check for preference order questions, which return a list of subdimension distances

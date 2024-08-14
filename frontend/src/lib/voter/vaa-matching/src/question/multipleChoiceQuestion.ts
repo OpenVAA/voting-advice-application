@@ -1,6 +1,6 @@
 import {
   type MatchableQuestion,
-  type MatchingSpaceCoordinate,
+  type Coordinate,
   MISSING_VALUE,
   NORMALIZED_DISTANCE_EXTENT
 } from 'vaa-shared';
@@ -47,7 +47,7 @@ export class MultipleChoiceQuestion implements MatchableQuestion {
    * @param value A question's native value
    * @returns The value in the signed normalized range (e.g. [-.5, .5])
    */
-  normalizeValue(value: number | undefined | null): MatchingSpaceCoordinate {
+  normalizeValue(value: number | undefined | null): Coordinate {
     if (value == null) return MISSING_VALUE;
     if (!(typeof value === 'number'))
       throw new Error(`Value must be a number! Got ${typeof value}`);

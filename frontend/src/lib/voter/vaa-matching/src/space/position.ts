@@ -1,4 +1,4 @@
-import type {MatchingSpaceCoordinate} from 'vaa-shared';
+import type {Coordinate} from 'vaa-shared';
 import type {MatchingSpace} from './matchingSpace';
 
 /**
@@ -6,7 +6,7 @@ import type {MatchingSpace} from './matchingSpace';
  */
 export class MatchingSpacePosition {
   constructor(
-    public coordinates: Array<MatchingSpaceCoordinate>,
+    public coordinates: Array<Coordinate>,
     public readonly space?: MatchingSpace
   ) {
     if (space && space.dimensions !== coordinates.length)

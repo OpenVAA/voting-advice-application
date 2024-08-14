@@ -1,4 +1,4 @@
-import type { MatchingSpaceCoordinate } from './distance.type';
+import type { Coordinate } from './distance.type';
 import type { HasId } from './id.type';
 
 /**
@@ -12,5 +12,5 @@ export interface MatchableQuestion extends HasId {
   /**
    * Most questions return only a single, normalized and possibly missing value. Some, e.g. preference order questions, require splitting into multiple subdimensions, in which case an array of normalized values should be returned. Its length must match the value for `normalizedDimensions`.
    */
-  normalizeValue(value: unknown): MatchingSpaceCoordinate | Array<MatchingSpaceCoordinate>;
+  normalizeValue(value: unknown): Coordinate | Array<Coordinate>;
 }

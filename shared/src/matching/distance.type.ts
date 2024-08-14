@@ -4,7 +4,7 @@ import type { MISSING_VALUE } from './missingValue';
  * A coordinate in the matching space.
  */
 
-export type MatchingSpaceCoordinate = SignedNormalizedDistance | typeof MISSING_VALUE;
+export type Coordinate = SignedNormalizedDistance | typeof MISSING_VALUE;
 /**
  * Should be a number [-0.5, 0.5 (NORMALIZED_DISTANCE_EXTENT / 2)], but we cannot easily enforce this.
  */
