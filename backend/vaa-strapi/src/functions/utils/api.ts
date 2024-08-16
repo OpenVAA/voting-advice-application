@@ -1,5 +1,6 @@
 export enum API {
   Answer = 'api::answer.answer',
+  AppCustomization = 'api::app-customization.app-customization',
   AppLabel = 'api::election-app-label.election-app-label',
   AppSettings = 'api::app-setting.app-setting',
   Candidate = 'api::candidate.candidate',

@@ -34,6 +34,13 @@ export async function setDefaultApiPermissions() {
     });
   }
 
+  await strapi.query('plugin::users-permissions.permission').create({
+    data: {
+      action: 'api::app-customization.app-customization.find',
+      role: roleId
+    }
+  });
+
   // Allow sending feedback
   await strapi.query('plugin::users-permissions.permission').create({
     data: {

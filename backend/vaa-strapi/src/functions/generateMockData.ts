@@ -61,6 +61,10 @@ export async function generateMockData() {
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
+        .query(API.AppCustomization)
+        .count({})
+        .then((number) => number);
+      countOfObjects += await strapi.db
         .query(API.Election)
         .count({})
         .then((number) => number);
@@ -147,6 +151,9 @@ export async function generateMockData() {
     console.info('#######################################');
     console.info('inserting app settings...');
     await createAppSettings();
+    console.info('#######################################');
+    console.info('inserting app customization...');
+    await createAppCustomization();
     console.info('#######################################');
     console.info('inserting languages ...');
     await createLanguages();
@@ -249,6 +256,14 @@ async function createAppSettings() {
     data: {
       ...dynamicSettings,
       results: {...dynamicSettings.results, ...cardContents}
+    }
+  });
+}
+
+async function createAppCustomization() {
+  await strapi.entityService.create(API.AppCustomization, {
+    data: {
+      publisherName: fakeLocalized((faker) => faker.company.name())
     }
   });
 }

@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_customization_translation_override_translations",
+  "info": {
+    "displayName": "Translation Override - Translation",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "languageCode": {
+      "type": "string",
+      "required": true
+    },
+    "translation": {
+      "type": "text",
+      "required": false
+    }
+  }
+}
