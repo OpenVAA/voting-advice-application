@@ -1,0 +1,67 @@
+{
+  "kind": "singleType",
+  "collectionName": "app_customizations",
+  "info": {
+    "singularName": "app-customization",
+    "pluralName": "app-customizations",
+    "displayName": "App Customization",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "publisherName": {
+      "type": "json"
+    },
+    "publisherLogo": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "publisherLogoDark": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "poster": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "posterCandidateApp": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "candidateAppFAQ": {
+      "displayName": "Candidate App FAQ",
+      "type": "component",
+      "repeatable": true,
+      "component": "customization.candidate-app-faq"
+    },
+    "dynamicTranslations": {
+      "type": "component",
+      "repeatable": true,
+      "component": "customization.translation-override"
+    },
+    "translationOverrides": {
+      "type": "component",
+      "repeatable": true,
+      "component": "customization.translation-override"
+    }
+  }
+}

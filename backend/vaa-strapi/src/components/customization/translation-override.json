@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_customization_translation_overrides",
+  "info": {
+    "displayName": "Translation Override",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "translationKey": {
+      "type": "string",
+      "required": true
+    },
+    "translations": {
+      "displayName": "Translation Override - Translation",
+      "type": "component",
+      "repeatable": true,
+      "component": "customization.translation-override-translation",
+      "required": false
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_customization_candidate_app_faqs",
+  "info": {
+    "displayName": "Candidate App FAQ",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "question": {
+      "type": "text",
+      "required": true
+    },
+    "answer": {
+      "type": "text",
+      "required": true
+    },
+    "languageCode": {
+      "type": "string",
+      "required": true
+    }
+  }
+}
