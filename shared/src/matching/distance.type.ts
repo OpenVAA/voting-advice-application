@@ -3,15 +3,14 @@ import type { MISSING_VALUE } from './missingValue';
 /**
  * A coordinate in the matching space.
  */
+export type CoordinateOrMissing = Coordinate | typeof MISSING_VALUE;
 
-export type Coordinate = SignedNormalizedDistance | typeof MISSING_VALUE;
 /**
- * Should be a number [-0.5, 0.5 (NORMALIZED_DISTANCE_EXTENT / 2)], but we cannot easily enforce this.
+ * Should be a number [COORDINATE.Min, COORDINATE.Max], but we cannot easily enforce this.
  */
+export type Coordinate = number;
 
-export type SignedNormalizedDistance = number;
 /**
- * Should be a number [0, 1 (NORMALIZED_DISTANCE_EXTENT)], but we cannot easily enforce this.
+ * Should be a number [0, COORDINATE.Extent], but we cannot easily enforce this.
  */
-
-export type UnsignedNormalizedDistance = number;
+export type NormalizedDistance = number;

@@ -6,13 +6,8 @@
     "skipLibCheck": true,
     "composite": true,
     "declarationMap": true,
-    "rootDir": ".",
-    "outDir": "./build",
-    "types": ["vitest/globals"]
+    "rootDir": "./src",
+    "outDir": "./build"
   },
-  "include": [
-    "index.ts",
-    "src/**/*",
-    "tests/**/*",    
-  ]
+  "include": ["src/**/*"]
 }
