@@ -15,12 +15,17 @@ export const load = (async ({locals, params}) => {
 
   await loadTranslations(effectiveLocale);
 
-  const {getAppSettings, getElection} = await dataProvider;
+  const {getAppSettings, getAppCustomization, getElection} = await dataProvider;
 
   // Get app settings and possibly enter maintenance mode. `getAppSettings` will resolve to `undefined` if the database connection could not be made.
   let appSettings = await getAppSettings();
   if (!appSettings) {
     appSettings = {underMaintenance: true};
+  }
+
+  let appCustomization: Partial<AppCustomization> | undefined;
+  if (!appSettings.underMaintenance) {
+    appCustomization = await getAppCustomization({locale: effectiveLocale});
   }
 
   let election: ElectionProps | undefined;
@@ -34,6 +39,7 @@ export const load = (async ({locals, params}) => {
 
   return {
     appSettings,
+    appCustomization,
     election,
     // We'll initialize as empty Arrays because they are required by `PageData`. See `app.d.ts` for more details
     questions: [],

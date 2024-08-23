@@ -2,7 +2,7 @@
   import {t} from '$lib/i18n';
   import {concatClass} from '$lib/utils/components';
   import {darkMode} from '$lib/utils/darkMode';
-  import {settings} from '$lib/stores';
+  import {customization} from '$lib/stores';
   import type {AppLogoProps} from './AppLogo.type';
 
   type $$Props = AppLogoProps;
@@ -13,10 +13,10 @@
   // Retrieve app logo from settings
   let logoSrc: string | undefined;
   let inverseSrc: string | undefined;
-  $: if ($settings.publisher?.logo) {
-    logoSrc = $settings.publisher.logo.url;
-    inverseSrc = $settings.publisher.logoDark?.url;
-    alt ??= $settings.publisher.name;
+  $: if ($customization.publisherLogo) {
+    logoSrc = $customization.publisherLogo?.url;
+    inverseSrc = $customization.publisherLogoDark?.url;
+    alt ??= $customization.publisherName;
   }
 
   // Check dark mode and select logo file
@@ -78,7 +78,7 @@ Logo files for use on a light and a dark background can be defined. If the latte
 
 <div {...concatClass($$restProps, classes)}>
   {#if src}
-    <img {src} alt={alt ?? $settings.publisher?.name ?? ''} class="h-full" />
+    <img {src} alt={alt ?? $customization.publisherName ?? ''} class="h-full" />
   {:else}
     {#await import('$lib/components/openVAALogo') then { OpenVAALogo }}
       <svelte:component

@@ -9,6 +9,8 @@ export interface DataProvider {
    */
   getAppSettings: (options?: GetDataOptionsBase) => Promise<Partial<AppSettings> | undefined>;
 
+  getAppCustomization: (options?: GetDataOptionsBase) => Promise<AppCustomization>;
+
   /**
    * Get the default `Election` object or one matching the `id`.
    * @returns A Promise with `ElectionProps`

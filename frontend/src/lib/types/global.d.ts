@@ -113,6 +113,20 @@ declare global {
   type AppSettingsGroupMatchingType = AppSettings['matching']['partyMatching'];
 
   /**
+   * The application customization provided by `DataProvider`.
+   */
+  type AppCustomization = {
+    publisherName?: string;
+    publisherLogo?: ImageProps;
+    publisherLogoDark?: ImageProps;
+    poster?: ImageProps;
+    posterCandidateApp?: ImageProps;
+    dynamicTranslations?: {[locale: string]: {[translationKey: string]: string}};
+    translationOverrides?: {[locale: string]: {[translationKey: string]: string}};
+    candidateAppFAQ?: Array<{languageCode: string; question: string; answer: string}>;
+  };
+
+  /**
    * The persistent preferences that can be set by the user.
    */
   interface UserPreferences {

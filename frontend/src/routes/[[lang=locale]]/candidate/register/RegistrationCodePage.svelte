@@ -9,6 +9,7 @@
   import {FrontPage} from '$lib/templates/frontPage';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import type {CandidateContext} from '$lib/utils/candidateContext';
+  import {customization} from '$lib/stores';
 
   export let registrationCode = '';
   export let wrongCode = false;
@@ -37,7 +38,11 @@ In addition, shows a warning to the user if another user is already logged in.
 -->
 
 <FrontPage title={$t('candidateApp.register.title')}>
-  <img slot="hero" class="bg-white" src="/images/hero-candidate.png" alt="" />
+  <img
+    slot="hero"
+    class="bg-white"
+    src={$customization.posterCandidateApp?.url ?? '/images/hero-candidate.png'}
+    alt="" />
 
   <HeadingGroup slot="heading">
     <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
