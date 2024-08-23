@@ -21,7 +21,8 @@ import type {
   GetNominatedCandidatesOptions,
   GetNominatingPartiesOptions,
   GetQuestionsOptionsBase,
-  DataProvider
+  DataProvider,
+  GetDataOptionsBase
 } from '../dataProvider';
 import {parseParty, parseImage, parseQuestionCategory} from './utils';
 import type {
@@ -34,7 +35,8 @@ import type {
   LocalizedStrapiData,
   StrapiQuestionCategoryData,
   StrapiAppSettingsData,
-  StrapiFeedbackData
+  StrapiFeedbackData,
+  StrapiAppCustomization
 } from './strapiDataProvider.type';
 
 /**
@@ -105,6 +107,38 @@ function getAppSettings(): Promise<Partial<AppSettings> | undefined> {
       return appSettings;
     })
     .catch(() => undefined);
+}
+
+/**
+ * Get app customization defined in Strapi.
+ */
+function getAppCustomization({locale}: GetDataOptionsBase = {}): Promise<AppCustomization> {
+  const params = new URLSearchParams({
+    'populate[dynamicTranslations][populate][translations]': 'true',
+    'populate[translationOverrides][populate][translations]': 'true',
+    'populate[candidateAppFAQ]': 'true',
+    'populate[publisherLogo]': 'true',
+    'populate[publisherLogoDark]': 'true',
+    'populate[poster]': 'true',
+    'populate[posterCandidateApp]': 'true'
+  });
+  return getData<StrapiAppCustomization>('api/app-customization', params).then((result) => {
+    const attr = result.attributes;
+    const publisherLogo = attr.publisherLogo?.data?.attributes;
+    const publisherLogoDark = attr.publisherLogoDark?.data?.attributes;
+    const poster = attr.poster?.data?.attributes;
+    const posterCandidateApp = attr.posterCandidateApp?.data?.attributes;
+    return {
+      dynamicTranslations: attr.dynamicTranslations,
+      translationOverrides: attr.translationOverrides,
+      candidateAppFAQ: attr.candidateAppFAQ,
+      publisherName: attr.publisherName ? translate(attr.publisherName, locale) : undefined,
+      publisherLogo: publisherLogo ? parseImage(publisherLogo) : undefined,
+      publisherLogoDark: publisherLogoDark ? parseImage(publisherLogoDark) : undefined,
+      poster: poster ? parseImage(poster) : undefined,
+      posterCandidateApp: posterCandidateApp ? parseImage(posterCandidateApp) : undefined
+    };
+  });
 }
 
 /**
@@ -412,6 +446,7 @@ function setFeedback(data: FeedbackData): Promise<Response | undefined> {
 
 export const dataProvider: DataProvider = {
   getAppSettings,
+  getAppCustomization,
   getElection,
   getQuestions,
   getInfoQuestions,

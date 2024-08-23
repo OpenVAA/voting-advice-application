@@ -1,9 +1,12 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
+  import {locale, t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {BasicPage} from '$lib/templates/basicPage';
   import {Button} from '$lib/components/button';
   import {Expander} from '$lib/components/expander';
+  import {customization} from '$lib/stores';
+
+  $: faqs = $customization.candidateAppFAQ?.filter((faq) => faq.languageCode === $locale) ?? [];
 </script>
 
 <BasicPage title={$t('candidateApp.help.title')}>
@@ -11,25 +14,11 @@
     <p class="pb-lg">{$t('candidateApp.help.ingress')}</p>
   </div>
 
-  <Expander title={$t('xxx.help.questions.question1.question')} variant="question-help">
-    {$t('xxx.help.questions.question1.answer')}
-  </Expander>
-
-  <Expander title={$t('xxx.help.questions.question2.question')} variant="question-help">
-    {$t('xxx.help.questions.question2.answer')}
-  </Expander>
-
-  <Expander title={$t('xxx.help.questions.question3.question')} variant="question-help">
-    {$t('xxx.help.questions.question3.answer')}
-  </Expander>
-
-  <Expander title={$t('xxx.help.questions.question4.question')} variant="question-help">
-    {$t('xxx.help.questions.question4.answer')}
-  </Expander>
-
-  <Expander title={$t('xxx.help.questions.question5.question')} variant="question-help">
-    {$t('xxx.help.questions.question5.answer')}
-  </Expander>
+  {#each faqs as faq}
+    <Expander title={faq.question} variant="question-help">
+      {faq.answer}
+    </Expander>
+  {/each}
 
   <svelte:fragment slot="primaryActions">
     <Button

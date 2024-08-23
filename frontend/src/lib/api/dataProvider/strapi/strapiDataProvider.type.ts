@@ -169,6 +169,43 @@ export interface StrapiAppSettingsData {
 }
 
 /**
+ * Non-exhaustive specification of app customization
+ */
+export interface StrapiAppCustomization {
+  id: number | string;
+  attributes: {
+    dynamicTranslations: {[locale: string]: {[translationKey: string]: string}};
+    translationOverrides: {[locale: string]: {[translationKey: string]: string}};
+    candidateAppFAQ: Array<{languageCode: string; question: string; answer: string}>;
+    publisherName: LocalizedString | null;
+    publisherLogo: {
+      data?: {
+        id: number | string;
+        attributes: StrapiImageData;
+      };
+    };
+    publisherLogoDark: {
+      data?: {
+        id: number | string;
+        attributes: StrapiImageData;
+      };
+    };
+    poster: {
+      data?: {
+        id: number | string;
+        attributes: StrapiImageData;
+      };
+    };
+    posterCandidateApp: {
+      data?: {
+        id: number | string;
+        attributes: StrapiImageData;
+      };
+    };
+  };
+}
+
+/**
  * Non-exhaustive specification of the data returned by the Strapi endpoint `question-type`.
  */
 export interface StrapiQuestionTypeData {

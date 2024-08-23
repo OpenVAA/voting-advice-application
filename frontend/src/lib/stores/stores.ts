@@ -22,6 +22,13 @@ export const settings: Readable<AppSettings> = derived([page], ([$page]) =>
 );
 
 /**
+ * Contains app customization from `DataProvider`.
+ */
+export const customization: Readable<AppCustomization> = derived([page], ([$page]) =>
+  $page?.data?.appCustomization ? $page.data.appCustomization : {}
+);
+
+/**
  * A store for the voter's answers which is maintained in local storage.
  */
 export const answeredQuestions = localStorageWritable('answeredQuestions', {} as AnswerDict);
