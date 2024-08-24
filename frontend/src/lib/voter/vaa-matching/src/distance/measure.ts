@@ -1,90 +1,71 @@
-import {imputeMissingValues, MISSING_VALUE} from '../missingValue';
-import type {MatchingSpace} from '../space/matchingSpace';
-import type {MatchingSpacePosition} from '../space/position';
-import type {UnsignedNormalizedDistance} from './distance';
-import {DistanceMetric, directionalDistance, manhattanDistance} from './metric';
+import type {NormalizedDistance} from 'vaa-shared';
+import {imputeMissingPosition} from '../missingValue';
+import {MatchingSpace, type Position} from '../space';
 import type {DistanceMeasurementOptions, GlobalAndSubspaceDistances} from './measure.type';
 
-export function measureDistance(
-  a: MatchingSpacePosition,
-  b: MatchingSpacePosition,
-  options: DistanceMeasurementOptions
-): UnsignedNormalizedDistance;
+export function measureDistance(params: {
+  reference: Position;
+  target: Position;
+  options: DistanceMeasurementOptions;
+}): NormalizedDistance;
 
-export function measureDistance(
-  a: MatchingSpacePosition,
-  b: MatchingSpacePosition,
-  options: DistanceMeasurementOptions,
-  subspaces: MatchingSpace[]
-): GlobalAndSubspaceDistances;
+export function measureDistance(params: {
+  reference: Position;
+  target: Position;
+  options: DistanceMeasurementOptions;
+  subspaces: ReadonlyArray<MatchingSpace>;
+}): GlobalAndSubspaceDistances;
 
 /**
- * Measure the distance between to positions in a `MatchingSpace`.
- *
- * @param a The reference position to measure against (cannot be missing)
- * @param b The other position
- * @param options See the interface `DistanceMeasurementOptions`
- * @param subspaces A list of subspaces in which distances are also measured.
- * Used to compute, e.g., matches within question categories, in which case
- * pass a llist of `MatchingSpaces`, where the weights of irrelevant questions
- * are zero. It's a bit clunky to deal with subspaces here and not on a higher
- * level, but this way we can avoid duplicate missing value imputations and
- * distance calculations.
- * @returns An unsigned normalized distance, e.g. [0, 1] (the range is defined
- * by `NORMALIZED_DISTANCE_EXTENT`) or a list of such distances if `subspaces`
- * is provided.
+ * Measure the distance between to positions in a `MatchingSpace` and possible subspaces. The process follows these steps:
+ * 1. Impute values for missing values if necessary.
+ * 2. Measure the distances using the provided distance metric in the global space and all subspaces.
+ * NB. The reference position `reference` is treated differently from `target` when dealing with missing values. Thus, switching them will in general yield a different result.
+ * @param reference The reference position to measure against.
+ * @param target The other position
+ * @param options See the `DistanceMeasurementOptions` type
+ * @param subspaces A list of subspaces in which distances are also measured. Used to compute, e.g., matches within question categories, in which case pass a llist of `MatchingSpaces`, where the weights of irrelevant questions are zero. It's a bit clunky to deal with subspaces here and not on a higher level, but this way we can avoid duplicate missing value imputations and distance calculations.
+ * @returns A normalized distance, e.g. [0, 1] (the range is defined by `[0, COORDINATE.Extent]`) or both a global distance and a list of distances in `subspaces` if they are provided.
  */
-export function measureDistance(
-  a: MatchingSpacePosition,
-  b: MatchingSpacePosition,
-  options: DistanceMeasurementOptions,
-  subspaces?: MatchingSpace[]
-): UnsignedNormalizedDistance | GlobalAndSubspaceDistances {
-  if (a.dimensions === 0) throw new Error("a doesn't have any elements!");
-  if (a.dimensions !== b.dimensions) throw new Error('a and b have different number of elements!');
-  const space = a.space;
-  if (space && space.dimensions !== a.dimensions)
-    throw new Error('a and space have different number of dimensions!');
+export function measureDistance({
+  reference,
+  target,
+  options,
+  subspaces
+}: {
+  reference: Position;
+  target: Position;
+  options: DistanceMeasurementOptions;
+  subspaces?: ReadonlyArray<MatchingSpace>;
+}): NormalizedDistance | GlobalAndSubspaceDistances {
+  // Check that all relevant spaces are compatible
+  const space = reference.space;
+  if (space.shape.length === 0) throw new Error('The matching space doesn’t have any dimensions.');
+  if (space !== target.space) throw new Error('a and b are in different spaces.');
   if (subspaces) {
     for (const subspace of subspaces) {
-      if (subspace.dimensions !== a.dimensions)
-        throw new Error('a and at least one subspace have different number of dimensions!');
+      if (!space.isCompatible(subspace))
+        throw new Error('a and at least one subspace have different number of dimensions.');
     }
   }
-  const sums = {
-    global: 0,
-    subspaces: subspaces == null ? [] : subspaces.map(() => 0)
+  // Impute missing values for `target`
+  const imputed = imputeMissingPosition({reference, target, options: options.missingValueOptions});
+  // Calculate global distance
+  const global = options.metric({
+    a: reference,
+    b: imputed,
+    allowMissing: options.allowMissingReference
+  });
+  if (!subspaces) return global;
+  return {
+    global,
+    subspaces: subspaces.map((s) =>
+      options.metric({
+        a: reference,
+        b: imputed,
+        space: s,
+        allowMissing: options.allowMissingReference
+      })
+    )
   };
-  for (let i = 0; i < a.dimensions; i++) {
-    // We might have to alter these values, if there are missing ones, hence the vars
-    let valA = a.coordinates[i],
-      valB = b.coordinates[i];
-    // First, handle missing values (we use == to allow undefined | null just in case)
-    if (valA == MISSING_VALUE) throw new Error('The first position cannot contain missing values!');
-    if (valB == MISSING_VALUE)
-      [valA, valB] = imputeMissingValues(valA, options.missingValueOptions);
-    // Calculate distance
-    let dist: number;
-    switch (options.metric) {
-      case DistanceMetric.Manhattan:
-        dist = manhattanDistance(valA, valB);
-        break;
-      case DistanceMetric.Directional:
-        dist = directionalDistance(valA, valB);
-        break;
-      default:
-        throw new Error(`Unknown distance metric: ${options.metric}`);
-    }
-    // Apply to totals
-    sums.global += dist * (space ? space.weights[i] : 1);
-    if (subspaces) {
-      subspaces.forEach((subspace, k) => (sums.subspaces[k] += dist * subspace.weights[i]));
-    }
-  }
-  // Normalize total distances
-  sums.global /= space ? space.maxDistance : a.dimensions;
-  if (subspaces) {
-    subspaces.forEach((subspace, k) => (sums.subspaces[k] /= subspace.maxDistance));
-  }
-  return subspaces == null ? sums.global : sums;
 }

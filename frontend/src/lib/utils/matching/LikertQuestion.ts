@@ -1,20 +1,26 @@
-import {MultipleChoiceQuestion} from '$voter/vaa-matching';
+import type {CoordinateOrMissing, Id} from 'vaa-shared';
+import {OrdinalQuestion} from '$voter/vaa-matching';
 
 /**
  * A dummy question object for matching.
  */
-export class LikertQuestion extends MultipleChoiceQuestion {
+export class LikertQuestion extends OrdinalQuestion {
   public readonly category: QuestionCategoryProps;
   constructor({id, values, category}: LikertQuestionOptions) {
-    super(id, values);
+    super({id, values});
     this.category = category;
+  }
+
+  normalizeValue(value: number): CoordinateOrMissing {
+    // The current frontend implemenation of questions uses numbers for choice keys
+    return super.normalizeValue(`${value}`);
   }
 }
 /**
  * Options for a dummy question object for matching.
  */
 interface LikertQuestionOptions {
-  id: ConstructorParameters<typeof MultipleChoiceQuestion>[0];
-  values: ConstructorParameters<typeof MultipleChoiceQuestion>[1];
+  id: Id;
+  values: ConstructorParameters<typeof OrdinalQuestion>[0]['values'];
   category: QuestionCategoryProps;
 }

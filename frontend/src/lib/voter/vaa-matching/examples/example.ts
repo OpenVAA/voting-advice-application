@@ -1,14 +1,12 @@
+import type {AnswerDict, HasAnswers, MatchableQuestion} from 'vaa-shared';
 import {
-  DistanceMetric,
+  DISTANCE_METRIC,
   MatchingAlgorithm,
-  MissingValueDistanceMethod,
-  MultipleChoiceQuestion,
-  type HasMatchableAnswers,
-  type MatchableQuestion,
+  MISSING_VALUE_METHOD,
+  OrdinalQuestion,
   type MatchableQuestionGroup,
   type MatchingOptions
 } from '..';
-import type {AnswerDict} from '../src/entity/hasMatchableAnswers';
 
 /**
  * Simple example.
@@ -25,7 +23,7 @@ function main(
 ): void {
   // Create dummy questions
   const questions = Array.from({length: numQuestions}, (i: number) =>
-    MultipleChoiceQuestion.fromLikert(`q${i}`, likertScale)
+    OrdinalQuestion.fromLikert({id: `q${i}`, scale: likertScale})
   );
 
   // Create answer subgroup
@@ -54,23 +52,24 @@ function main(
 
   // Manhattan matching algorithm
   const manhattan = new MatchingAlgorithm({
-    distanceMetric: DistanceMetric.Manhattan,
+    distanceMetric: DISTANCE_METRIC.Manhattan,
     missingValueOptions: {
-      missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+      method: MISSING_VALUE_METHOD.RelativeMaximum
     }
   });
 
   // Directional matching algorithm
   const directional = new MatchingAlgorithm({
-    distanceMetric: DistanceMetric.Directional,
+    distanceMetric: DISTANCE_METRIC.Directional,
     missingValueOptions: {
-      missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+      method: MISSING_VALUE_METHOD.RelativeMaximum
     }
   });
 
   // Get matches for both methods
-  const manhattanMatches = manhattan.match(questions, voter, candidates, matchingOptions);
-  const directionalMatches = directional.match(questions, voter, candidates, matchingOptions);
+  const args = {questions, reference: voter, targets: candidates, options: matchingOptions};
+  const manhattanMatches = manhattan.match(args);
+  const directionalMatches = directional.match(args);
 
   // Generate output string
   let output = `Questions: ${numQuestions} • Likert scale ${likertScale}\n`;
@@ -93,7 +92,7 @@ function main(
  * @returns Answer dict
  */
 function createAnswers(
-  questions: MatchableQuestion[],
+  questions: Array<MatchableQuestion>,
   answerValue: number | ((index: number) => number),
   missing = 0
 ): AnswerDict {
@@ -110,7 +109,7 @@ function createAnswers(
 /**
  * A dummy candidate object for matching.
  */
-class Candidate implements HasMatchableAnswers {
+class Candidate implements HasAnswers {
   constructor(
     public readonly name: string,
     public answers: AnswerDict

@@ -1,4 +1,7 @@
-export {MissingValueBias} from './bias';
-export {MissingValueDistanceMethod} from './distanceMethod';
-export {imputeMissingValues, type MissingValueImputationOptions} from './impute';
-export {MISSING_VALUE} from './missingValue';
+export {type MissingValueBias, MISSING_VALUE_BIAS} from './bias';
+export {MISSING_VALUE_METHOD, type MissingValueMethod} from './missingValueMethod';
+export {
+  imputeMissingValue,
+  imputeMissingPosition,
+  type MissingValueImputationOptions
+} from './impute';

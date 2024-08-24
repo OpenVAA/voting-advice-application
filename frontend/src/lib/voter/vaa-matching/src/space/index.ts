@@ -1,3 +1,4 @@
 export {createSubspace} from './createSubspace';
 export {MatchingSpace} from './matchingSpace';
-export {type MatchingSpaceCoordinate, MatchingSpacePosition} from './position';
+export {Position} from './position';
+export {coordinatesShape, equalShapes, flatten, reshape} from './shape';

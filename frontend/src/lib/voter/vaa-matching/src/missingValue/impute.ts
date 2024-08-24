@@ -1,68 +1,73 @@
-import {
-  NORMALIZED_DISTANCE_EXTENT,
-  assertSignedNormalized,
-  type SignedNormalizedDistance
-} from '../distance';
-import {MissingValueBias} from './bias';
-import {MissingValueDistanceMethod} from './distanceMethod';
+import {assertCoordinate, COORDINATE, isMissingValue, type Coordinate} from 'vaa-shared';
+import {type MissingValueBias, MISSING_VALUE_BIAS} from './bias';
+import {MISSING_VALUE_METHOD, type MissingValueMethod} from './missingValueMethod';
+import {flatten, reshape, Position} from '../space';
 
 /**
- * Options passed to imputeMissingValues
+ * Options passed to imputeMissingValue
  */
 export interface MissingValueImputationOptions {
   /** The method used for imputing missing values. */
-  missingValueMethod: MissingValueDistanceMethod;
-  /** The direction of the bias used in imputing missing values,
-   *  when the reference value is neutral. */
-  missingValueBias?: MissingValueBias;
+  method: MissingValueMethod;
+  /** The direction of the bias used in imputing missing values, when the reference value is neutral. */
+  bias?: MissingValueBias;
 }
 
 /**
- * Impute a value for a missing one. Note that also the referenceValue may
- * be affected, so both are returned.
- *
- * @param referenceValue The value used as reference, e.g. the voter's answer
- * @param method  The imputation method
- * @param bias The direction of the bias used in imputing missing values,
- * when the reference value is neutral
- * @returns Tuple of [imputed value for the reference, imputed value for
- * the missing one]. Note that the imputed reference value can only change
- * when using the `AbsoluteMaximum` method.
+ * Impute a value for a missing one.
+ * @param reference The value used as reference, e.g. the voter's answer
+ * @param method The imputation method
+ * @param bias The direction of the bias used in imputing missing values, when the reference value is neutral
+ * @returns The imputed coordinate.
  */
-export function imputeMissingValues(
-  referenceValue: SignedNormalizedDistance,
-  options: MissingValueImputationOptions
-): [SignedNormalizedDistance, SignedNormalizedDistance] {
+export function imputeMissingValue({
+  reference,
+  options
+}: {
+  reference: Coordinate;
+  options: MissingValueImputationOptions;
+}): Coordinate {
   // To be sure
-  assertSignedNormalized(referenceValue);
-  // For convenience
-  const maxAbsDistance = NORMALIZED_DISTANCE_EXTENT / 2;
-  const bias = options.missingValueBias ?? MissingValueBias.Positive;
-  // This will hold the imputed value for the missing one
-  let missingValue: SignedNormalizedDistance;
-  switch (options.missingValueMethod) {
-    case MissingValueDistanceMethod.Neutral:
-      // Treat value b as neutral
-      missingValue = 0;
-      break;
-    case MissingValueDistanceMethod.RelativeMaximum:
-      // Treat value b as the opposite extreme of value a, i.e. on a 5-point scale
-      // b is 5 if a is 1 or 2; 1 if a is 4 or 5; for 3, bias defines the direction
-      if (referenceValue == 0)
-        missingValue = bias === MissingValueBias.Positive ? maxAbsDistance : -maxAbsDistance;
-      else missingValue = referenceValue < 0 ? maxAbsDistance : -maxAbsDistance;
-      break;
-    case MissingValueDistanceMethod.AbsoluteMaximum:
-      // Treat the values as being at the opposite ends of the range
-      // Note that the bias behaviour for valA is reversed, its direction is thought
-      // to affect valB
-      if (referenceValue == 0)
-        referenceValue = bias === MissingValueBias.Positive ? -maxAbsDistance : maxAbsDistance;
-      else referenceValue = referenceValue < 0 ? -maxAbsDistance : maxAbsDistance;
-      missingValue = -referenceValue;
-      break;
+  assertCoordinate(reference);
+  const bias = options.bias ?? MISSING_VALUE_BIAS.Positive;
+  switch (options.method) {
+    case MISSING_VALUE_METHOD.Neutral:
+      return COORDINATE.Neutral;
+    case MISSING_VALUE_METHOD.RelativeMaximum:
+      // Treat value b as the opposite extreme of value a, i.e. on a 5-point scale b is 5 if a is 1 or 2; 1 if a is 4 or 5; for 3, bias defines the direction
+      if (reference == COORDINATE.Neutral)
+        return bias === MISSING_VALUE_BIAS.Positive ? COORDINATE.Max : COORDINATE.Min;
+      return reference < COORDINATE.Neutral ? COORDINATE.Max : COORDINATE.Min;
     default:
-      throw new Error(`Unknown missing value method: ${options.missingValueMethod}`);
+      throw new Error(`Unknown missing value method: ${options.method}`);
   }
-  return [referenceValue, missingValue];
+}
+
+/**
+ * Impute a `Position` for where coordinates missing in `target` are imputed based on `reference`.
+ * NB. If a coordinate is missing in `target`, the neutral coordinate is imputed.
+ * @param reference The `Position` used as reference, e.g. the voter's answers
+ * @param target The `Position` for which to impute missing coordinates
+ * @param options Options passed to `imputeMissingValue`
+ * @returns The imputed position.
+ */
+export function imputeMissingPosition({
+  reference,
+  target,
+  options
+}: {
+  reference: Position;
+  target: Position;
+  options: MissingValueImputationOptions;
+}): Position {
+  // Flatten both positions for easier mapping
+  const flatRef = flatten(reference.coordinates);
+  const flatCoordinates = flatten(target.coordinates).map((c, i) => {
+    if (!isMissingValue(c)) return c;
+    const ref = flatRef[i];
+    if (isMissingValue(ref)) return COORDINATE.Neutral;
+    return imputeMissingValue({reference: ref!, options});
+  });
+  const coordinates = reshape({flat: flatCoordinates, shape: target.shape});
+  return new Position({coordinates, space: target.space});
 }
