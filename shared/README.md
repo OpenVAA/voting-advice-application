@@ -1,6 +1,6 @@
 # shared
 
-Shared component between the frontend and backend, e.g. shared password validation.
+Shared component between the frontend and backend, e.g. shared password validation as well as types and utilities related to the matching algorithm that need to be synced between different submodules.
 
 ## Development
 
