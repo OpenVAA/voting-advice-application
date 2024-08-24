@@ -1,2 +1,2 @@
+export * from './entityWithAnswers';
 export * from './filterableEntity';
-export * from './hasAnswers';
