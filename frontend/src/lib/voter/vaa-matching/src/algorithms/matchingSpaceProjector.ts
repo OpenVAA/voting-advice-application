@@ -1,4 +1,4 @@
-import type {MatchingSpacePosition} from '../space';
+import type {Position} from '../space';
 
 /**
  * For future implementation.
@@ -6,5 +6,5 @@ import type {MatchingSpacePosition} from '../space';
  * by using a weight matrix.
  */
 export interface MatchingSpaceProjector {
-  project(position: MatchingSpacePosition[]): MatchingSpacePosition[];
+  project(position: ReadonlyArray<Position>): Array<Position>;
 }

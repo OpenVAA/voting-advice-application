@@ -7,8 +7,8 @@ import {error} from '@sveltejs/kit';
 import {
   type MatchingOptions,
   MatchingAlgorithm,
-  DistanceMetric,
-  MissingValueDistanceMethod,
+  DISTANCE_METRIC,
+  MISSING_VALUE_METHOD,
   type MatchableQuestionGroup
 } from '$voter/vaa-matching';
 import {LikertQuestion} from './LikertQuestion';
@@ -33,9 +33,9 @@ export async function match<E extends EntityProps>(
 ): Promise<RankingProps<E>[]> {
   // Create the algorithm instance
   const algorithm = new MatchingAlgorithm({
-    distanceMetric: DistanceMetric.Manhattan,
+    distanceMetric: DISTANCE_METRIC.Manhattan,
     missingValueOptions: {
-      missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
+      method: MISSING_VALUE_METHOD.RelativeMaximum
     }
   });
 
@@ -51,7 +51,7 @@ export async function match<E extends EntityProps>(
     questions.push(
       new LikertQuestion({
         id: q.id,
-        values: q.values.map((o) => ({value: o.key})),
+        values: q.values.map((o) => ({id: `${o.key}`, value: o.key})),
         category: q.category
       })
     );
@@ -85,7 +85,12 @@ export async function match<E extends EntityProps>(
   }
 
   // Perform the matching
-  return algorithm.match(questions, voter, entities, matchingOptions);
+  return algorithm.match({
+    questions,
+    reference: voter,
+    targets: entities,
+    options: matchingOptions
+  });
 }
 
 /**

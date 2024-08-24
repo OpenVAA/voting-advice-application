@@ -1,3 +1,3 @@
-export type {MatchableQuestion} from './matchableQuestion';
 export type {MatchableQuestionGroup} from './matchableQuestionGroup';
-export {MultipleChoiceQuestion} from './multipleChoiceQuestion';
+export {CategoricalQuestion} from './categoricalQuestion';
+export {OrdinalQuestion} from './ordinalQuestion';

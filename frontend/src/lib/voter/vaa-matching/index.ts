@@ -4,7 +4,6 @@
  */
 
 export * from './src/algorithms';
-export * from './src/entity';
 export * from './src/distance';
 export * from './src/match';
 export * from './src/missingValue';

@@ -1,591 +1,282 @@
+import {MISSING_VALUE, COORDINATE} from 'vaa-shared';
+import {DISTANCE_METRIC} from '../src/distance';
+import {MISSING_VALUE_METHOD} from '../src/missingValue';
+import {CategoricalQuestion, OrdinalQuestion} from '../src/question';
+import {createMatchesAndEntities, createVoter, createCandidates} from './utils';
 import {MatchingAlgorithm} from '../src/algorithms';
-import type {HasMatchableAnswers} from '../src/entity';
-import {
-  directionalDistance,
-  type DistanceMeasurementOptions,
-  DistanceMetric,
-  manhattanDistance,
-  measureDistance,
-  NORMALIZED_DISTANCE_EXTENT,
-  type SignedNormalizedDistance,
-  type UnsignedNormalizedDistance
-} from '../src/distance';
-import type {Match} from '../src/match';
-import {
-  imputeMissingValues,
-  MISSING_VALUE,
-  MissingValueBias,
-  MissingValueDistanceMethod
-} from '../src/missingValue';
-import {type MatchableQuestion, MultipleChoiceQuestion} from '../src/question';
-import {createSubspace, MatchingSpace, MatchingSpacePosition} from '../src/space';
-import type {AnswerDict} from '../src/entity/hasMatchableAnswers';
 
 // For convenience
-const maxDist = NORMALIZED_DISTANCE_EXTENT;
-const maxVal: SignedNormalizedDistance = NORMALIZED_DISTANCE_EXTENT / 2;
-const minVal: SignedNormalizedDistance = -maxVal;
-
-describe('single coordinate distance measurements', () => {
-  test('manhattanDistance', () => {
-    expect(manhattanDistance(maxVal, minVal), 'Commutatibility').toBeCloseTo(
-      manhattanDistance(minVal, maxVal)
-    );
-    expect(manhattanDistance(maxVal, minVal)).toBeCloseTo(maxDist);
-    expect(manhattanDistance(maxVal, 0)).toBeCloseTo(maxVal);
-    expect(manhattanDistance(maxVal * 0.5, maxVal * 0.5)).toBeCloseTo(0);
-  });
-  test('directionalDistance', () => {
-    expect(directionalDistance(maxVal, minVal), 'Commutatibility').toBeCloseTo(
-      directionalDistance(minVal, maxVal)
-    );
-    expect(directionalDistance(maxVal, minVal)).toBeCloseTo(maxDist);
-    expect(directionalDistance(maxVal, 0)).toBeCloseTo(0.5 * maxDist);
-    expect(directionalDistance(maxVal * 0.25, 0)).toBeCloseTo(0.5 * maxDist);
-    expect(directionalDistance(minVal * 0.9, 0)).toBeCloseTo(0.5 * maxDist);
-    const halfAgreeVal = 0.5 * 0.5; // Calculated on a scale from -1 to 1 (disagree to agree)
-    const halfAgreeDist = ((1 - halfAgreeVal) / 2) * maxDist; // Convert to distance and scale with maxDist
-    expect(directionalDistance(maxVal * 0.5, maxVal * 0.5)).toBeCloseTo(halfAgreeDist);
-    expect(directionalDistance(maxVal * 0.5, minVal * 0.5)).toBeCloseTo(maxDist - halfAgreeDist);
-  });
-});
-
-describe('imputeMissingValues', () => {
-  const refVals: SignedNormalizedDistance[] = [minVal, 0.3 * minVal, 0, 0.5 * maxVal, maxVal];
-  describe('MissingValueDistanceMethod.Neutral', () => {
-    const opts = {
-      missingValueMethod: MissingValueDistanceMethod.Neutral,
-      missingValueBias: MissingValueBias.Positive
-    };
-    test.each(refVals)('For %d', (refVal: SignedNormalizedDistance) => {
-      expect(imputeMissingValues(refVal, opts)[0], 'Ref value unchanged').toBe(refVal);
-      expect(imputeMissingValues(refVal, opts)[1], 'Imputed value always neutral').toBeCloseTo(0);
-    });
-  });
-  describe('MissingValueDistanceMethod.Neutral / MissingValueBias.Negative', () => {
-    const opts = {
-      missingValueMethod: MissingValueDistanceMethod.Neutral,
-      missingValueBias: MissingValueBias.Negative
-    };
-    test.each(refVals)('For %d', (refVal: SignedNormalizedDistance) => {
-      expect(imputeMissingValues(refVal, opts)[0], 'Ref value unchanged').toBe(refVal);
-      expect(imputeMissingValues(refVal, opts)[1], 'Imputed value always neutral').toBeCloseTo(0);
-    });
-  });
-  describe('MissingValueDistanceMethod.RelativeMaximum', () => {
-    const opts = {
-      missingValueMethod: MissingValueDistanceMethod.RelativeMaximum,
-      missingValueBias: MissingValueBias.Positive
-    };
-    test.each(refVals)('For %d', (refVal: SignedNormalizedDistance) => {
-      expect(imputeMissingValues(refVal, opts)[0], 'Ref value unchanged').toBe(refVal);
-      expect(imputeMissingValues(refVal, opts)[1], 'Imputed value reversed').toBeCloseTo(
-        refVal <= 0 ? maxVal : minVal
-      );
-    });
-    expect(imputeMissingValues(0, opts)[1], 'Pos bias for zero').toBeCloseTo(maxVal);
-  });
-  // Imputed vals should be the ones above reversed
-  describe('MissingValueDistanceMethod.RelativeMaximum / MissingValueBias.Negative', () => {
-    const opts = {
-      missingValueMethod: MissingValueDistanceMethod.RelativeMaximum,
-      missingValueBias: MissingValueBias.Negative
-    };
-    test.each(refVals)('For %d', (refVal: SignedNormalizedDistance) => {
-      expect(imputeMissingValues(refVal, opts)[0], 'Ref value unchanged').toBe(refVal);
-      expect(imputeMissingValues(refVal, opts)[1], 'Imputed value reversed').toBeCloseTo(
-        refVal >= 0 ? minVal : maxVal
-      );
-    });
-    expect(imputeMissingValues(0, opts)[1], 'Neg bias for zero').toBeCloseTo(minVal);
-  });
-  describe('MissingValueDistanceMethod.AbsoluteMaximum', () => {
-    const opts = {
-      missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum,
-      missingValueBias: MissingValueBias.Positive
-    };
-    test.each(refVals)('For %d', (refVal: SignedNormalizedDistance) => {
-      expect(imputeMissingValues(refVal, opts)[0], 'Ref value at max end').toBe(
-        refVal <= 0 ? minVal : maxVal
-      );
-      expect(imputeMissingValues(refVal, opts)[1], 'Imputed value reversed').toBeCloseTo(
-        refVal <= 0 ? maxVal : minVal
-      );
-    });
-    expect(imputeMissingValues(0, opts)[0], 'Pos bias for zero').toBeCloseTo(minVal);
-    expect(imputeMissingValues(0, opts)[1], 'Pos bias for zero').toBeCloseTo(maxVal);
-  });
-  // These should be the ones above reversed
-  describe('MissingValueDistanceMethod.AbsoluteMaximum / MissingValueBias.Negative', () => {
-    const opts = {
-      missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum,
-      missingValueBias: MissingValueBias.Negative
-    };
-    test.each(refVals)('For %d', (refVal: SignedNormalizedDistance) => {
-      expect(imputeMissingValues(refVal, opts)[0], 'Ref value at max end').toBe(
-        refVal >= 0 ? maxVal : minVal
-      );
-      expect(imputeMissingValues(refVal, opts)[1], 'Imputed value reversed').toBeCloseTo(
-        refVal >= 0 ? minVal : maxVal
-      );
-    });
-    expect(imputeMissingValues(0, opts)[0], 'Neg bias for zero').toBeCloseTo(maxVal);
-    expect(imputeMissingValues(0, opts)[1], 'Neg bias for zero').toBeCloseTo(minVal);
-  });
-});
-
-describe('measureDistance', () => {
-  const weights = [1, 2, 3];
-  const ms = new MatchingSpace(weights);
-  const mdOpts: DistanceMeasurementOptions[] = [
-    {
-      metric: DistanceMetric.Directional,
-      missingValueOptions: {
-        missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
-      }
-    },
-    {
-      metric: DistanceMetric.Manhattan,
-      missingValueOptions: {
-        missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
-      }
-    }
-  ];
-  describe('Extreme distances', () => {
-    const posMin = new MatchingSpacePosition([minVal, minVal, minVal], ms);
-    const posMax = new MatchingSpacePosition([maxVal, maxVal, maxVal], ms);
-    const posMissing = new MatchingSpacePosition([MISSING_VALUE, MISSING_VALUE, MISSING_VALUE], ms);
-    test.each(mdOpts)('Max distance for $metric', (opts: DistanceMeasurementOptions) => {
-      expect(measureDistance(posMin, posMax, opts)).toBeCloseTo(maxDist);
-    });
-    test.each(mdOpts)(
-      'Max distance with missing vals for $metric',
-      (opts: DistanceMeasurementOptions) => {
-        expect(measureDistance(posMin, posMissing, opts)).toBeCloseTo(maxDist);
-      }
-    );
-    test.each(mdOpts)(
-      'Min distance with min vals for $metric',
-      (opts: DistanceMeasurementOptions) => {
-        expect(measureDistance(posMin, posMin, opts)).toBeCloseTo(0);
-      }
-    );
-    test.each(mdOpts)(
-      'Min distance with max vals for $metric',
-      (opts: DistanceMeasurementOptions) => {
-        expect(measureDistance(posMax, posMax, opts)).toBeCloseTo(0);
-      }
-    );
-  });
-  test('DistanceMetric.Manhattan', () => {
-    const opts: DistanceMeasurementOptions = {
-      metric: DistanceMetric.Manhattan,
-      missingValueOptions: {
-        missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
-      }
-    };
-    const posA = new MatchingSpacePosition([minVal, minVal, minVal], ms);
-    const posB = new MatchingSpacePosition([minVal, 0, maxVal], ms);
-    const dist =
-      (weights[0] * 0 + (weights[1] * maxDist) / 2 + weights[2] * maxDist) / ms.maxDistance;
-    expect(measureDistance(posA, posB, opts)).toBeCloseTo(dist);
-    expect(measureDistance(posB, posA, opts), 'Commutatibility').toBeCloseTo(dist);
-  });
-  test('DistanceMetric.Directional', () => {
-    const opts: DistanceMeasurementOptions = {
-      metric: DistanceMetric.Directional,
-      missingValueOptions: {
-        missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
-      }
-    };
-    const f = 0.5;
-    const posA = new MatchingSpacePosition([f * minVal, minVal, minVal]);
-    const posB = new MatchingSpacePosition([f * minVal, 0, maxVal]);
-    const posC = new MatchingSpacePosition([f * maxVal, 0, maxVal]);
-    // Calculate first with factors on a scale from -1 to 1 (disagree to agree)
-    // where minVal = -1 and maxVal = 1
-    let factorsAB = [f * -1 * (f * -1), -1 * 0, -1 * 1];
-    // Convert to distance and scale with maxDist
-    factorsAB = factorsAB.map((v) => ((1 - v) / 2) * maxDist);
-    // Add up and divide by dims
-    const distAB = factorsAB.reduce((a, b) => a + b, 0) / 3;
-    // Ditto for A-C
-    let factorsAC = [f * -1 * (f * 1), -1 * 0, -1 * 1];
-    factorsAC = factorsAC.map((v) => ((1 - v) / 2) * maxDist);
-    const distAC = factorsAC.reduce((a, b) => a + b, 0) / 3;
-
-    expect(measureDistance(posA, posC, opts)).toBeCloseTo(distAC);
-    expect(measureDistance(posB, posA, opts), 'Commutatibility').toBeCloseTo(distAB);
-    expect(measureDistance(posC, posA, opts), 'Commutatibility').toBeCloseTo(distAC);
-  });
-  describe('Distances for missing values', () => {
-    const f = 0.3;
-    const posMin = new MatchingSpacePosition([minVal, minVal, minVal]);
-    const posFract = new MatchingSpacePosition([f * minVal, f * minVal, f * maxVal]);
-    const posMissing = new MatchingSpacePosition([MISSING_VALUE, MISSING_VALUE, MISSING_VALUE]);
-    test('MissingValueDistanceMethod.Neutral', () => {
-      const opts: DistanceMeasurementOptions = {
-        metric: DistanceMetric.Manhattan,
-        missingValueOptions: {
-          missingValueMethod: MissingValueDistanceMethod.Neutral
-        }
-      };
-      expect(measureDistance(posMin, posMissing, opts)).toBeCloseTo(0.5 * maxDist);
-      expect(measureDistance(posFract, posMissing, opts)).toBeCloseTo(0.5 * f * maxDist);
-    });
-    test('MissingValueDistanceMethod.RelativeMaximum', () => {
-      const opts: DistanceMeasurementOptions = {
-        metric: DistanceMetric.Manhattan,
-        missingValueOptions: {
-          missingValueMethod: MissingValueDistanceMethod.RelativeMaximum
-        }
-      };
-      expect(measureDistance(posMin, posMissing, opts)).toBeCloseTo(maxDist);
-      expect(measureDistance(posFract, posMissing, opts)).toBeCloseTo(0.5 * (1 + f) * maxDist);
-    });
-    test('MissingValueDistanceMethod.AbsoluteMaximum', () => {
-      const opts: DistanceMeasurementOptions = {
-        metric: DistanceMetric.Manhattan,
-        missingValueOptions: {
-          missingValueMethod: MissingValueDistanceMethod.AbsoluteMaximum
-        }
-      };
-      expect(measureDistance(posMin, posMissing, opts)).toBeCloseTo(maxDist);
-      expect(measureDistance(posFract, posMissing, opts)).toBeCloseTo(maxDist);
-    });
-    test('No missing values for ref value', () => {
-      const opts: DistanceMeasurementOptions = {
-        metric: DistanceMetric.Manhattan,
-        missingValueOptions: {
-          missingValueMethod: MissingValueDistanceMethod.Neutral
-        }
-      };
-      expect(() => measureDistance(posMissing, posMin, opts)).toThrow();
-    });
-  });
-});
+const max = COORDINATE.Max;
+const min = COORDINATE.Min;
+const half = COORDINATE.Extent / 2;
+const full = COORDINATE.Extent;
 
 describe('matchingAlgorithm', () => {
-  test('throw if there are duplicate questions', () => {
-    const likertScale = 5;
-    const values = [0, 0.5, 1];
-    const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
-      createLikertValues(likertScale, values),
-      [createLikertValues(likertScale, values)],
-      likertScale,
-      DistanceMetric.Manhattan,
-      MissingValueDistanceMethod.Neutral
-    );
-    // Add a question with the same id
-    questions.push(MultipleChoiceQuestion.fromLikert(questions[0].id, likertScale));
-    expect(() => algorithm.match(questions, voter, candidates)).toThrow();
-  });
-  test('throw if voter answers are missing', () => {
-    const likertScale = 5;
-    const values = [0, 0.5, 1];
-    const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
-      createLikertValues(likertScale, values),
-      [createLikertValues(likertScale, values)],
-      likertScale,
-      DistanceMetric.Manhattan,
-      MissingValueDistanceMethod.Neutral
-    );
-    // Delete all of the voter's answers
-    voter.answers = {};
-    expect(() => algorithm.match(questions, voter, candidates)).toThrow();
-  });
   test('projectToNormalizedSpace', () => {
     const likertScale = 5;
-    const values = [0, 0.5, 1];
-    const coords = values.map((v) => v * maxDist - maxVal);
+    const values = [1, 3, 5];
+    const coords = values.map((v) => {
+      const normalized = (v - 1) / (likertScale - 1);
+      return min + normalized * (max - min);
+    });
     const {questions, candidates, algorithm} = createMatchesAndEntities(
-      createLikertValues(likertScale, values),
-      [createLikertValues(likertScale, values)],
+      values,
+      [values, values],
       likertScale,
-      DistanceMetric.Manhattan,
-      MissingValueDistanceMethod.Neutral
-    );
-    expect(algorithm.projectToNormalizedSpace(questions, candidates)[0].coordinates).toMatchObject(
-      coords
+      DISTANCE_METRIC.Manhattan,
+      MISSING_VALUE_METHOD.Neutral
     );
     expect(
-      algorithm.projectToNormalizedSpace(questions.slice(0, 2), candidates)[0].coordinates,
+      algorithm.projectToNormalizedSpace({questions, targets: candidates})[0].coordinates
+    ).toEqual(coords);
+    expect(
+      algorithm.projectToNormalizedSpace({questions: questions.slice(1), targets: candidates})[0]
+        .coordinates,
       'Subset of answers based on question list'
-    ).toMatchObject(coords.slice(0, 2));
+    ).toMatchObject(coords.slice(1));
   });
+
+  test('throw if there are duplicate questions', () => {
+    const likertScale = 5;
+    const values = [1, 3, 5];
+    const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+      values,
+      [values, values],
+      likertScale,
+      DISTANCE_METRIC.Manhattan,
+      MISSING_VALUE_METHOD.Neutral
+    );
+    // Add a question with the same id
+    questions.push(OrdinalQuestion.fromLikert({id: questions[0].id, scale: likertScale}));
+    expect(() => algorithm.match({questions, reference: voter, targets: candidates})).toThrow();
+  });
+
+  test('skip missing reference questions', () => {
+    const likertScale = 5;
+    const values = [1, 3, 5];
+    const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+      [undefined, 5, 5],
+      [values, values],
+      likertScale,
+      DISTANCE_METRIC.Manhattan,
+      MISSING_VALUE_METHOD.Neutral
+    );
+    const expected = (half + 0) / 2; // [3-5, 5-5]
+    expect(
+      algorithm.match({questions, reference: voter, targets: candidates})[0].distance
+    ).toBeCloseTo(expected);
+  });
+
   describe('match with missing values', () => {
     const likertScale = 5;
-    const values = [0.25, 0.5, 1];
+    const values = [1, 3, 5];
     const valuesMissing = [MISSING_VALUE, MISSING_VALUE, MISSING_VALUE];
-    test('MissingValueDistanceMethod.Neutral', () => {
-      const dist = (maxDist * (0.25 + 0 + 0.5)) / 3;
+    test('MISSING_VALUE_METHOD.Neutral', () => {
       const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
-        createLikertValues(likertScale, values),
+        values,
         [valuesMissing],
         likertScale,
-        DistanceMetric.Manhattan,
-        MissingValueDistanceMethod.Neutral
+        DISTANCE_METRIC.Manhattan,
+        MISSING_VALUE_METHOD.Neutral
       );
-      expect(algorithm.match(questions, voter, candidates)[0].distance).toBeCloseTo(dist);
+      const expected = (half + 0 + half) / 3; // [1-3, 3-3, 5-3]
+      expect(
+        algorithm.match({questions, reference: voter, targets: candidates})[0].distance
+      ).toBeCloseTo(expected);
     });
-    test('MissingValueDistanceMethod.Neutral', () => {
-      const dist = (maxDist * (0.75 + 0.5 + 1)) / 3;
+    test('MISSING_VALUE_METHOD.RelativeMaximum', () => {
       const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
-        createLikertValues(likertScale, values),
+        values,
         [valuesMissing],
         likertScale,
-        DistanceMetric.Manhattan,
-        MissingValueDistanceMethod.RelativeMaximum
+        DISTANCE_METRIC.Manhattan,
+        MISSING_VALUE_METHOD.RelativeMaximum
       );
-      expect(algorithm.match(questions, voter, candidates)[0].distance).toBeCloseTo(dist);
-    });
-    test('MissingValueDistanceMethod.AbsoluteMaximum', () => {
-      const dist = maxDist;
-      const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
-        createLikertValues(likertScale, values),
-        [valuesMissing],
-        likertScale,
-        DistanceMetric.Manhattan,
-        MissingValueDistanceMethod.AbsoluteMaximum
-      );
-      expect(algorithm.match(questions, voter, candidates)[0].distance).toBeCloseTo(dist);
+      const expected = (full + half + full) / 3; // [1-5, 3-5, 5-1]
+      expect(
+        algorithm.match({questions, reference: voter, targets: candidates})[0].distance
+      ).toBeCloseTo(expected);
     });
   });
-  const likertScales = [3, 4, 5, 10];
-  describe.each(likertScales)('match with Likert %d', (likertScale: number) => {
-    test('DistanceMetric.Manhattan', () => {
-      const voterValues = [0.5, 1, 0];
-      const candValues = [0, 0.5, 1];
-      const dist = (maxDist * (0.5 + 0.5 + 1)) / 3;
-      const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
-        createLikertValues(likertScale, voterValues),
-        [createLikertValues(likertScale, candValues)],
-        likertScale,
-        DistanceMetric.Manhattan,
-        MissingValueDistanceMethod.Neutral
-      );
-      expect(algorithm.match(questions, voter, candidates)[0].distance).toBeCloseTo(dist);
-    });
-    test('DistanceMetric.Directional', () => {
-      const voterValues = [0.5, 1, 0];
-      const candValues = [0, 0.5, 1];
-      // Calculate first with factors on a scale from -1 to 1 (disagree to agree)
-      // where minVal = -1 and maxVal = 1
-      let factors = [0 * -1, 1 * 0, -1 * 1];
-      // Convert to distance and scale with maxDist
-      factors = factors.map((v) => ((1 - v) / 2) * maxDist);
-      // Add up and divide by dims
-      const dist = factors.reduce((a, b) => a + b, 0) / 3;
-      const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
-        createLikertValues(likertScale, voterValues),
-        [createLikertValues(likertScale, candValues)],
-        likertScale,
-        DistanceMetric.Directional,
-        MissingValueDistanceMethod.Neutral
-      );
-      expect(algorithm.match(questions, voter, candidates)[0].distance).toBeCloseTo(dist);
-    });
+
+  test('different distance metric', () => {
+    const likertScale = 5;
+    const voterValues = [1, 2, 3, 4, 2];
+    const candValues = [1, 5, 5, 2, 3];
+    const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+      voterValues,
+      [candValues, candValues],
+      likertScale,
+      DISTANCE_METRIC.Directional,
+      MISSING_VALUE_METHOD.Neutral
+    );
+    const expected =
+      (0 + // 1-1
+        0.75 * full + // 2-5
+        half + // 3-5
+        0.625 * full + // 4-2
+        half) / // 2-3
+      questions.length;
+    expect(
+      algorithm.match({questions, reference: voter, targets: candidates})[0].distance
+    ).toBeCloseTo(expected);
   });
+
+  test('categorical questions', () => {
+    const categorical2 = new CategoricalQuestion({
+      id: 'categorical2',
+      values: [{id: 'no'}, {id: 'yes'}]
+    });
+    const categorical4 = new CategoricalQuestion({
+      id: 'categorical4',
+      values: [{id: 'a'}, {id: 'b'}, {id: 'c'}, {id: 'd'}]
+    });
+    const questions = [categorical2, categorical4];
+    const voterValues = ['no', 'a'];
+    const voter = createVoter(questions, voterValues);
+    const disagreeValues = ['yes', 'c'];
+    const missingValues = [MISSING_VALUE, MISSING_VALUE];
+    const candidates = createCandidates(questions, [disagreeValues, missingValues, voterValues]);
+    const algorithm = new MatchingAlgorithm({
+      distanceMetric: DISTANCE_METRIC.Manhattan,
+      missingValueOptions: {method: MISSING_VALUE_METHOD.RelativeMaximum}
+    });
+    const matches = algorithm.match({questions, reference: voter, targets: candidates});
+    const expected0 = (full + (full * 2) / 4) / questions.length; // binary disagreement, 4-choice disagreement
+    const expected1 = full; // all missing values
+    const expected2 = 0; // perfect agreement
+    expect(matches.find((m) => m.entity === candidates[0])?.distance).toBeCloseTo(expected0);
+    expect(matches.find((m) => m.entity === candidates[1])?.distance).toBeCloseTo(expected1);
+    expect(matches.find((m) => m.entity === candidates[2])?.distance).toBeCloseTo(expected2);
+  });
+
+  test('mixed question types', () => {
+    const likert5 = OrdinalQuestion.fromLikert({id: 'likert5', scale: 5});
+    const likert7 = OrdinalQuestion.fromLikert({id: 'likert7', scale: 7});
+    const categorical2 = new CategoricalQuestion({
+      id: 'categorical2',
+      values: [{id: 'no'}, {id: 'yes'}]
+    });
+    const categorical4 = new CategoricalQuestion({
+      id: 'categorical4',
+      values: [{id: 'a'}, {id: 'b'}, {id: 'c'}, {id: 'd'}]
+    });
+    const questions = [likert5, likert7, categorical2, categorical4];
+    const voterValues = [likert5.values[0].id, likert7.values[5].id, 'no', 'c'];
+    const voter = createVoter(questions, voterValues);
+    const candAValues = [undefined, likert7.values[1].id, 'yes', 'c'];
+    const candBValues = [likert5.values[3].id, likert7.values[6].id, 'no', 'a'];
+    const candidates = createCandidates(questions, [candAValues, candBValues]);
+    const algorithm = new MatchingAlgorithm({
+      distanceMetric: DISTANCE_METRIC.Manhattan,
+      missingValueOptions: {method: MISSING_VALUE_METHOD.RelativeMaximum}
+    });
+    const matches = algorithm.match({questions, reference: voter, targets: candidates});
+    const expectedA =
+      (full + // likert5: 1-missing=>5
+        ((5 - 1) / 6) * full + // likert7: 6-2
+        full + // categorical2: no-yes
+        0) / // categorical4: c-c
+      questions.length;
+    const expectedB =
+      (0.75 * full + // likert5: 1-4
+        ((6 - 5) / 6) * full + // likert7: 6-7
+        0 + // categorical2: no-no
+        (2 / 4) * full) / // categorical4: c-a
+      questions.length;
+    expect(matches.find((m) => m.entity === candidates[0])?.distance).toBeCloseTo(expectedA);
+    expect(matches.find((m) => m.entity === candidates[1])?.distance).toBeCloseTo(expectedB);
+  });
+
   describe('submatches', () => {
-    test('createSubspaces', () => {
-      const numQuestions = 5;
-      const numSubset = 3;
-      const questions = createQuestions(numQuestions, 5);
-      const otherQuestions = createQuestions(numQuestions, 5);
-      const subsetA = questions.slice(0, numSubset);
-      const subsetB = [...subsetA, ...otherQuestions.slice(2)];
-      expect(
-        createSubspace(questions, questions.slice()).maxDistance,
-        'subset is fully included'
-      ).toBeCloseTo(numQuestions);
-      expect(
-        createSubspace(questions, otherQuestions).maxDistance,
-        'subset is fully excluded'
-      ).toBeCloseTo(0);
-      expect(
-        createSubspace(questions, subsetA).maxDistance,
-        'subset is partly included'
-      ).toBeCloseTo(numSubset);
-      expect(
-        createSubspace(questions, subsetB).maxDistance,
-        'subset is partly included and partly excluded'
-      ).toBeCloseTo(numSubset);
-    });
     test('match with subQuestionGroups', () => {
       const likertScale = 5;
-      const voterValues = [0, 0, 0, 0, 0.5];
-      const candValues = [0, 0, 1, 1, 1];
+      const voterValues = [1, 1, 1, 1, 3];
+      const candValues = [1, 1, 5, 4, 5];
       const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
-        createLikertValues(likertScale, voterValues),
-        [createLikertValues(likertScale, candValues)],
+        voterValues,
+        [candValues],
         likertScale,
-        DistanceMetric.Manhattan,
-        MissingValueDistanceMethod.Neutral
+        DISTANCE_METRIC.Manhattan,
+        MISSING_VALUE_METHOD.Neutral
       );
+      const fullDist = (0 + 0 + full + 0.75 * full + half) / questions.length; // 1-1, 1-1, 1-5, 1-4, 3-5
       const subsetA = {matchableQuestions: questions.slice(0, 1)};
-      const subsetADist = 0;
+      const subsetADist = 0; // 1-1
       const subsetB = {matchableQuestions: questions.slice(2, 3)};
-      const subsetBDist = maxDist;
+      const subsetBDist = full; // 1-5
       const subsetC = {matchableQuestions: questions.slice(0, 4)};
-      const subsetCDist = maxDist * (1 - 0.5);
+      const subsetCDist = (0 + 0 + full + 0.75 * full) / 4; // 1-1, 1-1, 1-5, 1-4
       const questionGroups = [subsetA, subsetB, subsetC];
-      const match = algorithm.match(questions, voter, candidates, {questionGroups})[0];
-      expect(match.subMatches?.length).toBeCloseTo(questionGroups.length);
-      expect(match.subMatches?.[0].distance).toBeCloseTo(subsetADist);
-      expect(match.subMatches?.[0].questionGroup).toBe(subsetA);
-      expect(match.subMatches?.[1].distance).toBeCloseTo(subsetBDist);
-      expect(match.subMatches?.[2].distance).toBeCloseTo(subsetCDist);
-      describe('subMatch for questions the voter has not answered should be zero', () => {
-        const likertScale = 5;
-        const voterValues = [0, 0, 1];
-        const candValues = [0, 0, 1];
-        const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
-          createLikertValues(likertScale, voterValues),
-          [createLikertValues(likertScale, candValues)],
-          likertScale,
-          DistanceMetric.Manhattan,
-          MissingValueDistanceMethod.Neutral
-        );
-        // A subset that includes only the question the voter has not answered
-        const subset = {matchableQuestions: questions.slice(-1)};
-        // Remove the voter's answer to the question
-        const lastQuestionId = subset.matchableQuestions[0].id;
-        delete voter.answers[lastQuestionId];
-        expect(voter.answers[lastQuestionId]).toBeUndefined();
-        // Remove the question from the matching questions as well
-        const questionsMinusLast = [...questions.slice(0, -1)];
-        const match = algorithm.match(questionsMinusLast, voter, candidates, {
-          questionGroups: [subset]
-        })[0];
-        expect(match.subMatches?.[0].distance).toBeCloseTo(0);
-        expect(match.subMatches?.[0].questionGroup).toBe(subset);
-      });
+      const match = algorithm.match({
+        questions,
+        reference: voter,
+        targets: candidates,
+        options: {questionGroups}
+      })[0];
+      expect(match.distance, 'to have global distance').toBeCloseTo(fullDist);
+      expect(match.subMatches?.length, 'to have submatches for all subgroups').toBe(
+        questionGroups.length
+      );
+      expect(match.subMatches?.[0].distance, 'to have subgroup a distance').toBeCloseTo(
+        subsetADist
+      );
+      expect(match.subMatches?.[0].questionGroup, 'to contain reference to subgroup').toBe(subsetA);
+      expect(match.subMatches?.[1].distance, 'to have subgroup b distance').toBeCloseTo(
+        subsetBDist
+      );
+      expect(match.subMatches?.[2].distance, 'to have subgroup c distance').toBeCloseTo(
+        subsetCDist
+      );
+    });
+    test('subMatch for questions the voter has not answered should be zero', () => {
+      const likertScale = 5;
+      const voterValues = [undefined, 1, 1];
+      const candValues = [1, 3, 5];
+      const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+        voterValues,
+        [candValues],
+        likertScale,
+        DISTANCE_METRIC.Manhattan,
+        MISSING_VALUE_METHOD.RelativeMaximum
+      );
+      // A subset that includes only the question the voter has not answered
+      const questionGroups = [{matchableQuestions: questions.slice(0, 1)}];
+      const match = algorithm.match({
+        questions: questions.slice(1),
+        reference: voter,
+        targets: candidates,
+        options: {questionGroups}
+      })[0];
+      expect(match.subMatches?.[0].distance).toBeCloseTo(half);
+      expect(match.subMatches?.[0].questionGroup).toBe(questionGroups[0]);
     });
   });
-});
 
-/**********************************************************************
- * Helper functions
- **********************************************************************/
-
-/**
- * Create dummy matches for testing.
- *
- * @param voterAnswers Array of voter answers
- * @param candidateAnswers Array of Arrays of candidate answers
- * @param likertScale The likert scale, e.g. 5
- * @param distanceMetric The DistanceMetric to use
- * @param missingValueMethod The MissingValueDistanceMethod
- * @returns A dict of all generated objects
- */
-function createMatchesAndEntities(
-  voterAnswers: (number | undefined)[],
-  candidateAnswers: (number | undefined)[][],
-  likertScale: number,
-  distanceMetric: DistanceMetric,
-  missingValueMethod: MissingValueDistanceMethod
-): {
-  questions: MultipleChoiceQuestion[];
-  voter: Candidate;
-  candidates: Candidate[];
-  algorithm: MatchingAlgorithm;
-  matches: Match<Candidate>[];
-} {
-  const numQuestions = voterAnswers.length;
-  // Create dummy questions
-  const questions = createQuestions(numQuestions, likertScale);
-  // Create a Candidate to represent the voter
-  const voter = createVoter(questions, voterAnswers);
-  // Create dummy candidates
-  const candidates = createCandidates(questions, candidateAnswers);
-  // Matching algorithm
-  const algorithm = new MatchingAlgorithm({
-    distanceMetric,
-    missingValueOptions: {missingValueMethod}
+  test('question weights', () => {
+    const likertScale = 5;
+    const voterValues = [1, 3, 5];
+    const candValues = [1, 1, 1];
+    const {questions, voter, candidates, algorithm} = createMatchesAndEntities(
+      voterValues,
+      [candValues],
+      likertScale,
+      DISTANCE_METRIC.Manhattan,
+      MISSING_VALUE_METHOD.Neutral
+    );
+    const weights = [0.54234, 4.131231, 97.1134];
+    const questionWeights = Object.fromEntries(questions.map((q, i) => [q.id, weights[i]]));
+    const expected =
+      (weights[0] * 0 + // 1-1
+        weights[1] * half + // 3-1
+        weights[2] * full) / // 5-1
+      weights.reduce((acc, v) => acc + v, 0);
+    const match = algorithm.match({
+      questions,
+      reference: voter,
+      targets: candidates,
+      options: {questionWeights}
+    })[0];
+    expect(match.distance).toBeCloseTo(expected);
   });
-  // Get matches
-  const matches = algorithm.match(questions, voter, candidates);
-  return {
-    questions,
-    voter,
-    candidates,
-    algorithm,
-    matches
-  };
-}
-
-/**
- * A dummy candidate object for matching.
- */
-class Candidate implements HasMatchableAnswers {
-  constructor(public answers: AnswerDict) {}
-}
-
-/**
- * Convert normalized values to Likert-scale values.
- *
- * @param scale The likert scale, e.g. 5
- * @param values The normalised values
- * @returns Array of values
- */
-function createLikertValues(scale: number, values: UnsignedNormalizedDistance[]) {
-  return values.map((v) => 1 + v * (scale - 1));
-}
-
-/**
- * Create dummy answers.
- *
- * @param questions Question list
- * @param answerValues The answer values
- * @returns An answer dict
- */
-function createAnswers(
-  questions: MatchableQuestion[],
-  answerValues: (number | undefined)[]
-): AnswerDict {
-  const answers = {} as AnswerDict;
-  for (let i = 0; i < questions.length; i++) {
-    answers[questions[i].id] = {value: answerValues[i]};
-  }
-  return answers;
-}
-
-/**
- * Create dummy questions.
- *
- * @param numQuestions Number of questions to creata
- * @param likertScale The likert scale, e.g. 5
- * @returns Array of questions
- */
-function createQuestions(numQuestions: number, likertScale: number): MultipleChoiceQuestion[] {
-  return Array.from({length: numQuestions}, (_, i) =>
-    MultipleChoiceQuestion.fromLikert(`qst${i}`, likertScale)
-  );
-}
-
-/**
- * Create dummy candidates
- *
- * @param questions The dummy questions
- * @param candidateAnswers Array of Arrays of candidate answers
- * @returns Array of candidates
- */
-function createCandidates(
-  questions: MultipleChoiceQuestion[],
-  candidateAnswers: (number | undefined)[][]
-): Candidate[] {
-  return candidateAnswers.map((o) => new Candidate(createAnswers(questions, o)));
-}
-
-/**
- * Create a dummy Candidate to represent the voter
- * @param questions The dummy questions
- * @param voterAnswers Array of voter answers
- * @returns A candidate
- */
-function createVoter(
-  questions: MultipleChoiceQuestion[],
-  voterAnswers: (number | undefined)[]
-): Candidate {
-  return new Candidate(createAnswers(questions, voterAnswers));
-}
+});

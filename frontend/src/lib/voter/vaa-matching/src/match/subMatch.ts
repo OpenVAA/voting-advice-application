@@ -1,24 +1,21 @@
-import type {UnsignedNormalizedDistance} from '../distance';
+import type {NormalizedDistance} from 'vaa-shared';
 import type {MatchableQuestionGroup} from '../question';
 import {MatchBase} from './matchBase';
 
 /**
  * The class for question-group-specific submatches within a Match.
  */
-export class SubMatch<T extends MatchableQuestionGroup = MatchableQuestionGroup> extends MatchBase {
+export class SubMatch<
+  TGroup extends MatchableQuestionGroup = MatchableQuestionGroup
+> extends MatchBase {
+  readonly questionGroup: TGroup;
   /**
-   * Create a new SubMatch.
-   *
-   * @param distance The match distance as an unsigned normalized distance,
-   * e.g. [0, 1] (the range is defined by `NORMALIZED_DISTANCE_EXTENT`).
-   * Note that 1 means a bad match and 0 a perfect one.
-   * @param questionGroup The subgroup of questions for which the match is
-   * computed.
+   * Create a new `SubMatch`.
+   * @param distance The match distance as an unsigned normalized distance, e.g. [0, 1] (the range is defined by `COORDINATE.Extent`). Note that a large distance (e.g. 1) means a bad match and a low one (e.g. 0) a perfect one.
+   * @param questionGroup The subgroup of questions for which the match is computed.
    */
-  constructor(
-    distance: UnsignedNormalizedDistance,
-    readonly questionGroup: T
-  ) {
+  constructor({distance, questionGroup}: {distance: NormalizedDistance; questionGroup: TGroup}) {
     super(distance);
+    this.questionGroup = questionGroup;
   }
 }

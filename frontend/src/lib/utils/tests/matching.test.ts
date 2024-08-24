@@ -1,7 +1,7 @@
 import {expect, test} from 'vitest';
 import {imputePartyAnswers, mean, median} from '../matching';
 import {MockCandidate, MockParty} from './mock-objects';
-import {MISSING_VALUE} from '$voter/vaa-matching';
+import {MISSING_VALUE} from 'vaa-shared';
 
 test('Mean and median', () => {
   expect(mean([1, 2, 2, 2, 10]), 'Mean').toEqual((1 + 2 + 2 + 2 + 10) / 5);
