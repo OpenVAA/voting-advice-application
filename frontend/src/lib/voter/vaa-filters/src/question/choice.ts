@@ -1,5 +1,7 @@
 import type {FilterOptions} from '../filter';
 
+// TODO: Update these when vaa-data module questions are adopted
+
 /**
  * The property name of a multiple choice key.
  */

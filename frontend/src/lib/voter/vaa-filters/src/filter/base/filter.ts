@@ -1,4 +1,4 @@
-import {getEntity, type MaybeWrapped, hasAnswers, type ExtractEntity} from '../../entity';
+import {getEntity, type MaybeWrapped, isEntityWithAnswers, type ExtractEntity} from '../../entity';
 import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
 import {ruleIsActive, matchRules, copyRules, type Rules, type Rule} from '../rules';
 import {castValue} from './castValue';
@@ -53,7 +53,7 @@ export abstract class Filter<T extends MaybeWrapped, V> {
   getValue(entity: ExtractEntity<T>): MaybeMissing<V> | MaybeMissing<V>[] {
     let value: unknown;
     if (this.options.question) {
-      if (!hasAnswers(entity)) throw new Error('Entity does not have answers.');
+      if (!isEntityWithAnswers(entity)) throw new Error('Entity does not have answers.');
       value = entity.answers[this.options.question.id]?.value;
     } else if (this.options.property != null) {
       value = entity[this.options.property as keyof typeof entity];

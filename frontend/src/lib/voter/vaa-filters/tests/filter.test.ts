@@ -1,3 +1,4 @@
+import type {AnswerDict, AnswerValue} from 'vaa-shared';
 import {
   castValue,
   FilterGroup,
@@ -7,8 +8,6 @@ import {
   ObjectFilter,
   TextPropertyFilter,
   TextQuestionFilter,
-  type AnswerDict,
-  type AnswerValue,
   type Choice,
   type EntityWithAnswers,
   type FilterableEntity,

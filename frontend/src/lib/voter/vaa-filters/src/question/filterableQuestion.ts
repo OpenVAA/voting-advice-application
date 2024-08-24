@@ -1,3 +1,4 @@
+import type {Id} from 'vaa-shared';
 import type {Choice} from './choice';
 
 /**
@@ -34,5 +35,5 @@ interface QuestionBase {
   /**
    * The entities' answers to questions are matched using the question id
    */
-  id: string;
+  id: Id;
 }
