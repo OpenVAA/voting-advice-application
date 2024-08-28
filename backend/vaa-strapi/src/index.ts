@@ -5,6 +5,7 @@ import {generateMockData} from './functions/generateMockData';
 import {loadData} from './functions/loadData';
 import {setDefaultApiPermissions} from './functions/setDefaultApiPermissions';
 import {loadDefaultAppSettings} from './functions/loadDefaultAppSettings';
+import {loadDynamicTranslations} from './functions/loadDynamicTranslations';
 
 module.exports = {
   /**
@@ -38,5 +39,6 @@ module.exports = {
     }
     setDefaultApiPermissions();
     loadDefaultAppSettings();
+    loadDynamicTranslations();
   }
 };
