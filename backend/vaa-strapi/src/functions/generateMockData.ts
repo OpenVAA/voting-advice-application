@@ -27,6 +27,7 @@ import mockCategories from './mockData/mockCategories.json';
 import mockUser from './mockData/mockUser.json';
 import {dynamicSettings} from 'vaa-shared';
 import {getCardContentsFromFile} from './utils/appSettings';
+import {getDynamicTranslations} from './utils/appCustomization';
 
 const locales: Locale[] = [
   {
@@ -261,9 +262,22 @@ async function createAppSettings() {
 }
 
 async function createAppCustomization() {
+  const faqs = [];
+  locales.forEach(({code}) => {
+    for (let i = 0; i < 5; i++) {
+      faqs.push({
+        languageCode: code,
+        question: faker.lorem.sentence(),
+        answer: faker.lorem.paragraph()
+      });
+    }
+  });
+
   await strapi.entityService.create(API.AppCustomization, {
     data: {
-      publisherName: fakeLocalized((faker) => faker.company.name())
+      publisherName: fakeLocalized((faker) => faker.company.name()),
+      dynamicTranslations: getDynamicTranslations(),
+      candidateAppFAQ: faqs
     }
   });
 }
