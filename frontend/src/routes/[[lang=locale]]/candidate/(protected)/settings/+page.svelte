@@ -7,12 +7,11 @@
   import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {Button} from '$lib/components/button';
   import {validatePassword} from '$shared/utils/passwordValidation';
-  import {changePassword, getLanguages, updateAppLanguage} from '$lib/api/candidate';
+  import {changePassword, updateAppLanguage} from '$lib/api/candidate';
   import {PasswordField} from '$lib/candidate/components/passwordField';
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateStore';
-  import type {StrapiLanguageData} from '$lib/api/dataProvider/strapi';
-  import type {Language} from '$lib/types/candidateAttributes';
+  import {locales} from '$lib/i18n';
 
   const {userStore, loadUserData} = getContext<CandidateContext>('candidate');
   $: user = $userStore;
@@ -41,33 +40,24 @@
   });
 
   // Fetch languages from backend
+  let allLanguages = $locales;
+  /*
   let allLanguages: StrapiLanguageData[] | undefined;
   getLanguages().then((languages) => (allLanguages = languages));
+  */
 
   // Handle the change when the app language is changed
   const handleLanguageSelect = async (e: Event) => {
     languageErrorMessage = '';
 
-    const chosenLanguage = allLanguages
-      ? allLanguages.find(
-          (lang) => lang.attributes.localisationCode === (e.target as HTMLSelectElement).value
-        )
-      : undefined;
+    const chosenLanguage = (e.target as HTMLSelectElement).value;
 
-    if (chosenLanguage) {
-      const languageObj: Language = {
-        id: chosenLanguage?.id,
-        localisationCode: chosenLanguage?.attributes?.localisationCode,
-        name: chosenLanguage?.attributes?.name
-      };
-
-      try {
-        await updateAppLanguage(languageObj);
-        await loadUserData(); // Reload user data so it's up to date
-        await goto($getRoute({locale: languageObj.localisationCode})); // Change page language to the chosen one
-      } catch (error) {
-        languageErrorMessage = $t('candidateApp.settings.changeLanguageError');
-      }
+    try {
+      await updateAppLanguage(chosenLanguage);
+      await loadUserData(); // Reload user data so it's up to date
+      await goto($getRoute({locale: chosenLanguage})); // Change page language to the chosen one
+    } catch (error) {
+      languageErrorMessage = $t('candidateApp.settings.changeLanguageError');
     }
   };
 
@@ -142,10 +132,8 @@
             on:change={handleLanguageSelect}
             bind:value={appLanguageCode}>
             {#each allLanguages ?? [] as option}
-              <option
-                value={option.attributes.localisationCode}
-                selected={option.attributes.localisationCode === appLanguageCode}>
-                {$t(`candidateApp.languages.${option.attributes.name}`)}</option>
+              <option value={option} selected={option === appLanguageCode}>
+                {$t(`lang.${option}`)}</option>
             {/each}
           </select>
         </div>

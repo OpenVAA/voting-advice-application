@@ -71,6 +71,10 @@
       "target": "api::candidate.candidate",
       "mappedBy": "user",
       "configurable": false
+    },
+    "appLanguage": {
+      "type": "string",
+      "configurable": false
     }
   },
   "config": {

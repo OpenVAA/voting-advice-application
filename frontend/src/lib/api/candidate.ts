@@ -137,20 +137,17 @@ export const updateBasicInfo = async (
 /**
  * Change the user's preferred language for the app.
  */
-export const updateAppLanguage = async (language: Language) => {
+export const updateAppLanguage = async (language: string) => {
   const user = get(candidateContext.userStore);
-  const candidate = user?.candidate;
 
-  if (!candidate) {
-    throw new Error('user.candidate is undefined');
+  if (!user) {
+    throw new Error('user is null');
   }
 
-  return await request(getUrl(`api/candidates/${candidate.id}`), {
+  return await request(getUrl(`api/users-permissions/user/${user.id}/appLanguage`), {
     method: 'PUT',
     body: JSON.stringify({
-      data: {
-        appLanguage: language?.id
-      }
+      appLanguage: language
     }),
     headers: {
       'Content-Type': 'application/json'

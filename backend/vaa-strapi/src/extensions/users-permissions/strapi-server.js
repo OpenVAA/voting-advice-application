@@ -121,6 +121,14 @@ module.exports = async (plugin) => {
     }
   });
 
+  plugin.routes['content-api'].routes.push({
+    method: 'PUT',
+    path: '/user/:id/appLanguage',
+    handler: async (ctx) => {
+      // TODO: update appLanguage of the user if the id in url and ctx.state.user
+    }
+  });
+
   // Enforce ACL on the /users/me endpoint
   for (const route of plugin.routes['content-api'].routes) {
     if (route.method !== 'GET' || route.path !== '/users/me') continue;
