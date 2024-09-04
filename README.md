@@ -59,8 +59,8 @@ We released two pilot VAAs for the 2024 EU Elections, which you can try out to s
   - Implement the most crucial missing features, such as constituency selection and support for multiple simultaneous elections
   - Expand unit and end-to-end test coverage
 
-**2024 Q4** — Release the first full VAA to the public, including the interface for the candidates to input their answers
-  - Create a project site with documentation, which is currently spread between the [`/docs`](./docs/) folder and in-code `JSDoc` comments
+**2024 Q4** — Release the first full VAA to the public, including the interface for the candidates to input their answers (Tampere youth council elections)
+  - Create a project site with documentation, which is currently spread between the [`/docs`](./docs/) folder and in-code `TSDoc` comments
   - Create a research-backed methodological guide to supplement the technical documentation
   - Build application manager UI
   - Enable plugins or easier customisation of pages and main components
