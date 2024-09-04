@@ -4,9 +4,10 @@
  * reference value is neutral (3 on a 5-pt Likert scale) and the bias is
  * Positive, we impute the maximum value (5) for the missing value.
  */
-export enum MissingValueBias {
+export const MissingValueBias: Record<'Positive' | 'Negative', number> = {
   /** Biased toward the maximum value, e.g. 5 on a 5-pt scale. */
-  Positive,
+  Positive: 0,
   /** Biased toward the minimum value, e.g. 1 on a 5-pt scale. */
-  Negative
-}
+  Negative: 2
+};
+export type MissingValueBias = (typeof MissingValueBias)[keyof typeof MissingValueBias];

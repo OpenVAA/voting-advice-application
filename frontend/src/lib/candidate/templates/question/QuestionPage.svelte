@@ -1,24 +1,24 @@
 <script lang="ts">
-  import {goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
-  import {getContext} from 'svelte';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {addAnswer, updateAnswer} from '$lib/api/candidate';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Button} from '$lib/components/button';
-  import {CategoryTag} from '$lib/components/categoryTag';
-  import {LikertResponseButtons, QuestionInfo} from '$lib/components/questions';
-  import {MultilangTextInput} from '$candidate/components/textArea';
-  import {Warning} from '$lib/components/warning';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import type {QuestionPageProps} from './QuestionPage.type';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { MultilangTextInput } from '$candidate/components/textArea';
+  import { addAnswer, updateAnswer } from '$lib/api/candidate';
+  import { Button } from '$lib/components/button';
+  import { CategoryTag } from '$lib/components/categoryTag';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { LikertResponseButtons, QuestionInfo } from '$lib/components/questions';
+  import { Warning } from '$lib/components/warning';
+  import { t } from '$lib/i18n';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { QuestionPageProps } from './QuestionPage.type';
 
   type $$Props = QuestionPageProps;
   export let currentQuestion: $$Props['currentQuestion'];
   export let editMode: $$Props['editMode'] = false;
 
-  const {opinionAnswers, progress, questionsLocked, unansweredOpinionQuestions} =
+  const { opinionAnswers, progress, questionsLocked, unansweredOpinionQuestions } =
     getContext<CandidateContext>('candidate');
 
   $: answer = $opinionAnswers?.[questionId]; // undefined if not answered
@@ -45,29 +45,29 @@
     }
   }
 
-  const saveLikertToLocal = ({detail}: CustomEvent) => {
+  function saveLikertToLocal({ detail }: CustomEvent) {
     selectedKey = detail.value;
     localStorage.setItem(likertLocal, detail.value);
-  };
+  }
 
-  const removeLocalAnswerToQuestion = () => {
+  function removeLocalAnswerToQuestion() {
     localStorage.removeItem(likertLocal);
     openAnswerTextArea.deleteLocal();
     openAnswer = {};
-  };
+  }
 
   let errorMessage = '';
   let errorTimeout: NodeJS.Timeout;
 
-  const showError = (message: string) => {
+  function showError(message: string) {
     errorMessage = message;
     clearTimeout(errorTimeout);
     errorTimeout = setTimeout(() => {
       errorMessage = '';
     }, 5000);
-  };
+  }
 
-  const saveToServer = async () => {
+  async function saveToServer() {
     if (!answer) {
       // New answer
 
@@ -99,13 +99,13 @@
     }
 
     removeLocalAnswerToQuestion();
-  };
+  }
 
-  const updateAnswerStore = (
+  function updateAnswerStore(
     answerId: string,
     value: AnswerProps['value'],
     openAnswer: LocalizedString
-  ) => {
+  ) {
     if ($opinionAnswers) {
       $opinionAnswers[questionId] = {
         id: String(answerId),
@@ -113,33 +113,33 @@
         openAnswer
       };
     }
-  };
+  }
 
-  const saveAndReturn = async () => {
+  async function saveAndReturn() {
     await saveToServer();
-    goto($getRoute(Route.CandAppQuestions));
-  };
+    goto($getRoute(ROUTE.CandAppQuestions));
+  }
 
-  const saveAndContinue = async () => {
+  async function saveAndContinue() {
     await saveToServer();
 
     if ($unansweredOpinionQuestions?.length === 0) {
       // All questions answered
-      goto($getRoute(Route.CandAppHome));
+      goto($getRoute(ROUTE.CandAppHome));
       return;
     }
     const nextUnansweredQuestion = $unansweredOpinionQuestions?.[0]?.id;
-    goto($getRoute({route: Route.CandAppQuestions, id: nextUnansweredQuestion}));
-  };
+    goto($getRoute({ route: ROUTE.CandAppQuestions, id: nextUnansweredQuestion }));
+  }
 
-  const cancelAndReturn = () => {
+  function cancelAndReturn() {
     removeLocalAnswerToQuestion();
-    goto($getRoute(Route.CandAppQuestions));
-  };
+    goto($getRoute(ROUTE.CandAppQuestions));
+  }
 
   $: category = currentQuestion.category;
   $: info = currentQuestion.info;
-  $: options = currentQuestion.values?.map(({key, label}) => ({
+  $: options = currentQuestion.values?.map(({ key, label }) => ({
     key,
     label: label
   }));
@@ -211,7 +211,7 @@ In addition to the question, includes a Likert scale and a text area for comment
 
       {#if !!$questionsLocked}
         <Button
-          on:click={() => goto($getRoute(Route.CandAppQuestions))}
+          on:click={() => goto($getRoute(ROUTE.CandAppQuestions))}
           variant="main"
           text={$t('candidateApp.questions.return')} />
       {:else if editMode}

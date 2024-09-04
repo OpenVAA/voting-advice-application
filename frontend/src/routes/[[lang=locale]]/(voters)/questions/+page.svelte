@@ -1,24 +1,24 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
+  import { Button } from '$lib/components/button';
+  import { CategoryTag } from '$lib/components/categoryTag';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { Loading } from '$lib/components/loading';
+  import { t } from '$lib/i18n';
   import {
     openFeedbackModal,
-    opinionQuestions,
     opinionQuestionCategories,
+    opinionQuestions,
     settings
   } from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {Loading} from '$lib/components/loading';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {getQuestionsContext} from './questions.context';
-  import {CategoryTag} from '$lib/components/categoryTag';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { FIRST_QUESTION_ID, getRoute, ROUTE } from '$lib/utils/navigation';
+  import { getQuestionsContext } from './questions.context';
 
-  const {firstQuestionId, selectedCategories} = getQuestionsContext();
+  const { firstQuestionId, selectedCategories } = getQuestionsContext();
 
   // Await the necessary promises here and save their contents in synced variables
-  let questionsSync: QuestionProps[] | undefined;
-  let categoriesSync: QuestionCategoryProps[] | undefined;
+  let questionsSync: Array<QuestionProps> | undefined;
+  let categoriesSync: Array<QuestionCategoryProps> | undefined;
 
   // Reset firstQuestion if set
   $firstQuestionId = null;
@@ -69,7 +69,7 @@
     {/if}
     {#if $settings.header.showHelp}
       <Button
-        href={$getRoute(Route.Help)}
+        href={$getRoute(ROUTE.Help)}
         variant="icon"
         icon="help"
         text={$t('actionLabels.help')} />
@@ -80,7 +80,7 @@
     <Loading />
   {:else if !$settings.questions.questionsIntro.allowCategorySelection || categoriesSync.length < 2}
     <p class="text-center">
-      {$t('questions.ingressWithoutCategories', {numQuestions: questionsSync.length})}
+      {$t('questions.ingressWithoutCategories', { numQuestions: questionsSync.length })}
     </p>
   {:else}
     <p class="text-center">
@@ -110,11 +110,11 @@
       disabled={!canContinue}
       href={$getRoute(
         $settings.questions.categoryIntros?.show && firstCategoryId
-          ? {route: Route.QuestionCategory, id: firstCategoryId}
-          : {route: Route.Question, id: FIRST_QUESTION_ID}
+          ? { route: ROUTE.QuestionCategory, id: firstCategoryId }
+          : { route: ROUTE.Question, id: FIRST_QUESTION_ID }
       )}
       variant="main"
       icon="next"
-      text={$t('questions.start', {numQuestions: numSelectedQuestions})} />
+      text={$t('questions.start', { numQuestions: numSelectedQuestions })} />
   </svelte:fragment>
 </BasicPage>

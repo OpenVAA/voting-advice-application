@@ -1,4 +1,4 @@
-import type {Schema, Attribute} from '@strapi/strapi';
+import type { Schema, Attribute } from '@strapi/strapi';
 
 export interface LabelsActionLabels extends Schema.Component {
   collectionName: 'components_labels_action_labels';

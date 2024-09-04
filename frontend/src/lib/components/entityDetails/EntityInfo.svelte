@@ -1,15 +1,15 @@
 <script lang="ts">
-  import {error} from '@sveltejs/kit';
-  import {t} from '$lib/i18n';
-  import {getAnswer} from '$lib/utils/answers';
-  import {getEntityType, isCandidate, isParty} from '$lib/utils/entities';
-  import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {settings} from '$lib/stores';
-  import {InfoAnswer} from '$lib/components/infoAnswer';
-  import {PartyTag} from '$lib/components/partyTag';
-  import {SurveyBanner} from '$lib/components/survey/banner';
+  import { error } from '@sveltejs/kit';
+  import { InfoAnswer } from '$lib/components/infoAnswer';
+  import { PartyTag } from '$lib/components/partyTag';
+  import { SurveyBanner } from '$lib/components/survey/banner';
+  import { t } from '$lib/i18n';
+  import { settings } from '$lib/stores';
+  import { getAnswer } from '$lib/utils/answers';
+  import { getEntityType, isCandidate, isParty } from '$lib/utils/entities';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
   import InfoItem from './InfoItem.svelte';
-  import type {EntityDetailsProps} from './EntityDetails.type';
+  import type { EntityDetailsProps } from './EntityDetails.type';
 
   export let entity: EntityProps;
   export let questions: EntityDetailsProps['infoQuestions'];

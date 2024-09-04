@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type {InfoBadgeProps} from './InfoBadge.type';
+  import type { InfoBadgeProps } from './InfoBadge.type';
 
   type $$Props = InfoBadgeProps;
   export let text: $$Props['text'] = '';

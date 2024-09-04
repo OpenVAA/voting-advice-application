@@ -1,14 +1,16 @@
-import type {MaybeWrapped} from '../entity';
+import type { MaybeWrapped } from '../entity';
 
 /**
  * A logic operator for combining results from multiple filters.
  */
-export enum LogicOp {
+export const LOGIC_OP = {
   /** Include only items that are present in all results */
-  And,
+  And: 0,
   /** Include all items that are present in any results */
-  Or
-}
+  Or: 2
+};
+
+export type LogicOp = (typeof LOGIC_OP)[keyof typeof LOGIC_OP];
 
 /**
  * Combine the results of multiple filters.
@@ -16,12 +18,12 @@ export enum LogicOp {
  * @param logicOperator And or Or logic operator to use in combination. @default LogicOp.And
  * @returns Combined results.
  */
-export function combineResults<E extends MaybeWrapped>(
-  results: E[][],
-  logicOperator = LogicOp.And
-): E[] {
+export function combineResults<TEntity extends MaybeWrapped>(
+  results: Array<Array<TEntity>>,
+  logicOperator = LOGIC_OP.And
+): Array<TEntity> {
   if (!results.length) return [];
-  if (logicOperator === LogicOp.Or) return Array.from(new Set(results.flat()));
+  if (logicOperator === LOGIC_OP.Or) return Array.from(new Set(results.flat()));
   let out = results[0];
   for (const list of results.slice(1)) {
     out = out.filter((e) => list.includes(e));

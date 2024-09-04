@@ -1,22 +1,22 @@
 <script lang="ts">
-  import {Button} from '$lib/components/button';
-  import {Expander} from '$lib/components/expander';
-  import {LikertResponseButtons} from '$lib/components/questions';
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {CategoryTag} from '$lib/components/categoryTag';
-  import {QuestionOpenAnswer} from '$lib/components/questions';
-  import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import type {RenderQuestionProps} from './Question.type';
-  import {translate} from '$lib/i18n/utils';
+  import { getContext } from 'svelte';
+  import { Button } from '$lib/components/button';
+  import { CategoryTag } from '$lib/components/categoryTag';
+  import { Expander } from '$lib/components/expander';
+  import { LikertResponseButtons } from '$lib/components/questions';
+  import { QuestionOpenAnswer } from '$lib/components/questions';
+  import { t } from '$lib/i18n';
+  import { translate } from '$lib/i18n/utils';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { RenderQuestionProps } from './Question.type';
 
   type $$Props = RenderQuestionProps;
 
   export let question: $$Props['question'];
   export let categoryQuestions: $$Props['categoryQuestions'];
 
-  const {opinionAnswers, questionsLocked} = getContext<CandidateContext>('candidate');
+  const { opinionAnswers, questionsLocked } = getContext<CandidateContext>('candidate');
 </script>
 
 <!--
@@ -49,14 +49,14 @@ open answers and a button to navigate to the questions page.
         <LikertResponseButtons
           name={question.id}
           mode="display"
-          options={question.values?.map(({key, label}) => ({
+          options={question.values?.map(({ key, label }) => ({
             key,
             label
           }))}
           selectedKey={answer.value} />
       {:else}
         <p class="text-center text-error">
-          {$t('candidateApp.questions.answerInvalidError', {questionId: question.id})}
+          {$t('candidateApp.questions.answerInvalidError', { questionId: question.id })}
         </p>
       {/if}
 
@@ -71,7 +71,7 @@ open answers and a button to navigate to the questions page.
           text={!$questionsLocked
             ? $t('candidateApp.questions.editYourAnswer')
             : $t('candidateApp.questions.viewYourAnswer')}
-          href={$getRoute({route: Route.CandAppQuestionEdit, id: question.id})}
+          href={$getRoute({ route: ROUTE.CandAppQuestionEdit, id: question.id })}
           icon={!$questionsLocked ? 'create' : 'show'}
           iconPos="left" />
       </div>
@@ -82,6 +82,6 @@ open answers and a button to navigate to the questions page.
   </div>
 {:else}
   <p class="text-center text-error">
-    {$t('candidateApp.questions.answerNotFoundError', {questionId: question.id})}
+    {$t('candidateApp.questions.answerNotFoundError', { questionId: question.id })}
   </p>
 {/if}

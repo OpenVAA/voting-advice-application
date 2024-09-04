@@ -1,7 +1,6 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {surveyLink} from '$lib/utils/analytics/survey';
-  import {getRoute, Route} from '$lib/utils/navigation';
+  import { NavGroup, Navigation, NavItem } from '$lib/components/navigation';
+  import { t } from '$lib/i18n';
   import {
     answeredQuestions,
     openFeedbackModal,
@@ -9,7 +8,8 @@
     resultsAvailable,
     settings
   } from '$lib/stores';
-  import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
+  import { surveyLink } from '$lib/utils/analytics/survey';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import LanguageSelection from './LanguageSelection.svelte';
 
   let resultsAvailableSync = false;
@@ -35,7 +35,7 @@ A template part that outputs the navigation menu for the Voter App for use in th
 
 ```tsx
 <VoterNav>
-  <NavItem href={$getRoute(Route.Home)} icon="home" text={$t('actionLabels.home')} />
+  <NavItem href={$getRoute(ROUTE.Home)} icon="home" text={$t('actionLabels.home')} />
 </VoterNav>
 ```
 -->
@@ -43,22 +43,22 @@ A template part that outputs the navigation menu for the Voter App for use in th
 <Navigation slot="nav" on:keyboardFocusOut {...$$restProps}>
   <slot />
   <NavGroup>
-    <NavItem href={$getRoute(Route.Home)} icon="home" text={$t('actionLabels.home')} />
-    <NavItem href={$getRoute(Route.Questions)} icon="opinion" text={$t('actionLabels.opinions')} />
+    <NavItem href={$getRoute(ROUTE.Home)} icon="home" text={$t('actionLabels.home')} />
+    <NavItem href={$getRoute(ROUTE.Questions)} icon="opinion" text={$t('actionLabels.opinions')} />
     <NavItem
       disabled={!$answeredQuestions || Object.values($answeredQuestions).length === 0}
       on:click={() => resetVoterAnswers()}
       icon="close"
       text={$t('navigation.resetAnswers')} />
     <NavItem
-      href={$getRoute(Route.Results)}
+      href={$getRoute(ROUTE.Results)}
       icon="results"
       text={resultsAvailableSync ? $t('navigation.results') : $t('navigation.browseEntities')} />
   </NavGroup>
   <NavGroup>
-    <NavItem href={$getRoute(Route.Info)} icon="election" text={$t('actionLabels.electionInfo')} />
-    <NavItem href={$getRoute(Route.About)} icon="info" text={$t('actionLabels.howItWorks')} />
-    <NavItem href={$getRoute(Route.Privacy)} icon="privacy" text={$t('privacy.title')} />
+    <NavItem href={$getRoute(ROUTE.Info)} icon="election" text={$t('actionLabels.electionInfo')} />
+    <NavItem href={$getRoute(ROUTE.About)} icon="info" text={$t('actionLabels.howItWorks')} />
+    <NavItem href={$getRoute(ROUTE.Privacy)} icon="privacy" text={$t('privacy.title')} />
   </NavGroup>
   {#if $settings.analytics.survey?.showIn?.includes('navigation') || $openFeedbackModal}
     <NavGroup>

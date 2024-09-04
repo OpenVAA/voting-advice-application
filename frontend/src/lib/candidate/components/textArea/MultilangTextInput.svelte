@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {Button} from '$lib/components/button';
-  import {locale as currentLocale, locales, t} from '$lib/i18n';
-  import type {TextAreaProps, MultilangTextAreaProps} from './TextArea.type';
-  import {Field, FieldGroup} from '$lib/components/common/form';
-  import {TextArea, InputField} from '$candidate/components/textArea';
+  import { InputField, TextArea } from '$candidate/components/textArea';
+  import { Button } from '$lib/components/button';
+  import { Field, FieldGroup } from '$lib/components/common/form';
+  import { locale as currentLocale, locales, t } from '$lib/i18n';
+  import type { MultilangTextAreaProps, TextAreaProps } from './TextArea.type';
 
   type $$Props = TextAreaProps & MultilangTextAreaProps;
   export let id: $$Props['id'];
@@ -18,14 +18,14 @@
   export let placeholder: $$Props['placeholder'] = '';
   export let locked: $$Props['locked'] = false;
 
-  export const deleteLocal = () => {
+  export function deleteLocal() {
     if (!localStorageId) {
       return;
     }
     for (const locale of $locales) {
       localStorage.removeItem(localStorageId + '-' + locale);
     }
-  };
+  }
 
   // Locked indicates that the text can no longer be edited
   // but still allows the user to view entered text including translations whereas

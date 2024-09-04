@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {election, settings} from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {SurveyBanner} from '$lib/components/survey/banner';
-  import {FrontPage} from '$lib/templates/frontPage';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { SurveyBanner } from '$lib/components/survey/banner';
+  import { t } from '$lib/i18n';
+  import { election, settings } from '$lib/stores';
+  import { FrontPage } from '$lib/templates/frontPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
 </script>
 
 <FrontPage title={$election?.name ?? ''}>
@@ -16,7 +16,7 @@
 
   <img slot="hero" class="bg-white" src={$settings.poster?.url ?? '/images/hero.png'} alt="" />
 
-  <Button variant="main" href={$getRoute(Route.Intro)} text={$t('actionLabels.startButton')} />
+  <Button variant="main" href={$getRoute(ROUTE.Intro)} text={$t('actionLabels.startButton')} />
 
   <p class="mt-lg text-center">
     {$t('viewTexts.frontpageIngress', {
@@ -24,9 +24,9 @@
     })}
   </p>
 
-  <a href={$getRoute(Route.Info)} class="btn btn-ghost w-full max-w-md"
+  <a href={$getRoute(ROUTE.Info)} class="btn btn-ghost w-full max-w-md"
     >{$t('actionLabels.electionInfo')}</a>
-  <a href={$getRoute(Route.About)} class="btn btn-ghost w-full max-w-md"
+  <a href={$getRoute(ROUTE.About)} class="btn btn-ghost w-full max-w-md"
     >{$t('actionLabels.howItWorks')}</a>
 
   {#if $settings.analytics.survey?.showIn?.includes('frontpage')}

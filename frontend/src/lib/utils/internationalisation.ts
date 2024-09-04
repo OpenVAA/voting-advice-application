@@ -5,7 +5,7 @@
  * @param lastName
  * @returns
  */
-export function formatName({firstName, lastName}: NameValues) {
+export function formatName({ firstName, lastName }: NameValues) {
   return `${firstName} ${lastName}`;
 }
 

@@ -4,7 +4,7 @@
 
 module.exports = {
   sendEmailToUnregistered: async (ctx) => {
-    const {subject, content} = JSON.parse(ctx.request.body ?? '{}');
+    const { subject, content } = JSON.parse(ctx.request.body ?? '{}');
     if (!subject || !content) {
       ctx.status = 400;
       ctx.body = 'Invalid request';
@@ -16,7 +16,7 @@ module.exports = {
     ctx.status = 200;
   },
   sendEmail: async (ctx) => {
-    const {candidateId, subject, content} = JSON.parse(ctx.request.body ?? '{}');
+    const { candidateId, subject, content } = JSON.parse(ctx.request.body ?? '{}');
     if (!subject || !content || !candidateId) {
       ctx.status = 400;
       ctx.body = 'Invalid request';

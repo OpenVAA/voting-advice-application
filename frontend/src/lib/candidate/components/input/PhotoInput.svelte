@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {onDestroy, onMount} from 'svelte';
-  import {updatePhoto, uploadFiles} from '$lib/api/candidate';
-  import {constants} from '$lib/utils/constants';
-  import {t} from '$lib/i18n';
-  import {Field} from '$lib/components/common/form';
-  import {Icon} from '$lib/components/icon';
-  import type {Photo} from '$lib/types/candidateAttributes';
+  import { onDestroy, onMount } from 'svelte';
+  import { updatePhoto, uploadFiles } from '$lib/api/candidate';
+  import { Field } from '$lib/components/common/form';
+  import { Icon } from '$lib/components/icon';
+  import { t } from '$lib/i18n';
+  import { constants } from '$lib/utils/constants';
+  import type { Photo } from '$lib/types/candidateAttributes';
 
   export let disabled: boolean = false;
   export let photo: Photo | undefined;
@@ -26,12 +26,12 @@
   const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';
 
   // function for clicking the portrait input field with space
-  const handlePortraitInput = (event: KeyboardEvent) => {
+  function handlePortraitInput(event: KeyboardEvent) {
     if (event.code === 'Space') {
       event.preventDefault(); // Prevent default behavior (e.g., scrolling the page)
       portraitInput?.click();
     }
-  };
+  }
 
   // add an event listener to the portrait label for keyboard navigation
   onMount(() => {
@@ -44,7 +44,7 @@
   });
 
   // change the profile image, does not upload it to strapi
-  const changePhoto = (e: Event) => {
+  function changePhoto(e: Event) {
     const target = e.target as HTMLInputElement;
     if (target.files) {
       const file = target.files[0];
@@ -60,10 +60,10 @@
         reader.readAsDataURL(file);
       }
     }
-  };
+  }
 
   // upload the current image file to strapi
-  export const uploadPhoto = async () => {
+  export async function uploadPhoto() {
     if (image && imageHasChanged) {
       const res = await uploadFiles([image]);
 
@@ -77,7 +77,7 @@
       photo = uploadedPhoto;
       imageHasChanged = false;
     }
-  };
+  }
 </script>
 
 <!--

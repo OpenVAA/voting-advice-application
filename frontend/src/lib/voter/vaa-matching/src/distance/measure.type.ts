@@ -1,6 +1,6 @@
-import type {MissingValueImputationOptions} from '../missingValue';
-import type {UnsignedNormalizedDistance} from './distance';
-import type {DistanceMetric} from './metric';
+import type { MissingValueImputationOptions } from '../missingValue';
+import type { UnsignedNormalizedDistance } from './distance';
+import type { DistanceMetric } from './metric';
 
 /**
  * Options passed to measureDistance.
@@ -18,5 +18,5 @@ export interface DistanceMeasurementOptions {
  */
 export type GlobalAndSubspaceDistances = {
   global: UnsignedNormalizedDistance;
-  subspaces: UnsignedNormalizedDistance[];
+  subspaces: Array<UnsignedNormalizedDistance>;
 };

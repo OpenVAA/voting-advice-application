@@ -1,5 +1,5 @@
-import {getEntity, type MaybeWrapped} from '../../entity';
-import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
+import { getEntity, type MaybeWrapped } from '../../entity';
+import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import {
   Filter,
   type FilterOptionsBase,
@@ -11,7 +11,7 @@ import {
  * A base class for numeric filters.
  * NB. This could be refactored to inherit from a common parent of this and EnumeratedFilter and allow value counts.
  */
-export abstract class NumericFilter<T extends MaybeWrapped> extends Filter<T, number> {
+export abstract class NumericFilter<TTarget extends MaybeWrapped> extends Filter<TTarget, number> {
   protected _rules: {
     min?: number;
     max?: number;
@@ -26,7 +26,7 @@ export abstract class NumericFilter<T extends MaybeWrapped> extends Filter<T, nu
     options: Omit<FilterOptionsBase, 'type' | 'multipleValues'> &
       (PropertyFilterOptions | QuestionFilterOptions)
   ) {
-    super({...options, type: 'number', multipleValues: false});
+    super({ ...options, type: 'number', multipleValues: false });
   }
 
   /**
@@ -38,10 +38,10 @@ export abstract class NumericFilter<T extends MaybeWrapped> extends Filter<T, nu
    * @input A list of entities.
    * @returns The min and max values.
    */
-  parseValues(targets: T[]) {
+  parseValues(targets: Array<TTarget>) {
     const values = targets
       .map((t) => this.getValue(getEntity(t)))
-      .filter((v) => typeof v === 'number') as number[];
+      .filter((v) => typeof v === 'number') as Array<number>;
     return values.length
       ? {
           min: Math.min(...values),

@@ -1,8 +1,9 @@
-import {error} from '@sveltejs/kit';
-import {get, derived} from 'svelte/store';
-import {page} from '$app/stores';
-import {settings} from '$lib/stores';
-import {Route} from './route';
+import { error } from '@sveltejs/kit';
+import { derived, get } from 'svelte/store';
+import { page } from '$app/stores';
+import { settings } from '$lib/stores';
+import { ROUTE } from './route';
+import type { Route } from './route';
 
 /**
  * A special id used to mark the question to start from before question ids are available
@@ -33,19 +34,19 @@ function _getRoute(options: {
   locale?: string | 'none';
   params?: Record<string, string>;
 }): string;
-function _getRoute(options: {locale: string}): string;
+function _getRoute(options: { locale: string }): string;
 function _getRoute(
   options:
     | Route
-    | {route: Route; id?: string; locale?: string; params?: Record<string, string>}
-    | {locale: string; id?: never; route?: never; params?: never}
+    | { route: Route; id?: string; locale?: string; params?: Record<string, string> }
+    | { locale: string; id?: never; route?: never; params?: never }
 ): string {
   // Shorthand function call
-  if (typeof options === 'string') options = {route: options};
+  if (typeof options === 'string') options = { route: options };
 
   let locale = options.locale;
-  const {route, params} = options;
-  let {id} = options;
+  const { route, params } = options;
+  let { id } = options;
 
   // Not route defined, so we just swap the locale
   if (locale && route == null) {
@@ -67,10 +68,10 @@ function _getRoute(
   if (locale) parts.push(locale);
 
   // If the `questions.questionsIntro.show` setting is false, we bypass the intro page
-  if (route === Route.Questions && id == null && !get(settings).questions?.questionsIntro?.show) {
-    parts.push(Route.Question);
+  if (route === ROUTE.Questions && id == null && !get(settings).questions?.questionsIntro?.show) {
+    parts.push(ROUTE.Question);
     id = FIRST_QUESTION_ID;
-  } else if (route !== '') {
+  } else if (route) {
     parts.push(route);
   }
 

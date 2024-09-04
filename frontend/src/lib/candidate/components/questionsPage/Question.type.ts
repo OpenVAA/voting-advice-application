@@ -7,5 +7,5 @@ export type RenderQuestionProps = {
   /**
    * All the questions belonging to the same category
    */
-  categoryQuestions: QuestionProps[];
+  categoryQuestions: Array<QuestionProps>;
 };

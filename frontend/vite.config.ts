@@ -1,6 +1,6 @@
-import {sveltekit} from '@sveltejs/kit/vite';
+import { sveltekit } from '@sveltejs/kit/vite';
 import viteTsConfigPaths from 'vite-tsconfig-paths';
-import type {UserConfig} from 'vite';
+import type { UserConfig } from 'vite';
 
 const config: UserConfig = {
   resolve: {

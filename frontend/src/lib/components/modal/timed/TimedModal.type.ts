@@ -1,4 +1,4 @@
-import type {ModalProps} from '../Modal.type';
+import type { ModalProps } from '../Modal.type';
 
 export type TimedModalProps = ModalProps & {
   /**

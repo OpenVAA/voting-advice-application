@@ -1,18 +1,18 @@
-import {type ExtractEntity, type FilterableEntity, type MaybeWrapped} from '../../entity';
-import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
-import type {PropertyFilterOptions} from '../base';
-import {EnumeratedFilter} from './enumeratedFilter';
+import { EnumeratedFilter } from './enumeratedFilter';
+import { type ExtractEntity, type FilterableEntity, type MaybeWrapped } from '../../entity';
+import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
+import type { PropertyFilterOptions } from '../base';
 
 /**
  * A filter for properties which are objects with a string-index label and key for filtering, e.g. party objects of candidates.
  * TODO: This could be refactored to merge with `SingleChoiceQuestionFilter`.
  */
 export class ObjectFilter<
-  T extends MaybeWrapped<FilterableEntity>,
-  O extends object = object
-> extends EnumeratedFilter<T, string, O> {
+  TEntity extends MaybeWrapped<FilterableEntity>,
+  TObject extends object = object
+> extends EnumeratedFilter<TEntity, string, TObject> {
   /** Options specific to the objects */
-  objOptions: ObjOptions<O>;
+  objOptions: ObjOptions<TObject>;
 
   /**
    * Create a filter for properties which are objects with a string-index label and key for filtering, e.g. party objects of candidates.
@@ -31,13 +31,13 @@ export class ObjectFilter<
       objects,
       name
     }: {
-      property: keyof ExtractEntity<T> & PropertyFilterOptions['property'];
+      property: keyof ExtractEntity<TEntity> & PropertyFilterOptions['property'];
       name?: string;
-    } & ObjOptions<O>,
+    } & ObjOptions<TObject>,
     public locale: string
   ) {
-    super({property, subProperty: keyProperty, name, type: 'string'});
-    this.objOptions = {keyProperty, labelProperty, objects};
+    super({ property, subProperty: keyProperty, name, type: 'string' });
+    this.objOptions = { keyProperty, labelProperty, objects };
   }
 
   /**
@@ -62,7 +62,7 @@ export class ObjectFilter<
   /**
    * Utility for getting a value's associated organisation
    */
-  getObject(value: string): O {
+  getObject(value: string): TObject {
     const org = this.objOptions.objects.find((o) => o[this.objOptions.keyProperty] === value);
     if (!org)
       throw new Error(
@@ -72,8 +72,8 @@ export class ObjectFilter<
   }
 }
 
-type ObjOptions<O> = {
-  keyProperty: keyof O & string;
-  labelProperty: keyof O & string;
-  objects: O[];
+type ObjOptions<TObject> = {
+  keyProperty: keyof TObject & string;
+  labelProperty: keyof TObject & string;
+  objects: Array<TObject>;
 };

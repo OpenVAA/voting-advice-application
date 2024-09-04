@@ -3,7 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
-import { restrictPopulate, restrictFilters } from '../../../util/acl';
+import { restrictFilters, restrictPopulate } from '../../../util/acl';
 
 export default factories.createCoreRouter('api::election-app-label.election-app-label', {
   only: ['find', 'findOne'], // Explicitly disabled create, update, delete
@@ -14,11 +14,11 @@ export default factories.createCoreRouter('api::election-app-label.election-app-
         restrictPopulate([
           'electionAppLabel.populate.actionLabels',
           'electionAppLabel.populate.viewTexts',
-          'electionAppLabel.populate.localizations.populate',
+          'electionAppLabel.populate.localizations.populate'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
+        restrictFilters([])
+      ]
     },
     findOne: {
       policies: [
@@ -26,11 +26,11 @@ export default factories.createCoreRouter('api::election-app-label.election-app-
         restrictPopulate([
           'electionAppLabel.populate.actionLabels',
           'electionAppLabel.populate.viewTexts',
-          'electionAppLabel.populate.localizations.populate',
+          'electionAppLabel.populate.localizations.populate'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
-    },
-  },
+        restrictFilters([])
+      ]
+    }
+  }
 });

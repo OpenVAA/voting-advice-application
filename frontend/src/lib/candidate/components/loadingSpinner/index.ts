@@ -1,1 +1,1 @@
-export {default as LoadingSpinner} from './LoadingSpinner.svelte';
+export { default as LoadingSpinner } from './LoadingSpinner.svelte';

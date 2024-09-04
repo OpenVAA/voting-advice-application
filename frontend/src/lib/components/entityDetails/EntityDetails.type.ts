@@ -1,4 +1,4 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
+import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type EntityDetailsProps = SvelteHTMLElements['article'] & {
   /**
@@ -8,13 +8,13 @@ export type EntityDetailsProps = SvelteHTMLElements['article'] & {
   /**
    * The list of Question objects to use for showing for on the basic (non-opinion) information tab.
    */
-  infoQuestions: QuestionProps[];
+  infoQuestions: Array<QuestionProps>;
   /**
    * The list of Question objects to use for showing for on the opinions tab.
    */
-  opinionQuestions: QuestionProps[];
+  opinionQuestions: Array<QuestionProps>;
   /**
    * Any subentities to show on a separate tab.
    */
-  subentities?: MaybeRanked[];
+  subentities?: Array<MaybeRanked>;
 };

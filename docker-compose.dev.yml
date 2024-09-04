@@ -4,7 +4,7 @@ services:
       file: ./frontend/docker-compose.dev.yml
       service: frontend
     depends_on:
-      - "strapi"
+      - 'strapi'
     environment:
       - VITE_BACKEND_URL=${VITE_BACKEND_URL}
       - PUBLIC_BACKEND_URL=${PUBLIC_BACKEND_URL}
@@ -40,7 +40,7 @@ services:
   maildev:
     image: maildev/maildev:2.1.0
     ports:
-      - "${MAILDEV_PORT}:${MAILDEV_PORT}"
+      - '${MAILDEV_PORT}:${MAILDEV_PORT}'
     environment:
       - MAILDEV_IP=0.0.0.0
       - MAILDEV_WEB_PORT=${MAILDEV_PORT}

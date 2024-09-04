@@ -266,14 +266,14 @@
           "description": "Whether to show a marker for missing election symbol in entity details, e.g. 'Election Symbol: --', or hide missing items completely. The marker, if shown, is defined in the translations.",
           "type": "object",
           "patternProperties": {
-            "^candidate|party$": {"type": "boolean"}
+            "^candidate|party$": { "type": "boolean" }
           }
         },
         "showMissingAnswers": {
           "description": "Whether to show a marker for missing answers in entity details as, e.g. 'Age: --', or hide missing items completely. The marker, if shown, is defined in the translations. This only applies to non-opinion questions.",
           "type": "object",
           "patternProperties": {
-            "^candidate|party$": {"type": "boolean"}
+            "^candidate|party$": { "type": "boolean" }
           }
         }
       }

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {onDestroy} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {concatClass} from '$lib/utils/components';
-  import {Icon} from '$lib/components/icon';
-  import type {TextEntityFilterProps} from './TextEntityFilter.type';
+  import { onDestroy } from 'svelte';
+  import { Icon } from '$lib/components/icon';
+  import { t } from '$lib/i18n';
+  import { concatClass } from '$lib/utils/components';
+  import type { TextEntityFilterProps } from './TextEntityFilter.type';
 
   type $$Props = TextEntityFilterProps;
 

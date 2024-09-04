@@ -8,7 +8,7 @@ export class MatchingSpace {
    * @param weights The weights used for matching, i.e. distance calculation
    * of each dimension.
    */
-  constructor(public weights: number[]) {
+  constructor(public weights: Array<number>) {
     if (weights.length === 0) throw new Error('Weights cannot be empty!');
   }
 

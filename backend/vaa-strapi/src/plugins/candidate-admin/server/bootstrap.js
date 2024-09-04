@@ -1,4 +1,4 @@
-module.exports = async ({strapi}) => {
+module.exports = async ({ strapi }) => {
   const actions = [
     {
       section: 'plugins',

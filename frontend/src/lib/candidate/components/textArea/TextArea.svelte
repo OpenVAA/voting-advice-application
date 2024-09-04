@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {onMount, onDestroy} from 'svelte';
-  import type {TextAreaProps} from './TextArea.type';
-  import {Icon} from '$lib/components/icon';
+  import { onDestroy, onMount } from 'svelte';
+  import { Icon } from '$lib/components/icon';
+  import type { TextAreaProps } from './TextArea.type';
 
   type $$Props = TextAreaProps;
 
@@ -42,7 +42,7 @@
     clearInterval(saveInterval);
   });
 
-  const saveToLocalStorage = () => {
+  function saveToLocalStorage() {
     if (!localStorageId) {
       return;
     }
@@ -54,19 +54,19 @@
     }
 
     localStorage.setItem(localStorageId, text.toString());
-  };
+  }
 
-  const removeFromLocalStorage = () => {
+  function removeFromLocalStorage() {
     if (!localStorageId) {
       return;
     }
     localStorage.removeItem(localStorageId);
-  };
+  }
 
   // Used to clear the local storage from a parent component
-  export const deleteLocal = () => {
+  export function deleteLocal() {
     removeFromLocalStorage();
-  };
+  }
 </script>
 
 <!--

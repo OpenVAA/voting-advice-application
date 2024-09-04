@@ -1,4 +1,4 @@
-import {canonize} from './canonize';
+import { canonize } from './canonize';
 
 /**
  * @param locale The code to test

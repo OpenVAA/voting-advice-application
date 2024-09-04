@@ -1,5 +1,5 @@
-import {type MaybeWrapped} from '../../entity';
-import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
+import { type MaybeWrapped } from '../../entity';
+import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import {
   Filter,
   type FilterOptionsBase,
@@ -11,7 +11,7 @@ import {
  * A base class for filters that search for text.
  */
 
-export class TextFilter<T extends MaybeWrapped> extends Filter<T, string> {
+export class TextFilter<TEntity extends MaybeWrapped> extends Filter<TEntity, string> {
   protected _rules: {
     exclude?: string;
     include?: string;
@@ -28,7 +28,7 @@ export class TextFilter<T extends MaybeWrapped> extends Filter<T, string> {
       (PropertyFilterOptions | QuestionFilterOptions),
     public locale: string
   ) {
-    super({...options, type: 'string', multipleValues: false});
+    super({ ...options, type: 'string', multipleValues: false });
   }
 
   get exclude(): string {

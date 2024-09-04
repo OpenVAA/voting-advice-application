@@ -1,11 +1,13 @@
-import type {UnsignedNormalizedDistance} from '../distance';
-import type {MatchableQuestionGroup} from '../question';
-import {MatchBase} from './matchBase';
+import { MatchBase } from './matchBase';
+import type { UnsignedNormalizedDistance } from '../distance';
+import type { MatchableQuestionGroup } from '../question';
 
 /**
  * The class for question-group-specific submatches within a Match.
  */
-export class SubMatch<T extends MatchableQuestionGroup = MatchableQuestionGroup> extends MatchBase {
+export class SubMatch<
+  TGroup extends MatchableQuestionGroup = MatchableQuestionGroup
+> extends MatchBase {
   /**
    * Create a new SubMatch.
    *
@@ -17,7 +19,7 @@ export class SubMatch<T extends MatchableQuestionGroup = MatchableQuestionGroup>
    */
   constructor(
     distance: UnsignedNormalizedDistance,
-    readonly questionGroup: T
+    readonly questionGroup: TGroup
   ) {
     super(distance);
   }

@@ -1,15 +1,15 @@
 <script lang="ts">
-  import {beforeNavigate} from '$app/navigation';
-  import {t} from '$lib/i18n';
-  import {onDestroy, onMount} from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
+  import { beforeNavigate } from '$app/navigation';
+  import { t } from '$lib/i18n';
 
   export let active: boolean = false;
 
-  const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+  function handleBeforeUnload(e: BeforeUnloadEvent) {
     if (active) {
       e.preventDefault();
     }
-  };
+  }
 
   beforeNavigate((e) => {
     if (active && !window.confirm($t('candidateApp.other.unsavedChanges'))) {

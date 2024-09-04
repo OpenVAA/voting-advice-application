@@ -1,23 +1,23 @@
 <script lang="ts">
-  import {getContext} from 'svelte';
-  import {goto} from '$app/navigation';
-  import {page} from '$app/stores';
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {FrontPage} from '$lib/templates/frontPage';
-  import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { LogoutButton } from '$lib/candidate/components/logoutButton';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { t } from '$lib/i18n';
+  import { FrontPage } from '$lib/templates/frontPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
 
   export let registrationCode = '';
   export let wrongCode = false;
 
-  const {user} = getContext<CandidateContext>('candidate');
+  const { user } = getContext<CandidateContext>('candidate');
 
-  const onRegistration = async () => {
-    await goto($getRoute({route: Route.CandAppRegister, params: {registrationCode}}));
-  };
+  async function onRegistration() {
+    await goto($getRoute({ route: ROUTE.CandAppRegister, params: { registrationCode } }));
+  }
 </script>
 
 <!--
@@ -68,7 +68,7 @@ In addition, shows a warning to the user if another user is already logged in.
       </p>
     {/if}
     <Button type="submit" text={$t('candidateApp.registration.registerButton')} variant="main" />
-    <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
-    <Button href={$getRoute(Route.Home)} text={$t('candidateApp.common.voterApp')} />
+    <Button href={$getRoute(ROUTE.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
+    <Button href={$getRoute(ROUTE.Home)} text={$t('candidateApp.common.voterApp')} />
   </form>
 </FrontPage>

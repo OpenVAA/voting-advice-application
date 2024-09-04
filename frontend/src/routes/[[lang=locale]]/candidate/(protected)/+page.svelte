@@ -1,19 +1,19 @@
 <script lang="ts">
-  import {t, locale} from '$lib/i18n';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Button} from '$lib/components/button';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {getContext} from 'svelte';
-  import {InfoBadge} from '$lib/components/infoBadge';
-  import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import {Warning} from '$lib/components/warning';
-  import {type CandidateContext} from '$lib/utils/candidateContext';
+  import { getContext } from 'svelte';
+  import { LogoutButton } from '$lib/candidate/components/logoutButton';
+  import { Button } from '$lib/components/button';
+  import { InfoBadge } from '$lib/components/infoBadge';
+  import { Warning } from '$lib/components/warning';
+  import { locale, t } from '$lib/i18n';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { type CandidateContext } from '$lib/utils/candidateContext';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
 
-  const {user, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, questionsLocked} =
+  const { user, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, questionsLocked } =
     getContext<CandidateContext>('candidate');
   const username = $user?.candidate?.firstName;
 
-  const getNextAction = () => {
+  function getNextAction() {
     if (
       $unansweredRequiredInfoQuestions?.length === 0 &&
       $unansweredOpinionQuestions?.length === 0
@@ -29,14 +29,14 @@
           ? $t('candidateApp.homePage.questionsButtonEdit')
           : $t('candidateApp.homePage.questionsButtonView'),
         buttonTextPrimaryActions: $t('candidateApp.homePage.previewButton'),
-        href: $getRoute(Route.CandAppPreview)
+        href: $getRoute(ROUTE.CandAppPreview)
       };
     } else if (
       $unansweredRequiredInfoQuestions?.length === 0 &&
       $unansweredOpinionQuestions?.length !== 0
     ) {
       return {
-        title: $t('candidateApp.homePage.greeting', {username}),
+        title: $t('candidateApp.homePage.greeting', { username }),
         explanation: $t('candidateApp.homePage.explanation'),
         buttonTextBasicInfo: !$questionsLocked
           ? $t('candidateApp.homePage.basicInfoButtonEdit')
@@ -47,11 +47,11 @@
         buttonTextPrimaryActions: !$questionsLocked
           ? $t('candidateApp.homePage.questionsButton')
           : $t('candidateApp.homePage.questionsButtonView'),
-        href: $getRoute(Route.CandAppQuestions)
+        href: $getRoute(ROUTE.CandAppQuestions)
       };
     }
     return {
-      title: $t('candidateApp.homePage.greeting', {username}),
+      title: $t('candidateApp.homePage.greeting', { username }),
       explanation: $t('candidateApp.homePage.explanation'),
       buttonTextBasicInfo: !$questionsLocked
         ? $t('candidateApp.homePage.basicInfoButton')
@@ -62,9 +62,9 @@
       buttonTextPrimaryActions: !$questionsLocked
         ? $t('candidateApp.homePage.basicInfoButtonPrimaryActions')
         : $t('candidateApp.homePage.basicInfoButtonView'),
-      href: $getRoute(Route.CandAppProfile)
+      href: $getRoute(ROUTE.CandAppProfile)
     };
-  };
+  }
 
   $: nextAction = {
     $locale, // Trigger reactivity when locale changes
@@ -94,7 +94,7 @@
     text={nextAction.buttonTextBasicInfo}
     icon="profile"
     iconPos="left"
-    href={$getRoute(Route.CandAppProfile)}>
+    href={$getRoute(ROUTE.CandAppProfile)}>
     <svelte:fragment slot="badge">
       {#if $unansweredRequiredInfoQuestions && $unansweredRequiredInfoQuestions.length > 0}
         <InfoBadge text={String($unansweredRequiredInfoQuestions.length)} />
@@ -106,7 +106,7 @@
     icon="opinion"
     iconPos="left"
     disabled={$unansweredRequiredInfoQuestions?.length !== 0}
-    href={$getRoute(Route.CandAppQuestions)}>
+    href={$getRoute(ROUTE.CandAppQuestions)}>
     <svelte:fragment slot="badge">
       {#if $unansweredOpinionQuestions && $unansweredOpinionQuestions?.length > 0}
         <InfoBadge
@@ -120,7 +120,7 @@
     icon="previewProfile"
     iconPos="left"
     disabled={$unansweredRequiredInfoQuestions?.length !== 0}
-    href={$getRoute(Route.CandAppPreview)} />
+    href={$getRoute(ROUTE.CandAppPreview)} />
 
   <div class="flex w-full flex-col items-center justify-center" slot="primaryActions">
     <Button

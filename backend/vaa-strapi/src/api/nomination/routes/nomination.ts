@@ -3,7 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
-import { restrictPopulate, restrictFilters } from '../../../util/acl';
+import { restrictFilters, restrictPopulate } from '../../../util/acl';
 
 export default factories.createCoreRouter('api::nomination.nomination', {
   only: ['find', 'findOne'], // Explicitly disabled create, update, delete
@@ -19,7 +19,7 @@ export default factories.createCoreRouter('api::nomination.nomination', {
           'candidate',
           'candidate.populate.party',
           'candidate.populate.photo',
-          'candidate.populate.answers.populate.question',
+          'candidate.populate.answers.populate.question'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([
@@ -29,9 +29,9 @@ export default factories.createCoreRouter('api::nomination.nomination', {
           'election.id.$eq',
           'candidate.party.id.$eq',
           'party.id.$eq',
-          'party.id.$notNull',
-        ]),
-      ],
+          'party.id.$notNull'
+        ])
+      ]
     },
     findOne: {
       policies: [
@@ -44,11 +44,11 @@ export default factories.createCoreRouter('api::nomination.nomination', {
           'candidate',
           'candidate.populate.party',
           'candidate.populate.photo',
-          'candidate.populate.answers.populate.question',
+          'candidate.populate.answers.populate.question'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
-    },
-  },
+        restrictFilters([])
+      ]
+    }
+  }
 });

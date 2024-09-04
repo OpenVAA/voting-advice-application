@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {openFeedbackModal, settings} from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {DataConsent} from '$lib/components/dataConsent';
+  import { Button } from '$lib/components/button';
+  import { DataConsent } from '$lib/components/dataConsent';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { t } from '$lib/i18n';
+  import { openFeedbackModal, settings } from '$lib/stores';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
 </script>
 
 <BasicPage title={$t('privacy.title')}>
@@ -32,7 +32,7 @@
       class="!text-neutral"
       variant="icon"
       icon="close"
-      href={$getRoute(Route.Home)}
+      href={$getRoute(ROUTE.Home)}
       text={$t('privacy.returnButton')} />
   </svelte:fragment>
 
@@ -57,7 +57,7 @@
   </div>
 
   <svelte:fragment slot="primaryActions">
-    <Button variant="main" href={$getRoute(Route.Home)} text={$t('privacy.returnButton')} />
+    <Button variant="main" href={$getRoute(ROUTE.Home)} text={$t('privacy.returnButton')} />
   </svelte:fragment>
 </BasicPage>
 

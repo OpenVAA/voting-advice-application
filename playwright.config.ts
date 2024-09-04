@@ -32,8 +32,10 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on',
 
-    baseURL: process.env.FRONTEND_PORT ? `http://localhost:${process.env.FRONTEND_PORT}` : 'http://localhost:5173',
-    storageState: STORAGE_STATE,
+    baseURL: process.env.FRONTEND_PORT
+      ? `http://localhost:${process.env.FRONTEND_PORT}`
+      : 'http://localhost:5173',
+    storageState: STORAGE_STATE
   },
 
   globalSetup: require.resolve('./tests/global-setup.ts'),
@@ -45,8 +47,8 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
+      use: { ...devices['Desktop Chrome'] }
+    }
 
     /*
     {
@@ -79,7 +81,7 @@ export default defineConfig({
     //   name: 'Google Chrome',
     //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
     // },
-  ],
+  ]
 
   /* Run your local dev server before starting the tests */
   // webServer: {

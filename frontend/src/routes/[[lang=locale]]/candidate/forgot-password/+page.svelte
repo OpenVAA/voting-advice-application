@@ -1,20 +1,20 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {page} from '$app/stores';
-  import {requestForgotPasswordLink} from '$lib/api/candidate';
-  import {FrontPage} from '$lib/templates/frontPage';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import { page } from '$app/stores';
+  import { requestForgotPasswordLink } from '$lib/api/candidate';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { t } from '$lib/i18n';
+  import { FrontPage } from '$lib/templates/frontPage';
 
   let statusMessage = ''; // Text to display when the send-button has been pressed: either email has been sent or internal error
   let email = '';
 
-  const onButtonPressed = async () => {
+  async function onButtonPressed() {
     const response = await requestForgotPasswordLink(email); // Request email to be sent in the backend
     statusMessage = response.ok
       ? $t('candidateApp.resetPassword.emailSentText')
       : $t('candidateApp.resetPassword.errorText');
-  };
+  }
 </script>
 
 <!-- Page for sending a reset email in case of a forgotten password. -->

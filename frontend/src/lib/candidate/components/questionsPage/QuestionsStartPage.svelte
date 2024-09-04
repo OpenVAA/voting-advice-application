@@ -1,14 +1,15 @@
 <script lang="ts">
-  import {Icon} from '$lib/components/icon';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {t} from '$lib/i18n';
-  import {getContext} from 'svelte';
-  import {get} from 'svelte/store';
-  import {Button} from '$lib/components/button';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import { getContext } from 'svelte';
+  import { get } from 'svelte/store';
+  import { Button } from '$lib/components/button';
+  import { Icon } from '$lib/components/icon';
+  import { t } from '$lib/i18n';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
 
-  const {opinionQuestions, unansweredOpinionQuestions} = getContext<CandidateContext>('candidate');
+  const { opinionQuestions, unansweredOpinionQuestions } =
+    getContext<CandidateContext>('candidate');
   const questions = get(opinionQuestions);
 
   if (!questions || Object.keys(questions).length === 0) {
@@ -19,7 +20,7 @@
   const numQuestions = Object.keys(questions).length;
   // The url of the first question where the user is navigated to after the start page.
   const firstQuestionUrl = $getRoute({
-    route: Route.CandAppQuestions,
+    route: ROUTE.CandAppQuestions,
     id: $unansweredOpinionQuestions?.[0]?.id
   });
 </script>
@@ -40,7 +41,7 @@ Renders the question start page, which tells the user information on how to answ
     {$t('candidateApp.questions.tip')}
   </svelte:fragment>
   <p class="text-center">
-    {$t('candidateApp.questions.instructions', {numQuestions})}
+    {$t('candidateApp.questions.instructions', { numQuestions })}
   </p>
 
   <Button

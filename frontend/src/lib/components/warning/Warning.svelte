@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {Icon} from '$lib/components/icon';
-  import type {WarningProps} from './Warning.type';
+  import { Icon } from '$lib/components/icon';
+  import type { WarningProps } from './Warning.type';
 
   type $$Props = WarningProps;
 

@@ -28,5 +28,7 @@ export type InputFieldProps<TValue extends AnswerProps['value']> = {
    */
   previousValue?: TValue | null;
 
-  onChange: ((details: {questionId: string; value: TValue | null | undefined}) => void) | undefined;
+  onChange:
+    | ((details: { questionId: string; value: TValue | null | undefined }) => void)
+    | undefined;
 };

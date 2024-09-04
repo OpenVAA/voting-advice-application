@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {page} from '$app/stores';
-  import {goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
-  import {resetPassword} from '$lib/api/candidate';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {validatePassword} from 'vaa-shared';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {PasswordSetter} from '$lib/candidate/components/passwordSetter';
-  import {FrontPage} from '$lib/templates/frontPage';
+  import { validatePassword } from 'vaa-shared';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { resetPassword } from '$lib/api/candidate';
+  import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { t } from '$lib/i18n';
+  import { FrontPage } from '$lib/templates/frontPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
 
   export let code: string;
 
@@ -16,7 +16,7 @@
   let validPassword = false;
   let errorMessage = '';
 
-  const onButtonPress = async () => {
+  async function onButtonPress() {
     if (password !== passwordConfirmation) {
       errorMessage = $t('candidateApp.setPassword.passwordsDontMatch');
       return;
@@ -35,8 +35,8 @@
     }
 
     errorMessage = '';
-    await goto($getRoute(Route.CandAppHome));
-  };
+    await goto($getRoute(ROUTE.CandAppHome));
+  }
 </script>
 
 <!--

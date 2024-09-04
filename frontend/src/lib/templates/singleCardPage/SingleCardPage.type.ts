@@ -1,5 +1,5 @@
-import type {AriaRole} from 'svelte/elements';
-import type {PageProps} from '../page';
+import type { AriaRole } from 'svelte/elements';
+import type { PageProps } from '../page';
 
 export interface SingleCardPageProps extends PageProps {
   /**

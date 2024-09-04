@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Button} from '$lib/components/button';
-  import {Expander} from '$lib/components/expander';
+  import { Button } from '$lib/components/button';
+  import { Expander } from '$lib/components/expander';
+  import { t } from '$lib/i18n';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
 </script>
 
 <BasicPage title={$t('candidateApp.help.title')}>
@@ -36,6 +36,6 @@
       icon="next"
       variant="main"
       text={$t('candidateApp.help.continueFilling')}
-      href={$getRoute(Route.CandAppHome)} />
+      href={$getRoute(ROUTE.CandAppHome)} />
   </svelte:fragment>
 </BasicPage>

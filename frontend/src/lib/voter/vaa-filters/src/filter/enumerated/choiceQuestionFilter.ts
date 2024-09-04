@@ -1,15 +1,15 @@
-import type {EntityWithAnswers, MaybeWrapped} from '../../entity';
-import {MISSING_VALUE, type MaybeMissing} from '../../missingValue';
-import {KEY_PROP, LABEL_PROP, type Choice, KEY_TYPE, type ChoiceQuestion} from '../../question';
-import type {FilterOptions} from '../base';
-import {EnumeratedFilter} from './enumeratedFilter';
+import { EnumeratedFilter } from './enumeratedFilter';
+import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
+import { type Choice, type ChoiceQuestion, KEY_PROP, KEY_TYPE, LABEL_PROP } from '../../question';
+import type { EntityWithAnswers, MaybeWrapped } from '../../entity';
+import type { FilterOptions } from '../base';
 
 /**
  * A filter for single or multiple choice questions
  */
 export class ChoiceQuestionFilter<
-  T extends MaybeWrapped<EntityWithAnswers>
-> extends EnumeratedFilter<T, Choice[typeof KEY_PROP], Choice> {
+  TEntity extends MaybeWrapped<EntityWithAnswers>
+> extends EnumeratedFilter<TEntity, Choice[typeof KEY_PROP], Choice> {
   declare readonly options: FilterOptions & {
     question: ChoiceQuestion;
     /** The type is always the type of the Choice key property */
@@ -24,7 +24,7 @@ export class ChoiceQuestionFilter<
    * @param name  Optional name for use when displaying the filter
    */
   constructor(
-    {question, name}: {question: ChoiceQuestion; name?: string},
+    { question, name }: { question: ChoiceQuestion; name?: string },
     public locale: string
   ) {
     super({

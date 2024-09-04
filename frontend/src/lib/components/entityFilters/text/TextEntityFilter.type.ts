@@ -1,5 +1,5 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
-import type {TextFilter} from '$voter/vaa-filters';
+import type { SvelteHTMLElements } from 'svelte/elements';
+import type { TextFilter } from '$voter/vaa-filters';
 
 export type TextEntityFilterProps = SvelteHTMLElements['form'] & {
   /**

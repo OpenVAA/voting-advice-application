@@ -1,15 +1,15 @@
-import {translate} from '$lib/i18n/utils/translate';
-import {ensureColors} from '../../../../utils/color/ensureColors';
-import type {StrapiQuestionCategoryData} from '../strapiDataProvider.type';
-import {parseCustomData} from './parseCustomData';
+import { translate } from '$lib/i18n/utils/translate';
+import { parseCustomData } from './parseCustomData';
+import { ensureColors } from '../../../../utils/color/ensureColors';
+import type { StrapiQuestionCategoryData } from '../strapiDataProvider.type';
 
 /**
  * Parse StrapiQuestionCategory data into a `QuestionCategoryProps` object, which must be supplied with the actual `questions` later.
  */
-export const parseQuestionCategory = (
+export function parseQuestionCategory(
   category: StrapiQuestionCategoryData,
   locale?: string
-): QuestionCategoryProps => {
+): QuestionCategoryProps {
   const id = `${category.id}`;
   const attr = category.attributes;
   const name = translate(attr.name, locale);
@@ -26,4 +26,4 @@ export const parseQuestionCategory = (
     questions: []
   };
   return props;
-};
+}

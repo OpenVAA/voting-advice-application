@@ -7,9 +7,9 @@ import {
 /**
  * Available distance measurement metrics
  */
-export enum DistanceMetric {
+export const DistanceMetric: Record<'Manhattan' | 'Directional', number> = {
   /** Sum of the distances in each dimension */
-  Manhattan,
+  Manhattan: 0,
   /**
    *  Sum of the products of the distances in each dimension. Note that
    *  this method assumes a neutral stance semantically meaning being
@@ -25,12 +25,14 @@ export enum DistanceMetric {
    *  candidate's answer to a statement is, e.g., 2/5, their agreement
    *  will be 25%, not 100% even though their answer are identical.
    */
-  Directional
+  Directional: 2
   // MendezHybrid, // This should be easy to implement, just take a 50/50
   // average of Manhattan and Directional
   // Euclidean,
   // Mahalonobis
-}
+};
+
+export type DistanceMetric = (typeof DistanceMetric)[keyof typeof DistanceMetric];
 
 /**
  * Calculate the Manhattan distance between two distances.

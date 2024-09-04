@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {openFeedbackModal, settings} from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup} from '$lib/components/headingGroup';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {BasicPage} from '$lib/templates/basicPage';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup } from '$lib/components/headingGroup';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { t } from '$lib/i18n';
+  import { openFeedbackModal, settings } from '$lib/stores';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
 </script>
 
 <BasicPage title={$t('intro.title')}>
@@ -28,7 +28,7 @@
     {/if}
     {#if $settings.header.showHelp}
       <Button
-        href={$getRoute(Route.Help)}
+        href={$getRoute(ROUTE.Help)}
         variant="icon"
         icon="help"
         text={$t('actionLabels.help')} />
@@ -47,7 +47,7 @@
 
   <svelte:fragment slot="primaryActions">
     <Button
-      href={$getRoute(Route.Questions)}
+      href={$getRoute(ROUTE.Questions)}
       variant="main"
       icon="next"
       text={$t('intro.continue')} />

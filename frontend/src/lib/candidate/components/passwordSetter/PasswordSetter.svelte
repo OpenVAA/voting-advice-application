@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {Button} from '$lib/components/button';
-  import {PasswordField} from '$candidate/components/passwordField';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {PasswordValidator} from '$candidate/components/passwordValidator';
+  import { PasswordField } from '$candidate/components/passwordField';
+  import { PasswordValidator } from '$candidate/components/passwordValidator';
+  import { Button } from '$lib/components/button';
+  import { t } from '$lib/i18n';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
 
   export let password = '';
   export let passwordConfirmation = '';
@@ -13,7 +13,7 @@
 
   $: disableSetButton = validPassword && passwordConfirmation.length > 0;
   // Dispatcher used for a function that calls the submit button's function in parent component
-  export let buttonPressed = () => {};
+  export let buttonPressed: () => void;
 </script>
 
 <!--
@@ -66,5 +66,5 @@ a second confirmation password input field, a button for submitting the password
     disabled={!disableSetButton}
     variant="main"
     text={$t('candidateApp.setPassword.setPassword')} />
-  <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
+  <Button href={$getRoute(ROUTE.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
 </form>

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {Field, FieldGroup} from '$lib/components/common/form';
+  import { Field, FieldGroup } from '$lib/components/common/form';
   import Icon from '$lib/components/icon/Icon.svelte';
-  import {t} from '$lib/i18n';
+  import { t } from '$lib/i18n';
   import InputContainer from './InputContainer.svelte';
-  import type {InputFieldProps} from './InputField.type';
+  import type { InputFieldProps } from './InputField.type';
 
   type $$Props = InputFieldProps<Array<number>>;
 
@@ -36,7 +36,7 @@
   }
 
   // handle the change when a language is selected
-  const onLanguageSelect = (e: Event) => {
+  function onLanguageSelect(e: Event) {
     const selected = options
       ? options.find((q) => q.label === (e.currentTarget as HTMLSelectElement).value)
       : undefined;
@@ -44,9 +44,9 @@
       selectedOptions = [...selectedOptions, selected];
       value = selectedOptions.map((option) => option.key);
       selectElement.selectedIndex = 0;
-      onChange?.({questionId, value});
+      onChange?.({ questionId, value });
     }
-  };
+  }
 </script>
 
 <!--
@@ -108,7 +108,7 @@ A component for a multiple choice question that can be answered.
             on:click={() => {
               selectedOptions = selectedOptions.filter((m) => m.key !== option.key);
               value = selectedOptions.map((option) => option.key);
-              onChange?.({questionId, value});
+              onChange?.({ questionId, value });
             }}>
             <Icon name="close" class="my-auto flex-shrink-0 text-secondary" />
           </button>

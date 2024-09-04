@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {election, openFeedbackModal, settings} from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {BasicPage} from '$lib/templates/basicPage';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { t } from '$lib/i18n';
+  import { election, openFeedbackModal, settings } from '$lib/stores';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
 </script>
 
 <BasicPage title={$t('info.title')}>
@@ -32,7 +32,7 @@
       class="!text-neutral"
       variant="icon"
       icon="close"
-      href={$getRoute(Route.Home)}
+      href={$getRoute(ROUTE.Home)}
       text={$t('info.returnButton')} />
   </svelte:fragment>
 
@@ -45,6 +45,6 @@
   </div>
 
   <svelte:fragment slot="primaryActions">
-    <Button variant="main" href={$getRoute(Route.Home)} text={$t('info.returnButton')} />
+    <Button variant="main" href={$getRoute(ROUTE.Home)} text={$t('info.returnButton')} />
   </svelte:fragment>
 </BasicPage>

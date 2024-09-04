@@ -1,16 +1,16 @@
 <script lang="ts">
-  import {getContext} from 'svelte';
-  import {page} from '$app/stores';
-  import {t} from '$lib/i18n';
-  import {goto} from '$app/navigation';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {PasswordField} from '$lib/candidate/components/passwordField';
-  import {FrontPage} from '$lib/templates/frontPage';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { PasswordField } from '$lib/candidate/components/passwordField';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { t } from '$lib/i18n';
+  import { FrontPage } from '$lib/templates/frontPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
 
-  const {user, logIn, newUserEmail} = getContext<CandidateContext>('candidate');
+  const { user, logIn, newUserEmail } = getContext<CandidateContext>('candidate');
 
   let email = '';
   let password = '';
@@ -23,16 +23,16 @@
     appLanguageCode = user?.candidate?.appLanguage?.localisationCode ?? '';
   });
 
-  const onLogin = async () => {
+  async function onLogin() {
     if (!(await logIn(email, password))) {
       wrongCredentials = true;
     } else {
       // If user has chosen an app language, change to that language
       if (appLanguageCode) {
-        await goto($getRoute({locale: appLanguageCode}));
+        await goto($getRoute({ locale: appLanguageCode }));
       }
     }
-  };
+  }
   if ($newUserEmail != null) {
     email = $newUserEmail;
     showPasswordSetMessage = true;
@@ -85,9 +85,9 @@ Candidate login page. This component also takes care of the login process.
     {/if}
     <Button type="submit" text={$t('candidateApp.common.logIn')} variant="main" />
     <Button
-      href={$getRoute(Route.CandAppForgotPassword)}
+      href={$getRoute(ROUTE.CandAppForgotPassword)}
       text={$t('candidateApp.common.forgotPassword')} />
-    <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
-    <Button href={$getRoute(Route.Home)} text={$t('candidateApp.common.voterApp')} />
+    <Button href={$getRoute(ROUTE.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
+    <Button href={$getRoute(ROUTE.Home)} text={$t('candidateApp.common.voterApp')} />
   </form>
 </FrontPage>

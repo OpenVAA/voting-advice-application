@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports -- require might be needed*/
 const Strapi = require('@strapi/strapi');
 const fs = require('fs');
 
@@ -26,9 +27,9 @@ async function cleanupStrapi() {
   if (dbSettings && dbSettings.connection && dbSettings.connection.filename) {
     const tmpDbFile = dbSettings.connection.filename;
     if (fs.existsSync(tmpDbFile)) {
-      fs.rmdirSync('./data', {recursive: true});
+      fs.rmdirSync('./data', { recursive: true });
     }
   }
 }
 
-module.exports = {setupStrapi, cleanupStrapi};
+module.exports = { setupStrapi, cleanupStrapi };

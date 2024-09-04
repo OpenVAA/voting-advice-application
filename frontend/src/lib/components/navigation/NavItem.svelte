@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {concatClass} from '$lib/utils/components';
-  import {ucFirst} from '$lib/utils/text/ucFirst';
-  import {Icon} from '$lib/components/icon';
-  import {getNavigationContext} from './navigationContext';
-  import type {NavItemProps} from './NavItem.type';
+  import { Icon } from '$lib/components/icon';
+  import { concatClass } from '$lib/utils/components';
+  import { ucFirst } from '$lib/utils/text/ucFirst';
+  import { getNavigationContext } from './navigationContext';
+  import type { NavItemProps } from './NavItem.type';
   type $$Props = NavItemProps;
 
   export let autoCloseNav: $$Props['autoCloseNav'] = true;
@@ -15,7 +15,7 @@
   /**
    * A function that will close the navigation menu when clicked.
    */
-  const {close} = getNavigationContext();
+  const { close } = getNavigationContext();
 
   // Create classes
   let classes: string;
@@ -48,7 +48,7 @@ The item is rendered as an `<a>` element if `href` is supplied. Otherwise a `<bu
 ### Usage
 
 ```tsx
-<NavItem href={$getRoute(Route.Info)} icon="info" text="Show info"/>
+<NavItem href={$getRoute(ROUTE.Info)} icon="info" text="Show info"/>
 <NavItem on:click={(e) => foo(e)} text="Do foo"/>
 ```
 -->

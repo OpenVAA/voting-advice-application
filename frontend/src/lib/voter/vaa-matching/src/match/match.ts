@@ -1,15 +1,15 @@
-import type {HasMatchableAnswers} from '../entity';
-import type {UnsignedNormalizedDistance} from '../distance';
-import type {MatchableQuestionGroup} from '../question';
-import {MatchBase} from './matchBase';
-import type {SubMatch} from './subMatch';
+import { MatchBase } from './matchBase';
+import type { UnsignedNormalizedDistance } from '../distance';
+import type { HasMatchableAnswers } from '../entity';
+import type { MatchableQuestionGroup } from '../question';
+import type { SubMatch } from './subMatch';
 
 /**
  * The class for an entity's matching result
  */
 export class Match<
-  E extends HasMatchableAnswers = HasMatchableAnswers,
-  G extends MatchableQuestionGroup = MatchableQuestionGroup
+  TAnswer extends HasMatchableAnswers = HasMatchableAnswers,
+  TGroup extends MatchableQuestionGroup = MatchableQuestionGroup
 > extends MatchBase {
   /**
    * Create a new Match.
@@ -22,8 +22,8 @@ export class Match<
    */
   constructor(
     distance: UnsignedNormalizedDistance,
-    readonly entity: E,
-    readonly subMatches?: SubMatch<G>[]
+    readonly entity: TAnswer,
+    readonly subMatches?: Array<SubMatch<TGroup>>
   ) {
     super(distance);
   }
