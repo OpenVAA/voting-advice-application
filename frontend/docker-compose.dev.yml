@@ -6,13 +6,13 @@ services:
       target: development
     volumes:
       # Creating this volume will make Docker update changes from local automatically
-      - ./:/usr/src/app
+      - ./:/opt/frontend
       # Mark these as volumes so they get ignored
-      - /usr/src/app/node_modules
-      - /usr/src/app/.svelte-kit
-      - /usr/src/app/.vite
-      - /usr/src/app/android
-      - /usr/src/app/ios
+      - /opt/frontend/node_modules
+      - /opt/frontend/.svelte-kit
+      - /opt/frontend/.vite
+      - /opt/frontend/android
+      - /opt/frontend/ios
     ports:
       - '${FRONTEND_PORT}:${FRONTEND_PORT}'
     healthcheck:
