@@ -24,7 +24,7 @@
     classes += ` shrink-0 overflow-hidden flex justify-center items-center text-${textColor}`;
     classes += image ? ' rounded-md' : ' rounded-full';
     styles = '';
-    initialsClasses = 'avatar placeholder';
+    initialsClasses = 'avatar placeholder text-center';
 
     // Set custom color (if we have an image, these are not needed)
     if (!image) {
