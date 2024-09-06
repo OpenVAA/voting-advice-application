@@ -17,7 +17,7 @@
       "displayName": "Entity Details - Show Missing Election Symbol",
       "type": "component",
       "repeatable": false,
-      "component": "settings.entity-details-show-missing-election-symbol",
+      "component": "settings.entity-details-show-missing-elsmbl",
       "required": true
     },
     "showMissingAnswers": {
