@@ -17,10 +17,10 @@ export function translate(strings: LocalizedString | undefined | null, locale?: 
  * @param locale The target locale
  * @returns The localized content or `undefined`
  */
-export function translateObject<T extends Record<string, unknown> | null | undefined>(
-  obj: T,
-  locale?: string
-) {
+export function translateObject<
+  TObject extends Record<string, unknown> | null | undefined,
+  TValue = TObject extends Record<string, infer V> ? V : never
+>(obj: TObject, locale?: string): TValue | undefined {
   if (!isTranslation(obj)) return undefined;
   locale ??= currentLocale.get();
   let key: string | undefined;
@@ -30,7 +30,9 @@ export function translateObject<T extends Record<string, unknown> | null | undef
     const match = matchLocale(locale, Object.keys(obj));
     key = match ?? defaultLocale;
   }
-  return obj[key] ?? obj[defaultLocale] ?? Object.values(obj)[0] ?? undefined;
+  return (obj[key] ?? obj[defaultLocale] ?? Object.values(obj)[0] ?? undefined) as
+    | TValue
+    | undefined;
 }
 
 /**
