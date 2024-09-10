@@ -46,6 +46,34 @@ The REST api query syntax can be a bit tricky, notably `*` only goes one-level d
 
 Another common case is that the Content Types that are not populated have been added to the schema after creating the API token. To allow reading them, edit the API token and change it from `Custom` to `Read-Only` and back (and check that locale listing is still allowed).
 
+## Strapi error ’relation already exists’ on restart after editing the content model
+
+If Strapi gives an error dealing with creating a table with the message that a relation or table already exists, such as the example below, it may be due to [a name that is longer than 63 characters](https://forum.strapi.io/t/create-index-already-exists/16835/7). To fix, shorten the name of the component or its parent. If the name cannot be easily shortened, you can only edit the internal names. For an example, see commit .
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                                                              |
+|   error: create table "public"."components_settings_entity_details_show_missing_election_symbols" ("id" serial primary key, "candidate" boolean      |
+|   null, "party" boolean null) - relation                                     |
+|   "components_settings_entity_details_show_missing_election_symbol"          |
+|   already exists                                                             |
+|   at Parser.parseErrorMessage                                                |
+|   (/opt/node_modules/pg-protocol/dist/parser.js:283:98)                      |
+|   at Parser.handlePacket                                                     |
+|   (/opt/node_modules/pg-protocol/dist/parser.js:122:29)                      |
+|   at Parser.parse (/opt/node_modules/pg-protocol/dist/parser.js:35:38)       |
+|   at Socket.<anonymous>                                                      |
+|   (/opt/node_modules/pg-protocol/dist/index.js:11:42)                        |
+|   at Socket.emit (node:events:517:28)                                        |
+|   at Socket.emit (node:domain:489:12)                                        |
+|   at addChunk (node:internal/streams/readable:368:12)                        |
+|   at readableAddChunk (node:internal/streams/readable:341:9)                 |
+|   at Readable.push (node:internal/streams/readable:278:10)                   |
+|   at TCP.onStreamRead (node:internal/stream_base_commons:190:23)             |
+|                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
 ## Candidate registration fails
 
 The `email` property is required for a `Candidate`. If it is not set, regisration will result in a 'Bad Request' error.
