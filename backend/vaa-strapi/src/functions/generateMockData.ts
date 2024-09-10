@@ -70,10 +70,6 @@ export async function generateMockData() {
         .count({})
         .then((number) => number);
       countOfObjects += await strapi.db
-        .query(API.AppLabel)
-        .count({})
-        .then((number) => number);
-      countOfObjects += await strapi.db
         .query(API.Party)
         .count({})
         .then((number) => number);
@@ -162,10 +158,6 @@ export async function generateMockData() {
     console.info('#######################################');
     console.info('inserting strapi admin');
     await createStrapiAdmin();
-    console.info('Done!');
-    console.info('#######################################');
-    console.info('inserting election app labels...');
-    await createElectionAppLabel();
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting elections');
@@ -304,54 +296,7 @@ async function createLanguages() {
   });
 }
 
-async function createElectionAppLabel() {
-  // This should create labels dynamically so that they match the translation files either completely or at least the most often modified parts
-  // Before this is done, it's better not to create labels at all
-  // const actionLabels = {
-  //   electionInfo: 'Information About the Elections',
-  //   help: 'Help',
-  //   home: 'home',
-  //   howItWorks: 'How Does This App Work?',
-  //   opinions: 'Opinions',
-  //   results: 'Results',
-  //   startButton: 'Start Finding The Best Candidates!',
-  //   startQuestions: 'Start the Questionnaire',
-  //   yourList: 'Your List'
-  // };
-  // const viewTexts = {
-  //   appTitle: 'Election Compass',
-  //   frontpageIngress:
-  //     'With this application you can compare candidates in the elections on {electionDate, date, ::yyyyMMdd} based on their opinions, parties and other data.',
-  //   madeWith: 'Made with',
-  //   publishedBy: 'Published by {publisher}',
-  //   questionsTip: 'Tip: If you don’t care about an issue, you can skip it.',
-  //   yourOpinionsIngress:
-  //     'Next, the app will ask your opinions on {numStatements} statements about political issues and values, which the candidates have also answered. After you’ve answered them, the app will find the candidates that best agree with your opinions. The statements are grouped into {numCategories} categories. You can answer all of them or only select those you find important.',
-  //   yourOpinionsTitle: 'Tell Your Opinions'
-  // };
-  // const strapiObjects: HasId[] = await Promise.all(
-  //   locales.map(
-  //     async (l) =>
-  //       await strapi.entityService.create(API.AppLabel, {
-  //         data: {
-  //           actionLabels: fakeTranslate(l, actionLabels),
-  //           viewTexts: fakeTranslate(l, viewTexts),
-  //           locale: l.code,
-  //           publishedAt: new Date()
-  //         }
-  //       })
-  //   )
-  // );
-  // await createRelationsForAvailableLocales(API.AppLabel, strapiObjects);
-}
-
 async function createElection() {
-  let appLabel = await strapi.db.query(API.AppLabel).findOne({
-    where: {
-      locale: locales[0].code
-    }
-  });
-
   const date = faker.date.future();
   const organiser = faker.location.country();
   const types = ['local', 'presidential', 'congress'];
@@ -374,7 +319,6 @@ async function createElection() {
       electionDate,
       electionType,
       info,
-      electionAppLabel: appLabel ? appLabel.id : null,
       publishedAt: new Date(),
       canEditQuestions: true
     }
