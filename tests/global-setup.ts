@@ -18,7 +18,11 @@ async function globalSetup(config: FullConfig) {
   await page.getByText(T.en['common.login'], {exact: true}).click();
 
   // Wait until the page actually signs in.
-  await expect(page.getByText(T.en['candidateApp.home.ready'], {exact: true})).toBeVisible();
+  await expect(
+    page.getByText(T.en['candidateApp.home.ready'], 
+    {exact: true}), 
+    'The start page for a logged-in candidate should be visible. If this fails, make sure that the database actually contains the user with the email and password used. Also, because we’re checking for a specific intro message, the user should have all their answers filled.'
+  ).toBeVisible();
 
   await page.context().storageState({ path: STORAGE_STATE });
 }
