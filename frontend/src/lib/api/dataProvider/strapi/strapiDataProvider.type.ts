@@ -38,19 +38,7 @@ export interface LocaleProps {
 }
 
 /**
- * Format for data localized in Strapi
- */
-export type LocalizedStrapiData<T> = T & {
-  attributes: {
-    localizations: {
-      data: T[];
-    };
-  };
-};
-
-/**
  * Non-exhaustive specification of the data returned by the Strapi endpoint `election`.
- * Currently we're only interested in the appLabels id.
  */
 export interface StrapiElectionData {
   id: string;
@@ -64,43 +52,8 @@ export interface StrapiElectionData {
     organizer: LocalizedString;
     info: LocalizedString;
     electionType: string | null;
-    electionAppLabel: {
-      data: LocalizedStrapiData<StrapiAppLabelsData>;
-    };
     constituencies: {
       data: StrapiConstituencyData[];
-    };
-  };
-}
-
-/**
- * Non-exhaustive specification of the app labels
- */
-export interface StrapiAppLabelsData {
-  id: string;
-  attributes: {
-    locale: string;
-    actionLabels: {
-      id: string;
-      electionInfo: string;
-      help: string;
-      home: string;
-      howItWorks: string;
-      opinions: string;
-      results: string;
-      startButton: string;
-      startQuestions: string;
-      yourList: string;
-    };
-    viewTexts: {
-      id: string;
-      appTitle: string;
-      frontpageIngress: string;
-      madeWith: string;
-      publishedBy: string;
-      questionsTip: string;
-      yourOpinionsIngress: string;
-      yourOpinionsTitle: string;
     };
   };
 }

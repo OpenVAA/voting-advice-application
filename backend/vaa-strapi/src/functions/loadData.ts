@@ -9,12 +9,10 @@ import Path from 'path';
 import type {Common} from '@strapi/strapi';
 import {API} from './utils/api';
 import {deleteMedia, dropAllCollections, getAllMedia} from './utils/drop';
-import {createRelationsForAvailableLocales} from './utils/i18n';
-import type {HasId} from './utils/data.type';
 
 /**
  * Load data from `folder`, if `AppSettings` do not exist or their `allowOverwrite` property is true. Warning! This will delete all existing data, including media files.
- * The data folder must contain separate json files for each data type: `answers.json`, `appSettings.json`, `candidates.json`, `constituencies.json`, `elections.json`, `infoQuestions.json`, `locales.json`, `nominations.json`, `opinionQuestions.json`, `parties.json`, `questionCategories.json`, `questionTypes.json`. The data for App Labels, `appLabels.json`, is optional.
+ * The data folder must contain separate json files for each data type: `answers.json`, `appSettings.json`, `candidates.json`, `constituencies.json`, `elections.json`, `infoQuestions.json`, `locales.json`, `nominations.json`, `opinionQuestions.json`, `parties.json`, `questionCategories.json`, `questionTypes.json`.
  * Possible images should be placed in the same folder and referenced by a relative path.
  * The data folder is set by the env variable `LOAD_DATA_ON_INITIALISE_FOLDER` by default.
  * @param folder The folder to load data from
@@ -67,6 +65,7 @@ export async function loadData(folder: string, force = false) {
       console.info('[loadData] Warning! Deleting all existing collections...');
       await dropAllCollections();
 
+      // TODO: We probably don't need this anymore
       console.info('[loadData] Creating Locales...');
       await createLocales((await loadFile(folder, 'locales')) as {name: string; code: string}[]);
 
@@ -80,16 +79,6 @@ export async function loadData(folder: string, force = false) {
         ]))
       )
         throw new Error();
-
-      console.info('[loadData] Creating AppLabels...');
-      const appLabels = await createFromFile(folder, 'appLabels', API.AppLabel);
-      if (appLabels) {
-        await createRelationsForAvailableLocales(API.AppLabel, appLabels as HasId[]);
-      } else {
-        console.info(
-          '[loadData] Warning! No AppLabels found. Continuing with loading the rest of the data...'
-        );
-      }
 
       console.info('[loadData] Creating Elections...');
       if (!(await createFromFile(folder, 'elections', API.Election))) throw new Error();

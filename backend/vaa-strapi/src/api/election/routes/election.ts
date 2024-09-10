@@ -12,9 +12,6 @@ export default factories.createCoreRouter('api::election.election', {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([
-          'electionAppLabel.populate.actionLabels',
-          'electionAppLabel.populate.viewTexts',
-          'electionAppLabel.populate.localizations.populate',
           'question.populate.category.populate.election'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
@@ -25,9 +22,6 @@ export default factories.createCoreRouter('api::election.election', {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([
-          'electionAppLabel.populate.actionLabels',
-          'electionAppLabel.populate.viewTexts',
-          'electionAppLabel.populate.localizations.populate',
           'question.populate.category.populate.election'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations

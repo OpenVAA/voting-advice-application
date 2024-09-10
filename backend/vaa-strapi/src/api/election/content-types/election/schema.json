@@ -31,12 +31,6 @@
       ],
       "pluginOptions": {}
     },
-    "electionAppLabel": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::election-app-label.election-app-label",
-      "inversedBy": "elections"
-    },
     "constituencies": {
       "type": "relation",
       "relation": "manyToMany",

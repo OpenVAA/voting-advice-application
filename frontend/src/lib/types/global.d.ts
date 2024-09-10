@@ -60,37 +60,6 @@ declare global {
   }
 
   /**
-   * Non-exhaustive specification of the app labels.
-   * TODO: Make this spec generic, because it will not be used in the frontend
-   * otherwise by just providing its contents to the translation function
-   */
-  interface AppLabels {
-    locale: string;
-    actionLabels: {
-      id: string;
-      electionInfo: string;
-      help: string;
-      home: string;
-      howItWorks: string;
-      opinions: string;
-      results: string;
-      startButton: string;
-      startQuestions: string;
-      yourList: string;
-    };
-    viewTexts: {
-      id: string;
-      appTitle: string;
-      frontpageIngress: string;
-      madeWith: string;
-      publishedBy: string;
-      questionsTip: string;
-      yourOpinionsIngress: string;
-      yourOpinionsTitle: string;
-    };
-  }
-
-  /**
    * The application settings, combined from both local settings and those retrieved from the database.
    */
   type AppSettings = StaticSettings & DynamicSettings;
@@ -185,7 +154,6 @@ declare global {
    * The properties of an Election object
    */
   interface ElectionProps {
-    appLabels?: AppLabels;
     electionDate: Date;
     id: string;
     name: string;
