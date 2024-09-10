@@ -17,7 +17,7 @@ export async function loadDynamicTranslations() {
   }
 
   await strapi.entityService.create(API.AppCustomization, {
-    data: {dynamicTranslations: getDynamicTranslations()}
+    data: {translationOverrides: getDynamicTranslations()}
   });
   console.info('[loadDynamicTranslations] Dynamic translations loaded.');
 }

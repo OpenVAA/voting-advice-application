@@ -1,4 +1,5 @@
 import type {DynamicSettings, StaticSettings} from 'vaa-shared';
+import type {TranslationKey} from './generated/translationKey';
 
 export {};
 
@@ -121,9 +122,8 @@ declare global {
     publisherLogoDark?: ImageProps;
     poster?: ImageProps;
     posterCandidateApp?: ImageProps;
-    dynamicTranslations?: {[locale: string]: {[translationKey: string]: string}};
-    translationOverrides?: {[locale: string]: {[translationKey: string]: string}};
-    candidateAppFAQ?: Array<{languageCode: string; question: string; answer: string}>;
+    translationOverrides?: {[translationKey: TranslationKey]: string};
+    candidateAppFAQ?: Array<{question: string; answer: string}>;
   };
 
   /**

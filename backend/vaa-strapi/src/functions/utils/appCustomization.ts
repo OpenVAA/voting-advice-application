@@ -1,12 +1,12 @@
 import {staticSettings} from 'vaa-shared';
-import en from './translations/en.json';
-import fi from './translations/fi.json';
-import sv from './translations/sv.json';
+import en from './translations/en/dynamic.json';
+import fi from './translations/fi/dynamic.json';
+import sv from './translations/sv/dynamic.json';
 
 /**
  * Get dynamic translations from json files in format used in Strapi.
  */
-export function getDynamicTranslations() {
+export function getDynamicTranslations(): Array<TranslationOverride> {
   const locales = staticSettings.supportedLocales.map((locale) => locale.code);
 
   // TODO: Move translations from frontend to vaa-shared and use those instead of hardcoding these copied files
@@ -16,18 +16,18 @@ export function getDynamicTranslations() {
     sv: flattenKeys(sv)
   };
 
-  const dynamicTranslations = Array<DynamicTranslation>();
+  const dynamicTranslations = Array<TranslationOverride>();
 
   for (const key in translationsFromFiles[locales[0]]) {
-    const dynamicTranslation: DynamicTranslation = {
+    const dynamicTranslation: TranslationOverride = {
       translationKey: key,
       translations: []
     };
 
     locales.forEach((locale) => {
       dynamicTranslation.translations.push({
-        languageCode: locale,
-        translation: translationsFromFiles[locale][key]
+        locale: locale,
+        translation: translationsFromFiles[locale]?.[key]
       });
     });
 
@@ -52,10 +52,10 @@ function flattenKeys(obj) {
   return Object.fromEntries(recurse(obj, 'dynamic'));
 }
 
-type DynamicTranslation = {
+type TranslationOverride = {
   translationKey: string;
   translations: Array<{
-    languageCode: string;
+    locale: string;
     translation?: string;
   }>;
 };
