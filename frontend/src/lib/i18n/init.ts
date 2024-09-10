@@ -1,13 +1,13 @@
 import {error} from '@sveltejs/kit';
 import I18n from '@sveltekit-i18n/base';
 import parser, {type Config} from '@sveltekit-i18n/parser-icu';
-import IntlMessageFormat from 'intl-messageformat';
+import {IntlMessageFormat} from 'intl-messageformat';
 import {logDebugError} from '$lib/utils/logger';
 import {ucFirst} from '$lib/utils/text/ucFirst';
 import {staticSettings} from 'vaa-shared';
 import {derived, get} from 'svelte/store';
 import {DEFAULT_PAYLOAD_KEYS, staticTranslations, type TranslationsPayload} from './translations';
-import {matchLocale, purgeTranslations} from './utils';
+import {matchLocale} from './utils';
 import type {TranslationKey} from '$types';
 
 const {supportedLocales} = staticSettings;
@@ -114,22 +114,6 @@ export {defaultLocale};
 /////////////////////////////////////////////////////
 // 4. Utility function exports
 /////////////////////////////////////////////////////
-
-const dynamicTranslationsAdded: Record<string, boolean> = {};
-
-/**
- * Add dynamic translations to the i18n with this method so that they will only be added once per locale.
- * @param loc The locale to which add the translations.
- * @param translations The translations
- */
-export function addDynamicTranslations(
-  loc: string,
-  translations: Parameters<typeof addTranslations>[0]
-) {
-  if (dynamicTranslationsAdded[loc]) return;
-  addTranslations(purgeTranslations({[loc]: translations}));
-  dynamicTranslationsAdded[loc] = true;
-}
 
 /**
  * Parse a message with supplied values using the international message (or ICU) format. See https://formatjs.io/docs/intl-messageformat/

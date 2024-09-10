@@ -266,7 +266,7 @@ async function createAppCustomization() {
   locales.forEach(({code}) => {
     for (let i = 0; i < 5; i++) {
       faqs.push({
-        languageCode: code,
+        locale: code,
         question: faker.lorem.sentence(),
         answer: faker.lorem.paragraph()
       });
@@ -276,7 +276,7 @@ async function createAppCustomization() {
   await strapi.entityService.create(API.AppCustomization, {
     data: {
       publisherName: fakeLocalized((faker) => faker.company.name()),
-      dynamicTranslations: getDynamicTranslations(),
+      translationOverrides: getDynamicTranslations(),
       candidateAppFAQ: faqs
     }
   });

@@ -10,7 +10,7 @@ import {locale as currentLocale, locales} from '$lib/i18n';
 import {constants} from '$lib/utils/constants';
 import {formatName} from '$lib/utils/internationalisation';
 import {matchLocale} from '$lib/i18n/utils/matchLocale';
-import {translate} from '$lib/i18n/utils/translate';
+import {translate, translateObject} from '$lib/i18n/utils/translate';
 import {parseAnswers} from './utils/parseAnswers';
 import {parseCustomData} from './utils/parseCustomData';
 import type {
@@ -36,7 +36,7 @@ import type {
   StrapiQuestionCategoryData,
   StrapiAppSettingsData,
   StrapiFeedbackData,
-  StrapiAppCustomization
+  StrapiAppCustomizationData
 } from './strapiDataProvider.type';
 
 /**
@@ -114,7 +114,6 @@ function getAppSettings(): Promise<Partial<AppSettings> | undefined> {
  */
 function getAppCustomization({locale}: GetDataOptionsBase = {}): Promise<AppCustomization> {
   const params = new URLSearchParams({
-    'populate[dynamicTranslations][populate][translations]': 'true',
     'populate[translationOverrides][populate][translations]': 'true',
     'populate[candidateAppFAQ]': 'true',
     'populate[publisherLogo]': 'true',
@@ -122,16 +121,15 @@ function getAppCustomization({locale}: GetDataOptionsBase = {}): Promise<AppCust
     'populate[poster]': 'true',
     'populate[posterCandidateApp]': 'true'
   });
-  return getData<StrapiAppCustomization>('api/app-customization', params).then((result) => {
+  return getData<StrapiAppCustomizationData>('api/app-customization', params).then((result) => {
     const attr = result.attributes;
     const publisherLogo = attr.publisherLogo?.data?.attributes;
     const publisherLogoDark = attr.publisherLogoDark?.data?.attributes;
     const poster = attr.poster?.data?.attributes;
     const posterCandidateApp = attr.posterCandidateApp?.data?.attributes;
     return {
-      dynamicTranslations: attr.dynamicTranslations,
-      translationOverrides: attr.translationOverrides,
-      candidateAppFAQ: attr.candidateAppFAQ,
+      translationOverrides: translateObject(attr.translationOverrides, locale),
+      candidateAppFAQ: translateObject(attr.candidateAppFAQ, locale),
       publisherName: attr.publisherName ? translate(attr.publisherName, locale) : undefined,
       publisherLogo: publisherLogo ? parseImage(publisherLogo) : undefined,
       publisherLogoDark: publisherLogoDark ? parseImage(publisherLogoDark) : undefined,

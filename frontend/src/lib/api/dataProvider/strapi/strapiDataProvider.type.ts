@@ -171,12 +171,11 @@ export interface StrapiAppSettingsData {
 /**
  * Non-exhaustive specification of app customization
  */
-export interface StrapiAppCustomization {
+export interface StrapiAppCustomizationData {
   id: number | string;
   attributes: {
-    dynamicTranslations: {[locale: string]: {[translationKey: string]: string}};
     translationOverrides: {[locale: string]: {[translationKey: string]: string}};
-    candidateAppFAQ: Array<{languageCode: string; question: string; answer: string}>;
+    candidateAppFAQ: {[locale: string]: Array<{question: string; answer: string}>};
     publisherName: LocalizedString | null;
     publisherLogo: {
       data?: {

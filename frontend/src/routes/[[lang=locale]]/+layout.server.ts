@@ -1,6 +1,6 @@
 import {error} from '@sveltejs/kit';
 import {dataProvider} from '$lib/api/getData';
-import {loadTranslations, locale} from '$lib/i18n';
+import {locale} from '$lib/i18n';
 import type {LayoutServerLoad} from './$types';
 
 export const load = (async ({locals, params}) => {
@@ -12,8 +12,6 @@ export const load = (async ({locals, params}) => {
 
   // Set the locale so that getData can used it as default
   if (effectiveLocale !== locale.get()) locale.set(effectiveLocale);
-
-  await loadTranslations(effectiveLocale);
 
   const {getAppSettings, getAppCustomization, getElection} = await dataProvider;
 
@@ -41,9 +39,6 @@ export const load = (async ({locals, params}) => {
     appSettings,
     appCustomization,
     election,
-    // We'll initialize as empty Arrays because they are required by `PageData`. See `app.d.ts` for more details
-    questions: [],
-    infoQuestions: [],
     i18n: {
       currentLocale: effectiveLocale,
       preferredLocale,

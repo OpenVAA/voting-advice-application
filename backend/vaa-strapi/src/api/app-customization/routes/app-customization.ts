@@ -12,7 +12,6 @@ export default factories.createCoreRouter('api::app-customization.app-customizat
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([
-          'dynamicTranslations',
           'translationOverrides',
           'candidateAppFAQ',
           'publisherLogo',

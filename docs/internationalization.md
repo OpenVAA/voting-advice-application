@@ -148,8 +148,8 @@ The locale selection process works as follows.
 
 [`+layout.ts`](../../routes/[[lang=locale]]/+layout.ts) runs twice and sets translations up for SSR and CSR:
 
-1. Receive `currentLocale` and `route`from `data.i18n` as well as the `appLabels`
-2. Add `TBA` as dynamic translations for use with `i18n`. The `addDynamicTranslations` function will make sure it is only done once per locale.
+1. Receive `currentLocale` and `route`from `data.i18n`.
+2. Add `DataProvider.getAppCustomization(•).translationOverrides` as dynamic translations for use with `i18n`.
 3. Set current locale to `currentLocale`
 4. Set the translations route to `setRoute` (which is used for separating translations into multiple files based on the route, but must be called even if no such are used)
 

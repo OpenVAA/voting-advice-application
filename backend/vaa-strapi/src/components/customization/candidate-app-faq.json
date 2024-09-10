@@ -14,7 +14,7 @@
       "type": "text",
       "required": true
     },
-    "languageCode": {
+    "locale": {
       "type": "string",
       "required": true
     }

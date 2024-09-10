@@ -11,22 +11,26 @@ export default factories.createCoreController(API.AppCustomization, () => ({
     const response = await super.find(ctx);
 
     if (response) {
-      const {dynamicTranslations, translationOverrides} = response.data.attributes;
-
-      if (dynamicTranslations) {
-        const dynamicTranslationsByLocale = Object.fromEntries(
-          staticSettings.supportedLocales.map((locale) => [locale.code, {}])
-        );
-        dynamicTranslations.forEach((dynTrs) => {
-          dynTrs.translations?.forEach((trs) => {
-            if (trs.translation) {
-              dynamicTranslationsByLocale[trs.languageCode][dynTrs.translationKey] =
-                trs.translation;
-            }
-          });
-        });
-        response.data.attributes.dynamicTranslations = dynamicTranslationsByLocale;
-      }
+      
+      const {candidateAppFAQ, translationOverrides} = response.data.attributes;
+       
+      /**
+       *  The translations are originally in the format:
+       *  Array<{
+       *    id: number;
+       *    translationKey: string;
+       *    translations: Array<{
+       *      locale: string;
+       *      translation: string;
+       *    }>;
+       *  }> or
+       *  Before returning them to the frontend, they are transformed into the format:
+       *  {
+       *    [locale: string]: {
+       *      [translationKey: string]: string;
+       *    }
+       *  }
+       */ 
       if (translationOverrides) {
         const translationOverridesByLocale = Object.fromEntries(
           staticSettings.supportedLocales.map((locale) => [locale.code, {}])
@@ -34,14 +38,36 @@ export default factories.createCoreController(API.AppCustomization, () => ({
         translationOverrides.forEach((trsOverride) => {
           trsOverride.translations?.forEach((trs) => {
             if (trs.translation) {
-              translationOverridesByLocale[trs.languageCode][trsOverride.translationKey] =
+              translationOverridesByLocale[trs.locale][trsOverride.translationKey] =
                 trs.translation;
             }
           });
         });
         response.data.attributes.translationOverrides = translationOverridesByLocale;
       }
-    }
+
+      /**
+       *  The candidateApp FAQ is in the format:
+       *  Array<{
+       *    locale: string;
+       *    question: string;
+       *    answer: string;
+       *  }>
+       *  It's transformed into the format:
+       *  {
+       *    [locale: string]: Array<{answer: string; question: string; }>;
+       *  }
+       */
+      if (candidateAppFAQ) {
+          const candidateAppFAQbyLocale = Object.fromEntries(
+            staticSettings.supportedLocales.map((locale) => [locale.code, new Array<{answer: string; question: string;}>()])
+          );
+          candidateAppFAQ.forEach(({ locale, question, answer }) =>
+            candidateAppFAQbyLocale[locale].push({ question, answer })
+          );
+          response.data.attributes.candidateAppFAQ = candidateAppFAQbyLocale;
+        }
+      }
 
     return response;
   }
