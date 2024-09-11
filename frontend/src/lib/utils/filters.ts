@@ -50,7 +50,7 @@ export function buildCandidateFilters(infoQuestions: QuestionProps[], parties: P
           keyProperty: 'id',
           labelProperty: 'name',
           objects: parties,
-          name: t.get('components.entityFilters.titles.party')
+          name: t.get('common.party.singular')
         },
         locale.get()
       )
