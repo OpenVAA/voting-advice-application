@@ -11,9 +11,9 @@ export class LikertQuestion extends OrdinalQuestion {
     this.category = category;
   }
 
-  normalizeValue(value: number): CoordinateOrMissing {
+  normalizeValue(value: number | undefined): CoordinateOrMissing {
     // The current frontend implemenation of questions uses numbers for choice keys
-    return super.normalizeValue(`${value}`);
+    return super.normalizeValue(Number.isFinite(value) ? `${value}` : undefined);
   }
 }
 /**
