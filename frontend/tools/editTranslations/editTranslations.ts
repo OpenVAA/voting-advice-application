@@ -8,6 +8,7 @@ import {readdir} from 'fs/promises';
  * ### NB
  *
  * `replaceKeys` will only replace old translation keys with new ones in Svelte files in the frontend src folder. This could be easily extended to also cover keys used in the e2e tests in /tests.
+ * You should not use escape characters in the translations, because their backslashes will be escaped when translations are imported.
  *
  * ### TSV Format
  *

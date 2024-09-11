@@ -1,5 +1,5 @@
 {
-  "content": "<p>Vaalikone vertaa sinun mielipiteitäsi niihin, jotka {candidatePlural} ja {partyPlural} ovat ilmoittaneet samoihin kysymyksiin. Vastaamisen jälkeen näille lasketaan sopivuustulos, joka osoittaa, kuinka paljon olette samaa mieltä.</p>\\n<ul>\\n<li>Tulos 100 tarkoittaa, että olette täysin samaa mieltä kysymyksistä, joihin olet vastannut.</li>\\n<li>Tulos 0 tarkoittaa, että olette täysin eri mieltä kaikista kysymyksistä, joihin olet vastannut.</li>\\n<li>Tulokset näiden välillä tarkoittavat, että olette joistakin kysymyksistä samaa, joistakin eri mieltä.</li>\\n</ul>",
+  "content": "<p>Vaalikone vertaa sinun mielipiteitäsi niihin, jotka {candidatePlural} ja {partyPlural} ovat ilmoittaneet samoihin kysymyksiin. Vastaamisen jälkeen näille lasketaan sopivuustulos, joka osoittaa, kuinka paljon olette samaa mieltä.</p> <ul> <li>Tulos 100 tarkoittaa, että olette täysin samaa mieltä kysymyksistä, joihin olet vastannut.</li> <li>Tulos 0 tarkoittaa, että olette täysin eri mieltä kaikista kysymyksistä, joihin olet vastannut.</li> <li>Tulokset näiden välillä tarkoittavat, että olette joistakin kysymyksistä samaa, joistakin eri mieltä.</li> </ul>",
   "feedback": {
     "title": "Palaute"
   },

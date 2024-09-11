@@ -27,6 +27,10 @@ type Translation = {
 
 Translations keys contain the name of the file as the first part, e.g. `error.404` for the key `404` in `error.json` or `candidateApp.basicInfo.disclaimer` for `disclaimer` in `candidateApp.basicInfo.json`.
 
+### Special characters
+
+You should not use special characters, e.g. `'\n'`, in the translations, because their backslashes will be escaped when translations are imported.
+
 ### File organisation
 
 Translations are spread into files such that:
