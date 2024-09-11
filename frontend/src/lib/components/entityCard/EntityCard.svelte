@@ -204,7 +204,8 @@ In nested cards, the layout and rendering of contents varies from that of a pare
 
     <!-- Subentities -->
     {#if subcards}
-      <div class="mt-md grid gap-lg">
+      <!-- TODO: Svelte 5: this currently leaves an unseemly empty gap even if there's no content, because the tag will still contain whitespace. With Svelte 5, this is supposed to be automatically fixed. -->
+      <div class="mt-md grid gap-lg empty:mt-0">
         {#each subcards.slice(0, showAllSubcards ? undefined : maxSubcards) as ecProps}
           <svelte:self context="subcard" {...concatClass(ecProps, 'offset-border')} />
         {/each}
@@ -225,6 +226,7 @@ In nested cards, the layout and rendering of contents varies from that of a pare
         {/if}
       </div>
     {/if}
+
     <slot />
   </article>
 </EntityCardAction>
