@@ -48,6 +48,7 @@
     };
     if (isCandidate(entity)) {
       electionSymbol = entity.electionSymbol;
+      // TODO: This becomes incorrect with `vaa-data` that supports party membership as distinct from nominating party
       nominatingParty = entity.party;
     } else if (isParty(entity)) {
       // Instead of auto-generating the initials from the name, we use the party's abbreviation
@@ -154,8 +155,6 @@ In nested cards, the layout and rendering of contents varies from that of a pare
             {#if isCandidate(entity)}
               {#if nominatingParty}
                 <PartyTag party={nominatingParty} variant="short" />
-              {:else}
-                {$t('common.unaffiliated')}
               {/if}
             {/if}
             {#if electionSymbol}
