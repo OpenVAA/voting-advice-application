@@ -47,6 +47,7 @@
   let filteredCandidates: WrappedEntity<CandidateProps>[] = [];
   let filteredParties: WrappedEntity<PartyProps>[] = [];
 
+  /** A utility synced boolean indicating whether results are available, i.e. that we have enough answers to perform matching */
   let resultsAvailableSync = false;
   $resultsAvailable.then((v) => {
     resultsAvailableSync = v;
