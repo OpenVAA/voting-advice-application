@@ -37,7 +37,8 @@
     questionsLocked,
     infoQuestions,
     unansweredOpinionQuestions,
-    unansweredRequiredInfoQuestions
+    unansweredRequiredInfoQuestions,
+    parties
   } = getContext<CandidateContext>('candidate');
 
   const unsavedInfoAnswers = writable<AnswerDict>({});
@@ -82,13 +83,16 @@
 
   // basic information
   type InfoField = ('firstName' | 'lastName' | 'party') & keyof CandidateProps;
-  const basicInfoFields: Record<InfoField, TranslationKey> = {
+
+  const basicInfoFields = new Array<InfoField>('firstName', 'lastName', 'party');
+
+  const basicInfoLabels: Record<InfoField, TranslationKey> = {
     firstName: 'common.firstName',
     lastName: 'common.lastName',
     party: 'common.party.singular'
   };
 
-  const basicInfoData: Record<string, string | number | undefined> = {
+  const basicInfoData: Record<InfoField, string | undefined> = {
     firstName: $user?.candidate?.firstName,
     lastName: $user?.candidate?.lastName,
     party: translate($user?.candidate?.party?.shortName)
@@ -224,7 +228,7 @@
   }
 </script>
 
-{#if $infoAnswers && $infoQuestions}
+{#if $parties && $infoAnswers && $infoQuestions}
   <BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
     <Warning display={!!$questionsLocked} slot="note">
       <p>{$t('candidateApp.common.editingNotAllowed')}</p>
@@ -241,8 +245,9 @@
 
       <div class="flex flex-col items-center gap-16">
         <FieldGroup>
-          {#each Object.entries(basicInfoFields) as [field, label]}
-            <Field id={field} label={$t(label)}>
+          <!-- Don't show the party field if no parties exist -->
+          {#each basicInfoFields.filter((f) => f !== 'party' || $parties.length) as field}
+            <Field id={field} label={$t(basicInfoLabels[field])}>
               <InputContainer locked>
                 <input
                   type="text"
