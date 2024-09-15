@@ -289,7 +289,7 @@ export const partyRankings: Readable<
     const opinionQuestionsSync = await $opinionQuestions;
     const candidatesSync = await $candidates;
     const partiesSync = await $parties;
-    return resultsAvailableSync && $settings.matching.partyMatching !== 'none'
+    return resultsAvailableSync && $settings.matching.partyMatching !== 'none' && partiesSync.length
       ? matchParties(opinionQuestionsSync, $answeredQuestions, candidatesSync, partiesSync, {
           subMatches: $settings.results.cardContents.party.includes('submatches'),
           matchingType: $settings.matching.partyMatching
