@@ -1,6 +1,6 @@
 {
   "addAnother": "Add another",
-  "disclaimer": "Your name and some other details are prefilled and cannot be changed. If there are any errors in them, please contact your party. If your Election Number is not visible, it will be automatically set after the candidate registration period ends on Oct 29.",
+  "disclaimer": "Your name and some other details are prefilled and cannot be changed. If there are any errors in them, please contact your party.",
   "error": {
     "invalidQuestion": "Question type or answer type is invalid for question {questionId}"
   },
