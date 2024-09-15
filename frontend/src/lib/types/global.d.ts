@@ -201,6 +201,7 @@ declare global {
     fillingInfo?: string;
     hidden?: boolean;
     type: QuestionSettingsProps['type'];
+    textType?: 'short' | 'long';
     values?: AnswerOption[];
     min?: number | Date;
     max?: number | Date;
@@ -257,6 +258,7 @@ declare global {
   type QuestionSettingsProps =
     | {
         type: 'text';
+        textType?: 'short' | 'long';
         notLocalizable?: boolean;
       }
     | {
