@@ -8,6 +8,7 @@
   export let questionId: $$Props['questionId'];
   export let headerText: $$Props['headerText'] = '';
   export let locked: $$Props['locked'] = false;
+  export let compact: $$Props['compact'] = false;
   export let value: $$Props['value'] = {};
   export let previousValue: $$Props['previousValue'] = {};
   export let onChange: $$Props['onChange'] = undefined;
@@ -58,7 +59,6 @@ A component for a text question that can be answered.
 - `previousText`: The previous text value. Optional.
 - `onChange`: A function that is called when the value changes.
 
-
 ### Usage
 
 ```tsx
@@ -79,6 +79,7 @@ A component for a text question that can be answered.
   {localStorageId}
   {previouslySavedMultilang}
   {headerText}
+  {compact}
   placeholder="—"
   bind:multilangText
   bind:this={textArea} />

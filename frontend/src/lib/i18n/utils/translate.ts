@@ -44,5 +44,7 @@ export function translateObject<
  * Check if an object is a valid localized object and is not empty.
  */
 export function isTranslation(obj: unknown): obj is Record<string, unknown> {
-  return obj != null && typeof obj === 'object' && Object.keys(obj).length > 0;
+  return (
+    obj != null && typeof obj === 'object' && !Array.isArray(obj) && Object.keys(obj).length > 0
+  );
 }
