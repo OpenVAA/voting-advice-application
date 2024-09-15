@@ -1,7 +1,7 @@
 <script lang="ts">
   import {writable} from 'svelte/store';
-  import {t} from '$lib/i18n';
-  import {translate} from '$lib/i18n/utils/translate';
+  import {t, defaultLocale} from '$lib/i18n';
+  import {isTranslation, translate} from '$lib/i18n/utils/translate';
   import {Field, FieldGroup} from '$lib/components/common/form';
   import {BasicPage} from '$lib/templates/basicPage';
   import {getContext} from 'svelte';
@@ -201,13 +201,13 @@
     else submitButtonText = $t('common.saveAndReturn');
   }
 
-  function isLocalizedString(value: AnswerPropsValue): value is LocalizedString {
-    return (
-      typeof value === 'object' &&
-      value !== null &&
-      !Array.isArray(value) &&
-      !(value instanceof Date)
-    );
+  /**
+   * This is a hacky, temporary way of ensuring that the inputs to `TextInput` are always `LocalizedString` instances even when only one locale is supported.
+   * TODO: This will be deprecated when all the input components are refactored in [PR #580](https://github.com/OpenVAA/voting-advice-application/pull/580)
+   * @param value A `LocalizedString` or a `string`
+   */
+  function ensureLocalizedString(value: AnswerPropsValue): LocalizedString | undefined {
+    return !value ? undefined : isTranslation(value) ? value : {[defaultLocale]: `${value}`};
   }
 
   function onChange(details: {questionId: string; value: AnswerPropsValue}) {
@@ -318,26 +318,16 @@
               footerText={$t('xxx.basicInfo.unaffiliatedDescription')}
               value={value ? value : false}
               {onChange} />
-          {:else if question.type === 'text' && (isLocalizedString(value) || value == null)}
-            {@const previousValue = $infoAnswers[question.id]?.value}
-            {#if $infoAnswers[question.id] && (isLocalizedString(previousValue) || previousValue == null)}
-              <TextInput
-                questionId={question.id}
-                headerText={question.text}
-                locked={$questionsLocked}
-                bind:clearLocalStorage
-                {value}
-                {previousValue}
-                {onChange} />
-            {:else}
-              <TextInput
-                questionId={question.id}
-                headerText={question.text}
-                {value}
-                locked={$questionsLocked}
-                bind:clearLocalStorage
-                {onChange} />
-            {/if}
+          {:else if question.type === 'text'}
+            <TextInput
+              questionId={question.id}
+              headerText={question.text}
+              locked={$questionsLocked}
+              compact={question.textType === 'short'}
+              bind:clearLocalStorage
+              value={ensureLocalizedString(value)}
+              previousValue={ensureLocalizedString($infoAnswers[question.id]?.value)}
+              {onChange} />
           {:else if question.type === 'date' && (typeof value === 'string' || value == null)}
             <DateInput
               questionId={question.id}
