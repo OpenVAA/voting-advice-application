@@ -4,6 +4,7 @@
   import type {TextAreaProps, MultilangTextAreaProps} from './TextArea.type';
   import {Field, FieldGroup} from '$lib/components/common/form';
   import {TextArea, InputField} from '$candidate/components/textArea';
+  import {assertTranslationKey} from '$lib/i18n/utils';
 
   type $$Props = TextAreaProps & MultilangTextAreaProps;
   export let id: $$Props['id'];
@@ -38,12 +39,9 @@
 
 <!--
 @component
-A text area that can be used to input text in multiple languages.
-Uses either a text area or an input field for each language.
-Text is given as a LocalizedString object with the language code as the key.
-
-The primary language is always shown, other languages can be toggled.
-If all languages are shown, the header is shown for each language.
+A text area that can be used to input text in multiple languages. Uses either a text area or an input field for each language. The text is given as a LocalizedString object with the language code as the key.
+The primary language is always shown, other languages can be toggled. If all languages are shown, the header is shown for each language.
+If the app only supports one language, no translation functions are shown.
 
 ### Slots
 - `header` - Optional header for the text area, can be used instead of the default one.
@@ -111,7 +109,9 @@ Input field variant
           <TextArea
             bind:text={multilangText[$currentLocale]}
             id={translationsShown ? id + '-' + $currentLocale : id}
-            headerText={translationsShown ? $t(`lang.${$currentLocale}`) : undefined}
+            headerText={translationsShown
+              ? $t(assertTranslationKey(`lang.${$currentLocale}`))
+              : undefined}
             localStorageId={localStorageId + '-' + $currentLocale}
             previouslySaved={previouslySavedMultilang?.[$currentLocale]}
             {rows}
@@ -127,7 +127,7 @@ Input field variant
               <InputField
                 id="{id}-{locale}"
                 bind:text={multilangText[locale]}
-                headerText={$t(`lang.${locale}`)}
+                headerText={$t(assertTranslationKey(`lang.${locale}`))}
                 {placeholder}
                 {disabled}
                 {locked} />
@@ -135,7 +135,7 @@ Input field variant
               <TextArea
                 id="{id}-{locale}"
                 bind:text={multilangText[locale]}
-                headerText={$t(`lang.${locale}`)}
+                headerText={$t(assertTranslationKey(`lang.${locale}`))}
                 localStorageId={localStorageId + '-' + locale}
                 previouslySaved={previouslySavedMultilang?.[locale]}
                 {rows}
@@ -149,19 +149,21 @@ Input field variant
     {/if}
   </FieldGroup>
 
-  {#if translationsShown}
-    <p class="px-6 text-sm">{$t('components.multiLangInput.info')}</p>
-  {/if}
+  {#if $locales.length > 1}
+    {#if translationsShown}
+      <p class="px-6 text-sm">{$t('components.multiLangInput.info')}</p>
+    {/if}
 
-  <!-- Toggle whether translations are shown -->
-  <Button
-    type="button"
-    on:click={() => (translationsShown = !translationsShown)}
-    text={translationsShown
-      ? $t('components.multiLangInput.hide')
-      : $t('components.multiLangInput.show')}
-    variant="normal"
-    icon={translationsShown ? 'hide' : 'language'}
-    {disabled}
-    iconPos="left" />
+    <!-- Toggle whether translations are shown -->
+    <Button
+      type="button"
+      on:click={() => (translationsShown = !translationsShown)}
+      text={translationsShown
+        ? $t('components.multiLangInput.hide')
+        : $t('components.multiLangInput.show')}
+      variant="normal"
+      icon={translationsShown ? 'hide' : 'language'}
+      {disabled}
+      iconPos="left" />
+  {/if}
 </div>
