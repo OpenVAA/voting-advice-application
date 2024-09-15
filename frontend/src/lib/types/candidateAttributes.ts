@@ -60,7 +60,7 @@ export interface Nomination {
   id: number;
   electionSymbol: string;
   electionRound: number;
-  party: Party;
+  party?: Party;
   election: Election;
   constituency?: Constituency;
 }

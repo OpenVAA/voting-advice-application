@@ -1,15 +1,12 @@
 {
   "addAnother": "Lisää uusi",
-  "disclaimer": "Nimesi ja jotkin muut tiedot on täytetty valmiiksi, eikä niitä voi muuttaa. Jos niissä on virheitä, ota yhteyttä puolueeseesi. Jos vaalinumerosi ei ole näkyvissä, se asetetaan automaattisesti sen jälkeen, kun ehdokkaiden rekisteröintijakso päättyy 29. lokakuuta.",
+  "disclaimer": "Nimesi ja jotkin muut tiedot on täytetty valmiiksi, eikä niitä voi muuttaa. Jos niissä on virheitä, ota yhteyttä puolueeseesi.",
   "error": {
-    "invalidQuestion": "Kysymyksen tai vastauksen tyyppi oli virheellinen kysymykselle {questionId}"
-  },
-  "fields": {
-    "birthday": "Syntymäpäivä"
+    "invalidQuestion": "Kysymyksen tai vastauksen tyyppi oli virheellinen kysymykselle {questionId}."
   },
   "instructions": "Täytä ensin perustietosi ja lataa valokuva. Tämän jälkeen sinulta kysytään poliittisia mielipiteitäsi.",
   "nominations": {
-    "description": "Nämä ovat vaalipiirit, joissa olet ehdolla, sekä vaaliluettelo ja mahdollinen vaalitunnus. Jos ehdokkuus on merkitty merkinnällä \\Vireillä\\\", vaalitunnustasi ei välttämättä ole vielä määritelty.",
+    "description": "Nämä ovat vaalipiirit, joissa olet ehdolla, sekä vaaliluettelo ja mahdollinen vaalitunnus. Jos ehdokkuus on merkitty merkinnällä ”Vireillä”, vaalitunnustasi ei välttämättä ole vielä määritelty.",
     "title": "Ehdokkuudet"
   },
   "title": "Perustiedot"

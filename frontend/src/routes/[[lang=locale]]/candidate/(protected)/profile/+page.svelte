@@ -10,7 +10,7 @@
   import {Button} from '$lib/components/button';
   import {goto} from '$app/navigation';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import type {CandidateAnswer} from '$lib/types/candidateAttributes';
+  import type {CandidateAnswer, Nomination} from '$lib/types/candidateAttributes';
   import {addAnswer, updateAnswer} from '$lib/api/candidate';
   import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
   import InputContainer from '$candidate/components/input/InputContainer.svelte';
@@ -72,7 +72,7 @@
   // follow allFilledPrivate to check if all the required questions are answered.
   let allFilledPrivate: boolean = false;
   $: {
-    if ($infoQuestions && $infoQuestions.length > 0) {
+    if ($infoQuestions) {
       const requiredQuestions = $infoQuestions.filter((question) => question.required);
       allFilledPrivate = requiredQuestions.every((question) => {
         return !answerIsEmpty(question, $unsavedInfoAnswers[question.id]);
@@ -209,9 +209,22 @@
   function onChange(details: {questionId: string; value: AnswerPropsValue}) {
     $unsavedInfoAnswers[details.questionId].value = details.value;
   }
+
+  /**
+   * Format a nomination for display.
+   */
+  function formatNomination(nomination: Nomination): string {
+    return [
+      translate(nomination.constituency?.shortName ?? nomination.constituency?.name),
+      translate(nomination.party?.shortName),
+      nomination.electionSymbol
+    ]
+      .filter((v) => v != null && v !== '')
+      .join($t('common.multipleAnswerSeparator'));
+  }
 </script>
 
-{#if $infoAnswers && $infoQuestions && $infoQuestions.length > 0}
+{#if $infoAnswers && $infoQuestions}
   <BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
     <Warning display={!!$questionsLocked} slot="note">
       <p>{$t('candidateApp.common.editingNotAllowed')}</p>
@@ -249,13 +262,7 @@
             {$t('candidateApp.basicInfo.nominations.title')}
           </p>
           {#if nomination}
-            <Field
-              id="nomination"
-              label={`${translate(nomination.constituency?.shortName)} ${$t('common.multipleAnswerSeparator')} ${translate(nomination.party.shortName)} ${
-                nomination.electionSymbol
-                  ? `${$t('common.multipleAnswerSeparator')} ${nomination.electionSymbol}`
-                  : ''
-              }`}>
+            <Field id="nomination" label={formatNomination(nomination)}>
               <InputContainer locked>
                 <input
                   disabled
