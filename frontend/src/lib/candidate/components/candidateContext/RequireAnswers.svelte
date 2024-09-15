@@ -5,21 +5,22 @@
 
   const candidateContext = getContext<CandidateContext>('candidate');
 
-  const questionsAndAnswers = Promise.all([
+  const data = Promise.all([
     candidateContext.loadOpinionAnswerData(),
     candidateContext.loadInfoAnswerData(),
     candidateContext.loadOpinionQuestionData(),
-    candidateContext.loadInfoQuestionData()
+    candidateContext.loadInfoQuestionData(),
+    candidateContext.loadPartyData()
   ]);
 </script>
 
 <!--
 @component
-Require candidate answers to be loaded to view the children of this component.
+Require candidate answers and other necessary dat to be loaded to view the children of this component.
 
 ### Slots
 
-- default: The content to show when the answers are loaded.
+- default: The content to show when the data are loaded.
 
 ### Usage
 
@@ -29,7 +30,7 @@ Require candidate answers to be loaded to view the children of this component.
 </RequiredAnswers>
 ```
 -->
-{#await questionsAndAnswers}
+{#await data}
   <Loading showLabel />
 {:then}
   <slot />
