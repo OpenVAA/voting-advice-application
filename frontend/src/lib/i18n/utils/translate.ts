@@ -3,12 +3,17 @@ import {matchLocale} from './matchLocale';
 
 /**
  * Return the correct string for the `locale` using soft-matching from the supplied `LocalizedString` object.
- * @param strings An object with locale-translation key-value pairs
+ * @param strings An object with locale-translation key-value pairs or a raw string
  * @param locale The target locale
  * @returns The translalated string or ''
  */
-export function translate(strings: LocalizedString | undefined | null, locale?: string): string {
-  return (translateObject(strings, locale) as string) ?? '';
+export function translate(
+  strings: LocalizedString | string | undefined | null,
+  locale?: string
+): string {
+  return typeof strings === 'string'
+    ? strings
+    : ((translateObject(strings, locale) as string) ?? '');
 }
 
 /**
