@@ -9,7 +9,6 @@ export async function setDefaultApiPermissions() {
     'api::app-setting.app-setting',
     'api::candidate.candidate',
     'api::constituency.constituency',
-    'api::election-app-label.election-app-label',
     'api::election.election',
     'api::language.language',
     'api::nomination.nomination',
