@@ -1,6 +1,6 @@
 # Development troubleshooting
 
-## Commit error: Husky not found
+## Commit error: ’Husky not found’
 
 Try running `npx husky install`.
 
@@ -34,23 +34,31 @@ Note also that there are two commands that can be used to stop the containers:
 
 Update your Docker engine to a more recent version.
 
-## Server error when trying to access frontend
+## Frontend: Candidate registration fails with ’Bad Request’ error
+
+The `email` property is required for a `Candidate`. If it is not set, registration will result in a ’Bad Request’ error.
+
+## Frontend: Changes to the content in Strapi not updated in the frontend
+
+If you’re adding the content manually in Strapi, make sure to `Publish` all changes to content types that require publishing, such as `Candidate`s.
+
+## Frontend: Server error when trying to access frontend
 
 It takes a while for Strapi to kick up even after the Docker container is running, so if you just started it, wait a few minutes.
 
 If that's not the issue, open Docker and check the `frontend` and `strapi` containers' logs for possible clues.
 
-## Strapi's content model is reset after restart
-
-Any changes to the content model are not reflected on local files by default. If you can't see any changes in your local files when editing the content types using Strapi's web UI, check that you have [hot reloading enabled](./docker-setup-guide.md#hot-reloading).
-
-## Strapi does not populate relations
+## Frontend: Strapi relations are not populated
 
 The REST api query syntax can be a bit tricky, notably `*` only goes one-level deep.
 
-Another possible cause is that the access control policy does not allow populating the relations. The policy is defined for each API route in [`backend/vaa-strapi/src/api/<endpoint>/routes/<endpoint>.ts`](../backend/vaa-strapi/src/api).
+Another possible cause is that the access control policy does not allow populating the relations. The policy is defined for each API route in [`backend/vaa-strapi/src/api/<schema>/routes/<schema>.ts`](../backend/vaa-strapi/src/api). For more information, see [Security](./security.md).
 
-## Strapi error ’relation already exists’ on restart after editing the content model
+## Strapi: Content model is reset after restart
+
+Any changes to the content model are not reflected on local files by default. If you can't see any changes in your local files when editing the content types using Strapi's web UI, check that you have [hot reloading enabled](./docker-setup-guide.md#hot-reloading).
+
+## Strapi error: ’Relation already exists’ error on restart after editing the content model
 
 If Strapi gives an error dealing with creating a table with the message that a relation or table already exists, such as the example below, it may be due to [a name that is longer than 63 characters](https://forum.strapi.io/t/create-index-already-exists/16835/7). To fix, shorten the name of the component or its parent. If the name cannot be easily shortened, you can only edit the internal names. For an example, see [this commit](https://github.com/OpenVAA/voting-advice-application/pull/577/commits/a9689458045ee1ebb9e2d00243d2befa5d571574).
 
@@ -77,7 +85,3 @@ If Strapi gives an error dealing with creating a table with the message that a r
 |                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
-
-## Candidate registration fails
-
-The `email` property is required for a `Candidate`. If it is not set, registration will result in a 'Bad Request' error.
