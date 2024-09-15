@@ -311,6 +311,13 @@ export async function getLanguages(): Promise<Array<StrapiLanguageData> | undefi
   return resJson.data;
 }
 
+/**
+ * Get all parties.
+ */
+export async function getParties(): Promise<Array<PartyProps>> {
+  return await dataProvider.getAllParties({locale: locale.get()});
+}
+
 export async function uploadFiles(files: Array<File>) {
   const formData = new FormData();
   files.forEach((file) => formData.append('files', file));
