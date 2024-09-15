@@ -20,6 +20,10 @@ export type InputFieldProps<TValue extends AnswerProps['value']> = {
    */
   locked?: boolean;
   /**
+   * If `true`, a compact version of the input will be shown, such as `input type="text"` instead of a `textarea`. @default false
+   */
+  compact?: boolean;
+  /**
    * The answer to the question.
    */
   value?: TValue | null;

@@ -348,6 +348,7 @@ function getQuestions({electionId, locale, categoryType}: GetAnyQuestionsOptions
         if ('min' in settings) props.min = settings.min;
         if ('max' in settings) props.max = settings.max;
         if ('dateType' in settings) props.dateType = settings.dateType;
+        if ('textType' in settings) props.textType = settings.textType;
         if ('notLocalizable' in settings) props.notLocalizable = settings.notLocalizable;
         catQuestions.push(props);
       }
