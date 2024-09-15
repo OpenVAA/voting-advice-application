@@ -202,11 +202,6 @@ function getNominatedCandidates({
         const cnd = nom.attributes.candidate.data;
         const id = '' + cnd.id;
         const attr = cnd.attributes;
-        if (!nom.attributes.party.data)
-          error(
-            500,
-            `Could not retrieve result for nominating candidates: party for candidate with id '${id}' not found`
-          );
         const {firstName, lastName} = attr;
         const props: CandidateProps = {
           id,
@@ -215,7 +210,9 @@ function getNominatedCandidates({
           firstName,
           lastName,
           name: formatName({firstName, lastName}),
-          party: parseParty(nom.attributes.party.data, locale),
+          party: nom.attributes.party.data
+            ? parseParty(nom.attributes.party.data, locale)
+            : undefined,
           answers: loadAnswers && attr.answers?.data ? parseAnswers(attr.answers.data, locale) : {}
         };
         const photo = attr.photo?.data?.attributes;

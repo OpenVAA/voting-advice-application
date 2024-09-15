@@ -137,7 +137,7 @@ declare global {
     lastName: string;
     name: string;
     photo?: ImageProps;
-    party: PartyProps;
+    party?: PartyProps;
   }
 
   /**
