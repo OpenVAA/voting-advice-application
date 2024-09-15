@@ -194,13 +194,11 @@
               >{$t('results.candidates.total', {numTotal: allCandidates.length})}</span>
           {/if}
         </h2>
-        {#if candidateFilters}
-          <EntityListControls
-            contents={allCandidates}
-            filterGroup={candidateFilters}
-            bind:output={filteredCandidates}
-            class="mx-10 mb-md" />
-        {/if}
+        <EntityListControls
+          contents={allCandidates}
+          filterGroup={candidateFilters}
+          bind:output={filteredCandidates}
+          class="mx-10 mb-md" />
         <EntityList cards={filteredCandidates.map(parseCandidate)} class="mb-lg" />
       {/await}
 

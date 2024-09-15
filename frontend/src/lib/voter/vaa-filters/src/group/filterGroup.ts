@@ -38,15 +38,17 @@ export class FilterGroup<T extends MaybeWrapped> {
   /////////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Apply the filters to the inputs.
+   * Apply the filters to the inputs. If the group has no active filters, returns the original list.
    * @input A list of entities.
    * @returns Filtered targets
    */
   apply<U extends T>(targets: U[]) {
-    return combineResults(
-      this.filters.map((f) => f.apply(targets)),
-      this._logicOp
-    ) as U[];
+    return this.active
+      ? (combineResults(
+          this.filters.map((f) => f.apply(targets)),
+          this._logicOp
+        ) as U[])
+      : targets;
   }
 
   /////////////////////////////////////////////////////////////////////////////////
