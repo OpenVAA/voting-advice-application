@@ -1,8 +1,14 @@
-import {authenticate, getInfoAnswers, getInfoQuestions, me} from '$lib/api/candidate';
+import {
+  authenticate,
+  getInfoAnswers,
+  getInfoQuestions,
+  getOpinionAnswers,
+  getOpinionQuestions,
+  getParties,
+  me
+} from '$lib/api/candidate';
 import type {User, Progress, CandidateAnswer} from '$lib/types/candidateAttributes';
 import {derived, writable, type Writable, type Readable} from 'svelte/store';
-import {getOpinionAnswers} from '$lib/api/candidate';
-import {getOpinionQuestions} from '$lib/api/candidate';
 import {answerIsEmpty} from './answers';
 
 export interface CandidateContext {
@@ -24,6 +30,9 @@ export interface CandidateContext {
   loadOpinionQuestionData: () => Promise<void>;
   infoQuestions: Writable<Array<QuestionProps> | undefined>;
   loadInfoQuestionData: () => Promise<void>;
+  // Parties
+  parties: Writable<Array<PartyProps> | undefined>;
+  loadPartyData: () => Promise<void>;
   // Custom utility
   unansweredRequiredInfoQuestions: Readable<Array<QuestionProps> | undefined>;
   unansweredOpinionQuestions: Readable<Array<QuestionProps> | undefined>;
@@ -38,6 +47,7 @@ const opinionAnswers = writable<Record<string, CandidateAnswer> | undefined>(und
 const infoAnswers = writable<Record<string, CandidateAnswer> | undefined>(undefined);
 const opinionQuestions = writable<Array<QuestionProps> | undefined>(undefined);
 const infoQuestions = writable<Array<QuestionProps> | undefined>(undefined);
+const parties = writable<Array<PartyProps> | undefined>(undefined);
 
 const questionsLocked = writable<boolean | undefined>(undefined);
 
@@ -77,13 +87,10 @@ const progress = derived(
 const logIn = async (email: string, password: string) => {
   const response = await authenticate(email, password);
   if (!response.ok) return false;
-
   const data = await response.json();
   token.set(data.jwt);
   localStorage.setItem('token', data.jwt);
-
   await loadUserData();
-
   return true;
 };
 
@@ -97,9 +104,7 @@ const loadUserData = async () => {
     logOut();
     return;
   }
-
   const canEditQuestions = currentUser.candidate?.nomination?.election?.canEditQuestions;
-
   questionsLocked.set(!canEditQuestions);
   user.set(currentUser);
 };
@@ -112,41 +117,29 @@ function logOut() {
 
 async function loadOpinionAnswerData() {
   const answers = await getOpinionAnswers();
-
-  if (!answers) {
-    throw new Error('Could not find opinion answer data');
-  }
+  if (!answers) throw new Error('Could not find opinion answer data');
   opinionAnswers.set(answers);
 }
 
 async function loadInfoAnswerData() {
   const answers = await getInfoAnswers();
-
-  if (!answers) {
-    throw new Error('Could not find info answer data');
-  }
-
+  if (!answers) throw new Error('Could not find info answer data');
   infoAnswers.set(answers);
 }
 
 async function loadOpinionQuestionData() {
   const questions = await getOpinionQuestions();
-
-  if (!questions) {
-    throw new Error('Could not find opinion question data');
-  }
-
   opinionQuestions.set(questions);
 }
 
 async function loadInfoQuestionData() {
   const questions = await getInfoQuestions();
-
-  if (!questions) {
-    throw new Error('Could not find info question data');
-  }
-
   infoQuestions.set(questions);
+}
+
+async function loadPartyData() {
+  const partyProps = await getParties();
+  parties.set(partyProps);
 }
 
 export const candidateContext: CandidateContext = {
@@ -168,5 +161,7 @@ export const candidateContext: CandidateContext = {
   unansweredRequiredInfoQuestions,
   unansweredOpinionQuestions,
   progress,
-  questionsLocked
+  questionsLocked,
+  parties,
+  loadPartyData
 };
