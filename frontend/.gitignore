@@ -12,4 +12,4 @@ vite.config.ts.*.mjs
 package-lock.json
 
 # Locally stored data files
-/data
+# /data
