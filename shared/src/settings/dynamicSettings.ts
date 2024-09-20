@@ -19,6 +19,11 @@ export const dynamicSettings: DynamicSettings = {
     showFeedback: true,
     showHelp: true
   },
+  entities: {
+    hideIfMissingAnswers: {
+      candidate: true
+    }
+  },
   matching: {
     minimumAnswers: 5,
     partyMatching: 'median'

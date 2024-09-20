@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2024-09-10T08:41:53.329Z"
+    "x-generation-date": "2024-09-20T08:09:35.691Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
@@ -3663,7 +3663,8 @@
           "matching",
           "entityDetails",
           "questions",
-          "results"
+          "results",
+          "entities"
         ],
         "properties": {
           "underMaintenance": {
@@ -3689,6 +3690,9 @@
           },
           "results": {
             "$ref": "#/components/schemas/SettingsResultsComponent"
+          },
+          "entities": {
+            "$ref": "#/components/schemas/SettingsEntitiesComponent"
           },
           "createdAt": {
             "type": "string",
@@ -4215,6 +4219,25 @@
                     "tag"
                   ]
                 }
+              }
+            }
+          }
+        }
+      },
+      "SettingsEntitiesComponent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "hideIfMissingAnswers": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              },
+              "candidate": {
+                "type": "boolean"
               }
             }
           }
