@@ -10,6 +10,7 @@
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import type {CandidateContext} from '$lib/utils/candidateContext';
   import {customization} from '$lib/stores';
+  import {darkMode} from '$lib/utils/darkMode';
 
   export let registrationCode = '';
   export let wrongCode = false;
@@ -40,8 +41,10 @@ In addition, shows a warning to the user if another user is already logged in.
 <FrontPage title={$t('candidateApp.register.title')}>
   <img
     slot="hero"
-    class="bg-white"
-    src={$customization.posterCandidateApp?.url ?? '/images/hero-candidate.png'}
+    class="bg-neutral-content"
+    src={$darkMode
+      ? ($customization.candPosterDark?.url ?? '/images/hero-candidate.png')
+      : ($customization.candPoster?.url ?? '/images/hero-candidate.png')}
     alt="" />
 
   <HeadingGroup slot="heading">

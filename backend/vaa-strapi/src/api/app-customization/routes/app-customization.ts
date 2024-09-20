@@ -17,7 +17,9 @@ export default factories.createCoreRouter('api::app-customization.app-customizat
           'publisherLogo',
           'publisherLogoDark',
           'poster',
-          'posterCandidateApp'
+          'posterDark',
+          'candPoster',
+          'candPosterDark',
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([])
