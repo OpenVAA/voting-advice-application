@@ -12,6 +12,7 @@
     UnAnsweredQuestion
   } from '$lib/candidate/components/questionsPage';
   import type {CandidateContext} from '$lib/utils/candidateContext';
+  import {settings} from '$lib/stores';
 
   const {
     opinionQuestions,
@@ -78,8 +79,8 @@
     progressMax={$progress?.max}>
     <Warning display={!!$questionsLocked} slot="note">
       <p>{$t('candidateApp.common.editingNotAllowed')}</p>
-      {#if $unansweredOpinionQuestions?.length !== 0 || $unansweredRequiredInfoQuestions?.length !== 0}
-        <p>{$t('candidateApp.common.editingNotAllowedPartiallyFilled')}</p>
+      {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
+        <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
       {/if}
     </Warning>
 
@@ -91,6 +92,9 @@
         {$t('candidateApp.questions.unansweredWarning', {
           numUnansweredQuestions: $unansweredOpinionQuestions?.length
         })}
+        {#if $settings.entities?.hideIfMissingAnswers?.candidate}
+          {$t('candidateApp.common.willBeHiddenIfMissing')}
+        {/if}
       </div>
       <div class="flex w-full justify-center pb-40 pt-20">
         <Button

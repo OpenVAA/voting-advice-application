@@ -2,10 +2,11 @@
   "contactSupport": "Contact Support",
   "continueFilling": "Continue Filling",
   "editingNotAllowed": "Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data.",
-  "editingNotAllowedPartiallyFilled": "Because you didn’t answer all of the questions, your profile won’t be shown.",
   "email": "Email",
   "emailPlaceholder": "example@email.com",
   "greeting": "Hello, {username}!",
   "home": "Start",
+  "isHiddenBecauseMissing": "Your profile won’t be shown because you didn’t answer all of the questions.",
+  "willBeHiddenIfMissing": "Your profile won’t be shown in the application before you have answered all of the questions.",
   "voterApp": "Election Compass for Voters"
 }
