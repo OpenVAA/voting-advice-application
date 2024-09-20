@@ -10,6 +10,7 @@ import {sortCandidates, sortParties} from '$lib/utils/sort';
 import {localStorageWritable} from '$lib/utils/storage';
 import {extractCategories, filterVisible} from '$lib/utils/questions';
 import {dynamicSettings, staticSettings} from 'vaa-shared';
+import {hasAllAnswers} from '../utils/hasAllAnswers';
 
 /**
  * Contains the currently effective app settings.
@@ -162,11 +163,21 @@ export const election: Readable<ElectionProps | undefined> = derived(
 );
 
 /**
- * Utility store for candidates as part of `PageData`.
+ * Utility store for candidates as part of `PageData` that also handles possible filtering by answers and sorting of candidates.
  */
 export const candidates: Readable<Promise<CandidateProps[]>> = derived(
   page,
-  ($page) => $page.data.candidates?.then((d) => d.sort(sortCandidates)) ?? Promise.resolve([]),
+  ($page) => {
+    const candsPromise = $page.data.candidates;
+    if (!candsPromise) return Promise.resolve([]);
+    // Technically, we should derive this store also from settings and opinionQuestions, but this will cause unnecessary updates and these are all dependent on page, so we just fetch them manually
+    const hideIfMissing = get(settings).entities?.hideIfMissingAnswers?.candidate;
+    if (!hideIfMissing) return candsPromise.then((d) => d.sort(sortCandidates));
+    const questPromise = get(opinionQuestions);
+    return Promise.all([candsPromise, questPromise]).then(([cands, questions]) =>
+      cands.filter((c) => hasAllAnswers(c, questions)).sort(sortCandidates)
+    );
+  },
   Promise.resolve([])
 );
 

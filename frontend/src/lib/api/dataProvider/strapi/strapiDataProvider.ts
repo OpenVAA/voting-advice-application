@@ -88,6 +88,7 @@ function getAppSettings(): Promise<Partial<AppSettings> | undefined> {
     'populate[header]': 'true',
     'populate[matching]': 'true',
     'populate[survey]': 'true',
+    'populate[entities][populate][hideIfMissingAnswers]': 'true',
     'populate[entityDetails][populate][contents]': 'true',
     'populate[entityDetails][populate][showMissingElectionSymbol]': 'true',
     'populate[entityDetails][populate][showMissingAnswers]': 'true',
