@@ -17,6 +17,6 @@
   "start": "Enter your opinions",
   "tip": "You can see all your anwers on this page when you come back to it later.",
   "title": "Your Opinions",
-  "unansweredWarning": "You still have {numUnansweredQuestions} unanswered questions. Your data won't be shown in the Election Compass until you have answered all of them.",
+  "unansweredWarning": "You still have {numUnansweredQuestions} unanswered questions.",
   "viewAnswer": "View Your Answer"
 }
