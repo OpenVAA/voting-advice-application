@@ -39,7 +39,7 @@ export const staticSettings: StaticSettings = {
   },
   font: {
     name: 'Inter',
-    url: "https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap')",
+    url: "https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap",
     style: 'sans'
   },
   supportedLocales: [
