@@ -13,36 +13,45 @@
   import {Warning} from '$lib/components/warning';
   import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {QuestionPageProps} from './QuestionPage.type';
+  import type {CandidateAnswer} from '$types/candidateAttributes';
 
   type $$Props = QuestionPageProps;
   export let currentQuestion: $$Props['currentQuestion'];
   export let editMode: $$Props['editMode'] = false;
 
+  let answer: CandidateAnswer | undefined;
+  let category: QuestionCategoryProps;
+  let info: string | undefined;
+  let likertLocal: string;
+  let openAnswer: LocalizedString = {};
+  let openAnswerLocal: string;
+  let openAnswerTextArea: MultilangTextInput; // Used to clear the local storage from the parent component
+  let options: Array<AnswerOption>;
+  let questionId: string;
+  let selectedKey: AnswerOption['key'] | undefined;
+
   const {opinionAnswers, progress, questionsLocked, unansweredOpinionQuestions} =
     getContext<CandidateContext>('candidate');
 
-  $: answer = $opinionAnswers?.[questionId]; // undefined if not answered
-
-  $: questionId = currentQuestion.id;
-
-  // Local storage keys, depend on the question id
-  $: likertLocal = `candidate-app-question-${questionId}-likert`;
-  $: openAnswerLocal = `candidate-app-question-${questionId}-open`;
-
-  let openAnswerTextArea: MultilangTextInput; // Used to clear the local storage from the parent component
-  let openAnswer: LocalizedString = {};
-
-  let selectedKey: AnswerOption['key'] | undefined;
-
-  // Set the selected key on page load, local storage takes precedence
   $: {
-    const value = localStorage.getItem(likertLocal) ?? answer?.value;
-    if (value != null) {
-      const intValue = typeof value === 'number' ? value : parseInt(`${value}`);
-      if (`${intValue}` !== `${value}` || !Number.isInteger(intValue))
-        throw new Error(`Likert question answer value is not an integer: ${value}`);
+    questionId = currentQuestion.id;
+    // Set the selected key on page load, local storage takes precedence
+    likertLocal = `candidate-app-question-${questionId}-likert`;
+    openAnswerLocal = `candidate-app-question-${questionId}-open`;
+    const localValue = localStorage.getItem(likertLocal);
+    if (localValue != null) {
+      const intValue = typeof localValue === 'number' ? localValue : parseInt(`${localValue}`);
+      if (`${intValue}` !== `${localValue}` || !Number.isInteger(intValue))
+        throw new Error(`Likert question answer value is not an integer: ${localValue}`);
+      answer = undefined;
       selectedKey = intValue;
+    } else {
+      answer = $opinionAnswers?.[questionId]; // undefined if not answered
+      selectedKey = answer ? parseInt(`${answer.value}`) : undefined;
     }
+    category = currentQuestion.category;
+    info = currentQuestion.info;
+    options = currentQuestion.values ?? [];
   }
 
   const saveLikertToLocal = ({detail}: CustomEvent) => {
@@ -136,13 +145,6 @@
     removeLocalAnswerToQuestion();
     goto($getRoute(Route.CandAppQuestions));
   };
-
-  $: category = currentQuestion.category;
-  $: info = currentQuestion.info;
-  $: options = currentQuestion.values?.map(({key, label}) => ({
-    key,
-    label: label
-  }));
 </script>
 
 <!--
