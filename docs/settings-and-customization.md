@@ -8,6 +8,28 @@ Dynamic settings can be changed by modifying [dynamicSettings.ts](../shared/src/
 
 Settings from `dynamicSettings.ts`, `staticSettings.ts` and from the DataProvider are merged together into [`settings` store](../frontend/src/lib/stores/stores.ts). Settings from `dynamicSettings.ts` are overwritten by dynamic settings from the DataProvider. Settings from `staticSettings.ts` are merged last to prevent overwriting them.
 
+## Adding New Settings
+
+In case of static settings:
+
+1. Add the type and documentation for the new setting to the `StaticSettings` type in [staticSettings.ts](../shared/src/settings/settings.type.ts).
+2. Add the default value for the setting to [staticSettings.ts](../shared/src/settings/staticSettings.ts).
+
+In case of dynamic settings:
+
+1. Add the type and documentation for the new setting to the `DynamicSettings` type in [staticSettings.ts](../shared/src/settings/settings.type.ts).
+2. Add the default value for the setting to [dynamicSettings.ts](../shared/src/settings/dynamicSettings.ts).
+3. Edit the settings components in Strapi:
+   1. If the new setting is a top-level one, create a new component for the setting and add it to the `App Settings` content-type.
+   2. If the new setting is a subsetting of a top-level item, edit that setting.
+4. Edit the populate restrictions for the [app-settings route](backend/vaa-strapi/src/api/app-setting/routes/app-setting.ts) so that the new component is allowed to be populated both for `find` and `findOne`.
+5. Update the Strapi data types for `StrapiAppSettingsData` in [strapiDataProvider.type.ts](../frontend/src/lib/api/dataProvider/strapi/strapiDataProvider.type.ts)
+6. Add the necessary `populate` query params to the `getAppSettings` method in [strapiDataProvider.ts](../frontend/src/lib/api/dataProvider/strapi/strapiDataProvider.ts), because components need to be explicitly populated.
+7. If the data type for the setting does not match the one in the `DynamicSettings` type:
+   1. Edit the `getAppSettings` method in [strapiDataProvider.ts](../frontend/src/lib/api/dataProvider/strapi/strapiDataProvider.ts) so that it returns the setting in the correct format.
+   2. Edit the [loadDefaultAppSettings](backend/vaa-strapi/src/functions/loadDefaultAppSettings.ts) utility so that it converts the  default settings to a format suitable for Strapi.
+8. Repeat steps 3–5 for all other `DataProvider` implementations that support `getAppSettings`.
+
 # App Customization
 
 App customization includes publisher logo, front page image, translations and frequently asked questions of the candidate app. App customization has been currently implemented only in Strapi.
