@@ -9,19 +9,26 @@
   import {FrontPage} from '$lib/templates/frontPage';
 </script>
 
-<FrontPage title={$election?.name ?? ''}>
+<FrontPage
+  title={$election?.name ?? ''}
+  invertLogo
+  style="background-image: url('{$darkMode
+    ? ($customization.posterDark?.url ?? '/images/hero.png')
+    : ($customization.poster?.url ?? '/images/hero.png')}');"
+  class="bg-cover bg-center"
+  mainClass="bg-base-300 grow-0 mt-0 mx-auto rounded-t-lg max-w-xl">
   <HeadingGroup slot="heading">
     <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
     <h1 class="text-3xl font-normal">{$election?.name ?? ''}</h1>
   </HeadingGroup>
 
-  <img
+  <!-- <img
     slot="hero"
     class="bg-neutral-content"
     src={$darkMode
       ? ($customization.posterDark?.url ?? '/images/hero.png')
       : ($customization.poster?.url ?? '/images/hero.png')}
-    alt="" />
+    alt="" /> -->
 
   <Button variant="main" href={$getRoute(Route.Intro)} text={$t('dynamic.frontPage.startButton')} />
 
