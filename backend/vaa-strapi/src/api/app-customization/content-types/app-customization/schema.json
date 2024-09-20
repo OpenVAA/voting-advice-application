@@ -39,7 +39,7 @@
         "images"
       ]
     },
-    "posterCandidateApp": {
+    "candPoster": {
       "type": "media",
       "multiple": false,
       "required": false,
@@ -57,6 +57,20 @@
       "type": "component",
       "repeatable": true,
       "component": "customization.translation-override"
+    },
+    "posterDark": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false
+    },
+    "candPosterDark": {
+      "allowedTypes": [
+        "images"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }
