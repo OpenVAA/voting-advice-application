@@ -485,45 +485,6 @@ export interface PluginContentReleasesReleaseAction extends Schema.CollectionTyp
   };
 }
 
-export interface PluginI18NLocale extends Schema.CollectionType {
-  collectionName: 'i18n_locale';
-  info: {
-    singularName: 'locale';
-    pluralName: 'locales';
-    collectionName: 'locales';
-    displayName: 'Locale';
-    description: '';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  pluginOptions: {
-    'content-manager': {
-      visible: false;
-    };
-    'content-type-builder': {
-      visible: false;
-    };
-  };
-  attributes: {
-    name: Attribute.String &
-      Attribute.SetMinMax<
-        {
-          min: 1;
-          max: 50;
-        },
-        number
-      >;
-    code: Attribute.String & Attribute.Unique;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<'plugin::i18n.locale', 'oneToOne', 'admin::user'> &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<'plugin::i18n.locale', 'oneToOne', 'admin::user'> &
-      Attribute.Private;
-  };
-}
-
 export interface PluginUsersPermissionsPermission extends Schema.CollectionType {
   collectionName: 'up_permissions';
   info: {
@@ -662,6 +623,45 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
   };
 }
 
+export interface PluginI18NLocale extends Schema.CollectionType {
+  collectionName: 'i18n_locale';
+  info: {
+    singularName: 'locale';
+    pluralName: 'locales';
+    collectionName: 'locales';
+    displayName: 'Locale';
+    description: '';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    name: Attribute.String &
+      Attribute.SetMinMax<
+        {
+          min: 1;
+          max: 50;
+        },
+        number
+      >;
+    code: Attribute.String & Attribute.Unique;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'plugin::i18n.locale', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'plugin::i18n.locale', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
 export interface ApiAnswerAnswer extends Schema.CollectionType {
   collectionName: 'answers';
   info: {
@@ -689,6 +689,42 @@ export interface ApiAnswerAnswer extends Schema.CollectionType {
   };
 }
 
+export interface ApiAppCustomizationAppCustomization extends Schema.SingleType {
+  collectionName: 'app_customizations';
+  info: {
+    singularName: 'app-customization';
+    pluralName: 'app-customizations';
+    displayName: 'App Customization';
+    description: '';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    publisherName: Attribute.JSON;
+    publisherLogo: Attribute.Media<'images'>;
+    publisherLogoDark: Attribute.Media<'images'>;
+    poster: Attribute.Media<'images'>;
+    posterCandidateApp: Attribute.Media<'images'>;
+    candidateAppFAQ: Attribute.Component<'customization.candidate-app-faq', true>;
+    translationOverrides: Attribute.Component<'customization.translation-override', true>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::app-customization.app-customization',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::app-customization.app-customization',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiAppSettingAppSetting extends Schema.CollectionType {
   collectionName: 'app_settings';
   info: {
@@ -701,14 +737,15 @@ export interface ApiAppSettingAppSetting extends Schema.CollectionType {
     draftAndPublish: false;
   };
   attributes: {
-    publisherName: Attribute.JSON;
-    publisherLogo: Attribute.Media;
-    publisherLogoDark: Attribute.Media;
-    customData: Attribute.JSON;
-    poster: Attribute.Media;
-    posterCandidateApp: Attribute.Media;
     underMaintenance: Attribute.Boolean & Attribute.DefaultTo<false>;
     allowOverwrite: Attribute.Boolean & Attribute.DefaultTo<false>;
+    header: Attribute.Component<'settings.header'> & Attribute.Required;
+    matching: Attribute.Component<'settings.matching'> & Attribute.Required;
+    survey: Attribute.Component<'settings.survey'>;
+    entityDetails: Attribute.Component<'settings.entity-details'> & Attribute.Required;
+    questions: Attribute.Component<'settings.questions'> & Attribute.Required;
+    results: Attribute.Component<'settings.results'> & Attribute.Required;
+    entities: Attribute.Component<'settings.entities'> & Attribute.Required;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<'api::app-setting.app-setting', 'oneToOne', 'admin::user'> &
@@ -740,8 +777,7 @@ export interface ApiCandidateCandidate extends Schema.CollectionType {
       Attribute.Private;
     firstName: Attribute.String & Attribute.Required;
     lastName: Attribute.String & Attribute.Required;
-    photo: Attribute.Media;
-    manifesto: Attribute.JSON;
+    photo: Attribute.Media<'images'>;
     party: Attribute.Relation<'api::candidate.candidate', 'manyToOne', 'api::party.party'>;
     answers: Attribute.Relation<'api::candidate.candidate', 'oneToMany', 'api::answer.answer'>;
     nomination: Attribute.Relation<
@@ -815,11 +851,6 @@ export interface ApiElectionElection extends Schema.CollectionType {
     electionStartDate: Attribute.Date & Attribute.Required;
     electionDate: Attribute.Date & Attribute.Required;
     electionType: Attribute.Enumeration<['local', 'presidential', 'congress']>;
-    electionAppLabel: Attribute.Relation<
-      'api::election.election',
-      'manyToOne',
-      'api::election-app-label.election-app-label'
-    >;
     constituencies: Attribute.Relation<
       'api::election.election',
       'manyToMany',
@@ -847,64 +878,6 @@ export interface ApiElectionElection extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<'api::election.election', 'oneToOne', 'admin::user'> &
       Attribute.Private;
-  };
-}
-
-export interface ApiElectionAppLabelElectionAppLabel extends Schema.CollectionType {
-  collectionName: 'election_app_label';
-  info: {
-    singularName: 'election-app-label';
-    pluralName: 'election-app-labels';
-    displayName: 'Election App Labels';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  pluginOptions: {
-    i18n: {
-      localized: true;
-    };
-  };
-  attributes: {
-    elections: Attribute.Relation<
-      'api::election-app-label.election-app-label',
-      'oneToMany',
-      'api::election.election'
-    >;
-    actionLabels: Attribute.Component<'labels.action-labels'> &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    viewTexts: Attribute.Component<'labels.view-texts'> &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::election-app-label.election-app-label',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::election-app-label.election-app-label',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    localizations: Attribute.Relation<
-      'api::election-app-label.election-app-label',
-      'oneToMany',
-      'api::election-app-label.election-app-label'
-    >;
-    locale: Attribute.String;
   };
 }
 
@@ -1018,7 +991,7 @@ export interface ApiPartyParty extends Schema.CollectionType {
     draftAndPublish: true;
   };
   attributes: {
-    logo: Attribute.Media;
+    logo: Attribute.Media<'images'>;
     candidates: Attribute.Relation<'api::party.party', 'oneToMany', 'api::candidate.candidate'>;
     answers: Attribute.Relation<'api::party.party', 'oneToMany', 'api::answer.answer'>;
     nominations: Attribute.Relation<'api::party.party', 'oneToMany', 'api::nomination.nomination'>;
@@ -1068,6 +1041,7 @@ export interface ApiQuestionQuestion extends Schema.CollectionType {
     filterable: Attribute.Boolean & Attribute.DefaultTo<false>;
     customData: Attribute.JSON;
     order: Attribute.Integer & Attribute.DefaultTo<0>;
+    required: Attribute.Boolean & Attribute.DefaultTo<true>;
     entityType: Attribute.Enumeration<['all', 'candidate', 'party']> & Attribute.DefaultTo<'all'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1092,7 +1066,7 @@ export interface ApiQuestionCategoryQuestionCategory extends Schema.CollectionTy
   };
   attributes: {
     order: Attribute.Integer & Attribute.Required & Attribute.DefaultTo<0>;
-    elections: Attribute.Relation<
+    election: Attribute.Relation<
       'api::question-category.question-category',
       'manyToOne',
       'api::election.election'
@@ -1171,16 +1145,16 @@ declare module '@strapi/types' {
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
-      'plugin::i18n.locale': PluginI18NLocale;
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
+      'plugin::i18n.locale': PluginI18NLocale;
       'api::answer.answer': ApiAnswerAnswer;
+      'api::app-customization.app-customization': ApiAppCustomizationAppCustomization;
       'api::app-setting.app-setting': ApiAppSettingAppSetting;
       'api::candidate.candidate': ApiCandidateCandidate;
       'api::constituency.constituency': ApiConstituencyConstituency;
       'api::election.election': ApiElectionElection;
-      'api::election-app-label.election-app-label': ApiElectionAppLabelElectionAppLabel;
       'api::feedback.feedback': ApiFeedbackFeedback;
       'api::language.language': ApiLanguageLanguage;
       'api::nomination.nomination': ApiNominationNomination;

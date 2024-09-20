@@ -60,6 +60,12 @@
       "repeatable": false,
       "component": "settings.results",
       "required": true
+    },
+    "entities": {
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.entities",
+      "required": true
     }
   }
 }
