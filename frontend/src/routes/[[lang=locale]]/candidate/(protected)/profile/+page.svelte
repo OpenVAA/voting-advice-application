@@ -24,6 +24,7 @@
   } from '$candidate/components/input';
   import {answerIsEmpty} from '$lib/utils/answers';
   import type {TranslationKey} from '$types';
+  import {settings} from '$lib/stores';
 
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
   const headerClass = 'uppercase mx-6 my-0 p-0 small-label';
@@ -232,8 +233,8 @@
   <BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
     <Warning display={!!$questionsLocked} slot="note">
       <p>{$t('candidateApp.common.editingNotAllowed')}</p>
-      {#if $unansweredOpinionQuestions?.length !== 0 || $unansweredRequiredInfoQuestions?.length !== 0}
-        <p>{$t('candidateApp.common.editingNotAllowedPartiallyFilled')}</p>
+      {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
+        <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
       {/if}
     </Warning>
 

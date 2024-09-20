@@ -5,7 +5,7 @@
     "view": "Tarkastele perustietojasi"
   },
   "ingress": {
-    "notDone": "Näkyäksesi vaalikoneessa sinun on annettava joitakin perustietoja itsestäsi ja vastattava poliittisiin mielipidekysymyksiin.",
+    "notDone": "Näkyäksesi vaalikoneessa sinun on annettava joitakin perustietoja itsestäsi ja vastattava mielipidekysymyksiin.",
     "ready": "Olet täyttänyt kaikki vaalikoneen tarvittavat tiedot. Voit vielä muokata vastauksiasi ja jopa kirjautua sisään myöhemmin sitä varten."
   },
   "preview": "Esikatsele profiiliasi",

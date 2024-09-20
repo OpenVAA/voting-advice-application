@@ -2,10 +2,11 @@
   "contactSupport": "Kontakta support",
   "continueFilling": "SV Continue Filling",
   "editingNotAllowed": "SV Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data.",
-  "editingNotAllowedPartiallyFilled": "SV Because you didn’t answer all of the questions, your profile won’t be shown.",
   "email": "E-post",
   "emailPlaceholder": "example@email.com",
   "greeting": "SV Hello, {userName}!",
   "home": "SV Start",
+  "isHiddenBecauseMissing": "SV Your profile won’t be shown because you didn’t answer all of the questions.",
+  "willBeHiddenIfMissing": "SV Your profile won’t be shown in the application before you have answered all of the questions.",
   "voterApp": "Valkompass för väljare"
 }

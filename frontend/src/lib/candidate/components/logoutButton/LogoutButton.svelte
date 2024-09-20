@@ -7,6 +7,7 @@
   import {getContext} from 'svelte';
   import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {LogoutButtonProps} from './LogoutButton.type';
+  import {settings} from '$lib/stores';
 
   type $$props = LogoutButtonProps;
 
@@ -18,13 +19,13 @@
   let closeModal: () => void;
   let timeLeft = logoutModalTimer;
 
-  const {unansweredOpinionQuestions, unansweredRequiredInfoQuestions, logOut} =
+  const {questionsLocked, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, logOut} =
     getContext<CandidateContext>('candidate');
 
   const triggerLogout = () => {
     if (
-      $unansweredOpinionQuestions?.length !== 0 ||
-      $unansweredRequiredInfoQuestions?.length !== 0
+      !$questionsLocked &&
+      ($unansweredOpinionQuestions?.length !== 0 || $unansweredRequiredInfoQuestions?.length !== 0)
     ) {
       openModal();
     } else {
@@ -83,6 +84,9 @@ Allows user to log out. Displays modal notification if the user hasn't filled al
         opinionQuestionsLeft: $unansweredOpinionQuestions?.length ?? 0
       })}
     </p>
+    {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
+      <p>{$t('candidateApp.common.willBeHiddenIfMissing')}</p>
+    {/if}
   {/if}
   <p>
     {$t('candidateApp.logoutModal.ingress', {timeLeft})}
