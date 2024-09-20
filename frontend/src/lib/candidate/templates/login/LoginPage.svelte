@@ -10,6 +10,7 @@
   import {FrontPage} from '$lib/templates/frontPage';
   import type {CandidateContext} from '$lib/utils/candidateContext';
   import {customization} from '$lib/stores';
+  import {darkMode} from '$lib/utils/darkMode';
 
   const {user, logIn, newUserEmail} = getContext<CandidateContext>('candidate');
 
@@ -55,8 +56,10 @@ Candidate login page. This component also takes care of the login process.
 <FrontPage title={$t('candidateApp.login.title')}>
   <img
     slot="hero"
-    class="bg-white"
-    src={$customization.posterCandidateApp?.url ?? '/images/hero-candidate.png'}
+    class="bg-neutral-content"
+    src={$darkMode
+      ? ($customization.candPosterDark?.url ?? '/images/hero-candidate.png')
+      : ($customization.candPoster?.url ?? '/images/hero-candidate.png')}
     alt="" />
 
   <HeadingGroup slot="heading">

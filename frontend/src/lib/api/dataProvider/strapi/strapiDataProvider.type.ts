@@ -130,30 +130,12 @@ export interface StrapiAppCustomizationData {
     translationOverrides: {[locale: string]: {[translationKey: string]: string}};
     candidateAppFAQ: {[locale: string]: Array<{question: string; answer: string}>};
     publisherName: LocalizedString | null;
-    publisherLogo: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
-    publisherLogoDark: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
-    poster: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
-    posterCandidateApp: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
+    publisherLogo: StrapiImage;
+    publisherLogoDark: StrapiImage;
+    poster: StrapiImage;
+    posterDark: StrapiImage;
+    candPoster: StrapiImage;
+    candPosterDark: StrapiImage;
   };
 }
 
@@ -277,12 +259,7 @@ export interface StrapiCandidateData {
     party: {
       data: StrapiPartyData;
     };
-    photo: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
+    photo: StrapiImage;
   };
 }
 
@@ -337,12 +314,7 @@ export interface StrapiPartyData {
     info: LocalizedString;
     color: string;
     colorDark: string;
-    logo: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
+    logo: StrapiImage;
     answers: {
       data: StrapiAnswerData[];
     };
@@ -354,6 +326,13 @@ export interface StrapiPartyData {
     };
   };
 }
+
+export type StrapiImage = {
+  data?: {
+    id: number | string;
+    attributes: StrapiImageData;
+  };
+};
 
 export interface StrapiImageData extends StrapiImageFormatData {
   alternativeText?: string;

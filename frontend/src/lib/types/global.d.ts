@@ -90,7 +90,9 @@ declare global {
     publisherLogo?: ImageProps;
     publisherLogoDark?: ImageProps;
     poster?: ImageProps;
-    posterCandidateApp?: ImageProps;
+    posterDark?: ImageProps;
+    candPoster?: ImageProps;
+    candPosterDark?: ImageProps;
     translationOverrides?: {[translationKey: TranslationKey]: string};
     candidateAppFAQ?: Array<{question: string; answer: string}>;
   };
