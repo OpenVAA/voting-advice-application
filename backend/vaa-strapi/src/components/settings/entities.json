@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_settings_entities",
+  "info": {
+    "displayName": "Entities",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "hideIfMissingAnswers": {
+      "displayName": "hideIfMissingAnswers",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.hide-if-missing-answers"
+    }
+  }
+}

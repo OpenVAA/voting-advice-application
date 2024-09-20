@@ -12,6 +12,7 @@ export default factories.createCoreRouter('api::app-setting.app-setting', {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([
+          'entities',
           'header',
           'matching',
           'survey',
@@ -33,6 +34,7 @@ export default factories.createCoreRouter('api::app-setting.app-setting', {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([
+          'entities',
           'header',
           'matching',
           'survey',

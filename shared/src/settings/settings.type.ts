@@ -192,6 +192,20 @@ export type DynamicSettings = {
     showHelp: boolean;
   };
   /**
+   * Settings controlling which entities are shown in the app.
+   */
+  entities: {
+    /**
+     * Settings controlling whether entites with missing answers should be shown. This is currently only supported for candidates.
+     */
+    hideIfMissingAnswers: {
+      /**
+       * Whether to hide candidates with missing answers in the app.
+       */
+      candidate: boolean;
+    };
+  }
+  /**
    * Settings related to the matching algorithm.
    */
   matching: {
