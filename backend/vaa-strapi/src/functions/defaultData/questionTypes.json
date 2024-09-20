@@ -1,0 +1,155 @@
+[
+  {
+    "name": "Likert-4",
+    "info": "A Likert question with 4 options.",
+    "settings": {
+      "type": "singleChoiceOrdinal",
+      "values": [
+        {
+          "key": 1,
+          "label": {
+            "en": "Fully disagree",
+            "fi": "Täysin eri mieltä",
+            "sv": "Instämmer inte alls"
+          }
+        },
+        {
+          "key": 2,
+          "label": {
+            "en": "Disagree",
+            "fi": "Osittain eri mieltä",
+            "sv": "Instämmer inte helt"
+          }
+        },
+        {
+          "key": 3,
+          "label": {
+            "en": "Agree",
+            "fi": "Osittain samaa mieltä",
+            "sv": "Instämmer i viss grad"
+          }
+        },
+        {
+          "key": 4,
+          "label": {
+            "en": "Fully agree",
+            "fi": "Täysin samaa mieltä",
+            "sv": "Instämmer i hög grad"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "Likert-5",
+    "info": "A Likert question with 5 options.",
+    "settings": {
+      "type": "singleChoiceOrdinal",
+      "values": [
+        {
+          "key": 1,
+          "label": {
+            "en": "Fully disagree",
+            "fi": "Täysin eri mieltä",
+            "sv": "Instämmer inte alls"
+          }
+        },
+        {
+          "key": 2,
+          "label": {
+            "en": "Disagree",
+            "fi": "Osittain eri mieltä",
+            "sv": "Instämmer inte helt"
+          }
+        },
+        {
+          "key": 3,
+          "label": {
+            "en": "Neither agree nor disagree",
+            "fi": "Ei samaa eikä eri mieltä",
+            "sv": "Varken instämmer eller instämmer inte"
+          }
+        },
+        {
+          "key": 4,
+          "label": {
+            "en": "Agree",
+            "fi": "Osittain samaa mieltä",
+            "sv": "Instämmer i viss grad"
+          }
+        },
+        {
+          "key": 5,
+          "label": {
+            "en": "Fully agree",
+            "fi": "Täysin samaa mieltä",
+            "sv": "Instämmer i hög grad"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "Text",
+    "info": "A basic text question.",
+    "settings": {
+      "type": "text"
+    }
+  },
+  {
+    "name": "Date",
+    "info": "A date which is displayed without the year.",
+    "settings": {
+      "type": "date",
+      "dateType": "monthDay"
+    }
+  },
+  {
+    "name": "Boolean",
+    "info": "A yes/no question.",
+    "settings": {
+      "type": "boolean"
+    }
+  },
+  {
+    "name": "Gender",
+    "info": "A list of genders.",
+    "settings": {
+      "type": "singleChoiceCategorical",
+      "values": [
+        {
+          "key": 1,
+          "label": {
+            "en": "Female",
+            "fi": "Nainen",
+            "sv": "Kvinna"
+          }
+        },
+        {
+          "key": 2,
+          "label": {
+            "en": "Male",
+            "fi": "Mies",
+            "sv": "Man"
+          }
+        },
+        {
+          "key": 3,
+          "label": {
+            "en": "Other",
+            "fi": "Muu",
+            "sv": "Annan"
+          }
+        },
+        {
+          "key": 4,
+          "label": {
+            "en": "Prefer not to answer",
+            "fi": "En halua vastata",
+            "sv": "Svarar helst inte"
+          }
+        }
+      ]
+    }
+  }
+]
