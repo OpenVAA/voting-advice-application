@@ -4,6 +4,7 @@
   import {Button} from '$lib/components/button';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {getContext} from 'svelte';
+  import {settings} from '$lib/stores';
   import {InfoBadge} from '$lib/components/infoBadge';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import {Warning} from '$lib/components/warning';
@@ -77,8 +78,8 @@
 <BasicPage title={nextAction.title}>
   <Warning display={!!$questionsLocked} slot="note">
     <p>{$t('candidateApp.common.editingNotAllowed')}</p>
-    {#if $unansweredRequiredInfoQuestions?.length !== 0 || $unansweredOpinionQuestions?.length !== 0}
-      <p>{$t('candidateApp.common.editingNotAllowedPartiallyFilled')}</p>
+    {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
+      <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
     {/if}
   </Warning>
 
