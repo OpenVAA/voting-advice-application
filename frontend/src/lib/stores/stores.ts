@@ -272,7 +272,7 @@ export const candidateRankings: Readable<
     const resultsAvailableSync = await $resultsAvailable;
     const candidatesSync = await $candidates;
     const opinionQuestionsSync = await $opinionQuestions;
-    return resultsAvailableSync
+    return resultsAvailableSync && candidatesSync.length
       ? match(opinionQuestionsSync, $answeredQuestions, candidatesSync, {
           subMatches: $settings.results.cardContents.candidate.includes('submatches')
         })
