@@ -12,7 +12,6 @@ export type TranslationKey =
   | 'candidateApp.basicInfo.addAnother'
   | 'candidateApp.basicInfo.disclaimer'
   | 'candidateApp.basicInfo.error.invalidQuestion'
-  | 'candidateApp.basicInfo.fields.birthday'
   | 'candidateApp.basicInfo.instructions'
   | 'candidateApp.basicInfo.nominations.description'
   | 'candidateApp.basicInfo.nominations.title'
