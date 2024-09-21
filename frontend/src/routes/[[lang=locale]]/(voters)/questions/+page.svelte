@@ -79,11 +79,19 @@
     <Loading />
   {:else if !$settings.questions.questionsIntro.allowCategorySelection || categoriesSync.length < 2 || questionsSync.length <= $settings.matching.minimumAnswers}
     <p class="text-center">
-      {$t('questions.intro.ingress.withoutCategories', {numQuestions: questionsSync.length})}
+      {$t('questions.intro.ingress.withoutCategorySelection', {
+        numCategories: categoriesSync.length,
+        numQuestions: questionsSync.length
+      })}
     </p>
+    <div class="grid justify-items-center gap-sm">
+      {#each categoriesSync as category}
+        <CategoryTag {category} />
+      {/each}
+    </div>
   {:else}
     <p class="text-center">
-      {$t('questions.intro.ingress.withCategories', {
+      {$t('questions.intro.ingress.withCategorySelection', {
         numCategories: categoriesSync.length,
         minQuestions: $settings.matching.minimumAnswers
       })}
