@@ -13,8 +13,8 @@
   "infoDescription": "Taustatietoja tästä kysymyksestä",
   "intro": {
     "ingress": {
-      "withCategories": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. {minQuestions, plural, =0 {} =1 {} other {Valitse kuitenkin teemat siten, että niissä on ainakin # kysymystä.}}",
-      "withoutCategories": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista."
+      "withCategorySelection": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. {minQuestions, plural, =0 {} =1 {} other {Valitse kuitenkin teemat siten, että niissä on ainakin # kysymystä.}}",
+      "withoutCategorySelection": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. {numCategories, plural, =0 {} =1 {} other {Ne on jaettu # teemaan.}}"
     },
     "start": "Vastaa {numQuestions} kysymykseen"
   },

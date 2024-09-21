@@ -13,8 +13,8 @@
   "infoDescription": "Bakgrundsinformation om frågan",
   "intro": {
     "ingress": {
-      "withCategories": "Frågorna är indelade i {numCategories} kategorier. Du kan svarar på dem alla eller välja de du vill ha. {minQuestions, plural, =0 {} =1 {} other {Välj dock tillräckligt många kategorier för att få minst # frågor totalt.}}",
-      "withoutCategories": "Svara sedan på {numQuestions} frågor om politik och värderingar."
+      "withCategorySelection": "Frågorna är indelade i {numCategories} kategorier. Du kan svarar på dem alla eller välja de du vill ha. {minQuestions, plural, =0 {} =1 {} other {Välj dock tillräckligt många kategorier för att få minst # frågor totalt.}}",
+      "withoutCategorySelection": "Svara sedan på {numQuestions} frågor om politik och värderingar. {numCategories, plural, =0 {} =1 {} other {Frågorna är indelade i # kategorier.}}"
     },
     "start": "Börja svara på frågor"
   },

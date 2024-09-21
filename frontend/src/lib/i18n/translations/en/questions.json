@@ -13,8 +13,8 @@
   "infoDescription": "Background information on the question",
   "intro": {
     "ingress": {
-      "withCategories": "The questions are divided into {numCategories} categories. You answer to all of them or the pick the ones you want. {minQuestions, plural, =0 {} =1 {} other {However, select enough categories to get at least # questions in total.}}",
-      "withoutCategories": "Next, answer {numQuestions} questions regarding politics and values."
+      "withCategorySelection": "The questions are divided into {numCategories} categories. You can answer all of them or the pick the ones you want. {minQuestions, plural, =0 {} =1 {} other {However, select enough categories to get at least # questions in total.}}",
+      "withoutCategorySelection": "Next, answer {numQuestions} questions regarding politics and values. {numCategories, plural, =0 {} =1 {} other {The questions are divided into # categories.}}"
     },
     "start": "Answer {numQuestions} Questions"
   },
