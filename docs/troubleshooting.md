@@ -76,4 +76,4 @@ If Strapi gives an error dealing with creating a table with the message that a r
 
 ## Candidate registration fails
 
-The `email` property is required for a `Candidate`. If it is not set, regisration will result in a 'Bad Request' error.
+The `email` property is required for a `Candidate`. If it is not set, registration will result in a 'Bad Request' error.

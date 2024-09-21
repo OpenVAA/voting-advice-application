@@ -26,13 +26,14 @@ You can create a new user using the "Create new entry" button. The following fie
 Then, use the "Save" button and you should be able to log in as the candidate at http://localhost:5173/candidate.
 
 ## Resetting Password
-The user gets an email with a link to reset their password using the forgot password functionality on the login page. The frontend URL in the emails is configured in `.env` with the PUBLIC_FRONTEND_URL variable, and the SMTP can be configured using the following variables:
-- `SMTP_HOST`: the hostname the SMTP server runs on
-- `SMTP_PORT`: the port of the SMTP server
-- `SMTP_USERNAME`: the username used for authentication
-- `SMTP_PASSWORD`: the password used for authentication
+The user gets an email with a link to reset their password using the forgot password functionality on the login page. The frontend URL in the emails is configured in `.env` with the PUBLIC_FRONTEND_URL variable, and the email service (AWS SES) can be configured using the following variables:
+- `AWS_ACCESS_KEY_ID`: AWS SES user access key
+- `AWS_SECRET_ACCESS_KEY`: AWS SES user secret access key
+- `AWS_REGION`: AWS SES region
 - `MAIL_FROM`: the email address the emails are sent from
 - `MAIL_REPLY_TO`: the email address replies should be sent to
+
+`MAIL_FROM` and `MAIL_REPLY_TO` variables will not take effect for emails sent by `user-permissions` Strapi plugin (f.e. reset password emails) as they are configured separately via Strapi UI in `Settings > Email Templates`.
 
 In a development environment, there is a local instance of [maildev](https://github.com/maildev/maildev) running so that you do not need to set up SMTP. The development configuration automatically enforces the use of maildev through the `backend/vaa-strapi/config/env/development/plugins.ts` file. The user interface of maildev can be found at [http://localhost:1080](http://localhost:1080), where you'll find any emails sent by Strapi.
 
