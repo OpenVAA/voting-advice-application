@@ -1,7 +1,13 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
   import {afterNavigate, onNavigate} from '$app/navigation';
-  import {settings, showFeedbackPopup, showSurveyPopup, userPreferences} from '$lib/stores';
+  import {
+    appType,
+    settings,
+    showFeedbackPopup,
+    showSurveyPopup,
+    userPreferences
+  } from '$lib/stores';
   import {startPageview, submitAllEvents} from '$lib/utils/analytics/track';
   import {DataConsentPopup} from '$lib/components/dataConsent/popup';
   import {FeedbackPopup} from '$lib/components/feedback/popup';
@@ -9,6 +15,8 @@
 
   let doShowFeedbackPopup = false;
   let doShowSurveyPopup = false;
+
+  $appType = 'voter';
 
   onNavigate(() => submitAllEvents());
   onDestroy(() => submitAllEvents());
