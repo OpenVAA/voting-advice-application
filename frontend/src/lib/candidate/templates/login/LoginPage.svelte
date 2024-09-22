@@ -9,7 +9,7 @@
   import {PasswordField} from '$lib/candidate/components/passwordField';
   import {FrontPage} from '$lib/templates/frontPage';
   import type {CandidateContext} from '$lib/utils/candidateContext';
-  import {customization} from '$lib/stores';
+  import {customization, settings} from '$lib/stores';
   import {darkMode} from '$lib/utils/darkMode';
 
   const {user, logIn, newUserEmail} = getContext<CandidateContext>('candidate');
@@ -95,7 +95,7 @@ Candidate login page. This component also takes care of the login process.
     <Button
       href={$getRoute(Route.CandAppForgotPassword)}
       text={$t('candidateApp.login.forgotPassword')} />
-    <Button href={$getRoute(Route.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
+    <Button href="mailto:{$settings.admin.email}" text={$t('candidateApp.common.contactSupport')} />
     <Button href={$getRoute(Route.Home)} text={$t('candidateApp.common.voterApp')} />
   </form>
 </FrontPage>
