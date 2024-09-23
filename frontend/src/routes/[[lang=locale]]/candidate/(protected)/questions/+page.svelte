@@ -111,13 +111,15 @@
           title={category || ''}
           variant="category"
           defaultExpanded={unansweredCategories.includes(category ?? '')}>
-          {#each categoryQuestions as question}
-            {#if $opinionAnswers?.[question.id]}
-              <AnsweredQuestion {question} {categoryQuestions} />
-            {:else}
-              <UnAnsweredQuestion {question} {categoryQuestions} />
-            {/if}
-          {/each}
+          <div class="px-lg">
+            {#each categoryQuestions as question}
+              {#if $opinionAnswers?.[question.id]}
+                <AnsweredQuestion {question} {categoryQuestions} />
+              {:else}
+                <UnAnsweredQuestion {question} {categoryQuestions} />
+              {/if}
+            {/each}
+          </div>
         </Expander>
       </div>
     {/each}
