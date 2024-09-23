@@ -14,7 +14,9 @@ export enum Route {
   CandAppProfile = 'candidate/profile',
   CandAppQuestions = 'candidate/questions',
   CandAppQuestionEdit = 'candidate/questions/edit',
+  /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/plugins/candidate-admin/server/services/email.js */
   CandAppRegister = 'candidate/register',
+  /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/extensions/users-permissions/strapi-server.js */
   CandAppResetPassword = 'candidate/password-reset',
   CandAppSettings = 'candidate/settings',
   Candidate = 'candidates',
