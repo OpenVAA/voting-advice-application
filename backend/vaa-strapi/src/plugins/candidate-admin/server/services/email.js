@@ -4,7 +4,7 @@
 
 const getFormattedMessage = (content, registrationKey) => {
   const url = new URL(process.env.PUBLIC_FRONTEND_URL ?? 'http://localhost:5173');
-  url.pathname = '/en/candidate/register';
+  url.pathname = '/candidate/register';
   url.searchParams.append('registrationCode', registrationKey);
   const resetUrl = url.toString();
 
