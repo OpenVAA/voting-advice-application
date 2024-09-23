@@ -11,7 +11,7 @@ const DEBUG = false;
 
 export const handle: Handle = (async ({event, resolve}) => {
   const {params, route, url, request, isDataRequest} = event;
-  const {pathname} = url;
+  const {pathname, search} = url;
   const requestedLocale = params.lang;
 
   const supportedLocales = locales.get();
@@ -67,7 +67,7 @@ export const handle: Handle = (async ({event, resolve}) => {
   if (requestedLocale !== servedLocale) {
     debug(`Route: REDIRECT to locale ${servedLocale}`);
     return new Response(undefined, {
-      headers: {location: `/${servedLocale}${cleanPath}`},
+      headers: {location: `/${servedLocale}${cleanPath}${search}`},
       status: 301
     });
   }
