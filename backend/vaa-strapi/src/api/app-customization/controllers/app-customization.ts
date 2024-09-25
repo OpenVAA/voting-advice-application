@@ -4,7 +4,6 @@
 
 import {factories} from '@strapi/strapi';
 import {API} from '../../../functions/utils/api';
-import {staticSettings} from 'vaa-shared';
 
 export default factories.createCoreController(API.AppCustomization, () => ({
   async find(ctx) {
@@ -32,18 +31,16 @@ export default factories.createCoreController(API.AppCustomization, () => ({
        *  }
        */ 
       if (translationOverrides) {
-        const translationOverridesByLocale = Object.fromEntries(
-          staticSettings.supportedLocales.map((locale) => [locale.code, {}])
-        );
+        const byLocale: {[locale: string]: {[key: string]: string}} = {};
         translationOverrides.forEach((trsOverride) => {
           trsOverride.translations?.forEach((trs) => {
             if (trs.translation) {
-              translationOverridesByLocale[trs.locale][trsOverride.translationKey] =
-                trs.translation;
+              byLocale[trs.locale] ??= {};
+              byLocale[trs.locale][trsOverride.translationKey] = trs.translation;
             }
           });
         });
-        response.data.attributes.translationOverrides = translationOverridesByLocale;
+        response.data.attributes.translationOverrides = byLocale;
       }
 
       /**
@@ -59,16 +56,16 @@ export default factories.createCoreController(API.AppCustomization, () => ({
        *  }
        */
       if (candidateAppFAQ) {
-          const candidateAppFAQbyLocale = Object.fromEntries(
-            staticSettings.supportedLocales.map((locale) => [locale.code, new Array<{answer: string; question: string;}>()])
-          );
-          candidateAppFAQ.forEach(({ locale, question, answer }) =>
-            candidateAppFAQbyLocale[locale].push({ question, answer })
-          );
-          response.data.attributes.candidateAppFAQ = candidateAppFAQbyLocale;
-        }
+        const byLocale: {[locale: string]: Array<{question: string; answer: string}>} = {};
+        candidateAppFAQ
+          .forEach(({ locale, question, answer }) => {
+            byLocale[locale] ??= [];
+            byLocale[locale].push({ question, answer });
+          });
+        response.data.attributes.candidateAppFAQ = byLocale;
       }
 
+    }
     return response;
   }
 }));
