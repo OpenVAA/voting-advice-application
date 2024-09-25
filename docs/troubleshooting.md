@@ -50,6 +50,10 @@ The REST api query syntax can be a bit tricky, notably `*` only goes one-level d
 
 Another common case is that the Content Types that are not populated have been added to the schema after creating the API token. To allow reading them, edit the API token and change it from `Custom` to `Read-Only` and back (and check that locale listing is still allowed).
 
+## Playwright: `TimeoutError` when locating elements and running the tests locally
+
+Elements are currently located mostly by their translated labels with hardcoded locales, which match those in the mock data. If, however, the `supportedLocales` you have set in [staticSettings.ts](../shared/src/settings/staticSettings.ts) differ from the ones used by the tests, many of them will fail.
+
 ## Strapi: Content model is reset after restart
 
 Any changes to the content model are not reflected on local files by default. If you can't see any changes in your local files when editing the content types using Strapi's web UI, check that you have [hot reloading enabled](./docker-setup-guide.md#hot-reloading).
