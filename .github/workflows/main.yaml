@@ -174,6 +174,14 @@ jobs:
       - name: "Run E2E tests"
         run: yarn test
 
+      - name: "Upload playwright setup report"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-setup-report
+          path: playwright-setup-report/
+          retention-days: 30
+
       - name: "Upload playwright report"
         uses: actions/upload-artifact@v4
         if: always()
