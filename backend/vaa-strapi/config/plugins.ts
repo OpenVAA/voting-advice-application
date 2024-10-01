@@ -47,6 +47,31 @@ export default ({env}) => {
         }
       }
     },
+    upload: {
+      config: {
+        provider: 'aws-s3',
+        providerOptions: {
+          baseUrl: env('STATIC_CONTENT_BASE_URL'),
+          rootPath: env('STATIC_MEDIA_CONTENT_PATH'),
+          s3Options: {
+            credentials: {
+              accessKeyId: env('AWS_S3_ACCESS_KEY_ID'),
+              secretAccessKey: env('AWS_S3_ACCESS_SECRET')
+            },
+            region: env('AWS_S3_REGION'),
+            params: {
+              ACL: 'private',
+              Bucket: env('AWS_S3_BUCKET')
+            }
+          }
+        },
+        actionOptions: {
+          upload: {},
+          uploadStream: {},
+          delete: {}
+        }
+      }
+    },
     'import-export-entries': {
       enabled: true,
       resolve: './strapi-plugin-import-export-entries'

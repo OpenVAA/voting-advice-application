@@ -2,6 +2,7 @@
   import {onDestroy, onMount} from 'svelte';
   import {updatePhoto, uploadFiles} from '$lib/api/candidate';
   import {constants} from '$lib/utils/constants';
+  import {isAbsoluteUrl} from '$lib/utils/links';
   import {t} from '$lib/i18n';
   import {Field} from '$lib/components/common/form';
   import {Icon} from '$lib/components/icon';
@@ -12,7 +13,11 @@
   export let onChange: (() => void) | undefined = undefined;
 
   let photoUrl = photo
-    ? new URL(constants.PUBLIC_BACKEND_URL + photo.formats.thumbnail.url)
+    ? new URL(
+        isAbsoluteUrl(photo.formats.thumbnail.url)
+          ? photo.formats.thumbnail.url
+          : `${constants.PUBLIC_BACKEND_URL}${photo.formats.thumbnail.url}`
+      )
     : undefined;
   let imageHasChanged = false;
   let image: File | undefined;
