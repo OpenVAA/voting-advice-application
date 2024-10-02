@@ -34,6 +34,7 @@ Display the question's expandable information content.
   on:collapse={() => startEvent('questionInfo_collapse')}
   on:expand={() => startEvent('questionInfo_expand')}
   title={$t('common.readMore')}
+  titleClass="text-primary font-bold"
   {...$$restProps}>
   {info}
 </Expander>
