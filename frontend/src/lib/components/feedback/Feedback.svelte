@@ -29,17 +29,16 @@
     sent: null;
   }>();
 
-  let textareaExpanded = variant === 'default';
-  let rating: number | undefined;
   let description: string;
   let errorTimeout: NodeJS.Timeout | undefined;
+  let rating: number | undefined;
+  let textareaExpanded = variant === 'default';
+  let zeroInput: HTMLInputElement;
 
   export let canSubmit: $$Props['canSubmit'] = false;
   $: canSubmit = status !== 'sending' && (rating != null || !!description);
 
-  onDestroy(() => {
-    if (errorTimeout) clearTimeout(errorTimeout);
-  });
+  onDestroy(clearErrorTimeout);
 
   /**
    * Submit the feedback or close the modal if it's already been submitted.
@@ -56,6 +55,7 @@
         dispatch('error');
         return;
       }
+      clearErrorTimeout();
       track('feedback_sent', {rating, description});
       status = 'sent';
       dispatch('sent');
@@ -76,6 +76,14 @@
     rating = undefined;
     description = '';
     status = 'default';
+    if (zeroInput) zeroInput.checked = true;
+  }
+
+  /**
+   * Clear the error timeout.
+   */
+  function clearErrorTimeout() {
+    if (errorTimeout) clearTimeout(errorTimeout);
   }
 
   /**
@@ -151,6 +159,7 @@ Show a form for sending feedback.
     </legend>
     <div class="rating">
       <input
+        bind:this={zeroInput}
         on:click={() => (rating = undefined)}
         aria-label={$t('feedback.rating.valueLabel', {rating: 0, ratingMax: MAX_RATING})}
         value={0}
