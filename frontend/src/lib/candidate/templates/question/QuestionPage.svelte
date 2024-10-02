@@ -28,13 +28,16 @@
   let openAnswerTextArea: MultilangTextInput; // Used to clear the local storage from the parent component
   let options: Array<AnswerOption>;
   let questionId: string;
+  let questionIndex: number | undefined;
   let selectedKey: AnswerOption['key'] | undefined;
 
-  const {opinionAnswers, progress, questionsLocked, unansweredOpinionQuestions} =
+  const {opinionAnswers, progress, questionsLocked, opinionQuestions, unansweredOpinionQuestions} =
     getContext<CandidateContext>('candidate');
 
   $: {
     questionId = currentQuestion.id;
+    questionIndex = $opinionQuestions?.findIndex((q) => q === currentQuestion);
+    if (questionIndex === -1) questionIndex = undefined;
     // Set the selected key on page load, local storage takes precedence
     likertLocal = `candidate-app-question-${questionId}-likert`;
     openAnswerLocal = `candidate-app-question-${questionId}-open`;
@@ -174,9 +177,18 @@ In addition to the question, includes a Likert scale and a text area for comment
       >{$t('candidateApp.common.editingNotAllowed')}</Warning>
 
     <HeadingGroup slot="heading" id="hgroup-{questionId}">
-      {#if category}
-        <PreHeading><CategoryTag {category} /></PreHeading>
-      {/if}
+      <PreHeading>
+        {#if questionIndex != null && $opinionQuestions}
+          <!-- Index of question within all questions -->
+          {#if !category}
+            {$t('common.question')}
+          {/if}
+          <span class="text-secondary">{questionIndex + 1}/{$opinionQuestions.length}</span>
+        {/if}
+        {#if category}
+          <CategoryTag {category} />
+        {/if}
+      </PreHeading>
       <h1>{currentQuestion.text}</h1>
     </HeadingGroup>
 
