@@ -12,11 +12,15 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 ```
 
+## Commit error: ’TypeError: Cannot read properties of undefined (reading 'font')’ error when running `/generateTranslationKeyType.ts`
+
+Try running `yarn workspace vaa-shared build` first.
+
 ## Docker error: Load metadata for docker.io/library/node:foo
 
 Docker needs to be connected to the internet to load the base Docker images.
 
-## Docker error: No space left on device
+## Docker: ’No space left on device’ error
 
 If Docker produces an error akin to `Error response from daemon [...] no space left on device`
 running `docker system prune` may help.
