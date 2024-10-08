@@ -291,6 +291,10 @@
             bind:uploadPhoto
             disabled={$answersLocked}
             onChange={() => (dirty = true)} />
+          <p class={disclaimerClass} slot="footer">
+            Vaalikoneen ylläpitäjä syöttää tähän aiemmin toimittamasi ehdokaskuvasi myöhemmin, joten
+            voit sivuuttaa tämän kohdan.
+          </p>
         </FieldGroup>
 
         {#each $infoQuestions as question}
