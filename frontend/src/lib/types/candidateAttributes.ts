@@ -75,7 +75,7 @@ export interface Party {
 
 export interface Election {
   id: number;
-  canEditQuestions: boolean;
+  answersLocked: boolean;
 }
 
 export interface Constituency {

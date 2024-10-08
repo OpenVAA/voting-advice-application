@@ -19,12 +19,12 @@
   let closeModal: () => void;
   let timeLeft = logoutModalTimer;
 
-  const {questionsLocked, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, logOut} =
+  const {answersLocked, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, logOut} =
     getContext<CandidateContext>('candidate');
 
   const triggerLogout = () => {
     if (
-      !$questionsLocked &&
+      !$answersLocked &&
       ($unansweredOpinionQuestions?.length !== 0 || $unansweredRequiredInfoQuestions?.length !== 0)
     ) {
       openModal();

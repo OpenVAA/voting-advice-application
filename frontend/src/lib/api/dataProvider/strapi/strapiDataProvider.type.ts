@@ -45,7 +45,7 @@ export interface StrapiElectionData {
   locale: string;
   attributes: {
     electionDate: Date;
-    canEditQuestions: boolean;
+    answersLocked: boolean;
     electionStartDate: Date;
     name: LocalizedString;
     shortName: LocalizedString;

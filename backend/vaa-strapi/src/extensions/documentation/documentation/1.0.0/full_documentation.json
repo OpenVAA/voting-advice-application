@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2024-09-20T12:23:37.268Z"
+    "x-generation-date": "2024-10-08T10:22:54.399Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
@@ -1765,7 +1765,7 @@
                                                                                         }
                                                                                       }
                                                                                     },
-                                                                                    "canEditQuestions": {
+                                                                                    "answersLocked": {
                                                                                       "type": "boolean"
                                                                                     },
                                                                                     "createdAt": {
@@ -6182,7 +6182,7 @@
                                                                                                     }
                                                                                                   }
                                                                                                 },
-                                                                                                "canEditQuestions": {
+                                                                                                "answersLocked": {
                                                                                                   "type": "boolean"
                                                                                                 },
                                                                                                 "createdAt": {
@@ -9112,7 +9112,7 @@
                             }
                           }
                         },
-                        "canEditQuestions": {
+                        "answersLocked": {
                           "type": "boolean"
                         },
                         "createdAt": {
@@ -11284,7 +11284,7 @@
                                           }
                                         }
                                       },
-                                      "canEditQuestions": {
+                                      "answersLocked": {
                                         "type": "boolean"
                                       },
                                       "createdAt": {
@@ -11456,7 +11456,7 @@
               }
             }
           },
-          "canEditQuestions": {
+          "answersLocked": {
             "type": "boolean"
           },
           "createdAt": {
@@ -14356,7 +14356,7 @@
                           }
                         }
                       },
-                      "canEditQuestions": {
+                      "answersLocked": {
                         "type": "boolean"
                       },
                       "createdAt": {
@@ -16303,7 +16303,7 @@
                                                                                           }
                                                                                         }
                                                                                       },
-                                                                                      "canEditQuestions": {
+                                                                                      "answersLocked": {
                                                                                         "type": "boolean"
                                                                                       },
                                                                                       "createdAt": {
@@ -18450,7 +18450,7 @@
                                                                                                         }
                                                                                                       }
                                                                                                     },
-                                                                                                    "canEditQuestions": {
+                                                                                                    "answersLocked": {
                                                                                                       "type": "boolean"
                                                                                                     },
                                                                                                     "createdAt": {
@@ -21277,7 +21277,7 @@
                           }
                         }
                       },
-                      "canEditQuestions": {
+                      "answersLocked": {
                         "type": "boolean"
                       },
                       "createdAt": {
@@ -23016,7 +23016,7 @@
                                                                                             }
                                                                                           }
                                                                                         },
-                                                                                        "canEditQuestions": {
+                                                                                        "answersLocked": {
                                                                                           "type": "boolean"
                                                                                         },
                                                                                         "createdAt": {

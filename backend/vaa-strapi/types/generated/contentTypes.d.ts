@@ -870,7 +870,7 @@ export interface ApiElectionElection extends Schema.CollectionType {
       'oneToMany',
       'api::question-category.question-category'
     >;
-    canEditQuestions: Attribute.Boolean;
+    answersLocked: Attribute.Boolean;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

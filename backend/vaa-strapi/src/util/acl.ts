@@ -145,7 +145,7 @@ export function restrictResourceOwnedByCandidate(contentType: string): any {
   };
 }
 
-export async function electionCanEditQuestions(ctx, config, {strapi}) {
+export async function electionCanEditAnswers(ctx, config, {strapi}) {
   if (!ctx.state.user) return false;
 
   const candidate = await strapi.db.query('api::candidate.candidate').findOne({
@@ -159,5 +159,5 @@ export async function electionCanEditQuestions(ctx, config, {strapi}) {
     }
   });
 
-  return candidate?.nomination?.election?.canEditQuestions ?? false;
+  return !candidate?.nomination?.election?.answersLocked;
 }

@@ -31,7 +31,7 @@
   let questionIndex: number | undefined;
   let selectedKey: AnswerOption['key'] | undefined;
 
-  const {opinionAnswers, progress, questionsLocked, opinionQuestions, unansweredOpinionQuestions} =
+  const {opinionAnswers, progress, answersLocked, opinionQuestions, unansweredOpinionQuestions} =
     getContext<CandidateContext>('candidate');
 
   $: {
@@ -173,7 +173,7 @@ In addition to the question, includes a Likert scale and a text area for comment
     class="bg-base-200"
     progress={$progress?.progress}
     progressMax={$progress?.max}>
-    <Warning display={!!$questionsLocked} slot="note"
+    <Warning display={!!$answersLocked} slot="note"
       >{$t('candidateApp.common.editingNotAllowed')}</Warning>
 
     <HeadingGroup slot="heading" id="hgroup-{questionId}">
@@ -201,7 +201,7 @@ In addition to the question, includes a Likert scale and a text area for comment
         <LikertResponseButtons
           aria-labelledby="hgroup-{questionId}"
           name={questionId}
-          mode={!$questionsLocked ? 'answer' : 'display'}
+          mode={!$answersLocked ? 'answer' : 'display'}
           {options}
           {selectedKey}
           on:change={saveLikertToLocal} />
@@ -215,7 +215,7 @@ In addition to the question, includes a Likert scale and a text area for comment
         localStorageId={openAnswerLocal}
         previouslySavedMultilang={answer?.openAnswer ?? undefined}
         disabled={!selectedKey}
-        locked={!!$questionsLocked}
+        locked={!!$answersLocked}
         placeholder="—"
         bind:multilangText={openAnswer}
         bind:this={openAnswerTextArea} />
@@ -224,7 +224,7 @@ In addition to the question, includes a Likert scale and a text area for comment
         <p class="text-error">{errorMessage}</p>
       {/if}
 
-      {#if !!$questionsLocked}
+      {#if !!$answersLocked}
         <Button
           on:click={() => goto($getRoute(Route.CandAppQuestions))}
           variant="main"
