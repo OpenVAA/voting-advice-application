@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, request } from "@playwright/test";
 import { faker } from "@faker-js/faker";
 import path from "path";
 import { TRANSLATIONS as T } from './utils/translations';
@@ -6,11 +6,24 @@ import { Route } from "../frontend/src/lib/utils/navigation/route";
 import mockInfoQuestions from "../backend/vaa-strapi/src/functions/mockData/mockInfoQuestions.json";
 import mockQuestionTypes from "../backend/vaa-strapi/src/functions/mockData/mockQuestionTypes.json";
 import mockQuestions from "../backend/vaa-strapi/src/functions/mockData/mockQuestions.json";
+import { simpleParser } from 'mailparser';
+import { load }from 'cheerio';
+
+type Email = {
+  Id: string
+  Region: string
+  Source: string
+  RawData: string
+  Timestamp: string
+}
+
+type Mailbox = {
+  messages: Email[]
+}
 
 const strapiPort = process.env.STRAPI_PORT || "1337";
 const strapiURL = `http://localhost:${strapiPort}`;
-const maildevPort = process.env.MAILDEV_PORT || "1080";
-const maildevURL = `http://localhost:${maildevPort}/#/`;
+const awsSesInboxURL = `${process.env.LOCALSTACK_ENDPOINT}/_aws/ses`;
 const LOCALE = 'en';
 
 const userFirstName = faker.person.firstName();
@@ -162,18 +175,27 @@ test("should log into Strapi and import candidates", async ({ page, baseURL }) =
   // Wait for 5 seconds to allow the email to be sent
   await page.waitForTimeout(5000);
 
-  // Navigate to maildev and open registration link
-  await page.goto(maildevURL);
-  await page
-    .getByRole("link", { name: `Subject To: ${userEmail}` })
-    .first()
-    .click();
-  const link = await page
-    .frameLocator("iframe >> nth=0")
-    .getByRole("link", { name: baseURL })
-    .getAttribute("href");
-  if (!link) throw new Error("Link not found");
-  await page.goto(link);
+  const req = await request.newContext();
+
+  // Fetch emails from the local AWS SES mailbox
+  const response = await req.fetch(awsSesInboxURL)
+  const emails = await response.json().then((parsed: Mailbox) => parsed.messages)
+
+  // Get HTML from the latest email
+  const latestEmailData = emails.at(-1)?.RawData
+  const htmlContent = latestEmailData && (await simpleParser(latestEmailData)).textAsHtml
+
+  // Extract registration link from the HTML
+  let registrationLink: string | undefined;
+
+  if (htmlContent) {
+    const $ = load(htmlContent)
+    registrationLink = $($('a')[0]).attr('href');
+  }
+
+  if (!registrationLink) throw new Error("Link not found");
+
+  await page.goto(registrationLink);
 
   // Complete the registration process
   // Check that the candidate name is correct
