@@ -12,6 +12,10 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 ```
 
+## Commit: ’TypeError: Cannot read properties of undefined (reading 'font')’ error when running `/generateTranslationKeyType.ts`
+
+Try running `yarn workspace vaa-shared build` first.
+
 ## Docker: ’No space left on device’ error
 
 If Docker produces an error akin to `Error response from daemon [...] no space left on device`
