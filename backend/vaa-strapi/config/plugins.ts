@@ -1,29 +1,8 @@
 const aws = require('@aws-sdk/client-ses');
 
 export default ({env}) => {
-  /**
-   * Strapi initilises nodemailer transporter only once using main plugin config.
-   * It allows to override only transporter specific (SMPT or SES) settings using [env]/plugins.ts, not the transporter type itself.
-   * So we have to make sure that for development we initilise the transporter as SMTP to be able to use maildev.
-   */
-  const emailProviderOptions =
-    env('NODE_ENV') === 'development'
-      ? undefined
-      : {
-          SES: {
-            ses: new aws.SES({
-              apiVersion: '2010-12-01',
-              region: env('AWS_REGION'),
-              credentials: {
-                accessKeyId: env('AWS_ACCESS_KEY_ID'),
-                secretAccessKey: env('AWS_SECRET_ACCESS_KEY')
-              }
-            }),
-            aws
-          },
-          // max 14 messages per second to comply with AWS SES
-          sendingRate: 14
-        };
+  const isDev = env('NODE_ENV') === 'development';
+
   return {
     'users-permissions': {
       config: {
@@ -39,7 +18,20 @@ export default ({env}) => {
       config: {
         provider: 'nodemailer',
         providerOptions: {
-          ...emailProviderOptions
+          SES: {
+            ses: new aws.SES({
+              endpoint: env('LOCALSTACK_ENDPOINT'),
+              apiVersion: '2010-12-01',
+              region: env('AWS_REGION'),
+              credentials: {
+                accessKeyId: env('AWS_ACCESS_KEY_ID'),
+                secretAccessKey: env('AWS_SECRET_ACCESS_KEY')
+              }
+            }),
+            aws
+          },
+          // max 14 messages per second to comply with AWS SES
+          sendingRate: 14
         },
         settings: {
           defaultFrom: env('MAIL_FROM'),
@@ -51,9 +43,25 @@ export default ({env}) => {
       config: {
         provider: 'aws-s3',
         providerOptions: {
-          baseUrl: env('STATIC_CONTENT_BASE_URL'),
+          /*
+           * The base URL on production uses a dedicated subdomain which is linked to AWS S3 bucket via CNAME DNS record.
+           **/
+          baseUrl: isDev
+            ? `${env('STATIC_CONTENT_BASE_URL')}/${env('AWS_S3_BUCKET')}`
+            : env('STATIC_CONTENT_BASE_URL'),
           rootPath: env('STATIC_MEDIA_CONTENT_PATH'),
           s3Options: {
+            /*
+             * In development we use local AWS - LocalStack.
+             **/
+            endpoint: isDev ? env('LOCALSTACK_ENDPOINT') : undefined,
+            /*
+             * In development we want to use "Path" style S3 URLs, since
+             * Docker services run locally are unable to resolve "Virtual-Hosted" style S3 URLs.
+             * https://docs.localstack.cloud/user-guide/aws/s3/#path-style-and-virtual-hosted-style-requests
+             *
+             **/
+            forcePathStyle: isDev,
             credentials: {
               accessKeyId: env('AWS_S3_ACCESS_KEY_ID'),
               secretAccessKey: env('AWS_S3_ACCESS_SECRET')
