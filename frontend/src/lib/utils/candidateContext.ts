@@ -37,7 +37,7 @@ export interface CandidateContext {
   unansweredRequiredInfoQuestions: Readable<Array<QuestionProps> | undefined>;
   unansweredOpinionQuestions: Readable<Array<QuestionProps> | undefined>;
   progress: Readable<Progress | undefined>;
-  questionsLocked: Writable<boolean | undefined>;
+  answersLocked: Writable<boolean | undefined>;
 }
 
 const user = writable<User | null>(null);
@@ -49,7 +49,7 @@ const opinionQuestions = writable<Array<QuestionProps> | undefined>(undefined);
 const infoQuestions = writable<Array<QuestionProps> | undefined>(undefined);
 const parties = writable<Array<PartyProps> | undefined>(undefined);
 
-const questionsLocked = writable<boolean | undefined>(undefined);
+const answersLocked = writable<boolean | undefined>(undefined);
 
 const unansweredRequiredInfoQuestions = derived(
   [infoQuestions, infoAnswers],
@@ -104,8 +104,7 @@ const loadUserData = async () => {
     logOut();
     return;
   }
-  const canEditQuestions = currentUser.candidate?.nomination?.election?.canEditQuestions;
-  questionsLocked.set(!canEditQuestions);
+  answersLocked.set(!!currentUser.candidate?.nomination?.election?.answersLocked);
   user.set(currentUser);
 };
 
@@ -161,7 +160,7 @@ export const candidateContext: CandidateContext = {
   unansweredRequiredInfoQuestions,
   unansweredOpinionQuestions,
   progress,
-  questionsLocked,
+  answersLocked,
   parties,
   loadPartyData
 };
