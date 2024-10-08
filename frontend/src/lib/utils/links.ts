@@ -3,6 +3,14 @@ import {logDebugError} from '$lib/utils/logger';
 import {ucFirst} from '$lib/utils/text/ucFirst';
 
 /**
+ * Checks if a URL is absolute.
+ * @returns true if absolute, false if not.
+ */
+export function isAbsoluteUrl(url: string): boolean {
+  return url.startsWith('http://') || url.startsWith('https://');
+}
+
+/**
  * Ensures an url is valid.
  * @returns the url or `undefined` if it is invalid.
  */

@@ -9,5 +9,13 @@ module.exports = ({env}) => ({
         ignoreTLS: true
       }
     }
+  },
+  upload: {
+    config: {
+      provider: 'local',
+      providerOptions: {
+        sizeLimit: 100000
+      }
+    }
   }
 });

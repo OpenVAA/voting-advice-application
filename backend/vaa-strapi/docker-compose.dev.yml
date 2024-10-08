@@ -30,6 +30,12 @@ services:
       AWS_REGION: ${AWS_REGION}
       MAIL_FROM: ${MAIL_FROM}
       MAIL_REPLY_TO: ${MAIL_REPLY_TO}
+      AWS_S3_ACCESS_KEY_ID: ${AWS_S3_ACCESS_KEY_ID}
+      AWS_S3_ACCESS_SECRET: ${AWS_S3_ACCESS_SECRET}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      STATIC_CONTENT_BASE_URL: ${STATIC_CONTENT_BASE_URL}
+      STATIC_MEDIA_CONTENT_PATH: ${STATIC_MEDIA_CONTENT_PATH}
     volumes:
       # Creating this volume will make Docker update changes from local automatically
       # Note that this only applies to src/, where all the source code is anyway.

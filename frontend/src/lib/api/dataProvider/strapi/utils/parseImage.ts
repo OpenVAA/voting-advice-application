@@ -1,4 +1,5 @@
 import {constants} from '$lib/utils/constants';
+import {isAbsoluteUrl} from '$lib/utils/links';
 import type {StrapiImageData} from '../strapiDataProvider.type';
 
 /**
@@ -6,13 +7,19 @@ import type {StrapiImageData} from '../strapiDataProvider.type';
  */
 
 export const parseImage = (image: StrapiImageData): ImageProps => {
-  const url = `${constants.PUBLIC_BACKEND_URL}${image.url}`;
+  const thumbnailUrl = image.formats?.thumbnail?.url || image.url;
+
+  const absoluteUrl = isAbsoluteUrl(image.url)
+    ? image.url
+    : `${constants.PUBLIC_BACKEND_URL}${image.url}`;
+  const absoluteThumbnailUrl = isAbsoluteUrl(thumbnailUrl)
+    ? thumbnailUrl
+    : `${constants.PUBLIC_BACKEND_URL}${thumbnailUrl}`;
+
   return {
-    url,
+    url: absoluteUrl,
     thumbnail: {
-      url: image.formats?.thumbnail
-        ? `${constants.PUBLIC_BACKEND_URL}${image.formats.thumbnail.url}`
-        : url
+      url: absoluteThumbnailUrl
     }
   };
 };
