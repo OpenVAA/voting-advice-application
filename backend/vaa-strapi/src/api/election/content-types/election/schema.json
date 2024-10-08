@@ -65,8 +65,9 @@
       "target": "api::question-category.question-category",
       "mappedBy": "election"
     },
-    "canEditQuestions": {
-      "type": "boolean"
+    "answersLocked": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

@@ -18,7 +18,7 @@
     opinionQuestions,
     opinionAnswers,
     progress,
-    questionsLocked,
+    answersLocked,
     unansweredRequiredInfoQuestions,
     unansweredOpinionQuestions
   } = getContext<CandidateContext>('candidate');
@@ -70,14 +70,14 @@
   );
 </script>
 
-{#if $opinionAnswers && !$questionsLocked && Object.keys($opinionAnswers).length === 0}
+{#if $opinionAnswers && !$answersLocked && Object.keys($opinionAnswers).length === 0}
   <QuestionsStartPage />
 {:else}
   <BasicPage
     title={$t('candidateApp.questions.title')}
     progress={$progress?.progress}
     progressMax={$progress?.max}>
-    <Warning display={!!$questionsLocked} slot="note">
+    <Warning display={!!$answersLocked} slot="note">
       <p>{$t('candidateApp.common.editingNotAllowed')}</p>
       {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
         <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
@@ -87,7 +87,7 @@
     <p class="pb-20 text-center">
       {$t('candidateApp.questions.ingress')}
     </p>
-    {#if $unansweredOpinionQuestions?.length !== 0 && !loading && !$questionsLocked}
+    {#if $unansweredOpinionQuestions?.length !== 0 && !loading && !$answersLocked}
       <div class="pb-6 text-center text-warning">
         {$t('candidateApp.questions.unansweredWarning', {
           numUnansweredQuestions: $unansweredOpinionQuestions?.length
