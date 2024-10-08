@@ -35,7 +35,7 @@
   const {
     user,
     infoAnswers,
-    questionsLocked,
+    answersLocked,
     infoQuestions,
     unansweredOpinionQuestions,
     unansweredRequiredInfoQuestions,
@@ -118,7 +118,7 @@
   let loading = false;
 
   const submitForm = async () => {
-    if ($questionsLocked) {
+    if ($answersLocked) {
       await goto($getRoute(Route.CandAppHome));
       return;
     }
@@ -143,7 +143,7 @@
 
     loading = false;
 
-    if ($unansweredOpinionQuestions?.length !== 0 && !$questionsLocked)
+    if ($unansweredOpinionQuestions?.length !== 0 && !$answersLocked)
       await goto($getRoute(Route.CandAppQuestions));
     else await goto($getRoute(Route.CandAppHome));
   };
@@ -196,9 +196,9 @@
   let submitButtonText = '';
 
   $: {
-    if ($unansweredOpinionQuestions?.length && !$questionsLocked)
+    if ($unansweredOpinionQuestions?.length && !$answersLocked)
       submitButtonText = $t('common.saveAndContinue');
-    else if ($questionsLocked) submitButtonText = $t('common.return');
+    else if ($answersLocked) submitButtonText = $t('common.return');
     else submitButtonText = $t('common.saveAndReturn');
   }
 
@@ -231,14 +231,14 @@
 
 {#if $parties && $infoAnswers && $infoQuestions}
   <BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
-    <Warning display={!!$questionsLocked} slot="note">
+    <Warning display={!!$answersLocked} slot="note">
       <p>{$t('candidateApp.common.editingNotAllowed')}</p>
       {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
         <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
       {/if}
     </Warning>
 
-    <PreventNavigation active={dirty && !loading && !$questionsLocked} />
+    <PreventNavigation active={dirty && !loading && !$answersLocked} />
     <form on:submit|preventDefault={submitForm}>
       <p class="text-center">
         {$t('candidateApp.basicInfo.instructions')}
@@ -289,7 +289,7 @@
           <PhotoInput
             bind:photo
             bind:uploadPhoto
-            disabled={$questionsLocked}
+            disabled={$answersLocked}
             onChange={() => (dirty = true)} />
         </FieldGroup>
 
@@ -300,7 +300,7 @@
               questionId={question.id}
               options={question.values}
               headerText={question.text}
-              locked={$questionsLocked}
+              locked={$answersLocked}
               {value}
               {onChange} />
           {:else if question.type === 'multipleChoiceCategorical' && ((Array.isArray(value) && value.every((v) => typeof v === 'number')) || value == null)}
@@ -308,14 +308,14 @@
               questionId={question.id}
               options={question.values}
               headerText={question.text}
-              locked={$questionsLocked}
+              locked={$answersLocked}
               {value}
               {onChange} />
           {:else if question.type === 'boolean' && (typeof value === 'boolean' || value == null)}
             <BooleanInput
               questionId={question.id}
               headerText={question.text}
-              locked={$questionsLocked}
+              locked={$answersLocked}
               footerText={$t('xxx.basicInfo.unaffiliatedDescription')}
               value={value ? value : false}
               {onChange} />
@@ -323,7 +323,7 @@
             <TextInput
               questionId={question.id}
               headerText={question.text}
-              locked={$questionsLocked}
+              locked={$answersLocked}
               compact={question.textType === 'short'}
               bind:clearLocalStorage
               value={ensureLocalizedString(value)}
@@ -333,7 +333,7 @@
             <DateInput
               questionId={question.id}
               headerText={question.text}
-              locked={$questionsLocked}
+              locked={$answersLocked}
               {value}
               {onChange} />
           {:else}

@@ -320,7 +320,7 @@ async function createElection() {
       electionType,
       info,
       publishedAt: new Date(),
-      canEditQuestions: true
+      answersLocked: false
     }
   });
 }
