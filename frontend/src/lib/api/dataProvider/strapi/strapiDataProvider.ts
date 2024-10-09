@@ -88,6 +88,7 @@ function getAppSettings(): Promise<Partial<AppSettings> | undefined> {
     'populate[header]': 'true',
     'populate[matching]': 'true',
     'populate[survey]': 'true',
+    'populate[entities][populate][hideIfMissingAnswers]': 'true',
     'populate[entityDetails][populate][contents]': 'true',
     'populate[entityDetails][populate][showMissingElectionSymbol]': 'true',
     'populate[entityDetails][populate][showMissingAnswers]': 'true',
@@ -117,14 +118,18 @@ function getAppCustomization({locale}: GetDataOptionsBase = {}): Promise<AppCust
     'populate[publisherLogo]': 'true',
     'populate[publisherLogoDark]': 'true',
     'populate[poster]': 'true',
-    'populate[posterCandidateApp]': 'true'
+    'populate[posterDark]': 'true',
+    'populate[candPoster]': 'true',
+    'populate[candPosterDark]': 'true'
   });
   return getData<StrapiAppCustomizationData>('api/app-customization', params).then((result) => {
     const attr = result.attributes;
     const publisherLogo = attr.publisherLogo?.data?.attributes;
     const publisherLogoDark = attr.publisherLogoDark?.data?.attributes;
     const poster = attr.poster?.data?.attributes;
-    const posterCandidateApp = attr.posterCandidateApp?.data?.attributes;
+    const posterDark = attr.posterDark?.data?.attributes;
+    const candPoster = attr.candPoster?.data?.attributes;
+    const candPosterDark = attr.candPosterDark?.data?.attributes;
     return {
       translationOverrides: translateObject(attr.translationOverrides, locale),
       candidateAppFAQ: translateObject(attr.candidateAppFAQ, locale),
@@ -132,7 +137,9 @@ function getAppCustomization({locale}: GetDataOptionsBase = {}): Promise<AppCust
       publisherLogo: publisherLogo ? parseImage(publisherLogo) : undefined,
       publisherLogoDark: publisherLogoDark ? parseImage(publisherLogoDark) : undefined,
       poster: poster ? parseImage(poster) : undefined,
-      posterCandidateApp: posterCandidateApp ? parseImage(posterCandidateApp) : undefined
+      posterDark: posterDark ? parseImage(posterDark) : undefined,
+      candPoster: candPoster ? parseImage(candPoster) : undefined,
+      candPosterDark: candPosterDark ? parseImage(candPosterDark) : undefined
     };
   });
 }
@@ -202,11 +209,6 @@ function getNominatedCandidates({
         const cnd = nom.attributes.candidate.data;
         const id = '' + cnd.id;
         const attr = cnd.attributes;
-        if (!nom.attributes.party.data)
-          error(
-            500,
-            `Could not retrieve result for nominating candidates: party for candidate with id '${id}' not found`
-          );
         const {firstName, lastName} = attr;
         const props: CandidateProps = {
           id,
@@ -215,7 +217,9 @@ function getNominatedCandidates({
           firstName,
           lastName,
           name: formatName({firstName, lastName}),
-          party: parseParty(nom.attributes.party.data, locale),
+          party: nom.attributes.party.data
+            ? parseParty(nom.attributes.party.data, locale)
+            : undefined,
           answers: loadAnswers && attr.answers?.data ? parseAnswers(attr.answers.data, locale) : {}
         };
         const photo = attr.photo?.data?.attributes;
@@ -351,6 +355,7 @@ function getQuestions({electionId, locale, categoryType}: GetAnyQuestionsOptions
         if ('min' in settings) props.min = settings.min;
         if ('max' in settings) props.max = settings.max;
         if ('dateType' in settings) props.dateType = settings.dateType;
+        if ('textType' in settings) props.textType = settings.textType;
         if ('notLocalizable' in settings) props.notLocalizable = settings.notLocalizable;
         catQuestions.push(props);
       }

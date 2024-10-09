@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2024-09-10T08:41:53.329Z"
+    "x-generation-date": "2024-10-08T10:22:54.399Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
@@ -1385,10 +1385,6 @@
                                                                           "type": "string",
                                                                           "format": "date-time"
                                                                         },
-                                                                        "publishedAt": {
-                                                                          "type": "string",
-                                                                          "format": "date-time"
-                                                                        },
                                                                         "createdBy": {
                                                                           "type": "object",
                                                                           "properties": {
@@ -1632,10 +1628,6 @@
                                                                                                                   "type": "string",
                                                                                                                   "format": "date-time"
                                                                                                                 },
-                                                                                                                "publishedAt": {
-                                                                                                                  "type": "string",
-                                                                                                                  "format": "date-time"
-                                                                                                                },
                                                                                                                 "createdBy": {
                                                                                                                   "type": "object",
                                                                                                                   "properties": {
@@ -1685,10 +1677,6 @@
                                                                                                     "format": "date-time"
                                                                                                   },
                                                                                                   "updatedAt": {
-                                                                                                    "type": "string",
-                                                                                                    "format": "date-time"
-                                                                                                  },
-                                                                                                  "publishedAt": {
                                                                                                     "type": "string",
                                                                                                     "format": "date-time"
                                                                                                   },
@@ -1777,7 +1765,7 @@
                                                                                         }
                                                                                       }
                                                                                     },
-                                                                                    "canEditQuestions": {
+                                                                                    "answersLocked": {
                                                                                       "type": "boolean"
                                                                                     },
                                                                                     "createdAt": {
@@ -1874,10 +1862,6 @@
                                                                           "format": "date-time"
                                                                         },
                                                                         "updatedAt": {
-                                                                          "type": "string",
-                                                                          "format": "date-time"
-                                                                        },
-                                                                        "publishedAt": {
                                                                           "type": "string",
                                                                           "format": "date-time"
                                                                         },
@@ -2004,10 +1988,6 @@
                                                   "format": "date-time"
                                                 },
                                                 "updatedAt": {
-                                                  "type": "string",
-                                                  "format": "date-time"
-                                                },
-                                                "publishedAt": {
                                                   "type": "string",
                                                   "format": "date-time"
                                                 },
@@ -2333,10 +2313,6 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "publishedAt": {
             "type": "string",
             "format": "date-time"
           },
@@ -3348,7 +3324,7 @@
               }
             }
           },
-          "posterCandidateApp": {
+          "candPoster": {
             "type": "object",
             "properties": {
               "data": {
@@ -3497,6 +3473,284 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/CustomizationTranslationOverrideComponent"
+            }
+          },
+          "posterDark": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "number"
+                  },
+                  "attributes": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "alternativeText": {
+                        "type": "string"
+                      },
+                      "caption": {
+                        "type": "string"
+                      },
+                      "width": {
+                        "type": "integer"
+                      },
+                      "height": {
+                        "type": "integer"
+                      },
+                      "formats": {},
+                      "hash": {
+                        "type": "string"
+                      },
+                      "ext": {
+                        "type": "string"
+                      },
+                      "mime": {
+                        "type": "string"
+                      },
+                      "size": {
+                        "type": "number",
+                        "format": "float"
+                      },
+                      "url": {
+                        "type": "string"
+                      },
+                      "previewUrl": {
+                        "type": "string"
+                      },
+                      "provider": {
+                        "type": "string"
+                      },
+                      "provider_metadata": {},
+                      "related": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "number"
+                                },
+                                "attributes": {
+                                  "type": "object",
+                                  "properties": {}
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "folder": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "attributes": {
+                                "type": "object",
+                                "properties": {}
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "folderPath": {
+                        "type": "string"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "createdBy": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "attributes": {
+                                "type": "object",
+                                "properties": {}
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "updatedBy": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "attributes": {
+                                "type": "object",
+                                "properties": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "candPosterDark": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "number"
+                  },
+                  "attributes": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "alternativeText": {
+                        "type": "string"
+                      },
+                      "caption": {
+                        "type": "string"
+                      },
+                      "width": {
+                        "type": "integer"
+                      },
+                      "height": {
+                        "type": "integer"
+                      },
+                      "formats": {},
+                      "hash": {
+                        "type": "string"
+                      },
+                      "ext": {
+                        "type": "string"
+                      },
+                      "mime": {
+                        "type": "string"
+                      },
+                      "size": {
+                        "type": "number",
+                        "format": "float"
+                      },
+                      "url": {
+                        "type": "string"
+                      },
+                      "previewUrl": {
+                        "type": "string"
+                      },
+                      "provider": {
+                        "type": "string"
+                      },
+                      "provider_metadata": {},
+                      "related": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "number"
+                                },
+                                "attributes": {
+                                  "type": "object",
+                                  "properties": {}
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "folder": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "attributes": {
+                                "type": "object",
+                                "properties": {}
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "folderPath": {
+                        "type": "string"
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      },
+                      "createdBy": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "attributes": {
+                                "type": "object",
+                                "properties": {}
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "updatedBy": {
+                        "type": "object",
+                        "properties": {
+                          "data": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "attributes": {
+                                "type": "object",
+                                "properties": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           },
           "createdAt": {
@@ -3663,7 +3917,8 @@
           "matching",
           "entityDetails",
           "questions",
-          "results"
+          "results",
+          "entities"
         ],
         "properties": {
           "underMaintenance": {
@@ -3689,6 +3944,9 @@
           },
           "results": {
             "$ref": "#/components/schemas/SettingsResultsComponent"
+          },
+          "entities": {
+            "$ref": "#/components/schemas/SettingsEntitiesComponent"
           },
           "createdAt": {
             "type": "string",
@@ -4215,6 +4473,25 @@
                     "tag"
                   ]
                 }
+              }
+            }
+          }
+        }
+      },
+      "SettingsEntitiesComponent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "hideIfMissingAnswers": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "number"
+              },
+              "candidate": {
+                "type": "boolean"
               }
             }
           }
@@ -5525,10 +5802,6 @@
                                                                                       "type": "string",
                                                                                       "format": "date-time"
                                                                                     },
-                                                                                    "publishedAt": {
-                                                                                      "type": "string",
-                                                                                      "format": "date-time"
-                                                                                    },
                                                                                     "createdBy": {
                                                                                       "type": "object",
                                                                                       "properties": {
@@ -5772,10 +6045,6 @@
                                                                                                                               "type": "string",
                                                                                                                               "format": "date-time"
                                                                                                                             },
-                                                                                                                            "publishedAt": {
-                                                                                                                              "type": "string",
-                                                                                                                              "format": "date-time"
-                                                                                                                            },
                                                                                                                             "createdBy": {
                                                                                                                               "type": "object",
                                                                                                                               "properties": {
@@ -5825,10 +6094,6 @@
                                                                                                                 "format": "date-time"
                                                                                                               },
                                                                                                               "updatedAt": {
-                                                                                                                "type": "string",
-                                                                                                                "format": "date-time"
-                                                                                                              },
-                                                                                                              "publishedAt": {
                                                                                                                 "type": "string",
                                                                                                                 "format": "date-time"
                                                                                                               },
@@ -5917,7 +6182,7 @@
                                                                                                     }
                                                                                                   }
                                                                                                 },
-                                                                                                "canEditQuestions": {
+                                                                                                "answersLocked": {
                                                                                                   "type": "boolean"
                                                                                                 },
                                                                                                 "createdAt": {
@@ -6014,10 +6279,6 @@
                                                                                       "format": "date-time"
                                                                                     },
                                                                                     "updatedAt": {
-                                                                                      "type": "string",
-                                                                                      "format": "date-time"
-                                                                                    },
-                                                                                    "publishedAt": {
                                                                                       "type": "string",
                                                                                       "format": "date-time"
                                                                                     },
@@ -6144,10 +6405,6 @@
                                                               "format": "date-time"
                                                             },
                                                             "updatedAt": {
-                                                              "type": "string",
-                                                              "format": "date-time"
-                                                            },
-                                                            "publishedAt": {
                                                               "type": "string",
                                                               "format": "date-time"
                                                             },
@@ -8139,10 +8396,6 @@
                                                                                                                       "type": "string",
                                                                                                                       "format": "date-time"
                                                                                                                     },
-                                                                                                                    "publishedAt": {
-                                                                                                                      "type": "string",
-                                                                                                                      "format": "date-time"
-                                                                                                                    },
                                                                                                                     "createdBy": {
                                                                                                                       "type": "object",
                                                                                                                       "properties": {
@@ -8280,10 +8533,6 @@
                                                                                                                       "type": "string",
                                                                                                                       "format": "date-time"
                                                                                                                     },
-                                                                                                                    "publishedAt": {
-                                                                                                                      "type": "string",
-                                                                                                                      "format": "date-time"
-                                                                                                                    },
                                                                                                                     "createdBy": {
                                                                                                                       "type": "object",
                                                                                                                       "properties": {
@@ -8407,10 +8656,6 @@
                                                                                               "format": "date-time"
                                                                                             },
                                                                                             "updatedAt": {
-                                                                                              "type": "string",
-                                                                                              "format": "date-time"
-                                                                                            },
-                                                                                            "publishedAt": {
                                                                                               "type": "string",
                                                                                               "format": "date-time"
                                                                                             },
@@ -8730,10 +8975,6 @@
                                                       "type": "string",
                                                       "format": "date-time"
                                                     },
-                                                    "publishedAt": {
-                                                      "type": "string",
-                                                      "format": "date-time"
-                                                    },
                                                     "createdBy": {
                                                       "type": "object",
                                                       "properties": {
@@ -8783,10 +9024,6 @@
                                         "format": "date-time"
                                       },
                                       "updatedAt": {
-                                        "type": "string",
-                                        "format": "date-time"
-                                      },
-                                      "publishedAt": {
                                         "type": "string",
                                         "format": "date-time"
                                       },
@@ -8875,7 +9112,7 @@
                             }
                           }
                         },
-                        "canEditQuestions": {
+                        "answersLocked": {
                           "type": "boolean"
                         },
                         "createdAt": {
@@ -8959,10 +9196,6 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "publishedAt": {
             "type": "string",
             "format": "date-time"
           },
@@ -10407,10 +10640,6 @@
                                                                                                                       "type": "string",
                                                                                                                       "format": "date-time"
                                                                                                                     },
-                                                                                                                    "publishedAt": {
-                                                                                                                      "type": "string",
-                                                                                                                      "format": "date-time"
-                                                                                                                    },
                                                                                                                     "createdBy": {
                                                                                                                       "type": "object",
                                                                                                                       "properties": {
@@ -10548,10 +10777,6 @@
                                                                                                                       "type": "string",
                                                                                                                       "format": "date-time"
                                                                                                                     },
-                                                                                                                    "publishedAt": {
-                                                                                                                      "type": "string",
-                                                                                                                      "format": "date-time"
-                                                                                                                    },
                                                                                                                     "createdBy": {
                                                                                                                       "type": "object",
                                                                                                                       "properties": {
@@ -10675,10 +10900,6 @@
                                                                                               "format": "date-time"
                                                                                             },
                                                                                             "updatedAt": {
-                                                                                              "type": "string",
-                                                                                              "format": "date-time"
-                                                                                            },
-                                                                                            "publishedAt": {
                                                                                               "type": "string",
                                                                                               "format": "date-time"
                                                                                             },
@@ -10998,10 +11219,6 @@
                                                       "type": "string",
                                                       "format": "date-time"
                                                     },
-                                                    "publishedAt": {
-                                                      "type": "string",
-                                                      "format": "date-time"
-                                                    },
                                                     "createdBy": {
                                                       "type": "object",
                                                       "properties": {
@@ -11067,7 +11284,7 @@
                                           }
                                         }
                                       },
-                                      "canEditQuestions": {
+                                      "answersLocked": {
                                         "type": "boolean"
                                       },
                                       "createdAt": {
@@ -11151,10 +11368,6 @@
                           "format": "date-time"
                         },
                         "updatedAt": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "publishedAt": {
                           "type": "string",
                           "format": "date-time"
                         },
@@ -11243,7 +11456,7 @@
               }
             }
           },
-          "canEditQuestions": {
+          "answersLocked": {
             "type": "boolean"
           },
           "createdAt": {
@@ -13427,10 +13640,6 @@
                                                                                                                     "type": "string",
                                                                                                                     "format": "date-time"
                                                                                                                   },
-                                                                                                                  "publishedAt": {
-                                                                                                                    "type": "string",
-                                                                                                                    "format": "date-time"
-                                                                                                                  },
                                                                                                                   "createdBy": {
                                                                                                                     "type": "object",
                                                                                                                     "properties": {
@@ -13568,10 +13777,6 @@
                                                                                                                     "type": "string",
                                                                                                                     "format": "date-time"
                                                                                                                   },
-                                                                                                                  "publishedAt": {
-                                                                                                                    "type": "string",
-                                                                                                                    "format": "date-time"
-                                                                                                                  },
                                                                                                                   "createdBy": {
                                                                                                                     "type": "object",
                                                                                                                     "properties": {
@@ -13695,10 +13900,6 @@
                                                                                             "format": "date-time"
                                                                                           },
                                                                                           "updatedAt": {
-                                                                                            "type": "string",
-                                                                                            "format": "date-time"
-                                                                                          },
-                                                                                          "publishedAt": {
                                                                                             "type": "string",
                                                                                             "format": "date-time"
                                                                                           },
@@ -14018,10 +14219,6 @@
                                                     "type": "string",
                                                     "format": "date-time"
                                                   },
-                                                  "publishedAt": {
-                                                    "type": "string",
-                                                    "format": "date-time"
-                                                  },
                                                   "createdBy": {
                                                     "type": "object",
                                                     "properties": {
@@ -14071,10 +14268,6 @@
                                       "format": "date-time"
                                     },
                                     "updatedAt": {
-                                      "type": "string",
-                                      "format": "date-time"
-                                    },
-                                    "publishedAt": {
                                       "type": "string",
                                       "format": "date-time"
                                     },
@@ -14163,7 +14356,7 @@
                           }
                         }
                       },
-                      "canEditQuestions": {
+                      "answersLocked": {
                         "type": "boolean"
                       },
                       "createdAt": {
@@ -14283,10 +14476,6 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "publishedAt": {
             "type": "string",
             "format": "date-time"
           },
@@ -15734,10 +15923,6 @@
                                                                             "type": "string",
                                                                             "format": "date-time"
                                                                           },
-                                                                          "publishedAt": {
-                                                                            "type": "string",
-                                                                            "format": "date-time"
-                                                                          },
                                                                           "createdBy": {
                                                                             "type": "object",
                                                                             "properties": {
@@ -15981,10 +16166,6 @@
                                                                                                                     "type": "string",
                                                                                                                     "format": "date-time"
                                                                                                                   },
-                                                                                                                  "publishedAt": {
-                                                                                                                    "type": "string",
-                                                                                                                    "format": "date-time"
-                                                                                                                  },
                                                                                                                   "createdBy": {
                                                                                                                     "type": "object",
                                                                                                                     "properties": {
@@ -16034,10 +16215,6 @@
                                                                                                       "format": "date-time"
                                                                                                     },
                                                                                                     "updatedAt": {
-                                                                                                      "type": "string",
-                                                                                                      "format": "date-time"
-                                                                                                    },
-                                                                                                    "publishedAt": {
                                                                                                       "type": "string",
                                                                                                       "format": "date-time"
                                                                                                     },
@@ -16126,7 +16303,7 @@
                                                                                           }
                                                                                         }
                                                                                       },
-                                                                                      "canEditQuestions": {
+                                                                                      "answersLocked": {
                                                                                         "type": "boolean"
                                                                                       },
                                                                                       "createdAt": {
@@ -16223,10 +16400,6 @@
                                                                             "format": "date-time"
                                                                           },
                                                                           "updatedAt": {
-                                                                            "type": "string",
-                                                                            "format": "date-time"
-                                                                          },
-                                                                          "publishedAt": {
                                                                             "type": "string",
                                                                             "format": "date-time"
                                                                           },
@@ -16353,10 +16526,6 @@
                                                     "format": "date-time"
                                                   },
                                                   "updatedAt": {
-                                                    "type": "string",
-                                                    "format": "date-time"
-                                                  },
-                                                  "publishedAt": {
                                                     "type": "string",
                                                     "format": "date-time"
                                                   },
@@ -18096,10 +18265,6 @@
                                                                                                                     "type": "string",
                                                                                                                     "format": "date-time"
                                                                                                                   },
-                                                                                                                  "publishedAt": {
-                                                                                                                    "type": "string",
-                                                                                                                    "format": "date-time"
-                                                                                                                  },
                                                                                                                   "createdBy": {
                                                                                                                     "type": "object",
                                                                                                                     "properties": {
@@ -18244,10 +18409,6 @@
                                                                                                                     "type": "string",
                                                                                                                     "format": "date-time"
                                                                                                                   },
-                                                                                                                  "publishedAt": {
-                                                                                                                    "type": "string",
-                                                                                                                    "format": "date-time"
-                                                                                                                  },
                                                                                                                   "createdBy": {
                                                                                                                     "type": "object",
                                                                                                                     "properties": {
@@ -18289,7 +18450,7 @@
                                                                                                         }
                                                                                                       }
                                                                                                     },
-                                                                                                    "canEditQuestions": {
+                                                                                                    "answersLocked": {
                                                                                                       "type": "boolean"
                                                                                                     },
                                                                                                     "createdAt": {
@@ -18409,10 +18570,6 @@
                                                                                           "format": "date-time"
                                                                                         },
                                                                                         "updatedAt": {
-                                                                                          "type": "string",
-                                                                                          "format": "date-time"
-                                                                                        },
-                                                                                        "publishedAt": {
                                                                                           "type": "string",
                                                                                           "format": "date-time"
                                                                                         },
@@ -18721,10 +18878,6 @@
                                                     "type": "string",
                                                     "format": "date-time"
                                                   },
-                                                  "publishedAt": {
-                                                    "type": "string",
-                                                    "format": "date-time"
-                                                  },
                                                   "createdBy": {
                                                     "type": "object",
                                                     "properties": {
@@ -18866,10 +19019,6 @@
                         "format": "date-time"
                       },
                       "updatedAt": {
-                        "type": "string",
-                        "format": "date-time"
-                      },
-                      "publishedAt": {
                         "type": "string",
                         "format": "date-time"
                       },
@@ -20412,10 +20561,6 @@
                                                                                                                     "type": "string",
                                                                                                                     "format": "date-time"
                                                                                                                   },
-                                                                                                                  "publishedAt": {
-                                                                                                                    "type": "string",
-                                                                                                                    "format": "date-time"
-                                                                                                                  },
                                                                                                                   "createdBy": {
                                                                                                                     "type": "object",
                                                                                                                     "properties": {
@@ -20553,10 +20698,6 @@
                                                                                                                     "type": "string",
                                                                                                                     "format": "date-time"
                                                                                                                   },
-                                                                                                                  "publishedAt": {
-                                                                                                                    "type": "string",
-                                                                                                                    "format": "date-time"
-                                                                                                                  },
                                                                                                                   "createdBy": {
                                                                                                                     "type": "object",
                                                                                                                     "properties": {
@@ -20680,10 +20821,6 @@
                                                                                             "format": "date-time"
                                                                                           },
                                                                                           "updatedAt": {
-                                                                                            "type": "string",
-                                                                                            "format": "date-time"
-                                                                                          },
-                                                                                          "publishedAt": {
                                                                                             "type": "string",
                                                                                             "format": "date-time"
                                                                                           },
@@ -21003,10 +21140,6 @@
                                                     "type": "string",
                                                     "format": "date-time"
                                                   },
-                                                  "publishedAt": {
-                                                    "type": "string",
-                                                    "format": "date-time"
-                                                  },
                                                   "createdBy": {
                                                     "type": "object",
                                                     "properties": {
@@ -21056,10 +21189,6 @@
                                       "format": "date-time"
                                     },
                                     "updatedAt": {
-                                      "type": "string",
-                                      "format": "date-time"
-                                    },
-                                    "publishedAt": {
                                       "type": "string",
                                       "format": "date-time"
                                     },
@@ -21148,7 +21277,7 @@
                           }
                         }
                       },
-                      "canEditQuestions": {
+                      "answersLocked": {
                         "type": "boolean"
                       },
                       "createdAt": {
@@ -21245,10 +21374,6 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "publishedAt": {
             "type": "string",
             "format": "date-time"
           },
@@ -21427,10 +21552,6 @@
                                       "format": "date-time"
                                     },
                                     "updatedAt": {
-                                      "type": "string",
-                                      "format": "date-time"
-                                    },
-                                    "publishedAt": {
                                       "type": "string",
                                       "format": "date-time"
                                     },
@@ -22710,10 +22831,6 @@
                                                                                                         "type": "string",
                                                                                                         "format": "date-time"
                                                                                                       },
-                                                                                                      "publishedAt": {
-                                                                                                        "type": "string",
-                                                                                                        "format": "date-time"
-                                                                                                      },
                                                                                                       "createdBy": {
                                                                                                         "type": "object",
                                                                                                         "properties": {
@@ -22858,10 +22975,6 @@
                                                                                                         "type": "string",
                                                                                                         "format": "date-time"
                                                                                                       },
-                                                                                                      "publishedAt": {
-                                                                                                        "type": "string",
-                                                                                                        "format": "date-time"
-                                                                                                      },
                                                                                                       "createdBy": {
                                                                                                         "type": "object",
                                                                                                         "properties": {
@@ -22903,7 +23016,7 @@
                                                                                             }
                                                                                           }
                                                                                         },
-                                                                                        "canEditQuestions": {
+                                                                                        "answersLocked": {
                                                                                           "type": "boolean"
                                                                                         },
                                                                                         "createdAt": {
@@ -23023,10 +23136,6 @@
                                                                               "format": "date-time"
                                                                             },
                                                                             "updatedAt": {
-                                                                              "type": "string",
-                                                                              "format": "date-time"
-                                                                            },
-                                                                            "publishedAt": {
                                                                               "type": "string",
                                                                               "format": "date-time"
                                                                             },
@@ -23335,10 +23444,6 @@
                                         "type": "string",
                                         "format": "date-time"
                                       },
-                                      "publishedAt": {
-                                        "type": "string",
-                                        "format": "date-time"
-                                      },
                                       "createdBy": {
                                         "type": "object",
                                         "properties": {
@@ -23480,10 +23585,6 @@
             "format": "date-time"
           },
           "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "publishedAt": {
             "type": "string",
             "format": "date-time"
           },

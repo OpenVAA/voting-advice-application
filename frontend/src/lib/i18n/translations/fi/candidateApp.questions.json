@@ -17,6 +17,6 @@
   "start": "Kerro mielipiteesi",
   "tip": "Näet kaikki vastauksesi tällä sivulla, kun palaat siihen myöhemmin.",
   "title": "Mielipiteesi",
-  "unansweredWarning": "Sinulla on vielä {numUnansweredQuestions, plural, =1 {yksi vastaamaton kysymys} other {# vastaamatonta kysymystä}}. Tietosi eivät näy vaalikoneessa ennen kuin olet vastannut kaikkiin kysymyksiin.",
+  "unansweredWarning": "Sinulla on vielä {numUnansweredQuestions, plural, =1 {yksi vastaamaton kysymys} other {# vastaamatonta kysymystä}}.",
   "viewAnswer": "Tarkastele vastaustasi"
 }

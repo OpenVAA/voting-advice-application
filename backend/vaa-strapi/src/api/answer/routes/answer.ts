@@ -3,7 +3,7 @@
  */
 
 import { factories } from '@strapi/strapi';
-import { restrictResourceOwnedByCandidate, restrictPopulate, restrictFilters, electionCanEditQuestions } from '../../../util/acl';
+import { restrictResourceOwnedByCandidate, restrictPopulate, restrictFilters, electionCanEditAnswers } from '../../../util/acl';
 
 export default factories.createCoreRouter('api::answer.answer', {
   only: ['find', 'findOne', 'create', 'update', 'delete'],
@@ -48,7 +48,7 @@ export default factories.createCoreRouter('api::answer.answer', {
           'question.category.type.$eq',
         ]),
         // Allow modification only when the current election allows it
-        electionCanEditQuestions,
+        electionCanEditAnswers,
       ],
     },
     update: {
@@ -67,7 +67,7 @@ export default factories.createCoreRouter('api::answer.answer', {
           'question.category.type.$eq',
         ]),
         // Allow modification only when the current election allows it
-        electionCanEditQuestions,
+        electionCanEditAnswers,
       ],
     },
     delete: {
@@ -84,7 +84,7 @@ export default factories.createCoreRouter('api::answer.answer', {
           'question.category.type.$eq',
         ]),
         // Allow modification only when the current election allows it
-        electionCanEditQuestions,
+        electionCanEditAnswers,
       ],
     },
   },

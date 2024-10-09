@@ -4,12 +4,13 @@
   import {Button} from '$lib/components/button';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {getContext} from 'svelte';
+  import {settings} from '$lib/stores';
   import {InfoBadge} from '$lib/components/infoBadge';
   import {LogoutButton} from '$lib/candidate/components/logoutButton';
   import {Warning} from '$lib/components/warning';
   import {type CandidateContext} from '$lib/utils/candidateContext';
 
-  const {user, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, questionsLocked} =
+  const {user, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, answersLocked} =
     getContext<CandidateContext>('candidate');
   const username = $user?.candidate?.firstName;
 
@@ -22,10 +23,10 @@
         title: $t('candidateApp.home.ready'),
         explanation: $t('candidateApp.home.ingress.ready'),
         tip: $t('candidateApp.home.previewTip'),
-        buttonTextBasicInfo: !$questionsLocked
+        buttonTextBasicInfo: !$answersLocked
           ? $t('candidateApp.home.basicInfo.edit')
           : $t('candidateApp.home.basicInfo.view'),
-        buttonTextQuestion: !$questionsLocked
+        buttonTextQuestion: !$answersLocked
           ? $t('candidateApp.home.questions.edit')
           : $t('candidateApp.home.questions.view'),
         buttonTextPrimaryActions: $t('candidateApp.home.preview'),
@@ -38,13 +39,13 @@
       return {
         title: $t('candidateApp.common.greeting', {username}),
         explanation: $t('candidateApp.home.ingress.notDone'),
-        buttonTextBasicInfo: !$questionsLocked
+        buttonTextBasicInfo: !$answersLocked
           ? $t('candidateApp.home.basicInfo.edit')
           : $t('candidateApp.home.basicInfo.view'),
-        buttonTextQuestion: !$questionsLocked
+        buttonTextQuestion: !$answersLocked
           ? $t('candidateApp.home.questions.enter')
           : $t('candidateApp.home.questions.view'),
-        buttonTextPrimaryActions: !$questionsLocked
+        buttonTextPrimaryActions: !$answersLocked
           ? $t('candidateApp.home.questions.enter')
           : $t('candidateApp.home.questions.view'),
         href: $getRoute(Route.CandAppQuestions)
@@ -53,13 +54,13 @@
     return {
       title: $t('candidateApp.common.greeting', {username}),
       explanation: $t('candidateApp.home.ingress.notDone'),
-      buttonTextBasicInfo: !$questionsLocked
+      buttonTextBasicInfo: !$answersLocked
         ? $t('candidateApp.home.basicInfo.enter')
         : $t('candidateApp.home.basicInfo.view'),
-      buttonTextQuestion: !$questionsLocked
+      buttonTextQuestion: !$answersLocked
         ? $t('candidateApp.home.questions.enter')
         : $t('candidateApp.home.questions.view'),
-      buttonTextPrimaryActions: !$questionsLocked
+      buttonTextPrimaryActions: !$answersLocked
         ? $t('candidateApp.home.basicInfo.enter')
         : $t('candidateApp.home.basicInfo.view'),
       href: $getRoute(Route.CandAppProfile)
@@ -75,10 +76,10 @@
 <!--Homepage for the user-->
 
 <BasicPage title={nextAction.title}>
-  <Warning display={!!$questionsLocked} slot="note">
+  <Warning display={!!$answersLocked} slot="note">
     <p>{$t('candidateApp.common.editingNotAllowed')}</p>
-    {#if $unansweredRequiredInfoQuestions?.length !== 0 || $unansweredOpinionQuestions?.length !== 0}
-      <p>{$t('candidateApp.common.editingNotAllowedPartiallyFilled')}</p>
+    {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
+      <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
     {/if}
   </Warning>
 

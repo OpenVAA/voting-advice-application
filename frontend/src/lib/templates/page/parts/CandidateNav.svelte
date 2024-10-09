@@ -1,5 +1,6 @@
 <script lang="ts">
   import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
+  import {customization, openFeedbackModal} from '$lib/stores';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {t} from '$lib/i18n';
   import {InfoBadge} from '$lib/components/infoBadge';
@@ -62,7 +63,12 @@ A template part that outputs the navigation menu for the Candidate App for use i
       href={$getRoute(Route.CandAppPreview)}
       icon="previewProfile"
       text={$t('candidateApp.preview.title')} />
-    <NavItem href={$getRoute(Route.CandAppHelp)} icon="help" text={$t('candidateApp.help.title')} />
+    {#if $customization.candidateAppFAQ?.length}
+      <NavItem
+        href={$getRoute(Route.CandAppHelp)}
+        icon="help"
+        text={$t('candidateApp.help.title')} />
+    {/if}
   </NavGroup>
   <!-- 
   <NavGroup>
@@ -74,12 +80,10 @@ A template part that outputs the navigation menu for the Candidate App for use i
       text={$t('candidateApp.info.title')} />
   </NavGroup> 
   -->
-  <NavGroup>
-    <NavItem
-      href={$getRoute(Route.CandAppFeedback)}
-      icon="feedback"
-      disabled
-      text={$t('feedback.send')} />
-  </NavGroup>
+  {#if $openFeedbackModal}
+    <NavGroup>
+      <NavItem on:click={$openFeedbackModal} icon="feedback" text={$t('feedback.send')} />
+    </NavGroup>
+  {/if}
   <LanguageSelection />
 </Navigation>

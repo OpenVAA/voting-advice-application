@@ -47,6 +47,7 @@
   let filteredCandidates: WrappedEntity<CandidateProps>[] = [];
   let filteredParties: WrappedEntity<PartyProps>[] = [];
 
+  /** A utility synced boolean indicating whether results are available, i.e. that we have enough answers to perform matching */
   let resultsAvailableSync = false;
   $resultsAvailable.then((v) => {
     resultsAvailableSync = v;
@@ -147,11 +148,6 @@
     {#if $settings.header.showHelp}
       <Button href={$getRoute(Route.Help)} variant="icon" icon="help" text={$t('help.title')} />
     {/if}
-    <Button
-      on:click={() => console.info('Show favourites')}
-      variant="icon"
-      icon="list"
-      text={$t('yourList.title')} />
   </svelte:fragment>
 
   <div class="mb-xl text-center">
@@ -194,13 +190,11 @@
               >{$t('results.candidates.total', {numTotal: allCandidates.length})}</span>
           {/if}
         </h2>
-        {#if candidateFilters}
-          <EntityListControls
-            contents={allCandidates}
-            filterGroup={candidateFilters}
-            bind:output={filteredCandidates}
-            class="mx-10 mb-md" />
-        {/if}
+        <EntityListControls
+          contents={allCandidates}
+          filterGroup={candidateFilters}
+          bind:output={filteredCandidates}
+          class="mx-10 mb-md" />
         <EntityList cards={filteredCandidates.map(parseCandidate)} class="mb-lg" />
       {/await}
 

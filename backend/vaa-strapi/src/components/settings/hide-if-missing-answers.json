@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_settings_hide_if_missing_answers",
+  "info": {
+    "displayName": "hideIfMissingAnswers",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "candidate": {
+      "type": "boolean"
+    }
+  }
+}

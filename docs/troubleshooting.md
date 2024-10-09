@@ -1,6 +1,6 @@
 # Development troubleshooting
 
-## Commit error: Husky not found
+## Commit: ’Husky not found’ error
 
 Try running `npx husky install`.
 
@@ -12,7 +12,11 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 ```
 
-## Docker error: No space left on device
+## Commit: ’TypeError: Cannot read properties of undefined (reading 'font')’ error when running `/generateTranslationKeyType.ts`
+
+Try running `yarn workspace vaa-shared build` first.
+
+## Docker: ’No space left on device’ error
 
 If Docker produces an error akin to `Error response from daemon [...] no space left on device`
 running `docker system prune` may help.
@@ -30,23 +34,35 @@ Note also that there are two commands that can be used to stop the containers:
 
 Docker needs to be connected to the internet to load the base Docker images.
 
-## Server error when trying to access frontend
+## Frontend: Candidate registration fails
+
+The `email` property is required for a `Candidate`. If it is not set, registration will result in a 'Bad Request' error.
+
+## Frontend: Changes to the content in Strapi not updated in the frontend
+
+If you’re adding the content manually in Strapi, make sure to `Publish` all changes.
+
+## Frontend: Server error when trying to access frontend
 
 It takes a while for Strapi to kick up even after the Docker container is running, so if you just started it, wait a few minutes.
 
 If that's not the issue, open Docker and check the `frontend` and `strapi` containers' logs for possible clues.
 
-## Strapi's content model is reset after restart
-
-Any changes to the content model are not reflected on local files by default. If you can't see any changes in your local files when editing the content types using Strapi's web UI, check that you have [hot reloading enabled](./docker-setup-guide.md#hot-reloading).
-
-## Strapi does not populate relations
+## Frontend: Strapi relations are not populated
 
 The REST api query syntax can be a bit tricky, notably `*` only goes one-level deep.
 
 Another common case is that the Content Types that are not populated have been added to the schema after creating the API token. To allow reading them, edit the API token and change it from `Custom` to `Read-Only` and back (and check that locale listing is still allowed).
 
-## Strapi error ’relation already exists’ on restart after editing the content model
+## Playwright: `TimeoutError` when locating elements and running the tests locally
+
+Elements are currently located mostly by their translated labels with hardcoded locales, which match those in the mock data. If, however, the `supportedLocales` you have set in [staticSettings.ts](../shared/src/settings/staticSettings.ts) differ from the ones used by the tests, many of them will fail.
+
+## Strapi: Content model is reset after restart
+
+Any changes to the content model are not reflected on local files by default. If you can't see any changes in your local files when editing the content types using Strapi's web UI, check that you have [hot reloading enabled](./docker-setup-guide.md#hot-reloading).
+
+## Strapi: ’Relation already exists’ error on restart after editing the content model
 
 If Strapi gives an error dealing with creating a table with the message that a relation or table already exists, such as the example below, it may be due to [a name that is longer than 63 characters](https://forum.strapi.io/t/create-index-already-exists/16835/7). To fix, shorten the name of the component or its parent. If the name cannot be easily shortened, you can only edit the internal names. For an example, see commit .
 
@@ -73,7 +89,3 @@ If Strapi gives an error dealing with creating a table with the message that a r
 |                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
-
-## Candidate registration fails
-
-The `email` property is required for a `Candidate`. If it is not set, registration will result in a 'Bad Request' error.

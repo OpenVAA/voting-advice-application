@@ -40,20 +40,17 @@ Used to show an entity's basic info in an `EntityDetails` component.
 
 <div class="grid p-lg">
   <!-- We don't want to render an empty infoGroup, so we need to do these unseemly double-checks -->
-  {#if isCandidate(entity) || $settings.entityDetails.showMissingElectionSymbol[entityType] || entity.electionSymbol || (isParty(entity) && entity.info)}
+  {#if (isCandidate(entity) && entity.party) || $settings.entityDetails.showMissingElectionSymbol[entityType] || entity.electionSymbol || (isParty(entity) && entity.info)}
     <div class="infoGroup" role="group">
       {#if isParty(entity) && entity.info}
         <div>
           {@html sanitizeHtml(entity.info)}
         </div>
       {/if}
-      {#if isCandidate(entity)}
+      {#if isCandidate(entity) && entity.party}
+        <!-- TODO: This becomes incorrect with `vaa-data` that supports party membership as distinct from nominating party. We need to handle cases where the list differs from party membership as well as $t('common.unaffiliated') -->
         <InfoItem label={$t('common.electionList')}>
-          {#if entity.party}
-            <PartyTag party={entity.party} variant="full" />
-          {:else}
-            {$t('common.unaffiliated')}
-          {/if}
+          <PartyTag party={entity.party} variant="full" />
         </InfoItem>
       {/if}
       {#if $settings.entityDetails.showMissingElectionSymbol[entityType] || entity.electionSymbol}

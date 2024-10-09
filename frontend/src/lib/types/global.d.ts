@@ -90,7 +90,9 @@ declare global {
     publisherLogo?: ImageProps;
     publisherLogoDark?: ImageProps;
     poster?: ImageProps;
-    posterCandidateApp?: ImageProps;
+    posterDark?: ImageProps;
+    candPoster?: ImageProps;
+    candPosterDark?: ImageProps;
     translationOverrides?: {[translationKey: TranslationKey]: string};
     candidateAppFAQ?: Array<{question: string; answer: string}>;
   };
@@ -137,7 +139,7 @@ declare global {
     lastName: string;
     name: string;
     photo?: ImageProps;
-    party: PartyProps;
+    party?: PartyProps;
   }
 
   /**
@@ -201,6 +203,7 @@ declare global {
     fillingInfo?: string;
     hidden?: boolean;
     type: QuestionSettingsProps['type'];
+    textType?: 'short' | 'long';
     values?: AnswerOption[];
     min?: number | Date;
     max?: number | Date;
@@ -257,6 +260,7 @@ declare global {
   type QuestionSettingsProps =
     | {
         type: 'text';
+        textType?: 'short' | 'long';
         notLocalizable?: boolean;
       }
     | {

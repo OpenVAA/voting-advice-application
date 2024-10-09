@@ -45,7 +45,7 @@ export interface StrapiElectionData {
   locale: string;
   attributes: {
     electionDate: Date;
-    canEditQuestions: boolean;
+    answersLocked: boolean;
     electionStartDate: Date;
     name: LocalizedString;
     shortName: LocalizedString;
@@ -130,30 +130,12 @@ export interface StrapiAppCustomizationData {
     translationOverrides: {[locale: string]: {[translationKey: string]: string}};
     candidateAppFAQ: {[locale: string]: Array<{question: string; answer: string}>};
     publisherName: LocalizedString | null;
-    publisherLogo: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
-    publisherLogoDark: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
-    poster: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
-    posterCandidateApp: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
+    publisherLogo: StrapiImage;
+    publisherLogoDark: StrapiImage;
+    poster: StrapiImage;
+    posterDark: StrapiImage;
+    candPoster: StrapiImage;
+    candPosterDark: StrapiImage;
   };
 }
 
@@ -165,72 +147,12 @@ export interface StrapiQuestionTypeData {
   attributes: {
     name: string;
     info: string;
-    settings: QuestionTypeSettings;
+    settings: QuestionSettingsProps;
     questions: {
       data: StrapiQuestionData[];
     };
   };
 }
-
-/**
- * Question type settings
- */
-export type QuestionTypeSettings =
-  | {
-      type: 'text';
-      notLocalizable?: boolean;
-    }
-  | {
-      type: 'number';
-      min?: number;
-      max?: number;
-    }
-  | {
-      type: 'boolean';
-    }
-  | {
-      type: 'photo';
-    }
-  | {
-      type: 'date';
-      dateType?: DateType;
-      min?: Date;
-      max?: Date;
-    }
-  | {
-      type: 'link';
-    }
-  | {
-      type: 'singleChoiceOrdinal';
-      values: Choice[];
-      display?: 'vertical' | 'horizontal';
-    }
-  | {
-      type: 'singleChoiceCategorical';
-      values: Choice[];
-      display?: 'vertical' | 'horizontal';
-    }
-  | {
-      type: 'multipleChoiceCategorical';
-      values: Choice[];
-      display?: 'vertical' | 'horizontal';
-      min?: number;
-      max?: number;
-    }
-  | {
-      type: 'preferenceOrder';
-      values: Choice[];
-      min?: number;
-      max?: number;
-    };
-
-/**
- * The format for an option in a multiple choice question.
- */
-export type Choice = {
-  key: number;
-  label: LocalizedString;
-};
 
 /**
  * Non-exhaustive specification of the data returned by the Strapi endpoint `question`.
@@ -337,12 +259,7 @@ export interface StrapiCandidateData {
     party: {
       data: StrapiPartyData;
     };
-    photo: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
+    photo: StrapiImage;
   };
 }
 
@@ -374,10 +291,10 @@ export type AnswerValues = {
   number: number;
   photo: string;
   date: Date;
-  singleChoiceOrdinal: Choice['key'];
-  singleChoiceCategorical: Choice['key'];
-  multipleChoiceCategorical: Choice['key'][];
-  preferenceOrder: Choice['key'][];
+  singleChoiceOrdinal: AnswerOption['key'];
+  singleChoiceCategorical: AnswerOption['key'];
+  multipleChoiceCategorical: AnswerOption['key'][];
+  preferenceOrder: AnswerOption['key'][];
 };
 
 /** TODO: Remove when generic questions are online */
@@ -397,12 +314,7 @@ export interface StrapiPartyData {
     info: LocalizedString;
     color: string;
     colorDark: string;
-    logo: {
-      data?: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    };
+    logo: StrapiImage;
     answers: {
       data: StrapiAnswerData[];
     };
@@ -414,6 +326,13 @@ export interface StrapiPartyData {
     };
   };
 }
+
+export type StrapiImage = {
+  data?: {
+    id: number | string;
+    attributes: StrapiImageData;
+  };
+};
 
 export interface StrapiImageData extends StrapiImageFormatData {
   alternativeText?: string;

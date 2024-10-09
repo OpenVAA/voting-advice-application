@@ -13,36 +13,48 @@
   import {Warning} from '$lib/components/warning';
   import type {CandidateContext} from '$lib/utils/candidateContext';
   import type {QuestionPageProps} from './QuestionPage.type';
+  import type {CandidateAnswer} from '$types/candidateAttributes';
 
   type $$Props = QuestionPageProps;
   export let currentQuestion: $$Props['currentQuestion'];
   export let editMode: $$Props['editMode'] = false;
 
-  const {opinionAnswers, progress, questionsLocked, unansweredOpinionQuestions} =
-    getContext<CandidateContext>('candidate');
-
-  $: answer = $opinionAnswers?.[questionId]; // undefined if not answered
-
-  $: questionId = currentQuestion.id;
-
-  // Local storage keys, depend on the question id
-  $: likertLocal = `candidate-app-question-${questionId}-likert`;
-  $: openAnswerLocal = `candidate-app-question-${questionId}-open`;
-
-  let openAnswerTextArea: MultilangTextInput; // Used to clear the local storage from the parent component
+  let answer: CandidateAnswer | undefined;
+  let category: QuestionCategoryProps;
+  let info: string | undefined;
+  let likertLocal: string;
   let openAnswer: LocalizedString = {};
-
+  let openAnswerLocal: string;
+  let openAnswerTextArea: MultilangTextInput; // Used to clear the local storage from the parent component
+  let options: Array<AnswerOption>;
+  let questionId: string;
+  let questionIndex: number | undefined;
   let selectedKey: AnswerOption['key'] | undefined;
 
-  // Set the selected key on page load, local storage takes precedence
+  const {opinionAnswers, progress, answersLocked, opinionQuestions, unansweredOpinionQuestions} =
+    getContext<CandidateContext>('candidate');
+
   $: {
-    const value = localStorage.getItem(likertLocal) ?? answer?.value;
-    if (value != null) {
-      const intValue = typeof value === 'number' ? value : parseInt(`${value}`);
-      if (`${intValue}` !== `${value}` || !Number.isInteger(intValue))
-        throw new Error(`Likert question answer value is not an integer: ${value}`);
+    questionId = currentQuestion.id;
+    questionIndex = $opinionQuestions?.findIndex((q) => q === currentQuestion);
+    if (questionIndex === -1) questionIndex = undefined;
+    // Set the selected key on page load, local storage takes precedence
+    likertLocal = `candidate-app-question-${questionId}-likert`;
+    openAnswerLocal = `candidate-app-question-${questionId}-open`;
+    const localValue = localStorage.getItem(likertLocal);
+    if (localValue != null) {
+      const intValue = typeof localValue === 'number' ? localValue : parseInt(`${localValue}`);
+      if (`${intValue}` !== `${localValue}` || !Number.isInteger(intValue))
+        throw new Error(`Likert question answer value is not an integer: ${localValue}`);
+      answer = undefined;
       selectedKey = intValue;
+    } else {
+      answer = $opinionAnswers?.[questionId]; // undefined if not answered
+      selectedKey = answer ? parseInt(`${answer.value}`) : undefined;
     }
+    category = currentQuestion.category;
+    info = currentQuestion.info;
+    options = currentQuestion.values ?? [];
   }
 
   const saveLikertToLocal = ({detail}: CustomEvent) => {
@@ -136,13 +148,6 @@
     removeLocalAnswerToQuestion();
     goto($getRoute(Route.CandAppQuestions));
   };
-
-  $: category = currentQuestion.category;
-  $: info = currentQuestion.info;
-  $: options = currentQuestion.values?.map(({key, label}) => ({
-    key,
-    label: label
-  }));
 </script>
 
 <!--
@@ -168,13 +173,22 @@ In addition to the question, includes a Likert scale and a text area for comment
     class="bg-base-200"
     progress={$progress?.progress}
     progressMax={$progress?.max}>
-    <Warning display={!!$questionsLocked} slot="note"
+    <Warning display={!!$answersLocked} slot="note"
       >{$t('candidateApp.common.editingNotAllowed')}</Warning>
 
     <HeadingGroup slot="heading" id="hgroup-{questionId}">
-      {#if category}
-        <PreHeading><CategoryTag {category} /></PreHeading>
-      {/if}
+      <PreHeading>
+        {#if questionIndex != null && $opinionQuestions}
+          <!-- Index of question within all questions -->
+          {#if !category}
+            {$t('common.question')}
+          {/if}
+          <span class="text-secondary">{questionIndex + 1}/{$opinionQuestions.length}</span>
+        {/if}
+        {#if category}
+          <CategoryTag {category} />
+        {/if}
+      </PreHeading>
       <h1>{currentQuestion.text}</h1>
     </HeadingGroup>
 
@@ -187,7 +201,7 @@ In addition to the question, includes a Likert scale and a text area for comment
         <LikertResponseButtons
           aria-labelledby="hgroup-{questionId}"
           name={questionId}
-          mode={!$questionsLocked ? 'answer' : 'display'}
+          mode={!$answersLocked ? 'answer' : 'display'}
           {options}
           {selectedKey}
           on:change={saveLikertToLocal} />
@@ -201,7 +215,7 @@ In addition to the question, includes a Likert scale and a text area for comment
         localStorageId={openAnswerLocal}
         previouslySavedMultilang={answer?.openAnswer ?? undefined}
         disabled={!selectedKey}
-        locked={!!$questionsLocked}
+        locked={!!$answersLocked}
         placeholder="—"
         bind:multilangText={openAnswer}
         bind:this={openAnswerTextArea} />
@@ -210,7 +224,7 @@ In addition to the question, includes a Likert scale and a text area for comment
         <p class="text-error">{errorMessage}</p>
       {/if}
 
-      {#if !!$questionsLocked}
+      {#if !!$answersLocked}
         <Button
           on:click={() => goto($getRoute(Route.CandAppQuestions))}
           variant="main"

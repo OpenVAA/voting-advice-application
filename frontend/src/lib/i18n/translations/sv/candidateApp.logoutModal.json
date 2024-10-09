@@ -1,7 +1,7 @@
 {
   "continue": "SV Continue Entering Data",
   "ingress": "SV Are you sure you want to logout? You will be automatically logged out after {timeLeft} seconds.",
-  "itemsLeft": "SV There {infoQuestionsLeft, plural, =1 {is still one item} other {are still # items}} of basic info and {opinionQuestionsLeft, plural, =1 {one opinion} other {# opinions}} to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
-  "questionsLeft": "SV There {opinionQuestionsLeft, plural, =1 {is still one opinion} other {are still # opinions}} to fill. Your data won't be shown in the Election Compass until you have filled these, but you can login later to continue.",
+  "itemsLeft": "SV There {infoQuestionsLeft, plural, =1 {is still one item} other {are still # items}} of basic info and {opinionQuestionsLeft, plural, =1 {one opinion} other {# opinions}} to fill.",
+  "questionsLeft": "SV There {opinionQuestionsLeft, plural, =1 {is still one opinion} other {are still # opinions}} to fill.",
   "title": "SV Some of Your Data Is Still Missing"
 }

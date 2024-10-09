@@ -13,7 +13,7 @@
   export let question: $$Props['question'];
   export let categoryQuestions: $$Props['categoryQuestions'];
 
-  const {questionsLocked} = getContext<CandidateContext>('candidate');
+  const {answersLocked} = getContext<CandidateContext>('candidate');
 </script>
 
 <!--
@@ -37,7 +37,7 @@ Renders an unanswered question on the summary page. Consists of the questions ti
   </Expander>
 
   <!-- Navigate to unsanswered question -->
-  {#if !$questionsLocked}
+  {#if !$answersLocked}
     <a
       class="flex justify-center py-20 pb-40"
       href={$getRoute({route: Route.CandAppQuestions, id: question.id})}>

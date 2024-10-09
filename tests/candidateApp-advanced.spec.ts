@@ -170,7 +170,7 @@ test("should log into Strapi and import candidates", async ({ page, baseURL }) =
     .click();
   const link = await page
     .frameLocator("iframe >> nth=0")
-    .getByRole("link", { name: `${baseURL}/${LOCALE}` })
+    .getByRole("link", { name: baseURL })
     .getAttribute("href");
   if (!link) throw new Error("Link not found");
   await page.goto(link);

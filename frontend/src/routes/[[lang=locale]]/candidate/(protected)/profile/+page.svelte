@@ -1,7 +1,7 @@
 <script lang="ts">
   import {writable} from 'svelte/store';
-  import {t} from '$lib/i18n';
-  import {translate} from '$lib/i18n/utils/translate';
+  import {t, defaultLocale} from '$lib/i18n';
+  import {isTranslation, translate} from '$lib/i18n/utils/translate';
   import {Field, FieldGroup} from '$lib/components/common/form';
   import {BasicPage} from '$lib/templates/basicPage';
   import {getContext} from 'svelte';
@@ -10,7 +10,7 @@
   import {Button} from '$lib/components/button';
   import {goto} from '$app/navigation';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import type {CandidateAnswer} from '$lib/types/candidateAttributes';
+  import type {CandidateAnswer, Nomination} from '$lib/types/candidateAttributes';
   import {addAnswer, updateAnswer} from '$lib/api/candidate';
   import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
   import InputContainer from '$candidate/components/input/InputContainer.svelte';
@@ -24,6 +24,7 @@
   } from '$candidate/components/input';
   import {answerIsEmpty} from '$lib/utils/answers';
   import type {TranslationKey} from '$types';
+  import {settings} from '$lib/stores';
 
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
   const headerClass = 'uppercase mx-6 my-0 p-0 small-label';
@@ -34,10 +35,11 @@
   const {
     user,
     infoAnswers,
-    questionsLocked,
+    answersLocked,
     infoQuestions,
     unansweredOpinionQuestions,
-    unansweredRequiredInfoQuestions
+    unansweredRequiredInfoQuestions,
+    parties
   } = getContext<CandidateContext>('candidate');
 
   const unsavedInfoAnswers = writable<AnswerDict>({});
@@ -72,7 +74,7 @@
   // follow allFilledPrivate to check if all the required questions are answered.
   let allFilledPrivate: boolean = false;
   $: {
-    if ($infoQuestions && $infoQuestions.length > 0) {
+    if ($infoQuestions) {
       const requiredQuestions = $infoQuestions.filter((question) => question.required);
       allFilledPrivate = requiredQuestions.every((question) => {
         return !answerIsEmpty(question, $unsavedInfoAnswers[question.id]);
@@ -82,13 +84,16 @@
 
   // basic information
   type InfoField = ('firstName' | 'lastName' | 'party') & keyof CandidateProps;
-  const basicInfoFields: Record<InfoField, TranslationKey> = {
+
+  const basicInfoFields = new Array<InfoField>('firstName', 'lastName', 'party');
+
+  const basicInfoLabels: Record<InfoField, TranslationKey> = {
     firstName: 'common.firstName',
     lastName: 'common.lastName',
     party: 'common.party.singular'
   };
 
-  const basicInfoData: Record<string, string | number | undefined> = {
+  const basicInfoData: Record<InfoField, string | undefined> = {
     firstName: $user?.candidate?.firstName,
     lastName: $user?.candidate?.lastName,
     party: translate($user?.candidate?.party?.shortName)
@@ -113,7 +118,7 @@
   let loading = false;
 
   const submitForm = async () => {
-    if ($questionsLocked) {
+    if ($answersLocked) {
       await goto($getRoute(Route.CandAppHome));
       return;
     }
@@ -138,7 +143,7 @@
 
     loading = false;
 
-    if ($unansweredOpinionQuestions?.length !== 0 && !$questionsLocked)
+    if ($unansweredOpinionQuestions?.length !== 0 && !$answersLocked)
       await goto($getRoute(Route.CandAppQuestions));
     else await goto($getRoute(Route.CandAppHome));
   };
@@ -191,36 +196,49 @@
   let submitButtonText = '';
 
   $: {
-    if ($unansweredOpinionQuestions?.length && !$questionsLocked)
+    if ($unansweredOpinionQuestions?.length && !$answersLocked)
       submitButtonText = $t('common.saveAndContinue');
-    else if ($questionsLocked) submitButtonText = $t('common.return');
+    else if ($answersLocked) submitButtonText = $t('common.return');
     else submitButtonText = $t('common.saveAndReturn');
   }
 
-  function isLocalizedString(value: AnswerPropsValue): value is LocalizedString {
-    return (
-      typeof value === 'object' &&
-      value !== null &&
-      !Array.isArray(value) &&
-      !(value instanceof Date)
-    );
+  /**
+   * This is a hacky, temporary way of ensuring that the inputs to `TextInput` are always `LocalizedString` instances even when only one locale is supported.
+   * TODO: This will be deprecated when all the input components are refactored in [PR #580](https://github.com/OpenVAA/voting-advice-application/pull/580)
+   * @param value A `LocalizedString` or a `string`
+   */
+  function ensureLocalizedString(value: AnswerPropsValue): LocalizedString | undefined {
+    return !value ? undefined : isTranslation(value) ? value : {[defaultLocale]: `${value}`};
   }
 
   function onChange(details: {questionId: string; value: AnswerPropsValue}) {
     $unsavedInfoAnswers[details.questionId].value = details.value;
   }
+
+  /**
+   * Format a nomination for display.
+   */
+  function formatNomination(nomination: Nomination): string {
+    return [
+      translate(nomination.constituency?.shortName ?? nomination.constituency?.name),
+      translate(nomination.party?.shortName),
+      nomination.electionSymbol
+    ]
+      .filter((v) => v != null && v !== '')
+      .join($t('common.multipleAnswerSeparator'));
+  }
 </script>
 
-{#if $infoAnswers && $infoQuestions && $infoQuestions.length > 0}
+{#if $parties && $infoAnswers && $infoQuestions}
   <BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
-    <Warning display={!!$questionsLocked} slot="note">
+    <Warning display={!!$answersLocked} slot="note">
       <p>{$t('candidateApp.common.editingNotAllowed')}</p>
-      {#if $unansweredOpinionQuestions?.length !== 0 || $unansweredRequiredInfoQuestions?.length !== 0}
-        <p>{$t('candidateApp.common.editingNotAllowedPartiallyFilled')}</p>
+      {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
+        <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
       {/if}
     </Warning>
 
-    <PreventNavigation active={dirty && !loading && !$questionsLocked} />
+    <PreventNavigation active={dirty && !loading && !$answersLocked} />
     <form on:submit|preventDefault={submitForm}>
       <p class="text-center">
         {$t('candidateApp.basicInfo.instructions')}
@@ -228,8 +246,9 @@
 
       <div class="flex flex-col items-center gap-16">
         <FieldGroup>
-          {#each Object.entries(basicInfoFields) as [field, label]}
-            <Field id={field} label={$t(label)}>
+          <!-- Don't show the party field if no parties exist -->
+          {#each basicInfoFields.filter((f) => f !== 'party' || $parties.length) as field}
+            <Field id={field} label={$t(basicInfoLabels[field])}>
               <InputContainer locked>
                 <input
                   type="text"
@@ -249,13 +268,7 @@
             {$t('candidateApp.basicInfo.nominations.title')}
           </p>
           {#if nomination}
-            <Field
-              id="nomination"
-              label={`${translate(nomination.constituency?.shortName)} ${$t('common.multipleAnswerSeparator')} ${translate(nomination.party.shortName)} ${
-                nomination.electionSymbol
-                  ? `${$t('common.multipleAnswerSeparator')} ${nomination.electionSymbol}`
-                  : ''
-              }`}>
+            <Field id="nomination" label={formatNomination(nomination)}>
               <InputContainer locked>
                 <input
                   disabled
@@ -276,7 +289,7 @@
           <PhotoInput
             bind:photo
             bind:uploadPhoto
-            disabled={$questionsLocked}
+            disabled={$answersLocked}
             onChange={() => (dirty = true)} />
         </FieldGroup>
 
@@ -287,7 +300,7 @@
               questionId={question.id}
               options={question.values}
               headerText={question.text}
-              locked={$questionsLocked}
+              locked={$answersLocked}
               {value}
               {onChange} />
           {:else if question.type === 'multipleChoiceCategorical' && ((Array.isArray(value) && value.every((v) => typeof v === 'number')) || value == null)}
@@ -295,42 +308,32 @@
               questionId={question.id}
               options={question.values}
               headerText={question.text}
-              locked={$questionsLocked}
+              locked={$answersLocked}
               {value}
               {onChange} />
           {:else if question.type === 'boolean' && (typeof value === 'boolean' || value == null)}
             <BooleanInput
               questionId={question.id}
               headerText={question.text}
-              locked={$questionsLocked}
+              locked={$answersLocked}
               footerText={$t('xxx.basicInfo.unaffiliatedDescription')}
               value={value ? value : false}
               {onChange} />
-          {:else if question.type === 'text' && (isLocalizedString(value) || value == null)}
-            {@const previousValue = $infoAnswers[question.id]?.value}
-            {#if $infoAnswers[question.id] && (isLocalizedString(previousValue) || previousValue == null)}
-              <TextInput
-                questionId={question.id}
-                headerText={question.text}
-                locked={$questionsLocked}
-                bind:clearLocalStorage
-                {value}
-                {previousValue}
-                {onChange} />
-            {:else}
-              <TextInput
-                questionId={question.id}
-                headerText={question.text}
-                {value}
-                locked={$questionsLocked}
-                bind:clearLocalStorage
-                {onChange} />
-            {/if}
+          {:else if question.type === 'text'}
+            <TextInput
+              questionId={question.id}
+              headerText={question.text}
+              locked={$answersLocked}
+              compact={question.textType === 'short'}
+              bind:clearLocalStorage
+              value={ensureLocalizedString(value)}
+              previousValue={ensureLocalizedString($infoAnswers[question.id]?.value)}
+              {onChange} />
           {:else if question.type === 'date' && (typeof value === 'string' || value == null)}
             <DateInput
               questionId={question.id}
               headerText={question.text}
-              locked={$questionsLocked}
+              locked={$answersLocked}
               {value}
               {onChange} />
           {:else}
