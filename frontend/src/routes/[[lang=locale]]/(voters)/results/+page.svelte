@@ -148,11 +148,6 @@
     {#if $settings.header.showHelp}
       <Button href={$getRoute(Route.Help)} variant="icon" icon="help" text={$t('help.title')} />
     {/if}
-    <Button
-      on:click={() => console.info('Show favourites')}
-      variant="icon"
-      icon="list"
-      text={$t('yourList.title')} />
   </svelte:fragment>
 
   <div class="mb-xl text-center">
