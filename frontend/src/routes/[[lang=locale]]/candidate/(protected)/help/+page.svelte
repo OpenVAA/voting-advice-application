@@ -4,21 +4,31 @@
   import {BasicPage} from '$lib/templates/basicPage';
   import {Button} from '$lib/components/button';
   import {Expander} from '$lib/components/expander';
-  import {customization} from '$lib/stores';
+  import {customization, settings} from '$lib/stores';
 </script>
 
 <BasicPage title={$t('candidateApp.help.title')}>
   <div class="text-center">
-    <p class="pb-lg">{$t('candidateApp.help.ingress')}</p>
+    <p>{$t('candidateApp.help.ingress')}</p>
   </div>
 
-  {#if $customization.candidateAppFAQ}
-    {#each $customization.candidateAppFAQ as faq}
-      <Expander title={faq.question} variant="question-help">
-        {faq.answer}
-      </Expander>
-    {/each}
-  {/if}
+  {#each $customization.candidateAppFAQ ?? [] as faq}
+    <Expander title={faq.question} variant="question-help">
+      {faq.answer}
+    </Expander>
+  {:else}
+    <p class="mt-lg text-center text-secondary">
+      {$t('candidateApp.help.noFAQ')}
+    </p>
+  {/each}
+
+  <div class="mt-md">
+    <Button
+      href="mailto:{$settings.admin.email}"
+      icon="feedback"
+      iconPos="left"
+      text={$t('candidateApp.common.contactSupport')} />
+  </div>
 
   <svelte:fragment slot="primaryActions">
     <Button
