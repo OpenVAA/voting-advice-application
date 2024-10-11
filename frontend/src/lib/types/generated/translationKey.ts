@@ -30,6 +30,7 @@ export type TranslationKey =
   | 'candidateApp.error.nominationNoElection'
   | 'candidateApp.error.userNoCandidate'
   | 'candidateApp.help.ingress'
+  | 'candidateApp.help.noFAQ'
   | 'candidateApp.help.title'
   | 'candidateApp.home.basicInfo.edit'
   | 'candidateApp.home.basicInfo.enter'

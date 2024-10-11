@@ -1,4 +1,5 @@
 {
-  "ingress": "Here you can find answers to the most common questions with using this application.",
+  "ingress": "Answers to the most common questions with using this application are collected here.",
+  "noFAQ": "There no answers yet. You can contact support if you have a question.",
   "title": "Help"
 }
