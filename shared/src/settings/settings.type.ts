@@ -191,6 +191,18 @@ export type DynamicSettings = {
      */
     showHelp: boolean;
   };
+  headerStyle: {
+    dark: {
+      bgColor?: string;
+      overImgBgColor?: string;
+    },
+    light: {
+      bgColor?: string;
+      overImgBgColor?: string;
+    }
+    imgSize?: string;
+    imgPosition?: string;
+  }
   /**
    * Settings controlling which entities are shown in the app.
    */
@@ -273,22 +285,10 @@ export type DynamicSettings = {
          * The scores for question categories. If there's only one category, submatches are never computed. Applies to both the results list and entity details.
          */
         'submatches'
-        | {
-            /**
-             * Show the entity's answer to a specific question. Only applies to the results list.
-             *
-             * The question's id.
-             */
-            question: string;
-            /**
-             * Whether to hide the question label in the card.
-             */
-            hideLabel?: boolean;
-            /**
-             * How to format the answer. • Default: use the same format as in EntityDetails. • Tag: format the answers as a pill or tag.
-             */
-            format?: 'default' | 'tag';
-          }
+        /**
+         * Show the entity's answer to a specific question. Only applies to the results list.
+         */
+        | QuestionInCardContent
       >;
       /**
        * The additional contents of party cards. NB. the order of the items has currently no effect.
@@ -302,22 +302,10 @@ export type DynamicSettings = {
          * List party's the top 3 candidates within it's card. Only applies to the results list.
          */
         | 'candidates'
-        | {
-            /**
-             * Show the entity's answer to a specific question. Only applies to the results list.
-             *
-             * The question's id.
-             */
-            question: string;
-            /**
-             * Whether to hide the question label in the card.
-             */
-            hideLabel?: boolean;
-            /**
-             * How to format the answer. • Default: use the same format as in EntityDetails. • Tag: format the answers as a pill or tag.
-             */
-            format?: 'default' | 'tag';
-          }
+        /**
+         * Show the entity's answer to a specific question. Only applies to the results list.
+         */
+        | QuestionInCardContent
       >;
     };
     /**
@@ -334,4 +322,22 @@ export type DynamicSettings = {
     showSurveyPopup?: number;
   };
   underMaintenance?: boolean;
+};
+
+/**
+ * Used to show the entity's answer to a specific question. Only applies to the results list.
+ */
+export type QuestionInCardContent = {
+  /**
+   * The question's id.
+   */
+  question: string;
+  /**
+   * Whether to hide the question label in the card.
+   */
+  hideLabel?: boolean;
+  /**
+   * How to format the answer. • Default: use the same format as in EntityDetails. • Tag: format the answers as a pill or tag.
+   */
+  format?: 'default' | 'tag';
 };

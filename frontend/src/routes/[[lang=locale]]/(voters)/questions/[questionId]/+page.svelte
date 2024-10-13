@@ -8,14 +8,11 @@
   import {
     answeredQuestions,
     deleteVoterAnswer,
-    openFeedbackModal,
     opinionQuestionCategories,
     opinionQuestions,
-    resultsAvailable,
     settings,
     setVoterAnswer
   } from '$lib/stores';
-  import {Button} from '$lib/components/button';
   import {CategoryTag} from '$lib/components/categoryTag';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {Loading} from '$lib/components/loading';
@@ -25,12 +22,13 @@
     QuestionInfo,
     type LikertResponseButtonsEventDetail
   } from '$lib/components/questions';
-  import {type VideoMode, Video} from '$lib/components/video';
-  import {BasicPage} from '$lib/templates/basicPage';
+  //import {type VideoMode, Video} from '$lib/components/video';
   import {getQuestionsContext} from '../questions.context';
   import {filterAndSortQuestions} from '../questions.utils';
+  import Layout from '../../../Layout.svelte';
   import type {PageData} from './$types';
-
+  import {getLayoutContext} from '$lib/contexts/layout';
+  import {onDestroy} from 'svelte';
   /**
    * A page for displaying a single opinion question or a question category intro.
    * TODO:
@@ -51,6 +49,8 @@
   const {setQuestionAsFirst} = data;
   const {firstQuestionId, selectedCategories} = getQuestionsContext();
 
+  const {progress} = getLayoutContext(onDestroy);
+
   /** Use to disable the response buttons when an answer is set but we're still waiting for the next page to load */
   let disabled = false;
   let question: QuestionProps | undefined;
@@ -59,15 +59,11 @@
   let selectedKey: AnswerOption['key'] | undefined;
 
   // Variables related to possible video content
-  let atEnd: boolean;
-  let mode: VideoMode;
-  let reload: (props: CustomVideoProps) => void;
-  let toggleTranscript: (show?: boolean) => void;
-  let videoProps: CustomVideoProps | undefined;
-
-  /** Synced version so that we don't have to await for this explicitly */
-  let resultsAvailableSync = false;
-  $: $resultsAvailable.then((d) => (resultsAvailableSync = d));
+  // let atEnd: boolean;
+  // let mode: VideoMode;
+  // let reload: (props: CustomVideoProps) => void;
+  // let toggleTranscript: (show?: boolean) => void;
+  // let videoProps: CustomVideoProps | undefined;
 
   // 1. HANDLE setQuestionAsFirst
 
@@ -83,9 +79,14 @@
 
   // Make reactive to locale changes propagated to $opinionQuestions
   // NB. We need to include $opinionQuestionCategories as in order to get enriched category objects, which is quite hacky but again will be fixed when the `vaa-data` module is available.
-  $: Promise.all([$opinionQuestions, $opinionQuestionCategories]).then(
-    ([qq]) => (questions = filterAndSortQuestions(qq, $firstQuestionId, $selectedCategories))
-  );
+  $: {
+    // Svelte does not track variables within future context
+    $firstQuestionId;
+    $selectedCategories;
+    Promise.all([$opinionQuestions, $opinionQuestionCategories]).then(
+      ([qq]) => (questions = filterAndSortQuestions(qq, $firstQuestionId, $selectedCategories))
+    );
+  }
 
   // 3. UPDATE CURRENT QUESTION
 
@@ -118,19 +119,20 @@
 
     // Update the index because we need it in the goto-functions
     questionIndex = questions.indexOf(question);
+    progress.current.set(questionIndex + 1);
 
     // Only perform updates if the question has actually changed
     if (question !== previousQuestion) {
       // Enable buttons
       disabled = false;
       // Track whether the previous question has video content
-      const previousHadVideo = videoProps != null;
+      // const previousHadVideo = videoProps != null;
       // Check if this question has video content
-      videoProps = getVideoProps(question);
+      //videoProps = getVideoProps(question);
       // We need to call reload if we're reusing the Video component
-      if (previousHadVideo && videoProps) {
+      /* if (previousHadVideo && videoProps) {
         reload(videoProps);
-      }
+      } */
     }
   }
 
@@ -183,7 +185,7 @@
    * @param question The question object
    * @returns The video props or `undefined` if the question has no video content
    */
-  function getVideoProps(question: QuestionProps): CustomVideoProps | undefined {
+  /* function getVideoProps(question: QuestionProps): CustomVideoProps | undefined {
     if (
       !(
         question.customData != null &&
@@ -197,7 +199,7 @@
       transcript: question.info,
       ...question.customData.video
     } as CustomVideoProps;
-  }
+  } */
 
   /**
    * Get the index of the question within its category taking into account possible reordering due to `firstQuestionId`.
@@ -214,46 +216,22 @@
   }
 </script>
 
+<svelte:head>
+  <title>{question ? question.text : $t('questions.title')} – {$t('dynamic.appName')}</title>
+</svelte:head>
+
 {#if !(questions?.length && question)}
   <Loading class="mt-lg" />
 {:else}
   {@const {id, text, type, values, category, info, customData} = question}
   {@const headingId = `questionHeading-${id}`}
 
-  <BasicPage
-    title={text}
+  <!--
     class={videoProps ? 'bg-base-300' : undefined}
     titleClass={videoProps ? '!pb-0' : undefined}
-    progressMin={0}
-    progressMax={questions.length + 1}
-    progress={questionIndex + 1}>
-    <svelte:fragment slot="banner">
-      {#if $settings.header.showFeedback && $openFeedbackModal}
-        <Button
-          on:click={$openFeedbackModal}
-          variant="icon"
-          icon="feedback"
-          text={$t('feedback.send')} />
-      {/if}
-      {#if $settings.questions.showResultsLink}
-        <Button
-          href={$getRoute(Route.Results)}
-          disabled={resultsAvailableSync ? null : true}
-          variant="responsive-icon"
-          icon="results"
-          text={$t('results.title.results')} />
-      {/if}
-      {#if videoProps}
-        <Button
-          on:click={() => toggleTranscript()}
-          variant="responsive-icon"
-          icon={mode === 'video' ? 'videoOn' : 'videoOff'}
-          text={mode === 'video'
-            ? $t('components.video.showTranscript')
-            : $t('components.video.showVideo')} />
-      {/if}
-    </svelte:fragment>
-
+  -->
+  <Layout title={text}>
+    <!--
     <svelte:fragment slot="video">
       {#if videoProps}
         <Video
@@ -265,6 +243,7 @@
           {...videoProps} />
       {/if}
     </svelte:fragment>
+    -->
 
     <svelte:fragment slot="heading">
       <HeadingGroup id={headingId} class="relative">
@@ -285,23 +264,25 @@
           {/if}
         </PreHeading>
 
-        <h1 class={videoProps ? 'my-0 text-lg sm:my-md sm:text-xl' : ''}>{text}</h1>
+        <!-- class={videoProps ? 'my-0 text-lg sm:my-md sm:text-xl' : ''} -->
+        <h1>{text}</h1>
       </HeadingGroup>
     </svelte:fragment>
 
-    {#if !videoProps && info && info !== ''}
+    <!-- !videoProps && -->
+    {#if info && info !== ''}
       <QuestionInfo {info} />
     {/if}
 
     <svelte:fragment slot="primaryActions">
       {#if type === 'singleChoiceOrdinal'}
+        <!-- onShadedBg={videoProps != null} -->
         <LikertResponseButtons
           aria-labelledby={headingId}
           {disabled}
           name={id}
           options={values}
           {selectedKey}
-          onShadedBg={videoProps != null}
           variant={customData?.vertical ? 'vertical' : undefined}
           on:change={answerQuestion} />
       {:else}
@@ -329,5 +310,5 @@
           jumpQuestion(+1);
         }} />
     </svelte:fragment>
-  </BasicPage>
+  </Layout>
 {/if}

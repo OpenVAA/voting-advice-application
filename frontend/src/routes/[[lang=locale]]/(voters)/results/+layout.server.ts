@@ -1,7 +1,6 @@
 import {dataProvider} from '$lib/api/getData';
-import type {LayoutServerLoad} from './$types';
 
-export const load = (async ({parent}) => {
+export async function load({parent}) {
   const locale = (await parent()).i18n.currentLocale;
   const {getInfoQuestions, getNominatedCandidates, getNominatingParties, getOpinionQuestions} =
     await dataProvider;
@@ -11,4 +10,4 @@ export const load = (async ({parent}) => {
     opinionQuestions: getOpinionQuestions({locale}),
     infoQuestions: getInfoQuestions({locale})
   };
-}) satisfies LayoutServerLoad;
+}

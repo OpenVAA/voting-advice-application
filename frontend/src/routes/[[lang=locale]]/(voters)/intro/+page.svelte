@@ -1,35 +1,25 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {openFeedbackModal, settings} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup} from '$lib/components/headingGroup';
   import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {BasicPage} from '$lib/templates/basicPage';
+  import Layout from '../../Layout.svelte';
 </script>
 
-<BasicPage title={$t('dynamic.intro.title')}>
-  <svelte:fragment slot="hero">
+<svelte:head>
+  <title>{$t('dynamic.intro.title')} – {$t('dynamic.appName')}</title>
+</svelte:head>
+
+<Layout title={$t('dynamic.intro.title')}>
+  <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.intro.heroEmoji')} />
-  </svelte:fragment>
+  </figure>
 
   <HeadingGroup slot="heading">
     <!-- <PreHeading class="text-primary">{$t('dynamic.appName')}</PreHeading> -->
     <h1>{$t('dynamic.intro.title')}</h1>
   </HeadingGroup>
-
-  <svelte:fragment slot="banner">
-    {#if $settings.header.showFeedback && $openFeedbackModal}
-      <Button
-        on:click={$openFeedbackModal}
-        variant="icon"
-        icon="feedback"
-        text={$t('feedback.send')} />
-    {/if}
-    {#if $settings.header.showHelp}
-      <Button href={$getRoute(Route.Help)} variant="icon" icon="help" text={$t('help.title')} />
-    {/if}
-  </svelte:fragment>
 
   <p class="text-center">
     {$t('dynamic.intro.ingress')}
@@ -41,14 +31,13 @@
     <li>{$t('dynamic.intro.list.details')}</li>
   </ol>
 
-  <svelte:fragment slot="primaryActions">
-    <Button
-      href={$getRoute(Route.Questions)}
-      variant="main"
-      icon="next"
-      text={$t('dynamic.intro.continue')} />
-  </svelte:fragment>
-</BasicPage>
+  <Button
+    slot="primaryActions"
+    href={$getRoute(Route.Questions)}
+    variant="main"
+    icon="next"
+    text={$t('dynamic.intro.continue')} />
+</Layout>
 
 <style lang="postcss">
   .list-circled {

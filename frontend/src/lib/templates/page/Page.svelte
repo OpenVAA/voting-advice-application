@@ -4,7 +4,9 @@
   import {concatClass} from '$lib/utils/components';
   import {appType} from '$lib/stores';
   import {Icon} from '$lib/components/icon';
-  import {NavItem, setNavigationContext} from '$lib/components/navigation';
+  import {NavItem} from '$lib/components/navigation';
+  import {getLayoutContext} from '$lib/contexts/layout';
+  import {onDestroy} from 'svelte';
   import {AppLogo} from '../parts/appLogo';
   import {CandidateNav, VoterNav} from './parts';
   import type {PageProps} from './Page.type';
@@ -49,7 +51,8 @@
   /**
    * Create a context which can be used by the nested navigation components to close the drawer
    */
-  setNavigationContext({close: closeDrawer});
+  const {navigation} = getLayoutContext(onDestroy);
+  navigation.close = closeDrawer;
 
   // TODO: Fix progress bar color on iOS Safari:
   // see https://stackoverflow.com/questions/38622911/styling-meter-bar-for-mozilla-and-safari

@@ -13,13 +13,18 @@ interface QuestionsContextContent extends StorageContextContent {
    * The ids of the categories the user has possibly selected.
    */
   selectedCategories: string[] | null;
+  /**
+   * Number of selected questions.
+   */
+  numSelectedQuestions: number;
 }
 
 const {get} = createStorageContext<QuestionsContextContent>(
   'vaa-questions',
   {
     firstQuestionId: null,
-    selectedCategories: null
+    selectedCategories: null,
+    numSelectedQuestions: 0
   },
   'sessionStorage'
 );
