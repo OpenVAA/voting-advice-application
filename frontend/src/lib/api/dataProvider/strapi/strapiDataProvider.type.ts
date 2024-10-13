@@ -86,6 +86,18 @@ export interface StrapiAppSettingsData {
     header?: {
       showFeedback: boolean;
       showHelp: boolean;
+      topBar: {
+        dark: {
+          bgColor?: string;
+          overImgBgColor?: string;
+        };
+        light: {
+          bgColor?: string;
+          overImgBgColor?: string;
+        };
+        imgSize?: string;
+        imagePosition?: string;
+      };
     };
     matching?: {
       minimumAnswers: number;

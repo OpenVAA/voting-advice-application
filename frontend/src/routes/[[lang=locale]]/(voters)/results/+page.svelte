@@ -7,7 +7,6 @@
     answeredQuestions,
     candidateRankings,
     infoQuestions,
-    openFeedbackModal,
     opinionQuestions,
     partyRankings,
     resultsAvailable,
@@ -19,7 +18,6 @@
   import {candidateFilters} from '$lib/utils/filters';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {Button} from '$lib/components/button';
   import type {EntityCardProps} from '$lib/components/entityCard';
   import {EntityList} from '$lib/components/entityList';
   import {EntityListControls} from '$lib/components/entityListControls';
@@ -27,8 +25,16 @@
   import {Loading} from '$lib/components/loading';
   import {StretchBackground} from '$lib/components/stretchBackground';
   import {Tabs} from '$lib/components/tabs';
-  import {BasicPage} from '$lib/templates/basicPage';
   import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
+  import Layout from '../../layout.svelte';
+  import {resetTopBarActionsContext} from '../../topBarActions.context';
+  import {resetTopBarContext} from '../../topBar.context';
+
+  resetTopBarContext();
+  resetTopBarActionsContext({
+    results: 'hide',
+    return: 'hide'
+  });
 
   /**
    * The currently active tab in the results. We want this to persist between opening entity details and returning to the results.
@@ -130,25 +136,18 @@
   function candidateRoute(candidate: WrappedEntity<CandidateProps>) {
     return $getRoute({route: Route.ResultCandidate, id: candidate.entity.id});
   }
+
+  const title = resultsAvailableSync ? $t('results.title.results') : $t('results.title.browse');
 </script>
 
-<BasicPage title={resultsAvailableSync ? $t('results.title.results') : $t('results.title.browse')}>
-  <svelte:fragment slot="hero">
-    <HeroEmoji emoji={$t('dynamic.results.heroEmoji')} />
-  </svelte:fragment>
+<svelte:head>
+  <title>{title} – {$t('dynamic.appName')}</title>
+</svelte:head>
 
-  <svelte:fragment slot="banner">
-    {#if $settings.header.showFeedback && $openFeedbackModal}
-      <Button
-        on:click={$openFeedbackModal}
-        variant="icon"
-        icon="feedback"
-        text={$t('feedback.send')} />
-    {/if}
-    {#if $settings.header.showHelp}
-      <Button href={$getRoute(Route.Help)} variant="icon" icon="help" text={$t('help.title')} />
-    {/if}
-  </svelte:fragment>
+<Layout {title}>
+  <figure role="presentation" slot="hero">
+    <HeroEmoji emoji={$t('dynamic.results.heroEmoji')} />
+  </figure>
 
   <div class="mb-xl text-center">
     {#if resultsAvailableSync}
@@ -221,4 +220,4 @@
       {/await}
     {/if}
   </StretchBackground>
-</BasicPage>
+</Layout>

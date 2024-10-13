@@ -1,20 +1,27 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
-  import {
-    openFeedbackModal,
-    opinionQuestions,
-    opinionQuestionCategories,
-    settings
-  } from '$lib/stores';
+  import {opinionQuestions, opinionQuestionCategories, settings} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import {HeroEmoji} from '$lib/components/heroEmoji';
   import {Loading} from '$lib/components/loading';
-  import {BasicPage} from '$lib/templates/basicPage';
   import {getQuestionsContext} from './questions.context';
   import {CategoryTag} from '$lib/components/categoryTag';
+  import Layout from '../../layout.svelte';
+  import {resetTopBarActionsContext} from '../../topBarActions.context';
+  import {resetTopBarContext} from '../../topBar.context';
+  import {getTopBarProgressContext} from '../../topBarProgress.context';
 
   const {firstQuestionId, selectedCategories} = getQuestionsContext();
+
+  resetTopBarContext({hideProgressBar: false});
+  resetTopBarActionsContext({
+    results: 'hide',
+    return: 'hide'
+  });
+
+  const topBarProgress = getTopBarProgressContext();
+  topBarProgress.current.set(0);
 
   // Await the necessary promises here and save their contents in synced variables
   let questionsSync: QuestionProps[] | undefined;
@@ -52,28 +59,15 @@
     : undefined;
 </script>
 
-<BasicPage title={$t('questions.title')}>
+<Layout title={$t('questions.title')}>
   <!-- <svelte:fragment slot="note">
     <Icon name="tip" />
     {$t('XXX')}
   </svelte:fragment> -->
 
-  <svelte:fragment slot="hero">
+  <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.questions.heroEmoji')} />
-  </svelte:fragment>
-
-  <svelte:fragment slot="banner">
-    {#if $settings.header.showFeedback && $openFeedbackModal}
-      <Button
-        on:click={$openFeedbackModal}
-        variant="icon"
-        icon="feedback"
-        text={$t('feedback.send')} />
-    {/if}
-    {#if $settings.header.showHelp}
-      <Button href={$getRoute(Route.Help)} variant="icon" icon="help" text={$t('help.title')} />
-    {/if}
-  </svelte:fragment>
+  </figure>
 
   {#if !(questionsSync && categoriesSync)}
     <Loading />
@@ -112,16 +106,15 @@
     </div>
   {/if}
 
-  <svelte:fragment slot="primaryActions">
-    <Button
-      disabled={!canContinue}
-      href={$getRoute(
-        $settings.questions.categoryIntros?.show && firstCategoryId
-          ? {route: Route.QuestionCategory, id: firstCategoryId}
-          : {route: Route.Question, id: FIRST_QUESTION_ID}
-      )}
-      variant="main"
-      icon="next"
-      text={$t('questions.intro.start', {numQuestions: numSelectedQuestions})} />
-  </svelte:fragment>
-</BasicPage>
+  <Button
+    slot="primaryActions"
+    disabled={!canContinue}
+    href={$getRoute(
+      $settings.questions.categoryIntros?.show && firstCategoryId
+        ? {route: Route.QuestionCategory, id: firstCategoryId}
+        : {route: Route.Question, id: FIRST_QUESTION_ID}
+    )}
+    variant="main"
+    icon="next"
+    text={$t('questions.intro.start', {numQuestions: numSelectedQuestions})} />
+</Layout>
