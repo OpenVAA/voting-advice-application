@@ -12,6 +12,10 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 ```
 
+## Docker error: Load metadata for docker.io/library/node:foo
+
+Docker needs to be connected to the internet to load the base Docker images.
+
 ## Docker error: No space left on device
 
 If Docker produces an error akin to `Error response from daemon [...] no space left on device`
@@ -26,9 +30,9 @@ Note also that there are two commands that can be used to stop the containers:
 1. `yarn dev:down`: This command will remove the unused volumes
 2. `yarn dev:stop`: This command stops the containers but keeps the volumes
 
-## Docker error: Load metadata for docker.io/library/node:foo
+## Docker error: Service "foo" can't be used with `extends` as it declare `depends_on`
 
-Docker needs to be connected to the internet to load the base Docker images.
+Update your Docker engine to a more recent version.
 
 ## Server error when trying to access frontend
 
@@ -44,7 +48,7 @@ Any changes to the content model are not reflected on local files by default. If
 
 The REST api query syntax can be a bit tricky, notably `*` only goes one-level deep.
 
-Another common case is that the Content Types that are not populated have been added to the schema after creating the API token. To allow reading them, edit the API token and change it from `Custom` to `Read-Only` and back (and check that locale listing is still allowed).
+Another possible cause is that the access control policy does not allow populating the relations. The policy is defined for each API route in [`backend/vaa-strapi/src/api/<endpoint>/routes/<endpoint>.ts`](../backend/vaa-strapi/src/api).
 
 ## Strapi error ’relation already exists’ on restart after editing the content model
 
