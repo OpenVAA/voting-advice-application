@@ -190,19 +190,19 @@ export type DynamicSettings = {
      * Whether to show the help icon by default in the header.
      */
     showHelp: boolean;
-    topBar: {
-      dark: {
-        bgColor?: string;
-        overImgBgColor?: string;
-      },
-      light: {
-        bgColor?: string;
-        overImgBgColor?: string;
-      }
-      imgSize?: string;
-      imagePosition?: string;
-    }
   };
+  headerStyle: {
+    dark: {
+      bgColor?: string;
+      overImgBgColor?: string;
+    },
+    light: {
+      bgColor?: string;
+      overImgBgColor?: string;
+    }
+    imgSize?: string;
+    imgPosition?: string;
+  }
   /**
    * Settings controlling which entities are shown in the app.
    */

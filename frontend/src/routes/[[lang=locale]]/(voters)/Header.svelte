@@ -28,14 +28,13 @@
 
   const topBar = getTopBarContext();
 
-  const topBarAppSettings = $settings.header.topBar;
-  const topBarNoImgBgColor = $darkMode
-    ? topBarAppSettings.dark.bgColor
-    : topBarAppSettings.light.bgColor;
-  const topBarOverImgBgColor = $darkMode
-    ? topBarAppSettings.dark.overImgBgColor
-    : topBarAppSettings.light.overImgBgColor;
-  const topBarBgColor = $topBar.imageSrc ? topBarOverImgBgColor : topBarNoImgBgColor;
+  const topBarAppSettings = $settings.headerStyle;
+
+  let bgColor: string | undefined;
+  $: {
+    const mode = $darkMode ? topBarAppSettings.dark : topBarAppSettings.light;
+    bgColor = $topBar.imageSrc ? mode.overImgBgColor : mode.bgColor;
+  }
 
   const progress = getTopBarProgressContext();
   const currentProgress = progress.current;
@@ -49,7 +48,7 @@
   class:top-bar={!$topBar.imageSrc}
   style:--image={$topBar.imageSrc && `url(${$topBar.imageSrc})`}
   style:--background-size={$topBar.imageSrc && topBarAppSettings.imgSize}
-  style:--background-position={$topBar.imageSrc && topBarAppSettings.imagePosition}>
+  style:--background-position={$topBar.imageSrc && topBarAppSettings.imgPosition}>
   {#if !$topBar.hideProgressBar}
     <progress
       class="progress progress-primary absolute left-0 top-0 h-2"
@@ -59,7 +58,7 @@
   {/if}
   <div
     class="inner-actions-bar flex w-full items-center justify-between pr-6"
-    style:--background-color={topBarBgColor}>
+    style:--background-color={bgColor}>
     <button
       on:click={openDrawer}
       bind:this={drawerOpenElement}

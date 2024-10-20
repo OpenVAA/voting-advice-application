@@ -18,16 +18,16 @@ export const dynamicSettings: DynamicSettings = {
   header: {
     showFeedback: true,
     showHelp: true,
-    topBar: {
-      dark: {
-        overImgBgColor: "transparent"
-      },
-      light: {
-        overImgBgColor: "transparent",
-      },
-      imgSize: "cover",
-      imagePosition: "center"
-    }
+  },
+  headerStyle: {
+    dark: {
+      overImgBgColor: "transparent"
+    },
+    light: {
+      overImgBgColor: "transparent",
+    },
+    imgSize: "cover",
+    imgPosition: "center"
   },
   entities: {
     hideIfMissingAnswers: {

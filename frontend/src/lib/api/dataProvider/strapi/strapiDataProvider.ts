@@ -85,16 +85,18 @@ function getData<T extends object>(
  */
 function getAppSettings(): Promise<Partial<AppSettings> | undefined> {
   const params = new URLSearchParams({
-    'populate[header]': 'true',
-    'populate[matching]': 'true',
-    'populate[survey]': 'true',
     'populate[entities][populate][hideIfMissingAnswers]': 'true',
     'populate[entityDetails][populate][contents]': 'true',
-    'populate[entityDetails][populate][showMissingElectionSymbol]': 'true',
     'populate[entityDetails][populate][showMissingAnswers]': 'true',
+    'populate[entityDetails][populate][showMissingElectionSymbol]': 'true',
+    'populate[header]': 'true',
+    'populate[headerStyle][populate][dark]': 'true',
+    'populate[headerStyle][populate][light]': 'true',
+    'populate[matching]': 'true',
     'populate[questions][populate][categoryIntros]': 'true',
     'populate[questions][populate][questionsIntro]': 'true',
-    'populate[results][populate][cardContents]': 'true'
+    'populate[results][populate][cardContents]': 'true',
+    'populate[survey]': 'true'
   });
   return getData<StrapiAppSettingsData[]>('api/app-settings', params)
     .then((result) => {

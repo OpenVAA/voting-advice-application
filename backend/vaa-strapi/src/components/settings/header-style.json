@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_settings_header_styles",
+  "info": {
+    "displayName": "Header Style"
+  },
+  "options": {},
+  "attributes": {
+    "dark": {
+      "displayName": "Header Style - Dark",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.header-style-dark"
+    },
+    "light": {
+      "displayName": "Header Style - Light",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.header-style-light"
+    },
+    "imgSize": {
+      "type": "string"
+    },
+    "imgPosition": {
+      "type": "string"
+    }
+  }
+}
