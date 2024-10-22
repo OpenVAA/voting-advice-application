@@ -40,6 +40,7 @@
   </ol>
 
   <Button
+    slot="primaryActions"
     href={$getRoute(Route.Questions)}
     variant="main"
     icon="next"
