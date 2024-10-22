@@ -6,22 +6,40 @@
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {SurveyBanner} from '$lib/components/survey/banner';
-  import {FrontPage} from '$lib/templates/frontPage';
+  import {resetTopBarActionsContext} from '../topBarActions.context';
+  import {resetTopBarContext} from '../topBar.context';
+  import Layout from '../layout.svelte';
+  import Footer from '$lib/templates/parts/footer/Footer.svelte';
+
+  // TEST: LayoutContext
+  import {onDestroy} from 'svelte';
+  import {getLayoutContext} from '$lib/contexts/layout';
+  const {pageStyles} = getLayoutContext(onDestroy);
+  $pageStyles = {drawer: {background: 'bg-base-300'}};
+  // END TEST
+
+  resetTopBarContext({
+    imageSrc: $darkMode
+      ? ($customization.posterDark?.url ?? '/images/hero.png')
+      : ($customization.poster?.url ?? '/images/hero.png')
+  });
+  resetTopBarActionsContext({
+    results: 'hide',
+    return: 'hide',
+    feedback: 'hide',
+    help: 'hide'
+  });
 </script>
 
-<FrontPage title={$election?.name ?? ''}>
+<svelte:head>
+  <title>{$election?.name ?? ''} – {$t('dynamic.appName')}</title>
+</svelte:head>
+
+<Layout title={$election?.name ?? ''}>
   <HeadingGroup slot="heading">
     <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
     <h1 class="text-3xl font-normal">{$election?.name ?? ''}</h1>
   </HeadingGroup>
-
-  <img
-    slot="hero"
-    class="bg-neutral-content"
-    src={$darkMode
-      ? ($customization.posterDark?.url ?? '/images/hero.png')
-      : ($customization.poster?.url ?? '/images/hero.png')}
-    alt="" />
 
   <Button variant="main" href={$getRoute(Route.Intro)} text={$t('dynamic.frontPage.startButton')} />
 
@@ -37,4 +55,6 @@
   {#if $settings.survey?.showIn?.includes('frontpage')}
     <SurveyBanner class="mt-lg" />
   {/if}
-</FrontPage>
+
+  <Footer />
+</Layout>

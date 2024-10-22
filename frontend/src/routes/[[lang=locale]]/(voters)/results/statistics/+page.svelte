@@ -6,7 +6,17 @@
   import {HeroEmoji} from '$lib/components/heroEmoji';
   import {Loading} from '$lib/components/loading';
   import {LikertResponseButtons} from '$lib/components/questions';
-  import {BasicPage} from '$lib/templates/basicPage';
+  import Layout from '../../../layout.svelte';
+  import {resetTopBarActionsContext} from '../../../topBarActions.context';
+  import {resetTopBarContext} from '../../../topBar.context';
+
+  resetTopBarContext();
+  resetTopBarActionsContext({
+    results: 'hide',
+    return: 'hide',
+    help: 'hide',
+    feedback: 'hide'
+  });
 
   /** This is needed to ensure typing but will be no longer needed, when vaa-data model is implemented an Question object methods can be used to enforce typing. */
   function getVoterLikertAnswer(question: QuestionProps): number | undefined {
@@ -46,10 +56,14 @@
   >;
 </script>
 
-<BasicPage title={$t('statistics.title')}>
-  <svelte:fragment slot="hero">
+<svelte:head>
+  <title>{$t('statistics.title')} – {$t('dynamic.appName')}</title>
+</svelte:head>
+
+<Layout title={$t('statistics.title')}>
+  <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.statistics.heroEmoji')} />
-  </svelte:fragment>
+  </figure>
 
   {#await Promise.all([$candidateRankings, $partyRankings, $opinionQuestions])}
     <Loading showLabel class="mt-lg" />
@@ -109,4 +123,4 @@
       {/each}
     </div>
   {/await}
-</BasicPage>
+</Layout>

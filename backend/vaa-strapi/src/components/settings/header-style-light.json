@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_settings_header_style_lights",
+  "info": {
+    "displayName": "Header Style - Light"
+  },
+  "options": {},
+  "attributes": {
+    "bgColor": {
+      "type": "string"
+    },
+    "overImgBgColor": {
+      "type": "string"
+    }
+  }
+}

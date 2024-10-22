@@ -7,16 +7,22 @@
   import {
     candidateRankings,
     infoQuestions,
-    openFeedbackModal,
     opinionQuestions,
     partyRankings,
     settings
   } from '$lib/stores/index.js';
-  import {Button} from '$lib/components/button';
   import {EntityDetails} from '$lib/components/entityDetails';
   import {Loading} from '$lib/components/loading';
-  import {SingleCardPage} from '$lib/templates/singleCardPage';
   import type {Readable} from 'svelte/store';
+  import {resetTopBarActionsContext} from '../../../../topBarActions.context';
+  import {resetTopBarContext} from '../../../../topBar.context';
+
+  // TEST: LayoutContext
+  import {onDestroy} from 'svelte';
+  import {getLayoutContext} from '$lib/contexts/layout';
+  const {pageStyles} = getLayoutContext(onDestroy);
+  $pageStyles = {drawer: {background: 'bg-base-300'}};
+  // END TEST
 
   export let data;
 
@@ -27,6 +33,14 @@
   let entity: Promise<WrappedEntity | RankingProps | undefined>;
   let title = '';
   let entities: Readable<Promise<WrappedEntity[] | RankingProps[]>>;
+
+  resetTopBarContext();
+  resetTopBarActionsContext({
+    results: 'hide',
+    help: 'hide',
+    returnButtonLabel: $t('common.back'),
+    returnButtonCallback: () => (useBack ? history.back() : goto($getRoute(Route.Results)))
+  });
 
   // We need to set these reactively to get the most recent param data. We should, however, check that data has actually changed before reloading anything.
   $: {
@@ -85,22 +99,14 @@
   afterNavigate((n) => (useBack = n.from?.route != null && initialLocale === $locale));
 </script>
 
-<SingleCardPage {title}>
-  <svelte:fragment slot="banner">
-    {#if $settings.header.showFeedback && $openFeedbackModal}
-      <Button
-        on:click={$openFeedbackModal}
-        variant="icon"
-        icon="feedback"
-        text={$t('feedback.send')} />
-    {/if}
-    <Button
-      class="!text-neutral"
-      variant="icon"
-      icon="close"
-      on:click={() => (useBack ? history.back() : goto($getRoute(Route.Results)))}
-      text={$t('common.back')} />
-  </svelte:fragment>
+<!-- Page title -->
+<svelte:head>
+  <title>{title} – {$t('dynamic.appName')}</title>
+</svelte:head>
+
+<!-- The card -->
+<div
+  class="-mx-lg -mb-safelgb -mt-lg flex w-screen max-w-xl flex-grow self-center rounded-t-lg bg-base-100 pb-[3.5rem] match-w-xl:shadow-xl">
   {#await Promise.all([entity, candidatesOrUndef, $opinionQuestions, $infoQuestions])}
     <Loading showLabel />
   {:then [content, subentities, opinionQuestionsSync, infoQuestionsSync]}
@@ -114,4 +120,4 @@
       {error(404, `Entity ${entityType}:${id} not found`)}
     {/if}
   {/await}
-</SingleCardPage>
+</div>

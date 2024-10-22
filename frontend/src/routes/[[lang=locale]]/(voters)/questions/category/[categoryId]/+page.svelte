@@ -1,22 +1,27 @@
 <script lang="ts">
   import {error} from '@sveltejs/kit';
   import {t} from '$lib/i18n';
-  import {
-    openFeedbackModal,
-    opinionQuestionCategories,
-    resultsAvailable,
-    settings
-  } from '$lib/stores';
+  import {opinionQuestionCategories, settings} from '$lib/stores';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {Button} from '$lib/components/button';
   import {CategoryTag} from '$lib/components/categoryTag';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {HeroEmoji} from '$lib/components/heroEmoji';
   import {Loading} from '$lib/components/loading';
-  import {BasicPage} from '$lib/templates/basicPage';
   import {getQuestionsContext} from '../../questions.context';
   import {filterAndSortQuestions} from '../../questions.utils';
+  import Layout from '../../../../layout.svelte';
+  import {resetTopBarActionsContext} from '../../../../topBarActions.context';
+  import {resetTopBarContext} from '../../../../topBar.context';
   import type {PageData} from './$types';
+  import {getTopBarProgressContext} from '../../../../topBarProgress.context';
+
+  // TEST: LayoutContext
+  import {onDestroy} from 'svelte';
+  import {getLayoutContext} from '$lib/contexts/layout';
+  const {pageStyles} = getLayoutContext(onDestroy);
+  $pageStyles = {drawer: {background: 'bg-base-100'}};
+  // END TEST
 
   /**
    * A page for showing a category's introduction page.
@@ -26,14 +31,19 @@
   export let data: PageData;
 
   const {firstQuestionId, selectedCategories} = getQuestionsContext();
+
+  resetTopBarContext({hideProgressBar: false});
+  resetTopBarActionsContext({
+    help: 'hide',
+    return: 'hide'
+  });
+
+  const topBarProgress = getTopBarProgressContext();
+
   let category: QuestionCategoryProps | undefined;
   let nextQuestionId: string | undefined;
-  let progress = 0;
   let nextCategoryId: string | undefined;
   let questions: QuestionProps[];
-  /** Synced version so that we don't have to await for this explicitly */
-  let resultsAvailableSync = false;
-  $: $resultsAvailable.then((d) => (resultsAvailableSync = d));
 
   // Prepare category data reactively when the route param or question categories (triggered by locale changes) change
   $: update(data.categoryId, $opinionQuestionCategories);
@@ -50,39 +60,27 @@
       .slice(cc.indexOf(category!) + 1)
       .find((c) => !$selectedCategories || $selectedCategories.includes(c.id))?.id;
     if (nextQuestionId)
-      progress = Math.max(0, questions.findIndex((q) => q.id === nextQuestionId) + 1);
+      topBarProgress.current.set(
+        Math.max(0, questions.findIndex((q) => q.id === nextQuestionId) + 1)
+      );
   }
 </script>
+
+<svelte:head>
+  <title>{category ? category.name : $t('questions.title')} – {$t('dynamic.appName')}</title>
+</svelte:head>
 
 {#if !category}
   <Loading class="mt-lg" />
 {:else}
   {@const {customData, name, info} = category}
 
-  <BasicPage title={name} progressMin={0} progressMax={questions.length + 1} {progress}>
-    <svelte:fragment slot="banner">
-      {#if $settings.header.showFeedback && $openFeedbackModal}
-        <Button
-          on:click={$openFeedbackModal}
-          variant="icon"
-          icon="feedback"
-          text={$t('feedback.send')} />
-      {/if}
-      {#if $settings.questions.showResultsLink}
-        <Button
-          href={$getRoute(Route.Results)}
-          disabled={resultsAvailableSync ? null : true}
-          variant="responsive-icon"
-          icon="results"
-          text={$t('results.title.results')} />
-      {/if}
-    </svelte:fragment>
-
-    <svelte:fragment slot="hero">
+  <Layout title={name}>
+    <figure role="presentation" slot="hero">
       {#if customData?.emoji}
         <HeroEmoji emoji={customData.emoji} />
       {/if}
-    </svelte:fragment>
+    </figure>
 
     <svelte:fragment slot="heading">
       <HeadingGroup class="relative">
@@ -116,5 +114,5 @@
           class="justify-center" />
       {/if}
     </svelte:fragment>
-  </BasicPage>
+  </Layout>
 {/if}

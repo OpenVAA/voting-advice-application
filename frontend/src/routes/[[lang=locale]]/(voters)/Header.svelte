@@ -1,0 +1,115 @@
+<script lang="ts">
+  import {t} from '$lib/i18n';
+  import Banner from './Banner.svelte';
+  import {Icon} from '$lib/components/icon';
+  import {AppLogo} from '$lib/templates/parts/appLogo';
+  import type {BasicPageProps} from '$lib/templates/basicPage/BasicPage.type';
+  import {Breakpoints} from '$lib/utils/breakpoints';
+  import {darkMode} from '$lib/utils/darkMode';
+  import {getTopBarContext} from '../topBar.context';
+  import {getTopBarProgressContext} from '../topBarProgress.context';
+  import {settings} from '$lib/stores';
+
+  export let navId: BasicPageProps['navId'] = 'pageNav';
+
+  export let openDrawer: () => void;
+  export let drawerOpen = false;
+  export let drawerOpenElement: HTMLButtonElement | undefined;
+
+  /** We use `videoHeight` and `videoWidth` as proxies to check for the presence of content in the `video` slot. Note that we cannot merely check if the slot is provided, because it might be empty. */
+  let videoHeight = 0;
+  let videoWidth = 0;
+  let hasVideo = videoWidth > 0 && videoHeight > 0;
+
+  let screenWidth = 0;
+
+  /** The complicated condition for invertLogo ensures that when video is present behind the header, the logo is always white. Invert would otherwise render the default logo in dark mode. */
+  let invertLogo = hasVideo && screenWidth < Breakpoints.sm && !$darkMode;
+
+  const topBar = getTopBarContext();
+
+  const topBarAppSettings = $settings.headerStyle;
+
+  let bgColor: string | undefined;
+  $: {
+    const mode = $darkMode ? topBarAppSettings.dark : topBarAppSettings.light;
+    bgColor = $topBar.imageSrc ? mode.overImgBgColor : mode.bgColor;
+  }
+
+  const progress = getTopBarProgressContext();
+  const currentProgress = progress.current;
+  const maxProgress = progress.max;
+</script>
+
+<!-- {hasVideo ? '!absolute w-full bg-transparent z-10' : ''} -->
+<header
+  class="relative flex max-h-fit pt-safet"
+  class:prominent-top-bar-with-background={$topBar.imageSrc}
+  class:top-bar={!$topBar.imageSrc}
+  style:--image={$topBar.imageSrc && `url(${$topBar.imageSrc})`}
+  style:--background-size={$topBar.imageSrc && topBarAppSettings.imgSize}
+  style:--background-position={$topBar.imageSrc && topBarAppSettings.imgPosition}>
+  {#if !$topBar.hideProgressBar}
+    <progress
+      class="progress progress-primary absolute left-0 top-0 h-2"
+      value={$currentProgress}
+      max={$maxProgress}
+      title={$t('common.progress')} />
+  {/if}
+  <div
+    class="inner-actions-bar flex w-full items-center justify-between pr-6"
+    style:--background-color={bgColor}>
+    <button
+      on:click={openDrawer}
+      bind:this={drawerOpenElement}
+      aria-expanded={drawerOpen}
+      aria-controls={navId}
+      aria-label={$t('common.openMenu')}
+      class="btn btn-ghost drawer-button flex cursor-pointer items-center gap-md {invertLogo
+        ? 'text-primary-content'
+        : 'text-neutral'}">
+      <Icon name="menu" />
+      <AppLogo inverse={invertLogo} aria-hidden="true" />
+    </button>
+    <Banner />
+  </div>
+</header>
+
+<style lang="postcss">
+  progress {
+    border-radius: 0;
+  }
+
+  progress::-webkit-progress-bar {
+    border-radius: 0;
+  }
+
+  progress::-moz-progress-bar {
+    border-radius: 0;
+  }
+
+  progress::-webkit-progress-value {
+    border-radius: 0;
+  }
+
+  .top-bar {
+    @apply min-h-0;
+    transition: min-height 0.25s ease-out;
+  }
+
+  .prominent-top-bar-with-background {
+    @apply min-h-[40vh];
+    transition: min-height 0.25s ease-in;
+    align-items: start;
+    background-image: var(--image);
+    background-size: var(--background-size);
+    background-position: var(--background-position);
+    background-repeat: no-repeat;
+  }
+
+  .inner-actions-bar {
+    @apply bg-base-300;
+    background-color: var(--background-color);
+    transition: background-color 0.5s ease;
+  }
+</style>
