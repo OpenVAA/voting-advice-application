@@ -1,10 +1,36 @@
-import {type DynamicSettings, dynamicSettings} from 'vaa-shared';
+import {type DynamicSettings, dynamicSettings, QuestionInCardContent} from 'vaa-shared';
 import {API} from './api';
 
 /**
  * Gets `results.cardContents` from `dynamicSettings.ts` and returns them in format used in Strapi
  */
-export function getCardContentsFromFile() {
+export function getCardContentsFromFile(): {
+  candidateCardContents: Array<
+    | {
+        content: 'submatches';
+      }
+    | {
+        content: 'question';
+        question_id: QuestionInCardContent['question'];
+        question_hideLabel?: QuestionInCardContent['hideLabel'];
+        question_format?: QuestionInCardContent['format'];
+      }
+  >;
+  partyCardContents: Array<
+    | {
+        content: 'submatches';
+      }
+    | {
+        content: 'candidates';
+      }
+    | {
+        content: 'question';
+        question_id: QuestionInCardContent['question'];
+        question_hideLabel?: QuestionInCardContent['hideLabel'];
+        question_format?: QuestionInCardContent['format'];
+      }
+  >;
+} {
   const candidateCardContents = [];
   dynamicSettings.results.cardContents.candidate.forEach((item) => {
     if (item === 'submatches') {
@@ -36,15 +62,21 @@ export function getCardContentsFromFile() {
 }
 
 /**
- * Gets `cardContents` from Strapi and returns them in format used in `DynamicSettings`
+ * Gets `cardContents` from Strapi and returns them in format used in `DynamicSettings`. The returned values are `null` if not defined.
  */
-export async function getCardContentsFromStrapi(id: number) {
+export async function getCardContentsFromStrapi(id: number): Promise<{
+  candidate: DynamicSettings['results']['cardContents']['candidate'] | null;
+  party: DynamicSettings['results']['cardContents']['party'] | null;
+} | null> {
   const appSettings = await strapi.entityService.findOne(API.AppSettings, id, {
     populate: ['results', 'results.candidateCardContents', 'results.partyCardContents']
   });
 
-  const candidateCardContents: DynamicSettings['results']['cardContents']['candidate'] = [];
-  appSettings.results.candidateCardContents.forEach((item) => {
+  if (!appSettings?.results) return null;
+
+  let candidateCardContents: DynamicSettings['results']['cardContents']['candidate'] | null = null;
+  appSettings.results?.candidateCardContents?.forEach((item) => {
+    candidateCardContents ??= [];
     if (item.content === 'submatches') {
       candidateCardContents.push(item.content);
     } else {
@@ -56,8 +88,9 @@ export async function getCardContentsFromStrapi(id: number) {
     }
   });
 
-  const partyCardContents: DynamicSettings['results']['cardContents']['party'] = [];
-  appSettings.results.partyCardContents.forEach((item) => {
+  let partyCardContents: DynamicSettings['results']['cardContents']['party'] | null = null;
+  appSettings.results?.partyCardContents?.forEach((item) => {
+    partyCardContents ??= [];
     if (item.content === 'submatches' || item.content === 'candidates') {
       partyCardContents.push(item.content);
     } else {
