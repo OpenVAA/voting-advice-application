@@ -16,6 +16,13 @@
   import type {PageData} from './$types';
   import {getTopBarProgressContext} from '../../../../topBarProgress.context';
 
+  // TEST: LayoutContext
+  import {onDestroy} from 'svelte';
+  import {getLayoutContext} from '$lib/contexts/layout';
+  const {pageStyles} = getLayoutContext(onDestroy);
+  $pageStyles = {drawer: {background: 'bg-base-100'}};
+  // END TEST
+
   /**
    * A page for showing a category's introduction page.
    * TODO: This has a lot of overlap with the single question page, but combining them would be a mess with template slots. Both this and the question page should be thoroughly refactored when the slotless page templates are available and the app state management is more coherent.

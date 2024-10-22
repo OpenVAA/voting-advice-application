@@ -11,6 +11,13 @@
   import Layout from '../layout.svelte';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
 
+  // TEST: LayoutContext
+  import {onDestroy} from 'svelte';
+  import {getLayoutContext} from '$lib/contexts/layout';
+  const {pageStyles} = getLayoutContext(onDestroy);
+  $pageStyles = {drawer: {background: 'bg-base-300'}};
+  // END TEST
+
   resetTopBarContext({
     imageSrc: $darkMode
       ? ($customization.posterDark?.url ?? '/images/hero.png')

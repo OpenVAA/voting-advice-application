@@ -6,6 +6,13 @@
   import {getRoute, Route} from '$lib/utils/navigation';
   import {LoadingSpinner} from '$candidate/components/loadingSpinner';
 
+  // TEST: LayoutContext
+  import {onDestroy} from 'svelte';
+  import {getLayoutContext} from '$lib/contexts/layout';
+  const {pageStyles} = getLayoutContext(onDestroy);
+  $pageStyles = {drawer: {background: 'bg-base-300'}};
+  // END TEST
+
   export let data;
 
   $: data.opinionQuestions.then((qs) => {

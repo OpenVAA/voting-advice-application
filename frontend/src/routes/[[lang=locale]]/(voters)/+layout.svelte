@@ -24,8 +24,7 @@
   import {tweened} from 'svelte/motion';
   import {cubicOut} from 'svelte/easing';
   import {setTopBarProgressContext} from '../topBarProgress.context';
-  import {getPageStylesContext, resetPageStylesContext, setPageStylesContext} from '../context';
-  import {navigating} from '$app/stores';
+  import {initLayoutContext} from '$lib/contexts/layout';
 
   export let drawerToggleId: BasicPageProps['drawerToggleId'] = 'pageDrawerToggle';
   export let mainId: BasicPageProps['mainId'] = 'mainContent';
@@ -76,11 +75,11 @@
       easing: cubicOut
     })
   });
-  setPageStylesContext();
 
-  $: if ($navigating) resetPageStylesContext();
-
-  const pageStyle = getPageStylesContext();
+  /**
+   * Init the context for layout changes.
+   */
+  const {pageStyles} = initLayoutContext();
 
   $appType = 'voter';
 
@@ -110,7 +109,7 @@
 <a href="#{mainId}" tabindex="1" class="sr-only focus:not-sr-only">{$t('common.skipToMain')}</a>
 
 <!-- Drawer container -->
-<div class="drawer {$pageStyle.drawer.background}">
+<div class="drawer {$pageStyles.drawer.background}">
   <!-- NB. The Wave ARIA checker will show an error for this, but the use of both the 
     non-hidden labels in aria-labelledby should be okay for screen readers. -->
   <input

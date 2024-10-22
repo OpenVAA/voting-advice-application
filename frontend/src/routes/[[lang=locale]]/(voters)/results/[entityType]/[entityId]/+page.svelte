@@ -16,7 +16,13 @@
   import type {Readable} from 'svelte/store';
   import {resetTopBarActionsContext} from '../../../../topBarActions.context';
   import {resetTopBarContext} from '../../../../topBar.context';
-  import {resetPageStylesContext} from '../../../../context';
+
+  // TEST: LayoutContext
+  import {onDestroy} from 'svelte';
+  import {getLayoutContext} from '$lib/contexts/layout';
+  const {pageStyles} = getLayoutContext(onDestroy);
+  $pageStyles = {drawer: {background: 'bg-base-300'}};
+  // END TEST
 
   export let data;
 
@@ -34,11 +40,6 @@
     help: 'hide',
     returnButtonLabel: $t('common.back'),
     returnButtonCallback: () => (useBack ? history.back() : goto($getRoute(Route.Results)))
-  });
-  resetPageStylesContext({
-    drawer: {
-      background: 'bg-base-300'
-    }
   });
 
   // We need to set these reactively to get the most recent param data. We should, however, check that data has actually changed before reloading anything.
