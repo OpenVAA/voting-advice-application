@@ -65,12 +65,13 @@ function getData<T extends object>(
   return fetch(url)
     .then((response) => {
       return response.json().then((parsed: StrapiResponse<T> | StrapiError) => {
-        if ('error' in parsed) throw new Error(`Error with getData: ${parsed?.error?.message}`);
+        if ('error' in parsed)
+          throw new Error(`Error with getData: ${parsed?.error?.message} • ${url}`);
         return parsed.data;
       });
     })
     .catch((e) => {
-      throw new Error(`Error with getData: ${e?.message}`);
+      throw new Error(`Error with getData: ${e?.message} • ${url}`);
     });
 }
 
