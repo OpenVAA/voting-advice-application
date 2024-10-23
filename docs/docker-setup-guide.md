@@ -6,11 +6,13 @@ backend into a single image that can be built with just a few commands.
 ## Requirements
 
 - Docker
-- Node.js (if running the app outside of Docker; version 18.20.4 is recommended)
+- Node.js (if running the app outside of Docker; version 18.20.4 and `nvm` for Node version management is recommended)
 - Ports 1337, 5173 and 5432 should be free for the application if using default settings
-  -  These ports can be changed in the `.env` file if desired.
+  - These ports can be changed in the `.env` file if desired.
 
 ## Getting started
+
+Make sure that you’re using the recommended Node version (see [Requirements](#requirements), above) by running `node -v`. If needed set the correct version with `nvm use <VERSION>`.
 
 Backend module contains `strapi-plugin-import-export-entries` directory which is a separate git repository. In order to initialise it you need to run:
 
