@@ -16,18 +16,30 @@ export NVM_DIR="$HOME/.nvm"
 
 Try running `yarn workspace vaa-shared build` first.
 
+## Docker error related to `frozen lockfile` when running `yarn dev`
+
+Try deleting `/yarn.lock` and rerunning the command. You may also:
+
+- check that you’re using the correct Node version (see [Docker Setup: Requirements](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/docker-setup-guide.md#requirements)).
+- follow the steps in [Docker error: ”No space left on device” error](#docker-no-space-left-on-device-error) below.
+
 ## Docker error: Load metadata for docker.io/library/node:foo
 
 Docker needs to be connected to the internet to load the base Docker images.
 
-## Docker: ’No space left on device’ error
+## Docker error: ’No space left on device’ error
 
-If Docker produces an error akin to `Error response from daemon [...] no space left on device`
-running `docker system prune` may help.
+Docker has some issues handling disk usage when spun up multiple times. They may result in errors, such as `Error response from daemon [...] no space left on device`, or similar ones in the logs of the (Postgres) container. To fix these some or all of the steps below may be needed:
 
-You may also try to run `docker volume prune` but be careful because it may delete local database data.
-
-Source: [Remarkablemark](https://remarkablemark.org/blog/2021/08/05/docker-error-no-space-left-on-device/)
+1. Clear the Docker cache (see [full guide](https://www.blacksmith.sh/blog/a-guide-to-disk-space-management-with-docker-how-to-clear-your-cache))
+   - **Warning!** If you have containers, volumes or images you want to keep, do not run the commands below.
+   - Run `docker system df` to see Docker disk usage
+   - Stop all containers and prune them: `docker stop $(docker ps -q) && docker container prune`
+   - Prune all unused images `docker image prune --all`
+   - Prune all unused volumes `docker volume prune`
+   - Clear the build cache `docker builder prune`
+2. On Mac you may need to remove the Docker raw file with `rm ~/Library/Containers/com.docker.docker/Data/vms/0/data/Docker.raw`
+3. Restart your computer to clear any temp files possibly bloated by Docker.
 
 Note also that there are two commands that can be used to stop the containers:
 
