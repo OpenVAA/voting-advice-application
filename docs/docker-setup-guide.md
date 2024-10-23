@@ -30,6 +30,7 @@ To build and run development Docker images for the entire stack (frontend, backe
 
 - Make a copy of the `.env.example` file and rename the copy as `.env`
 - Run `yarn dev`
+- If you run into errors, try checking the tips related to Docker in [Troubleshooting](./troubleshooting.md).
 
 To bring down the Docker stack properly (delete all containers, images and named volumes which include backend DB volume with potentially seeded mock data) run:
 
