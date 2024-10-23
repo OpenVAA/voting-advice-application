@@ -43,7 +43,7 @@ If you want to seed backend DB with mock data (e.g. for demostration, developmen
 ### Setting up the backend
 
 After the build is successful, go to the backend URL (`http://localhost:1337` by default) in your browser. The 
-**page will take a while to load as Strapi is building its codebase**. When it's loaded, go to the Strapi admin panel and register an admin account there for yourself.
+**page will take a while to load as Strapi is building its codebase**. When it's loaded, go to the Strapi admin panel and register an admin account there for yourself. However, if you're running the development setup and have mock data generation enabled, a default Admin user is created with the email `admin@example.com` and password `admin`.
 
 After setting up the backend, you can access the frontend at the following URL `http://localhost:5173`.
 
