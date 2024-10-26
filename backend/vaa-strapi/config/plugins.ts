@@ -80,24 +80,24 @@ export default ({env}) => {
     'candidate-admin': {
       enabled: true,
       resolve: './src/plugins/candidate-admin'
+    },
+    'rest-cache': {
+      config: {
+        provider: {
+          name: 'memory',
+          options: {
+            max: 2 * 32767, // default is 32767
+            maxAge: 14 * 24 * 60 * 60 * 1000, // 2 weeks
+            updateAgeOnGet: true
+          }
+        },
+        strategy: {
+          debug: false,
+          enableEtag: true,
+          maxAge: 14 * 24 * 60 * 60 * 1000, // 2 weeks
+          contentTypes: Object.values(API).filter((a) => !NO_CACHE.includes(a))
+        }
+      }
     }
-    // 'rest-cache': {
-    //   config: {
-    //     provider: {
-    //       name: 'memory',
-    //       options: {
-    //         max: 2 * 32767, // default is 32767
-    //         maxAge: 8 * 60 * 60 * 1000, // 8 hours
-    //         updateAgeOnGet: true
-    //       }
-    //     },
-    //     strategy: {
-    //       debug: false,
-    //       enableEtag: true,
-    //       maxAge: 8 * 60 * 60 * 1000, // 8 hours
-    //       contentTypes: Object.values(API).filter((a) => !NO_CACHE.includes(a))
-    //     }
-    //   }
-    // }
   };
 };
