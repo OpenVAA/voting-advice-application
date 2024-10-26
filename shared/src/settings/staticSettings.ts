@@ -50,6 +50,11 @@ export const staticSettings: StaticSettings = {
     },
   ],
   analytics: {
+    platform: {
+      name: 'umami',
+      code: '42de7670-abc9-4353-9821-cf6130d636ed',
+      infoUrl: 'https://umami.is/',
+    },
     trackEvents: false
   }
 };
