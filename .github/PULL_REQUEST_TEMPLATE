@@ -13,7 +13,7 @@ Fixes [Issue link]
 - [ ] I have tested this change on my own device.
 - [ ] I have tested this change on other devices (Using Browserstack is recommended).
 - [ ] I have tested my changes using the [WAVE extension](https://wave.webaim.org/extension/)
+- [ ] I have tested my changes using keyboard navigation and screen-reading
 - [ ] I have added documentation where necessary.
 - [ ] Is there an existing issue linked to this PR?
-
-**Clean up your git commit history before submitting the pull request!**
+- [ ] I have cleaned up the commit history and checked the commits follow [the guidelines](https://github.com/OpenVAA/voting-advice-application/blob/main/docs/contributing/CONTRIBUTING.md#commit-your-update)

@@ -1,6 +1,16 @@
 # Style guides
 
-In general, Prettier formats the code in a nice way.
+In general, Prettier formats the code in a nice way, but there are other requirements that you must take care of manually.
+
+## Comments
+
+Do not manually break comments into lines of a certain length unless separating paragraphs. This enables developers to use line-wrapping based on their own preference without adding unneccessary lines to the code.
+
+## TypeScript
+
+We follow the conventions of [TypeScript Style Guide](https://mkosir.github.io/typescript-style-guide/) with the following exception:
+
+- [The naming conventions](https://mkosir.github.io/typescript-style-guide/#variables-1) for booleans are optional but if possible should be adhered to.
 
 ## CSS
 
