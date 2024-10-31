@@ -43,9 +43,7 @@ environment. See [Development](../development.md) for more information.
 If you want to make changes to the project, you must follow the following steps.
 
 1. Clone the repository
-
 2. Create a new branch with a descriptive yet short name. For example, `fix-404-page` or `add-privacy-policy-page`.
-
 3. Once you start adding changes, make sure you split your work into small, meaningful, manageable commits.
 
 ### Commit your update
