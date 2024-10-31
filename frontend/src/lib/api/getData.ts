@@ -7,7 +7,7 @@
  */
 
 import {error} from '@sveltejs/kit';
-import {staticSettings} from 'vaa-shared';
+import {staticSettings} from 'vaa-app-shared';
 import type {DataProvider} from './dataProvider/dataProvider';
 
 let dpPromise: Promise<{dataProvider: DataProvider}>;

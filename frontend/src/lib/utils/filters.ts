@@ -14,7 +14,7 @@ import {
   type ChoiceQuestion,
   NumericQuestionFilter,
   type NumericQuestion
-} from '$voter/vaa-filters';
+} from 'vaa-filters';
 import {logDebugError} from './logger';
 
 let candidateFilterGroup: FilterGroup<MaybeRanked<CandidateProps>> | undefined = undefined;

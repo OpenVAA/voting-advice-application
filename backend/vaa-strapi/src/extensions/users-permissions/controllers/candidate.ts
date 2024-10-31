@@ -1,5 +1,5 @@
 'use strict';
-import {validatePassword} from 'vaa-shared';
+import {validatePassword} from 'vaa-app-shared';
 
 const {
   yup,

@@ -1,4 +1,4 @@
-import {type DynamicSettings, dynamicSettings, QuestionInCardContent} from 'vaa-shared';
+import {type DynamicSettings, dynamicSettings, QuestionInCardContent} from 'vaa-app-shared';
 import {API} from './api';
 
 /**

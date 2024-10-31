@@ -19,5 +19,5 @@
     "types/generated/**",
     "strapi-plugin-import-export-entries"
   ],
-  "references": [{"path": "../../shared/tsconfig.cjs.json"}]
+  "references": [{"path": "../../vaa-app-shared/tsconfig.cjs.json"}]
 }

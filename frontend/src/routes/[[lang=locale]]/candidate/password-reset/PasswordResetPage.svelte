@@ -3,7 +3,7 @@
   import {t} from '$lib/i18n';
   import {resetPassword} from '$lib/api/candidate';
   import {getRoute, Route} from '$lib/utils/navigation';
-  import {validatePassword} from 'vaa-shared';
+  import {validatePassword} from 'vaa-app-shared';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {PasswordSetter} from '$lib/candidate/components/passwordSetter';
   import {FrontPage} from '$lib/templates/frontPage';

@@ -52,4 +52,4 @@ The [`assertTranslationKey()`](./utils/assertTranslationKey.ts) utility can be u
 
 Whenever larger changes to translations are needed, it's best to use the [`editTranslations`](/frontend/tools/editTranslations/editTranslations.ts) tool for that. It can be used to manage translations, export them and replace changed translation keys in the source code.
 
-NB! Automatic key replacement only covers `.svelte` files in the frontend. Make sure to check that translations accessed by, for example, [e2e tests](/tests/) and [passwordValidation.ts](/shared/utils/passwordValidation.ts) are also updated accordingly.
+NB! Automatic key replacement only covers `.svelte` files in the frontend. Make sure to check that translations accessed by, for example, [e2e tests](/tests/) and [passwordValidation.ts](/vaa-app-shared/utils/passwordValidation.ts) are also updated accordingly.

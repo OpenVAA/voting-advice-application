@@ -1,4 +1,4 @@
-import type {DynamicSettings, StaticSettings} from 'vaa-shared';
+import type {DynamicSettings, StaticSettings} from 'vaa-app-shared';
 import type {TranslationKey} from './generated/translationKey';
 
 export {};

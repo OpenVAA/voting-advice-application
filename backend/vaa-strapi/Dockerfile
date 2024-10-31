@@ -18,16 +18,16 @@ FROM base AS shared
 
 WORKDIR /opt
 
-COPY shared/ ./shared
-RUN yarn workspace vaa-shared install --frozen-lockfile
-RUN yarn workspace vaa-shared build
+COPY vaa-app-shared/ ./vaa-app-shared
+RUN yarn workspace vaa-app-shared install --frozen-lockfile
+RUN yarn workspace vaa-app-shared build
 
 FROM base AS strapi
 
 WORKDIR /opt
 
 COPY --from=import-export /opt/strapi-plugin-import-export-entries ./backend/vaa-strapi/strapi-plugin-import-export-entries
-COPY --from=shared /opt/shared ./shared
+COPY --from=shared /opt/vaa-app-shared ./vaa-app-shared
 COPY backend/vaa-strapi/ ./backend/vaa-strapi
 RUN yarn workspace vaa-strapi install --frozen-lockfile
 
@@ -38,6 +38,7 @@ ENV NODE_ENV=${NODE_ENV}
 ENV STRAPI_DISABLE_REMOTE_DATA_TRANSFER=true
 
 EXPOSE 1337
+
 RUN yarn workspace vaa-strapi build
 CMD yarn workspace vaa-strapi dev --ignore-prompts
 

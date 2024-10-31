@@ -21,8 +21,11 @@
     "mailparser": "^3.7.1"
   },
   "workspaces": [
+    "backend/vaa-strapi",
     "frontend",
-    "shared",
-    "backend/vaa-strapi"
+    "vaa-app-shared",
+    "vaa-core",
+    "vaa-matching",
+    "vaa-filters"
   ]
 }

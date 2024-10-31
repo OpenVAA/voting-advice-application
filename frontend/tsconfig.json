@@ -12,5 +12,11 @@
     "preserveSymlinks": true,
     "types": ["vitest/globals"]
   },
-  "references": [{"path": "../shared/tsconfig.esm.json"}]
+  "references": [
+    {"path": "../vaa-app-shared/tsconfig.esm.json"},
+    {"path": "../vaa-core/tsconfig.json"},
+    {"path": "../vaa-data/tsconfig.json"},
+    {"path": "../vaa-matching/tsconfig.json"},
+    {"path": "../vaa-filters/tsconfig.json"}
+  ]
 }

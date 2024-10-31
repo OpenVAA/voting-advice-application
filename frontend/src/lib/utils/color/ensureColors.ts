@@ -1,4 +1,4 @@
-import {staticSettings} from 'vaa-shared';
+import {staticSettings} from 'vaa-app-shared';
 import {adjustContrast} from './adjustContrast';
 
 const bg = staticSettings.colors?.light?.['base-300'] ?? 'd1ebee';

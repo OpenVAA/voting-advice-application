@@ -58,7 +58,7 @@ this can be enabled by adding the volume `- ./:/opt` as a mounted point in [dock
 and re-building the Docker container. However, this can make the development process slow at times, so it is not recommended to keep that on
 unless doing direct development on the backend source code.
 
-Note that changes in `vaa-shared` module are not going to be picked up by frontend's or backend's hot reloading capabilities and their Docker images need to be rebuilt in order for the changes to take effect.
+Note that changes in `vaa-app-shared` module are not going to be picked up by frontend's or backend's hot reloading capabilities and their Docker images need to be rebuilt in order for the changes to take effect.
 
 ## Stop The Containers
 

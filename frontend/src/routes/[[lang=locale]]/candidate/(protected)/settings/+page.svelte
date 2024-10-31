@@ -6,7 +6,7 @@
   import {Icon} from '$lib/components/icon';
   import {PasswordValidator} from '$candidate/components/passwordValidator';
   import {Button} from '$lib/components/button';
-  import {validatePassword} from 'vaa-shared';
+  import {validatePassword} from 'vaa-app-shared';
   import {changePassword, getLanguages, updateAppLanguage} from '$lib/api/candidate';
   import {PasswordField} from '$lib/candidate/components/passwordField';
   import {getContext} from 'svelte';

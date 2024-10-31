@@ -25,7 +25,7 @@ import mockQuestions from './mockData/mockQuestions.json';
 import mockQuestionTypes from './mockData/mockQuestionTypes.json';
 import mockCategories from './mockData/mockCategories.json';
 import mockUser from './mockData/mockUser.json';
-import {dynamicSettings} from 'vaa-shared';
+import {dynamicSettings} from 'vaa-app-shared';
 import {getCardContentsFromFile} from './utils/appSettings';
 import {getDynamicTranslations} from './utils/appCustomization';
 

@@ -5,11 +5,11 @@ find [instructions on running the project with Docker here](../docs/docker-setup
 
 ## Run The Frontend
 
-Frontend module depends on `vaa-shared` and you need to build it prior to using `vaa-frontend` directly (no need if you use it via Docker):
+Frontend module depends on `vaa-app-shared` and you need to build it prior to using `vaa-frontend` directly (no need if you use it via Docker):
 
 ```bash
-yarn workspace vaa-shared install
-yarn workspace vaa-shared build
+yarn workspace vaa-app-shared install
+yarn workspace vaa-app-shared build
 ```
 
 Install frontend dependencies:

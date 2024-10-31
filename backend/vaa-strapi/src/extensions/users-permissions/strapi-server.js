@@ -3,7 +3,7 @@
 import fs from 'fs';
 import candidate from './controllers/candidate';
 import {restrictPopulate, restrictFilters} from '../../util/acl';
-import {validatePassword} from 'vaa-shared';
+import {validatePassword} from 'vaa-app-shared';
 
 const {
   errors: {ValidationError}

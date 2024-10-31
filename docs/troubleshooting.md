@@ -14,7 +14,7 @@ export NVM_DIR="$HOME/.nvm"
 
 ## Commit error: ’TypeError: Cannot read properties of undefined (reading 'font')’ error when running `/generateTranslationKeyType.ts`
 
-Try running `yarn workspace vaa-shared build` first.
+Try running `yarn workspace vaa-app-shared build` first.
 
 ## Docker error related to `frozen lockfile` when running `yarn dev`
 
@@ -72,7 +72,7 @@ Another possible cause is that the access control policy does not allow populati
 
 ## Playwright: `TimeoutError` when locating elements and running the tests locally
 
-Elements are currently located mostly by their translated labels with hardcoded locales, which match those in the mock data. If, however, the `supportedLocales` you have set in [staticSettings.ts](../shared/src/settings/staticSettings.ts) differ from the ones used by the tests, many of them will fail.
+Elements are currently located mostly by their translated labels with hardcoded locales, which match those in the mock data. If, however, the `supportedLocales` you have set in [staticSettings.ts](../vaa-app-shared/src/settings/staticSettings.ts) differ from the ones used by the tests, many of them will fail.
 
 ## Strapi: Content model is reset after restart
 
