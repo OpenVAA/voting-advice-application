@@ -22,8 +22,10 @@ on:
       - '.env.example'
 
 jobs:
-  frontend-validation:
+
+  frontend-and-shared-module-validation:
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: 'frontend'
@@ -37,12 +39,51 @@ jobs:
         with:
           node-version: 18.x
           cache: "yarn"
+  
+      - name: "Install shared module dependencies: vaa-core"
+        run: yarn workspace vaa-core install --frozen-lockfile
 
-      - name: "Install shared module dependencies"
-        run: yarn workspace vaa-shared install --frozen-lockfile
+      - name: "Build shared module: vaa-core"
+        run: yarn workspace vaa-core build
 
-      - name: "Build shared module"
-        run: yarn workspace vaa-shared build
+      - name: "Install shared module dependencies: vaa-data"
+        run: yarn workspace vaa-data install --frozen-lockfile
+
+      - name: "Build shared module: vaa-data"
+        run: yarn workspace vaa-data build
+
+      - name: "Install shared module dependencies: vaa-filters"
+        run: yarn workspace vaa-filters install --frozen-lockfile
+
+      - name: "Build shared module: vaa-filters"
+        run: yarn workspace vaa-filters build       
+
+      - name: "Install shared module dependencies: vaa-matching"
+        run: yarn workspace vaa-matching install --frozen-lockfile
+
+      - name: "Build shared module: vaa-matching"
+        run: yarn workspace vaa-matching build
+
+      - name: "Install shared module dependencies: vaa-app-shared"
+        run: yarn workspace vaa-app-shared install --frozen-lockfile
+
+      - name: "Build shared module: vaa-app-shared"
+        run: yarn workspace vaa-app-shared build
+
+      - name: "Run vaa-core tests"
+        run: yarn workspace vaa-core test
+
+      - name: "Run vaa-data tests"
+        run: yarn workspace vaa-data test
+
+      - name: "Run vaa-filters tests"
+        run: yarn workspace vaa-filters test
+
+      - name: "Run vaa-matching tests"
+        run: yarn workspace vaa-matching test
+
+      - name: "Run vaa-app-shared tests"
+        run: yarn workspace vaa-app-shared test
 
       - name: "Install Frontend dependencies"
         run: yarn install --frozen-lockfile
@@ -94,10 +135,10 @@ jobs:
             ${{ runner.os }}-
 
       - name: "Install shared module dependencies"
-        run: yarn workspace vaa-shared install --frozen-lockfile
+        run: yarn workspace vaa-app-shared install --frozen-lockfile
 
       - name: "Build shared module"
-        run: yarn workspace vaa-shared build
+        run: yarn workspace vaa-app-shared build
 
       - name: "Install Backend yarn dependencies"
         run: |
