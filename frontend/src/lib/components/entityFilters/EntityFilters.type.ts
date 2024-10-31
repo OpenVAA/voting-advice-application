@@ -1,5 +1,5 @@
 import type {SvelteHTMLElements} from 'svelte/elements';
-import type {FilterGroup} from '$voter/vaa-filters';
+import type {FilterGroup} from 'vaa-filters';
 
 export type EntityFiltersProps<T extends MaybeRanked = MaybeRanked> = SvelteHTMLElements['div'] & {
   /**

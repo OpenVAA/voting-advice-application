@@ -1,7 +1,7 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
   import {locale, t} from '$lib/i18n';
-  import {TextPropertyFilter} from '$lib/voter/vaa-filters';
+  import {TextPropertyFilter} from 'vaa-filters';
   import {startEvent} from '$lib/utils/analytics/track';
   import {concatClass} from '$lib/utils/components';
   import {Button} from '$lib/components/button';

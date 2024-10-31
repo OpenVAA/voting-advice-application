@@ -7,7 +7,7 @@
     TextFilter,
     NumericFilter,
     NumericQuestionFilter
-  } from '$voter/vaa-filters';
+  } from 'vaa-filters';
   import type {EntityFiltersProps} from './EntityFilters.type';
 
   type $$Props = EntityFiltersProps;

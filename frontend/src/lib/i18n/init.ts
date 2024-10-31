@@ -4,7 +4,7 @@ import parser, {type Config} from '@sveltekit-i18n/parser-icu';
 import {IntlMessageFormat} from 'intl-messageformat';
 import {logDebugError} from '$lib/utils/logger';
 import {ucFirst} from '$lib/utils/text/ucFirst';
-import {staticSettings} from 'vaa-shared';
+import {staticSettings} from 'vaa-app-shared';
 import {derived, get} from 'svelte/store';
 import {DEFAULT_PAYLOAD_KEYS, staticTranslations, type TranslationsPayload} from './translations';
 import {matchLocale} from './utils';

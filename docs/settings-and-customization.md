@@ -1,10 +1,10 @@
 # App Settings
 
-App settings are located in [`vaa-shared`](../shared/src/settings/) module. Settings are separated into static and dynamic settings.
+App settings are located in [`vaa-app-shared`](../vaa-app-shared/src/settings/) module. Settings are separated into static and dynamic settings.
 
-Static settings can be changed only by modifying [staticSettings.ts](../shared/src/settings/staticSettings.ts).
+Static settings can be changed only by modifying [staticSettings.ts](../vaa-app-shared/src/settings/staticSettings.ts).
 
-Dynamic settings can be changed by modifying [dynamicSettings.ts](../shared/src/settings/dynamicSettings.ts). In addition, dynamic settings can also be changed in the backend. This has been currently implemented only in Strapi. Settings from `dynamicSettings.ts` are loaded into Strapi if the app settings collection is empty.
+Dynamic settings can be changed by modifying [dynamicSettings.ts](../vaa-app-shared/src/settings/dynamicSettings.ts). In addition, dynamic settings can also be changed in the backend. This has been currently implemented only in Strapi. Settings from `dynamicSettings.ts` are loaded into Strapi if the app settings collection is empty.
 
 Settings from `dynamicSettings.ts`, `staticSettings.ts` and from the DataProvider are merged together into [`settings` store](../frontend/src/lib/stores/stores.ts). Settings from `dynamicSettings.ts` are overwritten by dynamic settings from the DataProvider. Settings from `staticSettings.ts` are merged last to prevent overwriting them.
 
@@ -12,13 +12,13 @@ Settings from `dynamicSettings.ts`, `staticSettings.ts` and from the DataProvide
 
 In case of static settings:
 
-1. Add the type and documentation for the new setting to the `StaticSettings` type in [staticSettings.ts](../shared/src/settings/settings.type.ts).
-2. Add the default value for the setting to [staticSettings.ts](../shared/src/settings/staticSettings.ts).
+1. Add the type and documentation for the new setting to the `StaticSettings` type in [staticSettings.ts](../vaa-app-shared/src/settings/settings.type.ts).
+2. Add the default value for the setting to [staticSettings.ts](../vaa-app-shared/src/settings/staticSettings.ts).
 
 In case of dynamic settings:
 
-1. Add the type and documentation for the new setting to the `DynamicSettings` type in [staticSettings.ts](../shared/src/settings/settings.type.ts).
-2. Add the default value for the setting to [dynamicSettings.ts](../shared/src/settings/dynamicSettings.ts).
+1. Add the type and documentation for the new setting to the `DynamicSettings` type in [staticSettings.ts](../vaa-app-shared/src/settings/settings.type.ts).
+2. Add the default value for the setting to [dynamicSettings.ts](../vaa-app-shared/src/settings/dynamicSettings.ts).
 3. Edit the settings components in Strapi:
    1. If the new setting is a top-level one, create a new component for the setting and add it to the `App Settings` content-type.
    2. If the new setting is a subsetting of a top-level item, edit that setting.

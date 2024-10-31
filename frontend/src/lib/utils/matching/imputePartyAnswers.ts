@@ -1,5 +1,5 @@
 import {error} from '@sveltejs/kit';
-import {MISSING_VALUE} from 'vaa-shared';
+import {MISSING_VALUE} from 'vaa-core';
 import {logDebugError} from '$lib/utils/logger';
 import {mean} from './mean';
 import {median} from './median';

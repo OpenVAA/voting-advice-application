@@ -10,7 +10,7 @@ import {
   DISTANCE_METRIC,
   MISSING_VALUE_METHOD,
   type MatchableQuestionGroup
-} from '$voter/vaa-matching';
+} from 'vaa-matching';
 import {LikertQuestion} from './LikertQuestion';
 import {imputePartyAnswers} from './imputePartyAnswers';
 import {extractCategories} from '../questions';

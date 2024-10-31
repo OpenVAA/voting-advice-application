@@ -1,4 +1,4 @@
-import {staticSettings} from 'vaa-shared';
+import {staticSettings} from 'vaa-app-shared';
 import en from './translations/en/dynamic.json';
 import fi from './translations/fi/dynamic.json';
 import sv from './translations/sv/dynamic.json';
@@ -9,7 +9,7 @@ import sv from './translations/sv/dynamic.json';
 export function getDynamicTranslations(): Array<TranslationOverride> {
   const locales = staticSettings.supportedLocales.map((locale) => locale.code);
 
-  // TODO: Move translations from frontend to vaa-shared and use those instead of hardcoding these copied files
+  // TODO: Move translations from frontend to vaa-app-shared and use those instead of hardcoding these copied files
   const translationsFromFiles = {
     en: flattenKeys(en),
     fi: flattenKeys(fi),

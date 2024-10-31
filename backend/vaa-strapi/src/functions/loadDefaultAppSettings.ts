@@ -1,4 +1,4 @@
-import {dynamicSettings} from 'vaa-shared';
+import {dynamicSettings} from 'vaa-app-shared';
 import {API} from './utils/api';
 import {getCardContentsFromFile} from './utils/appSettings';
 

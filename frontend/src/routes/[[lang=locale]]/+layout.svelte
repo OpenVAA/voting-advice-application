@@ -1,6 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {staticSettings} from 'vaa-shared';
+  import {staticSettings} from 'vaa-app-shared';
   import {openFeedbackModal} from '$lib/stores';
   import {FeedbackModal} from '$lib/components/feedback/modal';
   import {Loading} from '$lib/components/loading';

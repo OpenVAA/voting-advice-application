@@ -9,7 +9,7 @@ import {match, matchParties} from '$lib/utils/matching';
 import {sortCandidates, sortParties} from '$lib/utils/sort';
 import {localStorageWritable} from '$lib/utils/storage';
 import {extractCategories, filterVisible} from '$lib/utils/questions';
-import {dynamicSettings, staticSettings} from 'vaa-shared';
+import {dynamicSettings, staticSettings} from 'vaa-app-shared';
 import {hasAllAnswers} from '../utils/hasAllAnswers';
 
 /**

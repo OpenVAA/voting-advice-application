@@ -1,4 +1,4 @@
-import {staticSettings} from 'vaa-shared';
+import {staticSettings} from 'vaa-app-shared';
 
 // Utility for getting a color from the settings with a backup value
 function getColor(name, defaultValue, theme = 'light') {

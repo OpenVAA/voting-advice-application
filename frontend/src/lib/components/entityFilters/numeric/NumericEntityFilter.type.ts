@@ -1,5 +1,5 @@
 import type {SvelteHTMLElements} from 'svelte/elements';
-import type {NumericFilter} from '$voter/vaa-filters';
+import type {NumericFilter} from 'vaa-filters';
 
 export type NumericEntityFilterProps = SvelteHTMLElements['form'] & {
   /**

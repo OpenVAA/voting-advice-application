@@ -1,5 +1,5 @@
-import type {CoordinateOrMissing, Id} from 'vaa-shared';
-import {OrdinalQuestion} from '$voter/vaa-matching';
+import type {CoordinateOrMissing, Id} from 'vaa-core';
+import {OrdinalQuestion} from 'vaa-matching';
 
 /**
  * A dummy question object for matching.
