@@ -91,9 +91,15 @@ You can run the whole application in a single Docker image, or run the frontend 
 
 The project is a monorepo and it consists of several yarn workspaces (each is a separate NPM module):
 
-- vaa-shared
-- vaa-strapi
-- vaa-frontend
+- Abstract logic
+  - [`vaa-core`](./vaa-core/)
+  - [`vaa-data`](./vaa-data/)
+  - [`vaa-matching`](./vaa-matching/)
+  - [`vaa-filters`](./vaa-filters/)
+- Application
+  - [`vaa-app-shared`](./vaa-app-shared/)
+  - [`vaa-strapi`](./backend/vaa-strapi/)
+  - [`vaa-frontend`](./frontend/)
 
 All workspaces share a single `yarn.lock` file located at the project root but contain their own `tsconfig.json` and `package.json` files.
 
@@ -106,7 +112,7 @@ yarn workspace [module-name] [script-name].
 f.e. the shared module can be build by running:
 
 ```bash
-yarn workspace vaa-shared build
+yarn workspace vaa-app-shared build
 ```
 
 ### Module resolution
