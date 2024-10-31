@@ -22,8 +22,10 @@ on:
       - '.env.example'
 
 jobs:
-  frontend-validation:
+
+  frontend-and-shared-module-validation:
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: 'frontend'
@@ -37,12 +39,51 @@ jobs:
         with:
           node-version: 18.x
           cache: "yarn"
+  
+      - name: "Install shared module dependencies: vaa-core"
+        run: yarn workspace vaa-core install --frozen-lockfile
 
-      - name: "Install shared module dependencies"
-        run: yarn workspace vaa-shared install --frozen-lockfile
+      - name: "Build shared module: vaa-core"
+        run: yarn workspace vaa-core build
 
-      - name: "Build shared module"
-        run: yarn workspace vaa-shared build
+      - name: "Install shared module dependencies: vaa-data"
+        run: yarn workspace vaa-data install --frozen-lockfile
+
+      - name: "Build shared module: vaa-data"
+        run: yarn workspace vaa-data build
+
+      - name: "Install shared module dependencies: vaa-filters"
+        run: yarn workspace vaa-filters install --frozen-lockfile
+
+      - name: "Build shared module: vaa-filters"
+        run: yarn workspace vaa-filters build       
+
+      - name: "Install shared module dependencies: vaa-matching"
+        run: yarn workspace vaa-matching install --frozen-lockfile
+
+      - name: "Build shared module: vaa-matching"
+        run: yarn workspace vaa-matching build
+
+      - name: "Install shared module dependencies: vaa-app-shared"
+        run: yarn workspace vaa-app-shared install --frozen-lockfile
+
+      - name: "Build shared module: vaa-app-shared"
+        run: yarn workspace vaa-app-shared build
+
+      - name: "Run vaa-core tests"
+        run: yarn workspace vaa-core test
+
+      - name: "Run vaa-data tests"
+        run: yarn workspace vaa-data test
+
+      - name: "Run vaa-filters tests"
+        run: yarn workspace vaa-filters test
+
+      - name: "Run vaa-matching tests"
+        run: yarn workspace vaa-matching test
+
+      - name: "Run vaa-app-shared tests"
+        run: yarn workspace vaa-app-shared test
 
       - name: "Install Frontend dependencies"
         run: yarn install --frozen-lockfile
@@ -52,6 +93,9 @@ jobs:
 
       - name: "Run ESlint check on frontend"
         run: yarn lint
+
+      - name: "Check that TranslationKey type is up to date"
+        run: yarn generateTranslationKeyType && git diff --exit-code
 
       - name: "Run Frontend tests"
         run: yarn test
@@ -91,10 +135,10 @@ jobs:
             ${{ runner.os }}-
 
       - name: "Install shared module dependencies"
-        run: yarn workspace vaa-shared install --frozen-lockfile
+        run: yarn workspace vaa-app-shared install --frozen-lockfile
 
       - name: "Build shared module"
-        run: yarn workspace vaa-shared build
+        run: yarn workspace vaa-app-shared build
 
       - name: "Install Backend yarn dependencies"
         run: |
@@ -108,9 +152,9 @@ jobs:
         run: |
           yarn lint
 
-      #      - name: "Run Backend tests"
-      #        run: |
-      #         npm run test
+#      - name: "Run Backend tests"
+#        run: |
+#         npm run test
 
       - name: "Install import-export-entries dependencies"
         run: |
@@ -127,3 +171,66 @@ jobs:
       - name: "Build backend"
         run: |
           yarn build
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: "Configure environment"
+        run: cp .env.example .env
+
+      - name: Setup Node.js 18.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: "yarn"
+
+      - name: Cache node modules
+        id: cache-npm-e2e-main
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules-e2e
+        with:
+          path: "node_modules"
+          key: ${{ runner.os }}-e2e-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: "Install yarn dependencies"
+        run: yarn install --frozen-lockfile
+
+      - name: "Install playwright"
+        run: yarn playwright install
+
+      - name: "Start OpenVAA"
+        run: yarn dev
+
+      - name: "Run E2E tests"
+        run: yarn test
+
+      - name: "Upload playwright setup report"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-setup-report
+          path: playwright-setup-report/
+          retention-days: 30
+
+      - name: "Upload playwright report"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: "Stop OpenVAA"
+        if: always()
+        run: yarn dev:down
