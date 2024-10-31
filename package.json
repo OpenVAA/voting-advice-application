@@ -25,6 +25,7 @@
     "frontend",
     "vaa-app-shared",
     "vaa-core",
+    "vaa-data",
     "vaa-matching",
     "vaa-filters"
   ]
