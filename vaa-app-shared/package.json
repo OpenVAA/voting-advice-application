@@ -8,8 +8,8 @@
     "build:cjs": "yarn package:cjs && yarn tsc --build tsconfig.cjs.json",
     "build:esm": "yarn package:esm && yarn tsc --build tsconfig.esm.json",
     "build": "yarn build:cjs && yarn build:esm",
-    "test": "vitest run tests",
-    "test:watch": "vitest tests"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "type": "module",
   "main": "./build/cjs/index.js",
