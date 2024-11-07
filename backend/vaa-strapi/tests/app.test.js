@@ -1,4 +1,5 @@
-const {setupStrapi, cleanupStrapi} = require('./helpers/strapi');
+/* eslint-disable @typescript-eslint/no-require-imports -- require might be needed*/
+const { setupStrapi, cleanupStrapi } = require('./helpers/strapi');
 
 beforeAll(async () => {
   await setupStrapi();

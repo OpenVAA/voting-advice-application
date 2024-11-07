@@ -1,7 +1,17 @@
+import { Strapi } from '@strapi/strapi';
+import { ACLImplementation, StrapiContext } from './acl.type';
+
 // Helper functions used to make dealing with access control easier
 
-function filterObject(obj, keys) {
-  const recursive = (source, path) => {
+/**
+ * Filters an object to include only specified keys.
+ *
+ * @param obj - The object to be filtered.
+ * @param keys - An array of keys that should be retained in the object.
+ * @returns A new object containing only the specified keys.
+ */
+function filterObject(obj: object, keys: Array<string>): object {
+  function recursive(source: object, path: string): object {
     const res = {};
 
     for (const key in source) {
@@ -18,13 +28,12 @@ function filterObject(obj, keys) {
     }
 
     return res;
-  };
-
+  }
   return recursive(obj, '');
 }
 
-export function restrictPopulate(allowedPopulate: string[]): any {
-  return async (ctx, config, {strapi}) => {
+export function restrictPopulate(allowedPopulate: Array<string>): ACLImplementation {
+  return async (ctx: StrapiContext) => {
     const query = ctx.request.query;
 
     // Only allow the provided populate fields
@@ -52,8 +61,8 @@ export function restrictPopulate(allowedPopulate: string[]): any {
   };
 }
 
-export function restrictFilters(allowedFilters: string[]): any {
-  return async (ctx, config, {strapi}) => {
+export function restrictFilters(allowedFilters: Array<string>): ACLImplementation {
+  return async (ctx: StrapiContext) => {
     const query = ctx.request.query;
 
     // Only allow the provided filter fields
@@ -81,8 +90,8 @@ export function restrictFilters(allowedFilters: string[]): any {
   };
 }
 
-export function restrictFields(allowedFields: string[]): any {
-  return async (ctx, config, {strapi}) => {
+export function restrictFields(allowedFields: Array<string>): ACLImplementation {
+  return async (ctx: StrapiContext) => {
     const query = ctx.request.query;
 
     // Only allow the provided fields
@@ -107,13 +116,12 @@ export function restrictFields(allowedFields: string[]): any {
   };
 }
 
-export function restrictBody(allowedFields: string[]): any {
-  return async (ctx, config, {strapi}) => {
+export function restrictBody(allowedFields: Array<string>): ACLImplementation {
+  return async (ctx: StrapiContext) => {
     // Disallow providing non-allowed body fields
     if (ctx.request.body?.data) {
       for (const key in ctx.request.body.data) {
         if (allowedFields.includes(key)) continue;
-
         console.warn(`Deleting restricted field ${key} from the body.`);
         delete ctx.request.body.data[key];
       }
@@ -123,17 +131,17 @@ export function restrictBody(allowedFields: string[]): any {
   };
 }
 
-export function restrictResourceOwnedByCandidate(contentType: string): any {
-  return async (ctx, config, {strapi}) => {
-    const {id} = ctx.params;
+export function restrictResourceOwnedByCandidate(contentType: string): ACLImplementation {
+  return async (ctx: StrapiContext, config, { strapi }) => {
+    const { id } = ctx.params;
 
     const candidate = await strapi.query('api::candidate.candidate').findOne({
-      where: {user: {id: ctx.state.user.id}}
+      where: { user: { id: ctx.state.user.id } }
     });
 
     // Make sure we can find the resource belonging to our candidate
     const res = await strapi.db.query(contentType).findOne({
-      where: {id, candidate: candidate.id}
+      where: { id, candidate: candidate.id }
     });
 
     const exists = !!res;
@@ -145,11 +153,15 @@ export function restrictResourceOwnedByCandidate(contentType: string): any {
   };
 }
 
-export async function electionCanEditAnswers(ctx, config, {strapi}) {
+export async function electionCanEditAnswers(
+  ctx: StrapiContext,
+  config: unknown,
+  { strapi }: { strapi: Strapi }
+): Promise<boolean> {
   if (!ctx.state.user) return false;
 
   const candidate = await strapi.db.query('api::candidate.candidate').findOne({
-    where: {user: {id: ctx.state.user.id}},
+    where: { user: { id: ctx.state.user.id } },
     populate: {
       nomination: {
         populate: {

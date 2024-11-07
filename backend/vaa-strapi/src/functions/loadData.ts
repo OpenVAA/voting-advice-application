@@ -6,9 +6,9 @@
 import fs from 'fs';
 import mime from 'mime-types';
 import Path from 'path';
-import type {Common} from '@strapi/strapi';
-import {API} from './utils/api';
-import {deleteMedia, dropAllCollections, getAllMedia} from './utils/drop';
+import { API } from './utils/api';
+import { deleteMedia, dropAllCollections, getAllMedia } from './utils/drop';
+import type { Common } from '@strapi/strapi';
 
 /**
  * Load data from `folder`, if `AppSettings` do not exist or their `allowOverwrite` property is true. Warning! This will delete all existing data, including media files.
@@ -50,7 +50,7 @@ export async function loadData(folder: string, force = false) {
     }
   }
 
-  await strapi.db.transaction(async ({rollback, commit}) => {
+  await strapi.db.transaction(async ({ rollback, commit }) => {
     console.info('[loadData] Starting transaction...');
 
     // Get a list of all media files in the media library which will be deleted at the end of the transaction
@@ -67,7 +67,9 @@ export async function loadData(folder: string, force = false) {
 
       // TODO: We probably don't need this anymore
       console.info('[loadData] Creating Locales...');
-      await createLocales((await loadFile(folder, 'locales')) as {name: string; code: string}[]);
+      await createLocales(
+        (await loadFile(folder, 'locales')) as Array<{ name: string; code: string }>
+      );
 
       console.info('[loadData] Creating AppSettings...');
       if (
@@ -111,7 +113,7 @@ export async function loadData(folder: string, force = false) {
 
       console.info('[loadData] Creating Answers...');
       if (!(await createFromFile(folder, 'answers', API.Answer))) throw new Error();
-    } catch (error) {
+    } catch {
       console.info('[loadData] - There was an error. Rolling back transaction...');
       await rollback();
       console.info('[loadData] Data loading aborted');
@@ -136,11 +138,11 @@ export async function loadData(folder: string, force = false) {
 // FUNCTIONS
 ////////////////////////////////////////////////////////////////////////
 
-async function createLocales(locales: {code: string; name: string}[]) {
+async function createLocales(locales: Array<{ code: string; name: string }>) {
   const strapiLocales = await strapi.plugins.i18n.services.locales.find();
-  for (const {code, name} of locales) {
+  for (const { code, name } of locales) {
     if (strapiLocales.find((l) => l.code === code)) return;
-    await strapi.plugins.i18n.services.locales.create({code, name});
+    await strapi.plugins.i18n.services.locales.create({ code, name });
     console.info(`[loadData] Created locale '${code}'`);
   }
 }
@@ -159,9 +161,9 @@ async function createFromFile(
   folder: string,
   name: string,
   api: Common.UID.ContentType,
-  mediaFields?: string[],
+  mediaFields?: Array<string>,
   publish = true
-): Promise<void | object[]> {
+): Promise<void | Array<object>> {
   return new Promise((resolve) => {
     loadFile(folder, name)
       .catch(() => {
@@ -175,7 +177,7 @@ async function createFromFile(
           resolve(undefined);
           return;
         }
-        create(folder, api, data as object[], mediaFields, publish)
+        create(folder, api, data as Array<object>, mediaFields, publish)
           .catch((e) => {
             console.error(
               `[loadData] [createFromFile] Error creating '${api}' from file ${name} when creating objects`,
@@ -195,7 +197,7 @@ async function createFromFile(
  * @returns The JSON data
  * @throws Error
  */
-async function loadFile(folder: string, name: string): Promise<object[]> {
+async function loadFile(folder: string, name: string): Promise<Array<object>> {
   return new Promise((resolve) => {
     const fp = Path.resolve(folder, `${name}.json`);
     if (!fs.existsSync(fp)) {
@@ -205,7 +207,7 @@ async function loadFile(folder: string, name: string): Promise<object[]> {
     }
     try {
       const data = fs.readFileSync(fp);
-      resolve(JSON.parse(data.toString()) as object[]);
+      resolve(JSON.parse(data.toString()) as Array<object>);
     } catch (e) {
       console.error(`[loadData] [loadFile] Error loading file: ${fp}`, e);
       resolve(undefined);
@@ -223,18 +225,18 @@ async function loadFile(folder: string, name: string): Promise<object[]> {
  * @returns The created objects
  * @throws Error
  */
-async function create<T extends object>(
+async function create<TData extends object>(
   folder,
   api: Common.UID.ContentType,
-  data: T[],
-  mediaFields?: string[],
+  data: Array<TData>,
+  mediaFields?: Array<string>,
   publish = true
-): Promise<object[]> {
+): Promise<Array<object>> {
   const res = [];
   for (const item of data) {
     // Make a copy of item data for file upload purposes
-    let itemData = {...item};
-    const files = {} as Record<keyof T, FileUploadProps>;
+    const itemData = { ...item };
+    const files = {} as Record<keyof TData, FileUploadProps>;
     if (mediaFields?.length) {
       for (const key of mediaFields) {
         if (itemData[key]) {
@@ -244,7 +246,7 @@ async function create<T extends object>(
             const fullPath = Path.resolve(folder, path);
             const size = fs.statSync(fullPath).size;
             const type = mime.lookup(fullPath);
-            files[key] = {name, path: fullPath, size, type};
+            files[key] = { name, path: fullPath, size, type };
           } catch (e) {
             console.error(`[loadData] [create] Error reading media file '${itemData[key]}'`, e);
             throw e;
@@ -256,7 +258,7 @@ async function create<T extends object>(
     // Create the object
     const obj = await strapi.entityService
       .create(api, {
-        data: {...itemData, publishedAt: publish ? new Date() : undefined} as object,
+        data: { ...itemData, publishedAt: publish ? new Date() : undefined } as object,
         files
       })
       .catch((e) => {
