@@ -1,22 +1,14 @@
 import crypto from 'crypto';
 import { expect, test } from 'vitest';
-import {
-  COORDINATE,
-  MISSING_VALUE,
-  QUESTION_TYPE,
-  SingleChoiceOrdinalQuestion
-} from '../../../internal';
+import { COORDINATE, MISSING_VALUE, QUESTION_TYPE, SingleChoiceOrdinalQuestion } from '../../../internal';
 import { getTestData, getTestDataRoot, LIKERT_5_CHOICES } from '../../../testUtils';
 
 const root = getTestDataRoot();
 const questionData = getTestData().questions.questions;
 const objData = questionData.find((q) => q.type === QUESTION_TYPE.SingleChoiceOrdinal);
-if (!objData)
-  throw new Error('Test setup error: Test data does not contain a SingleChoiceOrdinal question');
+if (!objData) throw new Error('Test setup error: Test data does not contain a SingleChoiceOrdinal question');
 if (objData.choices.length < 3)
-  throw new Error(
-    'Test setup error: Test data does not contain a SingleChoiceOrdinal question with enough choices'
-  );
+  throw new Error('Test setup error: Test data does not contain a SingleChoiceOrdinal question with enough choices');
 
 test('Should normalize value', () => {
   const obj = root.getQuestion(objData.id) as SingleChoiceOrdinalQuestion;
@@ -53,8 +45,5 @@ test('Should throw if value range is invalid', () => {
       normalizableValue: 1
     }))
   };
-  expect(
-    () => new SingleChoiceOrdinalQuestion({ data, root }),
-    'Choices with zero range'
-  ).toThrow();
+  expect(() => new SingleChoiceOrdinalQuestion({ data, root }), 'Choices with zero range').toThrow();
 });

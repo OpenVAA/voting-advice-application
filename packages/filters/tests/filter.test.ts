@@ -16,9 +16,10 @@ import {
   type TextQuestion as ITextQuestion,
   TextQuestionFilter,
   WRAPPED_ENTITY_KEY,
-  type WrappedEntity} from '../src';
-import { copyRules,matchRules, ruleIsActive } from '../src/filter/rules';
-import type { Answer,AnswerDict } from '@openvaa/core';
+  type WrappedEntity
+} from '../src';
+import { copyRules, matchRules, ruleIsActive } from '../src/filter/rules';
+import type { Answer, AnswerDict } from '@openvaa/core';
 
 const LOCALE = 'en';
 
@@ -99,9 +100,7 @@ describe('Rules utilities', () => {
 
 describe('Filter basics', () => {
   const names = ['Bart', 'Homer', 'Marge'];
-  const people: Record<string, NamedEntity> = Object.fromEntries(
-    names.map((n) => [n, new NamedEntity(n)])
-  );
+  const people: Record<string, NamedEntity> = Object.fromEntries(names.map((n) => [n, new NamedEntity(n)]));
   const targets = Object.values(people);
 
   test('TextPropertyFilter', () => {
@@ -130,23 +129,16 @@ describe('Filter basics', () => {
     expect(filter.apply(targets), 'Case sensitive match').toEqual([people['Homer']]);
     filter.include = 'm';
     filter.caseSensitive = false;
-    expect(filter.apply(targets), 'Change case sensitivity').toEqual([
-      people['Homer'],
-      people['Marge']
-    ]);
+    expect(filter.apply(targets), 'Change case sensitivity').toEqual([people['Homer'], people['Marge']]);
   });
 
   test('TextPropertyFilter: Missing values', () => {
     const nameless = new NamedEntity(undefined);
     const targetsWithMissing = [...targets, nameless];
     const filter = new TextPropertyFilter({ property: 'name' }, LOCALE);
-    expect(filter.apply(targetsWithMissing), 'Include missing by default').toEqual(
-      targetsWithMissing
-    );
+    expect(filter.apply(targetsWithMissing), 'Include missing by default').toEqual(targetsWithMissing);
     filter.include = 'Bart';
-    expect(filter.apply(targetsWithMissing), 'Exlude missing if include is defined').toEqual([
-      people['Bart']
-    ]);
+    expect(filter.apply(targetsWithMissing), 'Exlude missing if include is defined').toEqual([people['Bart']]);
     filter.reset();
     filter.exclude = 'Bart';
     expect(filter.apply(targetsWithMissing), 'Exlude does not exlude missing').toEqual([
@@ -167,15 +159,9 @@ describe('Filter basics', () => {
     expect(handler, 'Call handler on reset').toHaveBeenCalledTimes(2);
     filter.include = 'Bart';
     filter.include = 'Bart';
-    expect(
-      handler,
-      'Do not fire onChange if rules are set to the current value'
-    ).toHaveBeenCalledTimes(3);
+    expect(handler, 'Do not fire onChange if rules are set to the current value').toHaveBeenCalledTimes(3);
     filter.withoutOnChange(() => (filter.include = 'Homer'));
-    expect(
-      handler,
-      'Do not fire onChange when wrapping call in filter.withoutOnChange'
-    ).toHaveBeenCalledTimes(3);
+    expect(handler, 'Do not fire onChange when wrapping call in filter.withoutOnChange').toHaveBeenCalledTimes(3);
   });
 
   test('Wrapped entity', () => {
@@ -281,17 +267,10 @@ test('ChoiceQuestionFilter: missing values', () => {
   filter.include = [0];
   expect(filter.apply(people), 'Do not include missing').toEqual([people[0]]);
   filter.include = [1, MISSING_VALUE];
-  expect(filter.apply(people), 'Explicitly include missing').toEqual([
-    people[1],
-    people[2],
-    people[4]
-  ]);
+  expect(filter.apply(people), 'Explicitly include missing').toEqual([people[1], people[2], people[4]]);
   filter.reset();
   filter.exclude = [0, 1];
-  expect(filter.apply(people), 'Exclude does not exluce missing by default').toEqual([
-    people[3],
-    people[4]
-  ]);
+  expect(filter.apply(people), 'Exclude does not exluce missing by default').toEqual([people[3], people[4]]);
   filter.reset();
   filter.exclude = [0, 1, MISSING_VALUE];
   expect(filter.apply(people), 'Explicitly exclude missing').toEqual([people[3]]);
@@ -341,10 +320,7 @@ test('ChoiceQuestionFilter: multipleVAlues', () => {
   expect(filter.active, 'Not active if reset').toBe(false);
   const singleQuestion = new ChoiceQuestion('rightId', choices, false);
   const singleFilter = new ChoiceQuestionFilter({ question: singleQuestion }, 'fi');
-  expect(
-    () => singleFilter.apply(people),
-    'Disallow casting of arrays to single value types'
-  ).toThrow();
+  expect(() => singleFilter.apply(people), 'Disallow casting of arrays to single value types').toThrow();
 });
 
 test('ObjectFilter', () => {

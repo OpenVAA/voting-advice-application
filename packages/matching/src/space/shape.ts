@@ -30,18 +30,10 @@ export function flatten(coordinates: PositionCoordinates): Array<CoordinateOrMis
 /**
  * Reshape a flattened shape into its original `Shape`.
  */
-export function reshape({
-  flat,
-  shape
-}: {
-  flat: Array<CoordinateOrMissing>;
-  shape: Shape;
-}): PositionCoordinates {
+export function reshape({ flat, shape }: { flat: Array<CoordinateOrMissing>; shape: Shape }): PositionCoordinates {
   if (shape.every((d) => d === 1)) return flat;
   if (flat.length !== shape.reduce((acc, d) => acc + d, 0))
-    throw new Error(
-      `Cannot reshape array of length ${flat.length} into shape [${shape.join(',')}]`
-    );
+    throw new Error(`Cannot reshape array of length ${flat.length} into shape [${shape.join(',')}]`);
   let i = 0;
   return shape.map((d) => {
     const element = d === 1 ? flat[i] : flat.slice(i, i + d);

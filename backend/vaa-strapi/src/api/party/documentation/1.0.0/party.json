@@ -63,9 +63,7 @@
           }
         }
       },
-      "tags": [
-        "Party"
-      ],
+      "tags": ["Party"],
       "parameters": [
         {
           "name": "sort",
@@ -237,9 +235,7 @@
           }
         }
       },
-      "tags": [
-        "Party"
-      ],
+      "tags": ["Party"],
       "parameters": [
         {
           "name": "id",

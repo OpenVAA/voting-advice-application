@@ -2,26 +2,26 @@
  * This is a severely limited implementation of the `DataProvider` that connects to locally stored JSON files.
  */
 
+import { error } from '@sveltejs/kit';
 import fs from 'fs';
 import path from 'path';
-import {error} from '@sveltejs/kit';
-import {locales} from '$lib/i18n';
-import {logDebugError} from '$lib/utils/logger';
+import { locales } from '$lib/i18n';
+import { ensureColors } from '$lib/utils/color/ensureColors';
+import { logDebugError } from '$lib/utils/logger';
+import { DataFolder } from './dataFolder';
+import { setFeedback } from './setFeedback';
+import { filterById } from './utils/filterById';
 import type {
+  DataProvider,
   GetAllPartiesOptions,
   GetAnyQuestionsOptions,
   GetDataOptionsBase,
   GetElectionOptions,
   GetNominatedCandidatesOptions,
   GetNominatingPartiesOptions,
-  GetQuestionsOptionsBase,
-  DataProvider
+  GetQuestionsOptionsBase
 } from '../dataProvider';
-import {filterById} from './utils/filterById';
-import {DataFolder} from './dataFolder';
-import {setFeedback} from './setFeedback';
-import {ensureColors} from '$lib/utils/color/ensureColors';
-import type {LocalQuestionCategoryProps, LocalQuestionProps} from './localDataProvider.type';
+import type { LocalQuestionCategoryProps, LocalQuestionProps } from './localDataProvider.type';
 
 ///////////////////////////////////////////////////////
 // LIMITED SUPPORT
@@ -49,8 +49,7 @@ function warnOnUnsupportedOptions(options: GetDataOptionsBase = {}) {
   for (const key in options) {
     if (CRITICAL_UNSUPPORTED_OPTIONS.includes(key))
       error(500, `[localDataProvider] Unsupported get data option (critical): ${key}`);
-    if (UNSUPPORTED_OPTIONS.includes(key))
-      logDebugError(`[localDataProvider] Unsupported get data option: ${key}`);
+    if (UNSUPPORTED_OPTIONS.includes(key)) logDebugError(`[localDataProvider] Unsupported get data option: ${key}`);
   }
 }
 
@@ -70,7 +69,7 @@ function readFile<TType>(filename: string): Promise<TType> {
 /**
  * Parse a list of `QuestionProps` objects from a promised list of `LocalQuestionProps` objects.
  */
-function parseQuestions(questions: Promise<LocalQuestionProps[]>): Promise<QuestionProps[]> {
+function parseQuestions(questions: Promise<Array<LocalQuestionProps>>): Promise<Array<QuestionProps>> {
   return Promise.all([questions, getAllQuestionCategories()]).then(([qsts, cats]) => {
     const qstProps = qsts.map((q) => parseQuestion(cats, q));
     // Link the questions to the categories
@@ -86,8 +85,8 @@ function parseQuestions(questions: Promise<LocalQuestionProps[]>): Promise<Quest
  * NB. The categories do not contain questions yet and must be supplied with those later.
  */
 function getAllQuestionCategories(): Promise<Record<string, QuestionCategoryProps>> {
-  return readFile<LocalQuestionCategoryProps[]>('questionCategories.json').then((categories) =>
-    Object.fromEntries(categories.map((c) => [c.id, {...c, questions: []}]))
+  return readFile<Array<LocalQuestionCategoryProps>>('questionCategories.json').then((categories) =>
+    Object.fromEntries(categories.map((c) => [c.id, { ...c, questions: [] }]))
   );
 }
 
@@ -100,15 +99,12 @@ function parseQuestion(
   questionCategories: Record<string, QuestionCategoryProps>,
   question: LocalQuestionProps
 ): QuestionProps {
-  const {categoryId, ...rest} = question;
+  const { categoryId, ...rest } = question;
   const category = questionCategories[categoryId];
   if (category == null) {
-    error(
-      500,
-      `No question category found with id ${question.categoryId} for question ${JSON.stringify(question)}`
-    );
+    error(500, `No question category found with id ${question.categoryId} for question ${JSON.stringify(question)}`);
   }
-  return {...rest, category};
+  return { ...rest, category };
 }
 
 ///////////////////////////////////////////////////////
@@ -141,12 +137,10 @@ function getElection(options?: GetElectionOptions): Promise<ElectionProps> {
  * This is a redundant and will likely be made obsolete. Use the other question getters instead.
  * NB. The implementation is also inefficient when getting all questions, bc `getAllQuestionCategories` is called twice.
  */
-function getQuestions(options?: GetAnyQuestionsOptions): Promise<QuestionProps[]> {
+function getQuestions(options?: GetAnyQuestionsOptions): Promise<Array<QuestionProps>> {
   warnOnUnsupportedOptions(options);
   if (options?.categoryType == null || options?.categoryType === 'all')
-    return Promise.all([getInfoQuestions(options), getOpinionQuestions(options)]).then(
-      ([iQ, oQ]) => [...iQ, ...oQ]
-    );
+    return Promise.all([getInfoQuestions(options), getOpinionQuestions(options)]).then(([iQ, oQ]) => [...iQ, ...oQ]);
   if (options?.categoryType === 'info') return getInfoQuestions(options);
   if (options?.categoryType === 'opinion') return getOpinionQuestions(options);
   error(500, `No questions found with categoryType ${options?.categoryType}`);
@@ -156,27 +150,27 @@ function getQuestions(options?: GetAnyQuestionsOptions): Promise<QuestionProps[]
  * Get all the info questions.
  * @returns A Promise with an array of `QuestionProps`
  */
-function getInfoQuestions(options?: GetQuestionsOptionsBase): Promise<QuestionProps[]> {
+function getInfoQuestions(options?: GetQuestionsOptionsBase): Promise<Array<QuestionProps>> {
   warnOnUnsupportedOptions(options);
-  return parseQuestions(readFile<LocalQuestionProps[]>('infoQuestions.json'));
+  return parseQuestions(readFile<Array<LocalQuestionProps>>('infoQuestions.json'));
 }
 
 /**
  * Get all the opinion questions.
  * @returns A Promise with an array of `QuestionProps`
  */
-function getOpinionQuestions(options?: GetQuestionsOptionsBase): Promise<QuestionProps[]> {
+function getOpinionQuestions(options?: GetQuestionsOptionsBase): Promise<Array<QuestionProps>> {
   warnOnUnsupportedOptions(options);
-  return parseQuestions(readFile<LocalQuestionProps[]>('opinionQuestions.json'));
+  return parseQuestions(readFile<Array<LocalQuestionProps>>('opinionQuestions.json'));
 }
 
 /**
  * Get all the parties, regardless whether they are nominated, have nominations or not.
  * @returns A Promise with an array of `PartyProps`
  */
-function getAllParties(options?: GetAllPartiesOptions): Promise<PartyProps[]> {
+function getAllParties(options?: GetAllPartiesOptions): Promise<Array<PartyProps>> {
   warnOnUnsupportedOptions(options);
-  return readFile<PartyProps[]>('parties.json')
+  return readFile<Array<PartyProps>>('parties.json')
     .then((parties) => filterById(parties, options))
     .then((parties) =>
       parties.map((p) => ({
@@ -190,7 +184,7 @@ function getAllParties(options?: GetAllPartiesOptions): Promise<PartyProps[]> {
  * Get all the nominated parties or parties nominating candidates.
  * @returns A Promise with an array of `PartyProps`
  */
-function getNominatingParties(options?: GetNominatingPartiesOptions): Promise<PartyProps[]> {
+function getNominatingParties(options?: GetNominatingPartiesOptions): Promise<Array<PartyProps>> {
   warnOnUnsupportedOptions(options);
   return getAllParties(options);
 }
@@ -199,13 +193,9 @@ function getNominatingParties(options?: GetNominatingPartiesOptions): Promise<Pa
  * Get all the nominated candidates.
  * @returns A Promise with an array of `CandidateProps`
  */
-function getNominatedCandidates(
-  options?: GetNominatedCandidatesOptions
-): Promise<CandidateProps[]> {
+function getNominatedCandidates(options?: GetNominatedCandidatesOptions): Promise<Array<CandidateProps>> {
   warnOnUnsupportedOptions(options);
-  return readFile<CandidateProps[]>('candidates.json').then((candidates) =>
-    filterById(candidates, options)
-  );
+  return readFile<Array<CandidateProps>>('candidates.json').then((candidates) => filterById(candidates, options));
 }
 
 ///////////////////////////////////////////////////////

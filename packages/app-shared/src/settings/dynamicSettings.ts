@@ -17,17 +17,17 @@ export const dynamicSettings: DynamicSettings = {
   },
   header: {
     showFeedback: true,
-    showHelp: true,
+    showHelp: true
   },
   headerStyle: {
     dark: {
-      overImgBgColor: "transparent"
+      overImgBgColor: 'transparent'
     },
     light: {
-      overImgBgColor: "transparent",
+      overImgBgColor: 'transparent'
     },
-    imgSize: "cover",
-    imgPosition: "center"
+    imgSize: 'cover',
+    imgPosition: 'center'
   },
   entities: {
     hideIfMissingAnswers: {

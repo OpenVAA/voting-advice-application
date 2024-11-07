@@ -21,17 +21,13 @@ test('Should have nomination objects for all Organization nominations with the c
     const obj = found[0];
     if (objData.parent) {
       expect(
-        obj.allianceNomination?.organizationNominations
-          .map((n) => n.entity.id)
-          .includes(obj.entity.id),
+        obj.allianceNomination?.organizationNominations.map((n) => n.entity.id).includes(obj.entity.id),
         'Have a parent nomination whose children include this Organization'
       ).toBe(true);
     }
     if (objData.factions) {
       // NB. The checkd below does not ensure exact match, but we rely on `factionNomination.test.ts` to handle such details
-      expect(obj.factionNominations.length, 'Have the same number of factions').toBe(
-        objData.factions.length
-      );
+      expect(obj.factionNominations.length, 'Have the same number of factions').toBe(objData.factions.length);
       expect(
         contentsMatch(
           obj.factionNominations.flatMap((f) => f.candidateNominations.map((c) => c.entity.id)),

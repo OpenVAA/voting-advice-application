@@ -1,4 +1,4 @@
-import { expect,test } from 'vitest';
+import { expect, test } from 'vitest';
 import { COORDINATE, normalizeCoordinate } from '../../src/matching/distance';
 
 test('normalizeCoordinate', () => {

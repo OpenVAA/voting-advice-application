@@ -1,6 +1,6 @@
 'use strict';
 import { validatePassword } from '@openvaa/app-shared';
-import { errors,sanitize, validateYupSchema, yup } from '@strapi/utils';
+import { errors, sanitize, validateYupSchema, yup } from '@strapi/utils';
 
 const { ValidationError, ApplicationError } = errors;
 
@@ -37,9 +37,7 @@ module.exports = {
     }
 
     if (candidate.user) {
-      throw new ValidationError(
-        'The user associated with the registration key is already registered.'
-      );
+      throw new ValidationError('The user associated with the registration key is already registered.');
     }
 
     return {
@@ -74,9 +72,7 @@ module.exports = {
     }
 
     if (candidate.user) {
-      throw new ValidationError(
-        'The user associated with the registration key is already registered.'
-      );
+      throw new ValidationError('The user associated with the registration key is already registered.');
     }
 
     const pluginStore = await strapi.store({ type: 'plugin', name: 'users-permissions' });

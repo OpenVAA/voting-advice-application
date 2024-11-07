@@ -8,8 +8,7 @@ const questionData = getTestData().questions.questions;
 
 // We use a concrete subclass for easier testing.
 const objData = questionData.find((q) => q.type === QUESTION_TYPE.SingleChoiceOrdinal);
-if (!objData)
-  throw new Error('Test setup error: Test data does not contain a SingleChoiceOrdinal question');
+if (!objData) throw new Error('Test setup error: Test data does not contain a SingleChoiceOrdinal question');
 
 test('Should return choices and their indices', () => {
   const obj = root.getQuestion(objData.id) as SingleChoiceOrdinalQuestion;
@@ -18,10 +17,7 @@ test('Should return choices and their indices', () => {
     expect(obj.getChoice(id)?.id).toBe(id);
     expect(obj.getChoiceIndex(id)).toBe(index);
   });
-  expect(
-    obj.getChoice(crypto.randomUUID()),
-    'To return undefined for an invalid choice id'
-  ).toBeUndefined();
+  expect(obj.getChoice(crypto.randomUUID()), 'To return undefined for an invalid choice id').toBeUndefined();
 });
 
 test('Should throw if choices are invalid', () => {

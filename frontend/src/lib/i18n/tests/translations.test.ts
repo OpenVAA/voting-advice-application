@@ -54,9 +54,7 @@ const firstLocaleFileKeys = Object.fromEntries(
 );
 
 test('translations/index.ts has all translation files', () => {
-  expect(keys.sort()).toEqual(
-    firstLocaleFilenames.map((filename) => filename.replace('.json', '')).sort()
-  );
+  expect(keys.sort()).toEqual(firstLocaleFilenames.map((filename) => filename.replace('.json', '')).sort());
 });
 
 test('translations/index.ts has all locales', () => {

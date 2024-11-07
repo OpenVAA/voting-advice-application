@@ -4,7 +4,8 @@ import {
   MatchingAlgorithm,
   type MatchingOptions,
   MISSING_VALUE_METHOD,
-  OrdinalQuestion} from '..';
+  OrdinalQuestion
+} from '..';
 import type { AnswerDict, HasAnswers, MatchableQuestion } from '@openvaa/core';
 
 /**
@@ -39,9 +40,7 @@ function main(
 
   // Create dummy candidates with dummy answers
   const candidates = Array.from({ length: numCandidates }, (_, i) => {
-    const value = randomCandAnswer
-      ? () => Math.floor(Math.random() * likertScale) + 1
-      : (i % likertScale) + 1;
+    const value = randomCandAnswer ? () => Math.floor(Math.random() * likertScale) + 1 : (i % likertScale) + 1;
     const answers = createAnswers(questions, value, numMissing);
     return new Candidate(`Candidate ${i} - Answers ${Object.values(answers).join(', ')}`, answers);
   });
@@ -98,8 +97,7 @@ function createAnswers(
   const answers = {} as AnswerDict;
   for (let i = 0; i < questions.length; i++) {
     answers[questions[i].id] = {
-      value:
-        i < missing ? undefined : typeof answerValue === 'number' ? answerValue : answerValue(i)
+      value: i < missing ? undefined : typeof answerValue === 'number' ? answerValue : answerValue(i)
     };
   }
   return answers;

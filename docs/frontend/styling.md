@@ -29,8 +29,9 @@ For DaisyUI, all the [basic colours](https://daisyui.com/docs/colors/) are defin
 ### Color contrast
 
 In order to fulfil the application's accessibility requirements, a [WGAC AA level color contrast](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html) has to be reached. The colors have been defined to ensure this as long as:
-* If the background is any of the base colors, e.g. `bg-base-100`, `bg-base-200` or `bg-base-300`, you can use any of the basic text colors on it.
-* If background is any other color, such as `bg-primary`, always use the matching `content` color for text on it, e.g.  `text-primary-content`.
+
+- If the background is any of the base colors, e.g. `bg-base-100`, `bg-base-200` or `bg-base-300`, you can use any of the basic text colors on it.
+- If background is any other color, such as `bg-primary`, always use the matching `content` color for text on it, e.g. `text-primary-content`.
 
 ### Testing the colors
 
@@ -46,7 +47,7 @@ For elements that absolutely need their `z-index` set, the following Tailwind cl
 
 - `z-10`: Navigation drawer menu, page header
 - `z-20`: Buttons overlaid on the header by the [`<Video>`](../../frontend/src/lib/components/video/Video.svelte) component
-- `z-30`: The [`<Alert>`]((../../frontend/src/lib/components/alert/Alert.svelte)) component
+- `z-30`: The [`<Alert>`](<(../../frontend/src/lib/components/alert/Alert.svelte)>) component
 - `z-40`: Not used currently
 - `z-50`: Not used currently
 

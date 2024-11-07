@@ -12,7 +12,8 @@ import {
   euclideanDistance,
   euclideanSubdimWeight,
   euclideanSum,
-  manhattanDistance} from '../src/distance/metric';
+  manhattanDistance
+} from '../src/distance/metric';
 import { MISSING_VALUE_METHOD } from '../src/missingValue';
 import { createSubspace, MatchingSpace, Position } from '../src/space';
 import type { DistanceMeasurementOptions } from '../src/distance';
@@ -35,34 +36,16 @@ describe('metric: kernels', () => {
   test('directionalKernel', () => {
     expect(directionalKernel(min, max)).toBeCloseTo(full);
     expect(directionalKernel(max, min), 'to be commutable').toBeCloseTo(full);
-    expect(directionalKernel(neutral, max), 'to be half when either value is neutral').toBeCloseTo(
-      half
-    );
-    expect(
-      directionalKernel(min, neutral),
-      'to be half when either value is neutral 2'
-    ).toBeCloseTo(half);
-    expect(
-      directionalKernel(neutral, halfMax),
-      'to be half when either value is neutral 3'
-    ).toBeCloseTo(half);
-    expect(
-      directionalKernel(neutral, neutral),
-      'to be half when either value is neutral 3'
-    ).toBeCloseTo(half);
-    expect(directionalKernel(halfMin, halfMax), 'to scale with assumed uncertainty').toBeCloseTo(
+    expect(directionalKernel(neutral, max), 'to be half when either value is neutral').toBeCloseTo(half);
+    expect(directionalKernel(min, neutral), 'to be half when either value is neutral 2').toBeCloseTo(half);
+    expect(directionalKernel(neutral, halfMax), 'to be half when either value is neutral 3').toBeCloseTo(half);
+    expect(directionalKernel(neutral, neutral), 'to be half when either value is neutral 3').toBeCloseTo(half);
+    expect(directionalKernel(halfMin, halfMax), 'to scale with assumed uncertainty').toBeCloseTo(0.625 * full);
+    expect(directionalKernel(halfMax, halfMin), 'to scale with assumed uncertainty and commute').toBeCloseTo(
       0.625 * full
     );
-    expect(
-      directionalKernel(halfMax, halfMin),
-      'to scale with assumed uncertainty and commute'
-    ).toBeCloseTo(0.625 * full);
-    expect(directionalKernel(min, halfMax), 'to scale with assumed uncertainty 2').toBeCloseTo(
-      0.75 * full
-    );
-    expect(directionalKernel(max, halfMin), 'to scale with assumed uncertainty 3').toBeCloseTo(
-      0.75 * full
-    );
+    expect(directionalKernel(min, halfMax), 'to scale with assumed uncertainty 2').toBeCloseTo(0.75 * full);
+    expect(directionalKernel(max, halfMin), 'to scale with assumed uncertainty 3').toBeCloseTo(0.75 * full);
   });
   test('basicSum', () => {
     expect(basicSum([1, 2, 3])).toBeCloseTo(6);
@@ -100,31 +83,21 @@ describe('metric: distance', () => {
   });
   test.each(metrics)('disallow missing with metric $name', ({ metric }) => {
     expect(() => metric({ a: posMin, b: posMissing }), 'to disallow missing by default').toThrow();
-    expect(
-      () => metric({ a: posMissing, b: posMin }),
-      'to disallow missing by default 2'
-    ).toThrow();
-    expect(
-      () => metric({ a: posMissing, b: posMin, allowMissing: false }),
-      'to explicitly disallow missing'
-    ).toThrow();
+    expect(() => metric({ a: posMissing, b: posMin }), 'to disallow missing by default 2').toThrow();
+    expect(() => metric({ a: posMissing, b: posMin, allowMissing: false }), 'to explicitly disallow missing').toThrow();
   });
   test.each(metrics)('disregard dimensions with missing values with metric $name', ({ metric }) => {
     expect(
       metric({ a: posMax, b: posMissing, allowMissing: true }),
       'to skip the third dimension when calculating distance'
     ).toBeCloseTo(metric({ a: posMin2D, b: posMax2D }));
-    expect(
-      metric({ a: posMissing, b: posMax, allowMissing: true }),
-      'to be commutable'
-    ).toBeCloseTo(metric({ a: posMin2D, b: posMax2D }));
+    expect(metric({ a: posMissing, b: posMax, allowMissing: true }), 'to be commutable').toBeCloseTo(
+      metric({ a: posMin2D, b: posMax2D })
+    );
   });
-  test.each(metrics)(
-    'return half extent when all dimensions are missing with metric $name',
-    ({ metric }) => {
-      expect(metric({ a: posMin, b: posAllMissing, allowMissing: true })).toBeCloseTo(half);
-    }
-  );
+  test.each(metrics)('return half extent when all dimensions are missing with metric $name', ({ metric }) => {
+    expect(metric({ a: posMin, b: posAllMissing, allowMissing: true })).toBeCloseTo(half);
+  });
 
   test('manhattanDistance', () => {
     const weights = [1.3121, 5.1324, 9.123, 13.14, 0];
@@ -233,14 +206,8 @@ describe('metric: measure', () => {
     const expectedSubspaceA = (full + full) / 2; // The last two dimensions only
     const expectedSubspaceB = (0 + half + full) / 3; // The first three dimensions only
     expect(result.global, 'to contain global distance').toBeCloseTo(expectedGlobal);
-    expect(result.subspaces.length, 'to contain subspace distances for all subspaces').toEqual(
-      subspaces.length
-    );
-    expect(result.subspaces[0], 'to correctly compute subspace distance 1').toBeCloseTo(
-      expectedSubspaceA
-    );
-    expect(result.subspaces[1], 'to correctly compute subspace distance 2').toBeCloseTo(
-      expectedSubspaceB
-    );
+    expect(result.subspaces.length, 'to contain subspace distances for all subspaces').toEqual(subspaces.length);
+    expect(result.subspaces[0], 'to correctly compute subspace distance 1').toBeCloseTo(expectedSubspaceA);
+    expect(result.subspaces[1], 'to correctly compute subspace distance 2').toBeCloseTo(expectedSubspaceB);
   });
 });

@@ -10,17 +10,14 @@ import {
   FactionNominationData,
   Nomination,
   type OrganizationNominationData,
-  WithOptional} from '../../../internal';
+  WithOptional
+} from '../../../internal';
 
 /**
  * A nomination for an `Organization`, most often a party. The nomination may be contain `CandidateNomination`s, i.e., it’s a party list, or `FactionNomination`s.
  */
 export class OrganizationNomination
-  extends Nomination<
-    typeof ENTITY_TYPE.Organization,
-    typeof ENTITY_TYPE.Alliance,
-    OrganizationNominationData
-  >
+  extends Nomination<typeof ENTITY_TYPE.Organization, typeof ENTITY_TYPE.Alliance, OrganizationNominationData>
   implements DataAccessor<OrganizationNominationData, 'candidates' | 'factions'>
 {
   //////////////////////////////////////////////////////////////////////////////
@@ -30,13 +27,7 @@ export class OrganizationNomination
   /**
    * Any nested `CandidateNomination`s or `FactionNomination`s in the data are created during initialization.
    */
-  constructor({
-    data,
-    root
-  }: {
-    data: WithOptional<OrganizationNominationData, 'id'>;
-    root: DataRoot;
-  }) {
+  constructor({ data, root }: { data: WithOptional<OrganizationNominationData, 'id'>; root: DataRoot }) {
     super({ data, root });
 
     if (this.data.candidates?.length && this.data.factions?.length)
@@ -93,9 +84,7 @@ export class OrganizationNomination
    * The `CandidateNomination`s in this nomination.
    */
   get candidateNominations(): Array<CandidateNomination> {
-    return (
-      this.data.candidateNominationIds?.map((id) => this.root.getCandidateNomination(id)) ?? []
-    );
+    return this.data.candidateNominationIds?.map((id) => this.root.getCandidateNomination(id)) ?? [];
   }
 
   /**

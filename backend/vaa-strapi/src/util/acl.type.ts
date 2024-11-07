@@ -1,6 +1,8 @@
 import type { factories } from '@strapi/strapi';
 import type { Strapi } from '@strapi/types';
 
+// Strapi 5: Hopefully, these types can be removed
+
 /**
  * Any of the following ACL implementations. The type is a detailed restricted version of Strapi's own PolicyImplementation type.
  */
@@ -25,7 +27,7 @@ export type StrapiContext = {
 };
 
 /**
- * Proper type for a Strapi Query. Source: https://docs.strapi.io/dev-docs/backend-customization/requests-responses#ctxrequestquery
+ * Proper type for a Strapi Query. Source: https://docs-v4.strapi.io/dev-docs/backend-customization/requests-responses#ctxrequestquery
  */
 export type StrapiQuery = {
   sort: string | Array<string>;

@@ -1,29 +1,29 @@
 <script lang="ts">
-  import {getContext} from 'svelte';
-  import {afterNavigate, goto} from '$app/navigation';
-  import {locale, t} from '$lib/i18n';
-  import {dataProvider} from '$lib/api/getData';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import {ROUTE, getRoute} from '$lib/utils/navigation';
-  import {Button} from '$lib/components/button';
-  import {EntityDetails} from '$lib/components/entityDetails';
-  import {Icon} from '$lib/components/icon';
-  import {Loading} from '$lib/components/loading';
-  import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import {SingleCardPage} from '$lib/templates/singleCardPage';
+  import { getContext } from 'svelte';
+  import { afterNavigate, goto } from '$app/navigation';
+  import { dataProvider } from '$lib/api/getData';
+  import { LogoutButton } from '$lib/candidate/components/logoutButton';
+  import { Button } from '$lib/components/button';
+  import { EntityDetails } from '$lib/components/entityDetails';
+  import { Icon } from '$lib/components/icon';
+  import { Loading } from '$lib/components/loading';
+  import { locale, t } from '$lib/i18n';
+  import { SingleCardPage } from '$lib/templates/singleCardPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
 
-  const {user} = getContext<CandidateContext>('candidate');
+  const { user } = getContext<CandidateContext>('candidate');
 
   let infoQuestions: Array<QuestionProps>;
   let opinionQuestions: Array<QuestionProps>;
   let candidate: CandidateProps | undefined;
   let loadData: Promise<void>;
 
-  const fetchData = async () => {
-    const {getInfoQuestions, getOpinionQuestions, getNominatedCandidates} = await dataProvider;
+  async function fetchData() {
+    const { getInfoQuestions, getOpinionQuestions, getNominatedCandidates } = await dataProvider;
     const [infoRes, opinionRes, candidateRes] = await Promise.all([
-      getInfoQuestions({locale: $locale}),
-      getOpinionQuestions({locale: $locale}),
+      getInfoQuestions({ locale: $locale }),
+      getOpinionQuestions({ locale: $locale }),
       getNominatedCandidates({
         loadAnswers: true,
         locale: $locale,
@@ -38,7 +38,7 @@
 
   $: {
     loadData = fetchData();
-    $locale;
+    $locale; // eslint-disable-line @typescript-eslint/no-unused-expressions
   }
 
   /**

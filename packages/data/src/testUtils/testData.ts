@@ -5,7 +5,8 @@ import {
   type FullVaaData,
   NominationVariantTree,
   QUESTION_CATEGORY_TYPE,
-  QUESTION_TYPE} from '../internal';
+  QUESTION_TYPE
+} from '../internal';
 
 export const LIKERT_5_CHOICES: Array<Choice<number>> = [
   {
@@ -368,8 +369,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         organizationId: 'organization-1',
         answers: {
           'question-1': {
-            value:
-              'If I’m elected I pledge destroy the new Hyrule Castle and usher in a reign of evil!'
+            value: 'If I’m elected I pledge destroy the new Hyrule Castle and usher in a reign of evil!'
           },
           'question-2': {
             value: 7
@@ -420,8 +420,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         organizationId: 'organization-1',
         answers: {
           'question-1': {
-            value:
-              'My main focus will be on improving the rights of moblins and other nomadic tribes.'
+            value: 'My main focus will be on improving the rights of moblins and other nomadic tribes.'
           },
           'question-2': {
             value: 4
@@ -461,8 +460,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         organizationId: 'organization-2',
         answers: {
           'question-1': {
-            value:
-              'The Gerudo desert irrigation project must be started within the next three years.'
+            value: 'The Gerudo desert irrigation project must be started within the next three years.'
           },
           'question-2': {
             value: 5
@@ -713,8 +711,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         },
         answers: {
           'question-1': {
-            value:
-              'The Evil Party opposes any developments for the common good and promotes evil in all its forms.'
+            value: 'The Evil Party opposes any developments for the common good and promotes evil in all its forms.'
           },
           'question-6': {
             value: false

@@ -63,9 +63,7 @@
           }
         }
       },
-      "tags": [
-        "Nomination"
-      ],
+      "tags": ["Nomination"],
       "parameters": [
         {
           "name": "sort",
@@ -237,9 +235,7 @@
           }
         }
       },
-      "tags": [
-        "Nomination"
-      ],
+      "tags": ["Nomination"],
       "parameters": [
         {
           "name": "id",

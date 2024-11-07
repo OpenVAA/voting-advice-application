@@ -1,9 +1,9 @@
-import {dataProvider} from '$lib/api/getData';
+import { dataProvider } from '$lib/api/getData';
 
-export async function load({parent}) {
+export async function load({ parent }) {
   const locale = (await parent()).i18n.currentLocale;
-  const {getOpinionQuestions} = await dataProvider;
+  const { getOpinionQuestions } = await dataProvider;
   return {
-    opinionQuestions: getOpinionQuestions({locale})
+    opinionQuestions: getOpinionQuestions({ locale })
   };
 }

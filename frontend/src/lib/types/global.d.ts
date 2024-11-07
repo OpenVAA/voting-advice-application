@@ -67,10 +67,7 @@ declare global {
   /**
    * A reference to a question in `AppSettings`.
    */
-  type AppSettingsQuestionRef = Exclude<
-    AppSettings['results']['cardContents']['candidate'][number],
-    'submatches'
-  >;
+  type AppSettingsQuestionRef = Exclude<AppSettings['results']['cardContents']['candidate'][number], 'submatches'>;
 
   /**
    * A entity details' content type in `AppSettings`.

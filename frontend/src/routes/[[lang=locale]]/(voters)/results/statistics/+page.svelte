@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {candidateRankings, partyRankings, opinionQuestions, answeredQuestions} from '$lib/stores';
-  import {getLikertAnswer} from '$lib/utils/answers';
-  import {Expander} from '$lib/components/expander';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {Loading} from '$lib/components/loading';
-  import {LikertResponseButtons} from '$lib/components/questions';
+  import { Expander } from '$lib/components/expander';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { Loading } from '$lib/components/loading';
+  import { LikertResponseButtons } from '$lib/components/questions';
+  import { t } from '$lib/i18n';
+  import { answeredQuestions, candidateRankings, opinionQuestions, partyRankings } from '$lib/stores';
+  import { getLikertAnswer } from '$lib/utils/answers';
   import Layout from '../../../Layout.svelte';
 
   /** This is needed to ensure typing but will be no longer needed, when @openvaa/data model is implemented an Question object methods can be used to enforce typing. */
@@ -25,11 +25,11 @@
       .forEach((c) => {
         const answer = getLikertAnswer(c.entity, question)?.value;
         if (answer != null) {
-          distribution[answer] ??= {percentage: 0, count: 0};
+          distribution[answer] ??= { percentage: 0, count: 0 };
           distribution[answer].count += 1;
         }
       });
-    const total = Object.values(distribution).reduce((sum, {count}) => sum + count, 0);
+    const total = Object.values(distribution).reduce((sum, { count }) => sum + count, 0);
     if (total === 0) return distribution;
     for (const d of Object.values(distribution)) {
       d.percentage = (d.count / total) * 100;
@@ -60,7 +60,7 @@
   {:then [allCandidates, allParties, questions]}
     <div class="grid gap-lg">
       {#each questions as question}
-        {@const {id, text, type, values} = question}
+        {@const { id, text, type, values } = question}
         {@const voterAnswer = getVoterLikertAnswer(question)}
 
         <Expander title={text} variant="question">
@@ -71,12 +71,7 @@
               </div>
             {/if}
 
-            <LikertResponseButtons
-              aria-label={text}
-              name={id}
-              selectedKey={voterAnswer}
-              disabled
-              options={values} />
+            <LikertResponseButtons aria-label={text} name={id} selectedKey={voterAnswer} disabled options={values} />
 
             <div class="mt-xl grid gap-xl">
               {#each [undefined, ...allParties] as group}

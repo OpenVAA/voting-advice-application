@@ -63,9 +63,7 @@
           }
         }
       },
-      "tags": [
-        "App-setting"
-      ],
+      "tags": ["App-setting"],
       "parameters": [
         {
           "name": "sort",
@@ -237,9 +235,7 @@
           }
         }
       },
-      "tags": [
-        "App-setting"
-      ],
+      "tags": ["App-setting"],
       "parameters": [
         {
           "name": "id",

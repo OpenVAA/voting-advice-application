@@ -77,7 +77,7 @@ process.
 
 ### Workflows
 
-The project uses GitHub Actions to verify each commit passes unit tests, is able to 
+The project uses GitHub Actions to verify each commit passes unit tests, is able to
 build the app successfully and adheres to the [coding conventions used by the project](style-guides.md).
 If a commit fails the verification, please check your changes from the logs and fix changes before
 submitting a review request.

@@ -4,9 +4,7 @@ import type { CoreAnswer, Id, Image, MissingValue, QUESTION_TYPE } from '../../.
  * The type for an answer to a `Question`.
  * @typeParam TValue - The type of the answer value which we can't know ahead of time, but it should conform to the `AnswerValue` specific to the question. The actual value may also be of type `MissingValue` if the answer is missing.
  */
-export type Answer<TValue extends AnswerValue | unknown = unknown> = CoreAnswer<
-  TValue | MissingValue
-> & {
+export type Answer<TValue extends AnswerValue | unknown = unknown> = CoreAnswer<TValue | MissingValue> & {
   /**
    * An optional open answer accompanying the answer.
    */

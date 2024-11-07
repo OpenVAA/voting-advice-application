@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {Button} from '$lib/components/button';
+  import { Button } from '$lib/components/button';
+  import { t } from '$lib/i18n';
   export let id: string | undefined = undefined;
   export let password = '';
   export let autocomplete = '';
@@ -49,9 +49,7 @@ PasswordField is an input box for password that comes with a button to reveal an
   <Button
     type="button"
     variant="icon"
-    text={passwordRevealed
-      ? $t('components.passwordInput.hidePassword')
-      : $t('components.passwordInput.showPassword')}
+    text={passwordRevealed ? $t('components.passwordInput.hidePassword') : $t('components.passwordInput.showPassword')}
     class="!absolute inset-y-0 right-0"
     icon={passwordRevealed ? 'hide' : 'show'}
     on:click={toggleRevealed} />

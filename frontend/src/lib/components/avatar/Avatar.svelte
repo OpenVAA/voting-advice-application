@@ -1,8 +1,8 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {concatProps} from '$lib/utils/components';
-  import {abbreviate} from '$lib/utils/text/abbreviate';
-  import type {AvatarProps} from './Avatar.type';
+  import { t } from '$lib/i18n';
+  import { concatProps } from '$lib/utils/components';
+  import { abbreviate } from '$lib/utils/text/abbreviate';
+  import type { AvatarProps } from './Avatar.type';
 
   type $$Props = AvatarProps;
   export let name: $$Props['name'];
@@ -87,24 +87,14 @@ Display either a photo or a initials-based avatar for an entity.
 ```
 -->
 
-<figure {...concatProps($$restProps, {class: classes, style: styles})}>
+<figure {...concatProps($$restProps, { class: classes, style: styles })}>
   {#if image}
     {#if linkFullImage}
-      <a
-        href={image.url}
-        target="_blank"
-        title={$t('common.showFullImage')}
-        aria-label={$t('common.showFullImage')}>
-        <img
-          class="border-bg-300 h-full w-full border-md object-cover"
-          src={image.thumbnail.url}
-          alt={name} />
+      <a href={image.url} target="_blank" title={$t('common.showFullImage')} aria-label={$t('common.showFullImage')}>
+        <img class="border-bg-300 h-full w-full border-md object-cover" src={image.thumbnail.url} alt={name} />
       </a>
     {:else}
-      <img
-        class="border-bg-300 h-full w-full border-md object-cover"
-        src={image.thumbnail.url}
-        alt={name} />
+      <img class="border-bg-300 h-full w-full border-md object-cover" src={image.thumbnail.url} alt={name} />
     {/if}
   {:else}
     <div class={initialsClasses}>{initials}</div>

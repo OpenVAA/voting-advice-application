@@ -1,5 +1,5 @@
-import { type HasAnswers, type Id, type MatchableQuestion,MISSING_VALUE } from '@openvaa/core';
-import { type DistanceMetric,measureDistance } from '../distance';
+import { type HasAnswers, type Id, type MatchableQuestion, MISSING_VALUE } from '@openvaa/core';
+import { type DistanceMetric, measureDistance } from '../distance';
 import { Match, SubMatch } from '../match';
 import { createSubspace, MatchingSpace, Position } from '../space';
 import type { MissingValueImputationOptions } from '../missingValue';
@@ -42,10 +42,7 @@ export class MatchingAlgorithm {
    * @options Matching options, see. `MatchingOptions`.
    * @returns An array of Match objects
    */
-  match<
-    TTarget extends HasAnswers,
-    TGroup extends MatchableQuestionGroup = MatchableQuestionGroup
-  >({
+  match<TTarget extends HasAnswers, TGroup extends MatchableQuestionGroup = MatchableQuestionGroup>({
     questions,
     reference,
     targets,
@@ -84,9 +81,7 @@ export class MatchingAlgorithm {
     // Create possible matching subspaces for, e.g., category matches
     let subspaces = new Array<MatchingSpace>();
     if (options.questionGroups) {
-      subspaces = options.questionGroups.map((g) =>
-        createSubspace({ questions, subset: g.matchableQuestions })
-      );
+      subspaces = options.questionGroups.map((g) => createSubspace({ questions, subset: g.matchableQuestions }));
     }
     // Calculate matches
     const measurementOptions = {
@@ -108,9 +103,7 @@ export class MatchingAlgorithm {
         const subMatches = distances.subspaces.map((distance, k) => {
           const questionGroup = options.questionGroups?.[k];
           if (questionGroup == null)
-            throw new Error(
-              "Distances returned by measureDistance don't match the number of questionGroups!"
-            );
+            throw new Error("Distances returned by measureDistance don't match the number of questionGroups!");
           return new SubMatch({ distance, questionGroup });
         });
         matches.push(new Match({ distance: distances.global, entity, subMatches }));

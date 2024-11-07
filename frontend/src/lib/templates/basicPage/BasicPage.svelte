@@ -1,14 +1,14 @@
 <script lang="ts">
-  import {getContext} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {appType} from '$lib/stores';
-  import {BREAKPOINTS} from '$lib/utils/breakpoints';
-  import {concatProps} from '$lib/utils/components';
-  import {darkMode} from '$lib/utils/darkMode';
-  import {Page} from '../page';
-  import type {BasicPageProps} from './BasicPage.type';
-  import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import { getContext } from 'svelte';
+  import { LogoutButton } from '$lib/candidate/components/logoutButton';
+  import { t } from '$lib/i18n';
+  import { appType } from '$lib/stores';
+  import { BREAKPOINTS } from '$lib/utils/breakpoints';
+  import { concatProps } from '$lib/utils/components';
+  import { darkMode } from '$lib/utils/darkMode';
+  import { Page } from '../page';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { BasicPageProps } from './BasicPage.type';
 
   type $$Props = BasicPageProps;
 
@@ -124,9 +124,7 @@ Instead, you have to use a wrapper. Note that this will also always result in th
   <svelte:fragment slot="banner">
     <div
       class="vaa-basicPage-actions flex gap-0"
-      style:--headerIcon-color={hasVideo && screenWidth < BREAKPOINTS.sm
-        ? 'white'
-        : 'oklch(var(--p))'}>
+      style:--headerIcon-color={hasVideo && screenWidth < BREAKPOINTS.sm ? 'white' : 'oklch(var(--p))'}>
       {#if showLogoutButton}
         <LogoutButton variant="icon" />
       {/if}

@@ -25,15 +25,7 @@ export const COORDINATE = {
  * @param min The minimum of the value range
  * @param max The maximum of the value range
  */
-export function normalizeCoordinate({
-  value,
-  min,
-  max
-}: {
-  value: number;
-  min: number;
-  max: number;
-}): Coordinate {
+export function normalizeCoordinate({ value, min, max }: { value: number; min: number; max: number }): Coordinate {
   if (min > max || min == max) throw new Error('Range is invalid');
   if (value < min || value > max) throw new Error('Value is out of range');
   return COORDINATE.Min + COORDINATE.Extent * ((value - min) / (max - min));
@@ -58,7 +50,6 @@ export function assertCoordinate(value: Coordinate): value is Coordinate {
  * @throws If the value is not a `NormalizedDistance`
  */
 export function assertDistance(value: NormalizedDistance): value is NormalizedDistance {
-  if (isNaN(value) || value < 0 || value > COORDINATE.Extent)
-    throw new Error(`${value} is not a NormalizedDistance!`);
+  if (isNaN(value) || value < 0 || value > COORDINATE.Extent) throw new Error(`${value} is not a NormalizedDistance!`);
   return true;
 }

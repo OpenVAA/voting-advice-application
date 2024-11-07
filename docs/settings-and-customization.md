@@ -26,7 +26,7 @@ In case of dynamic settings:
 5. Add the necessary `populate` query params to the `getAppSettings` method in [strapiDataProvider.ts](../frontend/src/lib/api/dataProvider/strapi/strapiDataProvider.ts), because components need to be explicitly populated. Note that if the components have subcomponents, you need to explicitly populate all the way down.
 6. If the data type for the setting does not match the one in the `DynamicSettings` type:
    1. Edit the `getAppSettings` method in [strapiDataProvider.ts](../frontend/src/lib/api/dataProvider/strapi/strapiDataProvider.ts) so that it returns the setting in the correct format.
-   2. Edit the [loadDefaultAppSettings](backend/vaa-strapi/src/functions/loadDefaultAppSettings.ts) utility so that it converts the  default settings to a format suitable for Strapi.
+   2. Edit the [loadDefaultAppSettings](backend/vaa-strapi/src/functions/loadDefaultAppSettings.ts) utility so that it converts the default settings to a format suitable for Strapi.
 7. Repeat applicable steps for all other `DataProvider` implementations that support `getAppSettings`.
 
 # App Customization

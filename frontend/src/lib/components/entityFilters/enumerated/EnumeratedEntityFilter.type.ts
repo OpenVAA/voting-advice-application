@@ -1,4 +1,4 @@
-import type { ChoiceQuestionFilter,ObjectFilter } from '@openvaa/filters';
+import type { ChoiceQuestionFilter, ObjectFilter } from '@openvaa/filters';
 import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type EnumeratedEntityFilterProps = SvelteHTMLElements['form'] & {

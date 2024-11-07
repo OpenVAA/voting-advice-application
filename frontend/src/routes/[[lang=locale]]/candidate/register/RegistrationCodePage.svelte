@@ -1,25 +1,25 @@
 <script lang="ts">
-  import {getContext} from 'svelte';
-  import {goto} from '$app/navigation';
-  import {page} from '$app/stores';
-  import {t} from '$lib/i18n';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {FrontPage} from '$lib/templates/frontPage';
-  import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import {customization} from '$lib/stores';
-  import {darkMode} from '$lib/utils/darkMode';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { LogoutButton } from '$lib/candidate/components/logoutButton';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { t } from '$lib/i18n';
+  import { customization } from '$lib/stores';
+  import { FrontPage } from '$lib/templates/frontPage';
+  import { darkMode } from '$lib/utils/darkMode';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
 
   export let registrationCode = '';
   export let wrongCode = false;
 
-  const {user} = getContext<CandidateContext>('candidate');
+  const { user } = getContext<CandidateContext>('candidate');
 
-  const onRegistration = async () => {
-    await goto($getRoute({route: ROUTE.CandAppRegister, params: {registrationCode}}));
-  };
+  async function onRegistration() {
+    await goto($getRoute({ route: ROUTE.CandAppRegister, params: { registrationCode } }));
+  }
 </script>
 
 <!--

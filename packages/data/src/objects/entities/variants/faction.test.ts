@@ -1,11 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { ENTITY_TYPE, parseEntityTree, parseNominationTree } from '../../../internal';
-import {
-  contentsMatch,
-  getTestData,
-  getTestDataRoot,
-  parseNestedNominations
-} from '../../../testUtils';
+import { contentsMatch, getTestData, getTestDataRoot, parseNestedNominations } from '../../../testUtils';
 
 const root = getTestDataRoot();
 const data = getTestData();
@@ -28,10 +23,7 @@ test('Should have factions for all faction nominations', () => {
   nominationData.forEach((objData) => {
     if (objData.entityId) {
       // This will actually throw if the faction is not found
-      expect(
-        !!root.getEntity(ENTITY_TYPE.Faction, objData.entityId),
-        'To find explicit faction'
-      ).toBe(true);
+      expect(!!root.getEntity(ENTITY_TYPE.Faction, objData.entityId), 'To find explicit faction').toBe(true);
     } else {
       let found = 0;
       // Find one and only one implicit faction that matches the nomination, i.e. has the same electionId, constituencyId, parent organization and member candidates

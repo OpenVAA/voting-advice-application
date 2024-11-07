@@ -5,6 +5,7 @@
  */
 export function logDebugError(message: unknown, error: unknown = null) {
   if (import.meta.env.DEV) {
-    error ? console.error(message, error) : console.info(message);
+    if (error) console.error(message, error);
+    else console.info(message);
   }
 }

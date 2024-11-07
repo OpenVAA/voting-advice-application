@@ -1,9 +1,4 @@
-import {
-  COORDINATE,
-  type Coordinate,
-  isMissingValue,
-  type NormalizedDistance
-} from '@openvaa/core';
+import { COORDINATE, type Coordinate, isMissingValue, type NormalizedDistance } from '@openvaa/core';
 import { flatten, type MatchingSpace, type Position } from '../space';
 
 /**
@@ -151,10 +146,7 @@ export function absoluteKernel(a: Coordinate, b: Coordinate): number {
  */
 export function directionalKernel(a: Coordinate, b: Coordinate): number {
   // If the coordinates were bound at [min, max] the formula below would do:
-  return (
-    0.5 * COORDINATE.Extent -
-    (2 * (a - COORDINATE.Neutral) * (b - COORDINATE.Neutral)) / COORDINATE.Extent
-  );
+  return 0.5 * COORDINATE.Extent - (2 * (a - COORDINATE.Neutral) * (b - COORDINATE.Neutral)) / COORDINATE.Extent;
 }
 
 /**
@@ -222,8 +214,7 @@ export function distance({
   allowMissing?: boolean;
 }): NormalizedDistance {
   space ??= a.space;
-  if (!space.isCompatible(b.space))
-    throw new Error('The shapes of the parameters are incompatible.');
+  if (!space.isCompatible(b.space)) throw new Error('The shapes of the parameters are incompatible.');
   // TODO: In theory, we could precompute `aFlat` and `weights` for the entire run of the matching algorithm, but it seems it would not provide much of a speed benefit because the operations involved are simple
   // Flatten the positions for easier mapping
   const aFlat = flatten(a.coordinates);

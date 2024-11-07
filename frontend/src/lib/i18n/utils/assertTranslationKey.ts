@@ -1,4 +1,4 @@
-import type {TranslationKey} from '$types';
+import type { TranslationKey } from '$types';
 
 /**
  * Asserts blindly that key is `TranslationKey` for use with translation keys that are formed dynamically.

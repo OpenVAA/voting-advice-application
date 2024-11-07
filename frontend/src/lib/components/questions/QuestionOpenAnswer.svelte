@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {onMount} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {concatClass, getUUID} from '$lib/utils/components';
+  import { onMount } from 'svelte';
+  import { t } from '$lib/i18n';
+  import { concatClass, getUUID } from '$lib/utils/components';
 
   let el: HTMLDivElement;
   let collapsible = false;
@@ -44,10 +44,7 @@ Display a Candidate's or Party's open answer to a question.
   class:collapsible
   class:expanded
   style:--full-height={fullHeight}
-  {...concatClass(
-    $$restProps,
-    'relative grid max-h-[8rem] overflow-hidden mt-16 rounded-md bg-base-200 text-center'
-  )}>
+  {...concatClass($$restProps, 'relative grid max-h-[8rem] overflow-hidden mt-16 rounded-md bg-base-200 text-center')}>
   {#if collapsible}
     <button
       on:click={() => {
@@ -58,8 +55,7 @@ Display a Candidate's or Party's open answer to a question.
       <span class="opacity-0">{$t('common.expandOrCollapse')}</span>
     </button>
   {/if}
-  <span
-    class="col-start-1 row-start-1 m-md before:content-[open-quote] after:content-[close-quote]">
+  <span class="col-start-1 row-start-1 m-md before:content-[open-quote] after:content-[close-quote]">
     <slot />
   </span>
 </div>

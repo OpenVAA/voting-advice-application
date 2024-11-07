@@ -22,7 +22,7 @@ export function attemptFocus(el: Element): boolean {
   if (!isFocusable(el)) return false;
   try {
     el.focus();
-  } catch (e) {
+  } catch {
     return false;
   }
   return document.activeElement === el;
@@ -33,7 +33,7 @@ export function attemptFocus(el: Element): boolean {
  * @param el Any HTML element
  * @returns true if the element is focusable
  */
-export function isFocusable(el: Element): el is Element & {focus: () => void} {
+export function isFocusable(el: Element): el is Element & { focus: () => void } {
   if ('tabindex' in el && (el.tabindex as number) < 0) return false;
   if ('ariaHidden' in el && el.ariaHidden) return false;
   if ('disabled' in el && el.disabled) return false;

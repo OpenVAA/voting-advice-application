@@ -14,16 +14,8 @@ describe('categoricalQuestion', () => {
   test('multiple dimensions', () => {
     const values = [{ id: 'red' }, { id: 'blue' }, { id: 'green' }];
     const question = new CategoricalQuestion({ id: 'q1', values });
-    expect(question.normalizeValue('red')).toEqual([
-      COORDINATE.Max,
-      COORDINATE.Min,
-      COORDINATE.Min
-    ]);
-    expect(question.normalizeValue('green')).toEqual([
-      COORDINATE.Min,
-      COORDINATE.Min,
-      COORDINATE.Max
-    ]);
+    expect(question.normalizeValue('red')).toEqual([COORDINATE.Max, COORDINATE.Min, COORDINATE.Min]);
+    expect(question.normalizeValue('green')).toEqual([COORDINATE.Min, COORDINATE.Min, COORDINATE.Max]);
     expect(question.normalizeValue(undefined)).toEqual(values.map(() => MISSING_VALUE));
   });
 });

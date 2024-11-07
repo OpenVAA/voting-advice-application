@@ -5,9 +5,7 @@ import { getTestData, getTestDataRoot } from '../../../testUtils';
 const root = getTestDataRoot();
 const data = getTestData();
 const entityData = parseEntityTree(data.entities).filter((d) => d.type === ENTITY_TYPE.Alliance);
-const nominationData = parseNominationTree(data.nominations).filter(
-  (d) => d.entityType === ENTITY_TYPE.Alliance
-);
+const nominationData = parseNominationTree(data.nominations).filter((d) => d.entityType === ENTITY_TYPE.Alliance);
 
 test('Should have all explicit alliances and their data', () => {
   entityData.forEach((objData) => {

@@ -1,12 +1,12 @@
 'use strict';
-import {Strapi} from '@strapi/strapi';
-import {generateMockDataOnInitialise, generateMockDataOnRestart, loadDataFolder} from './constants';
-import {generateMockData} from './functions/generateMockData';
-import {loadData} from './functions/loadData';
-import {setDefaultApiPermissions} from './functions/setDefaultApiPermissions';
-import {loadDefaultAppSettings} from './functions/loadDefaultAppSettings';
-import {loadDynamicTranslations} from './functions/loadDynamicTranslations';
-import {loadDefaultData} from './functions/loadDefaultData';
+import { Strapi } from '@strapi/strapi';
+import { generateMockDataOnInitialise, generateMockDataOnRestart, loadDataFolder } from './constants';
+import { generateMockData } from './functions/generateMockData';
+import { loadData } from './functions/loadData';
+import { loadDefaultAppSettings } from './functions/loadDefaultAppSettings';
+import { loadDefaultData } from './functions/loadDefaultData';
+import { loadDynamicTranslations } from './functions/loadDynamicTranslations';
+import { setDefaultApiPermissions } from './functions/setDefaultApiPermissions';
 
 module.exports = {
   /**
@@ -16,7 +16,7 @@ module.exports = {
    * This gives you an opportunity to extend code.
    */
   // eslint-disable-next-line no-empty-pattern
-  register({}: {strapi: Strapi}) {
+  register({}: { strapi: Strapi }) {
     // ...
   },
 

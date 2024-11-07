@@ -34,29 +34,26 @@ function _getRoute(options: {
   locale?: string | 'none';
   params?: Record<string, string>;
 }): string;
-function _getRoute(options: {locale: string}): string;
+function _getRoute(options: { locale: string }): string;
 function _getRoute(
   options:
     | Route
-    | {route: Route; id?: string; locale?: string; params?: Record<string, string>}
-    | {locale: string; id?: never; route?: never; params?: never}
+    | { route: Route; id?: string; locale?: string; params?: Record<string, string> }
+    | { locale: string; id?: never; route?: never; params?: never }
 ): string {
   // Shorthand function call
-  if (typeof options === 'string') options = {route: options};
+  if (typeof options === 'string') options = { route: options };
 
   let locale = options.locale;
-  const {route, params} = options;
-  let {id} = options;
+  const { route, params } = options;
+  let { id } = options;
 
   // Not route defined, so we just swap the locale
   if (locale && route == null) {
     const $page = get(page);
     const url = $page.url.pathname;
     const currentLocale = $page.params.lang;
-    return (
-      url.replace(RegExp(`^/${currentLocale}`), locale === 'none' ? '' : `/${locale}`) +
-      $page.url.search
-    );
+    return url.replace(RegExp(`^/${currentLocale}`), locale === 'none' ? '' : `/${locale}`) + $page.url.search;
   } else if (route == null) {
     throw error(500, 'Either a route or a locale must be specified');
   }

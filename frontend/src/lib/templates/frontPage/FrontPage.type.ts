@@ -1,3 +1,3 @@
-import type {PageProps} from '../page';
+import type { PageProps } from '../page';
 
 export type FrontPageProps = PageProps;

@@ -9,7 +9,8 @@ import {
   PublicAllianceNominationData,
   PublicCandidateNominationData,
   PublicFactionNominationData,
-  PublicOrganizationNominationData} from '../../../internal';
+  PublicOrganizationNominationData
+} from '../../../internal';
 
 /**
  * Nomination variants
@@ -64,8 +65,7 @@ export type NominationVariantPublicData = {
 /**
  * Any concrete Nominations’ public data.
  */
-export type AnyNominationVariantPublicData =
-  NominationVariantPublicData[keyof NominationVariantPublicData];
+export type AnyNominationVariantPublicData = NominationVariantPublicData[keyof NominationVariantPublicData];
 
 /**
  * An alternative data structure for `NominationData` with the `electionId` and `constituencyId` specified hierarchically as keys.
@@ -90,9 +90,7 @@ type WithoutElAndCoId<TType extends EntityType> = Omit<
 /**
  * Parse a `NominationVariantTree` into an array of `NominationVariantPublicData`.
  */
-export function parseNominationTree(
-  tree: NominationVariantTree
-): Array<AnyNominationVariantPublicData> {
+export function parseNominationTree(tree: NominationVariantTree): Array<AnyNominationVariantPublicData> {
   const nominations = new Array<AnyNominationVariantPublicData>();
   for (const electionId in tree) {
     for (const constituencyId in tree[electionId]) {

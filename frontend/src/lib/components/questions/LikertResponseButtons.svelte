@@ -1,12 +1,9 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {createEventDispatcher} from 'svelte';
-  import {logDebugError} from '$lib/utils/logger';
-  import {onKeyboardFocusOut} from '$lib/utils/onKeyboardFocusOut';
-  import type {
-    LikertResponseButtonsEventDetail,
-    LikertResponseButtonsProps
-  } from './LikertResponseButtons.type';
+  import { createEventDispatcher } from 'svelte';
+  import { t } from '$lib/i18n';
+  import { logDebugError } from '$lib/utils/logger';
+  import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
+  import type { LikertResponseButtonsEventDetail, LikertResponseButtonsProps } from './LikertResponseButtons.type';
 
   type $$Props = LikertResponseButtonsProps;
 
@@ -21,9 +18,7 @@
   export let variant: $$Props['variant'] = 'default';
 
   if (mode === 'display' && entityKey && !entityLabel)
-    logDebugError(
-      'You should supply an entityLabel when mode is "display" and entityKey is provided'
-    );
+    logDebugError('You should supply an entityLabel when mode is "display" and entityKey is provided');
 
   /** Holds the currently selected value and is initialized as `selectedKey` */
   let selected: AnswerOption['key'] | null | undefined;
@@ -73,10 +68,7 @@
     let keyboard: boolean;
     if ('pointerType' in event) {
       // `pointerType` is the main way of finding out whether the user is using a keyboard
-      keyboard =
-        event.pointerType !== 'mouse' &&
-        event.pointerType !== 'pen' &&
-        event.pointerType !== 'touch';
+      keyboard = event.pointerType !== 'mouse' && event.pointerType !== 'pen' && event.pointerType !== 'touch';
     } else {
       // Safari and Firefox, however, use the old `MouseEvent` type instead, which does not include `pointerType`. In them, we have to check the `detail` property.
       keyboard = event.detail === 0;
@@ -121,7 +113,7 @@
     dispatch(
       // Check whether the selected value has changed or not
       selectedKey != null && value == selectedKey ? 'reselect' : 'change',
-      {id: name, value} as LikertResponseButtonsEventDetail
+      { id: name, value } as LikertResponseButtonsEventDetail
     );
   }
 </script>
@@ -242,10 +234,7 @@ Keyboard navigation works in the following way:
 
       <!-- The text label. If we are displaying answers, we only show the label when it's in use to reduce clutter. Due to Aria concerns we, however, need to always show it to screenreaders. -->
       <div
-        class:sr-only={!(
-          mode === 'answer' ||
-          (mode === 'display' && (selectedKey == key || entityKey == key))
-        )}
+        class:sr-only={!(mode === 'answer' || (mode === 'display' && (selectedKey == key || entityKey == key)))}
         class={vertical ? 'text-start' : 'small-label text-center'}>
         {label}
       </div>

@@ -1,18 +1,18 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {settings} from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {DataConsent} from '$lib/components/dataConsent';
-  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
+  import { onDestroy } from 'svelte';
+  import { Button } from '$lib/components/button';
+  import { DataConsent } from '$lib/components/dataConsent';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { t } from '$lib/i18n';
+  import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
+  import { settings } from '$lib/stores';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
   import Layout from '../../Layout.svelte';
-  import {onDestroy} from 'svelte';
-  import {getLayoutContext} from '$lib/contexts/layout';
 
-  const {topBarSettings} = getLayoutContext(onDestroy);
+  const { topBarSettings } = getLayoutContext(onDestroy);
   topBarSettings.push({
     actions: {
       return: 'show',
@@ -42,9 +42,7 @@
     {#if $settings.analytics?.platform}
       <h2>{$t('privacy.analytics.title')}</h2>
       <div>
-        {@html sanitizeHtml(
-          $t(assertTranslationKey(`privacy.analyticsContent.${$settings.analytics.platform.name}`))
-        )}
+        {@html sanitizeHtml($t(assertTranslationKey(`privacy.analyticsContent.${$settings.analytics.platform.name}`)))}
       </div>
     {/if}
     <h2>{$t('privacy.cookies.title')}</h2>
@@ -57,11 +55,7 @@
     {/if}
   </div>
 
-  <Button
-    slot="primaryActions"
-    variant="main"
-    href={$getRoute(ROUTE.Home)}
-    text={$t('common.returnHome')} />
+  <Button slot="primaryActions" variant="main" href={$getRoute(ROUTE.Home)} text={$t('common.returnHome')} />
 </Layout>
 
 <style lang="postcss">

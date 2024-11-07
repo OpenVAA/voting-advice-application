@@ -1,5 +1,5 @@
-import {type DynamicSettings, dynamicSettings, QuestionInCardContent} from '@openvaa/app-shared';
-import {API} from './api';
+import { type DynamicSettings, dynamicSettings, QuestionInCardContent } from '@openvaa/app-shared';
+import { API } from './api';
 
 /**
  * Gets `results.cardContents` from `dynamicSettings.ts` and returns them in format used in Strapi

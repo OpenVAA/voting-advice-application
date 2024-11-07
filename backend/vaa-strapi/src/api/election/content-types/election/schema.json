@@ -24,11 +24,7 @@
     },
     "electionType": {
       "type": "enumeration",
-      "enum": [
-        "local",
-        "presidential",
-        "congress"
-      ],
+      "enum": ["local", "presidential", "congress"],
       "pluginOptions": {}
     },
     "constituencies": {

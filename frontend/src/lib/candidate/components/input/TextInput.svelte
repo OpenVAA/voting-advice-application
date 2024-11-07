@@ -1,7 +1,7 @@
 <script lang="ts">
   import MultilangTextInput from '$lib/candidate/components/textArea/MultilangTextInput.svelte';
-  import {locales} from '$lib/i18n';
-  import type {InputFieldProps} from './InputField.type';
+  import { locales } from '$lib/i18n';
+  import type { InputFieldProps } from './InputField.type';
 
   type $$Props = InputFieldProps<LocalizedString>;
 
@@ -37,7 +37,7 @@
 
   $: {
     if (multilangText) {
-      onChange?.({questionId, value: multilangText});
+      onChange?.({ questionId, value: multilangText });
     }
   }
 </script>

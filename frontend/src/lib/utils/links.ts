@@ -1,6 +1,6 @@
-import {t} from '$lib/i18n';
-import {logDebugError} from '$lib/utils/logger';
-import {ucFirst} from '$lib/utils/text/ucFirst';
+import { t } from '$lib/i18n';
+import { logDebugError } from '$lib/utils/logger';
+import { ucFirst } from '$lib/utils/text/ucFirst';
 
 /**
  * Checks if a URL is absolute.
@@ -18,7 +18,7 @@ export function checkUrl(url: string): string | undefined {
   try {
     new URL(url);
     return url;
-  } catch (e) {
+  } catch {
     logDebugError(`Invalid url ${url}`);
     return undefined;
   }
@@ -31,12 +31,7 @@ export function checkUrl(url: string): string | undefined {
  * @param defaultText The text to display if the url is longer than `maxLength`. @default t.get('common.website')
  * @param errorText The text to display if the url is invalid. @default t.get('common.missingAnswer')
  */
-export function getLinkText(
-  url: string,
-  maxLength = 30,
-  defaultText?: string,
-  errorText?: string
-): string {
+export function getLinkText(url: string, maxLength = 30, defaultText?: string, errorText?: string): string {
   try {
     const host = new URL(url)?.host;
     if (!host) throw new Error();
@@ -45,7 +40,7 @@ export function getLinkText(
     if (!text) throw new Error();
     if (text.length > maxLength) return defaultText ?? t.get('common.website');
     return ucFirst(text);
-  } catch (e) {
+  } catch {
     logDebugError(`Invalid url ${url}`);
     return errorText ?? t.get('common.missingAnswer');
   }

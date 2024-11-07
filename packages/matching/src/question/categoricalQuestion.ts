@@ -1,9 +1,4 @@
-import {
-  COORDINATE,
-  type CoordinateOrMissing,
-  type Id,
-  type MatchableQuestion,
-  MISSING_VALUE} from '@openvaa/core';
+import { COORDINATE, type CoordinateOrMissing, type Id, type MatchableQuestion, MISSING_VALUE } from '@openvaa/core';
 
 interface MultipleChoiceValue {
   id: Id;
@@ -48,15 +43,12 @@ export class CategoricalQuestion implements MatchableQuestion {
    * @returns The value in the signed normalized range (e.g. [-.5, .5])
    */
   normalizeValue(value: unknown): CoordinateOrMissing | Array<CoordinateOrMissing> {
-    if (value == null)
-      return this.values.length === 2 ? MISSING_VALUE : this.values.map(() => MISSING_VALUE);
-    if (!(typeof value === 'string'))
-      throw new Error(`Value must be a string! Got ${typeof value}`);
+    if (value == null) return this.values.length === 2 ? MISSING_VALUE : this.values.map(() => MISSING_VALUE);
+    if (!(typeof value === 'string')) throw new Error(`Value must be a string! Got ${typeof value}`);
     const choice = this.values.find((v) => v.id === value);
     if (choice == null) throw new Error(`Choice with id ${value} not found in question.`);
     // The mathematical model we use treats categorical questions as a combination of `n` binary choices or dimensions where `n` is the number of choices, unless `n` is 2, in which case a single dimension suffices.
-    if (this.values.length === 2)
-      return this.values.indexOf(choice) === 0 ? COORDINATE.Min : COORDINATE.Max;
+    if (this.values.length === 2) return this.values.indexOf(choice) === 0 ? COORDINATE.Min : COORDINATE.Max;
     // Otherwise, create subdmensions where we assign the max value to the selected choice and min to others
     return this.values.map((v) => (v === choice ? COORDINATE.Max : COORDINATE.Min));
   }

@@ -1,5 +1,5 @@
-import {defaultLocale, locale as currentLocale} from '../';
-import {matchLocale} from './matchLocale';
+import { matchLocale } from './matchLocale';
+import { defaultLocale, locale as currentLocale } from '../';
 
 /**
  * Return the correct string for the `locale` using soft-matching from the supplied `LocalizedString` object.
@@ -7,13 +7,8 @@ import {matchLocale} from './matchLocale';
  * @param locale The target locale
  * @returns The translalated string or ''
  */
-export function translate(
-  strings: LocalizedString | string | undefined | null,
-  locale?: string
-): string {
-  return typeof strings === 'string'
-    ? strings
-    : ((translateObject(strings, locale) as string) ?? '');
+export function translate(strings: LocalizedString | string | undefined | null, locale?: string): string {
+  return typeof strings === 'string' ? strings : ((translateObject(strings, locale) as string) ?? '');
 }
 
 /**
@@ -35,16 +30,12 @@ export function translateObject<
     const match = matchLocale(locale, Object.keys(obj));
     key = match ?? defaultLocale;
   }
-  return (obj[key] ?? obj[defaultLocale] ?? Object.values(obj)[0] ?? undefined) as
-    | TValue
-    | undefined;
+  return (obj[key] ?? obj[defaultLocale] ?? Object.values(obj)[0] ?? undefined) as TValue | undefined;
 }
 
 /**
  * Check if an object is a valid localized object and is not empty.
  */
 export function isTranslation(obj: unknown): obj is Record<string, unknown> {
-  return (
-    obj != null && typeof obj === 'object' && !Array.isArray(obj) && Object.keys(obj).length > 0
-  );
+  return obj != null && typeof obj === 'object' && !Array.isArray(obj) && Object.keys(obj).length > 0;
 }

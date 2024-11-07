@@ -10,7 +10,8 @@ import {
   MISSING_VALUE,
   type MissingValue,
   Question,
-  validateChoices} from '../../../internal';
+  validateChoices
+} from '../../../internal';
 
 /**
  * An abstract base class for all questions which have enumerated answering choices. Non-abstract subclasses should inherit from either of the two subclasses `SingleChoiceQuestion` or `MultipleChoiceQuestion`.

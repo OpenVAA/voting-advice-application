@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {error} from '@sveltejs/kit';
-  import {concatClass} from '$lib/utils/components';
-  import type {EntityCardActionProps} from './EntityCardAction.type';
+  import { error } from '@sveltejs/kit';
+  import { concatClass } from '$lib/utils/components';
+  import type { EntityCardActionProps } from './EntityCardAction.type';
 
   type $$Props = EntityCardActionProps;
 
@@ -34,10 +34,7 @@ A simple utility component for possibly wrapping content in an action handler.
 {#if action == null}
   <slot />
 {:else if typeof action === 'function'}
-  <button
-    on:click={action}
-    class:hover-shaded={shadeOnHover}
-    {...concatClass($$restProps, '!text-neutral')}>
+  <button on:click={action} class:hover-shaded={shadeOnHover} {...concatClass($$restProps, '!text-neutral')}>
     <slot />
   </button>
 {:else if typeof action === 'string'}

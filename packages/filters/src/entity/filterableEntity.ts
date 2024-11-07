@@ -20,15 +20,12 @@ export interface WrappedEntity<TEntity extends FilterableEntity = FilterableEnti
 /**
  * Either a wrapped or a naked entity.
  */
-export type MaybeWrapped<TEntity extends FilterableEntity = FilterableEntity> =
-  | TEntity
-  | WrappedEntity<TEntity>;
+export type MaybeWrapped<TEntity extends FilterableEntity = FilterableEntity> = TEntity | WrappedEntity<TEntity>;
 
 /**
  * Extract the naked entity from a possibly wrapped entity.
  */
-export type ExtractEntity<TEntity extends MaybeWrapped> =
-  TEntity extends WrappedEntity<infer E> ? E : TEntity;
+export type ExtractEntity<TEntity extends MaybeWrapped> = TEntity extends WrappedEntity<infer E> ? E : TEntity;
 
 /**
  * Return the entity for a wrapped entity or the entity itself if it's not wrapped.
@@ -36,7 +33,5 @@ export type ExtractEntity<TEntity extends MaybeWrapped> =
  * @returns The entity.
  */
 export function getEntity<TEntity extends MaybeWrapped>(target: TEntity) {
-  return (
-    WRAPPED_ENTITY_KEY in target ? target[WRAPPED_ENTITY_KEY] : target
-  ) as ExtractEntity<TEntity>;
+  return (WRAPPED_ENTITY_KEY in target ? target[WRAPPED_ENTITY_KEY] : target) as ExtractEntity<TEntity>;
 }

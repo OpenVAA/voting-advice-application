@@ -1,6 +1,6 @@
-import { COORDINATE,MISSING_VALUE } from '@openvaa/core';
+import { COORDINATE, MISSING_VALUE } from '@openvaa/core';
 import { describe, expect, test } from 'vitest';
-import { createCandidates,createMatchesAndEntities, createVoter } from './utils';
+import { createCandidates, createMatchesAndEntities, createVoter } from './utils';
 import { MatchingAlgorithm } from '../src/algorithms';
 import { DISTANCE_METRIC } from '../src/distance';
 import { MISSING_VALUE_METHOD } from '../src/missingValue';
@@ -27,12 +27,9 @@ describe('matchingAlgorithm', () => {
       DISTANCE_METRIC.Manhattan,
       MISSING_VALUE_METHOD.Neutral
     );
+    expect(algorithm.projectToNormalizedSpace({ questions, targets: candidates })[0].coordinates).toEqual(coords);
     expect(
-      algorithm.projectToNormalizedSpace({ questions, targets: candidates })[0].coordinates
-    ).toEqual(coords);
-    expect(
-      algorithm.projectToNormalizedSpace({ questions: questions.slice(1), targets: candidates })[0]
-        .coordinates,
+      algorithm.projectToNormalizedSpace({ questions: questions.slice(1), targets: candidates })[0].coordinates,
       'Subset of answers based on question list'
     ).toMatchObject(coords.slice(1));
   });
@@ -63,9 +60,7 @@ describe('matchingAlgorithm', () => {
       MISSING_VALUE_METHOD.Neutral
     );
     const expected = (half + 0) / 2; // [3-5, 5-5]
-    expect(
-      algorithm.match({ questions, reference: voter, targets: candidates })[0].distance
-    ).toBeCloseTo(expected);
+    expect(algorithm.match({ questions, reference: voter, targets: candidates })[0].distance).toBeCloseTo(expected);
   });
 
   describe('match with missing values', () => {
@@ -81,9 +76,7 @@ describe('matchingAlgorithm', () => {
         MISSING_VALUE_METHOD.Neutral
       );
       const expected = (half + 0 + half) / 3; // [1-3, 3-3, 5-3]
-      expect(
-        algorithm.match({ questions, reference: voter, targets: candidates })[0].distance
-      ).toBeCloseTo(expected);
+      expect(algorithm.match({ questions, reference: voter, targets: candidates })[0].distance).toBeCloseTo(expected);
     });
     test('MISSING_VALUE_METHOD.RelativeMaximum', () => {
       const { questions, voter, candidates, algorithm } = createMatchesAndEntities(
@@ -94,9 +87,7 @@ describe('matchingAlgorithm', () => {
         MISSING_VALUE_METHOD.RelativeMaximum
       );
       const expected = (full + half + full) / 3; // [1-5, 3-5, 5-1]
-      expect(
-        algorithm.match({ questions, reference: voter, targets: candidates })[0].distance
-      ).toBeCloseTo(expected);
+      expect(algorithm.match({ questions, reference: voter, targets: candidates })[0].distance).toBeCloseTo(expected);
     });
   });
 
@@ -118,9 +109,7 @@ describe('matchingAlgorithm', () => {
         0.625 * full + // 4-2
         half) / // 2-3
       questions.length;
-    expect(
-      algorithm.match({ questions, reference: voter, targets: candidates })[0].distance
-    ).toBeCloseTo(expected);
+    expect(algorithm.match({ questions, reference: voter, targets: candidates })[0].distance).toBeCloseTo(expected);
   });
 
   test('categorical questions', () => {
@@ -216,19 +205,11 @@ describe('matchingAlgorithm', () => {
         options: { questionGroups }
       })[0];
       expect(match.distance, 'to have global distance').toBeCloseTo(fullDist);
-      expect(match.subMatches?.length, 'to have submatches for all subgroups').toBe(
-        questionGroups.length
-      );
-      expect(match.subMatches?.[0].distance, 'to have subgroup a distance').toBeCloseTo(
-        subsetADist
-      );
+      expect(match.subMatches?.length, 'to have submatches for all subgroups').toBe(questionGroups.length);
+      expect(match.subMatches?.[0].distance, 'to have subgroup a distance').toBeCloseTo(subsetADist);
       expect(match.subMatches?.[0].questionGroup, 'to contain reference to subgroup').toBe(subsetA);
-      expect(match.subMatches?.[1].distance, 'to have subgroup b distance').toBeCloseTo(
-        subsetBDist
-      );
-      expect(match.subMatches?.[2].distance, 'to have subgroup c distance').toBeCloseTo(
-        subsetCDist
-      );
+      expect(match.subMatches?.[1].distance, 'to have subgroup b distance').toBeCloseTo(subsetBDist);
+      expect(match.subMatches?.[2].distance, 'to have subgroup c distance').toBeCloseTo(subsetCDist);
     });
     test('subMatch for questions the voter has not answered should be zero', () => {
       const likertScale = 5;

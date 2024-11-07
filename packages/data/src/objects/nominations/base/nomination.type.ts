@@ -1,9 +1,7 @@
 import type { DataObjectData, EntityType, Id } from '../../../internal';
 
-export interface NominationData<
-  TEntity extends EntityType = EntityType,
-  TParent extends EntityType | never = never
-> extends DataObjectData {
+export interface NominationData<TEntity extends EntityType = EntityType, TParent extends EntityType | never = never>
+  extends DataObjectData {
   // From HasId
   // - id: Id;
   //

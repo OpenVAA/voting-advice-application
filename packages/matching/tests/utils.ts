@@ -1,9 +1,4 @@
-import {
-  type AnswerDict,
-  type HasAnswers,
-  type Id,
-  type MatchableQuestion,
-  MISSING_VALUE} from '@openvaa/core';
+import { type AnswerDict, type HasAnswers, type Id, type MatchableQuestion, MISSING_VALUE } from '@openvaa/core';
 import { MatchingAlgorithm } from '../src/algorithms';
 import { OrdinalQuestion } from '../src/question';
 import type { DistanceMetric } from '../src/distance';
@@ -41,9 +36,7 @@ export function createMatchesAndEntities(
   const questions = createQuestions(numQuestions, likertScale);
   if ([voterAnswers, ...candidateAnswers].some((a) => a.length !== numQuestions))
     throw new Error('All answers must have the same length as the Likert scale.');
-  if (
-    [voterAnswers, ...candidateAnswers].flat().some((a) => a != null && (a < 1 || a > likertScale))
-  )
+  if ([voterAnswers, ...candidateAnswers].flat().some((a) => a != null && (a < 1 || a > likertScale)))
     throw new Error('All answers must have be within [0, Likert scale).');
   // Match answer ids
   function answers(answers: Array<number | undefined>): Array<Id | undefined> {
@@ -98,10 +91,7 @@ export class MockQuestion implements MatchableQuestion {
  * @param answerValues The answer values
  * @returns An answer dict
  */
-export function createAnswers(
-  questions: Array<MatchableQuestion>,
-  answerValues: Array<Id | undefined>
-): AnswerDict {
+export function createAnswers(questions: Array<MatchableQuestion>, answerValues: Array<Id | undefined>): AnswerDict {
   const answers = {} as AnswerDict;
   for (let i = 0; i < questions.length; i++) {
     answers[questions[i].id] = { value: answerValues[i] };
@@ -116,9 +106,7 @@ export function createAnswers(
  * @returns Array of questions
  */
 export function createQuestions(numQuestions: number, scale: number): Array<OrdinalQuestion> {
-  return Array.from({ length: numQuestions }, (_, i) =>
-    OrdinalQuestion.fromLikert({ id: `qst${i}`, scale })
-  );
+  return Array.from({ length: numQuestions }, (_, i) => OrdinalQuestion.fromLikert({ id: `qst${i}`, scale }));
 }
 
 /**
@@ -140,9 +128,6 @@ export function createCandidates(
  * @param voterAnswers Array of voter answers
  * @returns A candidate
  */
-export function createVoter(
-  questions: Array<MatchableQuestion>,
-  voterAnswers: Array<Id | undefined>
-): Candidate {
+export function createVoter(questions: Array<MatchableQuestion>, voterAnswers: Array<Id | undefined>): Candidate {
   return new Candidate(createAnswers(questions, voterAnswers));
 }

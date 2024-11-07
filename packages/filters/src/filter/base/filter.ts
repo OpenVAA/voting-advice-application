@@ -1,11 +1,7 @@
 import { castValue } from './castValue';
-import {
-  type ExtractEntity,
-  getEntity,
-  isEntityWithAnswers,
-  type MaybeWrapped} from '../../entity';
-import { type MaybeMissing,MISSING_VALUE } from '../../missingValue';
-import { copyRules, matchRules, type Rule,ruleIsActive, type Rules } from '../rules';
+import { type ExtractEntity, getEntity, isEntityWithAnswers, type MaybeWrapped } from '../../entity';
+import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
+import { copyRules, matchRules, type Rule, ruleIsActive, type Rules } from '../rules';
 import type { FilterOptions } from './filter.type';
 
 /**
@@ -108,9 +104,7 @@ export abstract class Filter<TEntity extends MaybeWrapped, TValue> {
    * True if the rules differ from the default _rules, i.e. the filter is active.
    */
   get active() {
-    return (
-      Object.keys(this._rules).length > 0 && Object.values(this._rules).some((r) => ruleIsActive(r))
-    );
+    return Object.keys(this._rules).length > 0 && Object.values(this._rules).some((r) => ruleIsActive(r));
   }
 
   /**

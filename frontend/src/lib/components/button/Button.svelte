@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {concatClass} from '$lib/utils/components';
-  import {Icon} from '$lib/components/icon';
-  import type {ButtonProps} from './Button.type';
+  import { Icon } from '$lib/components/icon';
+  import { concatClass } from '$lib/utils/components';
+  import type { ButtonProps } from './Button.type';
 
   type $$Props = ButtonProps;
 
@@ -14,10 +14,7 @@
   export let disabled: $$Props['disabled'] = undefined;
 
   // Check iconPos
-  if (
-    (variant === 'main' || variant === 'responsive-icon') &&
-    (iconPos === 'top' || iconPos === 'bottom')
-  ) {
+  if ((variant === 'main' || variant === 'responsive-icon') && (iconPos === 'top' || iconPos === 'bottom')) {
     iconPos = 'right';
   }
 
@@ -27,8 +24,7 @@
 
   $: {
     // 1. Base classes
-    classes =
-      'btn relative flex flex-nowrap min-h-touch min-w-touch h-auto flex items-center gap-y-6 gap-x-6';
+    classes = 'btn relative flex flex-nowrap min-h-touch min-w-touch h-auto flex items-center gap-y-6 gap-x-6';
     labelClass = 'vaa-button-label first-letter:uppercase';
 
     // 2. Variant-defined classes

@@ -27,26 +27,20 @@ export class Organization
    * The `Faction`s that this `Organization` has to via `OrganizationNomination`s.
    */
   get factions(): Array<Faction> {
-    return removeDuplicates(
-      this.nominations.map((n) => n.factionNominations.map((fn) => fn.entity)).flat()
-    );
+    return removeDuplicates(this.nominations.map((n) => n.factionNominations.map((fn) => fn.entity)).flat());
   }
 
   /**
    * The member `Candidate`s that belong to the `Organization`. Note that these may be different from `nominatedCandidates`s.
    */
   get memberCandidates(): Array<Candidate> {
-    return (
-      this.root.candidates?.filter((c) => `${c.data.organizationId}` === `${this.data.id}`) || []
-    );
+    return this.root.candidates?.filter((c) => `${c.data.organizationId}` === `${this.data.id}`) || [];
   }
 
   /**
    * The `Candidate`s that the `Organization` has nominated. Note that these may be different from `memberCandidates`.
    */
   get nominatedCandidates(): Array<Candidate> {
-    return removeDuplicates(
-      this.nominations.map((n) => n.candidateNominations.map((cn) => cn.entity)).flat()
-    );
+    return removeDuplicates(this.nominations.map((n) => n.candidateNominations.map((cn) => cn.entity)).flat());
   }
 }

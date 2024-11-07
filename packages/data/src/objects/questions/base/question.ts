@@ -9,7 +9,8 @@ import {
   QuestionAndCategoryBase,
   type QuestionCategory,
   type QuestionData,
-  type QuestionType} from '../../../internal';
+  type QuestionType
+} from '../../../internal';
 
 /**
  * An abstract base class for all questions. The non-abstract subclasses are contained in the `variants` directory. They implement the `_ensureValue` and `normalizeValue` methods and may override the `normalizedDimensions` and `isMatchable` getters. They may also accept more data properties.
@@ -88,9 +89,7 @@ export abstract class Question<
    * @param value - A canonical or missing value for this question.
    * @returns The normalized value or an array of normalized values, conforming to `CoordinateOrMissing`
    */
-  normalizeValue(
-    value: AnswerValue[TType] | MissingValue
-  ): CoordinateOrMissing | Array<CoordinateOrMissing> {
+  normalizeValue(value: AnswerValue[TType] | MissingValue): CoordinateOrMissing | Array<CoordinateOrMissing> {
     return this._normalizeValue(this.ensureValue(value));
   }
 
@@ -103,8 +102,6 @@ export abstract class Question<
   protected _normalizeValue(
     value: AnswerValue[TType] | MissingValue
   ): CoordinateOrMissing | Array<CoordinateOrMissing> {
-    throw new DataTypeError(
-      `This Question type does not support value normalization for value ${value}`
-    );
+    throw new DataTypeError(`This Question type does not support value normalization for value ${value}`);
   }
 }

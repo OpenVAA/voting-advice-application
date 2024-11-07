@@ -1,1 +1,1 @@
-export {default as PasswordField} from './PasswordField.svelte';
+export { default as PasswordField } from './PasswordField.svelte';

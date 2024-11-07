@@ -1,24 +1,21 @@
 <script lang="ts">
-  import {t, locale} from '$lib/i18n';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Button} from '$lib/components/button';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {getContext} from 'svelte';
-  import {settings} from '$lib/stores';
-  import {InfoBadge} from '$lib/components/infoBadge';
-  import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import {Warning} from '$lib/components/warning';
-  import {type CandidateContext} from '$lib/utils/candidateContext';
+  import { getContext } from 'svelte';
+  import { LogoutButton } from '$lib/candidate/components/logoutButton';
+  import { Button } from '$lib/components/button';
+  import { InfoBadge } from '$lib/components/infoBadge';
+  import { Warning } from '$lib/components/warning';
+  import { locale, t } from '$lib/i18n';
+  import { settings } from '$lib/stores';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { type CandidateContext } from '$lib/utils/candidateContext';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
 
-  const {user, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, answersLocked} =
+  const { user, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, answersLocked } =
     getContext<CandidateContext>('candidate');
   const username = $user?.candidate?.firstName;
 
   function getNextAction() {
-    if (
-      $unansweredRequiredInfoQuestions?.length === 0 &&
-      $unansweredOpinionQuestions?.length === 0
-    ) {
+    if ($unansweredRequiredInfoQuestions?.length === 0 && $unansweredOpinionQuestions?.length === 0) {
       return {
         title: $t('candidateApp.home.ready'),
         explanation: $t('candidateApp.home.ingress.ready'),
@@ -32,12 +29,9 @@
         buttonTextPrimaryActions: $t('candidateApp.home.preview'),
         href: $getRoute(ROUTE.CandAppPreview)
       };
-    } else if (
-      $unansweredRequiredInfoQuestions?.length === 0 &&
-      $unansweredOpinionQuestions?.length !== 0
-    ) {
+    } else if ($unansweredRequiredInfoQuestions?.length === 0 && $unansweredOpinionQuestions?.length !== 0) {
       return {
-        title: $t('candidateApp.common.greeting', {username}),
+        title: $t('candidateApp.common.greeting', { username }),
         explanation: $t('candidateApp.home.ingress.notDone'),
         buttonTextBasicInfo: !$answersLocked
           ? $t('candidateApp.home.basicInfo.edit')
@@ -52,7 +46,7 @@
       };
     }
     return {
-      title: $t('candidateApp.common.greeting', {username}),
+      title: $t('candidateApp.common.greeting', { username }),
       explanation: $t('candidateApp.home.ingress.notDone'),
       buttonTextBasicInfo: !$answersLocked
         ? $t('candidateApp.home.basicInfo.enter')
@@ -91,11 +85,7 @@
       </div>
     {/if}
   </p>
-  <Button
-    text={nextAction.buttonTextBasicInfo}
-    icon="profile"
-    iconPos="left"
-    href={$getRoute(ROUTE.CandAppProfile)}>
+  <Button text={nextAction.buttonTextBasicInfo} icon="profile" iconPos="left" href={$getRoute(ROUTE.CandAppProfile)}>
     <svelte:fragment slot="badge">
       {#if $unansweredRequiredInfoQuestions && $unansweredRequiredInfoQuestions.length > 0}
         <InfoBadge text={String($unansweredRequiredInfoQuestions.length)} />
@@ -124,11 +114,7 @@
     href={$getRoute(ROUTE.CandAppPreview)} />
 
   <div class="flex w-full flex-col items-center justify-center" slot="primaryActions">
-    <Button
-      variant="main"
-      text={nextAction.buttonTextPrimaryActions}
-      icon="next"
-      href={nextAction.href} />
+    <Button variant="main" text={nextAction.buttonTextPrimaryActions} icon="next" href={nextAction.href} />
 
     <LogoutButton variant="normal" icon={undefined} />
   </div>

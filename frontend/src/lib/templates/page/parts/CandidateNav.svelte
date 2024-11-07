@@ -1,14 +1,14 @@
 <script lang="ts">
-  import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
-  import {openFeedbackModal} from '$lib/stores';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {t} from '$lib/i18n';
-  import {InfoBadge} from '$lib/components/infoBadge';
-  import {getContext} from 'svelte';
+  import { getContext } from 'svelte';
+  import { InfoBadge } from '$lib/components/infoBadge';
+  import { NavGroup, Navigation, NavItem } from '$lib/components/navigation';
+  import { t } from '$lib/i18n';
+  import { openFeedbackModal } from '$lib/stores';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import LanguageSelection from './LanguageSelection.svelte';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
 
-  const {unansweredRequiredInfoQuestions, unansweredOpinionQuestions} =
+  const { unansweredRequiredInfoQuestions, unansweredOpinionQuestions } =
     getContext<CandidateContext>('candidate') ?? {};
 </script>
 
@@ -35,14 +35,8 @@ A template part that outputs the navigation menu for the Candidate App for use i
 <Navigation slot="nav" on:navFocusOut {...$$restProps}>
   <slot />
   <NavGroup>
-    <NavItem
-      href={$getRoute(ROUTE.CandAppHome)}
-      icon="home"
-      text={$t('candidateApp.common.home')} />
-    <NavItem
-      href={$getRoute(ROUTE.CandAppProfile)}
-      icon="profile"
-      text={$t('candidateApp.basicInfo.title')} />
+    <NavItem href={$getRoute(ROUTE.CandAppHome)} icon="home" text={$t('candidateApp.common.home')} />
+    <NavItem href={$getRoute(ROUTE.CandAppProfile)} icon="profile" text={$t('candidateApp.basicInfo.title')} />
     <NavItem
       href={$getRoute(ROUTE.CandAppQuestions)}
       icon="opinion"
@@ -55,14 +49,8 @@ A template part that outputs the navigation menu for the Candidate App for use i
           classes="-left-8 -top-4" />
       {/if}
     </NavItem>
-    <NavItem
-      href={$getRoute(ROUTE.CandAppSettings)}
-      icon="settings"
-      text={$t('candidateApp.settings.title')} />
-    <NavItem
-      href={$getRoute(ROUTE.CandAppPreview)}
-      icon="previewProfile"
-      text={$t('candidateApp.preview.title')} />
+    <NavItem href={$getRoute(ROUTE.CandAppSettings)} icon="settings" text={$t('candidateApp.settings.title')} />
+    <NavItem href={$getRoute(ROUTE.CandAppPreview)} icon="previewProfile" text={$t('candidateApp.preview.title')} />
     <NavItem href={$getRoute(ROUTE.CandAppHelp)} icon="help" text={$t('candidateApp.help.title')} />
   </NavGroup>
   <!-- 

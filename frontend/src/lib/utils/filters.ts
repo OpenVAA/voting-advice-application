@@ -10,18 +10,17 @@ import {
   FilterGroup,
   type NumericQuestion,
   NumericQuestionFilter,
-  ObjectFilter} from '@openvaa/filters';
-import { derived,type Readable } from 'svelte/store';
-import { locale,t } from '$lib/i18n';
-import { infoQuestions,parties } from '$lib/stores';
+  ObjectFilter
+} from '@openvaa/filters';
+import { derived, type Readable } from 'svelte/store';
+import { locale, t } from '$lib/i18n';
+import { infoQuestions, parties } from '$lib/stores';
 import { logDebugError } from './logger';
 
 let candidateFilterGroup: FilterGroup<MaybeRanked<CandidateProps>> | undefined = undefined;
 let candidateFiltersLocale: string = '';
 
-export const candidateFilters: Readable<
-  Promise<FilterGroup<MaybeRanked<CandidateProps>> | undefined>
-> = derived(
+export const candidateFilters: Readable<Promise<FilterGroup<MaybeRanked<CandidateProps>> | undefined>> = derived(
   [infoQuestions, locale, parties],
   async ([$infoQuestions, $locale, $parties]) => {
     const parties = await $parties;

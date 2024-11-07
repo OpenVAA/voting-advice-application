@@ -12,8 +12,7 @@ export abstract class DataObject<TData extends DataObjectData>
   readonly root: DataRoot;
 
   constructor({ data, root }: { data: TData; root: DataRoot }) {
-    if (!data.isGenerated && !root.checkId(data.id))
-      throw new DataProvisionError(`Invalid id: ${data.id}`);
+    if (!data.isGenerated && !root.checkId(data.id)) throw new DataProvisionError(`Invalid id: ${data.id}`);
     super();
     this.root = root;
     this.data = data;

@@ -1,10 +1,10 @@
-import {get, writable} from 'svelte/store';
-import {browser} from '$app/environment';
-import {page} from '$app/stores';
-import {settings, userPreferences} from '$lib/stores';
-import {sessionStorageWritable} from '$lib/utils/storage';
-import {getUUID} from '$lib/utils/components';
-import {logDebugError} from '$lib/utils/logger';
+import { get, writable } from 'svelte/store';
+import { browser } from '$app/environment';
+import { page } from '$app/stores';
+import { settings, userPreferences } from '$lib/stores';
+import { getUUID } from '$lib/utils/components';
+import { logDebugError } from '$lib/utils/logger';
+import { sessionStorageWritable } from '$lib/utils/storage';
 
 /**
  * Contains the current pageview event, which will be automatically submitted containing any other submitted events when the user leaves the page or hides or closes the window.
@@ -20,25 +20,20 @@ let pageviewEvent:
 /**
  * Contains any unsubmitted compound events. These will be automatically submitted when the user leaves the app.
  */
-let unsubmittedEvents: TrackingEvent[] = [];
+let unsubmittedEvents: Array<TrackingEvent> = [];
 
 /**
  * Whether we should track events.
  * @returns true if we should track events
  */
 export function shouldTrack() {
-  return (
-    browser &&
-    get(settings).analytics.trackEvents &&
-    get(userPreferences).dataCollection?.consent === 'granted'
-  );
+  return browser && get(settings).analytics.trackEvents && get(userPreferences).dataCollection?.consent === 'granted';
 }
 
 /**
  * In order for tracking to do anything, set the value of this store to a function that will send the events.
  */
-export const sendTrackingEvent =
-  writable<(e: TrackingEvent<Record<string, JSONData>>) => void | undefined>(undefined);
+export const sendTrackingEvent = writable<(e: TrackingEvent<Record<string, JSONData>>) => void | undefined>(undefined);
 
 /**
  * Track an analytics event and send it immediately. For most purposes, it's better to use the `startEvent` function instead, which will collect the events by page and only submit them when the page is unloaded.
@@ -47,9 +42,9 @@ export function track(name: TrackingEvent['name'], data: TrackingEvent['data'] =
   if (!shouldTrack()) return;
   const send = get(sendTrackingEvent);
   if (!send) return;
-  const dataToSend = purgeNullish({vaaSessionId: get(sessionId), ...data});
-  logDebugError({name, data: dataToSend});
-  send({name, data: dataToSend});
+  const dataToSend = purgeNullish({ vaaSessionId: get(sessionId), ...data });
+  logDebugError({ name, data: dataToSend });
+  send({ name, data: dataToSend });
 }
 
 /**
@@ -73,7 +68,7 @@ export function startPageview(href: string, from?: string | null) {
  * @returns The event object that can be used to add data to.
  */
 export function startEvent(name: TrackingEvent['name'], data: TrackingEvent['data'] = {}) {
-  const event = {name, data};
+  const event = { name, data };
   unsubmittedEvents.push(event);
   return event;
 }
@@ -85,7 +80,7 @@ export function submitAllEvents() {
   if (shouldTrack() && (pageviewEvent || unsubmittedEvents?.length)) {
     const events: Record<string, TrackingEvent['data']> = {};
     // This shouldn't happen
-    if (!pageviewEvent) pageviewEvent = {href: get(page)?.url?.href ?? ''};
+    if (!pageviewEvent) pageviewEvent = { href: get(page)?.url?.href ?? '' };
     // Prefix a number to all subevent names
     for (let i = 0; i < unsubmittedEvents.length; i++) {
       // We limit the max events to 50 (umami's limit) minus the ones we're adding by default
@@ -93,12 +88,12 @@ export function submitAllEvents() {
         logDebugError(`Too many unsubmitted events: ${unsubmittedEvents.length}`);
         break;
       }
-      const {name, data} = unsubmittedEvents[i];
+      const { name, data } = unsubmittedEvents[i];
       events[`${i < 10 ? '0' : ''}${i}__${name}`] = data;
     }
-    const {href, from, start} = pageviewEvent;
+    const { href, from, start } = pageviewEvent;
     const duration = start ? Date.now() - start : undefined;
-    track('pageview', {href, from, start, duration, ...events});
+    track('pageview', { href, from, start, duration, ...events });
   }
   resetAllEvents();
 }

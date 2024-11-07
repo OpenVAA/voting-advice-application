@@ -8,7 +8,8 @@ import {
   type FactionNominationData,
   Nomination,
   type OrganizationNomination,
-  WithOptional} from '../../../internal';
+  WithOptional
+} from '../../../internal';
 
 /**
  * A nomination for a `Faction`. The nomination must part of an `OrganizationNomination`, i.e., a party list.
@@ -16,11 +17,7 @@ import {
  * @param root - The `DataRoot`.
  */
 export class FactionNomination
-  extends Nomination<
-    typeof ENTITY_TYPE.Faction,
-    typeof ENTITY_TYPE.Organization,
-    FactionNominationData
-  >
+  extends Nomination<typeof ENTITY_TYPE.Faction, typeof ENTITY_TYPE.Organization, FactionNominationData>
   implements DataAccessor<FactionNominationData, 'candidates'>
 {
   //////////////////////////////////////////////////////////////////////////////
@@ -36,9 +33,7 @@ export class FactionNomination
     if (!this.data.candidates?.length)
       throw new DataProvisionError('A FactionNomination must have non-zero CandidateNominations');
     if (!this.data.parentNominationId || !this.data.parentNominationType)
-      throw new DataProvisionError(
-        'A FactionNomination must have parentNominationType and parentNominationId'
-      );
+      throw new DataProvisionError('A FactionNomination must have parentNominationType and parentNominationId');
 
     // Create implied entity if necessary
     if (!this.data.entityId) {
@@ -78,9 +73,7 @@ export class FactionNomination
    * The `CandidateNomination`s in the faction nomination.
    */
   get candidateNominations(): Array<CandidateNomination> {
-    return (
-      this.data.candidateNominationIds?.map((id) => this.root.getCandidateNomination(id)) ?? []
-    );
+    return this.data.candidateNominationIds?.map((id) => this.root.getCandidateNomination(id)) ?? [];
   }
 
   /**

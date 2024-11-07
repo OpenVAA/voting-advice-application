@@ -1,6 +1,6 @@
 import { EnumeratedFilter } from './enumeratedFilter';
 import { type ExtractEntity, type FilterableEntity, type MaybeWrapped } from '../../entity';
-import { type MaybeMissing,MISSING_VALUE } from '../../missingValue';
+import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import type { PropertyFilterOptions } from '../base';
 
 /**
@@ -64,10 +64,7 @@ export class ObjectFilter<
    */
   getObject(value: string): TObject {
     const org = this.objOptions.objects.find((o) => o[this.objOptions.keyProperty] === value);
-    if (!org)
-      throw new Error(
-        `Could not find organisation where ${this.objOptions.keyProperty} == '${value}'`
-      );
+    if (!org) throw new Error(`Could not find organisation where ${this.objOptions.keyProperty} == '${value}'`);
     return org;
   }
 }

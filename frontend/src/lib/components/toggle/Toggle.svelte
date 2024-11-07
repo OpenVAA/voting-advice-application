@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {concatClass} from '$lib/utils/components';
-  import {Icon} from '$lib/components/icon';
-  import type {ToggleProps} from './Toggle.type';
+  import { Icon } from '$lib/components/icon';
+  import { concatClass } from '$lib/utils/components';
+  import type { ToggleProps } from './Toggle.type';
 
   type $$Props = ToggleProps;
 
@@ -74,13 +74,7 @@ Display a short list of options as toggleable text or icon buttons from which on
   <legend class="sr-only">{label}</legend>
   {#each options as option}
     <label class="small-label rounded-full px-8 py-4">
-      <input
-        tabindex="0"
-        type="radio"
-        name="toggle-options"
-        value={option.key}
-        bind:group={selected}
-        class="sr-only" />
+      <input tabindex="0" type="radio" name="toggle-options" value={option.key} bind:group={selected} class="sr-only" />
       {#if option.icon}
         <Icon name={option.icon} size="sm" />
       {/if}

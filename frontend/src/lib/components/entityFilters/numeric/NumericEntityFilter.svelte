@@ -1,8 +1,8 @@
 <script lang="ts">
-  import {onDestroy} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {concatClass} from '$lib/utils/components';
-  import type {NumericEntityFilterProps} from './NumericEntityFilter.type';
+  import { onDestroy } from 'svelte';
+  import { t } from '$lib/i18n';
+  import { concatClass } from '$lib/utils/components';
+  import type { NumericEntityFilterProps } from './NumericEntityFilter.type';
 
   type $$Props = NumericEntityFilterProps;
 
@@ -63,24 +63,12 @@ Render a numeric filter for entities.
   <form {...concatClass($$restProps, '')}>
     <label class="label">
       <span class="text-label min-w-[6rem]">{$t('entityFilters.numeric.minLabel')}</span>
-      <input
-        bind:value={min}
-        on:change={setMin}
-        type="range"
-        min={range.min}
-        max={range.max}
-        class="range" />
+      <input bind:value={min} on:change={setMin} type="range" min={range.min} max={range.max} class="range" />
       <span class="w-[5rem] text-end">{min}</span>
     </label>
     <label class="label">
       <span class="text-label min-w-[6rem]">{$t('entityFilters.numeric.maxLabel')}</span>
-      <input
-        bind:value={max}
-        on:change={setMax}
-        type="range"
-        min={range.min}
-        max={range.max}
-        class="range" />
+      <input bind:value={max} on:change={setMax} type="range" min={range.min} max={range.max} class="range" />
       <span class="w-[5rem] text-end">{max}</span>
     </label>
   </form>

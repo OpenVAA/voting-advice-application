@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {requestForgotPasswordLink} from '$lib/api/candidate';
-  import {FrontPage} from '$lib/templates/frontPage';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
+  import { requestForgotPasswordLink } from '$lib/api/candidate';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { t } from '$lib/i18n';
+  import { FrontPage } from '$lib/templates/frontPage';
 
   let statusMessage = ''; // Text to display when the send-button has been pressed: either email has been sent or internal error
   let email = '';
@@ -13,7 +13,7 @@
     statusMessage = response.ok
       ? $t('candidateApp.resetPassword.emailSentText')
       : $t('candidateApp.resetPassword.error');
-  };
+  }
 </script>
 
 <!-- Page for sending a reset email in case of a forgotten password. -->

@@ -9,7 +9,8 @@ import {
   type MissingValue,
   normalizeCoordinate,
   QUESTION_TYPE,
-  SingleChoiceQuestion} from '../../../internal';
+  SingleChoiceQuestion
+} from '../../../internal';
 
 /**
  * Used for all questions which allow choosing a single enumerated answering choice and whose values can be [ordered numerically](https://en.wikipedia.org/wiki/Ordinal_data). This is the most common type of VAA questions and includes Likert questions of any scale.
@@ -53,8 +54,7 @@ export class SingleChoiceOrdinalQuestion extends SingleChoiceQuestion<
     const values = this.choices.map((v) => v.normalizableValue);
     this.min = Math.min(...values);
     this.max = Math.max(...values);
-    if (this.min === this.max)
-      throw new DataProvisionError('The value range of the choices must be greater than 0.');
+    if (this.min === this.max) throw new DataProvisionError('The value range of the choices must be greater than 0.');
   }
 
   get isMatchable(): boolean {

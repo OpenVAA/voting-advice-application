@@ -1,4 +1,4 @@
-import type { Answers, DataObjectData,EntityType } from '../../../internal';
+import type { Answers, DataObjectData, EntityType } from '../../../internal';
 
 export interface EntityData<TType extends EntityType = EntityType> extends DataObjectData {
   // From HasId

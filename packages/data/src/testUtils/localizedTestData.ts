@@ -6,7 +6,8 @@ import {
   ENTITY_TYPE,
   LocalizedObject,
   PublicAllianceNominationData,
-  QUESTION_TYPE} from '../internal';
+  QUESTION_TYPE
+} from '../internal';
 
 /**
  * The locale into which `TRANSLATED_TEST_DATA` is translated.

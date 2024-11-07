@@ -3,10 +3,10 @@
  * TODO: Test all required functions.
  */
 
-import {describe, expect, type Mock,test, vi} from 'vitest';
-import {dataProvider} from '$lib/api/dataProvider/strapi';
-import {loadTranslations, locale} from '$lib/i18n';
-import {constants} from '$lib/utils/constants';
+import { describe, expect, type Mock, test, vi } from 'vitest';
+import { dataProvider } from '$lib/api/dataProvider/strapi';
+import { loadTranslations, locale } from '$lib/i18n';
+import { constants } from '$lib/utils/constants';
 import allPartiesResponse from './data/allParties.response.json';
 import allPartiesResult from './data/allParties.result.json';
 import type * as environment from '$app/environment';
@@ -40,7 +40,7 @@ describe('Test mock processing of data that should be fetched from the backend',
 
   test('getAllParties', async () => {
     (fetch as Mock).mockResolvedValue(createFetchResponse(allPartiesResponse));
-    const response = await getAllParties({loadAnswers: true, locale: LOCALE});
+    const response = await getAllParties({ loadAnswers: true, locale: LOCALE });
     expect(fetch).toHaveBeenCalledWith(
       `${constants.BACKEND_URL}/api/parties?populate%5Blogo%5D=true&populate%5Bcandidates%5D=false&populate%5Banswers%5D%5Bpopulate%5D%5Bquestion%5D=true&pagination%5BpageSize%5D=1000`
     );
@@ -49,5 +49,5 @@ describe('Test mock processing of data that should be fetched from the backend',
 });
 
 function createFetchResponse(data: unknown) {
-  return {json: () => new Promise((resolve) => resolve(data))};
+  return { json: () => new Promise((resolve) => resolve(data)) };
 }

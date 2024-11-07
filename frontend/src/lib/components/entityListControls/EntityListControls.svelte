@@ -1,16 +1,16 @@
 <script lang="ts">
-  import {onDestroy} from 'svelte';
-  import {locale, t} from '$lib/i18n';
-  import {TextPropertyFilter} from '@openvaa/filters';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {concatClass} from '$lib/utils/components';
-  import {Button} from '$lib/components/button';
-  import {InfoBadge} from '$lib/components/infoBadge';
-  import {Modal} from '$lib/components/modal';
-  import {EntityFilters} from '$lib/components/entityFilters';
-  import {Icon} from '$lib/components/icon';
-  import {TextEntityFilter} from '../entityFilters/text';
-  import type {EntityListControlsProps} from './EntityListControls.type';
+  import { TextPropertyFilter } from '@openvaa/filters';
+  import { onDestroy } from 'svelte';
+  import { Button } from '$lib/components/button';
+  import { EntityFilters } from '$lib/components/entityFilters';
+  import { Icon } from '$lib/components/icon';
+  import { InfoBadge } from '$lib/components/infoBadge';
+  import { Modal } from '$lib/components/modal';
+  import { locale, t } from '$lib/i18n';
+  import { startEvent } from '$lib/utils/analytics/track';
+  import { concatClass } from '$lib/utils/components';
+  import { TextEntityFilter } from '../entityFilters/text';
+  import type { EntityListControlsProps } from './EntityListControls.type';
 
   type $$Props = EntityListControlsProps;
 
@@ -33,7 +33,7 @@
 
   // Create the text search filter
   const searchFilter = searchProperty
-    ? new TextPropertyFilter<MaybeRanked>({property: searchProperty as keyof MaybeRanked}, $locale)
+    ? new TextPropertyFilter<MaybeRanked>({ property: searchProperty as keyof MaybeRanked }, $locale)
     : undefined;
 
   // Listen to changes in the filters
@@ -80,7 +80,7 @@
       .filter((f) => f.active)
       .map((f) => f.name)
       .join(',');
-    if (activeFilters) startEvent('filters_active', {activeFilters});
+    if (activeFilters) startEvent('filters_active', { activeFilters });
   }
 </script>
 
@@ -144,9 +144,7 @@ Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
   </div>
   {#if contents.length > 0 && output.length === 0}
     {#if filterGroup}
-      <button
-        class="my-lg flex flex-col items-center text-center text-secondary"
-        on:click={openFilters}>
+      <button class="my-lg flex flex-col items-center text-center text-secondary" on:click={openFilters}>
         <Icon name="info" />
         {$t('entityList.controls.noFilterResults')}
       </button>
@@ -168,15 +166,8 @@ Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
     bind:closeModal={closeFiltersModal}>
     <EntityFilters {filterGroup} targets={contents} />
     <div class="flex w-full flex-col items-center" slot="actions">
-      <Button
-        on:click={closeFiltersModal}
-        text={$t('entityFilters.applyAndClose')}
-        variant="main" />
-      <Button
-        on:click={resetFilters}
-        color="warning"
-        disabled={!numActiveFilters}
-        text={$t('entityFilters.reset')} />
+      <Button on:click={closeFiltersModal} text={$t('entityFilters.applyAndClose')} variant="main" />
+      <Button on:click={resetFilters} color="warning" disabled={!numActiveFilters} text={$t('entityFilters.reset')} />
     </div>
   </Modal>
 {/if}

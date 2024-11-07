@@ -1,12 +1,13 @@
 import { FilterTargets } from './questionAndCategoryBase.type';
-import { DataObject,match } from '../../../internal';
+import { DataObject, match } from '../../../internal';
 import type {
   Constituency,
   DataAccessor,
   Election,
   EntityType,
   FilterValue,
-  QuestionAndCategoryBaseData} from '../../../internal';
+  QuestionAndCategoryBaseData
+} from '../../../internal';
 
 /**
  * An abstract base class for both `Question`s and `QuestionCategory`s. Provides the filtering functionality, which allows restricting either types to specific elections, election rounds, constituencies or entity types.
@@ -33,9 +34,7 @@ export class QuestionAndCategoryBase<TData extends QuestionAndCategoryBaseData>
    * An optional filter value that contains the elections for which this question or category should only be shown.
    */
   get elections(): Array<Election> {
-    return this.data.electionIds
-      ? [this.data.electionIds].flat().map((id) => this.root.getElection(id))
-      : [];
+    return this.data.electionIds ? [this.data.electionIds].flat().map((id) => this.root.getElection(id)) : [];
   }
 
   /**
@@ -54,13 +53,9 @@ export class QuestionAndCategoryBase<TData extends QuestionAndCategoryBaseData>
    */
   appliesTo(targets: FilterTargets): boolean {
     const { elections, electionRounds, entityTypes, constituencies } = targets;
-    if (
-      elections &&
-      !match({ filter: this.data.electionIds, target: [elections].flat().map((e) => e.id) })
-    )
+    if (elections && !match({ filter: this.data.electionIds, target: [elections].flat().map((e) => e.id) }))
       return false;
-    if (electionRounds && !match({ filter: this.data.electionRounds, target: electionRounds }))
-      return false;
+    if (electionRounds && !match({ filter: this.data.electionRounds, target: electionRounds })) return false;
     if (entityTypes && !match({ filter: this.data.entityTypes, target: entityTypes })) return false;
     if (
       constituencies &&

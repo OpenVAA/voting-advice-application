@@ -195,14 +195,14 @@ export type DynamicSettings = {
     dark: {
       bgColor?: string;
       overImgBgColor?: string;
-    },
+    };
     light: {
       bgColor?: string;
       overImgBgColor?: string;
-    }
+    };
     imgSize?: string;
     imgPosition?: string;
-  }
+  };
   /**
    * Settings controlling which entities are shown in the app.
    */

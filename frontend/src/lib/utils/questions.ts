@@ -1,12 +1,10 @@
-import {error} from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 
 /**
  * Extract the categories from a list of questions, throwing on any duplicated categories (by id).
  * @param questions An array of QuestionProps
  */
-export function extractCategories(
-  questions: {category: QuestionCategoryProps}[]
-): QuestionCategoryProps[] {
+export function extractCategories(questions: Array<{ category: QuestionCategoryProps }>): Array<QuestionCategoryProps> {
   const categories = Array.from(new Set(questions.map((q) => q.category)));
   const catIds = new Set<string>();
   for (const category of categories) {
@@ -20,6 +18,6 @@ export function extractCategories(
  * Performs basic filtering for questions.
  * @param questions
  */
-export function filterVisible(questions: QuestionProps[]): QuestionProps[] {
+export function filterVisible(questions: Array<QuestionProps>): Array<QuestionProps> {
   return questions.filter((q) => !q.hidden);
 }

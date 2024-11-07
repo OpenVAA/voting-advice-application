@@ -14,9 +14,7 @@ import {
  * @param nominations - Array of nomination variant data.
  * @returns An object with counts of the nominations for each entity type.
  */
-export function getNominationCounts(
-  nominations: Array<Partial<AnyNominationVariantData>>
-): Record<EntityType, number> {
+export function getNominationCounts(nominations: Array<Partial<AnyNominationVariantData>>): Record<EntityType, number> {
   const counts = {
     alliance: 0,
     candidate: 0,
@@ -36,9 +34,7 @@ export function getNominationCounts(
  * @returns An array of expanded nomination variant data.
  */
 export function parseNestedNominations(
-  nominations: Array<
-    AnyNominationVariantPublicData | NestedNomination<AnyNominationVariantPublicData>
-  >,
+  nominations: Array<AnyNominationVariantPublicData | NestedNomination<AnyNominationVariantPublicData>>,
   inherited?: {
     electionId: Id;
     constituencyId: Id;
@@ -86,8 +82,7 @@ export function parseNestedNominations(
   return out;
 }
 
-export type ExtendedNominationData<TTentity extends EntityType = EntityType> =
-  NominationVariantData[TTentity] & {
-    entityPseudoId?: string;
-    parent?: ExtendedNominationData;
-  };
+export type ExtendedNominationData<TTentity extends EntityType = EntityType> = NominationVariantData[TTentity] & {
+  entityPseudoId?: string;
+  parent?: ExtendedNominationData;
+};

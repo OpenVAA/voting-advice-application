@@ -6,7 +6,8 @@ import {
   MISSING_VALUE,
   type MissingValue,
   QUESTION_TYPE,
-  SingleChoiceQuestion} from '../../../internal';
+  SingleChoiceQuestion
+} from '../../../internal';
 
 /**
  * Used for all questions which allow choosing a single enumerated answering choice and whose values [cannot be ordered numerically](https://en.wikipedia.org/wiki/Nominal_category), i.e. the data is categorical or nominal.
@@ -57,15 +58,12 @@ export class SingleChoiceCategoricalQuestion extends SingleChoiceQuestion<
     value: AnswerValue[typeof QUESTION_TYPE.SingleChoiceOrdinal] | MissingValue
   ): CoordinateOrMissing | Array<CoordinateOrMissing> {
     const choices = this.choices;
-    if (isMissingValue(value))
-      return choices.length === 2 ? MISSING_VALUE : choices.map(() => MISSING_VALUE);
+    if (isMissingValue(value)) return choices.length === 2 ? MISSING_VALUE : choices.map(() => MISSING_VALUE);
     // We can be sure the choice exists, because `value` is ensureed before being passed to this method.
     const index = this.getChoiceIndex(value)!;
     // For 2 choices a single dimension suffices and the question works, in effect, like a `BooleanQuestion`.
     if (choices.length === 2) return index === 0 ? COORDINATE.Min : COORDINATE.Max;
     // Otherwise, create subdmensions where we assign the max value to the selected choice and min to others
-    return Array.from({ length: choices.length }, (_, i) =>
-      i === index ? COORDINATE.Max : COORDINATE.Min
-    );
+    return Array.from({ length: choices.length }, (_, i) => (i === index ? COORDINATE.Max : COORDINATE.Min));
   }
 }

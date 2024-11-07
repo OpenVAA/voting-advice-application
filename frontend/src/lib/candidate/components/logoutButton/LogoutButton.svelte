@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {TimedModal} from '$lib/components/modal/timed';
-  import {goto} from '$app/navigation';
-  import {Button} from '$lib/components/button';
-  import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import type {LogoutButtonProps} from './LogoutButton.type';
-  import {settings} from '$lib/stores';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { Button } from '$lib/components/button';
+  import { TimedModal } from '$lib/components/modal/timed';
+  import { t } from '$lib/i18n';
+  import { settings } from '$lib/stores';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { LogoutButtonProps } from './LogoutButton.type';
 
   type $$props = LogoutButtonProps;
 
@@ -19,7 +19,7 @@
   let closeModal: () => void;
   let timeLeft = logoutModalTimer;
 
-  const {answersLocked, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, logOut} =
+  const { answersLocked, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, logOut } =
     getContext<CandidateContext>('candidate');
 
   function triggerLogout() {
@@ -56,12 +56,7 @@ Allows user to log out. Displays modal notification if the user hasn't filled al
 ```
 -->
 
-<Button
-  on:click={triggerLogout}
-  icon="logout"
-  text={$t('common.logout')}
-  color="warning"
-  {...$$restProps} />
+<Button on:click={triggerLogout} icon="logout" text={$t('common.logout')} color="warning" {...$$restProps} />
 
 <TimedModal
   bind:timeLeft
@@ -89,7 +84,7 @@ Allows user to log out. Displays modal notification if the user hasn't filled al
     {/if}
   {/if}
   <p>
-    {$t('candidateApp.logoutModal.ingress', {timeLeft})}
+    {$t('candidateApp.logoutModal.ingress', { timeLeft })}
   </p>
   <!-- </div> -->
   <div slot="actions" class="flex w-full flex-col items-center">

@@ -1,5 +1,5 @@
-import type {HTMLAttributes} from 'svelte/elements';
-import type {CardAction} from './EntityCard.type';
+import type { HTMLAttributes } from 'svelte/elements';
+import type { CardAction } from './EntityCard.type';
 
 export type EntityCardActionProps = HTMLAttributes<HTMLElement> & {
   /**

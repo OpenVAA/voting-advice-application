@@ -1,17 +1,18 @@
-**/node_modules/
-**/build/
-**/dist/
-docker-compose.*
-.env
-.env.*
 .github
 .husky
+**/.DS_Store
+**/.env
+**/.env.*
+**/build/
+**/coverage/
+**/dist/
+**/docker-compose.*
+**/node_modules/
 
 # Ignore files for PNPM, NPM and YARN
-pnpm-lock.yaml
-package.json
 package-lock.json
-yarn.lock
+package.json
+pnpm-lock.yaml
 yarn.lock
 
 # NB! Because of prettier’s limitations, .prettierignore files in subfolders are not respected

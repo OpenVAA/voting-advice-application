@@ -1,4 +1,4 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
+import type { SvelteHTMLElements } from 'svelte/elements';
 export type LoadingProps = SvelteHTMLElements['div'] & {
   /**
    * Whether to show an inline version of the spinner. By default the spinner tries to center itself in the available area. @default false

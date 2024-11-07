@@ -1,16 +1,16 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {election} from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
+  import { onDestroy } from 'svelte';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { t } from '$lib/i18n';
+  import { election } from '$lib/stores';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
   import Layout from '../../Layout.svelte';
-  import {onDestroy} from 'svelte';
-  import {getLayoutContext} from '$lib/contexts/layout';
 
-  const {topBarSettings} = getLayoutContext(onDestroy);
+  const { topBarSettings } = getLayoutContext(onDestroy);
   topBarSettings.push({
     actions: {
       return: 'show',
@@ -41,9 +41,5 @@
     )}
   </div>
 
-  <Button
-    slot="primaryActions"
-    variant="main"
-    href={$getRoute(ROUTE.Home)}
-    text={$t('common.returnHome')} />
+  <Button slot="primaryActions" variant="main" href={$getRoute(ROUTE.Home)} text={$t('common.returnHome')} />
 </Layout>

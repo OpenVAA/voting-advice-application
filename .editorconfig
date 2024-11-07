@@ -1,0 +1,11 @@
+# Stop the editor from looking for .editorconfig files in the parent directories
+root = true
+
+# These settings are parsed by `prettier` for use as defaults
+[*]
+charset = utf-8
+insert_final_newline = true
+end_of_line = lf
+indent_style = space
+indent_size = 2
+max_line_length = 120

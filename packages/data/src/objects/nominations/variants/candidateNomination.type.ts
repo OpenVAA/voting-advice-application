@@ -1,10 +1,7 @@
 import type { ENTITY_TYPE, Id, NominationData, WithOptional } from '../../../internal';
 
 export interface CandidateNominationData
-  extends NominationData<
-    typeof ENTITY_TYPE.Candidate,
-    typeof ENTITY_TYPE.Faction | typeof ENTITY_TYPE.Organization
-  > {
+  extends NominationData<typeof ENTITY_TYPE.Candidate, typeof ENTITY_TYPE.Faction | typeof ENTITY_TYPE.Organization> {
   // From HasId
   // - id: Id;
   //

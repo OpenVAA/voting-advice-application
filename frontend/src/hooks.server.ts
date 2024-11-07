@@ -1,26 +1,24 @@
-import type {Handle, HandleServerError} from '@sveltejs/kit';
-import {API_ROOT} from '$lib/api/api';
-import {defaultLocale, loadTranslations, locales} from '$lib/i18n';
-import {matchLocale, parseAcceptedLanguages} from '$lib/i18n/utils';
-import {logDebugError} from '$lib/utils/logger';
+import { API_ROOT } from '$lib/api/api';
+import { defaultLocale, loadTranslations, locales } from '$lib/i18n';
+import { matchLocale, parseAcceptedLanguages } from '$lib/i18n/utils';
+import { logDebugError } from '$lib/utils/logger';
+import type { Handle, HandleServerError } from '@sveltejs/kit';
 
 // Handle and handleError based on sveltekit-i18n examples: https://github.com/sveltekit-i18n/lib/blob/master/examples/locale-router-advanced/src/hooks.server.js
 
 /** Set to `true` to show debug log in console */
 const DEBUG = false;
 
-export const handle: Handle = (async ({event, resolve}) => {
-  const {params, route, url, request, isDataRequest} = event;
-  const {pathname, search} = url;
+export const handle: Handle = (async ({ event, resolve }) => {
+  const { params, route, url, request, isDataRequest } = event;
+  const { pathname, search } = url;
   const requestedLocale = params.lang;
 
   const supportedLocales = locales.get();
-  let cleanPath = requestedLocale
-    ? pathname.replace(new RegExp(`^/${requestedLocale}`, 'i'), '')
-    : pathname;
+  let cleanPath = requestedLocale ? pathname.replace(new RegExp(`^/${requestedLocale}`, 'i'), '') : pathname;
   if (cleanPath === '') cleanPath = '/';
 
-  debug('Route: START', {params, pathname, isDataRequest, route});
+  debug('Route: START', { params, pathname, isDataRequest, route });
 
   //////////////////////////////////////////////////////////////////////////
   // 1. Handle non-route requests
@@ -67,7 +65,7 @@ export const handle: Handle = (async ({event, resolve}) => {
   if (requestedLocale !== servedLocale) {
     debug(`Route: REDIRECT to locale ${servedLocale}`);
     return new Response(undefined, {
-      headers: {location: `/${servedLocale}${cleanPath}${search}`},
+      headers: { location: `/${servedLocale}${cleanPath}${search}` },
       status: 301
     });
   }
@@ -87,13 +85,13 @@ export const handle: Handle = (async ({event, resolve}) => {
       }
     },
     {
-      transformPageChunk: ({html}) => html.replace('%lang%', `${servedLocale}`)
+      transformPageChunk: ({ html }) => html.replace('%lang%', `${servedLocale}`)
     }
   );
 }) satisfies Handle;
 
-export const handleError = (async ({error, event}) => {
-  const {locals} = event;
+export const handleError = (async ({ error, event }) => {
+  const { locals } = event;
   const currentLocale = locals?.currentLocale;
   logDebugError('handleError', error);
   if (currentLocale) await loadTranslations(currentLocale, 'error');

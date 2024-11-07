@@ -2,9 +2,9 @@
  * app-setting controller
  */
 
-import {factories} from '@strapi/strapi';
-import {API} from '../../../functions/utils/api';
-import {getCardContentsFromStrapi} from '../../../functions/utils/appSettings';
+import { factories } from '@strapi/strapi';
+import { API } from '../../../functions/utils/api';
+import { getCardContentsFromStrapi } from '../../../functions/utils/appSettings';
 
 export default factories.createCoreController(API.AppSettings, () => ({
   async findOne(ctx) {
@@ -21,7 +21,7 @@ export default factories.createCoreController(API.AppSettings, () => ({
   },
 
   async find(ctx) {
-    const {data, meta} = await super.find(ctx);
+    const { data, meta } = await super.find(ctx);
     if (data) {
       for (const [i, val] of data.entries()) {
         const cardContents = await getCardContentsFromStrapi(val.id);
@@ -30,6 +30,6 @@ export default factories.createCoreController(API.AppSettings, () => ({
         data[i].attributes.results.cardContents = cardContents;
       }
     }
-    return {data, meta};
+    return { data, meta };
   }
 }));

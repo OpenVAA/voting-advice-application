@@ -1,18 +1,18 @@
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {setSurveyStatus} from '$lib/stores';
-  import {surveyLink} from '$lib/utils/analytics/survey';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {concatClass} from '$lib/utils/components';
-  import {Button} from '$lib/components/button';
-  import type {SurveyButtonProps} from './SurveyButton.type';
+  import { createEventDispatcher } from 'svelte';
+  import { Button } from '$lib/components/button';
+  import { t } from '$lib/i18n';
+  import { setSurveyStatus } from '$lib/stores';
+  import { surveyLink } from '$lib/utils/analytics/survey';
+  import { startEvent } from '$lib/utils/analytics/track';
+  import { concatClass } from '$lib/utils/components';
+  import type { SurveyButtonProps } from './SurveyButton.type';
 
   type $$Props = SurveyButtonProps;
 
   export let clicked: $$Props['clicked'] = false;
 
-  const dispatch = createEventDispatcher<{click: null}>();
+  const dispatch = createEventDispatcher<{ click: null }>();
 
   function onClick() {
     if (clicked) return;

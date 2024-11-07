@@ -47,9 +47,7 @@ describe('AppliesTo should work', () => {
   const entityType = ENTITY_TYPE.Candidate;
   const entityType2 = ENTITY_TYPE.Organization;
   if ([election, election2, constituency, constituency2].some((o) => o == null))
-    throw new Error(
-      'Test setup error: Test data must have at least two elections and two constituencies'
-    );
+    throw new Error('Test setup error: Test data must have at least two elections and two constituencies');
 
   test('Object has no filterable restrictions', () => {
     const obj = new MockQuestionAndCategory({ data: { id: crypto.randomUUID() }, root });
@@ -58,9 +56,7 @@ describe('AppliesTo should work', () => {
     expect(obj.appliesTo({ constituencies: constituency })).toBe(true);
     expect(obj.appliesTo({ entityTypes: entityType })).toBe(true);
     expect(obj.appliesTo({ electionRounds: 1 })).toBe(true);
-    expect(
-      obj.appliesTo({ elections: election, constituencies: constituency, entityTypes: entityType })
-    ).toBe(true);
+    expect(obj.appliesTo({ elections: election, constituencies: constituency, entityTypes: entityType })).toBe(true);
   });
 
   test('Object has filterable restrictions', () => {
@@ -83,12 +79,8 @@ describe('AppliesTo should work', () => {
     expect(obj.appliesTo({ entityTypes: entityType2 })).toBe(false);
     expect(obj.appliesTo({ electionRounds: 1 })).toBe(true);
     expect(obj.appliesTo({ electionRounds: 2 })).toBe(false);
-    expect(
-      obj.appliesTo({ elections: election, constituencies: constituency, entityTypes: entityType })
-    ).toBe(true);
-    expect(
-      obj.appliesTo({ elections: election, constituencies: constituency2, entityTypes: entityType })
-    ).toBe(false);
+    expect(obj.appliesTo({ elections: election, constituencies: constituency, entityTypes: entityType })).toBe(true);
+    expect(obj.appliesTo({ elections: election, constituencies: constituency2, entityTypes: entityType })).toBe(false);
   });
 });
 

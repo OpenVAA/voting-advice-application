@@ -40,9 +40,7 @@ export function restrictPopulate(allowedPopulate: Array<string>): ACLImplementat
     if (query.populate) {
       // Allow only the explicit populate syntax (vs. allowing ?populate=*)
       if (typeof query.populate !== 'object') {
-        console.warn(
-          `Disallowing ${query.populate} due to not using the explicit ?populate[...]=true syntax`
-        );
+        console.warn(`Disallowing ${query.populate} due to not using the explicit ?populate[...]=true syntax`);
         return false;
       }
 
@@ -50,9 +48,7 @@ export function restrictPopulate(allowedPopulate: Array<string>): ACLImplementat
       query.populate = filterObject(query.populate, allowedPopulate);
       if (JSON.stringify(origPopulate) !== JSON.stringify(query.populate)) {
         console.warn(
-          `Filtered disallowed populate: ${JSON.stringify(origPopulate)} -> ${JSON.stringify(
-            query.populate
-          )}`
+          `Filtered disallowed populate: ${JSON.stringify(origPopulate)} -> ${JSON.stringify(query.populate)}`
         );
       }
     }
@@ -69,20 +65,14 @@ export function restrictFilters(allowedFilters: Array<string>): ACLImplementatio
     if (query.filters) {
       // Allow only the explicit filters syntax
       if (typeof query.filters !== 'object') {
-        console.warn(
-          `Disallowing ${query.populate} due to not using the explicit ?filter[...]=true syntax`
-        );
+        console.warn(`Disallowing ${query.populate} due to not using the explicit ?filter[...]=true syntax`);
         return false;
       }
 
       const origFilters = query.filters;
       query.filters = filterObject(query.filters, allowedFilters);
       if (JSON.stringify(origFilters) !== JSON.stringify(query.filters)) {
-        console.warn(
-          `Filtered disallowed filters: ${JSON.stringify(origFilters)} -> ${JSON.stringify(
-            query.filters
-          )}`
-        );
+        console.warn(`Filtered disallowed filters: ${JSON.stringify(origFilters)} -> ${JSON.stringify(query.filters)}`);
       }
     }
 

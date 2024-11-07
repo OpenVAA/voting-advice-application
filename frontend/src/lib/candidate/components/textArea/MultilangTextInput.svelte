@@ -1,10 +1,10 @@
 <script lang="ts">
-  import {Button} from '$lib/components/button';
-  import {locale as currentLocale, locales, t} from '$lib/i18n';
-  import type {TextAreaProps, MultilangTextAreaProps} from './TextArea.type';
-  import {Field, FieldGroup} from '$lib/components/common/form';
-  import {TextArea, InputField} from '$candidate/components/textArea';
-  import {assertTranslationKey} from '$lib/i18n/utils';
+  import { InputField, TextArea } from '$candidate/components/textArea';
+  import { Button } from '$lib/components/button';
+  import { Field, FieldGroup } from '$lib/components/common/form';
+  import { locale as currentLocale, locales, t } from '$lib/i18n';
+  import { assertTranslationKey } from '$lib/i18n/utils';
+  import type { MultilangTextAreaProps, TextAreaProps } from './TextArea.type';
 
   type $$Props = TextAreaProps & MultilangTextAreaProps;
   export let id: $$Props['id'];
@@ -109,9 +109,7 @@ Input field variant
           <TextArea
             bind:text={multilangText[$currentLocale]}
             id={translationsShown ? id + '-' + $currentLocale : id}
-            headerText={translationsShown
-              ? $t(assertTranslationKey(`lang.${$currentLocale}`))
-              : undefined}
+            headerText={translationsShown ? $t(assertTranslationKey(`lang.${$currentLocale}`)) : undefined}
             localStorageId={localStorageId + '-' + $currentLocale}
             previouslySaved={previouslySavedMultilang?.[$currentLocale]}
             {rows}
@@ -158,9 +156,7 @@ Input field variant
     <Button
       type="button"
       on:click={() => (translationsShown = !translationsShown)}
-      text={translationsShown
-        ? $t('components.multiLangInput.hide')
-        : $t('components.multiLangInput.show')}
+      text={translationsShown ? $t('components.multiLangInput.hide') : $t('components.multiLangInput.show')}
       variant="normal"
       icon={translationsShown ? 'hide' : 'language'}
       {disabled}

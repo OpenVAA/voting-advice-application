@@ -1,4 +1,4 @@
-import { Id, type Image, MISSING_VALUE,type MissingValue } from '../internal';
+import { Id, type Image, MISSING_VALUE, type MissingValue } from '../internal';
 
 /**
  * Contains functions used for ensureing answer value types.
@@ -75,9 +75,7 @@ export function ensureImage(value: unknown): Image | MissingValue {
 }
 
 function isImage(value: unknown): value is Image {
-  return (
-    value != null && typeof value === 'object' && 'url' in value && typeof value.url === 'string'
-  );
+  return value != null && typeof value === 'object' && 'url' in value && typeof value.url === 'string';
 }
 
 /**

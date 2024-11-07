@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup} from '$lib/components/headingGroup';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup } from '$lib/components/headingGroup';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { t } from '$lib/i18n';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import Layout from '../../Layout.svelte';
 </script>
 

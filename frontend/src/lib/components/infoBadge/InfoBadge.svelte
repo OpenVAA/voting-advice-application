@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type {InfoBadgeProps} from './InfoBadge.type';
+  import type { InfoBadgeProps } from './InfoBadge.type';
 
   type $$Props = InfoBadgeProps;
   export let text: $$Props['text'] = '';
@@ -23,9 +23,7 @@
 -->
 
 <div
-  class="badge badge-sm px-[0.25rem] {disabled
-    ? 'border-0 bg-black text-white opacity-20'
-    : 'badge-warning'}
+  class="badge badge-sm px-[0.25rem] {disabled ? 'border-0 bg-black text-white opacity-20' : 'badge-warning'}
      d-flex relative items-center justify-center text-[0.8rem] font-bold {classes}">
   <span class="m-0 p-0">{text}</span>
 </div>

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {attemptFocus, focusFirstDescendant} from '$lib/utils/aria/focus';
-  import {concatClass, getUUID} from '$lib/utils/components';
-  import type {ModalProps} from './Modal.type';
+  import { createEventDispatcher } from 'svelte';
+  import { t } from '$lib/i18n';
+  import { attemptFocus, focusFirstDescendant } from '$lib/utils/aria/focus';
+  import { concatClass, getUUID } from '$lib/utils/components';
+  import type { ModalProps } from './Modal.type';
 
   type $$Props = ModalProps;
 
@@ -153,10 +153,7 @@ A modal dialog.
   class:hidden={!isOpen && !inTransition}
   aria-modal="true"
   aria-labelledby={titleId}
-  {...concatClass(
-    $$restProps,
-    'modal modal-bottom sm:modal-middle backdrop:bg-neutral backdrop:opacity-60'
-  )}>
+  {...concatClass($$restProps, 'modal modal-bottom sm:modal-middle backdrop:bg-neutral backdrop:opacity-60')}>
   <div class="modal-box {boxClass ?? ''}">
     <h2 id={titleId} class="mb-lg text-center">{title}</h2>
     <slot />

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {concatClass} from '$lib/utils/components';
-  import type {OpenVAALogoProps} from './OpenVAALogo.type';
+  import { concatClass } from '$lib/utils/components';
+  import type { OpenVAALogoProps } from './OpenVAALogo.type';
 
   type $$Props = OpenVAALogoProps;
   export let title: $$Props['title'] = 'OpenVAA';
@@ -61,18 +61,13 @@ attributes of one.
 ```
 -->
 
-<svg
-  role="img"
-  xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 458.05 91.74"
-  {...concatClass($$restProps, classes)}>
+<svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 458.05 91.74" {...concatClass($$restProps, classes)}>
   {#if title}
     <title>{title}</title>
   {/if}
   <path
     d="m241.33,19.75c-3.93-.02-7.35.82-10.26,2.54-2.91,1.72-5.14,4.04-6.69,6.96l-.95-8.41-11.3-.06-.28,49.6,12.8.07.15-25.6c.03-4.53,1.2-8.06,3.51-10.58,2.31-2.52,5.27-3.77,8.87-3.75,3.67.02,6.36,1.17,8.08,3.45,1.72,2.28,2.57,5.55,2.54,9.82l-.15,26.8,12.8.07.16-28c.04-7.47-1.62-13.14-5-17.03-3.38-3.89-8.13-5.85-14.27-5.88Z" />
-  <polygon
-    points="317.44 1.01 297.21 57.8 277.74 .78 264.04 .71 289.24 70.85 304.93 70.94 330.94 1.09 317.44 1.01" />
+  <polygon points="317.44 1.01 297.21 57.8 277.74 .78 264.04 .71 289.24 70.85 304.93 70.94 330.94 1.09 317.44 1.01" />
   <path
     d="m349.69,1.21l-26,69.85,13.4.08,5.79-16.17,27.3.16,5.51,16.23,13.6.08L364.09,1.29l-14.4-.08Zm-3.25,43.78l10.27-29.04,10.03,29.16-20.3-.12Z" />
   <path

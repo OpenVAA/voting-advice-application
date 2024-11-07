@@ -4,7 +4,8 @@ import type {
   NestedNomination,
   NominationData,
   PublicCandidateNominationData,
-  WithOptional} from '../../../internal';
+  WithOptional
+} from '../../../internal';
 
 export interface FactionNominationData
   extends NominationData<typeof ENTITY_TYPE.Faction, typeof ENTITY_TYPE.Organization> {

@@ -7,7 +7,8 @@ import {
   ensureImage,
   ensureNumber,
   ensureString,
-  ensureUnique} from './ensureValue';
+  ensureUnique
+} from './ensureValue';
 import { MISSING_VALUE } from '../internal';
 
 const literals = ['true', 2, true, {}, new Date(), [], null, undefined];
@@ -32,9 +33,8 @@ describe('ensureId', () => {
     expect(ensureId('')).toBe(MISSING_VALUE);
     expect(ensureId('   ')).toBe(MISSING_VALUE);
   });
-  test.each(literals.filter((v) => !(typeof v === 'string')))(
-    'Should return MISSING_VALUE for %p',
-    (value) => expect(ensureId(value)).toBe(MISSING_VALUE)
+  test.each(literals.filter((v) => !(typeof v === 'string')))('Should return MISSING_VALUE for %p', (value) =>
+    expect(ensureId(value)).toBe(MISSING_VALUE)
   );
 });
 describe('ensureNumber', () => {
@@ -47,9 +47,8 @@ describe('ensureNumber', () => {
   test('Should return MISSING_VALUE when the input is a non-numeric string', () => {
     expect(ensureNumber('abc')).toBe(MISSING_VALUE);
   });
-  test.each(literals.filter((v) => !(typeof v === 'number')))(
-    'Should return MISSING_VALUE for %p',
-    (value) => expect(ensureNumber(value)).toBe(MISSING_VALUE)
+  test.each(literals.filter((v) => !(typeof v === 'number')))('Should return MISSING_VALUE for %p', (value) =>
+    expect(ensureNumber(value)).toBe(MISSING_VALUE)
   );
 });
 describe('ensureBoolean', () => {
@@ -61,9 +60,8 @@ describe('ensureBoolean', () => {
     expect(ensureBoolean(1)).toBe(true);
     expect(ensureBoolean(0)).toBe(false);
   });
-  test.each(literals.filter((v) => !(typeof v === 'boolean')))(
-    'Should return MISSING_VALUE for %p',
-    (value) => expect(ensureBoolean(value)).toBe(MISSING_VALUE)
+  test.each(literals.filter((v) => !(typeof v === 'boolean')))('Should return MISSING_VALUE for %p', (value) =>
+    expect(ensureBoolean(value)).toBe(MISSING_VALUE)
   );
 });
 describe('ensureImage', () => {
@@ -71,9 +69,7 @@ describe('ensureImage', () => {
     const validImage = { url: 'http://example.com/image.jpg' };
     expect(ensureImage(validImage)).toBe(validImage);
   });
-  test.each(literals)('Should return MISSING_VALUE for %p', (value) =>
-    expect(ensureImage(value)).toBe(MISSING_VALUE)
-  );
+  test.each(literals)('Should return MISSING_VALUE for %p', (value) => expect(ensureImage(value)).toBe(MISSING_VALUE));
 });
 describe('ensureDate', () => {
   test('Should return the Date object when the input is a valid date string', () => {
@@ -101,9 +97,8 @@ describe('ensureArray', () => {
     const expectedArray = [1, 2, 3];
     expect(ensureArray(validArray, ensureItem)).toEqual(expectedArray);
   });
-  test.each(literals.filter((v) => !Array.isArray(v)))(
-    'Should return MISSING_VALUE for %p',
-    (value) => expect(ensureArray(value, () => true)).toBe(MISSING_VALUE)
+  test.each(literals.filter((v) => !Array.isArray(v)))('Should return MISSING_VALUE for %p', (value) =>
+    expect(ensureArray(value, () => true)).toBe(MISSING_VALUE)
   );
 });
 describe('ensureUnique', () => {

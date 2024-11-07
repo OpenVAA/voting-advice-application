@@ -12,10 +12,9 @@ test('Should translate individual LocalizedValues', () => {
   expect(translate({ value, locale: 'en' })).toBe('Hello');
   expect(translate({ value, locale: 'fi' })).toBe('Moi');
   expect(translate({ value, locale: 'foo' }), 'To default to first value').toBe('Hello');
-  expect(
-    translate({ value: emptyValue, locale: 'en' }),
-    'To return the empty string if translations are empty'
-  ).toBe('');
+  expect(translate({ value: emptyValue, locale: 'en' }), 'To return the empty string if translations are empty').toBe(
+    ''
+  );
 });
 
 test('Should translate localizedTestData', () => {

@@ -15,10 +15,7 @@
     "type": {
       "pluginOptions": {},
       "type": "enumeration",
-      "enum": [
-        "geographic",
-        "ethnic"
-      ],
+      "enum": ["geographic", "ethnic"],
       "required": true
     },
     "elections": {

@@ -4,7 +4,7 @@ import { validatePassword } from '@openvaa/app-shared';
 import { errors } from '@strapi/utils';
 import fs from 'fs';
 import candidate from './controllers/candidate';
-import { restrictFilters,restrictPopulate } from '../../util/acl';
+import { restrictFilters, restrictPopulate } from '../../util/acl';
 
 const { ValidationError } = errors;
 
@@ -62,9 +62,7 @@ module.exports = async (plugin) => {
         }
       });
       if (!role) {
-        console.error(
-          `Failed to initialize default permissions due to missing role type: ${permission.roleType}`
-        );
+        console.error(`Failed to initialize default permissions due to missing role type: ${permission.roleType}`);
         continue;
       }
 
@@ -88,9 +86,7 @@ module.exports = async (plugin) => {
     const email = await pluginStore.get({ key: 'email' });
     // All options can be found here:
     // https://github.com/strapi/strapi/blob/2a2faea1d49c0d84077f66a57b3b73021a4c3ba7/packages/plugins/users-permissions/server/bootstrap/index.js#L41-L79
-    email.reset_password.options.message = fs
-      .readFileSync('config/email-templates/reset-password.html')
-      .toString();
+    email.reset_password.options.message = fs.readFileSync('config/email-templates/reset-password.html').toString();
     await pluginStore.set({ key: 'email', value: email });
 
     return res;

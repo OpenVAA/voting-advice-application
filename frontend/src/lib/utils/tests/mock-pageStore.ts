@@ -1,9 +1,9 @@
-import {writable} from 'svelte/store';
+import { writable } from 'svelte/store';
 
 // Source: https://github.com/sveltejs/kit/discussions/9759#discussioncomment-5715762
 
 type PageStore = {
-  params: {lang?: string};
+  params: { lang?: string };
   url: {
     pathname: string;
     search: string;
@@ -11,7 +11,7 @@ type PageStore = {
 };
 
 const mockIsAnonymousWritable = writable<PageStore>({
-  params: {lang: 'en'},
+  params: { lang: 'en' },
   url: {
     pathname: '/',
     search: ''
@@ -23,7 +23,7 @@ export const mockIsPageStore = {
   set: vi.fn(), // add as much store functions you need here and set them to vi.fn(), so you can call expect() functions on them
   mockSetSubscribeValue: (value: PageStore): void => mockIsAnonymousWritable.set(value),
   mockSetLocale: (lang?: string): void =>
-    mockIsAnonymousWritable.update((page) => ({...page, ...{params: {lang}}})),
+    mockIsAnonymousWritable.update((page) => ({ ...page, ...{ params: { lang } } })),
   mockSetPathnameAndSearch: (pathname: string, search: string): void =>
-    mockIsAnonymousWritable.update((page) => ({...page, ...{url: {pathname, search}}}))
+    mockIsAnonymousWritable.update((page) => ({ ...page, ...{ url: { pathname, search } } }))
 };

@@ -2,15 +2,14 @@
  * An API route for receiving feedback, which is written as a JSON file in the `data/feedback` folder. This is accessed via the `$lib/api/feedback.ts: sendFeedback` function.
  */
 
+import { error, json } from '@sveltejs/kit';
 import fs from 'fs';
 import path from 'path';
-import {error, json} from '@sveltejs/kit';
-import type {FeedbackData} from '$lib/api/dataProvider';
-import {DataFolder} from '$lib/api/dataProvider/local';
-import {logDebugError} from '$lib/utils/logger';
-import type {RequestHandler} from './$types';
+import { DataFolder } from '$lib/api/dataProvider/local';
+import { logDebugError } from '$lib/utils/logger';
+import type { FeedbackData } from '$lib/api/dataProvider';
 
-export const POST: RequestHandler = async ({request}) => {
+export async function POST({ request }) {
   logDebugError('[/api/feedback/+server.ts] Receiving feedback via the local API');
 
   try {
@@ -33,15 +32,14 @@ export const POST: RequestHandler = async ({request}) => {
     let suffix = 0;
     while (fs.existsSync(fp)) {
       fp = path.join(process.cwd(), DataFolder.Feedback, `${baseName}_${++suffix}.json`);
-      if (suffix > 50)
-        throw new Error(`Too many retries when trying to find an unused filename: ${fp}`);
+      if (suffix > 50) throw new Error(`Too many retries when trying to find an unused filename: ${fp}`);
     }
 
     fs.writeFileSync(fp, JSON.stringify(data, null, 2));
   } catch (e) {
-    if (e instanceof Error) error(400, {message: e.message});
-    error(400, {message: `An unknown error occured while writing feedback to disk: ${e}`});
+    if (e instanceof Error) error(400, { message: e.message });
+    error(400, { message: `An unknown error occured while writing feedback to disk: ${e}` });
   }
 
-  return json({ok: true});
-};
+  return json({ ok: true });
+}

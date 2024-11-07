@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {Field, FieldGroup} from '$lib/components/common/form';
+  import { Field, FieldGroup } from '$lib/components/common/form';
   import Icon from '$lib/components/icon/Icon.svelte';
-  import {t} from '$lib/i18n';
+  import { t } from '$lib/i18n';
   import InputContainer from './InputContainer.svelte';
-  import type {InputFieldProps} from './InputField.type';
+  import type { InputFieldProps } from './InputField.type';
 
   type $$Props = InputFieldProps<Array<number>>;
 
@@ -21,9 +21,7 @@
   let selectedOptions = Array<AnswerOption>();
 
   if (!options || options.length === 0) {
-    throw new Error(
-      `Could not find options for question with id '${questionId ? questionId : 'n/a'}'`
-    );
+    throw new Error(`Could not find options for question with id '${questionId ? questionId : 'n/a'}'`);
   }
 
   if (Array.isArray(value)) {
@@ -44,7 +42,7 @@
       selectedOptions = [...selectedOptions, selected];
       value = selectedOptions.map((option) => option.key);
       selectElement.selectedIndex = 0;
-      onChange?.({questionId, value});
+      onChange?.({ questionId, value });
     }
   }
 </script>
@@ -79,9 +77,7 @@ A component for a multiple choice question that can be answered.
   </p>
   <Field
     id={questionId}
-    label={selectedOptions.length > 0
-      ? $t('candidateApp.basicInfo.addAnother')
-      : $t('common.selectFirst')}>
+    label={selectedOptions.length > 0 ? $t('candidateApp.basicInfo.addAnother') : $t('common.selectFirst')}>
     <InputContainer {locked}>
       <select
         disabled={locked}
@@ -108,7 +104,7 @@ A component for a multiple choice question that can be answered.
             on:click={() => {
               selectedOptions = selectedOptions.filter((m) => m.key !== option.key);
               value = selectedOptions.map((option) => option.key);
-              onChange?.({questionId, value});
+              onChange?.({ questionId, value });
             }}>
             <Icon name="close" class="my-auto flex-shrink-0 text-secondary" />
           </button>

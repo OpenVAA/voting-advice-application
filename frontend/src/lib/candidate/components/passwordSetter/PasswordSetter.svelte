@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {Button} from '$lib/components/button';
-  import {PasswordField} from '$candidate/components/passwordField';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {PasswordValidator} from '$candidate/components/passwordValidator';
+  import { PasswordField } from '$candidate/components/passwordField';
+  import { PasswordValidator } from '$candidate/components/passwordValidator';
+  import { Button } from '$lib/components/button';
+  import { t } from '$lib/i18n';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
 
   export let password = '';
   export let passwordConfirmation = '';
@@ -41,19 +41,14 @@ a second confirmation password input field, a button for submitting the password
 ```
 -->
 
-<form
-  class="m-0 flex w-full flex-col flex-nowrap items-center"
-  on:submit|preventDefault={buttonPressed}>
+<form class="m-0 flex w-full flex-col flex-nowrap items-center" on:submit|preventDefault={buttonPressed}>
   <p class="m-0 text-center">
     {$t('candidateApp.setPassword.ingress')}
   </p>
   <PasswordValidator bind:validPassword {password} />
   <div class="mb-md flex w-full max-w-md flex-col gap-6">
     <PasswordField bind:password id="password" autocomplete={autocompleteString} />
-    <PasswordField
-      bind:password={passwordConfirmation}
-      id="passwordConfirmation"
-      autocomplete={autocompleteString} />
+    <PasswordField bind:password={passwordConfirmation} id="passwordConfirmation" autocomplete={autocompleteString} />
   </div>
 
   {#if errorMessage}
@@ -61,10 +56,6 @@ a second confirmation password input field, a button for submitting the password
       {errorMessage}
     </p>
   {/if}
-  <Button
-    type="submit"
-    disabled={!disableSetButton}
-    variant="main"
-    text={$t('candidateApp.setPassword.setPassword')} />
+  <Button type="submit" disabled={!disableSetButton} variant="main" text={$t('candidateApp.setPassword.setPassword')} />
   <Button href={$getRoute(ROUTE.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
 </form>

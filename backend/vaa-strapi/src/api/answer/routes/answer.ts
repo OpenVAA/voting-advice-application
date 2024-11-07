@@ -7,7 +7,8 @@ import {
   electionCanEditAnswers,
   restrictFilters,
   restrictPopulate,
-  restrictResourceOwnedByCandidate} from '../../../util/acl';
+  restrictResourceOwnedByCandidate
+} from '../../../util/acl';
 import { Generic } from '../../../util/acl.type';
 
 export default factories.createCoreRouter('api::answer.answer', {

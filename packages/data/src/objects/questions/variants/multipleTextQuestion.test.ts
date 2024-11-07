@@ -5,8 +5,7 @@ import { getTestData, getTestDataRoot } from '../../../testUtils';
 const root = getTestDataRoot();
 const questionData = getTestData().questions.questions;
 const objData = questionData.find((q) => q.type === QUESTION_TYPE.MultipleText);
-if (!objData)
-  throw new Error('Test setup error: Test data does not contain a MultipleText question');
+if (!objData) throw new Error('Test setup error: Test data does not contain a MultipleText question');
 
 test('Should assert value and not be matchable', () => {
   const obj = root.getQuestion(objData.id) as MultipleTextQuestion;

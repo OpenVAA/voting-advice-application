@@ -8,10 +8,7 @@ const questionData = getTestData().questions.questions;
 
 // We use a concrete subclass for easier testing.
 const objData = questionData.find((q) => q.type === QUESTION_TYPE.MultipleChoiceCategorical);
-if (!objData)
-  throw new Error(
-    'Test setup error: Test data does not contain a MultipleChoiceCategorical question'
-  );
+if (!objData) throw new Error('Test setup error: Test data does not contain a MultipleChoiceCategorical question');
 
 test('Should return choices based on ordered and allowDuplicates properties', () => {
   const obj = root.getQuestion(objData.id) as MultipleChoiceCategoricalQuestion;
@@ -20,26 +17,19 @@ test('Should return choices based on ordered and allowDuplicates properties', ()
 
   obj.data.allowDuplicates = false;
   obj.data.ordered = false;
-  expect(
-    obj.getChoices([...choiceIds].reverse()),
-    'To return choices in the order supplied'
-  ).toEqual(obj.choices.reverse());
+  expect(obj.getChoices([...choiceIds].reverse()), 'To return choices in the order supplied').toEqual(
+    obj.choices.reverse()
+  );
   expect(obj.getChoices([...choiceIds, ...choiceIds]), 'To remove duplicates').toEqual(obj.choices);
 
   obj.data.ordered = true;
-  expect(
-    obj.getChoices([...choiceIds].reverse()),
-    'To return choices in the original order'
-  ).toEqual(obj.choices);
+  expect(obj.getChoices([...choiceIds].reverse()), 'To return choices in the original order').toEqual(obj.choices);
 
   obj.data.allowDuplicates = true;
   expect(obj.allowDuplicates, 'To ordered override allowDuplicates').toBe(false);
 
   obj.data.ordered = false;
-  expect(obj.getChoices([...choiceIds, ...choiceIds]), 'To allow duplicates').toEqual([
-    ...obj.choices,
-    ...obj.choices
-  ]);
+  expect(obj.getChoices([...choiceIds, ...choiceIds]), 'To allow duplicates').toEqual([...obj.choices, ...obj.choices]);
 });
 
 test('Should assert value', () => {
@@ -51,13 +41,8 @@ test('Should assert value', () => {
   obj.data.ordered = false;
   expect(obj.ensureValue(choiceIds)).toEqual(choiceIds);
   expect(obj.ensureValue([...choiceIds, crypto.randomUUID()])).toEqual(MISSING_VALUE);
-  expect(obj.ensureValue([...choiceIds, ...choiceIds]), 'To disallow duplicates').toEqual(
-    MISSING_VALUE
-  );
+  expect(obj.ensureValue([...choiceIds, ...choiceIds]), 'To disallow duplicates').toEqual(MISSING_VALUE);
 
   obj.data.allowDuplicates = true;
-  expect(obj.ensureValue([...choiceIds, ...choiceIds]), 'To allow duplicates').toEqual([
-    ...choiceIds,
-    ...choiceIds
-  ]);
+  expect(obj.ensureValue([...choiceIds, ...choiceIds]), 'To allow duplicates').toEqual([...choiceIds, ...choiceIds]);
 });

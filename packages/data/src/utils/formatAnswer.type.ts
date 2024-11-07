@@ -6,7 +6,8 @@ import {
   QuestionVariantClass,
   SimpleQuestionType,
   SingleChoiceCategoricalQuestion,
-  SingleChoiceOrdinalQuestion} from '../internal';
+  SingleChoiceOrdinalQuestion
+} from '../internal';
 
 /**
  * The type for all `Answer.value` formatters.
@@ -41,10 +42,4 @@ export type CompatibleQuestionVariants<TType extends SimpleQuestionType> =
  * @param question - The `Question` toi which the `Answer` is missing.
  * @returns A formatted string representing the missing answer.
  */
-export type MissingAnswerFormatter = ({
-  locale,
-  question
-}: {
-  locale?: string;
-  question: QuestionVariant;
-}) => string;
+export type MissingAnswerFormatter = ({ locale, question }: { locale?: string; question: QuestionVariant }) => string;

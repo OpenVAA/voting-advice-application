@@ -2,17 +2,16 @@
  * app-customization controller
  */
 
-import {factories} from '@strapi/strapi';
-import {API} from '../../../functions/utils/api';
+import { factories } from '@strapi/strapi';
+import { API } from '../../../functions/utils/api';
 
 export default factories.createCoreController(API.AppCustomization, () => ({
   async find(ctx) {
     const response = await super.find(ctx);
 
     if (response) {
-      
-      const {candidateAppFAQ, translationOverrides} = response.data.attributes;
-       
+      const { candidateAppFAQ, translationOverrides } = response.data.attributes;
+
       /**
        *  The translations are originally in the format:
        *  Array<{
@@ -29,9 +28,9 @@ export default factories.createCoreController(API.AppCustomization, () => ({
        *      [translationKey: string]: string;
        *    }
        *  }
-       */ 
+       */
       if (translationOverrides) {
-        const byLocale: {[locale: string]: {[key: string]: string}} = {};
+        const byLocale: { [locale: string]: { [key: string]: string } } = {};
         translationOverrides.forEach((trsOverride) => {
           trsOverride.translations?.forEach((trs) => {
             if (trs.translation) {
@@ -56,15 +55,13 @@ export default factories.createCoreController(API.AppCustomization, () => ({
        *  }
        */
       if (candidateAppFAQ) {
-        const byLocale: {[locale: string]: Array<{question: string; answer: string}>} = {};
-        candidateAppFAQ
-          .forEach(({ locale, question, answer }) => {
-            byLocale[locale] ??= [];
-            byLocale[locale].push({ question, answer });
-          });
+        const byLocale: { [locale: string]: Array<{ question: string; answer: string }> } = {};
+        candidateAppFAQ.forEach(({ locale, question, answer }) => {
+          byLocale[locale] ??= [];
+          byLocale[locale].push({ question, answer });
+        });
         response.data.attributes.candidateAppFAQ = byLocale;
       }
-
     }
     return response;
   }

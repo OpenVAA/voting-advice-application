@@ -1,4 +1,4 @@
-import {locale} from '$lib/i18n';
+import { locale } from '$lib/i18n';
 
 /**
  * Sort candidates by election symbol, then last name, then first name.

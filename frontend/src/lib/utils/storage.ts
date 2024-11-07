@@ -1,9 +1,9 @@
-import {error} from '@sveltejs/kit';
-import {get, writable} from 'svelte/store';
-import type {Writable} from 'svelte/store';
-import {browser} from '$app/environment';
-import {settings} from '../stores/stores';
-import {logDebugError} from './logger';
+import { error } from '@sveltejs/kit';
+import { get, writable } from 'svelte/store';
+import { browser } from '$app/environment';
+import { logDebugError } from './logger';
+import { settings } from '../stores/stores';
+import type { Writable } from 'svelte/store';
 
 export type StorageType = 'localStorage' | 'sessionStorage';
 
@@ -42,11 +42,7 @@ export function sessionStorageWritable<TValue>(key: string, defaultValue: TValue
  * @param key The key to store the value under.
  * @param defaultValue The default value for the store.
  */
-export function storageWritable<TValue>(
-  type: StorageType,
-  key: string,
-  defaultValue: TValue
-): Writable<TValue> {
+export function storageWritable<TValue>(type: StorageType, key: string, defaultValue: TValue): Writable<TValue> {
   const value = getItemFromStorage<TValue>(type, key);
   // TODO: Check that the value matches the defaultValue's type
   const store = writable(value == null ? defaultValue : value) as Writable<TValue>;

@@ -1,10 +1,4 @@
-import type {
-  Constituency,
-  DataObjectData,
-  Election,
-  EntityType,
-  FilterValue,
-  Id} from '../../../internal';
+import type { Constituency, DataObjectData, Election, EntityType, FilterValue, Id } from '../../../internal';
 
 export interface QuestionAndCategoryBaseData extends DataObjectData {
   // From HasId

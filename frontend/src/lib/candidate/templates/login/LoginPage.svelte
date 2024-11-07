@@ -1,18 +1,18 @@
 <script lang="ts">
-  import {getContext} from 'svelte';
-  import {page} from '$app/stores';
-  import {t} from '$lib/i18n';
-  import {goto} from '$app/navigation';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {PasswordField} from '$lib/candidate/components/passwordField';
-  import {FrontPage} from '$lib/templates/frontPage';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import {customization, settings} from '$lib/stores';
-  import {darkMode} from '$lib/utils/darkMode';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { PasswordField } from '$lib/candidate/components/passwordField';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { t } from '$lib/i18n';
+  import { customization, settings } from '$lib/stores';
+  import { FrontPage } from '$lib/templates/frontPage';
+  import { darkMode } from '$lib/utils/darkMode';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
 
-  const {user, logIn, newUserEmail} = getContext<CandidateContext>('candidate');
+  const { user, logIn, newUserEmail } = getContext<CandidateContext>('candidate');
 
   let email = '';
   let password = '';
@@ -31,7 +31,7 @@
     } else {
       // If user has chosen an app language, change to that language
       if (appLanguageCode) {
-        await goto($getRoute({locale: appLanguageCode}));
+        await goto($getRoute({ locale: appLanguageCode }));
       }
     }
   }
@@ -92,9 +92,7 @@ Candidate login page. This component also takes care of the login process.
       <p class="text-center text-error">{$t('candidateApp.login.wrongEmailOrPassword')}</p>
     {/if}
     <Button type="submit" text={$t('common.login')} variant="main" />
-    <Button
-      href={$getRoute(ROUTE.CandAppForgotPassword)}
-      text={$t('candidateApp.login.forgotPassword')} />
+    <Button href={$getRoute(ROUTE.CandAppForgotPassword)} text={$t('candidateApp.login.forgotPassword')} />
     <Button href="mailto:{$settings.admin.email}" text={$t('candidateApp.common.contactSupport')} />
     <Button href={$getRoute(ROUTE.Home)} text={$t('candidateApp.common.voterApp')} />
   </form>

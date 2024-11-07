@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getAnswerForDisplay} from '$lib/utils/answers';
-  import {concatClass} from '$lib/utils/components';
-  import {parseMaybeRanked} from '$lib/utils/entities';
-  import {getLinkText} from '$lib/utils/links';
-  import {logDebugError} from '$lib/utils/logger';
-  import {ucFirst} from '$lib/utils/text/ucFirst';
-  import type {InfoAnswerProps} from './InfoAnswer.type';
+  import { t } from '$lib/i18n';
+  import { getAnswerForDisplay } from '$lib/utils/answers';
+  import { concatClass } from '$lib/utils/components';
+  import { parseMaybeRanked } from '$lib/utils/entities';
+  import { getLinkText } from '$lib/utils/links';
+  import { logDebugError } from '$lib/utils/logger';
+  import { ucFirst } from '$lib/utils/text/ucFirst';
+  import type { InfoAnswerProps } from './InfoAnswer.type';
 
   type $$Props = InfoAnswerProps;
 
@@ -76,11 +76,7 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
     {/each}
   </ol>
 {:else if question.type === 'link' && typeof answer === 'string'}
-  <a
-    href={answer}
-    target="_blank"
-    rel="noopener noreferrer"
-    {...concatClass($$restProps, 'vaa-tag hyphens-none')}>
+  <a href={answer} target="_blank" rel="noopener noreferrer" {...concatClass($$restProps, 'vaa-tag hyphens-none')}>
     {question.text}
   </a>
 {:else if question.type === 'linkList' && Array.isArray(answer)}
@@ -98,9 +94,7 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
     {ucFirst(answer)}
   </span>
 {:else}
-  {logError(
-    `InfoAnswer: Error displaying answer for question ${question.id}: ${answer} (${typeof answer})`
-  )}
+  {logError(`InfoAnswer: Error displaying answer for question ${question.id}: ${answer} (${typeof answer})`)}
 {/if}
 
 <style lang="postcss">

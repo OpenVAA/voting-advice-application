@@ -27,8 +27,7 @@ export class MatchingSpace {
   constructor({ shape, weights }: { shape: number | Shape; weights?: Array<number> }) {
     if (typeof shape === 'number') shape = Array.from({ length: shape }, () => 1);
     weights ??= Array.from({ length: shape.length }, () => 1);
-    if (shape.length !== weights.length)
-      throw new Error('Shape and weights must have the same length');
+    if (shape.length !== weights.length) throw new Error('Shape and weights must have the same length');
     this.shape = shape;
     this.weights = weights;
   }

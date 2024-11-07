@@ -1,15 +1,15 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {concatClass} from '$lib/utils/components';
-  import {appType} from '$lib/stores';
-  import {Icon} from '$lib/components/icon';
-  import {NavItem} from '$lib/components/navigation';
-  import {getLayoutContext} from '$lib/contexts/layout';
-  import {onDestroy} from 'svelte';
-  import {AppLogo} from '../parts/appLogo';
-  import {CandidateNav, VoterNav} from './parts';
-  import type {PageProps} from './Page.type';
+  import { onDestroy } from 'svelte';
+  import { Icon } from '$lib/components/icon';
+  import { NavItem } from '$lib/components/navigation';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { t } from '$lib/i18n';
+  import { appType } from '$lib/stores';
+  import { startEvent } from '$lib/utils/analytics/track';
+  import { concatClass } from '$lib/utils/components';
+  import { CandidateNav, VoterNav } from './parts';
+  import { AppLogo } from '../parts/appLogo';
+  import type { PageProps } from './Page.type';
 
   type $$Props = PageProps;
 
@@ -51,7 +51,7 @@
   /**
    * Create a context which can be used by the nested navigation components to close the drawer
    */
-  const {navigation} = getLayoutContext(onDestroy);
+  const { navigation } = getLayoutContext(onDestroy);
   navigation.close = closeDrawer;
 
   // TODO: Fix progress bar color on iOS Safari:
@@ -148,8 +148,7 @@ the Drawer component.
   <!-- Drawer content -->
   <div class="drawer-content flex flex-col {drawerContentClass ?? ''}">
     <header
-      class="min-h-header relative flex items-center justify-between bg-base-300 pr-6 pt-safet {headerClass ??
-        ''}">
+      class="min-h-header relative flex items-center justify-between bg-base-300 pr-6 pt-safet {headerClass ?? ''}">
       <button
         on:click={openDrawer}
         bind:this={drawerOpenElement}
@@ -180,8 +179,7 @@ the Drawer component.
     </header>
     <main
       id={mainId}
-      class="flex flex-grow flex-col items-center pb-safelgb pl-safelgl pr-safelgr pt-lg {mainClass ??
-        ''}">
+      class="flex flex-grow flex-col items-center pb-safelgb pl-safelgl pr-safelgr pt-lg {mainClass ?? ''}">
       <!-- Main page content -->
       <slot />
     </main>
@@ -196,12 +194,7 @@ the Drawer component.
       on:keyboardFocusOut={closeDrawer}
       class="h-full w-4/5 max-w-sm bg-base-100 {drawerOpen ? '' : 'hidden'}"
       id={navId}>
-      <NavItem
-        on:click={closeDrawer}
-        icon="close"
-        text={$t('common.closeMenu')}
-        class="pt-16"
-        id="drawerCloseButton" />
+      <NavItem on:click={closeDrawer} icon="close" text={$t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
     </svelte:component>
   </div>
 </div>

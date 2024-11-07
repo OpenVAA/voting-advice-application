@@ -6,7 +6,7 @@
  * @param locales The locales to find the target in
  * @returns The first matching locale in `locales` or `undefined` if not found.
  */
-export function matchLocale(targets: string | string[], locales: string[]): string | undefined {
+export function matchLocale(targets: string | Array<string>, locales: Array<string>): string | undefined {
   if (locales.length === 0) return undefined;
   for (const target of Array.isArray(targets) ? targets : [targets]) {
     // Wildcard match

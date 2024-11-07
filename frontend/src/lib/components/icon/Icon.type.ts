@@ -1,5 +1,5 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
-import type {IconName} from './icons';
+import type { SvelteHTMLElements } from 'svelte/elements';
+import type { IconName } from './icons';
 
 export type IconProps = SvelteHTMLElements['svg'] & {
   /** The name of the icon to use */

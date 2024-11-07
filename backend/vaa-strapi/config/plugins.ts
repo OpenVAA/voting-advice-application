@@ -1,4 +1,5 @@
-import aws from '@aws-sdk/client-ses';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const aws = require('@aws-sdk/client-ses');
 
 export default ({ env }) => {
   const isDev = env('NODE_ENV') === 'development';
@@ -46,9 +47,7 @@ export default ({ env }) => {
           /*
            * The base URL on production uses a dedicated subdomain which is linked to AWS S3 bucket via CNAME DNS record.
            **/
-          baseUrl: isDev
-            ? `${env('STATIC_CONTENT_BASE_URL')}/${env('AWS_S3_BUCKET')}`
-            : env('STATIC_CONTENT_BASE_URL'),
+          baseUrl: isDev ? `${env('STATIC_CONTENT_BASE_URL')}/${env('AWS_S3_BUCKET')}` : env('STATIC_CONTENT_BASE_URL'),
           rootPath: env('STATIC_MEDIA_CONTENT_PATH'),
           s3Options: {
             /*

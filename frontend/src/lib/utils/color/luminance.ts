@@ -1,4 +1,4 @@
-import type {RGB} from './rgb';
+import type { RGB } from './rgb';
 
 /** Luminance factors for rgb channels */
 export const LUM_F = [0.2126, 0.7152, 0.0722];
@@ -32,13 +32,7 @@ function valueToLum(v: number): number {
  * @param stepFactor The factor by which to increase or decrease the step size. @default 0.91
  * @returns The adjusted color
  */
-export function setLuminance(
-  color: RGB,
-  lum: number,
-  eps = 0.001,
-  maxSteps = 50,
-  stepFactor = 0.91
-) {
+export function setLuminance(color: RGB, lum: number, eps = 0.001, maxSteps = 50, stepFactor = 0.91) {
   lum = Math.min(Math.max(lum, 0), 1);
   let diff = lum - luminance(color);
   // The direction of adjustment
