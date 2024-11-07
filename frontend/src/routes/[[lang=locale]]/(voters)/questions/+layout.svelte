@@ -1,17 +1,17 @@
 <script lang="ts">
-  import {goto} from '$app/navigation';
-  import {opinionQuestions, settings} from '$lib/stores';
-  import {t} from '$lib/i18n';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {LoadingSpinner} from '$candidate/components/loadingSpinner';
-  import {onDestroy} from 'svelte';
-  import {getLayoutContext} from '$lib/contexts/layout';
-  import {getQuestionsContext} from './questions.context.js';
+  import { onDestroy } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { LoadingSpinner } from '$candidate/components/loadingSpinner';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { t } from '$lib/i18n';
+  import { opinionQuestions, settings } from '$lib/stores';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { getQuestionsContext } from './questions.context.js';
 
   export let data;
 
-  const {topBarSettings, progress} = getLayoutContext(onDestroy);
-  const {numSelectedQuestions} = getQuestionsContext();
+  const { topBarSettings, progress } = getLayoutContext(onDestroy);
+  const { numSelectedQuestions } = getQuestionsContext();
 
   topBarSettings.push({
     progress: 'show',

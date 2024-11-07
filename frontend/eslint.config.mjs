@@ -17,9 +17,7 @@ const compat = new FlatCompat({
 
 export default [
   ...sharedConfig,
-  ...compat.extends(
-    'plugin:svelte/prettier'
-  ),
+  ...compat.extends('plugin:svelte/prettier'),
   {
     ignores: [
       'ios/*',
@@ -36,7 +34,7 @@ export default [
       '**/package-lock.json',
       '**/yarn.lock',
       'src/app.html',
-      'src/error.html',
+      'src/error.html'
     ]
   },
   {
@@ -64,7 +62,7 @@ export default [
 
     settings: {
       'svelte/typescript': true
-    },
+    }
   },
   {
     files: ['**/*.svelte'],

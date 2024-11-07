@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
-  import {resetPassword} from '$lib/api/candidate';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {validatePassword} from '@openvaa/app-shared';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {PasswordSetter} from '$lib/candidate/components/passwordSetter';
-  import {FrontPage} from '$lib/templates/frontPage';
+  import { validatePassword } from '@openvaa/app-shared';
+  import { goto } from '$app/navigation';
+  import { resetPassword } from '$lib/api/candidate';
+  import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { t } from '$lib/i18n';
+  import { FrontPage } from '$lib/templates/frontPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
 
   export let code: string;
 

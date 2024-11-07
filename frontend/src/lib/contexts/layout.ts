@@ -1,10 +1,10 @@
-import {setContext, getContext, hasContext} from 'svelte';
-import {mergeSettings, type DeepPartial} from '$lib/utils/merge';
-import {stackedStore, type StackedStore} from '$lib/utils/stackedStore';
-import {type Writable, writable} from 'svelte/store';
-import {type Tweened, tweened} from 'svelte/motion';
-import {cubicOut} from 'svelte/easing';
-import {error} from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
+import { getContext, hasContext, setContext } from 'svelte';
+import { cubicOut } from 'svelte/easing';
+import { type Tweened, tweened } from 'svelte/motion';
+import { type Writable, writable } from 'svelte/store';
+import { type DeepPartial, mergeSettings } from '$lib/utils/merge';
+import { type StackedStore, stackedStore } from '$lib/utils/stackedStore';
 
 const LAYOUT_CONTEXT_KEY = Symbol();
 
@@ -33,10 +33,10 @@ export const DEFAULT_PAGE_STYLES: PageStyles = {
 export function initLayoutContext(): LayoutContext {
   if (hasContext(LAYOUT_CONTEXT_KEY)) error(500, 'InitLayoutContext() called for a second time');
 
-  const pageStyles = stackedStore<PageStyles, DeepPartial<PageStyles>>(
-    DEFAULT_PAGE_STYLES,
-    (current, value) => [...current, mergeSettings(current[current.length - 1], value)]
-  );
+  const pageStyles = stackedStore<PageStyles, DeepPartial<PageStyles>>(DEFAULT_PAGE_STYLES, (current, value) => [
+    ...current,
+    mergeSettings(current[current.length - 1], value)
+  ]);
   const topBarSettings = stackedStore<TopBarSettings, DeepPartial<TopBarSettings>>(
     DEFAULT_TOP_BAR_SETTINGS,
     (current, value) => [...current, mergeSettings(current[current.length - 1], value)]
@@ -66,8 +66,7 @@ export function initLayoutContext(): LayoutContext {
  * @returns The `LayoutContext` object
  */
 export function getLayoutContext(onDestroy: (fn: () => unknown) => void) {
-  if (!hasContext(LAYOUT_CONTEXT_KEY))
-    error(500, 'GetLayoutContext() called before initLayoutContext()');
+  if (!hasContext(LAYOUT_CONTEXT_KEY)) error(500, 'GetLayoutContext() called before initLayoutContext()');
   const ctx = getContext<LayoutContext>(LAYOUT_CONTEXT_KEY);
   const indexPageStyle = ctx.pageStyles.getLength() - 1;
   const indexTopBar = ctx.topBarSettings.getLength() - 1;

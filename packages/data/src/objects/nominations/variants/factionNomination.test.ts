@@ -21,10 +21,9 @@ test('Should have nomination objects for all faction nominations with the correc
     const obj = found[0];
     // The checks below are in effect already handled by findNominations, but double-checking doesn't hurt either
     if (!objData.parent) throw new Error('Data must have a parent entity');
-    expect(
-      obj.parentNomination?.entity.id,
-      'Parent nomination to refer to the correct entity'
-    ).toBe(objData.parent!.entityId);
+    expect(obj.parentNomination?.entity.id, 'Parent nomination to refer to the correct entity').toBe(
+      objData.parent!.entityId
+    );
     expect(
       contentsMatch(
         obj.candidateNominations.map((c) => c.entity.id),
@@ -57,9 +56,7 @@ function findNominations(
           obj.parentNomination?.entity.id === nominationData.parent.entityId &&
           // ...and the same candidates
           contentsMatch(
-            (nominationData as ExtendedNominationData<typeof ENTITY_TYPE.Faction>).candidates.map(
-              (c) => c.entityId
-            ),
+            (nominationData as ExtendedNominationData<typeof ENTITY_TYPE.Faction>).candidates.map((c) => c.entityId),
             obj.candidateNominations.map((c) => c.entity.id)
           )))
     )

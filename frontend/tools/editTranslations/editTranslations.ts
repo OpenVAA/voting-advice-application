@@ -82,15 +82,10 @@ async function replaceKeys(file: string): Promise<void> {
   }
 
   /** A map of old key regexes to new keys */
-  const replacements: Array<{ regex: RegExp; newKey: string }> = Object.entries(keyPairs).map(
-    ([oldKey, newKey]) => ({
-      regex: new RegExp(
-        `(?<=(?:\\$|\\b)${TRANSL_FUNCTION}\\s*\\(\\s*(['"]))${escapeRegExp(oldKey)}(?=\\1)`,
-        'gm'
-      ),
-      newKey
-    })
-  );
+  const replacements: Array<{ regex: RegExp; newKey: string }> = Object.entries(keyPairs).map(([oldKey, newKey]) => ({
+    regex: new RegExp(`(?<=(?:\\$|\\b)${TRANSL_FUNCTION}\\s*\\(\\s*(['"]))${escapeRegExp(oldKey)}(?=\\1)`, 'gm'),
+    newKey
+  }));
 
   const found = new Set<string>();
   let changed = 0;
@@ -159,9 +154,7 @@ function importTranslations(file: string): void {
 
   // Write the files
   for (const [outputPath, content] of Object.entries(fileContents)) writeFile(outputPath, content);
-  console.info(
-    `Wrote ${Object.keys(fileContents).length} translation files to folder ${OUTPUT_JSON}`
-  );
+  console.info(`Wrote ${Object.keys(fileContents).length} translation files to folder ${OUTPUT_JSON}`);
 
   // Write the index listing the keys
   const files = Object.keys(translations).map((f) => `  '${f}',`);
@@ -202,16 +195,14 @@ function readTsvTranslations(
     if ([oldKey, newKey].some((s) => !s)) throw new Error(`Invalid row: ${row}`);
 
     const newFile = items[2] || newKey.split('.')[0];
-    if (!newKey.startsWith(`${newFile}.`))
-      throw new Error(`New_key does not start with new_file: ${row}`);
+    if (!newKey.startsWith(`${newFile}.`)) throw new Error(`New_key does not start with new_file: ${row}`);
 
     const subkey = newKey.slice(newFile.length + 1);
     const values = Object.fromEntries(locales.map((l, i) => [l, items[i + 3]]));
 
     translations[newFile] ??= {};
     if (subkey in translations[newFile]) {
-      if (!silent)
-        console.warn(`Merging duplicate key ${newKey}, using the first encountered values`);
+      if (!silent) console.warn(`Merging duplicate key ${newKey}, using the first encountered values`);
       translations[newFile][subkey].oldKeys.push(oldKey);
       continue;
     }
@@ -235,16 +226,10 @@ function exportCurrentTranslations(file: string): void {
   const flatTranslations = Object.fromEntries(
     locales.map((l) => [l, Object.fromEntries(flattenKeys(translations[l]))])
   );
-  let tsv =
-    ['key', 'new_key', 'new_file', ...locales].map((s) => JSON.stringify(s)).join(COL_SEP) + '\n';
+  let tsv = ['key', 'new_key', 'new_file', ...locales].map((s) => JSON.stringify(s)).join(COL_SEP) + '\n';
   for (const key in flatTranslations[locales[0]]) {
     tsv +=
-      [
-        key,
-        key,
-        findFilePrefix(key),
-        ...locales.map((l) => flatTranslations[l][key] ?? MISSING_VALUE)
-      ]
+      [key, key, findFilePrefix(key), ...locales.map((l) => flatTranslations[l][key] ?? MISSING_VALUE)]
         .map((s) => JSON.stringify(s))
         .join(COL_SEP) + '\n';
   }
@@ -269,9 +254,7 @@ function readAllTranslations(): {
 } {
   const filePrefixes = new Array<string>();
   const translations: Translations = {};
-  const locales = fs
-    .readdirSync(TRANSL_DIR)
-    .filter((name) => fs.lstatSync(path.join(TRANSL_DIR, name)).isDirectory());
+  const locales = fs.readdirSync(TRANSL_DIR).filter((name) => fs.lstatSync(path.join(TRANSL_DIR, name)).isDirectory());
   for (const locale of locales) {
     const localeTranslations: Translations = {};
     const files = fs.readdirSync(path.join(TRANSL_DIR, locale));

@@ -31,9 +31,7 @@ for (const qc of root.questionCategories!.filter(
   console.info(`- ${qc}`);
 
 // Assume the user picked questionCategory-1 and questionCategory-2
-const questionCategories = ['questionCategory-2', 'questionCategory-3'].map((id) =>
-  root.getQuestionCategory(id)
-);
+const questionCategories = ['questionCategory-2', 'questionCategory-3'].map((id) => root.getQuestionCategory(id));
 console.info(`Selected categories: ${questionCategories.map((qc) => qc.shortName).join(' • ')}`);
 
 // Show the questions in the selected question categories and filtered by election and constituency
@@ -51,10 +49,8 @@ for (const on of election.getOrganizationNominations(constituency)) {
   let text = `- ${on.entity.name}`;
   if (on.electionSymbol) text += ` (${on.electionSymbol})`;
   if (on.allianceNomination) text += ` • in the alliance ${on.allianceNomination.name}`;
-  if (on.candidateNominations.length)
-    text += ` • listing ${on.candidateNominations.length} candidates`;
-  else if (on.factionNominations.length)
-    text += ` • listing ${on.factionNominations.length} factions`;
+  if (on.candidateNominations.length) text += ` • listing ${on.candidateNominations.length} candidates`;
+  else if (on.factionNominations.length) text += ` • listing ${on.factionNominations.length} factions`;
   else text += ' • fully closed list';
   console.info(text);
 }
@@ -65,8 +61,7 @@ for (const cn of election.getCandidateNominations(constituency)) {
   if (cn.electionSymbol) text += ` (${cn.electionSymbol})`;
   // NB. cn.list/factionList.name defaults to cn.list/factionList.entity.name
   if (cn.list) text += ` on party list ${cn.list.name}`;
-  else if (cn.factionList)
-    text += ` on faction list ${cn.factionList.name} of ${cn.factionList.list.name}`;
+  else if (cn.factionList) text += ` on faction list ${cn.factionList.name} of ${cn.factionList.list.name}`;
   else text += ' independent candidate';
   // The candidate may belong to a different organization from the one nominating them
   if (cn.entity.organization) text += ` • member of ${cn.entity.organization.name}`;
@@ -80,7 +75,5 @@ console.info('Select an entity to view');
 const entityType = ENTITY_TYPE.Candidate;
 const entity = root.getEntity(entityType, 'candidate-3');
 console.info(`Details for ${entity.type} '${entity.name}'`);
-for (const question of root.questions!.filter((q) =>
-  q.appliesTo({ ...filters, entityTypes: entityType })
-))
+for (const question of root.questions!.filter((q) => q.appliesTo({ ...filters, entityTypes: entityType })))
   console.info(`- ${question.name}: ${entity.getAnswer(question)?.value ?? '--'}`);

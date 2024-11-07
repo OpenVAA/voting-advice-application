@@ -10,10 +10,7 @@ const bgDark = staticSettings.colors?.dark?.['base-300'] ?? '1f2324';
  * @param colorDark The dark theme color
  * @returns An object with the adjusted colors
  */
-export function ensureColors(
-  color?: string,
-  colorDark?: string
-): { color: string; colorDark: string } {
+export function ensureColors(color?: string, colorDark?: string): { color: string; colorDark: string } {
   if (color) {
     color = adjustContrast(color, bg) ?? color;
   } else {

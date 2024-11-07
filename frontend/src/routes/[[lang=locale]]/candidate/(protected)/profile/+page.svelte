@@ -1,30 +1,30 @@
 <script lang="ts">
-  import {writable} from 'svelte/store';
-  import {t, defaultLocale} from '$lib/i18n';
-  import {isTranslation, translate} from '$lib/i18n/utils/translate';
-  import {Field, FieldGroup} from '$lib/components/common/form';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {getContext} from 'svelte';
-  import Warning from '$lib/components/warning/Warning.svelte';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import {Button} from '$lib/components/button';
-  import {goto} from '$app/navigation';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import type {CandidateAnswer, Nomination} from '$lib/types/candidateAttributes';
-  import {addAnswer, updateAnswer} from '$lib/api/candidate';
-  import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
-  import InputContainer from '$candidate/components/input/InputContainer.svelte';
+  import { getContext } from 'svelte';
+  import { writable } from 'svelte/store';
+  import { goto } from '$app/navigation';
   import {
+    BooleanInput,
+    DateInput,
+    MultipleChoiceInput,
     PhotoInput,
     SingleChoiceInput,
-    MultipleChoiceInput,
-    BooleanInput,
-    TextInput,
-    DateInput
+    TextInput
   } from '$candidate/components/input';
-  import {answerIsEmpty} from '$lib/utils/answers';
-  import type {TranslationKey} from '$types';
-  import {settings} from '$lib/stores';
+  import InputContainer from '$candidate/components/input/InputContainer.svelte';
+  import { addAnswer, updateAnswer } from '$lib/api/candidate';
+  import { Button } from '$lib/components/button';
+  import { Field, FieldGroup } from '$lib/components/common/form';
+  import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
+  import Warning from '$lib/components/warning/Warning.svelte';
+  import { defaultLocale, t } from '$lib/i18n';
+  import { isTranslation, translate } from '$lib/i18n/utils/translate';
+  import { settings } from '$lib/stores';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { answerIsEmpty } from '$lib/utils/answers';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { CandidateAnswer, Nomination } from '$lib/types/candidateAttributes';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { TranslationKey } from '$types';
 
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
   const headerClass = 'uppercase mx-6 my-0 p-0 small-label';
@@ -50,10 +50,10 @@
     if ($infoQuestions && !unsavedInfoAnswersInitialized) {
       $infoQuestions.forEach((question) => {
         if ($infoAnswers?.[question.id]) {
-          $unsavedInfoAnswers[question.id] = {value: $infoAnswers[question.id].value};
+          $unsavedInfoAnswers[question.id] = { value: $infoAnswers[question.id].value };
         } else {
           // Initialize unsavedInfoAnswers with undefined values for type consistency
-          $unsavedInfoAnswers[question.id] = {value: undefined};
+          $unsavedInfoAnswers[question.id] = { value: undefined };
         }
       });
       unsavedInfoAnswersInitialized = true;
@@ -143,8 +143,7 @@
 
     loading = false;
 
-    if ($unansweredOpinionQuestions?.length !== 0 && !$answersLocked)
-      await goto($getRoute(ROUTE.CandAppQuestions));
+    if ($unansweredOpinionQuestions?.length !== 0 && !$answersLocked) await goto($getRoute(ROUTE.CandAppQuestions));
     else await goto($getRoute(ROUTE.CandAppHome));
   }
 
@@ -196,8 +195,7 @@
   let submitButtonText = '';
 
   $: {
-    if ($unansweredOpinionQuestions?.length && !$answersLocked)
-      submitButtonText = $t('common.saveAndContinue');
+    if ($unansweredOpinionQuestions?.length && !$answersLocked) submitButtonText = $t('common.saveAndContinue');
     else if ($answersLocked) submitButtonText = $t('common.return');
     else submitButtonText = $t('common.saveAndReturn');
   }
@@ -208,10 +206,10 @@
    * @param value A `LocalizedString` or a `string`
    */
   function ensureLocalizedString(value: AnswerPropsValue): LocalizedString | undefined {
-    return !value ? undefined : isTranslation(value) ? value : {[defaultLocale]: `${value}`};
+    return !value ? undefined : isTranslation(value) ? value : { [defaultLocale]: `${value}` };
   }
 
-  function onChange(details: {questionId: string; value: AnswerPropsValue}) {
+  function onChange(details: { questionId: string; value: AnswerPropsValue }) {
     $unsavedInfoAnswers[details.questionId].value = details.value;
   }
 
@@ -250,12 +248,7 @@
           {#each basicInfoFields.filter((f) => f !== 'party' || $parties.length) as field}
             <Field id={field} label={$t(basicInfoLabels[field])}>
               <InputContainer locked>
-                <input
-                  type="text"
-                  disabled
-                  id={field}
-                  value={basicInfoData[field]}
-                  class={inputClass} />
+                <input type="text" disabled id={field} value={basicInfoData[field]} class={inputClass} />
               </InputContainer>
             </Field>
           {/each}
@@ -286,11 +279,7 @@
         </FieldGroup>
 
         <FieldGroup>
-          <PhotoInput
-            bind:photo
-            bind:uploadPhoto
-            disabled={$answersLocked}
-            onChange={() => (dirty = true)} />
+          <PhotoInput bind:photo bind:uploadPhoto disabled={$answersLocked} onChange={() => (dirty = true)} />
         </FieldGroup>
 
         {#each $infoQuestions as question}
@@ -330,16 +319,9 @@
               previousValue={ensureLocalizedString($infoAnswers[question.id]?.value)}
               {onChange} />
           {:else if question.type === 'date' && (typeof value === 'string' || value == null)}
-            <DateInput
-              questionId={question.id}
-              headerText={question.text}
-              locked={$answersLocked}
-              {value}
-              {onChange} />
+            <DateInput questionId={question.id} headerText={question.text} locked={$answersLocked} {value} {onChange} />
           {:else}
-            {showError(
-              $t('candidateApp.basicInfo.error.invalidQuestion', {questionId: question.id})
-            )}
+            {showError($t('candidateApp.basicInfo.error.invalidQuestion', { questionId: question.id }))}
           {/if}
         {/each}
 

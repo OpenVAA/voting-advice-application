@@ -1,18 +1,18 @@
 <script lang="ts">
-  import {onDestroy} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {afterNavigate, onNavigate} from '$app/navigation';
-  import {settings, showFeedbackPopup, showSurveyPopup, userPreferences} from '$lib/stores';
-  import {startPageview, submitAllEvents} from '$lib/utils/analytics/track';
-  import {DataConsentPopup} from '$lib/components/dataConsent/popup';
-  import {FeedbackPopup} from '$lib/components/feedback/popup';
-  import {SurveyPopup} from '$lib/components/survey/popup';
-  import type {BasicPageProps} from '$lib/templates/basicPage';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {NavItem} from '$lib/components/navigation';
-  import {VoterNav} from '$lib/templates/page/parts';
+  import { onDestroy } from 'svelte';
+  import { afterNavigate, onNavigate } from '$app/navigation';
+  import { DataConsentPopup } from '$lib/components/dataConsent/popup';
+  import { FeedbackPopup } from '$lib/components/feedback/popup';
+  import { NavItem } from '$lib/components/navigation';
+  import { SurveyPopup } from '$lib/components/survey/popup';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { t } from '$lib/i18n';
+  import { settings, showFeedbackPopup, showSurveyPopup, userPreferences } from '$lib/stores';
+  import { VoterNav } from '$lib/templates/page/parts';
+  import { startPageview, submitAllEvents } from '$lib/utils/analytics/track';
+  import { startEvent } from '$lib/utils/analytics/track';
   import Header from './Header.svelte';
-  import {getLayoutContext} from '$lib/contexts/layout';
+  import type { BasicPageProps } from '$lib/templates/basicPage';
 
   export let drawerToggleId: BasicPageProps['drawerToggleId'] = 'pageDrawerToggle';
   export let mainId: BasicPageProps['mainId'] = 'mainContent';
@@ -49,7 +49,7 @@
   /**
    * Init the context for layout changes.
    */
-  const {pageStyles, topBarSettings, navigation} = getLayoutContext(onDestroy);
+  const { pageStyles, topBarSettings, navigation } = getLayoutContext(onDestroy);
   topBarSettings.push({
     actions: {
       feedback: $settings.header.showFeedback ? 'show' : 'hide',
@@ -60,7 +60,7 @@
 
   onNavigate(() => submitAllEvents());
   onDestroy(() => submitAllEvents());
-  afterNavigate(({from, to}) => {
+  afterNavigate(({ from, to }) => {
     startPageview(to?.url?.href ?? '', from?.url?.href);
     if ($showFeedbackPopup) {
       setTimeout(() => (doShowFeedbackPopup = true), 225);
@@ -99,9 +99,7 @@
   <!-- Drawer content -->
   <div class="drawer-content flex flex-col {drawerContentClass ?? ''}">
     <Header {navId} {openDrawer} {drawerOpen} {drawerOpenElement} />
-    <main
-      id={mainId}
-      class="flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg">
+    <main id={mainId} class="flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg">
       <slot />
     </main>
   </div>
@@ -116,12 +114,7 @@
       on:keyboardFocusOut={closeDrawer}
       class="h-full w-4/5 max-w-sm bg-base-100 {drawerOpen ? '' : 'hidden'}"
       id={navId}>
-      <NavItem
-        on:click={closeDrawer}
-        icon="close"
-        text={$t('common.closeMenu')}
-        class="pt-16"
-        id="drawerCloseButton" />
+      <NavItem on:click={closeDrawer} icon="close" text={$t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
     </svelte:component>
   </div>
 </div>

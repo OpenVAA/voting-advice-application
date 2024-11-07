@@ -129,11 +129,7 @@ export abstract class Nomination<
    * A utility getter for the shortName of the nominated `Entity`.
    */
   get shortName(): string {
-    return this.data.shortName
-      ? this.data.shortName
-      : this.data.name
-        ? this.data.name
-        : this.entity.shortName;
+    return this.data.shortName ? this.data.shortName : this.data.name ? this.data.name : this.entity.shortName;
   }
 
   //////////////////////////////////////////////////////////////////////////////

@@ -94,20 +94,10 @@ export const t = {
     }
     return parsed == null ? key : parsed;
   }),
-  get: (key: string, payload?: TranslationsPayload) =>
-    get(i18n.t)(key, { ...defaultPayload, ...payload })
+  get: (key: string, payload?: TranslationsPayload) => get(i18n.t)(key, { ...defaultPayload, ...payload })
 };
 
-export const {
-  locale,
-  locales,
-  loading,
-  addTranslations,
-  loadTranslations,
-  translations,
-  setRoute,
-  setLocale
-} = i18n;
+export const { locale, locales, loading, addTranslations, loadTranslations, translations, setRoute, setLocale } = i18n;
 
 export { defaultLocale };
 

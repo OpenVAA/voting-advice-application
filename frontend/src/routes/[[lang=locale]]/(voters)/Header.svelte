@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
+  import { onDestroy } from 'svelte';
+  import { Icon } from '$lib/components/icon';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { t } from '$lib/i18n';
+  import { settings } from '$lib/stores';
+  import { AppLogo } from '$lib/templates/parts/appLogo';
+  import { darkMode } from '$lib/utils/darkMode';
   import Banner from './Banner.svelte';
-  import {Icon} from '$lib/components/icon';
-  import {AppLogo} from '$lib/templates/parts/appLogo';
-  import type {BasicPageProps} from '$lib/templates/basicPage/BasicPage.type';
-  import {darkMode} from '$lib/utils/darkMode';
-  import {settings} from '$lib/stores';
-  import {onDestroy} from 'svelte';
-  import {getLayoutContext} from '$lib/contexts/layout';
+  import type { BasicPageProps } from '$lib/templates/basicPage/BasicPage.type';
 
   export let navId: BasicPageProps['navId'] = 'pageNav';
 
@@ -27,7 +27,7 @@
   /** The complicated condition for invertLogo ensures that when video is present behind the header, the logo is always white. Invert would otherwise render the default logo in dark mode. */
   /* let invertLogo = hasVideo && screenWidth < Breakpoints.sm && !$darkMode; */
 
-  const {topBarSettings, progress} = getLayoutContext(onDestroy);
+  const { topBarSettings, progress } = getLayoutContext(onDestroy);
 
   const currentProgress = progress.current;
   const maxProgress = progress.max;
@@ -56,9 +56,7 @@
       max={$maxProgress}
       title={$t('common.progress')} />
   {/if}
-  <div
-    class="inner-actions-bar flex w-full items-center justify-between pr-6"
-    style:--background-color={bgColor}>
+  <div class="inner-actions-bar flex w-full items-center justify-between pr-6" style:--background-color={bgColor}>
     <!-- invertLogo ? 'text-primary-content' : 'text-neutral' -->
     <button
       on:click={openDrawer}

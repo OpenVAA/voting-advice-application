@@ -2,7 +2,7 @@
  * admin service
  */
 
-const getFormattedMessage = (content, registrationKey) => {
+function getFormattedMessage(content, registrationKey) {
   const url = new URL(process.env.PUBLIC_FRONTEND_URL ?? 'http://localhost:5173');
   url.pathname = '/candidate/register';
   url.searchParams.append('registrationCode', registrationKey);
@@ -11,7 +11,7 @@ const getFormattedMessage = (content, registrationKey) => {
   let text = content.replace(/{LINK}/g, `<a href="${resetUrl}">${resetUrl}</a>`);
   text = text.replace(/\n/g, '<br>');
   return text;
-};
+}
 
 module.exports = () => ({
   sendEmail: async (candidateId, subject, content) => {

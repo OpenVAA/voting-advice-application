@@ -1,12 +1,12 @@
 <script lang="ts">
-  import {createEventDispatcher, onDestroy} from 'svelte';
-  import {sendFeedback} from '$lib/api/sendFeedback';
-  import {t} from '$lib/i18n';
-  import {track} from '$lib/utils/analytics/track';
-  import {concatClass} from '$lib/utils/components';
-  import {setFeedbackStatus, settings} from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import type {FeedbacProps} from './Feedback.type';
+  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { sendFeedback } from '$lib/api/sendFeedback';
+  import { Button } from '$lib/components/button';
+  import { t } from '$lib/i18n';
+  import { setFeedbackStatus, settings } from '$lib/stores';
+  import { track } from '$lib/utils/analytics/track';
+  import { concatClass } from '$lib/utils/components';
+  import type { FeedbacProps } from './Feedback.type';
 
   type $$Props = FeedbacProps;
 
@@ -50,13 +50,13 @@
     status = 'sending';
     sendFeedback(rating, description).then((res) => {
       if (!res?.ok) {
-        track('feedback_error', {rating, description});
+        track('feedback_error', { rating, description });
         status = 'error';
         dispatch('error');
         return;
       }
       clearErrorTimeout();
-      track('feedback_sent', {rating, description});
+      track('feedback_sent', { rating, description });
       status = 'sent';
       dispatch('sent');
     });
@@ -90,9 +90,7 @@
    * Construct an email link with the subject and body of the email.
    */
   function getErrorEmail() {
-    const subject = encodeURIComponent(
-      `${$t('feedback.error.emailSubject')}: ${$t('dynamic.appName')}`
-    );
+    const subject = encodeURIComponent(`${$t('feedback.error.emailSubject')}: ${$t('dynamic.appName')}`);
     const start = `mailto:${$settings.admin.email}?subject=${encodeURIComponent(subject)}`;
     let end = `\n\nDate: ${new Date()}`;
     end += `\nURL: ${window?.location?.href ?? '-'}`;
@@ -161,17 +159,17 @@ Show a form for sending feedback.
       <input
         bind:this={zeroInput}
         on:click={() => (rating = undefined)}
-        aria-label={$t('feedback.rating.valueLabel', {rating: 0, ratingMax: MAX_RATING})}
+        aria-label={$t('feedback.rating.valueLabel', { rating: 0, ratingMax: MAX_RATING })}
         value={0}
         type="radio"
         name="rating"
         disabled={status !== 'default'}
         checked
         class="rating-hidden" />
-      {#each Array.from({length: MAX_RATING}, (_, i) => i + 1) as value}
+      {#each Array.from({ length: MAX_RATING }, (_, i) => i + 1) as value}
         <input
           on:click={() => (rating = value)}
-          aria-label={$t('feedback.rating.valueLabel', {rating: value, ratingMax: MAX_RATING})}
+          aria-label={$t('feedback.rating.valueLabel', { rating: value, ratingMax: MAX_RATING })}
           {value}
           type="radio"
           name="rating"
@@ -210,10 +208,7 @@ Show a form for sending feedback.
       </p>
       {#if $settings.admin.email}
         {@const mailto = getErrorEmail()}
-        <a
-          href={mailto}
-          target="_blank"
-          class="justify-self-center rounded-full bg-base-300 px-lg py-md"
+        <a href={mailto} target="_blank" class="justify-self-center rounded-full bg-base-300 px-lg py-md"
           >{$settings.admin.email}</a>
       {/if}
     </div>

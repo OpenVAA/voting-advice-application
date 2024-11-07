@@ -1,10 +1,4 @@
-import {
-  type CandidateData,
-  type DataAccessor,
-  Entity,
-  ENTITY_TYPE,
-  Organization
-} from '../../../internal';
+import { type CandidateData, type DataAccessor, Entity, ENTITY_TYPE, Organization } from '../../../internal';
 
 /**
  * The `Candidate` entity represents a person taking part in an election. In most circumstances, the `Candidate` is also associated with one or sometimes multiple `CandidateNomination`s, which represent the `Candidate` being nominated (either by themself or by an `Organization` or `Faction`) in `Election`-`Constituency` pairs.

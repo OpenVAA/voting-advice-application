@@ -1,8 +1,7 @@
 <script lang="ts">
-  import {Field, FieldGroup} from '$lib/components/common/form';
+  import { Field, FieldGroup } from '$lib/components/common/form';
   import InputContainer from './InputContainer.svelte';
-
-  import type {InputFieldProps} from './InputField.type';
+  import type { InputFieldProps } from './InputField.type';
 
   type $$Props = InputFieldProps<number>;
 
@@ -16,9 +15,7 @@
   let inputValue = value;
 
   if (!options || options.length === 0) {
-    throw new Error(
-      `Could not find options for question with id '${questionId ? questionId : 'n/a'}'`
-    );
+    throw new Error(`Could not find options for question with id '${questionId ? questionId : 'n/a'}'`);
   }
 </script>
 
@@ -54,7 +51,7 @@ A component for a single choice question that can be answered.
         class="select select-sm w-full text-right text-primary disabled:border-none disabled:bg-base-100"
         bind:value={inputValue}
         on:change={() => {
-          onChange?.({questionId, value: inputValue});
+          onChange?.({ questionId, value: inputValue });
         }}
         style="text-align-last: right; direction: rtl;">
         <option disabled selected value style="display: none;" />

@@ -63,9 +63,7 @@
           }
         }
       },
-      "tags": [
-        "Language"
-      ],
+      "tags": ["Language"],
       "parameters": [
         {
           "name": "sort",
@@ -237,9 +235,7 @@
           }
         }
       },
-      "tags": [
-        "Language"
-      ],
+      "tags": ["Language"],
       "parameters": [
         {
           "name": "id",

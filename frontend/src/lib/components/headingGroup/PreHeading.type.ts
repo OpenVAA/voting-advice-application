@@ -1,4 +1,4 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
+import type { SvelteHTMLElements } from 'svelte/elements';
 export type PreHeadingProps = SvelteHTMLElements['p'] & {
   /**
    * The Aria role description of the `<p>` element representing

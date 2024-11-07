@@ -1,16 +1,16 @@
 <script lang="ts">
-  import {onDestroy, onMount} from 'svelte';
-  import {fade} from 'svelte/transition';
-  import {beforeNavigate} from '$app/navigation';
-  import {locale, t} from '$lib/i18n';
-  import {startEvent, type TrackingEvent} from '$lib/utils/analytics/track';
-  import {concatClass} from '$lib/utils/components';
-  import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {Button} from '$lib/components/button';
-  import {Icon} from '$lib/components/icon';
-  import {Loading} from '$lib/components/loading';
-  import {videoPreferences} from './component-stores';
-  import type {PlayButtonAction, VideoMode, VideoProps, VideoTrackingEventData} from './Video.type';
+  import { onDestroy, onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
+  import { beforeNavigate } from '$app/navigation';
+  import { Button } from '$lib/components/button';
+  import { Icon } from '$lib/components/icon';
+  import { Loading } from '$lib/components/loading';
+  import { locale, t } from '$lib/i18n';
+  import { startEvent, type TrackingEvent } from '$lib/utils/analytics/track';
+  import { concatClass } from '$lib/utils/components';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
+  import { videoPreferences } from './component-stores';
+  import type { PlayButtonAction, VideoMode, VideoProps, VideoTrackingEventData } from './Video.type';
 
   ////////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
@@ -164,7 +164,7 @@
         return;
       }
       status = 'error';
-      addToEvent({shouldPlayError: true});
+      addToEvent({ shouldPlayError: true });
     }, ERROR_CHECK_INTERVAL);
   }
 
@@ -261,15 +261,13 @@
    * @param data
    */
   function addToEvent(
-    data:
-      | Partial<VideoTrackingEventData>
-      | ((current: VideoTrackingEventData) => VideoTrackingEventData)
+    data: Partial<VideoTrackingEventData> | ((current: VideoTrackingEventData) => VideoTrackingEventData)
   ) {
     if (!event) startVideoEvent();
     if (typeof data === 'function') {
       event!.data = data(event!.data);
     } else {
-      event!.data = {...event!.data, ...data};
+      event!.data = { ...event!.data, ...data };
     }
   }
 
@@ -373,11 +371,10 @@
     if (!video || (steps > 0 && atEnd)) return;
     let effectiveTime = video.currentTime;
     const cues = getTrack()?.cues;
-    if (!skipByCue || cues == null)
-      return gotoAndPlay(effectiveTime + (skipAmount ?? DEFAULT_SKIP_AMOUNT) * steps);
+    if (!skipByCue || cues == null) return gotoAndPlay(effectiveTime + (skipAmount ?? DEFAULT_SKIP_AMOUNT) * steps);
     const cue = (atEnd ? cues.length : findCue(effectiveTime)) + steps;
     seekTarget = cue < 0 ? 0 : cue >= cues.length ? duration : cues[cue].startTime;
-    addToEvent((data) => ({jump: `${data.jump ?? ''}${steps},`}));
+    addToEvent((data) => ({ jump: `${data.jump ?? ''}${steps},` }));
     return gotoAndPlay(seekTarget);
   }
 
@@ -455,12 +452,10 @@
   function buildTranscript() {
     const track = getTrack();
     if (!track?.cues) return;
-    const blocks: string[] = [];
+    const blocks: Array<string> = [];
     // Sometimes the cues continue from the previous cue, so we need may need to concatenate them
     let combined = '';
-    for (const cue of [...track.cues].filter(
-      (cue) => 'text' in cue && typeof cue.text === 'string'
-    )) {
+    for (const cue of [...track.cues].filter((cue) => 'text' in cue && typeof cue.text === 'string')) {
       let continued = false;
       let text = (cue as VTTCue).text.trim();
       // The text continues in the next cue
@@ -628,7 +623,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
       on:playing={() => (status = 'normal')}
       on:waiting={() => (status = 'waiting')}
       on:error={() => (status = 'error-pending')}
-      on:ended={() => addToEvent({ended: true})}
+      on:ended={() => addToEvent({ ended: true })}
       on:ended
       autoplay={autoPlay && !transcriptVisible}
       {poster}
@@ -679,13 +674,11 @@ User choices are stored in the `videoPreferences` store so that they persist acr
           aria-hidden="true"
           tabindex="-1"
           class="w-[33.333%] opacity-20 transition-colors duration-sm active:bg-gradient-to-l active:from-neutral active:to-50%"
-          class:hidden={atEnd}
-          ><span class="sr-only">{$t('components.video.jumpForward')}</span></button>
+          class:hidden={atEnd}><span class="sr-only">{$t('components.video.jumpForward')}</span></button>
       </div>
       <!-- Icon buttons -->
       <div
-        class="flex items-center justify-between px-sm py-4 {!hideControls ||
-        hideControls.length === 0
+        class="flex items-center justify-between px-sm py-4 {!hideControls || hideControls.length === 0
           ? "before:absolute before:bottom-0 before:left-0 before:right-0 before:h-[4rem] before:bg-gradient-to-t before:from-neutral before:from-50% before:opacity-50 before:content-['']"
           : ''}">
         {#if !hideControls.includes('transcript')}
@@ -715,9 +708,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
             on:click|once={tryUnmute}
             on:click={() => jump(-1)}
             text={$t('components.video.jumpBack')}
-            class="relative rounded-full !bg-opacity-30 {jumpBackPressed
-              ? 'bg-white'
-              : ''} active:bg-white" />
+            class="relative rounded-full !bg-opacity-30 {jumpBackPressed ? 'bg-white' : ''} active:bg-white" />
         {/if}
         {#if !hideControls.includes('pause')}
           <Button
@@ -727,9 +718,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
             on:click|once={tryUnmute}
             on:click={() => togglePlay()}
             text={$t(`components.video.${playButtonAction}`)}
-            class="relative rounded-full !bg-opacity-30 {togglePlayPressed
-              ? 'bg-white'
-              : ''} active:bg-white" />
+            class="relative rounded-full !bg-opacity-30 {togglePlayPressed ? 'bg-white' : ''} active:bg-white" />
         {/if}
         {#if !hideControls.includes('skip')}
           <Button
@@ -739,9 +728,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
             on:click|once={tryUnmute}
             on:click={() => jump(+1)}
             text={$t('components.video.jumpForward')}
-            class="relative rounded-full !bg-opacity-30 {jumpForwardPressed
-              ? 'bg-white'
-              : ''}  active:bg-white" />
+            class="relative rounded-full !bg-opacity-30 {jumpForwardPressed ? 'bg-white' : ''}  active:bg-white" />
         {/if}
         {#if !hideControls.includes('mute')}
           <Button
@@ -782,12 +769,8 @@ User choices are stored in the `videoPreferences` store so that they persist acr
         <div class="mt-sm text-center">
           {$t('components.video.error')}
         </div>
-        <Button
-          on:click={() => toggleTranscript(true)}
-          text={$t('components.video.showTranscript')} />
-        <button
-          on:click={() => (hideError = true)}
-          class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
+        <Button on:click={() => toggleTranscript(true)} text={$t('components.video.showTranscript')} />
+        <button on:click={() => (hideError = true)} class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
           <span aria-hidden="true">✕</span>
           <span class="sr-only">{$t('common.close')}</span>
         </button>

@@ -1,3 +1,5 @@
+# NB! Because of prettier’s limitations, these won’t have an effect when prettier is run at the repo root
+# If these are changed, apply to changes to the root .prettierignore as well
 .DS_Store
 node_modules
 /build
@@ -7,11 +9,10 @@ node_modules
 .env.*
 !.env.example
 coverage
+tailwind.config.cjs
 
 # Ignore files for PNPM, NPM and YARN
 pnpm-lock.yaml
 package.json
 package-lock.json
 yarn.lock
-
-tailwind.config.cjs

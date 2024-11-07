@@ -1,15 +1,9 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {surveyLink} from '$lib/utils/analytics/survey';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {
-    answeredQuestions,
-    openFeedbackModal,
-    resetVoterAnswers,
-    resultsAvailable,
-    settings
-  } from '$lib/stores';
-  import {Navigation, NavGroup, NavItem} from '$lib/components/navigation';
+  import { NavGroup, Navigation, NavItem } from '$lib/components/navigation';
+  import { t } from '$lib/i18n';
+  import { answeredQuestions, openFeedbackModal, resetVoterAnswers, resultsAvailable, settings } from '$lib/stores';
+  import { surveyLink } from '$lib/utils/analytics/survey';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
   import LanguageSelection from './LanguageSelection.svelte';
 
   let resultsAvailableSync = false;
@@ -63,11 +57,7 @@ A template part that outputs the navigation menu for the Voter App for use in th
   {#if $settings.survey?.showIn?.includes('navigation') || $openFeedbackModal}
     <NavGroup>
       {#if $settings.survey?.showIn?.includes('navigation')}
-        <NavItem
-          href={$surveyLink}
-          target="_blank"
-          icon="research"
-          text={$t('dynamic.survey.button')} />
+        <NavItem href={$surveyLink} target="_blank" icon="research" text={$t('dynamic.survey.button')} />
       {/if}
       {#if $openFeedbackModal}
         <NavItem on:click={$openFeedbackModal} icon="feedback" text={$t('feedback.send')} />

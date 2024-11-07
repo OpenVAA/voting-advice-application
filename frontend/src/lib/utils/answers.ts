@@ -21,10 +21,7 @@ export function getAnswer(entity: EntityProps, question: QuestionProps): AnswerP
  * @param question The Question object
  * @returns An `AnswerProps` object with an integer answer
  */
-export function getLikertAnswer(
-  entity: EntityProps,
-  question: QuestionProps
-): AnswerProps<number> | undefined {
+export function getLikertAnswer(entity: EntityProps, question: QuestionProps): AnswerProps<number> | undefined {
   if (question.type !== 'singleChoiceOrdinal') {
     logDebugError(`getLikertAnswer: Question ${question.id} is not a Likert question.`);
     return undefined;
@@ -48,10 +45,7 @@ export function getLikertAnswer(
  * @param question The Question object
  * @returns A string, an array of strings, or `undefined` if the answer is missing, invalid or would be an empty list
  */
-export function getAnswerForDisplay(
-  entity: EntityProps,
-  question: QuestionProps
-): string | Array<string> | undefined {
+export function getAnswerForDisplay(entity: EntityProps, question: QuestionProps): string | Array<string> | undefined {
   const { value } = getAnswer(entity, question) ?? {};
   if (value == null || value === '') return undefined;
   const qt = question.type;
@@ -73,8 +67,7 @@ export function getAnswerForDisplay(
     }
     return date.toLocaleDateString(locale.get(), format);
   }
-  if (['singleChoiceOrdinal', 'singleChoiceCategorical'].includes(qt))
-    return getChoiceLabel(question, value);
+  if (['singleChoiceOrdinal', 'singleChoiceCategorical'].includes(qt)) return getChoiceLabel(question, value);
   if (['multipleChoiceCategorical', 'preferenceOrder'].includes(qt)) {
     const labels = getChoiceLabels(question, value);
     return labels?.length ? labels : undefined;
@@ -114,10 +107,7 @@ function getChoiceLabel(question: QuestionProps, answer: AnswerProps['value']): 
  * @param answer The Candidate's answer
  * @returns The answer's translated labels or `undefined`
  */
-function getChoiceLabels(
-  question: QuestionProps,
-  answers: AnswerProps['value']
-): Array<string> | undefined {
+function getChoiceLabels(question: QuestionProps, answers: AnswerProps['value']): Array<string> | undefined {
   if (!Array.isArray(answers)) {
     logDebugError(`Invalid question answers (${answers}) for question ${question.id}`);
     return undefined;
@@ -161,10 +151,7 @@ export function answerIsEmpty(question: QuestionProps, answer?: AnswerProps): bo
   const answerValue = answer.value;
   if (question.type === 'boolean') {
     return answerValue == null;
-  } else if (
-    question.type === 'singleChoiceCategorical' ||
-    question.type === 'singleChoiceOrdinal'
-  ) {
+  } else if (question.type === 'singleChoiceCategorical' || question.type === 'singleChoiceOrdinal') {
     return answerValue === '' || answerValue == null;
   } else if (question.type === 'multipleChoiceCategorical') {
     return Array.isArray(answerValue) && answerValue.length === 0;

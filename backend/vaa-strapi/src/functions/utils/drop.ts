@@ -1,4 +1,4 @@
-import {API} from './api';
+import { API } from './api';
 
 /**
  * Drops all data in the collections
@@ -30,7 +30,7 @@ export async function getAllMedia() {
 /**
  * Deletes a list of media files in the media library.
  */
-export async function deleteMedia(files: unknown[]) {
+export async function deleteMedia(files: Array<unknown>) {
   for (const file of files) {
     await strapi.plugins.upload.services.upload.remove(file);
   }

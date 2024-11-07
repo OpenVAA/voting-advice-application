@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
-import { expect, request,test } from '@playwright/test';
-import { load }from 'cheerio';
+import { expect, request, test } from '@playwright/test';
+import { load } from 'cheerio';
 import { simpleParser } from 'mailparser';
 import path from 'path';
 import { TESTS_DIR } from './utils/testsDir';
@@ -11,16 +11,16 @@ import mockQuestionTypes from '../../backend/vaa-strapi/src/functions/mockData/m
 import { ROUTE } from '../../frontend/src/lib/utils/navigation/route';
 
 type Email = {
-  Id: string
-  Region: string
-  Source: string
-  RawData: string
-  Timestamp: string
-}
+  Id: string;
+  Region: string;
+  Source: string;
+  RawData: string;
+  Timestamp: string;
+};
 
 type Mailbox = {
-  messages: Array<Email>
-}
+  messages: Array<Email>;
+};
 
 const strapiPort = process.env.STRAPI_PORT || '1337';
 const strapiURL = `http://localhost:${strapiPort}`;
@@ -32,8 +32,7 @@ const userLastName = faker.person.lastName();
 const userEmail = `${userFirstName}.${userLastName}@example.com`.toLowerCase();
 const userPassword = 'Password1!';
 
-const userGender = mockQuestionTypes.find(({ name }) => name === 'Gender')?.settings.values?.[0]
-  .label.en;
+const userGender = mockQuestionTypes.find(({ name }) => name === 'Gender')?.settings.values?.[0].label.en;
 if (!userGender) throw new Error('Gender not found in mockQuestionTypes');
 
 const userBirthday = 'January 1';
@@ -63,10 +62,8 @@ if (!singleLangValues) throw new Error('Language not found in mockQuestionTypes'
 const selectedSingleLang = singleLangValues[0].label.en;
 
 const multiLangLabel = mockInfoQuestions.find(({ type }) => type === 'MultiLanguage')?.text.en;
-if (!multiLangLabel)
-  throw new Error('Question of type MultiLanguage not found in mockInfoQuestions');
-const multiLangValues = mockQuestionTypes.find(({ name }) => name === 'MultiLanguage')?.settings
-  .values;
+if (!multiLangLabel) throw new Error('Question of type MultiLanguage not found in mockInfoQuestions');
+const multiLangValues = mockQuestionTypes.find(({ name }) => name === 'MultiLanguage')?.settings.values;
 if (!multiLangValues) throw new Error('MultiLanguage not found in mockQuestionTypes');
 const selectedMultiLang = [multiLangValues[1].label.en, multiLangValues[2].label.en];
 
@@ -167,18 +164,18 @@ test('should log into Strapi and import candidates', async ({ page }) => {
   const req = await request.newContext();
 
   // Fetch emails from the local AWS SES mailbox
-  const response = await req.fetch(awsSesInboxURL)
-  const emails = await response.json().then((parsed: Mailbox) => parsed.messages)
+  const response = await req.fetch(awsSesInboxURL);
+  const emails = await response.json().then((parsed: Mailbox) => parsed.messages);
 
   // Get HTML from the latest email
-  const latestEmailData = emails.at(-1)?.RawData
-  const htmlContent = latestEmailData && (await simpleParser(latestEmailData)).textAsHtml
+  const latestEmailData = emails.at(-1)?.RawData;
+  const htmlContent = latestEmailData && (await simpleParser(latestEmailData)).textAsHtml;
 
   // Extract registration link from the HTML
   let registrationLink: string | undefined;
 
   if (htmlContent) {
-    const $ = load(htmlContent)
+    const $ = load(htmlContent);
     registrationLink = $($('a')[0]).attr('href');
   }
 
@@ -197,30 +194,18 @@ test('should log into Strapi and import candidates', async ({ page }) => {
   await page.locator('#password').fill(userPassword);
   await page.locator('#passwordConfirmation').fill('Password1!a');
   // Test password mismatch
-  await page
-    .getByRole('button', { name: T.en['candidateApp.setPassword.setPassword'], exact: true })
-    .click();
-  await expect(
-    page.getByText(T.en['candidateApp.setPassword.passwordsDontMatch'], { exact: true })
-  ).toBeVisible();
+  await page.getByRole('button', { name: T.en['candidateApp.setPassword.setPassword'], exact: true }).click();
+  await expect(page.getByText(T.en['candidateApp.setPassword.passwordsDontMatch'], { exact: true })).toBeVisible();
   // Correct the password
   await page.locator('#passwordConfirmation').fill(userPassword);
-  await page
-    .getByRole('button', { name: T.en['candidateApp.setPassword.setPassword'], exact: true })
-    .click();
+  await page.getByRole('button', { name: T.en['candidateApp.setPassword.setPassword'], exact: true }).click();
 
   // Check that the password was set by logging in
-  await expect(
-    page.getByText(T.en['candidateApp.setPassword.passwordSetSuccesfully'], { exact: true })
-  ).toBeVisible();
-  expect(
-    await page
-      .getByPlaceholder(T.en['candidateApp.common.emailPlaceholder'], { exact: true })
-      .inputValue()
-  ).toBe(userEmail);
-  await page
-    .getByPlaceholder(T.en['components.passwordInput.placeholder'], { exact: true })
-    .fill(userPassword);
+  await expect(page.getByText(T.en['candidateApp.setPassword.passwordSetSuccesfully'], { exact: true })).toBeVisible();
+  expect(await page.getByPlaceholder(T.en['candidateApp.common.emailPlaceholder'], { exact: true }).inputValue()).toBe(
+    userEmail
+  );
+  await page.getByPlaceholder(T.en['components.passwordInput.placeholder'], { exact: true }).fill(userPassword);
   await page.getByRole('button', { name: T.en['common.login'], exact: true }).click();
 
   // Check that the login was successful
@@ -238,12 +223,8 @@ test.describe('when logged in with imported user', () => {
     await page.getByLabel(T.en['common.logout'], { exact: true }).click();
 
     // Log in with the imported user
-    await page
-      .getByPlaceholder(T.en['candidateApp.common.emailPlaceholder'], { exact: true })
-      .fill(userEmail);
-    await page
-      .getByPlaceholder(T.en['components.passwordInput.placeholder'], { exact: true })
-      .fill(userPassword);
+    await page.getByPlaceholder(T.en['candidateApp.common.emailPlaceholder'], { exact: true }).fill(userEmail);
+    await page.getByPlaceholder(T.en['components.passwordInput.placeholder'], { exact: true }).fill(userPassword);
     await page.getByText(T.en['common.login'], { exact: true }).click();
   });
 
@@ -261,10 +242,7 @@ test.describe('when logged in with imported user', () => {
     await page.getByLabel(birthdayLabel, { exact: true }).fill(userBirthdayInput);
     const singleLangInput = page.getByLabel(singleLangLabel, { exact: true });
     await expect(singleLangInput).toBeVisible();
-    const multiLangInput = page
-      .getByText(multiLangLabel, { exact: true })
-      .locator('..')
-      .locator('select');
+    const multiLangInput = page.getByText(multiLangLabel, { exact: true }).locator('..').locator('select');
     await expect(multiLangInput).toBeVisible();
     const saveButton = page.locator('#submitButton');
 
@@ -287,15 +265,9 @@ test.describe('when logged in with imported user', () => {
     await multiLangInput.selectOption(selectedMultiLang[0]);
     await multiLangInput.selectOption(selectedMultiLang[1]);
 
-    await expect(
-      page.locator('form div').filter({ hasText: selectedSingleLang }).nth(3)
-    ).toBeVisible();
-    await expect(
-      page.locator('form div').filter({ hasText: selectedMultiLang[0] }).nth(3)
-    ).toBeVisible();
-    await expect(
-      page.locator('form div').filter({ hasText: selectedMultiLang[1] }).nth(3)
-    ).toBeVisible();
+    await expect(page.locator('form div').filter({ hasText: selectedSingleLang }).nth(3)).toBeVisible();
+    await expect(page.locator('form div').filter({ hasText: selectedMultiLang[0] }).nth(3)).toBeVisible();
+    await expect(page.locator('form div').filter({ hasText: selectedMultiLang[1] }).nth(3)).toBeVisible();
     await page.getByLabel(selectedMultiLang[1], { exact: true }).click();
 
     // Now submit the form
@@ -309,9 +281,7 @@ test.describe('when logged in with imported user', () => {
     await page.reload(); //Reload to make sure correct data is loaded to page
 
     // Expect correct texts on questions page
-    await expect(
-      page.getByText(T.en['candidateApp.questions.start'], { exact: true })
-    ).toBeVisible();
+    await expect(page.getByText(T.en['candidateApp.questions.start'], { exact: true })).toBeVisible();
     await page.getByRole('button', { name: T.en['common.continue'], exact: true }).click();
 
     // Expect Read More expander to exist
@@ -319,12 +289,8 @@ test.describe('when logged in with imported user', () => {
 
     // Answer first question and give comments
     await page.getByLabel(fullyAgree).click();
-    await page
-      .getByLabel(T.en['candidateApp.questions.openAnswerPrompt'], { exact: true })
-      .fill(comment);
-    await page
-      .getByRole('button', { name: T.en['components.multiLangInput.show'], exact: true })
-      .click();
+    await page.getByLabel(T.en['candidateApp.questions.openAnswerPrompt'], { exact: true }).fill(comment);
+    await page.getByRole('button', { name: T.en['components.multiLangInput.show'], exact: true }).click();
     await page.getByLabel(T.fi['lang.fi'], { exact: true }).fill('Lorem ipsum in Finnish');
     await page.getByRole('button', { name: T.en['common.saveAndContinue'], exact: true }).click();
     await page.waitForTimeout(500); //Wait so that UI has time to change (otherwise doesn't work all the time)
@@ -339,9 +305,7 @@ test.describe('when logged in with imported user', () => {
 
     // Expect to be at "You're Ready to Roll" page
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppHome}`);
-    await expect(
-      page.getByRole('heading', { name: T.en['candidateApp.home.ready'], exact: true })
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: T.en['candidateApp.home.ready'], exact: true })).toBeVisible();
 
     // Expect buttons to be visible and enabled
     await expect(
@@ -365,23 +329,16 @@ test.describe('when logged in with imported user', () => {
     ).toBeEnabled();
 
     // Check that buttons take to correct pages
-    await page
-      .getByRole('button', { name: T.en['candidateApp.home.basicInfo.edit'], exact: true })
-      .click();
+    await page.getByRole('button', { name: T.en['candidateApp.home.basicInfo.edit'], exact: true }).click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppProfile}`);
     const candidateUrl = `${baseURL}/${LOCALE}/${ROUTE.CandAppHome}`;
     await page.goto(candidateUrl);
 
-    await page
-      .getByRole('button', { name: T.en['candidateApp.home.questions.edit'], exact: true })
-      .click();
+    await page.getByRole('button', { name: T.en['candidateApp.home.questions.edit'], exact: true }).click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppQuestions}`);
     await page.goto(candidateUrl);
 
-    await page
-      .getByRole('button', { name: T.en['candidateApp.home.preview'], exact: true })
-      .first()
-      .click();
+    await page.getByRole('button', { name: T.en['candidateApp.home.preview'], exact: true }).first().click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppPreview}`);
     await page.goto(candidateUrl);
 
@@ -406,13 +363,9 @@ test.describe('when logged in with imported user', () => {
     await page.reload(); //Reload to make sure correct data is loaded to page
 
     // Expect correct heading and no warning
+    await expect(page.getByRole('heading', { name: T.en['candidateApp.questions.title'], exact: true })).toBeVisible();
     await expect(
-      page.getByRole('heading', { name: T.en['candidateApp.questions.title'], exact: true })
-    ).toBeVisible();
-    await expect(
-      page.getByText(
-        T.en['candidateApp.questions.unansweredWarning'].replace('{numUnansweredQuestions}', '0')
-      )
+      page.getByText(T.en['candidateApp.questions.unansweredWarning'].replace('{numUnansweredQuestions}', '0'))
     ).toBeHidden();
     await expect(
       page.getByRole('button', {
@@ -425,22 +378,15 @@ test.describe('when logged in with imported user', () => {
     await page.getByRole('checkbox').first().click();
 
     // Expect correct answer and comment text to be shown
-    await expect(
-      page.getByText(T.en['questions.answers.yourAnswer'], { exact: true }).first()
-    ).toBeVisible();
+    await expect(page.getByText(T.en['questions.answers.yourAnswer'], { exact: true }).first()).toBeVisible();
     await expect(page.getByText(fullyAgree).first()).toBeVisible();
     await expect(page.getByText(comment)).toBeVisible();
 
     // Go edit answer
-    await page
-      .getByRole('button', { name: T.en['candidateApp.questions.editAnswer'], exact: true })
-      .first()
-      .click();
+    await page.getByRole('button', { name: T.en['candidateApp.questions.editAnswer'], exact: true }).first().click();
 
     // Expect correct data for first question
-    await expect(
-      page.getByRole('heading', { name: mockQuestions[0].en, exact: true })
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: mockQuestions[0].en, exact: true })).toBeVisible();
     await expect(page.getByLabel(fullyAgree)).toBeChecked();
 
     // Check that button goes back to correct page
@@ -449,10 +395,7 @@ test.describe('when logged in with imported user', () => {
 
     // Go back and test cancel button
     await page.getByRole('checkbox').first().click();
-    await page
-      .getByRole('button', { name: T.en['candidateApp.questions.editAnswer'], exact: true })
-      .first()
-      .click();
+    await page.getByRole('button', { name: T.en['candidateApp.questions.editAnswer'], exact: true }).first().click();
 
     // Change opinion and press cancel
     await page.waitForTimeout(500);
@@ -476,14 +419,10 @@ test.describe('when logged in with imported user', () => {
 
     // Expect correct title and button
     await expect(page.getByText(T.en['candidateApp.preview.tip'], { exact: true })).toBeVisible();
-    await expect(
-      page.getByRole('button', { name: T.en['candidateApp.preview.close'], exact: true })
-    ).toBeEnabled();
+    await expect(page.getByRole('button', { name: T.en['candidateApp.preview.close'], exact: true })).toBeEnabled();
 
     // Expect correct data for the candidate
-    await expect(
-      page.getByRole('heading', { name: `${userFirstName} ${userLastName}` })
-    ).toBeVisible();
+    await expect(page.getByRole('heading', { name: `${userFirstName} ${userLastName}` })).toBeVisible();
 
     for (const lang of [selectedSingleLang, selectedMultiLang[0]]) {
       await expect(
@@ -503,9 +442,7 @@ test.describe('when logged in with imported user', () => {
     await expect(page.getByText(userBirthday, { exact: true })).toBeVisible();
 
     // Expect close button to take to start page
-    await page
-      .getByRole('button', { name: T.en['candidateApp.preview.close'], exact: true })
-      .click();
+    await page.getByRole('button', { name: T.en['candidateApp.preview.close'], exact: true }).click();
     await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppHome}`);
   });
 });

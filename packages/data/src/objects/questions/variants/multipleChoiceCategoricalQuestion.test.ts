@@ -5,10 +5,7 @@ import { getTestData, getTestDataRoot } from '../../../testUtils';
 const root = getTestDataRoot();
 const questionData = getTestData().questions.questions;
 const objData = questionData.find((q) => q.type === QUESTION_TYPE.MultipleChoiceCategorical);
-if (!objData)
-  throw new Error(
-    'Test setup error: Test data does not contain a MultipleChoiceCategorical question'
-  );
+if (!objData) throw new Error('Test setup error: Test data does not contain a MultipleChoiceCategorical question');
 
 test('Should not yet be matchable', () => {
   const obj = root.getQuestion(objData.id) as MultipleChoiceCategoricalQuestion;

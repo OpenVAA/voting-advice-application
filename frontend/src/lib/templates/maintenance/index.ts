@@ -1,1 +1,1 @@
-export {default as MaintenancePage} from './MaintenancePage.svelte';
+export { default as MaintenancePage } from './MaintenancePage.svelte';

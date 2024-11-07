@@ -1,2 +1,2 @@
-export {default as FeedbackModal} from './FeedbackModal.svelte';
+export { default as FeedbackModal } from './FeedbackModal.svelte';
 export * from './FeedbackModal.type';

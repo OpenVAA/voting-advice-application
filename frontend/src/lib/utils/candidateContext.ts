@@ -1,3 +1,4 @@
+import { derived, type Readable, type Writable, writable } from 'svelte/store';
 import {
   authenticate,
   getInfoAnswers,
@@ -7,9 +8,8 @@ import {
   getParties,
   me
 } from '$lib/api/candidate';
-import type {User, Progress, CandidateAnswer} from '$lib/types/candidateAttributes';
-import {derived, writable, type Writable, type Readable} from 'svelte/store';
-import {answerIsEmpty} from './answers';
+import { answerIsEmpty } from './answers';
+import type { CandidateAnswer, Progress, User } from '$lib/types/candidateAttributes';
 
 export interface CandidateContext {
   // Authentication
@@ -51,16 +51,11 @@ const parties = writable<Array<PartyProps> | undefined>(undefined);
 
 const answersLocked = writable<boolean | undefined>(undefined);
 
-const unansweredRequiredInfoQuestions = derived(
-  [infoQuestions, infoAnswers],
-  ([$infoQuestions, $infoAnswers]) => {
-    if (!$infoQuestions || !$infoAnswers) return;
-    const requiredQuestions = $infoQuestions.filter((question) => question.required);
-    return requiredQuestions.filter((question) =>
-      answerIsEmpty(question, {value: $infoAnswers?.[question.id]?.value})
-    );
-  }
-);
+const unansweredRequiredInfoQuestions = derived([infoQuestions, infoAnswers], ([$infoQuestions, $infoAnswers]) => {
+  if (!$infoQuestions || !$infoAnswers) return;
+  const requiredQuestions = $infoQuestions.filter((question) => question.required);
+  return requiredQuestions.filter((question) => answerIsEmpty(question, { value: $infoAnswers?.[question.id]?.value }));
+});
 
 const unansweredOpinionQuestions = derived(
   [opinionQuestions, opinionAnswers],
@@ -72,17 +67,14 @@ const unansweredOpinionQuestions = derived(
   }
 );
 
-const progress = derived(
-  [opinionAnswers, opinionQuestions],
-  ([$opinionAnswers, $opinionQuestions]) => {
-    if ($opinionAnswers && $opinionQuestions) {
-      return {
-        progress: Object.keys($opinionAnswers).length,
-        max: $opinionQuestions.length
-      };
-    }
+const progress = derived([opinionAnswers, opinionQuestions], ([$opinionAnswers, $opinionQuestions]) => {
+  if ($opinionAnswers && $opinionQuestions) {
+    return {
+      progress: Object.keys($opinionAnswers).length,
+      max: $opinionQuestions.length
+    };
   }
-);
+});
 
 async function logIn(email: string, password: string) {
   const response = await authenticate(email, password);

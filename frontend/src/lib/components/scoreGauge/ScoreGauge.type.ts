@@ -1,4 +1,4 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
+import type { SvelteHTMLElements } from 'svelte/elements';
 export type ScoreGaugeProps = SvelteHTMLElements['div'] & {
   /**
    * The score of the gauge in the range from 0 to `max`, usually 100.

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import {page} from '$app/stores';
-  import {t} from '$lib/i18n';
-  import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {BasicPage} from '$lib/templates/basicPage/';
-  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
+  import { page } from '$app/stores';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { t } from '$lib/i18n';
+  import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
+  import { BasicPage } from '$lib/templates/basicPage/';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
 
   let title: string;
   $: {

@@ -1,4 +1,4 @@
-import type {Schema, Attribute} from '@strapi/strapi';
+import type { Schema, Attribute } from '@strapi/strapi';
 
 export interface SettingsSurvey extends Schema.Component {
   collectionName: 'components_settings_surveys';
@@ -29,10 +29,8 @@ export interface SettingsResults extends Schema.Component {
       Attribute.CustomField<'plugin::multi-select.multi-select', ['candidate', 'party']>;
     showFeedbackPopup: Attribute.Integer;
     showSurveyPopup: Attribute.Integer;
-    candidateCardContents: Attribute.Component<'settings.results-candidate-card-contents', true> &
-      Attribute.Required;
-    partyCardContents: Attribute.Component<'settings.results-party-card-contents', true> &
-      Attribute.Required;
+    candidateCardContents: Attribute.Component<'settings.results-candidate-card-contents', true> & Attribute.Required;
+    partyCardContents: Attribute.Component<'settings.results-party-card-contents', true> & Attribute.Required;
   };
 }
 
@@ -108,8 +106,7 @@ export interface SettingsMatching extends Schema.Component {
   };
   attributes: {
     minimumAnswers: Attribute.Integer & Attribute.Required;
-    partyMatching: Attribute.Enumeration<['none', 'answersOnly', 'mean', 'median']> &
-      Attribute.Required;
+    partyMatching: Attribute.Enumeration<['none', 'answersOnly', 'mean', 'median']> & Attribute.Required;
   };
 }
 
@@ -144,10 +141,8 @@ export interface SettingsEntityDetails extends Schema.Component {
   };
   attributes: {
     contents: Attribute.Component<'settings.entity-details-contents'> & Attribute.Required;
-    showMissingElectionSymbol: Attribute.Component<'settings.entity-details-show-missing-elsmbl'> &
-      Attribute.Required;
-    showMissingAnswers: Attribute.Component<'settings.entity-details-show-missing-answers'> &
-      Attribute.Required;
+    showMissingElectionSymbol: Attribute.Component<'settings.entity-details-show-missing-elsmbl'> & Attribute.Required;
+    showMissingAnswers: Attribute.Component<'settings.entity-details-show-missing-answers'> & Attribute.Required;
   };
 }
 
@@ -187,10 +182,7 @@ export interface SettingsEntityDetailsContents extends Schema.Component {
       Attribute.CustomField<'plugin::multi-select.multi-select', ['info', 'opinions']>;
     party: Attribute.JSON &
       Attribute.Required &
-      Attribute.CustomField<
-        'plugin::multi-select.multi-select',
-        ['candidates', 'info', 'opinions']
-      >;
+      Attribute.CustomField<'plugin::multi-select.multi-select', ['candidates', 'info', 'opinions']>;
   };
 }
 

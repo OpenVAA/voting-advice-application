@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {Field, FieldGroup} from '$lib/components/common/form';
-  import {t} from '$lib/i18n';
-  import {onMount} from 'svelte';
+  import { onMount } from 'svelte';
+  import { Field, FieldGroup } from '$lib/components/common/form';
+  import { t } from '$lib/i18n';
   import InputContainer from './InputContainer.svelte';
-  import type {InputFieldProps} from './InputField.type';
+  import type { InputFieldProps } from './InputField.type';
 
   type $$Props = InputFieldProps<boolean>;
 
@@ -17,7 +17,7 @@
   let inputValue = value;
 
   onMount(() => {
-    onChange?.({questionId, value: inputValue});
+    onChange?.({ questionId, value: inputValue });
   });
 </script>
 
@@ -59,7 +59,7 @@ A component for a boolean question that can be answered.
           class="toggle toggle-primary mr-8"
           bind:checked={inputValue}
           on:change={() => {
-            onChange?.({questionId, value: inputValue});
+            onChange?.({ questionId, value: inputValue });
           }} />
       {:else}
         <input

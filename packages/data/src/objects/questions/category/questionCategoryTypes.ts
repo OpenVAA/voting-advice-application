@@ -19,5 +19,4 @@ export const QUESTION_CATEGORY_TYPE = {
 /**
  * The types of question categories.
  */
-export type QuestionCategoryType =
-  (typeof QUESTION_CATEGORY_TYPE)[keyof typeof QUESTION_CATEGORY_TYPE];
+export type QuestionCategoryType = (typeof QUESTION_CATEGORY_TYPE)[keyof typeof QUESTION_CATEGORY_TYPE];

@@ -38,24 +38,24 @@ export type QuestionTypeSettings =
     }
   | {
       type: 'singleChoiceOrdinal';
-      values: Choice[];
+      values: Array<Choice>;
       display?: 'vertical' | 'horizontal';
     }
   | {
       type: 'singleChoiceCategorical';
-      values: Choice[];
+      values: Array<Choice>;
       display?: 'vertical' | 'horizontal';
     }
   | {
       type: 'multipleChoiceCategorical';
-      values: Choice[];
+      values: Array<Choice>;
       display?: 'vertical' | 'horizontal';
       min?: number;
       max?: number;
     }
   | {
       type: 'preferenceOrder';
-      values: Choice[];
+      values: Array<Choice>;
       min?: number;
       max?: number;
     };
@@ -77,8 +77,8 @@ export type AnswerValue = {
   date: Date;
   singleChoiceOrdinal: Choice['key'];
   singleChoiceCategorical: Choice['key'];
-  multipleChoiceCategorical: Choice['key'][];
-  preferenceOrder: Choice['key'][];
+  multipleChoiceCategorical: Array<Choice['key']>;
+  preferenceOrder: Array<Choice['key']>;
 };
 
 export type EntityType = 'all' | 'candidate' | 'party';

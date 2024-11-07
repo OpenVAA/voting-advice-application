@@ -41,7 +41,9 @@ Currently, most components use attribute forwarding with [Svelte's `$$restProps`
 In most cases, default values for properties included in `$$restProps`, such as `aria-hidden` can be just added as attributes in the relevant element or component. The only thing to keep in mind is that they must precede `$$restProps`, otherwise they will override the values in it. For example:
 
 ```tsx
-<div aria-label="Default label" {...$$restProps}>...</div>
+<div aria-label="Default label" {...$$restProps}>
+  ...
+</div>
 ```
 
 However, if you want to concatenate values with properties in `$$restProps`, such as concatenating a default `class` string with one possibly defined in `$$restProps`, this should be added after `{...$$restProps}`. To make this easier, a `concatClass` helper function is provided in [`$lib/utils/components`](../../frontend/src/lib/utils/components.ts). For example:

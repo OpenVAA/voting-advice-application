@@ -19,9 +19,7 @@ function readTranslationsAndFlatten(): {
   [locale: string]: Record<TranslationKey, string>;
 } {
   const translations: Translations = {};
-  const locales = fs
-    .readdirSync(TRANSL_DIR)
-    .filter((name) => fs.lstatSync(path.join(TRANSL_DIR, name)).isDirectory());
+  const locales = fs.readdirSync(TRANSL_DIR).filter((name) => fs.lstatSync(path.join(TRANSL_DIR, name)).isDirectory());
   for (const locale of locales) {
     // The locale names are not included in the JSON translation files, so we need to add them manually
     const localeTranslations: Translations = { lang: { ...localeNames } };
@@ -44,10 +42,7 @@ function readTranslationsAndFlatten(): {
  * A recursive function which returns sorted array of flattened keys with their associated values.
  * @example `{a: 'abc', b: {c: 'def'}}` becomes `[['a', 'abc'], ['b.c', 'def']]`
  */
-function flattenKeys(
-  obj: Translations | string,
-  prefix: string = ''
-): Array<[TranslationKey, string]> {
+function flattenKeys(obj: Translations | string, prefix: string = ''): Array<[TranslationKey, string]> {
   const res = Array<[TranslationKey, string]>();
   for (const [key, value] of Object.entries(obj)) {
     const newKey = `${prefix}${key}`;

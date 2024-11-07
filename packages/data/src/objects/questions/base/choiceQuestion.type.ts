@@ -1,9 +1,7 @@
-import type { Choice, ChoiceQuestionType,QuestionData } from '../../../internal';
+import type { Choice, ChoiceQuestionType, QuestionData } from '../../../internal';
 
-export interface ChoiceQuestionData<
-  TType extends ChoiceQuestionType = ChoiceQuestionType,
-  TValue = undefined
-> extends QuestionData<TType> {
+export interface ChoiceQuestionData<TType extends ChoiceQuestionType = ChoiceQuestionType, TValue = undefined>
+  extends QuestionData<TType> {
   // From HasId
   // - id: Id;
   //

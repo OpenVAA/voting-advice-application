@@ -3,7 +3,8 @@ import {
   type Id,
   type MatchableQuestion,
   MISSING_VALUE,
-  normalizeCoordinate} from '@openvaa/core';
+  normalizeCoordinate
+} from '@openvaa/core';
 
 interface MultipleChoiceValue {
   id: Id;
@@ -48,8 +49,7 @@ export class OrdinalQuestion implements MatchableQuestion {
    */
   normalizeValue(value: unknown): CoordinateOrMissing {
     if (value == null) return MISSING_VALUE;
-    if (!(typeof value === 'string'))
-      throw new Error(`Value must be a string! Got ${typeof value}`);
+    if (!(typeof value === 'string')) throw new Error(`Value must be a string! Got ${typeof value}`);
     const choiceValue = this.values.find((v) => v.id === value)?.value;
     if (choiceValue == null) throw new Error(`Choice with id ${value} not found in question.`);
     return normalizeCoordinate({ value: choiceValue, min: this.minValue, max: this.maxValue });

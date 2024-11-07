@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {concatProps, getUUID} from '$lib/utils/components';
-  import type {ScoreGaugeProps} from './ScoreGauge.type';
+  import { concatProps, getUUID } from '$lib/utils/components';
+  import type { ScoreGaugeProps } from './ScoreGauge.type';
 
   type $$Props = ScoreGaugeProps;
 
@@ -84,11 +84,7 @@ Show a radial or a linear score gauge for a sub-match.
     </div>
   {/if}
   <div class="grid grid-cols-[minmax(0,_1fr)_fit-content(100%)] gap-sm justify-self-stretch">
-    <label
-      class="grow truncate text-sm text-secondary"
-      for={labelId}
-      id={labelId}
-      aria-hidden="true">
+    <label class="grow truncate text-sm text-secondary" for={labelId} id={labelId} aria-hidden="true">
       {label}
     </label>
     {#if variant === 'linear' && showScore}
@@ -135,8 +131,7 @@ Show a radial or a linear score gauge for a sub-match.
   /* This is the css rule copied from DaisyUI with the last line (oklch(var(--b3))) added to create the full circle background */
   .radial-progress:before {
     background:
-      radial-gradient(farthest-side, currentColor 98%, #0000) top/var(--thickness) var(--thickness)
-        no-repeat,
+      radial-gradient(farthest-side, currentColor 98%, #0000) top/var(--thickness) var(--thickness) no-repeat,
       conic-gradient(currentColor calc(var(--value) * 1%), #0000 0),
       oklch(var(--b3));
   }

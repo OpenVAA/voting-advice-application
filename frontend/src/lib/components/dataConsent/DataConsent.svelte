@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {concatClass} from '$lib/utils/components';
-  import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {setDataConsent, settings, userPreferences} from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {DataConsentInfoButton} from './';
-  import type {DataConsentEvents, DataConsentProps} from './DataConsent.type';
-  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
+  import { createEventDispatcher } from 'svelte';
+  import { Button } from '$lib/components/button';
+  import { t } from '$lib/i18n';
+  import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
+  import { setDataConsent, settings, userPreferences } from '$lib/stores';
+  import { concatClass } from '$lib/utils/components';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
+  import { DataConsentInfoButton } from './';
+  import type { DataConsentEvents, DataConsentProps } from './DataConsent.type';
 
   type $$Props = DataConsentProps;
 
@@ -17,7 +17,7 @@
 
   function onChange(consent: UserDataCollectionConsent) {
     if (consent !== $userPreferences.dataCollection?.consent) setDataConsent(consent);
-    dispatchEvent('change', {consent});
+    dispatchEvent('change', { consent });
   }
 </script>
 
@@ -52,18 +52,14 @@ Show buttons opting in or out of data collection and possibly information about 
       <p>{@html sanitizeHtml($t('common.privacy.dataCollection.content'))}</p>
       <p>
         {@html sanitizeHtml(
-          $t(
-            assertTranslationKey(`privacy.dataContentPlatform.${$settings.analytics.platform.name}`)
-          )
+          $t(assertTranslationKey(`privacy.dataContentPlatform.${$settings.analytics.platform.name}`))
         )}
       </p>
     </div>
     <p class="mt-md text-center font-bold">
       {$t(
-        assertTranslationKey(
-          `privacy.dataConsentIntro.${$userPreferences.dataCollection?.consent ?? 'indetermined'}`
-        ),
-        {consentDate: new Date($userPreferences.dataCollection?.date ?? '')}
+        assertTranslationKey(`privacy.dataConsentIntro.${$userPreferences.dataCollection?.consent ?? 'indetermined'}`),
+        { consentDate: new Date($userPreferences.dataCollection?.date ?? '') }
       )}
     </p>
   {/if}

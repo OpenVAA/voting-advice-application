@@ -4,7 +4,8 @@ import type {
   NestedNomination,
   NominationData,
   PublicOrganizationNominationData,
-  WithOptional} from '../../../internal';
+  WithOptional
+} from '../../../internal';
 
 export interface AllianceNominationData extends NominationData<typeof ENTITY_TYPE.Alliance> {
   // From HasId

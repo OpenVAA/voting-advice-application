@@ -1,10 +1,10 @@
-import {get} from 'svelte/store';
-import {constants} from '$lib/utils/constants';
-import {candidateContext} from '$lib/utils/candidateContext';
-import type {Language, User, Photo, CandidateAnswer} from '$lib/types/candidateAttributes';
-import type {StrapiAnswerData, StrapiLanguageData, StrapiResponse} from './dataProvider/strapi';
-import {dataProvider} from '$lib/api/dataProvider/strapi/strapiDataProvider';
-import {locale} from '$lib/i18n';
+import { get } from 'svelte/store';
+import { dataProvider } from '$lib/api/dataProvider/strapi/strapiDataProvider';
+import { locale } from '$lib/i18n';
+import { candidateContext } from '$lib/utils/candidateContext';
+import { constants } from '$lib/utils/constants';
+import type { CandidateAnswer, Language, Photo, User } from '$lib/types/candidateAttributes';
+import type { StrapiAnswerData, StrapiLanguageData, StrapiResponse } from './dataProvider/strapi';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
   const url = new URL(constants.PUBLIC_BACKEND_URL);
@@ -20,7 +20,7 @@ export function authenticate(identifier: string, password: string): Promise<Resp
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({identifier, password})
+    body: JSON.stringify({ identifier, password })
   });
 }
 
@@ -30,7 +30,7 @@ export function register(registrationKey: string, password: string): Promise<Res
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({registrationKey, password})
+    body: JSON.stringify({ registrationKey, password })
   });
 }
 
@@ -40,7 +40,7 @@ export function requestForgotPasswordLink(email: string): Promise<Response> {
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({email})
+    body: JSON.stringify({ email })
   });
 }
 
@@ -65,11 +65,11 @@ export function checkRegistrationKey(registrationKey: string): Promise<Response>
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({registrationKey})
+    body: JSON.stringify({ registrationKey })
   });
 }
 
-type UserData = User & {error: unknown};
+type UserData = User & { error: unknown };
 
 /**
  * Get the current user's data, including candidate information
@@ -162,14 +162,14 @@ export async function changePassword(currentPassword: string, password: string) 
  * Get all info questions.
  */
 export async function getInfoQuestions(): Promise<Array<QuestionProps>> {
-  return await dataProvider.getInfoQuestions({locale: locale.get()});
+  return await dataProvider.getInfoQuestions({ locale: locale.get() });
 }
 
 /**
  * Get all opinion questions.
  */
 export async function getOpinionQuestions(): Promise<Array<QuestionProps>> {
-  return await dataProvider.getOpinionQuestions({locale: locale.get()});
+  return await dataProvider.getOpinionQuestions({ locale: locale.get() });
 }
 
 /**
@@ -315,7 +315,7 @@ export async function getLanguages(): Promise<Array<StrapiLanguageData> | undefi
  * Get all parties.
  */
 export async function getParties(): Promise<Array<PartyProps>> {
-  return await dataProvider.getAllParties({locale: locale.get()});
+  return await dataProvider.getAllParties({ locale: locale.get() });
 }
 
 export async function uploadFiles(files: Array<File>) {
@@ -328,7 +328,7 @@ export async function uploadFiles(files: Array<File>) {
 }
 
 export async function deleteFile(id: number) {
-  return request(getUrl(`/api/upload/files/${id}`), {method: 'DELETE'});
+  return request(getUrl(`/api/upload/files/${id}`), { method: 'DELETE' });
 }
 
 export async function request(url: string, options: RequestInit = {}) {

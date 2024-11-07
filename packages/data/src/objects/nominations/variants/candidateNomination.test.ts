@@ -1,11 +1,6 @@
 import { expect, test } from 'vitest';
 import { CandidateNomination, ENTITY_TYPE, parseNominationTree } from '../../../internal';
-import {
-  ExtendedNominationData,
-  getTestData,
-  getTestDataRoot,
-  parseNestedNominations
-} from '../../../testUtils';
+import { ExtendedNominationData, getTestData, getTestDataRoot, parseNestedNominations } from '../../../testUtils';
 
 const root = getTestDataRoot();
 const data = getTestData();
@@ -24,10 +19,9 @@ test('Should have nomination objects for all candidate nominations with the corr
         objData.parent.entityType
       );
       if (objData.parent.entityId)
-        expect(
-          obj.parentNomination?.entity.id,
-          'Parent nomination to refer to the correct explicit entity'
-        ).toBe(objData.parent.entityId);
+        expect(obj.parentNomination?.entity.id, 'Parent nomination to refer to the correct explicit entity').toBe(
+          objData.parent.entityId
+        );
     } else {
       expect(obj.parentNomination, 'Parent nomination to be null').toBeNull();
     }
@@ -56,13 +50,11 @@ function findNominations(
         (nominationData.parent?.entityType === ENTITY_TYPE.Faction &&
           obj.factionList?.parentNomination &&
           // Explicit faction: check faction id
-          ((nominationData.parent.entityId &&
-            obj.factionList.entity.id === nominationData.parent.entityId) ||
+          ((nominationData.parent.entityId && obj.factionList.entity.id === nominationData.parent.entityId) ||
             // Implicit faction: check that faction’s parent organization id
             (!nominationData.parent.entityId &&
               nominationData.parent.parent &&
-              obj.factionList.parentNomination.entity.id ===
-                nominationData.parent.parent.entityId))) ||
+              obj.factionList.parentNomination.entity.id === nominationData.parent.parent.entityId))) ||
         // Organization parent
         (nominationData.parent?.entityType === ENTITY_TYPE.Organization &&
           obj.list &&

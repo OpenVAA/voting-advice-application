@@ -1,19 +1,19 @@
 <script lang="ts">
-  import {goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
-  import {getContext} from 'svelte';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {addAnswer, updateAnswer} from '$lib/api/candidate';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Button} from '$lib/components/button';
-  import {CategoryTag} from '$lib/components/categoryTag';
-  import {LikertResponseButtons, QuestionInfo} from '$lib/components/questions';
-  import {MultilangTextInput} from '$candidate/components/textArea';
-  import {Warning} from '$lib/components/warning';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import type {QuestionPageProps} from './QuestionPage.type';
-  import type {CandidateAnswer} from '$types/candidateAttributes';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { MultilangTextInput } from '$candidate/components/textArea';
+  import { addAnswer, updateAnswer } from '$lib/api/candidate';
+  import { Button } from '$lib/components/button';
+  import { CategoryTag } from '$lib/components/categoryTag';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { LikertResponseButtons, QuestionInfo } from '$lib/components/questions';
+  import { Warning } from '$lib/components/warning';
+  import { t } from '$lib/i18n';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { CandidateAnswer } from '$types/candidateAttributes';
+  import type { QuestionPageProps } from './QuestionPage.type';
 
   type $$Props = QuestionPageProps;
   export let currentQuestion: $$Props['currentQuestion'];
@@ -31,7 +31,7 @@
   let questionIndex: number | undefined;
   let selectedKey: AnswerOption['key'] | undefined;
 
-  const {opinionAnswers, progress, answersLocked, opinionQuestions, unansweredOpinionQuestions} =
+  const { opinionAnswers, progress, answersLocked, opinionQuestions, unansweredOpinionQuestions } =
     getContext<CandidateContext>('candidate');
 
   $: {
@@ -57,7 +57,7 @@
     options = currentQuestion.values ?? [];
   }
 
-  const saveLikertToLocal = ({detail}: CustomEvent) => {
+  function saveLikertToLocal({ detail }: CustomEvent) {
     selectedKey = detail.value;
     localStorage.setItem(likertLocal, detail.value);
   }
@@ -113,11 +113,7 @@
     removeLocalAnswerToQuestion();
   }
 
-  function updateAnswerStore(
-    answerId: string,
-    value: AnswerProps['value'],
-    openAnswer: LocalizedString
-  ) {
+  function updateAnswerStore(answerId: string, value: AnswerProps['value'], openAnswer: LocalizedString) {
     if ($opinionAnswers) {
       $opinionAnswers[questionId] = {
         id: String(answerId),
@@ -141,13 +137,13 @@
       return;
     }
     const nextUnansweredQuestion = $unansweredOpinionQuestions?.[0]?.id;
-    goto($getRoute({route: ROUTE.CandAppQuestions, id: nextUnansweredQuestion}));
-  };
+    goto($getRoute({ route: ROUTE.CandAppQuestions, id: nextUnansweredQuestion }));
+  }
 
   function cancelAndReturn() {
     removeLocalAnswerToQuestion();
     goto($getRoute(ROUTE.CandAppQuestions));
-  };
+  }
 </script>
 
 <!--
@@ -173,8 +169,7 @@ In addition to the question, includes a Likert scale and a text area for comment
     class="bg-base-200"
     progress={$progress?.progress}
     progressMax={$progress?.max}>
-    <Warning display={!!$answersLocked} slot="note"
-      >{$t('candidateApp.common.editingNotAllowed')}</Warning>
+    <Warning display={!!$answersLocked} slot="note">{$t('candidateApp.common.editingNotAllowed')}</Warning>
 
     <HeadingGroup slot="heading" id="hgroup-{questionId}">
       <PreHeading>
@@ -225,10 +220,7 @@ In addition to the question, includes a Likert scale and a text area for comment
       {/if}
 
       {#if !!$answersLocked}
-        <Button
-          on:click={() => goto($getRoute(ROUTE.CandAppQuestions))}
-          variant="main"
-          text={$t('common.return')} />
+        <Button on:click={() => goto($getRoute(ROUTE.CandAppQuestions))} variant="main" text={$t('common.return')} />
       {:else if editMode}
         <div class="grid w-full grid-cols-[1fr] justify-items-center">
           <Button on:click={saveAndReturn} variant="main" text={$t('common.saveAndReturn')} />

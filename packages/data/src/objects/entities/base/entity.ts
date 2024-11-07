@@ -15,15 +15,13 @@ import {
   type NominationVariant,
   QUESTION_TYPE,
   type QuestionVariant,
-  SingleChoiceQuestion} from '../../../internal';
+  SingleChoiceQuestion
+} from '../../../internal';
 
 /**
  * The abstract base class for all entities, which may have `Answers` and may be thus be matched against. `Entity`s can also be nominated in `{@link Election | Elections}` (see `{@link Nomination}`).
  */
-export abstract class Entity<
-    TType extends EntityType,
-    TData extends EntityData<TType> = EntityData<TType>
-  >
+export abstract class Entity<TType extends EntityType, TData extends EntityData<TType> = EntityData<TType>>
   extends DataObject<TData>
   implements DataAccessor<EntityData<TType>>, HasAnswers
 {

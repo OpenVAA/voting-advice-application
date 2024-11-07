@@ -1,10 +1,5 @@
 import { expect, test } from 'vitest';
-import {
-  ENTITY_TYPE,
-  parseEntityTree,
-  parseNominationTree,
-  removeDuplicates
-} from '../../../internal';
+import { ENTITY_TYPE, parseEntityTree, parseNominationTree, removeDuplicates } from '../../../internal';
 import { getTestData, getTestDataRoot, parseNestedNominations } from '../../../testUtils';
 import { contentsMatch } from '../../../testUtils/contentsMatch';
 
@@ -26,9 +21,7 @@ test('Should have all explicit organizations and their data and nominations', ()
     if (objData.shortName) expect(obj.shortName, 'To return shortName').toBe(objData.shortName);
 
     // Member candidates
-    const memCandidateIds = cndEntityData
-      .filter((c) => c.organizationId === objData.id)
-      .map((c) => c.id);
+    const memCandidateIds = cndEntityData.filter((c) => c.organizationId === objData.id).map((c) => c.id);
     expect(
       contentsMatch(
         obj.memberCandidates.map((c) => c.id),
@@ -54,8 +47,7 @@ test('Should have all explicit organizations and their data and nominations', ()
 
     // Alliances
     const allianceCount =
-      allNominationData.filter((a) => a.organizations.map((o) => o.entityId).includes(objData.id))
-        ?.length ?? 0;
+      allNominationData.filter((a) => a.organizations.map((o) => o.entityId).includes(objData.id))?.length ?? 0;
     expect(obj.alliances.length, 'To belong to a correct number of alliances').toBe(allianceCount);
 
     // Factions

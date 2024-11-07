@@ -1,4 +1,4 @@
-export async function load({params}) {
+export async function load({ params }) {
   return {
     categoryId: params.categoryId
   };

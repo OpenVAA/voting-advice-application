@@ -1,11 +1,12 @@
 <script lang="ts">
   import Icon from './Icon.svelte';
-  import {ICONS} from './icons';
+  import { ICONS } from './icons';
 
   // We need this clunky typing to get rid of warnings below
-  const entries: [keyof typeof ICONS, readonly [string, string]][] = Object.entries(ICONS).map(
-    ([name, path]) => [name as keyof typeof ICONS, path]
-  );
+  const entries: Array<[keyof typeof ICONS, readonly [string, string]]> = Object.entries(ICONS).map(([name, path]) => [
+    name as keyof typeof ICONS,
+    path
+  ]);
 </script>
 
 <!--

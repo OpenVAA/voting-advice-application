@@ -1,15 +1,17 @@
 import { EnumeratedFilter } from './enumeratedFilter';
-import { type MaybeMissing,MISSING_VALUE } from '../../missingValue';
-import { type Choice, type ChoiceQuestion,KEY_PROP, KEY_TYPE, LABEL_PROP } from '../../question';
+import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
+import { type Choice, type ChoiceQuestion, KEY_PROP, KEY_TYPE, LABEL_PROP } from '../../question';
 import type { EntityWithAnswers, MaybeWrapped } from '../../entity';
 import type { FilterOptions } from '../base';
 
 /**
  * A filter for single or multiple choice questions
  */
-export class ChoiceQuestionFilter<
-  TEntity extends MaybeWrapped<EntityWithAnswers>
-> extends EnumeratedFilter<TEntity, Choice[typeof KEY_PROP], Choice> {
+export class ChoiceQuestionFilter<TEntity extends MaybeWrapped<EntityWithAnswers>> extends EnumeratedFilter<
+  TEntity,
+  Choice[typeof KEY_PROP],
+  Choice
+> {
   declare readonly options: FilterOptions & {
     question: ChoiceQuestion;
     /** The type is always the type of the Choice key property */

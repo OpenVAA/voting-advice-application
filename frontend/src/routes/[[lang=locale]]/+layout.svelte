@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {staticSettings} from '@openvaa/app-shared';
-  import {openFeedbackModal} from '$lib/stores';
-  import {FeedbackModal} from '$lib/components/feedback/modal';
-  import {Loading} from '$lib/components/loading';
-  import {MaintenancePage} from '$lib/templates/maintenance';
-  import {initLayoutContext} from '$lib/contexts/layout';
   import '../../app.css';
-  import type {LayoutData} from './$types';
+  import { staticSettings } from '@openvaa/app-shared';
+  import { FeedbackModal } from '$lib/components/feedback/modal';
+  import { Loading } from '$lib/components/loading';
+  import { initLayoutContext } from '$lib/contexts/layout';
+  import { t } from '$lib/i18n';
+  import { openFeedbackModal } from '$lib/stores';
+  import { MaintenancePage } from '$lib/templates/maintenance';
+  import type { LayoutData } from './$types';
 
   export let data: LayoutData;
 
@@ -17,8 +17,7 @@
   $: underMaintenance = data.appSettings.underMaintenance ?? false;
 
   const fontUrl =
-    staticSettings.font?.url ??
-    'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap';
+    staticSettings.font?.url ?? 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap';
 </script>
 
 <svelte:head>

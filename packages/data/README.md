@@ -698,9 +698,7 @@ for (let i = 0; i < constituencyGroups.length - 1; i++) {
     const largersParents = larger.constituencies.map((c) => c.parentConstituency);
     if (
       smaller.constituencies.every((c) => largersParents.includes(c)) &&
-      larger.constituencies.every(
-        (c) => c.parentConstituency && smaller.constituencies.includes(c.parentConstituency)
-      )
+      larger.constituencies.every((c) => c.parentConstituency && smaller.constituencies.includes(c.parentConstituency))
     )
       impliedBy.set(smaller, larger);
   }

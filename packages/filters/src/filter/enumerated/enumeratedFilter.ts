@@ -1,6 +1,6 @@
 import { intersect } from './intersect';
 import { getEntity, type MaybeWrapped } from '../../entity';
-import { type MaybeMissing,MISSING_VALUE } from '../../missingValue';
+import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import { Filter } from '../base/filter';
 
 /**
@@ -31,8 +31,7 @@ export abstract class EnumeratedFilter<
       const valueOrArray = this.getValue(getEntity(t));
       let valueArray: Array<MaybeMissing<TValue>>;
       if (this.options.multipleValues) {
-        if (!Array.isArray(valueOrArray))
-          throw new Error(`Filter expected multiple values, but got ${valueOrArray}`);
+        if (!Array.isArray(valueOrArray)) throw new Error(`Filter expected multiple values, but got ${valueOrArray}`);
         valueArray = valueOrArray;
       } else {
         valueArray = [valueOrArray];
@@ -42,9 +41,7 @@ export abstract class EnumeratedFilter<
         values.set(v, count + 1);
       });
     });
-    return this.sortValues([...values.keys()]).map((v) =>
-      this.processValueForDisplay(v, values.get(v) ?? 0)
-    );
+    return this.sortValues([...values.keys()]).map((v) => this.processValueForDisplay(v, values.get(v) ?? 0));
   }
 
   /**
@@ -82,8 +79,7 @@ export abstract class EnumeratedFilter<
   }
 
   testValue(value: MaybeMissing<TValue>) {
-    if (this.options.multipleValues)
-      throw new Error(`Single values are not supported by this filter: ${value}`);
+    if (this.options.multipleValues) throw new Error(`Single values are not supported by this filter: ${value}`);
     if (this._rules.exclude?.includes(value)) return false;
     if (this._rules.include?.length && !this._rules.include.includes(value)) return false;
     return true;

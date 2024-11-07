@@ -1,19 +1,19 @@
 <script lang="ts">
-  import {error} from '@sveltejs/kit';
-  import {t} from '$lib/i18n';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {getAnswer} from '$lib/utils/answers';
-  import {concatClass, getUUID} from '$lib/utils/components';
-  import {isCandidate, isParty, parseMaybeRanked} from '$lib/utils/entities';
-  import {Avatar, type AvatarProps} from '$lib/components/avatar';
-  import {Button} from '$lib/components/button';
-  import {ElectionSymbol} from '$lib/components/electionSymbol';
-  import {InfoAnswer} from '$lib/components/infoAnswer';
-  import {MatchScore} from '$lib/components/matchScore';
-  import {PartyTag} from '$lib/components/partyTag';
-  import {SubMatches} from '$lib/components/subMatches';
+  import { error } from '@sveltejs/kit';
+  import { Avatar, type AvatarProps } from '$lib/components/avatar';
+  import { Button } from '$lib/components/button';
+  import { ElectionSymbol } from '$lib/components/electionSymbol';
+  import { InfoAnswer } from '$lib/components/infoAnswer';
+  import { MatchScore } from '$lib/components/matchScore';
+  import { PartyTag } from '$lib/components/partyTag';
+  import { SubMatches } from '$lib/components/subMatches';
+  import { t } from '$lib/i18n';
+  import { startEvent } from '$lib/utils/analytics/track';
+  import { getAnswer } from '$lib/utils/answers';
+  import { concatClass, getUUID } from '$lib/utils/components';
+  import { isCandidate, isParty, parseMaybeRanked } from '$lib/utils/entities';
   import EntityCardAction from './EntityCardAction.svelte';
-  import type {EntityCardProps} from './EntityCard.type';
+  import type { EntityCardProps } from './EntityCard.type';
 
   type $$Props = EntityCardProps;
 
@@ -38,7 +38,7 @@
   let showAllSubcards = false;
 
   $: {
-    ({entity, ranking} = parseMaybeRanked(content));
+    ({ entity, ranking } = parseMaybeRanked(content));
     name = entity.name;
     avatarProps = {
       name,
@@ -111,19 +111,14 @@ In nested cards, the layout and rendering of contents varies from that of a pare
 -->
 
 <!-- If there are no subcards, we make the whole card clickable... -->
-<EntityCardAction
-  action={subcards?.length ? undefined : action}
-  shadeOnHover={context === 'subcard'}>
+<EntityCardAction action={subcards?.length ? undefined : action} shadeOnHover={context === 'subcard'}>
   <article
     aria-labelledby="{baseId}_title {ranking ? `${baseId}_callout` : ''}"
     aria-describedby="{baseId}_subtitle"
     {...concatClass($$restProps, classes)}>
     <!-- Card header -->
     <!-- ...but if subcards are present, only the card header is clickable -->
-    <EntityCardAction
-      action={subcards?.length ? action : undefined}
-      shadeOnHover
-      class={gridClasses}>
+    <EntityCardAction action={subcards?.length ? action : undefined} shadeOnHover class={gridClasses}>
       <header
         class="grid items-center justify-items-start gap-x-md gap-y-xs"
         style="
@@ -147,10 +142,7 @@ In nested cards, the layout and rendering of contents varies from that of a pare
         </div>
 
         <!-- Subtitle -->
-        <div
-          id="{baseId}_subtitle"
-          class="grid grid-flow-col items-center gap-sm"
-          style="grid-area: subtitle">
+        <div id="{baseId}_subtitle" class="grid grid-flow-col items-center gap-sm" style="grid-area: subtitle">
           {#if context !== 'subcard'}
             {#if isCandidate(entity)}
               {#if nominatingParty}
@@ -173,15 +165,10 @@ In nested cards, the layout and rendering of contents varies from that of a pare
         {/if}
       </header>
       {#if context !== 'subcard' && ranking?.subMatches?.length}
-        <SubMatches
-          matches={ranking.subMatches}
-          variant={context === 'details' ? 'loose' : undefined}
-          class="mt-6" />
+        <SubMatches matches={ranking.subMatches} variant={context === 'details' ? 'loose' : undefined} class="mt-6" />
       {/if}
       {#if questions?.length}
-        <div
-          class="grid items-start gap-md"
-          style="grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));">
+        <div class="grid items-start gap-md" style="grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));">
           {#each questions as { question, hideLabel, format }}
             <!-- If `hideLabel` is true and we don't have an answer, we don't want to show anything -->
             {#if !hideLabel || getAnswer(entity, question) != null}
@@ -212,7 +199,7 @@ In nested cards, the layout and rendering of contents varies from that of a pare
           <div class="offset-border relative -my-md after:!top-0">
             <Button
               on:click={() => (showAllSubcards = !showAllSubcards)}
-              on:click={() => startEvent('entityCard_expandSubcards', {length: subcards.length})}
+              on:click={() => startEvent('entityCard_expandSubcards', { length: subcards.length })}
               variant="secondary"
               color="secondary"
               class="max-w-none"

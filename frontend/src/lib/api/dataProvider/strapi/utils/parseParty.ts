@@ -1,8 +1,8 @@
-import {translate} from '$lib/i18n/utils/translate';
-import {ensureColors} from '$lib/utils/color/ensureColors';
-import {parseAnswers} from './parseAnswers';
-import type {StrapiPartyData} from '../strapiDataProvider.type';
-import {parseImage} from './parseImage';
+import { translate } from '$lib/i18n/utils/translate';
+import { ensureColors } from '$lib/utils/color/ensureColors';
+import { parseAnswers } from './parseAnswers';
+import { parseImage } from './parseImage';
+import type { StrapiPartyData } from '../strapiDataProvider.type';
 
 /**
  * Parse Strapi Party data into a `PartyProps` object.

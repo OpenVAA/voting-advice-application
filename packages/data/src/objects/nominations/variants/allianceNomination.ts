@@ -7,7 +7,8 @@ import {
   ENTITY_TYPE,
   Nomination,
   OrganizationNomination,
-  WithOptional} from '../../../internal';
+  WithOptional
+} from '../../../internal';
 
 /**
  * A nomination for an `Alliance` of `Organization`s.
@@ -26,13 +27,7 @@ export class AllianceNomination
    * @param data - The data for the nomination. If it does not contain an explicit `entityId`, a generic `Alliance` `Entity` will be created.
    * @param root - The `DataRoot`.
    */
-  constructor({
-    data,
-    root
-  }: {
-    data: WithOptional<AllianceNominationData, 'id'>;
-    root: DataRoot;
-  }) {
+  constructor({ data, root }: { data: WithOptional<AllianceNominationData, 'id'>; root: DataRoot }) {
     super({ data, root });
 
     if (this.data.organizations.length < 2)
@@ -85,8 +80,7 @@ export class AllianceNomination
    * The `OrganizationNomination`s forming the alliance.
    */
   get organizationNominations(): Array<OrganizationNomination> {
-    if (!this.data.organizationNominationIds?.length)
-      throw new DataNotFoundError('No organizations provided.');
+    if (!this.data.organizationNominationIds?.length) throw new DataNotFoundError('No organizations provided.');
     return this.data.organizationNominationIds.map((id) => this.root.getOrganizationNomination(id));
   }
 }

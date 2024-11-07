@@ -10,28 +10,20 @@ import { contentsMatch, getTestData, getTestDataRoot } from '../../../testUtils'
 
 const root = getTestDataRoot();
 const data = getTestData();
-const nominationData = parseNominationTree(data.nominations).filter(
-  (d) => d.entityType === ENTITY_TYPE.Alliance
-);
+const nominationData = parseNominationTree(data.nominations).filter((d) => d.entityType === ENTITY_TYPE.Alliance);
 const implicitObjs = root.alliances!.filter((a) => a.isGenerated);
 
 test('Should have nomination objects and alliance entities for all alliance nominations', () => {
   nominationData.forEach((objData) => {
     if (objData.entityId) {
       // This will actually throw if the alliance is not found
-      expect(
-        !!root.getEntity(ENTITY_TYPE.Alliance, objData.entityId),
-        'To find explicit alliance'
-      ).toBe(true);
+      expect(!!root.getEntity(ENTITY_TYPE.Alliance, objData.entityId), 'To find explicit alliance').toBe(true);
     } else {
       expect(
         findNominations(root.allianceNominations ?? [], objData).length,
         'To find one and only one alliance nomination'
       ).toBe(1);
-      expect(
-        findEntities(implicitObjs, objData).length,
-        'To find one and only one implicit alliance'
-      ).toBe(1);
+      expect(findEntities(implicitObjs, objData).length, 'To find one and only one implicit alliance').toBe(1);
     }
   });
 });
@@ -54,10 +46,7 @@ test('Should have nested nominations', () => {
  * @param nominationData The data for the nomination
  * @returns An array of matching implicit alliances, which should have one and only one item
  */
-function findEntities(
-  entities: Array<Alliance>,
-  nominationData: PublicAllianceNominationData
-): Array<Alliance> {
+function findEntities(entities: Array<Alliance>, nominationData: PublicAllianceNominationData): Array<Alliance> {
   const found = new Array<Alliance>();
   // Find the implicit alliance that matches the nomination, i.e. has the same electionId, constituencyId, and member organizations
   for (const obj of entities) {

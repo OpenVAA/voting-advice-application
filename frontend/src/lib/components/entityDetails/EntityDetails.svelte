@@ -1,16 +1,16 @@
 <script lang="ts">
-  import {error} from '@sveltejs/kit';
-  import {t} from '$lib/i18n';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {getEntityType, parseMaybeRanked} from '$lib/utils/entities';
-  import {ROUTE, getRoute} from '$lib/utils/navigation';
-  import {settings} from '$lib/stores';
-  import {EntityCard, type EntityCardProps} from '$lib/components/entityCard';
-  import {Tabs} from '$lib/components/tabs';
-  import {EntityInfo, EntityOpinions, EntitySubentities} from './';
-  import type {EntityDetailsProps} from './EntityDetails.type';
-  import {concatClass} from '$lib/utils/components';
-  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
+  import { error } from '@sveltejs/kit';
+  import { EntityCard, type EntityCardProps } from '$lib/components/entityCard';
+  import { Tabs } from '$lib/components/tabs';
+  import { t } from '$lib/i18n';
+  import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
+  import { settings } from '$lib/stores';
+  import { startEvent } from '$lib/utils/analytics/track';
+  import { concatClass } from '$lib/utils/components';
+  import { getEntityType, parseMaybeRanked } from '$lib/utils/entities';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { EntityInfo, EntityOpinions, EntitySubentities } from './';
+  import type { EntityDetailsProps } from './EntityDetails.type';
 
   type $$Props = EntityDetailsProps;
 
@@ -21,11 +21,11 @@
 
   let entity: EntityProps;
   let entityType: EntityType | undefined;
-  let subcards: EntityCardProps[] | undefined;
+  let subcards: Array<EntityCardProps> | undefined;
   /** The tab content types */
-  let tabContents: AppSettingsEntityDetailsContent[];
+  let tabContents: Array<AppSettingsEntityDetailsContent>;
   /** The matching tab labels */
-  let tabs: string[];
+  let tabs: Array<string>;
   /** The currently active tab */
   let activeIndex = 0;
   /** Info questions filtered for the current entity type */
@@ -34,7 +34,7 @@
   let filteredOpinionQuestions: $$Props['opinionQuestions'];
 
   $: {
-    ({entity} = parseMaybeRanked(content));
+    ({ entity } = parseMaybeRanked(content));
     entityType = getEntityType(entity);
     if (!entityType) error(500, 'Unknown entity type');
     function inclQuestion(q: QuestionProps) {
@@ -56,7 +56,7 @@
           tabContents.push('candidates');
           subcards = subentities.map((e) => ({
             content: e,
-            action: $getRoute({route: ROUTE.ResultCandidate, id: parseMaybeRanked(e).entity.id})
+            action: $getRoute({ route: ROUTE.ResultCandidate, id: parseMaybeRanked(e).entity.id })
           }));
           break;
         default:
@@ -105,8 +105,7 @@ Used to show an entity's details and possible ranking. You can supply either a n
     <Tabs
       {tabs}
       bind:activeIndex
-      on:change={({detail}) =>
-        startEvent('entityDetails_changeTab', {section: tabContents[detail.index]})} />
+      on:change={({ detail }) => startEvent('entityDetails_changeTab', { section: tabContents[detail.index] })} />
     {#if activeIndex === tabContents.indexOf('info')}
       <EntityInfo {entity} questions={filteredInfoQuestions} />
     {:else if activeIndex === tabContents.indexOf('opinions')}

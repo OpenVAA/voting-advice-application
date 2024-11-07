@@ -1,7 +1,6 @@
 import type { Id, QuestionAndCategoryBaseData, QuestionType } from '../../../internal';
 
-export interface QuestionData<TType extends QuestionType = QuestionType>
-  extends QuestionAndCategoryBaseData {
+export interface QuestionData<TType extends QuestionType = QuestionType> extends QuestionAndCategoryBaseData {
   // From HasId
   // - id: Id;
   //

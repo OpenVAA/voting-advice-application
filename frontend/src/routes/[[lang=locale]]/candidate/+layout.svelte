@@ -1,8 +1,8 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {staticSettings} from '@openvaa/app-shared';
-  import {appType} from '$lib/stores';
-  import {ErrorPage} from '$lib/templates/error';
+  import { staticSettings } from '@openvaa/app-shared';
+  import { t } from '$lib/i18n';
+  import { appType } from '$lib/stores';
+  import { ErrorPage } from '$lib/templates/error';
 
   $appType = 'candidate';
 </script>

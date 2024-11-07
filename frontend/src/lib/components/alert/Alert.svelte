@@ -1,10 +1,10 @@
 <script lang="ts">
-  import {createEventDispatcher, onMount} from 'svelte';
-  import {t} from '$lib/i18n';
-  import {concatClass, getUUID} from '$lib/utils/components';
-  import {Button} from '$lib/components/button';
-  import {Icon} from '$lib/components/icon';
-  import type {AlertProps} from './Alert.type';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { Button } from '$lib/components/button';
+  import { Icon } from '$lib/components/icon';
+  import { t } from '$lib/i18n';
+  import { concatClass, getUUID } from '$lib/utils/components';
+  import type { AlertProps } from './Alert.type';
 
   type $$Props = AlertProps;
 
@@ -105,11 +105,7 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
     {#if $$slots.actions}
       <slot name="actions" />
     {:else}
-      <Button
-        on:click={closeAlert}
-        color="warning"
-        text={$t('common.close')}
-        class="-mt-[1rem] sm:mt-0" />
+      <Button on:click={closeAlert} color="warning" text={$t('common.close')} class="-mt-[1rem] sm:mt-0" />
     {/if}
   </div>
   <button on:click={closeAlert} class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">

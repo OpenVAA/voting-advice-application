@@ -1,8 +1,8 @@
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte';
-  import {concatClass} from '$lib/utils/components';
-  import {Icon} from '$lib/components/icon';
-  import type {ExpanderProps} from './Expander.type';
+  import { createEventDispatcher } from 'svelte';
+  import { Icon } from '$lib/components/icon';
+  import { concatClass } from '$lib/utils/components';
+  import type { ExpanderProps } from './Expander.type';
 
   type $$Props = ExpanderProps;
 
@@ -14,7 +14,7 @@
   export let contentClass: $$Props['contentClass'] = '';
   export let defaultExpanded: $$Props['defaultExpanded'] = false;
 
-  const dispatch = createEventDispatcher<{expand: null; collapse: null}>();
+  const dispatch = createEventDispatcher<{ expand: null; collapse: null }>();
 
   let expanded = defaultExpanded;
 

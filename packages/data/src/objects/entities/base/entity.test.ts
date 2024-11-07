@@ -119,9 +119,8 @@ describe('Should format answers correctly', () => {
       root
     });
     candidate.data.answers!['question-multi'] = { value: ['choice-3', 'choice-1', 'choice-2'] };
-    expect(
-      candidate.getFormattedAnswer(multiQuestion),
-      'To trim whitespace from labels and concatenate'
-    ).toBe('Choice 3, Choice 1, Choice 2');
+    expect(candidate.getFormattedAnswer(multiQuestion), 'To trim whitespace from labels and concatenate').toBe(
+      'Choice 3, Choice 1, Choice 2'
+    );
   });
 });

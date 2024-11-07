@@ -1,13 +1,13 @@
 <script lang="ts">
-  import {candidateContext} from '$lib/utils/candidateContext';
-  import {onMount, setContext} from 'svelte';
+  import { onMount, setContext } from 'svelte';
+  import { candidateContext } from '$lib/utils/candidateContext';
 
   setContext('candidate', candidateContext);
   const token = candidateContext.token;
 
   onMount(() => {
     candidateContext.loadLocalStorage();
-    $token && candidateContext.loadUserData();
+    if ($token) candidateContext.loadUserData();
   });
 </script>
 

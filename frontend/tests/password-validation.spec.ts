@@ -43,9 +43,7 @@ describe('Password Validation', () => {
       const result = validatePasswordDetails('aaaaaaBBB123!');
       expect(result.status).toBe(true);
       expect(result.details.repetition.status).toBe(false);
-      expect(result.details.repetition.message).toBe(
-        'candidateApp.register.passwordValidation.repetition'
-      );
+      expect(result.details.repetition.message).toBe('candidateApp.register.passwordValidation.repetition');
     });
   });
 });

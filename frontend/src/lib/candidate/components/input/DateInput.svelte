@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {Field, FieldGroup} from '$lib/components/common/form';
+  import { Field, FieldGroup } from '$lib/components/common/form';
   import InputContainer from './InputContainer.svelte';
-  import type {InputFieldProps} from './InputField.type';
+  import type { InputFieldProps } from './InputField.type';
 
   type $$Props = InputFieldProps<string>;
 
@@ -71,7 +71,7 @@ A component for a date question that can be answered.
           id={questionId}
           bind:value={inputValue}
           on:change={() => {
-            onChange?.({questionId, value: inputValue});
+            onChange?.({ questionId, value: inputValue });
           }} />
       </div>
     </InputContainer>

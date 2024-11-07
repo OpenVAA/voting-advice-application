@@ -27,11 +27,7 @@ export type Collectable = CanUpdate & HasId;
  * Extract the content of a `Collection` or a `MappedCollection`
  */
 export type CollectionContent<TCollection extends Collection | MappedCollection> =
-  TCollection extends MappedCollection<infer C>
-    ? C
-    : TCollection extends Collection<infer C>
-      ? C
-      : never;
+  TCollection extends MappedCollection<infer C> ? C : TCollection extends Collection<infer C> ? C : never;
 
 /**
  * Convert a `MappedCollection` into a `Collection`.

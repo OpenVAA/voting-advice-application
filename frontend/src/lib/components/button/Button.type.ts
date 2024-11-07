@@ -1,5 +1,5 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
-import type {IconName} from '$lib/components/icon';
+import type { SvelteHTMLElements } from 'svelte/elements';
+import type { IconName } from '$lib/components/icon';
 
 export type ButtonProps = LinkOrButtonElementProps & {
   /**
@@ -33,4 +33,4 @@ export type ButtonProps = LinkOrButtonElementProps & {
  */
 type LinkOrButtonElementProps =
   | WithRequired<SvelteHTMLElements['a'], 'href'>
-  | (SvelteHTMLElements['button'] & {href?: null});
+  | (SvelteHTMLElements['button'] & { href?: null });

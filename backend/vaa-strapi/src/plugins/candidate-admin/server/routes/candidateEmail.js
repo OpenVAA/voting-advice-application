@@ -8,7 +8,7 @@ module.exports = [
         'admin::isAuthenticatedAdmin',
         {
           name: 'admin::hasPermissions',
-          config: {actions: ['plugin::candidate-admin.send-email']}
+          config: { actions: ['plugin::candidate-admin.send-email'] }
         }
       ]
     }
@@ -22,7 +22,7 @@ module.exports = [
         'admin::isAuthenticatedAdmin',
         {
           name: 'admin::hasPermissions',
-          config: {actions: ['plugin::candidate-admin.send-email']}
+          config: { actions: ['plugin::candidate-admin.send-email'] }
         }
       ]
     }

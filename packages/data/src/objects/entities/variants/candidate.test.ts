@@ -12,8 +12,7 @@ test('Should have all candidates and their data', () => {
     expect(obj.id, 'To have entity').toBe(objData.id);
     if (objData.firstName) expect(obj.firstName, 'To return firstName').toBe(objData.firstName);
     if (objData.lastName) expect(obj.lastName, 'To return lastName').toBe(objData.lastName);
-    if (objData.organizationId)
-      expect(obj.organization?.id, 'To return organization').toBe(objData.organizationId);
+    if (objData.organizationId) expect(obj.organization?.id, 'To return organization').toBe(objData.organizationId);
     else expect(obj.organization, 'To return null').toBeNull();
   });
 });

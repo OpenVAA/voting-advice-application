@@ -19,9 +19,7 @@ import type { Common } from '@strapi/strapi';
  * @param force Load and clear data regardless of `AppSettings.allowOverwrite`
  */
 export async function loadData(folder: string, force = false) {
-  console.info(
-    '[loadData] ##########################################\n[loadData] Starting data loading...'
-  );
+  console.info('[loadData] ##########################################\n[loadData] Starting data loading...');
 
   folder = Path.resolve('.', folder);
   console.info(`[loadData] - Path resolved to: ${folder}`);
@@ -44,9 +42,7 @@ export async function loadData(folder: string, force = false) {
       );
       return false;
     } else {
-      console.info(
-        '[loadData] - AppSettings.allowOverwrite is true. Continuing with data loading...'
-      );
+      console.info('[loadData] - AppSettings.allowOverwrite is true. Continuing with data loading...');
     }
   }
 
@@ -59,17 +55,14 @@ export async function loadData(folder: string, force = false) {
     try {
       // Due to a bug in Strapi, we need to ensure this. See: https://github.com/strapi/strapi/issues/16071#issuecomment-1613334063
       console.info('[loadData] Ensuring we have an upload folder...');
-      if (!(await strapi.plugin('upload').service('api-upload-folder').getAPIUploadFolder()))
-        throw new Error();
+      if (!(await strapi.plugin('upload').service('api-upload-folder').getAPIUploadFolder())) throw new Error();
 
       console.info('[loadData] Warning! Deleting all existing collections...');
       await dropAllCollections();
 
       // TODO: We probably don't need this anymore
       console.info('[loadData] Creating Locales...');
-      await createLocales(
-        (await loadFile(folder, 'locales')) as Array<{ name: string; code: string }>
-      );
+      await createLocales((await loadFile(folder, 'locales')) as Array<{ name: string; code: string }>);
 
       console.info('[loadData] Creating AppSettings...');
       if (
@@ -89,8 +82,7 @@ export async function loadData(folder: string, force = false) {
       if (!(await createFromFile(folder, 'constituencies', API.Constituency))) throw new Error();
 
       console.info('[loadData] Creating Question Categories...');
-      if (!(await createFromFile(folder, 'questionCategories', API.QuestionCategory)))
-        throw new Error();
+      if (!(await createFromFile(folder, 'questionCategories', API.QuestionCategory))) throw new Error();
 
       console.info('[loadData] Creating Question Types...');
       if (!(await createFromFile(folder, 'questionTypes', API.QuestionType))) throw new Error();
@@ -105,8 +97,7 @@ export async function loadData(folder: string, force = false) {
       if (!(await createFromFile(folder, 'parties', API.Party, ['logo']))) throw new Error();
 
       console.info('[loadData] Creating Candidates...');
-      if (!(await createFromFile(folder, 'candidates', API.Candidate, ['photo'])))
-        throw new Error();
+      if (!(await createFromFile(folder, 'candidates', API.Candidate, ['photo']))) throw new Error();
 
       console.info('[loadData] Creating Nominations...');
       if (!(await createFromFile(folder, 'nominations', API.Nomination))) throw new Error();
@@ -123,9 +114,7 @@ export async function loadData(folder: string, force = false) {
     console.info('[loadData] - Committing transaction...');
     commit();
 
-    console.info(
-      '[loadData] Warning! Deleting all media files that existed before loading data...'
-    );
+    console.info('[loadData] Warning! Deleting all media files that existed before loading data...');
     await deleteMedia(mediaFiles);
 
     console.info('[loadData] Data loading done!');
@@ -167,9 +156,7 @@ async function createFromFile(
   return new Promise((resolve) => {
     loadFile(folder, name)
       .catch(() => {
-        console.error(
-          `[loadData] [createFromFile] Error creating '${api}' from file ${name} when reading file`
-        );
+        console.error(`[loadData] [createFromFile] Error creating '${api}' from file ${name} when reading file`);
         resolve();
       })
       .then((data) => {
@@ -262,11 +249,7 @@ async function create<TData extends object>(
         files
       })
       .catch((e) => {
-        console.error(
-          `[loadData] [create] Error creating '${api}'`,
-          ...(e.details?.errors ?? []),
-          itemData
-        );
+        console.error(`[loadData] [create] Error creating '${api}'`, ...(e.details?.errors ?? []), itemData);
         throw e;
       });
     res.push(obj);

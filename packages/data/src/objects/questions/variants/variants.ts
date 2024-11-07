@@ -89,15 +89,9 @@ export type QuestionVariantDataType = {
   [QUESTION_TYPE.Image]: ConstructorParameters<typeof ImageQuestion>[0]['data'];
   [QUESTION_TYPE.Date]: ConstructorParameters<typeof DateQuestion>[0]['data'];
   [QUESTION_TYPE.MultipleText]: ConstructorParameters<typeof MultipleTextQuestion>[0]['data'];
-  [QUESTION_TYPE.SingleChoiceOrdinal]: ConstructorParameters<
-    typeof SingleChoiceOrdinalQuestion
-  >[0]['data'];
-  [QUESTION_TYPE.SingleChoiceCategorical]: ConstructorParameters<
-    typeof SingleChoiceCategoricalQuestion
-  >[0]['data'];
-  [QUESTION_TYPE.MultipleChoiceCategorical]: ConstructorParameters<
-    typeof MultipleChoiceCategoricalQuestion
-  >[0]['data'];
+  [QUESTION_TYPE.SingleChoiceOrdinal]: ConstructorParameters<typeof SingleChoiceOrdinalQuestion>[0]['data'];
+  [QUESTION_TYPE.SingleChoiceCategorical]: ConstructorParameters<typeof SingleChoiceCategoricalQuestion>[0]['data'];
+  [QUESTION_TYPE.MultipleChoiceCategorical]: ConstructorParameters<typeof MultipleChoiceCategoricalQuestion>[0]['data'];
 };
 
 /**

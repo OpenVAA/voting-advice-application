@@ -1,4 +1,4 @@
-import type { QuestionAndCategoryBaseData,QuestionCategoryType } from '../../../internal';
+import type { QuestionAndCategoryBaseData, QuestionCategoryType } from '../../../internal';
 
 export interface QuestionCategoryData extends QuestionAndCategoryBaseData {
   // From HasId

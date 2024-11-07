@@ -1,13 +1,13 @@
-import {expect, test} from 'vitest';
-import {t, locale, defaultLocale, loadTranslations} from '$lib/i18n';
-import {getAnswer, getLikertAnswer, getAnswerForDisplay, DATE_FORMATS} from '../answers';
-import {MockCandidate, MockParty, MockQuestionCategory} from './mock-objects';
+import { expect, test } from 'vitest';
+import { defaultLocale, loadTranslations, locale, t } from '$lib/i18n';
+import { MockCandidate, MockParty, MockQuestionCategory } from './mock-objects';
+import { DATE_FORMATS, getAnswer, getAnswerForDisplay, getLikertAnswer } from '../answers';
 
 const DATE = new Date();
 
 /** Make unique labels */
 function makeLabels(count = 4) {
-  const labels: AnswerOption[] = [];
+  const labels: Array<AnswerOption> = [];
   for (let i = 1; i < count + 1; i++) {
     labels.push({
       key: i,
@@ -110,7 +110,7 @@ const QST: Record<string, QuestionProps> = {
 
 category.questions = Object.values(QST);
 
-const ANS: Record<string, AnswerProps & {questionId: string}> = {
+const ANS: Record<string, AnswerProps & { questionId: string }> = {
   Likert: {
     questionId: QST.Likert.id,
     value: 1,
@@ -151,9 +151,7 @@ const ANS: Record<string, AnswerProps & {questionId: string}> = {
 };
 
 const answers = {} as AnswerDict;
-Object.values(ANS).forEach(
-  ({questionId, value, openAnswer}) => (answers[questionId] = {value, openAnswer})
-);
+Object.values(ANS).forEach(({ questionId, value, openAnswer }) => (answers[questionId] = { value, openAnswer }));
 
 const CND = new MockCandidate('1', new MockParty('p1'), answers);
 
@@ -172,27 +170,19 @@ test('getAnswerForDisplay', async () => {
   expect(getAnswerForDisplay(CND, QST.Likert), 'Display Likert answer').toEqual(
     QST.Likert.values?.find((a) => a.key === ANS.Likert.value)?.label
   );
-  expect(
-    getAnswerForDisplay(CND, QST.SingleCategorical),
-    'Display SingleCategorical answer'
-  ).toEqual(
+  expect(getAnswerForDisplay(CND, QST.SingleCategorical), 'Display SingleCategorical answer').toEqual(
     QST.SingleCategorical.values?.find((a) => a.key === ANS.SingleCategorical.value)?.label
   );
   expect(getAnswerForDisplay(CND, QST.MultiCategorical), 'Display MultiCategorical answer').toEqual(
-    (ANS.MultiCategorical.value as number[]).map(
+    (ANS.MultiCategorical.value as Array<number>).map(
       (a) => QST.MultiCategorical.values?.find((v) => v.key === a)?.label
     )
   );
   expect(getAnswerForDisplay(CND, QST.PrefOrder), 'Display PrefOrder answer').toEqual(
-    (ANS.PrefOrder.value as number[]).map(
-      (a) => QST.PrefOrder.values?.find((v) => v.key === a)?.label
-    )
+    (ANS.PrefOrder.value as Array<number>).map((a) => QST.PrefOrder.values?.find((v) => v.key === a)?.label)
   );
   expect(getAnswerForDisplay(CND, QST.Date), 'Display Date answer').toEqual(
-    DATE.toLocaleDateString(
-      locale.get(),
-      DATE_FORMATS[QST.Date.dateType as keyof typeof DATE_FORMATS]
-    )
+    DATE.toLocaleDateString(locale.get(), DATE_FORMATS[QST.Date.dateType as keyof typeof DATE_FORMATS])
   );
   // We need to init the translations
   await loadTranslations(defaultLocale, '');
@@ -200,12 +190,7 @@ test('getAnswerForDisplay', async () => {
     t.get(ANS.Boolean.value ? 'common.answer.yes' : 'common.answer.no')
   );
   expect(getAnswerForDisplay(CND, QST.Text), 'Display Text answer').toEqual(ANS.Text.value);
-  expect(getAnswerForDisplay(CND, QST.Number), 'Display Number answer').toStrictEqual(
-    `${ANS.Number.value}`
-  );
+  expect(getAnswerForDisplay(CND, QST.Number), 'Display Number answer').toStrictEqual(`${ANS.Number.value}`);
   expect(getAnswerForDisplay(CND, QST.Missing), 'Display missing answer').toBeUndefined();
-  expect(
-    getAnswerForDisplay(CND, QST.EmptyMultiCategorical),
-    'Display empty list answer'
-  ).toBeUndefined();
+  expect(getAnswerForDisplay(CND, QST.EmptyMultiCategorical), 'Display empty list answer').toBeUndefined();
 });

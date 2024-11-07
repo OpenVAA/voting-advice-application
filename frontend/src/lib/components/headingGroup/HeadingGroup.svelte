@@ -1,5 +1,5 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
+  import { t } from '$lib/i18n';
 </script>
 
 <!--
@@ -27,9 +27,6 @@ and the main title.
 ```
 -->
 
-<hgroup
-  aria-roledescription={$t('components.headingGroup.roleDescription')}
-  role="group"
-  {...$$restProps}>
+<hgroup aria-roledescription={$t('components.headingGroup.roleDescription')} role="group" {...$$restProps}>
   <slot />
 </hgroup>

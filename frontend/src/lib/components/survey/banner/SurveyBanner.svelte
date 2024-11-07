@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {concatClass} from '$lib/utils/components';
-  import {settings, userPreferences} from '$lib/stores';
-  import {SurveyButton} from '..';
-  import type {SurveyBannerProps} from './SurveyBanner.type';
+  import { t } from '$lib/i18n';
+  import { settings, userPreferences } from '$lib/stores';
+  import { concatClass } from '$lib/utils/components';
+  import { SurveyButton } from '..';
+  import type { SurveyBannerProps } from './SurveyBanner.type';
 
   type $$Props = SurveyBannerProps;
 
@@ -33,8 +33,7 @@ Display a prompt for filling out a user survey if the setting is enabled and the
   <div
     {...concatClass(
       $$restProps,
-      'grid justify-items-center w-full ' +
-        (variant === 'compact' ? '' : 'rounded-lg bg-base-200 p-lg pt-md')
+      'grid justify-items-center w-full ' + (variant === 'compact' ? '' : 'rounded-lg bg-base-200 p-lg pt-md')
     )}>
     <SurveyButton bind:clicked />
     {#if variant !== 'compact'}

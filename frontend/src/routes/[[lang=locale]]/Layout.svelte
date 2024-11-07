@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import type {BasicPageProps} from '$lib/templates/basicPage';
+  import { t } from '$lib/i18n';
+  import type { BasicPageProps } from '$lib/templates/basicPage';
 
   export let title: BasicPageProps['title'];
   export let noteClass: BasicPageProps['noteClass'] = 'text-secondary text-center max-w-xl';

@@ -1,5 +1,5 @@
-import {error} from '@sveltejs/kit';
-import {writable, derived, get, type Readable} from 'svelte/store';
+import { error } from '@sveltejs/kit';
+import { derived, get, type Readable, writable } from 'svelte/store';
 
 /**
  * Create a simple stacked store which a appends items to an internally stored stack when set. The store can be reverted to any previous state with the `revert(index)` function.
@@ -26,13 +26,17 @@ export function stackedStore<TMerged, TAddition = TMerged>(
   const stack = writable<Array<TMerged>>([initialValue]);
 
   // A getter for the current length of the stack
-  const getLength = (): number => get(stack).length;
+  function getLength(): number {
+    return get(stack).length;
+  }
 
   // Push an item onto the internal stack store performing the merge by calling the `updater` callback with the current stack and the new value.
-  const push = (value: TAddition): void => stack.update((s: Array<TMerged>) => updater(s, value));
+  function push(value: TAddition): void {
+    return stack.update((s: Array<TMerged>) => updater(s, value));
+  }
 
   // A method that can be used to revert the stack to a previous state.
-  const revert = (index: number): TMerged => {
+  function revert(index: number): TMerged {
     if (index < 0) error(500, 'StackedStore.revert: index cannot be negative');
     const current = get(stack);
     // Only modify the stack if the `index` refers to an item in the stack that's not the last one
@@ -42,12 +46,12 @@ export function stackedStore<TMerged, TAddition = TMerged>(
     }
     // Return the last item in the stack, regardless of whether it was modified
     return current[current.length - 1];
-  };
+  }
 
   // We use `derived` to create another store, which always has the last item in the stack. We're only interested in its `subscribe` method, which will be used as the `subscribe` method for the whole `StackedStore`.
   const lastItem = derived(stack, ($stack: Array<TMerged>) => $stack[$stack.length - 1]);
 
-  return {getLength, revert, push, subscribe: lastItem.subscribe};
+  return { getLength, revert, push, subscribe: lastItem.subscribe };
 }
 
 /**

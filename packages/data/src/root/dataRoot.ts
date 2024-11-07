@@ -51,7 +51,8 @@ import {
   type QuestionVariantData,
   RootCollections,
   RootFormatters,
-  Updatable} from '../internal';
+  Updatable
+} from '../internal';
 
 /*
  * The root for all of the `DataObject`s. Each such must belong to a `DataRoot`.
@@ -185,9 +186,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
     TCollection extends keyof RootCollections,
     TArray = Array<NonNullable<RootCollections[TCollection]>>
   >(name: TCollection): TArray | undefined {
-    return this.children[name]
-      ? ([...this.children[name]!.values()].sort(order) as TArray)
-      : undefined;
+    return this.children[name] ? ([...this.children[name]!.values()].sort(order) as TArray) : undefined;
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -393,13 +392,12 @@ export class DataRoot extends Updatable implements FormatterMethods {
    * @returns The object in the collection with the given id
    * @throws If the object is not found.
    */
-  protected getChild<
-    TCollection extends keyof RootCollections,
-    TChild = NonNullable<RootCollections[TCollection]>
-  >(collection: TCollection, id: Id): TChild {
+  protected getChild<TCollection extends keyof RootCollections, TChild = NonNullable<RootCollections[TCollection]>>(
+    collection: TCollection,
+    id: Id
+  ): TChild {
     const res = this.children[collection]?.get(`${id}`);
-    if (!res)
-      throw new DataNotFoundError(`Child in collection ${collection} with id ${id} not found`);
+    if (!res) throw new DataNotFoundError(`Child in collection ${collection} with id ${id} not found`);
     return res as TChild;
   }
 
@@ -516,9 +514,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
    * Provide the data for all entities to the `DataRoot`. Existing objects with the same id will be overwritten.
    * @param data - The data for all entities. Two formats are supported: a single array of `EntityVariantData` with the `type` specified for each, or a structured object with these `EntityType`s as keys and the actual data without them.
    */
-  provideEntityData(
-    data: Readonly<Array<AnyEntityVariantData>> | Readonly<EntityVariantTree>
-  ): void {
+  provideEntityData(data: Readonly<Array<AnyEntityVariantData>> | Readonly<EntityVariantTree>): void {
     const dataArray: Readonly<Array<AnyEntityVariantData>> = !Array.isArray(data)
       ? parseEntityTree(data as EntityVariantTree)
       : data;
@@ -551,9 +547,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
    * @param data - The data for all nominations. Two formats are supported: a single array of `NominationVariantData` with the `electionId` and `constituencyId` specified for each, or a structured object with these `Id`s as keys and the actual data without them.
    * @returns The created nominations because they’re needed by some nomination initializers.
    */
-  provideNominationData(
-    data: Readonly<Array<AnyNominationVariantPublicData>> | Readonly<NominationVariantTree>
-  ): {
+  provideNominationData(data: Readonly<Array<AnyNominationVariantPublicData>> | Readonly<NominationVariantTree>): {
     allianceNominations: Array<AllianceNomination>;
     organizationNominations: Array<OrganizationNomination>;
     factionNominations: Array<FactionNomination>;
@@ -627,11 +621,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
    * @param constructor - The constructor function for the new objects, which is passed both the `data` items and the `DataRoot` instance.
    * @returns The created objects.
    */
-  protected provideData<
-    TCollection extends keyof RootCollections,
-    TData,
-    TChild extends RootCollections[TCollection]
-  >(
+  protected provideData<TCollection extends keyof RootCollections, TData, TChild extends RootCollections[TCollection]>(
     collection: TCollection,
     data: Readonly<Array<TData>>,
     constructor: (params: { data: TData; root: DataRoot }) => TChild
@@ -746,10 +736,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
    * @param type - The type of data to format.
    * @param formatter - The new formatter function.
    */
-  setFormatter<TType extends keyof RootFormatters>(
-    type: TType,
-    formatter: RootFormatters[TType]
-  ): void {
+  setFormatter<TType extends keyof RootFormatters>(type: TType, formatter: RootFormatters[TType]): void {
     this.formatters[type] = formatter;
   }
 }

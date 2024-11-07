@@ -1,16 +1,16 @@
 <script lang="ts">
-  import {page} from '$app/stores';
-  import {goto} from '$app/navigation';
-  import {t} from '$lib/i18n';
-  import {register} from '$lib/api/candidate';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {validatePassword} from '@openvaa/app-shared';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {FrontPage} from '$lib/templates/frontPage';
-  import {PasswordSetter} from '$lib/candidate/components/passwordSetter';
-  import {getContext} from 'svelte';
-  import {LogoutButton} from '$lib/candidate/components/logoutButton';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
+  import { validatePassword } from '@openvaa/app-shared';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { register } from '$lib/api/candidate';
+  import { LogoutButton } from '$lib/candidate/components/logoutButton';
+  import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { t } from '$lib/i18n';
+  import { FrontPage } from '$lib/templates/frontPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
 
   export let username: string;
   export let registrationCode: string;
@@ -18,7 +18,7 @@
 
   let password = '';
   let passwordConfirmation = '';
-  const {newUserEmail, user, logOut} = getContext<CandidateContext>('candidate');
+  const { newUserEmail, user, logOut } = getContext<CandidateContext>('candidate');
 
   let validPassword = false;
   let errorMessage = '';
@@ -79,7 +79,7 @@ Shows an error message if the registration is not successful.
     <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
     <h1 class="text-3xl font-normal">{$page.data.election?.name}</h1>
     <h1 class="my-24 text-2xl font-normal">
-      {$t('candidateApp.common.greeting', {username})}
+      {$t('candidateApp.common.greeting', { username })}
     </h1>
   </HeadingGroup>
   {#if $user}

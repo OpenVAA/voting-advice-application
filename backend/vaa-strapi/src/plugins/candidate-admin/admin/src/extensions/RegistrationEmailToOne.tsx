@@ -1,8 +1,8 @@
-import {useCMEditViewDataManager} from '@strapi/helper-plugin';
+import { useCMEditViewDataManager } from '@strapi/helper-plugin';
 import RegistrationEmailButton from './RegistrationEmailButton';
 
 export default function RegistrationEmailToOne() {
-  const {initialData} = useCMEditViewDataManager();
+  const { initialData } = useCMEditViewDataManager();
   // Only show this button if user hasn't registrated
   if (initialData.user?.length > 0) {
     return null;

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type {TextAreaProps} from './TextArea.type';
-  import {Icon} from '$lib/components/icon';
+  import { Icon } from '$lib/components/icon';
+  import type { TextAreaProps } from './TextArea.type';
 
   type $$Props = TextAreaProps;
 
@@ -39,9 +39,7 @@ A compact text input field.
 -->
 
 {#if headerText}
-  <label
-    for={id}
-    class="label-sm label pointer-events-none mx-6 my-2 whitespace-nowrap text-secondary">
+  <label for={id} class="label-sm label pointer-events-none mx-6 my-2 whitespace-nowrap text-secondary">
     {headerText}
   </label>
 {:else}

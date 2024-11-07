@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {logDebugError} from '$lib/utils/logger';
-  import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {settings} from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {Modal} from '$lib/components/modal';
-  import type {DataConsentInfoButtonProps} from './DataConsentInfoButton.type';
+  import { Button } from '$lib/components/button';
+  import { Modal } from '$lib/components/modal';
+  import { t } from '$lib/i18n';
+  import { settings } from '$lib/stores';
+  import { logDebugError } from '$lib/utils/logger';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
+  import type { DataConsentInfoButtonProps } from './DataConsentInfoButton.type';
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
   type $$Props = DataConsentInfoButtonProps;

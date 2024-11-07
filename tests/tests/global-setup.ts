@@ -21,9 +21,7 @@ async function globalSetup(config: FullConfig) {
     await context.tracing.start({ screenshots: true, snapshots: true });
     await page.goto(`${baseURL!}/${ROUTE.CandAppHome}`);
     await page.getByLabel(T.en['candidateApp.common.email'], { exact: true }).fill(mockUser.email);
-    await page
-      .getByLabel(T.en['components.passwordInput.password'], { exact: true })
-      .fill(mockUser.password);
+    await page.getByLabel(T.en['components.passwordInput.password'], { exact: true }).fill(mockUser.password);
     await page.getByText(T.en['common.login'], { exact: true }).click();
     // Wait until the page actually signs in.
     await expect(

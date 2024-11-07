@@ -1,4 +1,4 @@
-name: 'Main tests & validation'
+name: "Main tests & validation"
 
 on:
   push:

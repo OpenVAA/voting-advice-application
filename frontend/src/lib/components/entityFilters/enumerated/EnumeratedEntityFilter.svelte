@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {onDestroy} from 'svelte';
-  import {isMissing, type Choice, MISSING_VALUE, type MaybeMissing} from '@openvaa/filters';
-  import {t} from '$lib/i18n';
-  import {concatProps, getUUID} from '$lib/utils/components';
-  import {logDebugError} from '$lib/utils/logger';
-  import type {EnumeratedEntityFilterProps} from './EnumeratedEntityFilter.type';
-  import {Icon} from '$lib/components/icon';
+  import { type Choice, isMissing, type MaybeMissing, MISSING_VALUE } from '@openvaa/filters';
+  import { onDestroy } from 'svelte';
+  import { Icon } from '$lib/components/icon';
+  import { t } from '$lib/i18n';
+  import { concatProps, getUUID } from '$lib/utils/components';
+  import { logDebugError } from '$lib/utils/logger';
+  import type { EnumeratedEntityFilterProps } from './EnumeratedEntityFilter.type';
 
   type $$Props = EnumeratedEntityFilterProps;
 
@@ -20,7 +20,7 @@
 
   // Initialize values and possibly saved filter state
   const values = filter.parseValues(targets);
-  let selected: string[] | MaybeMissing<number>[];
+  let selected: Array<string> | Array<MaybeMissing<number>>;
   updateSelected();
 
   /** Track whether `toggleSelectAll()` will select or deselect all */
@@ -40,9 +40,7 @@
    * Update the selected checkboxes so that they reflect the filter state
    */
   function updateSelected() {
-    selected = convertMissingForInputs(
-      filter.include?.length ? filter.include : values.map((v) => v.value)
-    );
+    selected = convertMissingForInputs(filter.include?.length ? filter.include : values.map((v) => v.value));
   }
 
   /**
@@ -51,9 +49,7 @@
    * @returns The selected values for `filter.include`
    */
   function parseSelected(selectedValues: typeof selected) {
-    return selectedValues.length === values.length
-      ? undefined
-      : convertMissingForFilter(selectedValues);
+    return selectedValues.length === values.length ? undefined : convertMissingForFilter(selectedValues);
   }
 
   /**
@@ -66,7 +62,7 @@
   /**
    * Convert possibly missing values for use in `<input>` elements
    */
-  function convertMissingForInputs(filterValues: MaybeMissing<string | number>[]) {
+  function convertMissingForInputs(filterValues: Array<MaybeMissing<string | number>>) {
     return filterValues.map((v) => (isMissing(isMissing) ? missingValue : v));
   }
 
@@ -85,9 +81,7 @@
     if (!object) return $t('entityFilters.missingValue');
     if ('name' in object) return object.name;
     if ('label' in object) return object.label;
-    logDebugError(
-      `EnumeratedEntityFilter: entity's answer resulted in an invalid object: ${object}`
-    );
+    logDebugError(`EnumeratedEntityFilter: entity's answer resulted in an invalid object: ${object}`);
     return undefined;
   }
 </script>
@@ -127,9 +121,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
   {/each}
   {#if values.length > 3}
     <div class="col-span-full mt-md">
-      <button
-        on:click={() => toggleSelectAll()}
-        class="label cursor-pointer !items-start gap-sm !p-0 text-primary">
+      <button on:click={() => toggleSelectAll()} class="label cursor-pointer !items-start gap-sm !p-0 text-primary">
         <div class="w-[1.5rem]">
           <Icon name={allSelected ? 'uncheckAll' : 'checkAll'} />
         </div>

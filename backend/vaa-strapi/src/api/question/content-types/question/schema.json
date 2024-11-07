@@ -68,11 +68,7 @@
     },
     "entityType": {
       "type": "enumeration",
-      "enum": [
-        "all",
-        "candidate",
-        "party"
-      ],
+      "enum": ["all", "candidate", "party"],
       "default": "all"
     }
   }

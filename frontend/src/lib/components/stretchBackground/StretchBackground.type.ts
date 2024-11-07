@@ -1,4 +1,4 @@
-import type {SvelteHTMLElements} from 'svelte/elements';
+import type { SvelteHTMLElements } from 'svelte/elements';
 export type StretchBackgroundProps = SvelteHTMLElements['div'] & {
   /**
    * Optional named background color for the section.

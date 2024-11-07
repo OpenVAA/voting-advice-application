@@ -11,6 +11,7 @@ The default permissions unauthenticated and authenticated users are managed in t
 Enforces that all the returned content belongs to the currently authenticated candidate by filtering the `candidate` field. This is primarily meant only for the find and findOne endpoints so that they only return resources belonging to the authenticated candidate in case the content type shouldn't be public for everyone.
 
 Example usage:
+
 ```ts
 export default factories.createCoreRouter('...', {
   ...
@@ -29,6 +30,7 @@ export default factories.createCoreRouter('...', {
 Enforces that the request applies the `candidate` field to the currently authenticated candidate. This is primarily meant only for the create and update endpoints so that the created and updated resources body will always have the candidate set to the authenticated candidate to prevent impersonation.
 
 Example usage:
+
 ```ts
 export default factories.createCoreRouter('...', {
   ...
@@ -47,6 +49,7 @@ export default factories.createCoreRouter('...', {
 Enforces that only the allowed populate fields are set to prevent leaking content types from relationships. Strapi does not implement a convenient way to restrict populates, so this would need to be enforced for every content type that is able to eventually return the content type even if there is no direct relationship. For example, if there were the `shop -> pizza -> ingredient` relationship where `ingredient` should not be exposed to the public, it is still possible to use populate to get `ingredient` through the `shop` endpoint using the `shop -> pizza` and `pizza -> ingredient` relationship.
 
 Example usage:
+
 ```ts
 export default factories.createCoreRouter('...', {
   ...
@@ -68,6 +71,7 @@ export default factories.createCoreRouter('...', {
 Enforces that only the allowed filters are set to prevent leaking content types from relationships. This is useful in scenarios where a specific relationship should not be returned, which filter would allow querying for even though the value is not directly retrievable. For example, user would be able to filter relationship's value by checking the prefix, which would eventually give an oracle where if the character is correct, the content type is returned, or if it's wrong, the content type isn't returned. Repeating this would then allow recovering field values that they shouldn't be able to get.
 
 Example usage:
+
 ```ts
 export default factories.createCoreRouter('...', {
   ...
@@ -88,6 +92,7 @@ export default factories.createCoreRouter('...', {
 Enforces that only the allowed fields are returned from the content type. If no fields are explicitly provided (using the `?fields=...` syntax in the request), it will default to only providing the allowed fields. This is intended for all the request endpoints as they all return the content type the action is performed on. Note that you should use the `private` field in the content type schema first for increased security (making this redundant), but if that isn't possible then this is an alternative option. This also has same caveats as `restrictPopulate` where the fields will not apply to relationships returned, and the field that shouldn't be returned will still be returned through populate if not carefully restricted.
 
 Example usage:
+
 ```ts
 export default factories.createCoreRouter('...', {
   ...
@@ -106,6 +111,7 @@ export default factories.createCoreRouter('...', {
 Enforces that only the allowed fields are allowed in the body. This is primarily meant only for the create and update endpoints to prevent modifying fields that should not be modified in the content type.
 
 Example usage:
+
 ```ts
 export default factories.createCoreRouter('...', {
   ...
@@ -124,6 +130,7 @@ export default factories.createCoreRouter('...', {
 Enforces that the accessed resource belongs to the currently authenticated user by verifying that the accessed resource has `candidate` relationship to the authenticated user. This is primarily meant only for the findOne, create, update, and delete endpoints to prevent modification to resources not owned by that candidate. Note that one needs to be careful and make sure that the currently authenticated user is unable to modify another user's resource and set their candidate field to be themselves before performing modifications.
 
 Example usage:
+
 ```ts
 export default factories.createCoreRouter('api::my-content', {
   ...
@@ -140,6 +147,7 @@ export default factories.createCoreRouter('api::my-content', {
 # Preset
 
 Here is a default preset one can use for new content-type that aims to be secure by default:
+
 ```ts
 export default factories.createCoreRouter('...', {
   only: ['find', 'findOne', 'create', 'update', 'delete'],
@@ -149,16 +157,16 @@ export default factories.createCoreRouter('...', {
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
+        restrictFilters([])
+      ]
     },
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
+        restrictFilters([])
+      ]
     },
     create: {
       policies: [
@@ -167,8 +175,8 @@ export default factories.createCoreRouter('...', {
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
+        restrictFilters([])
+      ]
     },
     update: {
       policies: [
@@ -179,8 +187,8 @@ export default factories.createCoreRouter('...', {
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
+        restrictFilters([])
+      ]
     },
     delete: {
       policies: [
@@ -189,10 +197,11 @@ export default factories.createCoreRouter('...', {
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
-    },
-  },
+        restrictFilters([])
+      ]
+    }
+  }
 });
 ```
+
 Note that if you do not need the create, update, and delete endpoints, one should disable them by removing them from the `only` array.

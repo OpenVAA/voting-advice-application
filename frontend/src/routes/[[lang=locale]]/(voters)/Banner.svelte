@@ -1,11 +1,11 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {openFeedbackModal, resultsAvailable} from '$lib/stores';
-  import {Button} from '$lib/components/button';
-  import {getRoute, Route} from '$lib/utils/navigation';
-  import {goto} from '$app/navigation';
-  import {onDestroy} from 'svelte';
-  import {getLayoutContext} from '$lib/contexts/layout';
+  import { onDestroy } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { Button } from '$lib/components/button';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { t } from '$lib/i18n';
+  import { openFeedbackModal, resultsAvailable } from '$lib/stores';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
 
   /** Synced version so that we don't have to await for this explicitly */
   let resultsAvailableSync = false;
@@ -17,7 +17,7 @@
   // TODO: Figure out a way to define this LogoutButton part only within the
   // candidate route. This can be done with the new, slot-less templates
   // const showLogoutButton = $appType === 'candidate' && userStore;
-  const {topBarSettings} = getLayoutContext(onDestroy);
+  const { topBarSettings } = getLayoutContext(onDestroy);
 </script>
 
 <!-- style:--headerIcon-color={hasVideo && screenWidth < Breakpoints.sm
@@ -29,20 +29,16 @@
   {/if} -->
 
   {#if $topBarSettings.actions.feedback == 'show'}
-    <Button
-      on:click={$openFeedbackModal}
-      variant="icon"
-      icon="feedback"
-      text={$t('feedback.send')} />
+    <Button on:click={$openFeedbackModal} variant="icon" icon="feedback" text={$t('feedback.send')} />
   {/if}
 
   {#if $topBarSettings.actions.help == 'show'}
-    <Button href={$getRoute(Route.Help)} variant="icon" icon="help" text={$t('help.title')} />
+    <Button href={$getRoute(ROUTE.Help)} variant="icon" icon="help" text={$t('help.title')} />
   {/if}
 
   {#if $topBarSettings.actions.results == 'show'}
     <Button
-      href={$getRoute(Route.Results)}
+      href={$getRoute(ROUTE.Results)}
       disabled={resultsAvailableSync ? null : true}
       variant="responsive-icon"
       icon="results"
@@ -67,8 +63,7 @@
       variant="icon"
       icon="close"
       text={$topBarSettings.actions.returnButtonLabel}
-      on:click={$topBarSettings.actions.returnButtonCallback ||
-        (() => goto($getRoute(Route.Home)))} />
+      on:click={$topBarSettings.actions.returnButtonCallback || (() => goto($getRoute(ROUTE.Home)))} />
   {/if}
 </div>
 

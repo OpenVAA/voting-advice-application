@@ -1,27 +1,21 @@
 <script lang="ts">
-  import {error} from '@sveltejs/kit';
-  import {afterNavigate, goto} from '$app/navigation';
-  import {locale, t} from '$lib/i18n';
-  import {startEvent} from '$lib/utils/analytics/track';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {
-    candidateRankings,
-    infoQuestions,
-    opinionQuestions,
-    partyRankings,
-    settings
-  } from '$lib/stores/index.js';
-  import {EntityDetails} from '$lib/components/entityDetails';
-  import {Loading} from '$lib/components/loading';
-  import {getLayoutContext} from '$lib/contexts/layout';
-  import type {Readable} from 'svelte/store';
-  import {onDestroy} from 'svelte';
+  import { error } from '@sveltejs/kit';
+  import { onDestroy } from 'svelte';
+  import { afterNavigate, goto } from '$app/navigation';
+  import { EntityDetails } from '$lib/components/entityDetails';
+  import { Loading } from '$lib/components/loading';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { locale, t } from '$lib/i18n';
+  import { candidateRankings, infoQuestions, opinionQuestions, partyRankings, settings } from '$lib/stores/index.js';
+  import { startEvent } from '$lib/utils/analytics/track';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { Readable } from 'svelte/store';
 
   export let data;
 
-  const {pageStyles, topBarSettings} = getLayoutContext(onDestroy);
+  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
-  pageStyles.push({drawer: {background: 'bg-base-300'}});
+  pageStyles.push({ drawer: { background: 'bg-base-300' } });
   topBarSettings.push({
     actions: {
       help: 'hide',
@@ -35,14 +29,14 @@
   let entityType: Exclude<EntityType, 'all'>;
   let id: string;
   /** A party's candidates for displaying on a separate tab in EntityDetails or undefined if not applicable */
-  let candidatesOrUndef: Promise<WrappedEntity[] | RankingProps[] | undefined>;
+  let candidatesOrUndef: Promise<Array<WrappedEntity> | Array<RankingProps> | undefined>;
   let entity: Promise<WrappedEntity | RankingProps | undefined>;
   let title = '';
-  let entities: Readable<Promise<WrappedEntity[] | RankingProps[]>>;
+  let entities: Readable<Promise<Array<WrappedEntity> | Array<RankingProps>>>;
 
   // We need to set these reactively to get the most recent param data. We should, however, check that data has actually changed before reloading anything.
   $: {
-    const current = {id, entityType};
+    const current = { id, entityType };
     id = data.entityId;
     entityType = data.entityType as Exclude<EntityType, 'all'>;
 
@@ -64,8 +58,7 @@
         return res;
       });
       if ($settings.entityDetails.contents[entityType].includes('candidates')) {
-        if (entityType !== 'party')
-          error(500, `Entity type ${entityType} can not have 'candidates' in EntityDetails`);
+        if (entityType !== 'party') error(500, `Entity type ${entityType} can not have 'candidates' in EntityDetails`);
         candidatesOrUndef = $candidateRankings.then((d) => {
           const res = d.filter((c) => c.entity.party?.id == id);
           return res.length ? res : undefined;
@@ -80,10 +73,10 @@
           // Find out the rank of this entity
           $entities.then((all) => {
             const rank = all.findIndex((a) => a.entity.id == e.entity.id);
-            startEvent(`results_ranked_${entityType}`, {id, score: e.score, rank});
+            startEvent(`results_ranked_${entityType}`, { id, score: e.score, rank });
           });
         } else {
-          startEvent(`results_browse_${entityType}`, {id});
+          startEvent(`results_browse_${entityType}`, { id });
         }
       });
     }

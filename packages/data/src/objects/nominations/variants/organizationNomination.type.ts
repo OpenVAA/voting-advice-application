@@ -5,7 +5,8 @@ import type {
   NominationData,
   PublicCandidateNominationData,
   PublicFactionNominationData,
-  WithOptional} from '../../../internal';
+  WithOptional
+} from '../../../internal';
 
 export interface OrganizationNominationData
   extends NominationData<typeof ENTITY_TYPE.Organization, typeof ENTITY_TYPE.Alliance> {

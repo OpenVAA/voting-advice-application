@@ -1,7 +1,7 @@
 <script lang="ts">
-  import {concatClass} from '$lib/utils/components';
-  import {Icon} from '$lib/components/icon';
-  import type {PartyTagProps} from './PartyTag.type';
+  import { Icon } from '$lib/components/icon';
+  import { concatClass } from '$lib/utils/components';
+  import type { PartyTagProps } from './PartyTag.type';
 
   type $$Props = PartyTagProps;
 
@@ -28,10 +28,7 @@ Used to display a party tag with an icon.
 -->
 
 <div {...concatClass($$restProps, 'flex flex-row items-center gap-xs font-bold')}>
-  <Icon
-    name="party"
-    customColor={party.color || undefined}
-    customColorDark={party.colorDark || undefined} />
+  <Icon name="party" customColor={party.color || undefined} customColorDark={party.colorDark || undefined} />
   <span>
     {#if variant === 'short'}
       {party.shortName}

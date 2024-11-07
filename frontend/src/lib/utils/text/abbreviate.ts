@@ -1,4 +1,4 @@
-import {locale} from '$lib/i18n';
+import { locale } from '$lib/i18n';
 
 /**
  * Abbreviate a string.
@@ -8,14 +8,12 @@ import {locale} from '$lib/i18n';
  */
 export function abbreviate(text: string, options: AbbreviationOptions = {}) {
   if (!text) return '';
-  const {method = 'acronym', length = 3} = options;
+  const { method = 'acronym', length = 3 } = options;
   switch (method) {
     case 'acronym':
       return text
         .split(/(\s|-)+/)
-        .map((w) =>
-          w === '' || w === ' ' ? '' : w.substring(0, 1).toLocaleUpperCase(locale.get())
-        )
+        .map((w) => (w === '' || w === ' ' ? '' : w.substring(0, 1).toLocaleUpperCase(locale.get())))
         .slice(0, length)
         .join('');
     default:

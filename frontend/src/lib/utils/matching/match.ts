@@ -8,7 +8,8 @@ import {
   type MatchableQuestionGroup,
   MatchingAlgorithm,
   type MatchingOptions,
-  MISSING_VALUE_METHOD} from '@openvaa/matching';
+  MISSING_VALUE_METHOD
+} from '@openvaa/matching';
 import { error } from '@sveltejs/kit';
 import { imputePartyAnswers } from './imputePartyAnswers';
 import { LikertQuestion } from './LikertQuestion';
@@ -43,10 +44,7 @@ export async function match<TEntity extends EntityProps>(
   allQuestions.forEach((q) => {
     if (q.category.type !== 'opinion') return;
     if (q.type !== 'singleChoiceOrdinal' || !q.values)
-      error(
-        500,
-        `Unsupported opinion question type ${q.type} or question without values: length ${q.values?.length}.`
-      );
+      error(500, `Unsupported opinion question type ${q.type} or question without values: length ${q.values?.length}.`);
     questions.push(
       new LikertQuestion({
         id: q.id,
@@ -65,8 +63,7 @@ export async function match<TEntity extends EntityProps>(
   }
 
   // Possibly prepare for submatch calculation
-  let matchingOptions: MatchingOptions<QuestionCategoryProps & MatchableQuestionGroup> | undefined =
-    undefined;
+  let matchingOptions: MatchingOptions<QuestionCategoryProps & MatchableQuestionGroup> | undefined = undefined;
   if (options.subMatches) {
     // Create answer subgroups
     // We only consider those subgroups that the voter has answered
@@ -119,12 +116,7 @@ export async function matchParties(
   if (matchingType !== 'answersOnly') {
     for (const party of parties) {
       originalAnswers[party.id] = party.answers;
-      party.answers = imputePartyAnswers(
-        party,
-        candidates,
-        Object.keys(answeredQuestions),
-        matchingType
-      );
+      party.answers = imputePartyAnswers(party, candidates, Object.keys(answeredQuestions), matchingType);
     }
   }
   const res = match(allQuestions, answeredQuestions, parties, options);

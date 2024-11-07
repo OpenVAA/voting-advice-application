@@ -14,20 +14,13 @@ test.describe('Shared translation files', () => {
         .readFileSync(
           path.resolve(
             TESTS_DIR,
-            path.join(
-              '../../backend/vaa-strapi/src/functions/utils/translations',
-              locale,
-              'dynamic.json'
-            )
+            path.join('../../backend/vaa-strapi/src/functions/utils/translations', locale, 'dynamic.json')
           )
         )
         .toString();
       const frontend = fs
         .readFileSync(
-          path.resolve(
-            TESTS_DIR,
-            path.join('../../frontend/src/lib/i18n/translations', locale, 'dynamic.json')
-          )
+          path.resolve(TESTS_DIR, path.join('../../frontend/src/lib/i18n/translations', locale, 'dynamic.json'))
         )
         .toString();
       expect(backend).toEqual(frontend);

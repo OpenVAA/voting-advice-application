@@ -1,4 +1,4 @@
-import type { DataObjectData,Id } from '../../internal';
+import type { DataObjectData, Id } from '../../internal';
 
 export interface ConstituencyData extends DataObjectData {
   // From HasId

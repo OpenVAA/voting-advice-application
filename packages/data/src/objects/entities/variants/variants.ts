@@ -1,11 +1,4 @@
-import {
-  Alliance,
-  Candidate,
-  ENTITY_TYPE,
-  EntityType,
-  Faction,
-  Organization
-} from '../../../internal';
+import { Alliance, Candidate, ENTITY_TYPE, EntityType, Faction, Organization } from '../../../internal';
 
 /**
  * Entity variants

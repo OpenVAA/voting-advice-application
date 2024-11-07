@@ -15,8 +15,7 @@ export class Position {
   readonly space: MatchingSpace;
 
   constructor({ coordinates, space }: { coordinates: PositionCoordinates; space: MatchingSpace }) {
-    if (!space.isCompatible(coordinates))
-      throw new Error('The shape of coordinates and space are incompatible');
+    if (!space.isCompatible(coordinates)) throw new Error('The shape of coordinates and space are incompatible');
     this.coordinates = coordinates;
     this.space = space;
   }

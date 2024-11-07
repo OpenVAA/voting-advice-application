@@ -1,6 +1,6 @@
-import {expect, test} from 'vitest';
-import {defaultLocale} from '../';
-import {canonize, isLocale, matchLocale, parseAcceptedLanguages, translate} from '../utils';
+import { expect, test } from 'vitest';
+import { defaultLocale } from '../';
+import { canonize, isLocale, matchLocale, parseAcceptedLanguages, translate } from '../utils';
 
 test('canonize and isLocale', () => {
   // Locale names are based on the examples in the RFC:
@@ -39,10 +39,9 @@ test('parseAcceptedLanguages', () => {
   expect(parseAcceptedLanguages(header2), 'String order should not change results').toEqual(result);
   const header3 = 'fr-CH, en';
   const result3 = ['fr-CH', 'en'];
-  expect(
-    parseAcceptedLanguages(header3),
-    'String order should dictate order when there are no q values'
-  ).toEqual(result3);
+  expect(parseAcceptedLanguages(header3), 'String order should dictate order when there are no q values').toEqual(
+    result3
+  );
 });
 
 test('translate', () => {

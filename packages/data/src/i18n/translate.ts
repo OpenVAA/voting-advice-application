@@ -1,10 +1,4 @@
-import {
-  isLocalizedValue,
-  LocalizedArray,
-  LocalizedObject,
-  LocalizedValue,
-  TRANSLATIONS_KEY
-} from './localized';
+import { isLocalizedValue, LocalizedArray, LocalizedObject, LocalizedValue, TRANSLATIONS_KEY } from './localized';
 
 /**
  * Translate recursively any data structure containing some `LocalizedValues`.
@@ -60,12 +54,6 @@ function translateObject<TData extends object>({
  * @param locale - The locale to translate to.
  * @returns A new array with all `LocalizedValue`s recursively translated.
  */
-function translateArray<TItem>({
-  data,
-  locale
-}: {
-  data: LocalizedArray<TItem>;
-  locale: string;
-}): Array<TItem> {
+function translateArray<TItem>({ data, locale }: { data: LocalizedArray<TItem>; locale: string }): Array<TItem> {
   return data.map((value) => translate({ value, locale }));
 }

@@ -1,4 +1,4 @@
-import {isCandidate, isParty} from './entities';
+import { isCandidate, isParty } from './entities';
 
 /**
  * Check whether the entity has answers to all of the given questions.
@@ -10,7 +10,5 @@ export function hasAllAnswers(entity: EntityProps, questions: Array<QuestionProp
   if (isCandidate(entity)) type = 'candidate';
   else if (isParty(entity)) type = 'party';
   else throw new Error('Invalid entity type');
-  return questions.every(
-    (q) => (q.entityType !== 'all' && q.entityType !== type) || entity.answers[q.id] != null
-  );
+  return questions.every((q) => (q.entityType !== 'all' && q.entityType !== type) || entity.answers[q.id] != null);
 }

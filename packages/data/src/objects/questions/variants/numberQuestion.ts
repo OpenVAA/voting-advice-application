@@ -12,7 +12,8 @@ import {
   normalizeCoordinate,
   type NumberQuestionData,
   Question,
-  QUESTION_TYPE} from '../../../internal';
+  QUESTION_TYPE
+} from '../../../internal';
 
 /**
  * A possibly matchable simple question whose answer is a number. The question is matchable if it has a defined `min` and `max` range.
@@ -23,8 +24,7 @@ export class NumberQuestion
 {
   constructor({ data, root }: { data: NumberQuestionData; root: DataRoot }) {
     super({ data, root });
-    if (this.range === 0)
-      throw new DataProvisionError('If defined, the min-max range must be greater than zero.');
+    if (this.range === 0) throw new DataProvisionError('If defined, the min-max range must be greater than zero.');
   }
 
   protected _ensureValue(value: NonNullable<unknown>) {
@@ -69,9 +69,7 @@ export class NumberQuestion
   /**
    * Normalizes the value within the min–max range.
    */
-  protected _normalizeValue(
-    value: AnswerValue[typeof QUESTION_TYPE.Number] | MissingValue
-  ): CoordinateOrMissing {
+  protected _normalizeValue(value: AnswerValue[typeof QUESTION_TYPE.Number] | MissingValue): CoordinateOrMissing {
     const min = this.min;
     const max = this.max;
     if (min == null || max == null)

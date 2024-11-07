@@ -27,9 +27,7 @@ export function formatName({ object }: { object: Candidate }): string {
 export function formatAllianceName({ object }: { object: Alliance }): string {
   const names = object.organizations.map((o) => o.name).filter((n) => n !== '');
   // In theory, objects should always have at least two organizations, so this check is somewhat redundant
-  return names.length > 1
-    ? `${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}`
-    : (names[0] ?? '—');
+  return names.length > 1 ? `${names.slice(0, -1).join(', ')} & ${names[names.length - 1]}` : (names[0] ?? '—');
 }
 
 /**

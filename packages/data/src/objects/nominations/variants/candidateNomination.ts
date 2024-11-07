@@ -3,7 +3,8 @@ import {
   type DataAccessor,
   ENTITY_TYPE,
   FactionNomination,
-  OrganizationNomination} from '../../../internal';
+  OrganizationNomination
+} from '../../../internal';
 import { Nomination } from '../../../internal';
 
 /**
@@ -22,9 +23,7 @@ export class CandidateNomination
    * A utility synonym for `parentNomination` in the case when the `Candidate` is nominated on a `Faction`.
    */
   get factionList(): FactionNomination | null {
-    return this.data.parentNominationType === ENTITY_TYPE.Faction
-      ? (this.parentNomination as FactionNomination)
-      : null;
+    return this.data.parentNominationType === ENTITY_TYPE.Faction ? (this.parentNomination as FactionNomination) : null;
   }
 
   /**

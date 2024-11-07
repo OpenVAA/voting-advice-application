@@ -5,7 +5,8 @@ import {
   ExtendedNominationData,
   getTestData,
   getTestDataRoot,
-  parseNestedNominations} from '../testUtils';
+  parseNestedNominations
+} from '../testUtils';
 
 /**
  * Some of `DataRoot`’s methods are in effect tested by `getDataRoot` or the object classes and will not be repeated here, e.g.:
@@ -29,17 +30,10 @@ const mockRoot = new MockDataRoot({ data: getTestData() });
 
 test('Should have array and id-based getters for all child collections', () => {
   for (const collection of Object.keys(mockRoot.childrenObject)) {
-    expect(
-      Array.isArray(mockRoot[collection]),
-      `To have a collection array getter for ${collection}`
-    ).toBe(true);
-    const singular = collection.endsWith('ies')
-      ? `${collection.slice(0, -3)}y`
-      : `${collection.slice(0, -1)}`;
+    expect(Array.isArray(mockRoot[collection]), `To have a collection array getter for ${collection}`).toBe(true);
+    const singular = collection.endsWith('ies') ? `${collection.slice(0, -3)}y` : `${collection.slice(0, -1)}`;
     const byIdGetter = `get${singular.charAt(0).toUpperCase()}${singular.slice(1)}`;
-    expect(typeof mockRoot[byIdGetter], `To have id based object getter for ${collection}`).toBe(
-      'function'
-    );
+    expect(typeof mockRoot[byIdGetter], `To have id based object getter for ${collection}`).toBe('function');
   }
 });
 
@@ -54,18 +48,12 @@ test('GetNomination should work', () => {
 });
 
 test('FindNominations should work', () => {
-  if (nominationData.length === 0)
-    throw new Error('Test setup error: No nomination data available');
+  if (nominationData.length === 0) throw new Error('Test setup error: No nomination data available');
   for (const { entityType, electionId, constituencyId } of nominationData) {
     const fullMatch = nominationData.filter(
-      (n) =>
-        n.entityType === entityType &&
-        n.electionId === electionId &&
-        n.constituencyId === constituencyId
+      (n) => n.entityType === entityType && n.electionId === electionId && n.constituencyId === constituencyId
     );
-    const partialMatch = nominationData.filter(
-      (n) => n.entityType === entityType && n.electionId === electionId
-    );
+    const partialMatch = nominationData.filter((n) => n.entityType === entityType && n.electionId === electionId);
     expect(
       contentsMatch(
         root.findNominations({ entityType, electionId, constituencyId })!.map(hashNomination),
@@ -82,8 +70,7 @@ test('FindNominations should work', () => {
 });
 
 test('GetNominationsForEntity should return the correct number of nominations', () => {
-  if (nominationData.length === 0)
-    throw new Error('Test setup error: No nomination data available');
+  if (nominationData.length === 0) throw new Error('Test setup error: No nomination data available');
 
   // Count nominations in the data
   const countsById: {
@@ -135,8 +122,7 @@ test('GetNominationsForEntity should return the correct number of nominations', 
 });
 
 test('GetNominationsForConstituency should work', () => {
-  if (nominationData.length === 0)
-    throw new Error('Test setup error: No nomination data available');
+  if (nominationData.length === 0) throw new Error('Test setup error: No nomination data available');
 
   // Count nominations in the data
   const countsByConstituency: {
@@ -184,9 +170,7 @@ function hashNomination(nomination: AnyNominationVariant): string {
     nomination.election.id,
     nomination.constituency.id,
     nomination.parentNomination ? hashNomination(nomination.parentNomination) : null,
-    'candidateNominations' in nomination
-      ? nomination.candidateNominations.map((n) => n.entity.id)
-      : []
+    'candidateNominations' in nomination ? nomination.candidateNominations.map((n) => n.entity.id) : []
   ]);
 }
 

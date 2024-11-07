@@ -1,28 +1,27 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {goto} from '$app/navigation';
-  import {getRoute} from '$lib/utils/navigation';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Icon} from '$lib/components/icon';
-  import {PasswordValidator} from '$candidate/components/passwordValidator';
-  import {Button} from '$lib/components/button';
-  import {validatePassword} from '@openvaa/app-shared';
-  import {changePassword, getLanguages, updateAppLanguage} from '$lib/api/candidate';
-  import {PasswordField} from '$lib/candidate/components/passwordField';
-  import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import type {StrapiLanguageData} from '$lib/api/dataProvider/strapi';
-  import type {Language} from '$lib/types/candidateAttributes';
-  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
+  import { validatePassword } from '@openvaa/app-shared';
+  import { getContext } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { PasswordValidator } from '$candidate/components/passwordValidator';
+  import { changePassword, getLanguages, updateAppLanguage } from '$lib/api/candidate';
+  import { PasswordField } from '$lib/candidate/components/passwordField';
+  import { Button } from '$lib/components/button';
+  import { Icon } from '$lib/components/icon';
+  import { t } from '$lib/i18n';
+  import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { getRoute } from '$lib/utils/navigation';
+  import type { StrapiLanguageData } from '$lib/api/dataProvider/strapi';
+  import type { Language } from '$lib/types/candidateAttributes';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
 
-  const {user, loadUserData} = getContext<CandidateContext>('candidate');
+  const { user, loadUserData } = getContext<CandidateContext>('candidate');
 
   // TODO: consider refactoring this as this uses same classes as profile/+page.svelte?
   const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
   const headerClass = 'uppercase mx-6 my-0 p-0 text-m text-secondary';
-  const inputClass =
-    'input-ghost input input-sm w-full pr-2 text-right disabled:border-none disabled:bg-base-100';
+  const inputClass = 'input-ghost input input-sm w-full pr-2 text-right disabled:border-none disabled:bg-base-100';
 
   let currentPassword = '';
   let password = '';
@@ -46,9 +45,7 @@
     languageErrorMessage = '';
 
     const chosenLanguage = allLanguages
-      ? allLanguages.find(
-          (lang) => lang.attributes.localisationCode === (e.target as HTMLSelectElement).value
-        )
+      ? allLanguages.find((lang) => lang.attributes.localisationCode === (e.target as HTMLSelectElement).value)
       : undefined;
 
     if (chosenLanguage) {
@@ -61,8 +58,8 @@
       try {
         await updateAppLanguage(languageObj);
         await loadUserData(); // Reload user data so it's up to date
-        await goto($getRoute({locale: languageObj.localisationCode})); // Change page language to the chosen one
-      } catch (error) {
+        await goto($getRoute({ locale: languageObj.localisationCode })); // Change page language to the chosen one
+      } catch {
         languageErrorMessage = $t('candidateApp.settings.error.changeLanguage');
       }
     }
@@ -101,7 +98,7 @@
 
     errorMessage = '';
     successMessage = $t('candidateApp.settings.password.updated');
-  };
+  }
 </script>
 
 <BasicPage title={$t('candidateApp.settings.title')} mainClass="bg-base-200">
@@ -168,9 +165,7 @@
     </p>
   </div>
 
-  <form
-    class="flex-nowarp flex w-full flex-col items-center"
-    on:submit|preventDefault={onButtonPress}>
+  <form class="flex-nowarp flex w-full flex-col items-center" on:submit|preventDefault={onButtonPress}>
     <div class="w-full">
       <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
         <div class="flex items-center justify-between bg-base-100">
@@ -200,11 +195,7 @@
             {$t('candidateApp.settings.password.new')}
           </label>
           <div class="w-6/12 text-right text-secondary">
-            <PasswordField
-              id="newPassword"
-              bind:password
-              externalLabel={true}
-              autocomplete="new-password" />
+            <PasswordField id="newPassword" bind:password externalLabel={true} autocomplete="new-password" />
           </div>
         </div>
       </div>

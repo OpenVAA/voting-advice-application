@@ -11,7 +11,8 @@ import {
   type MissingValue,
   normalizeCoordinate,
   Question,
-  QUESTION_TYPE} from '../../../internal';
+  QUESTION_TYPE
+} from '../../../internal';
 
 /**
  * A possibly matchable simple question whose answer is a date.
@@ -53,17 +54,13 @@ export class DateQuestion
   /**
    * Normalizes the value within the min–max range.
    */
-  protected _normalizeValue(
-    value: AnswerValue[typeof QUESTION_TYPE.Date] | MissingValue
-  ): CoordinateOrMissing {
+  protected _normalizeValue(value: AnswerValue[typeof QUESTION_TYPE.Date] | MissingValue): CoordinateOrMissing {
     const min = this.min?.getTime();
     const max = this.max?.getTime();
     if (min == null || max == null)
       throw new DataTypeError(
         'This Question does not support value normalization because it does not have a defined range.'
       );
-    return isMissingValue(value)
-      ? MISSING_VALUE
-      : normalizeCoordinate({ value: value.getTime(), min, max });
+    return isMissingValue(value) ? MISSING_VALUE : normalizeCoordinate({ value: value.getTime(), min, max });
   }
 }

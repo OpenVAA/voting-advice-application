@@ -1,19 +1,19 @@
 <script lang="ts">
-  import {Button} from '$lib/components/button';
-  import {CategoryTag} from '$lib/components/categoryTag';
-  import {Expander} from '$lib/components/expander';
-  import {t} from '$lib/i18n';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {getContext} from 'svelte';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import type {RenderQuestionProps} from './Question.type';
+  import { getContext } from 'svelte';
+  import { Button } from '$lib/components/button';
+  import { CategoryTag } from '$lib/components/categoryTag';
+  import { Expander } from '$lib/components/expander';
+  import { t } from '$lib/i18n';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { RenderQuestionProps } from './Question.type';
 
   type $$Props = RenderQuestionProps;
 
   export let question: $$Props['question'];
   export let categoryQuestions: $$Props['categoryQuestions'];
 
-  const {answersLocked} = getContext<CandidateContext>('candidate');
+  const { answersLocked } = getContext<CandidateContext>('candidate');
 </script>
 
 <!--
@@ -38,12 +38,8 @@ Renders an unanswered question on the summary page. Consists of the questions ti
 
   <!-- Navigate to unsanswered question -->
   {#if !$answersLocked}
-    <a
-      class="flex justify-center py-20 pb-40"
-      href={$getRoute({route: ROUTE.CandAppQuestions, id: question.id})}>
-      <Button
-        text={$t('candidateApp.questions.answerButton')}
-        class="w-full max-w-md bg-base-300" />
+    <a class="flex justify-center py-20 pb-40" href={$getRoute({ route: ROUTE.CandAppQuestions, id: question.id })}>
+      <Button text={$t('candidateApp.questions.answerButton')} class="w-full max-w-md bg-base-300" />
     </a>
   {:else}
     <p class="p-10 pb-40">{$t('candidateApp.questions.notAnswered')}</p>

@@ -22,12 +22,7 @@ import { getDynamicTranslations } from './utils/appCustomization';
 import { getCardContentsFromFile } from './utils/appSettings';
 import { dropAllCollections } from './utils/drop';
 import { generateMockDataOnInitialise, generateMockDataOnRestart } from '../constants';
-import type {
-  AnswerValue,
-  EntityType,
-  LocalizedString,
-  QuestionTypeSettings
-} from './utils/data.type';
+import type { AnswerValue, EntityType, LocalizedString, QuestionTypeSettings } from './utils/data.type';
 
 const locales: Array<Locale> = [
   {
@@ -302,8 +297,7 @@ async function createElection() {
   const types = ['local', 'presidential', 'congress'];
   const electionType = types[Math.floor(Math.random() * types.length)];
   const name = fakeLocalized(
-    (faker, locale) =>
-      `${date.getFullYear()} ${faker.location.country()} ${electionType} (${locale.code})`
+    (faker, locale) => `${date.getFullYear()} ${faker.location.country()} ${electionType} (${locale.code})`
   );
   const shortName = name;
   const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
@@ -392,11 +386,9 @@ async function createConstituencies(numberOfConstituencies: number) {
 async function createCandidateNominations(length: number) {
   const elections: Array<HasId> = await strapi.db.query(API.Election).findMany({});
   const constituencies: Array<HasId> = await strapi.db.query(API.Constituency).findMany({});
-  const candidates: Array<{ id: string | number; party: HasId }> = await strapi.db
-    .query(API.Candidate)
-    .findMany({
-      populate: ['party']
-    });
+  const candidates: Array<{ id: string | number; party: HasId }> = await strapi.db.query(API.Candidate).findMany({
+    populate: ['party']
+  });
 
   for (let i = 0; i <= length; i++) {
     const candidate = faker.helpers.arrayElement(candidates);
@@ -506,11 +498,10 @@ async function createQuestionTypes() {
  *   have their `constituency` relation set to a random constituency.
  */
 async function createQuestions(options: { constituencyPctg?: number } = {}) {
-  const questionTypes: Array<HasId & { name: string; settings: QuestionTypeSettings }> =
-    await strapi.db.query(API.QuestionType).findMany({});
-  const likertTypes = questionTypes.filter(
-    (questionType) => questionType.settings.type === 'singleChoiceOrdinal'
-  );
+  const questionTypes: Array<HasId & { name: string; settings: QuestionTypeSettings }> = await strapi.db
+    .query(API.QuestionType)
+    .findMany({});
+  const likertTypes = questionTypes.filter((questionType) => questionType.settings.type === 'singleChoiceOrdinal');
 
   const questionCategories: Array<HasId & { type: 'opinion' | 'info' }> = await strapi.db
     .query(API.QuestionCategory)
@@ -527,8 +518,7 @@ async function createQuestions(options: { constituencyPctg?: number } = {}) {
     const info = fakeLocalized((faker) => faker.lorem.sentences(3));
     const category = opinionCategories[index % opinionCategories.length];
     // const category = faker.helpers.arrayElement(opinionCategories);
-    const constituency =
-      Math.random() < constituencyPctg ? faker.helpers.arrayElement(constituencies) : null;
+    const constituency = Math.random() < constituencyPctg ? faker.helpers.arrayElement(constituencies) : null;
     await strapi.db.query(API.Question).create({
       data: {
         text,
@@ -568,29 +558,24 @@ async function createAnswers(entityType: Omit<EntityType, 'all'>) {
     .query(entityType === 'candidate' ? API.Candidate : API.Party)
     .findMany({});
 
-  const questions: Array<HasId & {
-    allowOpen: boolean;
-    entityType?: EntityType;
-    questionType: { settings: QuestionTypeSettings };
-  }> = await strapi.db.query(API.Question).findMany({
+  const questions: Array<
+    HasId & {
+      allowOpen: boolean;
+      entityType?: EntityType;
+      questionType: { settings: QuestionTypeSettings };
+    }
+  > = await strapi.db.query(API.Question).findMany({
     populate: ['questionType']
   });
 
   for (const entity of entities) {
     for (const question of questions) {
-      if (
-        question.entityType &&
-        question.entityType !== 'all' &&
-        question.entityType !== entityType
-      )
-        continue;
+      if (question.entityType && question.entityType !== 'all' && question.entityType !== entityType) continue;
       const settings = question.questionType.settings;
       let value: AnswerValue[keyof AnswerValue];
       switch (settings.type) {
         case 'text':
-          value = settings.notLocalizable
-            ? faker.lorem.sentence()
-            : fakeLocalized((faker) => faker.lorem.sentence());
+          value = settings.notLocalizable ? faker.lorem.sentence() : fakeLocalized((faker) => faker.lorem.sentence());
           break;
         case 'boolean':
           value = faker.helpers.arrayElement([true, false]);
@@ -601,10 +586,7 @@ async function createAnswers(entityType: Omit<EntityType, 'all'>) {
         case 'date':
           if (settings.min) {
             if (settings.max) {
-              value = faker.date
-                .between({ from: settings.min, to: settings.max })
-                .toISOString()
-                .split('T')[0];
+              value = faker.date.between({ from: settings.min, to: settings.max }).toISOString().split('T')[0];
             } else {
               value = faker.date.future({ refDate: settings.min }).toISOString().split('T')[0];
             }
@@ -628,11 +610,8 @@ async function createAnswers(entityType: Omit<EntityType, 'all'>) {
         default:
           throw new Error(`Unsupported question type: ${settings.type}`);
       }
-      const openAnswer = question.allowOpen
-        ? fakeLocalized((faker) => faker.lorem.sentence())
-        : null;
-      const entityRelation =
-        entityType === 'candidate' ? { candidate: entity.id } : { party: entity.id };
+      const openAnswer = question.allowOpen ? fakeLocalized((faker) => faker.lorem.sentence()) : null;
+      const entityRelation = entityType === 'candidate' ? { candidate: entity.id } : { party: entity.id };
       await strapi.db.query(API.Answer).create({
         data: {
           value,
@@ -718,9 +697,7 @@ function fakeTranslate<TTranslation extends string | Record<string, string>>(
     return `${locale.code.toUpperCase()} ${s}`;
   }
   if (typeof target === 'string') return translate(target) as TTranslation;
-  return Object.fromEntries(
-    Object.entries(target).map(([key, value]) => [key, translate(value)])
-  ) as TTranslation;
+  return Object.fromEntries(Object.entries(target).map(([key, value]) => [key, translate(value)])) as TTranslation;
 }
 
 /**
@@ -741,10 +718,7 @@ function fakeLocalized(
  * @values The localized string json to translate
  * @options Optional settings for abbreviation
  */
-function abbreviate(
-  values: LocalizedString,
-  options: AbbreviationOptions = { type: 'acronym' }
-): LocalizedString {
+function abbreviate(values: LocalizedString, options: AbbreviationOptions = { type: 'acronym' }): LocalizedString {
   return Object.fromEntries(
     Object.entries(values).map(([key, value]) => {
       switch (options.type) {

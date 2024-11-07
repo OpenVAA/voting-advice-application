@@ -30,9 +30,7 @@ Meant to be mainly used with two chidlren that are aligned on both ends of the f
 
 <div class="flex h-full items-center justify-between {bgColor}" style={customStyle}>
   {#if id && label}
-    <label
-      for={id}
-      class="label-sm label pointer-events-none mx-6 my-2 whitespace-nowrap text-secondary"
+    <label for={id} class="label-sm label pointer-events-none mx-6 my-2 whitespace-nowrap text-secondary"
       >{label}</label>
   {/if}
   <slot />

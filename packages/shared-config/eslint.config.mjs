@@ -20,7 +20,8 @@ export default [
     ignores: [
       '**/.DS_Store',
       '**/node_modules',
-      'build',
+      '**/build',
+      '**/dist',
       'package',
       '**/.env',
       '**/.env.*',
@@ -32,11 +33,7 @@ export default [
       '**/*.yaml'
     ]
   },
-  ...compat.extends(
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'prettier',
-  ),
+  ...compat.extends('eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'),
   {
     plugins: {
       '@typescript-eslint': typescriptEslint,
@@ -47,12 +44,12 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.node,
-        ...globals.jest,
+        ...globals.jest
       },
 
       parser: tsParser,
       ecmaVersion: 2020,
-      sourceType: 'module',
+      sourceType: 'module'
     },
 
     rules: {
@@ -82,7 +79,7 @@ export default [
         }
       ],
 
-      'func-style': ['error', 'declaration', {allowArrowFunctions: false}],
+      'func-style': ['error', 'declaration', { allowArrowFunctions: false }],
 
       '@typescript-eslint/no-duplicate-enum-values': 'off',
 

@@ -1,10 +1,10 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Button} from '$lib/components/button';
-  import {Expander} from '$lib/components/expander';
-  import {customization, settings} from '$lib/stores';
+  import { Button } from '$lib/components/button';
+  import { Expander } from '$lib/components/expander';
+  import { t } from '$lib/i18n';
+  import { customization, settings } from '$lib/stores';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
 </script>
 
 <BasicPage title={$t('candidateApp.help.title')}>

@@ -1,7 +1,7 @@
-import { assertCoordinate, COORDINATE, type Coordinate,isMissingValue } from '@openvaa/core';
-import { MISSING_VALUE_BIAS,type MissingValueBias } from './bias';
+import { assertCoordinate, COORDINATE, type Coordinate, isMissingValue } from '@openvaa/core';
+import { MISSING_VALUE_BIAS, type MissingValueBias } from './bias';
 import { MISSING_VALUE_METHOD, type MissingValueMethod } from './missingValueMethod';
-import { flatten, Position,reshape } from '../space';
+import { flatten, Position, reshape } from '../space';
 
 /**
  * Options passed to imputeMissingValue

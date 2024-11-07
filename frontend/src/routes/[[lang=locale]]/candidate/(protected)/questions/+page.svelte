@@ -1,18 +1,14 @@
 <script lang="ts">
-  import {Button} from '$lib/components/button';
-  import {BasicPage} from '$lib/templates/basicPage';
-  import {Expander} from '$lib/components/expander';
-  import {t} from '$lib/i18n';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {getContext} from 'svelte';
-  import {Warning} from '$lib/components/warning';
-  import {
-    QuestionsStartPage,
-    AnsweredQuestion,
-    UnAnsweredQuestion
-  } from '$lib/candidate/components/questionsPage';
-  import type {CandidateContext} from '$lib/utils/candidateContext';
-  import {settings} from '$lib/stores';
+  import { getContext } from 'svelte';
+  import { AnsweredQuestion, QuestionsStartPage, UnAnsweredQuestion } from '$lib/candidate/components/questionsPage';
+  import { Button } from '$lib/components/button';
+  import { Expander } from '$lib/components/expander';
+  import { Warning } from '$lib/components/warning';
+  import { t } from '$lib/i18n';
+  import { settings } from '$lib/stores';
+  import { BasicPage } from '$lib/templates/basicPage';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import type { CandidateContext } from '$lib/utils/candidateContext';
 
   const {
     opinionQuestions,
@@ -57,26 +53,20 @@
         loading = false;
         if (questionsByCategory) {
           unansweredCategories = Object.keys(questionsByCategory).filter(
-            (category) =>
-              !questionsByCategory?.[category].every((question) => $opinionAnswers?.[question.id])
+            (category) => !questionsByCategory?.[category].every((question) => $opinionAnswers?.[question.id])
           );
         }
       }
     }
   }
 
-  $: nextUnansweredQuestion = $opinionQuestions?.find(
-    (question) => !$opinionAnswers?.[question.id]
-  );
+  $: nextUnansweredQuestion = $opinionQuestions?.find((question) => !$opinionAnswers?.[question.id]);
 </script>
 
 {#if $opinionAnswers && !$answersLocked && Object.keys($opinionAnswers).length === 0}
   <QuestionsStartPage />
 {:else}
-  <BasicPage
-    title={$t('candidateApp.questions.title')}
-    progress={$progress?.progress}
-    progressMax={$progress?.max}>
+  <BasicPage title={$t('candidateApp.questions.title')} progress={$progress?.progress} progressMax={$progress?.max}>
     <Warning display={!!$answersLocked} slot="note">
       <p>{$t('candidateApp.common.editingNotAllowed')}</p>
       {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
@@ -98,7 +88,7 @@
       </div>
       <div class="flex w-full justify-center pb-40 pt-20">
         <Button
-          href={$getRoute({route: ROUTE.CandAppQuestions, id: nextUnansweredQuestion?.id})}
+          href={$getRoute({ route: ROUTE.CandAppQuestions, id: nextUnansweredQuestion?.id })}
           text={$t('candidateApp.questions.enterMissingAnswer')}
           variant="main"
           icon="next" />
@@ -125,10 +115,7 @@
     {/each}
 
     <div class="flex w-full justify-center py-40">
-      <Button
-        text={$t('common.return')}
-        variant="main"
-        href={$getRoute({route: ROUTE.CandAppHome})} />
+      <Button text={$t('common.return')} variant="main" href={$getRoute({ route: ROUTE.CandAppHome })} />
     </div>
   </BasicPage>
 {/if}

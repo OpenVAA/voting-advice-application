@@ -63,9 +63,7 @@
           }
         }
       },
-      "tags": [
-        "App-customization"
-      ],
+      "tags": ["App-customization"],
       "parameters": [
         {
           "name": "sort",

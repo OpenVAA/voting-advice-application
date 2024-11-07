@@ -1,14 +1,14 @@
 <script lang="ts">
-  import {concatClass} from '$lib/utils/components';
-  import {Expander} from '$lib/components/expander';
   import {
-    ObjectFilter,
     ChoiceQuestionFilter,
-    TextFilter,
     NumericFilter,
-    NumericQuestionFilter
+    NumericQuestionFilter,
+    ObjectFilter,
+    TextFilter
   } from '@openvaa/filters';
-  import type {EntityFiltersProps} from './EntityFilters.type';
+  import { Expander } from '$lib/components/expander';
+  import { concatClass } from '$lib/utils/components';
+  import type { EntityFiltersProps } from './EntityFilters.type';
 
   type $$Props = EntityFiltersProps;
 

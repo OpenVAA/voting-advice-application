@@ -44,10 +44,7 @@
     },
     "type": {
       "type": "enumeration",
-      "enum": [
-        "opinion",
-        "info"
-      ],
+      "enum": ["opinion", "info"],
       "default": "opinion"
     },
     "color": {

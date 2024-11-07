@@ -1,10 +1,10 @@
 <script lang="ts">
-  import {tweened} from 'svelte/motion';
-  import {cubicOut} from 'svelte/easing';
-  import {t} from '$lib/i18n';
-  import {type ValidationDetail, validatePasswordDetails, minPasswordLength} from '@openvaa/app-shared';
-  import {onMount} from 'svelte';
-  import {assertTranslationKey} from '$lib/i18n/utils/assertTranslationKey';
+  import { minPasswordLength, validatePasswordDetails, type ValidationDetail } from '@openvaa/app-shared';
+  import { onMount } from 'svelte';
+  import { cubicOut } from 'svelte/easing';
+  import { tweened } from 'svelte/motion';
+  import { t } from '$lib/i18n';
+  import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   export let password = '';
   export let username = '';
   export let validPassword = false;
@@ -16,7 +16,7 @@
   $: {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
-      const {details, status} = validatePasswordDetails(password, username);
+      const { details, status } = validatePasswordDetails(password, username);
       validationDetails = details;
       validPassword = status;
 
@@ -40,11 +40,7 @@
   });
 
   // Filter rules based on their type and enforcement
-  function filterRules(
-    validationDetails: Record<string, ValidationDetail>,
-    negative: boolean,
-    enforced: boolean
-  ) {
+  function filterRules(validationDetails: Record<string, ValidationDetail>, negative: boolean, enforced: boolean) {
     if (negative) {
       // Filter negative rules based on enforcement
       return Object.values(validationDetails).filter(

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import {createEventDispatcher} from 'svelte';
-  import {onKeyboardFocusOut} from '$lib/utils/onKeyboardFocusOut';
+  import { createEventDispatcher } from 'svelte';
+  import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
 
   // Dispatch a `keyboardFocusOut` event when the component loses focus
   // This can be used to automatically close a drawer menu this is

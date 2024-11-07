@@ -26,8 +26,7 @@ export const SINGLE_CHOICE_QUESTION_TYPE = {
 /**
  * The types of enumerated questions where only a single choice can be selected.
  */
-export type SingleChoiceQuestionType =
-  (typeof SINGLE_CHOICE_QUESTION_TYPE)[keyof typeof SINGLE_CHOICE_QUESTION_TYPE];
+export type SingleChoiceQuestionType = (typeof SINGLE_CHOICE_QUESTION_TYPE)[keyof typeof SINGLE_CHOICE_QUESTION_TYPE];
 
 /**
  * The types of enumerated questions where multiple choices can be selected.

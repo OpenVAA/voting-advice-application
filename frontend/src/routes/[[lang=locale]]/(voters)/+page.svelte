@@ -1,19 +1,19 @@
 <script lang="ts">
-  import {t} from '$lib/i18n';
-  import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {election, settings, customization} from '$lib/stores';
-  import {darkMode} from '$lib/utils/darkMode';
-  import {Button} from '$lib/components/button';
-  import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
-  import {SurveyBanner} from '$lib/components/survey/banner';
-  import Layout from '../Layout.svelte';
+  import { onDestroy } from 'svelte';
+  import { Button } from '$lib/components/button';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { SurveyBanner } from '$lib/components/survey/banner';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { t } from '$lib/i18n';
+  import { customization, election, settings } from '$lib/stores';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
-  import {onDestroy} from 'svelte';
-  import {getLayoutContext} from '$lib/contexts/layout';
+  import { darkMode } from '$lib/utils/darkMode';
+  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import Layout from '../Layout.svelte';
 
-  const {pageStyles, topBarSettings} = getLayoutContext(onDestroy);
+  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
-  pageStyles.push({drawer: {background: 'bg-base-300'}});
+  pageStyles.push({ drawer: { background: 'bg-base-300' } });
   topBarSettings.push({
     imageSrc: $darkMode
       ? ($customization.posterDark?.url ?? '/images/hero.png')

@@ -1,5 +1,5 @@
-export type DeepPartial<T> = {
-  [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
+export type DeepPartial<TObject> = {
+  [K in keyof TObject]?: TObject[K] extends object ? DeepPartial<TObject[K]> : TObject[K];
 };
 
 /**
@@ -11,13 +11,19 @@ export type DeepPartial<T> = {
  *
  * @note The function does not support constructed objects (f.e. dates) and arrays containing functions.
  */
-export function mergeSettings<T extends object, U extends object>(target: T, source: U): T & U {
+export function mergeSettings<TTarget extends object, TSource extends object>(
+  target: TTarget,
+  source: TSource
+): TTarget & TSource {
   const result = deepMergeRecursively({}, target);
   return deepMergeRecursively(result, source);
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-function deepMergeRecursively<T extends object, U extends object>(target: T, source: U): T & U {
+function deepMergeRecursively<TTarget extends object, TSource extends object>(
+  target: TTarget,
+  source: TSource
+): TTarget & TSource {
   for (const key in source) {
     if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
       // If the key doesn't exist on the target, initialize it as an object
@@ -33,6 +39,6 @@ function deepMergeRecursively<T extends object, U extends object>(target: T, sou
       (target as any)[key] = structuredClone(source[key]);
     }
   }
-  return target as T & U;
+  return target as TTarget & TSource;
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */

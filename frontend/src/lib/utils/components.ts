@@ -1,4 +1,4 @@
-import {onDestroy} from 'svelte';
+import { onDestroy } from 'svelte';
 
 /** Create a unique identifier for use as an element ID. */
 export function getUUID(): string {
@@ -14,17 +14,12 @@ export function getUUID(): string {
  *   same values in `props`
  * @returns The merged props, based on a shallow copy of `props`
  */
-export function concatProps<TObject extends object>(
-  props: TObject,
-  defaults: Partial<StringProps<TObject>>
-) {
+export function concatProps<TObject extends object>(props: TObject, defaults: Partial<StringProps<TObject>>) {
   // Make a shallow copy of props so as not to alter its values
-  const merged = {...props};
+  const merged = { ...props };
   for (const k in defaults) {
     merged[k] = (
-      k in merged && typeof merged[k] === 'string'
-        ? `${defaults[k] ?? ''} ${merged[k]}`
-        : defaults[k]
+      k in merged && typeof merged[k] === 'string' ? `${defaults[k] ?? ''} ${merged[k]}` : defaults[k]
     ) as TObject[typeof k];
   }
   return merged;
@@ -38,8 +33,8 @@ export function concatProps<TObject extends object>(
  * @returns The merged props, based on a shallow copy of `props` with
  *   `classes` joined with possible `props.class`
  */
-export function concatClass<T extends {class?: string | null}>(props: T, classes: string) {
-  return concatProps(props, {class: classes} as Partial<StringProps<T>>);
+export function concatClass<TProps extends { class?: string | null }>(props: TProps, classes: string) {
+  return concatProps(props, { class: classes } as Partial<StringProps<TProps>>);
 }
 
 /**

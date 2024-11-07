@@ -14,9 +14,7 @@ export function createSubspace({
   subset: ReadonlyArray<MatchableQuestion>;
 }): MatchingSpace {
   const subsetIds = new Set(subset.map((q) => q.id));
-  const questionWeights = Object.fromEntries(
-    questions.filter((q) => !subsetIds.has(q.id)).map((q) => [q.id, 0])
-  );
+  const questionWeights = Object.fromEntries(questions.filter((q) => !subsetIds.has(q.id)).map((q) => [q.id, 0]));
   return MatchingSpace.fromQuestions({
     questions,
     questionWeights

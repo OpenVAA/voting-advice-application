@@ -10,13 +10,4 @@ export type Rules = Record<string, Rule>;
  */
 
 export type Rule = AtomicRule | Array<AtomicRule> | Set<AtomicRule>;
-type AtomicRule =
-  | string
-  | number
-  | symbol
-  | boolean
-  | bigint
-  | RegExp
-  | typeof MISSING_VALUE
-  | null
-  | undefined;
+type AtomicRule = string | number | symbol | boolean | bigint | RegExp | typeof MISSING_VALUE | null | undefined;

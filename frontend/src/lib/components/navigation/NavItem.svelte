@@ -1,10 +1,10 @@
 <script lang="ts">
-  import {concatClass} from '$lib/utils/components';
-  import {ucFirst} from '$lib/utils/text/ucFirst';
-  import {Icon} from '$lib/components/icon';
-  import {getLayoutContext} from '$lib/contexts/layout';
-  import type {NavItemProps} from './NavItem.type';
-  import {onDestroy} from 'svelte';
+  import { onDestroy } from 'svelte';
+  import { Icon } from '$lib/components/icon';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { concatClass } from '$lib/utils/components';
+  import { ucFirst } from '$lib/utils/text/ucFirst';
+  import type { NavItemProps } from './NavItem.type';
   type $$Props = NavItemProps;
 
   export let autoCloseNav: $$Props['autoCloseNav'] = true;
@@ -13,7 +13,7 @@
   export let icon: $$Props['icon'] = undefined;
   export let text: $$Props['text'];
 
-  const {navigation} = getLayoutContext(onDestroy);
+  const { navigation } = getLayoutContext(onDestroy);
 
   // Create classes
   let classes: string;

@@ -1,20 +1,25 @@
 # Candidates
 
 ## Mock Data
+
 By default, mock data includes the user `first.last@example.com` with the password `password` that can be used to test the candidate app.
 
 ## Creating a New Candidate
+
 A candidate can log in to the candidate app either by having the admin give them a registration key or registering an account for them.
 
 ### Using Registration Key
+
 To use the registration code, you need to navigate to the Strapi's admin area (http://localhost:1337), select the "Content Manager" tab, and choose the "Candidates" tab from the dropdown. If a candidate you want to log in as doesn't exist yet, you can use the "Create new entry" button to create one.
 
 Afterward, edit the desired candidate and choose a secure and random value for the registrationKey field. Then, save the change by clicking the "Save" button. The chosen registrationKey should be shared, and then the candidate can navigate to http://localhost:5173/candidate/register to create their account.
 
 ### Manually
-To create the user manually, you need to navigate to the Strapi's admin area (http://localhost:1337), select the "Content Manager" tab, and choose the "User" tab from the dropdown. 
+
+To create the user manually, you need to navigate to the Strapi's admin area (http://localhost:1337), select the "Content Manager" tab, and choose the "User" tab from the dropdown.
 
 You can create a new user using the "Create new entry" button. The following fields should be set:
+
 - username (any desired username)
 - email (any desired email, it'll be used for logging in)
 - password (any strong password)
@@ -26,7 +31,9 @@ You can create a new user using the "Create new entry" button. The following fie
 Then, use the "Save" button and you should be able to log in as the candidate at http://localhost:5173/candidate.
 
 ## Resetting Password
+
 The user gets an email with a link to reset their password using the forgot password functionality on the login page. The frontend URL in the emails is configured in `.env` with the PUBLIC_FRONTEND_URL variable, and the email service (AWS SES) can be configured using the following variables:
+
 - `AWS_ACCESS_KEY_ID`: AWS SES user access key
 - `AWS_SECRET_ACCESS_KEY`: AWS SES user secret access key
 - `AWS_REGION`: AWS SES region
@@ -35,7 +42,7 @@ The user gets an email with a link to reset their password using the forgot pass
 
 `MAIL_FROM` and `MAIL_REPLY_TO` variables will not take effect for emails sent by `user-permissions` Strapi plugin (f.e. reset password emails) as they are configured separately via Strapi UI in `Settings > Email Templates`.
 
-You can use a local instance of AWS SES via [LocalStack](https://docs.localstack.cloud/user-guide/aws/ses/) for development. To enforce the use of LocalStack set `LOCALSTACK_ENDPOINT` to `http://localhost.localstack.cloud:4566` in `.env` file. You could use the project's Docker compose setup to spin up `awslocal` service or install and run it [yourself](https://docs.localstack.cloud/getting-started/installation/). The LocalStack's AWS SES mailbox can be checked at [http://localhost:4566/_aws/ses](http://localhost:4566/_aws/ses), where you'll find any emails sent by Strapi.
+You can use a local instance of AWS SES via [LocalStack](https://docs.localstack.cloud/user-guide/aws/ses/) for development. To enforce the use of LocalStack set `LOCALSTACK_ENDPOINT` to `http://localhost.localstack.cloud:4566` in `.env` file. You could use the project's Docker compose setup to spin up `awslocal` service or install and run it [yourself](https://docs.localstack.cloud/getting-started/installation/). The LocalStack's AWS SES mailbox can be checked at [http://localhost:4566/\_aws/ses](http://localhost:4566/_aws/ses), where you'll find any emails sent by Strapi.
 
 ## Technical Documentation
 

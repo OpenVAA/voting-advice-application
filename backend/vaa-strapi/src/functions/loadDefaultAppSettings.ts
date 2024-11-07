@@ -4,9 +4,7 @@ import { getCardContentsFromFile } from './utils/appSettings';
 
 export async function loadDefaultAppSettings() {
   if ((await strapi.entityService.findMany(API.AppSettings)).length > 0) {
-    console.info(
-      '[loadDefaultAppSettings] App settings found - skipping loading of default app settings.'
-    );
+    console.info('[loadDefaultAppSettings] App settings found - skipping loading of default app settings.');
     return;
   }
 

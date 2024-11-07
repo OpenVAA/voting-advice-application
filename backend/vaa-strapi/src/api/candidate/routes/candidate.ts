@@ -2,12 +2,7 @@
  * candidate router
  */
 import { factories } from '@strapi/strapi';
-import {
-  electionCanEditAnswers,
-  restrictBody,
-  restrictFilters,
-  restrictPopulate
-} from '../../../util/acl';
+import { electionCanEditAnswers, restrictBody, restrictFilters, restrictPopulate } from '../../../util/acl';
 import { Generic, StrapiContext } from '../../../util/acl.type';
 
 export default factories.createCoreRouter('api::candidate.candidate', {

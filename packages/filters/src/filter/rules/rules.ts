@@ -1,5 +1,5 @@
 import { MISSING_VALUE } from '../../missingValue';
-import type { Rule,Rules } from './rules.type';
+import type { Rule, Rules } from './rules.type';
 
 /**
  * Create a copy of the filter's rules.
@@ -12,12 +12,7 @@ export function copyRules<TRule extends Rules>(rules: TRule): TRule {
       copy[k] = [...v];
     } else if (v instanceof Set) {
       copy[k] = new Set(v);
-    } else if (
-      typeof v === 'object' &&
-      !(v instanceof RegExp) &&
-      v !== MISSING_VALUE &&
-      v !== null
-    ) {
+    } else if (typeof v === 'object' && !(v instanceof RegExp) && v !== MISSING_VALUE && v !== null) {
       throw new Error(`Unsupported rule type: ${v.constructor.name}`);
     } else {
       copy[k] = v;
@@ -47,10 +42,8 @@ export function matchRules(a: Rule, b: Rule) {
   if (a == b) return true;
   // We check for active because undefined and an empty array should be considered equal
   if (!ruleIsActive(a) && !ruleIsActive(b)) return true;
-  if (Array.isArray(a))
-    return Array.isArray(b) && a.length === b.length && a.every((v) => b.includes(v));
-  if (a instanceof Set)
-    return b instanceof Set && a.size === b.size && [...a.values()].every((v) => b.has(v));
+  if (Array.isArray(a)) return Array.isArray(b) && a.length === b.length && a.every((v) => b.includes(v));
+  if (a instanceof Set) return b instanceof Set && a.size === b.size && [...a.values()].every((v) => b.has(v));
   if (a instanceof RegExp) return b instanceof RegExp && `${a}` === `${b}`;
   return false;
 }

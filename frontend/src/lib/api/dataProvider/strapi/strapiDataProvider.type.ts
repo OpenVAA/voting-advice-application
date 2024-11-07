@@ -53,7 +53,7 @@ export interface StrapiElectionData {
     info: LocalizedString;
     electionType: string | null;
     constituencies: {
-      data: StrapiConstituencyData[];
+      data: Array<StrapiConstituencyData>;
     };
   };
 }
@@ -117,13 +117,9 @@ export interface StrapiAppSettingsData {
     };
     results: {
       cardContents: {
-        candidate: Array<
-          'submatches' | {question: string; hideLabel?: boolean; format?: 'default' | 'tag'}
-        >;
+        candidate: Array<'submatches' | { question: string; hideLabel?: boolean; format?: 'default' | 'tag' }>;
         party: Array<
-          | 'submatches'
-          | 'candidates'
-          | {question: string; hideLabel?: boolean; format?: 'default' | 'tag'}
+          'submatches' | 'candidates' | { question: string; hideLabel?: boolean; format?: 'default' | 'tag' }
         >;
       };
       sections: Array<'candidate' | 'party'>;
@@ -139,8 +135,8 @@ export interface StrapiAppSettingsData {
 export interface StrapiAppCustomizationData {
   id: number | string;
   attributes: {
-    translationOverrides: {[locale: string]: {[translationKey: string]: string}};
-    candidateAppFAQ: {[locale: string]: Array<{question: string; answer: string}>};
+    translationOverrides: { [locale: string]: { [translationKey: string]: string } };
+    candidateAppFAQ: { [locale: string]: Array<{ question: string; answer: string }> };
     publisherName: LocalizedString | null;
     publisherLogo: StrapiImage;
     publisherLogoDark: StrapiImage;
@@ -161,7 +157,7 @@ export interface StrapiQuestionTypeData {
     info: string;
     settings: QuestionSettingsProps;
     questions: {
-      data: StrapiQuestionData[];
+      data: Array<StrapiQuestionData>;
     };
   };
 }
@@ -174,7 +170,7 @@ export interface StrapiQuestionData {
   attributes: {
     allowOpen: boolean | null;
     constituencies: {
-      data: StrapiConstituencyData[];
+      data: Array<StrapiConstituencyData>;
     };
     questionType: {
       data: StrapiQuestionTypeData;
@@ -211,7 +207,7 @@ export interface StrapiQuestionCategoryData {
       data: StrapiElectionData;
     };
     questions: {
-      data: StrapiQuestionData[];
+      data: Array<StrapiQuestionData>;
     };
     customData: JSONData;
   };
@@ -252,7 +248,7 @@ export interface StrapiConstituencyData {
     info: LocalizedString;
     type: string | null;
     nominations: {
-      data: StrapiNominationData[];
+      data: Array<StrapiNominationData>;
     };
   };
 }
@@ -264,7 +260,7 @@ export interface StrapiCandidateData {
   id: number | string;
   attributes: {
     answers: {
-      data: StrapiAnswerData[];
+      data: Array<StrapiAnswerData>;
     };
     firstName: string;
     lastName: string;
@@ -305,8 +301,8 @@ export type AnswerValues = {
   date: Date;
   singleChoiceOrdinal: AnswerOption['key'];
   singleChoiceCategorical: AnswerOption['key'];
-  multipleChoiceCategorical: AnswerOption['key'][];
-  preferenceOrder: AnswerOption['key'][];
+  multipleChoiceCategorical: Array<AnswerOption['key']>;
+  preferenceOrder: Array<AnswerOption['key']>;
 };
 
 /** TODO: Remove when generic questions are online */
@@ -328,13 +324,13 @@ export interface StrapiPartyData {
     colorDark: string;
     logo: StrapiImage;
     answers: {
-      data: StrapiAnswerData[];
+      data: Array<StrapiAnswerData>;
     };
     candidates: {
-      data: StrapiCandidateData[];
+      data: Array<StrapiCandidateData>;
     };
     nominations: {
-      data: StrapiNominationData[];
+      data: Array<StrapiNominationData>;
     };
   };
 }
