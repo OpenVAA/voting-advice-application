@@ -1,6 +1,6 @@
-import path, {resolve} from 'path';
 import fs from 'fs';
-import {readdir} from 'fs/promises';
+import { readdir } from 'fs/promises';
+import path, { resolve } from 'path';
 
 /**
  * Export current translations to a TSV file where you can easily reorganise translations under new keys and into new files as well as edit translations for all languages. Import the TSV back to generate the JSON translation files.
@@ -22,11 +22,11 @@ import {readdir} from 'fs/promises';
  * ### Usage
  *
  * - Export current translations to a TSV file:
- *   `node --no-warnings=ExperimentalWarning --loader ts-node/esm ./editTranslations.ts --export path/to/file.tsv`
+ *   `tsx ./editTranslations.ts --export path/to/file.tsv`
  * - Import translations from a TSV file and output JSON translation files into the `OUTPUT_JSON` folder:
- *   `node --no-warnings=ExperimentalWarning --loader ts-node/esm ./editTranslations.ts --import path/to/file.tsv`
+ *   `tsx ./editTranslations.ts --import path/to/file.tsv`
  * - Import translations from a TSV file and replace old translation keys with new ones in Svelte files in the frontend src folder. Note that the regexes used will not find dynamically constructed keys, and you should thus check the results manually. The script will output a list of all of the old keys that were not replaced even a single time.
- *   `node --no-warnings=ExperimentalWarning --loader ts-node/esm ./editTranslations.ts --replaceKeys path/to/file.tsv`
+ *   `tsx ./editTranslations.ts --replaceKeys path/to/file.tsv`
  */
 
 const TRANSL_DIR = path.join('..', '..', 'src', 'lib', 'i18n', 'translations');
@@ -69,11 +69,11 @@ async function main() {
  */
 async function replaceKeys(file: string): Promise<void> {
   console.info(`Importing translations from ${file} for replacing keys`);
-  const {translations} = readTsvTranslations(file, true);
+  const { translations } = readTsvTranslations(file, true);
 
-  const keyPairs: {[oldKey: string]: string} = {};
+  const keyPairs: { [oldKey: string]: string } = {};
   for (const keys of Object.values(translations)) {
-    for (const {newKey, oldKeys} of Object.values(keys)) {
+    for (const { newKey, oldKeys } of Object.values(keys)) {
       for (const oldKey of oldKeys) {
         if (newKey === oldKey) continue;
         keyPairs[oldKey] = newKey;
@@ -82,7 +82,7 @@ async function replaceKeys(file: string): Promise<void> {
   }
 
   /** A map of old key regexes to new keys */
-  const replacements: Array<{regex: RegExp; newKey: string}> = Object.entries(keyPairs).map(
+  const replacements: Array<{ regex: RegExp; newKey: string }> = Object.entries(keyPairs).map(
     ([oldKey, newKey]) => ({
       regex: new RegExp(
         `(?<=(?:\\$|\\b)${TRANSL_FUNCTION}\\s*\\(\\s*(['"]))${escapeRegExp(oldKey)}(?=\\1)`,
@@ -99,7 +99,7 @@ async function replaceKeys(file: string): Promise<void> {
     if (!file.endsWith('.svelte')) continue;
     const content = fs.readFileSync(file, ENCODING);
     let updated = content;
-    for (const {regex, newKey} of replacements) {
+    for (const { regex, newKey } of replacements) {
       // This is a bit of a clunky way to check if a replacement was made. We only make the copy if the key hasn't been found yet
       let current: string | undefined;
       if (!found.has(newKey)) current = updated;
@@ -122,10 +122,10 @@ async function replaceKeys(file: string): Promise<void> {
  */
 function importTranslations(file: string): void {
   console.info(`Importing translations from ${file}`);
-  const {locales, translations} = readTsvTranslations(file);
+  const { locales, translations } = readTsvTranslations(file);
 
   /** Stored contents to write so that the whole transaction can be cancelled by errors */
-  const fileContents: {[path: string]: string} = {};
+  const fileContents: { [path: string]: string } = {};
 
   for (const locale of locales) {
     for (const [file, keys] of Object.entries(translations)) {
@@ -133,7 +133,7 @@ function importTranslations(file: string): void {
       for (const [key, data] of Object.entries(keys)) {
         let current: Translations = output;
         const keyParts = key.split('.');
-        const {values} = data;
+        const { values } = data;
         for (let i = 0; i < keyParts.length; i++) {
           const part = keyParts[i];
           if (i === keyParts.length - 1) {
@@ -215,12 +215,12 @@ function readTsvTranslations(
       translations[newFile][subkey].oldKeys.push(oldKey);
       continue;
     }
-    translations[newFile][subkey] = {newKey, oldKeys: [oldKey], values};
+    translations[newFile][subkey] = { newKey, oldKeys: [oldKey], values };
   }
 
   if (!locales) throw new Error('No locales found in TSV file. Maybe it was empty?');
 
-  return {locales, translations};
+  return { locales, translations };
 }
 
 /**
@@ -229,7 +229,7 @@ function readTsvTranslations(
  * @param file
  */
 function exportCurrentTranslations(file: string): void {
-  const {filePrefixes, translations} = readAllTranslations();
+  const { filePrefixes, translations } = readAllTranslations();
   const multiPartPrefixes = filePrefixes.filter((p) => p.includes('.'));
   const locales = Object.keys(translations);
   const flatTranslations = Object.fromEntries(
@@ -282,7 +282,7 @@ function readAllTranslations(): {
     }
     translations[locale] = localeTranslations;
   }
-  return {filePrefixes, translations};
+  return { filePrefixes, translations };
 }
 
 /**
@@ -313,7 +313,7 @@ function readJsonTranslations(locale: string, filename: string): Translations {
  * (By qwtel)[https://stackoverflow.com/a/45130990/13409631]
  */
 async function* getFiles(dir: string): AsyncGenerator<string> {
-  const dirents = await readdir(dir, {withFileTypes: true});
+  const dirents = await readdir(dir, { withFileTypes: true });
   for (const dirent of dirents) {
     const res = resolve(dir, dirent.name);
     if (dirent.isDirectory()) {
@@ -328,7 +328,7 @@ async function* getFiles(dir: string): AsyncGenerator<string> {
  * Write contents to file and create any missing directories.
  */
 function writeFile(file: string, content: string): void {
-  fs.mkdirSync(path.dirname(file), {recursive: true});
+  fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, content, ENCODING);
 }
 

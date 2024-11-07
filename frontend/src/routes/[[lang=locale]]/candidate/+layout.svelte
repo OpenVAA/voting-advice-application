@@ -1,6 +1,6 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
-  import {staticSettings} from 'vaa-app-shared';
+  import {staticSettings} from '@openvaa/app-shared';
   import {appType} from '$lib/stores';
   import {ErrorPage} from '$lib/templates/error';
 

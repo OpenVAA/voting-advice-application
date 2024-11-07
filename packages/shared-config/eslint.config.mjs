@@ -18,7 +18,6 @@ const compat = new FlatCompat({
 export default [
   {
     ignores: [
-      '**/*.cjs',
       '**/.DS_Store',
       '**/node_modules',
       'build',
@@ -30,6 +29,7 @@ export default [
       '**/package-lock.json',
       '**/yarn.lock',
       '**/$types.d.ts',
+      '**/*.yaml'
     ]
   },
   ...compat.extends(

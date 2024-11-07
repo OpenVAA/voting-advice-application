@@ -1,13 +1,13 @@
-import type {CoordinateOrMissing, Id} from 'vaa-core';
-import {OrdinalQuestion} from 'vaa-matching';
+import { OrdinalQuestion } from '@openvaa/matching';
+import type { CoordinateOrMissing, Id } from '@openvaa/core';
 
 /**
  * A dummy question object for matching.
  */
 export class LikertQuestion extends OrdinalQuestion {
   public readonly category: QuestionCategoryProps;
-  constructor({id, values, category}: LikertQuestionOptions) {
-    super({id, values});
+  constructor({ id, values, category }: LikertQuestionOptions) {
+    super({ id, values });
     this.category = category;
   }
 

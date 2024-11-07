@@ -1,5 +1,5 @@
 {
-  "name": "vaa-strapi",
+  "name": "@openvaa/strapi",
   "private": true,
   "version": "0.1.0",
   "description": "OpenVAA Strapi Build",
@@ -8,35 +8,24 @@
     "start": "strapi start",
     "build": "strapi build",
     "strapi": "strapi",
-    "lint": "eslint .",
-    "lint:fix": "prettier --write . && eslint --fix . ",
-    "test": "jest --forceExit --detectOpenHandles",
-    "prettier": "prettier --write \"**/*.{js,jsx,ts,tsx,css,scss,html,json,md}\"",
-    "prettier:check": "prettier --check \"**/*.{js,jsx,ts,tsx,css,scss,html,json,md}\""
-  },
-  "lint-staged": {
-    "**/*.{css,html,js,json,md,ts,xml,yaml,yml}": [
-      "prettier --write",
-      "eslint"
-    ]
+    "test": "jest --forceExit --detectOpenHandles"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.654.0",
+    "@openvaa/app-shared": "^1.0.0",
     "@strapi/plugin-documentation": "^4.25.1",
     "@strapi/plugin-i18n": "^4.25.1",
     "@strapi/plugin-users-permissions": "^4.25.1",
     "@strapi/provider-email-nodemailer": "^5.0.2",
     "@strapi/provider-upload-aws-s3": "^5.0.1",
     "@strapi/strapi": "^4.25.1",
-    "eslint-plugin-simple-import-sort": "^12.1.1",
     "pg": "^8.12.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^5.3.4",
     "strapi-plugin-import-export-entries": "file:./strapi-plugin-import-export-entries",
     "strapi-plugin-multi-select": "^1.2.3",
-    "styled-components": "^5.3.11",
-    "vaa-app-shared": "1.0.0"
+    "styled-components": "^5.3.11"
   },
   "author": {
     "name": "OpenVAA"
@@ -50,19 +39,13 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@babel/eslint-parser": "^7.24.7",
     "@babel/plugin-transform-modules-commonjs": "^7.24.7",
-    "@eslint/eslintrc": "^3.1.0",
-    "@eslint/js": "^9.9.0",
     "@faker-js/faker": "^8.4.1",
-    "@typescript-eslint/eslint-plugin": "^8.1.0",
-    "@typescript-eslint/parser": "^7.14.1",
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^8.10.0",
+    "@openvaa/shared-config": "^1.0.0",
+    "@strapi/typescript-utils": "^5.3.0",
+    "@typescript-eslint/parser": "^8.13.0",
     "globals": "^15.9.0",
     "jest": "^29.7.0",
-    "lint-staged": "^15.2.7",
-    "prettier": "^3.3.2",
     "sqlite3": "^5.1.7",
     "supertest": "^6.3.4",
     "typescript": "^5.5.2"

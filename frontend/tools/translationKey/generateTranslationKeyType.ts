@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
+console.info('Generating TranslationKey type...');
+
 // Path where generated file is output
 const outputPath = path.join('src', 'lib', 'types', 'generated', 'translationKey.ts');
 

@@ -82,8 +82,8 @@
   // NB. We need to include $opinionQuestionCategories as in order to get enriched category objects, which is quite hacky but again will be fixed when the `vaa-data` module is available.
   $: {
     // Svelte does not track variables within future context
-    $firstQuestionId;
-    $selectedCategories;
+    $firstQuestionId; // eslint-disable-line @typescript-eslint/no-unused-expressions
+    $selectedCategories; // eslint-disable-line @typescript-eslint/no-unused-expressions
     Promise.all([$opinionQuestions, $opinionQuestionCategories]).then(
       ([qq]) => (questions = filterAndSortQuestions(qq, $firstQuestionId, $selectedCategories))
     );

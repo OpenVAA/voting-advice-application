@@ -48,7 +48,7 @@ Used to show an entity's basic info in an `EntityDetails` component.
         </div>
       {/if}
       {#if isCandidate(entity) && entity.party}
-        <!-- TODO: This becomes incorrect with `vaa-data` that supports party membership as distinct from nominating party. We need to handle cases where the list differs from party membership as well as $t('common.unaffiliated') -->
+        <!-- TODO: This becomes incorrect with `@openvaa/data` that supports party membership as distinct from nominating party. We need to handle cases where the list differs from party membership as well as $t('common.unaffiliated') -->
         <InfoItem label={$t('common.electionList')}>
           <PartyTag party={entity.party} variant="full" />
         </InfoItem>

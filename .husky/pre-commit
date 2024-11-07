@@ -1,6 +1,7 @@
-cd frontend
-yarn generateTranslationKeyType && git diff --quiet src/lib/types/generated/translationKey.ts || (echo "Run 'yarn generateTranslationKeyType' and 'git add' generated file" && exit 1)
-npx lint-staged
+yarn build:app-shared
 
-cd ../backend/vaa-strapi
-npx lint-staged
+cd frontend
+yarn generate:translation-key-type && git diff --quiet src/lib/types/generated/translationKey.ts || (echo "Run 'yarn generate:translation-key-type' and 'git add' generated file" && exit 1)
+
+cd ..
+yarn lint-staged

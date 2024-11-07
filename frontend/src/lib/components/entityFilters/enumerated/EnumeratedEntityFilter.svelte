@@ -1,6 +1,6 @@
 <script lang="ts">
   import {onDestroy} from 'svelte';
-  import {isMissing, type Choice, MISSING_VALUE, type MaybeMissing} from 'vaa-filters';
+  import {isMissing, type Choice, MISSING_VALUE, type MaybeMissing} from '@openvaa/filters';
   import {t} from '$lib/i18n';
   import {concatProps, getUUID} from '$lib/utils/components';
   import {logDebugError} from '$lib/utils/logger';

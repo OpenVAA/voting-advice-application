@@ -32,12 +32,12 @@ When providing localized default values to component properties, be sure to assi
 // This will NOT update
 export let label = $t('someLabel');
 // On the page
-<label>{label}</label>
+<label>{label}</label>;
 
 // This will update
 export let label = undefined;
 // On the page
-<label>{label ?? $t('someLabel')}</label>
+<label>{label ?? $t('someLabel')}</label>;
 ```
 
 ### Localized texts included in `export let data`
@@ -48,10 +48,10 @@ Specific care must be taken with any localized content loaded on the server so t
 
 ```ts
 // +layout.server.ts
-export const load = (async ({parent}) => {
+export const load = (async ({ parent }) => {
   const locale = (await parent()).i18n.currentLocale;
   return {
-    questions: await getOpinionQuestions({locale})
+    questions: await getOpinionQuestions({ locale })
   };
 }) satisfies LayoutServerLoad;
 ```
@@ -110,7 +110,7 @@ Switching between locales happens by only changing the language parameter in the
 
 ### The `getRoute` helper
 
-To facilitate locale switching, a `getRoute` helper function is provided as a store in [`$lib/utils/navigation`](../utils/navigation.ts). It is passed a `Route` enum value, a possible `id` and optionally a `locale` from which it constructs the proper url to go to. It can also be used to just switch the locale of the current page, by calling `$getRoute({locale: 'foo'})`. Note that the function is contained in a store, because it depends on changes to the `page` store and needs thus to be reactively updated.
+To facilitate locale switching, a `getRoute` helper function is provided as a store in [`$lib/utils/navigation`](../utils/navigation.ts). It is passed a `ROUTE` const value, a possible `id` and optionally a `locale` from which it constructs the proper url to go to. It can also be used to just switch the locale of the current page, by calling `$getRoute({locale: 'foo'})`. Note that the function is contained in a store, because it depends on changes to the `page` store and needs thus to be reactively updated.
 
 When sharing links, it's best to use the route without the locale param, i.e. with `locale: 'none'`.
 
@@ -129,12 +129,12 @@ The locale selection process works as follows.
 3. We check if there is a `lang` route parameter and it is included in `locales`
 4. Depending on these, one of the following happens:
 
-| `lang` route param | `preferredLocale`  |  Action                                                                                          |
-| ------------------ | ------------------ | ------------------------------------------------------------------------------------------------ |
-| not defined        | not supported      | Redirect to `/${defautlLocale}/${route}`                                                                             |
-| not defined        | supported | Redirect to `/${preferredLocale}/${route}`                                                                            |
-| soft match | N/A | Redirect to `/${supportedLocale}/${route}` where `supportedLocale` is the soft-matched locale, e.g. `'en'` for `lang = 'en-UK'` |
-| supported  | N/A | Serve content in `lang` (and show notification in the front end if `preferredLocale` is supported and `!= lang`) |
+| `lang` route param | `preferredLocale` | Action                                                                                                                          |
+| ------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| not defined        | not supported     | Redirect to `/${defautlLocale}/${route}`                                                                                        |
+| not defined        | supported         | Redirect to `/${preferredLocale}/${route}`                                                                                      |
+| soft match         | N/A               | Redirect to `/${supportedLocale}/${route}` where `supportedLocale` is the soft-matched locale, e.g. `'en'` for `lang = 'en-UK'` |
+| supported          | N/A               | Serve content in `lang` (and show notification in the front end if `preferredLocale` is supported and `!= lang`)                |
 
 1. Both `preferredLocale` and `currentLocale` (in which the content is served) are passed further in `locals`
 

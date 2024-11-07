@@ -1,9 +1,0 @@
-{
-  "bracketSpacing": true,
-  "singleQuote": true,
-  "trailingComma": "none",
-  "printWidth": 100,
-  "bracketSameLine": true,
-  "plugins": ["prettier-plugin-svelte", "prettier-plugin-tailwindcss"],
-  "overrides": [{ "files": "*.svelte", "options": { "parser": "svelte" } }]
-}

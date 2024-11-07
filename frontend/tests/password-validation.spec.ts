@@ -1,4 +1,4 @@
-import {validatePassword, validatePasswordDetails} from 'vaa-app-shared';
+import { validatePassword, validatePasswordDetails } from '@openvaa/app-shared';
 
 describe('Password Validation', () => {
   describe('validatePassword', () => {

@@ -1,4 +1,4 @@
-import {type DynamicSettings, dynamicSettings, QuestionInCardContent} from 'vaa-app-shared';
+import {type DynamicSettings, dynamicSettings, QuestionInCardContent} from '@openvaa/app-shared';
 import {API} from './api';
 
 /**
@@ -34,7 +34,7 @@ export function getCardContentsFromFile(): {
   const candidateCardContents = [];
   dynamicSettings.results.cardContents.candidate.forEach((item) => {
     if (item === 'submatches') {
-      candidateCardContents.push({content: item});
+      candidateCardContents.push({ content: item });
     } else {
       candidateCardContents.push({
         content: 'question',
@@ -47,7 +47,7 @@ export function getCardContentsFromFile(): {
   const partyCardContents = [];
   dynamicSettings.results.cardContents.party.forEach((item) => {
     if (item === 'submatches' || item === 'candidates') {
-      partyCardContents.push({content: item});
+      partyCardContents.push({ content: item });
     } else {
       partyCardContents.push({
         content: 'question',
@@ -58,7 +58,7 @@ export function getCardContentsFromFile(): {
     }
   });
 
-  return {candidateCardContents, partyCardContents};
+  return { candidateCardContents, partyCardContents };
 }
 
 /**
@@ -102,5 +102,5 @@ export async function getCardContentsFromStrapi(id: number): Promise<{
     }
   });
 
-  return {candidate: candidateCardContents, party: partyCardContents};
+  return { candidate: candidateCardContents, party: partyCardContents };
 }

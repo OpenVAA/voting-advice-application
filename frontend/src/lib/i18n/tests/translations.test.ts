@@ -1,7 +1,8 @@
-import {expect, test} from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import {keys, locales} from '../translations/index';
+import { fileURLToPath } from 'url';
+import { expect, test } from 'vitest';
+import { keys, locales } from '../translations/index';
 
 /**
  * Recursive function which returns sorted array of flattened keys.
@@ -31,8 +32,8 @@ function getFlattenedTranslationKeys(locale: string, filename: string): Array<st
   return flattenKeys(fileContentJSON, filename.replace('.json', ''));
 }
 
-// Path to translation files from the frontend directory
-const dirPath = path.join('src', 'lib', 'i18n', 'translations');
+// Path to translation files from this directory
+const dirPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'translations');
 
 const translationLocales = fs.readdirSync(dirPath).filter((name) => {
   return fs.lstatSync(path.join(dirPath, name)).isDirectory();

@@ -6,11 +6,11 @@
  * NB. In the frontend, always use the functions exposed by this module, never direct imports from the specific `DataProvider` implementations.
  */
 
-import {error} from '@sveltejs/kit';
-import {staticSettings} from 'vaa-app-shared';
-import type {DataProvider} from './dataProvider/dataProvider';
+import { staticSettings } from '@openvaa/app-shared';
+import { error } from '@sveltejs/kit';
+import type { DataProvider } from './dataProvider/dataProvider';
 
-let dpPromise: Promise<{dataProvider: DataProvider}>;
+let dpPromise: Promise<{ dataProvider: DataProvider }>;
 
 if (staticSettings.dataProvider.type === 'strapi') {
   dpPromise = import('./dataProvider/strapi');
@@ -21,7 +21,7 @@ if (staticSettings.dataProvider.type === 'strapi') {
 }
 
 export const dataProvider: Promise<WithRequired<DataProvider, 'setFeedback'>> = dpPromise.then(
-  async ({dataProvider}) => {
+  async ({ dataProvider }) => {
     if (!('setFeedback' in dataProvider) || typeof dataProvider.setFeedback !== 'function')
       dataProvider.setFeedback = (await import('./dataProvider/local/setFeedback')).setFeedback;
     return dataProvider as WithRequired<DataProvider, 'setFeedback'>;

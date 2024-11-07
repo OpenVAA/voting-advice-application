@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@openvaa/shared-config/ts",
+  "compilerOptions": {
+    "lib": ["es2022", "dom"],
+    "tsBuildInfoFile": "./build/tsconfig.tsbuildinfo",
+    "rootDir": "./src",
+    "outDir": "./build"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["src/testUtils/**/*", "**/*.test.ts"],
+  "references": [{ "path": "../core/tsconfig.json" }]
+}

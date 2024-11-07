@@ -2,11 +2,11 @@
 
 ## Preparing backend dependencies
 
-Backend module depends on `vaa-app-shared` and you need to build it prior to using `vaa-strapi` directly (no need if you use it via Docker):
+Backend module depends on `@openvaa/app-shared` and you need to build it prior to using `@openvaa/strapi` directly (no need if you use it via Docker):
 
 ```bash
-yarn workspace vaa-app-shared install
-yarn workspace vaa-app-shared build
+yarn workspace @openvaa/app-shared install
+yarn workspace @openvaa/app-shared build
 ```
 
 Backend module contains `strapi-plugin-import-export-entries` directory which is a separate git repository. In order to initialise it you need to run:
