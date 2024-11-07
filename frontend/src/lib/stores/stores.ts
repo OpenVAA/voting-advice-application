@@ -1,16 +1,16 @@
-import {derived, get, writable} from 'svelte/store';
-import type {Readable, Writable} from 'svelte/store';
-import {browser} from '$app/environment';
-import {page} from '$app/stores';
-import {startEvent, track} from '$lib/utils/analytics/track';
-import {logDebugError} from '$lib/utils/logger';
-import {wrap} from '$lib/utils/entities';
-import {match, matchParties} from '$lib/utils/matching';
-import {sortCandidates, sortParties} from '$lib/utils/sort';
-import {localStorageWritable} from '$lib/utils/storage';
-import {extractCategories, filterVisible} from '$lib/utils/questions';
-import {dynamicSettings, staticSettings} from 'vaa-app-shared';
-import {hasAllAnswers} from '../utils/hasAllAnswers';
+import { dynamicSettings, staticSettings } from '@openvaa/app-shared';
+import { derived, get, writable } from 'svelte/store';
+import { browser } from '$app/environment';
+import { page } from '$app/stores';
+import { startEvent, track } from '$lib/utils/analytics/track';
+import { wrap } from '$lib/utils/entities';
+import { logDebugError } from '$lib/utils/logger';
+import { match, matchParties } from '$lib/utils/matching';
+import { extractCategories, filterVisible } from '$lib/utils/questions';
+import { sortCandidates, sortParties } from '$lib/utils/sort';
+import { localStorageWritable } from '$lib/utils/storage';
+import { hasAllAnswers } from '../utils/hasAllAnswers';
+import type { Readable, Writable } from 'svelte/store';
 
 /**
  * Contains the currently effective app settings.
@@ -18,8 +18,8 @@ import {hasAllAnswers} from '../utils/hasAllAnswers';
  */
 export const settings: Readable<AppSettings> = derived([page], ([$page]) =>
   $page?.data?.appSettings
-    ? {...dynamicSettings, ...$page.data.appSettings, ...staticSettings}
-    : {...dynamicSettings, ...staticSettings}
+    ? { ...dynamicSettings, ...$page.data.appSettings, ...staticSettings }
+    : { ...dynamicSettings, ...staticSettings }
 );
 
 /**
@@ -42,14 +42,14 @@ export const answeredQuestions = localStorageWritable('answeredQuestions', {} as
 export function setVoterAnswer(questionId: string, value?: AnswerProps['value']) {
   answeredQuestions.update((d) => {
     if (value === undefined) {
-      startEvent('answer_delete', {questionId});
+      startEvent('answer_delete', { questionId });
       delete d[questionId];
     } else {
       startEvent('answer', {
         questionId,
         value: typeof value === 'number' || typeof value === 'boolean' ? value : `${value}`
       });
-      d[questionId] = {value};
+      d[questionId] = { value };
     }
     return d;
   });
@@ -87,7 +87,7 @@ export const userPreferences = localStorageWritable('userPreferences', {} as Use
 export function setDataConsent(consent: UserDataCollectionConsent): void {
   userPreferences.update((d) => ({
     ...d,
-    dataCollection: {consent, date: new Date().toISOString()}
+    dataCollection: { consent, date: new Date().toISOString() }
   }));
   if (consent === 'granted') {
     track('dataConsent_granted');
@@ -101,7 +101,7 @@ export function setDataConsent(consent: UserDataCollectionConsent): void {
 export function setFeedbackStatus(status: UserFeedbackStatus): void {
   userPreferences.update((d) => ({
     ...d,
-    feedback: {status, date: new Date().toISOString()}
+    feedback: { status, date: new Date().toISOString() }
   }));
 }
 
@@ -112,7 +112,7 @@ export function setFeedbackStatus(status: UserFeedbackStatus): void {
 export function setSurveyStatus(status: UserFeedbackStatus): void {
   userPreferences.update((d) => ({
     ...d,
-    survey: {status, date: new Date().toISOString()}
+    survey: { status, date: new Date().toISOString() }
   }));
 }
 
@@ -165,7 +165,7 @@ export const election: Readable<ElectionProps | undefined> = derived(
 /**
  * Utility store for candidates as part of `PageData` that also handles possible filtering by answers and sorting of candidates.
  */
-export const candidates: Readable<Promise<CandidateProps[]>> = derived(
+export const candidates: Readable<Promise<Array<CandidateProps>>> = derived(
   page,
   ($page) => {
     const candsPromise = $page.data.candidates;
@@ -184,7 +184,7 @@ export const candidates: Readable<Promise<CandidateProps[]>> = derived(
 /**
  * Utility store for parties as part of `PageData`.
  */
-export const parties: Readable<Promise<PartyProps[]>> = derived(
+export const parties: Readable<Promise<Array<PartyProps>>> = derived(
   page,
   ($page) => $page.data.parties?.then((d) => d.sort(sortParties)) ?? Promise.resolve([]),
   Promise.resolve([])
@@ -193,7 +193,7 @@ export const parties: Readable<Promise<PartyProps[]>> = derived(
 /**
  * Utility store for infoQuestions as part of `PageData`.
  */
-export const infoQuestions: Readable<Promise<QuestionProps[]>> = derived(
+export const infoQuestions: Readable<Promise<Array<QuestionProps>>> = derived(
   page,
   ($page) => $page.data.infoQuestions?.then((qq) => filterVisible(qq ?? [])) ?? Promise.resolve([]),
   Promise.resolve([])
@@ -202,7 +202,7 @@ export const infoQuestions: Readable<Promise<QuestionProps[]>> = derived(
 /**
  * Utility store for opinionQuestions as part of `PageData`.
  */
-export const opinionQuestions: Readable<Promise<QuestionProps[]>> = derived(
+export const opinionQuestions: Readable<Promise<Array<QuestionProps>>> = derived(
   page,
   ($page) =>
     $page.data.opinionQuestions?.then((qq) => filterVisible(qq ?? [])) ?? Promise.resolve([]),
@@ -227,7 +227,7 @@ export const allQuestions: Readable<Promise<Record<string, QuestionProps>>> = de
 /**
  * Utility store for opinion question catetgories as part of `PageData`.
  */
-export const opinionQuestionCategories: Readable<Promise<QuestionCategoryProps[]>> = derived(
+export const opinionQuestionCategories: Readable<Promise<Array<QuestionCategoryProps>>> = derived(
   opinionQuestions,
   ($opinionQuestions) => $opinionQuestions.then((qq) => extractCategories(qq)),
   Promise.resolve([])
@@ -265,7 +265,7 @@ export const resultsAvailable: Readable<Promise<boolean>> = derived(
  * A store that holds the candidate rankings. For ease of use, these will be wrapped entities with no `score` properties, if results are not yet available.
  */
 export const candidateRankings: Readable<
-  Promise<RankingProps<CandidateProps>[] | WrappedEntity<CandidateProps>[]>
+  Promise<Array<RankingProps<CandidateProps>> | Array<WrappedEntity<CandidateProps>>>
 > = derived(
   [candidates, opinionQuestions, answeredQuestions, resultsAvailable, settings],
   async ([$candidates, $opinionQuestions, $answeredQuestions, $resultsAvailable, $settings]) => {
@@ -285,7 +285,7 @@ export const candidateRankings: Readable<
  * A store that holds the party rankings. For ease of use, these will be wrapped entities with no `score` properties, if results are not yet available.
  */
 export const partyRankings: Readable<
-  Promise<RankingProps<PartyProps>[] | WrappedEntity<PartyProps>[]>
+  Promise<Array<RankingProps<PartyProps>> | Array<WrappedEntity<PartyProps>>>
 > = derived(
   [candidates, parties, opinionQuestions, answeredQuestions, resultsAvailable, settings],
   async ([

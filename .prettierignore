@@ -1,19 +1,9 @@
-frontend/
-backend/
-docs/
-node_modules/
-playwright/
-playwright-report/
-test-results/
-shared/build/
-shared/node_modules/
-
-README.md
+**/node_modules/
+**/build/
+**/dist/
 docker-compose.*
-
 .env
 .env.*
-
 .github
 .husky
 
@@ -22,4 +12,20 @@ pnpm-lock.yaml
 package.json
 package-lock.json
 yarn.lock
+yarn.lock
 
+# NB! Because of prettier’s limitations, .prettierignore files in subfolders are not respected
+# Ignores copied from /backend/vaa-strapi/.prettierignore
+backend/vaa-strapi/.strapi-updater.json
+backend/vaa-strapi/strapi-plugin-import-export-entries
+backend/vaa-strapi/.cache
+backend/vaa-strapi/**/*.json
+backend/vaa-strapi/**/documentation
+backend/vaa-strapi/temp
+# Ignores copied from /frontend/.prettierignore
+frontend/.svelte-kit
+frontend/package
+frontend/tailwind.config.cjs
+# Ignores copied from /tests/.prettierignore
+tests/test-results/
+tests/playwright*/

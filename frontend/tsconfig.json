@@ -1,22 +1,18 @@
 {
-  "extends": "./.svelte-kit/tsconfig.json",
+  "extends": ["@openvaa/shared-config/ts", "./.svelte-kit/tsconfig.json"],
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true,
     "sourceMap": true,
-    "strict": true,
     "preserveSymlinks": true,
     "types": ["vitest/globals"]
   },
   "references": [
-    {"path": "../vaa-app-shared/tsconfig.esm.json"},
-    {"path": "../vaa-core/tsconfig.json"},
-    {"path": "../vaa-data/tsconfig.json"},
-    {"path": "../vaa-matching/tsconfig.json"},
-    {"path": "../vaa-filters/tsconfig.json"}
+    { "path": "../packages/app-shared/tsconfig.esm.json" },
+    { "path": "../packages/core/tsconfig.json" },
+    { "path": "../packages/data/tsconfig.json" },
+    { "path": "../packages/matching/tsconfig.json" },
+    { "path": "../packages/filters/tsconfig.json" }
   ]
 }

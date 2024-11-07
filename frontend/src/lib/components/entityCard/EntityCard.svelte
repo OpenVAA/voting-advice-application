@@ -48,7 +48,7 @@
     };
     if (isCandidate(entity)) {
       electionSymbol = entity.electionSymbol;
-      // TODO: This becomes incorrect with `vaa-data` that supports party membership as distinct from nominating party
+      // TODO: This becomes incorrect with `@openvaa/data` that supports party membership as distinct from nominating party
       nominatingParty = entity.party;
     } else if (isParty(entity)) {
       // Instead of auto-generating the initials from the name, we use the party's abbreviation

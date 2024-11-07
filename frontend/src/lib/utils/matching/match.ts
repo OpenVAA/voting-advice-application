@@ -1,19 +1,18 @@
 /*
  * Matching utility functions
  *
- * NB. This is a temporary implementation which will be replaced with a proper one when the `vaa-data` model is implemented. The model will allow the passing of its consituent objects directly to the matching algorithm without need for constructing mediating objects, such as `LikertQuestion`s below.
+ * NB. This is a temporary implementation which will be replaced with a proper one when the `@openvaa/data` model is implemented. The model will allow the passing of its consituent objects directly to the matching algorithm without need for constructing mediating objects, such as `LikertQuestion`s below.
  */
-import {error} from '@sveltejs/kit';
 import {
-  type MatchingOptions,
-  MatchingAlgorithm,
   DISTANCE_METRIC,
-  MISSING_VALUE_METHOD,
-  type MatchableQuestionGroup
-} from 'vaa-matching';
-import {LikertQuestion} from './LikertQuestion';
-import {imputePartyAnswers} from './imputePartyAnswers';
-import {extractCategories} from '../questions';
+  type MatchableQuestionGroup,
+  MatchingAlgorithm,
+  type MatchingOptions,
+  MISSING_VALUE_METHOD} from '@openvaa/matching';
+import { error } from '@sveltejs/kit';
+import { imputePartyAnswers } from './imputePartyAnswers';
+import { LikertQuestion } from './LikertQuestion';
+import { extractCategories } from '../questions';
 
 /**
  * Run the matching algorithm as an async process.
@@ -40,7 +39,7 @@ export async function match<TEntity extends EntityProps>(
   });
 
   // Convert question data into proper question objects
-  const questions = [] as LikertQuestion[];
+  const questions = [] as Array<LikertQuestion>;
   allQuestions.forEach((q) => {
     if (q.category.type !== 'opinion') return;
     if (q.type !== 'singleChoiceOrdinal' || !q.values)
@@ -51,14 +50,14 @@ export async function match<TEntity extends EntityProps>(
     questions.push(
       new LikertQuestion({
         id: q.id,
-        values: q.values.map((o) => ({id: `${o.key}`, value: o.key})),
+        values: q.values.map((o) => ({ id: `${o.key}`, value: o.key })),
         category: q.category
       })
     );
   });
 
   // Create voter object
-  const voter = {answers: answeredQuestions};
+  const voter = { answers: answeredQuestions };
 
   // Check that we still have some answers
   if (Object.keys(voter.answers).length === 0) {
@@ -104,17 +103,17 @@ export async function match<TEntity extends EntityProps>(
  * @returns The matching results as entities wrapped in ranking properties
  */
 export async function matchParties(
-  allQuestions: QuestionProps[],
+  allQuestions: Array<QuestionProps>,
   answeredQuestions: AnswerDict,
-  candidates: CandidateProps[],
-  parties: PartyProps[],
+  candidates: Array<CandidateProps>,
+  parties: Array<PartyProps>,
   options?: Parameters<typeof match>[3] & {
     matchingType?: Exclude<AppSettingsGroupMatchingType, 'none'>;
   }
-): Promise<RankingProps<PartyProps>[]> {
+): Promise<Array<RankingProps<PartyProps>>> {
   const matchingType = options?.matchingType ?? 'median';
   // Save original answers here, if we will be adding computed averages to the answers dictionary.
-  // NB. In the full vaa-data model, this will be handled by a getter function
+  // NB. In the full @openvaa/data model, this will be handled by a getter function
   const originalAnswers = {} as Record<string, AnswerDict>;
   // Calculate average answers for each party for each question
   if (matchingType !== 'answersOnly') {

@@ -1,4 +1,4 @@
-name: Main tests & validation
+name: 'Main tests & validation'
 
 on:
   push:
@@ -26,10 +26,6 @@ jobs:
   frontend-and-shared-module-validation:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: 'frontend'
-
     steps:
       - name: "Checkout Frontend source code"
         uses: actions/checkout@v3
@@ -40,74 +36,29 @@ jobs:
           node-version: 18.x
           cache: "yarn"
   
-      - name: "Install shared module dependencies: vaa-core"
-        run: yarn workspace vaa-core install --frozen-lockfile
-
-      - name: "Build shared module: vaa-core"
-        run: yarn workspace vaa-core build
-
-      - name: "Install shared module dependencies: vaa-data"
-        run: yarn workspace vaa-data install --frozen-lockfile
-
-      - name: "Build shared module: vaa-data"
-        run: yarn workspace vaa-data build
-
-      - name: "Install shared module dependencies: vaa-filters"
-        run: yarn workspace vaa-filters install --frozen-lockfile
-
-      - name: "Build shared module: vaa-filters"
-        run: yarn workspace vaa-filters build       
-
-      - name: "Install shared module dependencies: vaa-matching"
-        run: yarn workspace vaa-matching install --frozen-lockfile
-
-      - name: "Build shared module: vaa-matching"
-        run: yarn workspace vaa-matching build
-
-      - name: "Install shared module dependencies: vaa-app-shared"
-        run: yarn workspace vaa-app-shared install --frozen-lockfile
-
-      - name: "Build shared module: vaa-app-shared"
-        run: yarn workspace vaa-app-shared build
-
-      - name: "Run vaa-core tests"
-        run: yarn workspace vaa-core test
-
-      - name: "Run vaa-data tests"
-        run: yarn workspace vaa-data test
-
-      - name: "Run vaa-filters tests"
-        run: yarn workspace vaa-filters test
-
-      - name: "Run vaa-matching tests"
-        run: yarn workspace vaa-matching test
-
-      - name: "Run vaa-app-shared tests"
-        run: yarn workspace vaa-app-shared test
-
-      - name: "Install Frontend dependencies"
+      - name: "Install all dependencies"
         run: yarn install --frozen-lockfile
+  
+      - name: "Build all shared modules"
+        run: yarn build:shared
 
-      - name: "Run Prettier check on frontend"
-        run: yarn prettier:check
+      - name: "Run Prettier check globally"
+        run: yarn format:check
 
       - name: "Run ESlint check on frontend"
-        run: yarn lint
+        run: yarn lint:check
 
       - name: "Check that TranslationKey type is up to date"
-        run: yarn generateTranslationKeyType && git diff --exit-code
+        run: yarn workspace @openvaa/frontend generate:translation-key-type && git diff --exit-code
 
-      - name: "Run Frontend tests"
-        run: yarn test
+      - name: "Run Frontend and shared module tests"
+        run: yarn test:unit
 
       - name: "Build frontend"
-        run: yarn build
+        run: yarn workspace @openvaa/frontend build
 
   backend-validation:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend/vaa-strapi
 
     steps:
       - name: "Checkout Backend source code"
@@ -134,43 +85,32 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
-      - name: "Install shared module dependencies"
-        run: yarn workspace vaa-app-shared install --frozen-lockfile
-
-      - name: "Build shared module"
-        run: yarn workspace vaa-app-shared build
+      - name: "Install all dependencies"
+        run: yarn install --frozen-lockfile
+            
+      - name: "Build all shared modules"
+        run: yarn build:shared
 
       - name: "Install Backend yarn dependencies"
+        run: yarn workspace @openvaa/strapi install --frozen-lockfile
+
+      # We've already linted and formatted the code globally in the previous job
+
+      # These are currently not used
+      # - name: "Run Backend tests"
+      #   run: |
+      #     npm run test
+
+      - name: "Install import-export-entries dependencies and build"
         run: |
+          cd backend/vaa-strapi/strapi-plugin-import-export-entries
           yarn install --frozen-lockfile
-
-      - name: "Run Prettier check on Backend"
-        run: |
-          yarn prettier:check
-
-      - name: "Run ESLint on backend"
-        run: |
-          yarn lint
-
-#      - name: "Run Backend tests"
-#        run: |
-#         npm run test
-
-      - name: "Install import-export-entries dependencies"
-        run: |
-          cd strapi-plugin-import-export-entries
-          yarn install --frozen-lockfile
-          cd ..
-
-      - name: "Build import-export-entries"
-        run: |
-          cd strapi-plugin-import-export-entries
           yarn build
-          cd ..
+          cd ../../../
 
       - name: "Build backend"
         run: |
-          yarn build
+          yarn workspace @openvaa/strapi build
 
   e2e-tests:
     runs-on: ubuntu-latest
@@ -213,14 +153,14 @@ jobs:
         run: yarn dev
 
       - name: "Run E2E tests"
-        run: yarn test
+        run: yarn test:e2e
 
       - name: "Upload playwright setup report"
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-setup-report
-          path: playwright-setup-report/
+          path: tests/playwright-setup-report/
           retention-days: 30
 
       - name: "Upload playwright report"
@@ -228,7 +168,7 @@ jobs:
         if: always()
         with:
           name: playwright-report
-          path: playwright-report/
+          path: tests/playwright-report/
           retention-days: 30
 
       - name: "Stop OpenVAA"

@@ -3,19 +3,18 @@
  * The `candidateFilters` store is used to store candidate filters so that they are persistent during the session. It is dependent both on the locale and the availability of `infoQuestions` and `parties` in `page.data`. For this reason, it is provided as a derived store and will be `undefined` until these are available.
  */
 
-import {type Readable, derived} from 'svelte/store';
-import {t, locale} from '$lib/i18n';
-import {parties, infoQuestions} from '$lib/stores';
 import {
+  type ChoiceQuestion,
+  ChoiceQuestionFilter,
   Filter,
   FilterGroup,
-  ObjectFilter,
-  ChoiceQuestionFilter,
-  type ChoiceQuestion,
+  type NumericQuestion,
   NumericQuestionFilter,
-  type NumericQuestion
-} from 'vaa-filters';
-import {logDebugError} from './logger';
+  ObjectFilter} from '@openvaa/filters';
+import { derived,type Readable } from 'svelte/store';
+import { locale,t } from '$lib/i18n';
+import { infoQuestions,parties } from '$lib/stores';
+import { logDebugError } from './logger';
 
 let candidateFilterGroup: FilterGroup<MaybeRanked<CandidateProps>> | undefined = undefined;
 let candidateFiltersLocale: string = '';
@@ -40,8 +39,8 @@ export const candidateFilters: Readable<
 /**
  * Initialize candidate filters
  */
-export function buildCandidateFilters(infoQuestions: QuestionProps[], parties: PartyProps[]) {
-  const filters: Filter<MaybeRanked<CandidateProps>, unknown>[] = [];
+export function buildCandidateFilters(infoQuestions: Array<QuestionProps>, parties: Array<PartyProps>) {
+  const filters: Array<Filter<MaybeRanked<CandidateProps>, unknown>> = [];
   if (parties.length) {
     filters.push(
       new ObjectFilter<MaybeRanked<CandidateProps>, PartyProps>(

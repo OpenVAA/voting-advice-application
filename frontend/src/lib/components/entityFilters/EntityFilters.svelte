@@ -7,7 +7,7 @@
     TextFilter,
     NumericFilter,
     NumericQuestionFilter
-  } from 'vaa-filters';
+  } from '@openvaa/filters';
   import type {EntityFiltersProps} from './EntityFilters.type';
 
   type $$Props = EntityFiltersProps;

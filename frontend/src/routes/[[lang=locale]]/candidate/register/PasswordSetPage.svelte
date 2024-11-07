@@ -4,7 +4,7 @@
   import {t} from '$lib/i18n';
   import {register} from '$lib/api/candidate';
   import {getRoute, ROUTE} from '$lib/utils/navigation';
-  import {validatePassword} from 'vaa-app-shared';
+  import {validatePassword} from '@openvaa/app-shared';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {FrontPage} from '$lib/templates/frontPage';
   import {PasswordSetter} from '$lib/candidate/components/passwordSetter';

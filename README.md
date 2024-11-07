@@ -34,36 +34,37 @@ The project is coordinated by the Finnish non-profit association [OpenVAA](https
 ## 🚧 Project status: Alpha
 
 > To stay up to speed, please ⭐️ star the repo or [📧 subscribe to our newsletter](https://openvaa.org/newsletter).
- 
+
 The project is currently in an alpha phase with the onus being on refactoring the existing code base for greater robustness and a better developer experience, as well as implementing some missing features.
 
 We released two pilot VAAs for the 2024 EU Elections, which you can try out to see the software in action.
 
-| Video-based VAA | Traditional VAA |
-|---|---|
-| <a href="https://nuortenvaalikone.openvaa.org" target="_blank"><img src="images/youthvaa-animation.gif" width="300" alt="The Election Compass for Young People – EE 2024"/></a> | <a href="https://vaalikone.openvaa.org" target="_blank"><img src="images/ee24-vaa-animation.gif" width="300" alt="EE 2024 Election Compass"/></a> |
-| Finnish, Swedish and English | Finnish only |
-| Features custom video content | Select questions by theme |
-| User survey and extended analytics | No analytics |
-| Data stored in Strapi backend | Data stored in local JSON files |
-| Postgres server and two Docker containers running on Render | Single Docker container running on Render |
-| nuortenvaalikone.openvaa.org | vaalikone.openvaa.org |
-
+| Video-based VAA                                                                                                                                                                  |  Traditional VAA                                                                                                                                  |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+|  <a href="https://nuortenvaalikone.openvaa.org" target="_blank"><img src="images/youthvaa-animation.gif" width="300" alt="The Election Compass for Young People – EE 2024"/></a> | <a href="https://vaalikone.openvaa.org" target="_blank"><img src="images/ee24-vaa-animation.gif" width="300" alt="EE 2024 Election Compass"/></a> |
+|  Finnish, Swedish and English                                                                                                                                                    |  Finnish only                                                                                                                                     |
+| Features custom video content                                                                                                                                                    | Select questions by theme                                                                                                                         |
+| User survey and extended analytics                                                                                                                                               | No analytics                                                                                                                                      |
+|  Data stored in Strapi backend                                                                                                                                                   | Data stored in local JSON files                                                                                                                   |
+|  Postgres server and two Docker containers running on Render                                                                                                                     | Single Docker container running on Render                                                                                                         |
+| nuortenvaalikone.openvaa.org                                                                                                                                                     | vaalikone.openvaa.org                                                                                                                             |
 
 ## 🎢 Roadmap
 
 **2024 Q3** — Refactor the current codebase, especially:
-  - Abstract the frontend–backend connection into a `dataProvider` API enabling arbitrary backend implementations
-  - Implement a `vaa-data` data model for VAA and election data
-  - Convert `vaa-data`, `vaa-matching` and `vaa-filters` pseudo-modules into independent modules. These handle together the application logic and are independent of the frontend and backend implementations
-  - Implement the most crucial missing features, such as constituency selection and support for multiple simultaneous elections
-  - Expand unit and end-to-end test coverage
+
+- Abstract the frontend–backend connection into a `dataProvider` API enabling arbitrary backend implementations
+- Implement a `@openvaa/data` data model for VAA and election data
+- Convert `@openvaa/data`, `@openvaa/matching` and `@openvaa/filters` pseudo-modules into independent modules. These handle together the application logic and are independent of the frontend and backend implementations
+- Implement the most crucial missing features, such as constituency selection and support for multiple simultaneous elections
+- Expand unit and end-to-end test coverage
 
 **2024 Q4** — Release the first full VAA to the public, including the interface for the candidates to input their answers (Tampere youth council elections)
-  - Create a project site with documentation, which is currently spread between the [`/docs`](./docs/) folder and in-code `TSDoc` comments
-  - Create a research-backed methodological guide to supplement the technical documentation
-  - Build application manager UI
-  - Enable plugins or easier customisation of pages and main components
+
+- Create a project site with documentation, which is currently spread between the [`/docs`](./docs/) folder and in-code `TSDoc` comments
+- Create a research-backed methodological guide to supplement the technical documentation
+- Build application manager UI
+- Enable plugins or easier customisation of pages and main components
 
 **2025 Q2** — Release VAAs in the Finnish county elections
 
@@ -92,14 +93,14 @@ You can run the whole application in a single Docker image, or run the frontend 
 The project is a monorepo and it consists of several yarn workspaces (each is a separate NPM module):
 
 - Abstract logic
-  - [`vaa-core`](./vaa-core/)
-  - [`vaa-data`](./vaa-data/)
-  - [`vaa-matching`](./vaa-matching/)
-  - [`vaa-filters`](./vaa-filters/)
+  - [`@openvaa/core`](./packages/core/)
+  - [`@openvaa/data`](./packages/data/)
+  - [`@openvaa/matching`](./packages/matching/)
+  - [`@openvaa/filters`](./packages/filters/)
 - Application
-  - [`vaa-app-shared`](./vaa-app-shared/)
-  - [`vaa-strapi`](./backend/vaa-strapi/)
-  - [`vaa-frontend`](./frontend/)
+  - [`@openvaa/app-shared`](./packages/app-shared/)
+  - [`@openvaa/strapi`](./backend/vaa-strapi/)
+  - [`@openvaa/frontend`](./frontend/)
 
 All workspaces share a single `yarn.lock` file located at the project root but contain their own `tsconfig.json` and `package.json` files.
 
@@ -112,7 +113,7 @@ yarn workspace [module-name] [script-name].
 f.e. the shared module can be build by running:
 
 ```bash
-yarn workspace vaa-app-shared build
+yarn workspace @openvaa/app-shared build
 ```
 
 ### Module resolution
@@ -121,12 +122,11 @@ yarn workspace vaa-app-shared build
 
 In order to resolve cross `import`s between the monorepo modules Visual Code Studio uses TypeScript references, which are defined in the `tsconfig.json` files of the corresponding modules.
 
-In other words, you DO NOT have to build the **dependee** modules in order for the IDE to resolve their `import`s within a **dependent** module or to pick up  changes you make in the **dependee’s** `.ts` sources.
-
+In other words, you DO NOT have to build the **dependee** modules in order for the IDE to resolve their `import`s within a **dependent** module or to pick up changes you make in the **dependee’s** `.ts` sources.
 
 #### NPM/Node
 
-When you use Yarn and during runtime NPM/Node module resolution mechanism is used instead. It relies on various pointers defined in `package.json` files of the corresponding modules (e.g. `main`, `module` or `exports`). These pointers usually refer to `build`/`dist` directory containing already transpiled TS sources of a given module (`.js` files). This directory subsequently gets symlinked by `yarn install` in a `node_modules` directory of a **dependent** module. 
+When you use Yarn and during runtime NPM/Node module resolution mechanism is used instead. It relies on various pointers defined in `package.json` files of the corresponding modules (e.g. `main`, `module` or `exports`). These pointers usually refer to `build`/`dist` directory containing already transpiled TS sources of a given module (`.js` files). This directory subsequently gets symlinked by `yarn install` in a `node_modules` directory of a **dependent** module.
 
 In other words, you DO have to build the **dependee** modules prior to running a **dependent** module or using Yarn on it, so that NPM/Node can find the transpiled `.js` sources and pick up changes you make in the original `.ts` code (see also on hot module reloading support or a lack of such [here](./docs/docker-setup-guide.md#hot-reloading)).
 

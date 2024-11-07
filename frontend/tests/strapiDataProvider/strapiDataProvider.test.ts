@@ -3,13 +3,13 @@
  * TODO: Test all required functions.
  */
 
-import {describe, test, expect, vi, type Mock} from 'vitest';
-import {loadTranslations, locale, locales} from '$lib/i18n';
-import type * as environment from '$app/environment';
-import {constants} from '$lib/utils/constants';
+import {describe, expect, type Mock,test, vi} from 'vitest';
 import {dataProvider} from '$lib/api/dataProvider/strapi';
+import {loadTranslations, locale} from '$lib/i18n';
+import {constants} from '$lib/utils/constants';
 import allPartiesResponse from './data/allParties.response.json';
 import allPartiesResult from './data/allParties.result.json';
+import type * as environment from '$app/environment';
 
 const LOCALE = 'fi';
 
@@ -36,8 +36,7 @@ describe('Test mock processing of data that should be fetched from the backend',
   // Initialize localization
   locale.set(LOCALE);
   await loadTranslations(LOCALE);
-  console.info(locale.get(), locales.get());
-  const {getAllParties} = await dataProvider;
+  const { getAllParties } = await dataProvider;
 
   test('getAllParties', async () => {
     (fetch as Mock).mockResolvedValue(createFetchResponse(allPartiesResponse));

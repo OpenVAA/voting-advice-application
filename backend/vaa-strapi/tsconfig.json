@@ -1,10 +1,9 @@
 {
   "extends": "@strapi/typescript-utils/tsconfigs/server",
   "compilerOptions": {
-    "moduleResolution": "Node10",
     "outDir": "dist",
     "rootDir": ".",
-    "allowJs": true //enables the build without .ts files
+    "allowJs": true
   },
   "include": ["./", "src/**/*.json"],
   "exclude": [
@@ -17,7 +16,8 @@
     "**/*.test.ts",
     "src/plugins/**",
     "types/generated/**",
-    "strapi-plugin-import-export-entries"
+    "strapi-plugin-import-export-entries",
+    "eslint.config.mjs"
   ],
-  "references": [{"path": "../../vaa-app-shared/tsconfig.cjs.json"}]
+  "references": [{ "path": "../../packages/app-shared/tsconfig.cjs.json" }]
 }

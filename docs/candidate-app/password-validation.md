@@ -6,9 +6,9 @@ Setting the password is done in three components:
 
 - [`PasswordSetPage.svelte`](/frontend/src/routes/candidate/register/PasswordSetPage.svelte) (new user)
 - [`PasswordResetPage.svelte`](/frontend/src/routes/candidate/password-reset/PasswordResetPage.svelte) (forgotten password)
-- [`settings/+page.svelte`](/frontend/src/routes/candidate/(protected)/settings/+page.svelte) (update existing password)
+- [`settings/+page.svelte`](</frontend/src/routes/candidate/(protected)/settings/+page.svelte>) (update existing password)
 
-The password is validated using [`passwordValidation.ts`](/vaa-app-shared/utils/passwordValidation.ts).
+The password is validated using [`passwordValidation.ts`](/packages/app-shared/utils/passwordValidation.ts).
 
 The file provides two main functions for validating a password
 
@@ -41,7 +41,7 @@ If the validity check passes, a POST request is sent to the backend to either
 
 ## Password requirements
 
-The password requirements are defined in the [`passwordValidation.ts`](/vaa-app-shared/utils/passwordValidation.ts) file.
+The password requirements are defined in the [`passwordValidation.ts`](/packages/app-shared/utils/passwordValidation.ts) file.
 
 Each requirement is defined by the `ValidationDetail` interface:
 

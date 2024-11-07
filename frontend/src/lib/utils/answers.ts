@@ -1,9 +1,9 @@
-import {locale, t} from '$lib/i18n';
-import {logDebugError} from '$lib/utils/logger';
-import {checkUrl} from './links';
+import { locale, t } from '$lib/i18n';
+import { logDebugError } from '$lib/utils/logger';
+import { checkUrl } from './links';
 
 // Utilities for getting Answers to Questions from Candidates and formatting them
-// TODO: These will be deprecated when we get proper Classes defs and methods for Question objects using the vaa-data module.
+// TODO: These will be deprecated when we get proper Classes defs and methods for Question objects using the @openvaa/data module.
 
 /**
  * Get the entity's answer for the given questions.
@@ -52,7 +52,7 @@ export function getAnswerForDisplay(
   entity: EntityProps,
   question: QuestionProps
 ): string | Array<string> | undefined {
-  const {value} = getAnswer(entity, question) ?? {};
+  const { value } = getAnswer(entity, question) ?? {};
   if (value == null || value === '') return undefined;
   const qt = question.type;
   if (qt === 'boolean') return t.get(value ? 'common.answer.yes' : 'common.answer.no');

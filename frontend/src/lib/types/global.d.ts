@@ -1,5 +1,5 @@
-import type {DynamicSettings, StaticSettings} from 'vaa-app-shared';
-import type {TranslationKey} from './generated/translationKey';
+import type { DynamicSettings, StaticSettings } from '@openvaa/app-shared';
+import type { TranslationKey } from './generated/translationKey';
 
 export {};
 
@@ -14,18 +14,18 @@ declare global {
   /*
    * The format for JSON structure.
    */
-  type JSONData = null | string | number | boolean | {[x: string]: JSONData} | Array<JSONData>;
+  type JSONData = null | string | number | boolean | { [x: string]: JSONData } | Array<JSONData>;
 
   /**
    * Make specific properties of an interface required. Works the same way as
    * `Required<Type>` but only applies to keys listed.
    * Source: https://stackoverflow.com/questions/69327990/how-can-i-make-one-property-non-optional-in-a-typescript-type
    */
-  type WithRequired<Type, Key extends keyof Type> = Type & {[Prop in Key]-?: Type[Prop]};
+  type WithRequired<TType, TKey extends keyof TType> = TType & { [Prop in TKey]-?: TType[Prop] };
 
   /**
    * The properties of a multiple choice option in a Question.
-   * TODO: This may be deprecated later by the `vaa-data` module.
+   * TODO: This may be deprecated later by the `@openvaa/data` module.
    */
   interface AnswerOption {
     key: number;
@@ -93,8 +93,8 @@ declare global {
     posterDark?: ImageProps;
     candPoster?: ImageProps;
     candPosterDark?: ImageProps;
-    translationOverrides?: {[translationKey: TranslationKey]: string};
-    candidateAppFAQ?: Array<{question: string; answer: string}>;
+    translationOverrides?: { [translationKey: TranslationKey]: string };
+    candidateAppFAQ?: Array<{ question: string; answer: string }>;
   };
 
   /**
@@ -128,7 +128,7 @@ declare global {
   /**
    * The properties of a Candidate object that can be passed onto the
    * related components.
-   * TODO: This may be deprecated later by the `vaa-data` module.
+   * TODO: This may be deprecated later by the `@openvaa/data` module.
    */
   interface CandidateProps {
     answers: AnswerDict;
@@ -166,7 +166,7 @@ declare global {
   /**
    * The properties of a Party object that can be passed onto the
    * related components.
-   * TODO: This may be deprecated later by the `vaa-data` module.
+   * TODO: This may be deprecated later by the `@openvaa/data` module.
    */
   interface PartyProps {
     answers: AnswerDict;
@@ -179,16 +179,16 @@ declare global {
     photo?: ImageProps;
     color?: string;
     colorDark?: string;
-    memberCandidateIds?: string[];
-    memberCandidates?: CandidateProps[];
-    nominatedCandidateIds?: string[];
-    nominatedCandidates?: CandidateProps[];
+    memberCandidateIds?: Array<string>;
+    memberCandidates?: Array<CandidateProps>;
+    nominatedCandidateIds?: Array<string>;
+    nominatedCandidates?: Array<CandidateProps>;
   }
 
   /**
    * The properties of a Question object that can be passed onto the
    * related components.
-   * TODO: This may be deprecated later by the `vaa-data` module.
+   * TODO: This may be deprecated later by the `@openvaa/data` module.
    */
   interface QuestionProps {
     id: string;
@@ -204,7 +204,7 @@ declare global {
     hidden?: boolean;
     type: QuestionSettingsProps['type'];
     textType?: 'short' | 'long';
-    values?: AnswerOption[];
+    values?: Array<AnswerOption>;
     min?: number | Date;
     max?: number | Date;
     notLocalizable?: boolean;
@@ -222,7 +222,7 @@ declare global {
    */
   interface CustomVideoProps {
     title: string;
-    sources: string[];
+    sources: Array<string>;
     captions: string;
     poster: string;
     aspectRatio: number;
@@ -232,7 +232,7 @@ declare global {
   /**
    * The properties of a QuestionCategory object that can be passed onto the
    * related components.
-   * TODO: This may be deprecated later by the `vaa-data` module.
+   * TODO: This may be deprecated later by the `@openvaa/data` module.
    */
   interface QuestionCategoryProps {
     id: string;
@@ -243,7 +243,7 @@ declare global {
     info?: string;
     color?: string;
     colorDark?: string;
-    questions: QuestionProps[];
+    questions: Array<QuestionProps>;
     customData?:
       | (JSONData & {
           emoji?: string;
@@ -288,24 +288,24 @@ declare global {
       }
     | {
         type: 'singleChoiceOrdinal';
-        values: AnswerOption[];
+        values: Array<AnswerOption>;
         display?: 'vertical' | 'horizontal';
       }
     | {
         type: 'singleChoiceCategorical';
-        values: AnswerOption[];
+        values: Array<AnswerOption>;
         display?: 'vertical' | 'horizontal';
       }
     | {
         type: 'multipleChoiceCategorical';
-        values: AnswerOption[];
+        values: Array<AnswerOption>;
         display?: 'vertical' | 'horizontal';
         min?: number;
         max?: number;
       }
     | {
         type: 'preferenceOrder';
-        values: AnswerOption[];
+        values: Array<AnswerOption>;
         min?: number;
         max?: number;
       };
@@ -327,18 +327,18 @@ declare global {
   type EntityProps = CandidateProps | PartyProps;
 
   /**
-   * Conforms to `vaa-filters.WrappedEntity`
+   * Conforms to `@openvaa/filters.WrappedEntity`
    */
   interface WrappedEntity<TEntity extends EntityProps = EntityProps> {
     entity: TEntity;
   }
 
   /**
-   * Conforms to `vaa-matching.Match`
+   * Conforms to `@openvaa/matching.Match`
    */
   interface RankingProps<TEntity extends EntityProps = EntityProps> extends WrappedEntity<TEntity> {
     score: number;
-    subMatches?: SubMatchProps[];
+    subMatches?: Array<SubMatchProps>;
   }
 
   /**

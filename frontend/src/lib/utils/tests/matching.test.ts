@@ -1,7 +1,7 @@
-import {expect, test} from 'vitest';
-import {imputePartyAnswers, mean, median} from '../matching';
-import {MockCandidate, MockParty} from './mock-objects';
-import {MISSING_VALUE} from 'vaa-core';
+import { MISSING_VALUE } from '@openvaa/core';
+import { expect, test } from 'vitest';
+import { MockCandidate, MockParty } from './mock-objects';
+import { imputePartyAnswers, mean, median } from '../matching';
 
 test('Mean and median', () => {
   expect(mean([1, 2, 2, 2, 10]), 'Mean').toEqual((1 + 2 + 2 + 2 + 10) / 5);
@@ -12,30 +12,30 @@ test('Mean and median', () => {
 });
 
 test('Impute party answers', () => {
-  const partyA = new MockParty('partyA', {q1: {value: 1}});
+  const partyA = new MockParty('partyA', { q1: { value: 1 } });
   const partyB = new MockParty('partyB');
-  const candidates: CandidateProps[] = [];
+  const candidates: Array<CandidateProps> = [];
   for (let i = 1; i < 5; i++) {
     const answers = {
-      q1: {value: i},
-      q2: {value: i},
-      q3: {value: MISSING_VALUE}
+      q1: { value: i },
+      q2: { value: i },
+      q3: { value: MISSING_VALUE }
     };
     candidates.push(new MockCandidate(`candidate_a_${i}`, partyA, answers));
   }
   // Add one more to make median and mean diverge
   candidates.push(
     new MockCandidate('candidate_a_5', partyA, {
-      q1: {value: 10},
-      q2: {value: 10},
-      q3: {value: MISSING_VALUE}
+      q1: { value: 10 },
+      q2: { value: 10 },
+      q3: { value: MISSING_VALUE }
     })
   );
   for (let i = 1; i < 5; i++) {
     const answers = {
-      q1: {value: 4},
-      q2: {value: 4},
-      q3: {value: 4}
+      q1: { value: 4 },
+      q2: { value: 4 },
+      q3: { value: 4 }
     };
     candidates.push(new MockCandidate(`candidate_b_${i}`, partyB, answers));
   }
