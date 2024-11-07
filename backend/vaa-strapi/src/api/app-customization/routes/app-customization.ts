@@ -2,8 +2,9 @@
  * app-customization router
  */
 
-import {factories} from '@strapi/strapi';
-import {restrictFilters} from '../../../util/acl';
+import { factories } from '@strapi/strapi';
+import { restrictFilters } from '../../../util/acl';
+import { Generic } from '../../../util/acl.type';
 
 export default factories.createCoreRouter('api::app-customization.app-customization', {
   only: ['find'],
@@ -15,5 +16,5 @@ export default factories.createCoreRouter('api::app-customization.app-customizat
         restrictFilters([])
       ]
     }
-  }
+  } as unknown as Generic
 });

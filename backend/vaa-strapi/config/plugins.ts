@@ -1,6 +1,6 @@
-const aws = require('@aws-sdk/client-ses');
+import aws from '@aws-sdk/client-ses';
 
-export default ({env}) => {
+export default ({ env }) => {
   const isDev = env('NODE_ENV') === 'development';
 
   return {

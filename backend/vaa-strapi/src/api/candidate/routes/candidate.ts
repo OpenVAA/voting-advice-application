@@ -1,9 +1,14 @@
 /**
  * candidate router
  */
-
 import { factories } from '@strapi/strapi';
-import { restrictPopulate, restrictFilters, restrictBody, electionCanEditAnswers } from '../../../util/acl';
+import {
+  electionCanEditAnswers,
+  restrictBody,
+  restrictFilters,
+  restrictPopulate
+} from '../../../util/acl';
+import { Generic, StrapiContext } from '../../../util/acl.type';
 
 export default factories.createCoreRouter('api::candidate.candidate', {
   only: ['find', 'findOne', 'update'], // Explicitly disabled create and delete
@@ -11,36 +16,29 @@ export default factories.createCoreRouter('api::candidate.candidate', {
     find: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([
-          'photo'
-        ]),
+        restrictPopulate(['photo']),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([
-          'candidate.id.$eq',
-          'question.category.type.$eq',
-        ]),
-      ],
+        restrictFilters(['candidate.id.$eq', 'question.category.type.$eq'])
+      ]
     },
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([
-          'photo'
-        ]),
+        restrictPopulate(['photo']),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([]),
-      ],
+        restrictFilters([])
+      ]
     },
     update: {
       policies: [
         // Allow only updating candidate itself
-        async (ctx: any, config, {strapi}) => {
-          const {id} = ctx.params;
-
+        async ({ params, state }: StrapiContext, config, { strapi }) => {
+          const { id } = params;
+          const userId = state?.user?.id;
+          if (!id || !userId) return false;
           const candidate = await strapi.query('api::candidate.candidate').findOne({
-            where: {id, user: {id: ctx.state.user.id}}
+            where: { id, user: { id: userId } }
           });
-
           return !!candidate;
         },
         // Disable populate by default to avoid accidentally leaking data through relations
@@ -50,8 +48,8 @@ export default factories.createCoreRouter('api::candidate.candidate', {
         // Allow only updating the following fields
         restrictBody(['photo', 'appLanguage']),
         // Allow modification only when the current election allows it
-        electionCanEditAnswers,
-      ],
-    },
-  },
+        electionCanEditAnswers
+      ]
+    }
+  } as unknown as Generic
 });

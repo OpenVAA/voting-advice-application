@@ -4,6 +4,7 @@
 
 import { factories } from '@strapi/strapi';
 import { restrictFilters, restrictPopulate } from '../../../util/acl';
+import { Generic } from '../../../util/acl.type';
 
 export default factories.createCoreRouter('api::party.party', {
   only: ['find', 'findOne'], // Explicitly disabled create, update, delete
@@ -24,5 +25,5 @@ export default factories.createCoreRouter('api::party.party', {
         restrictFilters([])
       ]
     }
-  }
+  } as unknown as Generic
 });

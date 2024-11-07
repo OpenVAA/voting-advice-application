@@ -4,6 +4,7 @@
 
 import { factories } from '@strapi/strapi';
 import { restrictFilters, restrictPopulate } from '../../../util/acl';
+import { Generic } from '../../../util/acl.type';
 
 export default factories.createCoreRouter('api::question-category.question-category', {
   only: ['find', 'findOne'], // Explicitly disabled create, update, delete
@@ -30,5 +31,5 @@ export default factories.createCoreRouter('api::question-category.question-categ
         restrictFilters(['type.$eq', 'elections.id.$eq'])
       ]
     }
-  }
+  } as unknown as Generic
 });

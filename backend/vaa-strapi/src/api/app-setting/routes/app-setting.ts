@@ -2,8 +2,9 @@
  * app-setting router
  */
 
-import {factories} from '@strapi/strapi';
-import {restrictFilters} from '../../../util/acl';
+import { factories } from '@strapi/strapi';
+import { restrictFilters } from '../../../util/acl';
+import { Generic } from '../../../util/acl.type';
 
 export default factories.createCoreRouter('api::app-setting.app-setting', {
   only: ['find', 'findOne'], // Explicitly disabled create and delete
@@ -22,5 +23,5 @@ export default factories.createCoreRouter('api::app-setting.app-setting', {
         restrictFilters([])
       ]
     }
-  }
+  } as unknown as Generic
 });
