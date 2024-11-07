@@ -1,6 +1,6 @@
 <script lang="ts">
   export let customStyle: string | undefined = undefined;
-  export let bgColor: string = 'bg-base-100';
+  export let bgColor: string = 'oklch(var(--b3))';
   export let id: string | undefined = undefined;
   export let label: string | undefined = undefined;
 </script>

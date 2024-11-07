@@ -5,10 +5,13 @@
   import {FeedbackModal} from '$lib/components/feedback/modal';
   import {Loading} from '$lib/components/loading';
   import {MaintenancePage} from '$lib/templates/maintenance';
+  import {initLayoutContext} from '$lib/contexts/layout';
   import '../../app.css';
   import type {LayoutData} from './$types';
 
   export let data: LayoutData;
+
+  initLayoutContext();
 
   let underMaintenance;
   $: underMaintenance = data.appSettings.underMaintenance ?? false;

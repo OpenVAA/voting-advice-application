@@ -2,39 +2,36 @@
   import {t} from '$lib/i18n';
   import {getRoute, Route} from '$lib/utils/navigation';
   import {sanitizeHtml} from '$lib/utils/sanitize';
-  import {election, openFeedbackModal, settings} from '$lib/stores';
+  import {election} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import {HeadingGroup, PreHeading} from '$lib/components/headingGroup';
   import {HeroEmoji} from '$lib/components/heroEmoji';
-  import {BasicPage} from '$lib/templates/basicPage';
+  import Layout from '../../Layout.svelte';
+  import {onDestroy} from 'svelte';
+  import {getLayoutContext} from '$lib/contexts/layout';
+
+  const {topBarSettings} = getLayoutContext(onDestroy);
+  topBarSettings.push({
+    actions: {
+      return: 'show',
+      returnButtonLabel: $t('common.returnHome')
+    }
+  });
 </script>
 
-<BasicPage title={$t('info.title')}>
-  <svelte:fragment slot="hero">
+<svelte:head>
+  <title>{$t('info.title')} – {$t('dynamic.appName')}</title>
+</svelte:head>
+
+<Layout title={$t('info.title')}>
+  <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.info.heroEmoji')} />
-  </svelte:fragment>
+  </figure>
 
   <HeadingGroup slot="heading">
     <PreHeading class="text-primary">{$election?.name ?? ''}</PreHeading>
     <h1>{$t('info.title')}</h1>
   </HeadingGroup>
-
-  <svelte:fragment slot="banner">
-    {#if $settings.header.showFeedback && $openFeedbackModal}
-      <Button
-        on:click={$openFeedbackModal}
-        variant="icon"
-        icon="feedback"
-        text={$t('feedback.send')} />
-    {/if}
-    <Button
-      slot="banner"
-      class="!text-neutral"
-      variant="icon"
-      icon="close"
-      href={$getRoute(Route.Home)}
-      text={$t('common.returnHome')} />
-  </svelte:fragment>
 
   <div>
     {@html sanitizeHtml(
@@ -44,7 +41,9 @@
     )}
   </div>
 
-  <svelte:fragment slot="primaryActions">
-    <Button variant="main" href={$getRoute(Route.Home)} text={$t('common.returnHome')} />
-  </svelte:fragment>
-</BasicPage>
+  <Button
+    slot="primaryActions"
+    variant="main"
+    href={$getRoute(Route.Home)}
+    text={$t('common.returnHome')} />
+</Layout>

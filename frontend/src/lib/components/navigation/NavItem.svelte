@@ -2,8 +2,9 @@
   import {concatClass} from '$lib/utils/components';
   import {ucFirst} from '$lib/utils/text/ucFirst';
   import {Icon} from '$lib/components/icon';
-  import {getNavigationContext} from './navigationContext';
+  import {getLayoutContext} from '$lib/contexts/layout';
   import type {NavItemProps} from './NavItem.type';
+  import {onDestroy} from 'svelte';
   type $$Props = NavItemProps;
 
   export let autoCloseNav: $$Props['autoCloseNav'] = true;
@@ -12,10 +13,7 @@
   export let icon: $$Props['icon'] = undefined;
   export let text: $$Props['text'];
 
-  /**
-   * A function that will close the navigation menu when clicked.
-   */
-  const {close} = getNavigationContext();
+  const {navigation} = getLayoutContext(onDestroy);
 
   // Create classes
   let classes: string;
@@ -61,7 +59,7 @@ The item is rendered as an `<a>` element if `href` is supplied. Otherwise a `<bu
     {href}
     on:click
     on:click={() => {
-      if (autoCloseNav && close) close();
+      if (autoCloseNav && navigation.close) navigation.close();
     }}
     disabled={disabled || undefined}
     {...concatClass($$restProps, classes)}>

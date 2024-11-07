@@ -9,23 +9,27 @@ import {getCardContentsFromStrapi} from '../../../functions/utils/appSettings';
 export default factories.createCoreController(API.AppSettings, () => ({
   async findOne(ctx) {
     const result = await super.find(ctx);
-
-    for (const [i, val] of result.data.entries()) {
-      const cardContents = await getCardContentsFromStrapi(val.id);
-      result.data[i].attributes.results.cardContents = cardContents;
+    if (result?.data) {
+      for (const [i, val] of result.data.entries()) {
+        const cardContents = await getCardContentsFromStrapi(val.id);
+        if (!cardContents) continue;
+        result.data[i].attributes.results ??= {};
+        result.data[i].attributes.results.cardContents = cardContents;
+      }
     }
-
     return result;
   },
 
   async find(ctx) {
     const {data, meta} = await super.find(ctx);
-
-    for (const [i, val] of data.entries()) {
-      const cardContents = await getCardContentsFromStrapi(val.id);
-      data[i].attributes.results.cardContents = cardContents;
+    if (data) {
+      for (const [i, val] of data.entries()) {
+        const cardContents = await getCardContentsFromStrapi(val.id);
+        if (!cardContents) continue;
+        data[i].attributes.results ??= {};
+        data[i].attributes.results.cardContents = cardContents;
+      }
     }
-
     return {data, meta};
   }
 }));

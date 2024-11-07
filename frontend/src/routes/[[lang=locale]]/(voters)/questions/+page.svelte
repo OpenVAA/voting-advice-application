@@ -1,20 +1,20 @@
 <script lang="ts">
   import {t} from '$lib/i18n';
   import {FIRST_QUESTION_ID, getRoute, Route} from '$lib/utils/navigation';
-  import {
-    openFeedbackModal,
-    opinionQuestions,
-    opinionQuestionCategories,
-    settings
-  } from '$lib/stores';
+  import {opinionQuestions, opinionQuestionCategories, settings} from '$lib/stores';
   import {Button} from '$lib/components/button';
   import {HeroEmoji} from '$lib/components/heroEmoji';
   import {Loading} from '$lib/components/loading';
-  import {BasicPage} from '$lib/templates/basicPage';
   import {getQuestionsContext} from './questions.context';
   import {CategoryTag} from '$lib/components/categoryTag';
+  import Layout from '../../Layout.svelte';
+  import {getLayoutContext} from '$lib/contexts/layout';
+  import {onDestroy} from 'svelte';
 
-  const {firstQuestionId, selectedCategories} = getQuestionsContext();
+  const {firstQuestionId, selectedCategories, numSelectedQuestions} = getQuestionsContext();
+
+  const {progress} = getLayoutContext(onDestroy);
+  progress.current.set(0);
 
   // Await the necessary promises here and save their contents in synced variables
   let questionsSync: QuestionProps[] | undefined;
@@ -28,13 +28,12 @@
     questionsSync = oq;
     categoriesSync = cc;
     // Select all categories by default
-    $selectedCategories = cc.map((c) => c.id);
+    if (!$selectedCategories) $selectedCategories = cc.map((c) => c.id);
   });
 
   /** The total number of selected questions */
-  let numSelectedQuestions = 0;
   $: if (categoriesSync) {
-    numSelectedQuestions = categoriesSync
+    $numSelectedQuestions = categoriesSync
       .filter((c) => !$selectedCategories || $selectedCategories.includes(c.id))
       .reduce((acc, c) => acc + (c.questions?.length ?? 0), 0);
   }
@@ -42,8 +41,8 @@
   let canContinue = false;
   $: canContinue =
     !!questionsSync &&
-    (numSelectedQuestions === questionsSync.length ||
-      numSelectedQuestions >= $settings.matching.minimumAnswers);
+    ($numSelectedQuestions === questionsSync.length ||
+      $numSelectedQuestions >= $settings.matching.minimumAnswers);
 
   let firstCategoryId: string | undefined;
   $: firstCategoryId = categoriesSync
@@ -52,28 +51,15 @@
     : undefined;
 </script>
 
-<BasicPage title={$t('questions.title')}>
+<Layout title={$t('questions.title')}>
   <!-- <svelte:fragment slot="note">
     <Icon name="tip" />
     {$t('XXX')}
   </svelte:fragment> -->
 
-  <svelte:fragment slot="hero">
+  <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.questions.heroEmoji')} />
-  </svelte:fragment>
-
-  <svelte:fragment slot="banner">
-    {#if $settings.header.showFeedback && $openFeedbackModal}
-      <Button
-        on:click={$openFeedbackModal}
-        variant="icon"
-        icon="feedback"
-        text={$t('feedback.send')} />
-    {/if}
-    {#if $settings.header.showHelp}
-      <Button href={$getRoute(Route.Help)} variant="icon" icon="help" text={$t('help.title')} />
-    {/if}
-  </svelte:fragment>
+  </figure>
 
   {#if !(questionsSync && categoriesSync)}
     <Loading />
@@ -112,16 +98,15 @@
     </div>
   {/if}
 
-  <svelte:fragment slot="primaryActions">
-    <Button
-      disabled={!canContinue}
-      href={$getRoute(
-        $settings.questions.categoryIntros?.show && firstCategoryId
-          ? {route: Route.QuestionCategory, id: firstCategoryId}
-          : {route: Route.Question, id: FIRST_QUESTION_ID}
-      )}
-      variant="main"
-      icon="next"
-      text={$t('questions.intro.start', {numQuestions: numSelectedQuestions})} />
-  </svelte:fragment>
-</BasicPage>
+  <Button
+    slot="primaryActions"
+    disabled={!canContinue}
+    href={$getRoute(
+      $settings.questions.categoryIntros?.show && firstCategoryId
+        ? {route: Route.QuestionCategory, id: firstCategoryId}
+        : {route: Route.Question, id: FIRST_QUESTION_ID}
+    )}
+    variant="main"
+    icon="next"
+    text={$t('questions.intro.start', {numQuestions: $numSelectedQuestions})} />
+</Layout>

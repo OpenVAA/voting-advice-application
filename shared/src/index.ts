@@ -9,4 +9,4 @@ export * from './matching/serializable.type.js';
 export * from './utils/passwordValidation.js';
 export {dynamicSettings} from './settings/dynamicSettings.js';
 export {staticSettings} from './settings/staticSettings.js';
-export type {DynamicSettings, StaticSettings} from './settings/settings.type.js';
+export * from './settings/settings.type.js';

@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_settings_header_style_darks",
+  "info": {
+    "displayName": "Header Style - Dark"
+  },
+  "options": {},
+  "attributes": {
+    "bgColor": {
+      "type": "string"
+    },
+    "overImgBgColor": {
+      "type": "string"
+    }
+  }
+}

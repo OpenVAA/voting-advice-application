@@ -66,6 +66,11 @@
       "repeatable": false,
       "component": "settings.entities",
       "required": true
+    },
+    "headerStyle": {
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.header-style"
     }
   }
 }
