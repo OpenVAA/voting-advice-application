@@ -35,7 +35,7 @@ The user gets an email with a link to reset their password using the forgot pass
 
 `MAIL_FROM` and `MAIL_REPLY_TO` variables will not take effect for emails sent by `user-permissions` Strapi plugin (f.e. reset password emails) as they are configured separately via Strapi UI in `Settings > Email Templates`.
 
-In a development environment, there is a local instance of [maildev](https://github.com/maildev/maildev) running so that you do not need to set up SMTP. The development configuration automatically enforces the use of maildev through the `backend/vaa-strapi/config/env/development/plugins.ts` file. The user interface of maildev can be found at [http://localhost:1080](http://localhost:1080), where you'll find any emails sent by Strapi.
+You can use a local instance of AWS SES via [LocalStack](https://docs.localstack.cloud/user-guide/aws/ses/) for development. To enforce the use of LocalStack set `LOCALSTACK_ENDPOINT` to `http://localhost.localstack.cloud:4566` in `.env` file. You could use the project's Docker compose setup to spin up `awslocal` service or install and run it [yourself](https://docs.localstack.cloud/getting-started/installation/). The LocalStack's AWS SES mailbox can be checked at [http://localhost:4566/_aws/ses](http://localhost:4566/_aws/ses), where you'll find any emails sent by Strapi.
 
 ## Technical Documentation
 
