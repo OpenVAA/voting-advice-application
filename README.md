@@ -51,15 +51,13 @@ We released two pilot VAAs for the 2024 EU Elections, which you can try out to s
 
 ## 🎢 Roadmap
 
-**2024 Q3** — Refactor the current codebase, especially:
+**2024 Q4** — Refactor the current codebase, especially:
 
 - Abstract the frontend–backend connection into a `dataProvider` API enabling arbitrary backend implementations
-- Implement a `@openvaa/data` data model for VAA and election data
-- Convert `@openvaa/data`, `@openvaa/matching` and `@openvaa/filters` pseudo-modules into independent modules. These handle together the application logic and are independent of the frontend and backend implementations
 - Implement the most crucial missing features, such as constituency selection and support for multiple simultaneous elections
 - Expand unit and end-to-end test coverage
 
-**2024 Q4** — Release the first full VAA to the public, including the interface for the candidates to input their answers (Tampere youth council elections)
+**2025 Q1** - Expand documentation and improve developer-friendliness
 
 - Create a project site with documentation, which is currently spread between the [`/docs`](./docs/) folder and in-code `TSDoc` comments
 - Create a research-backed methodological guide to supplement the technical documentation
@@ -90,17 +88,19 @@ You can run the whole application in a single Docker image, or run the frontend 
 - See [the frontend Readme](frontend/README.md) for instructions on running the frontend individually.
 - See [the backend Readme](/backend/vaa-strapi/README.md) for instructions on running the backend individually.
 
-The project is a monorepo and it consists of several yarn workspaces (each is a separate NPM module):
+The project is a monorepo and it consists of several yarn workspaces (each is a separate NPM module). See the READMEs in each for more information.
 
 - Abstract logic
   - [`@openvaa/core`](./packages/core/)
   - [`@openvaa/data`](./packages/data/)
-  - [`@openvaa/matching`](./packages/matching/)
   - [`@openvaa/filters`](./packages/filters/)
+  - [`@openvaa/matching`](./packages/matching/)
 - Application
   - [`@openvaa/app-shared`](./packages/app-shared/)
   - [`@openvaa/strapi`](./backend/vaa-strapi/)
   - [`@openvaa/frontend`](./frontend/)
+- Development
+  - [`@openvaa/shared-config`](./packages/shared-config/)
 
 All workspaces share a single `yarn.lock` file located at the project root but contain their own `tsconfig.json` and `package.json` files.
 
@@ -130,31 +130,6 @@ When you use Yarn and during runtime NPM/Node module resolution mechanism is use
 
 In other words, you DO have to build the **dependee** modules prior to running a **dependent** module or using Yarn on it, so that NPM/Node can find the transpiled `.js` sources and pick up changes you make in the original `.ts` code (see also on hot module reloading support or a lack of such [here](./docs/docker-setup-guide.md#hot-reloading)).
 
-## E2E tests
-
-The project uses Playwright for E2E testing. The tests rely on generated data which the local PosgresDB is being seeded with.
-
-To run the E2E tests start all the services locally:
-
-```bash
-yarn dev
-```
-
-... and then:
-
-```bash
-yarn playwright install
-yarn test
-```
-
-If you encounter any unexpected issues with the E2E tests, make sure to bring down the Docker stack properly to reseed the DB with the original mock data (more on mock data [here](./backend/vaa-strapi/README.md#mock-data)).
-
-To bring down the Docker stack properly (delete all containers, images and named volumes which include backend DB volume with potentially seeded mock data) run:
-
-```bash
-yarn dev:down
-```
-
 ## Maintaining dependencies
 
 The project uses [Dependabot](https://github.com/dependabot) to maintain security updates for its dependencies. Dependabot will create automated pull requests monthly to fix potential known security issues in application dependencies.
@@ -163,4 +138,6 @@ The project uses [Dependabot](https://github.com/dependabot) to maintain securit
 
 See [Troubleshooting](docs/troubleshooting.md) for solutions to some common issues.
 
-You can also find further documentation in the [docs](docs/) folder.
+Read more about [Testing](docs/testing.md).
+
+Find further documentation in the [docs](docs/) folder.
