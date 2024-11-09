@@ -9,6 +9,8 @@ merging the PR.
 
 To get an overview of the project, read the [README](/README.md).
 
+Also check the other documentation in the [docs](/docs) folder.
+
 ## Getting started
 
 ### Issues
@@ -94,9 +96,9 @@ When you're done with the changes, create a pull request known as a PR.
   your PR. Either using [suggested changes](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/incorporating-feedback-in-your-pull-request)
   or pull request comments.
 - As you update your PR and apply changes, mark each conversation as [resolved](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/commenting-on-a-pull-request#resolving-conversations).
-- Make sure that your commits pass the validation workflows, are able to run tests & build the application.
+- Make sure that your commits pass the validation workflows, are able to run the [tests](/docs/testing.md) and build the application.
+- Make sure to check all of the applicable requirements in the [PR template](/.github/PULL_REQUEST_TEMPLATE).
 
-### Your PR is merged!
+### Your PR is ready to be merged!
 
-Once all the changes have been approved, the reviewers may ask you to clean the git history before merging the changes
-into the main branch of the project.
+Once all the changes have been approved, the reviewers may still ask you to clean the git history before merging the changes into the main branch of the project.
