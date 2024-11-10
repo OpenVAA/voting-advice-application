@@ -23,10 +23,10 @@ export default ({ env }) => {
             ses: new aws.SES({
               endpoint: env('LOCALSTACK_ENDPOINT'),
               apiVersion: '2010-12-01',
-              region: env('AWS_REGION'),
+              region: env('AWS_SES_REGION'),
               credentials: {
-                accessKeyId: env('AWS_ACCESS_KEY_ID'),
-                secretAccessKey: env('AWS_SECRET_ACCESS_KEY')
+                accessKeyId: env('AWS_SES_ACCESS_KEY_ID'),
+                secretAccessKey: env('AWS_SES_SECRET_ACCESS_KEY')
               }
             }),
             aws
