@@ -152,6 +152,24 @@ jobs:
       - name: "Start OpenVAA"
         run: yarn dev
 
+      - name: "Collect Docker logs on failure"
+        if: failure()
+        uses: jwalton/gh-docker-logs@v2
+        with:
+          dest: ./logs
+
+      - name: "Tar Docker logs"
+        if: failure()
+        run: tar cvzf ./logs.tgz ./logs
+
+      - name: "Upload Docker logs on failure"
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs.tgz
+          path: ./logs.tgz
+          retention-days: 30
+
       - name: "Run E2E tests"
         run: yarn test:e2e
 
