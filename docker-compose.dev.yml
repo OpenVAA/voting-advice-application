@@ -4,7 +4,8 @@ services:
       file: ./frontend/docker-compose.dev.yml
       service: frontend
     depends_on:
-      - "strapi"
+      strapi:
+        condition: service_healthy
     environment:
       - VITE_BACKEND_URL=${VITE_BACKEND_URL}
       - PUBLIC_BACKEND_URL=${PUBLIC_BACKEND_URL}
@@ -27,7 +28,10 @@ services:
       file: ./backend/vaa-strapi/docker-compose.dev.yml
       service: strapi
     depends_on:
-      - "awslocal"
+      awslocal:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     environment:
       STRAPI_HOST: ${STRAPI_HOST}
       STRAPI_PORT: ${STRAPI_PORT}
