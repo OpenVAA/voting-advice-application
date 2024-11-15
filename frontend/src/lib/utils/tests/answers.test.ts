@@ -7,7 +7,7 @@ const DATE = new Date();
 
 /** Make unique labels */
 function makeLabels(count = 4) {
-  const labels: Array<AnswerOption> = [];
+  const labels: Array<LegacyAnswerOption> = [];
   for (let i = 1; i < count + 1; i++) {
     labels.push({
       key: i,
@@ -19,7 +19,7 @@ function makeLabels(count = 4) {
 
 const category = new MockQuestionCategory('c1');
 
-const QST: Record<string, QuestionProps> = {
+const QST: Record<string, LegacyQuestionProps> = {
   Likert: {
     id: '1',
     text: 'X',
@@ -110,7 +110,7 @@ const QST: Record<string, QuestionProps> = {
 
 category.questions = Object.values(QST);
 
-const ANS: Record<string, AnswerProps & { questionId: string }> = {
+const ANS: Record<string, LegacyAnswerProps & { questionId: string }> = {
   Likert: {
     questionId: QST.Likert.id,
     value: 1,
@@ -150,7 +150,7 @@ const ANS: Record<string, AnswerProps & { questionId: string }> = {
   }
 };
 
-const answers = {} as AnswerDict;
+const answers = {} as LegacyAnswerDict;
 Object.values(ANS).forEach(({ questionId, value, openAnswer }) => (answers[questionId] = { value, openAnswer }));
 
 const CND = new MockCandidate('1', new MockParty('p1'), answers);

@@ -27,15 +27,15 @@
 
   const { firstQuestionId, selectedCategories } = getQuestionsContext();
 
-  let category: QuestionCategoryProps | undefined;
+  let category: LegacyQuestionCategoryProps | undefined;
   let nextQuestionId: string | undefined;
   let nextCategoryId: string | undefined;
-  let questions: Array<QuestionProps>;
+  let questions: Array<LegacyQuestionProps>;
 
   // Prepare category data reactively when the route param or question categories (triggered by locale changes) change
   $: update(data.categoryId, $opinionQuestionCategories);
 
-  async function update(categoryId: string, promisedCategories: Promise<Array<QuestionCategoryProps>>) {
+  async function update(categoryId: string, promisedCategories: Promise<Array<LegacyQuestionCategoryProps>>) {
     const cc = await promisedCategories;
     const qq = cc.map((c) => c.questions).flat();
     category = cc.find((c) => c.id === categoryId);

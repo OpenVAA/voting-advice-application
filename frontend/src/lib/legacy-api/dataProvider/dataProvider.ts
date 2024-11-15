@@ -13,44 +13,44 @@ export interface DataProvider {
 
   /**
    * Get the default `Election` object or one matching the `id`.
-   * @returns A Promise with `ElectionProps`
+   * @returns A Promise with `LegacyElectionProps`
    */
-  getElection: (options?: GetElectionOptions) => Promise<ElectionProps>;
+  getElection: (options?: GetElectionOptions) => Promise<LegacyElectionProps>;
 
   /**
    * This is a redundant and will likely be made obsolute. Use the other question getters instead.
    */
-  getQuestions: (options?: GetAnyQuestionsOptions) => Promise<Array<QuestionProps>>;
+  getQuestions: (options?: GetAnyQuestionsOptions) => Promise<Array<LegacyQuestionProps>>;
 
   /**
    * Get all the info questions.
-   * @returns A Promise with an array of `QuestionProps`
+   * @returns A Promise with an array of `LegacyQuestionProps`
    */
-  getInfoQuestions: (options?: GetQuestionsOptionsBase) => Promise<Array<QuestionProps>>;
+  getInfoQuestions: (options?: GetQuestionsOptionsBase) => Promise<Array<LegacyQuestionProps>>;
 
   /**
    * Get all the opinion questions.
-   * @returns A Promise with an array of `QuestionProps`
+   * @returns A Promise with an array of `LegacyQuestionProps`
    */
-  getOpinionQuestions: (options?: GetQuestionsOptionsBase) => Promise<Array<QuestionProps>>;
+  getOpinionQuestions: (options?: GetQuestionsOptionsBase) => Promise<Array<LegacyQuestionProps>>;
 
   /**
    * Get all the parties, regardless whether they are nominated, have nominations or not.
-   * @returns A Promise with an array of `PartyProps`
+   * @returns A Promise with an array of `LegacyPartyProps`
    */
-  getAllParties: (options?: GetAllPartiesOptions) => Promise<Array<PartyProps>>;
+  getAllParties: (options?: GetAllPartiesOptions) => Promise<Array<LegacyPartyProps>>;
 
   /**
    * Get all the nominated parties or parties nominating candidates.
-   * @returns A Promise with an array of `PartyProps`
+   * @returns A Promise with an array of `LegacyPartyProps`
    */
-  getNominatingParties: (options?: GetNominatingPartiesOptions) => Promise<Array<PartyProps>>;
+  getNominatingParties: (options?: GetNominatingPartiesOptions) => Promise<Array<LegacyPartyProps>>;
 
   /**
    * Get all the nominated candidates.
-   * @returns A Promise with an array of `CandidateProps`
+   * @returns A Promise with an array of `LegacyCandidateProps`
    */
-  getNominatedCandidates: (options?: GetNominatedCandidatesOptions) => Promise<Array<CandidateProps>>;
+  getNominatedCandidates: (options?: GetNominatedCandidatesOptions) => Promise<Array<LegacyCandidateProps>>;
 
   /**
    * Optional method for receiving feedback. If this is not provided, the built-in feedback implementation will be used, which saves feedback as json files on the disk.
@@ -108,7 +108,7 @@ export interface GetAnyQuestionsOptions extends GetQuestionsOptionsBase {
   /**
    * The category type of the questions to load.
    */
-  categoryType?: QuestionCategoryType | 'all';
+  categoryType?: LegacyQuestionCategoryType | 'all';
 }
 
 export interface FilterById {

@@ -4,14 +4,17 @@ import { ensureColors } from '../../../../utils/color/ensureColors';
 import type { StrapiQuestionCategoryData } from '../strapiDataProvider.type';
 
 /**
- * Parse StrapiQuestionCategory data into a `QuestionCategoryProps` object, which must be supplied with the actual `questions` later.
+ * Parse StrapiQuestionCategory data into a `LegacyQuestionCategoryProps` object, which must be supplied with the actual `questions` later.
  */
-export function parseQuestionCategory(category: StrapiQuestionCategoryData, locale?: string): QuestionCategoryProps {
+export function parseQuestionCategory(
+  category: StrapiQuestionCategoryData,
+  locale?: string
+): LegacyQuestionCategoryProps {
   const id = `${category.id}`;
   const attr = category.attributes;
   const name = translate(attr.name, locale);
   const shortName = translate(attr.shortName, locale);
-  const props: QuestionCategoryProps = {
+  const props: LegacyQuestionCategoryProps = {
     id,
     order: attr.order ?? 0,
     type: attr.type,

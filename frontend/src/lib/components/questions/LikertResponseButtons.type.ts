@@ -4,11 +4,11 @@ export type LikertResponseButtonsProps = SvelteHTMLElements['fieldset'] & {
   /**
    * The `name` of the radio group. Usually the question's id
    */
-  name: QuestionProps['id'];
+  name: LegacyQuestionProps['id'];
   /**
    * The `key`-`label` pairs of the radio buttons
    */
-  options: QuestionProps['values'];
+  options: LegacyQuestionProps['values'];
   /**
    * Whether to disable all the buttons. @default false
    */
@@ -20,11 +20,11 @@ export type LikertResponseButtonsProps = SvelteHTMLElements['fieldset'] & {
   /**
    * The initially selected key of the radio group. @default undefined
    */
-  selectedKey?: AnswerOption['key'] | null;
+  selectedKey?: LegacyAnswerOption['key'] | null;
   /**
    * The answer key of the entity in display mode. @default undefined
    */
-  entityKey?: AnswerOption['key'] | null;
+  entityKey?: LegacyAnswerOption['key'] | null;
   /**
    * The label for the entity's answer. Be sure to supply this if `entityKey` is supplied.
    */
@@ -57,5 +57,5 @@ export type LikertResponseButtonsEventDetail = {
   /**
    * The selected key of the radio group.
    */
-  value: AnswerOption['key'];
+  value: LegacyAnswerOption['key'];
 };

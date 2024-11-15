@@ -9,9 +9,9 @@ import { checkUrl } from './links';
  * Get the entity's answer for the given questions.
  * @param entity The Entity
  * @param question The Question object
- * @returns An `AnswerProps` object with the answer
+ * @returns An `LegacyAnswerProps` object with the answer
  */
-export function getAnswer(entity: EntityProps, question: QuestionProps): AnswerProps | undefined {
+export function getAnswer(entity: LegacyEntityProps, question: LegacyQuestionProps): LegacyAnswerProps | undefined {
   return entity.answers[question.id] ?? undefined;
 }
 
@@ -19,9 +19,12 @@ export function getAnswer(entity: EntityProps, question: QuestionProps): AnswerP
  * Get the entity's Likert answer for the given question.
  * @param entity The Entity
  * @param question The Question object
- * @returns An `AnswerProps` object with an integer answer
+ * @returns An `LegacyAnswerProps` object with an integer answer
  */
-export function getLikertAnswer(entity: EntityProps, question: QuestionProps): AnswerProps<number> | undefined {
+export function getLikertAnswer(
+  entity: LegacyEntityProps,
+  question: LegacyQuestionProps
+): LegacyAnswerProps<number> | undefined {
   if (question.type !== 'singleChoiceOrdinal') {
     logDebugError(`getLikertAnswer: Question ${question.id} is not a Likert question.`);
     return undefined;
@@ -45,7 +48,10 @@ export function getLikertAnswer(entity: EntityProps, question: QuestionProps): A
  * @param question The Question object
  * @returns A string, an array of strings, or `undefined` if the answer is missing, invalid or would be an empty list
  */
-export function getAnswerForDisplay(entity: EntityProps, question: QuestionProps): string | Array<string> | undefined {
+export function getAnswerForDisplay(
+  entity: LegacyEntityProps,
+  question: LegacyQuestionProps
+): string | Array<string> | undefined {
   const { value } = getAnswer(entity, question) ?? {};
   if (value == null || value === '') return undefined;
   const qt = question.type;
@@ -92,7 +98,7 @@ export function getAnswerForDisplay(entity: EntityProps, question: QuestionProps
  * @param answer The Candidate's answer
  * @returns The answer's translated label or `undefined`
  */
-function getChoiceLabel(question: QuestionProps, answer: AnswerProps['value']): string | undefined {
+function getChoiceLabel(question: LegacyQuestionProps, answer: LegacyAnswerProps['value']): string | undefined {
   const label = question.values?.find((v) => v.key === (answer as number))?.label;
   if (label == null) {
     logDebugError(`Invalid question choice ${answer} for question ${question.id}`);
@@ -107,7 +113,10 @@ function getChoiceLabel(question: QuestionProps, answer: AnswerProps['value']): 
  * @param answer The Candidate's answer
  * @returns The answer's translated labels or `undefined`
  */
-function getChoiceLabels(question: QuestionProps, answers: AnswerProps['value']): Array<string> | undefined {
+function getChoiceLabels(
+  question: LegacyQuestionProps,
+  answers: LegacyAnswerProps['value']
+): Array<string> | undefined {
   if (!Array.isArray(answers)) {
     logDebugError(`Invalid question answers (${answers}) for question ${question.id}`);
     return undefined;
@@ -146,7 +155,7 @@ export const DATE_FORMATS: Record<DateType, Intl.DateTimeFormatOptions> = {
  * @param answer The Candidate's answer
  * @returns A boolean value indicating whether the answer is empty
  */
-export function answerIsEmpty(question: QuestionProps, answer?: AnswerProps): boolean {
+export function answerIsEmpty(question: LegacyQuestionProps, answer?: LegacyAnswerProps): boolean {
   if (!answer) return true;
   const answerValue = answer.value;
   if (question.type === 'boolean') {

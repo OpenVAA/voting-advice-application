@@ -5,7 +5,7 @@ import type { CoordinateOrMissing, Id } from '@openvaa/core';
  * A dummy question object for matching.
  */
 export class LikertQuestion extends OrdinalQuestion {
-  public readonly category: QuestionCategoryProps;
+  public readonly category: LegacyQuestionCategoryProps;
   constructor({ id, values, category }: LikertQuestionOptions) {
     super({ id, values });
     this.category = category;
@@ -22,5 +22,5 @@ export class LikertQuestion extends OrdinalQuestion {
 interface LikertQuestionOptions {
   id: Id;
   values: ConstructorParameters<typeof OrdinalQuestion>[0]['values'];
-  category: QuestionCategoryProps;
+  category: LegacyQuestionCategoryProps;
 }

@@ -1,4 +1,4 @@
-export type InputFieldProps<TValue extends AnswerProps['value']> = {
+export type InputFieldProps<TValue extends LegacyAnswerProps['value']> = {
   /**
    * The question that is to be answered.
    */
@@ -6,7 +6,7 @@ export type InputFieldProps<TValue extends AnswerProps['value']> = {
   /**
    * The answer options for a single or multiple choice input.
    */
-  options?: Array<AnswerOption>;
+  options?: Array<LegacyAnswerOption>;
   /**
    * Footer text to be displayed below the input field.
    */

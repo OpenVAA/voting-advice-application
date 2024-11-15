@@ -14,9 +14,9 @@
 
   const { user } = getContext<CandidateContext>('candidate');
 
-  let infoQuestions: Array<QuestionProps>;
-  let opinionQuestions: Array<QuestionProps>;
-  let candidate: CandidateProps | undefined;
+  let infoQuestions: Array<LegacyQuestionProps>;
+  let opinionQuestions: Array<LegacyQuestionProps>;
+  let candidate: LegacyCandidateProps | undefined;
   let loadData: Promise<void>;
 
   async function fetchData() {

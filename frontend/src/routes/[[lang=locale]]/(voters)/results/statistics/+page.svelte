@@ -9,15 +9,15 @@
   import Layout from '../../../../Layout.svelte';
 
   /** This is needed to ensure typing but will be no longer needed, when @openvaa/data model is implemented an Question object methods can be used to enforce typing. */
-  function getVoterLikertAnswer(question: QuestionProps): number | undefined {
+  function getVoterLikertAnswer(question: LegacyQuestionProps): number | undefined {
     const answer = $answeredQuestions[question.id]?.value;
     return typeof answer === 'number' ? answer : undefined;
   }
 
   function getAnswerDistribution(
-    question: QuestionProps,
-    allCandidates: Array<WrappedEntity<CandidateProps> | RankingProps<CandidateProps>>,
-    party?: PartyProps
+    question: LegacyQuestionProps,
+    allCandidates: Array<WrappedEntity<LegacyCandidateProps> | RankingProps<LegacyCandidateProps>>,
+    party?: LegacyPartyProps
   ): AnswerDistribution {
     const distribution: AnswerDistribution = {};
     allCandidates

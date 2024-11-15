@@ -25,7 +25,7 @@ export async function load({ locals, params }) {
     appCustomization = await getAppCustomization({ locale: effectiveLocale });
   }
 
-  let election: ElectionProps | undefined;
+  let election: LegacyElectionProps | undefined;
   if (!appSettings.underMaintenance) {
     // Get basic data and translations
     election = await getElection({ locale: effectiveLocale });

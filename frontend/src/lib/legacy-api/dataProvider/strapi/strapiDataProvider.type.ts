@@ -155,7 +155,7 @@ export interface StrapiQuestionTypeData {
   attributes: {
     name: string;
     info: string;
-    settings: QuestionSettingsProps;
+    settings: LegacyQuestionSettingsProps;
     questions: {
       data: Array<StrapiQuestionData>;
     };
@@ -175,7 +175,7 @@ export interface StrapiQuestionData {
     questionType: {
       data: StrapiQuestionTypeData;
     };
-    entityType: EntityType | null;
+    entityType: LegacyEntityType | null;
     text: LocalizedString;
     shortName: LocalizedString;
     info: LocalizedString;
@@ -202,7 +202,7 @@ export interface StrapiQuestionCategoryData {
     order: number | null;
     color: string;
     colorDark: string;
-    type: QuestionCategoryType;
+    type: LegacyQuestionCategoryType;
     election: {
       data: StrapiElectionData;
     };
@@ -299,10 +299,10 @@ export type AnswerValues = {
   number: number;
   photo: string;
   date: Date;
-  singleChoiceOrdinal: AnswerOption['key'];
-  singleChoiceCategorical: AnswerOption['key'];
-  multipleChoiceCategorical: Array<AnswerOption['key']>;
-  preferenceOrder: Array<AnswerOption['key']>;
+  singleChoiceOrdinal: LegacyAnswerOption['key'];
+  singleChoiceCategorical: LegacyAnswerOption['key'];
+  multipleChoiceCategorical: Array<LegacyAnswerOption['key']>;
+  preferenceOrder: Array<LegacyAnswerOption['key']>;
 };
 
 /** TODO: Remove when generic questions are online */

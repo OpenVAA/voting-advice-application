@@ -3,7 +3,7 @@ import { locale } from '$lib/i18n';
 import { dataProvider } from '$lib/legacy-api/dataProvider/strapi/strapiDataProvider';
 import { constants } from '$lib/utils/constants';
 import { candidateContext } from '$lib/utils/legacy-candidateContext';
-import type { CandidateAnswer, Language, Photo, User } from '$lib/types/candidateAttributes';
+import type { CandidateAnswer, Language, Photo, User } from '$types/legacy-candidateAttributes';
 import type { StrapiAnswerData, StrapiLanguageData, StrapiResponse } from './dataProvider/strapi';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
@@ -161,14 +161,14 @@ export async function changePassword(currentPassword: string, password: string) 
 /**
  * Get all info questions.
  */
-export async function getInfoQuestions(): Promise<Array<QuestionProps>> {
+export async function getInfoQuestions(): Promise<Array<LegacyQuestionProps>> {
   return await dataProvider.getInfoQuestions({ locale: locale.get() });
 }
 
 /**
  * Get all opinion questions.
  */
-export async function getOpinionQuestions(): Promise<Array<QuestionProps>> {
+export async function getOpinionQuestions(): Promise<Array<LegacyQuestionProps>> {
   return await dataProvider.getOpinionQuestions({ locale: locale.get() });
 }
 
@@ -177,7 +177,7 @@ export async function getOpinionQuestions(): Promise<Array<QuestionProps>> {
  */
 export function addAnswer(
   questionId: string,
-  value: AnswerProps['value'],
+  value: LegacyAnswerProps['value'],
   openAnswer?: LocalizedString
 ): Promise<Response | undefined> {
   return request(getUrl('api/answers'), {
@@ -201,7 +201,7 @@ export function addAnswer(
  */
 export async function updateAnswer(
   answerId: string,
-  value: AnswerProps['value'],
+  value: LegacyAnswerProps['value'],
   openAnswer?: LocalizedString
 ): Promise<Response | undefined> {
   return request(getUrl(`api/answers/${answerId}`), {
@@ -292,7 +292,7 @@ export async function getInfoAnswers(): Promise<Record<string, CandidateAnswer> 
   answerData.data.forEach((answer) => {
     answers[answer.attributes.question.data.id] = {
       id: `${answer.id}`,
-      value: answer.attributes.value as AnswerProps['value']
+      value: answer.attributes.value as LegacyAnswerProps['value']
     };
   });
 
@@ -314,7 +314,7 @@ export async function getLanguages(): Promise<Array<StrapiLanguageData> | undefi
 /**
  * Get all parties.
  */
-export async function getParties(): Promise<Array<PartyProps>> {
+export async function getParties(): Promise<Array<LegacyPartyProps>> {
   return await dataProvider.getAllParties({ locale: locale.get() });
 }
 

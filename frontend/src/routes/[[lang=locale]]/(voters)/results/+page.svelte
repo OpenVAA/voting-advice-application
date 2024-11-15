@@ -37,12 +37,12 @@
   };
 
   // Which entity sections to show
-  const sections = $settings.results.sections as Array<EntityType>;
+  const sections = $settings.results.sections as Array<LegacyEntityType>;
   if (!sections?.length) error(500, 'No sections to show');
 
   // These will hold the filtered entities returned by EntityListControls
-  let filteredCandidates: Array<WrappedEntity<CandidateProps>> = [];
-  let filteredParties: Array<WrappedEntity<PartyProps>> = [];
+  let filteredCandidates: Array<WrappedEntity<LegacyCandidateProps>> = [];
+  let filteredParties: Array<WrappedEntity<LegacyPartyProps>> = [];
 
   /** A utility synced boolean indicating whether results are available, i.e. that we have enough answers to perform matching */
   let resultsAvailableSync = false;
@@ -65,7 +65,7 @@
   $: updateAdditionalEcProps($allQuestions, $settings);
 
   async function updateAdditionalEcProps(
-    currentAllQuestions: Promise<Record<string, QuestionProps>>,
+    currentAllQuestions: Promise<Record<string, LegacyQuestionProps>>,
     currentSettings: AppSettings
   ) {
     const allQuestionsSync = await currentAllQuestions;
@@ -92,7 +92,7 @@
    * Create `EntityCard` properties for a candidate.
    * @param candidate The wrapped candidate
    */
-  function parseCandidate(candidate: WrappedEntity<CandidateProps>): EntityCardProps {
+  function parseCandidate(candidate: WrappedEntity<LegacyCandidateProps>): EntityCardProps {
     return {
       content: candidate,
       action: candidateRoute(candidate),
@@ -107,8 +107,8 @@
    * @param maxSubcards The maximum number of subcards to show if `allCandidates` are supplied.
    */
   function parseParty(
-    party: WrappedEntity<PartyProps>,
-    allCandidates?: Array<WrappedEntity<CandidateProps>>,
+    party: WrappedEntity<LegacyPartyProps>,
+    allCandidates?: Array<WrappedEntity<LegacyCandidateProps>>,
     maxSubcards = 3
   ): EntityCardProps {
     return {
@@ -123,7 +123,7 @@
   }
 
   /** Shorthand for building a candidate link route */
-  function candidateRoute(candidate: WrappedEntity<CandidateProps>) {
+  function candidateRoute(candidate: WrappedEntity<LegacyCandidateProps>) {
     return $getRoute({ route: ROUTE.ResultCandidate, id: candidate.entity.id });
   }
 

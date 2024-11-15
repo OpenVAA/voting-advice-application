@@ -5,7 +5,7 @@ export type EnumeratedEntityFilterProps = SvelteHTMLElements['form'] & {
   /**
    * The object filter object.
    */
-  filter: ObjectFilter<MaybeRanked, PartyProps> | ChoiceQuestionFilter<MaybeRanked>;
+  filter: ObjectFilter<MaybeRanked, LegacyPartyProps> | ChoiceQuestionFilter<MaybeRanked>;
   /**
    * The targets of the filter objects.
    */

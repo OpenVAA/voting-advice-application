@@ -19,8 +19,8 @@
   export let opinionQuestions: $$Props['opinionQuestions'];
   export let subentities: $$Props['subentities'] = undefined;
 
-  let entity: EntityProps;
-  let entityType: EntityType | undefined;
+  let entity: LegacyEntityProps;
+  let entityType: LegacyEntityType | undefined;
   let subcards: Array<EntityCardProps> | undefined;
   /** The tab content types */
   let tabContents: Array<AppSettingsEntityDetailsContent>;
@@ -37,7 +37,7 @@
     ({ entity } = parseMaybeRanked(content));
     entityType = getEntityType(entity);
     if (!entityType) error(500, 'Unknown entity type');
-    function inclQuestion(q: QuestionProps) {
+    function inclQuestion(q: LegacyQuestionProps) {
       return !q.entityType || q.entityType === entityType || q.entityType === 'all';
     }
     filteredInfoQuestions = infoQuestions.filter(inclQuestion);

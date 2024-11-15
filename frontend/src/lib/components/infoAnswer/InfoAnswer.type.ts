@@ -11,7 +11,7 @@ export type InfoAnswerProps = HTMLAttributes<HTMLElement> & {
   /**
    * The info question object.
    */
-  question: QuestionProps;
+  question: LegacyQuestionProps;
   /**
    * How to format the answer. @default 'default'
    * - `default`: use the same format as in `<EntityDetails>`.

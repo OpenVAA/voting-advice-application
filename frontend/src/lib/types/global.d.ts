@@ -27,7 +27,7 @@ declare global {
    * The properties of a multiple choice option in a Question.
    * TODO: This may be deprecated later by the `@openvaa/data` module.
    */
-  interface AnswerOption {
+  interface LegacyAnswerOption {
     key: number;
     label: string;
   }
@@ -35,12 +35,12 @@ declare global {
   /**
    * An entity's answers are stored in a record.
    */
-  type AnswerDict = Record<string, AnswerProps>;
+  type LegacyAnswerDict = Record<string, LegacyAnswerProps>;
 
   /**
    * The possible values for an answer to a question.
    */
-  type AnswerPropsValue =
+  type LegacyAnswerPropsValue =
     | string
     | Array<string>
     | boolean
@@ -54,7 +54,7 @@ declare global {
   /**
    * Properties of a Candidate's or Party's answer to a question.
    */
-  interface AnswerProps<TValue extends AnswerPropsValue = AnswerPropsValue> {
+  interface LegacyAnswerProps<TValue extends LegacyAnswerPropsValue = LegacyAnswerPropsValue> {
     value: TValue;
     openAnswer?: string;
   }
@@ -84,12 +84,12 @@ declare global {
    */
   type AppCustomization = {
     publisherName?: string;
-    publisherLogo?: ImageProps;
-    publisherLogoDark?: ImageProps;
-    poster?: ImageProps;
-    posterDark?: ImageProps;
-    candPoster?: ImageProps;
-    candPosterDark?: ImageProps;
+    publisherLogo?: LegacyImageProps;
+    publisherLogoDark?: LegacyImageProps;
+    poster?: LegacyImageProps;
+    posterDark?: LegacyImageProps;
+    candPoster?: LegacyImageProps;
+    candPosterDark?: LegacyImageProps;
     translationOverrides?: { [translationKey: TranslationKey]: string };
     candidateAppFAQ?: Array<{ question: string; answer: string }>;
   };
@@ -127,22 +127,22 @@ declare global {
    * related components.
    * TODO: This may be deprecated later by the `@openvaa/data` module.
    */
-  interface CandidateProps {
-    answers: AnswerDict;
+  interface LegacyCandidateProps {
+    answers: LegacyAnswerDict;
     electionRound?: number;
     electionSymbol?: string;
     firstName: string;
     id: string;
     lastName: string;
     name: string;
-    photo?: ImageProps;
-    party?: PartyProps;
+    photo?: LegacyImageProps;
+    party?: LegacyPartyProps;
   }
 
   /**
    * Properties of an image property
    */
-  interface ImageProps {
+  interface LegacyImageProps {
     url: string;
     thumbnail: {
       url: string;
@@ -152,7 +152,7 @@ declare global {
   /**
    * The properties of an Election object
    */
-  interface ElectionProps {
+  interface LegacyElectionProps {
     electionDate: Date;
     id: string;
     name: string;
@@ -165,21 +165,21 @@ declare global {
    * related components.
    * TODO: This may be deprecated later by the `@openvaa/data` module.
    */
-  interface PartyProps {
-    answers: AnswerDict;
+  interface LegacyPartyProps {
+    answers: LegacyAnswerDict;
     electionRound?: number;
     electionSymbol?: string;
     id: string;
     info: string;
     name: string;
     shortName: string;
-    photo?: ImageProps;
+    photo?: LegacyImageProps;
     color?: string;
     colorDark?: string;
     memberCandidateIds?: Array<string>;
-    memberCandidates?: Array<CandidateProps>;
+    memberCandidates?: Array<LegacyCandidateProps>;
     nominatedCandidateIds?: Array<string>;
-    nominatedCandidates?: Array<CandidateProps>;
+    nominatedCandidates?: Array<LegacyCandidateProps>;
   }
 
   /**
@@ -187,21 +187,21 @@ declare global {
    * related components.
    * TODO: This may be deprecated later by the `@openvaa/data` module.
    */
-  interface QuestionProps {
+  interface LegacyQuestionProps {
     id: string;
     text: string;
     shortName: string;
     order?: number;
     required?: boolean;
-    category: QuestionCategoryProps;
-    entityType: EntityType;
+    category: LegacyQuestionCategoryProps;
+    entityType: LegacyEntityType;
     info?: string;
     filterable?: boolean;
     fillingInfo?: string;
     hidden?: boolean;
-    type: QuestionSettingsProps['type'];
+    type: LegacyQuestionSettingsProps['type'];
     textType?: 'short' | 'long';
-    values?: Array<AnswerOption>;
+    values?: Array<LegacyAnswerOption>;
     min?: number | Date;
     max?: number | Date;
     notLocalizable?: boolean;
@@ -231,16 +231,16 @@ declare global {
    * related components.
    * TODO: This may be deprecated later by the `@openvaa/data` module.
    */
-  interface QuestionCategoryProps {
+  interface LegacyQuestionCategoryProps {
     id: string;
     name: string;
     shortName: string;
     order: number;
-    type: QuestionCategoryType;
+    type: LegacyQuestionCategoryType;
     info?: string;
     color?: string;
     colorDark?: string;
-    questions: Array<QuestionProps>;
+    questions: Array<LegacyQuestionProps>;
     customData?:
       | (JSONData & {
           emoji?: string;
@@ -248,13 +248,13 @@ declare global {
       | null;
   }
 
-  type QuestionCategoryType = 'info' | 'opinion';
+  type LegacyQuestionCategoryType = 'info' | 'opinion';
 
   /**
    * Question type settings
    * Make sure these align with the types defined for the `DataProvider` implementations in `lib/api/dataProvider/` and the mock data generator
    */
-  type QuestionSettingsProps =
+  type LegacyQuestionSettingsProps =
     | {
         type: 'text';
         textType?: 'short' | 'long';
@@ -285,24 +285,24 @@ declare global {
       }
     | {
         type: 'singleChoiceOrdinal';
-        values: Array<AnswerOption>;
+        values: Array<LegacyAnswerOption>;
         display?: 'vertical' | 'horizontal';
       }
     | {
         type: 'singleChoiceCategorical';
-        values: Array<AnswerOption>;
+        values: Array<LegacyAnswerOption>;
         display?: 'vertical' | 'horizontal';
       }
     | {
         type: 'multipleChoiceCategorical';
-        values: Array<AnswerOption>;
+        values: Array<LegacyAnswerOption>;
         display?: 'vertical' | 'horizontal';
         min?: number;
         max?: number;
       }
     | {
         type: 'preferenceOrder';
-        values: Array<AnswerOption>;
+        values: Array<LegacyAnswerOption>;
         min?: number;
         max?: number;
       };
@@ -316,24 +316,24 @@ declare global {
   /**
    * Value of enumerations for specifying the type of entity the object applies to
    */
-  type EntityType = 'all' | 'candidate' | 'party';
+  type LegacyEntityType = 'all' | 'candidate' | 'party';
 
   /**
    * Represents any entity that can be shown in listings and has answers to questions.
    */
-  type EntityProps = CandidateProps | PartyProps;
+  type LegacyEntityProps = LegacyCandidateProps | LegacyPartyProps;
 
   /**
    * Conforms to `@openvaa/filters.WrappedEntity`
    */
-  interface WrappedEntity<TEntity extends EntityProps = EntityProps> {
+  interface WrappedEntity<TEntity extends LegacyEntityProps = LegacyEntityProps> {
     entity: TEntity;
   }
 
   /**
    * Conforms to `@openvaa/matching.Match`
    */
-  interface RankingProps<TEntity extends EntityProps = EntityProps> extends WrappedEntity<TEntity> {
+  interface RankingProps<TEntity extends LegacyEntityProps = LegacyEntityProps> extends WrappedEntity<TEntity> {
     score: number;
     subMatches?: Array<SubMatchProps>;
   }
@@ -341,7 +341,7 @@ declare global {
   /**
    * A possibly ranked entity, accepted by all components consuming entities.
    */
-  type MaybeRanked<TEntity extends EntityProps = EntityProps> =
+  type MaybeRanked<TEntity extends LegacyEntityProps = LegacyEntityProps> =
     | TEntity
     | WrappedEntity<TEntity>
     | RankingProps<TEntity>;
@@ -352,8 +352,8 @@ declare global {
   interface SubMatchProps {
     // distance: number;
     score: number;
-    // TODO: Convert to QuestionCategoryProps
-    questionGroup: QuestionCategoryProps;
+    // TODO: Convert to LegacyQuestionCategoryProps
+    questionGroup: LegacyQuestionCategoryProps;
   }
 
   /**
