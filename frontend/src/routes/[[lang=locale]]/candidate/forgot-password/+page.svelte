@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { requestForgotPasswordLink } from '$lib/legacy-api/candidate';
   import { Button } from '$lib/components/button';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { t } from '$lib/i18n';
+  import { requestForgotPasswordLink } from '$lib/legacy-api/candidate';
   import { FrontPage } from '$lib/templates/frontPage';
 
   let statusMessage = ''; // Text to display when the send-button has been pressed: either email has been sent or internal error

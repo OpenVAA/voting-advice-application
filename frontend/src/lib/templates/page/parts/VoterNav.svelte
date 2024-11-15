@@ -1,7 +1,13 @@
 <script lang="ts">
   import { NavGroup, Navigation, NavItem } from '$lib/components/navigation';
   import { t } from '$lib/i18n';
-  import { answeredQuestions, openFeedbackModal, resetVoterAnswers, resultsAvailable, settings } from '$lib/legacy-stores';
+  import {
+    answeredQuestions,
+    openFeedbackModal,
+    resetVoterAnswers,
+    resultsAvailable,
+    settings
+  } from '$lib/legacy-stores';
   import { surveyLink } from '$lib/utils/legacy-analytics/survey';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import LanguageSelection from './LanguageSelection.svelte';
