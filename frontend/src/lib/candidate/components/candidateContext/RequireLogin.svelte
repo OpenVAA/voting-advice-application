@@ -5,7 +5,7 @@
   import { Warning } from '$lib/components/warning/index';
   import { t } from '$lib/i18n';
   import { BasicPage } from '$lib/templates/basicPage';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
 
   const { user, token } = getContext<CandidateContext>('candidate');
   export let showLogin = false;

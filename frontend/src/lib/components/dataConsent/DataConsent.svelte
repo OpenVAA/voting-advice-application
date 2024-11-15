@@ -3,7 +3,7 @@
   import { Button } from '$lib/components/button';
   import { t } from '$lib/i18n';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
-  import { setDataConsent, settings, userPreferences } from '$lib/stores';
+  import { setDataConsent, settings, userPreferences } from '$lib/legacy-stores';
   import { concatClass } from '$lib/utils/components';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { DataConsentInfoButton } from './';

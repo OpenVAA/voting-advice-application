@@ -6,9 +6,9 @@
   import { Loading } from '$lib/components/loading';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { locale, t } from '$lib/i18n';
-  import { candidateRankings, infoQuestions, opinionQuestions, partyRankings, settings } from '$lib/stores/index.js';
-  import { startEvent } from '$lib/utils/analytics/track';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { candidateRankings, infoQuestions, opinionQuestions, partyRankings, settings } from '$lib/legacy-stores/index.js';
+  import { startEvent } from '$lib/utils/legacy-analytics/track.js';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation/index.js';
   import type { Readable } from 'svelte/store';
 
   export let data;

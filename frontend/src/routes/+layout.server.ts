@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
-import { dataProvider } from '$lib/api/getData';
 import { locale } from '$lib/i18n';
+import { dataProvider } from '$lib/legacy-api/getData';
 
 export async function load({ locals, params }) {
   // Get language from locals (see hooks.server.ts)

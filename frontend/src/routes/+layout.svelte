@@ -5,7 +5,7 @@
   import { Loading } from '$lib/components/loading';
   import { initLayoutContext } from '$lib/contexts/layout';
   import { t } from '$lib/i18n';
-  import { openFeedbackModal } from '$lib/stores';
+  import { openFeedbackModal } from '$lib/legacy-stores';
   import { MaintenancePage } from '$lib/templates/maintenance';
   import type { LayoutData } from './$types';
 

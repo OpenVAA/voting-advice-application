@@ -3,7 +3,7 @@
   import { PasswordValidator } from '$candidate/components/passwordValidator';
   import { Button } from '$lib/components/button';
   import { t } from '$lib/i18n';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
 
   export let password = '';
   export let passwordConfirmation = '';

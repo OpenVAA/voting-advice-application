@@ -20,10 +20,10 @@
     opinionQuestions,
     settings,
     setVoterAnswer
-  } from '$lib/stores';
-  import { startEvent } from '$lib/utils/analytics/track';
+  } from '$lib/legacy-stores';
+  import { startEvent } from '$lib/utils/legacy-analytics/track';
   import { logDebugError } from '$lib/utils/logger';
-  import { FIRST_QUESTION_ID, getRoute, ROUTE } from '$lib/utils/navigation';
+  import { FIRST_QUESTION_ID, getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import Layout from '../../../../Layout.svelte';
   import { getQuestionsContext } from '../questions.context';
   import { filterAndSortQuestions } from '../questions.utils';

@@ -6,8 +6,8 @@
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { t } from '$lib/i18n';
   import { BasicPage } from '$lib/templates/basicPage';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
 
   const { opinionQuestions, unansweredRequiredInfoQuestions } = getContext<CandidateContext>('candidate');
 

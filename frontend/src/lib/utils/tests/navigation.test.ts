@@ -1,8 +1,8 @@
 import { get } from 'svelte/store';
 import { beforeAll, expect, test } from 'vitest';
 import { mockIsPageStore } from './mock-pageStore';
-import { getRoute } from '../navigation/getRoute';
-import { ROUTE } from '../navigation/route';
+import { getRoute } from '../legacy-navigation/getRoute';
+import { ROUTE } from '../legacy-navigation/route';
 
 // Mock the $page store which is used by get(getRoute)
 beforeAll(() => {

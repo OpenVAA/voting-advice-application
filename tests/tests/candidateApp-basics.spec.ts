@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { TRANSLATIONS as T } from './utils/translations';
 import mockUsers from '../../backend/vaa-strapi/src/functions/mockData/mockUser.json' assert { type: 'json' };
 // Import ROUTE directly so that other imports are not bundled in
-import { ROUTE } from '../../frontend/src/lib/utils/navigation/route';
+import { ROUTE } from '../../frontend/src/lib/utils/legacy-navigation/route';
 
 const LOCALE_EN = 'en';
 const LOCALE_FI = 'fi';

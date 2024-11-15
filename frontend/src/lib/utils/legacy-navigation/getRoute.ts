@@ -1,7 +1,7 @@
 import { error } from '@sveltejs/kit';
 import { derived, get } from 'svelte/store';
 import { page } from '$app/stores';
-import { settings } from '$lib/stores';
+import { settings } from '$lib/legacy-stores';
 import { ROUTE } from './route';
 import type { Route } from './route';
 

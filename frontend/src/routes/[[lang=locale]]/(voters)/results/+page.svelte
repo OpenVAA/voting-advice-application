@@ -19,10 +19,10 @@
     settings,
     startFeedbackPopupCountdown,
     startSurveyPopupCountdown
-  } from '$lib/stores';
-  import { startEvent } from '$lib/utils/analytics/track';
-  import { candidateFilters } from '$lib/utils/filters';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  } from '$lib/legacy-stores';
+  import { startEvent } from '$lib/utils/legacy-analytics/track';
+  import { candidateFilters } from '$lib/utils/legacy-filters';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import Layout from '../../../Layout.svelte';
   import type { EntityCardProps } from '$lib/components/entityCard';

@@ -7,10 +7,10 @@
   import { SurveyPopup } from '$lib/components/survey/popup';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { t } from '$lib/i18n';
-  import { settings, showFeedbackPopup, showSurveyPopup, userPreferences } from '$lib/stores';
+  import { settings, showFeedbackPopup, showSurveyPopup, userPreferences } from '$lib/legacy-stores';
   import { VoterNav } from '$lib/templates/page/parts';
-  import { startPageview, submitAllEvents } from '$lib/utils/analytics/track';
-  import { startEvent } from '$lib/utils/analytics/track';
+  import { startPageview, submitAllEvents } from '$lib/utils/legacy-analytics/track';
+  import { startEvent } from '$lib/utils/legacy-analytics/track';
   import Header from './Header.svelte';
   import type { BasicPageProps } from '$lib/templates/basicPage';
 

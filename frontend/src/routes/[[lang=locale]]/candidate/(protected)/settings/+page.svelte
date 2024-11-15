@@ -3,17 +3,17 @@
   import { getContext } from 'svelte';
   import { goto } from '$app/navigation';
   import { PasswordValidator } from '$candidate/components/passwordValidator';
-  import { changePassword, getLanguages, updateAppLanguage } from '$lib/api/candidate';
+  import { changePassword, getLanguages, updateAppLanguage } from '$lib/legacy-api/candidate';
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
   import { Icon } from '$lib/components/icon';
   import { t } from '$lib/i18n';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { BasicPage } from '$lib/templates/basicPage';
-  import { getRoute } from '$lib/utils/navigation';
-  import type { StrapiLanguageData } from '$lib/api/dataProvider/strapi';
+  import { getRoute } from '$lib/utils/legacy-navigation';
+  import type { StrapiLanguageData } from '$lib/legacy-api/dataProvider/strapi';
   import type { Language } from '$lib/types/candidateAttributes';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
 
   const { user, loadUserData } = getContext<CandidateContext>('candidate');
 

@@ -1,7 +1,7 @@
 import { get, writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { page } from '$app/stores';
-import { settings, userPreferences } from '$lib/stores';
+import { settings, userPreferences } from '$lib/legacy-stores';
 import { getUUID } from '$lib/utils/components';
 import { logDebugError } from '$lib/utils/logger';
 import { sessionStorageWritable } from '$lib/utils/storage';
@@ -138,10 +138,10 @@ export interface TrackingEvent<
 }
 
 export type TrackingEventName =
-  | 'answer_delete' // $lib/stores.ts
-  | 'answer_resetAll' // $lib/stores.ts
-  | 'answer' // $lib/stores.ts
-  | 'dataConsent_granted' // $lib/stores.ts
+  | 'answer_delete' // $lib/legacy-stores.ts
+  | 'answer_resetAll' // $lib/legacy-stores.ts
+  | 'answer' // $lib/legacy-stores.ts
+  | 'dataConsent_granted' // $lib/legacy-stores.ts
   | 'entityCard_expandSubcards' // <EntityCard>
   | 'entityDetails_changeTab' // <EntityDetails>
   | 'feedback_error' // <FeedbackModal>

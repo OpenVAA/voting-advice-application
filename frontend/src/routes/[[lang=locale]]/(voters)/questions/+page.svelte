@@ -6,8 +6,8 @@
   import { Loading } from '$lib/components/loading';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { t } from '$lib/i18n';
-  import { opinionQuestionCategories, opinionQuestions, settings } from '$lib/stores';
-  import { FIRST_QUESTION_ID, getRoute, ROUTE } from '$lib/utils/navigation';
+  import { opinionQuestionCategories, opinionQuestions, settings } from '$lib/legacy-stores';
+  import { FIRST_QUESTION_ID, getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import { getQuestionsContext } from './questions.context';
   import Layout from '../../../Layout.svelte';
 

@@ -7,8 +7,8 @@
   import { QuestionOpenAnswer } from '$lib/components/questions';
   import { t } from '$lib/i18n';
   import { translate } from '$lib/i18n/utils';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
   import type { RenderQuestionProps } from './Question.type';
 
   type $$Props = RenderQuestionProps;
