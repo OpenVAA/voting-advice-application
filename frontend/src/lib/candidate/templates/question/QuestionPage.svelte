@@ -2,13 +2,13 @@
   import { getContext } from 'svelte';
   import { goto } from '$app/navigation';
   import { MultilangTextInput } from '$candidate/components/textArea';
-  import { addAnswer, updateAnswer } from '$lib/legacy-api/candidate';
   import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { LikertResponseButtons, QuestionInfo } from '$lib/components/questions';
   import { Warning } from '$lib/components/warning';
   import { t } from '$lib/i18n';
+  import { addAnswer, updateAnswer } from '$lib/legacy-api/candidate';
   import { BasicPage } from '$lib/templates/basicPage';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import type { CandidateContext } from '$lib/utils/legacy-candidateContext';

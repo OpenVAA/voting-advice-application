@@ -22,8 +22,8 @@
     setVoterAnswer
   } from '$lib/legacy-stores';
   import { startEvent } from '$lib/utils/legacy-analytics/track';
-  import { logDebugError } from '$lib/utils/logger';
   import { FIRST_QUESTION_ID, getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import { logDebugError } from '$lib/utils/logger';
   import Layout from '../../../../Layout.svelte';
   import { getQuestionsContext } from '../questions.context';
   import { filterAndSortQuestions } from '../questions.utils';

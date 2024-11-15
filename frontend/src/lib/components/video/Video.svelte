@@ -6,8 +6,8 @@
   import { Icon } from '$lib/components/icon';
   import { Loading } from '$lib/components/loading';
   import { locale, t } from '$lib/i18n';
-  import { startEvent, type TrackingEvent } from '$lib/utils/legacy-analytics/track';
   import { concatClass } from '$lib/utils/components';
+  import { startEvent, type TrackingEvent } from '$lib/utils/legacy-analytics/track';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { videoPreferences } from './component-stores';
   import type { PlayButtonAction, VideoMode, VideoProps, VideoTrackingEventData } from './Video.type';
