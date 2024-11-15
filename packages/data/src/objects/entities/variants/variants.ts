@@ -26,29 +26,29 @@ export type EntityVariant = {
 /**
  * A map of the concrete entity constructors’ data arguments by their entity type.
  */
-export type EntityVariantData = {
+export type EntityVariantDataType = {
   [KType in EntityType]: ConstructorParameters<EntityVariantConstructor[KType]>[0]['data'];
 };
 
 /**
  * Any concrete entity constructors’ data argument type.
  */
-export type AnyEntityVariantData = EntityVariantData[keyof EntityVariantData];
+export type EntityVariantData = EntityVariantDataType[keyof EntityVariantDataType];
 
 /**
  * An alternative data structure for `EntityData` with the `type`s specified hierarchically as keys.
  * Use the `parseEntityTree` util to convert these to a canonical array.
  */
 export type EntityVariantTree = {
-  [K in EntityType]: Array<Omit<EntityVariantData[K], 'type'>>;
+  [K in EntityType]: Array<Omit<EntityVariantDataType[K], 'type'>>;
 };
 
 /**
  * Parse a `EntityVariantTree` into an array of `EntityVariantPublicData`.
  */
-export function parseEntityTree(tree: EntityVariantTree): Array<AnyEntityVariantData> {
-  const entities = new Array<AnyEntityVariantData>();
+export function parseEntityTree(tree: EntityVariantTree): Array<EntityVariantData> {
+  const entities = new Array<EntityVariantData>();
   for (const [type, data] of Object.entries(tree))
-    entities.push(...data.map((d) => ({ ...d, type }) as AnyEntityVariantData));
+    entities.push(...data.map((d) => ({ ...d, type }) as EntityVariantData));
   return entities;
 }
