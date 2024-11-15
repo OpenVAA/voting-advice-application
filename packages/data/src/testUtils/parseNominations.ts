@@ -1,12 +1,12 @@
 import crypto from 'crypto';
 import {
-  AnyNominationVariantData,
-  AnyNominationVariantPublicData,
   ENTITY_TYPE,
   EntityType,
   Id,
   NestedNomination,
-  NominationVariantData
+  NominationVariantData,
+  NominationVariantDataType,
+  NominationVariantPublicData,
 } from '../internal';
 
 /**
@@ -14,12 +14,12 @@ import {
  * @param nominations - Array of nomination variant data.
  * @returns An object with counts of the nominations for each entity type.
  */
-export function getNominationCounts(nominations: Array<Partial<AnyNominationVariantData>>): Record<EntityType, number> {
+export function getNominationCounts(nominations: Array<Partial<NominationVariantData>>): Record<EntityType, number> {
   const counts = {
     alliance: 0,
     candidate: 0,
     faction: 0,
-    organization: 0
+    organization: 0,
   };
   const parsedNominations = parseNestedNominations(nominations);
   for (const n of parsedNominations) counts[n.entityType] += 1;
@@ -34,7 +34,7 @@ export function getNominationCounts(nominations: Array<Partial<AnyNominationVari
  * @returns An array of expanded nomination variant data.
  */
 export function parseNestedNominations(
-  nominations: Array<AnyNominationVariantPublicData | NestedNomination<AnyNominationVariantPublicData>>,
+  nominations: Array<NominationVariantPublicData | NestedNomination<NominationVariantPublicData>>,
   inherited?: {
     electionId: Id;
     constituencyId: Id;
@@ -47,7 +47,7 @@ export function parseNestedNominations(
     const data = {
       ...n,
       ...inherited,
-      entityPseudoId: n.entityId ? undefined : crypto.randomUUID()
+      entityPseudoId: n.entityId ? undefined : crypto.randomUUID(),
     } as ExtendedNominationData;
     out.push(data);
     const { electionId, constituencyId } = data;
@@ -57,7 +57,7 @@ export function parseNestedNominations(
           entityType: ENTITY_TYPE.Organization,
           parent: data,
           electionId,
-          constituencyId
+          constituencyId,
         })
       );
     if ('factions' in n && n.factions)
@@ -66,7 +66,7 @@ export function parseNestedNominations(
           entityType: ENTITY_TYPE.Faction,
           parent: data,
           electionId,
-          constituencyId
+          constituencyId,
         })
       );
     if ('candidates' in n && n.candidates)
@@ -75,14 +75,14 @@ export function parseNestedNominations(
           entityType: ENTITY_TYPE.Candidate,
           parent: data,
           electionId,
-          constituencyId
+          constituencyId,
         })
       );
   }
   return out;
 }
 
-export type ExtendedNominationData<TTentity extends EntityType = EntityType> = NominationVariantData[TTentity] & {
+export type ExtendedNominationData<TTentity extends EntityType = EntityType> = NominationVariantDataType[TTentity] & {
   entityPseudoId?: string;
   parent?: ExtendedNominationData;
 };
