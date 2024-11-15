@@ -7,7 +7,7 @@
   import { InfoBadge } from '$lib/components/infoBadge';
   import { Modal } from '$lib/components/modal';
   import { locale, t } from '$lib/i18n';
-  import { startEvent } from '$lib/utils/analytics/track';
+  import { startEvent } from '$lib/utils/legacy-analytics/track';
   import { concatClass } from '$lib/utils/components';
   import { TextEntityFilter } from '../entityFilters/text';
   import type { EntityListControlsProps } from './EntityListControls.type';

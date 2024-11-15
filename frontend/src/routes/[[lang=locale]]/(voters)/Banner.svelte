@@ -4,8 +4,8 @@
   import { Button } from '$lib/components/button';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { t } from '$lib/i18n';
-  import { openFeedbackModal, resultsAvailable } from '$lib/stores';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { openFeedbackModal, resultsAvailable } from '$lib/legacy-stores';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
 
   /** Synced version so that we don't have to await for this explicitly */
   let resultsAvailableSync = false;

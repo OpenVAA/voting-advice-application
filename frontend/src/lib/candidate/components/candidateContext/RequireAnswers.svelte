@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext } from 'svelte';
   import { Loading } from '$lib/components/loading';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
 
   const candidateContext = getContext<CandidateContext>('candidate');
 

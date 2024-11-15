@@ -7,7 +7,7 @@ import {
   getOpinionQuestions,
   getParties,
   me
-} from '$lib/api/candidate';
+} from '$lib/legacy-api/candidate';
 import { answerIsEmpty } from './answers';
 import type { CandidateAnswer, Progress, User } from '$lib/types/candidateAttributes';
 

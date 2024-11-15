@@ -4,8 +4,8 @@
   import { LoadingSpinner } from '$candidate/components/loadingSpinner';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { t } from '$lib/i18n';
-  import { opinionQuestions, settings } from '$lib/stores';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { opinionQuestions, settings } from '$lib/legacy-stores/index.js';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation/index.js';
   import { getQuestionsContext } from './questions.context.js';
 
   export let data;

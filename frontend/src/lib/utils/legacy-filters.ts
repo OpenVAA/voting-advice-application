@@ -14,7 +14,7 @@ import {
 } from '@openvaa/filters';
 import { derived, type Readable } from 'svelte/store';
 import { locale, t } from '$lib/i18n';
-import { infoQuestions, parties } from '$lib/stores';
+import { infoQuestions, parties } from '$lib/legacy-stores';
 import { logDebugError } from './logger';
 
 let candidateFilterGroup: FilterGroup<MaybeRanked<CandidateProps>> | undefined = undefined;

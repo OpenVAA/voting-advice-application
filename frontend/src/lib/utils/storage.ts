@@ -2,7 +2,7 @@ import { error } from '@sveltejs/kit';
 import { get, writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { logDebugError } from './logger';
-import { settings } from '../stores/stores';
+import { settings } from '../legacy-stores/stores';
 import type { Writable } from 'svelte/store';
 
 export type StorageType = 'localStorage' | 'sessionStorage';
