@@ -34,6 +34,7 @@ export type StaticSettings = {
   readonly dataProvider:
     | {
         readonly type: 'strapi';
+        // TODO: [DataWriter] remove this setting and replace with null test on import { dataWriter } from '$lib/api/dataWriter'
         readonly supportsCandidateApp: true;
       }
     | {
