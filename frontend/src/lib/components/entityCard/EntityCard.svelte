@@ -8,10 +8,10 @@
   import { PartyTag } from '$lib/components/partyTag';
   import { SubMatches } from '$lib/components/subMatches';
   import { t } from '$lib/i18n';
-  import { startEvent } from '$lib/utils/legacy-analytics/track';
   import { getAnswer } from '$lib/utils/answers';
   import { concatClass, getUUID } from '$lib/utils/components';
   import { isCandidate, isParty, parseMaybeRanked } from '$lib/utils/entities';
+  import { startEvent } from '$lib/utils/legacy-analytics/track';
   import EntityCardAction from './EntityCardAction.svelte';
   import type { EntityCardProps } from './EntityCard.type';
 

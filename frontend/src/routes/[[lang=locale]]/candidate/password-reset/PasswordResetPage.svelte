@@ -1,10 +1,10 @@
 <script lang="ts">
   import { validatePassword } from '@openvaa/app-shared';
   import { goto } from '$app/navigation';
-  import { resetPassword } from '$lib/legacy-api/candidate';
   import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { t } from '$lib/i18n';
+  import { resetPassword } from '$lib/legacy-api/candidate';
   import { FrontPage } from '$lib/templates/frontPage';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
 
