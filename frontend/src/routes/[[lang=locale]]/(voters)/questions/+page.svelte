@@ -17,8 +17,8 @@
   progress.current.set(0);
 
   // Await the necessary promises here and save their contents in synced variables
-  let questionsSync: Array<QuestionProps> | undefined;
-  let categoriesSync: Array<QuestionCategoryProps> | undefined;
+  let questionsSync: Array<LegacyQuestionProps> | undefined;
+  let categoriesSync: Array<LegacyQuestionCategoryProps> | undefined;
 
   // Reset firstQuestion if set
   $firstQuestionId = null;

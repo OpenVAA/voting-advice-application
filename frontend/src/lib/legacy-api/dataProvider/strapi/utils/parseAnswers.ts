@@ -6,10 +6,10 @@ import type { StrapiAnswerData } from '../strapiDataProvider.type';
  * NB. Answers whose question property is `null` are excluded. This can happen when questions are converted to drafts later.
  * @param answers Answer data from Strapi
  * @param locale Optional locale to use for translating localized strings
- * @returns The Answers as AnswerProps
+ * @returns The Answers as LegacyAnswerProps
  */
-export function parseAnswers(answers: Array<StrapiAnswerData>, locale?: string): AnswerDict {
-  const dict = {} as AnswerDict;
+export function parseAnswers(answers: Array<StrapiAnswerData>, locale?: string): LegacyAnswerDict {
+  const dict = {} as LegacyAnswerDict;
   answers.forEach((a) => {
     const questionId = a.attributes.question?.data?.id;
     if (questionId == null) return;

@@ -5,19 +5,19 @@ import { parseImage } from './parseImage';
 import type { StrapiPartyData } from '../strapiDataProvider.type';
 
 /**
- * Parse Strapi Party data into a `PartyProps` object.
+ * Parse Strapi Party data into a `LegacyPartyProps` object.
  */
 export function parseParty(
   party: StrapiPartyData,
   locale?: string,
   includeAnswers = false,
   includeMembers = false
-): PartyProps {
+): LegacyPartyProps {
   const id = `${party.id}`;
   const attr = party.attributes;
   const name = translate(attr.name, locale);
   const shortName = translate(attr.shortName, locale);
-  const props: PartyProps = {
+  const props: LegacyPartyProps = {
     electionRound: 0, // We use a default here
     id,
     info: translate(attr.info, locale),

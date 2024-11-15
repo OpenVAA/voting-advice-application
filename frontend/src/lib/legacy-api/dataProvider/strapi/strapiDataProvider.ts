@@ -144,7 +144,7 @@ function getAppCustomization({ locale }: GetDataOptionsBase = {}): Promise<AppCu
 /**
  * Get election data from Strapi.
  */
-function getElection({ id, locale }: GetElectionOptions = {}): Promise<ElectionProps> {
+function getElection({ id, locale }: GetElectionOptions = {}): Promise<LegacyElectionProps> {
   locale ??= currentLocale.get();
   // Match locale softly
   const matchingLocale = matchLocale(locale || '', locales.get());
@@ -179,7 +179,7 @@ function getNominatedCandidates({
   memberOfPartyId,
   nominatingPartyId,
   loadAnswers
-}: GetNominatedCandidatesOptions = {}): Promise<Array<CandidateProps>> {
+}: GetNominatedCandidatesOptions = {}): Promise<Array<LegacyCandidateProps>> {
   const params = new URLSearchParams({
     // We need a specific calls to populate relations, * only goes one-level deep
     'populate[election]': 'true',
@@ -207,7 +207,7 @@ function getNominatedCandidates({
         const id = '' + cnd.id;
         const attr = cnd.attributes;
         const { firstName, lastName } = attr;
-        const props: CandidateProps = {
+        const props: LegacyCandidateProps = {
           id,
           electionRound: nom.attributes.electionRound,
           electionSymbol: nom.attributes.electionSymbol,
@@ -228,7 +228,7 @@ function getNominatedCandidates({
  * Get data for all parties from Strapi.
  */
 function getAllParties({ id, loadAnswers, loadMembers, locale }: GetAllPartiesOptions = {}): Promise<
-  Array<PartyProps>
+  Array<LegacyPartyProps>
 > {
   const params = new URLSearchParams({
     // We need a specific calls to populate relations, * only goes one-level deep
@@ -256,7 +256,7 @@ function getNominatingParties({
   loadMembers,
   loadNominations,
   locale
-}: GetNominatingPartiesOptions = {}): Promise<Array<PartyProps>> {
+}: GetNominatingPartiesOptions = {}): Promise<Array<LegacyPartyProps>> {
   // We first get all available parties and then fetch the nominated candidates for them
   // The reason we do this, is that we don't want to populate the parties deeply within
   // the Nominations, because they would be reduplicated for each candidate Nomination
@@ -295,7 +295,7 @@ function getNominatingParties({
           }
         });
       // Only return those parties that were found in the nominations
-      return Array.from(partyIds).map((id) => partyMap.get(id) as PartyProps);
+      return Array.from(partyIds).map((id) => partyMap.get(id) as LegacyPartyProps);
     });
   });
 }
@@ -305,7 +305,7 @@ function getNominatingParties({
  * NB. We use the `question-categories` endpoint, and thus any Questions that do not belong to a category are excluded.
  */
 function getQuestions({ electionId, locale, categoryType }: GetAnyQuestionsOptions = {}): Promise<
-  Array<QuestionProps>
+  Array<LegacyQuestionProps>
 > {
   const params = new URLSearchParams({
     'populate[questions][populate][questionType]': 'true',
@@ -315,10 +315,10 @@ function getQuestions({ electionId, locale, categoryType }: GetAnyQuestionsOptio
   if (categoryType !== 'all') params.set('filters[type][$eq]', categoryType);
   if (electionId != null) params.set('filters[elections][id][$eq]', electionId);
   return getData<Array<StrapiQuestionCategoryData>>('api/question-categories', params).then((result) => {
-    const questions: Array<QuestionProps> = [];
+    const questions: Array<LegacyQuestionProps> = [];
     for (const cat of result) {
       // Because the caterory needs references to the questions, we need to parse them first and supply them later
-      const catQuestions: Array<QuestionProps> = [];
+      const catQuestions: Array<LegacyQuestionProps> = [];
       const catProps = parseQuestionCategory(cat, locale);
       for (const qst of cat.attributes.questions.data) {
         const attr = qst.attributes;
@@ -326,7 +326,7 @@ function getQuestions({ electionId, locale, categoryType }: GetAnyQuestionsOptio
         if (!settings) error(500, `Question with id '${qst.id}' has no settings!`);
         const text = translate(attr.text, locale);
         const shortName = translate(attr.shortName, locale);
-        const props: QuestionProps = {
+        const props: LegacyQuestionProps = {
           id: `${qst.id}`,
           order: attr.order ?? 0,
           required: attr.required ?? true,

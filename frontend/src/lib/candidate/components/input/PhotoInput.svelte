@@ -6,7 +6,7 @@
   import { t } from '$lib/i18n';
   import { constants } from '$lib/utils/constants';
   import { isAbsoluteUrl } from '$lib/utils/links';
-  import type { Photo } from '$lib/types/candidateAttributes';
+  import type { Photo } from '$types/legacy-candidateAttributes';
 
   export let disabled: boolean = false;
   export let photo: Photo | undefined;

@@ -5,8 +5,8 @@ import { isCandidate, isParty } from './entities';
  * @param entity A Candidate or a Party
  * @param questions A list of questions
  */
-export function hasAllAnswers(entity: EntityProps, questions: Array<QuestionProps>): boolean {
-  let type: EntityType;
+export function hasAllAnswers(entity: LegacyEntityProps, questions: Array<LegacyQuestionProps>): boolean {
+  let type: LegacyEntityType;
   if (isCandidate(entity)) type = 'candidate';
   else if (isParty(entity)) type = 'party';
   else throw new Error('Invalid entity type');

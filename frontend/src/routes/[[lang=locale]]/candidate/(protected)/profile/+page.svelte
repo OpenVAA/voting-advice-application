@@ -22,7 +22,7 @@
   import { BasicPage } from '$lib/templates/basicPage';
   import { answerIsEmpty } from '$lib/utils/answers';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
-  import type { CandidateAnswer, Nomination } from '$lib/types/candidateAttributes';
+  import type { CandidateAnswer, Nomination } from '$types/legacy-candidateAttributes';
   import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
   import type { TranslationKey } from '$types';
 
@@ -42,7 +42,7 @@
     parties
   } = getContext<CandidateContext>('candidate');
 
-  const unsavedInfoAnswers = writable<AnswerDict>({});
+  const unsavedInfoAnswers = writable<LegacyAnswerDict>({});
 
   // initialize infoQuestions and unsavedInfoAnswers
   let unsavedInfoAnswersInitialized = false;
@@ -83,7 +83,7 @@
   }
 
   // basic information
-  type InfoField = ('firstName' | 'lastName' | 'party') & keyof CandidateProps;
+  type InfoField = ('firstName' | 'lastName' | 'party') & keyof LegacyCandidateProps;
 
   const basicInfoFields = new Array<InfoField>('firstName', 'lastName', 'party');
 
@@ -149,8 +149,8 @@
 
   function updateInfoAnswerStore(
     answerId: CandidateAnswer['id'],
-    question: QuestionProps,
-    value: AnswerProps['value']
+    question: LegacyQuestionProps,
+    value: LegacyAnswerProps['value']
   ) {
     if ($infoAnswers) {
       $infoAnswers[question.id] = {
@@ -162,7 +162,7 @@
 
   let clearLocalStorage: () => void;
 
-  async function saveToServer(question: QuestionProps) {
+  async function saveToServer(question: LegacyQuestionProps) {
     if (!$infoAnswers || $unsavedInfoAnswers[question.id].value === undefined) return;
     if ($infoAnswers[question.id] === undefined) {
       // New answer
@@ -205,11 +205,11 @@
    * TODO: This will be deprecated when all the input components are refactored in [PR #580](https://github.com/OpenVAA/voting-advice-application/pull/580)
    * @param value A `LocalizedString` or a `string`
    */
-  function ensureLocalizedString(value: AnswerPropsValue): LocalizedString | undefined {
+  function ensureLocalizedString(value: LegacyAnswerPropsValue): LocalizedString | undefined {
     return !value ? undefined : isTranslation(value) ? value : { [defaultLocale]: `${value}` };
   }
 
-  function onChange(details: { questionId: string; value: AnswerPropsValue }) {
+  function onChange(details: { questionId: string; value: LegacyAnswerPropsValue }) {
     $unsavedInfoAnswers[details.questionId].value = details.value;
   }
 

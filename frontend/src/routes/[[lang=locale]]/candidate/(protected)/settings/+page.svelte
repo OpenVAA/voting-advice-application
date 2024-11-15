@@ -12,7 +12,7 @@
   import { BasicPage } from '$lib/templates/basicPage';
   import { getRoute } from '$lib/utils/legacy-navigation';
   import type { StrapiLanguageData } from '$lib/legacy-api/dataProvider/strapi';
-  import type { Language } from '$lib/types/candidateAttributes';
+  import type { Language } from '$types/legacy-candidateAttributes';
   import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
 
   const { user, loadUserData } = getContext<CandidateContext>('candidate');

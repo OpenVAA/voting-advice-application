@@ -2,7 +2,7 @@ export type QuestionPageProps = {
   /**
    * Shown question
    */
-  currentQuestion: QuestionProps;
+  currentQuestion: LegacyQuestionProps;
 
   /**
    * Edit mode for the question page.

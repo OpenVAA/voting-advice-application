@@ -32,14 +32,14 @@ export const customization: Readable<AppCustomization> = derived([page], ([$page
 /**
  * A store for the voter's answers which is maintained in local storage.
  */
-export const answeredQuestions = localStorageWritable('answeredQuestions', {} as AnswerDict);
+export const answeredQuestions = localStorageWritable('answeredQuestions', {} as LegacyAnswerDict);
 
 /**
  * Set a voter's answer value
  * @param questionId The question id
  * @param value The question value. If `undefined`, the answer will be deleted
  */
-export function setVoterAnswer(questionId: string, value?: AnswerProps['value']) {
+export function setVoterAnswer(questionId: string, value?: LegacyAnswerProps['value']) {
   answeredQuestions.update((d) => {
     if (value === undefined) {
       startEvent('answer_delete', { questionId });
@@ -157,12 +157,12 @@ export function startSurveyPopupCountdown(delay = 5 * 60) {
 /**
  * Utility store for the election as part of `PageData`.
  */
-export const election: Readable<ElectionProps | undefined> = derived(page, ($page) => $page.data.election);
+export const election: Readable<LegacyElectionProps | undefined> = derived(page, ($page) => $page.data.election);
 
 /**
  * Utility store for candidates as part of `PageData` that also handles possible filtering by answers and sorting of candidates.
  */
-export const candidates: Readable<Promise<Array<CandidateProps>>> = derived(
+export const candidates: Readable<Promise<Array<LegacyCandidateProps>>> = derived(
   page,
   ($page) => {
     const candsPromise = $page.data.candidates;
@@ -181,7 +181,7 @@ export const candidates: Readable<Promise<Array<CandidateProps>>> = derived(
 /**
  * Utility store for parties as part of `PageData`.
  */
-export const parties: Readable<Promise<Array<PartyProps>>> = derived(
+export const parties: Readable<Promise<Array<LegacyPartyProps>>> = derived(
   page,
   ($page) => $page.data.parties?.then((d) => d.sort(sortParties)) ?? Promise.resolve([]),
   Promise.resolve([])
@@ -190,7 +190,7 @@ export const parties: Readable<Promise<Array<PartyProps>>> = derived(
 /**
  * Utility store for infoQuestions as part of `PageData`.
  */
-export const infoQuestions: Readable<Promise<Array<QuestionProps>>> = derived(
+export const infoQuestions: Readable<Promise<Array<LegacyQuestionProps>>> = derived(
   page,
   ($page) => $page.data.infoQuestions?.then((qq) => filterVisible(qq ?? [])) ?? Promise.resolve([]),
   Promise.resolve([])
@@ -199,7 +199,7 @@ export const infoQuestions: Readable<Promise<Array<QuestionProps>>> = derived(
 /**
  * Utility store for opinionQuestions as part of `PageData`.
  */
-export const opinionQuestions: Readable<Promise<Array<QuestionProps>>> = derived(
+export const opinionQuestions: Readable<Promise<Array<LegacyQuestionProps>>> = derived(
   page,
   ($page) => $page.data.opinionQuestions?.then((qq) => filterVisible(qq ?? [])) ?? Promise.resolve([]),
   Promise.resolve([])
@@ -208,7 +208,7 @@ export const opinionQuestions: Readable<Promise<Array<QuestionProps>>> = derived
 /**
  * Utility store for an dictionary of all info and opinion questions as part of `PageData`.
  */
-export const allQuestions: Readable<Promise<Record<string, QuestionProps>>> = derived(
+export const allQuestions: Readable<Promise<Record<string, LegacyQuestionProps>>> = derived(
   [infoQuestions, opinionQuestions],
   async ([$infoQuestions, $opinionQuestions]) => {
     const infoQuestionsSync = await $infoQuestions;
@@ -221,7 +221,7 @@ export const allQuestions: Readable<Promise<Record<string, QuestionProps>>> = de
 /**
  * Utility store for opinion question catetgories as part of `PageData`.
  */
-export const opinionQuestionCategories: Readable<Promise<Array<QuestionCategoryProps>>> = derived(
+export const opinionQuestionCategories: Readable<Promise<Array<LegacyQuestionCategoryProps>>> = derived(
   opinionQuestions,
   ($opinionQuestions) => $opinionQuestions.then((qq) => extractCategories(qq)),
   Promise.resolve([])
@@ -259,7 +259,7 @@ export const resultsAvailable: Readable<Promise<boolean>> = derived(
  * A store that holds the candidate rankings. For ease of use, these will be wrapped entities with no `score` properties, if results are not yet available.
  */
 export const candidateRankings: Readable<
-  Promise<Array<RankingProps<CandidateProps>> | Array<WrappedEntity<CandidateProps>>>
+  Promise<Array<RankingProps<LegacyCandidateProps>> | Array<WrappedEntity<LegacyCandidateProps>>>
 > = derived(
   [candidates, opinionQuestions, answeredQuestions, resultsAvailable, settings],
   async ([$candidates, $opinionQuestions, $answeredQuestions, $resultsAvailable, $settings]) => {
@@ -278,23 +278,24 @@ export const candidateRankings: Readable<
 /**
  * A store that holds the party rankings. For ease of use, these will be wrapped entities with no `score` properties, if results are not yet available.
  */
-export const partyRankings: Readable<Promise<Array<RankingProps<PartyProps>> | Array<WrappedEntity<PartyProps>>>> =
-  derived(
-    [candidates, parties, opinionQuestions, answeredQuestions, resultsAvailable, settings],
-    async ([$candidates, $parties, $opinionQuestions, $answeredQuestions, $resultsAvailable, $settings]) => {
-      const resultsAvailableSync = await $resultsAvailable;
-      const opinionQuestionsSync = await $opinionQuestions;
-      const candidatesSync = await $candidates;
-      const partiesSync = await $parties;
-      return resultsAvailableSync && $settings.matching.partyMatching !== 'none' && partiesSync.length
-        ? matchParties(opinionQuestionsSync, $answeredQuestions, candidatesSync, partiesSync, {
-            subMatches: $settings.results.cardContents.party.includes('submatches'),
-            matchingType: $settings.matching.partyMatching
-          })
-        : partiesSync.map(wrap);
-    },
-    Promise.resolve([])
-  );
+export const partyRankings: Readable<
+  Promise<Array<RankingProps<LegacyPartyProps>> | Array<WrappedEntity<LegacyPartyProps>>>
+> = derived(
+  [candidates, parties, opinionQuestions, answeredQuestions, resultsAvailable, settings],
+  async ([$candidates, $parties, $opinionQuestions, $answeredQuestions, $resultsAvailable, $settings]) => {
+    const resultsAvailableSync = await $resultsAvailable;
+    const opinionQuestionsSync = await $opinionQuestions;
+    const candidatesSync = await $candidates;
+    const partiesSync = await $parties;
+    return resultsAvailableSync && $settings.matching.partyMatching !== 'none' && partiesSync.length
+      ? matchParties(opinionQuestionsSync, $answeredQuestions, candidatesSync, partiesSync, {
+          subMatches: $settings.results.cardContents.party.includes('submatches'),
+          matchingType: $settings.matching.partyMatching
+        })
+      : partiesSync.map(wrap);
+  },
+  Promise.resolve([])
+);
 
 /**
  * A store that holds the function for opening the feedback modal.
