@@ -1,3 +1,3 @@
-# avoid uploading node_modules to the container
-backend/vaa-strapi/node_modules
-frontend/node_modules
+# Avoid uploading node_modules or module builds to the container because we install and build everything there
+**/node_modules
+**/build
