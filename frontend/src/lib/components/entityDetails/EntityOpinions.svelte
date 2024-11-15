@@ -3,7 +3,7 @@
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { LikertResponseButtons, QuestionOpenAnswer } from '$lib/components/questions';
   import { t } from '$lib/i18n';
-  import { answeredQuestions, appType, settings } from '$lib/stores';
+  import { answeredQuestions, appType, settings } from '$lib/legacy-stores';
   import { getLikertAnswer } from '$lib/utils/answers';
   import { isCandidate } from '$lib/utils/entities';
   import type { EntityDetailsProps } from './EntityDetails.type';

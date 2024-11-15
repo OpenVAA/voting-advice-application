@@ -1,7 +1,7 @@
 <script lang="ts">
   import { browser } from '$app/environment';
-  import { settings } from '$lib/stores';
-  import { sendTrackingEvent, type TrackingEvent } from '$lib/utils/analytics/track';
+  import { settings } from '$lib/legacy-stores';
+  import { sendTrackingEvent, type TrackingEvent } from '$lib/utils/legacy-analytics/track';
 
   if ($settings.analytics?.trackEvents) {
     $sendTrackingEvent = trackEvent;

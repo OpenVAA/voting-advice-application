@@ -1,10 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte';
-  import { sendFeedback } from '$lib/api/sendFeedback';
+  import { sendFeedback } from '$lib/legacy-api/sendFeedback';
   import { Button } from '$lib/components/button';
   import { t } from '$lib/i18n';
-  import { setFeedbackStatus, settings } from '$lib/stores';
-  import { track } from '$lib/utils/analytics/track';
+  import { setFeedbackStatus, settings } from '$lib/legacy-stores';
+  import { track } from '$lib/utils/legacy-analytics/track';
   import { concatClass } from '$lib/utils/components';
   import type { FeedbacProps } from './Feedback.type';
 

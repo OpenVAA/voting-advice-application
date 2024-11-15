@@ -5,10 +5,10 @@
   import { SurveyBanner } from '$lib/components/survey/banner';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { t } from '$lib/i18n';
-  import { customization, election, settings } from '$lib/stores';
+  import { customization, election, settings } from '$lib/legacy-stores';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
-  import { darkMode } from '$lib/utils/darkMode';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { darkMode } from '$lib/utils/legacy-darkMode';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import Layout from '../../Layout.svelte';
 
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);

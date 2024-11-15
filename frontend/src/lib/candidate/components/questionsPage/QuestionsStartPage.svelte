@@ -5,8 +5,8 @@
   import { Icon } from '$lib/components/icon';
   import { t } from '$lib/i18n';
   import { BasicPage } from '$lib/templates/basicPage';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
 
   const { opinionQuestions, unansweredOpinionQuestions } = getContext<CandidateContext>('candidate');
   const questions = get(opinionQuestions);

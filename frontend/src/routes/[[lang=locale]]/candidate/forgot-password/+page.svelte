@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { requestForgotPasswordLink } from '$lib/api/candidate';
+  import { requestForgotPasswordLink } from '$lib/legacy-api/candidate';
   import { Button } from '$lib/components/button';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { t } from '$lib/i18n';

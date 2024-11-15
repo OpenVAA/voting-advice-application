@@ -1,8 +1,8 @@
 <script lang="ts">
   import { t } from '$lib/i18n';
-  import { customization } from '$lib/stores';
+  import { customization } from '$lib/legacy-stores';
   import { concatClass } from '$lib/utils/components';
-  import { darkMode } from '$lib/utils/darkMode';
+  import { darkMode } from '$lib/utils/legacy-darkMode';
   import type { AppLogoProps } from './AppLogo.type';
 
   type $$Props = AppLogoProps;

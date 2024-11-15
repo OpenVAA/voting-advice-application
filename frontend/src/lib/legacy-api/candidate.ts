@@ -1,8 +1,8 @@
 import { get } from 'svelte/store';
-import { dataProvider } from '$lib/api/dataProvider/strapi/strapiDataProvider';
 import { locale } from '$lib/i18n';
-import { candidateContext } from '$lib/utils/candidateContext';
+import { dataProvider } from '$lib/legacy-api/dataProvider/strapi/strapiDataProvider';
 import { constants } from '$lib/utils/constants';
+import { candidateContext } from '$lib/utils/legacy-candidateContext';
 import type { CandidateAnswer, Language, Photo, User } from '$lib/types/candidateAttributes';
 import type { StrapiAnswerData, StrapiLanguageData, StrapiResponse } from './dataProvider/strapi';
 

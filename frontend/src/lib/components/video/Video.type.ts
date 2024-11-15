@@ -1,5 +1,5 @@
 import type { SvelteHTMLElements } from 'svelte/elements';
-import type { TrackingEvent } from '$lib/utils/analytics/track';
+import type { TrackingEvent } from '$lib/utils/legacy-analytics/track';
 
 export type VideoProps = SvelteHTMLElements['div'] & {
   /**

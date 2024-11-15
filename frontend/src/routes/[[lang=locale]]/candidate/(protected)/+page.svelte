@@ -5,10 +5,10 @@
   import { InfoBadge } from '$lib/components/infoBadge';
   import { Warning } from '$lib/components/warning';
   import { locale, t } from '$lib/i18n';
-  import { settings } from '$lib/stores';
+  import { settings } from '$lib/legacy-stores';
   import { BasicPage } from '$lib/templates/basicPage';
-  import { type CandidateContext } from '$lib/utils/candidateContext';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { type CandidateContext } from '$lib/utils/legacy-candidateContext';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
 
   const { user, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, answersLocked } =
     getContext<CandidateContext>('candidate');
