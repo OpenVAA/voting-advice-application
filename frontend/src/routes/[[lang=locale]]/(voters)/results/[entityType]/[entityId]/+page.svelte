@@ -26,7 +26,7 @@
     }
   });
 
-  let entityType: Exclude<EntityType, 'all'>;
+  let entityType: Exclude<LegacyEntityType, 'all'>;
   let id: string;
   /** A party's candidates for displaying on a separate tab in EntityDetails or undefined if not applicable */
   let candidatesOrUndef: Promise<Array<WrappedEntity> | Array<RankingProps> | undefined>;
@@ -38,7 +38,7 @@
   $: {
     const current = { id, entityType };
     id = data.entityId;
-    entityType = data.entityType as Exclude<EntityType, 'all'>;
+    entityType = data.entityType as Exclude<LegacyEntityType, 'all'>;
 
     // Only update if the data has actually changed.
     if (current.id !== id || current.entityType !== entityType) {

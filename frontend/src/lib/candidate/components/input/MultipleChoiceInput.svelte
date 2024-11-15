@@ -8,7 +8,7 @@
   type $$Props = InputFieldProps<Array<number>>;
 
   export let questionId: $$Props['questionId'];
-  export let options: $$Props['options'] = Array<AnswerOption>();
+  export let options: $$Props['options'] = Array<LegacyAnswerOption>();
   export let headerText: $$Props['headerText'] = '';
   export let locked: $$Props['locked'] = false;
   export let value: $$Props['value'] = [];
@@ -18,7 +18,7 @@
   // html element for selecting html language
   let selectElement: HTMLSelectElement;
 
-  let selectedOptions = Array<AnswerOption>();
+  let selectedOptions = Array<LegacyAnswerOption>();
 
   if (!options || options.length === 0) {
     throw new Error(`Could not find options for question with id '${questionId ? questionId : 'n/a'}'`);

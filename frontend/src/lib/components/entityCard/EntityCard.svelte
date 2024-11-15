@@ -30,9 +30,9 @@
 
   let avatarProps: AvatarProps;
   let electionSymbol: string | undefined;
-  let entity: EntityProps;
+  let entity: LegacyEntityProps;
   let name: string;
-  let nominatingParty: PartyProps | undefined;
+  let nominatingParty: LegacyPartyProps | undefined;
   let ranking: RankingProps | undefined;
   /** Used to toggle expansion of the subcards list */
   let showAllSubcards = false;

@@ -9,7 +9,7 @@ import {
   me
 } from '$lib/legacy-api/candidate';
 import { answerIsEmpty } from './answers';
-import type { CandidateAnswer, Progress, User } from '$lib/types/candidateAttributes';
+import type { CandidateAnswer, Progress, User } from '$types/legacy-candidateAttributes';
 
 export interface CandidateContext {
   // Authentication
@@ -26,16 +26,16 @@ export interface CandidateContext {
   infoAnswers: Writable<Record<string, CandidateAnswer> | undefined>;
   loadInfoAnswerData: () => Promise<void>;
   // Questions
-  opinionQuestions: Writable<Array<QuestionProps> | undefined>;
+  opinionQuestions: Writable<Array<LegacyQuestionProps> | undefined>;
   loadOpinionQuestionData: () => Promise<void>;
-  infoQuestions: Writable<Array<QuestionProps> | undefined>;
+  infoQuestions: Writable<Array<LegacyQuestionProps> | undefined>;
   loadInfoQuestionData: () => Promise<void>;
   // Parties
-  parties: Writable<Array<PartyProps> | undefined>;
+  parties: Writable<Array<LegacyPartyProps> | undefined>;
   loadPartyData: () => Promise<void>;
   // Custom utility
-  unansweredRequiredInfoQuestions: Readable<Array<QuestionProps> | undefined>;
-  unansweredOpinionQuestions: Readable<Array<QuestionProps> | undefined>;
+  unansweredRequiredInfoQuestions: Readable<Array<LegacyQuestionProps> | undefined>;
+  unansweredOpinionQuestions: Readable<Array<LegacyQuestionProps> | undefined>;
   progress: Readable<Progress | undefined>;
   answersLocked: Writable<boolean | undefined>;
 }
@@ -45,9 +45,9 @@ const token = writable<string | null | undefined>(undefined);
 const newUserEmail = writable<string | undefined>(undefined);
 const opinionAnswers = writable<Record<string, CandidateAnswer> | undefined>(undefined);
 const infoAnswers = writable<Record<string, CandidateAnswer> | undefined>(undefined);
-const opinionQuestions = writable<Array<QuestionProps> | undefined>(undefined);
-const infoQuestions = writable<Array<QuestionProps> | undefined>(undefined);
-const parties = writable<Array<PartyProps> | undefined>(undefined);
+const opinionQuestions = writable<Array<LegacyQuestionProps> | undefined>(undefined);
+const infoQuestions = writable<Array<LegacyQuestionProps> | undefined>(undefined);
+const parties = writable<Array<LegacyPartyProps> | undefined>(undefined);
 
 const answersLocked = writable<boolean | undefined>(undefined);
 

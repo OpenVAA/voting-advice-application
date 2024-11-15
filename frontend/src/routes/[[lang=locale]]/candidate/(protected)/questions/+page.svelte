@@ -19,7 +19,7 @@
     unansweredOpinionQuestions
   } = getContext<CandidateContext>('candidate');
 
-  let questionsByCategory: Record<string, Array<QuestionProps>>;
+  let questionsByCategory: Record<string, Array<LegacyQuestionProps>>;
 
   let loading = true;
   let unansweredCategories = Array<string>();

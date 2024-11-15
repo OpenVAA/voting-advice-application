@@ -14,7 +14,7 @@ test('Mean and median', () => {
 test('Impute party answers', () => {
   const partyA = new MockParty('partyA', { q1: { value: 1 } });
   const partyB = new MockParty('partyB');
-  const candidates: Array<CandidateProps> = [];
+  const candidates: Array<LegacyCandidateProps> = [];
   for (let i = 1; i < 5; i++) {
     const answers = {
       q1: { value: i },
