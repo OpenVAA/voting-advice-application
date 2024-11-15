@@ -3,10 +3,10 @@
   import { InfoBadge } from '$lib/components/infoBadge';
   import { NavGroup, Navigation, NavItem } from '$lib/components/navigation';
   import { t } from '$lib/i18n';
-  import { openFeedbackModal } from '$lib/stores';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { openFeedbackModal } from '$lib/legacy-stores';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import LanguageSelection from './LanguageSelection.svelte';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
 
   const { unansweredRequiredInfoQuestions, unansweredOpinionQuestions } =
     getContext<CandidateContext>('candidate') ?? {};

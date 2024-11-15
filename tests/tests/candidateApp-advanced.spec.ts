@@ -8,7 +8,7 @@ import { TRANSLATIONS as T } from './utils/translations';
 import mockInfoQuestions from '../../backend/vaa-strapi/src/functions/mockData/mockInfoQuestions.json' assert { type: 'json' };
 import mockQuestions from '../../backend/vaa-strapi/src/functions/mockData/mockQuestions.json' assert { type: 'json' };
 import mockQuestionTypes from '../../backend/vaa-strapi/src/functions/mockData/mockQuestionTypes.json' assert { type: 'json' };
-import { ROUTE } from '../../frontend/src/lib/utils/navigation/route';
+import { ROUTE } from '../../frontend/src/lib/utils/legacy-navigation/route';
 
 type Email = {
   Id: string;

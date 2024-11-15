@@ -8,8 +8,8 @@
   import { Loading } from '$lib/components/loading';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { t } from '$lib/i18n';
-  import { opinionQuestionCategories, settings } from '$lib/stores';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { opinionQuestionCategories, settings } from '$lib/legacy-stores';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import Layout from '../../../../../Layout.svelte';
   import { getQuestionsContext } from '../../questions.context';
   import { filterAndSortQuestions } from '../../questions.utils';

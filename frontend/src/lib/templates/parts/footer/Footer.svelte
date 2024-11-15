@@ -1,7 +1,7 @@
 <script lang="ts">
   import { OpenVAALogo } from '$lib/components/openVAALogo';
   import { t } from '$lib/i18n';
-  import { customization } from '$lib/stores';
+  import { customization } from '$lib/legacy-stores';
   import { concatClass } from '$lib/utils/components';
   import type { FooterProps } from './Footer.type';
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import PasswordResetPage from './PasswordResetPage.svelte';
 
   const codeParam = $page.url.searchParams.get('code');

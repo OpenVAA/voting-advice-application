@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getContext } from 'svelte';
   import { afterNavigate, goto } from '$app/navigation';
-  import { dataProvider } from '$lib/api/getData';
+  import { dataProvider } from '$lib/legacy-api/getData';
   import { LogoutButton } from '$lib/candidate/components/logoutButton';
   import { Button } from '$lib/components/button';
   import { EntityDetails } from '$lib/components/entityDetails';
@@ -9,8 +9,8 @@
   import { Loading } from '$lib/components/loading';
   import { locale, t } from '$lib/i18n';
   import { SingleCardPage } from '$lib/templates/singleCardPage';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
 
   const { user } = getContext<CandidateContext>('candidate');
 

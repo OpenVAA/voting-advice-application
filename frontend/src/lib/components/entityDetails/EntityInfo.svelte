@@ -4,7 +4,7 @@
   import { PartyTag } from '$lib/components/partyTag';
   import { SurveyBanner } from '$lib/components/survey/banner';
   import { t } from '$lib/i18n';
-  import { settings } from '$lib/stores';
+  import { settings } from '$lib/legacy-stores';
   import { getAnswer } from '$lib/utils/answers';
   import { getEntityType, isCandidate, isParty } from '$lib/utils/entities';
   import { sanitizeHtml } from '$lib/utils/sanitize';

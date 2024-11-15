@@ -4,9 +4,9 @@
   import { Button } from '$lib/components/button';
   import { TimedModal } from '$lib/components/modal/timed';
   import { t } from '$lib/i18n';
-  import { settings } from '$lib/stores';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import { settings } from '$lib/legacy-stores';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
   import type { LogoutButtonProps } from './LogoutButton.type';
 
   type $$props = LogoutButtonProps;

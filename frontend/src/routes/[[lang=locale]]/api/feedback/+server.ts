@@ -1,13 +1,13 @@
 /**
- * An API route for receiving feedback, which is written as a JSON file in the `data/feedback` folder. This is accessed via the `$lib/api/feedback.ts: sendFeedback` function.
+ * An API route for receiving feedback, which is written as a JSON file in the `data/feedback` folder. This is accessed via the `$lib/legacy-api/feedback.ts: sendFeedback` function.
  */
 
 import { error, json } from '@sveltejs/kit';
 import fs from 'fs';
 import path from 'path';
-import { DataFolder } from '$lib/api/dataProvider/local';
+import { DataFolder } from '$lib/legacy-api/dataProvider/local';
 import { logDebugError } from '$lib/utils/logger';
-import type { FeedbackData } from '$lib/api/dataProvider';
+import type { FeedbackData } from '$lib/legacy-api/dataProvider';
 
 export async function POST({ request }) {
   logDebugError('[/api/feedback/+server.ts] Receiving feedback via the local API');

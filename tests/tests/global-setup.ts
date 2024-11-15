@@ -4,7 +4,7 @@ import { TESTS_DIR } from './utils/testsDir';
 import { TRANSLATIONS as T } from './utils/translations';
 import mockUsers from '../../backend/vaa-strapi/src/functions/mockData/mockUser.json' assert { type: 'json' };
 // Import ROUTE directly so that other imports are not bundled in
-import { ROUTE } from '../../frontend/src/lib/utils/navigation/route';
+import { ROUTE } from '../../frontend/src/lib/utils/legacy-navigation/route';
 import { STORAGE_STATE } from '../playwright.config';
 
 const mockUser = mockUsers[1];

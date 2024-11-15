@@ -11,19 +11,19 @@
     TextInput
   } from '$candidate/components/input';
   import InputContainer from '$candidate/components/input/InputContainer.svelte';
-  import { addAnswer, updateAnswer } from '$lib/api/candidate';
+  import { addAnswer, updateAnswer } from '$lib/legacy-api/candidate';
   import { Button } from '$lib/components/button';
   import { Field, FieldGroup } from '$lib/components/common/form';
   import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
   import Warning from '$lib/components/warning/Warning.svelte';
   import { defaultLocale, t } from '$lib/i18n';
   import { isTranslation, translate } from '$lib/i18n/utils/translate';
-  import { settings } from '$lib/stores';
+  import { settings } from '$lib/legacy-stores';
   import { BasicPage } from '$lib/templates/basicPage';
   import { answerIsEmpty } from '$lib/utils/answers';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import type { CandidateAnswer, Nomination } from '$lib/types/candidateAttributes';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
   import type { TranslationKey } from '$types';
 
   const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Expander } from '$lib/components/expander';
   import { t } from '$lib/i18n';
-  import { startEvent } from '$lib/utils/analytics/track';
+  import { startEvent } from '$lib/utils/legacy-analytics/track';
   import type { QuestionInfoProps } from './QuestionInfo.type';
 
   type $$Props = QuestionInfoProps;

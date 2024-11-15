@@ -6,11 +6,11 @@
   import { Button } from '$lib/components/button';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { t } from '$lib/i18n';
-  import { customization, settings } from '$lib/stores';
+  import { customization, settings } from '$lib/legacy-stores';
   import { FrontPage } from '$lib/templates/frontPage';
-  import { darkMode } from '$lib/utils/darkMode';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import { darkMode } from '$lib/utils/legacy-darkMode';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
 
   const { user, logIn, newUserEmail } = getContext<CandidateContext>('candidate');
 

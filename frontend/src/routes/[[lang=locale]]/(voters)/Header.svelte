@@ -3,9 +3,9 @@
   import { Icon } from '$lib/components/icon';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { t } from '$lib/i18n';
-  import { settings } from '$lib/stores';
+  import { settings } from '$lib/legacy-stores';
   import { AppLogo } from '$lib/templates/parts/appLogo';
-  import { darkMode } from '$lib/utils/darkMode';
+  import { darkMode } from '$lib/utils/legacy-darkMode';
   import Banner from './Banner.svelte';
   import type { BasicPageProps } from '$lib/templates/basicPage/BasicPage.type';
 

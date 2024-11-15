@@ -2,7 +2,7 @@
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { t } from '$lib/i18n';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import Layout from '../../../../Layout.svelte';
 </script>
 

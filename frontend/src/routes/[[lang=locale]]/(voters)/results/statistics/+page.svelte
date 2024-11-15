@@ -4,7 +4,7 @@
   import { Loading } from '$lib/components/loading';
   import { LikertResponseButtons } from '$lib/components/questions';
   import { t } from '$lib/i18n';
-  import { answeredQuestions, candidateRankings, opinionQuestions, partyRankings } from '$lib/stores';
+  import { answeredQuestions, candidateRankings, opinionQuestions, partyRankings } from '$lib/legacy-stores';
   import { getLikertAnswer } from '$lib/utils/answers';
   import Layout from '../../../../Layout.svelte';
 
