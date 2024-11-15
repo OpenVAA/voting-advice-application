@@ -4,7 +4,7 @@ import { logDebugError } from '$lib/utils/logger';
  * Sort and filter `questions` by `selectedCategories` and `firstQuestionId`.
  */
 export function filterAndSortQuestions(
-  questions: Array<QuestionProps>,
+  questions: Array<LegacyQuestionProps>,
   firstQuestionId: string | null,
   selectedCategories: Array<string> | null
 ) {

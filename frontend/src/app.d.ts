@@ -12,19 +12,19 @@ declare namespace App {
     // null checks every time we use them. We'll initiliaze the Array types
     // as empty arrays in the global data load /+layout.server.ts
     appSettings?: Partial<AppSettings>;
-    candidates?: Promise<Array<CandidateProps>>;
+    candidates?: Promise<Array<LegacyCandidateProps>>;
     categoryId?: string;
-    election?: ElectionProps;
+    election?: LegacyElectionProps;
     entityId?: string;
-    entityType?: EntityType;
-    parties?: Promise<Array<PartyProps>>;
+    entityType?: LegacyEntityType;
+    parties?: Promise<Array<LegacyPartyProps>>;
     questionId?: string;
     // `setQuestionAsFirst` will be set to `true` on the `/(voter)/questions/[questionId]` route if a `start` search param is present (regardless of its value)
     setQuestionAsFirst?: boolean;
-    opinionQuestions?: Promise<Array<QuestionProps>>;
+    opinionQuestions?: Promise<Array<LegacyQuestionProps>>;
     // TODO: This is a temporary fix for the candidate app and will be corrected when this branc is merged into main
-    opinionQuestionsSync?: Array<QuestionProps>;
-    infoQuestions?: Promise<Array<QuestionProps>>;
+    opinionQuestionsSync?: Array<LegacyQuestionProps>;
+    infoQuestions?: Promise<Array<LegacyQuestionProps>>;
     i18n: {
       currentLocale: string;
       preferredLocale?: string;

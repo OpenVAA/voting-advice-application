@@ -11,10 +11,10 @@
   import InfoItem from './InfoItem.svelte';
   import type { EntityDetailsProps } from './EntityDetails.type';
 
-  export let entity: EntityProps;
+  export let entity: LegacyEntityProps;
   export let questions: EntityDetailsProps['infoQuestions'];
 
-  let entityType: Exclude<EntityType, 'all'>;
+  let entityType: Exclude<LegacyEntityType, 'all'>;
   $: {
     const res = getEntityType(entity);
     if (!res) error(500, `No entity type found for entity: ${entity?.id}`);

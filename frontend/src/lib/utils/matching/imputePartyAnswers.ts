@@ -13,13 +13,13 @@ import { median } from './median';
  * @returns A dictionary of the answers for the party.
  */
 export function imputePartyAnswers(
-  party: PartyProps,
-  candidates: Array<CandidateProps>,
+  party: LegacyPartyProps,
+  candidates: Array<LegacyCandidateProps>,
   questionIds: Array<string>,
   matchingType: Exclude<AppSettingsGroupMatchingType, 'none' | 'answersOnly'>
 ) {
   // Set existing answers as a base
-  const answers: AnswerDict = { ...party.answers };
+  const answers: LegacyAnswerDict = { ...party.answers };
 
   const partyCands = candidates.filter((c) => c.party?.id === party.id);
 
@@ -40,9 +40,9 @@ export function imputePartyAnswers(
  * @returns The answer value or `MISSING_VALUE` if there are no valid answers in the group.
  */
 export function imputeGroupAnswer(
-  answers: Array<AnswerProps['value']>,
+  answers: Array<LegacyAnswerProps['value']>,
   matchingType: Exclude<AppSettingsGroupMatchingType, 'none' | 'answersOnly'>
-): AnswerProps['value'] {
+): LegacyAnswerProps['value'] {
   // Filter values
   const values = answers.filter((v) => {
     if (v == null) return false;

@@ -54,10 +54,10 @@
 
   /** Use to disable the response buttons when an answer is set but we're still waiting for the next page to load */
   let disabled = false;
-  let question: QuestionProps | undefined;
-  let questions: Array<QuestionProps>;
+  let question: LegacyQuestionProps | undefined;
+  let questions: Array<LegacyQuestionProps>;
   let questionIndex: number;
-  let selectedKey: AnswerOption['key'] | undefined;
+  let selectedKey: LegacyAnswerOption['key'] | undefined;
 
   // Variables related to possible video content
   // let atEnd: boolean;
@@ -97,13 +97,13 @@
 
   // Set this in a separate reactive block so that it tracks changes in $answeredQuestions and question
   $: if (question) {
-    selectedKey = $answeredQuestions[question.id]?.value as AnswerOption['key'] | undefined;
+    selectedKey = $answeredQuestions[question.id]?.value as LegacyAnswerOption['key'] | undefined;
   }
 
   /**
    * Update the current question and related variables.
    */
-  function updateQuestion(newQuestionId: string, questions: Array<QuestionProps>) {
+  function updateQuestion(newQuestionId: string, questions: Array<LegacyQuestionProps>) {
     if (!questions?.length) return;
 
     // Save the current question so that we only rebuild the page if the question has actually changed either due to being a different one or a locale change
@@ -186,7 +186,7 @@
    * @param question The question object
    * @returns The video props or `undefined` if the question has no video content
    */
-  /* function getVideoProps(question: QuestionProps): CustomVideoProps | undefined {
+  /* function getVideoProps(question: LegacyQuestionProps): CustomVideoProps | undefined {
     if (
       !(
         question.customData != null &&
@@ -205,7 +205,7 @@
   /**
    * Get the index of the question within its category taking into account possible reordering due to `firstQuestionId`.
    */
-  function getIndexInCategory(question: QuestionProps) {
+  function getIndexInCategory(question: LegacyQuestionProps) {
     const catId = question.category.id;
     const catQuestions = questions.filter((q) => q.category.id === catId);
     const index = catQuestions.indexOf(question);

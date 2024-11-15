@@ -9,7 +9,7 @@ export type AvatarProps = SvelteHTMLElements['figure'] & {
   /**
    * The possible avatar image.
    */
-  image?: ImageProps;
+  image?: LegacyImageProps;
 
   /**
    * These can be provided to override the automatic initials construction.

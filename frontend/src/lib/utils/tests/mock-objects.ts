@@ -1,41 +1,41 @@
-export class MockQuestion implements QuestionProps {
+export class MockQuestion implements LegacyQuestionProps {
   constructor(
     public id: string,
     public text = 'X',
     public shortName = 'X',
-    public type: QuestionProps['type'] = 'singleChoiceOrdinal',
+    public type: LegacyQuestionProps['type'] = 'singleChoiceOrdinal',
     public values = makeLabels(),
-    public entityType: QuestionProps['entityType'] = 'candidate',
+    public entityType: LegacyQuestionProps['entityType'] = 'candidate',
     public category = new MockQuestionCategory('c1')
   ) {}
 }
 
-export class MockQuestionCategory implements QuestionCategoryProps {
+export class MockQuestionCategory implements LegacyQuestionCategoryProps {
   constructor(
     public id: string,
     public name = 'X',
     public shortName = 'X',
-    public type: QuestionCategoryProps['type'] = 'opinion',
+    public type: LegacyQuestionCategoryProps['type'] = 'opinion',
     public order = 0,
-    public questions = new Array<QuestionProps>()
+    public questions = new Array<LegacyQuestionProps>()
   ) {}
 }
 
-export class MockParty implements PartyProps {
+export class MockParty implements LegacyPartyProps {
   constructor(
     public id: string,
-    public answers: AnswerDict = {},
+    public answers: LegacyAnswerDict = {},
     public info = 'X',
     public name = 'X',
     public shortName = 'X'
   ) {}
 }
 
-export class MockCandidate implements CandidateProps {
+export class MockCandidate implements LegacyCandidateProps {
   constructor(
     public id: string,
-    public party: PartyProps,
-    public answers: AnswerDict = {},
+    public party: LegacyPartyProps,
+    public answers: LegacyAnswerDict = {},
     public firstName = 'X',
     public lastName = 'X',
     public name = 'X'
@@ -43,7 +43,7 @@ export class MockCandidate implements CandidateProps {
 }
 
 export function makeLabels(count = 4) {
-  const labels: Array<AnswerOption> = [];
+  const labels: Array<LegacyAnswerOption> = [];
   for (let i = 1; i < count + 1; i++) {
     labels.push({
       key: i,

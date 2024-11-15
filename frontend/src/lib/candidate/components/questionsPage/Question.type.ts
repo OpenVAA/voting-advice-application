@@ -2,10 +2,10 @@ export type RenderQuestionProps = {
   /**
    * The question to be rendered
    */
-  question: QuestionProps;
+  question: LegacyQuestionProps;
 
   /**
    * All the questions belonging to the same category
    */
-  categoryQuestions: Array<QuestionProps>;
+  categoryQuestions: Array<LegacyQuestionProps>;
 };

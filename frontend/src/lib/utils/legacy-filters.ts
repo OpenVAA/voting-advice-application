@@ -17,10 +17,10 @@ import { locale, t } from '$lib/i18n';
 import { infoQuestions, parties } from '$lib/legacy-stores';
 import { logDebugError } from './logger';
 
-let candidateFilterGroup: FilterGroup<MaybeRanked<CandidateProps>> | undefined = undefined;
+let candidateFilterGroup: FilterGroup<MaybeRanked<LegacyCandidateProps>> | undefined = undefined;
 let candidateFiltersLocale: string = '';
 
-export const candidateFilters: Readable<Promise<FilterGroup<MaybeRanked<CandidateProps>> | undefined>> = derived(
+export const candidateFilters: Readable<Promise<FilterGroup<MaybeRanked<LegacyCandidateProps>> | undefined>> = derived(
   [infoQuestions, locale, parties],
   async ([$infoQuestions, $locale, $parties]) => {
     const parties = await $parties;
@@ -38,11 +38,11 @@ export const candidateFilters: Readable<Promise<FilterGroup<MaybeRanked<Candidat
 /**
  * Initialize candidate filters
  */
-export function buildCandidateFilters(infoQuestions: Array<QuestionProps>, parties: Array<PartyProps>) {
-  const filters: Array<Filter<MaybeRanked<CandidateProps>, unknown>> = [];
+export function buildCandidateFilters(infoQuestions: Array<LegacyQuestionProps>, parties: Array<LegacyPartyProps>) {
+  const filters: Array<Filter<MaybeRanked<LegacyCandidateProps>, unknown>> = [];
   if (parties.length) {
     filters.push(
-      new ObjectFilter<MaybeRanked<CandidateProps>, PartyProps>(
+      new ObjectFilter<MaybeRanked<LegacyCandidateProps>, LegacyPartyProps>(
         {
           property: 'party',
           keyProperty: 'id',
@@ -60,7 +60,7 @@ export function buildCandidateFilters(infoQuestions: Array<QuestionProps>, parti
       case 'singleChoiceOrdinal':
       case 'multipleChoiceCategorical':
         filters.push(
-          new ChoiceQuestionFilter<MaybeRanked<CandidateProps>>(
+          new ChoiceQuestionFilter<MaybeRanked<LegacyCandidateProps>>(
             {
               question: q as ChoiceQuestion,
               name: q.text
@@ -71,7 +71,7 @@ export function buildCandidateFilters(infoQuestions: Array<QuestionProps>, parti
         break;
       case 'number':
         filters.push(
-          new NumericQuestionFilter<MaybeRanked<CandidateProps>>({
+          new NumericQuestionFilter<MaybeRanked<LegacyCandidateProps>>({
             question: q as NumericQuestion,
             name: q.text
           })

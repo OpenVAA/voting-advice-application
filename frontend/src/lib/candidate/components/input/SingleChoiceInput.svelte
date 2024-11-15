@@ -6,7 +6,7 @@
   type $$Props = InputFieldProps<number>;
 
   export let questionId: $$Props['questionId'];
-  export let options: $$Props['options'] = Array<AnswerOption>();
+  export let options: $$Props['options'] = Array<LegacyAnswerOption>();
   export let headerText: $$Props['headerText'] = '';
   export let locked: $$Props['locked'] = false;
   export let value: $$Props['value'] = undefined;

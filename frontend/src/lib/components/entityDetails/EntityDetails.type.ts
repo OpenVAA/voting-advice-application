@@ -8,11 +8,11 @@ export type EntityDetailsProps = SvelteHTMLElements['article'] & {
   /**
    * The list of Question objects to use for showing for on the basic (non-opinion) information tab.
    */
-  infoQuestions: Array<QuestionProps>;
+  infoQuestions: Array<LegacyQuestionProps>;
   /**
    * The list of Question objects to use for showing for on the opinions tab.
    */
-  opinionQuestions: Array<QuestionProps>;
+  opinionQuestions: Array<LegacyQuestionProps>;
   /**
    * Any subentities to show on a separate tab.
    */

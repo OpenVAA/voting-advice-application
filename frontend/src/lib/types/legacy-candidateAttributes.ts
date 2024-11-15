@@ -89,7 +89,7 @@ export type CandidateAnswer = {
   /**Id of the answer in the database */
   id: string;
   /**Selected answer option */
-  value: AnswerPropsValue;
+  value: LegacyAnswerPropsValue;
   /**Optional free-form answer */
   openAnswer?: LocalizedString | null;
 };
@@ -98,10 +98,10 @@ export interface Question {
   id: string;
   text: LocalizedString;
   shortName: LocalizedString;
-  category: QuestionCategoryProps;
+  category: LegacyQuestionCategoryProps;
   info?: LocalizedString;
   fillingInfo?: string;
-  type: QuestionSettingsProps['type'];
+  type: LegacyQuestionSettingsProps['type'];
   values?: Array<QuestionChoiceProps>;
   min?: number | Date;
   max?: number | Date;

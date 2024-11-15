@@ -20,7 +20,7 @@ export type EntityCardProps = SvelteHTMLElements['article'] & {
     /**
      * The question whose answer is shown.
      */
-    question: QuestionProps;
+    question: LegacyQuestionProps;
     /**
      * Whether to hide the question label in the card.
      */
