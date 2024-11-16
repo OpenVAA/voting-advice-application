@@ -47,6 +47,7 @@ import {
   parseNominationTree,
   QuestionCategory,
   type QuestionCategoryData,
+  QuestionCategoryType,
   type QuestionVariant,
   type QuestionVariantData,
   RootCollections,
@@ -467,6 +468,25 @@ export class DataRoot extends Updatable implements FormatterMethods {
     constituencyId: Id;
   }): Array<NominationVariant[TEntity]> | undefined {
     return this.findNominations({ entityType: type, electionId, constituencyId });
+  }
+
+  /**
+   * Get `QuestionVariant`s of a specific `QuestionCategoryType`.
+   * @param type - The type to look for.
+   * @returns An array of `QuestionVariant`s or `undefined` if questions haven't been provided yet.
+   */
+  getQuestionsByType(type: QuestionCategoryType): Array<QuestionVariant> | undefined {
+    const categories = this.getQuestionCategoriesByType(type);
+    return categories ? categories.flatMap((qc) => qc.questions) : undefined;
+  }
+
+  /**
+   * Get `QuestionCategory`s of a specific `QuestionCategoryType`.
+   * @param type - The type to look for.
+   * @returns An array of `QuestionCategory`s or `undefined` if questions haven't been provided yet.
+   */
+  getQuestionCategoriesByType(type: QuestionCategoryType): Array<QuestionCategory> | undefined {
+    return this.questionCategories?.filter((qc) => qc.type === type);
   }
 
   //////////////////////////////////////////////////////////////////////////////
