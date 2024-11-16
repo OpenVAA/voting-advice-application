@@ -90,6 +90,13 @@ export default [
         }
       ],
 
+      '@typescript-eslint/no-explicit-any': [
+        'error',
+        {
+          ignoreRestArgs: true
+        }
+      ],
+
       '@typescript-eslint/naming-convention': [
         'error',
         {
