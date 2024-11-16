@@ -9,7 +9,7 @@ export function parseCustomData(data: JSONData): JSONData {
   const { localized, ...rest } = data;
   if (typeof localized !== 'object' || localized === null) return data;
   return {
-    ...translateObject(localized as Record<string, unknown>),
+    ...(translateObject(localized as Record<string, unknown>) as object),
     ...rest
   };
 }

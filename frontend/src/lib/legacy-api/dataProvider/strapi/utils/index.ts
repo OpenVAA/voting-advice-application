@@ -1,3 +1,4 @@
+export * from './legacyEnsureColors';
 export * from './parseAnswers';
 export * from './parseCustomData';
 export * from './parseImage';

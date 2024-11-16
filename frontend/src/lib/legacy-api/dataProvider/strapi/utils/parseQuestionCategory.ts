@@ -1,6 +1,6 @@
 import { translate } from '$lib/i18n/utils/translate';
 import { parseCustomData } from './parseCustomData';
-import { ensureColors } from '../../../../utils/color/ensureColors';
+import { legacyEnsureColors } from '.';
 import type { StrapiQuestionCategoryData } from '../strapiDataProvider.type';
 
 /**
@@ -21,7 +21,7 @@ export function parseQuestionCategory(
     info: translate(attr.info, locale),
     name,
     shortName: shortName ? shortName : name,
-    ...ensureColors(attr.color, attr.colorDark),
+    ...legacyEnsureColors(attr.color, attr.colorDark),
     customData: parseCustomData(attr.customData),
     questions: []
   };
