@@ -1,5 +1,5 @@
 import { translate } from '$lib/i18n/utils/translate';
-import { ensureColors } from '$lib/utils/color/ensureColors';
+import { legacyEnsureColors } from './legacyEnsureColors';
 import { parseAnswers } from './parseAnswers';
 import { parseImage } from './parseImage';
 import type { StrapiPartyData } from '../strapiDataProvider.type';
@@ -23,7 +23,7 @@ export function parseParty(
     info: translate(attr.info, locale),
     name,
     shortName: shortName ? shortName : name,
-    ...ensureColors(attr.color, attr.colorDark),
+    ...legacyEnsureColors(attr.color, attr.colorDark),
     answers: includeAnswers && attr.answers?.data ? parseAnswers(attr.answers.data, locale) : {}
   };
   const photo = attr.logo?.data?.attributes;
