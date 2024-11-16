@@ -6,7 +6,7 @@ export interface Colors {
   /**
    * The colour to use by default.
    */
-  default: string;
+  normal: string;
   /**
    * The color used when the dark theme is requested.
    */
