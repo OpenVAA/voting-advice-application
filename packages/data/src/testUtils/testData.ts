@@ -180,7 +180,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         info: 'Political statements concerning building and maintaining infrastructure.',
         type: QUESTION_CATEGORY_TYPE.Opinion,
         color: {
-          default: '#FF6666',
+          normal: '#FF6666',
           dark: '#FFAAAA'
         }
       },
@@ -190,7 +190,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         info: 'Political statements concerning the economy.',
         type: QUESTION_CATEGORY_TYPE.Opinion,
         color: {
-          default: '#6666FF',
+          normal: '#6666FF',
           dark: '#AAAAFF'
         }
       }
