@@ -30,10 +30,6 @@
       "target": "api::party.party",
       "inversedBy": "nominations"
     },
-    "type": {
-      "pluginOptions": {},
-      "type": "string"
-    },
     "electionSymbol": {
       "pluginOptions": {},
       "type": "string"

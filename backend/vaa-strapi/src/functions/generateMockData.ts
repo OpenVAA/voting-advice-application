@@ -29,20 +29,20 @@ const locales: Array<Locale> = [
     code: 'en',
     name: 'English (en)',
     localeObject: undefined,
-    faker: faker
+    faker: faker,
   },
   {
     code: 'fi',
     name: 'Finnish (fi)',
     localeObject: undefined,
-    faker: fakerFI
+    faker: fakerFI,
   },
   {
     code: 'sv',
     name: 'Swedish (sv)',
     localeObject: undefined,
-    faker: fakerSV
-  }
+    faker: fakerSV,
+  },
 ];
 
 export async function generateMockData() {
@@ -51,65 +51,18 @@ export async function generateMockData() {
   }
   try {
     if (generateMockDataOnInitialise && !generateMockDataOnRestart) {
-      let countOfObjects = 0;
-      countOfObjects += await strapi.db
-        .query(API.AppSettings)
-        .count({})
-        .then((number) => number);
-      countOfObjects += await strapi.db
-        .query(API.AppCustomization)
-        .count({})
-        .then((number) => number);
-      countOfObjects += await strapi.db
-        .query(API.Election)
-        .count({})
-        .then((number) => number);
-      countOfObjects += await strapi.db
-        .query(API.Party)
-        .count({})
-        .then((number) => number);
-      countOfObjects += await strapi.db
-        .query(API.Candidate)
-        .count({})
-        .then((number) => number);
-      countOfObjects += await strapi.db
-        .query(API.Nomination)
-        .count({})
-        .then((number) => number);
-      countOfObjects += await strapi.db
-        .query(API.Constituency)
-        .count({})
-        .then((number) => number);
-      countOfObjects += await strapi.db
-        .query(API.QuestionCategory)
-        .count({})
-        .then((number) => number);
-      countOfObjects += await strapi.db
-        .query(API.QuestionType)
-        .count({})
-        .then((number) => number);
-      countOfObjects += await strapi.db
-        .query(API.Question)
-        .count({})
-        .then((number) => number);
-      countOfObjects += await strapi.db
-        .query(API.Answer)
-        .count({})
-        .then((number) => number);
-      countOfObjects += await strapi.db
-        .query(API.Language)
-        .count({})
-        .then((number) => number);
-      countOfObjects += await strapi.db
-        .query(API.User)
-        .count({})
-        .then((number) => number);
-
-      if (countOfObjects > 0) {
-        console.error(
-          'Database is not empty and mock data generation is set to be only on initialisation - skipping mock data generation for now.'
-        );
-        return;
+      for (const collection of Object.values(API)) {
+        if (
+          await strapi.db
+            .query(collection)
+            .count({})
+            .then((number) => number)
+        ) {
+          console.error(
+            'Database is not empty and mock data generation is set to be only on initialisation - skipping mock data generation for now.'
+          );
+          return;
+        }
       }
     }
   } catch (error) {
@@ -147,7 +100,7 @@ export async function generateMockData() {
     console.info('inserting app customization...');
     await createAppCustomization();
     console.info('#######################################');
-    console.info('inserting languages ...');
+    console.info('inserting languages');
     await createLanguages();
     console.info('Done!');
     console.info('#######################################');
@@ -155,11 +108,15 @@ export async function generateMockData() {
     await createStrapiAdmin();
     console.info('Done!');
     console.info('#######################################');
-    console.info('inserting elections');
+    console.info('inserting constituencies and constituency groups');
+    await createConstituenciesAndGroups(15, 5);
+    console.info('Done!');
+    console.info('#######################################');
+    console.info('inserting question types');
     await createQuestionTypes();
     console.info('Done!');
     console.info('#######################################');
-    console.info('inserting questions');
+    console.info('inserting one election');
     await createElection();
     console.info('Done!');
     console.info('#######################################');
@@ -169,10 +126,6 @@ export async function generateMockData() {
     console.info('#######################################');
     console.info('inserting candidates');
     await createCandidates(25);
-    console.info('Done!');
-    console.info('#######################################');
-    console.info('inserting constituencies');
-    await createConstituencies(20);
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidate nominations');
@@ -191,7 +144,7 @@ export async function generateMockData() {
     await createQuestionCategories();
     console.info('Done!');
     console.info('#######################################');
-    console.info('inserting question types');
+    console.info('inserting questions');
     await createQuestions();
     console.info('Done!');
     console.info('#######################################');
@@ -230,7 +183,7 @@ async function createStrapiAdmin() {
       blocked: false,
       isActive: true,
       registrationToken: null,
-      roles: superAdminRole ? [superAdminRole.id] : []
+      roles: superAdminRole ? [superAdminRole.id] : [],
     };
 
     await strapi.service('admin::user').create(params);
@@ -243,8 +196,8 @@ async function createAppSettings() {
   await strapi.entityService.create(API.AppSettings, {
     data: {
       ...dynamicSettings,
-      results: { ...dynamicSettings.results, ...cardContents }
-    }
+      results: { ...dynamicSettings.results, ...cardContents },
+    },
   });
 }
 
@@ -255,7 +208,7 @@ async function createAppCustomization() {
       faqs.push({
         locale: code,
         question: faker.lorem.sentence(),
-        answer: faker.lorem.paragraph()
+        answer: faker.lorem.paragraph(),
       });
     }
   });
@@ -264,8 +217,8 @@ async function createAppCustomization() {
     data: {
       publisherName: fakeLocalized((faker) => faker.company.name()),
       translationOverrides: getDynamicTranslations(),
-      candidateAppFAQ: faqs
-    }
+      candidateAppFAQ: faqs,
+    },
   });
 }
 
@@ -275,25 +228,61 @@ async function createLanguages() {
       {
         name: 'English',
         localisationCode: 'en',
-        publishedAt: new Date()
+        publishedAt: new Date(),
       },
       {
         name: 'Finnish',
         localisationCode: 'fi',
-        publishedAt: new Date()
+        publishedAt: new Date(),
       },
       {
         name: 'Swedish',
         localisationCode: 'sv',
-        publishedAt: new Date()
-      }
-    ]
+        publishedAt: new Date(),
+      },
+    ],
   });
 }
 
+/**
+ * @param numberPerGroup - An Array of numbers representing the number of constituencies per constituency group.
+ */
+async function createConstituenciesAndGroups(...numberPerGroup: Array<number>) {
+  for (let i = 0; i < numberPerGroup.length; i++) {
+    // Create Constituencies
+    const constituencies = new Array<number>();
+    for (let j = 0; j < numberPerGroup[i]; j++) {
+      const name = fakeLocalized((faker) => faker.location.state());
+      const shortName = fakeLocalized((faker) => faker.location.state({ abbreviated: true }));
+      const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
+      const { id } = await strapi.db.query(API.Constituency).create({
+        data: {
+          name,
+          shortName,
+          info,
+        },
+      });
+      constituencies.push(id);
+    }
+    // Create Constituency Group
+    const subtype = i % 2 ? 'ethnic' : 'geographic';
+    await strapi.db.query(API.ConstituencyGroup).create({
+      data: {
+        name: fakeLocalized(() => `${capitaliseFirstLetter(subtype)} constituency group`),
+        subtype,
+        info: fakeLocalized((faker) => faker.lorem.paragraph(3)),
+        constituencies,
+      },
+    });
+  }
+}
+
 async function createElection() {
+  const constituencyGroups = await strapi.db
+    .query(API.ConstituencyGroup)
+    .findMany({})
+    .then((res) => res.map((g) => g.id));
   const date = faker.date.future();
-  const organiser = faker.location.country();
   const types = ['local', 'presidential', 'congress'];
   const electionType = types[Math.floor(Math.random() * types.length)];
   const name = fakeLocalized(
@@ -303,19 +292,18 @@ async function createElection() {
   const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
   const electionStartDate = date.toISOString().split('T')[0];
   const electionDate = date.toISOString().split('T')[0];
-
   await strapi.db.query(API.Election).create({
     data: {
       name,
       shortName,
-      organiser,
       electionStartDate,
       electionDate,
       electionType,
       info,
       publishedAt: new Date(),
-      answersLocked: false
-    }
+      answersLocked: false,
+      constituencyGroups,
+    },
   });
 }
 
@@ -336,8 +324,8 @@ async function createParties(length: number) {
         shortName,
         color,
         info,
-        publishedAt: new Date()
-      }
+        publishedAt: new Date(),
+      },
     });
   }
 }
@@ -355,30 +343,8 @@ async function createCandidates(length: number) {
         lastName,
         email,
         party: party.id,
-        publishedAt: new Date()
-      }
-    });
-  }
-}
-
-async function createConstituencies(numberOfConstituencies: number) {
-  const elections = await strapi.db.query(API.Election).findMany({});
-
-  for (let i = 0; i <= numberOfConstituencies; i++) {
-    const name = fakeLocalized((faker) => faker.location.state());
-    const shortName = fakeLocalized((faker) => faker.location.state({ abbreviated: true }));
-    const type = i < 2 ? 'ethnic' : 'geographic';
-    const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
-    const election: HasId = faker.helpers.arrayElement(elections);
-    await strapi.db.query(API.Constituency).create({
-      data: {
-        name,
-        shortName,
-        type,
-        info,
-        elections: [election.id],
-        publishedAt: new Date()
-      }
+        publishedAt: new Date(),
+      },
     });
   }
 }
@@ -387,7 +353,7 @@ async function createCandidateNominations(length: number) {
   const elections: Array<HasId> = await strapi.db.query(API.Election).findMany({});
   const constituencies: Array<HasId> = await strapi.db.query(API.Constituency).findMany({});
   const candidates: Array<{ id: string | number; party: HasId }> = await strapi.db.query(API.Candidate).findMany({
-    populate: ['party']
+    populate: ['party'],
   });
 
   for (let i = 0; i <= length; i++) {
@@ -406,8 +372,7 @@ async function createCandidateNominations(length: number) {
         party: candidate.party.id,
         election: electionId,
         constituency: constituency.id,
-        publishedAt: new Date()
-      }
+      },
     });
   }
 }
@@ -432,8 +397,7 @@ async function createPartyNominations(length: number) {
         party: party.id,
         election: electionId,
         constituency: constituency.id,
-        publishedAt: new Date()
-      }
+      },
     });
   }
 }
@@ -455,8 +419,7 @@ async function createQuestionCategories() {
         type: 'opinion',
         color,
         election: elections[0].id,
-        publishedAt: new Date()
-      }
+      },
     });
   }
   // Category for basic info
@@ -472,8 +435,7 @@ async function createQuestionCategories() {
       info,
       type: 'info',
       election: elections[0].id,
-      publishedAt: new Date()
-    }
+    },
   });
 }
 
@@ -486,8 +448,7 @@ async function createQuestionTypes() {
     await strapi.db.query(API.QuestionType).create({
       data: {
         ...questionType,
-        publishedAt: new Date()
-      }
+      },
     });
   }
 }
@@ -527,9 +488,9 @@ async function createQuestions(options: { constituencyPctg?: number } = {}) {
         allowOpen: true,
         questionType: questionType.id,
         category: category.id,
-        constituency: constituency ? [constituency.id] : [],
-        publishedAt: new Date()
-      }
+        constituencies: constituency ? [constituency.id] : [],
+        publishedAt: new Date(),
+      },
     });
   });
   // Create other questions:
@@ -547,8 +508,8 @@ async function createQuestions(options: { constituencyPctg?: number } = {}) {
         order,
         required,
         entityType,
-        publishedAt: new Date()
-      }
+        publishedAt: new Date(),
+      },
     });
   }
 }
@@ -565,7 +526,7 @@ async function createAnswers(entityType: Omit<EntityType, 'all'>) {
       questionType: { settings: QuestionTypeSettings };
     }
   > = await strapi.db.query(API.Question).findMany({
-    populate: ['questionType']
+    populate: ['questionType'],
   });
 
   for (const entity of entities) {
@@ -603,7 +564,7 @@ async function createAnswers(entityType: Omit<EntityType, 'all'>) {
           value = faker.helpers
             .arrayElements(settings.values, {
               min: settings.min ?? 1,
-              max: settings.max ?? settings.values.length
+              max: settings.max ?? settings.values.length,
             })
             .map((v) => v.key);
           break;
@@ -617,9 +578,8 @@ async function createAnswers(entityType: Omit<EntityType, 'all'>) {
           value,
           openAnswer,
           question: question.id,
-          publishedAt: new Date(),
-          ...entityRelation
-        }
+          ...entityRelation,
+        },
       });
     }
   }
@@ -637,8 +597,8 @@ async function createCandidateUsers() {
 
   const authenticated = await strapi.query('plugin::users-permissions.role').findOne({
     where: {
-      type: 'authenticated'
-    }
+      type: 'authenticated',
+    },
   });
 
   const candidate = await strapi.db.query(API.Candidate).findMany({});
@@ -651,8 +611,8 @@ async function createCandidateUsers() {
       confirmed: true,
       blocked: false,
       role: authenticated.id,
-      candidate: candidate[0].id
-    }
+      candidate: candidate[0].id,
+    },
   });
 
   await strapi.entityService.create(API.User, {
@@ -664,23 +624,23 @@ async function createCandidateUsers() {
       confirmed: true,
       blocked: false,
       role: authenticated.id,
-      candidate: candidate[1].id
-    }
+      candidate: candidate[1].id,
+    },
   });
 
   // Disable registration key for the candidate we chose as they're already registered
   await strapi.query(API.User).update({
     where: { id: candidate[0].id },
     data: {
-      registrationKey: null
-    }
+      registrationKey: null,
+    },
   });
 
   await strapi.query(API.User).update({
     where: { id: candidate[1].id },
     data: {
-      registrationKey: null
-    }
+      registrationKey: null,
+    },
   });
 }
 

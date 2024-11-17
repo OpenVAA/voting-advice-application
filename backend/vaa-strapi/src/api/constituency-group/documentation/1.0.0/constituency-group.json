@@ -1,5 +1,5 @@
 {
-  "/questions": {
+  "/constituency-groups": {
     "get": {
       "responses": {
         "200": {
@@ -7,7 +7,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/QuestionListResponse"
+                "$ref": "#/components/schemas/ConstituencyGroupListResponse"
               }
             }
           }
@@ -64,7 +64,7 @@
         }
       },
       "tags": [
-        "Question"
+        "Constituency-group"
       ],
       "parameters": [
         {
@@ -170,10 +170,10 @@
           }
         }
       ],
-      "operationId": "get/questions"
+      "operationId": "get/constituency-groups"
     }
   },
-  "/questions/{id}": {
+  "/constituency-groups/{id}": {
     "get": {
       "responses": {
         "200": {
@@ -181,7 +181,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/QuestionResponse"
+                "$ref": "#/components/schemas/ConstituencyGroupResponse"
               }
             }
           }
@@ -238,7 +238,7 @@
         }
       },
       "tags": [
-        "Question"
+        "Constituency-group"
       ],
       "parameters": [
         {
@@ -252,7 +252,7 @@
           }
         }
       ],
-      "operationId": "get/questions/{id}"
+      "operationId": "get/constituency-groups/{id}"
     }
   }
 }

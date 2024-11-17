@@ -12,18 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "type": {
-      "pluginOptions": {},
-      "type": "enumeration",
-      "enum": ["geographic", "ethnic"],
-      "required": true
-    },
-    "elections": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::election.election",
-      "mappedBy": "constituencies"
-    },
     "nominations": {
       "type": "relation",
       "relation": "oneToMany",
@@ -40,6 +28,14 @@
     },
     "info": {
       "pluginOptions": {},
+      "type": "json"
+    },
+    "parent": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::constituency.constituency"
+    },
+    "keywords": {
       "type": "json"
     }
   }
