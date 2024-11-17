@@ -12,18 +12,18 @@ export default factories.createCoreRouter('api::election.election', {
     find: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate(['question.populate.category.populate.election']),
+        restrictPopulate(['constituencyGroups']),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([])
-      ]
+        restrictFilters(['id.$eq', 'id.$in']),
+      ],
     },
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate(['question.populate.category.populate.election']),
+        restrictPopulate(['constituencyGroups']),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([])
-      ]
-    }
-  } as unknown as Generic
+        restrictFilters(['id.$eq', 'id.$in']),
+      ],
+    },
+  } as unknown as Generic,
 });
