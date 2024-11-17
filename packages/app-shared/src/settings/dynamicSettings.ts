@@ -1,4 +1,4 @@
-import type { DynamicSettings } from '..';
+import type { DynamicSettings } from './dynamicSettings.type';
 
 export const dynamicSettings: DynamicSettings = {
   entityDetails: {
