@@ -14,11 +14,14 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2024-10-20T07:50:50.713Z"
+    "x-generation-date": "2024-12-04T08:22:30.882Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
-    "plugins": ["upload", "users-permissions"]
+    "plugins": [
+      "upload",
+      "users-permissions"
+    ]
   },
   "servers": [
     {
@@ -46,7 +49,9 @@
     "schemas": {
       "Error": {
         "type": "object",
-        "required": ["error"],
+        "required": [
+          "error"
+        ],
         "properties": {
           "data": {
             "nullable": true,
@@ -83,10 +88,14 @@
       },
       "AnswerRequest": {
         "type": "object",
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "properties": {
           "data": {
-            "required": ["value"],
+            "required": [
+              "value"
+            ],
             "type": "object",
             "properties": {
               "candidate": {
@@ -176,7 +185,9 @@
       },
       "Answer": {
         "type": "object",
-        "required": ["value"],
+        "required": [
+          "value"
+        ],
         "properties": {
           "candidate": {
             "type": "object",
@@ -1913,7 +1924,11 @@
                                                             },
                                                             "entityType": {
                                                               "type": "string",
-                                                              "enum": ["all", "candidate", "party"]
+                                                              "enum": [
+                                                                "all",
+                                                                "candidate",
+                                                                "party"
+                                                              ]
                                                             },
                                                             "createdAt": {
                                                               "type": "string",
@@ -3897,7 +3912,14 @@
       },
       "AppSetting": {
         "type": "object",
-        "required": ["header", "matching", "entityDetails", "questions", "results", "entities"],
+        "required": [
+          "header",
+          "matching",
+          "entityDetails",
+          "questions",
+          "results",
+          "entities"
+        ],
         "properties": {
           "underMaintenance": {
             "type": "boolean"
@@ -4272,7 +4294,12 @@
           },
           "partyMatching": {
             "type": "string",
-            "enum": ["none", "answersOnly", "mean", "median"]
+            "enum": [
+              "none",
+              "answersOnly",
+              "mean",
+              "median"
+            ]
           }
         }
       },
@@ -4399,7 +4426,10 @@
                 },
                 "content": {
                   "type": "string",
-                  "enum": ["submatches", "question"]
+                  "enum": [
+                    "submatches",
+                    "question"
+                  ]
                 },
                 "question_id": {
                   "type": "string"
@@ -4409,7 +4439,10 @@
                 },
                 "question_format": {
                   "type": "string",
-                  "enum": ["default", "tag"]
+                  "enum": [
+                    "default",
+                    "tag"
+                  ]
                 }
               }
             }
@@ -4424,7 +4457,11 @@
                 },
                 "content": {
                   "type": "string",
-                  "enum": ["submatches", "candidates", "question"]
+                  "enum": [
+                    "submatches",
+                    "candidates",
+                    "question"
+                  ]
                 },
                 "question_id": {
                   "type": "string"
@@ -4434,7 +4471,10 @@
                 },
                 "question_format": {
                   "type": "string",
-                  "enum": ["default", "tag"]
+                  "enum": [
+                    "default",
+                    "tag"
+                  ]
                 }
               }
             }
@@ -4504,10 +4544,15 @@
       },
       "CandidateRequest": {
         "type": "object",
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "properties": {
           "data": {
-            "required": ["firstName", "lastName"],
+            "required": [
+              "firstName",
+              "lastName"
+            ],
             "type": "object",
             "properties": {
               "email": {
@@ -4643,7 +4688,10 @@
       },
       "Candidate": {
         "type": "object",
-        "required": ["firstName", "lastName"],
+        "required": [
+          "firstName",
+          "lastName"
+        ],
         "properties": {
           "email": {
             "type": "string"
@@ -7068,11 +7116,16 @@
       },
       "Constituency": {
         "type": "object",
-        "required": ["type"],
+        "required": [
+          "type"
+        ],
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["geographic", "ethnic"]
+            "enum": [
+              "geographic",
+              "ethnic"
+            ]
           },
           "elections": {
             "type": "object",
@@ -7098,7 +7151,11 @@
                         },
                         "electionType": {
                           "type": "string",
-                          "enum": ["local", "presidential", "congress"]
+                          "enum": [
+                            "local",
+                            "presidential",
+                            "congress"
+                          ]
                         },
                         "constituencies": {
                           "type": "object",
@@ -7116,7 +7173,10 @@
                                     "properties": {
                                       "type": {
                                         "type": "string",
-                                        "enum": ["geographic", "ethnic"]
+                                        "enum": [
+                                          "geographic",
+                                          "ethnic"
+                                        ]
                                       },
                                       "elections": {
                                         "type": "object",
@@ -9290,7 +9350,10 @@
       },
       "Election": {
         "type": "object",
-        "required": ["electionStartDate", "electionDate"],
+        "required": [
+          "electionStartDate",
+          "electionDate"
+        ],
         "properties": {
           "electionStartDate": {
             "type": "string",
@@ -9302,7 +9365,11 @@
           },
           "electionType": {
             "type": "string",
-            "enum": ["local", "presidential", "congress"]
+            "enum": [
+              "local",
+              "presidential",
+              "congress"
+            ]
           },
           "constituencies": {
             "type": "object",
@@ -9320,7 +9387,10 @@
                       "properties": {
                         "type": {
                           "type": "string",
-                          "enum": ["geographic", "ethnic"]
+                          "enum": [
+                            "geographic",
+                            "ethnic"
+                          ]
                         },
                         "elections": {
                           "type": "object",
@@ -9346,7 +9416,11 @@
                                       },
                                       "electionType": {
                                         "type": "string",
-                                        "enum": ["local", "presidential", "congress"]
+                                        "enum": [
+                                          "local",
+                                          "presidential",
+                                          "congress"
+                                        ]
                                       },
                                       "constituencies": {
                                         "type": "object",
@@ -11502,7 +11576,9 @@
       },
       "FeedbackRequest": {
         "type": "object",
-        "required": ["data"],
+        "required": [
+          "data"
+        ],
         "properties": {
           "data": {
             "type": "object",
@@ -11912,7 +11988,10 @@
       },
       "Language": {
         "type": "object",
-        "required": ["name", "localisationCode"],
+        "required": [
+          "name",
+          "localisationCode"
+        ],
         "properties": {
           "name": {
             "type": "string"
@@ -12290,7 +12369,9 @@
       },
       "Nomination": {
         "type": "object",
-        "required": ["electionRound"],
+        "required": [
+          "electionRound"
+        ],
         "properties": {
           "election": {
             "type": "object",
@@ -12314,7 +12395,11 @@
                       },
                       "electionType": {
                         "type": "string",
-                        "enum": ["local", "presidential", "congress"]
+                        "enum": [
+                          "local",
+                          "presidential",
+                          "congress"
+                        ]
                       },
                       "constituencies": {
                         "type": "object",
@@ -12332,7 +12417,10 @@
                                   "properties": {
                                     "type": {
                                       "type": "string",
-                                      "enum": ["geographic", "ethnic"]
+                                      "enum": [
+                                        "geographic",
+                                        "ethnic"
+                                      ]
                                     },
                                     "elections": {
                                       "type": "object",
@@ -18912,7 +19000,11 @@
                                     },
                                     "entityType": {
                                       "type": "string",
-                                      "enum": ["all", "candidate", "party"]
+                                      "enum": [
+                                        "all",
+                                        "candidate",
+                                        "party"
+                                      ]
                                     },
                                     "createdAt": {
                                       "type": "string",
@@ -19071,7 +19163,11 @@
           },
           "entityType": {
             "type": "string",
-            "enum": ["all", "candidate", "party"]
+            "enum": [
+              "all",
+              "candidate",
+              "party"
+            ]
           },
           "createdAt": {
             "type": "string",
@@ -19191,7 +19287,9 @@
       },
       "QuestionCategory": {
         "type": "object",
-        "required": ["order"],
+        "required": [
+          "order"
+        ],
         "properties": {
           "order": {
             "type": "integer"
@@ -19218,7 +19316,11 @@
                       },
                       "electionType": {
                         "type": "string",
-                        "enum": ["local", "presidential", "congress"]
+                        "enum": [
+                          "local",
+                          "presidential",
+                          "congress"
+                        ]
                       },
                       "constituencies": {
                         "type": "object",
@@ -19236,7 +19338,10 @@
                                   "properties": {
                                     "type": {
                                       "type": "string",
-                                      "enum": ["geographic", "ethnic"]
+                                      "enum": [
+                                        "geographic",
+                                        "ethnic"
+                                      ]
                                     },
                                     "elections": {
                                       "type": "object",
@@ -21297,7 +21402,10 @@
           },
           "type": {
             "type": "string",
-            "enum": ["opinion", "info"]
+            "enum": [
+              "opinion",
+              "info"
+            ]
           },
           "color": {
             "type": "string"
@@ -21420,7 +21528,9 @@
       },
       "QuestionType": {
         "type": "object",
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "properties": {
           "name": {
             "type": "string"
@@ -23456,7 +23566,11 @@
                         },
                         "entityType": {
                           "type": "string",
-                          "enum": ["all", "candidate", "party"]
+                          "enum": [
+                            "all",
+                            "candidate",
+                            "party"
+                          ]
                         },
                         "createdAt": {
                           "type": "string",
@@ -23849,7 +23963,9 @@
             }
           }
         },
-        "tags": ["Answer"],
+        "tags": [
+          "Answer"
+        ],
         "parameters": [
           {
             "name": "sort",
@@ -24019,7 +24135,9 @@
             }
           }
         },
-        "tags": ["Answer"],
+        "tags": [
+          "Answer"
+        ],
         "parameters": [],
         "operationId": "post/answers",
         "requestBody": {
@@ -24098,7 +24216,9 @@
             }
           }
         },
-        "tags": ["Answer"],
+        "tags": [
+          "Answer"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -24176,7 +24296,9 @@
             }
           }
         },
-        "tags": ["Answer"],
+        "tags": [
+          "Answer"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -24265,7 +24387,9 @@
             }
           }
         },
-        "tags": ["Answer"],
+        "tags": [
+          "Answer"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -24345,7 +24469,9 @@
             }
           }
         },
-        "tags": ["App-customization"],
+        "tags": [
+          "App-customization"
+        ],
         "parameters": [
           {
             "name": "sort",
@@ -24517,7 +24643,9 @@
             }
           }
         },
-        "tags": ["App-setting"],
+        "tags": [
+          "App-setting"
+        ],
         "parameters": [
           {
             "name": "sort",
@@ -24689,7 +24817,9 @@
             }
           }
         },
-        "tags": ["App-setting"],
+        "tags": [
+          "App-setting"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -24769,7 +24899,9 @@
             }
           }
         },
-        "tags": ["Candidate"],
+        "tags": [
+          "Candidate"
+        ],
         "parameters": [
           {
             "name": "sort",
@@ -24941,7 +25073,9 @@
             }
           }
         },
-        "tags": ["Candidate"],
+        "tags": [
+          "Candidate"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -25019,7 +25153,9 @@
             }
           }
         },
-        "tags": ["Candidate"],
+        "tags": [
+          "Candidate"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -25109,7 +25245,9 @@
             }
           }
         },
-        "tags": ["Constituency"],
+        "tags": [
+          "Constituency"
+        ],
         "parameters": [
           {
             "name": "sort",
@@ -25281,7 +25419,9 @@
             }
           }
         },
-        "tags": ["Constituency"],
+        "tags": [
+          "Constituency"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -25361,7 +25501,9 @@
             }
           }
         },
-        "tags": ["Election"],
+        "tags": [
+          "Election"
+        ],
         "parameters": [
           {
             "name": "sort",
@@ -25533,7 +25675,9 @@
             }
           }
         },
-        "tags": ["Election"],
+        "tags": [
+          "Election"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -25613,7 +25757,9 @@
             }
           }
         },
-        "tags": ["Feedback"],
+        "tags": [
+          "Feedback"
+        ],
         "parameters": [],
         "operationId": "post/feedbacks",
         "requestBody": {
@@ -25692,7 +25838,9 @@
             }
           }
         },
-        "tags": ["Language"],
+        "tags": [
+          "Language"
+        ],
         "parameters": [
           {
             "name": "sort",
@@ -25864,7 +26012,9 @@
             }
           }
         },
-        "tags": ["Language"],
+        "tags": [
+          "Language"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -25944,7 +26094,9 @@
             }
           }
         },
-        "tags": ["Nomination"],
+        "tags": [
+          "Nomination"
+        ],
         "parameters": [
           {
             "name": "sort",
@@ -26116,7 +26268,9 @@
             }
           }
         },
-        "tags": ["Nomination"],
+        "tags": [
+          "Nomination"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -26196,7 +26350,9 @@
             }
           }
         },
-        "tags": ["Party"],
+        "tags": [
+          "Party"
+        ],
         "parameters": [
           {
             "name": "sort",
@@ -26368,7 +26524,9 @@
             }
           }
         },
-        "tags": ["Party"],
+        "tags": [
+          "Party"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -26448,7 +26606,9 @@
             }
           }
         },
-        "tags": ["Question"],
+        "tags": [
+          "Question"
+        ],
         "parameters": [
           {
             "name": "sort",
@@ -26620,7 +26780,9 @@
             }
           }
         },
-        "tags": ["Question"],
+        "tags": [
+          "Question"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -26700,7 +26862,9 @@
             }
           }
         },
-        "tags": ["Question-category"],
+        "tags": [
+          "Question-category"
+        ],
         "parameters": [
           {
             "name": "sort",
@@ -26872,7 +27036,9 @@
             }
           }
         },
-        "tags": ["Question-category"],
+        "tags": [
+          "Question-category"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -26952,7 +27118,9 @@
             }
           }
         },
-        "tags": ["Question-type"],
+        "tags": [
+          "Question-type"
+        ],
         "parameters": [
           {
             "name": "sort",
@@ -27124,7 +27292,9 @@
             }
           }
         },
-        "tags": ["Question-type"],
+        "tags": [
+          "Question-type"
+        ],
         "parameters": [
           {
             "name": "id",
@@ -27159,14 +27329,18 @@
           }
         },
         "summary": "",
-        "tags": ["Upload - File"],
+        "tags": [
+          "Upload - File"
+        ],
         "requestBody": {
           "description": "Upload files",
           "required": true,
           "content": {
             "multipart/form-data": {
               "schema": {
-                "required": ["files"],
+                "required": [
+                  "files"
+                ],
                 "type": "object",
                 "properties": {
                   "path": {
@@ -27229,7 +27403,9 @@
           }
         },
         "summary": "",
-        "tags": ["Upload - File"],
+        "tags": [
+          "Upload - File"
+        ],
         "requestBody": {
           "description": "Upload files",
           "required": true,
@@ -27265,7 +27441,9 @@
     },
     "/upload/files": {
       "get": {
-        "tags": ["Upload - File"],
+        "tags": [
+          "Upload - File"
+        ],
         "responses": {
           "200": {
             "description": "Get a list of files",
@@ -27297,7 +27475,9 @@
             }
           }
         ],
-        "tags": ["Upload - File"],
+        "tags": [
+          "Upload - File"
+        ],
         "responses": {
           "200": {
             "description": "Get a specific file",
@@ -27324,7 +27504,9 @@
             }
           }
         ],
-        "tags": ["Upload - File"],
+        "tags": [
+          "Upload - File"
+        ],
         "responses": {
           "200": {
             "description": "Delete a file",
@@ -27353,7 +27535,9 @@
             }
           }
         ],
-        "tags": ["Users-Permissions - Auth"],
+        "tags": [
+          "Users-Permissions - Auth"
+        ],
         "summary": "Login with a provider",
         "description": "Redirects to provider login before being redirect to /auth/{provider}/callback",
         "responses": {
@@ -27375,7 +27559,9 @@
     },
     "/auth/local": {
       "post": {
-        "tags": ["Users-Permissions - Auth"],
+        "tags": [
+          "Users-Permissions - Auth"
+        ],
         "summary": "Local login",
         "description": "Returns a jwt token and user info",
         "requestBody": {
@@ -27426,7 +27612,9 @@
     },
     "/auth/local/register": {
       "post": {
-        "tags": ["Users-Permissions - Auth"],
+        "tags": [
+          "Users-Permissions - Auth"
+        ],
         "summary": "Register a user",
         "description": "Returns a jwt token and user info",
         "requestBody": {
@@ -27481,7 +27669,9 @@
     },
     "/auth/{provider}/callback": {
       "get": {
-        "tags": ["Users-Permissions - Auth"],
+        "tags": [
+          "Users-Permissions - Auth"
+        ],
         "summary": "Default Callback from provider auth",
         "parameters": [
           {
@@ -27520,7 +27710,9 @@
     },
     "/auth/forgot-password": {
       "post": {
-        "tags": ["Users-Permissions - Auth"],
+        "tags": [
+          "Users-Permissions - Auth"
+        ],
         "summary": "Send rest password email",
         "requestBody": {
           "required": true,
@@ -27550,7 +27742,9 @@
                   "properties": {
                     "ok": {
                       "type": "string",
-                      "enum": [true]
+                      "enum": [
+                        true
+                      ]
                     }
                   }
                 }
@@ -27572,7 +27766,9 @@
     },
     "/auth/reset-password": {
       "post": {
-        "tags": ["Users-Permissions - Auth"],
+        "tags": [
+          "Users-Permissions - Auth"
+        ],
         "summary": "Rest user password",
         "requestBody": {
           "required": true,
@@ -27626,7 +27822,9 @@
     },
     "/auth/change-password": {
       "post": {
-        "tags": ["Users-Permissions - Auth"],
+        "tags": [
+          "Users-Permissions - Auth"
+        ],
         "summary": "Update user's own password",
         "requestBody": {
           "required": true,
@@ -27634,7 +27832,11 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["password", "currentPassword", "passwordConfirmation"],
+                "required": [
+                  "password",
+                  "currentPassword",
+                  "passwordConfirmation"
+                ],
                 "properties": {
                   "password": {
                     "type": "string"
@@ -27676,7 +27878,9 @@
     },
     "/auth/email-confirmation": {
       "get": {
-        "tags": ["Users-Permissions - Auth"],
+        "tags": [
+          "Users-Permissions - Auth"
+        ],
         "summary": "Confirm user email",
         "parameters": [
           {
@@ -27707,7 +27911,9 @@
     },
     "/auth/send-email-confirmation": {
       "post": {
-        "tags": ["Users-Permissions - Auth"],
+        "tags": [
+          "Users-Permissions - Auth"
+        ],
         "summary": "Send confirmation email",
         "requestBody": {
           "required": true,
@@ -27737,7 +27943,9 @@
                     },
                     "sent": {
                       "type": "string",
-                      "enum": [true]
+                      "enum": [
+                        true
+                      ]
                     }
                   }
                 }
@@ -27759,7 +27967,9 @@
     },
     "/users-permissions/permissions": {
       "get": {
-        "tags": ["Users-Permissions - Users & Roles"],
+        "tags": [
+          "Users-Permissions - Users & Roles"
+        ],
         "summary": "Get default generated permissions",
         "responses": {
           "200": {
@@ -27828,7 +28038,9 @@
     },
     "/users-permissions/roles": {
       "get": {
-        "tags": ["Users-Permissions - Users & Roles"],
+        "tags": [
+          "Users-Permissions - Users & Roles"
+        ],
         "summary": "List roles",
         "responses": {
           "200": {
@@ -27887,7 +28099,9 @@
         }
       },
       "post": {
-        "tags": ["Users-Permissions - Users & Roles"],
+        "tags": [
+          "Users-Permissions - Users & Roles"
+        ],
         "summary": "Create a role",
         "requestBody": {
           "$ref": "#/components/requestBodies/Users-Permissions-RoleRequest"
@@ -27902,7 +28116,9 @@
                   "properties": {
                     "ok": {
                       "type": "string",
-                      "enum": [true]
+                      "enum": [
+                        true
+                      ]
                     }
                   }
                 }
@@ -27924,7 +28140,9 @@
     },
     "/users-permissions/roles/{id}": {
       "get": {
-        "tags": ["Users-Permissions - Users & Roles"],
+        "tags": [
+          "Users-Permissions - Users & Roles"
+        ],
         "summary": "Get a role",
         "parameters": [
           {
@@ -27989,7 +28207,9 @@
     },
     "/users-permissions/roles/{role}": {
       "put": {
-        "tags": ["Users-Permissions - Users & Roles"],
+        "tags": [
+          "Users-Permissions - Users & Roles"
+        ],
         "summary": "Update a role",
         "parameters": [
           {
@@ -28015,7 +28235,9 @@
                   "properties": {
                     "ok": {
                       "type": "string",
-                      "enum": [true]
+                      "enum": [
+                        true
+                      ]
                     }
                   }
                 }
@@ -28035,7 +28257,9 @@
         }
       },
       "delete": {
-        "tags": ["Users-Permissions - Users & Roles"],
+        "tags": [
+          "Users-Permissions - Users & Roles"
+        ],
         "summary": "Delete a role",
         "parameters": [
           {
@@ -28058,7 +28282,9 @@
                   "properties": {
                     "ok": {
                       "type": "string",
-                      "enum": [true]
+                      "enum": [
+                        true
+                      ]
                     }
                   }
                 }
@@ -28080,7 +28306,9 @@
     },
     "/users": {
       "get": {
-        "tags": ["Users-Permissions - Users & Roles"],
+        "tags": [
+          "Users-Permissions - Users & Roles"
+        ],
         "summary": "Get list of users",
         "responses": {
           "200": {
@@ -28121,7 +28349,9 @@
         }
       },
       "post": {
-        "tags": ["Users-Permissions - Users & Roles"],
+        "tags": [
+          "Users-Permissions - Users & Roles"
+        ],
         "summary": "Create a user",
         "requestBody": {
           "required": true,
@@ -28129,7 +28359,11 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["username", "email", "password"],
+                "required": [
+                  "username",
+                  "email",
+                  "password"
+                ],
                 "properties": {
                   "email": {
                     "type": "string"
@@ -28206,7 +28440,9 @@
     },
     "/users/{id}": {
       "get": {
-        "tags": ["Users-Permissions - Users & Roles"],
+        "tags": [
+          "Users-Permissions - Users & Roles"
+        ],
         "summary": "Get a user",
         "parameters": [
           {
@@ -28253,7 +28489,9 @@
         }
       },
       "put": {
-        "tags": ["Users-Permissions - Users & Roles"],
+        "tags": [
+          "Users-Permissions - Users & Roles"
+        ],
         "summary": "Update a user",
         "parameters": [
           {
@@ -28272,7 +28510,11 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["username", "email", "password"],
+                "required": [
+                  "username",
+                  "email",
+                  "password"
+                ],
                 "properties": {
                   "email": {
                     "type": "string"
@@ -28347,7 +28589,9 @@
         }
       },
       "delete": {
-        "tags": ["Users-Permissions - Users & Roles"],
+        "tags": [
+          "Users-Permissions - Users & Roles"
+        ],
         "summary": "Delete a user",
         "parameters": [
           {
@@ -28400,7 +28644,9 @@
     },
     "/users/me": {
       "get": {
-        "tags": ["Users-Permissions - Users & Roles"],
+        "tags": [
+          "Users-Permissions - Users & Roles"
+        ],
         "summary": "Get authenticated user info",
         "responses": {
           "200": {
@@ -28438,7 +28684,9 @@
     },
     "/users/count": {
       "get": {
-        "tags": ["Users-Permissions - Users & Roles"],
+        "tags": [
+          "Users-Permissions - Users & Roles"
+        ],
         "summary": "Get user count",
         "responses": {
           "200": {

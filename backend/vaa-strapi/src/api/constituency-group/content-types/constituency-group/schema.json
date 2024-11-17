@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "constituency_groups",
+  "info": {
+    "singularName": "constituency-group",
+    "pluralName": "constituency-groups",
+    "displayName": "Constituency Group",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "constituencies": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::constituency.constituency"
+    },
+    "subtype": {
+      "type": "string"
+    },
+    "name": {
+      "type": "json"
+    },
+    "shortName": {
+      "type": "json"
+    },
+    "info": {
+      "type": "json"
+    }
+  }
+}

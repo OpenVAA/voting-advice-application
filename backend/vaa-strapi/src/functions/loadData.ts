@@ -64,22 +64,30 @@ export async function loadData(folder: string, force = false) {
       console.info('[loadData] Creating Locales...');
       await createLocales((await loadFile(folder, 'locales')) as Array<{ name: string; code: string }>);
 
-      console.info('[loadData] Creating AppSettings...');
+      console.info('[loadData] Creating App Settings...');
+      if (!(await createFromFile(folder, 'appSettings', API.AppSettings))) throw new Error();
+
+      console.info('[loadData] Creating App Customization...');
       if (
-        !(await createFromFile(folder, 'appSettings', API.AppSettings, [
+        !(await createFromFile(folder, 'appSettings', API.AppCustomization, [
+          'candPoster',
+          'candPosterDark',
           'publisherLogo',
           'publisherLogoDark',
           'poster',
-          'posterCandidateApp'
+          'posterDark',
         ]))
       )
         throw new Error();
 
-      console.info('[loadData] Creating Elections...');
-      if (!(await createFromFile(folder, 'elections', API.Election))) throw new Error();
-
       console.info('[loadData] Creating Constituencies...');
       if (!(await createFromFile(folder, 'constituencies', API.Constituency))) throw new Error();
+
+      console.info('[loadData] Creating Constituency Groups...');
+      if (!(await createFromFile(folder, 'constituencyGroups', API.ConstituencyGroup))) throw new Error();
+
+      console.info('[loadData] Creating Elections...');
+      if (!(await createFromFile(folder, 'elections', API.Election))) throw new Error();
 
       console.info('[loadData] Creating Question Categories...');
       if (!(await createFromFile(folder, 'questionCategories', API.QuestionCategory))) throw new Error();
@@ -246,7 +254,7 @@ async function create<TData extends object>(
     const obj = await strapi.entityService
       .create(api, {
         data: { ...itemData, publishedAt: publish ? new Date() : undefined } as object,
-        files
+        files,
       })
       .catch((e) => {
         console.error(`[loadData] [create] Error creating '${api}'`, ...(e.details?.errors ?? []), itemData);

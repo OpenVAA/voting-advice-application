@@ -1,4 +1,9 @@
 /**
+ * NB! SOME OF THE DATA TYPES HERE ARE OUTDATED AFTER THE CONTENT-MODEL UPDATE.
+ * See $lib/api/adapters/strapi/strapiData.type.ts for the latest data types.
+ */
+
+/**
  * The basic format for Strapi responses
  */
 export type StrapiResponse<TData> = {

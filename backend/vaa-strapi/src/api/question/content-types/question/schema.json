@@ -14,9 +14,8 @@
   "attributes": {
     "questionType": {
       "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::question-type.question-type",
-      "inversedBy": "questions"
+      "relation": "oneToOne",
+      "target": "api::question-type.question-type"
     },
     "answers": {
       "type": "relation",
@@ -68,8 +67,17 @@
     },
     "entityType": {
       "type": "enumeration",
-      "enum": ["all", "candidate", "party"],
+      "enum": [
+        "all",
+        "candidate",
+        "party"
+      ],
       "default": "all"
+    },
+    "constituencies": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::constituency.constituency"
     }
   }
 }
