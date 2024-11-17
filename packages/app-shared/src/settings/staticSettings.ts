@@ -1,4 +1,4 @@
-import type { StaticSettings } from '..';
+import type { StaticSettings } from './staticSettings.type';
 
 export const staticSettings: StaticSettings = {
   admin: {
