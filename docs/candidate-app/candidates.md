@@ -34,9 +34,9 @@ Then, use the "Save" button and you should be able to log in as the candidate at
 
 The user gets an email with a link to reset their password using the forgot password functionality on the login page. The frontend URL in the emails is configured in `.env` with the PUBLIC_FRONTEND_URL variable, and the email service (AWS SES) can be configured using the following variables:
 
-- `AWS_ACCESS_KEY_ID`: AWS SES user access key
-- `AWS_SECRET_ACCESS_KEY`: AWS SES user secret access key
-- `AWS_REGION`: AWS SES region
+- `AWS_SES_ACCESS_KEY_ID`: AWS SES user access key
+- `AWS_SES_SECRET_ACCESS_KEY`: AWS SES user secret access key
+- `AWS_SES_REGION`: AWS SES region
 - `MAIL_FROM`: the email address the emails are sent from
 - `MAIL_REPLY_TO`: the email address replies should be sent to
 
