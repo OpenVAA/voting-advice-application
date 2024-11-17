@@ -116,6 +116,13 @@ f.e. the shared module can be build by running:
 yarn workspace @openvaa/app-shared build
 ```
 
+In order to install dependencies for all modules and build all modules run:
+
+```bash
+yarn install
+yarn workspaces run build
+```
+
 ### Module resolution
 
 #### IDE
