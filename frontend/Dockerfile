@@ -25,11 +25,7 @@ COPY packages/data ./packages/data
 COPY packages/filters ./packages/filters
 COPY packages/matching ./packages/matching
 RUN yarn install --frozen-lockfile
-RUN yarn workspace @openvaa/app-shared build
-RUN yarn workspace @openvaa/core build
-RUN yarn workspace @openvaa/data build
-RUN yarn workspace @openvaa/filters build
-RUN yarn workspace @openvaa/matching build
+RUN yarn workspaces run build
 
 FROM base AS frontend
 

@@ -1,9 +1,8 @@
 import { error } from '@sveltejs/kit';
 import { dataProvider } from '$lib/api/getData';
 import { locale } from '$lib/i18n';
-import type { LayoutServerLoad } from './$types';
 
-export const load = (async ({ locals, params }) => {
+export async function load({ locals, params }) {
   // Get language from locals (see hooks.server.ts)
   const { currentLocale, preferredLocale, route } = locals;
 
@@ -45,4 +44,4 @@ export const load = (async ({ locals, params }) => {
       route
     }
   };
-}) satisfies LayoutServerLoad;
+}

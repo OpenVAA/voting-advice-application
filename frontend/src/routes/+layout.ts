@@ -1,7 +1,6 @@
 import { addTranslations, loadTranslations, locale, setRoute } from '$lib/i18n/init';
-import type { LayoutLoad } from './$types';
 
-export const load: LayoutLoad = (async ({ data }) => {
+export async function load({ data }) {
   const { currentLocale, route } = data.i18n;
   // Add dynamically defined translations but wait for the defaults to load first, otherwise the defaults for partially overwritten main keys will not be loaded
   await loadTranslations(currentLocale);
@@ -13,4 +12,4 @@ export const load: LayoutLoad = (async ({ data }) => {
   await setRoute(route);
 
   return data;
-}) satisfies LayoutLoad;
+}

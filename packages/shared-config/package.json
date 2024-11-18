@@ -2,6 +2,9 @@
   "private": true,
   "name": "@openvaa/shared-config",
   "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'Nothing to build.'"
+  },
   "dependencies": {
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.14.0",

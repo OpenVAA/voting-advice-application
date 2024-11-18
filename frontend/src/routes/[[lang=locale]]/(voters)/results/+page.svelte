@@ -24,7 +24,7 @@
   import { candidateFilters } from '$lib/utils/filters';
   import { getRoute, ROUTE } from '$lib/utils/navigation';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import Layout from '../../Layout.svelte';
+  import Layout from '../../../Layout.svelte';
   import type { EntityCardProps } from '$lib/components/entityCard';
 
   /**

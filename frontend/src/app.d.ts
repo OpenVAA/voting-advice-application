@@ -31,6 +31,10 @@ declare namespace App {
       route: string;
     };
   }
-  // interface Error {}
+  interface Error {
+    message: string;
+    description?: string;
+    emoji?: string;
+  }
   // interface Platform {}
 }

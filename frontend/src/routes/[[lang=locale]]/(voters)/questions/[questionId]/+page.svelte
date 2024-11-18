@@ -24,7 +24,7 @@
   import { startEvent } from '$lib/utils/analytics/track';
   import { logDebugError } from '$lib/utils/logger';
   import { FIRST_QUESTION_ID, getRoute, ROUTE } from '$lib/utils/navigation';
-  import Layout from '../../../Layout.svelte';
+  import Layout from '../../../../Layout.svelte';
   import { getQuestionsContext } from '../questions.context';
   import { filterAndSortQuestions } from '../questions.utils';
   import type { PageData } from './$types';

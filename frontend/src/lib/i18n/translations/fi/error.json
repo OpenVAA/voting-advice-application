@@ -1,7 +1,7 @@
 {
   "404": "Sivua ei löytynyt, anteeksi!",
   "500": "Palvelinvirhe, anteeksi!",
-  "content": "<p>Olemme todella pahoillamme harmista. Voit koettaa palata takaisin ja ladata sivun uudelleen ja katsoa, toistuuko ongelma.</p><p>Jos tilanne ei korjaannu, pyydämme ystävällisesti lähettämään sähköpostia osoitteeseen {adminEmail} ja kuvailemaan mahdollisimman tarkasti, mitä tapahtui. Kiitos etukäteen!</p>",
+  "content": "<p>Olemme todella pahoillamme harmista. Voit koettaa palata takaisin ja ladata sivun uudelleen ja katsoa, toistuuko ongelma.</p><p>Jos tilanne ei korjaannu, pyydämme ystävällisesti lähettämään sähköpostia osoitteeseen {adminEmailLink} ja kuvailemaan mahdollisimman tarkasti, mitä tapahtui. Kiitos etukäteen!</p>",
   "default": "Jotakin meni pieleen, anteeksi!",
   "general": "Jotakin meni pieleen, anteeksi",
   "noQuestions": "Vaalikoneessa ei vielä ole kysymyksiä.",

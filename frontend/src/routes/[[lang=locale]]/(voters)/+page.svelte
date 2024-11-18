@@ -9,7 +9,7 @@
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import { darkMode } from '$lib/utils/darkMode';
   import { getRoute, ROUTE } from '$lib/utils/navigation';
-  import Layout from '../Layout.svelte';
+  import Layout from '../../Layout.svelte';
 
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 

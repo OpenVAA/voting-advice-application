@@ -9,7 +9,7 @@
   import { opinionQuestionCategories, opinionQuestions, settings } from '$lib/stores';
   import { FIRST_QUESTION_ID, getRoute, ROUTE } from '$lib/utils/navigation';
   import { getQuestionsContext } from './questions.context';
-  import Layout from '../../Layout.svelte';
+  import Layout from '../../../Layout.svelte';
 
   const { firstQuestionId, selectedCategories, numSelectedQuestions } = getQuestionsContext();
 

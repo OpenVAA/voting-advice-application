@@ -147,7 +147,7 @@ function updateDefaultPayload() {
   for (const [key, path] of Object.entries(DEFAULT_PAYLOAD_KEYS)) {
     defaultPayload[key] = t(path);
   }
-  defaultPayload.adminEmail = staticSettings.admin.email;
+  defaultPayload.adminEmailLink = `<a href="mailto:${staticSettings.admin.email}">${staticSettings.admin.email}</a>`;
   defaultPayload.analyticsLink = staticSettings.analytics?.platform?.infoUrl
     ? `<a href="${staticSettings.analytics.platform.infoUrl}" target="_blank">${ucFirst(staticSettings.analytics.platform.name)}</a>`
     : '—';

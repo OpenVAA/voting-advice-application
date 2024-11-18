@@ -3,7 +3,7 @@
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { t } from '$lib/i18n';
   import { getRoute, ROUTE } from '$lib/utils/navigation';
-  import Layout from '../../../Layout.svelte';
+  import Layout from '../../../../Layout.svelte';
 </script>
 
 <svelte:head>
