@@ -83,7 +83,7 @@ export abstract class DataObject<TData extends DataObjectData>
    * Optional short name, which can be used in, e.g., lists and link titles. @defaultValue `this.name`
    */
   get shortName(): string {
-    return this.data.shortName ?? this.name;
+    return this.data.shortName || this.name;
   }
 
   /**

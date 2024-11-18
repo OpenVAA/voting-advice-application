@@ -35,15 +35,15 @@ export interface NominationData<TEntity extends EntityType = EntityType, TParent
   /**
    * The optional symbol, usually a number, marked on the ballot instead of nominee’s name. @defaultValue ''
    */
-  electionSymbol?: string;
+  electionSymbol?: string | null;
   /**
    * The possible `FactionNomination` this nomination is part of, e.g. a faction list. If the data is provided as part of `FactionNominationData`, this `id` will be automatically added. Only applicable to certain `Nomination` types.
    */
-  parentNominationId?: TParent extends never ? never : Id;
+  parentNominationId?: TParent extends never ? never : Id | null;
   /**
    * The `EntityType` of the possible parent nomination.
    */
-  parentNominationType?: TParent;
+  parentNominationType?: TParent | null;
 }
 
 /**
@@ -61,9 +61,9 @@ export type WithImpliedEntity<TData> = TData & {
   /**
    * The optional name of the `Entity`. @defaultValue '—'
    */
-  name?: string;
+  name?: string | null;
   /**
    * The optional short name of the `Entity`. @defaultValue `name`
    */
-  shortName?: string;
+  shortName?: string | null;
 };

@@ -4,7 +4,7 @@ import type {
   NestedNomination,
   NominationData,
   PublicCandidateNominationData,
-  WithOptional
+  WithOptional,
 } from '../../../internal';
 
 export interface FactionNominationData
@@ -37,7 +37,7 @@ export interface FactionNominationData
   /**
    * The ids of the `CandidateNomination`s being nominated. These will be automatically generated from the `candidates` array.
    */
-  candidateNominationIds?: Array<Id>;
+  candidateNominationIds?: Array<Id> | null;
   /**
    * The `OrganizationNomination` id this nomination is part of, is mandatory. If the data is provided as part of `OrganizationNominationData`, this `id` will be automatically added.
    */

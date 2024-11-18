@@ -25,5 +25,5 @@ export interface QuestionCategoryData extends QuestionAndCategoryBaseData {
   /**
    * The type of the question category. @defaultValue QUESTION_CATEGORY_TYPE.Default
    */
-  type?: QuestionCategoryType;
+  type?: QuestionCategoryType | null;
 }

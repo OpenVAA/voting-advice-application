@@ -6,7 +6,7 @@ import { DateQuestion, Image, NumberQuestion } from '../internal';
 export const DEFAULT_DATE_FORMAT: Intl.DateTimeFormatOptions = {
   year: 'numeric',
   month: 'numeric',
-  day: 'numeric'
+  day: 'numeric',
 };
 
 /**
@@ -22,14 +22,14 @@ export function formatBooleanAnswer({ value }: { value: boolean }): string {
 export function formatDateAnswer({
   locale,
   question,
-  value
+  value,
 }: {
-  locale?: string;
+  locale?: string | null;
   question: DateQuestion;
   value: Date;
 }): string {
   const format = question.format ?? DEFAULT_DATE_FORMAT;
-  return value.toLocaleDateString(locale, format);
+  return value.toLocaleDateString(locale ?? undefined, format);
 }
 
 /**
@@ -60,13 +60,13 @@ export function formatMultipleTextAnswer({ value }: { value: Array<string> }): s
 export function formatNumberAnswer({
   locale,
   question,
-  value
+  value,
 }: {
-  locale?: string;
+  locale?: string | null;
   question: NumberQuestion;
   value: number;
 }): string {
-  const { format } = new Intl.NumberFormat(locale, question.format ?? undefined);
+  const { format } = new Intl.NumberFormat(locale ?? undefined, question.format ?? undefined);
   return format(value);
 }
 

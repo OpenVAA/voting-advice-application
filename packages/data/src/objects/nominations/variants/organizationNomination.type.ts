@@ -5,7 +5,7 @@ import type {
   NominationData,
   PublicCandidateNominationData,
   PublicFactionNominationData,
-  WithOptional
+  WithOptional,
 } from '../../../internal';
 
 export interface OrganizationNominationData
@@ -38,27 +38,27 @@ export interface OrganizationNominationData
   /**
    * The possible `Candidate`s being nominated. A list may only contain either `candidates` or `factions` and an error will be thrown if both are provided.
    */
-  candidates?: Array<NestedNomination<PublicCandidateNominationData>>;
+  candidates?: Array<NestedNomination<PublicCandidateNominationData>> | null;
   /**
    * The ids the possible `CandidateNomination`s on the list. A list may only contain either `candidates` or `factions` and an error will be thrown if both are provided. These will be automatically generated from the `candidates` array.
    */
-  candidateNominationIds?: Array<Id>;
+  candidateNominationIds?: Array<Id> | null;
   /**
    * The possible `Faction`s being nominated. A list may only contain either `candidates` or `factions` and an error will be thrown if both are provided.
    */
-  factions?: Array<NestedNomination<PublicFactionNominationData>>;
+  factions?: Array<NestedNomination<PublicFactionNominationData>> | null;
   /**
    * The ids the possible `FactionNomination`s on the list. A list may only contain either `candidates` or `factions` and an error will be thrown if both are provided. These will be automatically generated from the `factions` array.
    */
-  factionNominationIds?: Array<Id>;
+  factionNominationIds?: Array<Id> | null;
   /**
    * An `OrganizationNomination` may not have specified `name`, we use the `Entity`’s.
    */
-  name?: never;
+  name?: never | null;
   /**
    * An `OrganizationNomination` may not have specified `shortName`, we use the `Entity`’s.
    */
-  shortName?: never;
+  shortName?: never | null;
 }
 
 /**

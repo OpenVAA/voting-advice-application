@@ -10,5 +10,5 @@ export interface Colors {
   /**
    * The color used when the dark theme is requested.
    */
-  dark?: string;
+  dark?: string | null;
 }

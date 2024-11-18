@@ -17,7 +17,7 @@ export type Choice<TValue = undefined> = HasId & {
         /**
          * For categorical question types, the value cannot be defined.
          */
-        normalizableValue?: undefined;
+        normalizableValue?: undefined | null;
       }
     : {
         /**
