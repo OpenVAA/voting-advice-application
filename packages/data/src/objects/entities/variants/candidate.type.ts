@@ -31,5 +31,5 @@ export interface CandidateData extends EntityData<typeof ENTITY_TYPE.Candidate> 
    * The `id` of the possible `Organization` the candidate belongs to. Note that this may be different from the `OrganizationNomination.entity` of the associated `CandidateNomination`, although in most cases the organizations are the same.
    * NB. We store the organization membership in the `Candidate`s instead of the `Organization` because the data for all the `Candidate`s may not be loaded at the same time for that of the `Organization`. Also, it’s probably more common to access the `Organization` for `Candidate` than all the `Candidate`s of an `Organization`.
    */
-  organizationId?: Id;
+  organizationId?: Id | null;
 }

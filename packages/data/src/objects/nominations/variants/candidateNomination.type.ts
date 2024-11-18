@@ -30,11 +30,11 @@ export interface CandidateNominationData
   /**
    * A `CandidateNomination` may not have specified `name`, we use the `Entity`’s.
    */
-  name?: never;
+  name?: never | null;
   /**
    * A `CandidateNomination` may not have specified `shortName`, we use the `Entity`’s.
    */
-  shortName?: never;
+  shortName?: never | null;
 }
 
 /**

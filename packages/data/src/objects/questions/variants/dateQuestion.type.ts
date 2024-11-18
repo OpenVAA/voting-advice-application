@@ -30,15 +30,15 @@ export interface DateQuestionData extends QuestionData<typeof QUESTION_TYPE.Date
   /**
    * Optional formatting options for the `Date`.
    */
-  format?: Intl.DateTimeFormatOptions;
+  format?: Intl.DateTimeFormatOptions | null;
   /**
    * Optional minimum date value for the question as a date string. If both `min` and `max` are provided, the question can be used in matching.
    * Preferably use the ISO 8601 format: 2019-11-14T00:55:31.820Z
    */
-  min?: string;
+  min?: string | null;
   /**
    * Optional maximum date value for the number question as a date string. If both `min` and `max` are provided, the question can be used in matching.
    * Preferably use the ISO 8601 format: 2019-11-14T00:55:31.820Z
    */
-  max?: string;
+  max?: string | null;
 }

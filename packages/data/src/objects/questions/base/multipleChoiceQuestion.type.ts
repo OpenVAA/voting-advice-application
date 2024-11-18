@@ -35,9 +35,9 @@ export interface MultipleChoiceQuestionData<TType extends MultipleChoiceQuestion
    * Whether or not the same choice can be selected multiple times. @defaultValue false
    * NB. `allowDuplicates` is assumed `false` if `ordered` is `true`.
    */
-  allowDuplicates?: boolean;
+  allowDuplicates?: boolean | null;
   /**
    * Whether or not the answer options can be ordered. @defaultValue false
    */
-  ordered?: boolean;
+  ordered?: boolean | null;
 }

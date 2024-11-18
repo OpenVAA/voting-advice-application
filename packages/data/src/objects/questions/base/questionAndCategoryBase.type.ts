@@ -24,27 +24,27 @@ export interface QuestionAndCategoryBaseData extends DataObjectData {
   /**
    * An optional filter value that contains the ids of elections for which this question or category should only be shown.
    */
-  electionIds?: FilterValue<Id>;
+  electionIds?: FilterValue<Id> | null;
   /**
    * An optional filter value that contains the numbers of the election rounds for which this question or category should only be shown.
    */
-  electionRounds?: FilterValue<number>;
+  electionRounds?: FilterValue<number> | null;
   /**
    * An optional filter value that contains the ids of constituencies for which this question or category should only be shown.
    */
-  constituencyIds?: FilterValue<Id>;
+  constituencyIds?: FilterValue<Id> | null;
   /**
    * An optional filter value that contains the entity types for which this question or category should only be shown.
    */
-  entityTypes?: FilterValue<EntityType>;
+  entityTypes?: FilterValue<EntityType> | null;
 }
 /**
  * The targets passed to the filter for questions and question categories.
  */
 
 export type FilterTargets = {
-  elections?: FilterValue<Election>;
-  electionRounds?: FilterValue<number>;
-  entityTypes?: FilterValue<EntityType>;
-  constituencies?: FilterValue<Constituency>;
+  elections?: FilterValue<Election> | null;
+  electionRounds?: FilterValue<number> | null;
+  entityTypes?: FilterValue<EntityType> | null;
+  constituencies?: FilterValue<Constituency> | null;
 };

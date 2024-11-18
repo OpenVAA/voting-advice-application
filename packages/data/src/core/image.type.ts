@@ -5,20 +5,20 @@ export interface Image extends ImageBase {
   /**
    * Additional size formats of the image.
    */
-  formats?: Record<string, ImageBase>;
+  formats?: Record<string, ImageBase> | null;
 }
 
 interface ImageBase {
   /**
    * The alt text of the image.
    */
-  alt?: string;
+  alt?: string | null;
   /**
    * The url of the default image.
    */
-  url: string;
+  url: string | null;
   /**
    * The url of the dark mdoe image in the defaul resolution.
    */
-  urlDark?: string;
+  urlDark?: string | null;
 }

@@ -30,13 +30,13 @@ export interface NumberQuestionData extends QuestionData<typeof QUESTION_TYPE.Nu
   /**
    * Optional formatting options for the `number`.
    */
-  format?: Intl.NumberFormatOptions;
+  format?: Intl.NumberFormatOptions | null;
   /**
    * Optional minimum value for the number question. If both `min` and `max` are provided, the question can be used in matching.
    */
-  min?: number;
+  min?: number | null;
   /**
    * Optional maximum value for the number question. If both `min` and `max` are provided, the question can be used in matching.
    */
-  max?: number;
+  max?: number | null;
 }

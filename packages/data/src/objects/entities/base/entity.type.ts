@@ -18,7 +18,7 @@ export interface EntityData<TType extends EntityType = EntityType> extends DataO
   /**
    * The entity’s answers to the questions. @defaultValue {}
    */
-  answers?: Answers;
+  answers?: Answers | null;
   /**
    * The type of the entity.
    */
