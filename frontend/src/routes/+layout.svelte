@@ -1,5 +1,5 @@
 <script lang="ts">
-  import '../../app.css';
+  import '../app.css';
   import { staticSettings } from '@openvaa/app-shared';
   import { FeedbackModal } from '$lib/components/feedback/modal';
   import { Loading } from '$lib/components/loading';

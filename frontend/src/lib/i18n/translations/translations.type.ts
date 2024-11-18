@@ -3,7 +3,7 @@
  * for interpolation
  */
 export type TranslationsPayload = Partial<{
-  adminEmail: string;
+  adminEmailLink: string;
   analyticsLink: string;
   candidatePlural: string;
   candidateSingular: string;

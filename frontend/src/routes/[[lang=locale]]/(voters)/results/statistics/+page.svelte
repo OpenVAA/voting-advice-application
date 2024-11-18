@@ -6,7 +6,7 @@
   import { t } from '$lib/i18n';
   import { answeredQuestions, candidateRankings, opinionQuestions, partyRankings } from '$lib/stores';
   import { getLikertAnswer } from '$lib/utils/answers';
-  import Layout from '../../../Layout.svelte';
+  import Layout from '../../../../Layout.svelte';
 
   /** This is needed to ensure typing but will be no longer needed, when @openvaa/data model is implemented an Question object methods can be used to enforce typing. */
   function getVoterLikertAnswer(question: QuestionProps): number | undefined {
