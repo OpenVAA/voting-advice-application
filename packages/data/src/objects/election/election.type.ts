@@ -26,13 +26,13 @@ export interface ElectionData extends DataObjectData {
   /**
    * The date after which the election can be treated as past, i.e., the end of the voting period.
    */
-  date?: string;
+  date?: string | null;
   /**
    * Set to true if the election can have multiple rounds.
    */
-  multipleRounds?: boolean;
+  multipleRounds?: boolean | null;
   /**
    * The optional current round of the election if it has multiple rounds. Defaults to 1.
    */
-  round?: number;
+  round?: number | null;
 }
