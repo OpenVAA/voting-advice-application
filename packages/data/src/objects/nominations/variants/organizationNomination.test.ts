@@ -5,7 +5,7 @@ import {
   ExtendedNominationData,
   getTestData,
   getTestDataRoot,
-  parseNestedNominations
+  parseNestedNominations,
 } from '../../../testUtils';
 
 const root = getTestDataRoot();
@@ -49,7 +49,7 @@ test('Should have nomination objects for all Organization nominations with the c
 });
 
 /**
- * Find the nomination object that matches the nomination data, i.e. has the same electionId, constituencyId and entityId.
+ * Find the nomination object that matches the nomination data, i.e. has the same electionId, electionRound, constituencyId and entityId.
  * @param nominations The entities to search in
  * @param nominationData The data for the nomination
  * @returns An array of matching implicit nominations, which should have one and only one item
@@ -60,8 +60,11 @@ function findNominations(
 ): Array<OrganizationNomination> {
   const found = new Array<OrganizationNomination>();
   for (const obj of nominations) {
+    // if (obj.entity.id === 'organization-2') console.info(obj.electionRound, nominationData.electionRound);
     if (
       obj.election.id === nominationData.electionId &&
+      ((!nominationData.electionRound && obj.electionRound === 1) ||
+        obj.electionRound === nominationData.electionRound) &&
       obj.constituency.id === nominationData.constituencyId &&
       obj.entity.id === nominationData.entityId
     )

@@ -25,11 +25,15 @@ export interface NominationData<TEntity extends EntityType = EntityType, TParent
    */
   entityId: Id;
   /**
-   * The `Election` for which the nomination is made in.
+   * The `Election` which the nomination is made in.
    */
   electionId: Id;
   /**
-   * The `Constituency` for which the nomination is made in.
+   * The possible election rounnd for which the nomination is made in. @defaultValue 1
+   */
+  electionRound?: number | null;
+  /**
+   * The `Constituency` which the nomination is made in.
    */
   constituencyId: Id;
   /**
@@ -51,7 +55,7 @@ export interface NominationData<TEntity extends EntityType = EntityType, TParent
  */
 export type NestedNomination<TData> = Omit<
   TData,
-  'constituencyId' | 'electionId' | 'entityType' | 'parentNominationId' | 'parentNominationType'
+  'constituencyId' | 'electionId' | 'electionRound' | 'entityType' | 'parentNominationId' | 'parentNominationType'
 >;
 
 /**

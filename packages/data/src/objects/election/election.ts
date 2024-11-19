@@ -11,7 +11,7 @@ import {
   FactionNomination,
   type Id,
   isMissingValue,
-  OrganizationNomination
+  OrganizationNomination,
 } from '../../internal';
 
 /**
@@ -72,7 +72,8 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
       this.root.getNominationsForConstituency({
         type: ENTITY_TYPE.Alliance,
         constituencyId: id,
-        electionId: this.id
+        electionId: this.id,
+        electionRound: this.round,
       }) ?? []
     );
   }
@@ -86,7 +87,8 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
       this.root.getNominationsForConstituency({
         type: ENTITY_TYPE.Candidate,
         constituencyId: id,
-        electionId: this.id
+        electionId: this.id,
+        electionRound: this.round,
       }) ?? []
     );
   }
@@ -100,7 +102,8 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
       this.root.getNominationsForConstituency({
         type: ENTITY_TYPE.Faction,
         constituencyId: id,
-        electionId: this.id
+        electionId: this.id,
+        electionRound: this.round,
       }) ?? []
     );
   }
@@ -114,7 +117,8 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
       this.root.getNominationsForConstituency({
         type: ENTITY_TYPE.Organization,
         constituencyId: id,
-        electionId: this.id
+        electionId: this.id,
+        electionRound: this.round,
       }) ?? []
     );
   }

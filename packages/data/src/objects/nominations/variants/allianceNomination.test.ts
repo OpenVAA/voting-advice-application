@@ -4,7 +4,7 @@ import {
   AllianceNomination,
   ENTITY_TYPE,
   parseNominationTree,
-  PublicAllianceNominationData
+  PublicAllianceNominationData,
 } from '../../../internal';
 import { contentsMatch, getTestData, getTestDataRoot } from '../../../testUtils';
 
@@ -66,7 +66,7 @@ function findEntities(entities: Array<Alliance>, nominationData: PublicAllianceN
 }
 
 /**
- * Find the nomination object that matches the nomination data, i.e. has the same electionId, constituencyId, and member organizations
+ * Find the nomination object that matches the nomination data, i.e. has the same electionId, electionRound, constituencyId, and member organizations
  * @param nominations The entities to search in
  * @param nominationData The data for the nomination
  * @returns An array of matching implicit nominations, which should have one and only one item
@@ -79,6 +79,8 @@ function findNominations(
   for (const obj of nominations) {
     if (
       obj.election.id === nominationData.electionId &&
+      ((!nominationData.electionRound && obj.electionRound === 1) ||
+        obj.electionRound === nominationData.electionRound) &&
       obj.constituency.id === nominationData.constituencyId &&
       contentsMatch(
         obj.organizationNominations.map((o) => o.entity.id),
