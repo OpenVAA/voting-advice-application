@@ -10,7 +10,7 @@ import type {
   HasAnswers,
   NominationData,
   NominationVariant,
-  WithOptional
+  WithOptional,
 } from '../../../internal';
 
 /**
@@ -47,7 +47,7 @@ export abstract class Nomination<
       fullData = {
         ...data,
         id: root.createId('nomination'),
-        isGenerated: true
+        isGenerated: true,
       } as TData;
     } else {
       fullData = data as TData;
@@ -67,17 +67,24 @@ export abstract class Nomination<
   }
 
   /**
-   * The `Constituency` for which the nomination is made in.
+   * The `Constituency` which the nomination is made in.
    */
   get constituency(): Constituency {
     return this.root.getConstituency(this.data.constituencyId);
   }
 
   /**
-   * The `Election` for which the nomination is made in.
+   * The `Election` which the nomination is made in.
    */
   get election(): Election {
     return this.root.getElection(this.data.electionId);
+  }
+
+  /**
+   * The possible election rounnd which the nomination is made in. @defaultValue 1
+   */
+  get electionRound(): number {
+    return this.data.electionRound ?? 1;
   }
 
   /**
@@ -130,6 +137,26 @@ export abstract class Nomination<
    */
   get shortName(): string {
     return this.data.shortName ? this.data.shortName : this.data.name ? this.data.name : this.entity.shortName;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Utilities
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * A utility for creating nested `Nomination`s.
+   * @returns The properties of the parent `Nomination` that the children should inherit.
+   */
+  protected getInheritableData(): Pick<
+    NominationData<EntityType, EntityType>,
+    'constituencyId' | 'electionId' | 'electionRound' | 'parentNominationId'
+  > {
+    return {
+      constituencyId: this.data.constituencyId,
+      electionId: this.data.electionId,
+      electionRound: this.data.electionRound,
+      parentNominationId: this.data.id,
+    };
   }
 
   //////////////////////////////////////////////////////////////////////////////

@@ -407,7 +407,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
   //////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Find `Nomination`s based on `entityType`, `entityId`, `electionId` and `constituencyId`.
+   * Find `Nomination`s based on `entityType`, `entityId`, `electionRound`, `electionId` and `constituencyId`.
    * @param type - The type of the nominated entity.
    * @param id - The id of the nominated entity.
    */
@@ -415,11 +415,13 @@ export class DataRoot extends Updatable implements FormatterMethods {
     entityType,
     entityId,
     electionId,
+    electionRound,
     constituencyId,
   }: {
     entityType: TEntity;
     entityId?: Id;
     electionId?: Id;
+    electionRound?: number;
     constituencyId?: Id;
   }): Array<NominationVariant[TEntity]> | undefined {
     const collection = this.children[this.getNominationCollectionName(entityType)] as
@@ -430,6 +432,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
           (n) =>
             (!entityId || `${n.data.entityId}` === `${entityId}`) &&
             (!electionId || `${n.data.electionId}` === `${electionId}`) &&
+            (!electionRound || n.electionRound === electionRound) &&
             (!constituencyId || `${n.data.constituencyId}` === `${constituencyId}`)
         )
       : undefined;
@@ -455,19 +458,22 @@ export class DataRoot extends Updatable implements FormatterMethods {
    * Get all provided `Nomination`s of a specific entity type for an `Election`-`Constituency` pair.
    * @param type - The type of the nominated entity.
    * @param electionId - The id of the election.
+   * @param electionRound - The possible round of the election.
    * @param constituencyId - The id of the constituency.
    * @returns An array of `Nomination`s for the given `Entity` or `undefined` if `Nomination`s have not yet been provided.
    */
   getNominationsForConstituency<TEntity extends EntityType>({
     type,
     electionId,
+    electionRound,
     constituencyId,
   }: {
     type: TEntity;
     electionId: Id;
+    electionRound?: number;
     constituencyId: Id;
   }): Array<NominationVariant[TEntity]> | undefined {
-    return this.findNominations({ entityType: type, electionId, constituencyId });
+    return this.findNominations({ entityType: type, electionId, electionRound, constituencyId });
   }
 
   /**

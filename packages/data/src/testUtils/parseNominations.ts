@@ -37,6 +37,7 @@ export function parseNestedNominations(
   nominations: Array<NominationVariantPublicData | NestedNomination<NominationVariantPublicData>>,
   inherited?: {
     electionId: Id;
+    electionRound?: number | null;
     constituencyId: Id;
     entityType: EntityType;
     parent?: ExtendedNominationData;
@@ -45,18 +46,19 @@ export function parseNestedNominations(
   const out = new Array<ExtendedNominationData>();
   for (const n of nominations) {
     const data = {
-      ...n,
       ...inherited,
+      ...n,
       entityPseudoId: n.entityId ? undefined : crypto.randomUUID(),
     } as ExtendedNominationData;
     out.push(data);
-    const { electionId, constituencyId } = data;
+    const { electionId, electionRound, constituencyId } = data;
     if ('organizations' in n && n.organizations)
       out.push(
         ...parseNestedNominations(n.organizations, {
           entityType: ENTITY_TYPE.Organization,
           parent: data,
           electionId,
+          electionRound,
           constituencyId,
         })
       );
@@ -66,6 +68,7 @@ export function parseNestedNominations(
           entityType: ENTITY_TYPE.Faction,
           parent: data,
           electionId,
+          electionRound,
           constituencyId,
         })
       );
@@ -75,6 +78,7 @@ export function parseNestedNominations(
           entityType: ENTITY_TYPE.Candidate,
           parent: data,
           electionId,
+          electionRound,
           constituencyId,
         })
       );
