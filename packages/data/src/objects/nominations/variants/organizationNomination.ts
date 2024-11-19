@@ -10,7 +10,7 @@ import {
   FactionNominationData,
   Nomination,
   type OrganizationNominationData,
-  WithOptional
+  WithOptional,
 } from '../../../internal';
 
 /**
@@ -36,11 +36,9 @@ export class OrganizationNomination
       );
 
     // Create nested candidate or faction nominations
-    const complementBase = {
-      constituencyId: this.data.constituencyId,
-      electionId: this.data.electionId,
-      parentNominationId: this.data.id,
-      parentNominationType: ENTITY_TYPE.Organization
+    const inheritance = {
+      ...this.getInheritableData(),
+      parentNominationType: ENTITY_TYPE.Organization,
     };
     if (this.data.candidates?.length) {
       const { candidateNominations } = this.root.provideNominationData(
@@ -48,9 +46,9 @@ export class OrganizationNomination
           (d) =>
             ({
               ...d,
-              ...complementBase,
-              entityType: ENTITY_TYPE.Candidate
-            }) as CandidateNominationData
+              ...inheritance,
+              entityType: ENTITY_TYPE.Candidate,
+            } as CandidateNominationData)
         )
       );
       this.data.candidateNominationIds = candidateNominations.map((n) => n.id);
@@ -60,9 +58,9 @@ export class OrganizationNomination
           (d) =>
             ({
               ...d,
-              ...complementBase,
-              entityType: ENTITY_TYPE.Faction
-            }) as FactionNominationData
+              ...inheritance,
+              entityType: ENTITY_TYPE.Faction,
+            } as FactionNominationData)
         )
       );
       this.data.factionNominationIds = factionNominations.map((n) => n.id);

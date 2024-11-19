@@ -29,7 +29,7 @@ test('Should have nomination objects for all candidate nominations with the corr
 });
 
 /**
- * Find the nomination object that matches the nomination data, i.e. has the same electionId, constituencyId, entityId and parent nomination.
+ * Find the nomination object that matches the nomination data, i.e. has the same electionId, electionRound, constituencyId, entityId and parent nomination.
  * @param nominations The entities to search in
  * @param nominationData The data for the nomination
  * @returns An array of matching implicit nominations, which should have one and only one item
@@ -42,6 +42,8 @@ function findNominations(
   for (const obj of nominations) {
     if (
       obj.election.id === nominationData.electionId &&
+      ((!nominationData.electionRound && obj.electionRound === 1) ||
+        obj.electionRound === nominationData.electionRound) &&
       obj.constituency.id === nominationData.constituencyId &&
       obj.entity.id === nominationData.entityId &&
       // No parent
