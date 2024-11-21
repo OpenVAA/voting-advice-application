@@ -110,10 +110,10 @@ export abstract class Nomination<
   }
 
   /**
-   * A utility getter for the name of the nominated `Entity`.
+   * A utility getter for the name of the nominated `Entity` unless the `Nomination` itself has a `name`.
    */
   get name(): string {
-    return this.data.name ? this.data.name : this.entity.name;
+    return this.data.name || this.entity.name;
   }
 
   /**
@@ -133,10 +133,10 @@ export abstract class Nomination<
   }
 
   /**
-   * A utility getter for the shortName of the nominated `Entity`.
+   * A utility getter for the shortName of the nominated `Entity` unless the `Nomination` itself has a `shortName` or `name`.
    */
   get shortName(): string {
-    return this.data.shortName ? this.data.shortName : this.data.name ? this.data.name : this.entity.shortName;
+    return this.data.shortName || this.data.name || this.entity.shortName;
   }
 
   //////////////////////////////////////////////////////////////////////////////

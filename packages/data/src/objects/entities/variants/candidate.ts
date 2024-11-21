@@ -25,7 +25,7 @@ export class Candidate
    * The full name of the candidate. To change the format, set the `format.candidateName` property in the `DataRoot`.
    */
   get name(): string {
-    return this.data.name ?? this.root.formatCandidateName({ object: this });
+    return this.data.name || this.root.formatCandidateName({ object: this });
   }
 
   /**
@@ -40,6 +40,6 @@ export class Candidate
    * The short name of the candidate. To change the format, set the `format.candidateName` property in the `DataRoot`.
    */
   get shortName(): string {
-    return this.data.shortName ?? this.root.formatCandidateShortName({ object: this });
+    return this.data.shortName || this.root.formatCandidateShortName({ object: this });
   }
 }

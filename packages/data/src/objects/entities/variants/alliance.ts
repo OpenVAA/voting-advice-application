@@ -4,7 +4,7 @@ import {
   Entity,
   ENTITY_TYPE,
   Organization,
-  removeDuplicates
+  removeDuplicates,
 } from '../../../internal';
 
 /**
@@ -23,13 +23,13 @@ export class Alliance extends Entity<typeof ENTITY_TYPE.Alliance, AllianceData> 
    * The name of the `Alliance`. @defaultValue Combination of the member `Organization`s’ names.
    */
   get name(): string {
-    return this.data.name ?? this.root.formatAllianceName({ object: this });
+    return this.data.name || this.root.formatAllianceName({ object: this });
   }
 
   /**
    * The short name of the `Alliance`. @defaultValue Combination of the member `Organization`s’ short names.
    */
   get shortName(): string {
-    return this.data.shortName ?? this.root.formatAllianceShortName({ object: this });
+    return this.data.shortName || this.root.formatAllianceShortName({ object: this });
   }
 }
