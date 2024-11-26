@@ -10,7 +10,7 @@ import type {
   HasAnswers,
   NominationData,
   NominationVariant,
-  WithOptional,
+  WithOptional
 } from '../../../internal';
 
 /**
@@ -47,7 +47,7 @@ export abstract class Nomination<
       fullData = {
         ...data,
         id: root.createId('nomination'),
-        isGenerated: true,
+        isGenerated: true
       } as TData;
     } else {
       fullData = data as TData;
@@ -155,7 +155,7 @@ export abstract class Nomination<
       constituencyId: this.data.constituencyId,
       electionId: this.data.electionId,
       electionRound: this.data.electionRound,
-      parentNominationId: this.data.id,
+      parentNominationId: this.data.id
     };
   }
 

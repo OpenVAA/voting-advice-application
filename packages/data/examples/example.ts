@@ -1,6 +1,7 @@
-import { DataRoot, ENTITY_TYPE, EXAMPLE_DATA, QUESTION_CATEGORY_TYPE } from '../src/internal';
+import { DataRoot, ENTITY_TYPE, QUESTION_CATEGORY_TYPE } from '../src/internal';
+import { getTestData } from '../src/testUtils';
 
-const root = new DataRoot({ data: EXAMPLE_DATA });
+const root = new DataRoot({ data: getTestData() });
 
 // Show elections
 console.info('Select an election');

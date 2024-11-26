@@ -1,6 +1,11 @@
 import {
   Alliance,
   AllianceNomination,
+  AnyEntityVariantData,
+  AnyNominationVariantData,
+  AnyNominationVariantPublicData,
+  type AnyQuestionVariant,
+  type AnyQuestionVariantData,
   Candidate,
   CandidateNomination,
   type Collection,
@@ -16,7 +21,6 @@ import {
   ENTITY_TYPE,
   type EntityType,
   type EntityVariant,
-  EntityVariantData,
   EntityVariantTree,
   Faction,
   FactionNomination,
@@ -37,8 +41,6 @@ import {
   isValidId,
   type MappedCollection,
   NominationVariant,
-  NominationVariantData,
-  NominationVariantPublicData,
   NominationVariantTree,
   order,
   Organization,
@@ -48,11 +50,9 @@ import {
   QuestionCategory,
   type QuestionCategoryData,
   QuestionCategoryType,
-  type QuestionVariant,
-  type QuestionVariantData,
   RootCollections,
   RootFormatters,
-  Updatable,
+  Updatable
 } from '../internal';
 
 /*
@@ -86,7 +86,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
     /** Format the `Answer.value` if it's a `number`. */
     numberAnswer: formatNumberAnswer,
     /** Format the `Answer.value` if it's a `string`. */
-    textAnswer: formatTextAnswer,
+    textAnswer: formatTextAnswer
   };
   /**
    * The locale to use for formatting.
@@ -112,7 +112,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
    */
   constructor({
     data,
-    locale,
+    locale
   }: {
     data?: FullVaaData;
     locale?: string;
@@ -170,7 +170,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
     return this.getCollectionAsArray('organizationNominations');
   }
 
-  get questions(): Collection<QuestionVariant> | undefined {
+  get questions(): Collection<AnyQuestionVariant> | undefined {
     return this.getCollectionAsArray('questions');
   }
 
@@ -372,7 +372,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
    * @returns The `Question` with the given id
    * @throws If the object is not found.
    */
-  getQuestion(id: Id): QuestionVariant {
+  getQuestion(id: Id): AnyQuestionVariant {
     return this.getChild('questions', id);
   }
 
@@ -416,7 +416,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
     entityId,
     electionId,
     electionRound,
-    constituencyId,
+    constituencyId
   }: {
     entityType: TEntity;
     entityId?: Id;
@@ -446,7 +446,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
    */
   getNominationsForEntity<TEntity extends EntityType>({
     type,
-    id,
+    id
   }: {
     type: TEntity;
     id: Id;
@@ -466,7 +466,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
     type,
     electionId,
     electionRound,
-    constituencyId,
+    constituencyId
   }: {
     type: TEntity;
     electionId: Id;
@@ -477,11 +477,11 @@ export class DataRoot extends Updatable implements FormatterMethods {
   }
 
   /**
-   * Get `QuestionVariant`s of a specific `QuestionCategoryType`.
+   * Get `AnyQuestionVariant`s of a specific `QuestionCategoryType`.
    * @param type - The type to look for.
-   * @returns An array of `QuestionVariant`s or `undefined` if questions haven't been provided yet.
+   * @returns An array of `AnyQuestionVariant`s or `undefined` if questions haven't been provided yet.
    */
-  getQuestionsByType(type: QuestionCategoryType): Array<QuestionVariant> | undefined {
+  getQuestionsByType(type: QuestionCategoryType): Array<AnyQuestionVariant> | undefined {
     const categories = this.getQuestionCategoriesByType(type);
     return categories ? categories.flatMap((qc) => qc.questions) : undefined;
   }
@@ -518,7 +518,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
    */
   provideConstituencyData({
     groups,
-    constituencies,
+    constituencies
   }: {
     groups: Array<ConstituencyGroupData>;
     constituencies: Array<ConstituencyData>;
@@ -538,10 +538,10 @@ export class DataRoot extends Updatable implements FormatterMethods {
 
   /**
    * Provide the data for all entities to the `DataRoot`. Existing objects with the same id will be overwritten.
-   * @param data - The data for all entities. Two formats are supported: a single array of `EntityVariantData` with the `type` specified for each, or a structured object with these `EntityType`s as keys and the actual data without them.
+   * @param data - The data for all entities. Two formats are supported: a single array of `AnyEntityVariantData` with the `type` specified for each, or a structured object with these `EntityType`s as keys and the actual data without them.
    */
-  provideEntityData(data: Readonly<Array<EntityVariantData>> | Readonly<EntityVariantTree>): void {
-    const dataArray: Readonly<Array<EntityVariantData>> = !Array.isArray(data)
+  provideEntityData(data: Readonly<Array<AnyEntityVariantData>> | Readonly<EntityVariantTree>): void {
+    const dataArray: Readonly<Array<AnyEntityVariantData>> = !Array.isArray(data)
       ? parseEntityTree(data as EntityVariantTree)
       : data;
     this.update(() => {
@@ -570,17 +570,17 @@ export class DataRoot extends Updatable implements FormatterMethods {
 
   /**
    * Provide the data for all nominations to the `DataRoot`. Existing objects with the same id will be overwritten.
-   * @param data - The data for all nominations. Two formats are supported: a single array of `NominationVariantData` with the `electionId` and `constituencyId` specified for each, or a structured object with these `Id`s as keys and the actual data without them.
+   * @param data - The data for all nominations. Two formats are supported: a single array of `AnyNominationVariantData` with the `electionId` and `constituencyId` specified for each, or a structured object with these `Id`s as keys and the actual data without them.
    * @returns The created nominations because they’re needed by some nomination initializers.
    */
-  provideNominationData(data: Readonly<Array<NominationVariantPublicData>> | Readonly<NominationVariantTree>): {
+  provideNominationData(data: Readonly<Array<AnyNominationVariantPublicData>> | Readonly<NominationVariantTree>): {
     allianceNominations: Array<AllianceNomination>;
     organizationNominations: Array<OrganizationNomination>;
     factionNominations: Array<FactionNomination>;
     candidateNominations: Array<CandidateNomination>;
   } {
     const out: Partial<ReturnType<this['provideNominationData']>> = {};
-    const dataArray: Readonly<Array<NominationVariantData>> = !Array.isArray(data)
+    const dataArray: Readonly<Array<AnyNominationVariantData>> = !Array.isArray(data)
       ? parseNominationTree(data as NominationVariantTree)
       : data;
     this.update(() => {
@@ -613,10 +613,10 @@ export class DataRoot extends Updatable implements FormatterMethods {
    */
   provideQuestionData({
     categories,
-    questions,
+    questions
   }: {
     categories: Array<QuestionCategoryData>;
-    questions: Array<QuestionVariantData>;
+    questions: Array<AnyQuestionVariantData>;
   }): void {
     this.update(() => {
       this.provideData('questionCategories', categories, (args) => new QuestionCategory(args));

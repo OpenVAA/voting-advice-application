@@ -5,7 +5,7 @@ import type {
   NominationData,
   PublicCandidateNominationData,
   PublicFactionNominationData,
-  WithOptional,
+  WithOptional
 } from '../../../internal';
 
 export interface OrganizationNominationData

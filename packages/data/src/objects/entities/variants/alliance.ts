@@ -4,7 +4,7 @@ import {
   Entity,
   ENTITY_TYPE,
   Organization,
-  removeDuplicates,
+  removeDuplicates
 } from '../../../internal';
 
 /**

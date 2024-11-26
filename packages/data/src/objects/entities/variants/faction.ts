@@ -6,7 +6,7 @@ import {
   ENTITY_TYPE,
   type FactionData,
   Organization,
-  removeDuplicates,
+  removeDuplicates
 } from '../../../internal';
 
 /**

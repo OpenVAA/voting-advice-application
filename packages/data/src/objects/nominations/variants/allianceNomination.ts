@@ -7,7 +7,7 @@ import {
   ENTITY_TYPE,
   Nomination,
   OrganizationNomination,
-  WithOptional,
+  WithOptional
 } from '../../../internal';
 
 /**
@@ -45,8 +45,8 @@ export class AllianceNomination
           isGenerated: true,
           id,
           name,
-          shortName,
-        },
+          shortName
+        }
       ]);
       this.data.entityId = id;
     }
@@ -57,7 +57,7 @@ export class AllianceNomination
         ...d,
         ...this.getInheritableData(),
         entityType: ENTITY_TYPE.Organization,
-        parentNominationType: ENTITY_TYPE.Alliance,
+        parentNominationType: ENTITY_TYPE.Alliance
       }))
     );
     this.data.organizationNominationIds = organizationNominations.map((n) => n.id);
