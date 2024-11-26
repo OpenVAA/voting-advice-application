@@ -8,7 +8,7 @@ import {
   type FactionNominationData,
   Nomination,
   type OrganizationNomination,
-  WithOptional,
+  WithOptional
 } from '../../../internal';
 
 /**
@@ -45,8 +45,8 @@ export class FactionNomination
           isGenerated: true,
           id,
           name,
-          shortName,
-        },
+          shortName
+        }
       ]);
       this.data.entityId = id;
     }
@@ -57,7 +57,7 @@ export class FactionNomination
         ...d,
         ...this.getInheritableData(),
         entityType: ENTITY_TYPE.Candidate,
-        parentNominationType: ENTITY_TYPE.Faction,
+        parentNominationType: ENTITY_TYPE.Faction
       }))
     );
     this.data.candidateNominationIds = candidateNominations.map((n) => n.id);

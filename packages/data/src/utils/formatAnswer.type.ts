@@ -1,12 +1,12 @@
 import {
   AnswerValue,
+  AnyQuestionVariant,
   MultipleChoiceCategoricalQuestion,
   QUESTION_TYPE,
   QuestionVariant,
-  QuestionVariantClass,
   SimpleQuestionType,
   SingleChoiceCategoricalQuestion,
-  SingleChoiceOrdinalQuestion,
+  SingleChoiceOrdinalQuestion
 } from '../internal';
 
 /**
@@ -19,7 +19,7 @@ import {
 export type AnswerFormatter<TType extends SimpleQuestionType> = ({
   locale,
   value,
-  question,
+  question
 }: {
   locale?: string | null;
   value: AnswerValue[TType];
@@ -30,12 +30,12 @@ export type AnswerFormatter<TType extends SimpleQuestionType> = ({
  * Map a `SimpleQuestionType` to its related `QuestionType` and possible matching `ChoiceQuestion`s.
  */
 export type CompatibleQuestionVariants<TType extends SimpleQuestionType> =
-  | QuestionVariantClass[TType]
+  | QuestionVariant[TType]
   | (TType extends typeof QUESTION_TYPE.Text
       ? SingleChoiceCategoricalQuestion | SingleChoiceOrdinalQuestion
       : TType extends typeof QUESTION_TYPE.MultipleText
-      ? MultipleChoiceCategoricalQuestion
-      : never);
+        ? MultipleChoiceCategoricalQuestion
+        : never);
 
 /**
  * The type for the `MISSING_VALUE` formater.
@@ -44,8 +44,8 @@ export type CompatibleQuestionVariants<TType extends SimpleQuestionType> =
  */
 export type MissingAnswerFormatter = ({
   locale,
-  question,
+  question
 }: {
   locale?: string | null;
-  question: QuestionVariant;
+  question: AnyQuestionVariant;
 }) => string;

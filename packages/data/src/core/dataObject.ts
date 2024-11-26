@@ -1,5 +1,5 @@
-import { DataProvisionError, DataRoot, Updatable } from '../internal';
-import type { Colors, DataAccessor, DataObjectData, Id, Image } from '../internal';
+import { DataProvisionError, Updatable } from '../internal';
+import type { Colors, DataAccessor, DataObjectData, DataRoot, Id, Image } from '../internal';
 
 /**
  * Base class for all data objects. Note that we implement `DataAccessor<DataObjectData>` to make sure that wehave accessors for all of the properties in the object’s data.

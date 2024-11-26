@@ -1,10 +1,10 @@
 import { order, QUESTION_CATEGORY_TYPE, QuestionAndCategoryBase } from '../../../internal';
 import type {
+  AnyQuestionVariant,
   Collection,
   DataAccessor,
   QuestionCategoryData,
-  QuestionCategoryType,
-  QuestionVariant
+  QuestionCategoryType
 } from '../../../internal';
 
 /**
@@ -24,7 +24,7 @@ export class QuestionCategory
   /**
    * Get the questions in this category.
    */
-  get questions(): Collection<QuestionVariant> {
+  get questions(): Collection<AnyQuestionVariant> {
     return this.root.questions?.filter((q) => q.category === this).sort(order) ?? [];
   }
 }

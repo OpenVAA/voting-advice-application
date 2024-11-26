@@ -1,4 +1,4 @@
-import { Alliance, Candidate, ENTITY_TYPE, EntityType, Faction, Organization } from '../../../internal';
+import type { Alliance, Candidate, ENTITY_TYPE, EntityType, Faction, Organization } from '../../../internal';
 
 /**
  * Entity variants
@@ -24,31 +24,36 @@ export type EntityVariant = {
 };
 
 /**
+ * Any concrete entity entity.
+ */
+export type AnyEntityVariant = EntityVariant[keyof EntityVariant];
+
+/**
  * A map of the concrete entity constructors’ data arguments by their entity type.
  */
-export type EntityVariantDataType = {
+export type EntityVariantData = {
   [KType in EntityType]: ConstructorParameters<EntityVariantConstructor[KType]>[0]['data'];
 };
 
 /**
  * Any concrete entity constructors’ data argument type.
  */
-export type EntityVariantData = EntityVariantDataType[keyof EntityVariantDataType];
+export type AnyEntityVariantData = EntityVariantData[keyof EntityVariantData];
 
 /**
  * An alternative data structure for `EntityData` with the `type`s specified hierarchically as keys.
  * Use the `parseEntityTree` util to convert these to a canonical array.
  */
 export type EntityVariantTree = {
-  [K in EntityType]: Array<Omit<EntityVariantDataType[K], 'type'>>;
+  [K in EntityType]: Array<Omit<EntityVariantData[K], 'type'>>;
 };
 
 /**
  * Parse a `EntityVariantTree` into an array of `EntityVariantPublicData`.
  */
-export function parseEntityTree(tree: EntityVariantTree): Array<EntityVariantData> {
-  const entities = new Array<EntityVariantData>();
+export function parseEntityTree(tree: EntityVariantTree): Array<AnyEntityVariantData> {
+  const entities = new Array<AnyEntityVariantData>();
   for (const [type, data] of Object.entries(tree))
-    entities.push(...data.map((d) => ({ ...d, type }) as EntityVariantData));
+    entities.push(...data.map((d) => ({ ...d, type }) as AnyEntityVariantData));
   return entities;
 }

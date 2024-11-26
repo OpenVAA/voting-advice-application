@@ -18,6 +18,6 @@ test('CreateQuestion should work', () => {
   for (const [type, constructor] of Object.entries(QUESTION_VARIANT)) {
     const objData = questionData.find((q) => q.type === type);
     const obj = createQuestion({ data: objData!, root });
-    expect(obj, `To create QuestionVariant of type ${type}`).toBeInstanceOf(constructor);
+    expect(obj, `To create AnyQuestionVariant of type ${type}`).toBeInstanceOf(constructor);
   }
 });

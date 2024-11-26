@@ -2,6 +2,7 @@ import {
   type Answer,
   type Answers,
   type AnswerValue,
+  type AnyQuestionVariant,
   type DataAccessor,
   DataObject,
   DataTypeError,
@@ -14,7 +15,6 @@ import {
   MultipleChoiceQuestion,
   type NominationVariant,
   QUESTION_TYPE,
-  type QuestionVariant,
   SingleChoiceQuestion
 } from '../../../internal';
 
@@ -51,7 +51,7 @@ export abstract class Entity<TType extends EntityType, TData extends EntityData<
    * @param question - The `Question` to get the answer for.
    * @returns The `Answer` object for the given question or `undefined` if the answer is missing or its `value` is invalid for the question type, it returns `undefined`.
    */
-  getAnswer<TQuestion extends QuestionVariant>(
+  getAnswer<TQuestion extends AnyQuestionVariant>(
     question: TQuestion
   ): Answer<AnswerValue[TQuestion['type']]> | undefined {
     const answer = this.answers?.[question.id];
@@ -66,7 +66,7 @@ export abstract class Entity<TType extends EntityType, TData extends EntityData<
    * @param question - The `Question` to get the answer for.
    * @returns A string or an array of strings.
    */
-  getFormattedAnswer<TQuestion extends QuestionVariant>(question: TQuestion): string {
+  getFormattedAnswer<TQuestion extends AnyQuestionVariant>(question: TQuestion): string {
     const answer = this.getAnswer(question);
     if (answer == null) return this.root.formatMissingAnswer({ question });
     // We use instanceof checks to catch subclasses of choice questions

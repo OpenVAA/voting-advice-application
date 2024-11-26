@@ -5,7 +5,7 @@ import {
   ExtendedNominationData,
   getTestData,
   getTestDataRoot,
-  parseNestedNominations,
+  parseNestedNominations
 } from '../../../testUtils';
 
 const root = getTestDataRoot();

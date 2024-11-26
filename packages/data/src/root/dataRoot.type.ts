@@ -2,6 +2,10 @@ import {
   Alliance,
   AllianceNomination,
   AnswerFormatter,
+  AnyEntityVariantData,
+  AnyNominationVariantPublicData,
+  AnyQuestionVariant,
+  AnyQuestionVariantData,
   Candidate,
   CandidateNomination,
   Constituency,
@@ -10,21 +14,17 @@ import {
   ConstituencyGroupData,
   Election,
   ElectionData,
-  EntityVariantData,
   EntityVariantTree,
   Faction,
   FactionNomination,
   Formatter,
   MissingAnswerFormatter,
-  NominationVariantPublicData,
   NominationVariantTree,
   Organization,
   OrganizationNomination,
   QUESTION_TYPE,
   QuestionCategory,
-  QuestionCategoryData,
-  QuestionVariant,
-  QuestionVariantData,
+  QuestionCategoryData
 } from '../internal';
 
 /**
@@ -61,7 +61,7 @@ export type RootCollections = {
   elections: Election;
   // Questions and categories
   questionCategories: QuestionCategory;
-  questions: QuestionVariant;
+  questions: AnyQuestionVariant;
   // Entities
   alliances: Alliance;
   candidates: Candidate;
@@ -78,10 +78,10 @@ export type RootCollections = {
  * A hierarchical data format for providing all VAA data at once.
  */
 export type FullVaaData<
-  TEntities extends EntityVariantTree | Array<EntityVariantData> = EntityVariantTree | Array<EntityVariantData>,
-  TNominations extends NominationVariantTree | Array<NominationVariantPublicData> =
+  TEntities extends EntityVariantTree | Array<AnyEntityVariantData> = EntityVariantTree | Array<AnyEntityVariantData>,
+  TNominations extends NominationVariantTree | Array<AnyNominationVariantPublicData> =
     | NominationVariantTree
-    | Array<NominationVariantPublicData>
+    | Array<AnyNominationVariantPublicData>
 > = {
   elections: Array<ElectionData>;
   constituencies: {
@@ -90,7 +90,7 @@ export type FullVaaData<
   };
   questions: {
     categories: Array<QuestionCategoryData>;
-    questions: Array<QuestionVariantData>;
+    questions: Array<AnyQuestionVariantData>;
   };
   /**
    * Entities can be provided either as a hierarchical tree or as an array of fully-specified entities.

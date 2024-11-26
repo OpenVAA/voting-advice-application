@@ -4,7 +4,7 @@ import type {
   NestedNomination,
   NominationData,
   PublicCandidateNominationData,
-  WithOptional,
+  WithOptional
 } from '../../../internal';
 
 export interface FactionNominationData

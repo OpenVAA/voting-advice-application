@@ -29,9 +29,9 @@ export function createQuestion<TType extends QuestionType>({
   data,
   root
 }: {
-  data: QuestionVariantDataType[TType];
+  data: QuestionVariantData[TType];
   root: DataRoot;
-}): QuestionVariantClass[TType] {
+}): QuestionVariant[TType] {
   return new QUESTION_VARIANT[data.type as TType]({ data, root });
 }
 
@@ -43,9 +43,9 @@ export const QUESTION_VARIANT: {
     data,
     root
   }: {
-    data: QuestionVariantDataType[KType];
+    data: QuestionVariantData[KType];
     root: DataRoot;
-  }) => QuestionVariantClass[KType];
+  }) => QuestionVariant[KType];
 } = {
   [QUESTION_TYPE.Text]: TextQuestion,
   [QUESTION_TYPE.Number]: NumberQuestion,
@@ -62,7 +62,14 @@ export const QUESTION_VARIANT: {
 /**
  * A map of the concrete question classes by their question type.
  */
-export type QuestionVariantClass = {
+export type QuestionVariantConstructor = {
+  [KType in QuestionType]: (typeof QUESTION_VARIANT)[KType];
+};
+
+/**
+ * A map of the concrete question classes by their question type.
+ */
+export type QuestionVariant = {
   [QUESTION_TYPE.Text]: TextQuestion;
   [QUESTION_TYPE.Number]: NumberQuestion;
   [QUESTION_TYPE.Boolean]: BooleanQuestion;
@@ -77,12 +84,12 @@ export type QuestionVariantClass = {
 /**
  * Any concrete question.
  */
-export type QuestionVariant = QuestionVariantClass[keyof QuestionVariantClass];
+export type AnyQuestionVariant = QuestionVariant[keyof QuestionVariant];
 
 /**
  * A map of the concrete question constructors’ data arguments by their question type.
  */
-export type QuestionVariantDataType = {
+export type QuestionVariantData = {
   [QUESTION_TYPE.Text]: ConstructorParameters<typeof TextQuestion>[0]['data'];
   [QUESTION_TYPE.Number]: ConstructorParameters<typeof NumberQuestion>[0]['data'];
   [QUESTION_TYPE.Boolean]: ConstructorParameters<typeof BooleanQuestion>[0]['data'];
@@ -97,4 +104,4 @@ export type QuestionVariantDataType = {
 /**
  * Any concrete question constructors’ data argument type.
  */
-export type QuestionVariantData = QuestionVariantDataType[keyof QuestionVariantDataType];
+export type AnyQuestionVariantData = QuestionVariantData[keyof QuestionVariantData];
