@@ -4,7 +4,7 @@ import type { Colors, DataAccessor, DataObjectData, DataRoot, Id, Image } from '
 /**
  * Base class for all data objects. Note that we implement `DataAccessor<DataObjectData>` to make sure that wehave accessors for all of the properties in the object’s data.
  */
-export abstract class DataObject<TData extends DataObjectData>
+export abstract class DataObject<TData extends DataObjectData = DataObjectData>
   extends Updatable
   implements DataAccessor<DataObjectData>
 {
