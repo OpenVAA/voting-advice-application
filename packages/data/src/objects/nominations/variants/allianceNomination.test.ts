@@ -4,7 +4,7 @@ import {
   AllianceNomination,
   ENTITY_TYPE,
   parseNominationTree,
-  PublicAllianceNominationData,
+  PublicAllianceNominationData
 } from '../../../internal';
 import { contentsMatch, getTestData, getTestDataRoot } from '../../../testUtils';
 

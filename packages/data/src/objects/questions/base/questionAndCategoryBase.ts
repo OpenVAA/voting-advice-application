@@ -1,10 +1,10 @@
-import { FilterTargets } from './questionAndCategoryBase.type';
 import { DataObject, match } from '../../../internal';
 import type {
   Constituency,
   DataAccessor,
   Election,
   EntityType,
+  FilterTargets,
   FilterValue,
   QuestionAndCategoryBaseData
 } from '../../../internal';

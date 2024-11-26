@@ -1,13 +1,13 @@
 import crypto from 'crypto';
 import { describe, expect, test } from 'vitest';
 import {
+  AnyQuestionVariant,
   ENTITY_TYPE,
   FilterValue,
   Id,
   QuestionAndCategoryBase,
   QuestionAndCategoryBaseData,
-  QuestionCategory,
-  QuestionVariant
+  QuestionCategory
 } from '../../../internal';
 import { contentsMatch, getTestData, getTestDataRoot } from '../../../testUtils';
 
@@ -90,7 +90,7 @@ describe('AppliesTo should work', () => {
  * @param data - The object data
  */
 function testFilterableProps(
-  obj: QuestionVariant | QuestionCategory,
+  obj: AnyQuestionVariant | QuestionCategory,
   {
     electionIds,
     electionRounds,

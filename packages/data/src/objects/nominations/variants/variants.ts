@@ -9,7 +9,7 @@ import {
   PublicAllianceNominationData,
   PublicCandidateNominationData,
   PublicFactionNominationData,
-  PublicOrganizationNominationData,
+  PublicOrganizationNominationData
 } from '../../../internal';
 
 /**
@@ -43,19 +43,19 @@ export type AnyNominationVariant = NominationVariant[keyof NominationVariant];
 /**
  * A map of the concrete Nomination constructors’ data arguments by their Nomination type.
  */
-export type NominationVariantDataType = {
+export type NominationVariantData = {
   [KType in EntityType]: ConstructorParameters<NominationVariantConstructor[KType]>[0]['data'];
 };
 
 /**
  * Any concrete Nomination constructors’ data argument type.
  */
-export type NominationVariantData = NominationVariantDataType[keyof NominationVariantDataType];
+export type AnyNominationVariantData = NominationVariantData[keyof NominationVariantData];
 
 /**
  * A map of the concrete Nominations’ public data by their Nomination type.
  */
-export type NominationVariantPublicDataType = {
+export type NominationVariantPublicData = {
   [ENTITY_TYPE.Candidate]: PublicCandidateNominationData;
   [ENTITY_TYPE.Faction]: PublicFactionNominationData;
   [ENTITY_TYPE.Organization]: PublicOrganizationNominationData;
@@ -65,7 +65,7 @@ export type NominationVariantPublicDataType = {
 /**
  * Any concrete Nominations’ public data.
  */
-export type NominationVariantPublicData = NominationVariantPublicDataType[keyof NominationVariantPublicDataType];
+export type AnyNominationVariantPublicData = NominationVariantPublicData[keyof NominationVariantPublicData];
 
 /**
  * An alternative data structure for `NominationData` with the `electionId` and `constituencyId` specified hierarchically as keys.
@@ -83,22 +83,22 @@ export type NominationVariantTree = {
 };
 
 type WithoutElAndCoId<TType extends EntityType> = Omit<
-  NominationVariantPublicDataType[TType],
+  NominationVariantPublicData[TType],
   'electionId' | 'constituencyId'
 >;
 
 /**
- * Parse a `NominationVariantTree` into an array of `NominationVariantPublicDataType`.
+ * Parse a `NominationVariantTree` into an array of `NominationVariantPublicData`.
  */
-export function parseNominationTree(tree: NominationVariantTree): Array<NominationVariantPublicData> {
-  const nominations = new Array<NominationVariantPublicData>();
+export function parseNominationTree(tree: NominationVariantTree): Array<AnyNominationVariantPublicData> {
+  const nominations = new Array<AnyNominationVariantPublicData>();
   for (const electionId in tree) {
     for (const constituencyId in tree[electionId]) {
       nominations.push(
         ...tree[electionId][constituencyId].map((n) => ({
           ...n,
           electionId,
-          constituencyId,
+          constituencyId
         }))
       );
     }

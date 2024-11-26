@@ -12,9 +12,17 @@ The module can be used by itself to build an easily traversable, hierarchical mo
 
 ## Developing
 
-The module uses [`tsc-esm-fix`](https://github.com/antongolub/tsc-esm-fix) which allows us to use suffixless imports in Typescript.
+- The module uses [`tsc-esm-fix`](https://github.com/antongolub/tsc-esm-fix) which allows us to use suffixless imports in Typescript.
+- See also note on [Exports](#exports).
 
-See also note on [Exports](#exports).
+### Test data
+
+Test data is available in [testData.ts](./src/testUtils/testData.ts). It’s in a tree-like format and can be exported into multiple json files with the [`exportTestData`](./src/testUtils/exportTestData.ts) utility:
+
+```ts
+import { exportTestData } from './src/exportTestData'; // Not included in module exports
+exportTestData('path-to-export-folder');
+```
 
 ## Quick start
 
@@ -43,7 +51,7 @@ The data model itself does not support localization, but the module contains a [
 
 ## Exports
 
-The default exports contain a selected set of non-abstract classes, types and utilities. The exports are defined by the `exports.ts` files in each folder.
+The default exports contain a set of non-abstract classes, some abstract base classes, types and utilities.
 
 Imports are handled internally from [`/internal`](./src/internal.ts), which collects all exports from the source files in an order that prevents errors due to circular dependencies. When editing the source code, always route internal imports from this file. Note that these exports should not be used by external consumers of the module, because their availability may change in future versions.
 
@@ -163,7 +171,7 @@ The implied entities are created for consistency of the data model.
 
 The [[`Question`](./src/objects/questions/base/question.ts)](./src/objects/questions/base/question.ts) objects represent, naturally enough, the questions or statements posed by the VAA. They’re grouped into categories and are expect belong to one and only one [`QuestionCategory`](./src/objects/questions/category/questionCategory.ts).
 
-There are subclasses for many different types of questions, dubbed [`QuestionVariant`](./src/objects/questions/variants/variants.ts)s. The data for each of these is differentiated by the [`type: QuestionType`](./src/objects/questions/base/questionTypes.ts) property. The subclasses differ in the type of [`Answer`](./src/objects/questions/base/answer.type.ts)s they accept. If they can be used in matching, they also implement the `MatchableQuestion` interface defined by the `@openvaa/core` module and required by `@openvaa/matching`.
+There are subclasses for many different types of questions, dubbed [`AnyQuestionVariant`](./src/objects/questions/variants/variants.ts)s. The data for each of these is differentiated by the [`type: QuestionType`](./src/objects/questions/base/questionTypes.ts) property. The subclasses differ in the type of [`Answer`](./src/objects/questions/base/answer.type.ts)s they accept. If they can be used in matching, they also implement the `MatchableQuestion` interface defined by the `@openvaa/core` module and required by `@openvaa/matching`.
 
 Both [`Question`](./src/objects/questions/base/question.ts)s and [`QuestionCategory`](./src/objects/questions/category/questionCategory.ts)s can be made specific to an [`Election`](./src/objects/election/election.ts), [`Constituency`](./src/objects/constituency/constituency.ts), [`EntityType`](./src/objects/entities/base/entityTypes.ts) or `electionRound` by setting the relavant filters in the data. The [`QuestionAndCategoryBase.appliesTo(targets: FilterTargets)`](./src/objects/questions/base/questionAndCategoryBase.ts) method can be used to this effect.
 
@@ -171,11 +179,11 @@ Both [`Question`](./src/objects/questions/base/question.ts)s and [`QuestionCateg
 
 The answers of [`Entity`](./src/objects/entities/base/entity.ts)s to the VAA questions are stored as a `Id`-[`Answer`](./src/objects/questions/base/answer.type.ts) record in their data. The `Answer<TValue>` interface is defined by the `@openvaa/core` module. The type parameter defines the type of the [`Answer`](./src/objects/questions/base/answer.type.ts)’s `value` property, which is used to store the answer proper. [`Answer`](./src/objects/questions/base/answer.type.ts)s may also contain an `info: string` property, which usually is the respondent’s freeform explanation for their answer.
 
-While the `value` types of the [`Entity`](./src/objects/entities/base/entity.ts)s [`Answer`](./src/objects/questions/base/answer.type.ts)s are currently not checked when the object is initialised, the [`Entity.getAnswer(question: QuestionVariant)`](./src/objects/entities/base/entity.ts) method does that and will return a `MISSING_ANSWER` (i.e. `undefined`, typed in `@openvaa/core`) if the stored [`Answer`](./src/objects/questions/base/answer.type.ts)’s `value` is not valid for the [`QuestionVariant`](./src/objects/questions/variants/variants.ts) in case. This way the consumers of the `@openvaa/data` model do not have to perform further checks when accessing the answers.
+While the `value` types of the [`Entity`](./src/objects/entities/base/entity.ts)s [`Answer`](./src/objects/questions/base/answer.type.ts)s are currently not checked when the object is initialised, the [`Entity.getAnswer(question: AnyQuestionVariant)`](./src/objects/entities/base/entity.ts) method does that and will return a `MISSING_ANSWER` (i.e. `undefined`, typed in `@openvaa/core`) if the stored [`Answer`](./src/objects/questions/base/answer.type.ts)’s `value` is not valid for the [`AnyQuestionVariant`](./src/objects/questions/variants/variants.ts) in case. This way the consumers of the `@openvaa/data` model do not have to perform further checks when accessing the answers.
 
 #### Formatting [`Answer`](./src/objects/questions/base/answer.type.ts)s for output
 
-For convenience, [`Entity`](./src/objects/entities/base/entity.ts)s also have a `getFormattedAnswer(question: QuestionVariant)` method, which can be used to retrieve the `Answer.value` and format it as a string, regardless of the `value` type. To overwrite the default formats, the [`DataRoot.setFormatter(...)`](./src/root/dataRoot.ts) method can be used. The optional [`DataRoot.locale`](./src/root/dataRoot.ts) property also affects some of the formats (e.g. [`formatDateAnswer`](./src/utils/formatAnswer.ts)).
+For convenience, [`Entity`](./src/objects/entities/base/entity.ts)s also have a `getFormattedAnswer(question: AnyQuestionVariant)` method, which can be used to retrieve the `Answer.value` and format it as a string, regardless of the `value` type. To overwrite the default formats, the [`DataRoot.setFormatter(...)`](./src/root/dataRoot.ts) method can be used. The optional [`DataRoot.locale`](./src/root/dataRoot.ts) property also affects some of the formats (e.g. [`formatDateAnswer`](./src/utils/formatAnswer.ts)).
 
 ### [`Updatable`](./src/core/updatable.ts) and subscribictions
 

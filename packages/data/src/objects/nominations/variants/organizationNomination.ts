@@ -10,7 +10,7 @@ import {
   FactionNominationData,
   Nomination,
   type OrganizationNominationData,
-  WithOptional,
+  WithOptional
 } from '../../../internal';
 
 /**
@@ -38,7 +38,7 @@ export class OrganizationNomination
     // Create nested candidate or faction nominations
     const inheritance = {
       ...this.getInheritableData(),
-      parentNominationType: ENTITY_TYPE.Organization,
+      parentNominationType: ENTITY_TYPE.Organization
     };
     if (this.data.candidates?.length) {
       const { candidateNominations } = this.root.provideNominationData(
@@ -47,8 +47,8 @@ export class OrganizationNomination
             ({
               ...d,
               ...inheritance,
-              entityType: ENTITY_TYPE.Candidate,
-            } as CandidateNominationData)
+              entityType: ENTITY_TYPE.Candidate
+            }) as CandidateNominationData
         )
       );
       this.data.candidateNominationIds = candidateNominations.map((n) => n.id);
@@ -59,8 +59,8 @@ export class OrganizationNomination
             ({
               ...d,
               ...inheritance,
-              entityType: ENTITY_TYPE.Faction,
-            } as FactionNominationData)
+              entityType: ENTITY_TYPE.Faction
+            }) as FactionNominationData
         )
       );
       this.data.factionNominationIds = factionNominations.map((n) => n.id);
