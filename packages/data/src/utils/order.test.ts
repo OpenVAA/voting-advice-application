@@ -3,7 +3,7 @@ import { order } from './order';
 import { DataObject, DataObjectData, DataRoot } from '../internal';
 
 describe('order', () => {
-  class MockDataObject extends DataObject<DataObjectData> {}
+  class MockDataObject extends DataObject {}
   const root = new DataRoot();
   const data: DataObjectData = { id: '1' };
   const order0 = new MockDataObject({ data, root });
