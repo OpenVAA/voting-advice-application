@@ -1,7 +1,9 @@
 import {
   AllianceNomination,
+  AnyQuestionVariant,
   CandidateNomination,
   type Collection,
+  Constituency,
   ConstituencyGroup,
   type DataAccessor,
   DataObject,
@@ -13,7 +15,8 @@ import {
   FactionNomination,
   isMissingValue,
   NominationVariant,
-  OrganizationNomination
+  OrganizationNomination,
+  QuestionCategoryType
 } from '../../internal';
 
 /**
@@ -114,6 +117,27 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
    */
   getOrganizationNominations(constituency: Constituency): Collection<OrganizationNomination> {
     return this.getNominations(ENTITY_TYPE.Organization, constituency);
+  }
+
+  /**
+   * Get the questions applicable to this `Election` and a `Constituency` it applies to.
+   * @param constituency - The `Constituency` the `Question`s apply to.
+   * @param type - Optional type of question category to filter for.
+   */
+  getQuestions({
+    constituency,
+    type
+  }: {
+    constituency: Constituency;
+    type?: QuestionCategoryType;
+  }): Collection<AnyQuestionVariant> {
+    return (
+      this.root.findQuestions({
+        elections: this,
+        constituencies: constituency,
+        type
+      }) ?? []
+    );
   }
 
   //////////////////////////////////////////////////////////////////////////////
