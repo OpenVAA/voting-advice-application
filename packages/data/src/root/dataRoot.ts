@@ -24,6 +24,7 @@ import {
   EntityVariantTree,
   Faction,
   FactionNomination,
+  type FilterTargets,
   formatAllianceName,
   formatAllianceShortName,
   formatBooleanAnswer,
@@ -474,6 +475,22 @@ export class DataRoot extends Updatable implements FormatterMethods {
     constituencyId: Id;
   }): Array<NominationVariant[TEntity]> | undefined {
     return this.findNominations({ entityType: type, electionId, electionRound, constituencyId });
+  }
+
+  /**
+   * Find `AnyQuestionVariant`s based on `FilterTargets` and `QuestionCategoryType`.
+   * @param type - The type of the `QuestionCategory`
+   * @param filters - Any `FilterTargets`
+   */
+  findQuestions({
+    type,
+    ...filters
+  }: FilterTargets & { type?: QuestionCategoryType }): Array<AnyQuestionVariant> | undefined {
+    const questions = type ? this.getQuestionsByType(type) : this.questions;
+    if (!questions) return undefined;
+    return Object.values(filters).filter((f) => f != null).length
+      ? questions.filter((q) => q.appliesTo(filters))
+      : questions;
   }
 
   /**

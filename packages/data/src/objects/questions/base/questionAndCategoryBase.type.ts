@@ -38,10 +38,10 @@ export interface QuestionAndCategoryBaseData extends DataObjectData {
    */
   entityTypes?: FilterValue<EntityType> | null;
 }
+
 /**
  * The targets passed to the filter for questions and question categories.
  */
-
 export type FilterTargets = {
   elections?: FilterValue<Election> | null;
   electionRounds?: FilterValue<number> | null;
