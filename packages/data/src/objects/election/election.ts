@@ -5,11 +5,12 @@ import {
   ConstituencyGroup,
   type DataAccessor,
   DataObject,
+  DataTypeError,
   type ElectionData,
   ensureDate,
   ENTITY_TYPE,
   FactionNomination,
-  type Id,
+  HasId,
   isMissingValue,
   OrganizationNomination
 } from '../../internal';
@@ -67,7 +68,7 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
    * Get the `AllianceNomination`s for a specific `Constituency` in this `Election`.
    * @param id - The id of the `Constituency`
    */
-  getAllianceNominations({ id }: { id: Id }): Collection<AllianceNomination> {
+  getAllianceNominations({ id }: HasId): Collection<AllianceNomination> {
     return (
       this.root.getNominationsForConstituency({
         type: ENTITY_TYPE.Alliance,
@@ -82,7 +83,7 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
    * Get the `CandidateNomination`s for a specific `Constituency` in this `Election`.
    * @param id - The id of the `Constituency`
    */
-  getCandidateNominations({ id }: { id: Id }): Collection<CandidateNomination> {
+  getCandidateNominations({ id }: HasId): Collection<CandidateNomination> {
     return (
       this.root.getNominationsForConstituency({
         type: ENTITY_TYPE.Candidate,
@@ -97,7 +98,7 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
    * Get the `FactionNomination`s for a specific `Constituency` in this `Election`.
    * @param id - The id of the `Constituency`
    */
-  getFactionNominations({ id }: { id: Id }): Collection<FactionNomination> {
+  getFactionNominations({ id }: HasId): Collection<FactionNomination> {
     return (
       this.root.getNominationsForConstituency({
         type: ENTITY_TYPE.Faction,
@@ -112,7 +113,7 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
    * Get the `OrganizationNomination`s for a specific `Constituency` in this `Election`.
    * @param id - The id of the `Constituency`
    */
-  getOrganizationNominations({ id }: { id: Id }): Collection<OrganizationNomination> {
+  getOrganizationNominations({ id }: HasId): Collection<OrganizationNomination> {
     return (
       this.root.getNominationsForConstituency({
         type: ENTITY_TYPE.Organization,
@@ -121,5 +122,24 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
         electionRound: this.round
       }) ?? []
     );
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Other getters
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Return the `Constituency` in an array that applies to this `Election`.
+   * @throws If more than one `Constituency`s matches the criteria.
+   */
+  getApplicableConstituency(constituencies: Array<HasId>): HasId | undefined {
+    const matches = constituencies.filter(({ id }) =>
+      this.constituencyGroups.some((group) => group.data.constituencyIds.includes(id))
+    );
+    if (matches.length > 1)
+      throw new DataTypeError(
+        `More than one constituency matches the election: ${matches.map((m) => m.id).join(', ')}`
+      );
+    return matches[0];
   }
 }

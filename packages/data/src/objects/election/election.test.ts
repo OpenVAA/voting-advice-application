@@ -1,3 +1,4 @@
+import { describe } from 'node:test';
 import { expect, test } from 'vitest';
 import { ENTITY_TYPE, parseNominationTree } from '../../internal';
 import { getTestData, getTestDataRoot, parseNestedNominations } from '../../testUtils';
@@ -86,5 +87,19 @@ test('Should have correct number of nominations for the second round of election
           `Organization nominations: ${election.id} / ${c.id}`
         ).toEqual(constCounts.organization);
       });
+  });
+});
+
+describe('getApplicableConstituency', () => {
+  const election = root.elections![0];
+  const constituencies = election.constituencyGroups[0].constituencies;
+  test('Should return applicable constituency', () => {
+    expect(election.getApplicableConstituency([constituencies[0], { id: 'NOT_THERE' }])).toBe(constituencies[0]);
+  });
+  test('Should return undefined if no constituency is applicable', () => {
+    expect(election.getApplicableConstituency([{ id: 'NOT_THERE' }])).toBeUndefined();
+  });
+  test('Should throw is more than one constituency is applicable', () => {
+    expect(() => election.getApplicableConstituency([constituencies[0], constituencies[1]])).toThrow();
   });
 });
