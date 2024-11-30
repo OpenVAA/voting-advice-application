@@ -9,9 +9,10 @@ import {
   type ElectionData,
   ensureDate,
   ENTITY_TYPE,
+  EntityType,
   FactionNomination,
-  HasId,
   isMissingValue,
+  NominationVariant,
   OrganizationNomination
 } from '../../internal';
 
@@ -65,63 +66,54 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
   }
 
   /**
-   * Get the `AllianceNomination`s for a specific `Constituency` in this `Election`.
-   * @param id - The id of the `Constituency`
+   * Get the `Nomination`s for a specific `Constituency` in this `Election`.
+   * @param entityType - The type of `Entity` to get the nominations for.
+   * @param constituency - The `Constituency`
    */
-  getAllianceNominations({ id }: HasId): Collection<AllianceNomination> {
+  getNominations<TEntity extends EntityType>(
+    type: TEntity,
+    constituency: Constituency
+  ): Collection<NominationVariant[TEntity]> {
     return (
       this.root.getNominationsForConstituency({
-        type: ENTITY_TYPE.Alliance,
-        constituencyId: id,
+        type,
+        constituencyId: constituency.id,
         electionId: this.id,
         electionRound: this.round
       }) ?? []
     );
+  }
+
+  /**
+   * Get the `AllianceNomination`s for a specific `Constituency` in this `Election`.
+   * @param constituency - The `Constituency`
+   */
+  getAllianceNominations(constituency: Constituency): Collection<AllianceNomination> {
+    return this.getNominations(ENTITY_TYPE.Alliance, constituency);
   }
 
   /**
    * Get the `CandidateNomination`s for a specific `Constituency` in this `Election`.
-   * @param id - The id of the `Constituency`
+   * @param constituency - The `Constituency`
    */
-  getCandidateNominations({ id }: HasId): Collection<CandidateNomination> {
-    return (
-      this.root.getNominationsForConstituency({
-        type: ENTITY_TYPE.Candidate,
-        constituencyId: id,
-        electionId: this.id,
-        electionRound: this.round
-      }) ?? []
-    );
+  getCandidateNominations(constituency: Constituency): Collection<CandidateNomination> {
+    return this.getNominations(ENTITY_TYPE.Candidate, constituency);
   }
 
   /**
    * Get the `FactionNomination`s for a specific `Constituency` in this `Election`.
-   * @param id - The id of the `Constituency`
+   * @param constituency - The `Constituency`
    */
-  getFactionNominations({ id }: HasId): Collection<FactionNomination> {
-    return (
-      this.root.getNominationsForConstituency({
-        type: ENTITY_TYPE.Faction,
-        constituencyId: id,
-        electionId: this.id,
-        electionRound: this.round
-      }) ?? []
-    );
+  getFactionNominations(constituency: Constituency): Collection<FactionNomination> {
+    return this.getNominations(ENTITY_TYPE.Faction, constituency);
   }
 
   /**
    * Get the `OrganizationNomination`s for a specific `Constituency` in this `Election`.
-   * @param id - The id of the `Constituency`
+   * @param constituency - The `Constituency`
    */
-  getOrganizationNominations({ id }: HasId): Collection<OrganizationNomination> {
-    return (
-      this.root.getNominationsForConstituency({
-        type: ENTITY_TYPE.Organization,
-        constituencyId: id,
-        electionId: this.id,
-        electionRound: this.round
-      }) ?? []
-    );
+  getOrganizationNominations(constituency: Constituency): Collection<OrganizationNomination> {
+    return this.getNominations(ENTITY_TYPE.Organization, constituency);
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -132,7 +124,7 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
    * Return the `Constituency` in an array that applies to this `Election`.
    * @throws If more than one `Constituency`s matches the criteria.
    */
-  getApplicableConstituency(constituencies: Array<HasId>): HasId | undefined {
+  getApplicableConstituency(constituencies: Array<Constituency>): Constituency | undefined {
     const matches = constituencies.filter(({ id }) =>
       this.constituencyGroups.some((group) => group.data.constituencyIds.includes(id))
     );
