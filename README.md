@@ -55,16 +55,20 @@ We released two pilot VAAs for the 2024 EU Elections, which you can try out to s
 
 - Abstract the frontend–backend connection into a `dataProvider` API enabling arbitrary backend implementations
 - Implement the most crucial missing features, such as constituency selection and support for multiple simultaneous elections
+- Stress test and improve performance for massive elections (especially Finnish local elections)
 - Expand unit and end-to-end test coverage
 
-**2025 Q1** - Expand documentation and improve developer-friendliness
+**2025 Q1** — Release a VAA in the Finnish county elections in association with Nuorisoala
+
+- Implement bank authentication for candidates
+- Implement simple educational mode for use in schools
+
+**2025 Q2** — Expand documentation and improve developer-friendliness
 
 - Create a project site with documentation, which is currently spread between the [`/docs`](./docs/) folder and in-code `TSDoc` comments
 - Create a research-backed methodological guide to supplement the technical documentation
 - Build application manager UI
 - Enable plugins or easier customisation of pages and main components
-
-**2025 Q2** — Release VAAs in the Finnish county elections
 
 **2025 Q3** — First production release
 
