@@ -2,9 +2,9 @@
   import { Button } from '$lib/components/button';
   import { Expander } from '$lib/components/expander';
   import { t } from '$lib/i18n';
-  import { customization, settings } from '$lib/stores';
+  import { customization, settings } from '$lib/legacy-stores';
   import { BasicPage } from '$lib/templates/basicPage';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
 </script>
 
 <BasicPage title={$t('candidateApp.help.title')}>

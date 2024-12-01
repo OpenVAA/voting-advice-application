@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { checkRegistrationKey } from '$lib/api/candidate';
+  import { checkRegistrationKey } from '$lib/legacy-api/candidate';
   import PasswordSetPage from './PasswordSetPage.svelte';
   import RegistrationCodePage from './RegistrationCodePage.svelte';
 

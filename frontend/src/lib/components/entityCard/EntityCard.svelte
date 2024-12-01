@@ -8,10 +8,10 @@
   import { PartyTag } from '$lib/components/partyTag';
   import { SubMatches } from '$lib/components/subMatches';
   import { t } from '$lib/i18n';
-  import { startEvent } from '$lib/utils/analytics/track';
   import { getAnswer } from '$lib/utils/answers';
   import { concatClass, getUUID } from '$lib/utils/components';
   import { isCandidate, isParty, parseMaybeRanked } from '$lib/utils/entities';
+  import { startEvent } from '$lib/utils/legacy-analytics/track';
   import EntityCardAction from './EntityCardAction.svelte';
   import type { EntityCardProps } from './EntityCard.type';
 
@@ -30,9 +30,9 @@
 
   let avatarProps: AvatarProps;
   let electionSymbol: string | undefined;
-  let entity: EntityProps;
+  let entity: LegacyEntityProps;
   let name: string;
-  let nominatingParty: PartyProps | undefined;
+  let nominatingParty: LegacyPartyProps | undefined;
   let ranking: RankingProps | undefined;
   /** Used to toggle expansion of the subcards list */
   let showAllSubcards = false;

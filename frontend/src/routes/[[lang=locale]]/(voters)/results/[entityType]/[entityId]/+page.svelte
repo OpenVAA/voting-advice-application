@@ -6,9 +6,15 @@
   import { Loading } from '$lib/components/loading';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { locale, t } from '$lib/i18n';
-  import { candidateRankings, infoQuestions, opinionQuestions, partyRankings, settings } from '$lib/stores/index.js';
-  import { startEvent } from '$lib/utils/analytics/track';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import {
+    candidateRankings,
+    infoQuestions,
+    opinionQuestions,
+    partyRankings,
+    settings
+  } from '$lib/legacy-stores/index.js';
+  import { startEvent } from '$lib/utils/legacy-analytics/track.js';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation/index.js';
   import type { Readable } from 'svelte/store';
 
   export let data;
@@ -26,7 +32,7 @@
     }
   });
 
-  let entityType: Exclude<EntityType, 'all'>;
+  let entityType: Exclude<LegacyEntityType, 'all'>;
   let id: string;
   /** A party's candidates for displaying on a separate tab in EntityDetails or undefined if not applicable */
   let candidatesOrUndef: Promise<Array<WrappedEntity> | Array<RankingProps> | undefined>;
@@ -38,7 +44,7 @@
   $: {
     const current = { id, entityType };
     id = data.entityId;
-    entityType = data.entityType as Exclude<EntityType, 'all'>;
+    entityType = data.entityType as Exclude<LegacyEntityType, 'all'>;
 
     // Only update if the data has actually changed.
     if (current.id !== id || current.entityType !== entityType) {

@@ -2,17 +2,17 @@
   import { getContext } from 'svelte';
   import { goto } from '$app/navigation';
   import { MultilangTextInput } from '$candidate/components/textArea';
-  import { addAnswer, updateAnswer } from '$lib/api/candidate';
   import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { LikertResponseButtons, QuestionInfo } from '$lib/components/questions';
   import { Warning } from '$lib/components/warning';
   import { t } from '$lib/i18n';
+  import { addAnswer, updateAnswer } from '$lib/legacy-api/candidate';
   import { BasicPage } from '$lib/templates/basicPage';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
-  import type { CandidateAnswer } from '$types/candidateAttributes';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
+  import type { CandidateAnswer } from '$types/legacy-candidateAttributes';
   import type { QuestionPageProps } from './QuestionPage.type';
 
   type $$Props = QuestionPageProps;
@@ -20,16 +20,16 @@
   export let editMode: $$Props['editMode'] = false;
 
   let answer: CandidateAnswer | undefined;
-  let category: QuestionCategoryProps;
+  let category: LegacyQuestionCategoryProps;
   let info: string | undefined;
   let likertLocal: string;
   let openAnswer: LocalizedString = {};
   let openAnswerLocal: string;
   let openAnswerTextArea: MultilangTextInput; // Used to clear the local storage from the parent component
-  let options: Array<AnswerOption>;
+  let options: Array<LegacyAnswerOption>;
   let questionId: string;
   let questionIndex: number | undefined;
-  let selectedKey: AnswerOption['key'] | undefined;
+  let selectedKey: LegacyAnswerOption['key'] | undefined;
 
   const { opinionAnswers, progress, answersLocked, opinionQuestions, unansweredOpinionQuestions } =
     getContext<CandidateContext>('candidate');
@@ -113,7 +113,7 @@
     removeLocalAnswerToQuestion();
   }
 
-  function updateAnswerStore(answerId: string, value: AnswerProps['value'], openAnswer: LocalizedString) {
+  function updateAnswerStore(answerId: string, value: LegacyAnswerProps['value'], openAnswer: LocalizedString) {
     if ($opinionAnswers) {
       $opinionAnswers[questionId] = {
         id: String(answerId),

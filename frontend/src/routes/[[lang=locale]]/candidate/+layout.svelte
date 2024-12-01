@@ -2,7 +2,7 @@
   import { staticSettings } from '@openvaa/app-shared';
   import { error } from '@sveltejs/kit';
   import { t } from '$lib/i18n';
-  import { appType } from '$lib/stores';
+  import { appType } from '$lib/legacy-stores';
 
   if (!staticSettings.dataProvider.supportsCandidateApp) {
     error(404, {

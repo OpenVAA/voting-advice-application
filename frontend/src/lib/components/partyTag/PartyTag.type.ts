@@ -3,7 +3,7 @@ export type PartyTagProps = SvelteHTMLElements['div'] & {
   /**
    * The Party object
    */
-  party: PartyProps;
+  party: LegacyPartyProps;
   /**
    * Whether to use an abbreviation or the full name. @default 'default'
    */

@@ -77,7 +77,7 @@
    * Get the text label from the object returned by the filter.
    * @param object party object or choice
    */
-  function getLabel(object: PartyProps | Choice | undefined): string | undefined {
+  function getLabel(object: LegacyPartyProps | Choice | undefined): string | undefined {
     if (!object) return $t('entityFilters.missingValue');
     if ('name' in object) return object.name;
     if ('label' in object) return object.label;

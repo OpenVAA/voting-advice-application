@@ -2,12 +2,12 @@
   import { getContext } from 'svelte';
   import { LogoutButton } from '$lib/candidate/components/logoutButton';
   import { t } from '$lib/i18n';
-  import { appType } from '$lib/stores';
+  import { appType } from '$lib/legacy-stores';
   import { BREAKPOINTS } from '$lib/utils/breakpoints';
   import { concatProps } from '$lib/utils/components';
-  import { darkMode } from '$lib/utils/darkMode';
+  import { darkMode } from '$lib/utils/legacy-darkMode';
   import { Page } from '../page';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
   import type { BasicPageProps } from './BasicPage.type';
 
   type $$Props = BasicPageProps;

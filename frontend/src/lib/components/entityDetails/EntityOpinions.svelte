@@ -3,12 +3,12 @@
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { LikertResponseButtons, QuestionOpenAnswer } from '$lib/components/questions';
   import { t } from '$lib/i18n';
-  import { answeredQuestions, appType, settings } from '$lib/stores';
+  import { answeredQuestions, appType, settings } from '$lib/legacy-stores';
   import { getLikertAnswer } from '$lib/utils/answers';
   import { isCandidate } from '$lib/utils/entities';
   import type { EntityDetailsProps } from './EntityDetails.type';
 
-  export let entity: EntityProps;
+  export let entity: LegacyEntityProps;
   export let questions: EntityDetailsProps['opinionQuestions'];
 
   let shortName: string;
@@ -18,7 +18,7 @@
     : entity.shortName;
 
   /** This is needed to ensure typing but will be no longer needed, when @openvaa/data model is implemented an Question object methods can be used to enforce typing. */
-  function getVoterLikertAnswer(question: QuestionProps): number | undefined {
+  function getVoterLikertAnswer(question: LegacyQuestionProps): number | undefined {
     const answer = $answeredQuestions[question.id]?.value;
     return typeof answer === 'number' ? answer : undefined;
   }

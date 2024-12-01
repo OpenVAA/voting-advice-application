@@ -1,4 +1,4 @@
-import { dataProvider } from '$lib/api/getData';
+import { dataProvider } from '$lib/legacy-api/getData';
 
 export async function load({ parent }) {
   const locale = (await parent()).i18n.currentLocale;

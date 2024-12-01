@@ -4,8 +4,8 @@
  */
 
 import { describe, expect, type Mock, test, vi } from 'vitest';
-import { dataProvider } from '$lib/api/dataProvider/strapi';
 import { loadTranslations, locale } from '$lib/i18n';
+import { dataProvider } from '$lib/legacy-api/dataProvider/strapi';
 import { constants } from '$lib/utils/constants';
 import allPartiesResponse from './data/allParties.response.json';
 import allPartiesResult from './data/allParties.result.json';

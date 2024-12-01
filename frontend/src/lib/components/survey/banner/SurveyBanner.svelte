@@ -1,6 +1,6 @@
 <script lang="ts">
   import { t } from '$lib/i18n';
-  import { settings, userPreferences } from '$lib/stores';
+  import { settings, userPreferences } from '$lib/legacy-stores';
   import { concatClass } from '$lib/utils/components';
   import { SurveyButton } from '..';
   import type { SurveyBannerProps } from './SurveyBanner.type';

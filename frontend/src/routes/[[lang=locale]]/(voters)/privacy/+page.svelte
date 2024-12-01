@@ -7,8 +7,8 @@
   import { getLayoutContext } from '$lib/contexts/layout';
   import { t } from '$lib/i18n';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
-  import { settings } from '$lib/stores';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { settings } from '$lib/legacy-stores';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import Layout from '../../../Layout.svelte';
 

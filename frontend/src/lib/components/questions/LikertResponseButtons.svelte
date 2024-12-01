@@ -21,7 +21,7 @@
     logDebugError('You should supply an entityLabel when mode is "display" and entityKey is provided');
 
   /** Holds the currently selected value and is initialized as `selectedKey` */
-  let selected: AnswerOption['key'] | null | undefined;
+  let selected: LegacyAnswerOption['key'] | null | undefined;
   const inputs: Record<string, HTMLInputElement> = {};
   $: {
     selected = selectedKey;
@@ -63,7 +63,7 @@
   /**
    * Used to check for changes to the radio buttons or clicks on them. These include keyboard interactions using the arrow keys as well.
    */
-  function onClick(event: MouseEvent, value: AnswerOption['key']) {
+  function onClick(event: MouseEvent, value: LegacyAnswerOption['key']) {
     if (disabled) return;
     let keyboard: boolean;
     if ('pointerType' in event) {
@@ -82,7 +82,7 @@
   /**
    * Dispatch the `change`/`reselect` event if the user presses the space or enter key when in the radio group
    */
-  function onKeyUp(event: KeyboardEvent, value: AnswerOption['key']) {
+  function onKeyUp(event: KeyboardEvent, value: LegacyAnswerOption['key']) {
     if (disabled) return;
     if (event.key === ' ' || event.key === 'Spacebar' || event.key === 'Enter') {
       selected = value;
@@ -105,7 +105,7 @@
    *
    * @param value Optional value that overrides the current value of the radio group. This should be passed when invoking this function from the `click` event handler, because it is fired before the radio group's value is updated. @default undefined
    */
-  function dispatchEvent(value?: AnswerOption['key'] | null) {
+  function dispatchEvent(value?: LegacyAnswerOption['key'] | null) {
     // Use the selected value if no value is supplied
     value ??= selected;
     // Only dispatch the event if the value is defined

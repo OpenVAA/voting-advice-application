@@ -4,11 +4,11 @@
   import { Tabs } from '$lib/components/tabs';
   import { t } from '$lib/i18n';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
-  import { settings } from '$lib/stores';
-  import { startEvent } from '$lib/utils/analytics/track';
+  import { settings } from '$lib/legacy-stores';
   import { concatClass } from '$lib/utils/components';
   import { getEntityType, parseMaybeRanked } from '$lib/utils/entities';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
+  import { startEvent } from '$lib/utils/legacy-analytics/track';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import { EntityInfo, EntityOpinions, EntitySubentities } from './';
   import type { EntityDetailsProps } from './EntityDetails.type';
 
@@ -19,8 +19,8 @@
   export let opinionQuestions: $$Props['opinionQuestions'];
   export let subentities: $$Props['subentities'] = undefined;
 
-  let entity: EntityProps;
-  let entityType: EntityType | undefined;
+  let entity: LegacyEntityProps;
+  let entityType: LegacyEntityType | undefined;
   let subcards: Array<EntityCardProps> | undefined;
   /** The tab content types */
   let tabContents: Array<AppSettingsEntityDetailsContent>;
@@ -37,7 +37,7 @@
     ({ entity } = parseMaybeRanked(content));
     entityType = getEntityType(entity);
     if (!entityType) error(500, 'Unknown entity type');
-    function inclQuestion(q: QuestionProps) {
+    function inclQuestion(q: LegacyQuestionProps) {
       return !q.entityType || q.entityType === entityType || q.entityType === 'all';
     }
     filteredInfoQuestions = infoQuestions.filter(inclQuestion);

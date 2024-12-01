@@ -23,9 +23,9 @@ import { extractCategories } from '../questions';
  * @param options.subMatches Whether to calculate the submatches for categories if there's more than one of them
  * @returns The matching results as entities wrapped in ranking properties
  */
-export async function match<TEntity extends EntityProps>(
-  allQuestions: Array<QuestionProps>,
-  answeredQuestions: AnswerDict,
+export async function match<TEntity extends LegacyEntityProps>(
+  allQuestions: Array<LegacyQuestionProps>,
+  answeredQuestions: LegacyAnswerDict,
   entities: Array<TEntity>,
   options: {
     subMatches?: boolean;
@@ -63,7 +63,7 @@ export async function match<TEntity extends EntityProps>(
   }
 
   // Possibly prepare for submatch calculation
-  let matchingOptions: MatchingOptions<QuestionCategoryProps & MatchableQuestionGroup> | undefined = undefined;
+  let matchingOptions: MatchingOptions<LegacyQuestionCategoryProps & MatchableQuestionGroup> | undefined = undefined;
   if (options.subMatches) {
     // Create answer subgroups
     // We only consider those subgroups that the voter has answered
@@ -100,18 +100,18 @@ export async function match<TEntity extends EntityProps>(
  * @returns The matching results as entities wrapped in ranking properties
  */
 export async function matchParties(
-  allQuestions: Array<QuestionProps>,
-  answeredQuestions: AnswerDict,
-  candidates: Array<CandidateProps>,
-  parties: Array<PartyProps>,
+  allQuestions: Array<LegacyQuestionProps>,
+  answeredQuestions: LegacyAnswerDict,
+  candidates: Array<LegacyCandidateProps>,
+  parties: Array<LegacyPartyProps>,
   options?: Parameters<typeof match>[3] & {
     matchingType?: Exclude<AppSettingsGroupMatchingType, 'none'>;
   }
-): Promise<Array<RankingProps<PartyProps>>> {
+): Promise<Array<RankingProps<LegacyPartyProps>>> {
   const matchingType = options?.matchingType ?? 'median';
   // Save original answers here, if we will be adding computed averages to the answers dictionary.
   // NB. In the full @openvaa/data model, this will be handled by a getter function
-  const originalAnswers = {} as Record<string, AnswerDict>;
+  const originalAnswers = {} as Record<string, LegacyAnswerDict>;
   // Calculate average answers for each party for each question
   if (matchingType !== 'answersOnly') {
     for (const party of parties) {

@@ -4,17 +4,17 @@
   import { PartyTag } from '$lib/components/partyTag';
   import { SurveyBanner } from '$lib/components/survey/banner';
   import { t } from '$lib/i18n';
-  import { settings } from '$lib/stores';
+  import { settings } from '$lib/legacy-stores';
   import { getAnswer } from '$lib/utils/answers';
   import { getEntityType, isCandidate, isParty } from '$lib/utils/entities';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import InfoItem from './InfoItem.svelte';
   import type { EntityDetailsProps } from './EntityDetails.type';
 
-  export let entity: EntityProps;
+  export let entity: LegacyEntityProps;
   export let questions: EntityDetailsProps['infoQuestions'];
 
-  let entityType: Exclude<EntityType, 'all'>;
+  let entityType: Exclude<LegacyEntityType, 'all'>;
   $: {
     const res = getEntityType(entity);
     if (!res) error(500, `No entity type found for entity: ${entity?.id}`);
