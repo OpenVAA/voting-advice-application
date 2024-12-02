@@ -28,17 +28,15 @@ export class FactionNomination
    * The constructor can be called with data lacking an explicit `Faction` entity’s `entityId` in which case an `Faction` with a non-deterministic, unique `id` will be generated. Also, any  nested `CandidateNomination`s in the data are created during initialization.
    */
   constructor({ data, root }: { data: WithOptional<FactionNominationData, 'id'>; root: DataRoot }) {
-    super({ data, root });
-
-    if (!this.data.candidates?.length)
+    if (!data.candidates?.length)
       throw new DataProvisionError('A FactionNomination must have non-zero CandidateNominations');
-    if (!this.data.parentNominationId || !this.data.parentNominationType)
+    if (!data.parentNominationId || !data.parentNominationType)
       throw new DataProvisionError('A FactionNomination must have parentNominationType and parentNominationId');
 
-    // Create implied entity if necessary
-    if (!this.data.entityId) {
-      const { name, shortName } = this.data;
-      const id = root.createId('faction');
+    // Create the possible implied entity before calling super(), because entityId will be needed by it for id generation
+    if (!data.entityId) {
+      const { name, shortName } = data;
+      const id = root.createId({ type: 'faction', data });
       root.provideEntityData([
         {
           type: ENTITY_TYPE.Faction,
@@ -48,8 +46,10 @@ export class FactionNomination
           shortName
         }
       ]);
-      this.data.entityId = id;
+      data.entityId = id;
     }
+
+    super({ data, root });
 
     // Create nested nominations
     const { candidateNominations } = this.root.provideNominationData(

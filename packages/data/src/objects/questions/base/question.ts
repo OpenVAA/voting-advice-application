@@ -3,6 +3,7 @@ import {
   type CoordinateOrMissing,
   type DataAccessor,
   DataTypeError,
+  FilterTargets,
   type MatchableQuestion,
   MISSING_VALUE,
   type MissingValue,
@@ -103,5 +104,32 @@ export abstract class Question<
     value: AnswerValue[TType] | MissingValue
   ): CoordinateOrMissing | Array<CoordinateOrMissing> {
     throw new DataTypeError(`This Question type does not support value normalization for value ${value}`);
+  }
+
+  /**
+   * A utility for showing the `Answer.value` to a question as a string. The formatting is controlled by the formatters defined in the `DataRoot`.
+   * @param answer - The `Question` to get the answer for.
+   * @param rest - Additional arguments for the `DataRoot.formatAnswer` method.
+   * @returns A string.
+   */
+  formatAnswer({ answer, ...rest }: { answer?: Answer<unknown> | null } & ArrayAnswerFormatterOptions = {}): string {
+    return this.root.formatAnswer({
+      question: this,
+      answer: this.ensureAnswer(answer),
+      ...rest
+    } as unknown as AnswerFormatterParams<QuestionVariant[TType]>);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Filtering
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * We override the `appliesTo` method to also check for the `category`’s applicability.
+   * @param targets - The targets to check for
+   * @returns True if the question and its category apply
+   */
+  appliesTo(targets: FilterTargets): boolean {
+    return this.category.appliesTo(targets) && super.appliesTo(targets);
   }
 }
