@@ -1,12 +1,14 @@
-import { expect, test } from 'vitest';
-import { AnyNominationVariant, DataRoot, EntityType, Id, parseNominationTree } from '../internal';
+import { describe, expect, test } from 'vitest';
 import {
-  contentsMatch,
-  ExtendedNominationData,
-  getTestData,
-  getTestDataRoot,
-  parseNestedNominations
-} from '../testUtils';
+  AnyNominationVariant,
+  DataRoot,
+  ENTITY_TYPE,
+  EntityType,
+  MultipleChoiceCategoricalQuestion,
+  NumberQuestion,
+  QUESTION_CATEGORY_TYPE
+} from '../internal';
+import { ENTITY_NOMINATIONS, getTestData, getTestDataRoot, NOMINATION_COUNTS } from '../testUtils';
 
 /**
  * Some of `DataRoot`’s methods are in effect tested by `getDataRoot` or the object classes and will not be repeated here, e.g.:
@@ -17,8 +19,6 @@ import {
  */
 
 const root = getTestDataRoot();
-const data = getTestData();
-const nominationData = parseNestedNominations(parseNominationTree(data.nominations));
 
 /** For accessing the protected children property */
 class MockDataRoot extends DataRoot {
@@ -47,104 +47,24 @@ test('GetNomination should work', () => {
   }
 });
 
-test('FindNominations should work', () => {
-  if (nominationData.length === 0) throw new Error('Test setup error: No nomination data available');
-  for (const { entityType, electionId, constituencyId } of nominationData) {
-    const fullMatch = nominationData.filter(
-      (n) => n.entityType === entityType && n.electionId === electionId && n.constituencyId === constituencyId
-    );
-    const partialMatch = nominationData.filter((n) => n.entityType === entityType && n.electionId === electionId);
-    expect(
-      contentsMatch(
-        root.findNominations({ entityType, electionId, constituencyId })!.map(hashNomination),
-        fullMatch.map(hashNominationData)
-      )
-    ).toBe(true);
-    expect(
-      contentsMatch(
-        root.findNominations({ entityType, electionId })!.map(hashNomination),
-        partialMatch.map(hashNominationData)
-      )
-    ).toBe(true);
+test('GetNominationsForEntity should return the correct number of nominations', () => {
+  for (const type in ENTITY_NOMINATIONS) {
+    for (const [id, numNominations] of Object.entries(ENTITY_NOMINATIONS[type])) {
+      const count = root.getNominationsForEntity({ type: type as EntityType, id })?.length;
+      expect(count, `Nomination count for ${type} ${id}`).toBe(numNominations);
+    }
   }
 });
 
-test('GetNominationsForEntity should return the correct number of nominations', () => {
-  if (nominationData.length === 0) throw new Error('Test setup error: No nomination data available');
-
-  // Count nominations in the data
-  const countsById: {
-    [entityType: string]: {
-      [entityId: Id]: number;
-    };
-  } = {};
-  const countsByType: {
-    [entityType: string]: number;
-  } = {};
-  nominationData.forEach(({ entityType, entityId }) => {
-    countsByType[entityType] ??= 0;
-    countsByType[entityType]++;
-    if (!entityId) return;
-    countsById[entityType] ??= {};
-    countsById[entityType][entityId] ??= 0;
-    countsById[entityType][entityId]++;
-  });
-
-  // Check that we have the correct number of nominations for each explicit entity
-  nominationData
-    .filter((n) => n.entityId)
-    .forEach(({ entityType, entityId }) => {
-      expect(
-        root.getNominationsForEntity({ type: entityType, id: entityId })?.length,
-        `To have the correct number of nominations for ${entityType} ${entityId}`
-      ).toEqual(countsById[entityType][entityId]);
-    });
-
-  // Count the total number of nominations in the root for each entity type
-  const countsByTypeInRoot: typeof countsByType = {};
-  [
-    ...(root.alliances ?? []),
-    ...(root.candidates ?? []),
-    ...(root.factions ?? []),
-    ...(root.organizations ?? [])
-  ].forEach(({ type, id }) => {
-    countsByTypeInRoot[type] ??= 0;
-    const count = root.getNominationsForEntity({ type, id })?.length;
-    expect(count).toBeDefined();
-    countsByTypeInRoot[type] += count!;
-  });
-
-  // Check that the counts match
-  expect(
-    countsByTypeInRoot,
-    'The root to have the same number of nominations for each entity type as in the data'
-  ).toEqual(countsByType);
-});
-
 test('GetNominationsForConstituency should work', () => {
-  if (nominationData.length === 0) throw new Error('Test setup error: No nomination data available');
-
-  // Count nominations in the data
-  const countsByConstituency: {
-    [electionId: Id]: {
-      [constituencyId: Id]: {
-        [entityType: string]: number;
-      };
-    };
-  } = {};
-  nominationData.forEach(({ electionId, constituencyId, entityType }) => {
-    countsByConstituency[electionId] ??= {};
-    countsByConstituency[electionId][constituencyId] ??= {};
-    countsByConstituency[electionId][constituencyId][entityType] ??= 0;
-    countsByConstituency[electionId][constituencyId][entityType]++;
-  });
-
-  for (const [electionId, eCounts] of Object.entries(countsByConstituency)) {
+  for (const [electionId, eCounts] of Object.entries(NOMINATION_COUNTS)) {
     for (const [constituencyId, cCounts] of Object.entries(eCounts)) {
       for (const [type, count] of Object.entries(cCounts)) {
         expect(
           root.getNominationsForConstituency({
             electionId,
+            // NOMINATION_COUNTS holds the counts for round 1
+            electionRound: 1,
             constituencyId,
             type: type as EntityType
           })?.length,
@@ -155,34 +75,110 @@ test('GetNominationsForConstituency should work', () => {
   }
 });
 
-test('Should create unique ids', () => {
-  const seen = new Set<Id>();
-  for (let i = 0; i < 1000; i++) seen.add(root.createId('nomination'));
-  expect(seen.size).toBe(1000);
+describe('FindQuestions', () => {
+  test('Should find questions', () => {
+    const questions = root.findQuestions({
+      type: QUESTION_CATEGORY_TYPE.Info, // Filter in those whose cateqgory is of type 'info'
+      entityTypes: ENTITY_TYPE.Organization // Filter out those with entityTypes: 'candidate'
+    });
+    const ids = [1, 2, 6, 7].map((i) => `question-${i}`);
+    expect(questions?.map((q) => q.id)).toEqual(expect.arrayContaining(ids));
+  });
+  test('Should exclude those where filter is different', () => {
+    const questions = root.findQuestions({
+      type: QUESTION_CATEGORY_TYPE.Opinion,
+      constituencies: root.getConstituency('constituency-1-2') // question-10 has constituency filter 'constituency-1-1'
+    });
+    const ids = [8, 9, 11, 12, 13].map((i) => `question-${i}`);
+    expect(questions?.map((q) => q.id)).toEqual(expect.arrayContaining(ids));
+  });
+  test('Should include questions where filter is not defined', () => {
+    const questions = root.findQuestions({
+      type: QUESTION_CATEGORY_TYPE.Opinion,
+      entityTypes: ENTITY_TYPE.Candidate // No opinion question has an entityTypes filter
+    });
+    const ids = [8, 9, 10, 11, 12, 13].map((i) => `question-${i}`);
+    expect(questions?.map((q) => q.id)).toEqual(expect.arrayContaining(ids));
+  });
+  test('Should apply filters to categories', () => {
+    const questions = root.findQuestions({
+      type: QUESTION_CATEGORY_TYPE.Info,
+      entityTypes: ENTITY_TYPE.Candidate // questionCategory-2 has an Organization entityTypes filter
+    });
+    const ids = [1, 2, 3, 4, 5].map((i) => `question-${i}`);
+    expect(questions?.map((q) => q.id)).toEqual(expect.arrayContaining(ids));
+  });
 });
 
-/**
- * Creates a unique-ish hash from a `Nomination` object so that the two can be compared without the need for an `Id`.
- */
-function hashNomination(nomination: AnyNominationVariant): string {
-  return JSON.stringify([
-    nomination.entity.type,
-    nomination.election.id,
-    nomination.constituency.id,
-    nomination.parentNomination ? hashNomination(nomination.parentNomination) : null,
-    'candidateNominations' in nomination ? nomination.candidateNominations.map((n) => n.entity.id) : []
-  ]);
-}
+describe('formatAnswer', () => {
+  // Get a copy, bc we set the locale
+  const root = getTestDataRoot();
+  root.locale = 'en-US';
 
-/**
- * Creates a unique-ish hash from a `NominationData` object so that the two can be compared without the need for an `Id`.
- */
-function hashNominationData(nomination: ExtendedNominationData): string {
-  return JSON.stringify([
-    nomination.entityType,
-    nomination.electionId,
-    nomination.constituencyId,
-    nomination.parent ? hashNominationData(nomination.parent) : null,
-    'candidates' in nomination ? (nomination.candidates ?? []).map((n) => n.entityId) : []
-  ]);
-}
+  test('Should format number answer correctly', () => {
+    const question = new NumberQuestion({
+      data: {
+        type: 'number',
+        name: 'Percentage',
+        categoryId: 'X',
+        id: 'question-number',
+        format: {
+          style: 'percent'
+        }
+      },
+      root
+    });
+    expect(
+      root.formatAnswer({
+        question,
+        answer: { value: 0.5 }
+      })
+    ).toBe('50%');
+  });
+
+  test('Should format date answer correctly', () => {
+    const question = new DateQuestion({
+      data: {
+        type: 'date',
+        name: 'Date',
+        categoryId: 'X',
+        id: 'question-date',
+        format: {
+          year: '2-digit',
+          month: 'long',
+          day: '2-digit'
+        }
+      },
+      root
+    });
+    expect(
+      root.formatAnswer({
+        question,
+        answer: { value: new Date(2023, 9, 5) }
+      })
+    ).toBe('October 05, 23');
+  });
+
+  test('Should format multiple choice answer correctly', () => {
+    const question = new MultipleChoiceCategoricalQuestion({
+      data: {
+        type: 'multipleChoiceCategorical',
+        name: 'Multi',
+        categoryId: 'X',
+        id: 'question-multi',
+        choices: [
+          { id: 'choice-1', label: 'Choice 1' },
+          { id: 'choice-2', label: '  Choice 2' },
+          { id: 'choice-3', label: '  Choice 3  ' }
+        ]
+      },
+      root
+    });
+    expect(
+      root.formatAnswer({
+        question,
+        answer: { value: ['choice-3', 'choice-1', 'choice-2'] }
+      })
+    ).toBe('Choice 3, Choice 1, Choice 2');
+  });
+});

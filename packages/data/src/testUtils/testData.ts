@@ -1,8 +1,10 @@
 import {
   Choice,
   ENTITY_TYPE,
+  EntityType,
   EntityVariantTree,
   type FullVaaData,
+  Id,
   NominationVariantTree,
   QUESTION_CATEGORY_TYPE,
   QUESTION_TYPE
@@ -370,7 +372,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         organizationId: 'organization-1',
         answers: {
           'question-1': {
-            value: 'If I’m elected I pledge destroy the new Hyrule Castle and usher in a reign of evil!'
+            value: 'If I’m elected I pledge to destroy the new Hyrule Castle and usher in a reign of evil!'
           },
           'question-2': {
             value: 7
@@ -838,7 +840,8 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
               entityId: 'organization-3',
               candidates: [
                 {
-                  entityId: 'candidate-5'
+                  entityId: 'candidate-5',
+                  info: 'Nomination of the same candidate but by another party'
                 },
                 {
                   entityId: 'candidate-6'
@@ -1059,6 +1062,143 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
           info: 'Closed list'
         }
       ]
+    }
+  }
+} as const;
+
+/**
+ * Nomination counts for all rounds for each entity.
+ */
+export const ENTITY_NOMINATIONS: Record<EntityType, Record<Id, number>> = {
+  alliance: {
+    'alliance-1': 1
+  },
+  candidate: {
+    'candidate-1': 0,
+    'candidate-2': 1,
+    'candidate-3': 2,
+    'candidate-4': 1,
+    'candidate-5': 3,
+    'candidate-6': 1,
+    'candidate-7': 2,
+    'candidate-8': 2
+  },
+  faction: {
+    'faction-1': 1
+  },
+  organization: {
+    'organization-1': 10,
+    'organization-2': 13,
+    'organization-3': 10,
+    'organization-4': 2,
+    'organization-5': 0
+  }
+} as const;
+
+/**
+ * Nomination counts for round 1 in the test data.
+ */
+export const NOMINATION_COUNTS = {
+  'election-1': {
+    'constituency-1-1': {
+      alliance: 1,
+      organization: 2,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-1-2': {
+      alliance: 1,
+      organization: 2,
+      faction: 2,
+      candidate: 6 // NB. 'candidate-5' is nominated twice in this constituency
+    },
+    'constituency-1-3': {
+      alliance: 0,
+      organization: 2,
+      faction: 0,
+      candidate: 2
+    },
+    'constituency-2-1': {
+      alliance: 0,
+      organization: 0,
+      faction: 0,
+      candidate: 1
+    },
+    'constituency-2-2': {
+      alliance: 0,
+      organization: 0,
+      faction: 0,
+      candidate: 1
+    }
+  },
+  'election-2': {
+    'constituency-3-1': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-2': {
+      alliance: 0,
+      organization: 4,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-3': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-4': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-5': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-6': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-7': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-8': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-9': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    }
+  }
+} as const;
+
+/**
+ * Nomination counts for round 2 in the test data.
+ */
+export const NOMINATION_COUNTS_ROUND_2 = {
+  'election-1': {
+    'constituency-1-2': {
+      alliance: 0,
+      organization: 1,
+      faction: 0,
+      candidate: 2
     }
   }
 } as const;

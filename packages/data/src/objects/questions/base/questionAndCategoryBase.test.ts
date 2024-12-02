@@ -96,9 +96,9 @@ function testFilterableProps(
     electionRounds,
     constituencyIds
   }: {
-    electionIds?: FilterValue<Id>;
-    electionRounds?: FilterValue<number>;
-    constituencyIds?: FilterValue<Id>;
+    electionIds?: FilterValue<Id> | null;
+    electionRounds?: FilterValue<number> | null;
+    constituencyIds?: FilterValue<Id> | null;
   }
 ): void {
   if (electionIds) {

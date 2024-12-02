@@ -44,6 +44,7 @@ For more interactions, see [example.ts](./examples/example.ts).
 - Utility getters for accessing other objects within the same hierarchy, e.g. all objects have the `root` getter returning the [`DataRoot`](./src/root/dataRoot.ts)
 - [`Question`](./src/objects/questions/base/question.ts) and [`Entity`](./src/objects/entities/base/entity.ts) classes implement the required interfaces defined in `@openvaa/matching` for seamless use with the matching algorithm
 - Support for multiple simultaneous elections with possibly linked constituencies
+- Idempotent data provision
 
 ### Localization
 
@@ -62,17 +63,10 @@ Imports are handled internally from [`/internal`](./src/internal.ts), which coll
 - Question types not fully implemented:
   - [`MultipleChoiceCategoricalQuestion`](./src/objects/questions/variants/multipleChoiceCategoricalQuestion.ts) – not matchable yet
   - `PreferenceOrderQuestion` – not implemented at all (this can be based on [`MultipleChoiceCategoricalQuestion`](./src/objects/questions/variants/multipleChoiceCategoricalQuestion.ts) because the logic for the matching algorithm is the same)
-- Data passed to the provision methods is currently not validated, but this could be added for robustness.
-  - An [`Organization`](./src/objects/entities/variants/organization.ts) should only be included in one [`AllianceNomination`](./src/objects/nominations/variants/allianceNomination.ts) per [`Election`](./src/objects/election/election.ts)-[`Constituency`](./src/objects/constituency/constituency.ts) pair.
+- Data passed to the provision methods is only partially validated with [`checkObject`](./src/root/dataRoot.ts).
 - The [`OrganizationNomination.allianceNomination`](./src/objects/nominations/variants/organizationNomination.ts) getter may need to be called for all [`OrganizationNomination`](./src/objects/nominations/variants/organizationNomination.ts)s. It calls the [`DataRoot.getAllianceNominationForOrganizationNomination`](./src/root/dataRoot.ts) method each time it’s accessed, so it could be useful to cache the results or save the `allianceNominationId` directly in the [`OrganizationNomination`](./src/objects/nominations/variants/organizationNomination.ts) object.
 - An object is only added to the [`DataRoot`](./src/root/dataRoot.ts)’s collection when using the data provision methods. Thus, it’s possible to create dangling objects by just using the [`DataObject`](./src/core/dataObject.ts) constructors. An option would be to register each object with [`DataRoot`](./src/root/dataRoot.ts) directly in the [`DataObject`](./src/core/dataObject.ts) constructor.
 - The `value` property of [`Answer`](./src/objects/questions/base/answer.type.ts)s is generic and not connected to the type of [`Question`](./src/objects/questions/base/question.ts). It might be good to offer typing for the `value` in the form of either an accompanying reference to the [`QuestionType`](./src/objects/questions/base/questionTypes.ts) or different property names for different value kinds, e.g. `stringValue` and `idArrayValue`.
-- Non-idempotent data provision: the [`DataRoot`](./src/root/dataRoot.ts)’s `provideData` methods store all objects mapped by `Id`, and thus providing them multiple times will not lead to duplicate objects in the case of all other object types except [`Nomination`](./src/objects/nominations/base/nomination.ts)s and any implicit [`Entity`](./src/objects/entities/base/entity.ts)s contained in them. Deterministic `Id`s could be generated for them as well but this would require using a hash function, so currently non-deterministic unique `Id`s are used. The data required for unique identification is a little bit involved because of the implicit [`Entity`](./src/objects/entities/base/entity.ts)s:
-  - Base for all: category keyword for [`Nomination`](./src/objects/nominations/base/nomination.ts), `electionId`, `constituencyId`, `entityType`
-  - Alliances: + `entityId`. If implicit, it can be generated from category keyword for [`Entity`](./src/objects/entities/base/entity.ts), `ENTITY_TYPE.Alliance` and the `entityId`s of nested `organizationNominations`.
-  - Organizations: + `entityId`.
-  - Factions: + `entityId`. If implicit, it can be generated from category keyword for [`Entity`](./src/objects/entities/base/entity.ts), `ENTITY_TYPE.Faction` and the `entityId`s of nested `candidateNominations`.
-  - Candidates: + `entityId` + `entityId` of the possible parent nomination, which may be either a [`FactionNomination`](./src/objects/nominations/variants/factionNomination.ts) or [`OrganizationNomination`](./src/objects/nominations/variants/organizationNomination.ts).
 
 ## Source file organisation
 
@@ -117,6 +111,15 @@ The data is expected to be immutable and no setters are provided for the propert
 
 The [`DataRoot`](./src/root/dataRoot.ts) exposes data provision methods like `provideElectionData(data: Readonly<Array<ElectionData>>)`, which are used to build the child [`DataObject`](./src/core/dataObject.ts)s. The objects are stored in the root’s `children` collections.
 
+Data provision is designed to be idempotent and for this reason whenever data is provided the whole collection is rewritten, along with those depending on it. See [`DEPENDENT_COLLECTIONS`](./src/root/dependentCollections.ts) for details. This means that data should be provided in this order:
+
+1. Elections
+2. Constituency groups
+3. Constituencies
+4. In either order:
+   1. Entities and the Nominations
+   2. Question categories and then Questions
+
 ### Accessing data objects
 
 The objects are stored internally in the [`DataRoot`](./src/root/dataRoot.ts) in `Id`-mapped collections. These collections cannot be accessed directly, but the [`DataRoot`](./src/root/dataRoot.ts) provides two main ways for accessing them:
@@ -127,6 +130,31 @@ The objects are stored internally in the [`DataRoot`](./src/root/dataRoot.ts) in
 In addition to accessing the objects via the root, many objects provide getters and methods for accessing related objects. The [`Election`](./src/objects/election/election.ts) object, for example, provides a `constituencyGroups` getter for the [`ConstituencyGroup`](./src/objects/constituency/constituencyGroup.ts)s available for that election as well as a `getCandidateNominations({id})` method which returns the [`CandidateNomination`](./src/objects/nominations/variants/candidateNomination.ts)s for the [`Constituency`](./src/objects/constituency/constituency.ts) with the `id` passed as the argument.
 
 None of these utility getters store references to the objects, but use the [`DataRoot`](./src/root/dataRoot.ts)’s getters when called.
+
+#### NB: Always reference objects by `id`
+
+The objects are always compared and referenced by their `id` instead of proper object equality. This is to prevent errors in cases where the data for is accidentally provided twice and the objects are recreated.
+
+Dynamically created objects – implied [`Entity`](./src/objects/entities/base/entity.ts)s (see also below) and [`Nomination`](./src/objects/nominations/base/nomination.ts)s – will be given a deterministic `Id` based on their hashed properties:
+
+- For [`Nomination`](./src/objects/nominations/base/nomination.ts)s a hash of:
+  1. Keyword `nomination`
+  2. `electionId`
+  3. `constituencyId`
+  4. `electionRound`
+  5. `entityType`
+  6. `entityId`
+  7. possible `parentNominationId`
+- For implied [`Alliance`](./src/objects/entities/variants/alliance.ts)s or [`Faction`](./src/objects/entities/variants/faction.ts)s:
+  1. Keyword `alliance` or `faction`
+  2. `electionId`
+  3. `constituencyId`
+  4. `electionRound`
+  5. `entityType`
+  6. `parentNominationId` for `FactionNomination`s
+  7. `Id`s of the entities in the child nominations:
+     - `Organization`s for `AllianceNomination`s
+     - `Candidate`s for `FactionNomination`s
 
 ### [`ConstituencyGroup`](./src/objects/constituency/constituencyGroup.ts)s and [`Constituency`](./src/objects/constituency/constituency.ts)s
 

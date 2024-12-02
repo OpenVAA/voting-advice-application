@@ -23,23 +23,21 @@ export class AllianceNomination
   //////////////////////////////////////////////////////////////////////////////
 
   /**
-   * The constructor can be called with `data` lacking an explicit `Alliance` entity’s `entityId` in which case an `Alliance` with a non-deterministic, unique `id` will be generated. Also, any nested `OrganizationNomination`s in the data are created during initialization.
+   * The constructor can be called with `data` lacking an explicit `Alliance` entity’s `entityId` in which case an `Alliance` with a deterministic, unique `id` will be generated. Also, any nested `OrganizationNomination`s in the data are created during initialization.
    * @param data - The data for the nomination. If it does not contain an explicit `entityId`, a generic `Alliance` `Entity` will be created.
    * @param root - The `DataRoot`.
    */
   constructor({ data, root }: { data: WithOptional<AllianceNominationData, 'id'>; root: DataRoot }) {
-    super({ data, root });
-
-    if (this.data.organizations.length < 2)
+    if (data.organizations.length < 2)
       throw new DataProvisionError(
-        `An AllianceNomination must have at least two organizations. The data has ${this.data.organizations.length}.`
+        `An AllianceNomination must have at least two organizations. The data has ${data.organizations.length}.`
       );
 
-    // Create implied entity if necessary, `super()` will add the `id`
-    if (!this.data.entityId) {
-      const { name, shortName } = this.data;
-      const id = this.root.createId('alliance');
-      this.root.provideEntityData([
+    // Create the possible implied entity before calling super(), because entityId will be needed by it for id generation
+    if (!data.entityId) {
+      const { name, shortName } = data;
+      const id = root.createId({ type: 'alliance', data });
+      root.provideEntityData([
         {
           type: ENTITY_TYPE.Alliance,
           isGenerated: true,
@@ -48,8 +46,10 @@ export class AllianceNomination
           shortName
         }
       ]);
-      this.data.entityId = id;
+      data.entityId = id;
     }
+
+    super({ data, root });
 
     // Create nested nominations
     const { organizationNominations } = this.root.provideNominationData(

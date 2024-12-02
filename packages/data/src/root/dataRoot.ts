@@ -13,9 +13,12 @@ import {
   type ConstituencyData,
   ConstituencyGroup,
   type ConstituencyGroupData,
+  createDeterministicId,
   createQuestion,
   DataNotFoundError,
+  DataProvisionError,
   DataTypeError,
+  DynamicObjectType,
   Election,
   type ElectionData,
   ENTITY_TYPE,
@@ -39,8 +42,10 @@ import {
   formatTextAnswer,
   FullVaaData,
   type Id,
+  IdentityProps,
   isValidId,
   type MappedCollection,
+  Nomination,
   NominationVariant,
   NominationVariantTree,
   order,
@@ -97,10 +102,6 @@ export class DataRoot extends Updatable implements FormatterMethods {
    * A prefix used when creating unique `Id`s automatically. `Id`s passed in object data cannot contaih this string. If the data source uses it in ids, change the prexix before providing data.
    */
   autoIdPrefix = '__';
-  /**
-   * A counter used when creating unique `Id`s automatically.
-   */
-  protected autoIdCounter = 0;
 
   protected children: {
     [KName in keyof RootCollections]?: MappedCollection<RootCollections[KName]>;
@@ -486,11 +487,16 @@ export class DataRoot extends Updatable implements FormatterMethods {
     type,
     ...filters
   }: FilterTargets & { type?: QuestionCategoryType }): Array<AnyQuestionVariant> | undefined {
-    const questions = type ? this.getQuestionsByType(type) : this.questions;
-    if (!questions) return undefined;
-    return Object.values(filters).filter((f) => f != null).length
-      ? questions.filter((q) => q.appliesTo(filters))
-      : questions;
+    const hasFilters = Object.values(filters).filter((f) => f != null).length > 0;
+    if (!type && !hasFilters) return this.questions;
+    if (type && !hasFilters) return this.getQuestionsByType(type);
+    // Apply filters first to categories and then questions
+    return this.questionCategories
+      ?.filter((qc) => {
+        if (type && qc.type !== type) return false;
+        return qc.appliesTo(filters);
+      })
+      .flatMap((qc) => qc.getApplicableQuestions(filters));
   }
 
   /**
@@ -517,21 +523,21 @@ export class DataRoot extends Updatable implements FormatterMethods {
   //////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Provide all data at once.
+   * Provide all data at once. All existing data is reset.
    */
   provideFullData(data: FullVaaData): void {
     const { elections, constituencies, questions, entities, nominations } = data;
     this.update(() => {
+      this.provideElectionData(elections);
       this.provideConstituencyData(constituencies);
       this.provideQuestionData(questions);
-      this.provideElectionData(elections);
       this.provideEntityData(entities);
       this.provideNominationData(nominations);
     });
   }
 
   /**
-   * Provide the constituency and group data to the `DataRoot`. Existing objects with the same id will be overwritten.
+   * Provide the constituency and group data to the `DataRoot`. Existing data will be reset, along with any {@link DEPENDENT_COLLECTIONS | dependent collections}.
    */
   provideConstituencyData({
     groups,
@@ -547,26 +553,22 @@ export class DataRoot extends Updatable implements FormatterMethods {
   }
 
   /**
-   * Provide election data to the `DataRoot`. Existing objects with the same id will be overwritten.
+   * Provide election data to the `DataRoot`. Existing data will be reset, along with any {@link DEPENDENT_COLLECTIONS | dependent collections}.
    */
   provideElectionData(data: Readonly<Array<ElectionData>>): void {
     this.provideData('elections', data, (args) => new Election(args));
   }
 
   /**
-   * Provide the data for all entities to the `DataRoot`. Existing objects with the same id will be overwritten.
+   * Provide the data for all entities to the `DataRoot`. Existing data will be reset, along with any {@link DEPENDENT_COLLECTIONS | dependent collections}.
    * @param data - The data for all entities. Two formats are supported: a single array of `AnyEntityVariantData` with the `type` specified for each, or a structured object with these `EntityType`s as keys and the actual data without them.
+   * @param options - Additional options for data provision.
    */
   provideEntityData(data: Readonly<Array<AnyEntityVariantData>> | Readonly<EntityVariantTree>): void {
     const dataArray: Readonly<Array<AnyEntityVariantData>> = !Array.isArray(data)
       ? parseEntityTree(data as EntityVariantTree)
       : data;
     this.update(() => {
-      this.provideData(
-        'alliances',
-        dataArray.filter((d) => d.type === ENTITY_TYPE.Alliance),
-        (args) => new Alliance(args)
-      );
       this.provideData(
         'candidates',
         dataArray.filter((d) => d.type === ENTITY_TYPE.Candidate),
@@ -582,12 +584,18 @@ export class DataRoot extends Updatable implements FormatterMethods {
         dataArray.filter((d) => d.type === ENTITY_TYPE.Organization),
         (args) => new Organization(args)
       );
+      this.provideData(
+        'alliances',
+        dataArray.filter((d) => d.type === ENTITY_TYPE.Alliance),
+        (args) => new Alliance(args)
+      );
     });
   }
 
   /**
-   * Provide the data for all nominations to the `DataRoot`. Existing objects with the same id will be overwritten.
+   * Provide the data for all nominations to the `DataRoot`. Existing data will be reset, along with any {@link DEPENDENT_COLLECTIONS | dependent collections}.
    * @param data - The data for all nominations. Two formats are supported: a single array of `AnyNominationVariantData` with the `electionId` and `constituencyId` specified for each, or a structured object with these `Id`s as keys and the actual data without them.
+   * @param options - Additional options for data provision.
    * @returns The created nominations because they’re needed by some nomination initializers.
    */
   provideNominationData(data: Readonly<Array<AnyNominationVariantPublicData>> | Readonly<NominationVariantTree>): {
@@ -601,32 +609,32 @@ export class DataRoot extends Updatable implements FormatterMethods {
       ? parseNominationTree(data as NominationVariantTree)
       : data;
     this.update(() => {
-      out.allianceNominations = this.provideData(
-        'allianceNominations',
-        dataArray.filter((d) => d.entityType === ENTITY_TYPE.Alliance),
-        (args) => new AllianceNomination(args)
-      );
-      out.organizationNominations = this.provideData(
-        'organizationNominations',
-        dataArray.filter((d) => d.entityType === ENTITY_TYPE.Organization),
-        (args) => new OrganizationNomination(args)
+      out.candidateNominations = this.provideData(
+        'candidateNominations',
+        dataArray.filter((d) => d.entityType === ENTITY_TYPE.Candidate),
+        (args) => new CandidateNomination(args)
       );
       out.factionNominations = this.provideData(
         'factionNominations',
         dataArray.filter((d) => d.entityType === ENTITY_TYPE.Faction),
         (args) => new FactionNomination(args)
       );
-      out.candidateNominations = this.provideData(
-        'candidateNominations',
-        dataArray.filter((d) => d.entityType === ENTITY_TYPE.Candidate),
-        (args) => new CandidateNomination(args)
+      out.organizationNominations = this.provideData(
+        'organizationNominations',
+        dataArray.filter((d) => d.entityType === ENTITY_TYPE.Organization),
+        (args) => new OrganizationNomination(args)
+      );
+      out.allianceNominations = this.provideData(
+        'allianceNominations',
+        dataArray.filter((d) => d.entityType === ENTITY_TYPE.Alliance),
+        (args) => new AllianceNomination(args)
       );
     });
     return out as ReturnType<this['provideNominationData']>;
   }
 
   /**
-   * Provide question and question category data to the `DataRoot`. Existing objects with the same id will be overwritten.
+   * Provide question and question category data to the `DataRoot`. Existing data will be reset, along with any {@link DEPENDENT_COLLECTIONS | dependent collections}.
    */
   provideQuestionData({
     categories,
@@ -642,11 +650,15 @@ export class DataRoot extends Updatable implements FormatterMethods {
   }
 
   /**
-   * Create a new automatic id from the category and a running counter.
-   * @param category - The category of the id.
+   * Create a deterministic `Id` for a `Nomination` or an implied `Entity`.
+   * @param args - Arguments passed to `createDeterministicId`.
+   * @returns A deterministic `Id` for the object.
    */
-  createId(category: 'nomination' | 'alliance' | 'faction'): Id {
-    return `${this.autoIdPrefix}${category}-${++this.autoIdCounter}`;
+  createId<TType extends DynamicObjectType>(args: { type: TType; data: IdentityProps[TType] }): Id {
+    return createDeterministicId({
+      prefix: this.autoIdPrefix,
+      ...args
+    });
   }
 
   /**
@@ -658,7 +670,23 @@ export class DataRoot extends Updatable implements FormatterMethods {
   }
 
   /**
-   * A utility method for providing data to the `DataRoot`. Existing objects with the same id will be overwritten.
+   * Check that a `DataObject` is valid.
+   * TODO: Expand coverage to other data types.
+   * @param object - The `DataObject` to check.
+   * @returns An error message if the object is invalid.
+   */
+  checkObject(object: object): void | string {
+    if (object instanceof Nomination) {
+      try {
+        object.entity; // eslint-disable-line @typescript-eslint/no-unused-expressions
+      } catch {
+        return 'No matching entity found for nomination.';
+      }
+    }
+  }
+
+  /**
+   * Provide data to the `DataRoot`. All edits to the `children` collections should be made using this method.
    * @param collection - The name of the collection
    * @param data - The data to be passed to the `constructor`
    * @param constructor - The constructor function for the new objects, which is passed both the `data` items and the `DataRoot` instance.
@@ -671,12 +699,15 @@ export class DataRoot extends Updatable implements FormatterMethods {
   ): Array<TChild> {
     if (!data.length) return [];
     this.log(`provideData() to ${collection} with ${data.length} new objects`);
-    const objects = new Array<TChild>();
     this.children[collection] ??= new Map();
+    const objects = new Array<TChild>();
     const collObject = this.children[collection] as MappedCollection<TChild>;
     this.update(() =>
       data.forEach((d) => {
         const obj = constructor({ data: d, root: this });
+        // Check that the object is valid before adding it to the collection
+        const error = this.checkObject(obj);
+        if (error) throw new DataProvisionError(`Object ${obj.id} could not be added to ${collection}: ${error}.`);
         collObject.set(obj.id, obj);
         objects.push(obj);
       })
