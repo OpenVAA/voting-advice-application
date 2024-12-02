@@ -46,7 +46,7 @@ export abstract class Nomination<
     if (!data.id) {
       fullData = {
         ...data,
-        id: root.createId('nomination'),
+        id: root.createId({ type: 'nomination', data }),
         isGenerated: true
       } as TData;
     } else {
