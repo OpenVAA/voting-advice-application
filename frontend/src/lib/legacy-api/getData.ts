@@ -1,29 +1,19 @@
 /**
- * This is the main access point for the Voter App API.
- *
- * Based on local `settings`, the module will import the appropriate `DataProvider` and exports its functions.
- *
- * NB. In the frontend, always use the functions exposed by this module, never direct imports from the specific `DataProvider` implementations.
+ * This legacy implementation always uses Strapi as the data provider.
  */
-
 import { staticSettings } from '@openvaa/app-shared';
-import { error } from '@sveltejs/kit';
+import { logDebugError } from '$lib/utils/logger';
 import type { DataProvider } from './dataProvider/dataProvider';
 
-let dpPromise: Promise<{ dataProvider: DataProvider }>;
+if (staticSettings.dataAdapter.type !== 'strapi')
+  logDebugError(
+    '[legacy-api] Until the legacy API is removed, legacy-api will always use Strapi as the data provider.'
+  );
 
-if (staticSettings.dataProvider.type === 'strapi') {
-  dpPromise = import('./dataProvider/strapi');
-} else if (staticSettings.dataProvider.type === 'local') {
-  dpPromise = import('./dataProvider/local');
-} else {
-  throw error(500, 'Could not load data provider');
-}
+const dpPromise: Promise<{ dataProvider: DataProvider }> = import('./dataProvider/strapi');
 
 export const dataProvider: Promise<WithRequired<DataProvider, 'setFeedback'>> = dpPromise.then(
   async ({ dataProvider }) => {
-    if (!('setFeedback' in dataProvider) || typeof dataProvider.setFeedback !== 'function')
-      dataProvider.setFeedback = (await import('./dataProvider/local/setFeedback')).setFeedback;
     return dataProvider as WithRequired<DataProvider, 'setFeedback'>;
   }
 );
