@@ -24,3 +24,10 @@ export const ENTITY_TYPE = {
  * The types of any entity. The `type` property of `EntityData` determines the `Entity` subclass that it uses.
  */
 export type EntityType = (typeof ENTITY_TYPE)[keyof typeof ENTITY_TYPE];
+
+/**
+ * Assert that a string is an `EntityType`.
+ */
+export function isEntityType(value: unknown): value is EntityType {
+  return Object.values(ENTITY_TYPE).includes(value as EntityType);
+}
