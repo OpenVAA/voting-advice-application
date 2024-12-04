@@ -13,14 +13,15 @@ export default factories.createCoreRouter('api::nomination.nomination', {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([
-          'election',
-          'constituency',
-          'party',
-          'party.populate.logo',
-          'candidate',
+          'candidate.populate.answers.populate.question',
           'candidate.populate.party',
           'candidate.populate.photo',
-          'candidate.populate.answers.populate.question',
+          'candidate',
+          'constituency',
+          'election',
+          'party.populate.answers.populate.question',
+          'party.populate.logo',
+          'party'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([
@@ -35,22 +36,23 @@ export default factories.createCoreRouter('api::nomination.nomination', {
           'candidate.party.id.$in',
           'party.id.$eq',
           'party.id.$in',
-          'party.id.$notNull',
-        ]),
-      ],
+          'party.id.$notNull'
+        ])
+      ]
     },
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
         restrictPopulate([
-          'election',
-          'constituency',
-          'party',
-          'party.populate.logo',
-          'candidate',
+          'candidate.populate.answers.populate.question',
           'candidate.populate.party',
           'candidate.populate.photo',
-          'candidate.populate.answers.populate.question',
+          'candidate',
+          'constituency',
+          'election',
+          'party.populate.answers.populate.question',
+          'party.populate.logo',
+          'party'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([
@@ -65,9 +67,9 @@ export default factories.createCoreRouter('api::nomination.nomination', {
           'candidate.party.id.$in',
           'party.id.$eq',
           'party.id.$in',
-          'party.id.$notNull',
-        ]),
-      ],
-    },
-  } as unknown as Generic,
+          'party.id.$notNull'
+        ])
+      ]
+    }
+  } as unknown as Generic
 });

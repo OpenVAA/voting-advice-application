@@ -7,7 +7,7 @@ import type { RGB } from './rgb';
  * @returns An RGB array, or `undefined` if the color string is not valid.
  */
 
-export function parseColor(color: string): RGB | undefined {
+export function parseColorString(color: string): RGB | undefined {
   color = color.replace(/\s+/g, '');
   // If it's an RGB string, parse it
   if (color.startsWith('rgb(') && color.endsWith(')')) {

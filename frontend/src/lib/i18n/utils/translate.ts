@@ -7,7 +7,7 @@ import { defaultLocale, locale as currentLocale } from '../';
  * @param locale The target locale
  * @returns The translalated string or ''
  */
-export function translate(strings: LocalizedString | string | undefined | null, locale?: string): string {
+export function translate(strings: LocalizedString | string | undefined | null, locale?: string | null): string {
   return typeof strings === 'string' ? strings : ((translateObject(strings, locale) as string) ?? '');
 }
 
@@ -20,7 +20,7 @@ export function translate(strings: LocalizedString | string | undefined | null, 
 export function translateObject<
   TObject extends Record<string, unknown> | null | undefined,
   TValue = TObject extends Record<string, infer V> ? V : never
->(obj: TObject, locale?: string): TValue | undefined {
+>(obj: TObject, locale?: string | null): TValue | undefined {
   if (!isTranslation(obj)) return undefined;
   locale ??= currentLocale.get();
   let key: string | undefined;
