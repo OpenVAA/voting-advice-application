@@ -444,16 +444,24 @@ export class DataRoot extends Updatable implements FormatterMethods {
    * Get all provided `Nomination`s for a specific `Entity` passing either itself or its `type` and `id`.
    * @param type - The type of the nominated entity.
    * @param id - The id of the nominated entity.
+   * @paramn options - Additional options passed to `findNominations`.
    * @returns An array of `Nomination`s for the given `Entity` or `undefined` if `Nomination`s have not yet been provided.
    */
-  getNominationsForEntity<TEntity extends EntityType>({
-    type,
-    id
-  }: {
-    type: TEntity;
-    id: Id;
-  }): Array<NominationVariant[TEntity]> | undefined {
-    return this.findNominations({ entityType: type, entityId: id });
+  getNominationsForEntity<TEntity extends EntityType>(
+    {
+      type,
+      id
+    }: {
+      type: TEntity;
+      id: Id;
+    },
+    options: {
+      electionId?: Id;
+      electionRound?: number;
+      constituencyId?: Id;
+    } = {}
+  ): Array<NominationVariant[TEntity]> | undefined {
+    return this.findNominations({ ...options, entityType: type, entityId: id });
   }
 
   /**
