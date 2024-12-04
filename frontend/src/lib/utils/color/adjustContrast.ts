@@ -1,7 +1,7 @@
 // Provides utilities for ensuring color contrasts for accessibility purposes
 
 import { luminance, setLuminance } from './luminance';
-import { parseColor } from './parseColor';
+import { parseColorString } from './parseColorString';
 import { rgbToHex } from './rgbToHex';
 import type { RGB } from './rgb';
 
@@ -18,12 +18,12 @@ export function adjustContrast(color: string, bgColor: string, minContrast?: num
  */
 export function adjustContrast(color: RGB | string, bgColor: RGB | string, minContrast = 4.55): string | undefined {
   if (typeof color === 'string') {
-    const res = parseColor(color);
+    const res = parseColorString(color);
     if (!res) return undefined;
     color = res;
   }
   if (typeof bgColor === 'string') {
-    const res = parseColor(bgColor);
+    const res = parseColorString(bgColor);
     if (!res) return undefined;
     bgColor = res;
   }
