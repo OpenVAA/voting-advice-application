@@ -29,9 +29,9 @@ export type StaticSettings = {
     readonly source: string;
   };
   /**
-   * Settings defining the data provider to use, which may be a database interface or one using local files.
+   * Settings defining the data adapters to use, which may be a database interface or one using local files.
    */
-  readonly dataProvider:
+  readonly dataAdapter:
     | {
         readonly type: 'strapi';
         // TODO: [DataWriter] remove this setting and replace with null test on import { dataWriter } from '$lib/api/dataWriter'
