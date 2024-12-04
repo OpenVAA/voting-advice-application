@@ -3,6 +3,7 @@ import type {
   AnyQuestionVariant,
   Collection,
   DataAccessor,
+  FilterTargets,
   QuestionCategoryData,
   QuestionCategoryType
 } from '../../../internal';
@@ -26,5 +27,13 @@ export class QuestionCategory
    */
   get questions(): Collection<AnyQuestionVariant> {
     return this.root.questions?.filter((q) => q.category === this).sort(order) ?? [];
+  }
+
+  /**
+   * Get the questions in this category that match the given filter targets.
+   * @param targets - The targets to check for
+   */
+  getApplicableQuestions(targets: FilterTargets): Collection<AnyQuestionVariant> {
+    return this.questions.filter((q) => q.appliesTo(targets));
   }
 }

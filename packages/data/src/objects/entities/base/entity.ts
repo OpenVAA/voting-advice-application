@@ -3,9 +3,11 @@ import {
   type Answers,
   type AnswerValue,
   type AnyQuestionVariant,
+  Constituency,
   type DataAccessor,
   DataObject,
   DataTypeError,
+  Election,
   type EntityData,
   type EntityType,
   type HasAnswers,
@@ -25,6 +27,10 @@ export abstract class Entity<TType extends EntityType, TData extends EntityData<
   extends DataObject<TData>
   implements DataAccessor<EntityData<TType>>, HasAnswers
 {
+  //////////////////////////////////////////////////////////////////////////////
+  // Property getters
+  //////////////////////////////////////////////////////////////////////////////
+
   /**
    * The Entity's answers to the questions. @defaultValue {}
    */
@@ -33,18 +39,47 @@ export abstract class Entity<TType extends EntityType, TData extends EntityData<
   }
 
   /**
-   * Get all the `Nominations` for this entity.
+   * The type of the entity.
+   */
+  get type(): TType {
+    return this.data.type;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Collection getters
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Get all `Nominations` for this entity.
    */
   get nominations(): Array<NominationVariant[TType]> {
     return this.root.getNominationsForEntity(this) ?? [];
   }
 
   /**
-   * The type of the entity.
+   * Get all `Nominations` for this entity that match the given `Election` and its current round and `Constituency`.
+   * @param election - The `Election` to filter the nominations by.
+   * @param constituency - The `Constituency` to filter the nominations by.
    */
-  get type(): TType {
-    return this.data.type;
+  getApplicableNominations({
+    election,
+    constituency
+  }: {
+    election: Election;
+    constituency: Constituency;
+  }): Array<NominationVariant[TType]> {
+    return (
+      this.root.getNominationsForEntity(this, {
+        electionId: election.id,
+        electionRound: election.round,
+        constituencyId: constituency.id
+      }) ?? []
+    );
   }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Object getters
+  //////////////////////////////////////////////////////////////////////////////
 
   /**
    * Returns the `Answer` object for the given question with the `value` property assured to be of the correct type for the question type.

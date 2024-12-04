@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { Id } from '../../../internal';
+import { ENTITY_TYPE, Id } from '../../../internal';
 import { contentsMatch, getTestData, getTestDataRoot } from '../../../testUtils';
 
 const root = getTestDataRoot();
@@ -22,4 +22,13 @@ test('Should have all questions', () => {
       'To have the same questions'
     ).toBe(true);
   });
+});
+
+test('GetApplicableQuestions should return applicable questions', () => {
+  const category = root.getQuestionCategory('questionCategory-1');
+  expect(category).toBeDefined();
+  const questions = category.getApplicableQuestions({ entityTypes: ENTITY_TYPE.Organization });
+  // Questions 1-5 belong to category 1 but 3-5 are only for candidates
+  const ids = [1, 2].map((i) => `question-${i}`);
+  expect(questions?.map((q) => q.id)).toEqual(expect.arrayContaining(ids));
 });
