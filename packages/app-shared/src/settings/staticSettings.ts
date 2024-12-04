@@ -9,7 +9,7 @@ export const staticSettings: StaticSettings = {
     requireUserDataVersion: 1,
     source: 'https://github.com/OpenVAA/voting-advice-application'
   },
-  dataProvider: {
+  dataAdapter: {
     type: 'strapi',
     supportsCandidateApp: true
   },
