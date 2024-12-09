@@ -128,55 +128,55 @@ export class DataRoot extends Updatable implements FormatterMethods {
   // Collection getters
   //////////////////////////////////////////////////////////////////////////////
 
-  get alliances(): Collection<Alliance> | undefined {
+  get alliances(): Collection<Alliance> {
     return this.getCollectionAsArray('alliances');
   }
 
-  get allianceNominations(): Collection<AllianceNomination> | undefined {
+  get allianceNominations(): Collection<AllianceNomination> {
     return this.getCollectionAsArray('allianceNominations');
   }
 
-  get candidates(): Collection<Candidate> | undefined {
+  get candidates(): Collection<Candidate> {
     return this.getCollectionAsArray('candidates');
   }
 
-  get candidateNominations(): Collection<CandidateNomination> | undefined {
+  get candidateNominations(): Collection<CandidateNomination> {
     return this.getCollectionAsArray('candidateNominations');
   }
 
-  get constituencies(): Collection<Constituency> | undefined {
+  get constituencies(): Collection<Constituency> {
     return this.getCollectionAsArray('constituencies');
   }
 
-  get constituencyGroups(): Collection<ConstituencyGroup> | undefined {
+  get constituencyGroups(): Collection<ConstituencyGroup> {
     return this.getCollectionAsArray('constituencyGroups');
   }
 
-  get elections(): Collection<Election> | undefined {
+  get elections(): Collection<Election> {
     return this.getCollectionAsArray('elections');
   }
 
-  get factions(): Collection<Faction> | undefined {
+  get factions(): Collection<Faction> {
     return this.getCollectionAsArray('factions');
   }
 
-  get factionNominations(): Collection<FactionNomination> | undefined {
+  get factionNominations(): Collection<FactionNomination> {
     return this.getCollectionAsArray('factionNominations');
   }
 
-  get organizations(): Collection<Organization> | undefined {
+  get organizations(): Collection<Organization> {
     return this.getCollectionAsArray('organizations');
   }
 
-  get organizationNominations(): Collection<OrganizationNomination> | undefined {
+  get organizationNominations(): Collection<OrganizationNomination> {
     return this.getCollectionAsArray('organizationNominations');
   }
 
-  get questions(): Collection<AnyQuestionVariant> | undefined {
+  get questions(): Collection<AnyQuestionVariant> {
     return this.getCollectionAsArray('questions');
   }
 
-  get questionCategories(): Collection<QuestionCategory> | undefined {
+  get questionCategories(): Collection<QuestionCategory> {
     return this.getCollectionAsArray('questionCategories');
   }
 
@@ -188,8 +188,8 @@ export class DataRoot extends Updatable implements FormatterMethods {
   protected getCollectionAsArray<
     TCollection extends keyof RootCollections,
     TArray = Array<NonNullable<RootCollections[TCollection]>>
-  >(name: TCollection): TArray | undefined {
-    return this.children[name] ? ([...this.children[name]!.values()].sort(order) as TArray) : undefined;
+  >(name: TCollection): TArray {
+    return (this.children[name] ? [...this.children[name]!.values()].sort(order) : []) as TArray;
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -425,7 +425,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
     electionId?: Id;
     electionRound?: number;
     constituencyId?: Id;
-  }): Array<NominationVariant[TEntity]> | undefined {
+  }): Array<NominationVariant[TEntity]> {
     const collection = this.children[this.getNominationCollectionName(entityType)] as
       | MappedCollection<NominationVariant[TEntity]>
       | undefined;
@@ -437,7 +437,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
             (!electionRound || n.electionRound === electionRound) &&
             (!constituencyId || `${n.data.constituencyId}` === `${constituencyId}`)
         )
-      : undefined;
+      : [];
   }
 
   /**
@@ -460,7 +460,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
       electionRound?: number;
       constituencyId?: Id;
     } = {}
-  ): Array<NominationVariant[TEntity]> | undefined {
+  ): Array<NominationVariant[TEntity]> {
     return this.findNominations({ ...options, entityType: type, entityId: id });
   }
 
@@ -482,7 +482,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
     electionId: Id;
     electionRound?: number;
     constituencyId: Id;
-  }): Array<NominationVariant[TEntity]> | undefined {
+  }): Array<NominationVariant[TEntity]> {
     return this.findNominations({ entityType: type, electionId, electionRound, constituencyId });
   }
 
@@ -491,10 +491,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
    * @param type - The type of the `QuestionCategory`
    * @param filters - Any `FilterTargets`
    */
-  findQuestions({
-    type,
-    ...filters
-  }: FilterTargets & { type?: QuestionCategoryType }): Array<AnyQuestionVariant> | undefined {
+  findQuestions({ type, ...filters }: FilterTargets & { type?: QuestionCategoryType }): Array<AnyQuestionVariant> {
     const hasFilters = Object.values(filters).filter((f) => f != null).length > 0;
     if (!type && !hasFilters) return this.questions;
     if (type && !hasFilters) return this.getQuestionsByType(type);
@@ -512,9 +509,8 @@ export class DataRoot extends Updatable implements FormatterMethods {
    * @param type - The type to look for.
    * @returns An array of `AnyQuestionVariant`s or `undefined` if questions haven't been provided yet.
    */
-  getQuestionsByType(type: QuestionCategoryType): Array<AnyQuestionVariant> | undefined {
-    const categories = this.getQuestionCategoriesByType(type);
-    return categories ? categories.flatMap((qc) => qc.questions) : undefined;
+  getQuestionsByType(type: QuestionCategoryType): Array<AnyQuestionVariant> {
+    return this.getQuestionCategoriesByType(type).flatMap((qc) => qc.questions);
   }
 
   /**
@@ -522,7 +518,7 @@ export class DataRoot extends Updatable implements FormatterMethods {
    * @param type - The type to look for.
    * @returns An array of `QuestionCategory`s or `undefined` if questions haven't been provided yet.
    */
-  getQuestionCategoriesByType(type: QuestionCategoryType): Array<QuestionCategory> | undefined {
+  getQuestionCategoriesByType(type: QuestionCategoryType): Array<QuestionCategory> {
     return this.questionCategories?.filter((qc) => qc.type === type);
   }
 
