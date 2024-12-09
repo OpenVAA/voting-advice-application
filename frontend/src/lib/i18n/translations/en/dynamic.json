@@ -3,15 +3,25 @@
     "heroEmoji": "⚙️"
   },
   "appName": "Election Compass",
+  "constituencies": {
+    "heroEmoji": "📍",
+    "ingressSingleElection": "The candidates and parties are divided into constituencies. You can only vote for those in your constituency.",
+    "ingressMultipleElections": "The candidates and parties are divided into constituencies. Select a constituency for each election."
+  },
+  "elections": {
+    "heroEmoji": "🗳️",
+    "ingress": "Select the elections for which you want to find candidates or parties."
+  },
   "error": {
     "heroEmoji": "🙊"
   },
   "frontPage": {
-    "ingress": "With this application you can compare candidates in the elections on {electionDate, date, ::yyyyMMdd} based on their opinions, parties and other data.",
+    "ingress": "With this application you can compare candidates and parties based on their opinions, parties and other data.",
     "startButton": "Find the Best Candidates and Parties!"
   },
   "info": {
-    "content": "The election date is {electionDate, date, ::yyyyMMdd}.",
+    "content": "Read more about the elections below.",
+    "dateInfo": "The election date is {electionDate, date, ::yyyyMMdd}.",
     "heroEmoji": "🗳️"
   },
   "intro": {
@@ -19,7 +29,9 @@
     "heroEmoji": "🚀",
     "ingress": "This application will help you find the {candidatePlural} and {partyPlural} that best match your opinions in the elections.",
     "list": {
+      "constituencies": "Select your constituency",
       "details": "Study them in detail",
+      "elections": "Select an election",
       "opinions": "Enter your opinions",
       "results": "See the {candidatePlural} and {partyPlural} that best agree with you"
     },
