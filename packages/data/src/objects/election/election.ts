@@ -51,10 +51,11 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
   }
 
   /**
-   * Returns `true` if the election only has a single constituency.
+   * Returns the single `Constituency` if the election only has a one, `null` otherwise.
    */
-  get singleConstituency(): boolean {
-    return this.data.constituencyGroupIds.length === 1 && this.constituencyGroups[0].singleConstituency;
+  get singleConstituency(): Constituency | null {
+    const maybeSingle = this.constituencyGroups[0].singleConstituency;
+    return this.data.constituencyGroupIds.length === 1 && maybeSingle ? maybeSingle : null;
   }
 
   //////////////////////////////////////////////////////////////////////////////

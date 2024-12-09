@@ -16,9 +16,9 @@ export class ConstituencyGroup
   }
 
   /**
-   * Returns `true` if the groups only has a single constituency.
+   * Returns the single `Constituency` if the group only has a one, `null` otherwise.
    */
-  get singleConstituency(): boolean {
-    return this.data.constituencyIds.length === 1;
+  get singleConstituency(): Constituency | null {
+    return this.data.constituencyIds.length === 1 ? this.root.getConstituency(this.data.constituencyIds[0]) : null;
   }
 }
