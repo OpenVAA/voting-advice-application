@@ -1,4 +1,10 @@
-import type { FilterableQuestion } from '../../question';
+import {
+  MultipleChoiceCategoricalQuestion,
+  NumberQuestion,
+  SingleChoiceCategoricalQuestion,
+  SingleChoiceOrdinalQuestion,
+  TextQuestion
+} from '@openvaa/data';
 
 /**
  * These options define how to get the filterable value from the target entity.
@@ -59,3 +65,10 @@ export interface QuestionFilterOptions {
    */
   question: FilterableQuestion;
 }
+
+export type FilterableQuestion = TextQuestion | NumberQuestion | ChoiceQuestion;
+
+export type ChoiceQuestion =
+  | SingleChoiceOrdinalQuestion
+  | SingleChoiceCategoricalQuestion
+  | MultipleChoiceCategoricalQuestion;

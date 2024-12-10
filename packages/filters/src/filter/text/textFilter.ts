@@ -1,4 +1,4 @@
-import { type MaybeWrapped } from '../../entity';
+import { MaybeWrappedEntity } from '@openvaa/core';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import { Filter, type FilterOptionsBase, type PropertyFilterOptions, type QuestionFilterOptions } from '../base';
 
@@ -6,7 +6,7 @@ import { Filter, type FilterOptionsBase, type PropertyFilterOptions, type Questi
  * A base class for filters that search for text.
  */
 
-export class TextFilter<TEntity extends MaybeWrapped> extends Filter<TEntity, string> {
+export class TextFilter<TEntity extends MaybeWrappedEntity> extends Filter<TEntity, string> {
   protected _rules: {
     exclude?: string;
     include?: string;
@@ -33,7 +33,7 @@ export class TextFilter<TEntity extends MaybeWrapped> extends Filter<TEntity, st
     return this._rules.include ?? '';
   }
 
-  get caseSensitive() {
+  get caseSensitive(): boolean {
     return this._rules.caseSensitive ?? false;
   }
 
@@ -49,7 +49,7 @@ export class TextFilter<TEntity extends MaybeWrapped> extends Filter<TEntity, st
     this.setRule('caseSensitive', value);
   }
 
-  testValue(value: MaybeMissing<string>) {
+  testValue(value: MaybeMissing<string>): boolean {
     // Treat missing values as empty strings.
     if (value === MISSING_VALUE) value = '';
     if (this._rules.exclude && this.testText(this._rules.exclude, value as string)) return false;
@@ -60,7 +60,7 @@ export class TextFilter<TEntity extends MaybeWrapped> extends Filter<TEntity, st
   /**
    * Test whether @param rule is found in @param text
    */
-  testText(rule: string, text: string) {
+  testText(rule: string, text: string): boolean {
     // We do not care about leading and trailing whitespace. Because we use indexOf, we only need to trim the rule
     rule = rule.trim();
     return this._rules.caseSensitive

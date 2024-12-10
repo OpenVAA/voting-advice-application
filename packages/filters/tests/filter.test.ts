@@ -1,27 +1,28 @@
+import {
+  type Choice,
+  DataRoot,
+  MultipleChoiceCategoricalQuestion,
+  NumberQuestion,
+  SingleChoiceCategoricalQuestion,
+  TextQuestion
+} from '@openvaa/data';
 import { describe, expect, test, vi } from 'vitest';
 import {
   castValue,
-  type Choice,
-  type ChoiceQuestion as IChoiceQuestion,
   ChoiceQuestionFilter,
-  type EntityWithAnswers,
-  type FilterableEntity,
   FilterGroup,
   LOGIC_OP,
   MISSING_VALUE,
-  type NumericQuestion as INumericQuestion,
   NumericQuestionFilter,
   ObjectFilter,
   TextPropertyFilter,
-  type TextQuestion as ITextQuestion,
-  TextQuestionFilter,
-  WRAPPED_ENTITY_KEY,
-  type WrappedEntity
+  TextQuestionFilter
 } from '../src';
 import { copyRules, matchRules, ruleIsActive } from '../src/filter/rules';
-import type { Answer, AnswerDict } from '@openvaa/core';
+import type { Answer, AnswerDict, HasAnswers, WrappedEntity } from '@openvaa/core';
 
 const LOCALE = 'en';
+const root = new DataRoot();
 
 describe('Value utilities', () => {
   test('castValue', () => {
@@ -186,7 +187,10 @@ describe('Filter basics', () => {
 
 test('TextQuestionFilter', () => {
   const names = ['Bart', 'Homer', 'Marge'];
-  const question = new TextQuestion('rightId');
+  const question = new TextQuestion({
+    root,
+    data: { id: 'rightId', type: 'text', name: '', categoryId: '' }
+  });
   const people: Record<string, AnsweringEntity> = Object.fromEntries(
     names.map((n) => [
       n,
@@ -208,14 +212,14 @@ test('TextQuestionFilter', () => {
 
 test('ChoiceQuestionFilter', () => {
   const choices: Array<Choice> = [
-    { key: 0, label: 'M' }, // 3rd in alhabetical order in the 'fi' locale
-    { key: 1, label: 'A' }, // 1st
-    { key: 2, label: 'Ä' }, // 4th
-    { key: 3, label: 'E' }, // 2nd
-    { key: 4, label: 'X' } // Should not be included because not present in answers
+    { id: '0', label: 'M' }, // 3rd in alhabetical order in the 'fi' locale
+    { id: '1', label: 'A' }, // 1st
+    { id: '2', label: 'Ä' }, // 4th
+    { id: '3', label: 'E' }, // 2nd
+    { id: '4', label: 'X' } // Should not be included because not present in answers
   ];
-  const question = new ChoiceQuestion('rightId', choices);
-  const answers = [0, 1, 1, 2, 3];
+  const question = choiceQuestion('rightId', choices);
+  const answers = ['0', '1', '1', '2', '3'];
   const people: Array<AnsweringEntity> = answers.map(
     (a) =>
       new AnsweringEntity({
@@ -226,18 +230,18 @@ test('ChoiceQuestionFilter', () => {
   const filter = new ChoiceQuestionFilter({ question }, 'fi');
   expect(filter.active, 'Not active by default').toBe(false);
   expect(filter.apply(people), 'Include all by default').toEqual(people);
-  filter.include = [0];
+  filter.include = ['0'];
   expect(filter.active, 'Active if changed').toBe(true);
   expect(filter.apply(people), 'Exact match').toEqual([people[0]]);
-  filter.include = [1, 3];
+  filter.include = ['1', '3'];
   expect(filter.apply(people), 'Multiple match').toEqual([people[1], people[2], people[4]]);
   filter.reset();
-  filter.exclude = [0, 1];
+  filter.exclude = ['0', '1'];
   expect(filter.apply(people), 'Exclude').toEqual([people[3], people[4]]);
   expect(
     filter.parseValues(people).map((v) => v.value),
     'Value sorting and exclusion of those not present in answers'
-  ).toEqual([1, 3, 0, 2]);
+  ).toEqual(['1', '3', '0', '2']);
   expect(
     filter.parseValues(people).map((v) => v.object),
     'Choice objects in values'
@@ -248,13 +252,13 @@ test('ChoiceQuestionFilter', () => {
 
 test('ChoiceQuestionFilter: missing values', () => {
   const choices: Array<Choice> = [
-    { key: 0, label: 'M' }, // 3rd in alhabetical order in the 'fi' locale
-    { key: 1, label: 'A' }, // 1st
-    { key: 2, label: 'Ä' }, // 4th
-    { key: 3, label: 'E' } // 2nd
+    { id: '0', label: 'M' }, // 3rd in alhabetical order in the 'fi' locale
+    { id: '1', label: 'A' }, // 1st
+    { id: '2', label: 'Ä' }, // 4th
+    { id: '3', label: 'E' } // 2nd
   ];
-  const question = new ChoiceQuestion('rightId', choices);
-  const answers = [0, 1, 1, 2, undefined];
+  const question = choiceQuestion('rightId', choices);
+  const answers = ['0', '1', '1', '2', undefined];
   const people: Array<AnsweringEntity> = answers.map(
     (a) =>
       new AnsweringEntity({
@@ -264,20 +268,20 @@ test('ChoiceQuestionFilter: missing values', () => {
   );
   const filter = new ChoiceQuestionFilter({ question }, 'fi');
   expect(filter.apply(people), 'Include all by default').toEqual(people);
-  filter.include = [0];
+  filter.include = ['0'];
   expect(filter.apply(people), 'Do not include missing').toEqual([people[0]]);
-  filter.include = [1, MISSING_VALUE];
+  filter.include = ['1', MISSING_VALUE];
   expect(filter.apply(people), 'Explicitly include missing').toEqual([people[1], people[2], people[4]]);
   filter.reset();
-  filter.exclude = [0, 1];
+  filter.exclude = ['0', '1'];
   expect(filter.apply(people), 'Exclude does not exluce missing by default').toEqual([people[3], people[4]]);
   filter.reset();
-  filter.exclude = [0, 1, MISSING_VALUE];
+  filter.exclude = ['0', '1', MISSING_VALUE];
   expect(filter.apply(people), 'Explicitly exclude missing').toEqual([people[3]]);
   expect(
     filter.parseValues(people).map((v) => v.value),
     'Value sorting with missing value'
-  ).toEqual([1, 0, 2, MISSING_VALUE]);
+  ).toEqual(['1', '0', '2', MISSING_VALUE]);
   expect(
     filter.parseValues(people).map((v) => v.object),
     'Choice objects in values'
@@ -286,17 +290,17 @@ test('ChoiceQuestionFilter: missing values', () => {
 
 test('ChoiceQuestionFilter: multipleVAlues', () => {
   const choices: Array<Choice> = [
-    { key: 0, label: 'M' }, // 3rd in alhabetical order in the 'fi' locale
-    { key: 1, label: 'A' }, // 1st
-    { key: 2, label: 'Ä' }, // 4th
-    { key: 3, label: 'E' } // 2nd
+    { id: '0', label: 'M' }, // 3rd in alhabetical order in the 'fi' locale
+    { id: '1', label: 'A' }, // 1st
+    { id: '2', label: 'Ä' }, // 4th
+    { id: '3', label: 'E' } // 2nd
   ];
-  const question = new ChoiceQuestion('rightId', choices, true);
+  const question = choiceQuestion('rightId', choices, true);
   const answers = [
-    [0, 1],
-    [1, 2],
-    [2, 3],
-    [0, 1, 2, 3]
+    ['0', '1'],
+    ['1', '2'],
+    ['2', '3'],
+    ['0', '1', '2', '3']
   ];
   const people: Array<AnsweringEntity> = answers.map(
     (a) =>
@@ -308,17 +312,17 @@ test('ChoiceQuestionFilter: multipleVAlues', () => {
   const filter = new ChoiceQuestionFilter({ question }, 'fi');
   expect(filter.active, 'Not active by default').toBe(false);
   expect(filter.apply(people), 'Include all by default').toEqual(people);
-  filter.include = [0];
+  filter.include = ['0'];
   expect(filter.active, 'Active if changed').toBe(true);
   expect(filter.apply(people), 'Exact match').toEqual([people[0], people[3]]);
-  filter.include = [2, 3];
+  filter.include = ['2', '3'];
   expect(filter.apply(people), 'Multiple match').toEqual([people[1], people[2], people[3]]);
   filter.reset();
-  filter.exclude = [0, 1];
+  filter.exclude = ['0', '1'];
   expect(filter.apply(people), 'Exclude').toEqual([people[2]]);
   filter.reset();
   expect(filter.active, 'Not active if reset').toBe(false);
-  const singleQuestion = new ChoiceQuestion('rightId', choices, false);
+  const singleQuestion = choiceQuestion('rightId', choices, false);
   const singleFilter = new ChoiceQuestionFilter({ question: singleQuestion }, 'fi');
   expect(() => singleFilter.apply(people), 'Disallow casting of arrays to single value types').toThrow();
 });
@@ -366,7 +370,10 @@ test('ObjectFilter', () => {
 
 test('NumericQuestionFilter', () => {
   const ages = [10, 40, 50, 90];
-  const question = new NumericQuestion('rightId');
+  const question = new NumberQuestion({
+    root,
+    data: { id: 'rightId', type: 'number', name: '', categoryId: '' }
+  });
   const people: Array<AnsweringEntity> = ages.map(
     (a) =>
       new AnsweringEntity({
@@ -400,9 +407,12 @@ test('FilterGroup', () => {
     { id: '3', name: 'E party' } // 2nd
   ];
   const parties = partyData.map((d) => new Party(d.id, d.name));
-  const memberships = [0, 1, 2, 3];
+  const memberships = [0, 1, 2, 3]; // Indeces, not ids
   const ages = [10, 40, 50, 90];
-  const question = new NumericQuestion('age');
+  const question = new NumberQuestion({
+    root,
+    data: { id: 'age', type: 'number', name: '', categoryId: '' }
+  });
   const people: Array<AnsweringPartyMember> = memberships.map(
     (m, i) => new AnsweringPartyMember({ age: ages[i] }, parties[m])
   );
@@ -440,14 +450,15 @@ test('FilterGroup', () => {
 /**
  * An entity with a name.
  */
-class NamedEntity implements FilterableEntity {
+class NamedEntity implements HasAnswers {
   constructor(public name: string | undefined) {}
+  answers: AnswerDict = {};
 }
 
 /**
  * An entity with answers.
  */
-class AnsweringEntity implements EntityWithAnswers {
+class AnsweringEntity implements HasAnswers {
   answers: AnswerDict = {};
   constructor(answers: Record<string, Answer['value']>) {
     Object.entries(answers).forEach(([id, value]) => (this.answers[id] = { value }));
@@ -457,8 +468,9 @@ class AnsweringEntity implements EntityWithAnswers {
 /**
  * An entity with a party property.
  */
-class PartyMember implements FilterableEntity {
+class PartyMember implements HasAnswers {
   constructor(public party: Party) {}
+  answers: AnswerDict = {};
 }
 
 /**
@@ -476,9 +488,9 @@ class AnsweringPartyMember extends AnsweringEntity {
 /**
  * Create a wrapped entity.
  */
-function wrap<TEntity extends FilterableEntity>(entity: TEntity): WrappedEntity<TEntity> {
+function wrap<TEntity extends HasAnswers>(entity: TEntity): WrappedEntity<TEntity> {
   return {
-    [WRAPPED_ENTITY_KEY]: entity
+    entity
   };
 }
 
@@ -493,34 +505,20 @@ class Party {
 }
 
 /**
- * A text question
- */
-class TextQuestion implements ITextQuestion {
-  readonly type = 'text';
-
-  constructor(public id: string) {}
-}
-
-/**
  * A single or multiple choice question
  */
-class ChoiceQuestion implements IChoiceQuestion {
-  readonly type: 'multipleChoiceCategorical' | 'singleChoiceCategorical';
-
-  constructor(
-    public id: string,
-    public values: Array<Choice>,
-    public isMultiple: boolean = false
-  ) {
-    this.type = isMultiple ? 'multipleChoiceCategorical' : 'singleChoiceCategorical';
-  }
-}
-
-/**
- * A numeric question
- */
-class NumericQuestion implements INumericQuestion {
-  readonly type = 'number';
-
-  constructor(public id: string) {}
+function choiceQuestion(
+  id: string,
+  choices: Array<Choice>,
+  isMultiple: boolean = false
+): MultipleChoiceCategoricalQuestion | SingleChoiceCategoricalQuestion {
+  return isMultiple
+    ? new MultipleChoiceCategoricalQuestion({
+        root,
+        data: { id, choices, name: '', categoryId: '', type: 'multipleChoiceCategorical' }
+      })
+    : new SingleChoiceCategoricalQuestion({
+        root,
+        data: { id, choices, name: '', categoryId: '', type: 'singleChoiceCategorical' }
+      });
 }
