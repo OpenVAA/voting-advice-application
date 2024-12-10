@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import {
   AnyNominationVariant,
   DataRoot,
+  DateQuestion,
   ENTITY_TYPE,
   EntityType,
   MultipleChoiceCategoricalQuestion,
@@ -107,6 +108,79 @@ describe('FindQuestions', () => {
     });
     const ids = [1, 2, 3, 4, 5].map((i) => `question-${i}`);
     expect(questions?.map((q) => q.id)).toEqual(expect.arrayContaining(ids));
+  });
+});
+
+describe('formatAnswer', () => {
+  // Get a copy, bc we set the locale
+  const root = getTestDataRoot();
+  root.locale = 'en-US';
+
+  test('Should format number answer correctly', () => {
+    const question = new NumberQuestion({
+      data: {
+        type: 'number',
+        name: 'Percentage',
+        categoryId: 'X',
+        id: 'question-number',
+        format: {
+          style: 'percent'
+        }
+      },
+      root
+    });
+    expect(
+      root.formatAnswer({
+        question,
+        answer: { value: 0.5 }
+      })
+    ).toBe('50%');
+  });
+
+  test('Should format date answer correctly', () => {
+    const question = new DateQuestion({
+      data: {
+        type: 'date',
+        name: 'Date',
+        categoryId: 'X',
+        id: 'question-date',
+        format: {
+          year: '2-digit',
+          month: 'long',
+          day: '2-digit'
+        }
+      },
+      root
+    });
+    expect(
+      root.formatAnswer({
+        question,
+        answer: { value: new Date(2023, 9, 5) }
+      })
+    ).toBe('October 05, 23');
+  });
+
+  test('Should format multiple choice answer correctly', () => {
+    const question = new MultipleChoiceCategoricalQuestion({
+      data: {
+        type: 'multipleChoiceCategorical',
+        name: 'Multi',
+        categoryId: 'X',
+        id: 'question-multi',
+        choices: [
+          { id: 'choice-1', label: 'Choice 1' },
+          { id: 'choice-2', label: '  Choice 2' },
+          { id: 'choice-3', label: '  Choice 3  ' }
+        ]
+      },
+      root
+    });
+    expect(
+      root.formatAnswer({
+        question,
+        answer: { value: ['choice-3', 'choice-1', 'choice-2'] }
+      })
+    ).toBe('Choice 3, Choice 1, Choice 2');
   });
 });
 

@@ -92,7 +92,7 @@ export class MatchingAlgorithm {
     };
     const matches = new Array<Match<TTarget, TGroup>>();
     for (let i = 0; i < targets.length; i++) {
-      const entity = targets[i];
+      const target = targets[i];
       if (options.questionGroups) {
         const distances = measureDistance({
           reference: referencePosition,
@@ -106,14 +106,14 @@ export class MatchingAlgorithm {
             throw new Error("Distances returned by measureDistance don't match the number of questionGroups!");
           return new SubMatch({ distance, questionGroup });
         });
-        matches.push(new Match({ distance: distances.global, entity, subMatches }));
+        matches.push(new Match({ distance: distances.global, target, subMatches }));
       } else {
         const distance = measureDistance({
           reference: referencePosition,
           target: positions[i],
           options: measurementOptions
         });
-        matches.push(new Match({ distance, entity }));
+        matches.push(new Match({ distance, target }));
       }
     }
     // Sort by ascending distance

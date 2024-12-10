@@ -6,13 +6,15 @@
 // eslint-disable-next-line simple-import-sort/exports
 export type {
   Answer as CoreAnswer,
+  Entity as CoreEntity,
   Id,
   HasAnswers,
   HasId,
   CoordinateOrMissing,
   MatchableQuestion,
   MissingValue,
-  Serializable
+  Serializable,
+  WrappedEntity
 } from '@openvaa/core';
 export { isValidId, isMissingValue, isEmptyValue, MISSING_VALUE, normalizeCoordinate, COORDINATE } from '@openvaa/core';
 export * from './core/filter.type';

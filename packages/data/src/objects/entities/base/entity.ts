@@ -4,20 +4,15 @@ import {
   type AnswerValue,
   type AnyQuestionVariant,
   Constituency,
+  CoreEntity,
   type DataAccessor,
   DataObject,
-  DataTypeError,
   Election,
   type EntityData,
   type EntityType,
   type HasAnswers,
-  Id,
-  type Image,
-  isMissingValue,
-  MultipleChoiceQuestion,
   type NominationVariant,
-  QUESTION_TYPE,
-  SingleChoiceQuestion
+  QuestionVariant
 } from '../../../internal';
 
 /**
@@ -25,7 +20,7 @@ import {
  */
 export abstract class Entity<TType extends EntityType, TData extends EntityData<TType> = EntityData<TType>>
   extends DataObject<TData>
-  implements DataAccessor<EntityData<TType>>, HasAnswers
+  implements DataAccessor<EntityData<TType>>, CoreEntity, HasAnswers
 {
   //////////////////////////////////////////////////////////////////////////////
   // Property getters
@@ -90,52 +85,24 @@ export abstract class Entity<TType extends EntityType, TData extends EntityData<
     question: TQuestion
   ): Answer<AnswerValue[TQuestion['type']]> | undefined {
     const answer = this.answers?.[question.id];
-    if (!answer) return undefined;
-    // AssertValue ensures that the answer value is of the correct type for the question
-    const value = question.ensureValue(answer.value) as AnswerValue[TQuestion['type']];
-    return isMissingValue(value) ? undefined : { ...answer, value };
+    return question.ensureAnswer(answer) as Answer<AnswerValue[TQuestion['type']]> | undefined;
   }
 
   /**
-   * A utility for showing the `Answer.value` to a question as a formatted string or array of strings. The formatting is controlled by the formatters defined in the `DataRoot`.
+   * A utility for showing the `Answer.value` to a question as a string. The formatting is controlled by the formatters defined in the `DataRoot`.
    * @param question - The `Question` to get the answer for.
-   * @returns A string or an array of strings.
+   * @returns A string.
    */
   getFormattedAnswer<TQuestion extends AnyQuestionVariant>(question: TQuestion): string {
     const answer = this.getAnswer(question);
-    if (answer == null) return this.root.formatMissingAnswer({ question });
-    // We use instanceof checks to catch subclasses of choice questions
-    if (question instanceof SingleChoiceQuestion)
-      // `getAnswer()` ensures that the answer value is not missing and the `Choice` is available
-      return this.root.formatTextAnswer({
-        question,
-        value: question.getChoice((answer as Answer<Id>).value!)!.label
-      });
-    if (question instanceof MultipleChoiceQuestion)
-      // The array may be empty, but that is left for the `multipleText` formatter to handle
-      return this.root.formatMultipleTextAnswer({
-        question,
-        value: (answer as Answer<Array<Id>>).value!.map((id) => question.getChoice(id)!.label)
-      });
-    // Otherwise the question is of a simple type
-    const { type } = question;
-    // `getAnswer()` ensures that the answer value is not missing and of the correct type
-    const { value } = answer;
-    switch (type) {
-      case QUESTION_TYPE.Boolean:
-        return this.root.formatBooleanAnswer({ question, value: value as boolean });
-      case QUESTION_TYPE.Date:
-        return this.root.formatDateAnswer({ question, value: value as Date });
-      case QUESTION_TYPE.Image:
-        return this.root.formatImageAnswer({ question, value: value as Image });
-      case QUESTION_TYPE.Number:
-        return this.root.formatNumberAnswer({ question, value: value as number });
-      case QUESTION_TYPE.MultipleText:
-        return this.root.formatMultipleTextAnswer({ question, value: value as Array<string> });
-      case QUESTION_TYPE.Text:
-        return this.root.formatTextAnswer({ question, value: value as string });
-      default:
-        throw new DataTypeError(`Unsupported question type: ${type}`);
-    }
+    return this.root.formatAnswer({ question, answer } as unknown as QuestionAndAnswer<TQuestion>);
   }
 }
+
+/**
+ * Used for enforcing typing in `getFormattedAnswer`.
+ */
+type QuestionAndAnswer<TQuestion extends AnyQuestionVariant> = {
+  answer?: Answer<AnswerValue[TQuestion['type']]> | null;
+  question: QuestionVariant[TQuestion['type']];
+};

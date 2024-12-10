@@ -10,7 +10,8 @@ import type {
   HasAnswers,
   NominationData,
   NominationVariant,
-  WithOptional
+  WithOptional,
+  WrappedEntity
 } from '../../../internal';
 
 /**
@@ -22,7 +23,7 @@ export abstract class Nomination<
     TData extends NominationData<TEntity, TParent> = NominationData<TEntity, TParent>
   >
   extends DataObject<TData>
-  implements DataAccessor<NominationData<TEntity, TParent>>, HasAnswers
+  implements DataAccessor<NominationData<TEntity, TParent>>, WrappedEntity, HasAnswers
 {
   //////////////////////////////////////////////////////////////////////////////
   // Initialization

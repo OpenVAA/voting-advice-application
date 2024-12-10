@@ -1,16 +1,21 @@
 import {
+  Answer,
+  type AnswerFormatterParams,
   type AnswerValue,
+  type ArrayAnswerFormatterOptions,
   type CoordinateOrMissing,
   type DataAccessor,
   DataTypeError,
   FilterTargets,
+  isMissingValue,
   type MatchableQuestion,
   MISSING_VALUE,
   type MissingValue,
   QuestionAndCategoryBase,
   type QuestionCategory,
   type QuestionData,
-  type QuestionType
+  type QuestionType,
+  QuestionVariant
 } from '../../../internal';
 
 /**
@@ -67,6 +72,18 @@ export abstract class Question<
   //////////////////////////////////////////////////////////////////////////////
   // Answer value handling
   //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Asserts that the `Answer` object is of the correct type for this question and converts it to one if the conversion is unequivocal. If the is of the wrong type, `undefined` is returned.
+   * @param answer - The `Answer` to check.
+   * @returns The `Answer` object or `undefined` if the answer is missing or its `value` is invalid for the question type.
+   */
+  ensureAnswer(answer?: Answer<unknown> | null): Answer<AnswerValue[TType]> | undefined {
+    if (!answer) return undefined;
+    // AssertValue ensures that the answer value is of the correct type for the question
+    const value = this.ensureValue(answer.value);
+    return isMissingValue(value) ? undefined : { ...answer, value };
+  }
 
   /**
    * Asserts that the value is of the correct type for this question and converts it to one if the conversion is unequivocal. If the value is of the wrong type, `MISSING_VALUE` is returned.

@@ -1,6 +1,8 @@
 import {
   Alliance,
   AllianceNomination,
+  Answer,
+  AnswerValue,
   AnyEntityVariantData,
   AnyNominationVariantData,
   AnyNominationVariantPublicData,
@@ -43,8 +45,10 @@ import {
   FullVaaData,
   type Id,
   IdentityProps,
+  type Image,
   isValidId,
   type MappedCollection,
+  MultipleChoiceQuestion,
   Nomination,
   NominationVariant,
   NominationVariantTree,
@@ -53,11 +57,15 @@ import {
   OrganizationNomination,
   parseEntityTree,
   parseNominationTree,
+  QUESTION_TYPE,
   QuestionCategory,
   type QuestionCategoryData,
   QuestionCategoryType,
+  QuestionType,
+  QuestionVariant,
   RootCollections,
   RootFormatters,
+  SingleChoiceQuestion,
   Updatable
 } from '../internal';
 
@@ -758,6 +766,56 @@ export class DataRoot extends Updatable implements FormatterMethods {
    */
   formatFactionName(args: Parameters<RootFormatters['factionName']>[0]): string {
     return this.formatters.factionName({ locale: this.locale, ...args });
+  }
+
+  /**
+   * Format any `Answer`, including missing ones, to a question as a string. The formatting is controlled by the formatters defined in the `DataRoot`.
+   * @param answer - The possible `Answer`.
+   * @param question - The `Question` the answer is for.
+   * @returns A string.
+   * @throws {DataTypeError} If `Question.type` is not supported.
+   */
+  formatAnswer<TQuestion extends QuestionType>({
+    answer,
+    question
+  }: {
+    answer?: Answer<AnswerValue[TQuestion]> | null;
+    question: QuestionVariant[TQuestion];
+  }): string {
+    if (answer == null) return this.formatMissingAnswer({ question });
+    // We use instanceof checks to catch subclasses of choice questions
+    if (question instanceof SingleChoiceQuestion)
+      // `getAnswer()` ensures that the answer value is not missing and the `Choice` is available
+      return this.formatTextAnswer({
+        question,
+        value: question.getChoice((answer as Answer<Id>).value!)!.label
+      });
+    if (question instanceof MultipleChoiceQuestion)
+      // The array may be empty, but that is left for the `multipleText` formatter to handle
+      return this.formatMultipleTextAnswer({
+        question,
+        value: (answer as Answer<Array<Id>>).value!.map((id) => question.getChoice(id)!.label)
+      });
+    // Otherwise the question is of a simple type
+    const { type } = question;
+    // `getAnswer()` ensures that the answer value is not missing and of the correct type
+    const { value } = answer;
+    switch (type) {
+      case QUESTION_TYPE.Boolean:
+        return this.formatBooleanAnswer({ question, value: value as boolean });
+      case QUESTION_TYPE.Date:
+        return this.formatDateAnswer({ question, value: value as Date });
+      case QUESTION_TYPE.Image:
+        return this.formatImageAnswer({ question, value: value as Image });
+      case QUESTION_TYPE.Number:
+        return this.formatNumberAnswer({ question, value: value as number });
+      case QUESTION_TYPE.MultipleText:
+        return this.formatMultipleTextAnswer({ question, value: value as Array<string> });
+      case QUESTION_TYPE.Text:
+        return this.formatTextAnswer({ question, value: value as string });
+      default:
+        throw new DataTypeError(`Unsupported question type: ${type}`);
+    }
   }
 
   /**
