@@ -7,6 +7,7 @@ export type {
   Answer,
   Answers,
   AnswerValue,
+  AnyChoice,
   AnyEntityVariant,
   AnyEntityVariantData,
   AnyNominationVariant,

@@ -1,7 +1,7 @@
 import { MaybeWrappedEntity } from '@openvaa/core';
-import { Choice } from '@openvaa/data';
 import { EnumeratedFilter } from './enumeratedFilter';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
+import type { AnyChoice } from '@openvaa/data';
 import type { ChoiceQuestion, FilterOptions } from '../base';
 
 /**
@@ -9,12 +9,12 @@ import type { ChoiceQuestion, FilterOptions } from '../base';
  */
 export class ChoiceQuestionFilter<TEntity extends MaybeWrappedEntity> extends EnumeratedFilter<
   TEntity,
-  Choice['id'],
-  Choice<undefined> | Choice<number>
+  AnyChoice['id'],
+  AnyChoice
 > {
   declare readonly options: FilterOptions & {
     question: ChoiceQuestion;
-    /** The type is always the type of the Choice id */
+    /** The type is always the type of the AnyChoice id */
     type: 'string';
     multipleValues?: boolean;
   };
@@ -40,7 +40,7 @@ export class ChoiceQuestionFilter<TEntity extends MaybeWrappedEntity> extends En
   /**
    * Compare to values for sorting. Note that missing values are always sorted to the end.
    */
-  compareValues(a: Choice['id'], b: Choice['id']): number {
+  compareValues(a: AnyChoice['id'], b: AnyChoice['id']): number {
     return this.getChoice(a)['label'].localeCompare(this.getChoice(b)['label'], this.locale);
   }
 
@@ -48,24 +48,24 @@ export class ChoiceQuestionFilter<TEntity extends MaybeWrappedEntity> extends En
    * Process a value and its count for display
    */
   processValueForDisplay(
-    value: MaybeMissing<Choice['id']>,
+    value: MaybeMissing<AnyChoice['id']>,
     count: number
   ): {
-    value: MaybeMissing<Choice['id']>;
+    value: MaybeMissing<AnyChoice['id']>;
     count: number;
-    object?: Choice<undefined> | Choice<number>;
+    object?: AnyChoice;
   } {
     return {
       value,
       count,
-      object: value === MISSING_VALUE ? undefined : this.getChoice(value as Choice['id'])
+      object: value === MISSING_VALUE ? undefined : this.getChoice(value as AnyChoice['id'])
     };
   }
 
   /**
    * Utility for getting a value's associated choice object.
    */
-  getChoice(value: Choice['id']): Choice<undefined> | Choice<number> {
+  getChoice(value: AnyChoice['id']): AnyChoice {
     const question = this.options.question;
     const choice = question.choices.find((c) => c['id'] === value);
     if (!choice)
