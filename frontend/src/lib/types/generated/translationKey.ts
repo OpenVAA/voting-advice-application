@@ -276,6 +276,7 @@ export type TranslationKey =
   | 'error.content'
   | 'error.default'
   | 'error.general'
+  | 'error.noNominations'
   | 'error.noQuestions'
   | 'error.unsupportedQuestion'
   | 'feedback.description.label'
