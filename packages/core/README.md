@@ -4,6 +4,7 @@ The module contains types and constants that all the `@openvaa` modules (`@openv
 
 It contains:
 
+- Typing for [`Entity`s, `WrappedEntity`s etc.](./src/entity/entity.type.ts)
 - Typing for [`Id`s](./src/id) and related utilities
 - Typing for JSON [`Serializable`](./src/serializable/serializable.type.ts) objects
 - Typing for distances, answers and missing values related to [matching](./src/matching/)

@@ -135,9 +135,9 @@ describe('matchingAlgorithm', () => {
     const expected0 = (full + (full * 2) / 4) / questions.length; // binary disagreement, 4-choice disagreement
     const expected1 = full; // all missing values
     const expected2 = 0; // perfect agreement
-    expect(matches.find((m) => m.entity === candidates[0])?.distance).toBeCloseTo(expected0);
-    expect(matches.find((m) => m.entity === candidates[1])?.distance).toBeCloseTo(expected1);
-    expect(matches.find((m) => m.entity === candidates[2])?.distance).toBeCloseTo(expected2);
+    expect(matches.find((m) => m.target === candidates[0])?.distance).toBeCloseTo(expected0);
+    expect(matches.find((m) => m.target === candidates[1])?.distance).toBeCloseTo(expected1);
+    expect(matches.find((m) => m.target === candidates[2])?.distance).toBeCloseTo(expected2);
   });
 
   test('mixed question types', () => {
@@ -174,8 +174,8 @@ describe('matchingAlgorithm', () => {
         0 + // categorical2: no-no
         (2 / 4) * full) / // categorical4: c-a
       questions.length;
-    expect(matches.find((m) => m.entity === candidates[0])?.distance).toBeCloseTo(expectedA);
-    expect(matches.find((m) => m.entity === candidates[1])?.distance).toBeCloseTo(expectedB);
+    expect(matches.find((m) => m.target === candidates[0])?.distance).toBeCloseTo(expectedA);
+    expect(matches.find((m) => m.target === candidates[1])?.distance).toBeCloseTo(expectedB);
   });
 
   describe('submatches', () => {
