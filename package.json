@@ -35,12 +35,12 @@
   },
   "type": "module",
   "workspaces": [
-    "packages/app-shared",
+    "packages/shared-config",
     "packages/core",
     "packages/data",
     "packages/filters",
     "packages/matching",
-    "packages/shared-config",
+    "packages/app-shared",
     "backend/vaa-strapi",
     "frontend"
   ]

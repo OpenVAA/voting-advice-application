@@ -1,4 +1,4 @@
-import type { MaybeWrapped } from '../entity';
+import { MaybeWrappedEntity } from '@openvaa/core';
 
 /**
  * A logic operator for combining results from multiple filters.
@@ -18,7 +18,7 @@ export type LogicOp = (typeof LOGIC_OP)[keyof typeof LOGIC_OP];
  * @param logicOperator And or Or logic operator to use in combination. @default LogicOp.And
  * @returns Combined results.
  */
-export function combineResults<TEntity extends MaybeWrapped>(
+export function combineResults<TEntity extends MaybeWrappedEntity>(
   results: Array<Array<TEntity>>,
   logicOperator = LOGIC_OP.And
 ): Array<TEntity> {

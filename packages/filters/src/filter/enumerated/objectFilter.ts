@@ -1,5 +1,5 @@
+import { ExtractEntity, MaybeWrappedEntity } from '@openvaa/core';
 import { EnumeratedFilter } from './enumeratedFilter';
-import { type ExtractEntity, type FilterableEntity, type MaybeWrapped } from '../../entity';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import type { PropertyFilterOptions } from '../base';
 
@@ -7,10 +7,11 @@ import type { PropertyFilterOptions } from '../base';
  * A filter for properties which are objects with a string-index label and key for filtering, e.g. party objects of candidates.
  * TODO: This could be refactored to merge with `SingleChoiceQuestionFilter`.
  */
-export class ObjectFilter<
-  TEntity extends MaybeWrapped<FilterableEntity>,
-  TObject extends object = object
-> extends EnumeratedFilter<TEntity, string, TObject> {
+export class ObjectFilter<TEntity extends MaybeWrappedEntity, TObject extends object = object> extends EnumeratedFilter<
+  TEntity,
+  string,
+  TObject
+> {
   /** Options specific to the objects */
   objOptions: ObjOptions<TObject>;
 
@@ -43,7 +44,7 @@ export class ObjectFilter<
   /**
    * Compare to values for sorting. Note that missing values are always sorted to the end.
    */
-  compareValues(a: string, b: string) {
+  compareValues(a: string, b: string): number {
     const label = this.objOptions.labelProperty;
     return `${this.getObject(a)[label]}`.localeCompare(`${this.getObject(b)[label]}`, this.locale);
   }
@@ -51,7 +52,14 @@ export class ObjectFilter<
   /**
    * Process a value and its count for display
    */
-  processValueForDisplay(value: MaybeMissing<string>, count: number) {
+  processValueForDisplay(
+    value: MaybeMissing<string>,
+    count: number
+  ): {
+    value: MaybeMissing<string>;
+    count: number;
+    object?: TObject;
+  } {
     return {
       value,
       count,

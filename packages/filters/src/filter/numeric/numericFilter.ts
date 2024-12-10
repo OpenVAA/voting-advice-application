@@ -1,4 +1,4 @@
-import { getEntity, type MaybeWrapped } from '../../entity';
+import { getEntity, MaybeWrappedEntity } from '@openvaa/core';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import { Filter, type FilterOptionsBase, type PropertyFilterOptions, type QuestionFilterOptions } from '../base';
 
@@ -6,7 +6,7 @@ import { Filter, type FilterOptionsBase, type PropertyFilterOptions, type Questi
  * A base class for numeric filters.
  * NB. This could be refactored to inherit from a common parent of this and EnumeratedFilter and allow value counts.
  */
-export abstract class NumericFilter<TTarget extends MaybeWrapped> extends Filter<TTarget, number> {
+export abstract class NumericFilter<TTarget extends MaybeWrappedEntity> extends Filter<TTarget, number> {
   protected _rules: {
     min?: number;
     max?: number;
@@ -32,7 +32,12 @@ export abstract class NumericFilter<TTarget extends MaybeWrapped> extends Filter
    * @input A list of entities.
    * @returns The min and max values.
    */
-  parseValues(targets: Array<TTarget>) {
+  parseValues(targets: Array<TTarget>):
+    | {
+        min: number;
+        max: number;
+      }
+    | undefined {
     const values = targets
       .map((t) => this.getValue(getEntity(t)))
       .filter((v) => typeof v === 'number') as Array<number>;
@@ -44,11 +49,11 @@ export abstract class NumericFilter<TTarget extends MaybeWrapped> extends Filter
       : undefined;
   }
 
-  get min() {
+  get min(): number | undefined {
     return this._rules.min;
   }
 
-  get max() {
+  get max(): number | undefined {
     return this._rules.max;
   }
 
@@ -69,11 +74,11 @@ export abstract class NumericFilter<TTarget extends MaybeWrapped> extends Filter
   /**
    * Set whether missing values are exluded.
    */
-  excludeMissing(value?: boolean) {
+  excludeMissing(value?: boolean): void {
     this.setRule('excludeMissing', value);
   }
 
-  testValue(value: MaybeMissing<number>) {
+  testValue(value: MaybeMissing<number>): boolean {
     if (value === MISSING_VALUE) return !this._rules.excludeMissing;
     if (this._rules.min != null && (value as number) < this._rules.min) return false;
     if (this._rules.max != null && (value as number) > this._rules.max) return false;

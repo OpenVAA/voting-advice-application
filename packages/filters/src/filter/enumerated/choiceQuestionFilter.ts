@@ -1,21 +1,21 @@
+import { MaybeWrappedEntity } from '@openvaa/core';
+import { Choice } from '@openvaa/data';
 import { EnumeratedFilter } from './enumeratedFilter';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
-import { type Choice, type ChoiceQuestion, KEY_PROP, KEY_TYPE, LABEL_PROP } from '../../question';
-import type { EntityWithAnswers, MaybeWrapped } from '../../entity';
-import type { FilterOptions } from '../base';
+import type { ChoiceQuestion, FilterOptions } from '../base';
 
 /**
  * A filter for single or multiple choice questions
  */
-export class ChoiceQuestionFilter<TEntity extends MaybeWrapped<EntityWithAnswers>> extends EnumeratedFilter<
+export class ChoiceQuestionFilter<TEntity extends MaybeWrappedEntity> extends EnumeratedFilter<
   TEntity,
-  Choice[typeof KEY_PROP],
-  Choice
+  Choice['id'],
+  Choice<undefined> | Choice<number>
 > {
   declare readonly options: FilterOptions & {
     question: ChoiceQuestion;
-    /** The type is always the type of the Choice key property */
-    type: typeof KEY_TYPE;
+    /** The type is always the type of the Choice id */
+    type: 'string';
     multipleValues?: boolean;
   };
 
@@ -32,7 +32,7 @@ export class ChoiceQuestionFilter<TEntity extends MaybeWrapped<EntityWithAnswers
     super({
       question,
       name,
-      type: KEY_TYPE,
+      type: 'string',
       multipleValues: question.type === 'multipleChoiceCategorical'
     });
   }
@@ -40,27 +40,34 @@ export class ChoiceQuestionFilter<TEntity extends MaybeWrapped<EntityWithAnswers
   /**
    * Compare to values for sorting. Note that missing values are always sorted to the end.
    */
-  compareValues(a: Choice[typeof KEY_PROP], b: Choice[typeof KEY_PROP]) {
-    return this.getChoice(a)[LABEL_PROP].localeCompare(this.getChoice(b)[LABEL_PROP], this.locale);
+  compareValues(a: Choice['id'], b: Choice['id']): number {
+    return this.getChoice(a)['label'].localeCompare(this.getChoice(b)['label'], this.locale);
   }
 
   /**
    * Process a value and its count for display
    */
-  processValueForDisplay(value: MaybeMissing<Choice[typeof KEY_PROP]>, count: number) {
+  processValueForDisplay(
+    value: MaybeMissing<Choice['id']>,
+    count: number
+  ): {
+    value: MaybeMissing<Choice['id']>;
+    count: number;
+    object?: Choice<undefined> | Choice<number>;
+  } {
     return {
       value,
       count,
-      object: value === MISSING_VALUE ? undefined : this.getChoice(value as Choice[typeof KEY_PROP])
+      object: value === MISSING_VALUE ? undefined : this.getChoice(value as Choice['id'])
     };
   }
 
   /**
    * Utility for getting a value's associated choice object.
    */
-  getChoice(value: Choice[typeof KEY_PROP]): Choice {
+  getChoice(value: Choice['id']): Choice<undefined> | Choice<number> {
     const question = this.options.question;
-    const choice = question.values.find((c) => c[KEY_PROP] === value);
+    const choice = question.choices.find((c) => c['id'] === value);
     if (!choice)
       throw new Error(
         `Could not find choice ${value} for question with id '${'id' in question ? question.id : 'n/a'}'`
