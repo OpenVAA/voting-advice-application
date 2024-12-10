@@ -24,7 +24,7 @@ export function copyRules<TRule extends Rules>(rules: TRule): TRule {
 /**
  * Check whether @param rule is empty for purposes of finding out whether a filter is active or not.
  */
-export function ruleIsActive(rule: Rule) {
+export function ruleIsActive(rule: Rule): boolean {
   if (rule == null || rule === '') return false;
   if (Array.isArray(rule)) return rule.length > 0;
   if (rule instanceof Set) return rule.size > 0;
@@ -38,7 +38,7 @@ export function ruleIsActive(rule: Rule) {
  * @param b A rule value
  * @returns true if the rules are equal
  */
-export function matchRules(a: Rule, b: Rule) {
+export function matchRules(a: Rule, b: Rule): boolean {
   if (a == b) return true;
   // We check for active because undefined and an empty array should be considered equal
   if (!ruleIsActive(a) && !ruleIsActive(b)) return true;

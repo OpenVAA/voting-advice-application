@@ -1,5 +1,5 @@
+import { getEntity, MaybeWrappedEntity } from '@openvaa/core';
 import { intersect } from './intersect';
-import { getEntity, type MaybeWrapped } from '../../entity';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import { Filter } from '../base/filter';
 
@@ -7,7 +7,7 @@ import { Filter } from '../base/filter';
  * The abstract base class for filters with enumerated values that can be listed, such as questions with enumerated choices.
  */
 export abstract class EnumeratedFilter<
-  TEntity extends MaybeWrapped,
+  TEntity extends MaybeWrappedEntity,
   TValue,
   TObject extends object = object
 > extends Filter<TEntity, TValue> {
@@ -47,7 +47,7 @@ export abstract class EnumeratedFilter<
   /**
    * Sort the values and return them.
    */
-  sortValues(values: Array<MaybeMissing<TValue>>) {
+  sortValues(values: Array<MaybeMissing<TValue>>): Array<MaybeMissing<TValue>> {
     return values.sort((a, b) => {
       if (a === MISSING_VALUE) {
         if (b === MISSING_VALUE) return 0;
@@ -78,14 +78,14 @@ export abstract class EnumeratedFilter<
     this.setRule('include', values);
   }
 
-  testValue(value: MaybeMissing<TValue>) {
+  testValue(value: MaybeMissing<TValue>): boolean {
     if (this.options.multipleValues) throw new Error(`Single values are not supported by this filter: ${value}`);
     if (this._rules.exclude?.includes(value)) return false;
     if (this._rules.include?.length && !this._rules.include.includes(value)) return false;
     return true;
   }
 
-  testValues(values: Array<MaybeMissing<TValue>>) {
+  testValues(values: Array<MaybeMissing<TValue>>): boolean {
     if (!this.options.multipleValues)
       throw new Error(`Multiple values are not supported by this filter: ${values.join(', ')}`);
     const { exclude, include } = this._rules;
