@@ -25,3 +25,5 @@ export type Choice<TValue = undefined> = HasId & {
          */
         normalizableValue: TValue;
       });
+
+export type AnyChoice = Choice<undefined> | Choice<unknown>;
