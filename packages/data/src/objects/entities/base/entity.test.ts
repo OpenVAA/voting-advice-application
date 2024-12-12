@@ -73,5 +73,5 @@ test('Should get formatted answer', () => {
     root
   });
   candidate.data.answers!['question-number'] = { value: 0.5 };
-  expect(candidate.getFormattedAnswer(numberQuestion)).toBe('50%');
+  expect(candidate.getFormattedAnswer({ question: numberQuestion })).toBe('50%');
 });
