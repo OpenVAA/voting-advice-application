@@ -16,7 +16,7 @@ interface ImageBase {
   /**
    * The url of the default image.
    */
-  url: string | null;
+  url: string;
   /**
    * The url of the dark mdoe image in the defaul resolution.
    */
