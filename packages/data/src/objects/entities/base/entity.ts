@@ -1,8 +1,10 @@
 import {
   type Answer,
+  AnswerFormatterParams,
   type Answers,
   type AnswerValue,
   type AnyQuestionVariant,
+  ArrayAnswerFormatterOptions,
   Constituency,
   CoreEntity,
   type DataAccessor,
@@ -11,8 +13,7 @@ import {
   type EntityData,
   type EntityType,
   type HasAnswers,
-  type NominationVariant,
-  QuestionVariant
+  type NominationVariant
 } from '../../../internal';
 
 /**
@@ -91,18 +92,14 @@ export abstract class Entity<TType extends EntityType, TData extends EntityData<
   /**
    * A utility for showing the `Answer.value` to a question as a string. The formatting is controlled by the formatters defined in the `DataRoot`.
    * @param question - The `Question` to get the answer for.
+   * @param rest - Additional arguments for the `formatAnswer` method.
    * @returns A string.
    */
-  getFormattedAnswer<TQuestion extends AnyQuestionVariant>(question: TQuestion): string {
+  getFormattedAnswer<TQuestion extends AnyQuestionVariant>({
+    question,
+    ...rest
+  }: { question: TQuestion } & ArrayAnswerFormatterOptions): string {
     const answer = this.getAnswer(question);
-    return this.root.formatAnswer({ question, answer } as unknown as QuestionAndAnswer<TQuestion>);
+    return this.root.formatAnswer({ question, answer, ...rest } as unknown as AnswerFormatterParams<TQuestion>);
   }
 }
-
-/**
- * Used for enforcing typing in `getFormattedAnswer`.
- */
-type QuestionAndAnswer<TQuestion extends AnyQuestionVariant> = {
-  answer?: Answer<AnswerValue[TQuestion['type']]> | null;
-  question: QuestionVariant[TQuestion['type']];
-};

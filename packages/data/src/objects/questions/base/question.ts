@@ -96,7 +96,7 @@ export abstract class Question<
   }
 
   /**
-   * Perform the actual ensureion for the (non-missing) value for this question.
+   * Perform the actual ensuring for the (non-missing) value for this question.
    * Implement this in the subclasses.
    * @param value
    */

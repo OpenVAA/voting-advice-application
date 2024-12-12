@@ -50,8 +50,18 @@ export function formatMissingAnswer(): string {
 /**
  * Format a non-missing `Array<string>` `Answer.value` for output.
  */
-export function formatMultipleTextAnswer({ value }: { value: Array<string> }): string {
-  return value.length === 0 ? '—' : value.map((v) => v.trim()).join(', ');
+export function formatMultipleTextAnswer({
+  value,
+  separator = ', ',
+  empty = '—',
+  map = (v) => v
+}: {
+  value: Array<string>;
+  separator?: string;
+  empty?: string;
+  map?: (item: string) => string;
+}): string {
+  return value.length === 0 ? empty : value.map((v) => map(v.trim())).join(separator);
 }
 
 /**
