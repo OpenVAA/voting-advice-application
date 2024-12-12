@@ -81,7 +81,7 @@ export class MatchingAlgorithm {
     // Create possible matching subspaces for, e.g., category matches
     let subspaces = new Array<MatchingSpace>();
     if (options.questionGroups) {
-      subspaces = options.questionGroups.map((g) => createSubspace({ questions, subset: g.matchableQuestions }));
+      subspaces = options.questionGroups.map((g) => createSubspace({ questions, subset: g.questions }));
     }
     // Calculate matches
     const measurementOptions = {
