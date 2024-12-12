@@ -16,5 +16,5 @@ test('Should not yet be matchable', () => {
   expect(obj.isMatchable).toBe(false);
   expect(() => obj.normalizeValue(choiceIds)).toThrow();
 
-  // We don't check value ensureion because it's already tested in the superclass
+  // We don't check value ensuring because it's already tested in the superclass
 });
