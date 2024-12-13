@@ -13,6 +13,7 @@ import {
   ENTITY_TYPE,
   EntityType,
   FactionNomination,
+  FilterValue,
   isMissingValue,
   NominationVariant,
   OrganizationNomination,
@@ -124,19 +125,23 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
    * Get the questions applicable to this `Election` and a `Constituency` it applies to.
    * @param constituency - The `Constituency` the `Question`s apply to.
    * @param type - Optional type of question category to filter for.
+   * @param entityTypes - Optional entity types to filter for.
    */
   getQuestions({
     constituency,
-    type
+    type,
+    entityTypes
   }: {
     constituency: Constituency;
     type?: QuestionCategoryType;
+    entityTypes?: FilterValue<EntityType>;
   }): Collection<AnyQuestionVariant> {
     return (
       this.root.findQuestions({
         elections: this,
         constituencies: constituency,
-        type
+        type,
+        entityTypes
       }) ?? []
     );
   }
