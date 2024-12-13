@@ -1,4 +1,4 @@
-import { ExtractEntity, MaybeWrappedEntity } from '@openvaa/core';
+import { Entity, MaybeWrappedEntity } from '@openvaa/core';
 import { EnumeratedFilter } from './enumeratedFilter';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import type { PropertyFilterOptions } from '../base';
@@ -30,14 +30,16 @@ export class ObjectFilter<TEntity extends MaybeWrappedEntity, TObject extends ob
       keyProperty,
       labelProperty,
       objects,
-      name
+      name,
+      entityGetter
     }: {
-      property: keyof ExtractEntity<TEntity> & PropertyFilterOptions['property'];
+      property: PropertyFilterOptions['property'];
       name?: string;
+      entityGetter?: (target: TEntity) => Entity;
     } & ObjOptions<TObject>,
     public locale: string
   ) {
-    super({ property, subProperty: keyProperty, name, type: 'string' });
+    super({ property, subProperty: keyProperty, name, entityGetter, type: 'string' });
     this.objOptions = { keyProperty, labelProperty, objects };
   }
 
@@ -68,12 +70,12 @@ export class ObjectFilter<TEntity extends MaybeWrappedEntity, TObject extends ob
   }
 
   /**
-   * Utility for getting a value's associated organisation
+   * Utility for getting a value's associated object
    */
   getObject(value: string): TObject {
-    const org = this.objOptions.objects.find((o) => o[this.objOptions.keyProperty] === value);
-    if (!org) throw new Error(`Could not find organisation where ${this.objOptions.keyProperty} == '${value}'`);
-    return org;
+    const obj = this.objOptions.objects.find((o) => o[this.objOptions.keyProperty] === value);
+    if (!obj) throw new Error(`Could not find object where ${this.objOptions.keyProperty} == '${value}'`);
+    return obj;
   }
 }
 

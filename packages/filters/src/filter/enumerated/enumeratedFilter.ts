@@ -1,4 +1,4 @@
-import { getEntity, MaybeWrappedEntity } from '@openvaa/core';
+import { MaybeWrappedEntity } from '@openvaa/core';
 import { intersect } from './intersect';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import { Filter } from '../base/filter';
@@ -28,7 +28,7 @@ export abstract class EnumeratedFilter<
   parseValues(targets: Array<TEntity>): Array<ReturnType<typeof this.processValueForDisplay>> {
     const values = new Map<MaybeMissing<TValue>, number>();
     targets.forEach((t) => {
-      const valueOrArray = this.getValue(getEntity(t));
+      const valueOrArray = this.getValue(t);
       let valueArray: Array<MaybeMissing<TValue>>;
       if (this.options.multipleValues) {
         if (!Array.isArray(valueOrArray)) throw new Error(`Filter expected multiple values, but got ${valueOrArray}`);
