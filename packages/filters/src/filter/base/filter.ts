@@ -1,4 +1,4 @@
-import { getEntity, HasAnswers, hasAnswers, type MaybeWrappedEntity } from '@openvaa/core';
+import { getEntity, hasAnswers, type MaybeWrappedEntity } from '@openvaa/core';
 import { castValue } from './castValue';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import { copyRules, matchRules, type Rule, ruleIsActive, type Rules } from '../rules';
@@ -21,7 +21,7 @@ export abstract class Filter<TTarget extends MaybeWrappedEntity, TValue> {
    */
   protected suspendOnChange = false;
 
-  constructor(public readonly options: FilterOptions) {}
+  constructor(public readonly options: FilterOptions<TTarget>) {}
 
   /////////////////////////////////////////////////////////////////////////////////
   // NAME
@@ -47,10 +47,11 @@ export abstract class Filter<TTarget extends MaybeWrappedEntity, TValue> {
 
   /**
    * Ge the value from an entity.
-   * @param entity A non-wrapped entity.
+   * @param target The target entity.
    * @returns The value to filter on or `MISSING_VALUE` or an array of these if `this.options.multipleValues` is true.
    */
-  getValue(entity: HasAnswers): MaybeMissing<TValue> | Array<MaybeMissing<TValue>> {
+  getValue(target: TTarget): MaybeMissing<TValue> | Array<MaybeMissing<TValue>> {
+    const entity = (this.options.entityGetter ?? getEntity)(target);
     let value: unknown;
     if (this.options.question) {
       if (!hasAnswers(entity)) throw new Error('Entity does not have answers.');
@@ -77,22 +78,22 @@ export abstract class Filter<TTarget extends MaybeWrappedEntity, TValue> {
 
   /**
    * Apply the filter to the inputs.
-   * @input A list of entities.
+   * @param targets A list of entities.
    * @returns Filtered targets
    */
   apply<TType extends TTarget>(targets: Array<TType>): Array<TTarget> {
-    return targets.filter((t) => this.test(getEntity(t)));
+    return targets.filter((t) => this.test(t));
   }
 
   /**
    * Test an entity against the filter.
-   * @param entity A non-wrapped entity.
+   * @param target The target entity.
    * @returns true if the entity passes the filter.
    */
-  test(entity: HasAnswers): boolean {
+  test(target: TTarget): boolean {
     return this.options.multipleValues
-      ? this.testValues(this.getValue(entity) as Array<MaybeMissing<TValue>>)
-      : this.testValue(this.getValue(entity) as MaybeMissing<TValue>);
+      ? this.testValues(this.getValue(target) as Array<MaybeMissing<TValue>>)
+      : this.testValue(this.getValue(target) as MaybeMissing<TValue>);
   }
 
   /////////////////////////////////////////////////////////////////////////////////

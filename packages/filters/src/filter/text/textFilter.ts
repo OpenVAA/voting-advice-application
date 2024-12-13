@@ -19,7 +19,8 @@ export class TextFilter<TEntity extends MaybeWrappedEntity> extends Filter<TEnti
    * @param locale The locale is used for case-insensitive matching
    */
   constructor(
-    options: Omit<FilterOptionsBase, 'type' | 'multipleValues'> & (PropertyFilterOptions | QuestionFilterOptions),
+    options: Omit<FilterOptionsBase<TEntity>, 'type' | 'multipleValues'> &
+      (PropertyFilterOptions | QuestionFilterOptions),
     public locale: string
   ) {
     super({ ...options, type: 'string', multipleValues: false });

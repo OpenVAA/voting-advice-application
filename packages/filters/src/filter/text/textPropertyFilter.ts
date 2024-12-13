@@ -1,4 +1,4 @@
-import { ExtractEntity, MaybeWrappedEntity } from '@openvaa/core';
+import { Entity, ExtractEntity, MaybeWrappedEntity } from '@openvaa/core';
 import { TextFilter } from './textFilter';
 import type { PropertyFilterOptions } from '../base';
 
@@ -14,14 +14,16 @@ export class TextPropertyFilter<TEntity extends MaybeWrappedEntity> extends Text
     {
       property,
       subProperty,
-      name
+      name,
+      entityGetter
     }: {
       property: keyof ExtractEntity<TEntity> & PropertyFilterOptions['property'];
       subProperty?: PropertyFilterOptions['subProperty'];
       name?: string;
+      entityGetter?: (target: TEntity) => Entity;
     },
     locale: string
   ) {
-    super({ property, subProperty, name }, locale);
+    super({ property, subProperty, name, entityGetter }, locale);
   }
 }

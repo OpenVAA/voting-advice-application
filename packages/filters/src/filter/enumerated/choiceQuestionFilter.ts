@@ -1,4 +1,4 @@
-import { MaybeWrappedEntity } from '@openvaa/core';
+import { Entity, MaybeWrappedEntity } from '@openvaa/core';
 import { EnumeratedFilter } from './enumeratedFilter';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import type { AnyChoice } from '@openvaa/data';
@@ -12,7 +12,7 @@ export class ChoiceQuestionFilter<TEntity extends MaybeWrappedEntity> extends En
   AnyChoice['id'],
   AnyChoice
 > {
-  declare readonly options: FilterOptions & {
+  declare readonly options: FilterOptions<TEntity> & {
     question: ChoiceQuestion;
     /** The type is always the type of the AnyChoice id */
     type: 'string';
@@ -26,12 +26,17 @@ export class ChoiceQuestionFilter<TEntity extends MaybeWrappedEntity> extends En
    * @param name  Optional name for use when displaying the filter
    */
   constructor(
-    { question, name }: { question: ChoiceQuestion; name?: string },
+    {
+      question,
+      name,
+      entityGetter
+    }: { question: ChoiceQuestion; name?: string; entityGetter?: (target: TEntity) => Entity },
     public locale: string
   ) {
     super({
       question,
       name,
+      entityGetter,
       type: 'string',
       multipleValues: question.type === 'multipleChoiceCategorical'
     });
