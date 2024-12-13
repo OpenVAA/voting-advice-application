@@ -3,6 +3,7 @@ import {
   type Choice,
   DataRoot,
   MultipleChoiceCategoricalQuestion,
+  MultipleTextQuestion,
   NumberQuestion,
   SingleChoiceCategoricalQuestion,
   TextQuestion
@@ -227,6 +228,50 @@ test('TextQuestionFilter', () => {
   expect(filter.apply(targets), 'No match').toEqual([]);
 });
 
+describe('TextQuestionFilter: multiple values', () => {
+  const names = ['Bart', 'Homer', 'Marge'];
+  const values = [
+    ['Pizza', 'Hamburger'],
+    ['Pasta', 'Hamburger'],
+    ['Broccoli', 'Suet']
+  ];
+  const question = new MultipleTextQuestion({
+    root,
+    data: { id: 'rightId', type: 'multipleText', name: '', categoryId: '' }
+  });
+  const people: Record<string, AnsweringEntity> = Object.fromEntries(
+    names.map((n, i) => [
+      n,
+      new AnsweringEntity({
+        rightId: values[i],
+        wrongId: undefined
+      })
+    ])
+  );
+  const targets = Object.values(people);
+  test('Should return all that have the included item', () => {
+    const filter = new TextQuestionFilter({ question }, LOCALE);
+    filter.include = 'Hamburger';
+    expect(filter.apply(targets)).toEqual(expect.arrayContaining([people['Bart'], people['Homer']]));
+  });
+  test('Should return all that partally match the included item', () => {
+    const filter = new TextQuestionFilter({ question }, LOCALE);
+    filter.include = 'Hambu';
+    expect(filter.apply(targets)).toEqual(expect.arrayContaining([people['Bart'], people['Homer']]));
+  });
+  test('Should not return those excluded', () => {
+    const filter = new TextQuestionFilter({ question }, LOCALE);
+    filter.include = 'Hamburger';
+    filter.exclude = 'Pasta';
+    expect(filter.apply(targets)).toEqual([people['Bart']]);
+  });
+  test('Should not return all if none are excluded', () => {
+    const filter = new TextQuestionFilter({ question }, LOCALE);
+    filter.exclude = 'None of the above';
+    expect(filter.apply(targets)).toEqual(expect.arrayContaining(Object.values(people)));
+  });
+});
+
 test('ChoiceQuestionFilter', () => {
   const choices: Array<Choice> = [
     { id: '0', label: 'M' }, // 3rd in alhabetical order in the 'fi' locale
@@ -446,6 +491,7 @@ test('FilterGroup', () => {
   const group = new FilterGroup([partyFilter, ageFilter]);
   expect(group.active, 'Not active by default').toBe(false);
   expect(group.apply(people), 'Include all by default').toEqual(people);
+  expect(new FilterGroup([]).apply(people), 'Empty filter group should return all').toEqual(people);
   partyFilter.include = ['0', '1'];
   expect(group.apply(people), 'Changes from one filter').toEqual([people[0], people[1]]);
   ageFilter.min = 40;

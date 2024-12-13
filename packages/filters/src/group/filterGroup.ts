@@ -38,11 +38,12 @@ export class FilterGroup<TEntity extends MaybeWrappedEntity> {
   /////////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Apply the filters to the inputs. If the group has no active filters, returns the original list.
+   * Apply the filters to the inputs. If the group has no active filters (or any filters at all), returns the original list.
    * @input A list of entities.
    * @returns Filtered targets
    */
   apply<TTarget extends TEntity>(targets: Array<TTarget>) {
+    if (!this.active) return targets;
     return combineResults(
       this.filters.map((f) => f.apply(targets)),
       this._logicOp

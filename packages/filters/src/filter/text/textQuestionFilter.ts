@@ -1,5 +1,5 @@
 import { Entity, MaybeWrappedEntity } from '@openvaa/core';
-import { TextQuestion } from '@openvaa/data';
+import { MultipleTextQuestion, TextQuestion } from '@openvaa/data';
 import { TextFilter } from './textFilter';
 
 export class TextQuestionFilter<TEntity extends MaybeWrappedEntity> extends TextFilter<TEntity> {
@@ -10,13 +10,19 @@ export class TextQuestionFilter<TEntity extends MaybeWrappedEntity> extends Text
    * @param locale The locale is used for case-insensitive matching
    */
   constructor(
-    {
-      question,
-      name,
-      entityGetter
-    }: { question: TextQuestion; name?: string; entityGetter?: (target: TEntity) => Entity },
+    options: {
+      question: TextQuestion | MultipleTextQuestion;
+      name?: string;
+      entityGetter?: (target: TEntity) => Entity;
+    },
     locale: string
   ) {
-    super({ question, name, entityGetter }, locale);
+    super(
+      {
+        ...options,
+        multipleValues: options.question instanceof MultipleTextQuestion
+      },
+      locale
+    );
   }
 }
