@@ -1,3 +1,4 @@
+import { Entity, MaybeWrappedEntity } from '@openvaa/core';
 import {
   MultipleChoiceCategoricalQuestion,
   NumberQuestion,
@@ -9,12 +10,13 @@ import {
 /**
  * These options define how to get the filterable value from the target entity.
  */
-export type FilterOptions = FilterOptionsBase & (PropertyFilterOptions | QuestionFilterOptions);
+export type FilterOptions<TTarget extends MaybeWrappedEntity = MaybeWrappedEntity> = FilterOptionsBase<TTarget> &
+  (PropertyFilterOptions | QuestionFilterOptions);
 
 /**
  * The commonn option to both types of filters.
  */
-export interface FilterOptionsBase {
+export interface FilterOptionsBase<TTarget> {
   /**
    * The data type of the values. They will be cast to this type.
    */
@@ -27,6 +29,10 @@ export interface FilterOptionsBase {
    * Optional name for use when displaying the filter. Has no effect on it's functionality.
    */
   name?: string;
+  /**
+   * Optional callback for unwrapping the entity from which the properties or question answers are used. Defaults to `getEntity`.
+   */
+  entityGetter?: (entity: TTarget) => Entity;
 }
 
 /**

@@ -1,12 +1,12 @@
-import { getEntity, MaybeWrappedEntity } from '@openvaa/core';
+import { MaybeWrappedEntity } from '@openvaa/core';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import { Filter, type FilterOptionsBase, type PropertyFilterOptions, type QuestionFilterOptions } from '../base';
 
 /**
- * A base class for numeric filters.
+ * A base class for number filters.
  * NB. This could be refactored to inherit from a common parent of this and EnumeratedFilter and allow value counts.
  */
-export abstract class NumericFilter<TTarget extends MaybeWrappedEntity> extends Filter<TTarget, number> {
+export abstract class NumberFilter<TTarget extends MaybeWrappedEntity> extends Filter<TTarget, number> {
   protected _rules: {
     min?: number;
     max?: number;
@@ -14,11 +14,12 @@ export abstract class NumericFilter<TTarget extends MaybeWrappedEntity> extends 
   } = {};
 
   /**
-   * Create a numeric filter.
+   * Create a number filter.
    * @param options The filter options
    */
   constructor(
-    options: Omit<FilterOptionsBase, 'type' | 'multipleValues'> & (PropertyFilterOptions | QuestionFilterOptions)
+    options: Omit<FilterOptionsBase<TTarget>, 'type' | 'multipleValues'> &
+      (PropertyFilterOptions | QuestionFilterOptions)
   ) {
     super({ ...options, type: 'number', multipleValues: false });
   }
@@ -38,9 +39,7 @@ export abstract class NumericFilter<TTarget extends MaybeWrappedEntity> extends 
         max: number;
       }
     | undefined {
-    const values = targets
-      .map((t) => this.getValue(getEntity(t)))
-      .filter((v) => typeof v === 'number') as Array<number>;
+    const values = targets.map((t) => this.getValue(t)).filter((v) => typeof v === 'number') as Array<number>;
     return values.length
       ? {
           min: Math.min(...values),

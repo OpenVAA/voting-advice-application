@@ -1,3 +1,4 @@
+import { type Answer, type AnswerDict, type HasAnswers, type WrappedEntity } from '@openvaa/core';
 import {
   type Choice,
   DataRoot,
@@ -13,13 +14,12 @@ import {
   FilterGroup,
   LOGIC_OP,
   MISSING_VALUE,
-  NumericQuestionFilter,
+  NumberQuestionFilter,
   ObjectFilter,
   TextPropertyFilter,
   TextQuestionFilter
 } from '../src';
 import { copyRules, matchRules, ruleIsActive } from '../src/filter/rules';
-import type { Answer, AnswerDict, HasAnswers, WrappedEntity } from '@openvaa/core';
 
 const LOCALE = 'en';
 const root = new DataRoot();
@@ -105,7 +105,7 @@ describe('Filter basics', () => {
   const targets = Object.values(people);
 
   test('TextPropertyFilter', () => {
-    const filter = new TextPropertyFilter({ property: 'name' }, LOCALE);
+    const filter = new TextPropertyFilter<NamedEntity>({ property: 'name' }, LOCALE);
     expect(filter.apply(targets), 'Match all by default').toEqual(targets);
     filter.include = 'Bart';
     expect(filter.apply(targets), 'Exact match').toEqual([people['Bart']]);
@@ -136,7 +136,7 @@ describe('Filter basics', () => {
   test('TextPropertyFilter: Missing values', () => {
     const nameless = new NamedEntity(undefined);
     const targetsWithMissing = [...targets, nameless];
-    const filter = new TextPropertyFilter({ property: 'name' }, LOCALE);
+    const filter = new TextPropertyFilter<NamedEntity>({ property: 'name' }, LOCALE);
     expect(filter.apply(targetsWithMissing), 'Include missing by default').toEqual(targetsWithMissing);
     filter.include = 'Bart';
     expect(filter.apply(targetsWithMissing), 'Exlude missing if include is defined').toEqual([people['Bart']]);
@@ -150,7 +150,7 @@ describe('Filter basics', () => {
   });
 
   test('onChange', () => {
-    const filter = new TextPropertyFilter({ property: 'name' }, LOCALE);
+    const filter = new TextPropertyFilter<NamedEntity>({ property: 'name' }, LOCALE);
     const handler = vi.fn((f) => f);
     filter.onChange(handler);
     filter.include = 'Bart';
@@ -175,8 +175,25 @@ describe('Filter basics', () => {
     expect(filter.apply(wrappedTargets), 'Include wrapped').toEqual([wrappedPeople['Bart']]);
   });
 
+  test('Custom entity getter', () => {
+    // Use the wrapper’s name property instead of the entity itself. We add a prefixed name to the wrapper. (We also need to add answers to comply with the Entity type.)
+    const wrappedPeople: Record<string, WrappedEntity<NamedEntity> & HasAnswers> = Object.fromEntries(
+      targets.map((p) => [p.name, { ...wrap(p), name: `Wrapped ${p.name}`, answers: {} }])
+    );
+    const wrappedTargets = Object.values(wrappedPeople);
+    const filter = new TextPropertyFilter<WrappedEntity<NamedEntity> & HasAnswers>(
+      {
+        property: 'name',
+        entityGetter: (e) => e
+      },
+      LOCALE
+    );
+    filter.include = 'Wrapped Bart';
+    expect(filter.apply(wrappedTargets), 'Include wrapped').toEqual([wrappedPeople['Bart']]);
+  });
+
   test('Active filter', () => {
-    const filter = new TextPropertyFilter({ property: 'name' }, LOCALE);
+    const filter = new TextPropertyFilter<NamedEntity>({ property: 'name' }, LOCALE);
     expect(filter.active, 'Not active by default').toBe(false);
     filter.include = 'Bart';
     expect(filter.active, 'Active if changed').toBe(true);
@@ -368,7 +385,7 @@ test('ObjectFilter', () => {
   expect(filter.active, 'Not active if reset').toBe(false);
 });
 
-test('NumericQuestionFilter', () => {
+test('NumberQuestionFilter', () => {
   const ages = [10, 40, 50, 90];
   const question = new NumberQuestion({
     root,
@@ -381,7 +398,7 @@ test('NumericQuestionFilter', () => {
         rightId: a
       })
   );
-  const filter = new NumericQuestionFilter({ question });
+  const filter = new NumberQuestionFilter({ question });
   expect(filter.active, 'Not active by default').toBe(false);
   expect(filter.apply(people), 'Include all by default').toEqual(people);
   filter.min = 20;
@@ -425,7 +442,7 @@ test('FilterGroup', () => {
     },
     'fi'
   );
-  const ageFilter = new NumericQuestionFilter({ question });
+  const ageFilter = new NumberQuestionFilter<AnsweringPartyMember>({ question });
   const group = new FilterGroup([partyFilter, ageFilter]);
   expect(group.active, 'Not active by default').toBe(false);
   expect(group.apply(people), 'Include all by default').toEqual(people);
