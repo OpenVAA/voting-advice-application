@@ -6,7 +6,7 @@ The filters in this module allow basic filtering of entities, e.g. candidates or
 
 ## 🚧 To Do:
 
-- Refactor the complicated `entityGetter` and built-in `property` or `Question` accessors into a single value getter callback (possibly with another callback for processing values for display)
+- Refactor the complicated `entityGetter`, built-in `property` or `Question` accessors and the stored objects in `EnumeratedFilter` into a single value getter callback (possibly with another callback for processing values for display). Also remove `locale` from properties and leave sorting to the consumers.
 - Add global locale changing to group
 - Make canonical missing value undefined, but add isMissing utility that checks for empty arrays etc.
 - Possibly move isMissing check to filter method so it can be overriden
