@@ -19,11 +19,13 @@ export class TextFilter<TEntity extends MaybeWrappedEntity> extends Filter<TEnti
    * @param locale The locale is used for case-insensitive matching
    */
   constructor(
-    options: Omit<FilterOptionsBase<TEntity>, 'type' | 'multipleValues'> &
-      (PropertyFilterOptions | QuestionFilterOptions),
+    options: Omit<FilterOptionsBase<TEntity>, 'type'> & (PropertyFilterOptions | QuestionFilterOptions),
     public locale: string
   ) {
-    super({ ...options, type: 'string', multipleValues: false });
+    super({
+      ...options,
+      type: 'string'
+    });
   }
 
   get exclude(): string {
@@ -55,6 +57,15 @@ export class TextFilter<TEntity extends MaybeWrappedEntity> extends Filter<TEnti
     if (value === MISSING_VALUE) value = '';
     if (this._rules.exclude && this.testText(this._rules.exclude, value as string)) return false;
     if (this._rules.include && !this.testText(this._rules.include, value as string)) return false;
+    return true;
+  }
+
+  testValues(values: Array<MaybeMissing<string>>): boolean {
+    const strings = values.map((v) => (v === MISSING_VALUE ? '' : (v as string)));
+    // Return false if any value is excluded
+    if (this._rules.exclude && strings.some((v) => this.testText(this._rules.exclude!, v))) return false;
+    // Return false if no value is included
+    if (this._rules.include && strings.every((v) => !this.testText(this._rules.include!, v))) return false;
     return true;
   }
 

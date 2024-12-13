@@ -1,6 +1,7 @@
 import { Entity, MaybeWrappedEntity } from '@openvaa/core';
 import {
   MultipleChoiceCategoricalQuestion,
+  MultipleTextQuestion,
   NumberQuestion,
   SingleChoiceCategoricalQuestion,
   SingleChoiceOrdinalQuestion,
@@ -72,7 +73,7 @@ export interface QuestionFilterOptions {
   question: FilterableQuestion;
 }
 
-export type FilterableQuestion = TextQuestion | NumberQuestion | ChoiceQuestion;
+export type FilterableQuestion = TextQuestion | MultipleTextQuestion | NumberQuestion | ChoiceQuestion;
 
 export type ChoiceQuestion =
   | SingleChoiceOrdinalQuestion

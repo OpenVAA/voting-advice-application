@@ -11,19 +11,15 @@ export class TextPropertyFilter<TEntity extends MaybeWrappedEntity> extends Text
    * @param locale The locale is used for case-insensitive matching
    */
   constructor(
-    {
-      property,
-      subProperty,
-      name,
-      entityGetter
-    }: {
+    options: {
       property: keyof ExtractEntity<TEntity> & PropertyFilterOptions['property'];
       subProperty?: PropertyFilterOptions['subProperty'];
       name?: string;
       entityGetter?: (target: TEntity) => Entity;
+      multipleValues?: boolean;
     },
     locale: string
   ) {
-    super({ property, subProperty, name, entityGetter }, locale);
+    super(options, locale);
   }
 }

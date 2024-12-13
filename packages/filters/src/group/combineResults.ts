@@ -23,7 +23,7 @@ export function combineResults<TEntity extends MaybeWrappedEntity>(
   logicOperator = LOGIC_OP.And
 ): Array<TEntity> {
   if (!results.length) return [];
-  if (logicOperator === LOGIC_OP.Or) return Array.from(new Set(results.flat()));
+  if (logicOperator === LOGIC_OP.Or) return [...new Set(results.flat())];
   let out = results[0];
   for (const list of results.slice(1)) {
     out = out.filter((e) => list.includes(e));
