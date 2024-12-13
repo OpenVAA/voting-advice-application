@@ -835,6 +835,6 @@ export class DataRoot extends Updatable {
    * @param formatter - The new formatter function.
    */
   setFormatter<TType extends keyof RootFormatters>(type: TType, formatter: RootFormatters[TType]): void {
-    this.formatters[type] = formatter;
+    this.update(() => (this.formatters[type] = formatter));
   }
 }
