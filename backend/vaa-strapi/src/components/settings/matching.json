@@ -10,9 +10,14 @@
       "type": "integer",
       "required": true
     },
-    "partyMatching": {
+    "organizationMatching": {
       "type": "enumeration",
-      "enum": ["none", "answersOnly", "mean", "median"],
+      "enum": [
+        "none",
+        "answersOnly",
+        "mean",
+        "median"
+      ],
       "required": true
     }
   }

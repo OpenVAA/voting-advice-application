@@ -4,15 +4,15 @@ export const dynamicSettings: DynamicSettings = {
   entityDetails: {
     contents: {
       candidate: ['info', 'opinions'],
-      party: ['info', 'candidates', 'opinions']
+      organization: ['info', 'candidates', 'opinions']
     },
     showMissingElectionSymbol: {
       candidate: true,
-      party: false
+      organization: false
     },
     showMissingAnswers: {
       candidate: true,
-      party: true
+      organization: true
     }
   },
   header: {
@@ -38,7 +38,7 @@ export const dynamicSettings: DynamicSettings = {
   },
   matching: {
     minimumAnswers: 5,
-    partyMatching: 'median'
+    organizationMatching: 'median'
   },
   questions: {
     categoryIntros: {
@@ -55,11 +55,14 @@ export const dynamicSettings: DynamicSettings = {
   results: {
     cardContents: {
       candidate: ['submatches'],
-      party: ['candidates']
+      organization: ['candidates']
     },
     showFeedbackPopup: 180,
     showSurveyPopup: 500,
-    sections: ['candidate', 'party']
+    sections: ['candidate', 'organization']
+  },
+  elections: {
+    disallowSelection: false
   },
   underMaintenance: false
 };

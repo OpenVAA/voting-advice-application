@@ -71,6 +71,12 @@
       "type": "component",
       "repeatable": false,
       "component": "settings.header-style"
+    },
+    "elections": {
+      "displayName": "Elections",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.elections"
     }
   }
 }
