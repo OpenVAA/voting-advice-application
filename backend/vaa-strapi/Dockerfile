@@ -26,7 +26,11 @@ WORKDIR /opt
 # Install all shared modules used by the backend
 # If changing these, remember to edit the copy commands in `production` as well
 COPY packages/app-shared/ ./packages/app-shared
+COPY packages/core ./packages/core
+COPY packages/data ./packages/data
 RUN yarn install --frozen-lockfile
+RUN yarn workspace @openvaa/core build
+RUN yarn workspace @openvaa/data build
 RUN yarn workspace @openvaa/app-shared build
 
 FROM base AS strapi

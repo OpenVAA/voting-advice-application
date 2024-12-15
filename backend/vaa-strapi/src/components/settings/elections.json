@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_settings_elections",
+  "info": {
+    "displayName": "Elections"
+  },
+  "options": {},
+  "attributes": {
+    "disallowSelection": {
+      "type": "boolean"
+    }
+  }
+}

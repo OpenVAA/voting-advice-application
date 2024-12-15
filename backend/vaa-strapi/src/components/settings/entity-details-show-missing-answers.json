@@ -10,7 +10,7 @@
       "type": "boolean",
       "required": true
     },
-    "party": {
+    "organization": {
       "type": "boolean",
       "required": true
     }
