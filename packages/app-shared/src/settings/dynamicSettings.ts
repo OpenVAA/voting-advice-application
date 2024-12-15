@@ -21,9 +21,11 @@ export const dynamicSettings: DynamicSettings = {
   },
   headerStyle: {
     dark: {
+      bgColor: 'oklch(var(--b3))',
       overImgBgColor: 'transparent'
     },
     light: {
+      bgColor: 'oklch(var(--b3))',
       overImgBgColor: 'transparent'
     },
     imgSize: 'cover',
