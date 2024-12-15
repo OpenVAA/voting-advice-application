@@ -1,3 +1,5 @@
+import type { ENTITY_TYPE } from '@openvaa/data';
+
 /**
  * These settings can be set either by editing the `dynamicSettings.ts` file or overwritten with settings loaded by the `DataProvider`.
  */
@@ -26,29 +28,29 @@ export type DynamicSettings = {
       /**
        * The content tabs to show for candidates.
        */
-      candidate: Array<'info' | 'opinions'>;
+      [ENTITY_TYPE.Candidate]: Array<'info' | 'opinions'>;
       /**
        * The content tabs to show for parties.
        */
-      party: Array<'candidates' | 'info' | 'opinions'>;
+      [ENTITY_TYPE.Organization]: Array<'candidates' | 'info' | 'opinions'>;
     };
     /**
      * Whether to show a marker for missing election symbol in entity details, e.g. 'Election Symbol: --', or hide missing items completely. The marker, if shown, is defined in the translations.
      */
     showMissingElectionSymbol: {
-      candidate: boolean;
-      party: boolean;
+      [ENTITY_TYPE.Candidate]: boolean;
+      [ENTITY_TYPE.Organization]: boolean;
     };
     /**
      * Whether to show a marker for missing answers in entity details as, e.g. 'Age: --', or hide missing items completely. The marker, if shown, is defined in the translations. This only applies to non-opinion questions.
      */
     showMissingAnswers: {
-      candidate: boolean;
-      party: boolean;
+      [ENTITY_TYPE.Candidate]: boolean;
+      [ENTITY_TYPE.Organization]: boolean;
     };
   };
   /**
-   * Settings related to the app header.
+   * Settings related to the actions in the app header.
    */
   header: {
     /**
@@ -60,6 +62,9 @@ export type DynamicSettings = {
      */
     showHelp: boolean;
   };
+  /**
+   * Settings related to app header styling
+   */
   headerStyle: {
     dark: {
       bgColor?: string;
@@ -83,7 +88,7 @@ export type DynamicSettings = {
       /**
        * Whether to hide candidates with missing answers in the app.
        */
-      candidate: boolean;
+      [ENTITY_TYPE.Candidate]: boolean;
     };
   };
   /**
@@ -97,7 +102,7 @@ export type DynamicSettings = {
     /**
      * The method with which parties are matched. • None: no party matching is done • answersOnly: matching is only performed on the parties explicit answers • Mean/Median: missing party answers are replaced with the mean, median or mode of the party's candidates' answers. Nb. Mode is not yet implemented because of difficulty of handling multiple modes when the counts are tied.
      */
-    partyMatching: 'none' | 'answersOnly' | 'mean' | 'median';
+    organizationMatching: 'none' | 'answersOnly' | 'mean' | 'median';
   };
   /**
    * Settings related to the question view.
@@ -147,9 +152,9 @@ export type DynamicSettings = {
      */
     cardContents: {
       /**
-       * The additional contents of candidate cards. NB. the order of the items has currently no effect.
+       * The additional contents of [ENTITY_TYPE.Candidate] cards. NB. the order of the items has currently no effect.
        */
-      candidate: Array<
+      [ENTITY_TYPE.Candidate]: Array<
         | 'submatches'
         /**
          * Show the entity's answer to a specific question. Only applies to the results list.
@@ -159,7 +164,7 @@ export type DynamicSettings = {
       /**
        * The additional contents of party cards. NB. the order of the items has currently no effect.
        */
-      party: Array<
+      [ENTITY_TYPE.Organization]: Array<
         | 'submatches'
         /**
          * List party's the top 3 candidates within it's card. Only applies to the results list.
@@ -174,7 +179,7 @@ export type DynamicSettings = {
     /**
      * Which entity types to show in the results view. There must be at least one.
      */
-    sections: Array<'candidate' | 'party'>;
+    sections: Array<typeof ENTITY_TYPE.Candidate | typeof ENTITY_TYPE.Organization>;
     /**
      * If defined, a feedback popup will be shown on the next page load, when the user has reached the results section and the number of seconds given by this value has passed. The popup will not be shown, if the user has already given some feedback.
      */
@@ -183,6 +188,15 @@ export type DynamicSettings = {
      * The delay in seconds after which a survey popup will be shown on the next page load, when the user has reached the results section. The popup will only be shown if the relevant `analytics.survey` settings are defined and if the user has not already opened the survey.
      */
     showSurveyPopup?: number;
+  };
+  /**
+   * Settings related to election selection in VAAs with multiple candidates. These have no effect if there is just one election.
+   */
+  elections?: {
+    /**
+     * If `true` all elections are selected by default.
+     */
+    disallowSelection?: boolean;
   };
   underMaintenance?: boolean;
 };

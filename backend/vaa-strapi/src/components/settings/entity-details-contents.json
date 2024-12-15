@@ -8,13 +8,20 @@
   "attributes": {
     "candidate": {
       "type": "customField",
-      "options": ["info", "opinions"],
+      "options": [
+        "info",
+        "opinions"
+      ],
       "customField": "plugin::multi-select.multi-select",
       "required": true
     },
-    "party": {
+    "organization": {
       "type": "customField",
-      "options": ["candidates", "info", "opinions"],
+      "options": [
+        "candidates",
+        "info",
+        "opinions"
+      ],
       "customField": "plugin::multi-select.multi-select",
       "required": true
     }

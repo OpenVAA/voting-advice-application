@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2024-12-04T08:23:43.938Z"
+    "x-generation-date": "2024-12-15T08:27:02.938Z"
   },
   "x-strapi-config": {
     "path": "/documentation",
@@ -4010,6 +4010,9 @@
           "headerStyle": {
             "$ref": "#/components/schemas/SettingsHeaderStyleComponent"
           },
+          "elections": {
+            "$ref": "#/components/schemas/SettingsElectionsComponent"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -4351,7 +4354,7 @@
           "minimumAnswers": {
             "type": "integer"
           },
-          "partyMatching": {
+          "organizationMatching": {
             "type": "string",
             "enum": [
               "none",
@@ -4387,7 +4390,7 @@
                 "type": "number"
               },
               "candidate": {},
-              "party": {}
+              "organization": {}
             }
           },
           "showMissingElectionSymbol": {
@@ -4399,7 +4402,7 @@
               "candidate": {
                 "type": "boolean"
               },
-              "party": {
+              "organization": {
                 "type": "boolean"
               }
             }
@@ -4413,7 +4416,7 @@
               "candidate": {
                 "type": "boolean"
               },
-              "party": {
+              "organization": {
                 "type": "boolean"
               }
             }
@@ -4506,7 +4509,7 @@
               }
             }
           },
-          "partyCardContents": {
+          "organizationCardContents": {
             "type": "array",
             "items": {
               "type": "object",
@@ -4598,6 +4601,17 @@
           },
           "imgPosition": {
             "type": "string"
+          }
+        }
+      },
+      "SettingsElectionsComponent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "disallowSelection": {
+            "type": "boolean"
           }
         }
       },
