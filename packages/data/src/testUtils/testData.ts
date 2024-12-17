@@ -174,7 +174,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         id: 'questionCategory-2',
         name: 'Party Information',
         info: 'The parties’ basic information.',
-        entityTypes: [ENTITY_TYPE.Organization],
+        entityType: [ENTITY_TYPE.Organization],
         type: QUESTION_CATEGORY_TYPE.Info
       },
       {
@@ -219,7 +219,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         categoryId: 'questionCategory-1',
         name: 'Pointy ears',
         info: 'Whether the candidate has pointy ears or not. Only applicable to candidates.',
-        entityTypes: [ENTITY_TYPE.Candidate]
+        entityType: [ENTITY_TYPE.Candidate]
       },
       {
         id: 'question-4',
@@ -227,7 +227,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         categoryId: 'questionCategory-1',
         name: 'Birthdate',
         info: 'The candidate’s date of birth. Only applicable to candidates.',
-        entityTypes: [ENTITY_TYPE.Candidate],
+        entityType: [ENTITY_TYPE.Candidate],
         min: '100-01-01',
         max: '2050-01-01'
       },
@@ -237,7 +237,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         categoryId: 'questionCategory-1',
         name: 'Favourite travel photo',
         info: 'A photo from the candidate’s travels. Only applicable to candidates.',
-        entityTypes: [ENTITY_TYPE.Candidate]
+        entityType: [ENTITY_TYPE.Candidate]
       },
       {
         id: 'question-6',
@@ -259,7 +259,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         categoryId: 'questionCategory-2',
         name: 'Languages',
         info: 'Select the languages you can speak.',
-        entityTypes: ENTITY_TYPE.Candidate,
+        entityType: ENTITY_TYPE.Candidate,
         choices: [
           {
             id: 'choice-1',
