@@ -21,7 +21,7 @@ export interface MultipleChoiceQuestionData<TType extends MultipleChoiceQuestion
   // - electionIds?: FilterValue<Id>;
   // - electionRounds?: FilterValue<number>;
   // - constituencyIds?: FilterValue<Id>;
-  // - entityTypes?: FilterValue<EntityType>;
+  // - entityType?: FilterValue<EntityType>;
   //
   // From QuestionData<TType>
   // - type: TType;
