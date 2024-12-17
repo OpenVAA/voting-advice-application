@@ -21,7 +21,7 @@ export interface ChoiceQuestionData<TType extends ChoiceQuestionType = ChoiceQue
   // - electionIds?: FilterValue<Id>;
   // - electionRounds?: FilterValue<number>;
   // - constituencyIds?: FilterValue<Id>;
-  // - entityTypes?: FilterValue<EntityType>;
+  // - entityType?: FilterValue<EntityType>;
   //
   // From QuestionData<TType>
   // - type: TType;

@@ -20,7 +20,7 @@ export interface NumberQuestionData extends QuestionData<typeof QUESTION_TYPE.Nu
   // - electionIds?: FilterValue<Id>;
   // - electionRounds?: FilterValue<number>;
   // - constituencyIds?: FilterValue<Id>;
-  // - entityTypes?: FilterValue<EntityType>;
+  // - entityType?: FilterValue<EntityType>;
   //
   // From QuestionData<TType>
   // - type: TType;

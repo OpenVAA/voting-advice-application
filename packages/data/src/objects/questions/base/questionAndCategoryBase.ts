@@ -26,8 +26,8 @@ export class QuestionAndCategoryBase<TData extends QuestionAndCategoryBaseData>
   /**
    * An optional filter value that contains the entity types for which this question or category should only be shown.
    */
-  get entityTypes(): FilterValue<EntityType> | null {
-    return this.data.entityTypes ?? null;
+  get entityType(): FilterValue<EntityType> | null {
+    return this.data.entityType ?? null;
   }
 
   /**
@@ -49,14 +49,14 @@ export class QuestionAndCategoryBase<TData extends QuestionAndCategoryBaseData>
   /**
    * Check if the question or category applies to the given filter targets.
    * @param targets - The targets to check for
-   * @returns True if the question category applies
+   * @returns True if the question or category applies
    */
   appliesTo(targets: FilterTargets): boolean {
-    const { elections, electionRounds, entityTypes, constituencies } = targets;
+    const { elections, electionRounds, entityType, constituencies } = targets;
     if (elections && !match({ filter: this.data.electionIds, target: [elections].flat().map((e) => e.id) }))
       return false;
     if (electionRounds && !match({ filter: this.data.electionRounds, target: electionRounds })) return false;
-    if (entityTypes && !match({ filter: this.data.entityTypes, target: entityTypes })) return false;
+    if (entityType && !match({ filter: this.data.entityType, target: entityType })) return false;
     if (
       constituencies &&
       !match({

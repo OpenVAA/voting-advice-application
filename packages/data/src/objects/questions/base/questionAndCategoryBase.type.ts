@@ -36,7 +36,7 @@ export interface QuestionAndCategoryBaseData extends DataObjectData {
   /**
    * An optional filter value that contains the entity types for which this question or category should only be shown.
    */
-  entityTypes?: FilterValue<EntityType> | null;
+  entityType?: FilterValue<EntityType> | null;
 }
 
 /**
@@ -45,6 +45,6 @@ export interface QuestionAndCategoryBaseData extends DataObjectData {
 export type FilterTargets = {
   elections?: FilterValue<Election> | null;
   electionRounds?: FilterValue<number> | null;
-  entityTypes?: FilterValue<EntityType> | null;
+  entityType?: FilterValue<EntityType> | null;
   constituencies?: FilterValue<Constituency> | null;
 };

@@ -20,7 +20,7 @@ export interface QuestionData<TType extends QuestionType = QuestionType> extends
   // - electionIds?: FilterValue<Id>;
   // - electionRounds?: FilterValue<number>;
   // - constituencyIds?: FilterValue<Id>;
-  // - entityTypes?: FilterValue<EntityType>;
+  // - entityType?: FilterValue<EntityType>;
 
   /**
    * The type of the question. The type property of `QuestionData` determines the `Question` subclass that it uses.
