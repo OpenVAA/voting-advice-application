@@ -1,6 +1,7 @@
 import { DataNotFoundError, DataObject, DataProvisionError } from '../../../internal';
 import type {
   Answers,
+  AnyQuestionVariant,
   Constituency,
   DataAccessor,
   DataRoot,
@@ -65,6 +66,18 @@ export abstract class Nomination<
    */
   get answers(): Answers {
     return this.entity.answers;
+  }
+
+  /**
+   * All `Question`s that are applicable to the nominated `Entity`’s type and the `Nomination`s election` and `constituency`.
+   */
+  get applicableQuestions(): Array<AnyQuestionVariant> {
+    return this.root.findQuestions({
+      entityType: this.entityType,
+      // Pass just the ids to save extraneous getter calls
+      elections: { id: this.data.electionId } as Election,
+      constituencies: { id: this.data.constituencyId } as Constituency
+    });
   }
 
   /**

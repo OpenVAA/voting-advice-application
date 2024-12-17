@@ -62,3 +62,13 @@ test('Name and shortName getters should default to entity properties', () => {
   nom.data.shortName = 'Nomination shortName';
   expect(nom.shortName).toBe('Nomination shortName');
 });
+
+test('Should return applicableQuestions', () => {
+  const nom = root
+    .getAlliance('alliance-1')
+    .nominations.find((n) => n.election.id === 'election-1' && n.constituency.id === 'constituency-1-1');
+  if (!nom) throw new Error('Test setup error: the correct alliance nomination not found in test data');
+  // The rest of the questions apply to different elections or entityTypes directly or via their categories
+  const questionIds = [1, 2, 9, 11, 12, 13].map((i) => `question-${i}`);
+  expect(nom.applicableQuestions.map((q) => q.id)).toEqual(expect.arrayContaining(questionIds));
+});

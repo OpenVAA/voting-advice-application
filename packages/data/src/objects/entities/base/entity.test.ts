@@ -1,5 +1,12 @@
 import { expect, test } from 'vitest';
-import { isMissingValue, NumberQuestion, parseEntityTree, parseNominationTree } from '../../../internal';
+import {
+  Candidate,
+  ENTITY_TYPE,
+  isMissingValue,
+  NumberQuestion,
+  parseEntityTree,
+  parseNominationTree
+} from '../../../internal';
 import { getTestData, getTestDataRoot, parseNestedNominations } from '../../../testUtils';
 
 /**
@@ -74,4 +81,23 @@ test('Should get formatted answer', () => {
   });
   candidate.data.answers!['question-number'] = { value: 0.5 };
   expect(candidate.getFormattedAnswer({ question: numberQuestion })).toBe('50%');
+});
+
+test('Should return answeredQuestions', () => {
+  const candidate = new Candidate({
+    root,
+    data: {
+      id: 'new-candidate',
+      firstName: 'Candidate',
+      lastName: 'Candidate',
+      type: ENTITY_TYPE.Candidate,
+      answers: {
+        'question-1': { value: 'Answer 1' },
+        // The ones below should not be included in answeredQuestions
+        'question-2': null,
+        'question-3': { value: undefined }
+      }
+    }
+  });
+  expect(candidate.answeredQuestions.map((q) => q.id)).toEqual(['question-1']);
 });

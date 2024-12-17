@@ -58,6 +58,8 @@ Imports are handled internally from [`/internal`](./src/internal.ts), which coll
 
 ## Constraints and future developments
 
+- The constructors for the `Entity`, `Nomination` and `Question` variants require a redundant `type` to be passed in the arguments, although this could be added by default. This could be changed in the future.
+- `Question.appliesTo` is based on the super class method and does not take into account the filters in the `QuestionCategory` it belongs to (contrary to `DataRoot.findQuestions`). This could be changed.
 - Currently no way to define the internals of the `customData` property all [`DataObjectData`](./src/core/dataObject.type.ts) share
 - Currently no way to extend the model with new subclasses _ad hoc_. This could perhaps be remedied by making provision methods of objects user-definable such that their return types would be used to type the `children` collections.
 - Question types not fully implemented:
