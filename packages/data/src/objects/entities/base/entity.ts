@@ -46,6 +46,15 @@ export abstract class Entity<TType extends EntityType, TData extends EntityData<
   //////////////////////////////////////////////////////////////////////////////
 
   /**
+   * All `Question`s that have been answered by this entity.
+   */
+  get answeredQuestions(): Array<AnyQuestionVariant> {
+    return Object.entries(this.answers)
+      .filter(([, answer]) => answer?.value != null)
+      .map(([id]) => this.root.getQuestion(id));
+  }
+
+  /**
    * Get all `Nominations` for this entity.
    */
   get nominations(): Array<NominationVariant[TType]> {
