@@ -26,7 +26,7 @@ export class QuestionCategory
    * Get the questions in this category.
    */
   get questions(): Collection<AnyQuestionVariant> {
-    return this.root.questions?.filter((q) => q.category === this).sort(order) ?? [];
+    return this.root.questions.filter((q) => q.category.id === this.id).sort(order) ?? [];
   }
 
   /**
