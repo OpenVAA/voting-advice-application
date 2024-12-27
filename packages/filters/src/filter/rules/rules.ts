@@ -25,7 +25,7 @@ export function copyRules<TRule extends Rules>(rules: TRule): TRule {
  * Check whether @param rule is empty for purposes of finding out whether a filter is active or not.
  */
 export function ruleIsActive(rule: Rule): boolean {
-  if (rule == null || rule === '') return false;
+  if (rule == null || rule === '' || rule === false) return false;
   if (Array.isArray(rule)) return rule.length > 0;
   if (rule instanceof Set) return rule.size > 0;
   if (rule instanceof RegExp) return rule.source !== '' && rule.source !== '(?:)';
