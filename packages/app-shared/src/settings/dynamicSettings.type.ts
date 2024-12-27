@@ -1,4 +1,4 @@
-import type { ENTITY_TYPE } from '@openvaa/data';
+import type { ENTITY_TYPE, EntityType } from '@openvaa/data';
 
 /**
  * These settings can be set either by editing the `dynamicSettings.ts` file or overwritten with settings loaded by the `DataProvider`.
@@ -28,26 +28,20 @@ export type DynamicSettings = {
       /**
        * The content tabs to show for candidates.
        */
-      [ENTITY_TYPE.Candidate]: Array<'info' | 'opinions'>;
+      [ENTITY_TYPE.Candidate]: Array<EntityDetailsContent>;
       /**
        * The content tabs to show for parties.
        */
-      [ENTITY_TYPE.Organization]: Array<'candidates' | 'info' | 'opinions'>;
+      [ENTITY_TYPE.Organization]: Array<EntityDetailsContent | OrganizationDetailsContent>;
     };
     /**
      * Whether to show a marker for missing election symbol in entity details, e.g. 'Election Symbol: --', or hide missing items completely. The marker, if shown, is defined in the translations.
      */
-    showMissingElectionSymbol: {
-      [ENTITY_TYPE.Candidate]: boolean;
-      [ENTITY_TYPE.Organization]: boolean;
-    };
+    showMissingElectionSymbol: Partial<Record<EntityType, boolean>>;
     /**
      * Whether to show a marker for missing answers in entity details as, e.g. 'Age: --', or hide missing items completely. The marker, if shown, is defined in the translations. This only applies to non-opinion questions.
      */
-    showMissingAnswers: {
-      [ENTITY_TYPE.Candidate]: boolean;
-      [ENTITY_TYPE.Organization]: boolean;
-    };
+    showMissingAnswers: Partial<Record<EntityType, boolean>>;
   };
   /**
    * Settings related to the actions in the app header.
@@ -127,6 +121,7 @@ export type DynamicSettings = {
     questionsIntro: {
       /**
        * Whether to allow the user to select which categories to answer if there are more than one.
+       * NB. If the app has multiple elections with different question applicable to each, category selection may result in cases where the user does not select enough questions to get any results for one or more elections, regardless of the minimum number of answers required. In such cases, consider setting this to `false`.
        */
       allowCategorySelection?: boolean;
       /**
@@ -200,10 +195,10 @@ export type DynamicSettings = {
   };
   underMaintenance?: boolean;
 };
+
 /**
  * Used to show the entity's answer to a specific question. Only applies to the results list.
  */
-
 export type QuestionInCardContent = {
   /**
    * The question's id.
@@ -218,3 +213,13 @@ export type QuestionInCardContent = {
    */
   format?: 'default' | 'tag';
 };
+
+/**
+ * The possible content tabs to show for all entities.
+ */
+export type EntityDetailsContent = 'info' | 'opinions';
+
+/**
+ * The possible content tabs to show for `Organization`s.
+ */
+export type OrganizationDetailsContent = 'candidates';
