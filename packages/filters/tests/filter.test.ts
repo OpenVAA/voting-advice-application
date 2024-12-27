@@ -431,7 +431,7 @@ test('ObjectFilter', () => {
 });
 
 test('NumberQuestionFilter', () => {
-  const ages = [10, 40, 50, 90];
+  const ages = [10, 40, 50, 90, undefined];
   const question = new NumberQuestion({
     root,
     data: { id: 'rightId', type: 'number', name: '', categoryId: '' }
@@ -448,17 +448,25 @@ test('NumberQuestionFilter', () => {
   expect(filter.apply(people), 'Include all by default').toEqual(people);
   filter.min = 20;
   expect(filter.active, 'Active if changed').toBe(true);
-  expect(filter.apply(people), 'Min match').toEqual([people[1], people[2], people[3]]);
+  expect(filter.apply(people), 'Min match, including missing').toEqual([people[1], people[2], people[3], people[4]]);
+  filter.excludeMissing = true;
+  expect(filter.apply(people), 'Min match, excluding missing').toEqual([people[1], people[2], people[3]]);
   filter.max = 50;
-  expect(filter.apply(people), 'Min and max match').toEqual([people[1], people[2]]);
+  expect(filter.apply(people), 'Min and max match, excluding missing').toEqual([people[1], people[2]]);
   filter.min = 50;
-  expect(filter.apply(people), 'Min == max match').toEqual([people[2]]);
+  expect(filter.apply(people), 'Min == max match, excluding missing').toEqual([people[2]]);
   filter.reset();
   filter.max = 45;
-  expect(filter.apply(people), 'Max match').toEqual([people[0], people[1]]);
-  expect(filter.parseValues(people), 'Min and max values').toEqual({ min: 10, max: 90 });
+  expect(filter.apply(people), 'Max match, including missing').toEqual([people[0], people[1], people[4]]);
+  expect(filter.parseValues(people), 'Min and max values and number of missing').toEqual({
+    min: 10,
+    max: 90,
+    missingValues: 1
+  });
   filter.reset();
   expect(filter.active, 'Not active if reset').toBe(false);
+  filter.excludeMissing = false;
+  expect(filter.active, 'Not active if exlude missing is false').toBe(false);
 });
 
 test('FilterGroup', () => {

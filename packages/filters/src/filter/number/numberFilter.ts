@@ -1,5 +1,5 @@
 import { MaybeWrappedEntity } from '@openvaa/core';
-import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
+import { isMissing, type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import { Filter, type FilterOptionsBase, type PropertyFilterOptions, type QuestionFilterOptions } from '../base';
 
 /**
@@ -31,21 +31,25 @@ export abstract class NumberFilter<TTarget extends MaybeWrappedEntity> extends F
   /**
    * Parse all the values from the targets to find min and max values.
    * @input A list of entities.
-   * @returns The min and max values.
+   * @returns The possible min and max values as well as the number of missing values.
    */
-  parseValues(targets: Array<TTarget>):
-    | {
-        min: number;
-        max: number;
-      }
-    | undefined {
-    const values = targets.map((t) => this.getValue(t)).filter((v) => typeof v === 'number') as Array<number>;
-    return values.length
-      ? {
-          min: Math.min(...values),
-          max: Math.max(...values)
-        }
-      : undefined;
+  parseValues(targets: Array<TTarget>): {
+    min?: number;
+    max?: number;
+    missingValues: number;
+  } {
+    const allValues = targets.map((t) => this.getValue(t));
+    const values = allValues.filter((v) => !isMissing(v));
+    const missingValues = allValues.filter((v) => isMissing(v)).length;
+    return {
+      min: values.length ? Math.min(...values) : undefined,
+      max: values.length ? Math.max(...values) : undefined,
+      missingValues
+    };
+  }
+
+  get exludeMissing(): boolean {
+    return !!this._rules.excludeMissing;
   }
 
   get min(): number | undefined {
@@ -54,6 +58,13 @@ export abstract class NumberFilter<TTarget extends MaybeWrappedEntity> extends F
 
   get max(): number | undefined {
     return this._rules.max;
+  }
+
+  /**
+   * Set whether missing values are exluded.
+   */
+  set excludeMissing(value: boolean | undefined) {
+    this.setRule('excludeMissing', value);
   }
 
   /**
@@ -68,13 +79,6 @@ export abstract class NumberFilter<TTarget extends MaybeWrappedEntity> extends F
    */
   set max(value: number | undefined) {
     this.setRule('max', value);
-  }
-
-  /**
-   * Set whether missing values are exluded.
-   */
-  excludeMissing(value?: boolean): void {
-    this.setRule('excludeMissing', value);
   }
 
   testValue(value: MaybeMissing<number>): boolean {
