@@ -18,4 +18,8 @@ export type AlertProps = SvelteHTMLElements['dialog'] & {
    * Bind to this to get the alert's open state.
    */
   readonly isOpen?: boolean;
+  /**
+   * The callback triggered when the alert is closed.
+   */
+  onClose?: () => void;
 };

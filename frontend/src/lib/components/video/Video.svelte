@@ -1,3 +1,79 @@
+<!--
+@component
+A video player that also includes a switcher between the video and a text transcript. The player also supports a variety of controls that mimic social media video controls.
+
+It's best to supply a number of sources, such as `mp4` and `webm` to support different browsers and devices. You also need to supply a `poster` image and VTT `captions` for accessibility reasons. `aspectRatio` is required for sizing the player correctly. A text `transcript` is recommended to be supplied, but if it's missing, one will be created from the `captions`.
+
+You can hide some of the controls using the `hideControls` property, in which case you should implement the functionality otherwise by binding to the control functions (see below).
+
+The player will try to unmute the video when the user first interacts with it. You can disable this by setting `autoUnmute` to `false`.
+
+User choices are stored in the `videoPreferences` store so that they persist across page loads. The preferences included are `muted`, `textTracksHidden` and `transcriptVisible`.
+
+### Dynamic component
+
+Accesses
+
+### Properties
+
+- `title`: The title of the video for labelling.
+- `sources`: The source URLs of the video.
+- `captions`: The source URL for the video's captions.
+- `poster`: The poster image URL for the video.
+- `aspectRatio`: The aspect ratio of the video. This is needed so that the component can be sized correctly even before the data is loaded.
+- `transcript`: The transcript text for the video as a HTML string. If empty, `captions` will be used instead.
+- `hideControls`: The controls to hide. All are shown if the list is not defined. Default: `undefined`
+- `autoPlay`: Whether to autoPlay the video. Default: `true`
+- `autoUnmute`: Whether to automatically try to unmute the video when the user interacts with it. Default: `true`
+- `showCaptions`: Whether to show captions by default. Default: `true`
+- `showTranscript`: Whether to show the transcript instead of the video by default. Default: `false`
+- `skipByCue`: Whether to skip using the captions' cues. Default: `true`
+- `skipAmount`: The amount in seconds to skip if not using cues. Default: `10`
+
+### Callbacks
+
+- `onTrack`: A callback triggered when the video tracking event should be sent. Send to `TrackingService.startEvent` or `track` to track.
+- `onEnded`: Forwarded from the `<video>` element.
+
+### Bindable properties
+
+- `atEnd`: Bindable: Whether the video is at the end (with a small margin)
+- `mode`: Bindable: Whether the video or the transcript is visible.
+
+### Bindable functions
+
+- `togglePlay`: Toggle video playback or replay.
+- `toggleSound`: Toggle sound
+- `toggleCaptions`: Show or hide captions.
+- `toggleTranscript`:  Toggle transcript visibility.
+- `jump`: Skip the video a number of steps based on text track cues or `skipAmount` if cues are not available. If the video is in the end, a `steps` of `-1` will be skip to the beginning of the last cue. If `steps` would result in a negative index or one greater than the number of cues, the video will be scrolled to the beginning or the end.
+- `gotoAndPlay`: Scroll the video to the given time and play.
+- `reload`: Call this function after changing the video contents, i.e. sources, captions, poster and transcript.
+
+### Events
+
+- `ended`: Forwarded from the `<video>` element.
+
+### Tracking events
+
+- `video`: The video player creates an analytics event for each video viewed which combines a number of properties. See the `VideoTrackingEventData` in [`Video.type.ts`](./Video.type.ts) for a complete description. The event is started and submitted when:
+  - the component is created/destroyed
+  - when the video shown is changed with `reload`
+  - when the page's visibility changes to `hidden`.
+
+### Usage
+
+```tsx
+<Video
+  title="Video title"
+  sources={['https://example.com/video.webm', 'https://example.com/video.mp4']}
+  captions="https://example.com/video.vtt"
+  poster="https://example.com/video.jpg"
+  aspectRatio={4/5}
+  transcript="<p>Transcript text</p>"/>
+```
+-->
+
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { fade } from 'svelte/transition';
@@ -5,12 +81,12 @@
   import { Button } from '$lib/components/button';
   import { Icon } from '$lib/components/icon';
   import { Loading } from '$lib/components/loading';
-  import { locale, t } from '$lib/i18n';
   import { concatClass } from '$lib/utils/components';
-  import { startEvent, type TrackingEvent } from '$lib/utils/legacy-analytics/track';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { videoPreferences } from './component-stores';
   import type { PlayButtonAction, VideoMode, VideoProps, VideoTrackingEventData } from './Video.type';
+  import { getAppContext } from '$lib/contexts/app';
+  import type { TrackingEvent } from '$lib/contexts/app/tracking';
 
   ////////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
@@ -52,8 +128,16 @@
   export let showTranscript: $$Props['showTranscript'] = false;
   export let skipByCue: $$Props['skipByCue'] = true;
   export let skipAmount: $$Props['skipAmount'] = DEFAULT_SKIP_AMOUNT;
+  export let onTrack: $$Props['onTrack'] = undefined;
+  export let onEnded: $$Props['onEnded'] = undefined;
 
   hideControls ??= [];
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { locale, startEvent, t } = getAppContext();
 
   ////////////////////////////////////////////////////////////////////////////////
   // TEXT TRACKS
@@ -218,8 +302,20 @@
   $: toggleTranscript(transcriptToggleValue === 'text');
 
   ////////////////////////////////////////////////////////////////////////////////
+  // EVENTS
+  ////////////////////////////////////////////////////////////////////////////////
+
+  function handleEnded(): void {
+    addToEvent({ ended: true });
+    onEnded?.();
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////
   // TRACKING
   ////////////////////////////////////////////////////////////////////////////////
+
+  beforeNavigate(endVideoEvent);
+  onMount(startVideoEvent);
 
   /**
    * The event data for the current video
@@ -231,11 +327,14 @@
    */
   function startVideoEvent() {
     if (event) return;
-    event = startEvent('video', {
-      startMuted: muted,
-      startWithTranscript: transcriptVisible,
-      startWithCaptions: showCaptions
-    });
+    event = { 
+      name: 'video', 
+      data: {
+        startMuted: muted,
+        startWithTranscript: transcriptVisible,
+        startWithCaptions: showCaptions
+      }
+    };
   }
 
   /**
@@ -252,7 +351,8 @@
       endWithTranscript: transcriptVisible,
       endWithCaptions: showCaptions
     };
-    // Delete the reference to the video event, it will still be contained in the unsubmitted events in the tracking module
+    onTrack?.(event);
+    // Delete the reference to the video event
     event = undefined;
   }
 
@@ -270,9 +370,6 @@
       event!.data = { ...event!.data, ...data };
     }
   }
-
-  beforeNavigate(endVideoEvent);
-  onMount(startVideoEvent);
 
   ////////////////////////////////////////////////////////////////////////////////
   // CONTROL FUNCTIONS
@@ -511,73 +608,6 @@
   }
 </script>
 
-<!--
-@component
-A video player that also includes a switcher between the video and a text transcript. The player also supports a variety of controls that mimic social media video controls.
-
-It's best to supply a number of sources, such as `mp4` and `webm` to support different browsers and devices. You also need to supply a `poster` image and VTT `captions` for accessibility reasons. `aspectRatio` is required for sizing the player correctly. A text `transcript` is recommended to be supplied, but if it's missing, one will be created from the `captions`.
-
-You can hide some of the controls using the `hideControls` property, in which case you should implement the functionality otherwise by binding to the control functions (see below).
-
-The player will try to unmute the video when the user first interacts with it. You can disable this by setting `autoUnmute` to `false`.
-
-User choices are stored in the `videoPreferences` store so that they persist across page loads. The preferences included are `muted`, `textTracksHidden` and `transcriptVisible`.
-
-### Properties
-
-- `title`: The title of the video for labelling.
-- `sources`: The source URLs of the video.
-- `captions`: The source URL for the video's captions.
-- `poster`: The poster image URL for the video.
-- `aspectRatio`: The aspect ratio of the video. This is needed so that the component can be sized correctly even before the data is loaded.
-- `transcript`: The transcript text for the video as a HTML string. If empty, `captions` will be used instead.
-- `hideControls`: The controls to hide. All are shown if the list is not defined. Default: `undefined`
-- `autoPlay`: Whether to autoPlay the video. Default: `true`
-- `autoUnmute`: Whether to automatically try to unmute the video when the user interacts with it. Default: `true`
-- `showCaptions`: Whether to show captions by default. Default: `true`
-- `showTranscript`: Whether to show the transcript instead of the video by default. Default: `false`
-- `skipByCue`: Whether to skip using the captions' cues. Default: `true`
-- `skipAmount`: The amount in seconds to skip if not using cues. Default: `10`
-
-### Bindable properties
-
-- `atEnd`: Bindable: Whether the video is at the end (with a small margin)
-- `mode`: Bindable: Whether the video or the transcript is visible.
-
-### Bindable functions
-
-- `togglePlay`: Toggle video playback or replay.
-- `toggleSound`: Toggle sound
-- `toggleCaptions`: Show or hide captions.
-- `toggleTranscript`:  Toggle transcript visibility.
-- `jump`: Skip the video a number of steps based on text track cues or `skipAmount` if cues are not available. If the video is in the end, a `steps` of `-1` will be skip to the beginning of the last cue. If `steps` would result in a negative index or one greater than the number of cues, the video will be scrolled to the beginning or the end.
-- `gotoAndPlay`: Scroll the video to the given time and play.
-- `reload`: Call this function after changing the video contents, i.e. sources, captions, poster and transcript.
-
-### Events
-
-- `ended`: Forwarded from the `<video>` element.
-
-### Tracking events
-
-- `video`: The video player creates an analytics event for each video viewed which combines a number of properties. See the `VideoTrackingEventData` in [`Video.type.ts`](./Video.type.ts) for a complete description. The event is started and submitted when:
-  - the component is created/destroyed
-  - when the video shown is changed with `reload`
-  - when the page's visibility changes to `hidden`.
-
-### Usage
-
-```tsx
-<Video
-  title="Video title"
-  sources={['https://example.com/video.webm', 'https://example.com/video.mp4']}
-  captions="https://example.com/video.vtt"
-  poster="https://example.com/video.jpg"
-  aspectRatio={4/5}
-  transcript="<p>Transcript text</p>"/>
-```
--->
-
 <!-- NB. We need select-none and touch-manipulation to avoid distracting functions touch devices -->
 <div
   {...concatClass(
@@ -623,8 +653,7 @@ User choices are stored in the `videoPreferences` store so that they persist acr
       on:playing={() => (status = 'normal')}
       on:waiting={() => (status = 'waiting')}
       on:error={() => (status = 'error-pending')}
-      on:ended={() => addToEvent({ ended: true })}
-      on:ended
+      on:ended={handleEnded}
       autoplay={autoPlay && !transcriptVisible}
       {poster}
       crossorigin="anonymous"

@@ -1,39 +1,6 @@
-<script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import { Button } from '$lib/components/button';
-  import { t } from '$lib/i18n';
-  import { concatClass } from '$lib/utils/components';
-  import type { QuestionActionsProps } from './QuestionActions.type';
-
-  type $$Props = QuestionActionsProps;
-
-  export let answered: $$Props['answered'] = false;
-  export let disabled: $$Props['disabled'] = false;
-  export let disablePrevious: $$Props['disablePrevious'] = false;
-  export let variant: $$Props['variant'] = 'default';
-  export let separateSkip: $$Props['separateSkip'] = false;
-  export let nextLabel: $$Props['nextLabel'] = undefined;
-  export let previousLabel: $$Props['previousLabel'] = undefined;
-
-  const dispatch = createEventDispatcher();
-
-  function onDelete() {
-    // We need to check `answered` here, because the button might be shown even when no answer was given due to the delay in hiding and showing actions
-    if (answered) dispatch('delete');
-  }
-
-  function onNext() {
-    dispatch(answered || !separateSkip ? 'next' : 'skip');
-  }
-
-  function onPrevious() {
-    dispatch('previous');
-  }
-</script>
-
 <!--
 @component
-Display the question's secondary actions, such as skip.
+Display a question's secondary actions, such as skip.
 
 ### Properties
 
@@ -46,14 +13,15 @@ Display the question's secondary actions, such as skip.
 - `previousLabel`: The text label for the `previous` button. @default `$t('questions.previous')`
 - Any valid properties of a `<div>` element
 
-### Events
+### Callbacks
 
-If `separateSkip` is set to `true`, the `next` event is switched to a `skip` event if the user has not yet answered the question. Otherwise, only `next` events will be fired.
+If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSkip` callback if the user has not yet answered the question. Otherwise, only `onNext` callbacks will be triggered.
 
-- `previous`: The user has clicked on the previous button.
-- `next`: The user has clicked on the next button. This is only available if `answered` is `true` or `separateSkip` is `true`.
-- `skip`: The user has clicked on the skip button. This is only available if `answered` is `false` and `separateSkip` is `true`.
-- `delete`: The user has clicked on the delete answer button. This is only available if `answered` is `true`.
+- `onDelete`: Triggered when the user has clicked on the delete answer button. This is only available if `answered` is `true`.
+- `onNext`: Triggered when the user has clicked on the next button. This is only available if `answered` is `true` or `separateSkip` is `true`.
+- `onPrevious`: Triggered when the user has clicked on the previous button.
+- `onSkip`: Triggered when user has clicked on the skip button. This is only available if `answered` is `false` and `separateSkip` is `true`.
+
 
 ### Usage
 
@@ -62,19 +30,59 @@ If `separateSkip` is set to `true`, the `next` event is switched to a `skip` eve
   answered={voterAnswer != null}
   separateSkip={true}
   variant="tight"
-  on:previous={gotoPreviousQuestion}
-  on:delete={deleteAnswer}
-  on:next={gotoNextQuestion}
-  on:skip={skipQuestion} />
+  onPrevious={gotoPreviousQuestion}
+  onDelete={deleteAnswer}
+  onNext={gotoNextQuestion}
+  onSkip={skipQuestion} />
 ```
 -->
+
+<script lang="ts">
+  import { Button } from '$lib/components/button';
+  import { getComponentContext } from '$lib/contexts/component';
+  import { concatClass } from '$lib/utils/components';
+  import type { QuestionActionsProps } from './QuestionActions.type';
+
+  type $$Props = QuestionActionsProps;
+
+  export let answered: $$Props['answered'] = false;
+  export let disabled: $$Props['disabled'] = false;
+  export let disablePrevious: $$Props['disablePrevious'] = false;
+  export let variant: $$Props['variant'] = 'default';
+  export let separateSkip: $$Props['separateSkip'] = false;
+  export let nextLabel: $$Props['nextLabel'] = undefined;
+  export let previousLabel: $$Props['previousLabel'] = undefined;
+  export let onDelete: $$Props['onDelete'] = undefined;
+  export let onNext: $$Props['onNext'] = undefined;
+  export let onPrevious: $$Props['onPrevious'] = undefined;
+  export let onSkip: $$Props['onSkip'] = undefined;
+
+  const { t } = getComponentContext();
+
+  function handleDelete() {
+    // We need to check `answered` here, because the button might be shown even when no answer was given due to the delay in hiding and showing actions
+    if (answered) onDelete?.();
+  }
+
+  function handleNext() {
+   if (answered || !separateSkip) {
+    onNext?.();
+   } else {
+    onSkip?.();
+   }
+  }
+
+  function handlePrevious() {
+    onPrevious?.();
+  }
+</script>
 
 <div
   role="group"
   aria-label={$t('questions.additionalActions')}
   {...concatClass($$restProps, 'mt-lg grid w-full grid-cols-3 items-stretch gap-md')}>
   <Button
-    on:click={onNext}
+    on:click={handleNext}
     style="grid-row: 1; grid-column: 3"
     color="secondary"
     {disabled}
@@ -84,7 +92,7 @@ If `separateSkip` is set to `true`, the `next` event is switched to a `skip` eve
     icon={answered || !separateSkip ? 'next' : 'skip'}
     text={nextLabel ?? (answered || !separateSkip ? $t('questions.next') : $t('questions.skip'))} />
   <Button
-    on:click={onDelete}
+    on:click={handleDelete}
     disabled={!disabled && answered ? undefined : true}
     class="transition-opacity delay-500 disabled:opacity-0"
     style="grid-row: 1; grid-column: 2"
@@ -94,7 +102,7 @@ If `separateSkip` is set to `true`, the `next` event is switched to a `skip` eve
     icon="close"
     text={$t('questions.remove')} />
   <Button
-    on:click={onPrevious}
+    on:click={handlePrevious}
     disabled={disabled || disablePrevious}
     style="grid-row: 1; grid-column: 1"
     color="secondary"

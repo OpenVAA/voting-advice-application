@@ -1,3 +1,4 @@
+import type { AnyEntityVariant } from '@openvaa/data';
 import type { ChoiceQuestionFilter, ObjectFilter } from '@openvaa/filters';
 import type { SvelteHTMLElements } from 'svelte/elements';
 
@@ -5,9 +6,9 @@ export type EnumeratedEntityFilterProps = SvelteHTMLElements['form'] & {
   /**
    * The object filter object.
    */
-  filter: ObjectFilter<MaybeRanked, LegacyPartyProps> | ChoiceQuestionFilter<MaybeRanked>;
+  filter: ObjectFilter<MaybeWrappedEntityVariant, AnyEntityVariant> | ChoiceQuestionFilter<MaybeWrappedEntityVariant>;
   /**
    * The targets of the filter objects.
    */
-  targets: Array<MaybeRanked>;
+  targets: Array<MaybeWrappedEntityVariant>;
 };

@@ -1,40 +1,3 @@
-<script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
-  import { Button } from '$lib/components/button';
-  import { Icon } from '$lib/components/icon';
-  import { t } from '$lib/i18n';
-  import { concatClass, getUUID } from '$lib/utils/components';
-  import type { AlertProps } from './Alert.type';
-
-  type $$Props = AlertProps;
-
-  export let title: $$Props['title'];
-  export let icon: $$Props['icon'] = undefined;
-  export let autoOpen: $$Props['autoOpen'] = true;
-
-  // Bindable
-  export let isOpen: $$Props['isOpen'] = false;
-
-  // For aria references
-  const contentId = getUUID();
-
-  const dispatchEvent = createEventDispatcher();
-
-  onMount(() => {
-    if (autoOpen) openAlert();
-  });
-
-  export function openAlert() {
-    isOpen = true;
-    dispatchEvent('open');
-  }
-
-  export function closeAlert() {
-    isOpen = false;
-    dispatchEvent('close');
-  }
-</script>
-
 <!--
 @component
 Show a non-model alert or dialog that appears at the bottom of the screen.
@@ -49,6 +12,7 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
 - `title`: The title of the modal 
 - `icon`: The icon of the alert. @default `info`
 - `autoOpen`: Whether to open the alert automatically. @default `true`
+- `onClose`: The callback triggered when the alert is closed.
 - Any valid properties of a `<div>` element.
 
 ### Bindable functions
@@ -81,6 +45,52 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
 </Alert>
 ```
 -->
+
+<script lang="ts">
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { Button } from '$lib/components/button';
+  import { Icon } from '$lib/components/icon';
+  import { concatClass, getUUID } from '$lib/utils/components';
+  import type { AlertProps } from './Alert.type';
+  import { getComponentContext } from '$lib/contexts/component';
+
+  type $$Props = AlertProps;
+
+  export let title: $$Props['title'];
+  export let icon: $$Props['icon'] = undefined;
+  export let autoOpen: $$Props['autoOpen'] = true;
+  export let onClose: $$Props['onClose'] = undefined;
+
+  // Bindable
+  export let isOpen: $$Props['isOpen'] = false;
+
+  const { t } = getComponentContext();
+
+  // For aria references
+  const contentId = getUUID();
+
+  // TODO[Svelte 5]: Refactor. NB. An onClose prop is already implemented
+  const dispatchEvent = createEventDispatcher();
+
+  ////////////////////////////////////////////////////////////////////
+  // Events
+  ////////////////////////////////////////////////////////////////////
+
+  onMount(() => {
+    if (autoOpen) openAlert();
+  });
+
+  export function openAlert() {
+    isOpen = true;
+    dispatchEvent('open');
+  }
+
+  export function closeAlert() {
+    isOpen = false;
+    dispatchEvent('close');
+    onClose?.();
+  }
+</script>
 
 <div
   role={$$slots.actions ? 'dialog' : 'alert'}

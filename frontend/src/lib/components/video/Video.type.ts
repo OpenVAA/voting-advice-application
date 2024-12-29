@@ -1,5 +1,5 @@
 import type { SvelteHTMLElements } from 'svelte/elements';
-import type { TrackingEvent } from '$lib/utils/legacy-analytics/track';
+import type { TrackingEvent } from '$lib/contexts/app/tracking';
 
 export type VideoProps = SvelteHTMLElements['div'] & {
   /**
@@ -62,6 +62,14 @@ export type VideoProps = SvelteHTMLElements['div'] & {
    * Bindable: Whether the video or the transcript is visible.
    */
   mode?: VideoMode;
+  /**
+   * A callback triggered when the `video` element’s `ended` event is triggered.
+   */
+  onEnded?: () => void;
+  /**
+   * A callback triggered when the video tracking event should be sent. Send to `TrackingService.startEvent` or `track` to track.
+   */
+  onTrack?: (event: TrackingEvent<VideoTrackingEventData>) => void;
 };
 
 /**

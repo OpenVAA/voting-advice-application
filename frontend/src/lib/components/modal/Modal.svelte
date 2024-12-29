@@ -1,82 +1,3 @@
-<script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import { t } from '$lib/i18n';
-  import { attemptFocus, focusFirstDescendant } from '$lib/utils/aria/focus';
-  import { concatClass, getUUID } from '$lib/utils/components';
-  import type { ModalProps } from './Modal.type';
-
-  type $$Props = ModalProps;
-
-  export let title: $$Props['title'];
-  export let autofocusId: $$Props['autofocusId'] = undefined;
-  export let boxClass: $$Props['boxClass'] = '';
-  export let closeOnBackdropClick: $$Props['closeOnBackdropClick'] = true;
-  export let isOpen: $$Props['isOpen'] = false;
-
-  /** Bind to open the modal dialog */
-  export function openModal() {
-    if (!isOpen) {
-      modalContainer?.showModal();
-      onOpen();
-    }
-  }
-  /** Bind to close the modal dialog */
-  export function closeModal() {
-    if (isOpen) modalContainer?.close();
-  }
-
-  const dispatchEvent = createEventDispatcher();
-
-  // We need a small timeout before trying to focus for the dialog to be visible
-  const FOCUS_TIMEOUT = 225;
-
-  // Used to track the animation when the element is being hidden
-  let inTransition = false;
-  // Container element for the modal
-  let modalContainer: HTMLDialogElement | undefined;
-
-  // For the h2 element
-  const titleId = getUUID();
-
-  /**
-   * Close the dialog by pressing the escape key. NB. Some browsers implement a default behaviour for the escape key, which closes the dialog, but this prevents us from performing cleanup, so we need a custom event handler.
-   * @param e The keyboard event.
-   */
-  function handleEscape(e: KeyboardEvent) {
-    if (isOpen && e.key == 'Escape') {
-      closeModal();
-      e.stopPropagation();
-    }
-  }
-
-  function onClose() {
-    inTransition = true;
-    isOpen = false;
-    dispatchEvent('close');
-  }
-
-  function onOpen() {
-    inTransition = false;
-    isOpen = true;
-    dispatchEvent('open');
-    setTimeout(() => {
-      if (!isOpen) return;
-      if (modalContainer) {
-        if (autofocusId != null) {
-          const el = modalContainer.querySelector(`#${autofocusId}`);
-          if (el) attemptFocus(el);
-        } else {
-          focusFirstDescendant(modalContainer);
-        }
-      }
-    }, FOCUS_TIMEOUT);
-  }
-
-  function onTransitionEnd() {
-    inTransition = false;
-  }
-</script>
-
 <!--
 @component
 A modal dialog.
@@ -143,6 +64,95 @@ A modal dialog.
 </Modal>
 ```
 -->
+
+<script lang="ts">
+  import { createEventDispatcher } from 'svelte';
+  import { attemptFocus, focusFirstDescendant } from '$lib/utils/aria/focus';
+  import { concatClass, getUUID } from '$lib/utils/components';
+  import type { ModalProps } from './Modal.type';
+  import { getComponentContext } from '$lib/contexts/component';
+
+  type $$Props = ModalProps;
+
+  export let title: $$Props['title'];
+  export let autofocusId: $$Props['autofocusId'] = undefined;
+  export let boxClass: $$Props['boxClass'] = '';
+  export let closeOnBackdropClick: $$Props['closeOnBackdropClick'] = true;
+  export let isOpen: $$Props['isOpen'] = false;
+
+  /** Bind to open the modal dialog */
+  export function openModal() {
+    if (!isOpen) {
+      modalContainer?.showModal();
+      onOpen();
+    }
+  }
+  /** Bind to close the modal dialog */
+  export function closeModal() {
+    if (isOpen) modalContainer?.close();
+  }
+
+  // We need a small timeout before trying to focus for the dialog to be visible
+  const FOCUS_TIMEOUT = 225;
+
+  // For the h2 element
+  const titleId = getUUID();
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { t } = getComponentContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // Events
+  ////////////////////////////////////////////////////////////////////
+
+  const dispatchEvent = createEventDispatcher();
+
+  // Used to track the animation when the element is being hidden
+  let inTransition = false;
+  // Container element for the modal
+  let modalContainer: HTMLDialogElement | undefined;
+
+  /**
+   * Close the dialog by pressing the escape key. NB. Some browsers implement a default behaviour for the escape key, which closes the dialog, but this prevents us from performing cleanup, so we need a custom event handler.
+   * @param e The keyboard event.
+   */
+  function handleEscape(e: KeyboardEvent) {
+    if (isOpen && e.key == 'Escape') {
+      closeModal();
+      e.stopPropagation();
+    }
+  }
+
+  function onClose() {
+    inTransition = true;
+    isOpen = false;
+    dispatchEvent('close');
+  }
+
+  function onOpen() {
+    inTransition = false;
+    isOpen = true;
+    dispatchEvent('open');
+    setTimeout(() => {
+      if (!isOpen) return;
+      if (modalContainer) {
+        if (autofocusId != null) {
+          const el = modalContainer.querySelector(`#${autofocusId}`);
+          if (el) attemptFocus(el);
+        } else {
+          focusFirstDescendant(modalContainer);
+        }
+      }
+    }, FOCUS_TIMEOUT);
+  }
+
+  function onTransitionEnd() {
+    inTransition = false;
+  }
+</script>
 
 <svelte:document on:keydown={handleEscape} />
 

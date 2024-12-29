@@ -1,3 +1,31 @@
+<!--
+@component
+Display the OpenVAA logo. You can define the `color` and `size` of the logo using
+predefined values.
+
+The logo is rendered as a `<svg>` element, and you can also pass any valid 
+attributes of one.
+
+### Properties
+
+- `title`: The `<title>` of the SVG logo. Functions much the same way as the `alt``
+  attribute of an `<img>`.
+- `color`: The color of the logo as one of the predefined colours.
+  For arbitrary values, you can supply a `class` property, such as
+  `fill-[#123456]`. @default `'neutral'`
+  - `size`: The size of the logo as one of the predefined sizes 'sm', 'md' or 'lg'.
+    For arbitrary values, you can supply a `class` attribute, such as 
+    `class="h-[3.5rem]"`. @default `'md'`
+  - Any valid attributes of a `<svg>` element
+  
+### Usage
+
+```tsx
+<OpenVAALogo/>
+<OpenVAALogo color="secondary" size="sm"/>
+```
+-->
+  
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import type { OpenVAALogoProps } from './OpenVAALogo.type';
@@ -32,34 +60,6 @@
     }
   }
 </script>
-
-<!--
-@component
-Display the OpenVAA logo. You can define the `color` and `size` of the logo using
-predefined values.
-
-The logo is rendered as a `<svg>` element, and you can also pass any valid 
-attributes of one.
-
-### Properties
-
-- `title`: The `<title>` of the SVG logo. Functions much the same way as the `alt``
-  attribute of an `<img>`.
-- `color`: The color of the logo as one of the predefined colours.
-  For arbitrary values, you can supply a `class` property, such as
-   `fill-[#123456]`. @default `'neutral'`
-- `size`: The size of the logo as one of the predefined sizes 'sm', 'md' or 'lg'.
-  For arbitrary values, you can supply a `class` attribute, such as 
-  `class="h-[3.5rem]"`. @default `'md'`
-- Any valid attributes of a `<svg>` element
-
-### Usage
-
-```tsx
-<OpenVAALogo/>
-<OpenVAALogo color="secondary" size="sm"/>
-```
--->
 
 <svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 458.05 91.74" {...concatClass($$restProps, classes)}>
   {#if title}

@@ -1,9 +1,8 @@
 <script lang="ts">
   import { getContext } from 'svelte';
   import { InfoBadge } from '$lib/components/infoBadge';
-  import { NavGroup, Navigation, NavItem } from '$lib/components/navigation';
+  import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
   import { t } from '$lib/i18n';
-  import { openFeedbackModal } from '$lib/legacy-stores';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import LanguageSelection from './LanguageSelection.svelte';
   import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
@@ -63,10 +62,13 @@ A template part that outputs the navigation menu for the Candidate App for use i
       text={$t('candidateApp.info.title')} />
   </NavGroup> 
   -->
+  <!-- 
+  TODO: Uncomment when Candidate App is refactored to use contexts
   {#if $openFeedbackModal}
     <NavGroup>
       <NavItem on:click={$openFeedbackModal} icon="feedback" text={$t('feedback.send')} />
     </NavGroup>
-  {/if}
+  {/if} 
+  -->
   <LanguageSelection />
 </Navigation>

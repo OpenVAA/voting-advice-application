@@ -1,16 +1,44 @@
+<!--
+@component
+Render an enumerated filter for entities that displays a list of values to include in the results. These can be, for example, parties or answers to enumerated questions, like gender or language. The filter works for both single and multiple selection questions.
+
+### Properties
+
+- `filter`: The filter object
+- `targets`: An array of target entities or rankings
+- Any valid attributes of a `<form>` element
+
+### Usage
+
+```tsx
+<EnumeratedEntityFilter {filter} targets={candidates}/>
+```
+-->
+
 <script lang="ts">
-  import { type Choice, isMissing, type MaybeMissing, MISSING_VALUE } from '@openvaa/filters';
+  import { isMissing, type MaybeMissing, MISSING_VALUE } from '@openvaa/filters';
   import { onDestroy } from 'svelte';
   import { Icon } from '$lib/components/icon';
-  import { t } from '$lib/i18n';
   import { concatProps, getUUID } from '$lib/utils/components';
   import { logDebugError } from '$lib/utils/logger';
   import type { EnumeratedEntityFilterProps } from './EnumeratedEntityFilter.type';
+  import { getComponentContext } from '$lib/contexts/component';
+  import type { AnyChoice, AnyEntityVariant } from '@openvaa/data';
 
   type $$Props = EnumeratedEntityFilterProps;
 
   export let filter: $$Props['filter'];
   export let targets: $$Props['targets'];
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { t } = getComponentContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // Initialize
+  ////////////////////////////////////////////////////////////////////
 
   /** A unique name for the input group */
   const name = getUUID();
@@ -20,8 +48,12 @@
 
   // Initialize values and possibly saved filter state
   const values = filter.parseValues(targets);
-  let selected: Array<string> | Array<MaybeMissing<number>>;
+  let selected: Array<MaybeMissing<string>>;
   updateSelected();
+
+  ////////////////////////////////////////////////////////////////////
+  // Set filter
+  ////////////////////////////////////////////////////////////////////
 
   /** Track whether `toggleSelectAll()` will select or deselect all */
   let allSelected: boolean;
@@ -33,8 +65,12 @@
   // Update selection when filter values change
   filter.onChange(updateSelected);
 
-  // Cleanup
+  // Clean up
   onDestroy(() => filter.onChange(updateSelected, false));
+
+  ////////////////////////////////////////////////////////////////////
+  // Functions
+  ////////////////////////////////////////////////////////////////////
 
   /**
    * Update the selected checkboxes so that they reflect the filter state
@@ -62,7 +98,7 @@
   /**
    * Convert possibly missing values for use in `<input>` elements
    */
-  function convertMissingForInputs(filterValues: Array<MaybeMissing<string | number>>) {
+  function convertMissingForInputs(filterValues: Array<MaybeMissing<string>>) {
     return filterValues.map((v) => (isMissing(isMissing) ? missingValue : v));
   }
 
@@ -77,31 +113,16 @@
    * Get the text label from the object returned by the filter.
    * @param object party object or choice
    */
-  function getLabel(object: LegacyPartyProps | Choice | undefined): string | undefined {
+  function getLabel(object: AnyEntityVariant | AnyChoice | undefined): string | undefined {
     if (!object) return $t('entityFilters.missingValue');
-    if ('name' in object) return object.name;
+    // Entity
+    if ('shortName' in object) return object.shortName;
+    // Choice
     if ('label' in object) return object.label;
     logDebugError(`EnumeratedEntityFilter: entity's answer resulted in an invalid object: ${object}`);
     return undefined;
   }
 </script>
-
-<!--
-@component
-Render an enumerated filter for entities that displays a list of values to include in the results. These can be, for example, parties or answers to enumerated questions, like gender or language. The filter works for both single and multiple selection questions.
-
-### Properties
-
-- `filter`: The filter object
-- `targets`: An array of target entities or rankings
-- Any valid attributes of a `<form>` element
-
-### Usage
-
-```tsx
-<EnumeratedEntityFilter {filter} targets={candidates}/>
-```
--->
 
 <form
   {...concatProps($$restProps, {
@@ -112,7 +133,9 @@ Render an enumerated filter for entities that displays a list of values to inclu
     {@const label = getLabel(object)}
     {#if label != null}
       <label class="label cursor-pointer !items-start gap-sm !p-0">
-        <input type="checkbox" class="checkbox" {value} bind:group={selected} {name} />
+        <!-- Disable the input if there is only one value -->
+        <input type="checkbox" class="checkbox" {value} bind:group={selected} {name}
+         disabled={values.length === 1} />
         <span class="label-text w-full pt-2 text-left">
           {label} <span class="pl-sm text-secondary">{count}</span>
         </span>

@@ -1,22 +1,3 @@
-<script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import { concatClass } from '$lib/utils/components';
-  import { ucFirst } from '$lib/utils/text/ucFirst';
-  import type { TabsProps } from './Tabs.type';
-
-  type $$Props = TabsProps;
-
-  export let tabs: $$Props['tabs'] = [];
-  export let activeIndex: $$Props['activeIndex'] = 0;
-
-  const dispatch = createEventDispatcher<{ change: { index: number } }>();
-
-  function activate(index: number) {
-    activeIndex = index;
-    dispatch('change', { index });
-  }
-</script>
-
 <!--@component
 Show a tab title bar that can be used to switch between different tabs.
 
@@ -26,14 +7,14 @@ Show a tab title bar that can be used to switch between different tabs.
 - `activeIndex`: The index of the active tab. Bind to this to change or read the active tab. @default 0
 - Any valid attributes of a `<ul>` element
 
-### Events
+### Callbacls
 
-- `change`: Emitted when the active tab changes. The event `details` contains the active tab index as `index`. Note, it's preferable to just bind to the `activeIndex` property instead.
+- `onChange`: Callback for when the active tab changes. The event `details` contains the active tab as `tab` as well as its `index`. Note, it's preferable to just bind to the `activeTab` property instead.
 
 ### Accessibility
 
 - The tab can be activated by pressing `Enter` or `Space`.
-- TODO: Add support for keyboard navigation with the arrow keys.
+- TODO[a11y]: Add support for keyboard navigation with the arrow keys.
 
 ### Usage
 
@@ -42,20 +23,36 @@ Show a tab title bar that can be used to switch between different tabs.
 ```
 -->
 
-<ul {...concatClass($$restProps, 'flex items-center justify-center bg-base-300 px-lg py-8')}>
-  {#each tabs as tab, i}
+<script lang="ts">
+  import { concatClass } from '$lib/utils/components';
+  import { ucFirst } from '$lib/utils/text/ucFirst';
+  import type { TabsProps } from './Tabs.type';
+
+  type $$Props = TabsProps;
+
+  export let tabs: $$Props['tabs'] = [];
+  export let activeIndex: $$Props['activeIndex'] = 0;
+  export let onChange: $$Props['onChange'] = undefined;
+
+  function activate(index: number) {
+    activeIndex = index;
+    onChange?.({ index, tab: tabs[index] });
+  }
+</script>
+
+<ul {...concatClass($$restProps, 'flex items-center justify-start bg-base-300 px-0 py-8 overflow-auto')}>
+  {#each tabs as tab, index}
     <li
-      class="btn btn-outline m-0 h-[2.2rem] min-h-[2.2rem] w-auto flex-grow truncate rounded-sm px-12 text-md hover:bg-base-100 hover:text-primary focus:bg-base-100 focus:text-primary"
-      class:text-primary={i === activeIndex}
-      class:font-bold={i === activeIndex}
-      class:bg-base-100={i === activeIndex}
+      class="btn btn-outline font-bold m-0 h-[2.2rem] min-h-[2.2rem] w-auto flex-grow truncate rounded-sm px-12 text-md hover:bg-base-100 hover:text-primary focus:bg-base-100 focus:text-primary"
+      class:text-primary={index !== activeIndex}
+      class:bg-base-100={index === activeIndex}
       tabindex="0"
       role="tab"
-      on:click={() => activate(i)}
+      on:click={() => activate(index)}
       on:keyup={(e) => {
-        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') activate(i);
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') activate(index);
       }}>
-      {ucFirst(tab)}
+      {ucFirst(tab.label)}
     </li>
   {/each}
 </ul>

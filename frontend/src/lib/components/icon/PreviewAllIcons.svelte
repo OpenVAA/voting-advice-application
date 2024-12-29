@@ -1,3 +1,15 @@
+<!--
+@component
+A utility component to see all the available icons at a glance. You can supply
+any valid props to the icons.
+
+### Usage
+
+```tsx
+<PreviewAllIcons size="lg" />
+```
+-->
+
 <script lang="ts">
   import Icon from './Icon.svelte';
   import { ICONS } from './icons';
@@ -8,18 +20,6 @@
     path
   ]);
 </script>
-
-<!--
-@component
-A utility component to see all the available icons at a glance. You can supply
-any valid props to the icons.
-
-### Usage
-
-```tsx
-  <PreviewAllIcons size="lg" />
-```
--->
 
 {#each entries as [name, path]}
   <div>

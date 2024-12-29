@@ -1,47 +1,3 @@
-<script lang="ts">
-  import { onDestroy } from 'svelte';
-  import { t } from '$lib/i18n';
-  import { concatClass } from '$lib/utils/components';
-  import type { NumericEntityFilterProps } from './NumericEntityFilter.type';
-
-  type $$Props = NumericEntityFilterProps;
-
-  export let filter: $$Props['filter'];
-  export let targets: $$Props['targets'];
-
-  let min: number;
-  let max: number;
-
-  // Initialize values and possibly saved filter state
-  const range = filter.parseValues(targets);
-  updateValues();
-
-  // Update selection when filter values change
-  filter.onChange(updateValues);
-
-  // Cleanup
-  onDestroy(() => filter.onChange(updateValues, false));
-
-  $: {
-    filter.min = !range || range.min === min ? undefined : min;
-    filter.max = !range || range.max === max ? undefined : max;
-  }
-
-  function setMax() {
-    if (min > max) min = max;
-  }
-
-  function setMin() {
-    if (max < min) max = min;
-  }
-
-  function updateValues() {
-    if (!range) return;
-    min = filter.min ?? range.min;
-    max = filter.max ?? range.max;
-  }
-</script>
-
 <!--
 @component
 Render a numeric filter for entities.
@@ -59,18 +15,89 @@ Render a numeric filter for entities.
 ```
 -->
 
-{#if range}
+<script lang="ts">
+  import { onDestroy } from 'svelte';
+  import { concatClass } from '$lib/utils/components';
+  import type { NumericEntityFilterProps } from './NumericEntityFilter.type';
+  import { getComponentContext } from '$lib/contexts/component';
+
+  type $$Props = NumericEntityFilterProps;
+
+  export let filter: $$Props['filter'];
+  export let targets: $$Props['targets'];
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { t } = getComponentContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // Filtering
+  ////////////////////////////////////////////////////////////////////
+
+  let min: number;
+  let max: number;
+  let includeMissing = true;
+
+  // Initialize values and possibly saved filter state
+  const range = filter.parseValues(targets);
+  updateValues();
+
+  // Update selection when filter values change
+  filter.onChange(updateValues);
+
+  // Cleanup
+  onDestroy(() => filter.onChange(updateValues, false));
+
+  $: {
+    filter.min = range?.min == null || range.min === min ? undefined : min;
+    filter.max = range?.max == null || range.max === max ? undefined : max;
+    filter.excludeMissing = !includeMissing;
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Functions
+  ////////////////////////////////////////////////////////////////////
+
+  function setMax() {
+    if (min > max) min = max;
+  }
+
+  function setMin() {
+    if (max < min) max = min;
+  }
+
+  function updateValues() {
+    if (range.min != null && range.max != null) {
+      min = filter.min ?? range.min;
+      max = filter.max ?? range.max;
+    }
+  }
+</script>
+
+{#if (range.min != null && range.max != null) || range.missingValues }
   <form {...concatClass($$restProps, '')}>
-    <label class="label">
-      <span class="text-label min-w-[6rem]">{$t('entityFilters.numeric.minLabel')}</span>
-      <input bind:value={min} on:change={setMin} type="range" min={range.min} max={range.max} class="range" />
-      <span class="w-[5rem] text-end">{min}</span>
-    </label>
-    <label class="label">
-      <span class="text-label min-w-[6rem]">{$t('entityFilters.numeric.maxLabel')}</span>
-      <input bind:value={max} on:change={setMax} type="range" min={range.min} max={range.max} class="range" />
-      <span class="w-[5rem] text-end">{max}</span>
-    </label>
+    {#if range.min != null && range.max != null}
+      <label class="label !px-0 gap-xs">
+        <span class="text-label text-start min-w-[6rem]">{$t('entityFilters.numeric.minLabel')}</span>
+        <input bind:value={min} on:change={setMin} type="range" min={range.min} max={range.max} class="range" />
+        <span class="w-[5rem] text-end">{min}</span>
+      </label>
+      <label class="label !px-0 gap-xs">
+        <span class="text-label text-start min-w-[6rem]">{$t('entityFilters.numeric.maxLabel')}</span>
+        <input bind:value={max} on:change={setMax} type="range" min={range.min} max={range.max} class="range" />
+        <span class="w-[5rem] text-end">{max}</span>
+      </label>
+    {/if}
+    {#if range.missingValues}
+      <label class="label !px-0 gap-xs">
+        <span class="text-label text-start min-w-[6rem] justify-start">{$t('entityFilters.missingValue')}</span>
+        <!-- Disable the missing values selection if there are only missing values -->
+        <input bind:checked={includeMissing} type="checkbox" class="checkbox"
+          disabled={range.min == null || range.max == null}/>
+      </label>
+    {/if}
   </form>
 {:else}
   <div class="w-full text-center text-warning">{$t('entityFilters.error')}</div>
