@@ -1,6 +1,9 @@
 import { error } from '@sveltejs/kit';
 import { locale } from '$lib/i18n';
 import { dataProvider } from '$lib/legacy-api/getData';
+import type { AppCustomization } from '$lib/contexts/app/appCustomization.type';
+
+// TODO: These legacy load calls can be replaced with proper DataProvider API calls that are now performed by /(voter)/layout.ts when the Candidate App is updated.
 
 export async function load({ locals, params }) {
   // Get language from locals (see hooks.server.ts)

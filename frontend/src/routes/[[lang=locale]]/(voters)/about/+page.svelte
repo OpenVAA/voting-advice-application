@@ -1,14 +1,26 @@
+<!--@component
+
+# About (the app) page
+
+Displays information about the application.
+
+### Settings
+
+- `matching.organizationMatching`: Affects the information displayed.
+- `appVersion.source`: Shown as a link to the source code.
+-->
+
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { t } from '$lib/i18n';
-  import { settings } from '$lib/legacy-stores';
-  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import Layout from '../../../Layout.svelte';
+  import { getAppContext } from '$lib/contexts/app';
+
+  const { appSettings, getRoute, t } = getAppContext();
 
   const { topBarSettings } = getLayoutContext(onDestroy);
   topBarSettings.push({
@@ -18,10 +30,6 @@
     }
   });
 </script>
-
-<svelte:head>
-  <title>{$t('about.title')} – {$t('dynamic.appName')}</title>
-</svelte:head>
 
 <Layout title={$t('about.title')}>
   <figure role="presentation" slot="hero">
@@ -35,21 +43,21 @@
 
   {@html sanitizeHtml($t('about.content'))}
 
-  {#if $settings.matching.partyMatching !== 'none'}
-    <h2 class="mb-md mt-xl">{$t('about.partyMatching.title')}</h2>
-    {@html sanitizeHtml($t('about.partyMatching.content', { partyMatchingMethod: $settings.matching.partyMatching }))}
+  {#if $appSettings.matching.organizationMatching !== 'none'}
+    <h2 class="mb-md mt-xl">{$t('about.organizationMatching.title')}</h2>
+    {@html sanitizeHtml($t('about.organizationMatching.content', { partyMatchingMethod: $appSettings.matching.organizationMatching }))}
   {/if}
 
-  {#if $settings.appVersion.source}
+  {#if $appSettings.appVersion.source}
     <h2 class="mb-md mt-lg">{$t('about.source.title')}</h2>
     <p>
       {$t('about.source.content')}
       <a
-        href={$settings.appVersion.source}
+        href={$appSettings.appVersion.source}
         target="_blank"
         class="small-label me-md inline-block rounded-[1rem] bg-base-300 px-md py-sm">{$t('about.source.sitename')}</a>
     </p>
   {/if}
 
-  <Button slot="primaryActions" variant="main" href={$getRoute(ROUTE.Home)} text={$t('common.returnHome')} />
+  <Button slot="primaryActions" variant="main" href={$getRoute('Home')} text={$t('common.returnHome')} />
 </Layout>

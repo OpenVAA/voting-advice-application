@@ -1,17 +1,26 @@
 <script lang="ts">
   import '../app.css';
   import { staticSettings } from '@openvaa/app-shared';
-  import { FeedbackModal } from '$lib/components/feedback/modal';
   import { Loading } from '$lib/components/loading';
   import { initLayoutContext } from '$lib/contexts/layout';
-  import { t } from '$lib/i18n';
-  import { openFeedbackModal } from '$lib/legacy-stores';
   import { MaintenancePage } from '$lib/templates/maintenance';
   import type { LayoutData } from './$types';
+  import { initI18nContext } from '$lib/contexts/i18n';
+  import { initComponentContext } from '$lib/contexts/component';
 
   export let data: LayoutData;
 
+  ////////////////////////////////////////////////////////////////////
+  // Initialize globally used contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { t } = initI18nContext();
+  initComponentContext();
   initLayoutContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // Other global effects
+  ////////////////////////////////////////////////////////////////////
 
   let underMaintenance;
   $: underMaintenance = data.appSettings.underMaintenance ?? false;
@@ -45,5 +54,4 @@
   {:else}
     <Loading showLabel />
   {/if}
-  <FeedbackModal bind:openFeedback={$openFeedbackModal} />
 {/if}

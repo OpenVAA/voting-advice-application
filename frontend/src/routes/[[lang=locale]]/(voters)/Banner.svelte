@@ -1,23 +1,35 @@
+<!--@component
+
+# Banner component
+
+Contains the secondary action buttons in the header.
+
+### Dynamic component
+
+Accesses `AppContext` and optionally `VoterContext`.
+-->
+
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { t } from '$lib/i18n';
-  import { openFeedbackModal, resultsAvailable } from '$lib/legacy-stores';
-  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import { getAppContext } from '$lib/contexts/app';
+  import { getVoterContext } from '$lib/contexts/voter';
 
-  /** Synced version so that we don't have to await for this explicitly */
-  let resultsAvailableSync = false;
-  $: $resultsAvailable.then((d) => (resultsAvailableSync = d));
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { appType, getRoute, openFeedbackModal, t } = getAppContext();
+  const resultsAvailable = $appType === 'voter' ? getVoterContext().resultsAvailable : undefined;
+  const { topBarSettings } = getLayoutContext(onDestroy);
 
   // TODO: When the Banner component is shared bring logout button back
   // const userStore = getContext<CandidateContext>('candidate')?.user;
   // We are in the candidate application and the user has logged in
-  // TODO: Figure out a way to define this LogoutButton part only within the
-  // candidate route. This can be done with the new, slot-less templates
+  // TODO: Figure out a way to define this LogoutButton part only within the candidate route. This can be done with the new, slot-less templates
   // const showLogoutButton = $appType === 'candidate' && userStore;
-  const { topBarSettings } = getLayoutContext(onDestroy);
 </script>
 
 <!-- style:--headerIcon-color={hasVideo && screenWidth < Breakpoints.sm
@@ -28,18 +40,18 @@
     <LogoutButton variant="icon" />
   {/if} -->
 
-  {#if $topBarSettings.actions.feedback == 'show'}
+  {#if $topBarSettings.actions.feedback === 'show'}
     <Button on:click={$openFeedbackModal} variant="icon" icon="feedback" text={$t('feedback.send')} />
   {/if}
 
-  {#if $topBarSettings.actions.help == 'show'}
-    <Button href={$getRoute(ROUTE.Help)} variant="icon" icon="help" text={$t('help.title')} />
+  {#if $topBarSettings.actions.help === 'show'}
+    <Button href={$getRoute('Help')} variant="icon" icon="help" text={$t('help.title')} />
   {/if}
 
-  {#if $topBarSettings.actions.results == 'show'}
+  {#if $topBarSettings.actions.results === 'show'}
     <Button
-      href={$getRoute(ROUTE.Results)}
-      disabled={resultsAvailableSync ? null : true}
+      href={$getRoute('Results')}
+      disabled={resultsAvailable == null ? true : !$resultsAvailable}
       variant="responsive-icon"
       icon="results"
       text={$t('results.title.results')} />
@@ -57,13 +69,13 @@
   {/if}
   -->
 
-  {#if $topBarSettings.actions.return == 'show'}
+  {#if $topBarSettings.actions.return === 'show'}
     <Button
       class="!text-neutral"
       variant="icon"
       icon="close"
       text={$topBarSettings.actions.returnButtonLabel}
-      on:click={$topBarSettings.actions.returnButtonCallback || (() => goto($getRoute(ROUTE.Home)))} />
+      on:click={$topBarSettings.actions.returnButtonCallback || (() => goto($getRoute('Home')))} />
   {/if}
 </div>
 

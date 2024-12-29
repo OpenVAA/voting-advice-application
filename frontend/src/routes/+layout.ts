@@ -1,4 +1,4 @@
-import { addTranslations, loadTranslations, locale, setRoute } from '$lib/i18n/init';
+import { addTranslations, loadTranslations, locale, setRoute } from '$lib/i18n';
 
 export async function load({ data }) {
   const { currentLocale, route } = data.i18n;
