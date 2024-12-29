@@ -1,15 +1,15 @@
 <script lang="ts">
   import { error } from '@sveltejs/kit';
-  import { Avatar, type AvatarProps } from '../avatar';
   import { Button } from '$lib/components/button';
   import { ElectionSymbol } from '$lib/components/electionSymbol';
   import { MatchScore } from '$lib/components/matchScore';
-  import { PartyTag } from '../partyTag';
   import { t } from '$lib/i18n';
   import { concatClass, getUUID } from '$lib/utils/components';
-  import { isCandidate, isParty, parseMaybeRanked } from '$lib/utils/legacy-entities';
   import { startEvent } from '$lib/utils/legacy-analytics/track';
+  import { isCandidate, isParty, parseMaybeRanked } from '$lib/utils/legacy-entities';
   import EntityCardAction from './EntityCardAction.svelte';
+  import { Avatar, type AvatarProps } from '../avatar';
+  import { PartyTag } from '../partyTag';
   import type { EntityCardProps } from './EntityCard.type';
 
   type $$Props = EntityCardProps;

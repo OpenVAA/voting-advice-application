@@ -13,12 +13,12 @@ Provides the data used by the located – i.e. those requiring the elections and
 -->
 
 <script lang="ts">
-  import { getVoterContext } from '$lib/contexts/voter';
   import { isValidResult } from '$lib/api/utils/isValidResult.js';
-  import { Loading } from '$lib/components/loading';
-  import type { DPDataType } from '$lib/api/base/dataTypes';
-  import { logDebugError } from '$lib/utils/logger.js';
   import { ErrorMessage } from '$lib/components/errorMessage';
+  import { Loading } from '$lib/components/loading';
+  import { getVoterContext } from '$lib/contexts/voter';
+  import { logDebugError } from '$lib/utils/logger.js';
+  import type { DPDataType } from '$lib/api/base/dataTypes';
 
   export let data;
 
@@ -30,10 +30,9 @@ Provides the data used by the located – i.e. those requiring the elections and
     // If data is updated, we want to prevent loading the slot until the promises resolve
     error = undefined;
     ready = false;
-    Promise.all([data.questionData, data.nominationData])
-      .then((data) => {
-        error = update(data);
-      });
+    Promise.all([data.questionData, data.nominationData]).then((data) => {
+      error = update(data);
+    });
   }
   $: if (error) logDebugError(error.message);
 
@@ -41,10 +40,10 @@ Provides the data used by the located – i.e. those requiring the elections and
    * Handle the update inside a function so that we don't track $dataRoot, which would result in an infinite loop.
    * @returns `Error` if the data is invalid, `undefined` otherwise.
    */
-  function update(
-    [questionData, nominationData]: 
-    [DPDataType['questions'] | Error, DPDataType['nominations'] | Error]
-  ): Error | undefined {
+  function update([questionData, nominationData]: [
+    DPDataType['questions'] | Error,
+    DPDataType['nominations'] | Error
+  ]): Error | undefined {
     if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
     if (!isValidResult(nominationData, { allowEmpty: true })) return new Error('Error loading nomination data');
     $dataRoot.provideQuestionData(questionData);

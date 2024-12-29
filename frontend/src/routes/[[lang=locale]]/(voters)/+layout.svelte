@@ -18,20 +18,20 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { afterNavigate, onNavigate } from '$app/navigation';
-  import { NavItem } from '$lib/dynamic-components/navigation';
-  import { getLayoutContext } from '$lib/contexts/layout';
-  import { VoterNav } from '$lib/templates/page/parts';
+  import { isValidResult } from '$lib/api/utils/isValidResult';
+  import { ErrorMessage } from '$lib/components/errorMessage';
+  import { Loading } from '$lib/components/loading';
   import { initAppContext } from '$lib/contexts/app';
   import { initDataContext } from '$lib/contexts/data/dataContext';
-  import { isValidResult } from '$lib/api/utils/isValidResult';
-  import { Loading } from '$lib/components/loading';
-  import Header from './Header.svelte';
+  import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
-  import type { DPDataType } from '$lib/api/base/dataTypes';
   import { DataConsentPopup } from '$lib/dynamic-components/dataConsent/popup';
   import { FeedbackModal } from '$lib/dynamic-components/feedback/modal';
-  import { ErrorMessage } from '$lib/components/errorMessage';
+  import { NavItem } from '$lib/dynamic-components/navigation';
+  import { VoterNav } from '$lib/templates/page/parts';
   import { logDebugError } from '$lib/utils/logger';
+  import Header from './Header.svelte';
+  import type { DPDataType } from '$lib/api/base/dataTypes';
 
   export let data;
 
@@ -49,7 +49,19 @@
 
   // TODO: Move these to the parent layout when Cand App is refactored
   initDataContext();
-  const { appSettings, appType, dataRoot, openFeedbackModal, popupQueue, sendTrackingEvent, startPageview, startEvent, submitAllEvents, t, userPreferences } = initAppContext();
+  const {
+    appSettings,
+    appType,
+    dataRoot,
+    openFeedbackModal,
+    popupQueue,
+    sendTrackingEvent,
+    startPageview,
+    startEvent,
+    submitAllEvents,
+    t,
+    userPreferences
+  } = initAppContext();
 
   ////////////////////////////////////////////////////////////////////
   // Init Voter Context – NB! This should not be moved outside /(voter)
@@ -72,7 +84,8 @@
     Promise.all([data.electionData, data.constituencyData]).then(
       (data) => {
         error = update(data);
-      });
+      }
+    );
   }
   $: if (error) logDebugError(error.message);
 
@@ -126,8 +139,7 @@
     actions: {
       feedback: $appSettings.header.showFeedback ? 'show' : 'hide',
       help: $appSettings.header.showHelp ? 'show' : 'hide'
-    },
-
+    }
   });
   navigation.close = closeDrawer;
 
@@ -140,17 +152,17 @@
   afterNavigate(({ from, to }) => {
     startPageview(to?.url?.href ?? '', from?.url?.href);
   });
-  
+
   ////////////////////////////////////////////////////////////////////
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
   // Ask for event tracking consent if we have no explicit answer
-  onMount(() => {    
+  onMount(() => {
     if (
-      $appSettings.analytics?.platform 
-      && $appSettings.analytics?.trackEvents
-      && (!$userPreferences.dataCollection?.consent || $userPreferences.dataCollection?.consent === 'indetermined')
+      $appSettings.analytics?.platform &&
+      $appSettings.analytics?.trackEvents &&
+      (!$userPreferences.dataCollection?.consent || $userPreferences.dataCollection?.consent === 'indetermined')
     ) {
       popupQueue.push(DataConsentPopup);
     }
@@ -166,7 +178,6 @@
 {:else if !ready}
   <Loading class="h-screen bg-base-300" />
 {:else}
-
   <!-- Skip links for screen readers and keyboard users. We use tabindex="1" so that's it's available before any alerts injected by layouts. -->
   <!-- svelte-ignore a11y-positive-tabindex -->
   <a href="#{mainId}" tabindex="1" class="sr-only focus:not-sr-only">{$t('common.skipToMain')}</a>
@@ -188,9 +199,9 @@
     <div class="drawer-content flex flex-col">
       <Header {navId} {openDrawer} {drawerOpen} {drawerOpenElement} />
       <main id={mainId} class="flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg">
-          <slot />
+        <slot />
       </main>
-  </div>
+    </div>
 
     <!-- Drawer side menu -->
     <div class="drawer-side z-10">
@@ -202,7 +213,12 @@
         on:keyboardFocusOut={closeDrawer}
         class="min-h-full w-4/5 max-w-sm bg-base-100 {drawerOpen ? '' : 'hidden'}"
         id={navId}>
-        <NavItem on:click={closeDrawer} icon="close" text={$t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
+        <NavItem
+          on:click={closeDrawer}
+          icon="close"
+          text={$t('common.closeMenu')}
+          class="pt-16"
+          id="drawerCloseButton" />
       </svelte:component>
     </div>
   </div>
@@ -221,10 +237,10 @@
   {#if $appSettings.analytics?.platform}
     {#if $appSettings.analytics?.platform?.name === 'umami'}
       {#await import('$lib/components/analytics/umami/UmamiAnalytics.svelte') then UmamiAnalytics}
-        <svelte:component 
-          this={UmamiAnalytics.default} 
+        <svelte:component
+          this={UmamiAnalytics.default}
           websiteId={$appSettings.analytics.platform.code}
-          bind:trackEvent={$sendTrackingEvent}/>
+          bind:trackEvent={$sendTrackingEvent} />
       {/await}
     {/if}
     {#await import('svelte-visibility-change') then VisibilityChange}
@@ -232,5 +248,4 @@
       <svelte:component this={VisibilityChange.default} on:hidden={() => submitAllEvents()} />
     {/await}
   {/if}
-
 {/if}

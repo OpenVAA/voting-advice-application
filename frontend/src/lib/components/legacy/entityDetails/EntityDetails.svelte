@@ -1,12 +1,12 @@
 <script lang="ts">
   import { error } from '@sveltejs/kit';
-  import { EntityCard } from '../entityCard';
-  import { Tabs } from '../tabs';
   import { t } from '$lib/i18n';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { concatClass } from '$lib/utils/components';
   import { getEntityType, parseMaybeRanked } from '$lib/utils/legacy-entities';
   import { EntityInfo, EntityOpinions } from './';
+  import { EntityCard } from '../entityCard';
+  import { Tabs } from '../tabs';
   import type { EntityDetailsProps } from './EntityDetails.type';
 
   type $$Props = EntityDetailsProps;
@@ -48,9 +48,7 @@
     <EntityCard {content} context="details" class="!p-lg" />
   </header>
   {#if tabContents.length > 1}
-    <Tabs
-      {tabs}
-      bind:activeIndex />
+    <Tabs {tabs} bind:activeIndex />
     {#if activeIndex === tabContents.indexOf('info')}
       <EntityInfo {entity} questions={filteredInfoQuestions} />
     {:else if activeIndex === tabContents.indexOf('opinions')}

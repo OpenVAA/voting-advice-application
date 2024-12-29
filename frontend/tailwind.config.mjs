@@ -195,9 +195,12 @@ export default {
       minWidth: ({ theme }) => ({
         touch: touchTargetSize,
         // Add the named maxWidth sizes for consistency
-        ...Object.fromEntries(['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl']
-          .map((size) => ([size, theme(`maxWidth.${size}`)])
-        ))
+        ...Object.fromEntries(
+          ['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl'].map((size) => [
+            size,
+            theme(`maxWidth.${size}`)
+          ])
+        )
       }),
       screens: {
         xs: '320px',

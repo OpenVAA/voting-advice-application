@@ -1,4 +1,4 @@
-import { type AnyQuestionVariantData,type Choice, QUESTION_TYPE } from '@openvaa/data';
+import { type AnyQuestionVariantData, type Choice, QUESTION_TYPE } from '@openvaa/data';
 import { formatId } from '$lib/api/utils/formatId';
 import { translate } from '$lib/i18n/utils';
 import type { StrapiChoice, StrapiDateType, StrapiQuestionTypeData } from '../strapiData.type';

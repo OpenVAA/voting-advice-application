@@ -81,12 +81,12 @@ Accesses
   import { Button } from '$lib/components/button';
   import { Icon } from '$lib/components/icon';
   import { Loading } from '$lib/components/loading';
+  import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { videoPreferences } from './component-stores';
-  import type { PlayButtonAction, VideoMode, VideoProps, VideoTrackingEventData } from './Video.type';
-  import { getAppContext } from '$lib/contexts/app';
   import type { TrackingEvent } from '$lib/contexts/app/tracking';
+  import type { PlayButtonAction, VideoMode, VideoProps, VideoTrackingEventData } from './Video.type';
 
   ////////////////////////////////////////////////////////////////////////////////
   // CONSTANTS
@@ -137,7 +137,7 @@ Accesses
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { locale, startEvent, t } = getAppContext();
+  const { locale, t } = getAppContext();
 
   ////////////////////////////////////////////////////////////////////////////////
   // TEXT TRACKS
@@ -327,8 +327,8 @@ Accesses
    */
   function startVideoEvent() {
     if (event) return;
-    event = { 
-      name: 'video', 
+    event = {
+      name: 'video',
       data: {
         startMuted: muted,
         startWithTranscript: transcriptVisible,

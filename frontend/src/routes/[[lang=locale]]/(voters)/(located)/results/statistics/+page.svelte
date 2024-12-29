@@ -8,16 +8,22 @@ Usually accessed by direct link only and not meant for the wide public.
 -->
 
 <script lang="ts">
+  import {
+    Candidate,
+    CandidateNomination,
+    type Organization,
+    SingleChoiceCategoricalQuestion,
+    SingleChoiceOrdinalQuestion
+  } from '@openvaa/data';
   import { Expander } from '$lib/components/expander';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import QuestionChoices from '$lib/components/questions/QuestionChoices.svelte';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { Candidate, CandidateNomination, SingleChoiceCategoricalQuestion, SingleChoiceOrdinalQuestion, type AnyQuestionVariant, type Organization } from '@openvaa/data';
-  import Layout from '../../../../../Layout.svelte';
-  import type { MaybeWrappedEntity, Id } from '@openvaa/core';
-  import type { MatchTree } from '$lib/contexts/voter/matchStore';
-  import { removeDuplicates } from '$lib/utils/removeDuplicates';
   import { unwrapEntity } from '$lib/utils/entities';
+  import { removeDuplicates } from '$lib/utils/removeDuplicates';
+  import Layout from '../../../../../Layout.svelte';
+  import type { Id, MaybeWrappedEntity } from '@openvaa/core';
+  import type { MatchTree } from '$lib/contexts/voter/matchStore';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -34,7 +40,7 @@ Usually accessed by direct link only and not meant for the wide public.
    */
   function getAnswerDistribution(
     question: SingleChoiceCategoricalQuestion | SingleChoiceOrdinalQuestion,
-    organization?: MaybeWrappedEntity<Organization>,
+    organization?: MaybeWrappedEntity<Organization>
   ): AnswerDistribution {
     const distribution: AnswerDistribution = {};
     let candidates: Array<CandidateNomination>;
@@ -43,15 +49,17 @@ Usually accessed by direct link only and not meant for the wide public.
       if (!nomination) return distribution;
       candidates = nomination.candidateNominations;
     } else {
-      candidates = getCandidates($matches).map((m) => unwrapEntity(m).nomination).filter((n) => n != null);
+      candidates = getCandidates($matches)
+        .map((m) => unwrapEntity(m).nomination)
+        .filter((n) => n != null);
     }
     candidates.forEach((c) => {
-        const answer = c.entity.getAnswer(question)?.value;
-        if (answer != null) {
-          distribution[answer] ??= { percentage: 0, count: 0 };
-          distribution[answer].count += 1;
-        }
-      });
+      const answer = c.entity.getAnswer(question)?.value;
+      if (answer != null) {
+        distribution[answer] ??= { percentage: 0, count: 0 };
+        distribution[answer].count += 1;
+      }
+    });
     const total = Object.values(distribution).reduce((sum, { count }) => sum + count, 0);
     if (total === 0) return distribution;
     for (const d of Object.values(distribution)) {
@@ -70,13 +78,17 @@ Usually accessed by direct link only and not meant for the wide public.
 
   function getCandidates(matches: MatchTree): Array<MaybeWrappedEntity<Candidate>> {
     return removeDuplicates(
-      Object.values(matches).flatMap((e) => e.candidate).filter((o) => o != null)
+      Object.values(matches)
+        .flatMap((e) => e.candidate)
+        .filter((o) => o != null)
     ) as Array<MaybeWrappedEntity<Candidate>>;
   }
 
   function getOrganizations(matches: MatchTree): Array<MaybeWrappedEntity<Organization>> {
     return removeDuplicates(
-      Object.values(matches).flatMap((e) => e.organization).filter((o) => o != null)
+      Object.values(matches)
+        .flatMap((e) => e.organization)
+        .filter((o) => o != null)
     ) as Array<MaybeWrappedEntity<Organization>>;
   }
 </script>
@@ -87,10 +99,8 @@ Usually accessed by direct link only and not meant for the wide public.
   </figure>
 
   <div class="grid gap-lg">
-    {#each $opinionQuestions.filter(
-      (q) => q instanceof SingleChoiceCategoricalQuestion || q instanceof SingleChoiceOrdinalQuestion
-    ) as question}
-      {@const { id, text, type, choices } = question}
+    {#each $opinionQuestions.filter((q) => q instanceof SingleChoiceCategoricalQuestion || q instanceof SingleChoiceOrdinalQuestion) as question}
+      {@const { id, text, choices } = question}
       {@const voterAnswer = answers ? `${$answers?.[id]?.value}` : undefined}
       {@const distAll = getAnswerDistribution(question)}
 
@@ -104,7 +114,6 @@ Usually accessed by direct link only and not meant for the wide public.
         <QuestionChoices {question} selectedId={voterAnswer} disabled />
 
         <div class="mt-xl grid gap-xl">
-
           <!-- All candidates -->
           <div>
             <h4>{$t('statistics.allCandidates')}</h4>
@@ -129,11 +138,11 @@ Usually accessed by direct link only and not meant for the wide public.
           </div>
 
           <!-- Each party -->
-          {#each getOrganizations($matches) as organization }
-            {@const { entity } = unwrapEntity(organization) }
+          {#each getOrganizations($matches) as organization}
+            {@const { entity } = unwrapEntity(organization)}
             {@const dist = getAnswerDistribution(question, organization)}
             <div>
-              <h4>{ entity.shortName }</h4>
+              <h4>{entity.shortName}</h4>
               <div
                 class="relative grid w-full gap-0 fill-[var(--color)] after:absolute
                       after:left-0 after:right-0 after:top-[3rem] after:h-[1px] after:border-t-md after:content-[''] dark:fill-[var(--colorDark)]"
@@ -160,5 +169,4 @@ Usually accessed by direct link only and not meant for the wide public.
       </Expander>
     {/each}
   </div>
-
 </Layout>

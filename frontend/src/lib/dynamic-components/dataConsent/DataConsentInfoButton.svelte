@@ -48,7 +48,9 @@ Accesses `AppContext` to read `appSettings`.
   {#if $appSettings.analytics?.platform?.name}
     <p>{@html sanitizeHtml($t('common.privacy.dataCollection.content'))}</p>
     <p>
-      {@html sanitizeHtml($t(assertTranslationKey(`privacy.dataContentPlatform.${$appSettings.analytics.platform.name}`)))}
+      {@html sanitizeHtml(
+        $t(assertTranslationKey(`privacy.dataContentPlatform.${$appSettings.analytics.platform.name}`))
+      )}
     </p>
   {:else}
     {logDebugError('No analytics platform configured!')}

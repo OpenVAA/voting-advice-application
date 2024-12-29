@@ -45,9 +45,9 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
+  import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
   import type { FeedbackProps } from './Feedback.type';
-  import { getAppContext } from '$lib/contexts/app';
 
   type $$Props = FeedbackProps;
 

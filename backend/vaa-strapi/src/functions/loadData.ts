@@ -75,7 +75,7 @@ export async function loadData(folder: string, force = false) {
           'publisherLogo',
           'publisherLogoDark',
           'poster',
-          'posterDark',
+          'posterDark'
         ]))
       )
         throw new Error();
@@ -254,7 +254,7 @@ async function create<TData extends object>(
     const obj = await strapi.entityService
       .create(api, {
         data: { ...itemData, publishedAt: publish ? new Date() : undefined } as object,
-        files,
+        files
       })
       .catch((e) => {
         console.error(`[loadData] [create] Error creating '${api}'`, ...(e.details?.errors ?? []), itemData);

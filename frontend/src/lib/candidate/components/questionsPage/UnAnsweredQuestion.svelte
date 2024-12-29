@@ -1,8 +1,8 @@
 <script lang="ts">
   import { getContext } from 'svelte';
   import { Button } from '$lib/components/button';
-  import { CategoryTag } from '$lib/components/legacy/categoryTag';
   import { Expander } from '$lib/components/expander';
+  import { CategoryTag } from '$lib/components/legacy/categoryTag';
   import { t } from '$lib/i18n';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import type { CandidateContext } from '$lib/utils/legacy-candidateContext';

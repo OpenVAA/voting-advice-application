@@ -11,14 +11,14 @@ export const PUBLIC_API = {
   Party: 'api::party.party',
   Question: 'api::question.question',
   QuestionCategory: 'api::question-category.question-category',
-  QuestionType: 'api::question-type.question-type',
+  QuestionType: 'api::question-type.question-type'
 } as const;
 
 export const PROTECTED_API = {
-  User: 'plugin::users-permissions.user',
+  User: 'plugin::users-permissions.user'
 } as const;
 
 export const API = {
   ...PUBLIC_API,
-  ...PROTECTED_API,
+  ...PROTECTED_API
 } as const;

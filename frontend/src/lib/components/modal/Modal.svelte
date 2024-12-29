@@ -67,10 +67,10 @@ A modal dialog.
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { getComponentContext } from '$lib/contexts/component';
   import { attemptFocus, focusFirstDescendant } from '$lib/utils/aria/focus';
   import { concatClass, getUUID } from '$lib/utils/components';
   import type { ModalProps } from './Modal.type';
-  import { getComponentContext } from '$lib/contexts/component';
 
   type $$Props = ModalProps;
 

@@ -62,12 +62,12 @@ The same component can also be used to display the answers of the voter and anot
 -->
 
 <script lang="ts">
+  import { type Choice, SingleChoiceCategoricalQuestion, SingleChoiceOrdinalQuestion } from '@openvaa/data';
+  import { getComponentContext } from '$lib/contexts/component';
   import { logDebugError } from '$lib/utils/logger';
   import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
   import type { Id } from '@openvaa/core';
   import type { QuestionChoicesProps } from './QuestionChoices.type';
-  import { getComponentContext } from '$lib/contexts/component';
-  import { type Choice, SingleChoiceCategoricalQuestion, SingleChoiceOrdinalQuestion } from '@openvaa/data';
 
   type $$Props = QuestionChoicesProps;
 
@@ -99,7 +99,7 @@ The same component can also be used to display the answers of the voter and anot
   ////////////////////////////////////////////////////////////////////
   // Layout variants
   ////////////////////////////////////////////////////////////////////
-  
+
   // The is to show the line for ordinal questions and not for categorical ones.
   let doShowLine: boolean;
   // The default layout for ordinal questions is horizontal, and vertical for categorical ones.
@@ -179,7 +179,7 @@ The same component can also be used to display the answers of the voter and anot
   /**
    * Trigger a callback using the value of the radio group when the user leaves the radio group using the keyboard.
    */
-   function handleGroupFocusOut() {
+  function handleGroupFocusOut() {
     if (disabled) return;
     triggerCallback();
   }
@@ -292,7 +292,7 @@ The same component can also be used to display the answers of the voter and anot
   }
 
   fieldset.vertical label {
-    @apply auto-cols-fr grid-flow-col items-center justify-items-start gap-md min-w-[8rem];
+    @apply min-w-[8rem] auto-cols-fr grid-flow-col items-center justify-items-start gap-md;
     grid-column: 2;
     grid-template-columns: auto;
   }

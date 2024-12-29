@@ -2,11 +2,11 @@
   import '../app.css';
   import { staticSettings } from '@openvaa/app-shared';
   import { Loading } from '$lib/components/loading';
+  import { initComponentContext } from '$lib/contexts/component';
+  import { initI18nContext } from '$lib/contexts/i18n';
   import { initLayoutContext } from '$lib/contexts/layout';
   import { MaintenancePage } from '$lib/templates/maintenance';
   import type { LayoutData } from './$types';
-  import { initI18nContext } from '$lib/contexts/i18n';
-  import { initComponentContext } from '$lib/contexts/component';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { logDebugError } from '$lib/utils/logger';
   import type { DPDataType } from '$lib/api/base/dataTypes';

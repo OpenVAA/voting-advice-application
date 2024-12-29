@@ -30,20 +30,20 @@ Accesses `AppContext` to set and read `userPreferences`.
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { Button } from '$lib/components/button';
+  import { getAppContext } from '$lib/contexts/app';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { concatClass } from '$lib/utils/components';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { DataConsentInfoButton } from './';
-  import type { DataConsentEvents, DataConsentProps } from './DataConsent.type';
-  import { getAppContext } from '$lib/contexts/app';
   import type { ConsentStatus } from '$lib/contexts/app/userPreferences.type';
+  import type { DataConsentEvents, DataConsentProps } from './DataConsent.type';
 
   type $$Props = DataConsentProps;
 
   export let description: $$Props['description'] = 'modal';
 
   const { appSettings, userPreferences, setDataConsent, t } = getAppContext();
-  
+
   const dispatchEvent = createEventDispatcher<DataConsentEvents>();
 
   function onChange(consent: ConsentStatus) {

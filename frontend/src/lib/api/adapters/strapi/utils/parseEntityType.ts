@@ -1,4 +1,4 @@
-import type { EntityType,FilterValue } from '@openvaa/data';
+import type { EntityType, FilterValue } from '@openvaa/data';
 import type { StrapiQuestionData } from '../strapiData.type';
 
 /**

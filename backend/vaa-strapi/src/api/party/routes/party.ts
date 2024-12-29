@@ -19,7 +19,7 @@ export default factories.createCoreRouter('api::party.party', {
           'nominations',
           'nominations.populate.constituency',
           'nominations.populate.election',
-          'nominations.populate.candidate',
+          'nominations.populate.candidate'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([
@@ -28,9 +28,9 @@ export default factories.createCoreRouter('api::party.party', {
           'nominations.constituency.id.$eq',
           'nominations.constituency.id.$in',
           'nominations.election.id.$eq',
-          'nominations.election.id.$in',
-        ]),
-      ],
+          'nominations.election.id.$in'
+        ])
+      ]
     },
     findOne: {
       policies: [
@@ -42,7 +42,7 @@ export default factories.createCoreRouter('api::party.party', {
           'nominations',
           'nominations.populate.constituency',
           'nominations.populate.election',
-          'nominations.populate.candidate',
+          'nominations.populate.candidate'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([
@@ -51,9 +51,9 @@ export default factories.createCoreRouter('api::party.party', {
           'nominations.constituency.id.$eq',
           'nominations.constituency.id.$in',
           'nominations.election.id.$eq',
-          'nominations.election.id.$in',
-        ]),
-      ],
-    },
-  } as unknown as Generic,
+          'nominations.election.id.$in'
+        ])
+      ]
+    }
+  } as unknown as Generic
 });

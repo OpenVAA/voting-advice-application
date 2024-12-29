@@ -18,9 +18,9 @@ Render a text filter for entities.
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Icon } from '$lib/components/icon';
+  import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import type { TextEntityFilterProps } from './TextEntityFilter.type';
-  import { getComponentContext } from '$lib/contexts/component';
 
   type $$Props = TextEntityFilterProps;
 
@@ -81,7 +81,7 @@ Render a text filter for entities.
     <input
       bind:value
       type="text"
-      class="grow w-full"
+      class="w-full grow"
       placeholder={placeholder ?? $t('entityFilters.text.placeholder')} />
     {#if value === ''}
       <Icon name="search" />

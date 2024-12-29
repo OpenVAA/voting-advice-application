@@ -17,9 +17,9 @@ Show a popup asking for user feedback.
   import { onDestroy } from 'svelte';
   import { Alert } from '$lib/components/alert';
   import { Button } from '$lib/components/button';
+  import { getComponentContext } from '$lib/contexts/component';
   import { SurveyButton } from '..';
   import type { SurveyPopupProps } from './SurveyPopup.type';
-  import { getComponentContext } from '$lib/contexts/component';
 
   /* eslint-disable @typescript-eslint/no-unused-vars */
   type $$Props = SurveyPopupProps;
