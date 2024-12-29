@@ -1,46 +1,40 @@
-/** Return the entity type for the entity */
-export function getEntityType(entity: LegacyEntityProps | undefined): Exclude<LegacyEntityType, 'all'> | undefined {
-  if (entity == null) return undefined;
-  return isCandidate(entity) ? 'candidate' : isParty(entity) ? 'party' : undefined;
+import {
+  AllianceNomination,
+  type AnyEntityVariant,
+  CandidateNomination,
+  FactionNomination,
+  type NominationVariant,
+  OrganizationNomination
+} from '@openvaa/data';
+import { Match } from '@openvaa/matching';
+import type { MaybeWrappedEntity } from '@openvaa/core';
+
+/**
+ * Parse a `MaybeWrappedEntity` into `Entity` and possible `Match` and `Nomination`.
+ */
+export function unwrapEntity<TEntity extends AnyEntityVariant>(
+  maybeWrapped: MaybeWrappedEntity<TEntity>
+): UnwrappedEntity<TEntity> {
+  const out: Partial<UnwrappedEntity<TEntity>> = {};
+  if (maybeWrapped instanceof Match) {
+    out.match = maybeWrapped;
+    maybeWrapped = maybeWrapped.target;
+  }
+  if (
+    maybeWrapped instanceof AllianceNomination ||
+    maybeWrapped instanceof CandidateNomination ||
+    maybeWrapped instanceof FactionNomination ||
+    maybeWrapped instanceof OrganizationNomination
+  ) {
+    out.nomination = maybeWrapped as NominationVariant[TEntity['type']];
+    maybeWrapped = maybeWrapped.entity as TEntity;
+  }
+  out.entity = maybeWrapped as TEntity;
+  return out as UnwrappedEntity<TEntity>;
 }
 
-/** Check whether `entity` is a `LegacyCandidateProps`. NB. This will be no longer necessary when the `@openvaa/data` model is implemented. */
-export function isCandidate(entity: LegacyEntityProps | undefined): entity is LegacyCandidateProps {
-  return entity != null && 'firstName' in entity;
-}
-
-/** Check whether `entity` is a `LegacyPartyProps`. NB. This will be no longer necessary when the `@openvaa/data` model is implemented. */
-export function isParty(entity: LegacyEntityProps | undefined): entity is LegacyPartyProps {
-  return entity != null && !('firstName' in entity);
-}
-
-/** Check whether a possibly ranked `entity` is a `RankingProps`. */
-export function isWrapped(entity: MaybeRanked): entity is WrappedEntity {
-  return entity != null && 'entity' in entity;
-}
-
-/** Check whether a possibly ranked `entity` is a `RankingProps`. */
-export function isRanked(entity: MaybeRanked): entity is RankingProps {
-  return isWrapped(entity) && 'score' in entity && entity.score != null;
-}
-
-/** Parse a possibly ranked `entity` into `LegacyEntityProps` and possible `RankingProps`. */
-export function parseMaybeRanked(entity: MaybeRanked): {
-  entity: LegacyEntityProps;
-  ranking: RankingProps | undefined;
-} {
-  return isWrapped(entity)
-    ? {
-        entity: entity.entity,
-        ranking: isRanked(entity) ? entity : undefined
-      }
-    : {
-        entity,
-        ranking: undefined
-      };
-}
-
-/** Wrap an entity for easier use in contexts where rankings are expected */
-export function wrap<TEntity extends LegacyEntityProps>(entity: TEntity): WrappedEntity<TEntity> {
-  return { entity };
-}
+export type UnwrappedEntity<TEntity extends AnyEntityVariant = AnyEntityVariant> = {
+  entity: TEntity;
+  nomination?: NominationVariant[TEntity['type']];
+  match?: Match<TEntity | NominationVariant[TEntity['type']]>;
+};
