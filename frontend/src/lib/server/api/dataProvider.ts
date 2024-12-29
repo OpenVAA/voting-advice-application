@@ -13,4 +13,4 @@ switch (type) {
     module = Promise.resolve({});
 }
 
-export const { dataProvider } = await module;
+export const dataProvider = module.then((m) => m?.dataProvider);

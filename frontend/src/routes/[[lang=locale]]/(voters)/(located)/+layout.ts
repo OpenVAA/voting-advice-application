@@ -8,7 +8,7 @@
 
 import { staticSettings } from '@openvaa/app-shared';
 import { redirect } from '@sveltejs/kit';
-import { dataProvider } from '$lib/api/dataProvider';
+import { dataProvider as dataProviderPromise } from '$lib/api/dataProvider';
 import { buildRoute, getImpliedConstituencyIds, getImpliedElectionIds, parseParams } from '$lib/utils/route';
 import { mergeAppSettings } from '$lib/utils/settings';
 import type { Id } from '@openvaa/core';
@@ -58,6 +58,7 @@ export async function load({ fetch, parent, params: { lang }, untrack, url }) {
   }
 
   // Get data
+  const dataProvider = await dataProviderPromise;
   dataProvider.init({ fetch });
   return {
     questionData: dataProvider
