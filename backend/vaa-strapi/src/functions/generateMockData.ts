@@ -29,20 +29,20 @@ const locales: Array<Locale> = [
     code: 'en',
     name: 'English (en)',
     localeObject: undefined,
-    faker: faker,
+    faker: faker
   },
   {
     code: 'fi',
     name: 'Finnish (fi)',
     localeObject: undefined,
-    faker: fakerFI,
+    faker: fakerFI
   },
   {
     code: 'sv',
     name: 'Swedish (sv)',
     localeObject: undefined,
-    faker: fakerSV,
-  },
+    faker: fakerSV
+  }
 ];
 
 export async function generateMockData() {
@@ -109,7 +109,7 @@ export async function generateMockData() {
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting constituencies and constituency groups');
-    await createConstituenciesAndGroups(15, 5);
+    await createConstituenciesAndGroups(15);
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting question types');
@@ -125,11 +125,11 @@ export async function generateMockData() {
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidates');
-    await createCandidates(25);
+    await createCandidates(15 * 50);
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidate nominations');
-    await createCandidateNominations(25);
+    await createCandidateNominations(15 * 50);
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting closed list parties');
@@ -183,7 +183,7 @@ async function createStrapiAdmin() {
       blocked: false,
       isActive: true,
       registrationToken: null,
-      roles: superAdminRole ? [superAdminRole.id] : [],
+      roles: superAdminRole ? [superAdminRole.id] : []
     };
 
     await strapi.service('admin::user').create(params);
@@ -196,8 +196,8 @@ async function createAppSettings() {
   await strapi.entityService.create(API.AppSettings, {
     data: {
       ...dynamicSettings,
-      results: { ...dynamicSettings.results, ...cardContents },
-    },
+      results: { ...dynamicSettings.results, ...cardContents }
+    }
   });
 }
 
@@ -208,7 +208,7 @@ async function createAppCustomization() {
       faqs.push({
         locale: code,
         question: faker.lorem.sentence(),
-        answer: faker.lorem.paragraph(),
+        answer: faker.lorem.paragraph()
       });
     }
   });
@@ -217,8 +217,8 @@ async function createAppCustomization() {
     data: {
       publisherName: fakeLocalized((faker) => faker.company.name()),
       translationOverrides: getDynamicTranslations(),
-      candidateAppFAQ: faqs,
-    },
+      candidateAppFAQ: faqs
+    }
   });
 }
 
@@ -228,19 +228,19 @@ async function createLanguages() {
       {
         name: 'English',
         localisationCode: 'en',
-        publishedAt: new Date(),
+        publishedAt: new Date()
       },
       {
         name: 'Finnish',
         localisationCode: 'fi',
-        publishedAt: new Date(),
+        publishedAt: new Date()
       },
       {
         name: 'Swedish',
         localisationCode: 'sv',
-        publishedAt: new Date(),
-      },
-    ],
+        publishedAt: new Date()
+      }
+    ]
   });
 }
 
@@ -259,8 +259,8 @@ async function createConstituenciesAndGroups(...numberPerGroup: Array<number>) {
         data: {
           name,
           shortName,
-          info,
-        },
+          info
+        }
       });
       constituencies.push(id);
     }
@@ -271,8 +271,8 @@ async function createConstituenciesAndGroups(...numberPerGroup: Array<number>) {
         name: fakeLocalized(() => `${capitaliseFirstLetter(subtype)} constituency group`),
         subtype,
         info: fakeLocalized((faker) => faker.lorem.paragraph(3)),
-        constituencies,
-      },
+        constituencies
+      }
     });
   }
 }
@@ -302,8 +302,8 @@ async function createElection() {
       info,
       publishedAt: new Date(),
       answersLocked: false,
-      constituencyGroups,
-    },
+      constituencyGroups
+    }
   });
 }
 
@@ -324,8 +324,8 @@ async function createParties(length: number) {
         shortName,
         color,
         info,
-        publishedAt: new Date(),
-      },
+        publishedAt: new Date()
+      }
     });
   }
 }
@@ -343,8 +343,8 @@ async function createCandidates(length: number) {
         lastName,
         email,
         party: party.id,
-        publishedAt: new Date(),
-      },
+        publishedAt: new Date()
+      }
     });
   }
 }
@@ -353,7 +353,7 @@ async function createCandidateNominations(length: number) {
   const elections: Array<HasId> = await strapi.db.query(API.Election).findMany({});
   const constituencies: Array<HasId> = await strapi.db.query(API.Constituency).findMany({});
   const candidates: Array<{ id: string | number; party: HasId }> = await strapi.db.query(API.Candidate).findMany({
-    populate: ['party'],
+    populate: ['party']
   });
 
   for (let i = 0; i <= length; i++) {
@@ -361,7 +361,7 @@ async function createCandidateNominations(length: number) {
     // Remove from list to prevent duplicates
     candidates.splice(candidates.indexOf(candidate), 1);
     const electionSymbol = faker.number.int({ min: 2, max: length + 2 }).toString();
-    const electionRound = faker.number.int(1);
+    const electionRound = 1; // faker.number.int(1);
     const constituency = faker.helpers.arrayElement(constituencies);
     const electionId = elections[0].id;
     await strapi.db.query(API.Nomination).create({
@@ -371,8 +371,8 @@ async function createCandidateNominations(length: number) {
         candidate: candidate.id,
         party: candidate.party.id,
         election: electionId,
-        constituency: constituency.id,
-      },
+        constituency: constituency.id
+      }
     });
   }
 }
@@ -396,8 +396,8 @@ async function createPartyNominations(length: number) {
         electionRound,
         party: party.id,
         election: electionId,
-        constituency: constituency.id,
-      },
+        constituency: constituency.id
+      }
     });
   }
 }
@@ -418,8 +418,8 @@ async function createQuestionCategories() {
         info,
         type: 'opinion',
         color,
-        election: elections[0].id,
-      },
+        election: elections[0].id
+      }
     });
   }
   // Category for basic info
@@ -434,8 +434,8 @@ async function createQuestionCategories() {
       order,
       info,
       type: 'info',
-      election: elections[0].id,
-    },
+      election: elections[0].id
+    }
   });
 }
 
@@ -447,8 +447,8 @@ async function createQuestionTypes() {
   }>) {
     await strapi.db.query(API.QuestionType).create({
       data: {
-        ...questionType,
-      },
+        ...questionType
+      }
     });
   }
 }
@@ -489,8 +489,8 @@ async function createQuestions(options: { constituencyPctg?: number } = {}) {
         questionType: questionType.id,
         category: category.id,
         constituencies: constituency ? [constituency.id] : [],
-        publishedAt: new Date(),
-      },
+        publishedAt: new Date()
+      }
     });
   });
   // Create other questions:
@@ -508,8 +508,8 @@ async function createQuestions(options: { constituencyPctg?: number } = {}) {
         order,
         required,
         entityType,
-        publishedAt: new Date(),
-      },
+        publishedAt: new Date()
+      }
     });
   }
 }
@@ -526,7 +526,7 @@ async function createAnswers(entityType: Omit<EntityType, 'all'>) {
       questionType: { settings: QuestionTypeSettings };
     }
   > = await strapi.db.query(API.Question).findMany({
-    populate: ['questionType'],
+    populate: ['questionType']
   });
 
   for (const entity of entities) {
@@ -564,7 +564,7 @@ async function createAnswers(entityType: Omit<EntityType, 'all'>) {
           value = faker.helpers
             .arrayElements(settings.values, {
               min: settings.min ?? 1,
-              max: settings.max ?? settings.values.length,
+              max: settings.max ?? settings.values.length
             })
             .map((v) => v.key);
           break;
@@ -578,8 +578,8 @@ async function createAnswers(entityType: Omit<EntityType, 'all'>) {
           value,
           openAnswer,
           question: question.id,
-          ...entityRelation,
-        },
+          ...entityRelation
+        }
       });
     }
   }
@@ -597,8 +597,8 @@ async function createCandidateUsers() {
 
   const authenticated = await strapi.query('plugin::users-permissions.role').findOne({
     where: {
-      type: 'authenticated',
-    },
+      type: 'authenticated'
+    }
   });
 
   const candidate = await strapi.db.query(API.Candidate).findMany({});
@@ -611,8 +611,8 @@ async function createCandidateUsers() {
       confirmed: true,
       blocked: false,
       role: authenticated.id,
-      candidate: candidate[0].id,
-    },
+      candidate: candidate[0].id
+    }
   });
 
   await strapi.entityService.create(API.User, {
@@ -624,23 +624,23 @@ async function createCandidateUsers() {
       confirmed: true,
       blocked: false,
       role: authenticated.id,
-      candidate: candidate[1].id,
-    },
+      candidate: candidate[1].id
+    }
   });
 
   // Disable registration key for the candidate we chose as they're already registered
   await strapi.query(API.User).update({
     where: { id: candidate[0].id },
     data: {
-      registrationKey: null,
-    },
+      registrationKey: null
+    }
   });
 
   await strapi.query(API.User).update({
     where: { id: candidate[1].id },
     data: {
-      registrationKey: null,
-    },
+      registrationKey: null
+    }
   });
 }
 
