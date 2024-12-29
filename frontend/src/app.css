@@ -70,6 +70,42 @@
 }
 
 @layer components {
+  /* Custom styles */
+
+  /**
+   * A list with circled numbers.
+   */
+  .list-circled {
+    counter-reset: steps;
+    @apply relative list-none pl-[2rem];
+  }
+  .list-circled li {
+    counter-increment: steps;
+    @apply mt-12 first:mt-0;
+  }
+  .circled {
+    @apply absolute left-0 -mt-2 grid h-24 w-24 place-items-center rounded-full border-md border-[var(--line-color)] text-md;
+  }
+  .list-circled li::before {
+    content: counter(steps);
+    @apply circled;
+  }
+
+  /**
+   * Small text in all caps used for, e.g., Likert button labels and data labels in entity details
+   */
+  .small-label {
+    @apply text-xs font-normal uppercase text-secondary;
+  }
+
+  /**
+   * Small pilled text
+   */
+  .tag {
+    /* last: is valid prefix */
+    @apply small-label me-md inline-block rounded-[1rem] bg-base-300 px-md py-sm last:me-0;
+  }
+
   /* Override DaisyUI components here */
 
   /* Reset font sizes to base */
@@ -99,13 +135,14 @@
     @apply min-h-screen;
   }
 
-  /* Custom styles */
+  /* Divider */
+  .divider {
+    @apply small-label;
+  }
 
-  /**
-   * Small text in all caps used for, e.g., Likert button labels and data labels in entity details
-   */
-  .small-label {
-    @apply text-xs font-normal uppercase text-secondary;
+  /* Select */
+  .select {
+    @apply bg-base-300;
   }
 }
 
