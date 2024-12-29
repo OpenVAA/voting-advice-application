@@ -1,11 +1,13 @@
+import type { QuestionCategory } from '@openvaa/data';
+import type { SubMatch } from '@openvaa/matching';
 import type { SvelteHTMLElements } from 'svelte/elements';
 import type { ScoreGaugeProps } from '$lib/components/scoreGauge';
 
 export type SubMatchesProps = SvelteHTMLElements['div'] & {
   /**
-   * The sub-matches of a `RankingProps`.
+   * The `SubMatch`es of a `Match`.
    */
-  matches: Array<SubMatchProps>;
+  matches: Array<SubMatch<QuestionCategory>>;
   /**
    * Variant layout, controlling the spacing of gauges. @default 'tight'
    */

@@ -29,4 +29,20 @@ export type QuestionActionsProps = SvelteHTMLElements['div'] & {
    * The text label for the `previous` button. @default $t('questions.previous')
    */
   previousLabel?: string;
+  /**
+   * Triggered when the user has clicked on the delete answer button. This is only available if `answered` is `true`.
+   */
+  onDelete?: () => void;
+  /**
+   * Triggered when the user has clicked on the next button. This is only available if `answered` is `true` or `separateSkip` is `true`.
+   */
+  onNext?: () => void;
+  /**
+   * Triggered when the user has clicked on the previous button.
+   */
+  onPrevious?: () => void;
+  /**
+   * Triggered when user has clicked on the skip button. This is only available if `answered` is `false` and `separateSkip` is `true`.
+   */
+  onSkip?: () => void;
 };

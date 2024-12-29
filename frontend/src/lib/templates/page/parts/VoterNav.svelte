@@ -1,25 +1,13 @@
-<script lang="ts">
-  import { NavGroup, Navigation, NavItem } from '$lib/components/navigation';
-  import { t } from '$lib/i18n';
-  import {
-    answeredQuestions,
-    openFeedbackModal,
-    resetVoterAnswers,
-    resultsAvailable,
-    settings
-  } from '$lib/legacy-stores';
-  import { surveyLink } from '$lib/utils/legacy-analytics/survey';
-  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
-  import LanguageSelection from './LanguageSelection.svelte';
-
-  let resultsAvailableSync = false;
-  $: $resultsAvailable.then((v) => (resultsAvailableSync = v));
-</script>
-
 <!--
 @component
 A template part that outputs the navigation menu for the Voter App for use in the 
 `Page` template.
+
+### Dynamic component
+
+This is a dynamic component because it accesse the `VoterContext`.
+
+### Import
 
 ### Slots
 
@@ -35,34 +23,62 @@ A template part that outputs the navigation menu for the Voter App for use in th
 
 ```tsx
 <VoterNav>
-  <NavItem href={$getRoute(ROUTE.Home)} icon="home" text={$t('common.home')} />
+  <NavItem href={$getRoute('Home')} icon="home" text={$t('common.home')} />
 </VoterNav>
 ```
 -->
 
-<Navigation slot="nav" on:keyboardFocusOut {...$$restProps}>
+<script lang="ts">
+  import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
+  import { getVoterContext } from '$lib/contexts/voter';
+  import { surveyLink } from '$lib/utils/legacy-analytics/survey';
+  import { openFeedbackModal } from '$lib/legacy-stores';
+  import LanguageSelection from './LanguageSelection.svelte';
+
+  const { answers, appSettings, constituenciesSelectable, electionsSelectable, getRoute, 
+    resultsAvailable, selectedElections: elections, selectedConstituencies: constituencies, t } = getVoterContext();
+</script>
+
+<Navigation on:keyboardFocusOut {...$$restProps}>
   <slot />
   <NavGroup>
-    <NavItem href={$getRoute(ROUTE.Home)} icon="home" text={$t('common.home')} />
-    <NavItem href={$getRoute(ROUTE.Questions)} icon="opinion" text={$t('questions.title')} />
+    <NavItem href={$getRoute('Home')} icon="home" text={$t('common.home')} />
+    {#if $electionsSelectable}
+      <NavItem href={$getRoute('Elections')} icon="election" text={$t('elections.title')} />
+    {/if}
+    {#if $constituenciesSelectable}
+      <NavItem 
+        disabled={!$elections.length}
+        href={$getRoute('Constituencies')} 
+        icon="constituency" 
+        text={$t('constituencies.title')} />
+    {/if}
+    <NavItem 
+      disabled={!($elections.length && $constituencies.length)}
+      href={$getRoute('Questions')} 
+      icon="opinion" 
+      text={$t('questions.title')} />
     <NavItem
-      disabled={!$answeredQuestions || Object.values($answeredQuestions).length === 0}
-      on:click={() => resetVoterAnswers()}
-      icon="close"
-      text={$t('common.resetAnswers')} />
-    <NavItem
-      href={$getRoute(ROUTE.Results)}
+      disabled={!($elections.length && $constituencies.length)}
+      href={$getRoute('Results')}
       icon="results"
-      text={resultsAvailableSync ? $t('results.title.results') : $t('results.title.browse')} />
+      text={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')} />
   </NavGroup>
   <NavGroup>
-    <NavItem href={$getRoute(ROUTE.Info)} icon="election" text={$t('info.title')} />
-    <NavItem href={$getRoute(ROUTE.About)} icon="info" text={$t('about.title')} />
-    <NavItem href={$getRoute(ROUTE.Privacy)} icon="privacy" text={$t('privacy.title')} />
+    <NavItem
+        disabled={Object.values($answers).length === 0}
+        on:click={() => answers.reset()}
+        icon="close"
+        text={$t('common.resetAnswers')} />
   </NavGroup>
-  {#if $settings.survey?.showIn?.includes('navigation') || $openFeedbackModal}
+  <NavGroup>
+    <NavItem href={$getRoute('Info')} icon="election" text={$t('info.title')} />
+    <NavItem href={$getRoute('About')} icon="info" text={$t('about.title')} />
+    <NavItem href={$getRoute('Privacy')} icon="privacy" text={$t('privacy.title')} />
+  </NavGroup>
+  {#if $appSettings.survey?.showIn?.includes('navigation') || $openFeedbackModal}
     <NavGroup>
-      {#if $settings.survey?.showIn?.includes('navigation')}
+      {#if $appSettings.survey?.showIn?.includes('navigation')}
         <NavItem href={$surveyLink} target="_blank" icon="research" text={$t('dynamic.survey.button')} />
       {/if}
       {#if $openFeedbackModal}

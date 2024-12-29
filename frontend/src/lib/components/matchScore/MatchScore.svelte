@@ -1,15 +1,3 @@
-<script lang="ts">
-  import { t } from '$lib/i18n';
-  import { concatClass } from '$lib/utils/components';
-  import type { MatchScoreProps } from './MatchScore.type';
-
-  type $$Props = MatchScoreProps;
-
-  export let score: $$Props['score'];
-  export let label: $$Props['label'] = undefined;
-  export let showLabel: $$Props['showLabel'] = true;
-</script>
-
 <!--
 @component
 Display an entity's match score.
@@ -26,6 +14,20 @@ Display an entity's match score.
 <MatchScore score="25%"/>
 ```
 -->
+
+<script lang="ts">
+  import { getComponentContext } from '$lib/contexts/component';
+  import { concatClass } from '$lib/utils/components';
+  import type { MatchScoreProps } from './MatchScore.type';
+
+  type $$Props = MatchScoreProps;
+
+  export let score: $$Props['score'];
+  export let label: $$Props['label'] = undefined;
+  export let showLabel: $$Props['showLabel'] = true;
+
+  const { t } = getComponentContext();
+</script>
 
 <div {...concatClass($$restProps, 'flex min-w-[3.125rem] flex-col items-center')}>
   <span class="text-lg font-bold">{$t('components.matchScore.score', { score })}</span>

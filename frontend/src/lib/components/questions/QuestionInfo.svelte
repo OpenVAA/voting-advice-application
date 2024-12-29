@@ -1,27 +1,13 @@
-<script lang="ts">
-  import { Expander } from '$lib/components/expander';
-  import { t } from '$lib/i18n';
-  import { startEvent } from '$lib/utils/legacy-analytics/track';
-  import type { QuestionInfoProps } from './QuestionInfo.type';
-
-  type $$Props = QuestionInfoProps;
-
-  export let info: $$Props['info'];
-</script>
-
 <!--
 @component
 Display the question's expandable information content.
 
 ### Properties
 
-- `info`: The info text of the question
+- `info`: The info content to show as a plain or HTML string.
+- `onCollapse`: A callback triggered when the info content is collapsed. Mostly used for tracking.
+- `onExpand`: A callback triggered when the info content is expanded.  Mostly used for tracking.
 - Any valid properties of an `<Expander>` component
-
-### Tracking events
-
-- `questionInfo_collapse`
-- `questionInfo_expand`
 
 ### Usage
 
@@ -30,10 +16,25 @@ Display the question's expandable information content.
 ```
 -->
 
+<script lang="ts">
+  import { Expander } from '$lib/components/expander';
+  import { getComponentContext } from '$lib/contexts/component';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
+  import type { QuestionInfoProps } from './QuestionInfo.type';
+
+  type $$Props = QuestionInfoProps;
+
+  export let info: $$Props['info'];
+  export let onCollapse: $$Props['onCollapse'] = undefined;
+  export let onExpand: $$Props['onExpand'] = undefined;
+
+  const { t } = getComponentContext();
+</script>
+
 <Expander
-  on:collapse={() => startEvent('questionInfo_collapse')}
-  on:expand={() => startEvent('questionInfo_expand')}
+  on:collapse={() => onCollapse?.()}
+  on:expand={() => onExpand?.()}
   title={$t('common.readMore')}
   {...$$restProps}>
-  {info}
+  {@html sanitizeHtml(info) }
 </Expander>

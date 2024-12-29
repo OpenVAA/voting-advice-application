@@ -1,7 +1,3 @@
-<script lang="ts">
-  import { t } from '$lib/i18n';
-</script>
-
 <!--
 @component
 Used for a pre-title, or kicker, above the main title of a page within a `HeadingGroup`.
@@ -21,6 +17,11 @@ Used for a pre-title, or kicker, above the main title of a page within a `Headin
 <PreHeading class="text-accent">{$t('categories.environment')}</PreHeading>
 ```
 -->
+
+<script lang="ts">
+  import { getComponentContext } from '$lib/contexts/component';
+  const { t } = getComponentContext();
+</script>
 
 <p aria-roledescription={$t('components.preHeading.roleDescription')} {...$$restProps}>
   <slot />

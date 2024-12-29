@@ -1,45 +1,3 @@
-<script lang="ts">
-  import { onDestroy } from 'svelte';
-  import { Icon } from '$lib/components/icon';
-  import { t } from '$lib/i18n';
-  import { concatClass } from '$lib/utils/components';
-  import type { TextEntityFilterProps } from './TextEntityFilter.type';
-
-  type $$Props = TextEntityFilterProps;
-
-  export let filter: $$Props['filter'];
-  export let placeholder: $$Props['placeholder'] = undefined;
-  export let variant: $$Props['variant'] = 'default';
-
-  let value: string;
-  updateText();
-
-  // Update filter values when selection changes
-  $: filter.include = value;
-
-  // Update selection when filter values change
-  filter.onChange(updateText);
-
-  // Cleanup
-  onDestroy(() => filter.onChange(updateText, false));
-
-  function updateText() {
-    value = filter.include;
-  }
-
-  let labelClass: string;
-  $: {
-    labelClass = 'input flex items-center gap-2';
-    switch (variant) {
-      case 'discrete':
-        labelClass += ' bg-base-200';
-        break;
-      default:
-        labelClass += ' input-bordered';
-    }
-  }
-</script>
-
 <!--
 @component
 Render a text filter for entities.
@@ -57,13 +15,73 @@ Render a text filter for entities.
 ```
 -->
 
+<script lang="ts">
+  import { onDestroy } from 'svelte';
+  import { Icon } from '$lib/components/icon';
+  import { concatClass } from '$lib/utils/components';
+  import type { TextEntityFilterProps } from './TextEntityFilter.type';
+  import { getComponentContext } from '$lib/contexts/component';
+
+  type $$Props = TextEntityFilterProps;
+
+  export let filter: $$Props['filter'];
+  export let placeholder: $$Props['placeholder'] = undefined;
+  export let variant: $$Props['variant'] = 'default';
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { t } = getComponentContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // Filtering
+  ////////////////////////////////////////////////////////////////////
+
+  let value: string;
+  updateText();
+
+  // Update filter values when selection changes
+  $: filter.include = value;
+
+  // Update selection when filter values change
+  filter.onChange(updateText);
+
+  // Cleanup
+  onDestroy(() => filter.onChange(updateText, false));
+
+  ////////////////////////////////////////////////////////////////////
+  // Functions
+  ////////////////////////////////////////////////////////////////////
+
+  function updateText() {
+    value = filter.include;
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Styling
+  ////////////////////////////////////////////////////////////////////
+
+  let labelClass: string;
+  $: {
+    labelClass = 'input flex items-center gap-2';
+    switch (variant) {
+      case 'discrete':
+        labelClass += ' bg-base-200';
+        break;
+      default:
+        labelClass += ' input-bordered';
+    }
+  }
+</script>
+
 <form {...concatClass($$restProps, '')}>
   <label class={labelClass}>
     <span class="sr-only">{$t('entityFilters.text.ariaLabel')}</span>
     <input
       bind:value
       type="text"
-      class="max-w-[8rem]"
+      class="grow w-full"
       placeholder={placeholder ?? $t('entityFilters.text.placeholder')} />
     {#if value === ''}
       <Icon name="search" />
