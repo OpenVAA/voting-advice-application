@@ -56,7 +56,8 @@
     "ingress": {
       "browse": "These are the {candidatePlural} and {partyPlural} standing in these elections, ordered by election symbol or name. You can use the filters to narrow them down.",
       "results": "These are the {candidatePlural} and {partyPlural} standing in these elections. The best matches are first on the list. To narrow down the results, you can also use the filters."
-    }
+    },
+    "multipleElections": "Select below first which election’s {candidatePlural} and {partyPlural} you want to see and then whether you want to see {candidatePlural} or {partyPlural} ."
   },
   "statistics": {
     "heroEmoji": "🧮"

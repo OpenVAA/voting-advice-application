@@ -1,15 +1,20 @@
 {
-  "candidates": {
-    "numShown": "{numShown, plural, =1 {1 ehdokas} other {# ehdokasta}}",
-    "total": "({numTotal})"
+  "alliance": {
+    "numShown": "{numShown, plural, =0 {Ei vaaliliittoja} =1 {1 vaaliliitto} other {# vaaliliittoa}}"
+  },
+  "candidate": {
+    "numShown": "{numShown, plural, =0 {Ei ehdokkaita}=1 {1 ehdokas} other {# ehdokasta}}"
+  },
+  "faction": {
+    "numShown": "{numShown, plural, =0 {Ei ryhmittymiä} =1 {1 ryhmittymä} other {# ryhmittymää}}"
   },
   "ingress": {
     "answerMinQuestions": "Jos haluat löytää eniten kanssasi samaa mieltä olevat {candidatePlural} ja {partyPlural}, {questionsLink} ensin.",
     "questionsLinkText": "vastaa ainakin {numQuestions, plural, =1 {yhteen kysymykseen} other {# kysymykseen}}"
   },
-  "parties": {
-    "numShown": "{numShown, plural, =1 {1 puolue} other {# puoluetta}}",
-    "total": "({numTotal})"
+  "numTotal": "({numTotal})",
+  "organization": {
+    "numShown": "{numShown, plural, =0 {Ei puolueita} =1 {1 puolue} other {# puoluetta}}"
   },
   "title": {
     "browse": "Selaa ehdokkaita ja puolueita",

@@ -1,4 +1,8 @@
 {
+  "alliance": {
+    "plural": "vaaliliitot",
+    "singular": "vaaliliitto"
+  },
   "answer": {
     "no": "Ei",
     "yes": "Kyllä"
@@ -17,10 +21,16 @@
   "continue": "Jatka",
   "electionList": "Vaalilista",
   "electionSymbol": {
+    "alliance": "Vaalisymboli",
     "candidate": "Ehdokasnumero",
-    "party": "Vaalisymboli"
+    "faction": "Vaalisymboli",
+    "organization": "Vaalisymboli"
   },
   "expandOrCollapse": "Laajenna tai pienennä tämä sisältö",
+  "faction": {
+    "plural": "ryhmittymät",
+    "singular": "ryhmittymä"
+  },
   "firstName": "Etunimi",
   "home": "Alkuun",
   "info": "Lisätietoja",
@@ -39,9 +49,9 @@
   "openMenu": "Avaa valikko",
   "openVAA": "OpenVAA",
   "or": "Tai",
-  "party": {
+  "organization": {
     "plural": "puolueet",
-    "singular": "Puolue"
+    "singular": "puolue"
   },
   "pending": "odottaa",
   "primaryActions": "Ensijaiset toiminnot",

@@ -1,15 +1,20 @@
 {
-  "candidates": {
-    "numShown": "{numShown, plural, =1 {1 {candidateSingular}} other {# {candidatePlural}}}",
-    "total": "of {numTotal}"
+  "alliance": {
+    "numShown": "{numShown, plural, =0 {No alliances} =1 {1 alliance} other {# alliances}}"
+  },
+  "candidate": {
+    "numShown": "{numShown, plural, =0 {No {candidatePlural}} =1 {1 {candidateSingular}} other {# {candidatePlural}}}"
+  },
+  "faction": {
+    "numShown": "{numShown, plural, =0 {No factions} =1 {1 faction} other {# factions}}"
   },
   "ingress": {
     "answerMinQuestions": "If you want to find the {candidatePlural} and {partyPlural} that agree with you the most, {questionsLink} first.",
     "questionsLinkText": "answer at least {numQuestions, plural, =1 {one question} other {# questions}}"
   },
-  "parties": {
-    "numShown": "{numShown, plural, =1 {1 {partySingular}} other {# {partyPlural}}}",
-    "total": "of {numTotal}"
+  "numTotal": "of {numTotal}",
+  "organization": {
+    "numShown": "{numShown, plural, =0 {No {partyPlural}} =1 {1 {partySingular}} other {# {partyPlural}}}"
   },
   "title": {
     "browse": "Browse {candidatePlural} and {partyPlural}",

@@ -56,7 +56,8 @@
     "ingress": {
       "browse": "Alla ovat näiden vaalien {candidatePlural} ja {partyPlural} järjestettynä vaalinumeron tai nimen mukaan. Voit käyttää suodattimia näiden karsimiseen.",
       "results": "Alla ovat näiden vaalien {candidatePlural} ja {partyPlural}. Eniten samaa mieltä kanssasi olevat ovat ensimmäisenä listalla. Voit lisäksi käyttää suodattimia tulosten karsimiseen."
-    }
+    },
+    "multipleElections": "Valitse alta ensin, minkä vaalin {candidatePlural} ja {partyPlural} haluat nähdä ja sen jälkeen, haluatko katsoa ehdokkaita vai puolueita."
   },
   "statistics": {
     "heroEmoji": "🧮"

@@ -1,33 +1,43 @@
 {
+  "alliance": {
+    "plural": "valallianser",
+    "singular": "valallians"
+  },
   "answer": {
     "no": "Nej",
     "yes": "Ja"
   },
   "back": "Tillbaka",
-  "cancel": "SV Cancel",
+  "cancel": "Avbrytt",
   "candidate": {
     "plural": "kandidater",
     "singular": "kandidat"
   },
-  "candidatePortrait": "SV Portrait",
+  "candidatePortrait": "Porträtt",
   "clear": "Klart",
-  "close": "SV Close",
+  "close": "Stäng",
   "closeDialog": "Stäng dialogrutan",
   "closeMenu": "Stäng menyn",
-  "continue": "SV Continue",
+  "continue": "Fortsätta",
   "electionList": "Lista",
   "electionSymbol": {
+    "alliance": "Valsymbol",
     "candidate": "Valnummer",
-    "party": "Valsymbol"
+    "faction": "Valsymbol",
+    "organization": "Valsymbol"
   },
   "expandOrCollapse": "Expandera eller kollapsa detta avsnitt",
-  "firstName": "SV First Name",
+  "faction": {
+    "plural": "fraktioner",
+    "singular": "fraktion"
+  },
+  "firstName": "Förnamn",
   "home": "hem",
   "info": "Information",
   "language": {
     "select": "Välj språk"
   },
-  "lastName": "SV Surname",
+  "lastName": "Efternamn",
   "loading": "Laddar…",
   "login": "Registrera dig",
   "logout": "Logga ut",
@@ -39,11 +49,11 @@
   "openMenu": "Öppna menyn",
   "openVAA": "OpenVAA",
   "or": "Eller",
-  "party": {
+  "organization": {
     "plural": "partier",
-    "singular": "SV Party"
+    "singular": "parti"
   },
-  "pending": "SV pending",
+  "pending": "Väntar",
   "primaryActions": "Primära åtgärder",
   "privacy": {
     "dataCollection": {
@@ -56,14 +66,14 @@
   "question": "Fråga",
   "readMore": "Läs mer om",
   "resetAnswers": "Klargör dina svar",
-  "return": "SV Return",
+  "return": "Returnera",
   "returnHome": "Återvänd hem",
-  "saveAndContinue": "SV Save and Continue",
-  "saveAndReturn": "SV Save and Return",
-  "selectFirst": "SV Select first",
+  "saveAndContinue": "Spara och fortsätt",
+  "saveAndReturn": "Spara och returnera",
+  "selectFirst": "Välj först",
   "showFullImage": "Visa hela bilden",
   "skipToMain": "Hoppa till huvudinnehåll",
   "thanksNo": "Nej tack",
-  "unaffiliated": "SV Unaffiliated",
+  "unaffiliated": "Oberoende",
   "website": "Webbsida"
 }
