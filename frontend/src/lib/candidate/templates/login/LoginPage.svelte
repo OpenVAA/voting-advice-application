@@ -58,7 +58,7 @@ Candidate login page. This component also takes care of the login process.
     slot="hero"
     class="bg-neutral-content"
     src={$darkMode
-      ? ($customization.candPosterDark?.url ?? '/images/hero-candidate.png')
+      ? ($customization.candPoster?.urlDark ?? $customization.candPoster?.url ?? '/images/hero-candidate.png')
       : ($customization.candPoster?.url ?? '/images/hero-candidate.png')}
     alt="" />
 

@@ -2,23 +2,25 @@ import { dynamicSettings, staticSettings } from '@openvaa/app-shared';
 import { derived, get, writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { page } from '$app/stores';
-import { wrap } from '$lib/utils/entities';
 import { startEvent, track } from '$lib/utils/legacy-analytics/track';
+import { wrap } from '$lib/utils/legacy-entities';
+import { match, matchParties } from '$lib/utils/legacy-matching';
+import { extractCategories, filterVisible } from '$lib/utils/legacy-questions';
+import { sortCandidates, sortParties } from '$lib/utils/legacy-sort';
+import { localStorageWritable } from '$lib/utils/legacy-storage';
 import { logDebugError } from '$lib/utils/logger';
-import { match, matchParties } from '$lib/utils/matching';
-import { extractCategories, filterVisible } from '$lib/utils/questions';
-import { sortCandidates, sortParties } from '$lib/utils/sort';
-import { localStorageWritable } from '$lib/utils/storage';
-import { hasAllAnswers } from '../utils/hasAllAnswers';
+import { hasAllAnswers } from '../utils/legacy-hasAllAnswers';
 import type { Readable, Writable } from 'svelte/store';
+import type { AppCustomization } from '$lib/contexts/app/appCustomization.type';
 
 /**
  * Contains the currently effective app settings.
  * NB! Settings are overwritten by root key.
  */
 export const settings: Readable<AppSettings> = derived([page], ([$page]) =>
-  $page?.data?.appSettings
-    ? { ...dynamicSettings, ...$page.data.appSettings, ...staticSettings }
+  // TODO: Handle merging so that empty objects do not overwrite defaults
+  $page?.data?.appSettingsData
+    ? { ...dynamicSettings, ...$page.data.appSettingsData, ...staticSettings }
     : { ...dynamicSettings, ...staticSettings }
 );
 
@@ -26,7 +28,7 @@ export const settings: Readable<AppSettings> = derived([page], ([$page]) =>
  * Contains app customization from `DataProvider`.
  */
 export const customization: Readable<AppCustomization> = derived([page], ([$page]) =>
-  $page?.data?.appCustomization ? $page.data.appCustomization : {}
+  $page?.data?.appCustomizationData ? $page.data.appCustomizationData : {}
 );
 
 /**
@@ -259,7 +261,7 @@ export const resultsAvailable: Readable<Promise<boolean>> = derived(
  * A store that holds the candidate rankings. For ease of use, these will be wrapped entities with no `score` properties, if results are not yet available.
  */
 export const candidateRankings: Readable<
-  Promise<Array<RankingProps<LegacyCandidateProps>> | Array<WrappedEntity<LegacyCandidateProps>>>
+  Promise<Array<LegacyRankingProps<LegacyCandidateProps>> | Array<LegacyWrappedEntity<LegacyCandidateProps>>>
 > = derived(
   [candidates, opinionQuestions, answeredQuestions, resultsAvailable, settings],
   async ([$candidates, $opinionQuestions, $answeredQuestions, $resultsAvailable, $settings]) => {
@@ -279,7 +281,7 @@ export const candidateRankings: Readable<
  * A store that holds the party rankings. For ease of use, these will be wrapped entities with no `score` properties, if results are not yet available.
  */
 export const partyRankings: Readable<
-  Promise<Array<RankingProps<LegacyPartyProps>> | Array<WrappedEntity<LegacyPartyProps>>>
+  Promise<Array<LegacyRankingProps<LegacyPartyProps>> | Array<LegacyWrappedEntity<LegacyPartyProps>>>
 > = derived(
   [candidates, parties, opinionQuestions, answeredQuestions, resultsAvailable, settings],
   async ([$candidates, $parties, $opinionQuestions, $answeredQuestions, $resultsAvailable, $settings]) => {
@@ -287,10 +289,10 @@ export const partyRankings: Readable<
     const opinionQuestionsSync = await $opinionQuestions;
     const candidatesSync = await $candidates;
     const partiesSync = await $parties;
-    return resultsAvailableSync && $settings.matching.partyMatching !== 'none' && partiesSync.length
+    return resultsAvailableSync && $settings.matching.organizationMatching !== 'none' && partiesSync.length
       ? matchParties(opinionQuestionsSync, $answeredQuestions, candidatesSync, partiesSync, {
           subMatches: $settings.results.cardContents.party.includes('submatches'),
-          matchingType: $settings.matching.partyMatching
+          matchingType: $settings.matching.organizationMatching
         })
       : partiesSync.map(wrap);
   },

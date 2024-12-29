@@ -8,7 +8,7 @@ import {
   getParties,
   me
 } from '$lib/legacy-api/candidate';
-import { answerIsEmpty } from './answers';
+import { answerIsEmpty } from './legacy-answers';
 import type { CandidateAnswer, Progress, User } from '$types/legacy-candidateAttributes';
 
 export interface CandidateContext {

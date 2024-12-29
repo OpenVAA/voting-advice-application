@@ -10,10 +10,11 @@ import { locale as currentLocale, locales } from '$lib/i18n';
 import { matchLocale } from '$lib/i18n/utils/matchLocale';
 import { translate, translateObject } from '$lib/i18n/utils/translate';
 import { constants } from '$lib/utils/constants';
-import { formatName } from '$lib/utils/internationalisation';
+import { formatName } from '$lib/utils/legacy-internationalisation';
 import { parseImage, parseParty, parseQuestionCategory } from './utils';
 import { parseAnswers } from './utils/parseAnswers';
 import { parseCustomData } from './utils/parseCustomData';
+import type { AppCustomization } from '$lib/contexts/app/appCustomization.type';
 import type {
   DataProvider,
   FeedbackData,
