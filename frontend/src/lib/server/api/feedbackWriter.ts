@@ -13,4 +13,4 @@ switch (type) {
     module = Promise.resolve({});
 }
 
-export const { feedbackWriter } = await module;
+export const feedbackWriter = module.then((m) => m?.feedbackWriter);

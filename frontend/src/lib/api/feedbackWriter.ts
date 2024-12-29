@@ -16,4 +16,4 @@ switch (type) {
     throw new Error(`Unsupported data adapter: ${type}`);
 }
 
-export const { feedbackWriter } = await module;
+export const feedbackWriter = module.then((m) => m.feedbackWriter);

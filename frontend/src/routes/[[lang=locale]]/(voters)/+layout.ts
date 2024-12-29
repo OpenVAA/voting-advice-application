@@ -2,9 +2,10 @@
  * Load data used by the whole voter app.
  */
 
-import { dataProvider } from '$lib/api/dataProvider';
+import { dataProvider as dataProviderPromise } from '$lib/api/dataProvider';
 
 export async function load({ fetch, params: { lang: locale } }) {
+  const dataProvider = await dataProviderPromise;
   dataProvider.init({ fetch });
   return {
     appSettingsData: dataProvider.getAppSettings().catch((e) => e),
