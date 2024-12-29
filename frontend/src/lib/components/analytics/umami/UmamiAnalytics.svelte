@@ -1,13 +1,14 @@
 <script lang="ts">
   import { browser } from '$app/environment';
-  import { settings } from '$lib/legacy-stores';
-  import { sendTrackingEvent, type TrackingEvent } from '$lib/utils/legacy-analytics/track';
+  import type { TrackingEvent } from '$lib/contexts/app/tracking';
+  import type { UmamiAnalyticsProps } from './UmamiAnalytics.type';
 
-  if ($settings.analytics?.trackEvents) {
-    $sendTrackingEvent = trackEvent;
-  }
+  type $$Props = UmamiAnalyticsProps;
 
-  function trackEvent({ name, data }: TrackingEvent<Record<string, JSONData>>) {
+  export let websiteId: $$Props['websiteId'];
+  export const trackEvent: $$Props['trackEvent'] = sendUmamiEvent;
+  
+  function sendUmamiEvent({ name, data }: TrackingEvent<Record<string, JSONData>>) {
     if (!browser || !('umami' in window)) return;
     (window.umami as { track: UmamiTrack }).track(name, data);
   }
@@ -22,6 +23,6 @@
   <script
     defer
     src="https://analytics.eu.umami.is/script.js"
-    data-website-id={$settings.analytics?.platform?.code}
+    data-website-id={websiteId}
     data-auto-track="true"></script>
 </svelte:head>

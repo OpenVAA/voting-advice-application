@@ -1,17 +1,3 @@
-<script lang="ts">
-  import { concatClass } from '$lib/utils/components';
-  import type { HeroEmojiProps } from './HeroEmoji.type';
-
-  type $$Props = HeroEmojiProps;
-
-  export let emoji: $$Props['emoji'] = undefined;
-
-  // We cannot currently use this filtering to remove non-emoji glyphs because it breaks the emojis on Safari. See: https://developer.apple.com/forums/thread/729609
-  // $: if (emoji != null && emoji !== '') {
-  //   emoji = emoji.replace(/\P{Extended_Pictographic}/gu, '');
-  // }
-</script>
-
 <!--
 @component
 Used for large emojis acting as decorative illustrations.
@@ -38,6 +24,20 @@ using the `class` attribute, e.g. `class="text-[10rem]"`.
 <HeroEmoji emoji="🚀"/>
 ```
 -->
+
+<script lang="ts">
+  import { concatClass } from '$lib/utils/components';
+  import type { HeroEmojiProps } from './HeroEmoji.type';
+
+  type $$Props = HeroEmojiProps;
+
+  export let emoji: $$Props['emoji'] = undefined;
+
+  // We cannot currently use this filtering to remove non-emoji glyphs because it breaks the emojis on Safari. See: https://developer.apple.com/forums/thread/729609
+  // $: if (emoji != null && emoji !== '') {
+  //   emoji = emoji.replace(/\P{Extended_Pictographic}/gu, '');
+  // }
+</script>
 
 {#if emoji != null && emoji !== ''}
   <div

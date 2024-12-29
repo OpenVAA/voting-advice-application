@@ -1,12 +1,3 @@
-<script lang="ts">
-  import { Icon } from '$lib/components/icon';
-  import type { WarningProps } from './Warning.type';
-
-  type $$Props = WarningProps;
-
-  export let display: $$Props['display'] = true;
-</script>
-
 <!--
 @component
 A simple warning component to be used with BasicPage
@@ -21,10 +12,19 @@ A simple warning component to be used with BasicPage
 
 ```tsx
 <Warning>
-    Warning content, such as text or HTML element.
+  Warning content, such as text or HTML element.
 </Warning>
 ```
 -->
+
+<script lang="ts">
+  import { Icon } from '$lib/components/icon';
+  import type { WarningProps } from './Warning.type';
+
+  type $$Props = WarningProps;
+
+  export let display: $$Props['display'] = true;
+</script>
 
 <div class="text-warning">
   {#if display}

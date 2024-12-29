@@ -1,5 +1,7 @@
+import type { Colors } from '@openvaa/data';
 import type { SvelteHTMLElements } from 'svelte/elements';
-export type ScoreGaugeProps = SvelteHTMLElements['div'] & {
+
+export type ScoreGaugeProps = Omit<SvelteHTMLElements['div'], 'color'> & {
   /**
    * The score of the gauge in the range from 0 to `max`, usually 100.
    */
@@ -27,9 +29,5 @@ export type ScoreGaugeProps = SvelteHTMLElements['div'] & {
   /**
    * The color of the gauge. @default 'oklch(var(--n))' i.e. the `neutral` color.
    */
-  color?: string;
-  /**
-   * The color of the gauge in dark mode. @default 'oklch(var(--n))' i.e. the `neutral` color.
-   */
-  colorDark?: string;
+  color?: Colors | string | null;
 };

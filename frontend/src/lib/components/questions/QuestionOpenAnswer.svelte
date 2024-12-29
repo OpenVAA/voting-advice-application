@@ -1,14 +1,36 @@
+<!--
+@component
+Display an `Entity`’s open answer to a question. If the content is empty, nothing will be rendered.
+
+### Properties
+
+- Any valid properties of an `<Expander>` component
+
+### Usage
+
+```tsx
+<QuestionOpenAnswer content={openAnswer} />
+```
+-->
+
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { t } from '$lib/i18n';
   import { concatClass, getUUID } from '$lib/utils/components';
+  import type { QuestionOpenAnswerProps } from './QuestionOpenAnswer.type';
+  import { getComponentContext } from '$lib/contexts/component';
+
+  type $$Props = QuestionOpenAnswerProps;
+
+  export let content: $$Props['content'];
+
+  const { t } = getComponentContext();
+
+  const id = getUUID();
 
   let el: HTMLDivElement;
   let collapsible = false;
   let expanded = false;
   let fullHeight = 'none';
-
-  const id = getUUID();
 
   onMount(() => {
     if (el) {
@@ -18,47 +40,30 @@
   });
 </script>
 
-<!--
-@component
-Display a Candidate's or Party's open answer to a question.
-
-### Properties
-
-- Any valid properties of an `<Expander>` component
-
-### Slots
-
-- default: The open answer
-
-### Usage
-
-```tsx
-<QuestionOpenAnswer>{openAnswer}</QuestionOpenAnswer>
-```
--->
-
-<div
-  bind:this={el}
-  {id}
-  aria-expanded={collapsible ? expanded : undefined}
-  class:collapsible
-  class:expanded
-  style:--full-height={fullHeight}
-  {...concatClass($$restProps, 'relative grid max-h-[8rem] overflow-hidden mt-16 rounded-md bg-base-200 text-center')}>
-  {#if collapsible}
-    <button
-      on:click={() => {
-        if (collapsible) expanded = !expanded;
-      }}
-      aria-controls={id}
-      class="absolute bottom-0 left-0 right-0 top-0 focus:ring-2 focus:ring-inset focus:ring-neutral">
-      <span class="opacity-0">{$t('common.expandOrCollapse')}</span>
-    </button>
-  {/if}
-  <span class="col-start-1 row-start-1 m-md before:content-[open-quote] after:content-[close-quote]">
-    <slot />
-  </span>
-</div>
+{#if content && content.trim() !== ''}
+  <div
+    bind:this={el}
+    {id}
+    aria-expanded={collapsible ? expanded : undefined}
+    class:collapsible
+    class:expanded
+    style:--full-height={fullHeight}
+    {...concatClass($$restProps, 'relative grid max-h-[8rem] overflow-hidden mt-16 rounded-md bg-base-200 text-center')}>
+    {#if collapsible}
+      <button
+        on:click={() => {
+          if (collapsible) expanded = !expanded;
+        }}
+        aria-controls={id}
+        class="absolute bottom-0 left-0 right-0 top-0 focus:ring-2 focus:ring-inset focus:ring-neutral">
+        <span class="opacity-0">{$t('common.expandOrCollapse')}</span>
+      </button>
+    {/if}
+    <span class="col-start-1 row-start-1 m-md before:content-[open-quote] after:content-[close-quote]">
+      { content }
+    </span>
+  </div>
+{/if}
 
 <style lang="postcss">
   .collapsible {

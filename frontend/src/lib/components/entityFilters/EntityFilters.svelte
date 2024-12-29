@@ -1,21 +1,3 @@
-<script lang="ts">
-  import {
-    ChoiceQuestionFilter,
-    NumericFilter,
-    NumericQuestionFilter,
-    ObjectFilter,
-    TextFilter
-  } from '@openvaa/filters';
-  import { Expander } from '$lib/components/expander';
-  import { concatClass } from '$lib/utils/components';
-  import type { EntityFiltersProps } from './EntityFilters.type';
-
-  type $$Props = EntityFiltersProps;
-
-  export let filterGroup: $$Props['filterGroup'];
-  export let targets: $$Props['targets'];
-</script>
-
 <!--
 @component
 Show filters for entities. This component and the individual filter components only display the UI for the filters and handle their rule updates. To access the results of the filters, you have to apply the filters to the targets.
@@ -33,6 +15,24 @@ Show filters for entities. This component and the individual filter components o
 ```
 -->
 
+<script lang="ts">
+  import {
+    ChoiceQuestionFilter,
+    NumberFilter,
+    NumberQuestionFilter,
+    ObjectFilter,
+    TextFilter
+  } from '@openvaa/filters';
+  import { Expander } from '$lib/components/expander';
+  import { concatClass } from '$lib/utils/components';
+  import type { EntityFiltersProps } from './EntityFilters.type';
+
+  type $$Props = EntityFiltersProps;
+
+  export let filterGroup: $$Props['filterGroup'];
+  export let targets: $$Props['targets'];
+</script>
+
 <div {...concatClass($$restProps, 'flex flex-col gap-md')}>
   {#each filterGroup.filters as filter}
     <Expander
@@ -44,7 +44,7 @@ Show filters for entities. This component and the individual filter components o
         {#await import('./text') then { TextEntityFilter }}
           <svelte:component this={TextEntityFilter} {filter} />
         {/await}
-      {:else if filter instanceof NumericFilter || filter instanceof NumericQuestionFilter}
+      {:else if filter instanceof NumberFilter || filter instanceof NumberQuestionFilter}
         {#await import('./numeric') then { NumericEntityFilter }}
           <svelte:component this={NumericEntityFilter} {filter} {targets} />
         {/await}

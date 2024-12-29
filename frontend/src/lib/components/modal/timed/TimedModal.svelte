@@ -1,3 +1,50 @@
+<!--
+@component
+A modal dialog that will automatically close after a set amount of time.
+
+### Slots
+
+- `actions`: The action buttons to display.
+- default: The content of the modal.
+
+### Properties
+
+- `title`: The title of the modal
+- `timerDuration`: Logout timer duration in seconds. @default `30`
+- `timeLeft`: Bind to this to get time left in seconds 
+- Any valid properties of a `<Modal>` component.
+
+### Bindable functions
+
+- `openModal`: Opens the modal
+- `closeModal`: Closes the modal
+
+### Events
+
+- `open`: Fired after the modal is opened. Note that the modal may still be transitioning from `hidden`.
+- `close`: Fired when the modal is closed by any means. Note that the modal may still be transitioning to `hidden`.
+- `timeout`: Fired right before the modal is closed due to a timeout. Note that the `close` event will be fired after this.
+- Neither event has any details.
+
+### Accessibility
+
+See the [`<Modal>` component](../Modal.svelte) documentation for more information.
+
+### Usage
+
+```tsx
+<TimedModal 
+  bind:closeModal
+  title="Timout modal"
+  on:open={() => console.info('Opened')}
+  on:close={() => console.info('Closed')}
+  on:timeout={() => console.info('Timeout!')}>
+  <p>Wait for it…</p>
+  <Button slot="actions" on:click={closeModal} text="Close" variant="main"/>
+</TimedModal>
+```
+-->
+
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte';
   import { tweened } from 'svelte/motion';
@@ -66,53 +113,6 @@
     progressBarTimer.set($progressBarTimer, { duration: 0 });
   }
 </script>
-
-<!--
-@component
-A modal dialog that will automatically close after a set amount of time.
-
-### Slots
-
-- `actions`: The action buttons to display.
-- default: The content of the modal.
-
-### Properties
-
-- `title`: The title of the modal
-- `timerDuration`: Logout timer duration in seconds. @default `30`
-- `timeLeft`: Bind to this to get time left in seconds 
-- Any valid properties of a `<Modal>` component.
-
-### Bindable functions
-
-- `openModal`: Opens the modal
-- `closeModal`: Closes the modal
-
-### Events
-
-- `open`: Fired after the modal is opened. Note that the modal may still be transitioning from `hidden`.
-- `close`: Fired when the modal is closed by any means. Note that the modal may still be transitioning to `hidden`.
-- `timeout`: Fired right before the modal is closed due to a timeout. Note that the `close` event will be fired after this.
-- Neither event has any details.
-
-### Accessibility
-
-See the [`<Modal>` component](../Modal.svelte) documentation for more information.
-
-### Usage
-
-```tsx
-<TimedModal 
-  bind:closeModal
-  title="Timout modal"
-  on:open={() => console.info('Opened')}
-  on:close={() => console.info('Closed')}
-  on:timeout={() => console.info('Timeout!')}>
-  <p>Wait for it…</p>
-  <Button slot="actions" on:click={closeModal} text="Close" variant="main"/>
-</TimedModal>
-```
--->
 
 <Modal
   bind:closeModal={_closeModal}

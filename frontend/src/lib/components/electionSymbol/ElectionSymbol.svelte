@@ -1,20 +1,3 @@
-<script lang="ts">
-  import { concatClass } from '$lib/utils/components';
-  import type { ElectionSymbolProps } from './ElectionSymbol.type';
-
-  type $$Props = ElectionSymbolProps;
-
-  export let text: $$Props['text'];
-  export let image: $$Props['image'] = undefined;
-
-  let classes: string;
-  $: {
-    classes =
-      'flex items-center justify-center h-[1.6rem] min-w-[1.6rem] border border-sm border-color-[var(--line-color)] rounded-sm ';
-    if (!image) classes += ' px-4 font-bold';
-  }
-</script>
-
 <!--
 @component
 Display an entity's election symbol, which is usually a number but may also be an image, e.g. in Pakistan.
@@ -32,6 +15,23 @@ Display an entity's election symbol, which is usually a number but may also be a
 <ElectionSymbol><img src="arrow.png" alt="Arrow"/></ElectionSymbol>
 ```
 -->
+
+<script lang="ts">
+  import { concatClass } from '$lib/utils/components';
+  import type { ElectionSymbolProps } from './ElectionSymbol.type';
+
+  type $$Props = ElectionSymbolProps;
+
+  export let text: $$Props['text'];
+  export let image: $$Props['image'] = undefined;
+
+  let classes: string;
+  $: {
+    classes =
+      'flex items-center justify-center h-[1.6rem] min-w-[1.6rem] border border-sm border-color-[var(--line-color)] rounded-sm ';
+    if (!image) classes += ' px-4 font-bold';
+  }
+</script>
 
 <span {...concatClass($$restProps, classes)}>
   {#if image}

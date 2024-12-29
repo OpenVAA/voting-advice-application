@@ -1,3 +1,26 @@
+<!--
+@component
+Used to display a full-width background color while maintaining the usual maximum width for the contents.
+
+### Properties
+
+- `bgColor`: Optional named background color for the section.
+- `padding`: The padding to apply to the contents with `default` matching the padding used on the basic page template. @default `'default'`
+- Any valid attributes of a `<div>` element.
+
+### Slots
+
+- default: The contents on the background.
+
+### Usage
+
+```tsx
+<StretchBackground bgColor="base-200">
+  <h2>This text is on an edge-to-edge background.</h2>
+</StretchBackground>
+```
+-->
+
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import type { StretchBackgroundProps } from './StretchBackground.type';
@@ -27,29 +50,6 @@
     if (toBottom) classes += ' -mb-lg pb-lg';
   }
 </script>
-
-<!--
-@component
-Used to display a full-width background color while maintaining the usual maximum width for the contents.
-
-### Properties
-
-- `bgColor`: Optional named background color for the section.
-- `padding`: The padding to apply to the contents with `default` matching the padding used on the basic page template. @default `'default'`
-- Any valid attributes of a `<div>` element.
-
-### Slots
-
-- default: The contents on the background.
-
-### Usage
-
-```tsx
-<StretchBackground bgColor="base-200">
-  <h2>This text is on an edge-to-edge background.</h2>
-</StretchBackground>
-```
--->
 
 <div {...concatClass($$restProps, classes)}>
   <div class="flex w-full max-w-xl flex-col items-stretch {paddingClasses}">
