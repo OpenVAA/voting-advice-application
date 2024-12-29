@@ -1,3 +1,5 @@
+import type { DPReturnType } from '$lib/api/base/dataProvider.type';
+
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 // and what to do when importing types
@@ -30,6 +32,14 @@ declare namespace App {
       preferredLocale?: string;
       route: string;
     };
+
+    // These are the new types used by the @openvaa/data-conformant Data API
+    appCustomizationData?: DPReturnType['appCustomization'] | Promise<Error>;
+    appSettingsData?: DPReturnType['appSettings'] | Promise<Error>;
+    constituencyData?: DPReturnType['constituencies'] | Promise<Error>;
+    electionData?: DPReturnType['elections'] | Promise<Error>;
+    nominationData?: DPReturnType['nominations'] | Promise<Error>;
+    questionData?: DPReturnType['questions'] | Promise<Error>;
   }
   interface Error {
     message: string;

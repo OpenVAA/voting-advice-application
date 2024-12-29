@@ -1,15 +1,23 @@
 import type { DynamicSettings, StaticSettings } from '@openvaa/app-shared';
-import type { TranslationKey } from './generated/translationKey';
+import type { MaybeWrappedEntity } from '@openvaa/core';
+import type { AnyEntityVariant, QuestionCategory } from '@openvaa/data';
 
 export {};
 
 declare global {
+  ///////////////////////////////////////////////
+  // THESE ONE WE'll KEEP
+  ///////////////////////////////////////////////
+
   /**
-   * The format for localized strings.
+   * A shorthand for the types of `Match` objects the frontend uses.
    */
-  type LocalizedString = {
-    [lang: string]: string;
-  };
+  type EntityVariantMatch = Match<AnyEntityVariant, QuestionCategory>;
+
+  /**
+   * A shorthand for possibly wrapped `Entity`s that all components dealing with entities consume.
+   */
+  type MaybeWrappedEntityVariant = MaybeWrappedEntity<AnyEntityVariant>;
 
   /*
    * The format for JSON structure.
@@ -22,6 +30,146 @@ declare global {
    * Source: https://stackoverflow.com/questions/69327990/how-can-i-make-one-property-non-optional-in-a-typescript-type
    */
   type WithRequired<TType, TKey extends keyof TType> = TType & { [Prop in TKey]-?: TType[Prop] };
+
+  /**
+   * Get the type of the array items.
+   */
+  type ArrayItem<TArray> = TArray extends Array<infer TElement> ? TElement : never;
+
+  ///////////////////////////////////////////////
+  // CUSTOM DATA DEFINITIONS FOR DATA OBJECTS
+  ///////////////////////////////////////////////
+
+  type CustomData = {
+    Question: {
+      allowOpen?: boolean;
+      fillingInfo?: string;
+      filterable?: boolean;
+      vertical?: boolean;
+      video?: CustomVideoProps;
+    };
+    QuestionCategory: {
+      emoji?: string;
+    };
+  };
+
+  /**
+   * The properties for defining video content in customData
+   */
+  interface CustomVideoProps {
+    title: string;
+    sources: Array<string>;
+    captions: string;
+    poster: string;
+    aspectRatio: number;
+    transcript?: string;
+  }
+
+  ///////////////////////////////////////////////
+
+  /**
+   * The format for localized strings.
+   */
+  type LocalizedString = {
+    [lang: string]: string;
+  };
+
+  /**
+   * The application settings, combined from both local settings and those retrieved from the database.
+   */
+  type AppSettings = StaticSettings & DynamicSettings;
+
+  /**
+   * A reference to a question in `AppSettings`.
+   */
+  type AppSettingsQuestionRef = Exclude<AppSettings['results']['cardContents']['candidate'][number], 'submatches'>;
+
+  /**
+   * A entity details' content type in `AppSettings`.
+   */
+  type AppSettingsEntityDetailsContent = AppSettings['entityDetails']['contents']['party'][number];
+
+  /**
+   * The method for performing group, i.e. party, maching in `AppSettings`.
+   */
+  type AppSettingsGroupMatchingType = AppSettings['matching']['organizationMatching'];
+
+  /**
+   * The possible values for a user's data collection consent
+   */
+  type UserDataCollectionConsent = 'denied' | 'granted' | 'indetermined';
+
+  /**
+   * The possible values for the status of asking for a user's feedback or filling out a survey.
+   */
+  type UserFeedbackStatus = 'received' | 'indetermined';
+
+  /**
+   * Conforms to
+   */
+  interface LegacyWrappedEntity<TEntity extends LegacyEntityProps = LegacyEntityProps> {
+    target: TEntity;
+  }
+
+  /**
+   * Conforms to `@openvaa/matching.Match`
+   */
+  interface LegacyRankingProps<TEntity extends LegacyEntityProps = LegacyEntityProps>
+    extends LegacyWrappedEntity<TEntity> {
+    score: number;
+    subMatches?: Array<LegacySubMatchProps>;
+  }
+
+  /**
+   * A possibly ranked entity, accepted by all components consuming entities.
+   */
+  type LegacyMaybeRanked<TEntity extends LegacyEntityProps = LegacyEntityProps> =
+    | TEntity
+    | LegacyWrappedEntity<TEntity>
+    | LegacyRankingProps<TEntity>;
+
+  /**
+   * The submatches of a `LegacyRankingProps`
+   */
+  interface LegacySubMatchProps {
+    // distance: number;
+    score: number;
+    // TODO: Convert to LegacyQuestionCategoryProps
+    questionGroup: LegacyQuestionCategoryProps;
+  }
+
+  /**
+   * These are all the DaisyUI colors supported by the application.
+   * These can be used in utility classes like ``fill-${color}``,
+   * but be sure to check `tailwind.config.cjs` for the classes
+   * that are safelisted for use.
+   */
+  type Color =
+    | 'current'
+    | 'primary'
+    | 'secondary'
+    | 'accent'
+    | 'neutral'
+    | 'base-100'
+    | 'base-200'
+    | 'base-300'
+    | 'info'
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'base-content'
+    | 'primary-content'
+    | 'secondary-content'
+    | 'accent-content'
+    | 'info-content'
+    | 'success-content'
+    | 'warning-content'
+    | 'error-content'
+    | 'white';
+
+  ///////////////////////////////
+  // LEGACY TYPES START HERE
+  ///////////////////////////////
 
   /**
    * The properties of a multiple choice option in a Question.
@@ -58,69 +206,6 @@ declare global {
     value: TValue;
     openAnswer?: string;
   }
-
-  /**
-   * The application settings, combined from both local settings and those retrieved from the database.
-   */
-  type AppSettings = StaticSettings & DynamicSettings;
-
-  /**
-   * A reference to a question in `AppSettings`.
-   */
-  type AppSettingsQuestionRef = Exclude<AppSettings['results']['cardContents']['candidate'][number], 'submatches'>;
-
-  /**
-   * A entity details' content type in `AppSettings`.
-   */
-  type AppSettingsEntityDetailsContent = AppSettings['entityDetails']['contents']['party'][number];
-
-  /**
-   * The method for performing group, i.e. party, maching in `AppSettings`.
-   */
-  type AppSettingsGroupMatchingType = AppSettings['matching']['partyMatching'];
-
-  /**
-   * The application customization provided by `DataProvider`.
-   */
-  type AppCustomization = {
-    publisherName?: string;
-    publisherLogo?: LegacyImageProps;
-    publisherLogoDark?: LegacyImageProps;
-    poster?: LegacyImageProps;
-    posterDark?: LegacyImageProps;
-    candPoster?: LegacyImageProps;
-    candPosterDark?: LegacyImageProps;
-    translationOverrides?: { [translationKey: TranslationKey]: string };
-    candidateAppFAQ?: Array<{ question: string; answer: string }>;
-  };
-
-  /**
-   * The persistent preferences that can be set by the user.
-   */
-  interface UserPreferences {
-    dataCollection?: {
-      consent: UserDataConsent;
-      date: string;
-    };
-    feedback: {
-      status: UserFeedbackStatus;
-      date: string;
-    };
-    survey: {
-      status: UserFeedbackStatus;
-      date: string;
-    };
-  }
-
-  /**
-   * The possible values for a user's data collection consent
-   */
-  type UserDataCollectionConsent = 'denied' | 'granted' | 'indetermined';
-
-  /**
-   * The possible values for the status of asking for a user's feedback or filling out a survey.
-   */
-  type UserFeedbackStatus = 'received' | 'indetermined';
 
   /**
    * The properties of a Candidate object that can be passed onto the
@@ -212,18 +297,6 @@ declare global {
           vertical?: boolean;
         })
       | null;
-  }
-
-  /**
-   * The properties for defining video content in customData
-   */
-  interface CustomVideoProps {
-    title: string;
-    sources: Array<string>;
-    captions: string;
-    poster: string;
-    aspectRatio: number;
-    transcript?: string;
   }
 
   /**
@@ -322,66 +395,4 @@ declare global {
    * Represents any entity that can be shown in listings and has answers to questions.
    */
   type LegacyEntityProps = LegacyCandidateProps | LegacyPartyProps;
-
-  /**
-   * Conforms to `@openvaa/filters.WrappedEntity`
-   */
-  interface WrappedEntity<TEntity extends LegacyEntityProps = LegacyEntityProps> {
-    entity: TEntity;
-  }
-
-  /**
-   * Conforms to `@openvaa/matching.Match`
-   */
-  interface RankingProps<TEntity extends LegacyEntityProps = LegacyEntityProps> extends WrappedEntity<TEntity> {
-    score: number;
-    subMatches?: Array<SubMatchProps>;
-  }
-
-  /**
-   * A possibly ranked entity, accepted by all components consuming entities.
-   */
-  type MaybeRanked<TEntity extends LegacyEntityProps = LegacyEntityProps> =
-    | TEntity
-    | WrappedEntity<TEntity>
-    | RankingProps<TEntity>;
-
-  /**
-   * The submatches of a `RankingProps`
-   */
-  interface SubMatchProps {
-    // distance: number;
-    score: number;
-    // TODO: Convert to LegacyQuestionCategoryProps
-    questionGroup: LegacyQuestionCategoryProps;
-  }
-
-  /**
-   * These are all the DaisyUI colors supported by the application.
-   * These can be used in utility classes like ``fill-${color}``,
-   * but be sure to check `tailwind.config.cjs` for the classes
-   * that are safelisted for use.
-   */
-  type Color =
-    | 'current'
-    | 'primary'
-    | 'secondary'
-    | 'accent'
-    | 'neutral'
-    | 'base-100'
-    | 'base-200'
-    | 'base-300'
-    | 'info'
-    | 'success'
-    | 'warning'
-    | 'error'
-    | 'base-content'
-    | 'primary-content'
-    | 'secondary-content'
-    | 'accent-content'
-    | 'info-content'
-    | 'success-content'
-    | 'warning-content'
-    | 'error-content'
-    | 'white';
 }
