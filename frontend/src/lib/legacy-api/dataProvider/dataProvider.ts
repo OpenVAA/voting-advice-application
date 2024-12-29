@@ -1,3 +1,5 @@
+import type { AppCustomization } from '$lib/contexts/app/appCustomization.type';
+
 /**
  * The DataProvider interface defines the Voter App API calls for getting data and saving feedback.
  */

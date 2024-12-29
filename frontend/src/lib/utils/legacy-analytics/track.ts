@@ -3,8 +3,8 @@ import { browser } from '$app/environment';
 import { page } from '$app/stores';
 import { settings, userPreferences } from '$lib/legacy-stores';
 import { getUUID } from '$lib/utils/components';
+import { sessionStorageWritable } from '$lib/utils/legacy-storage';
 import { logDebugError } from '$lib/utils/logger';
-import { sessionStorageWritable } from '$lib/utils/storage';
 
 /**
  * Contains the current pageview event, which will be automatically submitted containing any other submitted events when the user leaves the page or hides or closes the window.

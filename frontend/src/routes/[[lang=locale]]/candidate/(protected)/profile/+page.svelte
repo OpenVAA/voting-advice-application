@@ -20,7 +20,7 @@
   import { addAnswer, updateAnswer } from '$lib/legacy-api/candidate';
   import { settings } from '$lib/legacy-stores';
   import { BasicPage } from '$lib/templates/basicPage';
-  import { answerIsEmpty } from '$lib/utils/answers';
+  import { answerIsEmpty } from '$lib/utils/legacy-answers';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
   import type { TranslationKey } from '$types';
@@ -90,7 +90,7 @@
   const basicInfoLabels: Record<InfoField, TranslationKey> = {
     firstName: 'common.firstName',
     lastName: 'common.lastName',
-    party: 'common.party.singular'
+    party: 'common.organization.singular'
   };
 
   const basicInfoData: Record<InfoField, string | undefined> = {

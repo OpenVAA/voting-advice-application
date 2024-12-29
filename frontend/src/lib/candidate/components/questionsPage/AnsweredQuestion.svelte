@@ -1,10 +1,9 @@
 <script lang="ts">
   import { getContext } from 'svelte';
   import { Button } from '$lib/components/button';
-  import { CategoryTag } from '$lib/components/categoryTag';
+  import { CategoryTag } from '$lib/components/legacy/categoryTag';
   import { Expander } from '$lib/components/expander';
-  import { LikertResponseButtons } from '$lib/components/questions';
-  import { QuestionOpenAnswer } from '$lib/components/questions';
+  import { LikertResponseButtons, QuestionOpenAnswer } from '$lib/components/legacy/questions';
   import { t } from '$lib/i18n';
   import { translate } from '$lib/i18n/utils';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';

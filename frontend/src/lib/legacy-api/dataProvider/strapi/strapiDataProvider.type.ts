@@ -106,7 +106,7 @@ export interface StrapiAppSettingsData {
     };
     matching?: {
       minimumAnswers: number;
-      partyMatching: 'none' | 'answersOnly' | 'mean' | 'median';
+      organizationMatching: 'none' | 'answersOnly' | 'mean' | 'median';
     };
     questions?: {
       categoryIntros?: {
