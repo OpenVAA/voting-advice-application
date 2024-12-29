@@ -1,36 +1,139 @@
 # To do:
 
-onMount(() => {
-if ($elections.length === 1) goto($getRoute({ route: 'Questions', constituencyId: 'constituency-1-1' }), { replaceState: true });
-});
+- Docs: Adapter setting sets dp, fr, dr but maybe changed in the future for dynamic import
+- Tracking and survey
 
-- Nomination display in entity details simpler if just one election or one const
+  - survey, analytics, userprefs
+    - `results_changeElection`
 
-- Fix app custom incl. poster images
-- Don't return errors
-- Check that Strapi allows all filters used
-- When Cand App refact complete, remove depr Strapi data types and controller policies
+- Add legacy question, categoryTag and entity components in their own folder for Cand App
+  [text](../components/legacy/avatar)
+  [text](../components/legacy/categoryTag)
+  [text](../components/legacy/entityCard)
+  [text](../components/legacy/entityDetails)
+  [text](../components/legacy/infoAnswer)
+  [text](../components/legacy/partyTag)
+  [text](../components/legacy/questions)
 
 - Party matching
+  - Should be done globally on all candidates
+  - DP option for returning child answers for imputation
+  - Option 1:
+    - Child answers in `Answer.children`, see below
+    - Set imputed answers in `Entity` by just setting the `imputedAnswers` property
+      - { value: imputed; info: $t('imputedValue.method'); imputed: true; }
+    - Question: When to set imputed answers?
+      - (located) layout? or matching part of VoterContext
+    - Match normally
 
-- Remove global types
-  - Figure out what to do with wrapped entities
-- Create the data context and decide what stores it should expose
-- Create the other contexts and decide into which to combine LayoutContext
-  - Check the missing requirements for each context from the PR intro
-  - Check that we have collected all global stores into the contexts
-- Fix Anwers store
-- Build the new routes for election, constituency
-  - Use /election/[...electionId]/constituency/[...constituencyId]
-- Figure out dataRoot locale change, perhaps listen to route param changes instead of locale store which is update with a delay?
-- Docs: Adapter setting sets dp, fr, dr but maybe changed in the future for dynamic import
-- Check if we need \_utils/awaitAll
-- Check that dataObjectStore unsubscribe really works
-- Global error store?
+```ts
+DataProvider.getNominations({ imputeGroupAnswers, imputedInfo }: {
+  includeChildAnswers?: Array<EntityType> | null;
+}) {
+  HOW TO SELECT ONLY OPINION QUESTIONS?
+  group.answers:
+}
+
+/**
+ * The type for an answer to a `Question`.
+ * @typeParam TValue - The type of the answer value which we can't know ahead of time, but it should conform to the `AnswerValue` specific to the question. The actual value may also be of type `MissingValue` if the answer is missing.
+ */
+export type Answer<TValue extends AnswerValue | unknown = unknown> = CoreAnswer<TValue | MissingValue> & {
+  /**
+   * An optional open answer accompanying the answer.
+   */
+  info?: string | null;
+  /**
+   * Possible answer values of the entity’s children that can be used for imputation.
+   */
+  childrensAnswers?: Array<TValue> | null;
+  /**
+   * Whether the value is imputed.
+   */
+  imputed?: boolean | null;
+};
+
+class Entity {
+  imputedAnswers: Answers | undefined;
+
+  get answers(): Answers {
+    return this.imputedAnswers ?? this.data.answers ?? {};
+  }
+}
+
+type Impute = {
+  [Type in EntityType]?: (values: Array<Answer>) => Answer;
+};
+```
+
+- Check setting and other spelling for `party/organizationMatching`
+
+- Update translations, also -> strapi
 
 - Later when Cand App is unified:
+
+  - Boolean filter incl. missing
   - Move i18n into contexts and don't import it /layout.ts
   - Refactor /layout.server.ts
+  - Move `Navigation` back to static components
+    - Create local context for Navigation
+    - NavItems use the context to trigger a onClick event
+    - Navigation exposes a callback for onClick
+    - VoterNav e.g. expose this callback to the layout which handles closing the nav
+  - Remove depr Strapi data types and controller policies
+  - Remove `main` from +error
+  - Remove global types
+  - Convert feedback modal: import { openFeedbackModal } from '$lib/legacy-stores';
+  - Number question in matching
+  - Remove LikertResponseButtons
+  - Set Banner action items in layouts by passing in Button properties
+    - Don't do deep merge on items, but overwrite on a specific level
+    - Use the same structure for app settings as well
+  - Combine EntityList and Controls but allow filtering of Cards instead of Entities
+    - Perhaps allow filters to use with a custom getter for the target `(wrapped: any) => Entity = (t) => t`
+  - Autocomplete
+
+    ```tsx
+    const removedAccents = label.normalize("NFD").replace(/[\u0300-\u036f]/g, '');
+
+    <script>
+      // https://svelte.dev/playground/4e7f48d40e6c40f3a3c519be97ff98d5?version=4.2.0
+      export let items = [];
+      export let selectedItem;
+
+      $: inputVal = '';
+
+      function onItemClicked(item) {
+        document.activeElement.blur()
+        selectedItem = item
+        inputVal = '';
+      }
+
+      $: filteredItems = items.filter(function(item) {
+        return item.toLowerCase().includes(inputVal.toLowerCase())
+      })
+    </script>
+
+    <div class="dropdown">
+      <input
+        class="input input-bordered"
+        placeholder="Pick a country"
+        bind:value={inputVal}
+        />
+      <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52 max-h-80 flex-nowrap overflow-auto">
+        {#each filteredItems as item}
+          <li>
+            <a on:click|preventDefault={() => onItemClicked(item)}>{item}</a>
+          </li>
+        {/each}
+      </ul>
+    </div>
+    ```
+
+- Docs:
+  - DATA API
+  - Contexts
+  - Routing
 
 # Data API
 
@@ -422,15 +525,15 @@ flowchart TD
 
 All of the data and state variables used by the app and components are contained in [Svelte contexts](https://svelte.dev/docs/svelte#setcontext).
 
-| Context                                                       |  Consumer                                             | Includes          | Own contents                                                                                                                                                                                                                                                                                                                                                                           | Initiated by                     |
-| ------------------------------------------------------------- | ----------------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
-| [`I18nContext`](/frontend/src/lib/contexts/i18n.ts)           | Other contexts                                        | —                 | — `t`<br> — `locale`<br> — `locales` from `$lib/i18n`                                                                                                                                                                                                                                                                                                                                  | `/[lang]`                        |
-| [`DataContext`](/frontend/src/lib/contexts/vaaData.ts)        | Other contexts                                        | `I18n`            | — `dataRoot: Readable<dataRoot>`                                                                                                                                                                                                                                                                                                                                                       | `/[lang]`                        |
-| [`ComponentContext`](/frontend/src/lib/contexts/component.ts) | Any component\*                                       | `I18n`            | None currently, but the context is separate because the components might be moved later to a separate module                                                                                                                                                                                                                                                                           | `/[lang]`                        |
-| [`AppContext`](/frontend/src/lib/contexts/app.ts)             | Any part of the app or dynamic components             | `I18n`, `VaaData` | — `appSettings: SettingsStore`<br>— `appType: Writable<AppType>`<br> — `userPreferences: Writable<UserPreferences>`<br> — `feedback: DialogService<Feedback>`<br> — `survey: DialogService<Survey>`<br> — `progress: Writable<number \| undefined>`<br> — `getRoute: Readable<RouteGetter>`<br> — `darkMode: Readable<boolean>`<br> — `track`, `startPageview`, `startEvent` etc.      | `/[lang]`                        |
-| [`LayoutContext`](/frontend/src/lib/contexts/layout.ts)       | Any page or layout                                    | —                 | — `appSettings: SettingsStore`<br> — `topBarSettings: StackedStore<TopBarSettings, DeepPartial<TopBarSettings>>`<br> — `pageStyles: StackedStore<PageStyles, DeepPartial<PageStyles>>`<br> — `progress: Progress`<br> — `navigation: Navigation`                                                                                                                                       | `/[lang]` (currently (/(voter))) |
-| [`VoterContext`](/frontend/src/lib/contexts/voter/context.ts) | Any part of the Voter App or voter components         | `App`             | — `electionId: Writable<id>`<br> — `election: Readable<Election>`<br> — `constituencyId: Writable<id>`<br> — `constituency: Readable<Constituency>`<br> — `algorithm: MatchingAlgorithm`<br> — `answers: AnswerStore`<br> — `matchedCandidates: Readable<Promise<Array<Match<Nomination>>>>`<br> — `entityFilters: Readable<Promise<FilterGroup<MaybeRanked<CandidateProps>>>` • MAYBE | `/[lang]/(voter)`                |
-| [`CandidateContext`](/frontend/src/lib/contexts/candidate.ts) | Any part of the Candidate App or candidate components | `App`             | — TBA<br> — `logout: DialogService<LogoutModal>`                                                                                                                                                                                                                                                                                                                                       | `/[lang]/candidate`              |
+| Context                                                       |  Consumer                                             | Includes          | Own contents                                                                                                                                                                                                                                                                                                                                                                                 | Initiated by                     |
+| ------------------------------------------------------------- | ----------------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| [`I18nContext`](/frontend/src/lib/contexts/i18n.ts)           | Other contexts                                        | —                 | — `t`<br> — `locale`<br> — `locales` from `$lib/i18n`                                                                                                                                                                                                                                                                                                                                        | `/[lang]`                        |
+| [`DataContext`](/frontend/src/lib/contexts/vaaData.ts)        | Other contexts                                        | `I18n`            | — `dataRoot: Readable<dataRoot>`                                                                                                                                                                                                                                                                                                                                                             | `/[lang]`                        |
+| [`ComponentContext`](/frontend/src/lib/contexts/component.ts) | Any component\*                                       | `I18n`            | None currently, but the context is separate because the components might be moved later to a separate module                                                                                                                                                                                                                                                                                 | `/[lang]`                        |
+| [`AppContext`](/frontend/src/lib/contexts/app.ts)             | Any part of the app or dynamic components             | `I18n`, `VaaData` | — `appSettings: SettingsStore`<br>— `appType: Writable<AppType>`<br> — `userPreferences: Writable<UserPreferences>`<br> — `feedback: DialogService<Feedback>`<br> — `survey: DialogService<Survey>`<br> — `progress: Writable<number \| undefined>`<br> — `getRoute: Readable<RouteGetter>`<br> — `darkMode: Readable<boolean>`<br> — `track`, `startPageview`, `startEvent` etc.            | `/[lang]`                        |
+| [`LayoutContext`](/frontend/src/lib/contexts/layout.ts)       | Any page or layout                                    | —                 | — `appSettings: SettingsStore`<br> — `topBarSettings: StackedStore<TopBarSettings, DeepPartial<TopBarSettings>>`<br> — `pageStyles: StackedStore<PageStyles, DeepPartial<PageStyles>>`<br> — `progress: Progress`<br> — `navigation: Navigation`                                                                                                                                             | `/[lang]` (currently (/(voter))) |
+| [`VoterContext`](/frontend/src/lib/contexts/voter/context.ts) | Any part of the Voter App or voter components         | `App`             | — `electionId: Writable<id>`<br> — `election: Readable<Election>`<br> — `constituencyId: Writable<id>`<br> — `constituency: Readable<Constituency>`<br> — `algorithm: MatchingAlgorithm`<br> — `answers: AnswerStore`<br> — `matchedCandidates: Readable<Promise<Array<Match<Nomination>>>>`<br> — `entityFilters: Readable<Promise<FilterGroup<LegacyMaybeRanked<CandidateProps>>>` • MAYBE | `/[lang]/(voter)`                |
+| [`CandidateContext`](/frontend/src/lib/contexts/candidate.ts) | Any part of the Candidate App or candidate components | `App`             | — TBA<br> — `logout: DialogService<LogoutModal>`                                                                                                                                                                                                                                                                                                                                             | `/[lang]/candidate`              |
 
 \* `ComponentContext` should be imported in such a way that another context that implements the same functions can easily be provided if the components are used elsewhere.
 
