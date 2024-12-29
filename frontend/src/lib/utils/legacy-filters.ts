@@ -8,8 +8,8 @@ import {
   ChoiceQuestionFilter,
   Filter,
   FilterGroup,
-  type NumericQuestion,
-  NumericQuestionFilter,
+  type NumberQuestion,
+  NumberQuestionFilter,
   ObjectFilter
 } from '@openvaa/filters';
 import { derived, type Readable } from 'svelte/store';
@@ -17,38 +17,39 @@ import { locale, t } from '$lib/i18n';
 import { infoQuestions, parties } from '$lib/legacy-stores';
 import { logDebugError } from './logger';
 
-let candidateFilterGroup: FilterGroup<MaybeRanked<LegacyCandidateProps>> | undefined = undefined;
+let candidateFilterGroup: FilterGroup<LegacyMaybeRanked<LegacyCandidateProps>> | undefined = undefined;
 let candidateFiltersLocale: string = '';
 
-export const candidateFilters: Readable<Promise<FilterGroup<MaybeRanked<LegacyCandidateProps>> | undefined>> = derived(
-  [infoQuestions, locale, parties],
-  async ([$infoQuestions, $locale, $parties]) => {
-    const parties = await $parties;
-    const infoQuestionsSync = await $infoQuestions;
-    if (!infoQuestionsSync.length && !parties.length) return undefined;
-    if (candidateFiltersLocale !== $locale) {
-      candidateFilterGroup = buildCandidateFilters(infoQuestionsSync, parties);
-      candidateFiltersLocale = $locale;
-    }
-    return candidateFilterGroup;
-  },
-  Promise.resolve(undefined)
-);
+export const candidateFilters: Readable<Promise<FilterGroup<LegacyMaybeRanked<LegacyCandidateProps>> | undefined>> =
+  derived(
+    [infoQuestions, locale, parties],
+    async ([$infoQuestions, $locale, $parties]) => {
+      const parties = await $parties;
+      const infoQuestionsSync = await $infoQuestions;
+      if (!infoQuestionsSync.length && !parties.length) return undefined;
+      if (candidateFiltersLocale !== $locale) {
+        candidateFilterGroup = buildCandidateFilters(infoQuestionsSync, parties);
+        candidateFiltersLocale = $locale;
+      }
+      return candidateFilterGroup;
+    },
+    Promise.resolve(undefined)
+  );
 
 /**
  * Initialize candidate filters
  */
 export function buildCandidateFilters(infoQuestions: Array<LegacyQuestionProps>, parties: Array<LegacyPartyProps>) {
-  const filters: Array<Filter<MaybeRanked<LegacyCandidateProps>, unknown>> = [];
+  const filters: Array<Filter<LegacyMaybeRanked<LegacyCandidateProps>, unknown>> = [];
   if (parties.length) {
     filters.push(
-      new ObjectFilter<MaybeRanked<LegacyCandidateProps>, LegacyPartyProps>(
+      new ObjectFilter<LegacyMaybeRanked<LegacyCandidateProps>, LegacyPartyProps>(
         {
           property: 'party',
           keyProperty: 'id',
           labelProperty: 'name',
           objects: parties,
-          name: t.get('common.party.singular')
+          name: t.get('common.organization.singular')
         },
         locale.get()
       )
@@ -60,7 +61,7 @@ export function buildCandidateFilters(infoQuestions: Array<LegacyQuestionProps>,
       case 'singleChoiceOrdinal':
       case 'multipleChoiceCategorical':
         filters.push(
-          new ChoiceQuestionFilter<MaybeRanked<LegacyCandidateProps>>(
+          new ChoiceQuestionFilter<LegacyMaybeRanked<LegacyCandidateProps>>(
             {
               question: q as ChoiceQuestion,
               name: q.text
@@ -71,8 +72,8 @@ export function buildCandidateFilters(infoQuestions: Array<LegacyQuestionProps>,
         break;
       case 'number':
         filters.push(
-          new NumericQuestionFilter<MaybeRanked<LegacyCandidateProps>>({
-            question: q as NumericQuestion,
+          new NumberQuestionFilter<LegacyMaybeRanked<LegacyCandidateProps>>({
+            question: q as NumberQuestion,
             name: q.text
           })
         );

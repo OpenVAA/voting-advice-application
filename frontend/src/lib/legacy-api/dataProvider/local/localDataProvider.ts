@@ -11,6 +11,7 @@ import { logDebugError } from '$lib/utils/logger';
 import { DataFolder } from './dataFolder';
 import { setFeedback } from './setFeedback';
 import { filterById } from './utils/filterById';
+import type { AppCustomization } from '$lib/contexts/app';
 import type {
   DataProvider,
   GetAllPartiesOptions,
@@ -44,7 +45,7 @@ const CRITICAL_UNSUPPORTED_OPTIONS = ['constituencyId', 'electionId', 'loadMembe
 function warnOnUnsupportedOptions(options: GetDataOptionsBase = {}) {
   // This would be better to check at initialization, but having it at the top of the module produces a Vite compilation error
   if (locales.get().length !== 1) {
-    error(500, '[localDataProvider] The current implementation fully supports only one locale.');
+    logDebugError('[localDataProvider] The current implementation fully supports only one locale.');
   }
   for (const key in options) {
     if (CRITICAL_UNSUPPORTED_OPTIONS.includes(key))
@@ -113,11 +114,20 @@ function parseQuestion(
 
 /**
  * Get app settings.
- * @returns The app settings or `undefined` if there was an error
+ * @returns The app settings or an empty object if the file does not exist.
  */
-function getAppSettings(options?: GetDataOptionsBase): Promise<Partial<AppSettings> | undefined> {
+function getAppSettings(options?: GetDataOptionsBase): Promise<Partial<AppSettings>> {
   warnOnUnsupportedOptions(options);
-  return readFile<Partial<AppSettings>>('appSettings.json');
+  return readFile<Partial<AppSettings>>('appSettings.json').catch(() => ({}));
+}
+
+/**
+ * Get app customization.
+ * @returns The app customization or an empty object if the file does not exist.
+ */
+function getAppCustomization(options?: GetDataOptionsBase): Promise<Partial<AppCustomization>> {
+  warnOnUnsupportedOptions(options);
+  return readFile<Partial<AppCustomization>>('appCustomization.json').catch(() => ({}));
 }
 
 /**
@@ -175,7 +185,7 @@ function getAllParties(options?: GetAllPartiesOptions): Promise<Array<LegacyPart
     .then((parties) =>
       parties.map((p) => ({
         ...p,
-        ...ensureColors(p.color, p.colorDark)
+        ...ensureColors({ normal: p.color, dark: p.colorDark })
       }))
     );
 }
@@ -204,6 +214,7 @@ function getNominatedCandidates(options?: GetNominatedCandidatesOptions): Promis
 
 export const dataProvider: DataProvider = {
   getAppSettings,
+  getAppCustomization,
   getElection,
   getQuestions,
   getInfoQuestions,

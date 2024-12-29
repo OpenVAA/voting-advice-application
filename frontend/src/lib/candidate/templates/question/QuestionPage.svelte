@@ -3,9 +3,9 @@
   import { goto } from '$app/navigation';
   import { MultilangTextInput } from '$candidate/components/textArea';
   import { Button } from '$lib/components/button';
-  import { CategoryTag } from '$lib/components/categoryTag';
+  import { CategoryTag } from '$lib/components/legacy/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
-  import { LikertResponseButtons, QuestionInfo } from '$lib/components/questions';
+  import { LikertResponseButtons, QuestionInfo } from '$lib/components/legacy/questions';
   import { Warning } from '$lib/components/warning';
   import { t } from '$lib/i18n';
   import { addAnswer, updateAnswer } from '$lib/legacy-api/candidate';

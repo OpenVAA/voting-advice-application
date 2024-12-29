@@ -3,7 +3,7 @@
   import { afterNavigate, goto } from '$app/navigation';
   import { LogoutButton } from '$lib/candidate/components/logoutButton';
   import { Button } from '$lib/components/button';
-  import { EntityDetails } from '$lib/components/entityDetails';
+  import { EntityDetails } from '$lib/components/legacy/entityDetails';
   import { Icon } from '$lib/components/icon';
   import { Loading } from '$lib/components/loading';
   import { locale, t } from '$lib/i18n';
