@@ -1,5 +1,28 @@
+<!--@component
+
+# App `main` content layout
+
+Defines the layout of the `main` content of all the standard pages in the app.
+
+### Slots
+
+- default: main content of the page
+- `note`: optional content for the complementary notification displayed at the top of the page, right below the `<header>`
+- `hero`: an optional hero image
+- `heading`: optional content for the main title block, defaults to a `<h1>` element containing the required `title` property
+- `primaryActions`: optional content for the primary actions displayed at the bottom of the page
+
+### Properties
+
+- `title`: The required page `title`.
+- `noteClass`: Optional class string to add to the `<div>` tag wrapping the `note` slot.
+- `noteRole`: Aria role for the `note` slot. @default 'note'
+- `primaryActionsLabel`: Optional `aria-label` for the section that contains the primary page actions. @default $t('common.primaryActions')
+- `titleClass`: Optional class string to add to the `<div>` tag wrapping the `title` slot.
+-->
+
 <script lang="ts">
-  import { t } from '$lib/i18n';
+  import { getComponentContext } from '$lib/contexts/component';
   import type { BasicPageProps } from '$lib/templates/basicPage';
 
   export let title: BasicPageProps['title'];
@@ -8,11 +31,17 @@
   export let primaryActionsLabel: BasicPageProps['primaryActionsLabel'] = undefined;
   export let titleClass: BasicPageProps['titleClass'] = '';
 
+  const { t } = getComponentContext();
+
   /** We use `videoHeight` and `videoWidth` as proxies to check for the presence of content in the `video` slot. Note that we cannot merely check if the slot is provided, because it might be empty. */
   // let videoHeight = 0;
   // let videoWidth = 0;
   // let hasVideo = videoWidth > 0 && videoHeight > 0;
 </script>
+
+<svelte:head>
+  <title>{title} – {$t('dynamic.appName')}</title>
+</svelte:head>
 
 <!-- Note -->
 {#if $$slots.note}

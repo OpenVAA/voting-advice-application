@@ -1,14 +1,20 @@
+<!--@component
+
+# Info (about the elections) page
+
+Displays information about the elections in the VAA.
+-->
+
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
-  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { t } from '$lib/i18n';
-  import { election } from '$lib/legacy-stores';
-  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import Layout from '../../../Layout.svelte';
+  import { getAppContext } from '$lib/contexts/app';
+
+  const { dataRoot, getRoute, t } = getAppContext();
 
   const { topBarSettings } = getLayoutContext(onDestroy);
   topBarSettings.push({
@@ -19,27 +25,28 @@
   });
 </script>
 
-<svelte:head>
-  <title>{$t('info.title')} – {$t('dynamic.appName')}</title>
-</svelte:head>
-
 <Layout title={$t('info.title')}>
   <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.info.heroEmoji')} />
   </figure>
 
-  <HeadingGroup slot="heading">
-    <PreHeading class="text-primary">{$election?.name ?? ''}</PreHeading>
-    <h1>{$t('info.title')}</h1>
-  </HeadingGroup>
-
   <div>
-    {@html sanitizeHtml(
-      $t('dynamic.info.content', {
-        electionDate: new Date($election?.electionDate ?? '')
-      })
-    )}
+    {@html sanitizeHtml($t('dynamic.info.content'))}
   </div>
 
-  <Button slot="primaryActions" variant="main" href={$getRoute(ROUTE.Home)} text={$t('common.returnHome')} />
+  {#if $dataRoot.elections}
+    <div class="items-stretch">
+      {#each $dataRoot.elections ?? [] as { name, date, info } }
+          {#if $dataRoot.elections.length > 1}
+            <h2 class="mb-md mt-lg">{ name }</h2>
+          {/if}
+          <p>{ info }</p>
+          {#if date}
+            <p>{ $t('dynamic.info.dateInfo', { electionDate: date }) }</p>
+          {/if}
+      {/each}
+    </div>
+  {/if}
+
+  <Button slot="primaryActions" variant="main" href={$getRoute('Home')} text={$t('common.returnHome')} />
 </Layout>

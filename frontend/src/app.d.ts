@@ -4,17 +4,14 @@
 declare namespace App {
   interface Locals {
     currentLocale: string;
-    route: string;
     preferredLocale?: string;
   }
   interface PageData {
     // Most of these properties are required so we don't need unnecessary
     // null checks every time we use them. We'll initiliaze the Array types
     // as empty arrays in the global data load /+layout.server.ts
-    appSettings?: Partial<AppSettings>;
     candidates?: Promise<Array<LegacyCandidateProps>>;
     categoryId?: string;
-    election?: LegacyElectionProps;
     entityId?: string;
     entityType?: LegacyEntityType;
     parties?: Promise<Array<LegacyPartyProps>>;
@@ -25,11 +22,14 @@ declare namespace App {
     // TODO: This is a temporary fix for the candidate app and will be corrected when this branc is merged into main
     opinionQuestionsSync?: Array<LegacyQuestionProps>;
     infoQuestions?: Promise<Array<LegacyQuestionProps>>;
-    i18n: {
-      currentLocale: string;
-      preferredLocale?: string;
-      route: string;
-    };
+
+    // These are the new types used by the @openvaa/data-conformant Data API
+    appCustomizationData?: DPReturnType['appCustomization'] | Promise<Error>;
+    appSettingsData?: DPReturnType['appSettings'] | Promise<Error>;
+    constituencyData?: DPReturnType['constituencies'] | Promise<Error>;
+    electionData?: DPReturnType['elections'] | Promise<Error>;
+    nominationData?: DPReturnType['nominations'] | Promise<Error>;
+    questionData?: DPReturnType['questions'] | Promise<Error>;
   }
   interface Error {
     message: string;

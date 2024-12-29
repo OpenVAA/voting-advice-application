@@ -1,16 +1,28 @@
+<!--@component
+
+# Privacy page
+
+Displays information about the privacy policy of the app as well as the possible data collection consent of the voter.
+
+### Settings
+
+- `analytics.platform`: Affects the information displayed.
+- `analytics.trackEvents`: Affects the information displayed and whether the `DataConsent` component is shown.
+-->
+
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
-  import { DataConsent } from '$lib/components/dataConsent';
+  import { DataConsent } from '$lib/dynamic-components/dataConsent';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { t } from '$lib/i18n';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
-  import { settings } from '$lib/legacy-stores';
-  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import Layout from '../../../Layout.svelte';
+  import { getAppContext } from '$lib/contexts/app';
+
+  const { appSettings, getRoute, t } = getAppContext();
 
   const { topBarSettings } = getLayoutContext(onDestroy);
   topBarSettings.push({
@@ -20,10 +32,6 @@
     }
   });
 </script>
-
-<svelte:head>
-  <title>{$t('privacy.title')} – {$t('dynamic.appName')}</title>
-</svelte:head>
 
 <Layout title={$t('privacy.title')}>
   <figure role="presentation" slot="hero">
@@ -39,23 +47,23 @@
     <div>
       {@html sanitizeHtml($t('dynamic.privacy.content'))}
     </div>
-    {#if $settings.analytics?.platform}
+    {#if $appSettings.analytics?.platform}
       <h2>{$t('privacy.analytics.title')}</h2>
       <div>
-        {@html sanitizeHtml($t(assertTranslationKey(`privacy.analyticsContent.${$settings.analytics.platform.name}`)))}
+        {@html sanitizeHtml($t(assertTranslationKey(`privacy.analyticsContent.${$appSettings.analytics.platform.name}`)))}
       </div>
     {/if}
     <h2>{$t('privacy.cookies.title')}</h2>
     <div>
       {@html sanitizeHtml($t('privacy.cookies.content'))}
     </div>
-    {#if $settings.analytics.trackEvents}
+    {#if $appSettings.analytics.trackEvents}
       <h2>{$t('common.privacy.dataCollection.title')}</h2>
       <DataConsent description="inline" class="rounded-lg bg-base-300 p-lg" />
     {/if}
   </div>
 
-  <Button slot="primaryActions" variant="main" href={$getRoute(ROUTE.Home)} text={$t('common.returnHome')} />
+  <Button slot="primaryActions" variant="main" href={$getRoute('Home')} text={$t('common.returnHome')} />
 </Layout>
 
 <style lang="postcss">
