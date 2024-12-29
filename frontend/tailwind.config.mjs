@@ -192,9 +192,13 @@ export default {
         screen: fixedScreenHeight,
         touch: touchTargetSize
       },
-      minWidth: {
-        touch: touchTargetSize
-      },
+      minWidth: ({ theme }) => ({
+        touch: touchTargetSize,
+        // Add the named maxWidth sizes for consistency
+        ...Object.fromEntries(['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl', '7xl']
+          .map((size) => ([size, theme(`maxWidth.${size}`)])
+        ))
+      }),
       screens: {
         xs: '320px',
         // The 36rem should match the value for max-w-xl. We have to use
