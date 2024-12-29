@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Icon } from '$lib/components/icon';
-  import { NavItem } from '$lib/dynamic-components/navigation';
   import { getLayoutContext } from '$lib/contexts/layout';
+  import { NavItem } from '$lib/dynamic-components/navigation';
   import { t } from '$lib/i18n';
   import { appType } from '$lib/legacy-stores';
   import { concatClass } from '$lib/utils/components';

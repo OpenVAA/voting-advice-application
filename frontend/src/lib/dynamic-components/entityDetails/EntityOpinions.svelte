@@ -19,12 +19,12 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { QuestionOpenAnswer } from '$lib/components/questions';
-  import type { AnyEntityVariant, AnyQuestionVariant, EntityType } from '@openvaa/data';
-  import type { EntityDetailsProps } from './EntityDetails.type';
+  import QuestionChoices from '$lib/components/questions/QuestionChoices.svelte';
   import { getAppContext } from '$lib/contexts/app';
   import { unwrapEntity } from '$lib/utils/entities';
-  import QuestionChoices from '$lib/components/questions/QuestionChoices.svelte';
+  import type { AnyEntityVariant, AnyQuestionVariant } from '@openvaa/data';
   import type { AnswerStore } from '$lib/contexts/voter';
+  import type { EntityDetailsProps } from './EntityDetails.type';
 
   export let entity: EntityDetailsProps['entity'];
   export let questions: Array<AnyQuestionVariant>;
@@ -39,23 +39,19 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
   ////////////////////////////////////////////////////////////////////
   // Parse entity components
   ////////////////////////////////////////////////////////////////////
-  
-  let entityType: EntityType;
+
   let nakedEntity: AnyEntityVariant;
   let shortName: string;
 
   $: {
     ({ entity: nakedEntity } = unwrapEntity(entity));
     ({ shortName } = nakedEntity);
-    entityType = nakedEntity.type;
   }
-
 </script>
-
 
 <div class="grid p-lg">
   {#each questions as question}
-    {@const { id, text, type, category, customData } = question}
+    {@const { id, text, type, category } = question}
     {@const answer = nakedEntity.getAnswer(question)}
     <!-- We need to be careful in the value conversion that we don't end up with an 'undefined' string -->
     {@const otherSelected = answer?.value ? `${answer?.value}` : undefined}
@@ -106,7 +102,7 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
         {/if}
 
         {#if answer?.info}
-          <QuestionOpenAnswer content={answer.info}/>
+          <QuestionOpenAnswer content={answer.info} />
         {/if}
       {/if}
     </div>

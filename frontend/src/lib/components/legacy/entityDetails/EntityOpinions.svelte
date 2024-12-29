@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { CategoryTag } from '../categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
-  import { LikertResponseButtons, QuestionOpenAnswer } from '../questions';
   import { t } from '$lib/i18n';
   import { answeredQuestions, appType, settings } from '$lib/legacy-stores';
   import { getLikertAnswer } from '$lib/utils/legacy-answers';
   import { isCandidate } from '$lib/utils/legacy-entities';
+  import { CategoryTag } from '../categoryTag';
+  import { LikertResponseButtons, QuestionOpenAnswer } from '../questions';
   import type { EntityDetailsProps } from './EntityDetails.type';
 
   export let entity: LegacyEntityProps;

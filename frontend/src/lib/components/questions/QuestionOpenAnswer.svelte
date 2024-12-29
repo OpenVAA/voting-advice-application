@@ -15,9 +15,9 @@ Display an `Entity`’s open answer to a question. If the content is empty, noth
 
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { getComponentContext } from '$lib/contexts/component';
   import { concatClass, getUUID } from '$lib/utils/components';
   import type { QuestionOpenAnswerProps } from './QuestionOpenAnswer.type';
-  import { getComponentContext } from '$lib/contexts/component';
 
   type $$Props = QuestionOpenAnswerProps;
 
@@ -48,7 +48,10 @@ Display an `Entity`’s open answer to a question. If the content is empty, noth
     class:collapsible
     class:expanded
     style:--full-height={fullHeight}
-    {...concatClass($$restProps, 'relative grid max-h-[8rem] overflow-hidden mt-16 rounded-md bg-base-200 text-center')}>
+    {...concatClass(
+      $$restProps,
+      'relative grid max-h-[8rem] overflow-hidden mt-16 rounded-md bg-base-200 text-center'
+    )}>
     {#if collapsible}
       <button
         on:click={() => {
@@ -60,7 +63,7 @@ Display an `Entity`’s open answer to a question. If the content is empty, noth
       </button>
     {/if}
     <span class="col-start-1 row-start-1 m-md before:content-[open-quote] after:content-[close-quote]">
-      { content }
+      {content}
     </span>
   </div>
 {/if}

@@ -12,11 +12,11 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Icon } from '$lib/components/icon';
+  import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { AppLogo } from '$lib/templates/parts/appLogo';
   import Banner from './Banner.svelte';
   import type { BasicPageProps } from '$lib/templates/basicPage';
-  import { getAppContext } from '$lib/contexts/app';
 
   export let navId: BasicPageProps['navId'];
 

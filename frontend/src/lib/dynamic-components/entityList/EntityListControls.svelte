@@ -32,12 +32,12 @@ TODO: Consider moving the tracking events away from the component and just addin
   import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
   import { EntityFilters } from '$lib/components/entityFilters';
+  import { TextEntityFilter } from '$lib/components/entityFilters/text';
   import { Icon } from '$lib/components/icon';
   import { InfoBadge } from '$lib/components/infoBadge';
   import { Modal } from '$lib/components/modal';
   import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
-  import { TextEntityFilter } from '$lib/components/entityFilters/text';
   import type { EntityListControlsProps } from './EntityListControls.type';
 
   type $$Props = EntityListControlsProps;
@@ -76,7 +76,10 @@ TODO: Consider moving the tracking events away from the component and just addin
 
   // Create the text search filter
   const searchFilter = searchProperty
-    ? new TextPropertyFilter<MaybeWrappedEntityVariant>({ property: searchProperty as keyof MaybeWrappedEntityVariant }, $locale)
+    ? new TextPropertyFilter<MaybeWrappedEntityVariant>(
+        { property: searchProperty as keyof MaybeWrappedEntityVariant },
+        $locale
+      )
     : undefined;
 
   // Listen to changes in the filters

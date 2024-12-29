@@ -50,9 +50,9 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
   import { createEventDispatcher, onMount } from 'svelte';
   import { Button } from '$lib/components/button';
   import { Icon } from '$lib/components/icon';
+  import { getComponentContext } from '$lib/contexts/component';
   import { concatClass, getUUID } from '$lib/utils/components';
   import type { AlertProps } from './Alert.type';
-  import { getComponentContext } from '$lib/contexts/component';
 
   type $$Props = AlertProps;
 

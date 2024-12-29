@@ -43,14 +43,14 @@ Used to display an error message.
 
 <div {...concatClass($$restProps, classes)}>
   {#if inline}
-    <span class="text-error text-center">{ message }</span>
+    <span class="text-center text-error">{message}</span>
   {:else}
     {#if emoji}
       <figure role="presentation" class="my-lg">
         <HeroEmoji {emoji} />
       </figure>
     {/if}
-    <h2 class="text-error text-center">{ message }</h2>
+    <h2 class="text-center text-error">{message}</h2>
     <div class="text-center">{@html sanitizeHtml($t('error.content'))}</div>
   {/if}
 </div>

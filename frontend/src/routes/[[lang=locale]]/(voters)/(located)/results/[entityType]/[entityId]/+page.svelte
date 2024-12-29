@@ -22,25 +22,24 @@ Used to show an entity's details using the `EntityDetails` component.
 -->
 
 <script lang="ts">
+  import { Match } from '@openvaa/matching';
   import { onDestroy } from 'svelte';
   import { afterNavigate, goto } from '$app/navigation';
-  import { EntityDetails } from '$lib/dynamic-components/entityDetails';
+  import { page } from '$app/stores';
   import { Loading } from '$lib/components/loading';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { page } from '$app/stores';
-  import type { AnyEntityVariant, EntityType } from '@openvaa/data';
-  import { findNomination } from '$lib/utils/matches';
-  import { Match } from '@openvaa/matching';
-  import type { EntityDetailsContent, OrganizationDetailsContent } from '@openvaa/app-shared';
-  import { logDebugError } from '$lib/utils/logger';
+  import { EntityDetails } from '$lib/dynamic-components/entityDetails';
   import { unwrapEntity } from '$lib/utils/entities';
+  import { logDebugError } from '$lib/utils/logger';
+  import { findNomination } from '$lib/utils/matches';
+  import type { AnyEntityVariant, EntityType } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, dataRoot, getRoute, locale, matches, startEvent, t } = getVoterContext();
+  const { dataRoot, getRoute, locale, matches, startEvent, t } = getVoterContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -71,7 +70,6 @@ Used to show an entity's details using the `EntityDetails` component.
   ////////////////////////////////////////////////////////////////////
 
   let entity: MaybeWrappedEntityVariant | undefined;
-  let tabs: Array<EntityDetailsContent | OrganizationDetailsContent> | undefined;
   $: {
     const entityType = $page.params.entityType as EntityType;
     const entityId = $page.params.entityId;
@@ -100,10 +98,6 @@ Used to show an entity's details using the `EntityDetails` component.
         handleError(`Entity of type ${entityType} with id ${entityId} not found.`);
       }
     }
-
-    tabs = entityType in $appSettings.entityDetails.contents 
-      ? $appSettings.entityDetails.contents[entityType as keyof typeof $appSettings.entityDetails.contents]
-      : undefined;
   }
 
   /**
@@ -120,7 +114,10 @@ Used to show an entity's details using the `EntityDetails` component.
 
   function doTrack(): void {
     if (entity instanceof Match) {
-      startEvent(`results_ranked_${$page.params.entityType as EntityType}`, { id: $page.params.entityId, score: entity.score });
+      startEvent(`results_ranked_${$page.params.entityType as EntityType}`, {
+        id: $page.params.entityId,
+        score: entity.score
+      });
     } else {
       startEvent(`results_browse_${$page.params.entityType as EntityType}`, { id: $page.params.entityId });
     }

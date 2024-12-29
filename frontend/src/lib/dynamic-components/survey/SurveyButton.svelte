@@ -29,13 +29,13 @@ Accesses `AppContext` to set and read the current survey status and link.
   <SurveyButton variant="main"/>
   ```
 -->
-  
+
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { Button } from '$lib/components/button';
+  import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
   import type { SurveyButtonProps } from './SurveyButton.type';
-  import { getAppContext } from '$lib/contexts/app';
 
   type $$Props = SurveyButtonProps;
 

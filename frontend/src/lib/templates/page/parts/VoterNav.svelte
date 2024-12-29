@@ -29,14 +29,23 @@ This is a dynamic component because it accesse the `VoterContext`.
 -->
 
 <script lang="ts">
-  import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { surveyLink } from '$lib/utils/legacy-analytics/survey';
+  import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
   import { openFeedbackModal } from '$lib/legacy-stores';
+  import { surveyLink } from '$lib/utils/legacy-analytics/survey';
   import LanguageSelection from './LanguageSelection.svelte';
 
-  const { answers, appSettings, constituenciesSelectable, electionsSelectable, getRoute, 
-    resultsAvailable, selectedElections: elections, selectedConstituencies: constituencies, t } = getVoterContext();
+  const {
+    answers,
+    appSettings,
+    constituenciesSelectable,
+    electionsSelectable,
+    getRoute,
+    resultsAvailable,
+    selectedElections: elections,
+    selectedConstituencies: constituencies,
+    t
+  } = getVoterContext();
 </script>
 
 <Navigation on:keyboardFocusOut {...$$restProps}>
@@ -47,16 +56,16 @@ This is a dynamic component because it accesse the `VoterContext`.
       <NavItem href={$getRoute('Elections')} icon="election" text={$t('elections.title')} />
     {/if}
     {#if $constituenciesSelectable}
-      <NavItem 
+      <NavItem
         disabled={!$elections.length}
-        href={$getRoute('Constituencies')} 
-        icon="constituency" 
+        href={$getRoute('Constituencies')}
+        icon="constituency"
         text={$t('constituencies.title')} />
     {/if}
-    <NavItem 
+    <NavItem
       disabled={!($elections.length && $constituencies.length)}
-      href={$getRoute('Questions')} 
-      icon="opinion" 
+      href={$getRoute('Questions')}
+      icon="opinion"
       text={$t('questions.title')} />
     <NavItem
       disabled={!($elections.length && $constituencies.length)}
@@ -66,10 +75,10 @@ This is a dynamic component because it accesse the `VoterContext`.
   </NavGroup>
   <NavGroup>
     <NavItem
-        disabled={Object.values($answers).length === 0}
-        on:click={() => answers.reset()}
-        icon="close"
-        text={$t('common.resetAnswers')} />
+      disabled={Object.values($answers).length === 0}
+      on:click={() => answers.reset()}
+      icon="close"
+      text={$t('common.resetAnswers')} />
   </NavGroup>
   <NavGroup>
     <NavItem href={$getRoute('Info')} icon="election" text={$t('info.title')} />

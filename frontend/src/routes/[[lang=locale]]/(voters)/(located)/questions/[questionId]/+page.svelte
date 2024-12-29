@@ -15,33 +15,40 @@ Display a question for answering.
 -->
 
 <script lang="ts">
+  import { error } from '@sveltejs/kit';
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { Loading } from '$lib/components/loading';
-  import {
-    QuestionActions,
-    QuestionInfo
-  } from '$lib/components/questions';
+  import { QuestionActions, QuestionInfo } from '$lib/components/questions';
+  import QuestionChoices from '$lib/components/questions/QuestionChoices.svelte';
   import { getLayoutContext } from '$lib/contexts/layout';
+  import { getVoterContext } from '$lib/contexts/voter';
+  import { logDebugError } from '$lib/utils/logger';
+  import { FIRST_QUESTION_ID, parseParams } from '$lib/utils/route';
+  import { DELAY } from '$lib/utils/timing';
   import Layout from '../../../../../Layout.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
-  import { page } from '$app/stores';
-  import { FIRST_QUESTION_ID, parseParams } from '$lib/utils/route';
-  import { getVoterContext } from '$lib/contexts/voter';
-  import { error } from '@sveltejs/kit';
-  import { DELAY } from '$lib/utils/timing';
-  import QuestionChoices from '$lib/components/questions/QuestionChoices.svelte';
   import type { QuestionBlock } from '$lib/contexts/voter/questionBlockStore.type';
-  import { logDebugError } from '$lib/utils/logger';
   //import {type VideoMode, Video} from '$lib/components/video';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { answers, appSettings, dataRoot, firstQuestionId, selectedQuestionBlocks, selectedQuestionCategoryIds, getRoute, startEvent, t } = getVoterContext();
+  const {
+    answers,
+    appSettings,
+    dataRoot,
+    firstQuestionId,
+    selectedQuestionBlocks,
+    selectedQuestionCategoryIds,
+    getRoute,
+    startEvent,
+    t
+  } = getVoterContext();
   const { progress } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -50,26 +57,26 @@ Display a question for answering.
 
   let customData: CustomData['Question'];
   let question: AnyQuestionVariant;
-  let questionBlock: { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number; } | undefined;
+  let questionBlock: { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
   $: {
     // Get question
     const questionId = parseParams($page).questionId;
     if (!questionId) error(500, 'No questionId provided.');
     try {
-      question = questionId === FIRST_QUESTION_ID 
-        ? $selectedQuestionBlocks.blocks[0]?.[0]
-        : $dataRoot.getQuestion(questionId);
+      question =
+        questionId === FIRST_QUESTION_ID ? $selectedQuestionBlocks.blocks[0]?.[0] : $dataRoot.getQuestion(questionId);
     } catch {
-      error(404, `Question with id ${questionId} not found.`)
+      error(404, `Question with id ${questionId} not found.`);
     }
 
     // Get question block and index
     questionBlock = $selectedQuestionBlocks.getByQuestion(question);
     if (!questionBlock) {
-      logDebugError(`Question with id ${questionId} not found in selectedQuestionBlocks. Rerouting to category selection.`);
+      logDebugError(
+        `Question with id ${questionId} not found in selectedQuestionBlocks. Rerouting to category selection.`
+      );
       goto($getRoute('Questions'));
     } else {
-
       progress.current.set(questionBlock.index + 1);
       customData = question.customData;
 
@@ -105,10 +112,7 @@ Display a question for answering.
   /** Use to disable the response buttons when an answer is set but we're still waiting for the next page to load */
   let disabled = false;
 
-  function handleAnswer({ question, value }: {
-    question: AnyQuestionVariant,
-    value?: unknown
-  }): void {
+  function handleAnswer({ question, value }: { question: AnyQuestionVariant; value?: unknown }): void {
     disabled = true;
     answers.setAnswer(question.id, value);
     setTimeout(handleJump, DELAY.md);
@@ -132,21 +136,21 @@ Display a question for answering.
     // Go back to the questions are main intro if moving back from the first question
     if (newIndex < 0) {
       url = $getRoute($appSettings.questions.questionsIntro.show ? 'Questions' : 'Intro');
-    // Go to results if moving forward from the last question
+      // Go to results if moving forward from the last question
     } else if (newIndex >= $selectedQuestionBlocks.questions.length) {
       url = $getRoute('Results');
-    // Show category intro if moving forward from the first question in a category
+      // Show category intro if moving forward from the first question in a category
     } else {
       const newQuestion = $selectedQuestionBlocks.questions[newIndex];
       // Show the next category intro if the next question is the first question in a new category and we're not moving backwards
       // TODO: Handle category showing more centrally, e.g. during onMount of this page, so that sources linking here need to concern themselves with choosing whether to show the category intro. In that case, though, another search param will be necessary that can be used to suppress category intro display.
       if (
-        $appSettings.questions.questionsIntro.show
-        && steps > 0
-        && $selectedQuestionBlocks.getByQuestion(newQuestion)?.indexInBlock === 0
+        $appSettings.questions.questionsIntro.show &&
+        steps > 0 &&
+        $selectedQuestionBlocks.getByQuestion(newQuestion)?.indexInBlock === 0
       ) {
         url = $getRoute({ route: 'QuestionCategory', categoryId: newQuestion.category.id });
-      // Othwerwise, just go to the new question
+        // Othwerwise, just go to the new question
       } else {
         url = $getRoute({ route: 'Question', questionId: newQuestion.id });
         // Disable scrolling when moving between questions for a smoother experience
@@ -200,13 +204,12 @@ Display a question for answering.
       ...question.customData.video
     } as CustomVideoProps;
   } */
-
 </script>
 
 {#if question && questionBlock}
-  {@const { category, id, info, text, type } = question }
-  {@const headingId = `questionHeading-${id}` }
-  {@const questions = $selectedQuestionBlocks.questions }
+  {@const { category, id, info, text, type } = question}
+  {@const headingId = `questionHeading-${id}`}
+  {@const questions = $selectedQuestionBlocks.questions}
 
   <!--
     class={videoProps ? 'bg-base-300' : undefined}
@@ -214,7 +217,6 @@ Display a question for answering.
   -->
 
   <Layout title={text}>
-
     <!--
       <svelte:fragment slot="video">
         {#if videoProps}
@@ -255,7 +257,7 @@ Display a question for answering.
 
     <svelte:fragment slot="primaryActions">
       {#if type === 'singleChoiceOrdinal' || type === 'singleChoiceCategorical'}
-        {@const selectedId = question.ensureValue($answers[question.id]?.value) }
+        {@const selectedId = question.ensureValue($answers[question.id]?.value)}
         <!-- onShadedBg={videoProps != null} -->
         <QuestionChoices
           aria-labelledby={headingId}

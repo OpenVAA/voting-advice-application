@@ -9,10 +9,10 @@ Displays information about the elections in the VAA.
   import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import Layout from '../../../Layout.svelte';
-  import { getAppContext } from '$lib/contexts/app';
 
   const { dataRoot, getRoute, t } = getAppContext();
 
@@ -36,14 +36,14 @@ Displays information about the elections in the VAA.
 
   {#if $dataRoot.elections}
     <div class="items-stretch">
-      {#each $dataRoot.elections ?? [] as { name, date, info } }
-          {#if $dataRoot.elections.length > 1}
-            <h2 class="mb-md mt-lg">{ name }</h2>
-          {/if}
-          <p>{ info }</p>
-          {#if date}
-            <p>{ $t('dynamic.info.dateInfo', { electionDate: date }) }</p>
-          {/if}
+      {#each $dataRoot.elections ?? [] as { name, date, info }}
+        {#if $dataRoot.elections.length > 1}
+          <h2 class="mb-md mt-lg">{name}</h2>
+        {/if}
+        <p>{info}</p>
+        {#if date}
+          <p>{$t('dynamic.info.dateInfo', { electionDate: date })}</p>
+        {/if}
       {/each}
     </div>
   {/if}

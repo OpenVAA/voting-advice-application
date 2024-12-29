@@ -15,15 +15,22 @@ Used to show an entity's basic info and their answers to `info` questions in an 
 -->
 
 <script lang="ts">
-  import { InfoAnswer } from '$lib/components/infoAnswer';
+  import {
+    type AnyEntityVariant,
+    type AnyNominationVariant,
+    type AnyQuestionVariant,
+    Candidate,
+    ENTITY_TYPE,
+    type EntityType
+  } from '@openvaa/data';
   import { EntityTag } from '$lib/components/entityTag';
+  import { InfoAnswer } from '$lib/components/infoAnswer';
+  import { getAppContext } from '$lib/contexts/app';
   import { SurveyBanner } from '$lib/dynamic-components/survey/banner';
+  import { unwrapEntity } from '$lib/utils/entities';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import InfoItem from './InfoItem.svelte';
   import type { EntityDetailsProps } from './EntityDetails.type';
-  import { Candidate, ENTITY_TYPE, Organization, type AnyEntityVariant, type AnyNominationVariant, type AnyQuestionVariant, type EntityType } from '@openvaa/data';
-  import { unwrapEntity } from '$lib/utils/entities';
-  import { getAppContext } from '$lib/contexts/app';
 
   export let entity: EntityDetailsProps['entity'];
   export let questions: Array<AnyQuestionVariant>;
@@ -37,7 +44,7 @@ Used to show an entity's basic info and their answers to `info` questions in an 
   ////////////////////////////////////////////////////////////////////
   // Parse entity components
   ////////////////////////////////////////////////////////////////////
-  
+
   let electionSymbol: string | undefined;
   let entityType: EntityType;
   let nakedEntity: AnyEntityVariant;
@@ -63,25 +70,26 @@ Used to show an entity's basic info and their answers to `info` questions in an 
         <InfoItem label={$t('common.electionList')}>
           <!-- Add a link to the entity page for parties -->
           {#if nomination.parentNomination.entityType === ENTITY_TYPE.Organization}
-            <a href={$getRoute({
-              route: 'ResultEntity', 
-              entityType: nomination.parentNomination.entityType,
-              entityId: nomination.parentNomination.entity.id,
-              nominationId: nomination.parentNomination.id,
-            })}>
+            <a
+              href={$getRoute({
+                route: 'ResultEntity',
+                entityType: nomination.parentNomination.entityType,
+                entityId: nomination.parentNomination.entity.id,
+                nominationId: nomination.parentNomination.id
+              })}>
               <EntityTag entity={nomination.parentNomination} variant="full" />
             </a>
           {:else}
             <EntityTag entity={nomination.parentNomination} variant="full" />
           {/if}
           {#if nakedEntity instanceof Candidate && nakedEntity.organization && nakedEntity.organization !== nomination.parentNomination.entity}
-            ({ $t('entityDetails.memberOfOrganization', { organization: nakedEntity.organization.shortName }) })
+            ({$t('entityDetails.memberOfOrganization', { organization: nakedEntity.organization.shortName })})
           {/if}
         </InfoItem>
       {/if}
       {#if electionSymbol || $appSettings.entityDetails.showMissingElectionSymbol[entityType]}
         <InfoItem label={$t(`common.electionSymbol.${entityType}`)}>
-          { electionSymbol ?? $t('common.missingAnswer') }
+          {electionSymbol ?? $t('common.missingAnswer')}
         </InfoItem>
       {/if}
     </div>

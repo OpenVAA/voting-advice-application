@@ -83,7 +83,7 @@ A component for a multiple choice question that can be answered.
         disabled={locked}
         bind:this={selectElement}
         id={questionId}
-        class="select select-sm w-full text-right text-primary disabled:border-none !bg-base-100"
+        class="select select-sm w-full !bg-base-100 text-right text-primary disabled:border-none"
         on:change={onLanguageSelect}
         style="text-align-last: right; direction: rtl;">
         <option disabled selected value style="display: none;" />

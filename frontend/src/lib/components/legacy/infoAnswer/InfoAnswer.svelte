@@ -1,7 +1,7 @@
 <script lang="ts">
   import { t } from '$lib/i18n';
-  import { getAnswerForDisplay } from '$lib/utils/legacy-answers';
   import { concatClass } from '$lib/utils/components';
+  import { getAnswerForDisplay } from '$lib/utils/legacy-answers';
   import { parseMaybeRanked } from '$lib/utils/legacy-entities';
   import { getLinkText } from '$lib/utils/links';
   import { logDebugError } from '$lib/utils/logger';

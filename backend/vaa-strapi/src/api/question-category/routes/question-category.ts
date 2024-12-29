@@ -17,11 +17,11 @@ export default factories.createCoreRouter('api::question-category.question-categ
           'elections',
           'questions',
           'questions.populate.questionType',
-          'questions.populate.category.populate.election',
+          'questions.populate.category.populate.election'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters(['type.$eq', 'elections.id.$eq', 'elections.id.$in']),
-      ],
+        restrictFilters(['type.$eq', 'elections.id.$eq', 'elections.id.$in'])
+      ]
     },
     findOne: {
       policies: [
@@ -31,11 +31,11 @@ export default factories.createCoreRouter('api::question-category.question-categ
           'elections',
           'questions',
           'questions.populate.questionType',
-          'questions.populate.category.populate.election',
+          'questions.populate.category.populate.election'
         ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters(['type.$eq', 'elections.id.$eq', 'elections.id.$in']),
-      ],
-    },
-  } as unknown as Generic,
+        restrictFilters(['type.$eq', 'elections.id.$eq', 'elections.id.$in'])
+      ]
+    }
+  } as unknown as Generic
 });
