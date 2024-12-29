@@ -1,3 +1,5 @@
+import type { DPReturnType } from '$lib/api/base/dataProvider.type';
+
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 // and what to do when importing types
