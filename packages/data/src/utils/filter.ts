@@ -13,8 +13,8 @@ export function match<TValue>({
   filter?: FilterValue<TValue>;
   target?: FilterValue<TValue>;
 }): boolean {
-  if (filter == null) return true;
-  if (target == null) return false;
+  if (filter == null || (Array.isArray(filter) && filter.length === 0)) return true;
+  if (target == null || (Array.isArray(target) && target.length === 0)) return false;
   if (!Array.isArray(filter)) filter = [filter];
   if (!Array.isArray(target)) target = [target];
   return target.some((t) => filter.includes(t));
