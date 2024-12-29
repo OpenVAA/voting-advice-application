@@ -1,5 +1,6 @@
 {
   "links": "Länkar",
+  "memberOfOrganization": "medlem av {organization}",
   "tabs": {
     "candidates": "{candidatePlural}",
     "info": "Information",
