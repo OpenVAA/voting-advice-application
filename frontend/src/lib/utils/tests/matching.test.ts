@@ -1,7 +1,7 @@
 import { MISSING_VALUE } from '@openvaa/core';
 import { expect, test } from 'vitest';
 import { MockCandidate, MockParty } from './mock-objects';
-import { imputePartyAnswers, mean, median } from '../matching';
+import { imputePartyAnswers, mean, median } from '../legacy-matching';
 
 test('Mean and median', () => {
   expect(mean([1, 2, 2, 2, 10]), 'Mean').toEqual((1 + 2 + 2 + 2 + 10) / 5);
