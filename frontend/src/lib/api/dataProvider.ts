@@ -16,4 +16,4 @@ switch (type) {
     throw new Error(`Unsupported data provider: ${type}`);
 }
 
-export const { dataProvider } = await module;
+export const dataProvider = module.then((m) => m.dataProvider);

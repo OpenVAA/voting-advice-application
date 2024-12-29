@@ -3,7 +3,7 @@ import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { get, type Writable, writable } from 'svelte/store';
 import { browser } from '$app/environment';
-import { feedbackWriter } from '$lib/api/feedbackWriter';
+import { feedbackWriter as feedbackWriterPromise } from '$lib/api/feedbackWriter';
 import { FeedbackPopup } from '$lib/dynamic-components/feedback/popup';
 import { SurveyPopup } from '$lib/dynamic-components/survey/popup';
 import { mergeAppSettings } from '$lib/utils/settings';
@@ -92,8 +92,9 @@ export function initAppContext(): AppContext {
   // Sending feedback
   ////////////////////////////////////////////////////////////////////
 
-  function sendFeedback(feedback: FeedbackData): Promise<Response> {
+  async function sendFeedback(feedback: FeedbackData): Promise<Response> {
     if (!browser) error(500, 'sendFeedback() called in a non-browser environment');
+    const feedbackWriter = await feedbackWriterPromise;
     feedbackWriter.init({ fetch });
     return feedbackWriter.postFeedback(feedback);
   }
