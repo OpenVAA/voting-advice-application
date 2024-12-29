@@ -59,6 +59,25 @@ describe('AppliesTo should work', () => {
     expect(obj.appliesTo({ elections: election, constituencies: constituency, entityType: entityType })).toBe(true);
   });
 
+  test('Object has empty arrays for filterable restrictions', () => {
+    const obj = new MockQuestionAndCategory({
+      data: {
+        id: crypto.randomUUID(),
+        electionIds: [],
+        electionRounds: [],
+        constituencyIds: [],
+        entityType: []
+      },
+      root
+    });
+    expect(obj.appliesTo({ elections: election! })).toBe(true);
+    expect(obj.appliesTo({ elections: [election!, election2!] })).toBe(true);
+    expect(obj.appliesTo({ constituencies: constituency })).toBe(true);
+    expect(obj.appliesTo({ entityType: entityType })).toBe(true);
+    expect(obj.appliesTo({ electionRounds: 1 })).toBe(true);
+    expect(obj.appliesTo({ elections: election, constituencies: constituency, entityType: entityType })).toBe(true);
+  });
+
   test('Object has filterable restrictions', () => {
     const obj = new MockQuestionAndCategory({
       data: {
