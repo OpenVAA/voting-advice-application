@@ -1,19 +1,47 @@
+<!--@component
+
+# Header component
+
+Defines the global app header.
+
+### Dynamic component
+
+Accesses `AppContext` and renders the dynamic `Banner` component.
+-->
+
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Icon } from '$lib/components/icon';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { t } from '$lib/i18n';
-  import { settings } from '$lib/legacy-stores';
   import { AppLogo } from '$lib/templates/parts/appLogo';
-  import { darkMode } from '$lib/utils/legacy-darkMode';
   import Banner from './Banner.svelte';
-  import type { BasicPageProps } from '$lib/templates/basicPage/BasicPage.type';
+  import type { BasicPageProps } from '$lib/templates/basicPage';
+  import { getAppContext } from '$lib/contexts/app';
 
-  export let navId: BasicPageProps['navId'] = 'pageNav';
+  export let navId: BasicPageProps['navId'];
 
   export let openDrawer: () => void;
   export let drawerOpen = false;
   export let drawerOpenElement: HTMLButtonElement | undefined;
+
+  const { appSettings, darkMode, t } = getAppContext();
+
+  const { topBarSettings, progress } = getLayoutContext(onDestroy);
+
+  const currentProgress = progress.current;
+  const maxProgress = progress.max;
+
+  const headerStyle = $appSettings.headerStyle;
+
+  let bgColor: string | undefined;
+  $: {
+    const mode = $darkMode ? headerStyle.dark : headerStyle.light;
+    bgColor = $topBarSettings.imageSrc ? mode.overImgBgColor : mode.bgColor;
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Stashed for video
+  ////////////////////////////////////////////////////////////////////
 
   /** We use `videoHeight` and `videoWidth` as proxies to check for the presence of content in the `video` slot. Note that we cannot merely check if the slot is provided, because it might be empty. */
   /*
@@ -26,19 +54,6 @@
 
   /** The complicated condition for invertLogo ensures that when video is present behind the header, the logo is always white. Invert would otherwise render the default logo in dark mode. */
   /* let invertLogo = hasVideo && screenWidth < Breakpoints.sm && !$darkMode; */
-
-  const { topBarSettings, progress } = getLayoutContext(onDestroy);
-
-  const currentProgress = progress.current;
-  const maxProgress = progress.max;
-
-  const headerStyle = $settings.headerStyle;
-
-  let bgColor: string | undefined;
-  $: {
-    const mode = $darkMode ? headerStyle.dark : headerStyle.light;
-    bgColor = $topBarSettings.imageSrc ? mode.overImgBgColor : mode.bgColor;
-  }
 </script>
 
 <!-- {hasVideo ? '!absolute w-full bg-transparent z-10' : ''} -->
