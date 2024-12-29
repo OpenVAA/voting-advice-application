@@ -25,27 +25,38 @@ The nominations applicable to these elections and constituencies are shown. Thes
 -->
 
 <script lang="ts">
+  import { Election, type EntityType } from '@openvaa/data';
   import { type Snapshot } from '@sveltejs/kit';
-  import { EntityList, EntityListControls } from '$lib/dynamic-components/entityList';
+  import { onMount } from 'svelte';
   import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { Icon } from '$lib/components/icon';
   import { Loading } from '$lib/components/loading';
   import { StretchBackground } from '$lib/components/stretchBackground';
-  import { Tabs, type Tab } from '$lib/components/tabs';
-  import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
-  import { sanitizeHtml } from '$lib/utils/sanitize';
-  import Layout from '../../../../Layout.svelte';
+  import { type Tab, Tabs } from '$lib/components/tabs';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { onMount } from 'svelte';
-  import { Election, type EntityType } from '@openvaa/data';
-  import type { Id } from '@openvaa/core';
+  import { EntityList, EntityListControls } from '$lib/dynamic-components/entityList';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
   import { ucFirst } from '$lib/utils/text/ucFirst';
-  import { Icon } from '$lib/components/icon';
-  
+  import Layout from '../../../../Layout.svelte';
+  import type { Id } from '@openvaa/core';
+
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { answers, appSettings, entityFilters, getRoute, matches, resultsAvailable, selectedElections: elections, startEvent, startFeedbackPopupCountdown, startSurveyPopupCountdown, t } = getVoterContext();
+  const {
+    answers,
+    appSettings,
+    entityFilters,
+    getRoute,
+    matches,
+    resultsAvailable,
+    selectedElections: elections,
+    startEvent,
+    startFeedbackPopupCountdown,
+    startSurveyPopupCountdown,
+    t
+  } = getVoterContext();
 
   ////////////////////////////////////////////////////////////////////
   // Start countdowns and track events, set initial tab
@@ -57,11 +68,11 @@ The nominations applicable to these elections and constituencies are shown. Thes
       entityType: activeEntityType,
       numAnswers: Object.keys($answers).length
     });
-    if ($appSettings.results.showFeedbackPopup != null) 
+    if ($appSettings.results.showFeedbackPopup != null)
       startFeedbackPopupCountdown($appSettings.results.showFeedbackPopup);
     if ($appSettings.survey?.showIn && $appSettings.survey.showIn.includes('resultsPopup'))
       startSurveyPopupCountdown($appSettings.results.showSurveyPopup);
-  })
+  });
 
   ////////////////////////////////////////////////////////////////////
   // Sections
@@ -80,18 +91,15 @@ The nominations applicable to these elections and constituencies are shown. Thes
   let activeMatches: Array<MaybeWrappedEntityVariant> | undefined;
   /** The tabs for entity selection that are available for the active election */
   let entityTabs: Array<EntityTab>;
-  
+
   // React to changes in activeElectionId to updadate entityTabs
   $: {
-    entityTabs = Object.keys($matches[activeElectionId]).map(
-      (type) => ({ 
-        type: type as EntityType, 
-        label: ucFirst($t(`common.${type as EntityType}.plural`))
-      })
-    );
+    entityTabs = Object.keys($matches[activeElectionId]).map((type) => ({
+      type: type as EntityType,
+      label: ucFirst($t(`common.${type as EntityType}.plural`))
+    }));
     // Preserve current activeEntityType if it exists in the new tabs, otherwise use the first one available
-    if (!activeEntityType || !(activeEntityType in $matches[activeElectionId]))
-      activeEntityType = entityTabs[0]?.type;
+    if (!activeEntityType || !(activeEntityType in $matches[activeElectionId])) activeEntityType = entityTabs[0]?.type;
     activeElection = $elections.find((e) => e.id === activeElectionId)!;
   }
 
@@ -121,7 +129,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   }
 
   // Restore the currently open section when returning
-  export const snapshot: Snapshot<{ activeElectionId: Id; activeEntityType?: EntityType; }> = {
+  export const snapshot: Snapshot<{ activeElectionId: Id; activeEntityType?: EntityType }> = {
     capture: () => ({ activeElectionId, activeEntityType }),
     restore: (values) => {
       ({ activeElectionId, activeEntityType } = values);
@@ -135,7 +143,6 @@ The nominations applicable to these elections and constituencies are shown. Thes
   // This will hold the filtered entities returned by EntityListControls
   // TODO: Combine EntityListControls and List components into one
   let filteredEntities = new Array<MaybeWrappedEntityVariant>();
-
 </script>
 
 <Layout title={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}>
@@ -147,13 +154,15 @@ The nominations applicable to these elections and constituencies are shown. Thes
     {#if $resultsAvailable}
       <p>{$t('dynamic.results.ingress.results')}</p>
     {:else}
-      <p>{@html sanitizeHtml(
-        $t('dynamic.results.ingress.browse', {
-          questionsLink: `<a href="${$getRoute('Questions')}">${$t('results.ingress.questionsLinkText', {
-            numQuestions: $appSettings.matching.minimumAnswers
-          })}</a>`
-        })
-      )}</p>
+      <p>
+        {@html sanitizeHtml(
+          $t('dynamic.results.ingress.browse', {
+            questionsLink: `<a href="${$getRoute('Questions')}">${$t('results.ingress.questionsLinkText', {
+              numQuestions: $appSettings.matching.minimumAnswers
+            })}</a>`
+          })
+        )}
+      </p>
     {/if}
     {#if $elections.length > 1}
       <p>{$t('dynamic.results.multipleElections')}</p>
@@ -165,32 +174,28 @@ The nominations applicable to these elections and constituencies are shown. Thes
   {#if $elections.length > 1}
     <div class="-mt-md mb-lg grid gap-md">
       {#each $elections as election}
-        <button 
+        <button
           class="btn px-lg"
           class:bg-base-300={activeElectionId === election.id}
           class:font-bold={activeElectionId === election.id}
           on:click={() => handleElectionChange(election)}>
-          { election.shortName }
+          {election.shortName}
         </button>
       {/each}
     </div>
 
     {#if activeElection.info}
       <p class="text-center text-secondary">
-        <Icon name="info"/>
-        { activeElection.info }
+        <Icon name="info" />
+        {activeElection.info}
       </p>
     {/if}
   {/if}
 
   <StretchBackground padding="medium" bgColor="base-300" toBottom class="min-h-[75vh]">
-
     <!-- EntityType selector if there are multiple -->
     {#if Object.keys($matches[activeElectionId]).length > 1}
-      <Tabs
-        tabs={entityTabs}
-        activeIndex={initialEntityTabIndex}
-        onChange={handleEntityTabChange} />
+      <Tabs tabs={entityTabs} activeIndex={initialEntityTabIndex} onChange={handleEntityTabChange} />
     {/if}
 
     <!-- We need to add mx-10 below to match the margins to the basic page margins, except for the EntityList components which we want to give more width -->
@@ -207,21 +212,18 @@ The nominations applicable to these elections and constituencies are shown. Thes
           </h2>
           <EntityListControls
             entities={activeMatches}
-            onUpdate={(results) => filteredEntities = results}
+            onUpdate={(results) => (filteredEntities = results)}
             filterGroup={$entityFilters[activeElectionId][activeEntityType]}
             class="mx-10 mb-md" />
-          <EntityList 
-            cards={filteredEntities.map((e) => ({ entity: e }))} 
-            class="mb-lg" />
+          <EntityList cards={filteredEntities.map((e) => ({ entity: e }))} class="mb-lg" />
         {/key}
       {:else}
-        <Loading/>
+        <Loading />
       {/if}
     {:else}
-      <div class="py-lg text-center text-error text-lg">
-        { $t('error.noNominations') }
+      <div class="py-lg text-center text-lg text-error">
+        {$t('error.noNominations')}
       </div>
     {/if}
-
   </StretchBackground>
 </Layout>

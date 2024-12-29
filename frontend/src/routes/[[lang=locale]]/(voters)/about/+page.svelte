@@ -15,10 +15,10 @@ Displays information about the application.
   import { Button } from '$lib/components/button';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import Layout from '../../../Layout.svelte';
-  import { getAppContext } from '$lib/contexts/app';
 
   const { appSettings, getRoute, t } = getAppContext();
 
@@ -45,7 +45,9 @@ Displays information about the application.
 
   {#if $appSettings.matching.organizationMatching !== 'none'}
     <h2 class="mb-md mt-xl">{$t('about.organizationMatching.title')}</h2>
-    {@html sanitizeHtml($t('about.organizationMatching.content', { partyMatchingMethod: $appSettings.matching.organizationMatching }))}
+    {@html sanitizeHtml(
+      $t('about.organizationMatching.content', { partyMatchingMethod: $appSettings.matching.organizationMatching })
+    )}
   {/if}
 
   {#if $appSettings.appVersion.source}

@@ -39,22 +39,28 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 -->
 
 <script lang="ts">
+  import {
+    type AnyEntityVariant,
+    type AnyNominationVariant,
+    type AnyQuestionVariant,
+    ENTITY_TYPE,
+    OrganizationNomination
+  } from '@openvaa/data';
   import { Avatar } from '$lib/components/avatar';
   import { Button } from '$lib/components/button';
   import { ElectionSymbol } from '$lib/components/electionSymbol';
+  import { EntityTag } from '$lib/components/entityTag';
   import { InfoAnswer, type InfoAnswerProps } from '$lib/components/infoAnswer';
   import { MatchScore } from '$lib/components/matchScore';
-  import { EntityTag } from '$lib/components/entityTag';
   import { SubMatches } from '$lib/components/subMatches';
-  import { concatClass, getUUID } from '$lib/utils/components';
-  import EntityCardAction from './EntityCardAction.svelte';
-  import type { EntityCardProps } from './EntityCard.type';
-  import { ENTITY_TYPE, OrganizationNomination, type AnyEntityVariant, type AnyNominationVariant, type AnyQuestionVariant } from '@openvaa/data';
-  import { unwrapEntity } from '$lib/utils/entities';
   import { getAppContext } from '$lib/contexts/app';
   import { getVoterContext } from '$lib/contexts/voter';
+  import { concatClass, getUUID } from '$lib/utils/components';
+  import { unwrapEntity } from '$lib/utils/entities';
   import { getCardQuestions } from '$lib/utils/entityCards';
-  import { findCandidateNominations, findNomination } from '$lib/utils/matches';
+  import { findCandidateNominations } from '$lib/utils/matches';
+  import EntityCardAction from './EntityCardAction.svelte';
+  import type { EntityCardProps } from './EntityCard.type';
 
   type $$Props = EntityCardProps;
 
@@ -62,7 +68,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   export let entity: $$Props['entity'];
   export let variant: $$Props['variant'] = 'list';
   export let maxSubcards: $$Props['maxSubcards'] = undefined;
-  
+
   // We have to set the default value like this, otherwise the value is treated later as possibly undefined
   maxSubcards ??= 3;
 
@@ -83,11 +89,13 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   let nakedEntity: AnyEntityVariant;
   let match: EntityVariantMatch | undefined;
   let nomination: AnyNominationVariant | undefined;
-  let questions: Array<{
-    question: AnyQuestionVariant;
-    hideLabel?: boolean;
-    format?: InfoAnswerProps['format'];
-  }> | undefined;
+  let questions:
+    | Array<{
+        question: AnyQuestionVariant;
+        hideLabel?: boolean;
+        format?: InfoAnswerProps['format'];
+      }>
+    | undefined;
   let showSubMatches: boolean;
   let subcards: Array<$$Props> | undefined;
 
@@ -98,29 +106,36 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     electionSymbol = nomination?.electionSymbol;
 
     // The default action is a link to the entity's ResultEntity route.
-    action ??= $getRoute({ 
-      route: 'ResultEntity', 
-      entityType: type, 
-      entityId: id, 
-      nominationId: nomination?.id,
+    action ??= $getRoute({
+      route: 'ResultEntity',
+      entityType: type,
+      entityId: id,
+      nominationId: nomination?.id
     });
 
     // The questions and possible submatches to display in the card
     // TODO: Add support for all entity types by expanding the setting type to cover all of them
-    if (type === ENTITY_TYPE.Candidate || type ===  ENTITY_TYPE.Organization) {
+    if (type === ENTITY_TYPE.Candidate || type === ENTITY_TYPE.Organization) {
       showSubMatches = $appSettings.results.cardContents[type].includes('submatches');
       if (variant !== 'details') {
         questions = getCardQuestions({
           type,
           appSettings: $appSettings,
-          dataRoot: $dataRoot,
-        })
+          dataRoot: $dataRoot
+        });
       }
     }
 
     // The possible subentities to display in the card, shown only in the list variant
-    if (variant === 'list' && nomination && nomination instanceof OrganizationNomination && $appSettings.results.cardContents.organization.includes('candidates')) {
-      subcards = findCandidateNominations({ matches: matches ? $matches : undefined, nomination }).map((e) => ({ entity: e }));
+    if (
+      variant === 'list' &&
+      nomination &&
+      nomination instanceof OrganizationNomination &&
+      $appSettings.results.cardContents.organization.includes('candidates')
+    ) {
+      subcards = findCandidateNominations({ matches: matches ? $matches : undefined, nomination }).map((e) => ({
+        entity: e
+      }));
     }
   }
 
@@ -135,7 +150,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     showAllSubcards = !showAllSubcards;
     if (showAllSubcards) startEvent('entityCard_expandSubcards', { length: subcards?.length ?? 0 });
   }
-  
+
   ////////////////////////////////////////////////////////////////////
   // Styling
   ////////////////////////////////////////////////////////////////////

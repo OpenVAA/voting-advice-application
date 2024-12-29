@@ -19,11 +19,11 @@ Render an enumerated filter for entities that displays a list of values to inclu
   import { isMissing, type MaybeMissing, MISSING_VALUE } from '@openvaa/filters';
   import { onDestroy } from 'svelte';
   import { Icon } from '$lib/components/icon';
+  import { getComponentContext } from '$lib/contexts/component';
   import { concatProps, getUUID } from '$lib/utils/components';
   import { logDebugError } from '$lib/utils/logger';
-  import type { EnumeratedEntityFilterProps } from './EnumeratedEntityFilter.type';
-  import { getComponentContext } from '$lib/contexts/component';
   import type { AnyChoice, AnyEntityVariant } from '@openvaa/data';
+  import type { EnumeratedEntityFilterProps } from './EnumeratedEntityFilter.type';
 
   type $$Props = EnumeratedEntityFilterProps;
 
@@ -134,8 +134,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
     {#if label != null}
       <label class="label cursor-pointer !items-start gap-sm !p-0">
         <!-- Disable the input if there is only one value -->
-        <input type="checkbox" class="checkbox" {value} bind:group={selected} {name}
-         disabled={values.length === 1} />
+        <input type="checkbox" class="checkbox" {value} bind:group={selected} {name} disabled={values.length === 1} />
         <span class="label-text w-full pt-2 text-left">
           {label} <span class="pl-sm text-secondary">{count}</span>
         </span>

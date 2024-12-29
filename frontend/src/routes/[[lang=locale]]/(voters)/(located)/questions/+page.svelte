@@ -11,22 +11,33 @@ Display a general intro before starting answering the questions and possibly all
 -->
 
 <script lang="ts">
+  import { error } from '@sveltejs/kit';
   import { onDestroy, onMount } from 'svelte';
+  import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import Layout from '../../../../Layout.svelte';
   import { getVoterContext } from '$lib/contexts/voter';
-  import { goto } from '$app/navigation';
-  import { error } from '@sveltejs/kit';
+  import Layout from '../../../../Layout.svelte';
   import type { QuestionCategory } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, firstQuestionId, getRoute, opinionQuestions, opinionQuestionCategories, selectedElections: elections, selectedConstituencies: constituencies, selectedQuestionBlocks, selectedQuestionCategoryIds, t } = getVoterContext();
+  const {
+    appSettings,
+    firstQuestionId,
+    getRoute,
+    opinionQuestions,
+    opinionQuestionCategories,
+    selectedElections: elections,
+    selectedConstituencies: constituencies,
+    selectedQuestionBlocks,
+    selectedQuestionCategoryIds,
+    t
+  } = getVoterContext();
 
   const { progress } = getLayoutContext(onDestroy);
   progress.current.set(0);
@@ -39,12 +50,9 @@ Display a general intro before starting answering the questions and possibly all
   onMount(() => {
     $firstQuestionId = null;
     if (!$appSettings.questions.questionsIntro.show) {
-      return goto(
-        $getRoute({ route: 'Question' }),
-        { replaceState: true }
-      );
+      return goto($getRoute({ route: 'Question' }), { replaceState: true });
     }
-    if ($selectedQuestionCategoryIds.length === 0) 
+    if ($selectedQuestionCategoryIds.length === 0)
       $selectedQuestionCategoryIds = $opinionQuestionCategories.map((c) => c.id);
   });
 
@@ -54,18 +62,20 @@ Display a general intro before starting answering the questions and possibly all
 
   // To submit, there number of questions in the selected categories must be at least the minimum number set in the app settings or all questions if there are less than the minimum number
   let canSubmit = false;
-  $: canSubmit = $selectedQuestionCategoryIds.length > 0 
-    && $selectedQuestionBlocks.questions.length >= Math.min($opinionQuestions.length, $appSettings.matching.minimumAnswers);
+  $: canSubmit =
+    $selectedQuestionCategoryIds.length > 0 &&
+    $selectedQuestionBlocks.questions.length >=
+      Math.min($opinionQuestions.length, $appSettings.matching.minimumAnswers);
 
   function handleSubmit(): void {
     if (!canSubmit) return;
     const categoryId = $selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
     if (!categoryId) error(500, 'No question categories selected even though canSubmit is true');
-    goto($getRoute(
-      $appSettings.questions.categoryIntros?.show
-      ? { route: 'QuestionCategory', categoryId }
-      : { route: 'Question' }
-    ));
+    goto(
+      $getRoute(
+        $appSettings.questions.categoryIntros?.show ? { route: 'QuestionCategory', categoryId } : { route: 'Question' }
+      )
+    );
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -85,7 +95,7 @@ Display a general intro before starting answering the questions and possibly all
     <HeroEmoji emoji={$t('dynamic.questions.heroEmoji')} />
   </figure>
 
-  {#if $appSettings.questions.questionsIntro.allowCategorySelection }
+  {#if $appSettings.questions.questionsIntro.allowCategorySelection}
     <p class="text-center">
       {$t('questions.intro.ingress.withCategorySelection', {
         numCategories: $opinionQuestionCategories.length,
@@ -102,7 +112,7 @@ Display a general intro before starting answering the questions and possibly all
             value={category.id}
             bind:group={$selectedQuestionCategoryIds} />
           <CategoryTag {category} />
-          <span class="text-secondary">{ countQuestions(category) }</span>
+          <span class="text-secondary">{countQuestions(category)}</span>
         </label>
       {/each}
     </div>
@@ -126,7 +136,7 @@ Display a general intro before starting answering the questions and possibly all
     on:click={handleSubmit}
     variant="main"
     icon="next"
-    text={$t('questions.intro.start', { 
+    text={$t('questions.intro.start', {
       numQuestions: $selectedQuestionCategoryIds.length > 0 ? $selectedQuestionBlocks.questions.length : 0
     })} />
 </Layout>

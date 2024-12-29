@@ -48,7 +48,7 @@ A component for a single choice question that can be answered.
       <select
         disabled={locked}
         id={questionId}
-        class="select select-sm w-full text-right text-primary disabled:border-none !bg-base-100"
+        class="select select-sm w-full !bg-base-100 text-right text-primary disabled:border-none"
         bind:value={inputValue}
         on:change={() => {
           onChange?.({ questionId, value: inputValue });

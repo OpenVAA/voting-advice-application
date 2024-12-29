@@ -65,11 +65,11 @@ If `separateSkip` is set to `true`, the `onNext` callback is switched to a `onSk
   }
 
   function handleNext() {
-   if (answered || !separateSkip) {
-    onNext?.();
-   } else {
-    onSkip?.();
-   }
+    if (answered || !separateSkip) {
+      onNext?.();
+    } else {
+      onSkip?.();
+    }
   }
 
   function handlePrevious() {

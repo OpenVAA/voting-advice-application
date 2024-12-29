@@ -10,16 +10,16 @@ export async function setDefaultApiPermissions() {
     await strapi.query('plugin::users-permissions.permission').create({
       data: {
         action: contentType + '.find',
-        role: roleId,
-      },
+        role: roleId
+      }
     });
     // App Customization is a single type, so we don't need to create a '.findOne' permission for it
     if (contentType.indexOf('app-customization') > -1) continue;
     await strapi.query('plugin::users-permissions.permission').create({
       data: {
         action: contentType + '.findOne',
-        role: roleId,
-      },
+        role: roleId
+      }
     });
   }
 
@@ -27,8 +27,8 @@ export async function setDefaultApiPermissions() {
   await strapi.query('plugin::users-permissions.permission').create({
     data: {
       action: 'api::feedback.feedback' + '.create',
-      role: roleId,
-    },
+      role: roleId
+    }
   });
 
   // Candidate App
@@ -42,15 +42,15 @@ export async function setDefaultApiPermissions() {
     'plugin::users-permissions.auth.resetPassword',
     'plugin::users-permissions.auth.sendEmailConfirmation',
     'plugin::users-permissions.candidate.check',
-    'plugin::users-permissions.candidate.register',
+    'plugin::users-permissions.candidate.register'
   ];
 
   for (const authType of authTypes) {
     await strapi.query('plugin::users-permissions.permission').create({
       data: {
         action: authType,
-        role: roleId,
-      },
+        role: roleId
+      }
     });
   }
 }

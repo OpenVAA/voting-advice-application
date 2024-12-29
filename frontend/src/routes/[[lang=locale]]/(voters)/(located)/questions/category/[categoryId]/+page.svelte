@@ -16,20 +16,20 @@ Display the intro to a question category and possibly a button with which to ski
 
 <script lang="ts">
   import { error } from '@sveltejs/kit';
-  import type { Id } from '@openvaa/core';
-  import type { QuestionCategory } from '@openvaa/data';
   import { onDestroy, onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
   import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
-  import { getLayoutContext } from '$lib/contexts/layout';
-  import Layout from '../../../../../../Layout.svelte';
-  import { getVoterContext } from '$lib/contexts/voter';
-  import { page } from '$app/stores';
-  import { goto } from '$app/navigation';
   import { Loading } from '$lib/components/loading';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { getVoterContext } from '$lib/contexts/voter';
   import { parseParams } from '$lib/utils/route';
+  import Layout from '../../../../../../Layout.svelte';
+  import type { Id } from '@openvaa/core';
+  import type { QuestionCategory } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -62,7 +62,7 @@ Display the intro to a question category and possibly a button with which to ski
       nextCategoryId = undefined;
     }
   }
-  
+
   ////////////////////////////////////////////////////////////////////
   // Possible redirect
   ////////////////////////////////////////////////////////////////////
@@ -70,10 +70,7 @@ Display the intro to a question category and possibly a button with which to ski
   // On mount possibly redirect
   onMount(() => {
     if (!$appSettings.questions.categoryIntros?.show) {
-      return goto(
-        $getRoute({ route: 'Question', questionId }),
-        { replaceState: true }
-      );
+      return goto($getRoute({ route: 'Question', questionId }), { replaceState: true });
     }
   });
 
@@ -108,18 +105,13 @@ Display the intro to a question category and possibly a button with which to ski
     {/if}
 
     <svelte:fragment slot="primaryActions">
-      <Button
-        variant="main"
-        href={$getRoute({ route: 'Question', questionId })}
-        text={$t('common.continue')} />
+      <Button variant="main" href={$getRoute({ route: 'Question', questionId })} text={$t('common.continue')} />
       {#if $appSettings.questions.categoryIntros?.allowSkip}
         <Button
           icon="skip"
           color="secondary"
           href={$getRoute(
-            nextCategoryId 
-            ? { route: 'QuestionCategory', categoryId: nextCategoryId } 
-            : { route: 'Results' }
+            nextCategoryId ? { route: 'QuestionCategory', categoryId: nextCategoryId } : { route: 'Results' }
           )}
           text={nextCategoryId ? $t('questions.category.skip') : $t('questions.skipToResults')}
           class="justify-center" />

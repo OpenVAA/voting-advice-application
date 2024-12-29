@@ -21,9 +21,9 @@ Show a modal dialog for sending feedback.
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Modal } from '$lib/components/modal';
+  import { getComponentContext } from '$lib/contexts/component';
   import { Feedback } from '..';
   import type { FeedbackModalProps } from './FeedbackModal.type';
-  import { getComponentContext } from '$lib/contexts/component';
 
   type $$Props = FeedbackModalProps;
 

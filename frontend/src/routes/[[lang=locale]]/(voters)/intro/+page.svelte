@@ -27,10 +27,10 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
     {$t('dynamic.intro.ingress')}
   </p>
   <ol class="list-circled w-fit">
-    {#if $electionsSelectable }
+    {#if $electionsSelectable}
       <li>{$t('dynamic.intro.list.elections')}</li>
     {/if}
-    {#if $constituenciesSelectable }
+    {#if $constituenciesSelectable}
       <li>{$t('dynamic.intro.list.constituencies')}</li>
     {/if}
     <li>{$t('dynamic.intro.list.opinions')}</li>

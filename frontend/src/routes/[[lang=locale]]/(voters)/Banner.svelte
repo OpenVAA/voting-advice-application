@@ -13,8 +13,8 @@ Accesses `AppContext` and optionally `VoterContext`.
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
-  import { getLayoutContext } from '$lib/contexts/layout';
   import { getAppContext } from '$lib/contexts/app';
+  import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
 
   ////////////////////////////////////////////////////////////////////

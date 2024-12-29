@@ -17,9 +17,9 @@ Render a numeric filter for entities.
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import type { NumericEntityFilterProps } from './NumericEntityFilter.type';
-  import { getComponentContext } from '$lib/contexts/component';
 
   type $$Props = NumericEntityFilterProps;
 
@@ -76,26 +76,29 @@ Render a numeric filter for entities.
   }
 </script>
 
-{#if (range.min != null && range.max != null) || range.missingValues }
+{#if (range.min != null && range.max != null) || range.missingValues}
   <form {...concatClass($$restProps, '')}>
     {#if range.min != null && range.max != null}
-      <label class="label !px-0 gap-xs">
-        <span class="text-label text-start min-w-[6rem]">{$t('entityFilters.numeric.minLabel')}</span>
+      <label class="label gap-xs !px-0">
+        <span class="text-label min-w-[6rem] text-start">{$t('entityFilters.numeric.minLabel')}</span>
         <input bind:value={min} on:change={setMin} type="range" min={range.min} max={range.max} class="range" />
         <span class="w-[5rem] text-end">{min}</span>
       </label>
-      <label class="label !px-0 gap-xs">
-        <span class="text-label text-start min-w-[6rem]">{$t('entityFilters.numeric.maxLabel')}</span>
+      <label class="label gap-xs !px-0">
+        <span class="text-label min-w-[6rem] text-start">{$t('entityFilters.numeric.maxLabel')}</span>
         <input bind:value={max} on:change={setMax} type="range" min={range.min} max={range.max} class="range" />
         <span class="w-[5rem] text-end">{max}</span>
       </label>
     {/if}
     {#if range.missingValues}
-      <label class="label !px-0 gap-xs">
-        <span class="text-label text-start min-w-[6rem] justify-start">{$t('entityFilters.missingValue')}</span>
+      <label class="label gap-xs !px-0">
+        <span class="text-label min-w-[6rem] justify-start text-start">{$t('entityFilters.missingValue')}</span>
         <!-- Disable the missing values selection if there are only missing values -->
-        <input bind:checked={includeMissing} type="checkbox" class="checkbox"
-          disabled={range.min == null || range.max == null}/>
+        <input
+          bind:checked={includeMissing}
+          type="checkbox"
+          class="checkbox"
+          disabled={range.min == null || range.max == null} />
       </label>
     {/if}
   </form>

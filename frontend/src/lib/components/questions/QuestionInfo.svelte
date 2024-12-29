@@ -36,5 +36,5 @@ Display the question's expandable information content.
   on:expand={() => onExpand?.()}
   title={$t('common.readMore')}
   {...$$restProps}>
-  {@html sanitizeHtml(info) }
+  {@html sanitizeHtml(info)}
 </Expander>

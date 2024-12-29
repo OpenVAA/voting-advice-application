@@ -35,14 +35,14 @@ Used to display an `Entity` as small tag including an icon.
     alliance: 'alliance',
     candidate: 'candidate',
     faction: 'candidates',
-    organization: 'party',
-  }
+    organization: 'party'
+  };
 </script>
 
 <div {...concatClass($$restProps, 'flex flex-row items-center gap-xs font-bold')}>
-  <Icon 
-    name={ICONS[nakedEntity.type]} 
-    customColor={nakedEntity.color?.normal} 
+  <Icon
+    name={ICONS[nakedEntity.type]}
+    customColor={nakedEntity.color?.normal}
     customColorDark={nakedEntity.color?.dark} />
   <span>
     {#if variant === 'short'}

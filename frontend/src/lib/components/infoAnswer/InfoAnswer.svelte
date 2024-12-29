@@ -52,7 +52,7 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
       rel="noopener noreferrer"
       class="vaa-tag hyphens-none mb-sm ${$$restProps.class ?? ''}">
       ${text}
-    </a>`
+    </a>`;
   }
 
   /**
@@ -63,23 +63,23 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
   }
 </script>
 
-{#if answer == null }
+{#if answer == null}
   <!-- `question.formatAnswer` will handle missing answer formatting -->
   <span {...concatClass($$restProps, 'text-secondary')}>
-    { question.formatAnswer() }
+    {question.formatAnswer()}
   </span>
 {:else if question.subtype === 'link'}
   {@const link = checkUrl(question.formatAnswer({ answer }))}
   {#if link}
-    <a 
-      href={question.formatAnswer({ answer })} 
-      target="_blank" 
-      rel="noopener noreferrer" 
+    <a
+      href={question.formatAnswer({ answer })}
+      target="_blank"
+      rel="noopener noreferrer"
       {...concatClass($$restProps, 'vaa-tag hyphens-none')}>
       {question.text}
     </a>
   {:else}
-    { question.formatAnswer() }
+    {question.formatAnswer()}
   {/if}
 {:else if question.type === 'multipleText' || question.type === 'multipleChoiceCategorical'}
   {#if question.subtype === 'linkList'}
@@ -90,24 +90,22 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
         map: formatLinkListItem
       })
     )}
+  {:else if asTag}
+    <div {...$$restProps}>
+      {@html sanitizeHtml(
+        question.formatAnswer({
+          answer,
+          separator: $t('common.multipleAnswerSeparator'),
+          map: formatTagItem
+        })
+      )}
+    </div>
   {:else}
-    {#if asTag}
-      <div {...$$restProps}>
-        {@html sanitizeHtml(
-          question.formatAnswer({
-            answer,
-            separator: $t('common.multipleAnswerSeparator'),
-            map: formatTagItem
-          })
-        )}
-      </div>
-    {:else}
-      <span {...$$restProps}>
-        { question.formatAnswer({ answer, separator: $t('common.multipleAnswerSeparator') }) }
-      </span>
-    {/if}
+    <span {...$$restProps}>
+      {question.formatAnswer({ answer, separator: $t('common.multipleAnswerSeparator') })}
+    </span>
   {/if}
-<!-- 
+  <!-- 
   TODO[preferenceOrder]: Check
   {:else if question.type === 'preferenceOrder'}
     <ol {...$$restProps}>
@@ -118,10 +116,10 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
 -->
 {:else if question.type === 'image'}
   <figure class:vaa-tag={asTag} {...$$restProps}>
-    {@html sanitizeHtml(question.formatAnswer({ answer })) }
+    {@html sanitizeHtml(question.formatAnswer({ answer }))}
   </figure>
 {:else}
   <span class:vaa-tag={asTag} {...$$restProps}>
-    { ucFirst(question.formatAnswer({ answer })) }
+    {ucFirst(question.formatAnswer({ answer }))}
   </span>
 {/if}

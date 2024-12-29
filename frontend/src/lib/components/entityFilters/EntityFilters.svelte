@@ -16,13 +16,7 @@ Show filters for entities. This component and the individual filter components o
 -->
 
 <script lang="ts">
-  import {
-    ChoiceQuestionFilter,
-    NumberFilter,
-    NumberQuestionFilter,
-    ObjectFilter,
-    TextFilter
-  } from '@openvaa/filters';
+  import { ChoiceQuestionFilter, NumberFilter, NumberQuestionFilter, ObjectFilter, TextFilter } from '@openvaa/filters';
   import { Expander } from '$lib/components/expander';
   import { concatClass } from '$lib/utils/components';
   import type { EntityFiltersProps } from './EntityFilters.type';

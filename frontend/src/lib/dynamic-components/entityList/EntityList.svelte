@@ -35,11 +35,11 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
+  import { getComponentContext } from '$lib/contexts/component';
   import { EntityCard } from '$lib/dynamic-components/entityCard';
   import { concatClass } from '$lib/utils/components';
-  import type { EntityListProps } from './EntityList.type';
-  import { getComponentContext } from '$lib/contexts/component';
   import { DELAY } from '$lib/utils/timing';
+  import type { EntityListProps } from './EntityList.type';
 
   type $$Props = EntityListProps;
 

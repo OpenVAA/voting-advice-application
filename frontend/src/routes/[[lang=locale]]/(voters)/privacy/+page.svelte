@@ -13,14 +13,14 @@ Displays information about the privacy policy of the app as well as the possible
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
-  import { DataConsent } from '$lib/dynamic-components/dataConsent';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
+  import { DataConsent } from '$lib/dynamic-components/dataConsent';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import Layout from '../../../Layout.svelte';
-  import { getAppContext } from '$lib/contexts/app';
 
   const { appSettings, getRoute, t } = getAppContext();
 
@@ -50,7 +50,9 @@ Displays information about the privacy policy of the app as well as the possible
     {#if $appSettings.analytics?.platform}
       <h2>{$t('privacy.analytics.title')}</h2>
       <div>
-        {@html sanitizeHtml($t(assertTranslationKey(`privacy.analyticsContent.${$appSettings.analytics.platform.name}`)))}
+        {@html sanitizeHtml(
+          $t(assertTranslationKey(`privacy.analyticsContent.${$appSettings.analytics.platform.name}`))
+        )}
       </div>
     {/if}
     <h2>{$t('privacy.cookies.title')}</h2>

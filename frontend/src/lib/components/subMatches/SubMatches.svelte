@@ -32,11 +32,6 @@ Display an entity's sub-matches.
 
 <div {...concatProps($$restProps, { class: 'grid gap-x-md gap-y-sm', style })}>
   {#each matches as { score, questionGroup }}
-    <ScoreGauge
-      {score}
-      label={questionGroup.name}
-      color={questionGroup.color}
-      variant="radial"
-      {...scoreGaugeProps} />
+    <ScoreGauge {score} label={questionGroup.name} color={questionGroup.color} variant="radial" {...scoreGaugeProps} />
   {/each}
 </div>

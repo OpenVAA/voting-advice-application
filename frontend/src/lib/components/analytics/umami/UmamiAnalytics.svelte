@@ -7,7 +7,7 @@
 
   export let websiteId: $$Props['websiteId'];
   export const trackEvent: $$Props['trackEvent'] = sendUmamiEvent;
-  
+
   function sendUmamiEvent({ name, data }: TrackingEvent<Record<string, JSONData>>) {
     if (!browser || !('umami' in window)) return;
     (window.umami as { track: UmamiTrack }).track(name, data);

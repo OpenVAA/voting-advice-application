@@ -3,8 +3,8 @@
   import { goto } from '$app/navigation';
   import { MultilangTextInput } from '$candidate/components/textArea';
   import { Button } from '$lib/components/button';
-  import { CategoryTag } from '$lib/components/legacy/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { CategoryTag } from '$lib/components/legacy/categoryTag';
   import { LikertResponseButtons, QuestionInfo } from '$lib/components/legacy/questions';
   import { Warning } from '$lib/components/warning';
   import { t } from '$lib/i18n';

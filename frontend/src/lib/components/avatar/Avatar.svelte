@@ -19,10 +19,10 @@ Display either a photo or a initials-based avatar for an entity. The color of th
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
   import { concatProps } from '$lib/utils/components';
+  import { unwrapEntity } from '$lib/utils/entities';
   import { abbreviate } from '$lib/utils/text/abbreviate';
   import type { Colors, Image } from '@openvaa/data';
   import type { AvatarProps } from './Avatar.type';
-  import { unwrapEntity } from '$lib/utils/entities';
 
   type $$Props = AvatarProps;
 
@@ -51,9 +51,11 @@ Display either a photo or a initials-based avatar for an entity. The color of th
   $: {
     let color: Colors | null;
     let shortName: string;
-    ({ entity: { color, image, name, shortName } } = unwrapEntity(entity));
+    ({
+      entity: { color, image, name, shortName }
+    } = unwrapEntity(entity));
     classes = size === 'sm' ? 'w-[2.75rem] h-[2.75rem]' : 'w-[3.125rem] h-[3.125rem]';
-    classes += ` shrink-0 overflow-hidden flex justify-center items-center`;
+    classes += ' shrink-0 overflow-hidden flex justify-center items-center';
     styles = '';
 
     if (image && imageStatus !== 'error') {
@@ -63,8 +65,8 @@ Display either a photo or a initials-based avatar for an entity. The color of th
 
       // Set custom color (if we have an image, these are not needed)
       if (color) {
-          styles += ` --bg-color: ${color.normal};`;
-          classes += ' bg-[var(--bg-color)] text-primary-content';
+        styles += ` --bg-color: ${color.normal};`;
+        classes += ' bg-[var(--bg-color)] text-primary-content';
         if (color.dark) {
           styles += ` --bg-color-dark: ${color.dark};`;
           classes += ' dark:bg-[var(--bg-color-dark)]';
@@ -76,9 +78,7 @@ Display either a photo or a initials-based avatar for an entity. The color of th
       // Set initials
       initialsClasses = 'avatar placeholder text-center';
       // Use shortName if it's short enough
-      initials = shortName && shortName.length <= 6 
-        ? shortName 
-        : abbreviate(name);
+      initials = shortName && shortName.length <= 6 ? shortName : abbreviate(name);
       switch (initials.length) {
         case 1:
         case 2:
@@ -108,15 +108,13 @@ Display either a photo or a initials-based avatar for an entity. The color of th
    * @param dark - Whether to use the dark thumbnail (if available), defaulting to the normal image.
    */
   function getThumbnail(image: Image, dark = false): string {
-    const normal = image.formats?.thumbnail
-      ? image.formats.thumbnail.url
-      : image.url;
+    const normal = image.formats?.thumbnail ? image.formats.thumbnail.url : image.url;
     if (!dark) return normal;
     return image.formats?.thumbnail?.urlDark
-       ? image.formats?.thumbnail?.urlDark
-       : image.urlDark
-       ? image.urlDark
-       : normal;
+      ? image.formats?.thumbnail?.urlDark
+      : image.urlDark
+        ? image.urlDark
+        : normal;
   }
 
   function handleImgError(): void {
@@ -132,18 +130,20 @@ Display either a photo or a initials-based avatar for an entity. The color of th
   {#if image && imageStatus !== 'error'}
     {#if linkFullImage}
       <a href={image.url} target="_blank" title={$t('common.showFullImage')} aria-label={$t('common.showFullImage')}>
-        <img class="border-bg-300 h-full w-full border-md object-cover" 
+        <img
+          class="border-bg-300 h-full w-full border-md object-cover"
           alt={name}
           src={getThumbnail(image, $darkMode)}
           on:load={handleImgLoad}
-          on:error={handleImgError}/>
+          on:error={handleImgError} />
       </a>
     {:else}
-      <img class="border-bg-300 h-full w-full border-md object-cover"
+      <img
+        class="border-bg-300 h-full w-full border-md object-cover"
         alt={name}
         src={getThumbnail(image, $darkMode)}
         on:load={handleImgLoad}
-        on:error={handleImgError}/>
+        on:error={handleImgError} />
     {/if}
   {:else}
     <div class={initialsClasses}>{initials}</div>

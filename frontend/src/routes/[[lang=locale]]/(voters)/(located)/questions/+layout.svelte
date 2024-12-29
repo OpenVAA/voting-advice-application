@@ -8,10 +8,10 @@
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { getLayoutContext } from '$lib/contexts/layout';
-  import { getVoterContext } from '$lib/contexts/voter/voterContext.js';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { getVoterContext } from '$lib/contexts/voter/voterContext.js';
   import Layout from '../../../../Layout.svelte';
 
   ////////////////////////////////////////////////////////////////////

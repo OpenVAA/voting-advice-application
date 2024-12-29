@@ -1,13 +1,13 @@
 <script lang="ts">
   import { error } from '@sveltejs/kit';
-  import { InfoAnswer } from '../infoAnswer';
-  import { PartyTag } from '../partyTag';
   import { t } from '$lib/i18n';
   import { settings } from '$lib/legacy-stores';
   import { getAnswer } from '$lib/utils/legacy-answers';
   import { getEntityType, isCandidate, isParty } from '$lib/utils/legacy-entities';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import InfoItem from './InfoItem.svelte';
+  import { InfoAnswer } from '../infoAnswer';
+  import { PartyTag } from '../partyTag';
   import type { EntityDetailsProps } from './EntityDetails.type';
 
   export let entity: LegacyEntityProps;

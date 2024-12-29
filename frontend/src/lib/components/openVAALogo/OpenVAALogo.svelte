@@ -25,7 +25,7 @@ attributes of one.
 <OpenVAALogo color="secondary" size="sm"/>
 ```
 -->
-  
+
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
   import type { OpenVAALogoProps } from './OpenVAALogo.type';

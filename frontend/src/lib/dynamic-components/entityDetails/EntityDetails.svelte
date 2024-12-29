@@ -31,21 +31,21 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 -->
 
 <script lang="ts">
+  import { type AnyQuestionVariant, ENTITY_TYPE, OrganizationNomination } from '@openvaa/data';
+  import { type Tab, Tabs } from '$lib/components/tabs';
+  import { getAppContext } from '$lib/contexts/app';
+  import { getVoterContext } from '$lib/contexts/voter';
   import { EntityCard } from '$lib/dynamic-components/entityCard';
-  import { Tabs, type Tab } from '$lib/components/tabs';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { concatClass } from '$lib/utils/components';
-  import { EntityInfo, EntityOpinions, EntityChildren } from './';
-  import type { EntityDetailsProps } from './EntityDetails.type';
-  import { getAppContext } from '$lib/contexts/app';
-  import type { EntityDetailsContent, OrganizationDetailsContent } from '@openvaa/app-shared';
   import { unwrapEntity } from '$lib/utils/entities';
-  import { ENTITY_TYPE, OrganizationNomination, type AnyQuestionVariant } from '@openvaa/data';
-  import type { AnswerStore } from '$lib/contexts/voter';
-  import { getVoterContext } from '$lib/contexts/voter';
   import { findCandidateNominations } from '$lib/utils/matches';
-  import type { MatchTree } from '$lib/contexts/voter/matchStore';
+  import { EntityChildren, EntityInfo, EntityOpinions } from './';
+  import type { EntityDetailsContent, OrganizationDetailsContent } from '@openvaa/app-shared';
   import type { Readable } from 'svelte/store';
+  import type { AnswerStore } from '$lib/contexts/voter';
+  import type { MatchTree } from '$lib/contexts/voter/matchStore';
+  import type { EntityDetailsProps } from './EntityDetails.type';
 
   type $$Props = EntityDetailsProps;
 
@@ -79,22 +79,22 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   let children: Array<MaybeWrappedEntityVariant>;
   let infoQuestions: Array<AnyQuestionVariant>;
   let opinionQuestions: Array<AnyQuestionVariant>;
-  
+
   $: {
     const { entity: nakedEntity, nomination } = unwrapEntity(entity);
 
     // Possibly use defaults based on entity type
-    const tabs: Array<EntityDetailsContent | OrganizationDetailsContent> = nakedEntity.type === 'organization' ? ['info', 'opinions', 'candidates'] : ['info', 'opinions'];
+    const tabs: Array<EntityDetailsContent | OrganizationDetailsContent> =
+      nakedEntity.type === 'organization' ? ['info', 'opinions', 'candidates'] : ['info', 'opinions'];
     contentTabs = tabs.map((tab) => ({
-      content: tab, label: $t(assertTranslationKey(`entityDetails.tabs.${tab}`))
+      content: tab,
+      label: $t(assertTranslationKey(`entityDetails.tabs.${tab}`))
     }));
 
     // Collect questions
     if (tabs.includes('info') || tabs.includes('opinions')) {
       // If we're showing a nominated entity, we show the questions applicable to the election and constituency, otherwise default to all questions the entity has answered
-      const questions = nomination
-        ? nomination.applicableQuestions
-        : nakedEntity.answeredQuestions;
+      const questions = nomination ? nomination.applicableQuestions : nakedEntity.answeredQuestions;
       infoQuestions = questions.filter((q) => q.category.type !== 'opinion');
       opinionQuestions = questions.filter((q) => q.category.type === 'opinion');
     } else {
@@ -117,18 +117,13 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 </script>
 
 <article {...concatClass($$restProps, 'flex flex-col grow')}>
-
   <!-- Add a border if there's not need for a Tabs component which separates the contents visually from the header -->
   <header class:bottomBorder={contentTabs.length === 1}>
     <EntityCard {entity} variant="details" class="!p-lg" />
   </header>
 
   {#if contentTabs.length > 1}
-    <Tabs
-      tabs={contentTabs}
-      bind:activeIndex={activeIndex}
-      onChange={handleContentTabChange}
-      class="px-10" />
+    <Tabs tabs={contentTabs} bind:activeIndex onChange={handleContentTabChange} class="px-10" />
   {/if}
 
   {#if contentTabs[activeIndex]?.content === 'info'}

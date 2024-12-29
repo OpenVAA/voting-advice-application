@@ -12,11 +12,11 @@ The frontpage of the app for voters.
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
-  import { SurveyBanner } from '$lib/dynamic-components/survey/banner';
+  import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
+  import { SurveyBanner } from '$lib/dynamic-components/survey/banner';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
   import Layout from '../../Layout.svelte';
-  import { getAppContext } from '$lib/contexts/app';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -38,7 +38,6 @@ The frontpage of the app for voters.
 </script>
 
 <Layout title={$t('dynamic.appName')}>
-
   <Button variant="main" href={$getRoute('Intro')} text={$t('dynamic.frontPage.startButton')} />
 
   <p class="mt-lg text-center">

@@ -10,9 +10,9 @@ See `+page.ts` for possible redirects.
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
-  import Layout from '../../../Layout.svelte';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
+  import Layout from '../../../Layout.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -24,8 +24,7 @@ See `+page.ts` for possible redirects.
   // Selecting elections and submitting
   ////////////////////////////////////////////////////////////////////
 
-  let selected = ($selectedElections.length ? $selectedElections : $dataRoot.elections)
-    .map((e) => e.id);
+  let selected = ($selectedElections.length ? $selectedElections : $dataRoot.elections).map((e) => e.id);
 
   // Submitting
   let canSubmit = false;
@@ -49,12 +48,7 @@ See `+page.ts` for possible redirects.
   <div class="grid gap-sm">
     {#each $dataRoot.elections as { id, name }}
       <label class="label cursor-pointer justify-start gap-sm !p-0">
-        <input
-          type="checkbox"
-          class="checkbox"
-          name="selected-elections"
-          value={id}
-          bind:group={selected} />
+        <input type="checkbox" class="checkbox" name="selected-elections" value={id} bind:group={selected} />
         <span class="label-text">{name}</span>
       </label>
     {/each}
