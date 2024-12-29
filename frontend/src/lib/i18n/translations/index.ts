@@ -51,8 +51,8 @@ export const locales = { en: 'English', fi: 'Suomi', sv: 'Svenska' };
 export const DEFAULT_PAYLOAD_KEYS = {
   candidateSingular: 'common.candidate.singular',
   candidatePlural: 'common.candidate.plural',
-  partySingular: 'common.party.singular',
-  partyPlural: 'common.party.plural'
+  partySingular: 'common.organization.singular',
+  partyPlural: 'common.organization.plural'
 };
 
 /**

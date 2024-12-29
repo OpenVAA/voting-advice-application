@@ -56,7 +56,8 @@
     "ingress": {
       "browse": "Detta är kandidaterna och partierna som ställer upp i dessa val, sorterade efter valsymbol eller namn. Du kan använda filtren för att begränsa dem.",
       "results": "Detta är de kandidaterna och partierna som ställer upp i dessa val. De bästa matchningarna är först på listan. För att begränsa resultaten kan du också använda filtren."
-    }
+    },
+    "multipleElections": "Välj nedan först vilket vals {candidatePlural} och {partyPlural} du vill se och sedan om du vill se {candidatePlural} eller {partyPlural}."
   },
   "statistics": {
     "heroEmoji": "🧮"
