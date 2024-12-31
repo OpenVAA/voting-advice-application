@@ -14,7 +14,7 @@
     "@aws-sdk/client-ses": "^3.654.0",
     "@openvaa/app-shared": "^1.0.0",
     "@strapi/plugin-documentation": "^4.25.1",
-    "@strapi/plugin-i18n": "^4.25.1",
+    "@strapi/plugin-i18n": "^4.25.13",
     "@strapi/plugin-users-permissions": "^4.25.1",
     "@strapi/provider-email-nodemailer": "^5.0.2",
     "@strapi/provider-upload-aws-s3": "^5.0.1",
@@ -33,9 +33,10 @@
   "strapi": {
     "uuid": "bf2736db-ee20-4091-9e1e-f02ff08da6dd"
   },
-  "engines": {
-    "node": "18",
-    "npm": ">=10.7.0"
+  "engine": {
+    "node": "20.18.1",
+    "yarn": "1.22.22",
+    "npm": "please-use-yarn"
   },
   "license": "MIT",
   "devDependencies": {
