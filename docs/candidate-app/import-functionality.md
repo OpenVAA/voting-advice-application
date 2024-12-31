@@ -1,4 +1,6 @@
-# Import functionality
+# ⛔️Currenlty unavailable⛔️ Import functionality
+
+> The `import-export-entries` plugin is not compatible with Node 20 or Strapi 5. It is thus enabled and should be rewritten as a standalone plugin.
 
 The import functionality has been implemented using the `import-export-entries` strapi plugin. The plugin has been forked and edited to suit our needs.
 

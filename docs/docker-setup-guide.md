@@ -14,13 +14,7 @@ backend into a single image that can be built with just a few commands.
 
 Make sure that you’re using the recommended Node version (see [Requirements](#requirements), above) by running `node -v`. If needed set the correct version with `nvm use <VERSION>`.
 
-Backend module contains `strapi-plugin-import-export-entries` directory which is a separate git repository. In order to initialise it you need to run:
-
-```bash
-git submodule update --init --recursive
-```
-
-Then install dependencies for all workspaces:
+First, install dependencies for all workspaces:
 
 ```bash
 yarn install

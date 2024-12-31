@@ -12,6 +12,7 @@
 
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
 import { dynamicSettings } from '@openvaa/app-shared';
+import mockCandidateForTesting from './mockData/mockCandidateForTesting.json';
 import mockCategories from './mockData/mockCategories.json';
 import mockInfoQuestions from './mockData/mockInfoQuestions.json';
 import mockQuestions from './mockData/mockQuestions.json';
@@ -128,18 +129,6 @@ export async function generateMockData() {
     await createCandidates(15 * 50);
     console.info('Done!');
     console.info('#######################################');
-    console.info('inserting candidate nominations');
-    await createCandidateNominations(15 * 50);
-    console.info('Done!');
-    console.info('#######################################');
-    console.info('inserting closed list parties');
-    await createParties(2);
-    console.info('Done!');
-    console.info('#######################################');
-    console.info('inserting party nominations');
-    await createPartyNominations(2);
-    console.info('Done!');
-    console.info('#######################################');
     console.info('inserting question categories');
     await createQuestionCategories();
     console.info('Done!');
@@ -154,6 +143,22 @@ export async function generateMockData() {
     console.info('#######################################');
     console.info('inserting party answers');
     await createAnswers('party');
+    console.info('Done!');
+    console.info('#######################################');
+    console.info('inserting candidate without answers for testing');
+    await createCandidateForTesting();
+    console.info('Done!');
+    console.info('#######################################');
+    console.info('inserting candidate nominations');
+    await createCandidateNominations(15 * 50);
+    console.info('Done!');
+    console.info('#######################################');
+    console.info('inserting closed list parties');
+    await createParties(2);
+    console.info('Done!');
+    console.info('#######################################');
+    console.info('inserting party nominations');
+    await createPartyNominations(2);
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidate users');
@@ -347,6 +352,25 @@ async function createCandidates(length: number) {
       }
     });
   }
+}
+
+/**
+ * Create a candidate for testing purposes with the specified data.
+ * NB. Do this after generating answers but before generating nominations, so that the profile will not be complete.
+ */
+async function createCandidateForTesting() {
+  const parties = await strapi.db.query(API.Party).findMany({});
+  const { firstName, lastName, email } = mockCandidateForTesting;
+  const party: HasId = faker.helpers.arrayElement(parties);
+  await strapi.db.query(API.Candidate).create({
+    data: {
+      firstName,
+      lastName,
+      email,
+      party: party.id,
+      publishedAt: new Date()
+    }
+  });
 }
 
 async function createCandidateNominations(length: number) {
@@ -601,7 +625,7 @@ async function createCandidateUsers() {
     }
   });
 
-  const candidate = await strapi.db.query(API.Candidate).findMany({});
+  const candidates = await strapi.db.query(API.Candidate).findMany({});
   await strapi.entityService.create(API.User, {
     data: {
       username: mockUser[0].username,
@@ -611,7 +635,7 @@ async function createCandidateUsers() {
       confirmed: true,
       blocked: false,
       role: authenticated.id,
-      candidate: candidate[0].id
+      candidate: candidates[0].id
     }
   });
 
@@ -624,20 +648,20 @@ async function createCandidateUsers() {
       confirmed: true,
       blocked: false,
       role: authenticated.id,
-      candidate: candidate[1].id
+      candidate: candidates[1].id
     }
   });
 
   // Disable registration key for the candidate we chose as they're already registered
   await strapi.query(API.User).update({
-    where: { id: candidate[0].id },
+    where: { id: candidates[0].id },
     data: {
       registrationKey: null
     }
   });
 
   await strapi.query(API.User).update({
-    where: { id: candidate[1].id },
+    where: { id: candidates[1].id },
     data: {
       registrationKey: null
     }
