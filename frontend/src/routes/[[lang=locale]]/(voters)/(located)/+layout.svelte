@@ -56,7 +56,7 @@ Provides the data used by the located – i.e. those requiring the elections and
 {#if error}
   <ErrorMessage class="bg-base-300" />
 {:else if !ready}
-  <Loading class="bg-base-300" />
+  <Loading />
 {:else}
   <slot />
 {/if}
