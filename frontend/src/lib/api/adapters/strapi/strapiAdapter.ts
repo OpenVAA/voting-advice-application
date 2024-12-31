@@ -9,7 +9,7 @@ import type { FetchOptions, GetOptions, PostOptions, StrapiAdapter } from './str
  * The default limit for query results. This is set to be very high, because we don't use pagination.
  * NB! Make sure that Strapi's own config is also high enough, see `/backend/vaa-strapi/config/server.ts`
  */
-const ITEM_LIMIT = 1000;
+const ITEM_LIMIT = 50000;
 
 /**
  * A mixin for all Strapi Data API services, implementing `apiFetch`, `apiGet` and `apiPost` methods.
