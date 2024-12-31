@@ -9,7 +9,6 @@ build
 **/documentation
 .cache
 **/*.json
-strapi-plugin-import-export-entries
 .strapi-updater.json
 
 # Ignore files for PNPM, NPM and YARN

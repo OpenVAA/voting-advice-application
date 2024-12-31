@@ -5,7 +5,7 @@ import tsParser from '@typescript-eslint/parser';
 export default [
   ...sharedConfig,
   {
-    ignores: ['.strapi', 'dist/', 'types/generated/', 'src/extensions/', 'strapi-plugin-import-export-entries/']
+    ignores: ['.strapi', 'dist/', 'types/generated/', 'src/extensions/']
   },
   {
     languageOptions: {

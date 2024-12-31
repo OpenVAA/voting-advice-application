@@ -4,7 +4,6 @@ node_modules/
 dist/
 data/
 tests/
-strapi-plugin-import-export-entries/node_modules/
 .gitignore
 .prettierignore
 .prettierrc

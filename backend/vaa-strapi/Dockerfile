@@ -11,14 +11,6 @@ COPY yarn.lock .
 COPY packages/shared-config/ ./packages/shared-config
 RUN yarn install --frozen-lockfile
 
-FROM base AS import-export
-
-WORKDIR /opt/strapi-plugin-import-export-entries
-
-COPY backend/vaa-strapi/strapi-plugin-import-export-entries/ .
-RUN yarn install --frozen-lockfile
-RUN yarn build
-
 FROM base AS shared
 
 WORKDIR /opt
@@ -37,7 +29,6 @@ FROM base AS strapi
 
 WORKDIR /opt
 
-COPY --from=import-export /opt/strapi-plugin-import-export-entries ./backend/vaa-strapi/strapi-plugin-import-export-entries
 COPY --from=shared /opt/packages ./packages
 COPY backend/vaa-strapi/ ./backend/vaa-strapi
 RUN yarn workspace @openvaa/strapi install --frozen-lockfile
