@@ -2,6 +2,8 @@
 @component
 Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
 
+TODO: Consider moving the tracking events away from the component and just adding callbacks that the consumer can use to trigger tracking events.
+
 ### Properties
 
 - `entities`: A list of possibly ranked entities, e.g. candidates or a parties.
@@ -34,9 +36,9 @@ Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
   import { Icon } from '$lib/components/icon';
   import { InfoBadge } from '$lib/components/infoBadge';
   import { Modal } from '$lib/components/modal';
-  import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import type { EntityListControlsProps } from './EntityListControls.type';
+  import { getAppContext } from '$lib/contexts/app';
 
   type $$Props = EntityListControlsProps;
 
@@ -49,7 +51,7 @@ Show filter, sorting (TBA) and search tools for an associated `<EntityList>`.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { locale, startEvent, t } = getComponentContext();
+  const { locale, startEvent, t } = getAppContext();
 
   ////////////////////////////////////////////////////////////////////
   // Filtering
