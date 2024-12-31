@@ -24,7 +24,7 @@ yarn build
 
 ## Running the backend separately
 
-0. You should be running Strapi with Node version 18.20.4. Use of nvm is encouraged. **Additionally, you need Docker!**
+0. You should be running Strapi with the Node version specified under `engines` in the root [package.json](../../package.json). Use of nvm is encouraged. **Additionally, you need Docker!**
 1. Install dependencies by running `yarn install`.
 2. Copy or rename the `.env.example` to `.env` before running any of the commands.
 3. Run `docker compose -f docker-compose.dev.yml up postgres` to start Postgres container.
