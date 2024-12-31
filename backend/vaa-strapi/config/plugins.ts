@@ -79,10 +79,6 @@ export default ({ env }) => {
         }
       }
     },
-    'import-export-entries': {
-      enabled: true,
-      resolve: './strapi-plugin-import-export-entries'
-    },
     'candidate-admin': {
       enabled: true,
       resolve: './src/plugins/candidate-admin'

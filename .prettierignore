@@ -18,7 +18,6 @@ yarn.lock
 # NB! Because of prettier’s limitations, .prettierignore files in subfolders are not respected
 # Ignores copied from /backend/vaa-strapi/.prettierignore
 backend/vaa-strapi/.strapi-updater.json
-backend/vaa-strapi/strapi-plugin-import-export-entries
 backend/vaa-strapi/.cache
 backend/vaa-strapi/**/*.json
 backend/vaa-strapi/**/documentation

@@ -101,13 +101,6 @@ jobs:
       #   run: |
       #     npm run test
 
-      - name: "Install import-export-entries dependencies and build"
-        run: |
-          cd backend/vaa-strapi/strapi-plugin-import-export-entries
-          yarn install --frozen-lockfile
-          yarn build
-          cd ../../../
-
       - name: "Build backend"
         run: |
           yarn workspace @openvaa/strapi build
