@@ -53,6 +53,6 @@ interface ParamsBase {
   populate?: Record<string, ParamsBase | string>;
 }
 
-interface FilterParams {
+export interface FilterParams {
   [key: string]: FilterParams | string | Array<string> | Array<FilterParams>;
 }

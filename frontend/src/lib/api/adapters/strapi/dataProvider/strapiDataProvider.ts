@@ -206,7 +206,6 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         elections: 'true',
         questions: {
           populate: {
-            category: 'true',
             constituencies: 'true',
             questionType: 'true'
           }
@@ -233,15 +232,14 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       if (!questions) continue;
       for (const { id, attributes } of questions.data) {
         if (allQuestions.has(id)) continue;
-        const { allowOpen, category, customData, entityType, fillingInfo, filterable, constituencies, questionType } =
-          attributes;
+        const { allowOpen, customData, entityType, fillingInfo, filterable, constituencies, questionType } = attributes;
         if (!questionType?.data) throw new Error(`Question ${id} has no questionType.`);
         // Parsing the question type may yield props that belong to the question’s customData
         const { customData: typeCustom, ...typeProps } = parseQuestionType(questionType.data, locale);
         allQuestions.set(id, {
           ...parseBasics({ id, attributes }, locale),
           ...typeProps,
-          categoryId: parseSingleRelationId(category),
+          categoryId: category.id,
           constituencyIds: parseRelationIds(constituencies),
           entityType: parseEntityType(entityType),
           customData: {
