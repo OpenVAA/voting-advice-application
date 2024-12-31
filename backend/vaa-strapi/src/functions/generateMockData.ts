@@ -125,11 +125,11 @@ export async function generateMockData() {
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidates');
-    await createCandidates(500);
+    await createCandidates(15 * 50);
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidate nominations');
-    await createCandidateNominations(500);
+    await createCandidateNominations(15 * 50);
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting closed list parties');
@@ -361,7 +361,7 @@ async function createCandidateNominations(length: number) {
     // Remove from list to prevent duplicates
     candidates.splice(candidates.indexOf(candidate), 1);
     const electionSymbol = faker.number.int({ min: 2, max: length + 2 }).toString();
-    const electionRound = faker.number.int(1);
+    const electionRound = 1; // faker.number.int(1);
     const constituency = faker.helpers.arrayElement(constituencies);
     const electionId = elections[0].id;
     await strapi.db.query(API.Nomination).create({
