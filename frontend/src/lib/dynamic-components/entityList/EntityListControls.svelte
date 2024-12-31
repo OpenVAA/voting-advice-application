@@ -36,9 +36,9 @@ TODO: Consider moving the tracking events away from the component and just addin
   import { Icon } from '$lib/components/icon';
   import { InfoBadge } from '$lib/components/infoBadge';
   import { Modal } from '$lib/components/modal';
+  import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
   import type { EntityListControlsProps } from './EntityListControls.type';
-  import { getAppContext } from '$lib/contexts/app';
 
   type $$Props = EntityListControlsProps;
 
