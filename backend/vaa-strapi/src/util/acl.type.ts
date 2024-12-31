@@ -22,6 +22,7 @@ export type StrapiContext = {
       data: Record<string, unknown>;
     };
     query: StrapiQuery | Record<string, Array<string>>;
+    url: string;
   };
   state?: { user: { id: number } };
 };
