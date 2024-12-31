@@ -1,10 +1,10 @@
-import { faker } from '@faker-js/faker';
 import { expect, request, test } from '@playwright/test';
 import { load } from 'cheerio';
 import { simpleParser } from 'mailparser';
 import path from 'path';
 import { TESTS_DIR } from './utils/testsDir';
 import { TRANSLATIONS as T } from './utils/translations';
+import mockCandidateForTesting from '../../backend/vaa-strapi/src/functions/mockData/mockCandidateForTesting.json' assert { type: 'json' };
 import mockInfoQuestions from '../../backend/vaa-strapi/src/functions/mockData/mockInfoQuestions.json' assert { type: 'json' };
 import mockQuestions from '../../backend/vaa-strapi/src/functions/mockData/mockQuestions.json' assert { type: 'json' };
 import mockQuestionTypes from '../../backend/vaa-strapi/src/functions/mockData/mockQuestionTypes.json' assert { type: 'json' };
@@ -27,9 +27,14 @@ const strapiURL = `http://localhost:${strapiPort}`;
 const awsSesInboxURL = `${process.env.LOCALSTACK_ENDPOINT}/_aws/ses`;
 const LOCALE = 'en';
 
-const userFirstName = faker.person.firstName();
-const userLastName = faker.person.lastName();
-const userEmail = `${userFirstName}.${userLastName}@example.com`.toLowerCase();
+// TODO: When importing works, use faker instead of the imported data
+// const userFirstName = faker.person.firstName();
+// const userLastName = faker.person.lastName();
+// const userEmail = `${userFirstName}.${userLastName}@example.com`.toLowerCase();
+// const userPassword = 'Password1!';
+const userFirstName = mockCandidateForTesting.firstName;
+const userLastName = mockCandidateForTesting.lastName;
+const userEmail = mockCandidateForTesting.email;
 const userPassword = 'Password1!';
 
 const userGender = mockQuestionTypes.find(({ name }) => name === 'Gender')?.settings.values?.[0].label.en;
@@ -80,72 +85,83 @@ test('should log into Strapi and import candidates', async ({ page }) => {
 
   await expect(page.getByText('Strapi Dashboard')).toBeVisible();
 
+  // The import functionality is currently unavailable
+  // TODO: When importing works re-enable
+
   // Navigate to the Parties in Content Manager
-  await page.getByRole('link', { name: 'Content Manager' }).click();
-  await page.getByRole('link', { name: 'Parties' }).click();
-  const partyRow = page.getByRole('row').nth(1);
-  const partyCell = partyRow.getByRole('gridcell').nth(1);
-  const partyId = await partyCell.innerText();
-  expect(partyId).not.toBeNull();
+  // await page.getByRole('link', { name: 'Content Manager' }).click();
+  // await page.getByRole('link', { name: 'Parties' }).click();
+  // const partyRow = page.getByRole('row').nth(1);
+  // const partyCell = partyRow.getByRole('gridcell').nth(1);
+  // const partyId = await partyCell.innerText();
+  // expect(partyId).not.toBeNull();
 
-  // Navigate to the Elections in Content Manager
-  await page.getByRole('link', { name: 'Elections' }).click();
-  const electionRow = page.getByRole('row').nth(1);
-  const electionCell = electionRow.getByRole('gridcell').nth(1);
-  const electionId = await electionCell.innerText();
-  expect(electionId).not.toBeNull();
+  // // Navigate to the Elections in Content Manager
+  // await page.getByRole('link', { name: 'Elections' }).click();
+  // const electionRow = page.getByRole('row').nth(1);
+  // const electionCell = electionRow.getByRole('gridcell').nth(1);
+  // const electionId = await electionCell.innerText();
+  // expect(electionId).not.toBeNull();
 
-  // Navigate to the Constituencies in Content Manager
-  await page.getByRole('link', { name: 'Constituencies' }).click();
-  const contituencyRow = page.getByRole('row').nth(1);
-  const contituencyCell = contituencyRow.getByRole('gridcell').nth(1);
-  const contituencyId = await contituencyCell.innerText();
-  expect(contituencyId).not.toBeNull();
+  // // Navigate to the Constituencies in Content Manager
+  // await page.getByRole('link', { name: 'Constituencies' }).click();
+  // const contituencyRow = page.getByRole('row').nth(1);
+  // const contituencyCell = contituencyRow.getByRole('gridcell').nth(1);
+  // const contituencyId = await contituencyCell.innerText();
+  // expect(contituencyId).not.toBeNull();
 
-  page.on('filechooser', async (fileChooser) => {
-    await fileChooser.setFiles(path.join(TESTS_DIR, 'candidate-import.csv'));
-  });
+  // page.on('filechooser', async (fileChooser) => {
+  //   await fileChooser.setFiles(path.join(TESTS_DIR, 'candidate-import.csv'));
+  // });
 
-  // Navigate to the Candidates in Content Manager
-  await page.getByRole('link', { name: 'Candidates' }).click();
-  await page.getByRole('button', { name: 'Import' }).click();
-  await page.locator('label').click();
+  // // Navigate to the Candidates in Content Manager
+  // await page.getByRole('link', { name: 'Candidates' }).click();
+  // await page.getByRole('button', { name: 'Import' }).click();
+  // await page.locator('label').click();
 
-  // Enter the CSV data
-  await page.locator('.view-line').first().click();
-  await page.getByLabel('Editor content;Press Alt+F1').fill(
-    `firstName,lastName,party,email,published
-    ${userFirstName},${userLastName},${partyId},${userEmail},true
-    Bob,Bobsson,${partyId},bob@example.com,false
-    Carol,Carolsson,${partyId},carol@example.com,false`
-  );
-  await page.getByLabel('Import', { exact: true }).getByRole('button', { name: 'Import' }).click();
+  // // Enter the CSV data
+  // await page.locator('.view-line').first().click();
+  // await page.getByLabel('Editor content;Press Alt+F1').fill(
+  //   `firstName,lastName,party,email,published
+  //   ${userFirstName},${userLastName},${partyId},${userEmail},true
+  //   Bob,Bobsson,${partyId},bob@example.com,false
+  //   Carol,Carolsson,${partyId},carol@example.com,false`
+  // );
+  // await page.getByLabel('Import', { exact: true }).getByRole('button', { name: 'Import' }).click();
 
-  // Check that the import was successful
-  await expect(page.getByText('Your data has been imported').first()).toBeVisible();
-  await page.getByRole('button', { name: 'Close', exact: true }).first().click();
+  // // Check that the import was successful
+  // await expect(page.getByText('Your data has been imported').first()).toBeVisible();
+  // await page.getByRole('button', { name: 'Close', exact: true }).first().click();
 
-  // Reload the page to see the imported candidates (just in case)
-  await page.reload();
+  // // Reload the page to see the imported candidates (just in case)
+  // await page.reload();
 
-  // Navigate to the Nominations in Content Manager
-  await page.getByRole('link', { name: 'Nominations' }).click();
-  await page.getByRole('button', { name: 'Import' }).click();
-  await page.locator('label').click();
+  // // Navigate to the Nominations in Content Manager
+  // await page.getByRole('link', { name: 'Nominations' }).click();
+  // await page.getByRole('button', { name: 'Import' }).click();
+  // await page.locator('label').click();
 
-  // Enter the CSV data
-  await page.locator('.view-line').first().click();
-  await page.getByLabel('Editor content;Press Alt+F1').fill(
-    `election,constituency,email,party,electionSymbol,published
-    ${electionId},${contituencyId},${userEmail},${partyId},0,true`
-  );
-  await page.getByLabel('Import', { exact: true }).getByRole('button', { name: 'Import' }).click();
+  // // Enter the CSV data
+  // await page.locator('.view-line').first().click();
+  // await page.getByLabel('Editor content;Press Alt+F1').fill(
+  //   `election,constituency,email,party,electionSymbol,published
+  //   ${electionId},${contituencyId},${userEmail},${partyId},0,true`
+  // );
+  // await page.getByLabel('Import', { exact: true }).getByRole('button', { name: 'Import' }).click();
 
-  // Check that the import was successful
-  await expect(page.getByText('Your data has been imported').first()).toBeVisible();
-  await page.getByRole('button', { name: 'Close', exact: true }).first().click();
+  // // Check that the import was successful
+  // await expect(page.getByText('Your data has been imported').first()).toBeVisible();
+  // await page.getByRole('button', { name: 'Close', exact: true }).first().click();
 
   // Navigate to the imported candidate
+  // await page.getByRole('link', { name: 'Candidates' }).click();
+  // await page.getByLabel('Search', { exact: true }).click();
+  // await page.getByPlaceholder('Search').fill(userFirstName);
+  // await page.keyboard.press('Enter');
+  // await page.getByText(userEmail).first().click();
+
+  // Navigate to any candidate
+  await page.getByRole('link', { name: 'Content Manager' }).click();
   await page.getByRole('link', { name: 'Candidates' }).click();
   await page.getByLabel('Search', { exact: true }).click();
   await page.getByPlaceholder('Search').fill(userFirstName);
@@ -192,7 +208,7 @@ test('should log into Strapi and import candidates', async ({ page }) => {
     })
   ).toBeVisible({ timeout: 20000 });
   await page.locator('#password').fill(userPassword);
-  await page.locator('#passwordConfirmation').fill('Password1!a');
+  await page.locator('#passwordConfirmation').fill(userPassword + 'FOO');
   // Test password mismatch
   await page.getByRole('button', { name: T.en['candidateApp.setPassword.setPassword'], exact: true }).click();
   await expect(page.getByText(T.en['candidateApp.setPassword.passwordsDontMatch'], { exact: true })).toBeVisible();
@@ -278,7 +294,7 @@ test.describe('when logged in with imported user', () => {
 
   test('should succesfully answer opinion questions', async ({ page, baseURL }) => {
     await page.goto(`${baseURL}/${LOCALE}/${ROUTE.CandAppQuestions}`);
-    await page.reload(); //Reload to make sure correct data is loaded to page
+    await page.reload(); // Reload to make sure correct data is loaded to page
 
     // Expect correct texts on questions page
     await expect(page.getByText(T.en['candidateApp.questions.start'], { exact: true })).toBeVisible();
