@@ -1,8 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "build:app-shared": "yarn workspace @openvaa/core build && yarn workspace @openvaa/data build && yarn workspace @openvaa/app-shared build && true",
-    "build:shared": "yarn build:app-shared && yarn workspace @openvaa/filters build && yarn workspace @openvaa/matching build && true",
+    "build:app-shared": "yarn workspaces foreach -Rt --from '@openvaa/app-shared' run build && true",
+    "build:shared": "yarn workspaces foreach -At --include 'packages/*' run build && true",
     "dev": "docker compose -f docker-compose.dev.yml up -d --force-recreate --build --wait",
     "dev:attach": "docker compose -f docker-compose.dev.yml up --force-recreate --build",
     "dev:down": "docker compose -f docker-compose.dev.yml down -v --rmi all --remove-orphans",
@@ -35,7 +35,7 @@
   },
   "engine": {
     "node": "20.18.1",
-    "yarn": "1.22.22",
+    "yarn": "4.6",
     "npm": "please-use-yarn"
   },
   "type": "module",
@@ -49,5 +49,5 @@
     "backend/vaa-strapi",
     "frontend"
   ],
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "packageManager": "yarn@4.6.0"
 }
