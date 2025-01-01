@@ -3,7 +3,7 @@
   "name": "@openvaa/filters",
   "version": "1.0.0",
   "scripts": {
-    "build": "yarn --modules-folder ./node_modules tsc --build && yarn tsc-esm-fix"
+    "build": "yarn tsc --build && yarn tsc-esm-fix"
   },
   "type": "module",
   "module": "./build/index.js",

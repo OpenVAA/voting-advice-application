@@ -2,36 +2,39 @@ FROM node:20.18.1-alpine AS base
 
 WORKDIR /opt
 
+# Setup env variable for yarn
+ENV YARN_VERSION=4.6
+
+# install and use yarn 4.x
+RUN corepack enable && corepack prepare yarn@${YARN_VERSION}
+
 # Skip Husky installation in Docker
 ENV HUSKY=0
 
-COPY package.json .
-COPY yarn.lock .
-# The shared-config contains devDependencies which are needed for install
-COPY packages/shared-config/ ./packages/shared-config
-RUN yarn install --frozen-lockfile
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn ./.yarn
+# To be able to use --immutable, we need to copy all the packages in the workspace
+COPY backend backend
+COPY frontend frontend
+COPY packages packages
+RUN yarn install --immutable
 
 FROM base AS shared
 
 WORKDIR /opt
 
-# Install all shared modules used by the backend
-# If changing these, remember to edit the copy commands in `production` as well
-COPY packages/app-shared/ ./packages/app-shared
-COPY packages/core ./packages/core
-COPY packages/data ./packages/data
-RUN yarn install --frozen-lockfile
-RUN yarn workspace @openvaa/core build
-RUN yarn workspace @openvaa/data build
-RUN yarn workspace @openvaa/app-shared build
+# Build all shared modules
+RUN yarn build:shared
 
 FROM base AS strapi
 
 WORKDIR /opt
 
-COPY --from=shared /opt/packages ./packages
-COPY backend/vaa-strapi/ ./backend/vaa-strapi
-RUN yarn workspace @openvaa/strapi install --frozen-lockfile
+# Copy only the packages we need
+COPY --from=shared /opt/packages/app-shared ./packages/app-shared
+COPY --from=shared /opt/packages/core ./packages/core
+COPY --from=shared /opt/packages/data ./packages/data
+COPY --from=shared /opt/backend/vaa-strapi ./backend/vaa-strapi
 
 FROM strapi AS development
 
