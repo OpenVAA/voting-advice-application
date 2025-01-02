@@ -19798,6 +19798,7 @@ __metadata:
     lint-staged: "npm:^15.3.0"
     mailparser: "npm:^3.7.2"
     prettier: "npm:^3.4.2"
+    vitest: "npm:^2.1.8"
   languageName: unknown
   linkType: soft
 
