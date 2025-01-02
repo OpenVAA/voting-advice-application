@@ -170,6 +170,11 @@ jobs:
           path: ./logs.tgz
           retention-days: 30
 
+      - name: "Sleep for 30s to allow mock data generation to complete before running e2e tests"
+        uses: juliangruber/sleep-action@v2.0.0
+        with:
+          time: 30s
+
       - name: "Run E2E tests"
         run: yarn test:e2e
 
