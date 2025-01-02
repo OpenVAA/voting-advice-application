@@ -10,7 +10,9 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "algorithm-example": "tsx src/matching/examples/example.ts",
-    "generate:translation-key-type": "tsx tools/translationKey/generateTranslationKeyType.ts && prettier --write src/lib/types/generated/translationKey.ts"
+    "generate:translation-key-type": "tsx tools/translationKey/generateTranslationKeyType.ts && prettier --write src/lib/types/generated/translationKey.ts",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
