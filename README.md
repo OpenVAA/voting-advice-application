@@ -51,17 +51,13 @@ We released two pilot VAAs for the 2024 EU Elections, which you can try out to s
 
 ## 🎢 Roadmap
 
-**2024 Q4** — Refactor the current codebase, especially:
+**2025 Q1** —  Refactor the current codebase and release a VAA in the Finnish county elections in association with Nuorisoala
 
-- Abstract the frontend–backend connection into a `dataProvider` API enabling arbitrary backend implementations
-- Implement the most crucial missing features, such as constituency selection and support for multiple simultaneous elections
 - Stress test and improve performance for massive elections (especially Finnish local elections)
 - Expand unit and end-to-end test coverage
-
-**2025 Q1** — Release a VAA in the Finnish county elections in association with Nuorisoala
-
 - Implement bank authentication for candidates
 - Implement simple educational mode for use in schools
+- Implement experimental AI-features with Aalto University
 
 **2025 Q2** — Expand documentation and improve developer-friendliness
 
