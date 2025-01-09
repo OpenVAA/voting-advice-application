@@ -2,7 +2,6 @@
   import { validatePassword } from '@openvaa/app-shared';
   import { getContext } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
   import { LogoutButton } from '$lib/candidate/components/logoutButton';
   import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
@@ -77,7 +76,6 @@ Shows an error message if the registration is not successful.
 <FrontPage title={$t('candidateApp.register.title')}>
   <HeadingGroup slot="heading">
     <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
-    <h1 class="text-3xl font-normal">{$page.data.election?.name}</h1>
     <h1 class="my-24 text-2xl font-normal">
       {$t('candidateApp.common.greeting', { username })}
     </h1>
