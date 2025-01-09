@@ -8,7 +8,9 @@
     "start": "strapi start",
     "build": "strapi build",
     "strapi": "strapi",
-    "test": "jest --forceExit --detectOpenHandles"
+    "test:e2e": "jest --forceExit --detectOpenHandles",
+    "test:unit": "vitest run ./src",
+    "generate:types": "strapi ts:generate-types"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.716.0",

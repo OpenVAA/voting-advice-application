@@ -10,7 +10,7 @@
     "prepare": "husky",
     "prod": "docker compose -f docker-compose.yml -p vaa-prod up -d --build",
     "test:e2e": "playwright test -c ./tests/playwright.config.ts ./tests",
-    "test:unit": "vitest run && yarn workspace @openvaa/frontend test:unit",
+    "test:unit": "vitest run && yarn workspace @openvaa/frontend test:unit && yarn workspace @openvaa/strapi test:unit",
     "test:unit:watch": "echo '###################################\nNB! Running only tests in /packages\n###################################\n' && vitest",
     "format": "yarn build:app-shared && prettier --write .",
     "format:check": "yarn build:app-shared && prettier --check .",
