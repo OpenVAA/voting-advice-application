@@ -81,11 +81,9 @@
     // If data is updated, we want to prevent loading the slot until the promises resolve
     error = undefined;
     ready = false;
-    Promise.all([data.electionData, data.constituencyData]).then(
-      (data) => {
-        error = update(data);
-      }
-    );
+    Promise.all([data.electionData, data.constituencyData]).then((data) => {
+      error = update(data);
+    });
   }
   $: if (error) logDebugError(error.message);
 
