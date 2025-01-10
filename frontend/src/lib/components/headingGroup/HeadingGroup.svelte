@@ -1,7 +1,3 @@
-<script lang="ts">
-  import { t } from '$lib/i18n';
-</script>
-
 <!--
 @component
 Used to group the page's main headings, such as a pre-heading (kicker)
@@ -26,6 +22,11 @@ and the main title.
 </HeadingGroup>
 ```
 -->
+
+<script lang="ts">
+  import { getComponentContext } from '$lib/contexts/component';
+  const { t } = getComponentContext();
+</script>
 
 <hgroup aria-roledescription={$t('components.headingGroup.roleDescription')} role="group" {...$$restProps}>
   <slot />

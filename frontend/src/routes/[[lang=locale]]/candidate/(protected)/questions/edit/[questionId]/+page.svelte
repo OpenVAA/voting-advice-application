@@ -3,7 +3,7 @@
   import { page } from '$app/stores';
   import { QuestionPage } from '$candidate/templates/question';
   import { t } from '$lib/i18n';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
 
   const { opinionQuestions } = getContext<CandidateContext>('candidate');
 

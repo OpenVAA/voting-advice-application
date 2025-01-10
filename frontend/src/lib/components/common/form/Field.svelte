@@ -1,6 +1,6 @@
 <script lang="ts">
   export let customStyle: string | undefined = undefined;
-  export let bgColor: string = 'oklch(var(--b3))';
+  export let bgColor: string = 'bg-base-100';
   export let id: string | undefined = undefined;
   export let label: string | undefined = undefined;
 </script>
@@ -13,7 +13,7 @@ Meant to be mainly used with two chidlren that are aligned on both ends of the f
 ### Properties
 
 - `customStyle`: A custom style passed on to the parent component.
-- `bgColor`: The background color of the field.
+- `bgColor`: The background color class of the field.
 - `id`: The id of the input which the label is for. You must supply either both id and label or neither of them. Optional.
 - `label`: The label of the field.
 

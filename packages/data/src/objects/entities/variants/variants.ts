@@ -1,4 +1,4 @@
-import { Alliance, Candidate, ENTITY_TYPE, EntityType, Faction, Organization } from '../../../internal';
+import type { Alliance, Candidate, ENTITY_TYPE, EntityType, Faction, Organization } from '../../../internal';
 
 /**
  * Entity variants
@@ -22,6 +22,11 @@ export type EntityVariantConstructor = {
 export type EntityVariant = {
   [KType in EntityType]: InstanceType<EntityVariantConstructor[KType]>;
 };
+
+/**
+ * Any concrete entity entity.
+ */
+export type AnyEntityVariant = EntityVariant[keyof EntityVariant];
 
 /**
  * A map of the concrete entity constructors’ data arguments by their entity type.

@@ -26,5 +26,5 @@ export interface ConstituencyData extends DataObjectData {
   /**
    * The id of a possible root constituency, within which this constituency is nested. This is mainly useful in situation where multiple elections take place on differing levels of a country’s regional hierarchy, such as state-wide, regional and municipal.
    */
-  parentId?: Id;
+  parentId?: Id | null;
 }

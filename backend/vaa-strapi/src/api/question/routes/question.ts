@@ -12,17 +12,17 @@ export default factories.createCoreRouter('api::question.question', {
     find: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate(['questionType', 'category']),
+        restrictPopulate(['questionType', 'category', 'constituencies']),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters(['questionType.name.$startsWith'])
+        restrictFilters(['questionType.name.$startsWith', 'constituencies.id.$eq', 'constituencies.id.$in'])
       ]
     },
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate(['questionType', 'category']),
+        restrictPopulate(['questionType', 'category', 'constituencies']),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters(['questionType.name.$startsWith'])
+        restrictFilters(['questionType.name.$startsWith', 'constituencies.id.$eq', 'constituencies.id.$in'])
       ]
     }
   } as unknown as Generic

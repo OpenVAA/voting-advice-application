@@ -1,15 +1,20 @@
 {
-  "candidates": {
-    "numShown": "{numShown, plural, =1 {1 {candidateSingular}} other {# {candidatePlural}}}",
-    "total": "av {numTotal}"
+  "alliance": {
+    "numShown": "{numShown, plural, =0 {Inga allianser} =1 {1 alliance} other {# alliances}}"
+  },
+  "candidate": {
+    "numShown": "{numShown, plural, =0 {Inga {candidatePlural}} =1 {1 {candidateSingular}} other {# {candidatePlural}}}"
+  },
+  "faction": {
+    "numShown": "{numShown, plural, =0 {Inga fraktioner} =1 {1 fraktion} other {# fraktioner}}"
   },
   "ingress": {
     "answerMinQuestions": "Om du vill för att hitta de kandidaterna och partierna som håller med dig mest, {questionsLink} först.",
     "questionsLinkText": "svara minst {numQuestions, plural, =1 {en fråga} other {# frågor}}"
   },
-  "parties": {
-    "numShown": "{numShown, plural, =1 {1 {partySingular}} other {# {partyPlural}}}",
-    "total": "av {numTotal}"
+  "numTotal": "av {numTotal}",
+  "organization": {
+    "numShown": "{numShown, plural, =0 {Inga {partyPlural}} =1 {1 {partySingular}} other {# {partyPlural}}}"
   },
   "title": {
     "browse": "Bläddra bland {candidatePlural} och {partyPlural}",

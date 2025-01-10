@@ -1,30 +1,20 @@
+import { PUBLIC_API } from './utils/api';
+
 export async function setDefaultApiPermissions() {
   console.info('[setDefaultApiPermissions] Setting default API permissions');
 
   const roleId = 2; // Role for public user
 
   // Voter App
-  const contentTypes = [
-    'api::answer.answer',
-    'api::app-setting.app-setting',
-    'api::candidate.candidate',
-    'api::constituency.constituency',
-    'api::election.election',
-    'api::language.language',
-    'api::nomination.nomination',
-    'api::party.party',
-    'api::question-category.question-category',
-    'api::question-type.question-type',
-    'api::question.question'
-  ];
-
-  for (const contentType of contentTypes) {
+  for (const contentType of Object.values(PUBLIC_API)) {
     await strapi.query('plugin::users-permissions.permission').create({
       data: {
         action: contentType + '.find',
         role: roleId
       }
     });
+    // App Customization is a single type, so we don't need to create a '.findOne' permission for it
+    if (contentType.indexOf('app-customization') > -1) continue;
     await strapi.query('plugin::users-permissions.permission').create({
       data: {
         action: contentType + '.findOne',
@@ -32,13 +22,6 @@ export async function setDefaultApiPermissions() {
       }
     });
   }
-
-  await strapi.query('plugin::users-permissions.permission').create({
-    data: {
-      action: 'api::app-customization.app-customization.find',
-      role: roleId
-    }
-  });
 
   // Allow sending feedback
   await strapi.query('plugin::users-permissions.permission').create({

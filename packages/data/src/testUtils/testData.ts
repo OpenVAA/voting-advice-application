@@ -1,8 +1,10 @@
 import {
   Choice,
   ENTITY_TYPE,
+  EntityType,
   EntityVariantTree,
   type FullVaaData,
+  Id,
   NominationVariantTree,
   QUESTION_CATEGORY_TYPE,
   QUESTION_TYPE
@@ -45,7 +47,8 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
       info: 'The 200 member of the Hyrulian Parliament are chosen in the elections.',
       date: '2033-11-03',
       constituencyGroupIds: ['constituencyGroup-1', 'constituencyGroup-2'],
-      subtype: 'parliamentary'
+      subtype: 'parliamentary',
+      multipleRounds: true
     },
     {
       id: 'election-2',
@@ -171,7 +174,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         id: 'questionCategory-2',
         name: 'Party Information',
         info: 'The parties’ basic information.',
-        entityTypes: [ENTITY_TYPE.Organization],
+        entityType: [ENTITY_TYPE.Organization],
         type: QUESTION_CATEGORY_TYPE.Info
       },
       {
@@ -180,7 +183,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         info: 'Political statements concerning building and maintaining infrastructure.',
         type: QUESTION_CATEGORY_TYPE.Opinion,
         color: {
-          default: '#FF6666',
+          normal: '#FF6666',
           dark: '#FFAAAA'
         }
       },
@@ -190,7 +193,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         info: 'Political statements concerning the economy.',
         type: QUESTION_CATEGORY_TYPE.Opinion,
         color: {
-          default: '#6666FF',
+          normal: '#6666FF',
           dark: '#AAAAFF'
         }
       }
@@ -216,7 +219,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         categoryId: 'questionCategory-1',
         name: 'Pointy ears',
         info: 'Whether the candidate has pointy ears or not. Only applicable to candidates.',
-        entityTypes: [ENTITY_TYPE.Candidate]
+        entityType: [ENTITY_TYPE.Candidate]
       },
       {
         id: 'question-4',
@@ -224,7 +227,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         categoryId: 'questionCategory-1',
         name: 'Birthdate',
         info: 'The candidate’s date of birth. Only applicable to candidates.',
-        entityTypes: [ENTITY_TYPE.Candidate],
+        entityType: [ENTITY_TYPE.Candidate],
         min: '100-01-01',
         max: '2050-01-01'
       },
@@ -234,7 +237,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         categoryId: 'questionCategory-1',
         name: 'Favourite travel photo',
         info: 'A photo from the candidate’s travels. Only applicable to candidates.',
-        entityTypes: [ENTITY_TYPE.Candidate]
+        entityType: [ENTITY_TYPE.Candidate]
       },
       {
         id: 'question-6',
@@ -256,7 +259,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         categoryId: 'questionCategory-2',
         name: 'Languages',
         info: 'Select the languages you can speak.',
-        entityTypes: ENTITY_TYPE.Candidate,
+        entityType: ENTITY_TYPE.Candidate,
         choices: [
           {
             id: 'choice-1',
@@ -369,7 +372,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         organizationId: 'organization-1',
         answers: {
           'question-1': {
-            value: 'If I’m elected I pledge destroy the new Hyrule Castle and usher in a reign of evil!'
+            value: 'If I’m elected I pledge to destroy the new Hyrule Castle and usher in a reign of evil!'
           },
           'question-2': {
             value: 7
@@ -837,7 +840,8 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
               entityId: 'organization-3',
               candidates: [
                 {
-                  entityId: 'candidate-5'
+                  entityId: 'candidate-5',
+                  info: 'Nomination of the same candidate but by another party'
                 },
                 {
                   entityId: 'candidate-6'
@@ -846,6 +850,22 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
             }
           ],
           info: 'A regular AllianceNomination with an implicit Alliance entity, full hierarchy of nominations and an overriden name in the Nomination data.'
+        },
+        {
+          entityType: ENTITY_TYPE.Organization,
+          entityId: 'organization-2',
+          electionRound: 2,
+          candidates: [
+            {
+              entityId: 'candidate-5',
+              info: 'Nomination of a candidate from a different party'
+            },
+            {
+              entityId: 'candidate-7',
+              info: 'Nomination of an independent candidate'
+            }
+          ],
+          info: 'A nomination on the second round of elections. NB. This is a bit silly, because there are no other nominations for the second round.'
         }
       ],
       'constituency-1-3': [
@@ -1042,6 +1062,143 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
           info: 'Closed list'
         }
       ]
+    }
+  }
+} as const;
+
+/**
+ * Nomination counts for all rounds for each entity.
+ */
+export const ENTITY_NOMINATIONS: Record<EntityType, Record<Id, number>> = {
+  alliance: {
+    'alliance-1': 1
+  },
+  candidate: {
+    'candidate-1': 0,
+    'candidate-2': 1,
+    'candidate-3': 2,
+    'candidate-4': 1,
+    'candidate-5': 3,
+    'candidate-6': 1,
+    'candidate-7': 2,
+    'candidate-8': 2
+  },
+  faction: {
+    'faction-1': 1
+  },
+  organization: {
+    'organization-1': 10,
+    'organization-2': 13,
+    'organization-3': 10,
+    'organization-4': 2,
+    'organization-5': 0
+  }
+} as const;
+
+/**
+ * Nomination counts for round 1 in the test data.
+ */
+export const NOMINATION_COUNTS = {
+  'election-1': {
+    'constituency-1-1': {
+      alliance: 1,
+      organization: 2,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-1-2': {
+      alliance: 1,
+      organization: 2,
+      faction: 2,
+      candidate: 6 // NB. 'candidate-5' is nominated twice in this constituency
+    },
+    'constituency-1-3': {
+      alliance: 0,
+      organization: 2,
+      faction: 0,
+      candidate: 2
+    },
+    'constituency-2-1': {
+      alliance: 0,
+      organization: 0,
+      faction: 0,
+      candidate: 1
+    },
+    'constituency-2-2': {
+      alliance: 0,
+      organization: 0,
+      faction: 0,
+      candidate: 1
+    }
+  },
+  'election-2': {
+    'constituency-3-1': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-2': {
+      alliance: 0,
+      organization: 4,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-3': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-4': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-5': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-6': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-7': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-8': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    },
+    'constituency-3-9': {
+      alliance: 0,
+      organization: 3,
+      faction: 0,
+      candidate: 0
+    }
+  }
+} as const;
+
+/**
+ * Nomination counts for round 2 in the test data.
+ */
+export const NOMINATION_COUNTS_ROUND_2 = {
+  'election-1': {
+    'constituency-1-2': {
+      alliance: 0,
+      organization: 1,
+      faction: 0,
+      candidate: 2
     }
   }
 } as const;

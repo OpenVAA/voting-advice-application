@@ -18,11 +18,10 @@
       "required": true,
       "default": 0
     },
-    "election": {
+    "elections": {
       "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::election.election",
-      "inversedBy": "question_categories"
+      "relation": "oneToMany",
+      "target": "api::election.election"
     },
     "name": {
       "pluginOptions": {},
@@ -44,7 +43,10 @@
     },
     "type": {
       "type": "enumeration",
-      "enum": ["opinion", "info"],
+      "enum": [
+        "opinion",
+        "info"
+      ],
       "default": "opinion"
     },
     "color": {
@@ -55,6 +57,11 @@
     },
     "customData": {
       "type": "json"
+    },
+    "constituencies": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::constituency.constituency"
     }
   }
 }

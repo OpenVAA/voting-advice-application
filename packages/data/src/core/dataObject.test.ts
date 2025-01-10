@@ -1,8 +1,8 @@
 import { expect, test } from 'vitest';
-import { DataObject, DataObjectData, DataRoot } from '../internal';
+import { DataObject, DataRoot } from '../internal';
 
 test('DataObject', () => {
-  class MockDataObject extends DataObject<DataObjectData> {}
+  class MockDataObject extends DataObject {}
   const root = new DataRoot();
   const id = 'ID';
   const name = 'NAME';

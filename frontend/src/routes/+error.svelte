@@ -22,14 +22,12 @@
   }
 </script>
 
-<svelte:head>
-  <title>{title} – {$t('dynamic.appName')}</title>
-</svelte:head>
+<main class="flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg">
+  <Layout {title}>
+    <figure role="presentation" slot="hero">
+      <HeroEmoji {emoji} />
+    </figure>
 
-<Layout {title}>
-  <figure role="presentation" slot="hero">
-    <HeroEmoji {emoji} />
-  </figure>
-
-  <div class="text-center">{@html sanitizeHtml(description)}</div>
-</Layout>
+    <div class="text-center">{@html sanitizeHtml(description)}</div>
+  </Layout>
+</main>

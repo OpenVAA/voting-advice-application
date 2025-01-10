@@ -1,4 +1,8 @@
 {
+  "alliance": {
+    "plural": "alliances",
+    "singular": "alliance"
+  },
   "answer": {
     "no": "No",
     "yes": "Yes"
@@ -17,10 +21,16 @@
   "continue": "Continue",
   "electionList": "List",
   "electionSymbol": {
+    "alliance": "Election Symbol",
     "candidate": "Election Number",
-    "party": "Election Symbol"
+    "faction": "Election Symbol",
+    "organization": "Election Symbol"
   },
   "expandOrCollapse": "Expand or collapse this section",
+  "faction": {
+    "plural": "factions",
+    "singular": "faction"
+  },
   "firstName": "First Name",
   "home": "home",
   "info": "Info",
@@ -38,9 +48,10 @@
   "openCloseMenu": "Toggle menu",
   "openMenu": "Open menu",
   "openVAA": "OpenVAA",
-  "party": {
+  "or": "Or",
+  "organization": {
     "plural": "parties",
-    "singular": "Party"
+    "singular": "party"
   },
   "pending": "pending",
   "primaryActions": "Primary actions",

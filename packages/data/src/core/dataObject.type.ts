@@ -18,30 +18,30 @@ export interface DataObjectData extends HasId {
   /**
    * The name of the object
    */
-  name?: string;
+  name?: string | null;
   /**
    * Optional short name, which can be used in, e.g., lists and link titles. Defaults to name
    */
-  shortName?: string;
+  shortName?: string | null;
   /**
    * Optional description of the object
    */
-  info?: string;
+  info?: string | null;
   /**
    * When objects are returned in arrays, they are ordered by ascending `order`. Set to a small value to prioritise the object. @defaultValue Infinity
    */
-  order?: number;
+  order?: number | null;
   /**
    * Optional arbitrary subtype that can be used to differentiate between objects of the same class, e.g. 'Constituency association' for an `Organization` that is not a party in an election where are parties are the default nominators. @defaultValue ''
    */
-  subtype?: string;
+  subtype?: string | null;
   /**
    * Optional arbitrary data associated with the object.
    */
-  customData?: object;
+  customData?: object | null;
   /**
    * Whether the object is fully or partially automatically generated during data provision, such as `Alliance`s and `Nomination`s. @defaultValue false
    * If this is `true`, the `Id` validity check is bypassed, because it’s assumed to be generated as well.
    */
-  isGenerated?: boolean;
+  isGenerated?: boolean | null;
 }

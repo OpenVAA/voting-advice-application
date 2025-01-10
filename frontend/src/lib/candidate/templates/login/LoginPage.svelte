@@ -1,16 +1,15 @@
 <script lang="ts">
   import { getContext } from 'svelte';
   import { goto } from '$app/navigation';
-  import { page } from '$app/stores';
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
-  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { HeadingGroup } from '$lib/components/headingGroup';
   import { t } from '$lib/i18n';
-  import { customization, settings } from '$lib/stores';
+  import { customization, settings } from '$lib/legacy-stores';
   import { FrontPage } from '$lib/templates/frontPage';
-  import { darkMode } from '$lib/utils/darkMode';
-  import { getRoute, ROUTE } from '$lib/utils/navigation';
-  import type { CandidateContext } from '$lib/utils/candidateContext';
+  import { darkMode } from '$lib/utils/legacy-darkMode';
+  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
 
   const { user, logIn, newUserEmail } = getContext<CandidateContext>('candidate');
 
@@ -58,13 +57,12 @@ Candidate login page. This component also takes care of the login process.
     slot="hero"
     class="bg-neutral-content"
     src={$darkMode
-      ? ($customization.candPosterDark?.url ?? '/images/hero-candidate.png')
+      ? ($customization.candPoster?.urlDark ?? $customization.candPoster?.url ?? '/images/hero-candidate.png')
       : ($customization.candPoster?.url ?? '/images/hero-candidate.png')}
     alt="" />
 
   <HeadingGroup slot="heading">
-    <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
-    <h1 class="text-3xl font-normal">{$page.data.election?.name}</h1>
+    <h1>{$t('dynamic.appName')}</h1>
   </HeadingGroup>
   <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onLogin}>
     {#if showPasswordSetMessage}

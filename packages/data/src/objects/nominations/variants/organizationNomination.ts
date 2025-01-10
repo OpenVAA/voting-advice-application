@@ -28,18 +28,16 @@ export class OrganizationNomination
    * Any nested `CandidateNomination`s or `FactionNomination`s in the data are created during initialization.
    */
   constructor({ data, root }: { data: WithOptional<OrganizationNominationData, 'id'>; root: DataRoot }) {
-    super({ data, root });
-
-    if (this.data.candidates?.length && this.data.factions?.length)
+    if (data.candidates?.length && data.factions?.length)
       throw new DataProvisionError(
         'An OrganizationNomination cannot have both FactionNominations and OrganizationNominations'
       );
 
+    super({ data, root });
+
     // Create nested candidate or faction nominations
-    const complementBase = {
-      constituencyId: this.data.constituencyId,
-      electionId: this.data.electionId,
-      parentNominationId: this.data.id,
+    const inheritance = {
+      ...this.getInheritableData(),
       parentNominationType: ENTITY_TYPE.Organization
     };
     if (this.data.candidates?.length) {
@@ -48,7 +46,7 @@ export class OrganizationNomination
           (d) =>
             ({
               ...d,
-              ...complementBase,
+              ...inheritance,
               entityType: ENTITY_TYPE.Candidate
             }) as CandidateNominationData
         )
@@ -60,7 +58,7 @@ export class OrganizationNomination
           (d) =>
             ({
               ...d,
-              ...complementBase,
+              ...inheritance,
               entityType: ENTITY_TYPE.Faction
             }) as FactionNominationData
         )

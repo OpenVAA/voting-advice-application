@@ -1,5 +1,6 @@
 import { staticSettings } from '@openvaa/app-shared';
 import { adjustContrast } from './adjustContrast';
+import type { Colors } from '@openvaa/data';
 
 const bg = staticSettings.colors?.light?.['base-300'] ?? 'd1ebee';
 const bgDark = staticSettings.colors?.dark?.['base-300'] ?? '1f2324';
@@ -10,18 +11,18 @@ const bgDark = staticSettings.colors?.dark?.['base-300'] ?? '1f2324';
  * @param colorDark The dark theme color
  * @returns An object with the adjusted colors
  */
-export function ensureColors(color?: string, colorDark?: string): { color: string; colorDark: string } {
-  if (color) {
-    color = adjustContrast(color, bg) ?? color;
+export function ensureColors({ normal, dark }: Partial<Colors>): WithRequired<Colors, 'dark'> {
+  if (normal) {
+    normal = adjustContrast(normal, bg) ?? normal;
   } else {
-    color = '';
+    normal = '';
   }
-  if (colorDark) {
-    colorDark = adjustContrast(colorDark, bgDark) ?? colorDark;
-  } else if (color) {
-    colorDark = adjustContrast(color, bgDark) ?? '';
+  if (dark) {
+    dark = adjustContrast(dark, bgDark) ?? dark;
+  } else if (normal) {
+    dark = adjustContrast(normal, bgDark) ?? '';
   } else {
-    colorDark = '';
+    dark = '';
   }
-  return { color, colorDark };
+  return { normal, dark };
 }

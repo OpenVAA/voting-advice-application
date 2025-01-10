@@ -1,10 +1,11 @@
 import { order, QUESTION_CATEGORY_TYPE, QuestionAndCategoryBase } from '../../../internal';
 import type {
+  AnyQuestionVariant,
   Collection,
   DataAccessor,
+  FilterTargets,
   QuestionCategoryData,
-  QuestionCategoryType,
-  QuestionVariant
+  QuestionCategoryType
 } from '../../../internal';
 
 /**
@@ -24,7 +25,15 @@ export class QuestionCategory
   /**
    * Get the questions in this category.
    */
-  get questions(): Collection<QuestionVariant> {
-    return this.root.questions?.filter((q) => q.category === this).sort(order) ?? [];
+  get questions(): Collection<AnyQuestionVariant> {
+    return this.root.questions.filter((q) => q.category.id === this.id).sort(order) ?? [];
+  }
+
+  /**
+   * Get the questions in this category that match the given filter targets.
+   * @param targets - The targets to check for
+   */
+  getApplicableQuestions(targets: FilterTargets): Collection<AnyQuestionVariant> {
+    return this.questions.filter((q) => q.appliesTo(targets));
   }
 }

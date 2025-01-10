@@ -135,9 +135,9 @@ describe('matchingAlgorithm', () => {
     const expected0 = (full + (full * 2) / 4) / questions.length; // binary disagreement, 4-choice disagreement
     const expected1 = full; // all missing values
     const expected2 = 0; // perfect agreement
-    expect(matches.find((m) => m.entity === candidates[0])?.distance).toBeCloseTo(expected0);
-    expect(matches.find((m) => m.entity === candidates[1])?.distance).toBeCloseTo(expected1);
-    expect(matches.find((m) => m.entity === candidates[2])?.distance).toBeCloseTo(expected2);
+    expect(matches.find((m) => m.target === candidates[0])?.distance).toBeCloseTo(expected0);
+    expect(matches.find((m) => m.target === candidates[1])?.distance).toBeCloseTo(expected1);
+    expect(matches.find((m) => m.target === candidates[2])?.distance).toBeCloseTo(expected2);
   });
 
   test('mixed question types', () => {
@@ -174,8 +174,8 @@ describe('matchingAlgorithm', () => {
         0 + // categorical2: no-no
         (2 / 4) * full) / // categorical4: c-a
       questions.length;
-    expect(matches.find((m) => m.entity === candidates[0])?.distance).toBeCloseTo(expectedA);
-    expect(matches.find((m) => m.entity === candidates[1])?.distance).toBeCloseTo(expectedB);
+    expect(matches.find((m) => m.target === candidates[0])?.distance).toBeCloseTo(expectedA);
+    expect(matches.find((m) => m.target === candidates[1])?.distance).toBeCloseTo(expectedB);
   });
 
   describe('submatches', () => {
@@ -191,11 +191,11 @@ describe('matchingAlgorithm', () => {
         MISSING_VALUE_METHOD.Neutral
       );
       const fullDist = (0 + 0 + full + 0.75 * full + half) / questions.length; // 1-1, 1-1, 1-5, 1-4, 3-5
-      const subsetA = { matchableQuestions: questions.slice(0, 1) };
+      const subsetA = { questions: questions.slice(0, 1) };
       const subsetADist = 0; // 1-1
-      const subsetB = { matchableQuestions: questions.slice(2, 3) };
+      const subsetB = { questions: questions.slice(2, 3) };
       const subsetBDist = full; // 1-5
-      const subsetC = { matchableQuestions: questions.slice(0, 4) };
+      const subsetC = { questions: questions.slice(0, 4) };
       const subsetCDist = (0 + 0 + full + 0.75 * full) / 4; // 1-1, 1-1, 1-5, 1-4
       const questionGroups = [subsetA, subsetB, subsetC];
       const match = algorithm.match({
@@ -223,7 +223,7 @@ describe('matchingAlgorithm', () => {
         MISSING_VALUE_METHOD.RelativeMaximum
       );
       // A subset that includes only the question the voter has not answered
-      const questionGroups = [{ matchableQuestions: questions.slice(0, 1) }];
+      const questionGroups = [{ questions: questions.slice(0, 1) }];
       const match = algorithm.match({
         questions: questions.slice(1),
         reference: voter,

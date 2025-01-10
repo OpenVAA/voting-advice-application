@@ -20,10 +20,10 @@ export interface QuestionCategoryData extends QuestionAndCategoryBaseData {
   // - electionIds?: FilterValue<Id>;
   // - electionRounds?: FilterValue<number>;
   // - constituencyIds?: FilterValue<Id>;
-  // - entityTypes?: FilterValue<EntityType>;
+  // - entityType?: FilterValue<EntityType>;
 
   /**
    * The type of the question category. @defaultValue QUESTION_CATEGORY_TYPE.Default
    */
-  type?: QuestionCategoryType;
+  type?: QuestionCategoryType | null;
 }

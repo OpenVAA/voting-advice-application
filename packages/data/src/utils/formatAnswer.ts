@@ -24,12 +24,12 @@ export function formatDateAnswer({
   question,
   value
 }: {
-  locale?: string;
+  locale?: string | null;
   question: DateQuestion;
   value: Date;
 }): string {
   const format = question.format ?? DEFAULT_DATE_FORMAT;
-  return value.toLocaleDateString(locale, format);
+  return value.toLocaleDateString(locale ?? undefined, format);
 }
 
 /**
@@ -50,8 +50,18 @@ export function formatMissingAnswer(): string {
 /**
  * Format a non-missing `Array<string>` `Answer.value` for output.
  */
-export function formatMultipleTextAnswer({ value }: { value: Array<string> }): string {
-  return value.length === 0 ? '—' : value.map((v) => v.trim()).join(', ');
+export function formatMultipleTextAnswer({
+  value,
+  separator = ', ',
+  empty = '—',
+  map = (v) => v
+}: {
+  value: Array<string>;
+  separator?: string;
+  empty?: string;
+  map?: (item: string) => string;
+}): string {
+  return value.length === 0 ? empty : value.map((v) => map(v.trim())).join(separator);
 }
 
 /**
@@ -62,11 +72,11 @@ export function formatNumberAnswer({
   question,
   value
 }: {
-  locale?: string;
+  locale?: string | null;
   question: NumberQuestion;
   value: number;
 }): string {
-  const { format } = new Intl.NumberFormat(locale, question.format ?? undefined);
+  const { format } = new Intl.NumberFormat(locale ?? undefined, question.format ?? undefined);
   return format(value);
 }
 

@@ -1,15 +1,3 @@
-<script lang="ts">
-  import { Icon } from '$lib/components/icon';
-  import { concatClass } from '$lib/utils/components';
-  import type { ToggleProps } from './Toggle.type';
-
-  type $$Props = ToggleProps;
-
-  export let label: $$Props['label'];
-  export let options: $$Props['options'];
-  export let selected: $$Props['selected'] = undefined;
-</script>
-
 <!--
 @component
 Display a short list of options as toggleable text or icon buttons from which one can be selected. Semantically a `<fieldset>` with radio buttons.
@@ -60,9 +48,20 @@ Display a short list of options as toggleable text or icon buttons from which on
   let selected: string;
 </script>
 <Toggle bind:selected label="Switch between video and text display" {options}/>
-
 ```
 -->
+
+<script lang="ts">
+  import { Icon } from '$lib/components/icon';
+  import { concatClass } from '$lib/utils/components';
+  import type { ToggleProps } from './Toggle.type';
+
+  type $$Props = ToggleProps;
+
+  export let label: $$Props['label'];
+  export let options: $$Props['options'];
+  export let selected: $$Props['selected'] = undefined;
+</script>
 
 <fieldset
   role="radiogroup"

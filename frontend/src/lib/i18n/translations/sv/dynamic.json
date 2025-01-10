@@ -3,15 +3,25 @@
     "heroEmoji": "⚙️"
   },
   "appName": "Valkompassen",
+  "constituencies": {
+    "heroEmoji": "📍",
+    "ingressSingleElection": "Kandidaterna och partierna är indelade i valkretsar. Du kan bara rösta på dem i din valkrets.",
+    "ingressMultipleElections": "Kandidaterna och partierna är indelade i valkretsar. Välj en valkrets för varje val."
+  },
+  "elections": {
+    "heroEmoji": "🗳️",
+    "ingress": "Välj de val som du vill hitta kandidater eller partier till."
+  },
   "error": {
     "heroEmoji": "🙊"
   },
   "frontPage": {
-    "ingress": "Valkompassen ger kandidater och partier poäng efter hur väl de överensstämmer med dina åsikter. Valet hålls den {electionDate, date, ::ddMMyyyy}.",
+    "ingress": "Valkompassen ger kandidater och partier poäng efter hur väl de överensstämmer med dina åsikter.",
     "startButton": "Börja!"
   },
   "info": {
-    "content": "Valets datum är {electionDate, date, ::yyyyMMdd}.",
+    "content": "Läs mer om valen.",
+    "dateInfo": "Valets datum är {electionDate, date, ::yyyyMMdd}.",
     "heroEmoji": "🗳️"
   },
   "intro": {
@@ -19,7 +29,9 @@
     "heroEmoji": "🚀",
     "ingress": "Denna applikation hjälper dig att hitta den {candidatePlural} och {partyPlural} som bäst matchar dina åsikter i valet.",
     "list": {
+      "constituencies": "Välj din valkrets",
       "details": "Studera dem i detalj",
+      "elections": "Välj ett val",
       "opinions": "Ange dina åsikter",
       "results": "Se de {candidatePlural} och {partyPlural} som bäst överensstämmer med dig"
     },
@@ -44,7 +56,8 @@
     "ingress": {
       "browse": "Detta är kandidaterna och partierna som ställer upp i dessa val, sorterade efter valsymbol eller namn. Du kan använda filtren för att begränsa dem.",
       "results": "Detta är de kandidaterna och partierna som ställer upp i dessa val. De bästa matchningarna är först på listan. För att begränsa resultaten kan du också använda filtren."
-    }
+    },
+    "multipleElections": "Välj nedan först vilket vals {candidatePlural} och {partyPlural} du vill se och sedan om du vill se {candidatePlural} eller {partyPlural}."
   },
   "statistics": {
     "heroEmoji": "🧮"

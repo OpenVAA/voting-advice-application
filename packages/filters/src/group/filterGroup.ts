@@ -1,11 +1,11 @@
+import { MaybeWrappedEntity } from '@openvaa/core';
 import { combineResults, LOGIC_OP, type LogicOp } from './combineResults';
-import type { MaybeWrapped } from '../entity';
 import type { Filter } from '../filter';
 
 /**
  * Use to combine a group of filters and subscribe to changes in their combined results using the `onChange` callback.
  */
-export class FilterGroup<TEntity extends MaybeWrapped> {
+export class FilterGroup<TEntity extends MaybeWrappedEntity> {
   /**
    * The logic operator used to combine the results.
    */
@@ -38,11 +38,12 @@ export class FilterGroup<TEntity extends MaybeWrapped> {
   /////////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Apply the filters to the inputs. If the group has no active filters, returns the original list.
+   * Apply the filters to the inputs. If the group has no active filters (or any filters at all), returns the original list.
    * @input A list of entities.
    * @returns Filtered targets
    */
   apply<TTarget extends TEntity>(targets: Array<TTarget>) {
+    if (!this.active) return targets;
     return combineResults(
       this.filters.map((f) => f.apply(targets)),
       this._logicOp

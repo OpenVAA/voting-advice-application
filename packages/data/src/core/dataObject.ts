@@ -1,10 +1,10 @@
-import { DataProvisionError, DataRoot, Updatable } from '../internal';
-import type { Colors, DataAccessor, DataObjectData, Id, Image } from '../internal';
+import { DataProvisionError, Updatable } from '../internal';
+import type { Colors, DataAccessor, DataObjectData, DataRoot, Id, Image } from '../internal';
 
 /**
  * Base class for all data objects. Note that we implement `DataAccessor<DataObjectData>` to make sure that wehave accessors for all of the properties in the object’s data.
  */
-export abstract class DataObject<TData extends DataObjectData>
+export abstract class DataObject<TData extends DataObjectData = DataObjectData>
   extends Updatable
   implements DataAccessor<DataObjectData>
 {
@@ -83,7 +83,7 @@ export abstract class DataObject<TData extends DataObjectData>
    * Optional short name, which can be used in, e.g., lists and link titles. @defaultValue `this.name`
    */
   get shortName(): string {
-    return this.data.shortName ?? this.name;
+    return this.data.shortName || this.name;
   }
 
   /**

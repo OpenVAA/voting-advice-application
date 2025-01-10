@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { NavGroup, NavItem } from '$lib/components/navigation';
+  import { NavGroup, NavItem } from '$lib/dynamic-components/navigation';
   import { locale as currentLocale, locales, t } from '$lib/i18n';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
-  import { getRoute } from '$lib/utils/navigation';
+  import { getRoute } from '$lib/utils/legacy-navigation';
 </script>
 
 <!--

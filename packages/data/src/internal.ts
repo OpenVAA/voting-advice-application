@@ -6,19 +6,20 @@
 // eslint-disable-next-line simple-import-sort/exports
 export type {
   Answer as CoreAnswer,
+  Entity as CoreEntity,
   Id,
   HasAnswers,
   HasId,
   CoordinateOrMissing,
   MatchableQuestion,
   MissingValue,
-  Serializable
+  Serializable,
+  WrappedEntity
 } from '@openvaa/core';
 export { isValidId, isMissingValue, isEmptyValue, MISSING_VALUE, normalizeCoordinate, COORDINATE } from '@openvaa/core';
 export * from './core/filter.type';
 export * from './core/collection.type';
 export * from './core/colors.type';
-export * from './core/error';
 export * from './core/image.type';
 export * from './core/updatable.type';
 export * from './core/updatable';
@@ -27,16 +28,19 @@ export * from './root/dataRoot';
 export * from './core/dataObject.type';
 export * from './core/dataObject';
 export * from './core/dataAccessor.type';
+export * from './core/error';
 export * from './utils/withOptional.type';
 export * from './utils/answer';
-export * from './utils/ensureValue';
 export * from './utils/choice';
+export * from './utils/createDeterministicId';
+export * from './utils/ensureValue';
 export * from './utils/filter';
 export * from './utils/format.type';
 export * from './utils/format';
 export * from './utils/formatAnswer.type';
 export * from './utils/formatAnswer';
 export * from './utils/order';
+export * from './utils/parseFullVaaData';
 export * from './utils/removeDuplicates';
 export * from './i18n/localized';
 export * from './i18n/translate';

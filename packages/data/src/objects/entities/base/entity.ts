@@ -1,21 +1,19 @@
 import {
   type Answer,
+  AnswerFormatterParams,
   type Answers,
   type AnswerValue,
+  type AnyQuestionVariant,
+  ArrayAnswerFormatterOptions,
+  Constituency,
+  CoreEntity,
   type DataAccessor,
   DataObject,
-  DataTypeError,
+  Election,
   type EntityData,
   type EntityType,
   type HasAnswers,
-  Id,
-  type Image,
-  isMissingValue,
-  MultipleChoiceQuestion,
-  type NominationVariant,
-  QUESTION_TYPE,
-  type QuestionVariant,
-  SingleChoiceQuestion
+  type NominationVariant
 } from '../../../internal';
 
 /**
@@ -23,20 +21,17 @@ import {
  */
 export abstract class Entity<TType extends EntityType, TData extends EntityData<TType> = EntityData<TType>>
   extends DataObject<TData>
-  implements DataAccessor<EntityData<TType>>, HasAnswers
+  implements DataAccessor<EntityData<TType>>, CoreEntity, HasAnswers
 {
+  //////////////////////////////////////////////////////////////////////////////
+  // Property getters
+  //////////////////////////////////////////////////////////////////////////////
+
   /**
    * The Entity's answers to the questions. @defaultValue {}
    */
   get answers(): Answers {
     return this.data.answers ?? {};
-  }
-
-  /**
-   * Get all the `Nominations` for this entity.
-   */
-  get nominations(): Array<NominationVariant[TType]> {
-    return this.root.getNominationsForEntity(this) ?? [];
   }
 
   /**
@@ -46,61 +41,74 @@ export abstract class Entity<TType extends EntityType, TData extends EntityData<
     return this.data.type;
   }
 
+  //////////////////////////////////////////////////////////////////////////////
+  // Collection getters
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * All `Question`s that have been answered by this entity.
+   */
+  get answeredQuestions(): Array<AnyQuestionVariant> {
+    return Object.entries(this.answers)
+      .filter(([, answer]) => answer?.value != null)
+      .map(([id]) => this.root.getQuestion(id));
+  }
+
+  /**
+   * Get all `Nominations` for this entity.
+   */
+  get nominations(): Array<NominationVariant[TType]> {
+    return this.root.getNominationsForEntity(this) ?? [];
+  }
+
+  /**
+   * Get all `Nominations` for this entity that match the given `Election` and its current round and `Constituency`.
+   * @param election - The `Election` to filter the nominations by.
+   * @param constituency - The `Constituency` to filter the nominations by.
+   */
+  getApplicableNominations({
+    election,
+    constituency
+  }: {
+    election: Election;
+    constituency: Constituency;
+  }): Array<NominationVariant[TType]> {
+    return (
+      this.root.getNominationsForEntity(this, {
+        electionId: election.id,
+        electionRound: election.round,
+        constituencyId: constituency.id
+      }) ?? []
+    );
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Object getters
+  //////////////////////////////////////////////////////////////////////////////
+
   /**
    * Returns the `Answer` object for the given question with the `value` property assured to be of the correct type for the question type.
    * @param question - The `Question` to get the answer for.
    * @returns The `Answer` object for the given question or `undefined` if the answer is missing or its `value` is invalid for the question type, it returns `undefined`.
    */
-  getAnswer<TQuestion extends QuestionVariant>(
+  getAnswer<TQuestion extends AnyQuestionVariant>(
     question: TQuestion
   ): Answer<AnswerValue[TQuestion['type']]> | undefined {
     const answer = this.answers?.[question.id];
-    if (!answer) return undefined;
-    // AssertValue ensures that the answer value is of the correct type for the question
-    const value = question.ensureValue(answer.value) as AnswerValue[TQuestion['type']];
-    return isMissingValue(value) ? undefined : { ...answer, value };
+    return question.ensureAnswer(answer) as Answer<AnswerValue[TQuestion['type']]> | undefined;
   }
 
   /**
-   * A utility for showing the `Answer.value` to a question as a formatted string or array of strings. The formatting is controlled by the formatters defined in the `DataRoot`.
+   * A utility for showing the `Answer.value` to a question as a string. The formatting is controlled by the formatters defined in the `DataRoot`.
    * @param question - The `Question` to get the answer for.
-   * @returns A string or an array of strings.
+   * @param rest - Additional arguments for the `formatAnswer` method.
+   * @returns A string.
    */
-  getFormattedAnswer<TQuestion extends QuestionVariant>(question: TQuestion): string {
+  getFormattedAnswer<TQuestion extends AnyQuestionVariant>({
+    question,
+    ...rest
+  }: { question: TQuestion } & ArrayAnswerFormatterOptions): string {
     const answer = this.getAnswer(question);
-    if (answer == null) return this.root.formatMissingAnswer({ question });
-    // We use instanceof checks to catch subclasses of choice questions
-    if (question instanceof SingleChoiceQuestion)
-      // `getAnswer()` ensures that the answer value is not missing and the `Choice` is available
-      return this.root.formatTextAnswer({
-        question,
-        value: question.getChoice((answer as Answer<Id>).value!)!.label
-      });
-    if (question instanceof MultipleChoiceQuestion)
-      // The array may be empty, but that is left for the `multipleText` formatter to handle
-      return this.root.formatMultipleTextAnswer({
-        question,
-        value: (answer as Answer<Array<Id>>).value!.map((id) => question.getChoice(id)!.label)
-      });
-    // Otherwise the question is of a simple type
-    const { type } = question;
-    // `getAnswer()` ensures that the answer value is not missing and of the correct type
-    const { value } = answer;
-    switch (type) {
-      case QUESTION_TYPE.Boolean:
-        return this.root.formatBooleanAnswer({ question, value: value as boolean });
-      case QUESTION_TYPE.Date:
-        return this.root.formatDateAnswer({ question, value: value as Date });
-      case QUESTION_TYPE.Image:
-        return this.root.formatImageAnswer({ question, value: value as Image });
-      case QUESTION_TYPE.Number:
-        return this.root.formatNumberAnswer({ question, value: value as number });
-      case QUESTION_TYPE.MultipleText:
-        return this.root.formatMultipleTextAnswer({ question, value: value as Array<string> });
-      case QUESTION_TYPE.Text:
-        return this.root.formatTextAnswer({ question, value: value as string });
-      default:
-        throw new DataTypeError(`Unsupported question type: ${type}`);
-    }
+    return this.root.formatAnswer({ question, answer, ...rest } as unknown as AnswerFormatterParams<TQuestion>);
   }
 }

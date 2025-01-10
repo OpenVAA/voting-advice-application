@@ -3,7 +3,7 @@
   "feedback": {
     "title": "Respons"
   },
-  "partyMatching": {
+  "organizationMatching": {
     "content": "{partyMatchingMethod, select, answersOnly {<p>Partipoängen beräknas utifrån de svar som partierna har lämnat.</p>} mean {<p>Partipoängen beräknas utifrån de svar som partierna har lämnat eller - om sådana saknas - från medelvärdet av deras kandidaters svar.</p>} median {<p>Partiernas poäng beräknas utifrån de svar som de har gett eller - om dessa saknas - från medianen av deras kandidaters svar.</p>} other {<p>Partiernas poäng beräknas utifrån de svar som de har gett eller - om dessa saknas - från deras kandidaters svar.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Observera att kandidater kan vara oense med sitt parti i vissa frågor, och de beräknade partisvaren kan därför skilja sig från partiernas officiella ställningstaganden.</p>}}",
     "title": "Matchning av partier"
   },

@@ -6,14 +6,15 @@ The filters in this module allow basic filtering of entities, e.g. candidates or
 
 ## 🚧 To Do:
 
-- Remove objects and choices from the filters bc they are a frontend property
+- Refactor the complicated `entityGetter`, built-in `property` or `Question` accessors and the stored objects in `EnumeratedFilter` into a single value getter callback (possibly with another callback for processing values for display). Also remove `locale` from properties and leave sorting to the consumers.
 - Add global locale changing to group
 - Make canonical missing value undefined, but add isMissing utility that checks for empty arrays etc.
 - Possibly move isMissing check to filter method so it can be overriden
 
 ## Dependencies
 
-`@openvaa/core`: Definitions related to ids, answers and entities having answers to these are shared between this and other `vaa` modules.
+- `@openvaa/core`: Definitions related to ids, answers and entities having answers to these are shared between this and other `vaa` modules.
+- `@openvaa/data`: Definitions related to questions.
 
 ## Developing
 
@@ -29,11 +30,11 @@ The module uses [`tsc-esm-fix`](https://github.com/antongolub/tsc-esm-fix) which
 6. You can also add an event handler which is called each time the filters' rules change.
 
 ```tsx
-// Get candidates from somewhere, CandidateProps must implement EntityWithAnswers
-const candidates: CandidateProps[] = getCandidates();
+// Get candidates from somewhere, Candidate implements EntityWithAnswers
+const candidates: Array<Candidate> = getCandidates();
 
 // Create filter: ; genderQuestion: ChoiceQuestion, $locale: string
-const filter = new SingleChoiceQuestionFilter<CandidateProps>(genderQuestion, $locale);
+const filter = new SingleChoiceQuestionFilter<Candidate>(genderQuestion, locale);
 
 // Define event handler
 const handler = (filter) => console.info(filter.apply(candidates));

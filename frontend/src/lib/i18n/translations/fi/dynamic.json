@@ -3,15 +3,25 @@
     "heroEmoji": "⚙️"
   },
   "appName": "Vaalikone",
+  "constituencies": {
+    "heroEmoji": "📍",
+    "ingressSingleElection": "Ehdokkaat ja puolueet on jaettu vaalipiireihin. Voit äänestää vain oman vaalipiirisi ehdokkaita.",
+    "ingressMultipleElections": "Ehdokkaat ja puolueet on jaettu vaalipiireihin. Valitse vaalipiirisi kullekin vaalille."
+  },
+  "elections": {
+    "heroEmoji": "🗳️",
+    "ingress": "Valitse ne vaalit, joiden ehdokkaita tai puolueita haluat löytää."
+  },
   "error": {
     "heroEmoji": "🙊"
   },
   "frontPage": {
-    "ingress": "Vaalikoneen avulla voit etsiä ehdokkaita ja puolueita vaaleissa {electionDate, date, ::dMyyyy} sen mukaan, miten paljon he ovat samaa mieltä kanssasi.",
+    "ingress": "Vaalikoneen avulla voit etsiä ehdokkaita ja puolueita sen mukaan, miten paljon he ovat samaa mieltä kanssasi.",
     "startButton": "Löydä sopivimmat ehdokkaat ja puolueet!"
   },
   "info": {
-    "content": "Vaalipäivä on {electionDate, date, ::dMyyyy}.",
+    "content": "Tällä sivulla on tietoa vaaleista.",
+    "dateInfo": "Vaalipäivä on {electionDate, date, ::dMyyyy}.",
     "heroEmoji": "🗳️"
   },
   "intro": {
@@ -19,7 +29,9 @@
     "heroEmoji": "🚀",
     "ingress": "Vaalikone auttaa sinua löytämään kanssasi eniten samaa mieltä olevat {candidatePlural} ja {partyPlural} näissä vaaleissa.",
     "list": {
+      "constituencies": "Valitse oma vaalipiirisi",
       "details": "Tarkastele ehdokkaita ja puolueita tarkemmin",
+      "elections": "Valitse vaalit",
       "opinions": "Kerro mielipiteesi",
       "results": "Näe kanssasi eniten samaa mieltä olevat {candidatePlural} ja {partyPlural}"
     },
@@ -44,7 +56,8 @@
     "ingress": {
       "browse": "Alla ovat näiden vaalien {candidatePlural} ja {partyPlural} järjestettynä vaalinumeron tai nimen mukaan. Voit käyttää suodattimia näiden karsimiseen.",
       "results": "Alla ovat näiden vaalien {candidatePlural} ja {partyPlural}. Eniten samaa mieltä kanssasi olevat ovat ensimmäisenä listalla. Voit lisäksi käyttää suodattimia tulosten karsimiseen."
-    }
+    },
+    "multipleElections": "Valitse alta ensin, minkä vaalin {candidatePlural} ja {partyPlural} haluat nähdä ja sen jälkeen, haluatko katsoa ehdokkaita vai puolueita."
   },
   "statistics": {
     "heroEmoji": "🧮"

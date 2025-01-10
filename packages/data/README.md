@@ -12,9 +12,17 @@ The module can be used by itself to build an easily traversable, hierarchical mo
 
 ## Developing
 
-The module uses [`tsc-esm-fix`](https://github.com/antongolub/tsc-esm-fix) which allows us to use suffixless imports in Typescript.
+- The module uses [`tsc-esm-fix`](https://github.com/antongolub/tsc-esm-fix) which allows us to use suffixless imports in Typescript.
+- See also note on [Exports](#exports).
 
-See also note on [Exports](#exports).
+### Test data
+
+Test data is available in [testData.ts](./src/testUtils/testData.ts). It’s in a tree-like format and can be exported into multiple json files with the [`exportTestData`](./src/testUtils/exportTestData.ts) utility:
+
+```ts
+import { exportTestData } from './src/exportTestData'; // Not included in module exports
+exportTestData('path-to-export-folder');
+```
 
 ## Quick start
 
@@ -36,6 +44,7 @@ For more interactions, see [example.ts](./examples/example.ts).
 - Utility getters for accessing other objects within the same hierarchy, e.g. all objects have the `root` getter returning the [`DataRoot`](./src/root/dataRoot.ts)
 - [`Question`](./src/objects/questions/base/question.ts) and [`Entity`](./src/objects/entities/base/entity.ts) classes implement the required interfaces defined in `@openvaa/matching` for seamless use with the matching algorithm
 - Support for multiple simultaneous elections with possibly linked constituencies
+- Idempotent data provision
 
 ### Localization
 
@@ -43,28 +52,23 @@ The data model itself does not support localization, but the module contains a [
 
 ## Exports
 
-The default exports contain a selected set of non-abstract classes, types and utilities. The exports are defined by the `exports.ts` files in each folder.
+The default exports contain a set of non-abstract classes, some abstract base classes, types and utilities.
 
 Imports are handled internally from [`/internal`](./src/internal.ts), which collects all exports from the source files in an order that prevents errors due to circular dependencies. When editing the source code, always route internal imports from this file. Note that these exports should not be used by external consumers of the module, because their availability may change in future versions.
 
 ## Constraints and future developments
 
+- The constructors for the `Entity`, `Nomination` and `Question` variants require a redundant `type` to be passed in the arguments, although this could be added by default. This could be changed in the future.
+- `Question.appliesTo` is based on the super class method and does not take into account the filters in the `QuestionCategory` it belongs to (contrary to `DataRoot.findQuestions`). This could be changed.
 - Currently no way to define the internals of the `customData` property all [`DataObjectData`](./src/core/dataObject.type.ts) share
 - Currently no way to extend the model with new subclasses _ad hoc_. This could perhaps be remedied by making provision methods of objects user-definable such that their return types would be used to type the `children` collections.
 - Question types not fully implemented:
   - [`MultipleChoiceCategoricalQuestion`](./src/objects/questions/variants/multipleChoiceCategoricalQuestion.ts) – not matchable yet
   - `PreferenceOrderQuestion` – not implemented at all (this can be based on [`MultipleChoiceCategoricalQuestion`](./src/objects/questions/variants/multipleChoiceCategoricalQuestion.ts) because the logic for the matching algorithm is the same)
-- Data passed to the provision methods is currently not validated, but this could be added for robustness.
-  - An [`Organization`](./src/objects/entities/variants/organization.ts) should only be included in one [`AllianceNomination`](./src/objects/nominations/variants/allianceNomination.ts) per [`Election`](./src/objects/election/election.ts)-[`Constituency`](./src/objects/constituency/constituency.ts) pair.
+- Data passed to the provision methods is only partially validated with [`checkObject`](./src/root/dataRoot.ts).
 - The [`OrganizationNomination.allianceNomination`](./src/objects/nominations/variants/organizationNomination.ts) getter may need to be called for all [`OrganizationNomination`](./src/objects/nominations/variants/organizationNomination.ts)s. It calls the [`DataRoot.getAllianceNominationForOrganizationNomination`](./src/root/dataRoot.ts) method each time it’s accessed, so it could be useful to cache the results or save the `allianceNominationId` directly in the [`OrganizationNomination`](./src/objects/nominations/variants/organizationNomination.ts) object.
 - An object is only added to the [`DataRoot`](./src/root/dataRoot.ts)’s collection when using the data provision methods. Thus, it’s possible to create dangling objects by just using the [`DataObject`](./src/core/dataObject.ts) constructors. An option would be to register each object with [`DataRoot`](./src/root/dataRoot.ts) directly in the [`DataObject`](./src/core/dataObject.ts) constructor.
 - The `value` property of [`Answer`](./src/objects/questions/base/answer.type.ts)s is generic and not connected to the type of [`Question`](./src/objects/questions/base/question.ts). It might be good to offer typing for the `value` in the form of either an accompanying reference to the [`QuestionType`](./src/objects/questions/base/questionTypes.ts) or different property names for different value kinds, e.g. `stringValue` and `idArrayValue`.
-- Non-idempotent data provision: the [`DataRoot`](./src/root/dataRoot.ts)’s `provideData` methods store all objects mapped by `Id`, and thus providing them multiple times will not lead to duplicate objects in the case of all other object types except [`Nomination`](./src/objects/nominations/base/nomination.ts)s and any implicit [`Entity`](./src/objects/entities/base/entity.ts)s contained in them. Deterministic `Id`s could be generated for them as well but this would require using a hash function, so currently non-deterministic unique `Id`s are used. The data required for unique identification is a little bit involved because of the implicit [`Entity`](./src/objects/entities/base/entity.ts)s:
-  - Base for all: category keyword for [`Nomination`](./src/objects/nominations/base/nomination.ts), `electionId`, `constituencyId`, `entityType`
-  - Alliances: + `entityId`. If implicit, it can be generated from category keyword for [`Entity`](./src/objects/entities/base/entity.ts), `ENTITY_TYPE.Alliance` and the `entityId`s of nested `organizationNominations`.
-  - Organizations: + `entityId`.
-  - Factions: + `entityId`. If implicit, it can be generated from category keyword for [`Entity`](./src/objects/entities/base/entity.ts), `ENTITY_TYPE.Faction` and the `entityId`s of nested `candidateNominations`.
-  - Candidates: + `entityId` + `entityId` of the possible parent nomination, which may be either a [`FactionNomination`](./src/objects/nominations/variants/factionNomination.ts) or [`OrganizationNomination`](./src/objects/nominations/variants/organizationNomination.ts).
 
 ## Source file organisation
 
@@ -109,6 +113,15 @@ The data is expected to be immutable and no setters are provided for the propert
 
 The [`DataRoot`](./src/root/dataRoot.ts) exposes data provision methods like `provideElectionData(data: Readonly<Array<ElectionData>>)`, which are used to build the child [`DataObject`](./src/core/dataObject.ts)s. The objects are stored in the root’s `children` collections.
 
+Data provision is designed to be idempotent and for this reason whenever data is provided the whole collection is rewritten, along with those depending on it. See [`DEPENDENT_COLLECTIONS`](./src/root/dependentCollections.ts) for details. This means that data should be provided in this order:
+
+1. Elections
+2. Constituency groups
+3. Constituencies
+4. In either order:
+   1. Entities and the Nominations
+   2. Question categories and then Questions
+
 ### Accessing data objects
 
 The objects are stored internally in the [`DataRoot`](./src/root/dataRoot.ts) in `Id`-mapped collections. These collections cannot be accessed directly, but the [`DataRoot`](./src/root/dataRoot.ts) provides two main ways for accessing them:
@@ -119,6 +132,31 @@ The objects are stored internally in the [`DataRoot`](./src/root/dataRoot.ts) in
 In addition to accessing the objects via the root, many objects provide getters and methods for accessing related objects. The [`Election`](./src/objects/election/election.ts) object, for example, provides a `constituencyGroups` getter for the [`ConstituencyGroup`](./src/objects/constituency/constituencyGroup.ts)s available for that election as well as a `getCandidateNominations({id})` method which returns the [`CandidateNomination`](./src/objects/nominations/variants/candidateNomination.ts)s for the [`Constituency`](./src/objects/constituency/constituency.ts) with the `id` passed as the argument.
 
 None of these utility getters store references to the objects, but use the [`DataRoot`](./src/root/dataRoot.ts)’s getters when called.
+
+#### NB: Always reference objects by `id`
+
+The objects are always compared and referenced by their `id` instead of proper object equality. This is to prevent errors in cases where the data for is accidentally provided twice and the objects are recreated.
+
+Dynamically created objects – implied [`Entity`](./src/objects/entities/base/entity.ts)s (see also below) and [`Nomination`](./src/objects/nominations/base/nomination.ts)s – will be given a deterministic `Id` based on their hashed properties:
+
+- For [`Nomination`](./src/objects/nominations/base/nomination.ts)s a hash of:
+  1. Keyword `nomination`
+  2. `electionId`
+  3. `constituencyId`
+  4. `electionRound`
+  5. `entityType`
+  6. `entityId`
+  7. possible `parentNominationId`
+- For implied [`Alliance`](./src/objects/entities/variants/alliance.ts)s or [`Faction`](./src/objects/entities/variants/faction.ts)s:
+  1. Keyword `alliance` or `faction`
+  2. `electionId`
+  3. `constituencyId`
+  4. `electionRound`
+  5. `entityType`
+  6. `parentNominationId` for `FactionNomination`s
+  7. `Id`s of the entities in the child nominations:
+     - `Organization`s for `AllianceNomination`s
+     - `Candidate`s for `FactionNomination`s
 
 ### [`ConstituencyGroup`](./src/objects/constituency/constituencyGroup.ts)s and [`Constituency`](./src/objects/constituency/constituency.ts)s
 
@@ -163,7 +201,7 @@ The implied entities are created for consistency of the data model.
 
 The [[`Question`](./src/objects/questions/base/question.ts)](./src/objects/questions/base/question.ts) objects represent, naturally enough, the questions or statements posed by the VAA. They’re grouped into categories and are expect belong to one and only one [`QuestionCategory`](./src/objects/questions/category/questionCategory.ts).
 
-There are subclasses for many different types of questions, dubbed [`QuestionVariant`](./src/objects/questions/variants/variants.ts)s. The data for each of these is differentiated by the [`type: QuestionType`](./src/objects/questions/base/questionTypes.ts) property. The subclasses differ in the type of [`Answer`](./src/objects/questions/base/answer.type.ts)s they accept. If they can be used in matching, they also implement the `MatchableQuestion` interface defined by the `@openvaa/core` module and required by `@openvaa/matching`.
+There are subclasses for many different types of questions, dubbed [`AnyQuestionVariant`](./src/objects/questions/variants/variants.ts)s. The data for each of these is differentiated by the [`type: QuestionType`](./src/objects/questions/base/questionTypes.ts) property. The subclasses differ in the type of [`Answer`](./src/objects/questions/base/answer.type.ts)s they accept. If they can be used in matching, they also implement the `MatchableQuestion` interface defined by the `@openvaa/core` module and required by `@openvaa/matching`.
 
 Both [`Question`](./src/objects/questions/base/question.ts)s and [`QuestionCategory`](./src/objects/questions/category/questionCategory.ts)s can be made specific to an [`Election`](./src/objects/election/election.ts), [`Constituency`](./src/objects/constituency/constituency.ts), [`EntityType`](./src/objects/entities/base/entityTypes.ts) or `electionRound` by setting the relavant filters in the data. The [`QuestionAndCategoryBase.appliesTo(targets: FilterTargets)`](./src/objects/questions/base/questionAndCategoryBase.ts) method can be used to this effect.
 
@@ -171,11 +209,11 @@ Both [`Question`](./src/objects/questions/base/question.ts)s and [`QuestionCateg
 
 The answers of [`Entity`](./src/objects/entities/base/entity.ts)s to the VAA questions are stored as a `Id`-[`Answer`](./src/objects/questions/base/answer.type.ts) record in their data. The `Answer<TValue>` interface is defined by the `@openvaa/core` module. The type parameter defines the type of the [`Answer`](./src/objects/questions/base/answer.type.ts)’s `value` property, which is used to store the answer proper. [`Answer`](./src/objects/questions/base/answer.type.ts)s may also contain an `info: string` property, which usually is the respondent’s freeform explanation for their answer.
 
-While the `value` types of the [`Entity`](./src/objects/entities/base/entity.ts)s [`Answer`](./src/objects/questions/base/answer.type.ts)s are currently not checked when the object is initialised, the [`Entity.getAnswer(question: QuestionVariant)`](./src/objects/entities/base/entity.ts) method does that and will return a `MISSING_ANSWER` (i.e. `undefined`, typed in `@openvaa/core`) if the stored [`Answer`](./src/objects/questions/base/answer.type.ts)’s `value` is not valid for the [`QuestionVariant`](./src/objects/questions/variants/variants.ts) in case. This way the consumers of the `@openvaa/data` model do not have to perform further checks when accessing the answers.
+While the `value` types of the [`Entity`](./src/objects/entities/base/entity.ts)s [`Answer`](./src/objects/questions/base/answer.type.ts)s are currently not checked when the object is initialised, the [`Entity.getAnswer(question: AnyQuestionVariant)`](./src/objects/entities/base/entity.ts) method does that and will return a `MISSING_ANSWER` (i.e. `undefined`, typed in `@openvaa/core`) if the stored [`Answer`](./src/objects/questions/base/answer.type.ts)’s `value` is not valid for the [`AnyQuestionVariant`](./src/objects/questions/variants/variants.ts) in case. This way the consumers of the `@openvaa/data` model do not have to perform further checks when accessing the answers.
 
 #### Formatting [`Answer`](./src/objects/questions/base/answer.type.ts)s for output
 
-For convenience, [`Entity`](./src/objects/entities/base/entity.ts)s also have a `getFormattedAnswer(question: QuestionVariant)` method, which can be used to retrieve the `Answer.value` and format it as a string, regardless of the `value` type. To overwrite the default formats, the [`DataRoot.setFormatter(...)`](./src/root/dataRoot.ts) method can be used. The optional [`DataRoot.locale`](./src/root/dataRoot.ts) property also affects some of the formats (e.g. [`formatDateAnswer`](./src/utils/formatAnswer.ts)).
+For convenience, [`Entity`](./src/objects/entities/base/entity.ts)s also have a `getFormattedAnswer(question: AnyQuestionVariant)` method, which can be used to retrieve the `Answer.value` and format it as a string, regardless of the `value` type. To overwrite the default formats, the [`DataRoot.setFormatter(...)`](./src/root/dataRoot.ts) method can be used. The optional [`DataRoot.locale`](./src/root/dataRoot.ts) property also affects some of the formats (e.g. [`formatDateAnswer`](./src/utils/formatAnswer.ts)).
 
 ### [`Updatable`](./src/core/updatable.ts) and subscribictions
 

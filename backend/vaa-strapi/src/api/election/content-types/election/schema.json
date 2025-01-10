@@ -24,14 +24,12 @@
     },
     "electionType": {
       "type": "enumeration",
-      "enum": ["local", "presidential", "congress"],
+      "enum": [
+        "local",
+        "presidential",
+        "congress"
+      ],
       "pluginOptions": {}
-    },
-    "constituencies": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::constituency.constituency",
-      "inversedBy": "elections"
     },
     "nominations": {
       "type": "relation",
@@ -47,23 +45,18 @@
       "pluginOptions": {},
       "type": "json"
     },
-    "organizer": {
-      "pluginOptions": {},
-      "type": "json"
-    },
     "info": {
       "pluginOptions": {},
       "type": "json"
     },
-    "question_categories": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::question-category.question-category",
-      "mappedBy": "election"
-    },
     "answersLocked": {
       "type": "boolean",
       "default": false
+    },
+    "constituencyGroups": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::constituency-group.constituency-group"
     }
   }
 }

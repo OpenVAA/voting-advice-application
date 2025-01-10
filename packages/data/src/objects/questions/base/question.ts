@@ -1,15 +1,21 @@
 import {
+  Answer,
+  type AnswerFormatterParams,
   type AnswerValue,
+  type ArrayAnswerFormatterOptions,
   type CoordinateOrMissing,
   type DataAccessor,
   DataTypeError,
+  FilterTargets,
+  isMissingValue,
   type MatchableQuestion,
   MISSING_VALUE,
   type MissingValue,
   QuestionAndCategoryBase,
   type QuestionCategory,
   type QuestionData,
-  type QuestionType
+  type QuestionType,
+  QuestionVariant
 } from '../../../internal';
 
 /**
@@ -68,6 +74,18 @@ export abstract class Question<
   //////////////////////////////////////////////////////////////////////////////
 
   /**
+   * Asserts that the `Answer` object is of the correct type for this question and converts it to one if the conversion is unequivocal. If the is of the wrong type, `undefined` is returned.
+   * @param answer - The `Answer` to check.
+   * @returns The `Answer` object or `undefined` if the answer is missing or its `value` is invalid for the question type.
+   */
+  ensureAnswer(answer?: Answer<unknown> | null): Answer<AnswerValue[TType]> | undefined {
+    if (!answer) return undefined;
+    // AssertValue ensures that the answer value is of the correct type for the question
+    const value = this.ensureValue(answer.value);
+    return isMissingValue(value) ? undefined : { ...answer, value };
+  }
+
+  /**
    * Asserts that the value is of the correct type for this question and converts it to one if the conversion is unequivocal. If the value is of the wrong type, `MISSING_VALUE` is returned.
    * @param value - The answer value to the question.
    * @returns The value in a the canonical type for this question or `MISSING_VALUE` if the value is not of the correct type.
@@ -78,7 +96,7 @@ export abstract class Question<
   }
 
   /**
-   * Perform the actual ensureion for the (non-missing) value for this question.
+   * Perform the actual ensuring for the (non-missing) value for this question.
    * Implement this in the subclasses.
    * @param value
    */
@@ -103,5 +121,32 @@ export abstract class Question<
     value: AnswerValue[TType] | MissingValue
   ): CoordinateOrMissing | Array<CoordinateOrMissing> {
     throw new DataTypeError(`This Question type does not support value normalization for value ${value}`);
+  }
+
+  /**
+   * A utility for showing the `Answer.value` to a question as a string. The formatting is controlled by the formatters defined in the `DataRoot`.
+   * @param answer - The `Question` to get the answer for.
+   * @param rest - Additional arguments for the `DataRoot.formatAnswer` method.
+   * @returns A string.
+   */
+  formatAnswer({ answer, ...rest }: { answer?: Answer<unknown> | null } & ArrayAnswerFormatterOptions = {}): string {
+    return this.root.formatAnswer({
+      question: this,
+      answer: this.ensureAnswer(answer),
+      ...rest
+    } as unknown as AnswerFormatterParams<QuestionVariant[TType]>);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Filtering
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * We override the `appliesTo` method to also check for the `category`’s applicability.
+   * @param targets - The targets to check for
+   * @returns True if the question and its category apply
+   */
+  appliesTo(targets: FilterTargets): boolean {
+    return this.category.appliesTo(targets) && super.appliesTo(targets);
   }
 }

@@ -2,9 +2,9 @@
   import { staticSettings } from '@openvaa/app-shared';
   import { error } from '@sveltejs/kit';
   import { t } from '$lib/i18n';
-  import { appType } from '$lib/stores';
+  import { appType } from '$lib/legacy-stores';
 
-  if (!staticSettings.dataProvider.supportsCandidateApp) {
+  if (!staticSettings.dataAdapter.supportsCandidateApp) {
     error(404, {
       message: $t('candidateApp.notSupported.title'),
       description: $t('candidateApp.notSupported.content'),

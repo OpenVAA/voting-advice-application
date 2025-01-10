@@ -1,6 +1,7 @@
 import { DataNotFoundError, DataObject, DataProvisionError } from '../../../internal';
 import type {
   Answers,
+  AnyQuestionVariant,
   Constituency,
   DataAccessor,
   DataRoot,
@@ -10,7 +11,8 @@ import type {
   HasAnswers,
   NominationData,
   NominationVariant,
-  WithOptional
+  WithOptional,
+  WrappedEntity
 } from '../../../internal';
 
 /**
@@ -22,7 +24,7 @@ export abstract class Nomination<
     TData extends NominationData<TEntity, TParent> = NominationData<TEntity, TParent>
   >
   extends DataObject<TData>
-  implements DataAccessor<NominationData<TEntity, TParent>>, HasAnswers
+  implements DataAccessor<NominationData<TEntity, TParent>>, WrappedEntity, HasAnswers
 {
   //////////////////////////////////////////////////////////////////////////////
   // Initialization
@@ -46,7 +48,7 @@ export abstract class Nomination<
     if (!data.id) {
       fullData = {
         ...data,
-        id: root.createId('nomination'),
+        id: root.createId({ type: 'nomination', data }),
         isGenerated: true
       } as TData;
     } else {
@@ -67,17 +69,36 @@ export abstract class Nomination<
   }
 
   /**
-   * The `Constituency` for which the nomination is made in.
+   * All `Question`s that are applicable to the nominated `Entity`’s type and the `Nomination`s election` and `constituency`.
+   */
+  get applicableQuestions(): Array<AnyQuestionVariant> {
+    return this.root.findQuestions({
+      entityType: this.entityType,
+      // Pass just the ids to save extraneous getter calls
+      elections: { id: this.data.electionId } as Election,
+      constituencies: { id: this.data.constituencyId } as Constituency
+    });
+  }
+
+  /**
+   * The `Constituency` which the nomination is made in.
    */
   get constituency(): Constituency {
     return this.root.getConstituency(this.data.constituencyId);
   }
 
   /**
-   * The `Election` for which the nomination is made in.
+   * The `Election` which the nomination is made in.
    */
   get election(): Election {
     return this.root.getElection(this.data.electionId);
+  }
+
+  /**
+   * The possible election rounnd which the nomination is made in. @defaultValue 1
+   */
+  get electionRound(): number {
+    return this.data.electionRound ?? 1;
   }
 
   /**
@@ -103,10 +124,10 @@ export abstract class Nomination<
   }
 
   /**
-   * A utility getter for the name of the nominated `Entity`.
+   * A utility getter for the name of the nominated `Entity` unless the `Nomination` itself has a `name`.
    */
   get name(): string {
-    return this.data.name ? this.data.name : this.entity.name;
+    return this.data.name || this.entity.name;
   }
 
   /**
@@ -126,10 +147,30 @@ export abstract class Nomination<
   }
 
   /**
-   * A utility getter for the shortName of the nominated `Entity`.
+   * A utility getter for the shortName of the nominated `Entity` unless the `Nomination` itself has a `shortName` or `name`.
    */
   get shortName(): string {
-    return this.data.shortName ? this.data.shortName : this.data.name ? this.data.name : this.entity.shortName;
+    return this.data.shortName || this.data.name || this.entity.shortName;
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Utilities
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * A utility for creating nested `Nomination`s.
+   * @returns The properties of the parent `Nomination` that the children should inherit.
+   */
+  protected getInheritableData(): Pick<
+    NominationData<EntityType, EntityType>,
+    'constituencyId' | 'electionId' | 'electionRound' | 'parentNominationId'
+  > {
+    return {
+      constituencyId: this.data.constituencyId,
+      electionId: this.data.electionId,
+      electionRound: this.data.electionRound,
+      parentNominationId: this.data.id
+    };
   }
 
   //////////////////////////////////////////////////////////////////////////////

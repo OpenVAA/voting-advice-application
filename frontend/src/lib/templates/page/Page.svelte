@@ -1,12 +1,12 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Icon } from '$lib/components/icon';
-  import { NavItem } from '$lib/components/navigation';
   import { getLayoutContext } from '$lib/contexts/layout';
+  import { NavItem } from '$lib/dynamic-components/navigation';
   import { t } from '$lib/i18n';
-  import { appType } from '$lib/stores';
-  import { startEvent } from '$lib/utils/analytics/track';
+  import { appType } from '$lib/legacy-stores';
   import { concatClass } from '$lib/utils/components';
+  import { startEvent } from '$lib/utils/legacy-analytics/track';
   import { CandidateNav, VoterNav } from './parts';
   import { AppLogo } from '../parts/appLogo';
   import type { PageProps } from './Page.type';

@@ -1,4 +1,4 @@
-import { type MaybeWrapped } from '../../entity';
+import { MaybeWrappedEntity } from '@openvaa/core';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import { Filter, type FilterOptionsBase, type PropertyFilterOptions, type QuestionFilterOptions } from '../base';
 
@@ -6,7 +6,7 @@ import { Filter, type FilterOptionsBase, type PropertyFilterOptions, type Questi
  * A base class for filters that search for text.
  */
 
-export class TextFilter<TEntity extends MaybeWrapped> extends Filter<TEntity, string> {
+export class TextFilter<TEntity extends MaybeWrappedEntity> extends Filter<TEntity, string> {
   protected _rules: {
     exclude?: string;
     include?: string;
@@ -19,10 +19,13 @@ export class TextFilter<TEntity extends MaybeWrapped> extends Filter<TEntity, st
    * @param locale The locale is used for case-insensitive matching
    */
   constructor(
-    options: Omit<FilterOptionsBase, 'type' | 'multipleValues'> & (PropertyFilterOptions | QuestionFilterOptions),
+    options: Omit<FilterOptionsBase<TEntity>, 'type'> & (PropertyFilterOptions | QuestionFilterOptions),
     public locale: string
   ) {
-    super({ ...options, type: 'string', multipleValues: false });
+    super({
+      ...options,
+      type: 'string'
+    });
   }
 
   get exclude(): string {
@@ -33,7 +36,7 @@ export class TextFilter<TEntity extends MaybeWrapped> extends Filter<TEntity, st
     return this._rules.include ?? '';
   }
 
-  get caseSensitive() {
+  get caseSensitive(): boolean {
     return this._rules.caseSensitive ?? false;
   }
 
@@ -49,7 +52,7 @@ export class TextFilter<TEntity extends MaybeWrapped> extends Filter<TEntity, st
     this.setRule('caseSensitive', value);
   }
 
-  testValue(value: MaybeMissing<string>) {
+  testValue(value: MaybeMissing<string>): boolean {
     // Treat missing values as empty strings.
     if (value === MISSING_VALUE) value = '';
     if (this._rules.exclude && this.testText(this._rules.exclude, value as string)) return false;
@@ -57,10 +60,19 @@ export class TextFilter<TEntity extends MaybeWrapped> extends Filter<TEntity, st
     return true;
   }
 
+  testValues(values: Array<MaybeMissing<string>>): boolean {
+    const strings = values.map((v) => (v === MISSING_VALUE ? '' : (v as string)));
+    // Return false if any value is excluded
+    if (this._rules.exclude && strings.some((v) => this.testText(this._rules.exclude!, v))) return false;
+    // Return false if no value is included
+    if (this._rules.include && strings.every((v) => !this.testText(this._rules.include!, v))) return false;
+    return true;
+  }
+
   /**
    * Test whether @param rule is found in @param text
    */
-  testText(rule: string, text: string) {
+  testText(rule: string, text: string): boolean {
     // We do not care about leading and trailing whitespace. Because we use indexOf, we only need to trim the rule
     rule = rule.trim();
     return this._rules.caseSensitive

@@ -26,7 +26,7 @@ export class Faction extends Entity<typeof ENTITY_TYPE.Faction, FactionData> imp
    * The name of the `Faction`. @defaultValue '—'
    */
   get name(): string {
-    return this.data.name ?? this.root.formatFactionName({ object: this });
+    return this.data.name || this.root.formatFactionName({ object: this });
   }
 
   /**

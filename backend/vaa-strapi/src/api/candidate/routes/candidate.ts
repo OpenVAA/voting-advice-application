@@ -11,17 +11,45 @@ export default factories.createCoreRouter('api::candidate.candidate', {
     find: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate(['photo']),
+        restrictPopulate([
+          'photo',
+          'answers.populate.question',
+          'nomination',
+          'nomination.populate.constituency',
+          'nomination.populate.election',
+          'nomination.populate.party'
+        ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters(['candidate.id.$eq', 'question.category.type.$eq'])
+        restrictFilters([
+          'id.$eq',
+          'id.$in',
+          'nomination.constituency.id.$eq',
+          'nomination.constituency.id.$in',
+          'nomination.election.id.$eq',
+          'nomination.election.id.$in'
+        ])
       ]
     },
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate(['photo']),
+        restrictPopulate([
+          'photo',
+          'answers.populate.question',
+          'nomination',
+          'nomination.populate.constituency',
+          'nomination.populate.election',
+          'nomination.populate.party'
+        ]),
         // Disable filters by default to avoid accidentally leaking data of relations
-        restrictFilters([])
+        restrictFilters([
+          'id.$eq',
+          'id.$in',
+          'nomination.constituency.id.$eq',
+          'nomination.constituency.id.$in',
+          'nomination.election.id.$eq',
+          'nomination.election.id.$in'
+        ])
       ]
     },
     update: {

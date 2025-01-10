@@ -4,11 +4,17 @@ describe('filter', () => {
   test('Missing filter should return true', () => {
     expect(match({})).toBe(true);
   });
-  test('Missing filter should return true with undefined filter', () => {
+  test('Undefined filter should return true', () => {
     expect(match({ filter: undefined, target: 1 })).toBe(true);
+  });
+  test('Empty array filter should return true', () => {
+    expect(match({ filter: [], target: 1 })).toBe(true);
   });
   test('Missing target should return false', () => {
     expect(match({ filter: 1, target: undefined })).toBe(false);
+  });
+  test('Empty array target should return false', () => {
+    expect(match({ filter: 1, target: [] })).toBe(false);
   });
   test('Exact match should return true', () => {
     expect(match({ filter: 1, target: 1 })).toBe(true);

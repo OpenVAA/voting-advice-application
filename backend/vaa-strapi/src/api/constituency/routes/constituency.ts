@@ -12,7 +12,7 @@ export default factories.createCoreRouter('api::constituency.constituency', {
     find: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([]),
+        restrictPopulate(['parent']),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([])
       ]
@@ -20,7 +20,7 @@ export default factories.createCoreRouter('api::constituency.constituency', {
     findOne: {
       policies: [
         // Disable populate by default to avoid accidentally leaking data through relations
-        restrictPopulate([]),
+        restrictPopulate(['parent']),
         // Disable filters by default to avoid accidentally leaking data of relations
         restrictFilters([])
       ]

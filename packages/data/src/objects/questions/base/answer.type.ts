@@ -8,7 +8,7 @@ export type Answer<TValue extends AnswerValue | unknown = unknown> = CoreAnswer<
   /**
    * An optional open answer accompanying the answer.
    */
-  info?: string;
+  info?: string | null;
 };
 
 /**

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { adjustContrast, calcContrast } from './adjustContrast';
   import { luminance } from './luminance';
-  import { parseColor } from './parseColor';
+  import { parseColorString } from './parseColorString';
   import { rgbToHex } from './rgbToHex';
   import type { RGB } from './rgb';
 
@@ -16,17 +16,17 @@
   let adjLum: number;
 
   $: {
-    const rgb = parseColor(origColor);
-    const bgRgb = parseColor(bgColor);
+    const rgb = parseColorString(origColor);
+    const bgRgb = parseColorString(bgColor);
     if (rgb != null) {
       origLuminance = luminance(rgb);
       parsedColor = rgbToHex(rgb);
-      const bgRgb = parseColor(bgColor);
+      const bgRgb = parseColorString(bgColor);
       if (rgb != null && bgRgb != null) {
         origContrast = calcContrast(rgb, bgRgb).contrast;
         if (origContrast < 4.5) {
           color = adjustContrast(rgb, bgRgb);
-          const adjRgb = parseColor(color) as RGB;
+          const adjRgb = parseColorString(color) as RGB;
           adjLum = luminance(adjRgb);
           contrast = calcContrast(adjRgb, bgRgb).contrast;
         } else {

@@ -8,7 +8,10 @@
   "attributes": {
     "sections": {
       "type": "customField",
-      "options": ["candidate", "party"],
+      "options": [
+        "candidate",
+        "organization"
+      ],
       "customField": "plugin::multi-select.multi-select",
       "required": true
     },
@@ -25,7 +28,7 @@
       "component": "settings.results-candidate-card-contents",
       "required": true
     },
-    "partyCardContents": {
+    "organizationCardContents": {
       "displayName": "Results - Party Card Contents",
       "type": "component",
       "repeatable": true,

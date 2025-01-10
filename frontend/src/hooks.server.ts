@@ -1,4 +1,4 @@
-import { API_ROOT } from '$lib/api/api';
+import { API_ROOT } from '$lib/api/adapters/apiRoute/apiRoutes';
 import { defaultLocale, loadTranslations, locales } from '$lib/i18n';
 import { matchLocale, parseAcceptedLanguages } from '$lib/i18n/utils';
 import { logDebugError } from '$lib/utils/logger';
@@ -80,8 +80,7 @@ export const handle: Handle = (async ({ event, resolve }) => {
       ...event,
       locals: {
         currentLocale: servedLocale,
-        preferredLocale,
-        route: cleanPath
+        preferredLocale
       }
     },
     {

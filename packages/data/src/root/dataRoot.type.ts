@@ -1,9 +1,14 @@
 import {
   Alliance,
   AllianceNomination,
+  Answer,
   AnswerFormatter,
+  AnswerValue,
   AnyEntityVariantData,
   AnyNominationVariantPublicData,
+  AnyQuestionVariant,
+  AnyQuestionVariantData,
+  ArrayAnswerFormatter,
   Candidate,
   CandidateNomination,
   Constituency,
@@ -23,8 +28,7 @@ import {
   QUESTION_TYPE,
   QuestionCategory,
   QuestionCategoryData,
-  QuestionVariant,
-  QuestionVariantData
+  QuestionVariant
 } from '../internal';
 
 /**
@@ -40,17 +44,18 @@ export type RootFormatters = {
   dateAnswer: AnswerFormatter<typeof QUESTION_TYPE.Date>;
   imageAnswer: AnswerFormatter<typeof QUESTION_TYPE.Image>;
   missingAnswer: MissingAnswerFormatter;
-  multipleTextAnswer: AnswerFormatter<typeof QUESTION_TYPE.MultipleText>;
+  multipleTextAnswer: ArrayAnswerFormatter;
   numberAnswer: AnswerFormatter<typeof QUESTION_TYPE.Number>;
   textAnswer: AnswerFormatter<typeof QUESTION_TYPE.Text>;
 };
 
 /**
- * Used to check that `DataRoot` implements methods for accessing the `RootFormatters` methods.
+ * Used for enforcing typing for `DataRoot.formatAnswer`.
  */
-export type FormatterMethods = {
-  [KType in keyof RootFormatters as `format${Capitalize<KType>}`]: RootFormatters[KType];
-};
+export interface AnswerFormatterParams<TQuestion extends AnyQuestionVariant> {
+  answer?: Answer<AnswerValue[TQuestion['type']]> | null;
+  question: QuestionVariant[TQuestion['type']];
+}
 
 /**
  * The names of `DataRoot` child collections and their respective classes.
@@ -61,7 +66,7 @@ export type RootCollections = {
   elections: Election;
   // Questions and categories
   questionCategories: QuestionCategory;
-  questions: QuestionVariant;
+  questions: AnyQuestionVariant;
   // Entities
   alliances: Alliance;
   candidates: Candidate;
@@ -90,7 +95,7 @@ export type FullVaaData<
   };
   questions: {
     categories: Array<QuestionCategoryData>;
-    questions: Array<QuestionVariantData>;
+    questions: Array<AnyQuestionVariantData>;
   };
   /**
    * Entities can be provided either as a hierarchical tree or as an array of fully-specified entities.

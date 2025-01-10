@@ -6,7 +6,7 @@
   type $$Props = InputFieldProps<number>;
 
   export let questionId: $$Props['questionId'];
-  export let options: $$Props['options'] = Array<AnswerOption>();
+  export let options: $$Props['options'] = Array<LegacyAnswerOption>();
   export let headerText: $$Props['headerText'] = '';
   export let locked: $$Props['locked'] = false;
   export let value: $$Props['value'] = undefined;
@@ -48,7 +48,7 @@ A component for a single choice question that can be answered.
       <select
         disabled={locked}
         id={questionId}
-        class="select select-sm w-full text-right text-primary disabled:border-none disabled:bg-base-100"
+        class="select select-sm w-full !bg-base-100 text-right text-primary disabled:border-none"
         bind:value={inputValue}
         on:change={() => {
           onChange?.({ questionId, value: inputValue });

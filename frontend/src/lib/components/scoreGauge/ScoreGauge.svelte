@@ -1,39 +1,3 @@
-<script lang="ts">
-  import { concatProps, getUUID } from '$lib/utils/components';
-  import type { ScoreGaugeProps } from './ScoreGauge.type';
-
-  type $$Props = ScoreGaugeProps;
-
-  export let score: $$Props['score'];
-  export let label: $$Props['label'];
-  export let max: $$Props['max'] = 100;
-  export let showScore: $$Props['showScore'] = true;
-  export let unit: $$Props['unit'] = '';
-  export let variant: $$Props['variant'] = 'radial';
-  export let color: $$Props['color'] = 'oklch(var(--n))';
-  export let colorDark: $$Props['colorDark'] = 'oklch(var(--n))';
-
-  const labelId = getUUID();
-
-  // Create styles
-  let classes: string;
-  let styles: string | undefined;
-  $: {
-    classes = 'vaa-score-gauge grid gap-4';
-    switch (variant) {
-      case 'linear':
-        classes += ' grid-rows-[fit-content(100%)_minmax(0,_1fr)] justify-items-start';
-        break;
-      default:
-        classes += ' grid-cols-[fit-content(100%)_minmax(0,_1fr)] items-center';
-    }
-    styles = `--meter-color: ${color}; --meter-color-dark: ${colorDark};`;
-    // Set the radial size based on the contents
-    const radSize = (showScore ? Math.max(`${max}${unit}`.length, 3) : 3) * 0.7;
-    styles += `--radial-size: ${radSize.toFixed(3)}rem; --radial-size-lg: ${(radSize * 1.25).toFixed(3)}rem;`;
-  }
-</script>
-
 <!--@component
 Show a radial or a linear score gauge for a sub-match.
 
@@ -45,8 +9,8 @@ Show a radial or a linear score gauge for a sub-match.
 - `variant`: The format of the gauge. @default 'linear'
 - `showScore`: Whether to also show the score as numbers. @default true
 - `unit`: The string to add to the score if it's shown, e.g. '%'. @default ''
-- `color`: The color of the gauge. @default 'oklch(var(--n))' i.e. the `neutral` color.
-- `colorDark`: The color of the gauge in dark mode. @default 'oklch(var(--n))' i.e. the `neutral` color.
+- `colors`: The colors of the gauge. @default 'oklch(var(--n))' i.e. the `neutral` color.
+- Any valid attributes of a `<div>` element
 
 ```tsx
 <ScoreGauge score={23} label={category.name} 
@@ -55,6 +19,44 @@ Show a radial or a linear score gauge for a sub-match.
 <ScoreGauge score={23} label={category.name}/>
 ```
 -->
+
+<script lang="ts">
+  import { parseColors } from '$lib/utils/color/parseColors';
+  import { concatProps, getUUID } from '$lib/utils/components';
+  import type { ScoreGaugeProps } from './ScoreGauge.type';
+
+  type $$Props = ScoreGaugeProps;
+
+  export let score: $$Props['score'];
+  export let label: $$Props['label'];
+  export let max: $$Props['max'] = 100;
+  export let showScore: $$Props['showScore'] = true;
+  export let unit: $$Props['unit'] = '';
+  export let variant: $$Props['variant'] = 'radial';
+  export let color: $$Props['color'] = undefined;
+
+  const labelId = getUUID();
+
+  // Create styles
+  let classes: string;
+  let styles: string | undefined;
+  $: {
+    const { normal, dark } = parseColors(color, 'oklch(var(--n))');
+
+    classes = 'vaa-score-gauge grid gap-4';
+    switch (variant) {
+      case 'linear':
+        classes += ' grid-rows-[fit-content(100%)_minmax(0,_1fr)] justify-items-start';
+        break;
+      default:
+        classes += ' grid-cols-[fit-content(100%)_minmax(0,_1fr)] items-center';
+    }
+    styles = `--meter-color: ${normal}; --meter-color-dark: ${dark ?? normal};`;
+    // Set the radial size based on the contents
+    const radSize = (showScore ? Math.max(`${max}${unit}`.length, 3) : 3) * 0.7;
+    styles += `--radial-size: ${radSize.toFixed(3)}rem; --radial-size-lg: ${(radSize * 1.25).toFixed(3)}rem;`;
+  }
+</script>
 
 <div
   {...concatProps($$restProps, {

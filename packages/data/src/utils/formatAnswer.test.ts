@@ -55,12 +55,17 @@ describe('formatImageAnswer', () => {
 
 describe('formatMultipleTextAnswer', () => {
   test('Should return "—" when the input array is empty for the formatMultipleTextAnswer function', () => {
-    expect(formatMultipleTextAnswer({ value: [] })).toBe('—');
+    expect(formatMultipleTextAnswer({ value: [], empty: '—' })).toBe('—');
   });
   test('Should return a comma-separated list of trimmed strings when the input array contains multiple non-empty strings', () => {
     const input = ['  apple  ', 'banana', '  cherry '];
-    const result = formatMultipleTextAnswer({ value: input });
+    const result = formatMultipleTextAnswer({ value: input, separator: ', ' });
     expect(result).toBe('apple, banana, cherry');
+  });
+  test('Should apply map function to items', () => {
+    const input = ['  apple  ', 'banana', '  cherry '];
+    const result = formatMultipleTextAnswer({ value: input, separator: ', ', map: (s) => s + 'x' });
+    expect(result).toBe('applex, bananax, cherryx');
   });
 });
 

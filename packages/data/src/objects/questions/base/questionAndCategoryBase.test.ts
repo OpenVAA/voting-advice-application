@@ -1,13 +1,13 @@
 import crypto from 'crypto';
 import { describe, expect, test } from 'vitest';
 import {
+  AnyQuestionVariant,
   ENTITY_TYPE,
   FilterValue,
   Id,
   QuestionAndCategoryBase,
   QuestionAndCategoryBaseData,
-  QuestionCategory,
-  QuestionVariant
+  QuestionCategory
 } from '../../../internal';
 import { contentsMatch, getTestData, getTestDataRoot } from '../../../testUtils';
 
@@ -54,9 +54,28 @@ describe('AppliesTo should work', () => {
     expect(obj.appliesTo({ elections: election! })).toBe(true);
     expect(obj.appliesTo({ elections: [election!, election2!] })).toBe(true);
     expect(obj.appliesTo({ constituencies: constituency })).toBe(true);
-    expect(obj.appliesTo({ entityTypes: entityType })).toBe(true);
+    expect(obj.appliesTo({ entityType: entityType })).toBe(true);
     expect(obj.appliesTo({ electionRounds: 1 })).toBe(true);
-    expect(obj.appliesTo({ elections: election, constituencies: constituency, entityTypes: entityType })).toBe(true);
+    expect(obj.appliesTo({ elections: election, constituencies: constituency, entityType: entityType })).toBe(true);
+  });
+
+  test('Object has empty arrays for filterable restrictions', () => {
+    const obj = new MockQuestionAndCategory({
+      data: {
+        id: crypto.randomUUID(),
+        electionIds: [],
+        electionRounds: [],
+        constituencyIds: [],
+        entityType: []
+      },
+      root
+    });
+    expect(obj.appliesTo({ elections: election! })).toBe(true);
+    expect(obj.appliesTo({ elections: [election!, election2!] })).toBe(true);
+    expect(obj.appliesTo({ constituencies: constituency })).toBe(true);
+    expect(obj.appliesTo({ entityType: entityType })).toBe(true);
+    expect(obj.appliesTo({ electionRounds: 1 })).toBe(true);
+    expect(obj.appliesTo({ elections: election, constituencies: constituency, entityType: entityType })).toBe(true);
   });
 
   test('Object has filterable restrictions', () => {
@@ -66,7 +85,7 @@ describe('AppliesTo should work', () => {
         electionIds: election!.id,
         electionRounds: 1,
         constituencyIds: [constituency!.id, crypto.randomUUID()],
-        entityTypes: [entityType]
+        entityType: [entityType]
       },
       root
     });
@@ -75,12 +94,12 @@ describe('AppliesTo should work', () => {
     expect(obj.appliesTo({ elections: [election!, election2!] })).toBe(true);
     expect(obj.appliesTo({ constituencies: constituency })).toBe(true);
     expect(obj.appliesTo({ constituencies: constituency2 })).toBe(false);
-    expect(obj.appliesTo({ entityTypes: entityType })).toBe(true);
-    expect(obj.appliesTo({ entityTypes: entityType2 })).toBe(false);
+    expect(obj.appliesTo({ entityType: entityType })).toBe(true);
+    expect(obj.appliesTo({ entityType: entityType2 })).toBe(false);
     expect(obj.appliesTo({ electionRounds: 1 })).toBe(true);
     expect(obj.appliesTo({ electionRounds: 2 })).toBe(false);
-    expect(obj.appliesTo({ elections: election, constituencies: constituency, entityTypes: entityType })).toBe(true);
-    expect(obj.appliesTo({ elections: election, constituencies: constituency2, entityTypes: entityType })).toBe(false);
+    expect(obj.appliesTo({ elections: election, constituencies: constituency, entityType: entityType })).toBe(true);
+    expect(obj.appliesTo({ elections: election, constituencies: constituency2, entityType: entityType })).toBe(false);
   });
 });
 
@@ -90,15 +109,15 @@ describe('AppliesTo should work', () => {
  * @param data - The object data
  */
 function testFilterableProps(
-  obj: QuestionVariant | QuestionCategory,
+  obj: AnyQuestionVariant | QuestionCategory,
   {
     electionIds,
     electionRounds,
     constituencyIds
   }: {
-    electionIds?: FilterValue<Id>;
-    electionRounds?: FilterValue<number>;
-    constituencyIds?: FilterValue<Id>;
+    electionIds?: FilterValue<Id> | null;
+    electionRounds?: FilterValue<number> | null;
+    constituencyIds?: FilterValue<Id> | null;
   }
 ): void {
   if (electionIds) {

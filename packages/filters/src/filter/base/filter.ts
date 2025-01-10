@@ -1,5 +1,5 @@
+import { getEntity, hasAnswers, type MaybeWrappedEntity } from '@openvaa/core';
 import { castValue } from './castValue';
-import { type ExtractEntity, getEntity, isEntityWithAnswers, type MaybeWrapped } from '../../entity';
 import { type MaybeMissing, MISSING_VALUE } from '../../missingValue';
 import { copyRules, matchRules, type Rule, ruleIsActive, type Rules } from '../rules';
 import type { FilterOptions } from './filter.type';
@@ -7,7 +7,7 @@ import type { FilterOptions } from './filter.type';
 /**
  * The abstract base class for all filters.
  */
-export abstract class Filter<TEntity extends MaybeWrapped, TValue> {
+export abstract class Filter<TTarget extends MaybeWrappedEntity, TValue> {
   /**
    * All rules related to this filter should be stored here.
    */
@@ -21,7 +21,7 @@ export abstract class Filter<TEntity extends MaybeWrapped, TValue> {
    */
   protected suspendOnChange = false;
 
-  constructor(public readonly options: FilterOptions) {}
+  constructor(public readonly options: FilterOptions<TTarget>) {}
 
   /////////////////////////////////////////////////////////////////////////////////
   // NAME
@@ -47,13 +47,14 @@ export abstract class Filter<TEntity extends MaybeWrapped, TValue> {
 
   /**
    * Ge the value from an entity.
-   * @param entity A non-wrapped entity.
+   * @param target The target entity.
    * @returns The value to filter on or `MISSING_VALUE` or an array of these if `this.options.multipleValues` is true.
    */
-  getValue(entity: ExtractEntity<TEntity>): MaybeMissing<TValue> | Array<MaybeMissing<TValue>> {
+  getValue(target: TTarget): MaybeMissing<TValue> | Array<MaybeMissing<TValue>> {
+    const entity = (this.options.entityGetter ?? getEntity)(target);
     let value: unknown;
     if (this.options.question) {
-      if (!isEntityWithAnswers(entity)) throw new Error('Entity does not have answers.');
+      if (!hasAnswers(entity)) throw new Error('Entity does not have answers.');
       value = entity.answers[this.options.question.id]?.value;
     } else if (this.options.property != null) {
       value = entity[this.options.property as keyof typeof entity];
@@ -77,23 +78,22 @@ export abstract class Filter<TEntity extends MaybeWrapped, TValue> {
 
   /**
    * Apply the filter to the inputs.
-   * @input A list of entities.
+   * @param targets A list of entities.
    * @returns Filtered targets
    */
-  apply<TType extends TEntity>(targets: Array<TType>) {
-    // We perform the testing on the raw entities even if they are wrapped.
-    return targets.filter((t) => this.test(getEntity(t)));
+  apply<TType extends TTarget>(targets: Array<TType>): Array<TTarget> {
+    return targets.filter((t) => this.test(t));
   }
 
   /**
    * Test an entity against the filter.
-   * @param entity A non-wrapped entity.
+   * @param target The target entity.
    * @returns true if the entity passes the filter.
    */
-  test(entity: ExtractEntity<TEntity>) {
+  test(target: TTarget): boolean {
     return this.options.multipleValues
-      ? this.testValues(this.getValue(entity) as Array<MaybeMissing<TValue>>)
-      : this.testValue(this.getValue(entity) as MaybeMissing<TValue>);
+      ? this.testValues(this.getValue(target) as Array<MaybeMissing<TValue>>)
+      : this.testValue(this.getValue(target) as MaybeMissing<TValue>);
   }
 
   /////////////////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ export abstract class Filter<TEntity extends MaybeWrapped, TValue> {
   /**
    * True if the rules differ from the default _rules, i.e. the filter is active.
    */
-  get active() {
+  get active(): boolean {
     return Object.keys(this._rules).length > 0 && Object.values(this._rules).some((r) => ruleIsActive(r));
   }
 
@@ -117,7 +117,7 @@ export abstract class Filter<TEntity extends MaybeWrapped, TValue> {
   /**
    * Reset all rules
    */
-  reset() {
+  reset(): void {
     if (Object.keys(this._rules).length === 0) return;
     this._rules = {};
     this.doOnChange();
@@ -128,7 +128,7 @@ export abstract class Filter<TEntity extends MaybeWrapped, TValue> {
    * @param name The rule key
    * @param value The rule value
    */
-  setRule(name: keyof typeof this._rules, value: Rule) {
+  setRule(name: keyof typeof this._rules, value: Rule): void {
     // If there's no change, don't trigger an update
     const current = this._rules[name];
     if (matchRules(current, value)) return;
@@ -145,7 +145,7 @@ export abstract class Filter<TEntity extends MaybeWrapped, TValue> {
    * @param handler The event handler
    * @add Add the event handler if true, remove it otherwise
    */
-  onChange(handler: (filter: unknown) => void, add = true) {
+  onChange(handler: (filter: unknown) => void, add = true): void {
     if (add) {
       this._onChange.add(handler);
     } else {
@@ -157,7 +157,7 @@ export abstract class Filter<TEntity extends MaybeWrapped, TValue> {
    * This method is called each time the filter's rules and thus results change.
    * NB. The results will only be recalculated when they are fetched or `apply()` is called.
    */
-  protected doOnChange() {
+  protected doOnChange(): void {
     if (this.suspendOnChange) return;
     this._onChange.forEach((f) => f(this));
   }
@@ -166,7 +166,7 @@ export abstract class Filter<TEntity extends MaybeWrapped, TValue> {
    * Wrap a function call with this to temporarily bypass `onChange` events.
    * @param f The function to call without triggering `onChange`
    */
-  withoutOnChange(f: () => void) {
+  withoutOnChange(f: () => void): void {
     this.suspendOnChange = true;
     f();
     this.suspendOnChange = false;

@@ -1,3 +1,32 @@
+<!--
+@component
+An icon component, where the `name` property defines which icon to use.
+
+Use the other properties to set the size and color of the icon. The icon
+is `aria-hidden` by default, but that can overriden. You can also pass 
+any valid attributes of the `<svg>` element.
+
+### Properties
+
+- `name`: the name of the icon to use
+- `size`: The size of the icon as one of the predefined sizes 'sm', 'md' or 'lg'. For arbitrary values, you can supply a `class` property, such as `h-[3.15rem] w-[3.15rem]`. @default 'md'
+- `color`: The color of the icon as one of the predefined colours. For arbitrary values, use the `customColor` and `customColorDark` properties. @default 'current'
+- `customColor`: A custom color string to use for the icon, e.g. in case of parties, which will override the `color` property. Make sure to define both `customColor` and `customColorDark` together.
+- `customColorDark`: A custom color string to use for the icon in dark mode, which will override the `color` property.
+- `aria-hidden`: @default `true`
+- `role`: Aria role @default `img`
+- `class`: Additional class string to append to the element's default classes.
+- Any valid attributes of a `<svg>` element
+
+### Usage
+
+```tsx
+<Icon name="addToList"/>
+<Icon name="opinion" color="primary" size="lg"
+ aria-hidden="false" aria-label="Add candidate to your list"/>
+```
+-->
+
 <script lang="ts">
   import { concatProps } from '$lib/utils/components';
   import { ICONS } from './icons';
@@ -57,35 +86,6 @@
     }
   }
 </script>
-
-<!--
-@component
-An icon component, where the `name` property defines which icon to use.
-
-Use the other properties to set the size and color of the icon. The icon
-is `aria-hidden` by default, but that can overriden. You can also pass 
-any valid attributes of the `<svg>` element.
-
-### Properties
-
-- `name`: the name of the icon to use
-- `size`: The size of the icon as one of the predefined sizes 'sm', 'md' or 'lg'. For arbitrary values, you can supply a `class` property, such as `h-[3.15rem] w-[3.15rem]`. @default 'md'
-- `color`: The color of the icon as one of the predefined colours. For arbitrary values, use the `customColor` and `customColorDark` properties. @default 'current'
-- `customColor`: A custom color string to use for the icon, e.g. in case of parties, which will override the `color` property. Make sure to define both `customColor` and `customColorDark` together.
-- `customColorDark`: A custom color string to use for the icon in dark mode, which will override the `color` property.
-- `aria-hidden`: @default `true`
-- `role`: Aria role @default `img`
-- `class`: Additional class string to append to the element's default classes.
-- Any valid attributes of a `<svg>` element
-
-### Usage
-
-```tsx
-<Icon name="addToList"/>
-<Icon name="opinion" color="primary" size="lg"
- aria-hidden="false" aria-label="Add candidate to your list"/>
-```
--->
 
 <svg
   bind:this={svgElement}

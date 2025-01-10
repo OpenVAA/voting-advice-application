@@ -1,17 +1,23 @@
 import {
   AllianceNomination,
+  AnyQuestionVariant,
   CandidateNomination,
   type Collection,
+  Constituency,
   ConstituencyGroup,
   type DataAccessor,
   DataObject,
+  DataTypeError,
   type ElectionData,
   ensureDate,
   ENTITY_TYPE,
+  EntityType,
   FactionNomination,
-  type Id,
+  FilterValue,
   isMissingValue,
-  OrganizationNomination
+  NominationVariant,
+  OrganizationNomination,
+  QuestionCategoryType
 } from '../../internal';
 
 /**
@@ -46,10 +52,11 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
   }
 
   /**
-   * Returns `true` if the election only has a single constituency.
+   * Returns the single `Constituency` if the election only has a one, `null` otherwise.
    */
-  get singleConstituency(): boolean {
-    return this.data.constituencyGroupIds.length === 1 && this.constituencyGroups[0].singleConstituency;
+  get singleConstituency(): Constituency | null {
+    const maybeSingle = this.constituencyGroups[0].singleConstituency;
+    return this.data.constituencyGroupIds.length === 1 && maybeSingle ? maybeSingle : null;
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -64,58 +71,97 @@ export class Election extends DataObject<ElectionData> implements DataAccessor<E
   }
 
   /**
-   * Get the `AllianceNomination`s for a specific `Constituency` in this `Election`.
-   * @param id - The id of the `Constituency`
+   * Get the `Nomination`s for a specific `Constituency` in this `Election`.
+   * @param entityType - The type of `Entity` to get the nominations for.
+   * @param constituency - The `Constituency`
    */
-  getAllianceNominations({ id }: { id: Id }): Collection<AllianceNomination> {
+  getNominations<TEntity extends EntityType>(
+    type: TEntity,
+    constituency: Constituency
+  ): Collection<NominationVariant[TEntity]> {
     return (
       this.root.getNominationsForConstituency({
-        type: ENTITY_TYPE.Alliance,
-        constituencyId: id,
-        electionId: this.id
+        type,
+        constituencyId: constituency.id,
+        electionId: this.id,
+        electionRound: this.round
       }) ?? []
     );
+  }
+
+  /**
+   * Get the `AllianceNomination`s for a specific `Constituency` in this `Election`.
+   * @param constituency - The `Constituency`
+   */
+  getAllianceNominations(constituency: Constituency): Collection<AllianceNomination> {
+    return this.getNominations(ENTITY_TYPE.Alliance, constituency);
   }
 
   /**
    * Get the `CandidateNomination`s for a specific `Constituency` in this `Election`.
-   * @param id - The id of the `Constituency`
+   * @param constituency - The `Constituency`
    */
-  getCandidateNominations({ id }: { id: Id }): Collection<CandidateNomination> {
-    return (
-      this.root.getNominationsForConstituency({
-        type: ENTITY_TYPE.Candidate,
-        constituencyId: id,
-        electionId: this.id
-      }) ?? []
-    );
+  getCandidateNominations(constituency: Constituency): Collection<CandidateNomination> {
+    return this.getNominations(ENTITY_TYPE.Candidate, constituency);
   }
 
   /**
    * Get the `FactionNomination`s for a specific `Constituency` in this `Election`.
-   * @param id - The id of the `Constituency`
+   * @param constituency - The `Constituency`
    */
-  getFactionNominations({ id }: { id: Id }): Collection<FactionNomination> {
-    return (
-      this.root.getNominationsForConstituency({
-        type: ENTITY_TYPE.Faction,
-        constituencyId: id,
-        electionId: this.id
-      }) ?? []
-    );
+  getFactionNominations(constituency: Constituency): Collection<FactionNomination> {
+    return this.getNominations(ENTITY_TYPE.Faction, constituency);
   }
 
   /**
    * Get the `OrganizationNomination`s for a specific `Constituency` in this `Election`.
-   * @param id - The id of the `Constituency`
+   * @param constituency - The `Constituency`
    */
-  getOrganizationNominations({ id }: { id: Id }): Collection<OrganizationNomination> {
+  getOrganizationNominations(constituency: Constituency): Collection<OrganizationNomination> {
+    return this.getNominations(ENTITY_TYPE.Organization, constituency);
+  }
+
+  /**
+   * Get the questions applicable to this `Election` and a `Constituency` it applies to.
+   * @param constituency - The `Constituency` the `Question`s apply to.
+   * @param type - Optional type of question category to filter for.
+   * @param entityType - Optional entity types to filter for.
+   */
+  getQuestions({
+    constituency,
+    type,
+    entityType
+  }: {
+    constituency: Constituency;
+    type?: QuestionCategoryType;
+    entityType?: FilterValue<EntityType>;
+  }): Collection<AnyQuestionVariant> {
     return (
-      this.root.getNominationsForConstituency({
-        type: ENTITY_TYPE.Organization,
-        constituencyId: id,
-        electionId: this.id
+      this.root.findQuestions({
+        elections: this,
+        constituencies: constituency,
+        type,
+        entityType
       }) ?? []
     );
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Other getters
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Return the `Constituency` in an array that applies to this `Election`.
+   * @throws If more than one `Constituency`s matches the criteria.
+   */
+  getApplicableConstituency(constituencies: Array<Constituency>): Constituency | undefined {
+    const matches = constituencies.filter(({ id }) =>
+      this.constituencyGroups.some((group) => group.data.constituencyIds.includes(id))
+    );
+    if (matches.length > 1)
+      throw new DataTypeError(
+        `More than one constituency matches the election: ${matches.map((m) => m.id).join(', ')}`
+      );
+    return matches[0];
   }
 }
