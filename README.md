@@ -51,7 +51,7 @@ We released two pilot VAAs for the 2024 EU Elections, which you can try out to s
 
 ## 🎢 Roadmap
 
-**2025 Q1** —  Refactor the current codebase and release a VAA in the Finnish county elections in association with Nuorisoala
+**2025 Q1** — Refactor the current codebase and release a VAA in the Finnish county elections in association with Nuorisoala
 
 - Stress test and improve performance for massive elections (especially Finnish local elections)
 - Expand unit and end-to-end test coverage
