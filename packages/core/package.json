@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@openvaa/core",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "scripts": {
     "build": "yarn tsc --build && yarn tsc-esm-fix"
   },
@@ -12,7 +12,7 @@
     "import": "./build/index.js"
   },
   "devDependencies": {
-    "@openvaa/shared-config": "^1.0.0",
+    "@openvaa/shared-config": "workspace:^",
     "tsc-esm-fix": "^3.1.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

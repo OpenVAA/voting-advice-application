@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
-    "@openvaa/shared-config": "^1.0.0",
+    "@openvaa/shared-config": "workspace:^",
     "@playwright/test": "^1.49.1",
     "@types/cheerio": "^0.22.35",
     "@types/mailparser": "^3.4.5",
@@ -41,12 +41,7 @@
   },
   "type": "module",
   "workspaces": [
-    "packages/shared-config",
-    "packages/core",
-    "packages/data",
-    "packages/filters",
-    "packages/matching",
-    "packages/app-shared",
+    "packages/*",
     "backend/vaa-strapi",
     "frontend"
   ],

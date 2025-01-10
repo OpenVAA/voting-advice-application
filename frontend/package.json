@@ -1,6 +1,6 @@
 {
   "name": "@openvaa/frontend",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "prepare": "svelte-kit sync",
@@ -17,7 +17,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.17.0",
-    "@openvaa/shared-config": "^1.0.0",
+    "@openvaa/shared-config": "workspace:^",
     "@sveltejs/adapter-auto": "^3.3.1",
     "@sveltejs/adapter-node": "^5.2.11",
     "@sveltejs/kit": "^2.15.1",
@@ -62,11 +62,11 @@
     "@capacitor/cli": "^5.7.8",
     "@capacitor/core": "^5.7.8",
     "@capacitor/ios": "^5.7.8",
-    "@openvaa/app-shared": "^1.0.0",
-    "@openvaa/core": "^1.0.0",
-    "@openvaa/data": "^1.0.0",
-    "@openvaa/filters": "^1.0.0",
-    "@openvaa/matching": "^1.0.0",
+    "@openvaa/app-shared": "workspace:^",
+    "@openvaa/core": "workspace:^",
+    "@openvaa/data": "workspace:^",
+    "@openvaa/filters": "workspace:^",
+    "@openvaa/matching": "workspace:^",
     "@sveltekit-i18n/parser-icu": "^1.0.8",
     "intl-messageformat": "^10.7.10",
     "isomorphic-dompurify": "^2.19.0",

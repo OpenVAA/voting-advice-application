@@ -3712,47 +3712,47 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@openvaa/app-shared@npm:^1.0.0, @openvaa/app-shared@workspace:packages/app-shared":
+"@openvaa/app-shared@workspace:^, @openvaa/app-shared@workspace:packages/app-shared":
   version: 0.0.0-use.local
   resolution: "@openvaa/app-shared@workspace:packages/app-shared"
   dependencies:
-    "@openvaa/data": "npm:^1.0.0"
-    "@openvaa/shared-config": "npm:^1.0.0"
+    "@openvaa/data": "workspace:^"
+    "@openvaa/shared-config": "workspace:^"
     typescript: "npm:^5.7.2"
     vitest: "npm:^2.1.8"
   languageName: unknown
   linkType: soft
 
-"@openvaa/core@npm:^1.0.0, @openvaa/core@workspace:packages/core":
+"@openvaa/core@workspace:^, @openvaa/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@openvaa/core@workspace:packages/core"
   dependencies:
-    "@openvaa/shared-config": "npm:^1.0.0"
+    "@openvaa/shared-config": "workspace:^"
     tsc-esm-fix: "npm:^3.1.2"
     typescript: "npm:^5.7.2"
     vitest: "npm:^2.1.8"
   languageName: unknown
   linkType: soft
 
-"@openvaa/data@npm:^1.0.0, @openvaa/data@workspace:packages/data":
+"@openvaa/data@workspace:^, @openvaa/data@workspace:packages/data":
   version: 0.0.0-use.local
   resolution: "@openvaa/data@workspace:packages/data"
   dependencies:
-    "@openvaa/core": "npm:^1.0.0"
-    "@openvaa/shared-config": "npm:^1.0.0"
+    "@openvaa/core": "workspace:^"
+    "@openvaa/shared-config": "workspace:^"
     tsc-esm-fix: "npm:^3.1.2"
     typescript: "npm:^5.7.2"
     vitest: "npm:^2.1.8"
   languageName: unknown
   linkType: soft
 
-"@openvaa/filters@npm:^1.0.0, @openvaa/filters@workspace:packages/filters":
+"@openvaa/filters@workspace:^, @openvaa/filters@workspace:packages/filters":
   version: 0.0.0-use.local
   resolution: "@openvaa/filters@workspace:packages/filters"
   dependencies:
-    "@openvaa/core": "npm:^1.0.0"
-    "@openvaa/data": "npm:^1.0.0"
-    "@openvaa/shared-config": "npm:^1.0.0"
+    "@openvaa/core": "workspace:^"
+    "@openvaa/data": "workspace:^"
+    "@openvaa/shared-config": "workspace:^"
     tsc-esm-fix: "npm:^3.1.2"
     typescript: "npm:^5.7.2"
     vitest: "npm:^2.1.8"
@@ -3769,12 +3769,12 @@ __metadata:
     "@capacitor/ios": "npm:^5.7.8"
     "@eslint/eslintrc": "npm:^3.2.0"
     "@eslint/js": "npm:^9.17.0"
-    "@openvaa/app-shared": "npm:^1.0.0"
-    "@openvaa/core": "npm:^1.0.0"
-    "@openvaa/data": "npm:^1.0.0"
-    "@openvaa/filters": "npm:^1.0.0"
-    "@openvaa/matching": "npm:^1.0.0"
-    "@openvaa/shared-config": "npm:^1.0.0"
+    "@openvaa/app-shared": "workspace:^"
+    "@openvaa/core": "workspace:^"
+    "@openvaa/data": "workspace:^"
+    "@openvaa/filters": "workspace:^"
+    "@openvaa/matching": "workspace:^"
+    "@openvaa/shared-config": "workspace:^"
     "@sveltejs/adapter-auto": "npm:^3.3.1"
     "@sveltejs/adapter-node": "npm:^5.2.11"
     "@sveltejs/kit": "npm:^2.15.1"
@@ -3815,19 +3815,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@openvaa/matching@npm:^1.0.0, @openvaa/matching@workspace:packages/matching":
+"@openvaa/matching@workspace:^, @openvaa/matching@workspace:packages/matching":
   version: 0.0.0-use.local
   resolution: "@openvaa/matching@workspace:packages/matching"
   dependencies:
-    "@openvaa/core": "npm:^1.0.0"
-    "@openvaa/shared-config": "npm:^1.0.0"
+    "@openvaa/core": "workspace:^"
+    "@openvaa/shared-config": "workspace:^"
     tsc-esm-fix: "npm:^3.1.2"
     typescript: "npm:^5.7.2"
     vitest: "npm:^2.1.8"
   languageName: unknown
   linkType: soft
 
-"@openvaa/shared-config@npm:^1.0.0, @openvaa/shared-config@workspace:packages/shared-config":
+"@openvaa/shared-config@workspace:^, @openvaa/shared-config@workspace:packages/shared-config":
   version: 0.0.0-use.local
   resolution: "@openvaa/shared-config@workspace:packages/shared-config"
   dependencies:
@@ -3851,8 +3851,8 @@ __metadata:
     "@babel/core": "npm:^7.26.0"
     "@babel/plugin-transform-modules-commonjs": "npm:^7.26.3"
     "@faker-js/faker": "npm:^8.4.1"
-    "@openvaa/app-shared": "npm:^1.0.0"
-    "@openvaa/shared-config": "npm:^1.0.0"
+    "@openvaa/app-shared": "workspace:^"
+    "@openvaa/shared-config": "workspace:^"
     "@strapi/plugin-documentation": "npm:^4.25.18"
     "@strapi/plugin-i18n": "npm:4.25.13"
     "@strapi/plugin-users-permissions": "npm:^4.25.18"
@@ -19785,7 +19785,7 @@ __metadata:
   resolution: "root-workspace-0b6124@workspace:."
   dependencies:
     "@faker-js/faker": "npm:^8.4.1"
-    "@openvaa/shared-config": "npm:^1.0.0"
+    "@openvaa/shared-config": "workspace:^"
     "@playwright/test": "npm:^1.49.1"
     "@types/cheerio": "npm:^0.22.35"
     "@types/mailparser": "npm:^3.4.5"
