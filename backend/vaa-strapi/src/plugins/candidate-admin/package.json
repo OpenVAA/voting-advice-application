@@ -1,6 +1,6 @@
 {
   "name": "candidate-admin",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Candidate Admin Side for OpenVAA",
   "strapi": {
     "name": "candidate-admin",
