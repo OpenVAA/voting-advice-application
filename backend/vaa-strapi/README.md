@@ -9,22 +9,9 @@ yarn workspace @openvaa/app-shared install
 yarn workspace @openvaa/app-shared build
 ```
 
-Backend module contains `strapi-plugin-import-export-entries` directory which is a separate git repository. In order to initialise it you need to run:
-
-```bash
-git submodule update --init --recursive
-```
-
-To build the submodule in `strapi-plugin-import-export-entries` directory run:
-
-```bash
-yarn install
-yarn build
-```
-
 ## Running the backend separately
 
-0. You should be running Strapi with Node version 18.20.4. Use of nvm is encouraged. **Additionally, you need Docker!**
+0. You should be running Strapi with the Node version specified under `engines` in the root [package.json](../../package.json). Use of nvm is encouraged. **Additionally, you need Docker!**
 1. Install dependencies by running `yarn install`.
 2. Copy or rename the `.env.example` to `.env` before running any of the commands.
 3. Run `docker compose -f docker-compose.dev.yml up postgres` to start Postgres container.

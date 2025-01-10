@@ -30,10 +30,15 @@ jobs:
       - name: "Checkout Frontend source code"
         uses: actions/checkout@v3
 
-      - name: Setup Node.js 18.x
+      - name: Setup Yarn 4.6
+        uses: threeal/setup-yarn-action@v2.0.0
+        with:
+          version: 4.6
+
+      - name: Setup Node.js 20.18.1
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: 20.18.1
           cache: "yarn"
   
       - name: "Install all dependencies"
@@ -66,10 +71,15 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup Node.js 18.x
+      - name: Setup Yarn 4.6
+        uses: threeal/setup-yarn-action@v2.0.0
+        with:
+          version: 4.6
+
+      - name: Setup Node.js 20.18.1
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: 20.18.1
           cache: "yarn"
 
       - name: Cache node modules
@@ -101,13 +111,6 @@ jobs:
       #   run: |
       #     npm run test
 
-      - name: "Install import-export-entries dependencies and build"
-        run: |
-          cd backend/vaa-strapi/strapi-plugin-import-export-entries
-          yarn install --frozen-lockfile
-          yarn build
-          cd ../../../
-
       - name: "Build backend"
         run: |
           yarn workspace @openvaa/strapi build
@@ -124,10 +127,15 @@ jobs:
       - name: "Configure environment"
         run: cp .env.example .env
 
-      - name: Setup Node.js 18.x
+      - name: Setup Yarn 4.6
+        uses: threeal/setup-yarn-action@v2.0.0
+        with:
+          version: 4.6
+  
+      - name: Setup Node.js 20.18.1
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: 20.18.1
           cache: "yarn"
 
       - name: Cache node modules
