@@ -110,18 +110,34 @@ The workspaces can be addressed by yarn from any directory as follows:
 yarn workspace [module-name] [script-name].
 ```
 
-f.e. the shared module can be build by running:
+E.g., the `app-shared` module can be built by running:
 
 ```bash
 yarn workspace @openvaa/app-shared build
 ```
 
-In order to install dependencies for all modules and build all modules run:
+In order to install dependencies for all modules and build all modules (although, you’d rarely want to this) run:
 
 ```bash
 yarn install
-yarn workspaces run build
+yarn workspaces foreach -A build
 ```
+
+When adding interdependencies between the modules, use yarn’s `workspace:` syntax:
+
+```json
+  "dependencies": {
+    "@openvaa/core": "workspace:^"
+  }
+```
+
+Also add a reference to the package’s `tsconfig.json` file:
+
+```json
+  "references": [{ "path": "../core/tsconfig.json" }]
+```
+
+The root [`package.json`](./package.json) contains scipts for many repo-wide tasks.
 
 ### Module resolution
 
