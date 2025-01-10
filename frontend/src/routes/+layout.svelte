@@ -1,16 +1,16 @@
 <script lang="ts">
   import '../app.css';
   import { staticSettings } from '@openvaa/app-shared';
+  import { isValidResult } from '$lib/api/utils/isValidResult';
+  import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
   import { initComponentContext } from '$lib/contexts/component';
   import { initI18nContext } from '$lib/contexts/i18n';
   import { initLayoutContext } from '$lib/contexts/layout';
   import { MaintenancePage } from '$lib/templates/maintenance';
-  import type { LayoutData } from './$types';
-  import { ErrorMessage } from '$lib/components/errorMessage';
   import { logDebugError } from '$lib/utils/logger';
   import type { DPDataType } from '$lib/api/base/dataTypes';
-  import { isValidResult } from '$lib/api/utils/isValidResult';
+  import type { LayoutData } from './$types';
 
   export let data: LayoutData;
 
