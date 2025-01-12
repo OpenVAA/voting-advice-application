@@ -17,9 +17,10 @@ Display the question's expandable information content.
 -->
 
 <script lang="ts">
-  import { Expander } from '$lib/components/expander';
+  import { Drawer } from '$lib/components/drawer';
   import { getComponentContext } from '$lib/contexts/component';
   import { sanitizeHtml } from '$lib/utils/sanitize';
+  import { Button } from '../button';
   import type { QuestionInfoProps } from './QuestionInfo.type';
 
   type $$Props = QuestionInfoProps;
@@ -31,10 +32,11 @@ Display the question's expandable information content.
   const { t } = getComponentContext();
 </script>
 
-<Expander
+<Drawer
   on:collapse={() => onCollapse?.()}
   on:expand={() => onExpand?.()}
   title={$t('common.readMore')}
   {...$$restProps}>
+  <Button text="Learn more" icon="info" iconPos="left" slot="title" />
   {@html sanitizeHtml(info)}
-</Expander>
+</Drawer>
