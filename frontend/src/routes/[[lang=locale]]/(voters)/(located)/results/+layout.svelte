@@ -9,7 +9,7 @@ Shows an error message if there are no nominations yet. This is usually the case
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter/voterContext.js';
-  import Layout from '../../../../Layout.svelte';
+  import Layout from '../../../Layout.svelte';
 
   const { getRoute, matches, t } = getVoterContext();
 </script>

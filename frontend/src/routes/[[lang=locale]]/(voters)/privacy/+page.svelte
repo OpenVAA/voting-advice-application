@@ -20,7 +20,7 @@ Displays information about the privacy policy of the app as well as the possible
   import { DataConsent } from '$lib/dynamic-components/dataConsent';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import Layout from '../../../Layout.svelte';
+  import Layout from '../../Layout.svelte';
 
   const { appSettings, getRoute, t } = getAppContext();
 
