@@ -15,6 +15,7 @@ export const DEFAULT_TOP_BAR_SETTINGS: TopBarSettings = {
     return: 'hide',
     help: 'hide',
     feedback: 'hide',
+    logout: 'hide',
     results: 'hide',
     returnButtonLabel: ''
   }

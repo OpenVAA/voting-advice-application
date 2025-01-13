@@ -1,38 +1,33 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
+  import { getContext, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { LoadingSpinner } from '$candidate/components/loadingSpinner';
-  import { Button } from '$lib/components/button';
-  import { HeroEmoji } from '$lib/components/heroEmoji';
-  import { t } from '$lib/i18n';
-  import { BasicPage } from '$lib/templates/basicPage';
+  import { getLayoutContext } from '$lib/contexts/layout';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
 
-  const { opinionQuestions, unansweredRequiredInfoQuestions } = getContext<CandidateContext>('candidate');
+  const { opinionQuestions, opinionAnswers, unansweredRequiredInfoQuestions } =
+    getContext<CandidateContext>('candidate');
 
-  $: if ($unansweredRequiredInfoQuestions?.length) {
+  if (!$opinionQuestions || !Object.values($opinionQuestions).length) {
+    goto($getRoute(ROUTE.CandAppQuestionsError), { replaceState: true });
+  }
+
+  if ($unansweredRequiredInfoQuestions?.length) {
     goto($getRoute(ROUTE.CandAppProfile));
+  }
+
+  const { topBarSettings, progress } = getLayoutContext(onDestroy);
+
+  topBarSettings.push({
+    progress: 'show'
+  });
+
+  progress.current.set(0);
+
+  $: if ($opinionQuestions && $opinionAnswers) {
+    progress.current.set(Object.keys($opinionAnswers).length);
+    progress.max.set($opinionQuestions.length);
   }
 </script>
 
-<svelte:head>
-  <title>{$t('questions.title')}</title>
-</svelte:head>
-
-{#if $unansweredRequiredInfoQuestions?.length}
-  <LoadingSpinner />
-{:else if !$opinionQuestions || !Object.values($opinionQuestions).length}
-  <BasicPage title={$t('error.noQuestions')}>
-    <HeroEmoji emoji={$t('dynamic.error.heroEmoji')} slot="hero" />
-    <Button
-      href={$getRoute(ROUTE.CandAppHome)}
-      text={$t('common.return')}
-      variant="main"
-      icon="previous"
-      iconPos="left"
-      slot="primaryActions" />
-  </BasicPage>
-{:else}
-  <slot />
-{/if}
+<slot />

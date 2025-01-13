@@ -22,11 +22,12 @@ vi.mock('$app/environment', (): typeof environment => ({
 }));
 
 vi.mock(
-  '$env/dynamic/public',
-  (): Record<string, object> => ({
-    env: {
-      PUBLIC_BACKEND_URL: 'http://localhost:1337'
-    }
+  '$env/static/public',
+  (): Record<string, string> => ({
+    PUBLIC_DOCKER_FRONTEND_URL: 'http://frontend:5137',
+    PUBLIC_FRONTEND_URL: 'http://localhost:5137',
+    PUBLIC_DOCKER_BACKEND_URL: 'http://strapi:1337',
+    PUBLIC_BACKEND_URL: 'http://localhost:1337'
   })
 );
 
@@ -42,7 +43,7 @@ describe('Test mock processing of data that should be fetched from the backend',
     (fetch as Mock).mockResolvedValue(createFetchResponse(allPartiesResponse));
     const response = await getAllParties({ loadAnswers: true, locale: LOCALE });
     expect(fetch).toHaveBeenCalledWith(
-      `${constants.BACKEND_URL}/api/parties?populate%5Blogo%5D=true&populate%5Bcandidates%5D=false&populate%5Banswers%5D%5Bpopulate%5D%5Bquestion%5D=true&pagination%5BpageSize%5D=1000`
+      `${constants.PUBLIC_DOCKER_BACKEND_URL}/api/parties?populate%5Blogo%5D=true&populate%5Bcandidates%5D=false&populate%5Banswers%5D%5Bpopulate%5D%5Bquestion%5D=true&pagination%5BpageSize%5D=1000`
     );
     expect(response).toStrictEqual(allPartiesResult);
   });

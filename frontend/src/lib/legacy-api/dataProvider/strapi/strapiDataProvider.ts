@@ -60,7 +60,7 @@ function getData<TData extends object>(
     params = new URLSearchParams(params);
     params.set('pagination[pageSize]', `${ITEM_LIMIT}`);
   }
-  const url = `${browser ? constants.PUBLIC_BACKEND_URL : constants.BACKEND_URL}/${endpoint}?${params}`;
+  const url = `${browser ? constants.PUBLIC_BACKEND_URL : constants.PUBLIC_DOCKER_BACKEND_URL}/${endpoint}?${params}`;
   return fetch(url)
     .then((response) => {
       return response.json().then((parsed: StrapiResponse<TData> | StrapiError) => {

@@ -71,7 +71,31 @@ export const handle: Handle = (async ({ event, resolve }) => {
   }
 
   //////////////////////////////////////////////////////////////////////////
-  // 4. Serve content in the requested locale
+  // 4. Handle candidate requests
+  //////////////////////////////////////////////////////////////////////////
+
+  if (pathname.startsWith(`/${servedLocale}/candidate`)) {
+    const token = event.cookies.get('token');
+
+    if (token && pathname.endsWith('candidate/login')) {
+      debug('Route: REDIRECT to home page');
+      return new Response(undefined, {
+        headers: { location: `/${servedLocale}/candidate` },
+        status: 303
+      });
+    }
+
+    if (!token && route.id.includes('(protected)')) {
+      debug('Route: REDIRECT to login page');
+      return new Response(undefined, {
+        headers: { location: `/${servedLocale}/candidate/login?redirectTo=${cleanPath.substring(1)}` },
+        status: 303
+      });
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////
+  // 5. Serve content in the requested locale
   //////////////////////////////////////////////////////////////////////////
 
   debug(`Route: SERVE with proper locale ${servedLocale}`);

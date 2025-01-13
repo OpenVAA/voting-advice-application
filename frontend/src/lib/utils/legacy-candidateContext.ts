@@ -1,30 +1,31 @@
 import { derived, type Readable, type Writable, writable } from 'svelte/store';
 import {
-  authenticate,
   getInfoAnswers,
   getInfoQuestions,
+  getLanguages,
   getOpinionAnswers,
   getOpinionQuestions,
   getParties,
   me
 } from '$lib/legacy-api/candidate';
 import { answerIsEmpty } from './legacy-answers';
-import type { CandidateAnswer, Progress, User } from '$types/legacy-candidateAttributes';
+import type { StrapiLanguageData } from '$lib/legacy-api/dataProvider/strapi';
+import type { CandidateAnswer, User } from '$types/legacy-candidateAttributes';
 
 export interface CandidateContext {
   // Authentication
   user: Writable<User | null>;
-  token: Writable<string | null | undefined>;
-  logIn: (email: string, password: string) => Promise<boolean>;
+  token: Writable<string | undefined>;
   loadUserData: () => Promise<void>;
-  logOut: () => void;
-  loadLocalStorage: () => void;
   newUserEmail: Writable<string | null | undefined>;
   // Answers
   opinionAnswers: Writable<Record<string, CandidateAnswer> | undefined>;
   loadOpinionAnswerData: () => Promise<void>;
   infoAnswers: Writable<Record<string, CandidateAnswer> | undefined>;
   loadInfoAnswerData: () => Promise<void>;
+  // Languages
+  allLanguages: Writable<Array<StrapiLanguageData> | undefined>;
+  loadAllLanguages: () => Promise<void>;
   // Questions
   opinionQuestions: Writable<Array<LegacyQuestionProps> | undefined>;
   loadOpinionQuestionData: () => Promise<void>;
@@ -36,13 +37,13 @@ export interface CandidateContext {
   // Custom utility
   unansweredRequiredInfoQuestions: Readable<Array<LegacyQuestionProps> | undefined>;
   unansweredOpinionQuestions: Readable<Array<LegacyQuestionProps> | undefined>;
-  progress: Readable<Progress | undefined>;
   answersLocked: Writable<boolean | undefined>;
 }
 
 const user = writable<User | null>(null);
-const token = writable<string | null | undefined>(undefined);
+const token = writable<string | undefined>(undefined);
 const newUserEmail = writable<string | undefined>(undefined);
+const allLanguages = writable<Array<StrapiLanguageData> | undefined>(undefined);
 const opinionAnswers = writable<Record<string, CandidateAnswer> | undefined>(undefined);
 const infoAnswers = writable<Record<string, CandidateAnswer> | undefined>(undefined);
 const opinionQuestions = writable<Array<LegacyQuestionProps> | undefined>(undefined);
@@ -67,43 +68,16 @@ const unansweredOpinionQuestions = derived(
   }
 );
 
-const progress = derived([opinionAnswers, opinionQuestions], ([$opinionAnswers, $opinionQuestions]) => {
-  if ($opinionAnswers && $opinionQuestions) {
-    return {
-      progress: Object.keys($opinionAnswers).length,
-      max: $opinionQuestions.length
-    };
-  }
-});
-
-async function logIn(email: string, password: string) {
-  const response = await authenticate(email, password);
-  if (!response.ok) return false;
-  const data = await response.json();
-  token.set(data.jwt);
-  localStorage.setItem('token', data.jwt);
-  await loadUserData();
-  return true;
-}
-
-function loadLocalStorage() {
-  token.set(localStorage.getItem('token'));
-}
-
 async function loadUserData() {
   const currentUser = await me();
-  if (!currentUser) {
-    logOut();
-    return;
-  }
-  answersLocked.set(!!currentUser.candidate?.nomination?.election?.answersLocked);
-  user.set(currentUser);
+  answersLocked.set(!!currentUser?.candidate?.nomination?.election?.answersLocked);
+  user.set(currentUser || null);
 }
 
-function logOut() {
-  user.set(null);
-  token.set(null);
-  localStorage.clear();
+async function loadAllLanguages() {
+  const languages = await getLanguages();
+  if (!languages) throw new Error('Could not find langugages');
+  allLanguages.set(languages);
 }
 
 async function loadOpinionAnswerData() {
@@ -136,22 +110,20 @@ async function loadPartyData() {
 export const candidateContext: CandidateContext = {
   user,
   token,
-  logIn,
   loadUserData,
-  logOut,
   newUserEmail,
   opinionAnswers,
   loadOpinionAnswerData,
   infoAnswers,
   loadInfoAnswerData,
+  allLanguages,
+  loadAllLanguages,
   opinionQuestions,
   loadOpinionQuestionData,
   infoQuestions,
   loadInfoQuestionData,
-  loadLocalStorage,
   unansweredRequiredInfoQuestions,
   unansweredOpinionQuestions,
-  progress,
   answersLocked,
   parties,
   loadPartyData

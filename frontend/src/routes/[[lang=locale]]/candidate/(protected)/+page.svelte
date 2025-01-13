@@ -6,9 +6,9 @@
   import { Warning } from '$lib/components/warning';
   import { locale, t } from '$lib/i18n';
   import { settings } from '$lib/legacy-stores';
-  import { BasicPage } from '$lib/templates/basicPage';
   import { type CandidateContext } from '$lib/utils/legacy-candidateContext';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import Layout from '../../Layout.svelte';
 
   const { user, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, answersLocked } =
     getContext<CandidateContext>('candidate');
@@ -68,14 +68,19 @@
 </script>
 
 <!--Homepage for the user-->
+<svelte:head>
+  <title>{nextAction.title} – {$t('dynamic.appName')}</title>
+</svelte:head>
 
-<BasicPage title={nextAction.title}>
-  <Warning display={!!$answersLocked} slot="note">
-    <p>{$t('candidateApp.common.editingNotAllowed')}</p>
-    {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
-      <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
-    {/if}
-  </Warning>
+<Layout title={nextAction.title}>
+  <div class="mt-xl text-center text-secondary" role="note" slot="note">
+    <Warning display={!!$answersLocked}>
+      <p>{$t('candidateApp.common.editingNotAllowed')}</p>
+      {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
+        <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
+      {/if}
+    </Warning>
+  </div>
 
   <p class="max-w-md text-center">
     {nextAction.explanation}
@@ -118,4 +123,4 @@
 
     <LogoutButton variant="normal" icon={undefined} />
   </div>
-</BasicPage>
+</Layout>

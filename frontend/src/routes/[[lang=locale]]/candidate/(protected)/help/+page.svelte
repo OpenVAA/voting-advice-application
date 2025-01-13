@@ -3,11 +3,15 @@
   import { Expander } from '$lib/components/expander';
   import { t } from '$lib/i18n';
   import { customization, settings } from '$lib/legacy-stores';
-  import { BasicPage } from '$lib/templates/basicPage';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import Layout from '../../../Layout.svelte';
 </script>
 
-<BasicPage title={$t('candidateApp.help.title')}>
+<svelte:head>
+  <title>{$t('candidateApp.help.title')} – {$t('dynamic.appName')}</title>
+</svelte:head>
+
+<Layout title={$t('candidateApp.help.title')}>
   <div class="text-center">
     <p>{$t('candidateApp.help.ingress')}</p>
   </div>
@@ -37,4 +41,4 @@
       text={$t('candidateApp.common.continueFilling')}
       href={$getRoute(ROUTE.CandAppHome)} />
   </svelte:fragment>
-</BasicPage>
+</Layout>

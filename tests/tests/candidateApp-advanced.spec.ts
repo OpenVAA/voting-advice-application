@@ -197,6 +197,9 @@ test('should log into Strapi and import candidates', async ({ page }) => {
 
   if (!registrationLink) throw new Error('Link not found');
 
+  // Logout from the previous session
+  await page.context().clearCookies();
+
   await page.goto(registrationLink);
 
   // Complete the registration process
@@ -242,6 +245,7 @@ test.describe('when logged in with imported user', () => {
     await page.getByPlaceholder(T.en['candidateApp.common.emailPlaceholder'], { exact: true }).fill(userEmail);
     await page.getByPlaceholder(T.en['components.passwordInput.placeholder'], { exact: true }).fill(userPassword);
     await page.getByText(T.en['common.login'], { exact: true }).click();
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE}/${ROUTE.CandAppHome}`);
   });
 
   test('should succesfully set basic info', async ({ page, baseURL }) => {

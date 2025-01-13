@@ -32,6 +32,7 @@ declare namespace App {
     electionData?: DPReturnType['elections'] | Promise<Error>;
     nominationData?: DPReturnType['nominations'] | Promise<Error>;
     questionData?: DPReturnType['questions'] | Promise<Error>;
+    token?: string;
   }
   interface Error {
     message: string;
