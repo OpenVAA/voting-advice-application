@@ -7,8 +7,10 @@ services:
       strapi:
         condition: service_healthy
     environment:
-      - VITE_BACKEND_URL=${VITE_BACKEND_URL}
-      - PUBLIC_BACKEND_URL=${PUBLIC_BACKEND_URL}
+      - PUBLIC_BROWSER_BACKEND_URL=${PUBLIC_BROWSER_BACKEND_URL}
+      - PUBLIC_SERVER_BACKEND_URL=${PUBLIC_SERVER_BACKEND_URL}
+      - PUBLIC_BROWSER_FRONTEND_URL=${PUBLIC_BROWSER_FRONTEND_URL}
+      - PUBLIC_SERVER_FRONTEND_URL=${PUBLIC_SERVER_FRONTEND_URL}
   awslocal:
     extends:
       file: ./backend/vaa-strapi/docker-compose.dev.yml

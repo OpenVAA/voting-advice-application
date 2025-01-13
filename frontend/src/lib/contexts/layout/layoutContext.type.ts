@@ -25,11 +25,11 @@ export type LayoutContext = {
 
 export interface PageStyles {
   drawer: {
-    background: 'bg-base-100' | 'bg-base-300';
+    background: 'bg-base-100' | 'bg-base-200' | 'bg-base-300';
   };
 }
 
-type TopBarAction = 'return' | 'help' | 'feedback' | 'results';
+type TopBarAction = 'return' | 'help' | 'feedback' | 'results' | 'logout';
 
 type TopBarActionsSettings = {
   [action in TopBarAction]: 'hide' | 'show';

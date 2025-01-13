@@ -68,7 +68,7 @@ open answers and a button to navigate to the questions page.
       <div class="flex justify-center py-20 pb-40">
         <Button
           text={!$answersLocked ? $t('candidateApp.questions.editAnswer') : $t('candidateApp.questions.viewAnswer')}
-          href={$getRoute({ route: ROUTE.CandAppQuestionEdit, id: question.id })}
+          href={$getRoute({ route: ROUTE.CandAppQuestions, id: question.id, params: { edit: 'true' } })}
           icon={!$answersLocked ? 'create' : 'show'}
           iconPos="left" />
       </div>

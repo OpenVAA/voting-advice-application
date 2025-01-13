@@ -11,10 +11,12 @@ export const ROUTE = {
   CandAppInfo: 'candidate/info',
   CandAppPreview: 'candidate/preview',
   CandAppProfile: 'candidate/profile',
+  CandAppQuestionsError: 'candidate/questions/error',
   CandAppQuestions: 'candidate/questions',
-  CandAppQuestionEdit: 'candidate/questions/edit',
+  CandAppLogin: 'candidate/login',
   /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/plugins/candidate-admin/server/services/email.js */
   CandAppRegister: 'candidate/register',
+  CandAppSetPassword: 'candidate/register/password',
   /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/extensions/users-permissions/strapi-server.js */
   CandAppResetPassword: 'candidate/password-reset',
   CandAppSettings: 'candidate/settings',

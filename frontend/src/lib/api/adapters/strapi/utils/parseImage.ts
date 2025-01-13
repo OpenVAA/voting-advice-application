@@ -30,5 +30,5 @@ export function parseImage(imageObject: StrapiImage, darkImageObject?: StrapiIma
 }
 
 function formatUrl(url: string): string {
-  return isAbsoluteUrl(url) ? url : `${constants.PUBLIC_BACKEND_URL}${url}`;
+  return isAbsoluteUrl(url) ? url : `${constants.PUBLIC_BROWSER_BACKEND_URL}${url}`;
 }

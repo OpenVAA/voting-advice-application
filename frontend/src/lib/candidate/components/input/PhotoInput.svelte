@@ -16,7 +16,7 @@
     ? new URL(
         isAbsoluteUrl(photo.formats.thumbnail.url)
           ? photo.formats.thumbnail.url
-          : `${constants.PUBLIC_BACKEND_URL}${photo.formats.thumbnail.url}`
+          : `${constants.PUBLIC_BROWSER_BACKEND_URL}${photo.formats.thumbnail.url}`
       )
     : undefined;
   let imageHasChanged = false;

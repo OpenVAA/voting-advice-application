@@ -1,8 +1,22 @@
 <script lang="ts">
   import { staticSettings } from '@openvaa/app-shared';
   import { error } from '@sveltejs/kit';
+  import { onDestroy, setContext } from 'svelte';
+  import { getAppContext } from '$lib/contexts/app';
+  import { getLayoutContext } from '$lib/contexts/layout';
   import { t } from '$lib/i18n';
-  import { appType } from '$lib/legacy-stores';
+  import { candidateContext } from '$lib/utils/legacy-candidateContext';
+
+  setContext('candidate', candidateContext);
+
+  const { appType } = getAppContext();
+
+  const { topBarSettings } = getLayoutContext(onDestroy);
+  topBarSettings.push({
+    actions: {
+      logout: 'show'
+    }
+  });
 
   if (!staticSettings.dataAdapter.supportsCandidateApp) {
     error(404, {
@@ -15,8 +29,4 @@
   $appType = 'candidate';
 </script>
 
-{#await import('$lib/candidate/components/candidateContext') then { CandidateContextProvider }}
-  <svelte:component this={CandidateContextProvider}>
-    <slot />
-  </svelte:component>
-{/await}
+<slot />

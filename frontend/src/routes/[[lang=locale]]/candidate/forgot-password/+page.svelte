@@ -3,7 +3,7 @@
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { t } from '$lib/i18n';
   import { requestForgotPasswordLink } from '$lib/legacy-api/candidate';
-  import { FrontPage } from '$lib/templates/frontPage';
+  import Layout from '../../Layout.svelte';
 
   let statusMessage = ''; // Text to display when the send-button has been pressed: either email has been sent or internal error
   let email = '';
@@ -18,7 +18,7 @@
 
 <!-- Page for sending a reset email in case of a forgotten password. -->
 
-<FrontPage title={$t('candidateApp.resetPassword.title')}>
+<Layout title={$t('candidateApp.resetPassword.title')}>
   <HeadingGroup slot="heading">
     <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
     <h1 class="my-24 text-2xl font-normal">{$t('candidateApp.resetPassword.title')}</h1>
@@ -53,4 +53,4 @@
       {statusMessage}
     </p>
   {/if}
-</FrontPage>
+</Layout>

@@ -1,21 +1,25 @@
 <script lang="ts">
   import { validatePassword } from '@openvaa/app-shared';
-  import { getContext } from 'svelte';
+  import { getContext, onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { PasswordValidator } from '$candidate/components/passwordValidator';
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
   import { Icon } from '$lib/components/icon';
+  import { getLayoutContext } from '$lib/contexts/layout';
   import { t } from '$lib/i18n';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
-  import { changePassword, getLanguages, updateAppLanguage } from '$lib/legacy-api/candidate';
-  import { BasicPage } from '$lib/templates/basicPage';
+  import { changePassword, updateAppLanguage } from '$lib/legacy-api/candidate';
   import { getRoute } from '$lib/utils/legacy-navigation';
-  import type { StrapiLanguageData } from '$lib/legacy-api/dataProvider/strapi';
+  import Layout from '../../../Layout.svelte';
   import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
   import type { Language } from '$types/legacy-candidateAttributes';
 
-  const { user, loadUserData } = getContext<CandidateContext>('candidate');
+  const { pageStyles } = getLayoutContext(onDestroy);
+
+  pageStyles.push({ drawer: { background: 'bg-base-200' } });
+
+  const { user, loadUserData, allLanguages } = getContext<CandidateContext>('candidate');
 
   // TODO: consider refactoring this as this uses same classes as profile/+page.svelte?
   const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';
@@ -36,16 +40,12 @@
   // Variable for the user's chosen app language. Keep it updated if changed.
   $: appLanguageCode = $user?.candidate?.appLanguage?.localisationCode;
 
-  // Fetch languages from backend
-  let allLanguages: Array<StrapiLanguageData> | undefined;
-  getLanguages().then((languages) => (allLanguages = languages));
-
   // Handle the change when the app language is changed
   async function handleLanguageSelect(e: Event) {
     languageErrorMessage = '';
 
-    const chosenLanguage = allLanguages
-      ? allLanguages.find((lang) => lang.attributes.localisationCode === (e.target as HTMLSelectElement).value)
+    const chosenLanguage = $allLanguages
+      ? $allLanguages.find((lang) => lang.attributes.localisationCode === (e.target as HTMLSelectElement).value)
       : undefined;
 
     if (chosenLanguage) {
@@ -101,7 +101,7 @@
   }
 </script>
 
-<BasicPage title={$t('candidateApp.settings.title')} mainClass="bg-base-200">
+<Layout title={$t('candidateApp.settings.title')}>
   <div class="text-center">
     <p>{$t('candidateApp.settings.ingress')}</p>
   </div>
@@ -135,7 +135,7 @@
             class="select select-sm w-6/12 text-primary"
             on:change={handleLanguageSelect}
             bind:value={appLanguageCode}>
-            {#each allLanguages ?? [] as option}
+            {#each $allLanguages ?? [] as option}
               <option
                 value={option.attributes.localisationCode}
                 selected={option.attributes.localisationCode === appLanguageCode}>
@@ -237,4 +237,4 @@
       </p>
     {/if}
   </form>
-</BasicPage>
+</Layout>

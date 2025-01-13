@@ -6,7 +6,7 @@
   "error": {
     "answerNotFound": "Answer not found for question {questionId}",
     "invalidAnswer": "Answer is invalid for question {questionId}",
-    "questionNotFound": "Question not found for question {questionId}"
+    "questionNotFound": "Question {questionId} not found"
   },
   "ingress": "You can see all of your opinions below and edit them by tapping on them.",
   "intro": {

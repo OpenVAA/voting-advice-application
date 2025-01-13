@@ -113,8 +113,3 @@ interface QuestionChoiceProps {
   key: number;
   label: LocalizedString;
 }
-
-export interface Progress {
-  progress: number;
-  max: number;
-}

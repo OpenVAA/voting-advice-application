@@ -1,19 +1,19 @@
 <script lang="ts">
   import { getContext } from 'svelte';
-  import { AnsweredQuestion, QuestionsStartPage, UnAnsweredQuestion } from '$lib/candidate/components/questionsPage';
+  import { AnsweredQuestion, UnAnsweredQuestion } from '$lib/candidate/components/questionsPage';
   import { Button } from '$lib/components/button';
   import { Expander } from '$lib/components/expander';
+  import { Icon } from '$lib/components/icon';
   import { Warning } from '$lib/components/warning';
   import { t } from '$lib/i18n';
   import { settings } from '$lib/legacy-stores';
-  import { BasicPage } from '$lib/templates/basicPage';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import Layout from '../../../Layout.svelte';
   import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
 
   const {
     opinionQuestions,
     opinionAnswers,
-    progress,
     answersLocked,
     unansweredRequiredInfoQuestions,
     unansweredOpinionQuestions
@@ -23,6 +23,12 @@
 
   let loading = true;
   let unansweredCategories = Array<string>();
+
+  // The url of the first question where the user is navigated to after the start page.
+  const firstQuestionUrl = $getRoute({
+    route: ROUTE.CandAppQuestions,
+    id: $unansweredOpinionQuestions?.[0]?.id
+  });
 
   $: {
     if ($opinionQuestions) {
@@ -60,20 +66,37 @@
     }
   }
 
+  // The number of questions to be answered.
+  $: numQuestions = $opinionQuestions ? Object.keys($opinionQuestions).length : 0;
+  $: start = !!$opinionAnswers && !$answersLocked && Object.keys($opinionAnswers).length === 0;
   $: nextUnansweredQuestion = $opinionQuestions?.find((question) => !$opinionAnswers?.[question.id]);
 </script>
 
-{#if $opinionAnswers && !$answersLocked && Object.keys($opinionAnswers).length === 0}
-  <QuestionsStartPage />
-{:else}
-  <BasicPage title={$t('candidateApp.questions.title')} progress={$progress?.progress} progressMax={$progress?.max}>
-    <Warning display={!!$answersLocked} slot="note">
-      <p>{$t('candidateApp.common.editingNotAllowed')}</p>
-      {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
-        <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
-      {/if}
-    </Warning>
+<Layout title={start ? $t('candidateApp.questions.start') : $t('candidateApp.questions.title')}>
+  <svelte:fragment slot="note">
+    {#if start}
+      <div class="mt-xl text-center text-secondary" role="note">
+        <Icon name="tip" />
+        {$t('candidateApp.questions.tip')}
+      </div>
+    {:else}
+      <div class="mt-xl text-center text-secondary" role="note">
+        <Warning display={!!$answersLocked}>
+          <p>{$t('candidateApp.common.editingNotAllowed')}</p>
+          {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
+            <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
+          {/if}
+        </Warning>
+      </div>
+    {/if}
+  </svelte:fragment>
 
+  {#if start}
+    <p class="text-center">
+      {$t('candidateApp.questions.intro.ingress', { numQuestions })}
+    </p>
+    <Button slot="primaryActions" href={firstQuestionUrl} variant="main" icon="next" text={$t('common.continue')} />
+  {:else}
     <p class="pb-20 text-center">
       {$t('candidateApp.questions.ingress')}
     </p>
@@ -117,8 +140,8 @@
     <div class="flex w-full justify-center py-40">
       <Button text={$t('common.return')} variant="main" href={$getRoute({ route: ROUTE.CandAppHome })} />
     </div>
-  </BasicPage>
-{/if}
+  {/if}
+</Layout>
 
 <style>
   /* Hotfix for making the expander span the whole width of the page */

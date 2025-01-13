@@ -1,16 +1,26 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
+  import { getContext, onDestroy } from 'svelte';
   import { afterNavigate, goto } from '$app/navigation';
-  import { LogoutButton } from '$lib/candidate/components/logoutButton';
-  import { Button } from '$lib/components/button';
   import { Icon } from '$lib/components/icon';
   import { EntityDetails } from '$lib/components/legacy/entityDetails';
   import { Loading } from '$lib/components/loading';
+  import { getLayoutContext } from '$lib/contexts/layout';
   import { locale, t } from '$lib/i18n';
   import { dataProvider } from '$lib/legacy-api/getData';
-  import { SingleCardPage } from '$lib/templates/singleCardPage';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import Layout from '../../../Layout.svelte';
   import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
+
+  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+
+  pageStyles.push({ drawer: { background: 'bg-base-300' } });
+  topBarSettings.push({
+    actions: {
+      return: 'show',
+      returnButtonLabel: $t('candidateApp.preview.close'),
+      returnButtonCallback: () => (useBack ? history.back() : goto($getRoute(ROUTE.CandAppHome)))
+    }
+  });
 
   const { user } = getContext<CandidateContext>('candidate');
 
@@ -49,29 +59,22 @@
   afterNavigate((n) => (useBack = n.from?.route != null && initialLocale === $locale));
 </script>
 
-<SingleCardPage title={$t('candidateApp.preview.title')}>
-  <svelte:fragment slot="note">
+<Layout title={$t('candidateApp.preview.title')}>
+  <div class="mt-xl text-center text-secondary" role="note" slot="note">
     <Icon name="info" />
     {$t('candidateApp.preview.tip')}
-  </svelte:fragment>
-  <svelte:fragment slot="banner">
-    <LogoutButton variant="icon" />
-    <Button
-      slot="banner"
-      class="!text-neutral"
-      variant="icon"
-      icon="close"
-      on:click={() => (useBack ? history.back() : goto($getRoute(ROUTE.CandAppHome)))}
-      text={$t('candidateApp.preview.close')} />
-  </svelte:fragment>
-
-  {#await loadData}
-    <Loading showLabel />
-  {:then}
-    {#if candidate}
-      <EntityDetails content={candidate} {opinionQuestions} {infoQuestions} />
-    {:else}
-      <div class="w-full text-center text-warning">{$t('candidateApp.preview.notFound')}</div>
-    {/if}
-  {/await}
-</SingleCardPage>
+  </div>
+  <!-- The card -->
+  <div
+    class="-mx-lg -mb-safelgb -mt-lg flex w-screen max-w-xl flex-grow self-center rounded-t-lg bg-base-100 pb-[3.5rem] match-w-xl:shadow-xl">
+    {#await loadData}
+      <Loading showLabel />
+    {:then}
+      {#if candidate}
+        <EntityDetails content={candidate} {opinionQuestions} {infoQuestions} />
+      {:else}
+        <div class="w-full text-center text-warning">{$t('candidateApp.preview.notFound')}</div>
+      {/if}
+    {/await}
+  </div>
+</Layout>

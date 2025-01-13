@@ -60,7 +60,7 @@ function getData<TData extends object>(
     params = new URLSearchParams(params);
     params.set('pagination[pageSize]', `${ITEM_LIMIT}`);
   }
-  const url = `${browser ? constants.PUBLIC_BACKEND_URL : constants.BACKEND_URL}/${endpoint}?${params}`;
+  const url = `${browser ? constants.PUBLIC_BROWSER_BACKEND_URL : constants.PUBLIC_SERVER_BACKEND_URL}/${endpoint}?${params}`;
   return fetch(url)
     .then((response) => {
       return response.json().then((parsed: StrapiResponse<TData> | StrapiError) => {
@@ -391,7 +391,7 @@ function getInfoQuestions({ electionId, locale }: GetQuestionsOptionsBase = {}) 
  */
 function setFeedback(data: FeedbackData): Promise<Response | undefined> {
   // NB. We need to use the public backend URL here, bc this is function is called from the client side
-  const url = `${constants.PUBLIC_BACKEND_URL}/api/feedbacks`;
+  const url = `${constants.PUBLIC_BROWSER_BACKEND_URL}/api/feedbacks`;
   const request = {
     method: 'POST',
     body: JSON.stringify({
