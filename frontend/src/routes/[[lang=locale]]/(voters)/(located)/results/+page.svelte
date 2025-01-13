@@ -37,7 +37,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import { EntityList, EntityListControls } from '$lib/dynamic-components/entityList';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { ucFirst } from '$lib/utils/text/ucFirst';
-  import Layout from '../../../../Layout.svelte';
+  import Layout from '../../../Layout.svelte';
   import type { Id } from '@openvaa/core';
 
   ////////////////////////////////////////////////////////////////////

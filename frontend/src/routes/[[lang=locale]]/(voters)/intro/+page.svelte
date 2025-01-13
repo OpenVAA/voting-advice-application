@@ -13,7 +13,7 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
-  import Layout from '../../../Layout.svelte';
+  import Layout from '../../Layout.svelte';
 
   const { constituenciesSelectable, electionsSelectable, getRoute, t } = getVoterContext();
 </script>
