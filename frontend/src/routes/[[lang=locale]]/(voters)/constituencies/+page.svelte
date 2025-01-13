@@ -12,7 +12,7 @@ See `+page.ts` for possible redirects.
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
-  import Layout from '../../../Layout.svelte';
+  import Layout from '../../Layout.svelte';
   import type { Id } from '@openvaa/core';
 
   ////////////////////////////////////////////////////////////////////

@@ -16,7 +16,7 @@ The frontpage of the app for voters.
   import { getLayoutContext } from '$lib/contexts/layout';
   import { SurveyBanner } from '$lib/dynamic-components/survey/banner';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
-  import Layout from '../../Layout.svelte';
+  import Layout from '../Layout.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

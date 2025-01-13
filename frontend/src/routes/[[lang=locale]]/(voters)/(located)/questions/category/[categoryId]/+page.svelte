@@ -27,7 +27,7 @@ Display the intro to a question category and possibly a button with which to ski
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { parseParams } from '$lib/utils/route';
-  import Layout from '../../../../../../Layout.svelte';
+  import Layout from '../../../../../Layout.svelte';
   import type { Id } from '@openvaa/core';
   import type { QuestionCategory } from '@openvaa/data';
 

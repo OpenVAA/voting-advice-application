@@ -19,7 +19,7 @@ Display a general intro before starting answering the questions and possibly all
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
-  import Layout from '../../../../Layout.svelte';
+  import Layout from '../../../Layout.svelte';
   import type { QuestionCategory } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////

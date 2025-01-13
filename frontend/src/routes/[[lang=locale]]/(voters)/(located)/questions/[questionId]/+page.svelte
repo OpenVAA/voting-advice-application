@@ -29,7 +29,7 @@ Display a question for answering.
   import { logDebugError } from '$lib/utils/logger';
   import { FIRST_QUESTION_ID, parseParams } from '$lib/utils/route';
   import { DELAY } from '$lib/utils/timing';
-  import Layout from '../../../../../Layout.svelte';
+  import Layout from '../../../../Layout.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { QuestionBlock } from '$lib/contexts/voter/questionBlockStore.type';
   //import {type VideoMode, Video} from '$lib/components/video';

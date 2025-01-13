@@ -12,7 +12,7 @@ Displays information about the elections in the VAA.
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import Layout from '../../../Layout.svelte';
+  import Layout from '../../Layout.svelte';
 
   const { dataRoot, getRoute, t } = getAppContext();
 
