@@ -3727,6 +3727,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@openvaa/ai@workspace:^, @openvaa/ai@workspace:packages/ai":
+  version: 0.0.0-use.local
+  resolution: "@openvaa/ai@workspace:packages/ai"
+  dependencies:
+    "@openvaa/core": "workspace:^"
+    "@openvaa/shared-config": "workspace:^"
+    tsc-esm-fix: "npm:^3.1.2"
+    typescript: "npm:^5.7.2"
+    vitest: "npm:^2.1.8"
+  languageName: unknown
+  linkType: soft
+
 "@openvaa/app-shared@workspace:^, @openvaa/app-shared@workspace:packages/app-shared":
   version: 0.0.0-use.local
   resolution: "@openvaa/app-shared@workspace:packages/app-shared"
@@ -3784,6 +3796,7 @@ __metadata:
     "@capacitor/ios": "npm:^5.7.8"
     "@eslint/eslintrc": "npm:^3.2.0"
     "@eslint/js": "npm:^9.17.0"
+    "@openvaa/ai": "workspace:^"
     "@openvaa/app-shared": "workspace:^"
     "@openvaa/core": "workspace:^"
     "@openvaa/data": "workspace:^"
