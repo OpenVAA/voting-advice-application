@@ -3,19 +3,13 @@
   "name": "@openvaa/llm",
   "version": "0.1.0",
   "scripts": {
-    "package:cjs": "mkdir -p ./build/cjs/ && echo '{ \"type\": \"commonjs\" }' > ./build/cjs/package.json",
-    "package:esm": "mkdir -p ./build/esm/ && echo '{ \"type\": \"module\" }' > ./build/esm/packagec.json",
-    "build:cjs": "yarn package:cjs && yarn tsc --build tsconfig.cjs.json",
-    "build:esm": "yarn package:esm && yarn tsc --build tsconfig.esm.json",
-    "build": "yarn build:cjs && yarn build:esm",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "build": "yarn tsc --build && yarn tsc-esm-fix"
   },
-  "main": "./build/cjs/index.js",
-  "module": "./build/esm/index.js",
+  "type": "module",
+  "module": "./build/index.js",
+  "types": "./build/index.d.ts",
   "exports": {
-    "import": "./build/esm/index.js",
-    "require": "./build/cjs/index.js"
+    "import": "./build/index.js"
   },
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",
@@ -24,7 +18,6 @@
     "vitest": "^2.1.8"
   },
   "dependencies": {
-    "@openvaa/core": "workspace:^",
-    "openai": "^4.78.1"
+    "@openvaa/core": "workspace:^"
   }
 }
