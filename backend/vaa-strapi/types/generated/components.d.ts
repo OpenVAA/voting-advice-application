@@ -71,6 +71,7 @@ export interface SettingsQuestions extends Schema.Component {
     questionsIntro: Attribute.Component<'settings.questions-intro'> & Attribute.Required;
     showCategoryTags: Attribute.Boolean & Attribute.Required;
     showResultsLink: Attribute.Boolean;
+    questionOrdering: Attribute.Component<'settings.questions-ordering'>;
   };
 }
 
@@ -95,6 +96,18 @@ export interface SettingsQuestionsCategoryIntros extends Schema.Component {
   attributes: {
     allowSkip: Attribute.Boolean;
     show: Attribute.Boolean & Attribute.Required;
+  };
+}
+
+export interface SettingsQuestionsOrdering extends Schema.Component {
+  collectionName: 'components_settings_questions_ordering';
+  info: {
+    displayName: 'Questions - Ordering';
+    description: '';
+  };
+  attributes: {
+    enabled: Attribute.Boolean & Attribute.Required;
+    suggestions: Attribute.Integer & Attribute.Required;
   };
 }
 
@@ -255,6 +268,7 @@ declare module '@strapi/types' {
       'customization.translation-override': CustomizationTranslationOverride;
       'customization.translation-override-translation': CustomizationTranslationOverrideTranslation;
       'customization.candidate-app-faq': CustomizationCandidateAppFaq;
+      'settings.questions-ordering': SettingsQuestionsOrdering;
     }
   }
 }

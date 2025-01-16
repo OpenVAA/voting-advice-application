@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_settings_questions_ordering",
+  "info": {
+    "displayName": "Questions - Ordering",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "enabled": {
+      "type": "boolean",
+      "required": true
+    },
+    "suggestions": {
+      "type": "integer",
+      "required": true
+    }
+  }
+}

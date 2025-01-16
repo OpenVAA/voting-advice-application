@@ -50,7 +50,11 @@ export const dynamicSettings: DynamicSettings = {
       show: true
     },
     showCategoryTags: true,
-    showResultsLink: true
+    showResultsLink: true,
+    questionOrdering: {
+      enabled: true,
+      suggestions: 3
+    }
   },
   results: {
     cardContents: {

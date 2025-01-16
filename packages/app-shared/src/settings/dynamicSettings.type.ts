@@ -137,6 +137,19 @@ export type DynamicSettings = {
      * Whether to the link to results in the header when answering questions if enough answers are provided.
      */
     showResultsLink?: boolean;
+    /**
+     * Settings related to question ordering.
+     */
+    questionOrdering?: {
+      /**
+       * Whether to sort questions based on highest information gain.
+       */
+      enabled: boolean;
+      /**
+       * Number of questions to suggest.
+       */
+      suggestions: number;
+    };
   };
   /**
    * Settings related to the results view.
