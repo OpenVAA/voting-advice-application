@@ -113,8 +113,8 @@ export async function loadData(folder: string, force = false) {
       console.info('[loadData] Creating Nominations...');
       if (!(await createFromFile(folder, 'nominations', 'api::nomination.nomination'))) throw new Error();
 
-      console.info('[loadData] Creating Answers...');
-      if (!(await createFromFile(folder, 'answers', API.Answer))) throw new Error();
+      // console.info('[loadData] Creating Answers...');
+      // if (!(await createFromFile(folder, 'answers', API.Answer))) throw new Error();
     } catch {
       console.info('[loadData] - There was an error. Rolling back transaction...');
       await rollback();
