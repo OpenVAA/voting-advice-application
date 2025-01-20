@@ -1,5 +1,5 @@
 {
-  "kind": "collectionType",
+  "kind": "singleType",
   "collectionName": "app_settings",
   "info": {
     "singularName": "app-setting",

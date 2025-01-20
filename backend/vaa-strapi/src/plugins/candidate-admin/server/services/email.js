@@ -15,7 +15,8 @@ function getFormattedMessage(content, registrationKey) {
 
 module.exports = () => ({
   sendEmail: async (candidateId, subject, content) => {
-    const candidate = await strapi.entityService.findOne('api::candidate.candidate', candidateId, {
+    const candidate = await strapi.documents('api::candidate.candidate').findOne({
+      documentId: candidateId,
       fields: ['registrationKey', 'email']
     });
     const registrationKey = candidate.registrationKey;
@@ -30,7 +31,7 @@ module.exports = () => ({
     });
   },
   sendEmailToUnregistered: async (subject, content) => {
-    const unregisteredCandidates = await strapi.entityService.findMany('api::candidate.candidate', {
+    const unregisteredCandidates = await strapi.documents('api::candidate.candidate').findMany({
       fields: ['registrationKey', 'email'],
       filters: {
         user: {

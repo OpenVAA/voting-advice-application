@@ -4,9 +4,10 @@
     "info": "A Likert question with 4 options.",
     "settings": {
       "type": "singleChoiceOrdinal",
-      "values": [
+      "choices": [
         {
-          "key": 1,
+          "id": "1",
+          "normalizableValue": "1",
           "label": {
             "en": "Fully disagree",
             "fi": "Täysin eri mieltä",
@@ -14,7 +15,8 @@
           }
         },
         {
-          "key": 2,
+          "id": "2",
+          "normalizableValue": "2",
           "label": {
             "en": "Disagree",
             "fi": "Osittain eri mieltä",
@@ -22,7 +24,8 @@
           }
         },
         {
-          "key": 3,
+          "id": "3",
+          "normalizableValue": "3",
           "label": {
             "en": "Agree",
             "fi": "Osittain samaa mieltä",
@@ -30,7 +33,8 @@
           }
         },
         {
-          "key": 4,
+          "id": "4",
+          "normalizableValue": "4",
           "label": {
             "en": "Fully agree",
             "fi": "Täysin samaa mieltä",
@@ -45,9 +49,10 @@
     "info": "A Likert question with 5 options.",
     "settings": {
       "type": "singleChoiceOrdinal",
-      "values": [
+      "choices": [
         {
-          "key": 1,
+          "id": "1",
+          "normalizableValue": "1",
           "label": {
             "en": "Fully disagree",
             "fi": "Täysin eri mieltä",
@@ -55,7 +60,8 @@
           }
         },
         {
-          "key": 2,
+          "id": "2",
+          "normalizableValue": "2",
           "label": {
             "en": "Disagree",
             "fi": "Osittain eri mieltä",
@@ -63,7 +69,8 @@
           }
         },
         {
-          "key": 3,
+          "id": "3",
+          "normalizableValue": "3",
           "label": {
             "en": "Neither agree nor disagree",
             "fi": "Ei samaa eikä eri mieltä",
@@ -71,7 +78,8 @@
           }
         },
         {
-          "key": 4,
+          "id": "4",
+          "normalizableValue": "4",
           "label": {
             "en": "Agree",
             "fi": "Osittain samaa mieltä",
@@ -79,7 +87,8 @@
           }
         },
         {
-          "key": 5,
+          "id": "5",
+          "normalizableValue": "5",
           "label": {
             "en": "Fully agree",
             "fi": "Täysin samaa mieltä",
@@ -116,9 +125,9 @@
     "info": "A list of genders.",
     "settings": {
       "type": "singleChoiceCategorical",
-      "values": [
+      "choices": [
         {
-          "key": 1,
+          "id": "1",
           "label": {
             "en": "Female",
             "fi": "Nainen",
@@ -126,7 +135,7 @@
           }
         },
         {
-          "key": 2,
+          "id": "2",
           "label": {
             "en": "Male",
             "fi": "Mies",
@@ -134,7 +143,7 @@
           }
         },
         {
-          "key": 3,
+          "id": "3",
           "label": {
             "en": "Other",
             "fi": "Muu",
@@ -142,7 +151,7 @@
           }
         },
         {
-          "key": 4,
+          "id": "4",
           "label": {
             "en": "Prefer not to answer",
             "fi": "En halua vastata",

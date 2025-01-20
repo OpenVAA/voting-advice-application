@@ -1,17 +1,31 @@
-import { Strapi } from '@strapi/strapi';
-import { StrapiContext } from '../util/acl.type';
+import { StrapiContext } from '../../types/customStrapiTypes';
+import type { Core } from '@strapi/strapi';
 
-export default async (ctx: StrapiContext, config: unknown, { strapi }: { strapi: Strapi }): Promise<boolean> => {
+// TODO: Remove when Answers are deprecated
+
+export default async function ownedByCandidate(
+  { request, state }: StrapiContext,
+  config: unknown,
+  { strapi }: { strapi: Core.Strapi }
+): Promise<boolean> {
+  const userId = state?.user?.id;
+
   // Accessing without a valid user session should always fail as we can't enforce this check otherwise
-  if (!ctx.state.user) return false;
+  if (!userId) return false;
 
-  const candidate = await strapi.query('api::candidate.candidate').findOne({
-    where: { user: { id: ctx.state.user.id } }
-  });
+  const candidate = (
+    await strapi.documents('api::candidate.candidate').findMany({
+      populate: ['user'],
+      where: {
+        user: { id: userId }
+      }
+    })
+  )[0];
+
   if (!candidate) return false;
 
-  // Enforce that any creation/update enforces the candidate to be ourselves
-  if (ctx.request.body?.data) ctx.request.body.data.candidate = candidate.id;
+  // Enforce that any creation/update enforces the candidate to be themself
+  if (request.body?.data) request.body.data.candidate = candidate.documentId;
 
   return true;
-};
+}

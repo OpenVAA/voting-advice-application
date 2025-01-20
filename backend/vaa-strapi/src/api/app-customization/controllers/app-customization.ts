@@ -2,15 +2,16 @@
  * app-customization controller
  */
 
-import { factories } from '@strapi/strapi';
-import { API } from '../../../functions/utils/api';
+import { Data, factories } from '@strapi/strapi';
+import { StrapiContext } from '../../../../types/customStrapiTypes';
 
-export default factories.createCoreController(API.AppCustomization, () => ({
-  async find(ctx) {
+export default factories.createCoreController('api::app-customization.app-customization', () => ({
+  async find(ctx: StrapiContext) {
     const response = await super.find(ctx);
 
-    if (response) {
-      const { candidateAppFAQ, translationOverrides } = response.data.attributes;
+    if (response?.data) {
+      const { candidateAppFAQ, translationOverrides } =
+        response.data as Data.ContentType<'api::app-customization.app-customization'>;
 
       /**
        *  The translations are originally in the format:
@@ -39,7 +40,7 @@ export default factories.createCoreController(API.AppCustomization, () => ({
             }
           });
         });
-        response.data.attributes.translationOverrides = byLocale;
+        response.data.translationOverrides = byLocale;
       }
 
       /**
@@ -60,9 +61,10 @@ export default factories.createCoreController(API.AppCustomization, () => ({
           byLocale[locale] ??= [];
           byLocale[locale].push({ question, answer });
         });
-        response.data.attributes.candidateAppFAQ = byLocale;
+        response.data.candidateAppFAQ = byLocale;
       }
     }
+
     return response;
   }
 }));

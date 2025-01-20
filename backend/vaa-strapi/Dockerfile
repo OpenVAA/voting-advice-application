@@ -40,18 +40,16 @@ FROM strapi AS development
 
 ARG NODE_ENV=development
 ENV NODE_ENV=${NODE_ENV}
-ENV STRAPI_DISABLE_REMOTE_DATA_TRANSFER=true
 
 EXPOSE 1337
 
 RUN yarn workspace @openvaa/strapi build
-CMD yarn workspace @openvaa/strapi dev --ignore-prompts
+CMD yarn workspace @openvaa/strapi dev
 
 FROM strapi AS production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
-ENV STRAPI_DISABLE_REMOTE_DATA_TRANSFER=true
 
 EXPOSE 1337
 
