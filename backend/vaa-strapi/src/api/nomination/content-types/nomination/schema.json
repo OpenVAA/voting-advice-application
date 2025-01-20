@@ -45,6 +45,9 @@
       "relation": "oneToOne",
       "target": "api::candidate.candidate",
       "mappedBy": "nomination"
+    },
+    "unconfirmed": {
+      "type": "boolean"
     }
   }
 }

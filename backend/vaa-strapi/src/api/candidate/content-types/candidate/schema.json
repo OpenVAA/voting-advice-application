@@ -8,7 +8,7 @@
     "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
@@ -43,7 +43,7 @@
       "type": "string",
       "required": true
     },
-    "photo": {
+    "image": {
       "type": "media",
       "multiple": false,
       "required": false,
@@ -58,12 +58,6 @@
       "target": "api::party.party",
       "inversedBy": "candidates"
     },
-    "answers": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::answer.answer",
-      "mappedBy": "candidate"
-    },
     "nomination": {
       "type": "relation",
       "relation": "oneToOne",
@@ -74,6 +68,9 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "api::language.language"
+    },
+    "answers": {
+      "type": "json"
     }
   }
 }

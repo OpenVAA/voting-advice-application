@@ -5,7 +5,7 @@
 function getFormattedMessage(content, registrationKey) {
   const url = new URL(process.env.PUBLIC_BROWSER_FRONTEND_URL ?? 'http://localhost:5173');
   url.pathname = '/candidate/register';
-  url.searchParams.append('registrationCode', registrationKey);
+  url.searchParams.append('registrationKey', registrationKey);
   const resetUrl = url.toString();
 
   let text = content.replace(/{LINK}/g, `<a href="${resetUrl}">${resetUrl}</a>`);
@@ -15,7 +15,8 @@ function getFormattedMessage(content, registrationKey) {
 
 module.exports = () => ({
   sendEmail: async (candidateId, subject, content) => {
-    const candidate = await strapi.entityService.findOne('api::candidate.candidate', candidateId, {
+    const candidate = await strapi.documents('api::candidate.candidate').findOne({
+      documentId: candidateId,
       fields: ['registrationKey', 'email']
     });
     const registrationKey = candidate.registrationKey;
@@ -30,7 +31,7 @@ module.exports = () => ({
     });
   },
   sendEmailToUnregistered: async (subject, content) => {
-    const unregisteredCandidates = await strapi.entityService.findMany('api::candidate.candidate', {
+    const unregisteredCandidates = await strapi.documents('api::candidate.candidate').findMany({
       fields: ['registrationKey', 'email'],
       filters: {
         user: {

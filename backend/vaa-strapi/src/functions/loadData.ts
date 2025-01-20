@@ -6,9 +6,8 @@
 import fs from 'fs';
 import mime from 'mime-types';
 import Path from 'path';
-import { API } from './utils/api';
 import { deleteMedia, dropAllCollections, getAllMedia } from './utils/drop';
-import type { Common } from '@strapi/strapi';
+import type { UID } from '@strapi/strapi';
 
 /**
  * Load data from `folder`, if `AppSettings` do not exist or their `allowOverwrite` property is true. Warning! This will delete all existing data, including media files.
@@ -19,6 +18,8 @@ import type { Common } from '@strapi/strapi';
  * @param force Load and clear data regardless of `AppSettings.allowOverwrite`
  */
 export async function loadData(folder: string, force = false) {
+  console.warn('[loadData] This function has not been tested on Strapi 5 yet!');
+
   console.info('[loadData] ##########################################\n[loadData] Starting data loading...');
 
   folder = Path.resolve('.', folder);
@@ -28,7 +29,7 @@ export async function loadData(folder: string, force = false) {
     console.info('[loadData] - The force argument is true. Continuing with data loading...');
   } else {
     console.info('[loadData] Getting current AppSettings...');
-    const currentSettings = await strapi.entityService.findMany(API.AppSettings);
+    const currentSettings = await strapi.documents('api::app-setting.app-setting').findMany();
     if (!currentSettings?.length) {
       console.info('[loadData] - No AppSettings found. Continuing with data loading...');
     } else if (currentSettings.length > 1) {
@@ -65,11 +66,11 @@ export async function loadData(folder: string, force = false) {
       await createLocales((await loadFile(folder, 'locales')) as Array<{ name: string; code: string }>);
 
       console.info('[loadData] Creating App Settings...');
-      if (!(await createFromFile(folder, 'appSettings', API.AppSettings))) throw new Error();
+      if (!(await createFromFile(folder, 'appSettings', 'api::app-setting.app-setting'))) throw new Error();
 
       console.info('[loadData] Creating App Customization...');
       if (
-        !(await createFromFile(folder, 'appSettings', API.AppCustomization, [
+        !(await createFromFile(folder, 'appSettings', 'api::app-customization.app-customization', [
           'candPoster',
           'candPosterDark',
           'publisherLogo',
@@ -81,34 +82,36 @@ export async function loadData(folder: string, force = false) {
         throw new Error();
 
       console.info('[loadData] Creating Constituencies...');
-      if (!(await createFromFile(folder, 'constituencies', API.Constituency))) throw new Error();
+      if (!(await createFromFile(folder, 'constituencies', 'api::constituency.constituency'))) throw new Error();
 
       console.info('[loadData] Creating Constituency Groups...');
-      if (!(await createFromFile(folder, 'constituencyGroups', API.ConstituencyGroup))) throw new Error();
+      if (!(await createFromFile(folder, 'constituencyGroups', 'api::constituency-group.constituency-group')))
+        throw new Error();
 
       console.info('[loadData] Creating Elections...');
-      if (!(await createFromFile(folder, 'elections', API.Election))) throw new Error();
+      if (!(await createFromFile(folder, 'elections', 'api::election.election'))) throw new Error();
 
       console.info('[loadData] Creating Question Categories...');
-      if (!(await createFromFile(folder, 'questionCategories', API.QuestionCategory))) throw new Error();
+      if (!(await createFromFile(folder, 'questionCategories', 'api::question-category.question-category')))
+        throw new Error();
 
       console.info('[loadData] Creating Question Types...');
-      if (!(await createFromFile(folder, 'questionTypes', API.QuestionType))) throw new Error();
+      if (!(await createFromFile(folder, 'questionTypes', 'api::question-type.question-type'))) throw new Error();
 
       console.info('[loadData] Creating Info Questions...');
-      if (!(await createFromFile(folder, 'infoQuestions', API.Question))) throw new Error();
+      if (!(await createFromFile(folder, 'infoQuestions', 'api::question.question'))) throw new Error();
 
       console.info('[loadData] Creating Opinion Questions...');
-      if (!(await createFromFile(folder, 'opinionQuestions', API.Question))) throw new Error();
+      if (!(await createFromFile(folder, 'opinionQuestions', 'api::question.question'))) throw new Error();
 
       console.info('[loadData] Creating Parties...');
-      if (!(await createFromFile(folder, 'parties', API.Party, ['logo']))) throw new Error();
+      if (!(await createFromFile(folder, 'parties', 'api::party.party', ['image']))) throw new Error();
 
       console.info('[loadData] Creating Candidates...');
-      if (!(await createFromFile(folder, 'candidates', API.Candidate, ['photo']))) throw new Error();
+      if (!(await createFromFile(folder, 'candidates', 'api::candidate.candidate', ['image']))) throw new Error();
 
       console.info('[loadData] Creating Nominations...');
-      if (!(await createFromFile(folder, 'nominations', API.Nomination))) throw new Error();
+      if (!(await createFromFile(folder, 'nominations', 'api::nomination.nomination'))) throw new Error();
 
       console.info('[loadData] Creating Answers...');
       if (!(await createFromFile(folder, 'answers', API.Answer))) throw new Error();
@@ -157,7 +160,7 @@ async function createLocales(locales: Array<{ code: string; name: string }>) {
 async function createFromFile(
   folder: string,
   name: string,
-  api: Common.UID.ContentType,
+  api: UID.ContentType,
   mediaFields?: Array<string>,
   publish = true
 ): Promise<void | Array<object>> {
@@ -222,7 +225,7 @@ async function loadFile(folder: string, name: string): Promise<Array<object>> {
  */
 async function create<TData extends object>(
   folder,
-  api: Common.UID.ContentType,
+  api: UID.ContentType,
   data: Array<TData>,
   mediaFields?: Array<string>,
   publish = true
@@ -251,9 +254,10 @@ async function create<TData extends object>(
       }
     }
     // Create the object
-    const obj = await strapi.entityService
-      .create(api, {
-        data: { ...itemData, publishedAt: publish ? new Date() : undefined } as object,
+    const obj = await strapi
+      .documents(api)
+      .create({
+        data: { ...itemData, publishedAt: publish ? new Date() : null } as object,
         files
       })
       .catch((e) => {

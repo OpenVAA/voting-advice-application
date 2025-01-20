@@ -3,5 +3,10 @@ module.exports = ({ env }) => ({
   port: env.int('STRAPI_PORT', 1337),
   app: {
     keys: env.array('APP_KEYS')
+  },
+  transfer: {
+    remote: {
+      enabled: false
+    }
   }
 });

@@ -1,5 +1,3 @@
-'use strict';
-import { Strapi } from '@strapi/strapi';
 import { generateMockDataOnInitialise, generateMockDataOnRestart, loadDataFolder } from './constants';
 import { generateMockData } from './functions/generateMockData';
 import { loadData } from './functions/loadData';
@@ -15,8 +13,8 @@ module.exports = {
    *
    * This gives you an opportunity to extend code.
    */
-  // eslint-disable-next-line no-empty-pattern
-  register({}: { strapi: Strapi }) {
+   
+  register(/*{ strapi }*/) {
     // ...
   },
 
