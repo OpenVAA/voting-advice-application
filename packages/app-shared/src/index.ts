@@ -1,3 +1,4 @@
+export * from './data/extendedData.type.js';
 export * from './settings/dynamicSettings.js';
 export * from './settings/dynamicSettings.type.js';
 export * from './settings/staticSettings.js';
