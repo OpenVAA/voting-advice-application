@@ -6,7 +6,7 @@ import { API } from './api';
 export async function dropAllCollections() {
   let count = 0;
   for (const api of Object.values(API)) {
-    count += (await strapi.db.query(api).deleteMany({})).count;
+    count += (await strapi.query(api).deleteMany({})).count;
   }
   return count;
 }

@@ -1,13 +1,12 @@
-import { API } from './utils/api';
 import { getDynamicTranslations } from './utils/appCustomization';
 
 export async function loadDynamicTranslations() {
-  if (await strapi.entityService.findMany(API.AppCustomization)) {
+  if (await strapi.documents('api::app-customization.app-customization').findMany()) {
     console.info('[loadDynamicTranslations] App customization found - loading of dynamic translations skipped.');
     return;
   }
 
-  await strapi.entityService.create(API.AppCustomization, {
+  await strapi.documents('api::app-customization.app-customization').create({
     data: { translationOverrides: getDynamicTranslations() }
   });
   console.info('[loadDynamicTranslations] Dynamic translations loaded.');
