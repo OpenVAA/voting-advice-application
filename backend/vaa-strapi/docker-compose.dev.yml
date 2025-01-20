@@ -67,7 +67,8 @@ services:
       LOCALSTACK_ENDPOINT: http://awslocal:4566
     volumes:
       # Creating this volume will make Docker update changes from local automatically
-      # Note that this only applies to src/, where all the source code is anyway.
+      # Note that this only applies to src/, where all the source code is anyway, except the config. 
+      # If you make changes to it, you need to rebuild the container.
       # - ./src:/opt/backend/vaa-strapi/src
       - strapi-uploads:/opt/backend/vaa-strapi/public/uploads
     healthcheck:
