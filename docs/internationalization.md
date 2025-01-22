@@ -136,4 +136,4 @@ The locale selection process works as follows.
 
 ## Supported locales
 
-Ssupported locales are defined app-wide in [`StaticSettings`](../packages/app-shared/src/settings/staticSettings.ts).
+Supported locales are defined app-wide in [`StaticSettings`](../packages/app-shared/src/settings/staticSettings.ts).
