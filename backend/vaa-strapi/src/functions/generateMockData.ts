@@ -7,11 +7,9 @@
  */
 
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
-import { LLMResponse, OpenAIProvider } from '@openvaa/llm';
-import crypto from 'crypto';
-import { loadDefaultAppSettings } from './loadDefaultAppSettings';
+import { dynamicSettings } from '@openvaa/app-shared';
+import { LLMResponse, OpenAIProvider, Role } from '@openvaa/llm';
 import mockCandidateForTesting from './mockData/mockCandidateForTesting.json';
-import { OpenAIProvider, LLMResponse, Role } from '@openvaa/llm';
 import mockCategories from './mockData/mockCategories.json';
 import mockInfoQuestions from './mockData/mockInfoQuestions.json';
 import mockQuestions from './mockData/mockQuestions.json';
@@ -21,7 +19,7 @@ import { API } from './utils/api';
 import { getDynamicTranslations } from './utils/appCustomization';
 import { getCardContentsFromFile } from './utils/appSettings';
 import { dropAllCollections } from './utils/drop';
-import { generateMockDataOnInitialise, generateMockDataOnRestart, generateAiMockData } from '../constants';
+import { generateAiMockData, generateMockDataOnInitialise, generateMockDataOnRestart } from '../constants';
 import type { AnswerValue, EntityType, LocalizedString, QuestionTypeSettings } from './utils/data.type';
 
 const locales: Array<Locale> = [
