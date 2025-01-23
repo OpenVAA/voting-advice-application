@@ -9,10 +9,10 @@ export type QuestionInfoProps = Partial<ExpanderProps> & {
   /**
    * Additional expandable info sections shown as plain or HTML strings.
    */
-  infoSections?: {
+  infoSections?: Array<{
     title: string;
     content: string;
-  }[];
+  }>;
   /**
    * The future situation of the question.
    */
@@ -25,4 +25,8 @@ export type QuestionInfoProps = Partial<ExpanderProps> & {
    * A callback triggered when the info content is expanded.  Mostly used for tracking.
    */
   onExpand?: () => void;
+  /**
+   * The ID of the question.
+   */
+  questionId: string;
 };

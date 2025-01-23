@@ -266,6 +266,7 @@ Display a question for answering.
             modalStack.push(QuestionInfo, {
               title: text,
               info,
+              questionId: id,
               onCollapse: handleInfoCollapse,
               infoSections: Object.values(infoSections ?? {})
                 .filter(({ visible }) => !!visible)

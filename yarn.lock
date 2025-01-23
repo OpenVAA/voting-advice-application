@@ -3777,6 +3777,7 @@ __metadata:
     "@openvaa/core": "workspace:^"
     "@openvaa/data": "workspace:^"
     "@openvaa/filters": "workspace:^"
+    "@openvaa/llm": "workspace:^"
     "@openvaa/matching": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
     "@sveltejs/adapter-auto": "npm:^3.3.1"
