@@ -47,6 +47,7 @@ declare global {
       filterable?: boolean;
       vertical?: boolean;
       video?: CustomVideoProps;
+      infoSections?: QuestionInfoSections;
     };
     QuestionCategory: {
       emoji?: string;
@@ -63,6 +64,25 @@ declare global {
     poster: string;
     aspectRatio: number;
     transcript?: string;
+  }
+
+  /**
+   * The properties for defining generated question info in customData
+   */
+  // TODO: Localize
+  // interface QuestionInfoSections {
+  //   [infoSection: string]: {
+  //     title?: LocalizedString
+  //     text?: LocalizedString;
+  //     visible?: boolean;
+  //   };
+  // }
+  interface QuestionInfoSections {
+    [infoSection: string]: {
+      title?: string;
+      text?: string;
+      visible?: boolean;
+    };
   }
 
   ///////////////////////////////////////////////

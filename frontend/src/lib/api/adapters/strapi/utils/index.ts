@@ -8,3 +8,4 @@ export * from './parseNominations';
 export * from './parseOrganization';
 export * from './parseQuestionType';
 export * from './parseRelationIds';
+export * from './parseQuestionInfoSections';
