@@ -210,7 +210,7 @@ Display a question for answering.
 </script>
 
 {#if question && questionBlock}
-  {@const { category, id, info, text, type } = question}
+  {@const { category, id, info, text, type, customData } = question}
   {@const headingId = `questionHeading-${id}`}
   {@const questions = $selectedQuestionBlocks.questions}
 
@@ -266,11 +266,18 @@ Display a question for answering.
               title: text,
               info,
               onCollapse: handleInfoCollapse,
-              background: 'Background info here',
-              argumentsFor: 'Arguments for here',
-              argumentsAgainst: 'Arguments against here',
-              currentSituation: 'Current situation here',
-              terms: 'Terms here'
+              // @ts-ignore
+              background: (customData?.background?.visible && customData?.background?.text) || undefined,
+              // @ts-ignore
+              argumentsFor: (customData?.argumentsFor?.visible && customData?.argumentsFor?.text) || undefined,
+              argumentsAgainst:
+                // @ts-ignore
+                (customData?.argumentsAgainst?.visible && customData?.argumentsAgainst?.text) || undefined,
+              currentSituation:
+                // @ts-ignore
+                (customData?.currentSituation?.visible && customData?.currentSituation?.text) || undefined,
+              // @ts-ignore
+              terms: (customData?.terms?.visible && customData?.terms?.text) || undefined
             });
           }} />
       </div>
@@ -285,7 +292,8 @@ Display a question for answering.
           {disabled}
           {question}
           {selectedId}
-          variant={customData?.vertical ? 'vertical' : undefined}
+          variant={// @ts-ignore
+          customData?.vertical ? 'vertical' : undefined}
           onChange={handleAnswer} />
       {:else}
         {$t('error.unsupportedQuestion')}
