@@ -3881,6 +3881,7 @@ __metadata:
     "@babel/plugin-transform-modules-commonjs": "npm:^7.26.3"
     "@faker-js/faker": "npm:^8.4.1"
     "@openvaa/app-shared": "workspace:^"
+    "@openvaa/llm": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
     "@strapi/plugin-documentation": "npm:^4.25.18"
     "@strapi/plugin-i18n": "npm:4.25.13"

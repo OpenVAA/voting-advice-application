@@ -13,6 +13,7 @@
   "dependencies": {
     "@aws-sdk/client-ses": "^3.716.0",
     "@openvaa/app-shared": "workspace:^",
+    "@openvaa/llm": "workspace:^",
     "@strapi/plugin-documentation": "^4.25.18",
     "@strapi/plugin-i18n": "4.25.13",
     "@strapi/plugin-users-permissions": "^4.25.18",
@@ -43,6 +44,7 @@
     "@babel/core": "^7.26.0",
     "@babel/plugin-transform-modules-commonjs": "^7.26.3",
     "@faker-js/faker": "^8.4.1",
+    "@openvaa/llm": "workspace:^",
     "@openvaa/shared-config": "workspace:^",
     "@strapi/typescript-utils": "^5.6.0",
     "@types/babel__core": "^7",
