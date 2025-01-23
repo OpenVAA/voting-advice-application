@@ -7,6 +7,7 @@ import type { getRoute } from './getRoute';
 import type { PopupStore } from './popup';
 import type { TrackingService } from './tracking';
 import type { UserPreferences } from './userPreferences.type';
+import type { ModalStore } from './modal';
 
 export type AppContext = ComponentContext &
   DataContext &
@@ -41,6 +42,10 @@ export type AppContext = ComponentContext &
      * A store that manages a queue of popup components and resolves to the first component in the queue.
      */
     popupQueue: PopupStore;
+    /**
+     * A store that manages a stack of modal components and resolves to the top component in the stack.
+     */
+    modalStack: ModalStore;
     /**
      * A store that holds the function for opening the feedback modal.
      * TODO: Refactor when Cand App is refactored.

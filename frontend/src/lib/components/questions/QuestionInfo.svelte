@@ -21,22 +21,68 @@ Display the question's expandable information content.
   import { getComponentContext } from '$lib/contexts/component';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { Button } from '../button';
+  import { Expander } from '../expander';
+  import Modal from '../modal/Modal.svelte';
   import type { QuestionInfoProps } from './QuestionInfo.type';
 
   type $$Props = QuestionInfoProps;
 
+  export let title: $$Props['title'];
   export let info: $$Props['info'];
+  export let background: $$Props['background'] = undefined;
+  export let argumentsFor: $$Props['argumentsFor'] = undefined;
+  export let argumentsAgainst: $$Props['argumentsAgainst'] = undefined;
+  export let currentSituation: $$Props['currentSituation'] = undefined;
+  export let terms: $$Props['terms'] = undefined;
   export let onCollapse: $$Props['onCollapse'] = undefined;
   export let onExpand: $$Props['onExpand'] = undefined;
 
   const { t } = getComponentContext();
 </script>
 
-<Drawer
-  on:collapse={() => onCollapse?.()}
-  on:expand={() => onExpand?.()}
-  title={$t('common.readMore')}
-  {...$$restProps}>
-  <Button text="Learn more" icon="info" iconPos="left" slot="title" />
+<Drawer {title} on:close={() => onCollapse?.()}>
   {@html sanitizeHtml(info)}
+  <div class="mt-16">
+    {#if background}
+      <Expander
+        title="Background"
+        {...$$restProps}
+        titleClass="flex justify-between font-bold"
+        contentClass="!text-left">
+        {@html sanitizeHtml(background)}
+      </Expander>
+    {/if}
+    {#if argumentsFor}
+      <Expander
+        title="Arguments for"
+        {...$$restProps}
+        titleClass="flex justify-between font-bold"
+        contentClass="!text-left">
+        {@html sanitizeHtml(argumentsFor)}
+      </Expander>
+    {/if}
+    {#if argumentsAgainst}
+      <Expander
+        title="Arguments against"
+        {...$$restProps}
+        titleClass="flex justify-between font-bold"
+        contentClass="!text-left">
+        {@html sanitizeHtml(argumentsAgainst)}
+      </Expander>
+    {/if}
+    {#if currentSituation}
+      <Expander
+        title="Current situation"
+        {...$$restProps}
+        titleClass="flex justify-between font-bold"
+        contentClass="!text-left">
+        {@html sanitizeHtml(currentSituation)}
+      </Expander>
+    {/if}
+    {#if terms}
+      <Expander title="Terms" {...$$restProps} titleClass="flex justify-between font-bold" contentClass="!text-left">
+        {@html sanitizeHtml(terms)}
+      </Expander>
+    {/if}
+  </div>
 </Drawer>
