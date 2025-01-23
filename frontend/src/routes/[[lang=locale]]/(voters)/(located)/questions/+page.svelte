@@ -71,9 +71,13 @@ Display a general intro before starting answering the questions and possibly all
     if (!canSubmit) return;
     const categoryId = $selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
     if (!categoryId) error(500, 'No question categories selected even though canSubmit is true');
+    
+    // Skip category intros if question ordering is enabled
     goto(
       $getRoute(
-        $appSettings.questions.categoryIntros?.show ? { route: 'QuestionCategory', categoryId } : { route: 'Question' }
+        $appSettings.questions.categoryIntros?.show && !$appSettings.questions.questionOrdering?.enabled
+          ? { route: 'QuestionCategory', categoryId }
+          : { route: 'Question' }
       )
     );
   }
@@ -95,7 +99,7 @@ Display a general intro before starting answering the questions and possibly all
     <HeroEmoji emoji={$t('dynamic.questions.heroEmoji')} />
   </figure>
 
-  {#if $appSettings.questions.questionsIntro.allowCategorySelection}
+  {#if $appSettings.questions.questionsIntro.allowCategorySelection && !$appSettings.questions.questionOrdering?.enabled}
     <p class="text-center">
       {$t('questions.intro.ingress.withCategorySelection', {
         numCategories: $opinionQuestionCategories.length,
@@ -118,10 +122,14 @@ Display a general intro before starting answering the questions and possibly all
     </div>
   {:else}
     <p class="text-center">
-      {$t('questions.intro.ingress.withoutCategorySelection', {
-        numCategories: $opinionQuestionCategories.length,
-        minQuestions: $appSettings.matching.minimumAnswers
-      })}
+      {#if $appSettings.questions.questionOrdering?.enabled}
+        {"quesion ordering enabled"}
+      {:else}
+        {$t('questions.intro.ingress.withoutCategorySelection', {
+          numQuestions: $selectedQuestionBlocks.questions.length,
+          numCategories: $opinionQuestionCategories.length
+        })}
+      {/if}
     </p>
     <div class="grid justify-items-center gap-sm">
       {#each $opinionQuestionCategories as category}

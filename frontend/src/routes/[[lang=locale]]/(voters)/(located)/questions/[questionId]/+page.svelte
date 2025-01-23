@@ -32,6 +32,8 @@ Display a question for answering.
   import Layout from '../../../../Layout.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { QuestionBlock } from '$lib/contexts/voter/questionBlockStore.type';
+  import { Button } from '$lib/components/button';
+  import { slide } from 'svelte/transition';
   //import {type VideoMode, Video} from '$lib/components/video';
 
   ////////////////////////////////////////////////////////////////////
@@ -58,6 +60,10 @@ Display a question for answering.
   let customData: CustomData['Question'];
   let question: AnyQuestionVariant;
   let questionBlock: { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
+  let useQuestionOrdering = $appSettings.questions.questionOrdering?.enabled ?? false;
+  let showNextQuestionChoices = true;
+  let nextQuestionChoices: Array<AnyQuestionVariant> = getNextQuestionChoices();
+
   $: {
     // Get question
     const questionId = parseParams($page).questionId;
@@ -112,10 +118,34 @@ Display a question for answering.
   /** Use to disable the response buttons when an answer is set but we're still waiting for the next page to load */
   let disabled = false;
 
+  function getNextQuestionChoices(): Array<AnyQuestionVariant> {
+    const allQuestions = $selectedQuestionBlocks.questions;
+    const unansweredQuestions = allQuestions.filter(q => !$answers[q.id]?.value);
+    
+    if (unansweredQuestions.length === 0) {
+        return [];
+    }
+
+    const maxSuggestions = $appSettings.questions.questionOrdering?.suggestions ?? 3;
+    return [...unansweredQuestions]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, maxSuggestions);
+  }
+
   function handleAnswer({ question, value }: { question: AnyQuestionVariant; value?: unknown }): void {
     disabled = true;
     answers.setAnswer(question.id, value);
-    setTimeout(handleJump, DELAY.md);
+    
+    if (useQuestionOrdering) {
+      nextQuestionChoices = getNextQuestionChoices();
+      if (nextQuestionChoices.length > 1) {
+        showNextQuestionChoices = true;
+      } else {
+        goto($getRoute('Results'));
+      }
+    } else {
+      setTimeout(handleJump, DELAY.md);
+    }
   }
 
   function handleDelete() {
@@ -129,6 +159,44 @@ Display a question for answering.
    */
   function handleJump(steps = 1): void {
     if (!questionBlock) return;
+    if (useQuestionOrdering) {
+        if (steps < 0) {
+            // Get ordered list of previously answered questions
+            const orderedAnswers = answers.getAnswerOrder();
+            const currentIndex = orderedAnswers.indexOf(question.id);
+            
+            if (currentIndex >= 0) {
+                // If we're showing choices, stay on current question when going back
+                const previousIndex = currentIndex - (showNextQuestionChoices ? 0 : 1);
+                if (previousIndex >= 0) {
+                    const previousId = orderedAnswers[previousIndex];
+                    goto($getRoute({ route: 'Question', questionId: previousId }));
+                } else {
+                    goto($getRoute('Questions'));
+                }
+            } else {
+                // If current question isn't in history, go to last answered question
+                const lastAnsweredId = orderedAnswers[orderedAnswers.length - 1];
+                if (lastAnsweredId) {
+                    goto($getRoute({ route: 'Question', questionId: lastAnsweredId }));
+                } else {
+                    goto($getRoute('Questions'));
+                }
+            }
+        } else {
+            // Forward navigation shows new question choices
+            nextQuestionChoices = getNextQuestionChoices();
+            if (nextQuestionChoices.length > 0) {
+                showNextQuestionChoices = true;
+            } else {
+                goto($getRoute('Results'));
+            }
+        }
+        
+        disabled = false;
+        return;
+    }
+
     // Build the new URL based on appSettings and the new index
     const newIndex = questionBlock.index + steps;
     let url: string;
@@ -146,6 +214,7 @@ Display a question for answering.
       // TODO: Handle category showing more centrally, e.g. during onMount of this page, so that sources linking here need to concern themselves with choosing whether to show the category intro. In that case, though, another search param will be necessary that can be used to suppress category intro display.
       if (
         $appSettings.questions.questionsIntro.show &&
+        !useQuestionOrdering &&
         steps > 0 &&
         $selectedQuestionBlocks.getByQuestion(newQuestion)?.indexInBlock === 0
       ) {
@@ -204,6 +273,20 @@ Display a question for answering.
       ...question.customData.video
     } as CustomVideoProps;
   } */
+
+  function handleChoiceSelect(selectedQuestion: AnyQuestionVariant) {
+    showNextQuestionChoices = false;
+    goto($getRoute({ route: 'Question', questionId: selectedQuestion.id }));
+    disabled = false;
+  }
+
+  // Replace the existing progress reactive block with:
+  $: if (questionBlock) {
+    // Set current to number of answered questions
+    progress.current.set(Object.keys($answers).length);
+    // Set max to total number of questions
+    progress.max.set($selectedQuestionBlocks.questions.length);
+  }
 </script>
 
 {#if question && questionBlock}
@@ -232,22 +315,45 @@ Display a question for answering.
     -->
 
     <svelte:fragment slot="heading">
-      <HeadingGroup id={headingId} class="relative">
-        <PreHeading>
-          {#if $appSettings.questions.showCategoryTags}
-            <CategoryTag {category} />
-            <!-- Index of question within category -->
-            <span class="text-secondary">{questionBlock.indexInBlock + 1}/{questionBlock.block.length}</span>
-          {:else}
-            <!-- Index of question within all questions -->
-            {$t('common.question')}
-            <span class="text-secondary">{questionBlock.index + 1}/{questions.length}</span>
-          {/if}
-        </PreHeading>
-
-        <!-- class={videoProps ? 'my-0 text-lg sm:my-md sm:text-xl' : ''} -->
-        <h1>{text}</h1>
-      </HeadingGroup>
+      {#if showNextQuestionChoices}
+        <h2 class="text-xl font-bold mb-4">{$t('questions.pickNext')}</h2>
+      {/if}
+      {#each showNextQuestionChoices ? nextQuestionChoices : [question] as currentQuestion}
+        <div
+          transition:slide
+          class="border-b border-base-300 last:border-none py-4"
+        >
+          <button
+            class="w-full text-left {showNextQuestionChoices ? 'hover:bg-base-200 transition-colors p-2 rounded-lg' : ''}"
+            on:click={() => showNextQuestionChoices && handleChoiceSelect(currentQuestion)}
+            disabled={!showNextQuestionChoices}
+          >
+            <HeadingGroup
+              id={`questionHeading-${currentQuestion.id}`}
+              class="relative"
+            >
+              <PreHeading>
+                {#if $appSettings.questions.showCategoryTags}
+                  <CategoryTag category={currentQuestion.category} />
+                  <span class="text-secondary">
+                    {#if !useQuestionOrdering}
+                      {questionBlock.indexInBlock + 1}/{questionBlock.block.length}
+                    {/if}
+                  </span>
+                {:else}
+                  {$t('common.question')}
+                  <span class="text-secondary">
+                    {#if !showNextQuestionChoices}
+                      {questionBlock.index + 1}/{questions.length}
+                    {/if}
+                  </span>
+                {/if}
+              </PreHeading>
+              <h1>{currentQuestion.text}</h1>
+            </HeadingGroup>
+          </button>
+        </div>
+      {/each}
     </svelte:fragment>
 
     <!-- !videoProps && -->
@@ -256,41 +362,81 @@ Display a question for answering.
     {/if}
 
     <svelte:fragment slot="primaryActions">
-      {#if type === 'singleChoiceOrdinal' || type === 'singleChoiceCategorical'}
-        {@const selectedId = question.ensureValue($answers[question.id]?.value)}
-        <!-- onShadedBg={videoProps != null} -->
-        <QuestionChoices
-          aria-labelledby={headingId}
+      {#if !showNextQuestionChoices}
+        {#if type === 'singleChoiceOrdinal' || type === 'singleChoiceCategorical'}
+          {@const selectedId = question.ensureValue($answers[question.id]?.value)}
+          <QuestionChoices
+            aria-labelledby={headingId}
+            {disabled}
+            {question}
+            {selectedId}
+            variant={customData?.vertical ? 'vertical' : undefined}
+            onChange={handleAnswer}
+          />
+        {:else}
+          {$t('error.unsupportedQuestion')}
+        {/if}
+
+        <QuestionActions
+          answered={$answers[question.id]?.value != null}
           {disabled}
-          {question}
-          {selectedId}
-          variant={customData?.vertical ? 'vertical' : undefined}
-          onChange={handleAnswer} />
-      {:else}
-        {$t('error.unsupportedQuestion')}
+          nextLabel={questionBlock.index === questions.length - 1 && $answers[question.id]?.value != null
+            ? $t('results.title.results')
+            : undefined}
+          previousLabel={questionBlock.index === 0 ? $t('common.back') : undefined}
+          separateSkip={true}
+          onPrevious={() => {
+            startEvent('question_previous', { questionIndex: questionBlock?.index });
+            handleJump(-1);
+          }}
+          onDelete={handleDelete}
+          onNext={() => {
+            startEvent('question_next', { questionIndex: questionBlock?.index });
+            handleJump(+1);
+          }}
+          onSkip={() => {
+            startEvent('question_skip', { questionIndex: questionBlock?.index });
+            handleJump(+1);
+          }}
+        />
       {/if}
-      <QuestionActions
-        answered={$answers[question.id]?.value != null}
-        {disabled}
-        nextLabel={questionBlock.index === questions.length - 1 && $answers[question.id]?.value != null
-          ? $t('results.title.results')
-          : undefined}
-        previousLabel={questionBlock.index === 0 ? $t('common.back') : undefined}
-        separateSkip={true}
-        onPrevious={() => {
-          startEvent('question_previous', { questionIndex: questionBlock?.index });
-          handleJump(-1);
-        }}
-        onDelete={handleDelete}
-        onNext={() => {
-          startEvent('question_next', { questionIndex: questionBlock?.index });
-          handleJump(+1);
-        }}
-        onSkip={() => {
-          startEvent('question_skip', { questionIndex: questionBlock?.index });
-          handleJump(+1);
-        }} />
     </svelte:fragment>
+
+    {#if showNextQuestionChoices}
+      <div
+        role="group"
+        aria-label={$t('questions.additionalActions')}
+        class="mt-lg grid w-full grid-cols-3 items-stretch gap-md"
+      >
+        <Button
+          on:click={() => {
+            handleJump(-1);
+            showNextQuestionChoices = false;
+          }}
+          style="grid-row: 1; grid-column: 1"
+          color="secondary"
+          variant="secondary"
+          iconPos="left"
+          class="content-start"
+          icon="previous"
+          text={$t('questions.previous')}
+        />
+        <Button
+          on:click={() => {
+            const randomIndex = Math.floor(Math.random() * nextQuestionChoices.length);
+            const randomChoice = nextQuestionChoices[randomIndex];
+            handleChoiceSelect(randomChoice);
+          }}
+          style="grid-row: 1; grid-column: 3"
+          color="secondary"
+          variant="secondary"
+          iconPos="right"
+          class="content-end"
+          icon="check"
+          text={$t('questions.chooseForMe')}
+        />
+      </div>
+    {/if}
   </Layout>
 {:else}
   <Loading class="mt-lg" />

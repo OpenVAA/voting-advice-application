@@ -23,5 +23,7 @@
   "remove": "Radera svar",
   "skip": "Hoppa över",
   "skipToResults": "Hoppa till resultat",
-  "title": "Yttranden"
+  "title": "Yttranden",
+  "pickNext": "Välj nästa fråga",
+  "chooseForMe": "Välj åt mig"
 }

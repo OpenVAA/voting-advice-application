@@ -23,5 +23,7 @@
   "remove": "Delete answer",
   "skip": "Skip",
   "skipToResults": "Skip to Results",
-  "title": "Opinions"
+  "title": "Opinions",
+  "pickNext": "Pick Next Question",
+  "chooseForMe": "Choose For Me"
 }

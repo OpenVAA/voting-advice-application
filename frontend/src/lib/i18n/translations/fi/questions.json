@@ -23,5 +23,7 @@
   "remove": "Poista vastaus",
   "skip": "Ohita",
   "skipToResults": "Hyppää tuloksiin",
-  "title": "Mielipiteesi"
+  "title": "Mielipiteesi",
+  "pickNext": "Valitse seuraava kysymys",
+  "chooseForMe": "Valitse puolestani"
 }
