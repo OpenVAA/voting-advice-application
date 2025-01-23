@@ -1,105 +1,195 @@
-<!-- 
+<!--
 @component
-A component for expanders that contain a title and some content. Use the
-`variant` prop to specify the expander type.
+A modal dialog.
 
-- `read-more`: the default style of the expander. Used, for example, for getting
-  more information about a question.
-- `question`: a more prominent style of the expander. Used in question listings
-  to display a question that can be expanded to reveal further information.
-- `category`: the most prominent style of the expander. Used for collapsible
-  categories of items, such as questions.
-- `question-help`: used to display questions and answers in the style of the help page.
+### Slots
+
+- `actions`: The action buttons to display.
+- default: The content of the modal.
 
 ### Properties
 
-- `title`: Title used for the expander. This is also used as the aria-label for 
-  the checkbox on which the expander operates on.
-- `variant`: The type for the expander.
-- `iconColor`: The color for the icon. Default color is primary.
-- `iconPos`: The position for the icon. Default is text, which means the icon will
-    be where the text ends.
-- `titleClass`: Custom class string to add to the `<div>` containing the title.
-- `contentClass`: Custom class string to add to the `<div>` containing the main content.
-- `defaultExpanded`: Variable used to define if the expander is expanded or not by default.
+- `title`: The title of the modal 
+- `autofocusId`: Optional id of the element to autofocus when the dialog has opened. Note that this must be a focusable element. By default, the first focusable descendant will be focused.
+- `boxClass`: Optional classes to add to the dialog box itself. Note that the basic `class` property is applied to the `<dialog>` element, which is rarely needed.
+- `closeOnBackdropClick`:  Whether to allow closing the modal by clicking outside of it. @default `true`
+- Any valid properties of a `<dialog>` element.
 
-You should not try to use a variant and customize at the same time.
+### Bindable functions
+
+- `openModal`: Opens the modal
+- `closeModal`: Closes the modal
 
 ### Events
 
-- `expand`: Fired when the expander is expanded.
-- `collapse`: Fired when the expander is collapsed.
+- `open`: Fired after the modal is opened. Note that the modal may still be transitioning from `hidden`.
+- `close`: Fired when the modal is closed by any means. Note that the modal may still be transitioning to `hidden`.
+- Neither event has any details.
+
+### Accessibility
+
+- The modal can be closed by pressing the `Escape` key.
+- When opened, either the element defined by `autofocusId` or the first focusable descendant will be focused on. Note that if the contents of the moadl are long, it's recommended to use the `autofocusId` property and select an element that appears at the start of the dialog to focus. If this is not an interactive element, set `tabindex="-1"` for it.
+- For more accessibility information, see [ARIA Dialog Pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/#keyboardinteraction)
 
 ### Usage
 
 ```tsx
-<Drawer title="Example title">
-  <p>Example content<p/>
-</Drawer>
+<script lang="ts">
+  let openModal: () => void;
+  let closeModal: () => void;
+  let answer = '?';
 
-<Drawer title="Example title" variant="category"  iconColor="primary" 
-  titleClass="bg-base-100 text-primary" contentClass="bg-base-300 text-info font-bold">
-  <p>Example content<p/>
-</Drawer>
+  // Will only set answer if it's not been set yet, because this will fire even when we close the modal ourselves
+  function setAnswer(a: string) {
+    if (answer == '?') answer = a;
+  }
+</script>
+
+<Button on:click={openModal}>Open modal</Button>
+
+<h2>Answer: {answer}</h2>
+
+<Modal 
+  bind:closeModal
+  bind:openModal
+  title="What's your answer?"
+  on:open={() => answer = '?'}
+  on:close={() => setAnswer('No')}>
+  <p>Click below or hit ESC to exit.</p>
+  <div slot="actions" class="flex flex-col w-full max-w-md mx-auto">
+    <Button on:click={() => {setAnswer('Yes'); closeModal();}} text="Yes" variant="main"/>
+    <Button on:click={closeModal} text="No"/>
+  </div>
+</Modal>
 ```
 -->
 
 <script lang="ts">
-  import { Icon } from '$lib/components/icon';
-  import { concatClass } from '$lib/utils/components';
-  import { createEventDispatcher } from 'svelte';
-  import type { ExpanderProps } from './Drawer.type';
-  import Button from '../button/Button.svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
+  import { getComponentContext } from '$lib/contexts/component';
+  import { attemptFocus, focusFirstDescendant } from '$lib/utils/aria/focus';
+  import { concatClass, getUUID } from '$lib/utils/components';
+  import type { DrawerProps } from './Drawer.type';
+  import { fly, slide } from 'svelte/transition';
 
-  type $$Props = ExpanderProps;
+  type $$Props = DrawerProps;
 
   export let title: $$Props['title'];
-  export let variant: $$Props['variant'] = 'read-more';
-  export let iconColor: $$Props['iconColor'] = 'secondary';
-  export let iconPos: $$Props['iconPos'] = 'text';
-  export let titleClass: $$Props['titleClass'] = '';
-  export let contentClass: $$Props['contentClass'] = '';
-  export let defaultExpanded: $$Props['defaultExpanded'] = false;
+  export let autofocusId: $$Props['autofocusId'] = undefined;
+  export let boxClass: $$Props['boxClass'] = '';
+  export let closeOnBackdropClick: $$Props['closeOnBackdropClick'] = true;
+  export let isOpen: $$Props['isOpen'] = false;
 
-  const dispatch = createEventDispatcher<{ expand: null; collapse: null }>();
-
-  let expanded = defaultExpanded;
-
-  function toggleExpanded() {
-    expanded = !expanded;
-    dispatch(expanded ? 'expand' : 'collapse');
+  /** Bind to open the modal dialog */
+  export function openModal() {
+    if (!isOpen) {
+      modalContainer?.showModal();
+      onOpen();
+    }
+  }
+  /** Bind to close the modal dialog */
+  export function closeModal() {
+    if (isOpen) modalContainer?.close();
   }
 
-  $: console.log('expanded', expanded);
+  // We need a small timeout before trying to focus for the dialog to be visible
+  const FOCUS_TIMEOUT = 225;
+
+  // For the h2 element
+  const titleId = getUUID();
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { t } = getComponentContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // Events
+  ////////////////////////////////////////////////////////////////////
+
+  const dispatchEvent = createEventDispatcher();
+
+  // Used to track the animation when the element is being hidden
+  let inTransition = false;
+  // Container element for the modal
+  let modalContainer: HTMLDialogElement | undefined;
+
+  /**
+   * Close the dialog by pressing the escape key. NB. Some browsers implement a default behaviour for the escape key, which closes the dialog, but this prevents us from performing cleanup, so we need a custom event handler.
+   * @param e The keyboard event.
+   */
+  function handleEscape(e: KeyboardEvent) {
+    if (isOpen && e.key == 'Escape') {
+      closeModal();
+      e.stopPropagation();
+    }
+  }
+
+  function onClose() {
+    inTransition = true;
+    isOpen = false;
+    dispatchEvent('close');
+  }
+
+  function onOpen() {
+    inTransition = false;
+    isOpen = true;
+    dispatchEvent('open');
+    setTimeout(() => {
+      if (!isOpen) return;
+      if (modalContainer) {
+        if (autofocusId != null) {
+          const el = modalContainer.querySelector(`#${autofocusId}`);
+          if (el) attemptFocus(el);
+        } else {
+          focusFirstDescendant(modalContainer);
+        }
+      }
+    }, FOCUS_TIMEOUT);
+  }
+
+  function onTransitionEnd() {
+    inTransition = false;
+  }
+
+  onMount(() => {
+    openModal();
+    console.log('mounted', isOpen);
+  });
 </script>
 
-<div class="">
-  <!-- Page content here -->
-  <Button text={title} on:click={toggleExpanded} icon="info" iconPos="left"></Button>
-  <div class="inset-0 {expanded ? 'fixed z-10' : 'hidden'} flex flex-col bg-base-200">
-    <div class="flex items-center justify-between p-4">
-      <div>
-        <slot name="title" />
-      </div>
-      <div>
-        <Button text="" variant="icon" icon="close" on:click={toggleExpanded}></Button>
-      </div>
-    </div>
-    <slot />
-  </div>
-</div>
+<svelte:document on:keydown={handleEscape} />
 
-<!-- <div {...concatClass($$restProps, collapseClasses)}>
-  <input type="checkbox" aria-label="open ${title}" on:click={toggleExpanded} checked={expanded} />
-  <div class={titleClasses}>
-    {title}
-    <div class="not-rotated-icon {expanded ? 'rotated-icon' : ''} ml-[0.4rem] {iconClass}">
-      <Icon name="next" size="sm" color={iconColor} />
-    </div>
+<dialog
+  bind:this={modalContainer}
+  on:close={onClose}
+  class:hidden={!isOpen && !inTransition}
+  aria-modal="true"
+  aria-labelledby={titleId}
+  {...concatClass($$restProps, 'modal modal-bottom sm:modal-middle backdrop:bg-neutral backdrop:opacity-60')}>
+  <div
+    class="relative col-span-1 col-start-1 row-span-1 row-start-1 h-[calc(100vh-2rem)] w-full translate-y-[1rem] rounded-t-[2rem] bg-black p-24 pt-40 {boxClass ??
+      ''}"
+    in:slide>
+    <h2 id={titleId} class="mb-lg text-center">{title}</h2>
+    <slot />
+    {#if $$slots.actions}
+      <div class="modal-action justify-center">
+        <slot name="actions" />
+      </div>
+    {/if}
+    <form method="dialog">
+      <button class="btn btn-circle btn-ghost btn-sm absolute right-10 top-10">
+        <span aria-hidden="true">✕</span>
+        <span class="sr-only">{$t('common.closeDialog')}</span>
+      </button>
+    </form>
   </div>
-  {#if expanded}
-    <div class={contentClasses}>
-      <slot />
+  {#if closeOnBackdropClick}
+    <div class="modal-backdrop" aria-hidden="true">
+      <button on:click={closeModal} tabindex="-1">{$t('common.closeDialog')}</button>
     </div>
   {/if}
-</div> -->
+</dialog>

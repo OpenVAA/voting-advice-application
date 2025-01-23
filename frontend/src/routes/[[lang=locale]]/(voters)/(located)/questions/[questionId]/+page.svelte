@@ -32,6 +32,8 @@ Display a question for answering.
   import Layout from '../../../../Layout.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { QuestionBlock } from '$lib/contexts/voter/questionBlockStore.type';
+  import { Button } from '$lib/components/button';
+  import { getAppContext } from '$lib/contexts/app';
   //import {type VideoMode, Video} from '$lib/components/video';
 
   ////////////////////////////////////////////////////////////////////
@@ -50,6 +52,7 @@ Display a question for answering.
     t
   } = getVoterContext();
   const { progress } = getLayoutContext(onDestroy);
+  const { modalStack } = getAppContext();
 
   ////////////////////////////////////////////////////////////////////
   // Get the current question and update related variables
@@ -252,7 +255,25 @@ Display a question for answering.
 
     <!-- !videoProps && -->
     {#if info && info !== ''}
-      <QuestionInfo {info} onCollapse={handleInfoCollapse} onExpand={handleInfoExpand} />
+      <div class="flex items-center justify-center">
+        <Button
+          text="Learn more"
+          icon="info"
+          iconPos="left"
+          on:click={() => {
+            handleInfoExpand();
+            modalStack.push(QuestionInfo, {
+              title: text,
+              info,
+              onCollapse: handleInfoCollapse,
+              background: 'Background info here',
+              argumentsFor: 'Arguments for here',
+              argumentsAgainst: 'Arguments against here',
+              currentSituation: 'Current situation here',
+              terms: 'Terms here'
+            });
+          }} />
+      </div>
     {/if}
 
     <svelte:fragment slot="primaryActions">
