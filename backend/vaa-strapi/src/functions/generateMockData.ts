@@ -12,8 +12,8 @@
 
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
 import { dynamicSettings } from '@openvaa/app-shared';
+import { LLMResponse, OpenAIProvider, Role } from '@openvaa/llm';
 import mockCandidateForTesting from './mockData/mockCandidateForTesting.json';
-import { OpenAIProvider, LLMResponse, Role } from '@openvaa/llm';
 import mockCategories from './mockData/mockCategories.json';
 import mockInfoQuestions from './mockData/mockInfoQuestions.json';
 import mockQuestions from './mockData/mockQuestions.json';
@@ -23,7 +23,7 @@ import { API } from './utils/api';
 import { getDynamicTranslations } from './utils/appCustomization';
 import { getCardContentsFromFile } from './utils/appSettings';
 import { dropAllCollections } from './utils/drop';
-import { generateMockDataOnInitialise, generateMockDataOnRestart, generateAiMockData } from '../constants';
+import { generateAiMockData, generateMockDataOnInitialise, generateMockDataOnRestart } from '../constants';
 import type { AnswerValue, EntityType, LocalizedString, QuestionTypeSettings } from './utils/data.type';
 
 const locales: Array<Locale> = [
@@ -707,24 +707,23 @@ async function generateMockLLMSummaries() {
         }`
         }
       ])
-      .then((r) => r)
-      // Api response with LLMResponse parameters
-      // TODO: Type for this? Also handle error-responses
-      const generatedCustomData = JSON.parse(res.content);
-      // Use the same response for all candidates
-      await strapi.db.query(API.Question).updateMany({
-        where: {
-          // Get all
-        },
-        data: {
-          customData: generatedCustomData
-        }
-      });
+      .then((r) => r);
+    // Api response with LLMResponse parameters
+    // TODO: Type for this? Also handle error-responses
+    const generatedCustomData = JSON.parse(res.content);
+    // Use the same response for all candidates
+    await strapi.db.query(API.Question).updateMany({
+      where: {
+        // Get all
+      },
+      data: {
+        customData: generatedCustomData
+      }
+    });
   } catch (error) {
-    console.error("Failed to generate LLM summary, ", error);
-  };
+    console.error('Failed to generate LLM summary, ', error);
+  }
 }
-
 
 /**
  * Adds the locale code to any strings unless the locale is the default one.
