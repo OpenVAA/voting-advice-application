@@ -210,7 +210,7 @@ Display a question for answering.
 </script>
 
 {#if question && questionBlock}
-  {@const { category, id, info, text, type, customData } = question}
+  {@const { category, id, info, text, type } = question}
   {@const headingId = `questionHeading-${id}`}
   {@const questions = $selectedQuestionBlocks.questions}
 
@@ -255,6 +255,7 @@ Display a question for answering.
 
     <!-- !videoProps && -->
     {#if info && info !== ''}
+      {@const { infoSections } = customData}
       <div class="flex items-center justify-center">
         <Button
           text="Learn more"
@@ -266,18 +267,12 @@ Display a question for answering.
               title: text,
               info,
               onCollapse: handleInfoCollapse,
-              // @ts-ignore
-              background: (customData?.background?.visible && customData?.background?.text) || undefined,
-              // @ts-ignore
-              argumentsFor: (customData?.argumentsFor?.visible && customData?.argumentsFor?.text) || undefined,
-              argumentsAgainst:
-                // @ts-ignore
-                (customData?.argumentsAgainst?.visible && customData?.argumentsAgainst?.text) || undefined,
-              currentSituation:
-                // @ts-ignore
-                (customData?.currentSituation?.visible && customData?.currentSituation?.text) || undefined,
-              // @ts-ignore
-              terms: (customData?.terms?.visible && customData?.terms?.text) || undefined
+              infoSections: Object.values(infoSections ?? {})
+                .filter(({ visible }) => !!visible)
+                .map(({ title, text }) => ({
+                  title: title ?? '',
+                  content: text ?? ''
+                }))
             });
           }} />
       </div>
