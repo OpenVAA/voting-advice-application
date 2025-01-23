@@ -1,40 +1,24 @@
 import type { SvelteHTMLElements } from 'svelte/elements';
 
-export type ExpanderProps = SvelteHTMLElements['div'] & {
+export type DrawerProps = SvelteHTMLElements['dialog'] & {
   /**
-   * Title is seen as the text in the expander's visible part, and it is mandatory.
-   * Title will also be used as a 'aria-label' for a checkbow on which the
-   * expander operates on.
+   * The title of the drawer
    */
   title: string;
   /**
-   * The color of the next-icon that is used in the expander.
-   *
-   * @default 'primary'
+   * Optional id of the element to autofocus when the dialog has opened. Note that this must be a focusable element. By default, the first focusable descendant will be focused.
    */
-  iconColor?: Color;
+  autofocusId?: string;
   /**
-   * The position of the next-icon that is used in the expander.
-   *
-   * @default 'text'
+   * Optional classes to add to the dialog box itself. Note that the basic `class` property is applied to the `<dialog>` element, which is rarely needed.
    */
-  iconPos?: string;
+  boxClass?: string;
   /**
-   * Variable with which to configure the expanders title if no variants
-   * are in use.
+   * Whether to allow closing the drawer by clicking outside of it. @default true
    */
-  titleClass?: string;
+  closeOnBackdropClick?: boolean;
   /**
-   * Variable with which to configure the expanders content if no variants
-   * are in use.
+   * Bind to this to get the drawer's open state.
    */
-  contentClass?: string;
-  /**
-   * Variable used to define if the expander is expanded or not by default.
-   */
-  defaultExpanded?: boolean;
-  /**
-   * Variable used to define a variant for the expander.
-   */
-  variant?: 'read-more' | 'category' | 'question' | 'question-help';
+  readonly isOpen?: boolean;
 };

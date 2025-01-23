@@ -55,6 +55,7 @@
     dataRoot,
     openFeedbackModal,
     popupQueue,
+    modalStack,
     sendTrackingEvent,
     startPageview,
     startEvent,
@@ -228,6 +229,13 @@
   {#if $popupQueue}
     {#key $popupQueue}
       <svelte:component this={$popupQueue} onClose={popupQueue.shift} />
+    {/key}
+  {/if}
+
+  <!-- Modal service -->
+  {#if $modalStack}
+    {#key $modalStack}
+      <svelte:component this={$modalStack.component} onClose={modalStack.pop} {...$modalStack.props} />
     {/key}
   {/if}
 
