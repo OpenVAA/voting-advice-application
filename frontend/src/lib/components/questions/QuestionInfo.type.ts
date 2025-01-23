@@ -6,27 +6,13 @@ export type QuestionInfoProps = Partial<ExpanderProps> & {
    * The info content to show as a plain or HTML string.
    */
   info: string;
-
   /**
-   * The background info of the question.
+   * Additional expandable info sections shown as plain or HTML strings.
    */
-  background?: string;
-
-  /**
-   * The arguments for the question.
-   */
-  argumentsFor?: string;
-
-  /**
-   * The arguments against the question.
-   */
-  argumentsAgainst?: string;
-
-  /**
-   * The current situation of the question.
-   */
-  currentSituation?: string;
-
+  infoSections?: {
+    title: string;
+    content: string;
+  }[];
   /**
    * The future situation of the question.
    */

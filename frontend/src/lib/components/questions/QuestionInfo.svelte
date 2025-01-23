@@ -29,11 +29,7 @@ Display the question's expandable information content.
 
   export let title: $$Props['title'];
   export let info: $$Props['info'];
-  export let background: $$Props['background'] = undefined;
-  export let argumentsFor: $$Props['argumentsFor'] = undefined;
-  export let argumentsAgainst: $$Props['argumentsAgainst'] = undefined;
-  export let currentSituation: $$Props['currentSituation'] = undefined;
-  export let terms: $$Props['terms'] = undefined;
+  export let infoSections: $$Props['infoSections'] = [];
   export let onCollapse: $$Props['onCollapse'] = undefined;
   export let onExpand: $$Props['onExpand'] = undefined;
 
@@ -43,46 +39,10 @@ Display the question's expandable information content.
 <Drawer {title} on:close={() => onCollapse?.()}>
   {@html sanitizeHtml(info)}
   <div class="mt-16">
-    {#if background}
-      <Expander
-        title="Background"
-        {...$$restProps}
-        titleClass="flex justify-between font-bold"
-        contentClass="!text-left">
-        {@html sanitizeHtml(background)}
+    {#each infoSections ?? [] as { title, content }}
+      <Expander {title} {...$$restProps} titleClass="flex justify-between font-bold" contentClass="!text-left">
+        {@html sanitizeHtml(content)}
       </Expander>
-    {/if}
-    {#if argumentsFor}
-      <Expander
-        title="Arguments for"
-        {...$$restProps}
-        titleClass="flex justify-between font-bold"
-        contentClass="!text-left">
-        {@html sanitizeHtml(argumentsFor)}
-      </Expander>
-    {/if}
-    {#if argumentsAgainst}
-      <Expander
-        title="Arguments against"
-        {...$$restProps}
-        titleClass="flex justify-between font-bold"
-        contentClass="!text-left">
-        {@html sanitizeHtml(argumentsAgainst)}
-      </Expander>
-    {/if}
-    {#if currentSituation}
-      <Expander
-        title="Current situation"
-        {...$$restProps}
-        titleClass="flex justify-between font-bold"
-        contentClass="!text-left">
-        {@html sanitizeHtml(currentSituation)}
-      </Expander>
-    {/if}
-    {#if terms}
-      <Expander title="Terms" {...$$restProps} titleClass="flex justify-between font-bold" contentClass="!text-left">
-        {@html sanitizeHtml(terms)}
-      </Expander>
-    {/if}
+    {/each}
   </div>
 </Drawer>
