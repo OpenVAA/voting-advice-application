@@ -24,7 +24,7 @@ FROM base AS shared
 WORKDIR /opt
 
 # Build all shared modules
-RUN yarn build:shared --debug
+RUN yarn build:shared
 
 FROM base AS strapi
 
