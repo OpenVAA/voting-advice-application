@@ -32,6 +32,8 @@ Display a question for answering.
   import Layout from '../../../../Layout.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { QuestionBlock } from '$lib/contexts/voter/questionBlockStore.type';
+  import { Button } from '$lib/components/button';
+  import { getAppContext } from '$lib/contexts/app';
   //import {type VideoMode, Video} from '$lib/components/video';
 
   ////////////////////////////////////////////////////////////////////
@@ -50,6 +52,7 @@ Display a question for answering.
     t
   } = getVoterContext();
   const { progress } = getLayoutContext(onDestroy);
+  const { modalStack } = getAppContext();
 
   ////////////////////////////////////////////////////////////////////
   // Get the current question and update related variables
@@ -207,7 +210,7 @@ Display a question for answering.
 </script>
 
 {#if question && questionBlock}
-  {@const { category, id, info, text, type } = question}
+  {@const { category, id, info, text, type, customData } = question}
   {@const headingId = `questionHeading-${id}`}
   {@const questions = $selectedQuestionBlocks.questions}
 
@@ -252,7 +255,32 @@ Display a question for answering.
 
     <!-- !videoProps && -->
     {#if info && info !== ''}
-      <QuestionInfo {info} onCollapse={handleInfoCollapse} onExpand={handleInfoExpand} />
+      <div class="flex items-center justify-center">
+        <Button
+          text="Learn more"
+          icon="info"
+          iconPos="left"
+          on:click={() => {
+            handleInfoExpand();
+            modalStack.push(QuestionInfo, {
+              title: text,
+              info,
+              onCollapse: handleInfoCollapse,
+              // @ts-ignore
+              background: (customData?.background?.visible && customData?.background?.text) || undefined,
+              // @ts-ignore
+              argumentsFor: (customData?.argumentsFor?.visible && customData?.argumentsFor?.text) || undefined,
+              argumentsAgainst:
+                // @ts-ignore
+                (customData?.argumentsAgainst?.visible && customData?.argumentsAgainst?.text) || undefined,
+              currentSituation:
+                // @ts-ignore
+                (customData?.currentSituation?.visible && customData?.currentSituation?.text) || undefined,
+              // @ts-ignore
+              terms: (customData?.terms?.visible && customData?.terms?.text) || undefined
+            });
+          }} />
+      </div>
     {/if}
 
     <svelte:fragment slot="primaryActions">
@@ -264,7 +292,8 @@ Display a question for answering.
           {disabled}
           {question}
           {selectedId}
-          variant={customData?.vertical ? 'vertical' : undefined}
+          variant={// @ts-ignore
+          customData?.vertical ? 'vertical' : undefined}
           onChange={handleAnswer} />
       {:else}
         {$t('error.unsupportedQuestion')}
