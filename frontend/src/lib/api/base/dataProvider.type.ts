@@ -71,7 +71,7 @@ export interface DataProvider<TType extends AdapterType = 'universal'> {
 }
 
 /**
- * Constructs the type of the return value of the data getter methods, which are `Response` of JSON strings on the server and serializable objects on the client.
+ * Constructs the type of the return value of the data getter methods, which are `Response`s of JSON strings on the server and serializable objects on the client.
  */
 export type DPReturnType<TCollection extends keyof DPDataType, TType extends AdapterType = 'universal'> = Promise<
   TType extends 'server' ? Response : DPDataType[TCollection]

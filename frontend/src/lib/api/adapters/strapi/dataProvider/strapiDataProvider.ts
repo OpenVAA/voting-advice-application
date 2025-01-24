@@ -6,7 +6,7 @@ import {
   type QuestionCategoryData
 } from '@openvaa/data';
 import { UniversalDataProvider } from '$lib/api/base/universalDataProvider';
-import { translate, translateObject } from '$lib/i18n/utils';
+import { translate, translateObject } from '$lib/i18n';
 import { ensureColors } from '$lib/utils/color/ensureColors';
 import { strapiAdapterMixin } from '../strapiAdapter';
 import {
@@ -22,6 +22,7 @@ import {
   parseSingleRelationId
 } from '../utils';
 import { parseEntityType } from '../utils/parseEntityType';
+import type { CustomData } from '@openvaa/app-shared';
 import type { DPDataType } from '$lib/api/base/dataTypes';
 import type {
   GetAppCustomizationOptions,
@@ -38,35 +39,19 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     const params: Params = {
       populate: {
         elections: 'true',
-        entities: { populate: { hideIfMissingAnswers: 'true' } },
-        entityDetails: {
-          populate: {
-            contents: 'true',
-            showMissingAnswers: 'true',
-            showMissingElectionSymbol: 'true'
-          }
-        },
+        entities: { populate: '*' },
+        entityDetails: { populate: '*' },
         header: 'true',
-        headerStyle: {
-          populate: {
-            dark: 'true',
-            light: 'true'
-          }
-        },
+        headerStyle: { populate: '*' },
         matching: 'true',
-        questions: {
-          populate: {
-            categoryIntros: 'true',
-            questionsIntro: 'true'
-          }
-        },
-        results: { populate: { cardContents: 'true' } },
+        questions: { populate: '*' },
+        results: { populate: '*' },
         survey: 'true'
       }
     };
     const data = await this.apiGet({ endpoint: 'appSettings', params });
-    if (data.length !== 1) throw new Error(`Expected one AppSettings object, but got ${data.length}`);
-    return data[0].attributes;
+    if (!data) throw new Error('Expected one AppSettings object, but got none.');
+    return data;
   }
 
   protected async _getAppCustomization(
@@ -87,14 +72,13 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     };
     const data = await this.apiGet({ endpoint: 'appCustomization', params });
     if (!data) throw new Error('Expected one AppCustomization object, but got none.');
-    const attr = data.attributes;
     return {
-      translationOverrides: translateObject(attr.translationOverrides, locale),
-      candidateAppFAQ: translateObject(attr.candidateAppFAQ, locale),
-      publisherName: attr.publisherName ? translate(attr.publisherName, locale) : undefined,
-      publisherLogo: parseImage(attr.publisherLogo, attr.publisherLogoDark),
-      poster: parseImage(attr.poster, attr.posterDark),
-      candPoster: parseImage(attr.candPoster, attr.candPosterDark)
+      translationOverrides: translateObject(data.translationOverrides, locale),
+      candidateAppFAQ: translateObject(data.candidateAppFAQ, locale),
+      publisherName: data.publisherName ? translate(data.publisherName, locale) : undefined,
+      publisherLogo: parseImage(data.publisherLogo, data.publisherLogoDark),
+      poster: parseImage(data.poster, data.posterDark),
+      candPoster: parseImage(data.candPoster, data.candPosterDark)
     };
   }
 
@@ -105,13 +89,13 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       constituencyGroups: 'true'
     };
     const data = await this.apiGet({ endpoint: 'elections', params });
-    return data.map(({ id, attributes }) => ({
-      ...parseBasics({ id, attributes }, locale),
-      date: attributes.electionDate,
-      subtype: attributes.electionType,
-      constituencyGroupIds: parseRelationIds(attributes.constituencyGroups),
+    return data.map((election) => ({
+      ...parseBasics(election, locale),
+      date: election.electionDate,
+      subtype: election.electionType,
+      constituencyGroupIds: parseRelationIds(election.constituencyGroups),
       customData: {
-        organizer: translate(attributes.organizer, locale)
+        organizer: translate(election.organizer, locale)
       }
     }));
   }
@@ -127,18 +111,18 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     const groups = new Array<ConstituencyGroupData>();
     const constituencies = new Map<string, ConstituencyData>();
     for (const group of data) {
-      const members = group.attributes.constituencies;
+      const members = group.constituencies;
       groups.push({
         ...parseBasics(group, locale),
         constituencyIds: parseRelationIds(members)
       });
       if (!members) continue;
-      for (const { id, attributes } of members.data) {
-        if (constituencies.has(id)) continue;
-        const { keywords, parent } = attributes;
-        constituencies.set(id, {
-          ...parseBasics({ id, attributes }, locale),
-          keywords: keywords ? translate(attributes.keywords, locale).split(/\s*,\s*/) : null,
+      for (const constituency of members) {
+        const { documentId, keywords, parent } = constituency;
+        if (constituencies.has(constituency.documentId)) continue;
+        constituencies.set(documentId, {
+          ...parseBasics(constituency, locale),
+          keywords: keywords ? translate(keywords, locale).split(/\s*,\s*/) : null,
           parentId: parseSingleRelationId(parent)
         });
       }
@@ -157,11 +141,11 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       election: 'true',
       candidate: {
         populate: {
-          answers: { populate: { question: 'true' } },
+          image: 'true',
           party: 'true'
         }
       },
-      party: { populate: { answers: { populate: { question: 'true' } } } }
+      party: { populate: { image: 'true' } }
     };
     const data = await this.apiGet({ endpoint: 'nominations', params });
     return parseNominations(data, locale);
@@ -173,25 +157,28 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     if (id && !entityType) throw new Error('If id is defined entityType must also be defined.');
     // Common params for both APIs
     const params = buildFilterParams({ id });
-    params.populate = {
-      answers: { populate: { question: 'true' } }
-    };
     // Collect Promises so we don't need to await separately
     const promises = new Array<Promise<DPDataType['entities']>>();
     if (!entityType || entityType === ENTITY_TYPE.Candidate) {
       const candParams = { ...params };
-      candParams.populate!.party = 'true';
+      candParams.populate = {
+        party: 'true',
+        image: 'true'
+      };
       const candidates = this.apiGet({
         endpoint: 'candidates',
         params: candParams
-      }).then((data) => data.map((c) => parseCandidate(c, locale)));
+      }).then((data) => data.map((d) => parseCandidate(d, locale)));
       promises.push(candidates);
     }
     if (!entityType || entityType === ENTITY_TYPE.Organization) {
+      params.populate = {
+        image: 'true'
+      };
       const organizations = this.apiGet({
         endpoint: 'parties',
         params
-      }).then((data) => data.map((c) => parseOrganization(c, locale)));
+      }).then((data) => data.map((d) => parseOrganization(d, locale)));
       promises.push(organizations);
     }
     // Merge the results into a single array
@@ -215,40 +202,57 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     // If the category has no election defined, it means it applies to all elections
     if (options.electionId)
       params.filters = {
-        $or: [{ elections: { id: makeRule(options.electionId) } }, { elections: { id: { $null: 'true' } } }]
+        $or: [
+          { elections: { documentId: makeRule(options.electionId) } },
+          { elections: { documentId: { $null: 'true' } } }
+        ]
       };
     const data = await this.apiGet({ endpoint: 'questionCategories', params });
     const categories = new Array<QuestionCategoryData>();
     const allQuestions = new Map<string, AnyQuestionVariantData>();
     for (const category of data) {
-      const { color, colorDark, constituencies, elections, questions, type } = category.attributes;
+      const { color, colorDark, constituencies, elections, emoji, questions, type } = category;
+      const customData: CustomData['QuestionCategory'] = { emoji };
       categories.push({
         ...parseBasics(category, locale),
         ...ensureColors({ normal: color, dark: colorDark }),
         constituencyIds: parseRelationIds(constituencies),
         electionIds: parseRelationIds(elections),
+        customData,
         type
       });
       if (!questions) continue;
-      for (const { id, attributes } of questions.data) {
-        if (allQuestions.has(id)) continue;
-        const { allowOpen, customData, entityType, fillingInfo, filterable, constituencies, questionType } = attributes;
-        if (!questionType?.data) throw new Error(`Question ${id} has no questionType.`);
+      for (const question of questions) {
+        const {
+          documentId,
+          allowOpen,
+          customData,
+          entityType,
+          fillingInfo,
+          filterable,
+          constituencies,
+          questionType,
+          required
+        } = question;
+        if (allQuestions.has(documentId)) continue;
+        if (!questionType) throw new Error(`Question ${documentId} has no questionType.`);
         // Parsing the question type may yield props that belong to the question’s customData
-        const { customData: typeCustom, ...typeProps } = parseQuestionType(questionType.data, locale);
-        allQuestions.set(id, {
-          ...parseBasics({ id, attributes }, locale),
+        const { customData: typeCustom, ...typeProps } = parseQuestionType(questionType, locale);
+        const combinedCustomData: CustomData['Question'] = {
+          ...customData,
+          ...typeCustom,
+          allowOpen: !!allowOpen,
+          fillingInfo: translate(fillingInfo, locale),
+          filterable: !!filterable,
+          required: !!required
+        };
+        allQuestions.set(documentId, {
+          ...parseBasics(question, locale),
           ...typeProps,
-          categoryId: category.id,
+          categoryId: category.documentId,
           constituencyIds: parseRelationIds(constituencies),
           entityType: parseEntityType(entityType),
-          customData: {
-            ...customData,
-            ...typeCustom,
-            allowOpen,
-            fillingInfo,
-            filterable
-          }
+          customData: combinedCustomData
         } as AnyQuestionVariantData);
       }
     }
