@@ -51,17 +51,17 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 -->
 
 <script lang="ts">
-  import {concatClass, getUUID} from '$lib/utils/components';
-  import {Button} from '$lib/components/button';
-  import {Icon} from '$lib/components/icon';
-  import type {InputProps} from './Input.type';
+  import { Button } from '$lib/components/button';
+  import { ErrorMessage } from '$lib/components/errorMessage';
+  import { Icon } from '$lib/components/icon';
+  import { Loading } from '$lib/components/loading';
   import { getComponentContext } from '$lib/contexts/component';
   import { assertTranslationKey, isTranslation } from '$lib/i18n/utils';
-  import type { Id } from '@openvaa/core';
-  import {ErrorMessage} from '$lib/components/errorMessage';
-  import type { AnyChoice, Image } from '@openvaa/data';
+  import { concatClass, getUUID } from '$lib/utils/components';
   import { logDebugError } from '$lib/utils/logger';
-  import { Loading } from '$lib/components/loading';
+  import type { Id } from '@openvaa/core';
+  import type { AnyChoice, Image } from '@openvaa/data';
+  import type { InputProps } from './Input.type';
 
   type $$Props = InputProps;
 
@@ -115,9 +115,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 
   // Initialize the value for an empty `LocalizedString`
   if (multilingual && !isTranslation(value)) {
-    value = typeof value === 'string'
-      ? { [$currentLocale]: value }
-      : {};
+    value = typeof value === 'string' ? { [$currentLocale]: value } : {};
   }
 
   // Ensure `select` values are present in the options
@@ -135,22 +133,20 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   let unselectedOptions = new Array<AnyChoice>();
   $: if (type === 'select-multiple' && options) {
     // If the values can be ordered, we maintain their order in the options array
-    selectedOptions = ordered 
+    selectedOptions = ordered
       ? (value as Array<Id>).map((v) => options.find((o) => o.id === v)!) // We can be sure all ids are valid bc we checked it above
       : options.filter((o) => (value as Array<Id>).includes(o.id));
     unselectedOptions = options.filter((o) => !selectedOptions.includes(o));
   }
 
-  /** 
+  /**
    * Gets the subvalue of `value` for `locale`. Used to ensure typing.
    */
   function getLocalizedValue(locale: string): string {
-    return isTranslation(value)
-      ? (value as LocalizedString)[locale] ?? ''
-      : '';
+    return isTranslation(value) ? ((value as LocalizedString)[locale] ?? '') : '';
   }
 
-  /** 
+  /**
    * Gets the url of the image.
    */
   function getImageUrl(value: $$Props['value']): string {
@@ -181,7 +177,6 @@ The input itself is wrapped in multiple container elements, the outermost of whi
     mainInputs[0]?.focus();
   }
 
-
   ////////////////////////////////////////////////////////////////////
   // Handle value updates
   ////////////////////////////////////////////////////////////////////
@@ -190,7 +185,9 @@ The input itself is wrapped in multiple container elements, the outermost of whi
    * Called internally whenever an input's value changes.
    */
   async function handleChange(
-    { currentTarget }: {
+    {
+      currentTarget
+    }: {
       currentTarget: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
     },
     locale?: string
@@ -201,23 +198,23 @@ The input itself is wrapped in multiple container elements, the outermost of whi
     if (multilingual) {
       if (locale) (value as LocalizedString)[locale] = currentTarget.value;
       else logDebugError('Multilingual handleChange called without locale!');
-      
-    // Boolean
+
+      // Boolean
     } else if (currentTarget instanceof HTMLInputElement && currentTarget.type === 'checkbox') {
       value = currentTarget.checked;
 
-    // Select-multiple
+      // Select-multiple
     } else if (type === 'select-multiple') {
       if (!(currentTarget instanceof HTMLSelectElement)) return;
       // Reassign to trigger reactive update and possibly reorder
       const newValues = [...(value as Array<Id>), currentTarget.value];
-      value = ordered 
+      value = ordered
         ? newValues // Keep the same order in which the values've been selected
         : options!.filter((o) => newValues.includes(o.id)).map((o) => o.id); // Order based on the `options` array
       // Select the placeholder
       currentTarget.selectedIndex = 0;
 
-    // Image
+      // Image
     } else if (currentTarget instanceof HTMLInputElement && currentTarget.type === 'file') {
       const file = currentTarget.files?.[0];
       if (!file || !file.type.startsWith('image/')) return;
@@ -254,20 +251,24 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   ////////////////////////////////////////////////////////////////////
 
   // TODO[Svelte 5]: Use snippets instead of these clunky class variables
-  const inputContainerClass = 'flex min-h-touch items-center justify-between gap-2 overflow-hidden rounded-lg bg-[var(--inputBgColor)]';
+  const inputContainerClass =
+    'flex min-h-touch items-center justify-between gap-2 overflow-hidden rounded-lg bg-[var(--inputBgColor)]';
   const inputLabelClass = 'label-sm label pointer-events-none mx-md my-2 px-0 whitespace-nowrap text-secondary';
   const inputAndLockContainerClass = 'flex grow justify-end pr-8';
-  const inputClass = 'input input-sm input-ghost grow justify-end px-0 text-right disabled:border-none disabled:bg-[var(--inputBgColor)]';
+  const inputClass =
+    'input input-sm input-ghost grow justify-end px-0 text-right disabled:border-none disabled:bg-[var(--inputBgColor)]';
   const lockClass = 'my-auto flex-shrink-0 text-secondary';
-  const selectClass = 'select select-sm grow text-end !bg-transparent disabled:border-none disabled:bg-[var(--inputBgColor)]';
+  const selectClass =
+    'select select-sm grow text-end !bg-transparent disabled:border-none disabled:bg-[var(--inputBgColor)]';
   const textareaLockPosition = 'absolute bottom-sm right-md';
-  const textareaClass = 'textarea bg-[var(--inputBgColor)] resize-none px-md py-sm !outline-none disabled:bg-[var(--inputBgColor)]';
+  const textareaClass =
+    'textarea bg-[var(--inputBgColor)] resize-none px-md py-sm !outline-none disabled:bg-[var(--inputBgColor)]';
 </script>
 
 <!-- Add containarProps to the outer container and set styles for it -->
-<div {...concatClass(containerProps ?? {}, 'w-full flex flex-col items-stretch')}
+<div
+  {...concatClass(containerProps ?? {}, 'w-full flex flex-col items-stretch')}
   style:--inputBgColor={variant === 'default' ? 'oklch(var(--b3))' : 'oklch(var(--b1))'}>
-
   <!-- The label in small caps above the input -->
   {#if isLabelOutside}
     <!-- svelte-ignore a11y-label-has-associated-control -->
@@ -276,19 +277,16 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 
   <!-- 1. Multilingual text inputs and textareas -->
   {#if multilingual}
-    
-    <div class="items-stretch gap-xs join join-vertical">
-
+    <div class="join join-vertical items-stretch gap-xs">
       <!-- Show the field for the current locale and for all others, if translations are visible -->
       {#each [$currentLocale, ...$locales.filter((l) => l !== $currentLocale)] as locale, i}
         {#if locale === $currentLocale || isTranslationsVisible}
-
           {#if type === 'textarea-multilingual'}
-
             <div class="relative flex flex-col items-stretch">
               <!-- The language label inside the field -->
               <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label id="{id}-label-{locale}" class="small-label absolute top-sm left-md text-secondary">{$t(assertTranslationKey(`lang.${locale}`))}</label>
+              <label id="{id}-label-{locale}" class="small-label absolute left-md top-sm text-secondary"
+                >{$t(assertTranslationKey(`lang.${locale}`))}</label>
               <!-- The actual textarea 
                    NB. Join does not work it, so we do it by hand -->
               <textarea
@@ -306,21 +304,19 @@ The input itself is wrapped in multiple container elements, the outermost of whi
               <!-- Possible lock icon, shown for each translation -->
               {#if locked}
                 <div class={textareaLockPosition}>
-                  <Icon name="locked" class="{lockClass}" />
+                  <Icon name="locked" class={lockClass} />
                 </div>
               {/if}
             </div>
-
           {:else if type === 'text-multilingual'}
-
-            <div 
-              class="{inputContainerClass} join-item">
+            <div class="{inputContainerClass} join-item">
               <!-- The language label inside the field -->
               <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label id="{id}-label-{locale}" class={inputLabelClass}>{$t(assertTranslationKey(`lang.${locale}`))}</label>
+              <label id="{id}-label-{locale}" class={inputLabelClass}
+                >{$t(assertTranslationKey(`lang.${locale}`))}</label>
               <div class={inputAndLockContainerClass}>
                 <!-- The actual text input -->
-                <input 
+                <input
                   type="text"
                   id="{id}-{locale}"
                   aria-labelledby="{id}-label {id}-label-{locale}"
@@ -332,23 +328,19 @@ The input itself is wrapped in multiple container elements, the outermost of whi
                   value={getLocalizedValue(locale)} />
                 <!-- Possible lock icon, shown for each translation -->
                 {#if locked}
-                  <Icon name="locked" class="{lockClass}" />
+                  <Icon name="locked" class={lockClass} />
                 {/if}
               </div>
             </div>
-            
           {:else}
             <ErrorMessage message={$t('error.general')} />
           {/if}
-
         {/if}
       {/each}
-
     </div>
 
-  <!-- 2. Single-language textareas -->
+    <!-- 2. Single-language textareas -->
   {:else if type === 'textarea'}
-
     <div class="relative flex flex-col items-stretch">
       <!-- The actual textarea -->
       <textarea
@@ -363,36 +355,28 @@ The input itself is wrapped in multiple container elements, the outermost of whi
       <!-- Possible lock icon, shown for each translation -->
       {#if locked}
         <div class={textareaLockPosition}>
-          <Icon name="locked" class="{lockClass}" />
+          <Icon name="locked" class={lockClass} />
         </div>
       {/if}
     </div>
 
-  <!-- 3. Select multiple -->
+    <!-- 3. Select multiple -->
   {:else if type === 'select-multiple'}
-    <div class="items-stretch gap-xs join join-vertical">
+    <div class="join join-vertical items-stretch gap-xs">
       <div class="{inputContainerClass} join-item">
         <label class={inputLabelClass} for={id}>{label}</label>
         <div class={inputAndLockContainerClass}>
           {#if options?.length}
-            <select
-              {id}
-              disabled={isDisabled}
-              class={selectClass}
-              bind:this={mainInputs[0]}
-              on:change={handleChange}>
-              <option disabled selected>{
-                placeholder || 
-                (
-                  selectedOptions.length > 0
-                  ? selectedOptions.length === options.length 
-                  ? $t('components.input.allSelected') 
-                  : $t('components.input.selectAnother') 
-                  : $t('components.input.selectFirst')
-                )
-              }</option>
+            <select {id} disabled={isDisabled} class={selectClass} bind:this={mainInputs[0]} on:change={handleChange}>
+              <option disabled selected
+                >{placeholder ||
+                  (selectedOptions.length > 0
+                    ? selectedOptions.length === options.length
+                      ? $t('components.input.allSelected')
+                      : $t('components.input.selectAnother')
+                    : $t('components.input.selectFirst'))}</option>
               {#each unselectedOptions as option}
-                <option value={option.id}>{ option.label }</option>
+                <option value={option.id}>{option.label}</option>
               {/each}
             </select>
           {:else}
@@ -404,26 +388,23 @@ The input itself is wrapped in multiple container elements, the outermost of whi
       <!-- Selected options -->
       {#each selectedOptions as option}
         {@const buttonLabel = $t('components.input.deleteOption', { option: option.label })}
-        <div class="{inputContainerClass} join-item !bg-base-200 !justify-end">
+        <div class="{inputContainerClass} join-item !justify-end !bg-base-200">
           <span class={inputLabelClass}>{option.label}</span>
-            <div class="{inputAndLockContainerClass} grow-0">
-              {#if !locked}
-                <button
-                  type="button"
-                  title={buttonLabel}
-                  on:click={() => handleDeleteOption(option.id)}>
-                  <span class="sr-only">{ buttonLabel }, { label }</span>
-                  <Icon name="close" class={lockClass} />
-                </button>
-              {:else}
-                <Icon name="locked" class={lockClass} />
-              {/if}
-            </div>
+          <div class="{inputAndLockContainerClass} grow-0">
+            {#if !locked}
+              <button type="button" title={buttonLabel} on:click={() => handleDeleteOption(option.id)}>
+                <span class="sr-only">{buttonLabel}, {label}</span>
+                <Icon name="close" class={lockClass} />
+              </button>
+            {:else}
+              <Icon name="locked" class={lockClass} />
+            {/if}
+          </div>
         </div>
       {/each}
     </div>
 
-  <!-- 4. Image input -->
+    <!-- 4. Image input -->
   {:else if type === 'image'}
     {@const url = getImageUrl(value)}
     <div class={inputContainerClass}>
@@ -431,22 +412,17 @@ The input itself is wrapped in multiple container elements, the outermost of whi
       <label id="{id}-label" class={inputLabelClass}>{label}</label>
       <div class={inputAndLockContainerClass}>
         <!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-no-noninteractive-element-interactions a11y-label-has-associated-control -->
-        <label 
+        <label
           id="{id}-image-label"
           tabindex="0"
-          class="flex justify-stretch h-60 text-primary"
+          class="flex h-60 justify-stretch text-primary"
           class:cursor-pointer={!isDisabled}
           on:keydown={handleFileInputLabelKeydown}>
           {#if isLoading}
-            <Loading inline/>
+            <Loading inline />
           {:else if url}
-            <div 
-              class="flex w-60 items-center justify-center overflow-hidden {locked ? 'mr-8' : '-mr-8'}">
-              <img
-                src={url}
-                alt={label}
-                class="h-full w-full object-cover" 
-                class:rounded-r-lg={!locked} />
+            <div class="flex w-60 items-center justify-center overflow-hidden {locked ? 'mr-8' : '-mr-8'}">
+              <img src={url} alt={label} class="h-full w-full object-cover" class:rounded-r-lg={!locked} />
             </div>
             <span class="sr-only">{$t('components.input.changeImage')}</span>
           {:else if !isDisabled}
@@ -455,7 +431,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
               <Icon name="photo" />
             </div>
           {:else}
-            <div class="flex items-center text-secondary me-8">
+            <div class="me-8 flex items-center text-secondary">
               {$t('components.input.noImage')}
             </div>
           {/if}
@@ -468,19 +444,18 @@ The input itself is wrapped in multiple container elements, the outermost of whi
           class="hidden"
           bind:this={fileInput}
           on:change={handleChange}
-          accept="image/jpeg, image/png, image/gif"/>
+          accept="image/jpeg, image/png, image/gif" />
         {#if locked}
           <Icon name="locked" class={lockClass} />
         {/if}
       </div>
     </div>
 
-  <!-- 5. Other single-row inputs -->
+    <!-- 5. Other single-row inputs -->
   {:else}
     <div class={inputContainerClass}>
       <label class={inputLabelClass} for={id}>{label}</label>
       <div class={inputAndLockContainerClass}>
-
         <!-- 5.1 Boolean -->
         {#if type === 'boolean'}
           <input
@@ -490,21 +465,15 @@ The input itself is wrapped in multiple container elements, the outermost of whi
             class="toggle toggle-primary mr-md"
             {placeholder}
             checked={!!value}
-            on:change={handleChange}/>
+            on:change={handleChange} />
 
-        <!-- 5.2 Select -->
+          <!-- 5.2 Select -->
         {:else if type === 'select'}
           {#if options?.length}
-            <select
-              {id}
-              disabled={isDisabled}
-              class={selectClass}
-              on:change={handleChange}>
+            <select {id} disabled={isDisabled} class={selectClass} on:change={handleChange}>
               <option disabled selected={!value}>{placeholder || $t('components.input.selectOne')}</option>
-              {#each options as { id,label }}
-                <option 
-                  value={id}
-                  selected={value === id}>
+              {#each options as { id, label }}
+                <option value={id} selected={value === id}>
                   {label}
                 </option>
               {/each}
@@ -513,16 +482,9 @@ The input itself is wrapped in multiple container elements, the outermost of whi
             <ErrorMessage message={$t('error.general')} />
           {/if}
 
-        <!-- 5.3 All other inputs: date, number, text -->
+          <!-- 5.3 All other inputs: date, number, text -->
         {:else}
-          <input
-            {type}
-            {id}
-            disabled={isDisabled}
-            class={inputClass}
-            {placeholder}
-            {value}
-            on:change={handleChange}/>
+          <input {type} {id} disabled={isDisabled} class={inputClass} {placeholder} {value} on:change={handleChange} />
         {/if}
 
         {#if locked}
@@ -545,5 +507,4 @@ The input itself is wrapped in multiple container elements, the outermost of whi
       class="!w-auto self-end"
       on:click={handleToggleTranslations} />
   {/if}
-
 </div>
