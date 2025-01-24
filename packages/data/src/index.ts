@@ -67,6 +67,7 @@ export {
   BooleanQuestion,
   Candidate,
   CandidateNomination,
+  ChoiceQuestion,
   Constituency,
   ConstituencyGroup,
   DataNotFoundError,
@@ -81,6 +82,7 @@ export {
   FactionNomination,
   ImageQuestion,
   MultipleChoiceCategoricalQuestion,
+  MultipleChoiceQuestion,
   MultipleTextQuestion,
   Nomination,
   NumberQuestion,
@@ -90,6 +92,7 @@ export {
   QuestionCategory,
   SingleChoiceCategoricalQuestion,
   SingleChoiceOrdinalQuestion,
+  SingleChoiceQuestion,
   TextQuestion
 } from './internal';
 export {
