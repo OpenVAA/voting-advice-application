@@ -23,6 +23,7 @@ export type TranslationsPayload = Partial<{
   numTotal: number;
   numUnansweredQuestions: number;
   openVAA: string;
+  option: string;
   organization: string;
   partiesTerm: string;
   partyMatchingMethod: AppSettingsGroupMatchingType;

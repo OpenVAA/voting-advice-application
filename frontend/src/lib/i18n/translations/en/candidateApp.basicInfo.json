@@ -1,5 +1,4 @@
 {
-  "addAnother": "Add another",
   "disclaimer": "Your name and some other details are prefilled and cannot be changed. If there are any errors in them, please contact your party.",
   "error": {
     "invalidQuestion": "Question type or answer type is invalid for question {questionId}"

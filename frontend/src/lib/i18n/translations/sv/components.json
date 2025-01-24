@@ -29,9 +29,6 @@
     "placeholder": "T.ex. CP23-174a-f4%&-aHAB",
     "showPassword": "SV Reveal password"
   },
-  "photoInput": {
-    "tapToAddPhoto": "SV Tap to add photo"
-  },
   "preHeading": {
     "roleDescription": "Förtexter"
   },
