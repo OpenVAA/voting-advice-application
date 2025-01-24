@@ -136,16 +136,20 @@ Display a question for answering.
     disabled = true;
     answers.setAnswer(question.id, value);
     
-    if (useQuestionOrdering) {
-      nextQuestionChoices = getNextQuestionChoices();
-      if (nextQuestionChoices.length > 1) {
-        showNextQuestionChoices = true;
-      } else {
-        goto($getRoute('Results'));
-      }
-    } else {
-      setTimeout(handleJump, DELAY.md);
-    }
+    // Add delay before showing next question or choices
+    setTimeout(() => {
+        if (useQuestionOrdering) {
+            nextQuestionChoices = getNextQuestionChoices();
+            if (nextQuestionChoices.length > 0) {
+                showNextQuestionChoices = true;
+            } else {
+                goto($getRoute('Results'));
+            }
+        } else {
+            handleJump();
+        }
+        disabled = false;
+    }, DELAY.md);
   }
 
   function handleDelete() {
@@ -160,11 +164,10 @@ Display a question for answering.
   function handleJump(steps = 1): void {
     if (!questionBlock) return;
     if (useQuestionOrdering) {
+        const orderedAnswers = answers.getAnswerOrder();
+        const currentIndex = orderedAnswers.indexOf(question.id);
+        
         if (steps < 0) {
-            // Get ordered list of previously answered questions
-            const orderedAnswers = answers.getAnswerOrder();
-            const currentIndex = orderedAnswers.indexOf(question.id);
-            
             if (currentIndex >= 0) {
                 // If we're showing choices, stay on current question when going back
                 const previousIndex = currentIndex - (showNextQuestionChoices ? 0 : 1);
@@ -184,12 +187,19 @@ Display a question for answering.
                 }
             }
         } else {
-            // Forward navigation shows new question choices
-            nextQuestionChoices = getNextQuestionChoices();
-            if (nextQuestionChoices.length > 0) {
-                showNextQuestionChoices = true;
+            // When going forward, check if we're in the ordered answers
+            if (currentIndex >= 0 && currentIndex < orderedAnswers.length - 1) {
+                // If we're in the ordered answers, go to the next answered question
+                const nextId = orderedAnswers[currentIndex + 1];
+                goto($getRoute({ route: 'Question', questionId: nextId }));
             } else {
-                goto($getRoute('Results'));
+                // Only show choices if we're not in the ordered answers or at the end
+                nextQuestionChoices = getNextQuestionChoices();
+                if (nextQuestionChoices.length > 0) {
+                    showNextQuestionChoices = true;
+                } else {
+                    goto($getRoute('Results'));
+                }
             }
         }
         
