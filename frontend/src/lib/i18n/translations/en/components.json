@@ -29,9 +29,6 @@
     "placeholder": "E.g. CP23-174a-f4%&-aHAB",
     "showPassword": "Reveal password"
   },
-  "photoInput": {
-    "tapToAddPhoto": "Tap to add photo"
-  },
   "preHeading": {
     "roleDescription": "Pre-title"
   },
