@@ -10,6 +10,10 @@ The reason for limiting Tailwind classes is that this way adherence to the desig
 
 Note that you can still use [arbitrary values](https://tailwindcss.com/docs/adding-custom-styles#using-arbitrary-values) with any Tailwind utility class with the bracket notation, e.g. `w-[21.35px]`. Bear in mind, however, that you should not construct these (or any other Tailwind classes) in code, unless the whole final string for the class is spelled out in code, such as `class = 'w-' + size === 'lg' ? 'lg' : 'md'`, because Tailwind only compiles classes it can spot in the source code using a naïve search.
 
+### Passing classes to components
+
+The components in the app allow passing any attributes of the underlying element as component properties. This is most commonly used to add extra classes to those defined by the component (see [Component properties](../contributing/style-guides.md#component-properties) in the Contributors’ guide). However, note that due to styling compartmentalization, **you should only pass Tailwind or global classes, not any classes defined locally**.
+
 ## Colors
 
 For DaisyUI, all the [basic colours](https://daisyui.com/docs/colors/) are defined for both the default and the dark theme, which is used in dark mode. The colours are applicable to Tailwind utility classes (e.g. `text-primary`, `bg-base-300`) and DaisyUI component classes (e.g. `btn-primary`). You can see all the colours in `tailwind.config.cjs` but the most common ones are listed below.
