@@ -315,18 +315,18 @@ Display a question for answering.
     -->
 
     <svelte:fragment slot="heading">
-      {#if showNextQuestionChoices}
+      {#if useQuestionOrdering && showNextQuestionChoices}
         <h2 class="text-xl font-bold mb-4">{$t('questions.pickNext')}</h2>
       {/if}
-      {#each showNextQuestionChoices ? nextQuestionChoices : [question] as currentQuestion}
+      {#each (useQuestionOrdering && showNextQuestionChoices) ? nextQuestionChoices : [question] as currentQuestion}
         <div
           transition:slide
           class="border-b border-base-300 last:border-none py-4"
         >
           <button
-            class="w-full text-left {showNextQuestionChoices ? 'hover:bg-base-200 transition-colors p-2 rounded-lg' : ''}"
-            on:click={() => showNextQuestionChoices && handleChoiceSelect(currentQuestion)}
-            disabled={!showNextQuestionChoices}
+            class="w-full text-left {(useQuestionOrdering && showNextQuestionChoices) ? 'hover:bg-base-200 transition-colors p-2 rounded-lg' : ''}"
+            on:click={() => (useQuestionOrdering && showNextQuestionChoices) && handleChoiceSelect(currentQuestion)}
+            disabled={!(useQuestionOrdering && showNextQuestionChoices)}
           >
             <HeadingGroup
               id={`questionHeading-${currentQuestion.id}`}
@@ -343,7 +343,7 @@ Display a question for answering.
                 {:else}
                   {$t('common.question')}
                   <span class="text-secondary">
-                    {#if !showNextQuestionChoices}
+                    {#if !(useQuestionOrdering && showNextQuestionChoices)}
                       {questionBlock.index + 1}/{questions.length}
                     {/if}
                   </span>
@@ -362,7 +362,7 @@ Display a question for answering.
     {/if}
 
     <svelte:fragment slot="primaryActions">
-      {#if !showNextQuestionChoices}
+      {#if !(useQuestionOrdering && showNextQuestionChoices)}
         {#if type === 'singleChoiceOrdinal' || type === 'singleChoiceCategorical'}
           {@const selectedId = question.ensureValue($answers[question.id]?.value)}
           <QuestionChoices
@@ -402,7 +402,7 @@ Display a question for answering.
       {/if}
     </svelte:fragment>
 
-    {#if showNextQuestionChoices}
+    {#if useQuestionOrdering && showNextQuestionChoices}
       <div
         role="group"
         aria-label={$t('questions.additionalActions')}
