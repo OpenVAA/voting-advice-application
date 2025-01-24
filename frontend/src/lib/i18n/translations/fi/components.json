@@ -2,6 +2,18 @@
   "headingGroup": {
     "roleDescription": "Otsikkoryhmä"
   },
+  "input": {
+    "addImage": "Lisää kuva",
+    "allSelected": "Kaikki valittu",
+    "changeImage": "Vaihda kuva",
+    "deleteOption": "Poista valinta: {option}",
+    "hideTranslations": "Piilota käännökset",
+    "noImage": "Ei kuvaa",
+    "selectAnother": "Valitse lisää",
+    "selectFirst": "Valitse ensimmäinen",
+    "selectOne": "Valitse yksi",
+    "showTranslations": "Näytä käännökset"
+  },
   "matchScore": {
     "label": "sopivuus",
     "score": "{score}%"
