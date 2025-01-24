@@ -2,6 +2,18 @@
   "headingGroup": {
     "roleDescription": "Rubrikgrupp"
   },
+  "input": {
+    "addImage": "Lägga till en bild",
+    "allSelected": "Alla valda",
+    "changeImage": "Ändra bilden",
+    "deleteOption": "Välj bort {option}",
+    "hideTranslations": "Dölja översättningar",
+    "noImage": "Ingen bild",
+    "selectAnother": "Välj en annan",
+    "selectFirst": "Välj först",
+    "selectOne": "Välj en",
+    "showTranslations": "Visa översättningar"
+  },
   "matchScore": {
     "label": "matchning",
     "score": "{score}%"

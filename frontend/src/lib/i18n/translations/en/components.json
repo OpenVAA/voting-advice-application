@@ -2,6 +2,18 @@
   "headingGroup": {
     "roleDescription": "Heading group"
   },
+  "input": {
+    "addImage": "Add an image",
+    "allSelected": "All selected",
+    "changeImage": "Change the image",
+    "deleteOption": "Deselect {option}",
+    "hideTranslations": "Hide translations",
+    "noImage": "No image",
+    "selectAnother": "Select another",
+    "selectFirst": "Select first",
+    "selectOne": "Select one",
+    "showTranslations": "Show translations"
+  },
   "matchScore": {
     "label": "match",
     "score": "{score}%"
