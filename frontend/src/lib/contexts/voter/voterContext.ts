@@ -9,10 +9,10 @@ import { countAnswers } from './countAnswers';
 import { filterStore } from './filters/filterStore';
 import { matchStore } from './matchStore';
 import { nominationAndQuestionStore } from './nominationAndQuestionStore';
-import { questionBlockStore } from './questionBlockStore';
 import { getAppContext } from '../../contexts/app';
 import { dataCollectionStore } from '../utils/dataCollectionStore';
 import { paramStore } from '../utils/paramStore';
+import { questionBlockStore } from '../utils/questionBlockStore';
 import { sessionStorageWritable } from '../utils/storageStore';
 import type { Id } from '@openvaa/core';
 import type { VoterContext } from './voterContext.type';
@@ -180,11 +180,13 @@ export function initVoterContext(): VoterContext {
   const minAnswers = derived(appSettings, (appSettings) => appSettings.matching.minimumAnswers);
 
   /** Get the entityTypes whose cardContents include `submatches` */
-  const calcSubmatches = derived(appSettings, (appSettings) =>
-    Object.entries(appSettings.results.cardContents)
+  const calcSubmatches = derived(appSettings, (appSettings) => {
+    console.info(appSettings);
+    return [];
+    return Object.entries(appSettings.results.cardContents)
       .filter(([, value]) => value.includes('submatches'))
-      .map(([type]) => type as EntityType)
-  );
+      .map(([type]) => type as EntityType);
+  });
 
   const matches = matchStore({
     algorithm,
