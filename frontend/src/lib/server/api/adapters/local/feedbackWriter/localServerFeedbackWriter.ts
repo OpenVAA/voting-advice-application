@@ -1,7 +1,7 @@
 import { LocalServerAdapter } from '../localServerAdapter';
 import type { FeedbackData, FeedbackWriter } from '$lib/api/base/feedbackWriter.type';
 
-export class LocalServerFeedbackWriter extends LocalServerAdapter implements FeedbackWriter {
+export class LocalServerFeedbackWriter extends LocalServerAdapter implements FeedbackWriter<'server'> {
   postFeedback(data: FeedbackData): Promise<Response> {
     data.date ??= new Date().toJSON();
     return this.create({

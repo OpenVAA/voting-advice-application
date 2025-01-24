@@ -5,18 +5,16 @@ import type { StrapiImage } from '../strapiData.type';
 
 /**
  * Parse image properties from one or two possibly defined `StrapiImage`s, providing the full image url as a default for the thumbnail.
- * @param imageObject - The image object that will be used to get the `url` props.
- * @param darkImageObject - An optional dark image object that will be used to get the `urlDark` props
- * @returns An `Image` object containing the image properties, or `undefined` if `imageObject` is missing.
+ * @param image - The image object that will be used to get the `url` props.
+ * @param darkImage - An optional dark image object that will be used to get the `urlDark` props
+ * @returns An `Image` object containing the image properties, or `undefined` if `image` is missing.
  */
-export function parseImage(imageObject: StrapiImage, darkImageObject?: StrapiImage): Image | undefined {
-  if (!imageObject?.data?.attributes) return undefined;
-  const image = imageObject?.data?.attributes;
+export function parseImage(image?: StrapiImage, darkImage?: StrapiImage): Image | undefined {
+  if (!image) return undefined;
   const { url } = image;
   const thumbnailUrl = image.formats?.thumbnail?.url || url;
-  const dark = darkImageObject?.data?.attributes;
-  const urlDark = dark?.url;
-  const thumbnailDark = dark?.formats?.thumbnail?.url || urlDark;
+  const urlDark = darkImage?.url;
+  const thumbnailDark = darkImage?.formats?.thumbnail?.url || urlDark;
   return {
     url: formatUrl(url),
     urlDark: urlDark ? formatUrl(urlDark) : undefined,

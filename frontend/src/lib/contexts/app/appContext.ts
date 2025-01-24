@@ -15,6 +15,7 @@ import { getComponentContext } from '../component';
 import { getDataContext } from '../data';
 import { pageDatumStore } from '../utils/pageDatumStore';
 import { localStorageWritable } from '../utils/storageStore';
+import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { FeedbackData } from '$lib/api/base/feedbackWriter.type';
 import type { AppContext, AppType } from './appContext.type';
 import type { AppCustomization } from './appCustomization.type';
@@ -92,7 +93,7 @@ export function initAppContext(): AppContext {
   // Sending feedback
   ////////////////////////////////////////////////////////////////////
 
-  async function sendFeedback(feedback: FeedbackData): Promise<Response> {
+  async function sendFeedback(feedback: FeedbackData): Promise<DataApiActionResult> {
     if (!browser) error(500, 'sendFeedback() called in a non-browser environment');
     const feedbackWriter = await feedbackWriterPromise;
     feedbackWriter.init({ fetch });
