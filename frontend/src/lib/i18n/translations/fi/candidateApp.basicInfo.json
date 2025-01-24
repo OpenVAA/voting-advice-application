@@ -1,5 +1,4 @@
 {
-  "addAnother": "Lisää uusi",
   "disclaimer": "Nimesi ja jotkin muut tiedot on täytetty valmiiksi, eikä niitä voi muuttaa. Jos niissä on virheitä, ota yhteyttä puolueeseesi.",
   "error": {
     "invalidQuestion": "Kysymyksen tai vastauksen tyyppi oli virheellinen kysymykselle {questionId}."

@@ -29,9 +29,6 @@
     "placeholder": "Esim. CP23-174a-f4%&-aHAB",
     "showPassword": "Näytä salasana"
   },
-  "photoInput": {
-    "tapToAddPhoto": "Paina lisätäksesi valokuvan"
-  },
   "preHeading": {
     "roleDescription": "Otsikon esirivi"
   },
