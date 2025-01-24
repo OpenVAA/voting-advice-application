@@ -36,15 +36,26 @@ declare global {
    */
   type ArrayItem<TArray> = TArray extends Array<infer TElement> ? TElement : never;
 
+  /**
+   * The format for localized strings.
+   */
+  type LocalizedString = SharedLocalizedString;
+
   ///////////////////////////////////////////////
   // CUSTOM DATA DEFINITIONS FOR DATA OBJECTS
   ///////////////////////////////////////////////
+
+  // TODO: Consider moving these to `@openvaa/app-shared/data/extendedData.type.ts`
 
   type CustomData = {
     Question: {
       allowOpen?: boolean;
       fillingInfo?: string;
       filterable?: boolean;
+      /**
+       * For `QuestionInput`. If `true` for a text input, a `textarea` will be used instead of a `text` input.
+       */
+      longText?: boolean;
       vertical?: boolean;
       video?: CustomVideoProps;
     };
@@ -66,13 +77,6 @@ declare global {
   }
 
   ///////////////////////////////////////////////
-
-  /**
-   * The format for localized strings.
-   */
-  type LocalizedString = {
-    [lang: string]: string;
-  };
 
   /**
    * The application settings, combined from both local settings and those retrieved from the database.
