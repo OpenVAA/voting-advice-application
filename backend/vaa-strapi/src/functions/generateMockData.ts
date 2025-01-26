@@ -299,7 +299,6 @@ async function createElection() {
       electionType,
       info,
       publishedAt: new Date(),
-      answersLocked: false,
       constituencyGroups
     },
     status: 'published'

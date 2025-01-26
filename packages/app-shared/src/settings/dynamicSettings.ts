@@ -64,5 +64,6 @@ export const dynamicSettings: DynamicSettings = {
   elections: {
     disallowSelection: false
   },
-  underMaintenance: false
+  underMaintenance: false,
+  answersLocked: false
 };
