@@ -49,10 +49,6 @@
       "pluginOptions": {},
       "type": "json"
     },
-    "answersLocked": {
-      "type": "boolean",
-      "default": false
-    },
     "constituencyGroups": {
       "type": "relation",
       "relation": "oneToMany",

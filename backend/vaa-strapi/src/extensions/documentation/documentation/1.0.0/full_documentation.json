@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2025-01-26T10:43:39.343Z"
+    "x-generation-date": "2025-01-26T19:10:12.329Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -6904,6 +6904,9 @@
           "elections": {
             "$ref": "#/components/schemas/SettingsElectionsComponent"
           },
+          "answersLocked": {
+            "type": "boolean"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -7236,6 +7239,9 @@
                 },
                 "elections": {
                   "$ref": "#/components/schemas/SettingsElectionsComponent"
+                },
+                "answersLocked": {
+                  "type": "boolean"
                 },
                 "createdAt": {
                   "type": "string",
@@ -8807,9 +8813,6 @@
                                 "name": {},
                                 "shortName": {},
                                 "info": {},
-                                "answersLocked": {
-                                  "type": "boolean"
-                                },
                                 "constituencyGroups": {
                                   "type": "array",
                                   "items": {
@@ -9709,9 +9712,6 @@
                     "name": {},
                     "shortName": {},
                     "info": {},
-                    "answersLocked": {
-                      "type": "boolean"
-                    },
                     "constituencyGroups": {
                       "type": "array",
                       "items": {
@@ -11445,9 +11445,6 @@
                           "name": {},
                           "shortName": {},
                           "info": {},
-                          "answersLocked": {
-                            "type": "boolean"
-                          },
                           "constituencyGroups": {
                             "type": "array",
                             "items": {
@@ -13170,9 +13167,6 @@
                     "name": {},
                     "shortName": {},
                     "info": {},
-                    "answersLocked": {
-                      "type": "boolean"
-                    },
                     "constituencyGroups": {
                       "type": "array",
                       "items": {
@@ -14722,9 +14716,6 @@
           "name": {},
           "shortName": {},
           "info": {},
-          "answersLocked": {
-            "type": "boolean"
-          },
           "constituencyGroups": {
             "type": "array",
             "items": {
@@ -17189,9 +17180,6 @@
               "name": {},
               "shortName": {},
               "info": {},
-              "answersLocked": {
-                "type": "boolean"
-              },
               "constituencyGroups": {
                 "type": "array",
                 "items": {
@@ -18694,9 +18682,6 @@
                               "name": {},
                               "shortName": {},
                               "info": {},
-                              "answersLocked": {
-                                "type": "boolean"
-                              },
                               "constituencyGroups": {
                                 "type": "array",
                                 "items": {
@@ -20884,9 +20869,6 @@
                     "name": {},
                     "shortName": {},
                     "info": {},
-                    "answersLocked": {
-                      "type": "boolean"
-                    },
                     "constituencyGroups": {
                       "type": "array",
                       "items": {
@@ -22849,9 +22831,6 @@
                 "name": {},
                 "shortName": {},
                 "info": {},
-                "answersLocked": {
-                  "type": "boolean"
-                },
                 "constituencyGroups": {
                   "type": "array",
                   "items": {
