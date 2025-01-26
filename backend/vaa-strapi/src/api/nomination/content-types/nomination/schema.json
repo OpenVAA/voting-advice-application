@@ -40,14 +40,14 @@
       "required": true,
       "default": 1
     },
-    "candidate": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::candidate.candidate",
-      "mappedBy": "nomination"
-    },
     "unconfirmed": {
       "type": "boolean"
+    },
+    "candidate": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::candidate.candidate",
+      "inversedBy": "nominations"
     }
   }
 }

@@ -58,11 +58,11 @@
       "target": "api::party.party",
       "inversedBy": "candidates"
     },
-    "nomination": {
+    "nominations": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "oneToMany",
       "target": "api::nomination.nomination",
-      "inversedBy": "candidate"
+      "mappedBy": "candidate"
     },
     "appLanguage": {
       "type": "relation",

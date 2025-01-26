@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2025-01-23T15:26:00.589Z"
+    "x-generation-date": "2025-01-26T10:43:39.343Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -7676,16 +7676,19 @@
                 ],
                 "example": "string or id"
               },
-              "nomination": {
-                "oneOf": [
-                  {
-                    "type": "integer"
-                  },
-                  {
-                    "type": "string"
-                  }
-                ],
-                "example": "string or id"
+              "nominations": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ],
+                  "example": "string or id"
+                }
               },
               "appLanguage": {
                 "oneOf": [
@@ -9053,6 +9056,9 @@
                             "electionRound": {
                               "type": "integer"
                             },
+                            "unconfirmed": {
+                              "type": "boolean"
+                            },
                             "candidate": {
                               "type": "object",
                               "properties": {
@@ -9063,9 +9069,6 @@
                                   "type": "string"
                                 }
                               }
-                            },
-                            "unconfirmed": {
-                              "type": "boolean"
                             },
                             "createdAt": {
                               "type": "string",
@@ -9184,14 +9187,17 @@
                       }
                     }
                   },
-                  "nomination": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "number"
-                      },
-                      "documentId": {
-                        "type": "string"
+                  "nominations": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "number"
+                        },
+                        "documentId": {
+                          "type": "string"
+                        }
                       }
                     }
                   },
@@ -9516,14 +9522,17 @@
               }
             }
           },
-          "nomination": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "number"
-              },
-              "documentId": {
-                "type": "string"
+          "nominations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number"
+                },
+                "documentId": {
+                  "type": "string"
+                }
               }
             }
           },
@@ -10961,14 +10970,17 @@
                               }
                             }
                           },
-                          "nomination": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "number"
-                              },
-                              "documentId": {
-                                "type": "string"
+                          "nominations": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "number"
+                                },
+                                "documentId": {
+                                  "type": "string"
+                                }
                               }
                             }
                           },
@@ -11178,6 +11190,9 @@
                 "electionRound": {
                   "type": "integer"
                 },
+                "unconfirmed": {
+                  "type": "boolean"
+                },
                 "candidate": {
                   "type": "object",
                   "properties": {
@@ -11188,9 +11203,6 @@
                       "type": "string"
                     }
                   }
-                },
-                "unconfirmed": {
-                  "type": "boolean"
                 },
                 "createdAt": {
                   "type": "string",
@@ -12614,14 +12626,17 @@
                                     }
                                   }
                                 },
-                                "nomination": {
-                                  "type": "object",
-                                  "properties": {
-                                    "id": {
-                                      "type": "number"
-                                    },
-                                    "documentId": {
-                                      "type": "string"
+                                "nominations": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "number"
+                                      },
+                                      "documentId": {
+                                        "type": "string"
+                                      }
                                     }
                                   }
                                 },
@@ -12831,6 +12846,9 @@
                       "electionRound": {
                         "type": "integer"
                       },
+                      "unconfirmed": {
+                        "type": "boolean"
+                      },
                       "candidate": {
                         "type": "object",
                         "properties": {
@@ -12841,9 +12859,6 @@
                             "type": "string"
                           }
                         }
-                      },
-                      "unconfirmed": {
-                        "type": "boolean"
                       },
                       "createdAt": {
                         "type": "string",
@@ -14416,14 +14431,17 @@
                               }
                             }
                           },
-                          "nomination": {
-                            "type": "object",
-                            "properties": {
-                              "id": {
-                                "type": "number"
-                              },
-                              "documentId": {
-                                "type": "string"
+                          "nominations": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "number"
+                                },
+                                "documentId": {
+                                  "type": "string"
+                                }
                               }
                             }
                           },
@@ -14633,6 +14651,9 @@
                 "electionRound": {
                   "type": "integer"
                 },
+                "unconfirmed": {
+                  "type": "boolean"
+                },
                 "candidate": {
                   "type": "object",
                   "properties": {
@@ -14643,9 +14664,6 @@
                       "type": "string"
                     }
                   }
-                },
-                "unconfirmed": {
-                  "type": "boolean"
                 },
                 "createdAt": {
                   "type": "string",
@@ -16880,14 +16898,17 @@
                                   }
                                 }
                               },
-                              "nomination": {
-                                "type": "object",
-                                "properties": {
-                                  "id": {
-                                    "type": "number"
-                                  },
-                                  "documentId": {
-                                    "type": "string"
+                              "nominations": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "number"
+                                    },
+                                    "documentId": {
+                                      "type": "string"
+                                    }
                                   }
                                 }
                               },
@@ -17097,6 +17118,9 @@
                     "electionRound": {
                       "type": "integer"
                     },
+                    "unconfirmed": {
+                      "type": "boolean"
+                    },
                     "candidate": {
                       "type": "object",
                       "properties": {
@@ -17107,9 +17131,6 @@
                           "type": "string"
                         }
                       }
-                    },
-                    "unconfirmed": {
-                      "type": "boolean"
                     },
                     "createdAt": {
                       "type": "string",
@@ -17337,6 +17358,9 @@
           "electionRound": {
             "type": "integer"
           },
+          "unconfirmed": {
+            "type": "boolean"
+          },
           "candidate": {
             "type": "object",
             "properties": {
@@ -17347,9 +17371,6 @@
                 "type": "string"
               }
             }
-          },
-          "unconfirmed": {
-            "type": "boolean"
           },
           "createdAt": {
             "type": "string",
@@ -18922,6 +18943,9 @@
                           "electionRound": {
                             "type": "integer"
                           },
+                          "unconfirmed": {
+                            "type": "boolean"
+                          },
                           "candidate": {
                             "type": "object",
                             "properties": {
@@ -18932,9 +18956,6 @@
                                 "type": "string"
                               }
                             }
-                          },
-                          "unconfirmed": {
-                            "type": "boolean"
                           },
                           "createdAt": {
                             "type": "string",
@@ -19053,14 +19074,17 @@
                     }
                   }
                 },
-                "nomination": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "number"
-                    },
-                    "documentId": {
-                      "type": "string"
+                "nominations": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "number"
+                      },
+                      "documentId": {
+                        "type": "string"
+                      }
                     }
                   }
                 },
@@ -20569,14 +20593,17 @@
                                         }
                                       }
                                     },
-                                    "nomination": {
-                                      "type": "object",
-                                      "properties": {
-                                        "id": {
-                                          "type": "number"
-                                        },
-                                        "documentId": {
-                                          "type": "string"
+                                    "nominations": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "id": {
+                                            "type": "number"
+                                          },
+                                          "documentId": {
+                                            "type": "string"
+                                          }
                                         }
                                       }
                                     },
@@ -20786,6 +20813,9 @@
                           "electionRound": {
                             "type": "integer"
                           },
+                          "unconfirmed": {
+                            "type": "boolean"
+                          },
                           "candidate": {
                             "type": "object",
                             "properties": {
@@ -20796,9 +20826,6 @@
                                 "type": "string"
                               }
                             }
-                          },
-                          "unconfirmed": {
-                            "type": "boolean"
                           },
                           "createdAt": {
                             "type": "string",
@@ -22531,14 +22558,17 @@
                                     }
                                   }
                                 },
-                                "nomination": {
-                                  "type": "object",
-                                  "properties": {
-                                    "id": {
-                                      "type": "number"
-                                    },
-                                    "documentId": {
-                                      "type": "string"
+                                "nominations": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "number"
+                                      },
+                                      "documentId": {
+                                        "type": "string"
+                                      }
                                     }
                                   }
                                 },
@@ -22748,6 +22778,9 @@
                       "electionRound": {
                         "type": "integer"
                       },
+                      "unconfirmed": {
+                        "type": "boolean"
+                      },
                       "candidate": {
                         "type": "object",
                         "properties": {
@@ -22758,9 +22791,6 @@
                             "type": "string"
                           }
                         }
-                      },
-                      "unconfirmed": {
-                        "type": "boolean"
                       },
                       "createdAt": {
                         "type": "string",

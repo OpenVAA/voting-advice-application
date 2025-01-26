@@ -29,6 +29,7 @@ const N_CONSTITUENCIES = 15;
 const N_CANDIDATES_PER_CONSTITUENCY = 10;
 const N_PARTIES = 10;
 const N_PARTIES_WITH_CLOSED_LISTS = 2;
+const F_DUPLICATE_NOMINATIONS = 0.2;
 
 const locales: Array<Locale> = [
   {
@@ -147,7 +148,7 @@ export async function generateMockData() {
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidate nominations');
-    await createCandidateNominations(N_CONSTITUENCIES * N_CANDIDATES_PER_CONSTITUENCY);
+    await createCandidateNominations(F_DUPLICATE_NOMINATIONS);
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting closed list parties');
@@ -376,32 +377,38 @@ async function createCandidateForTesting() {
   });
 }
 
-async function createCandidateNominations(length: number) {
+/**
+ * Create nominations for all candidates with possible duplicates.
+ * @param duplicateFraction - Approximate fraction of candidates to nominate in two constituencies.
+ */
+async function createCandidateNominations(duplicateFraction = 0.0) {
   const elections = await strapi.documents('api::election.election').findMany({});
   const constituencies = await strapi.documents('api::constituency.constituency').findMany({});
   const candidates = await strapi.documents('api::candidate.candidate').findMany({
     populate: ['party']
   });
 
-  for (let i = 0; i <= length; i++) {
-    const candidate = faker.helpers.arrayElement(candidates);
-    // Remove from list to prevent duplicates
-    candidates.splice(candidates.indexOf(candidate), 1);
-    const electionSymbol = faker.number.int({ min: 2, max: length + 2 }).toString();
+  for (const candidate of candidates) {
+    const duplicate = Math.random() < duplicateFraction;
+    const electionSymbol = faker.number
+      .int({ min: 2, max: Math.ceil(candidates.length * (1 + duplicateFraction)) + 2 })
+      .toString();
     const electionRound = 1; // faker.number.int(1);
-    const constituency = faker.helpers.arrayElement(constituencies);
     const electionId = elections[0].documentId;
-    await strapi.documents('api::nomination.nomination').create({
-      data: {
-        electionSymbol,
-        electionRound,
-        candidate: candidate.documentId,
-        party: candidate.party.documentId,
-        election: electionId,
-        constituency: constituency.documentId
-      },
-      status: 'published'
-    });
+    // If duplicate create two nominations, otherwise one
+    for (const constituency of faker.helpers.arrayElements(constituencies, duplicate ? 2 : 1)) {
+      await strapi.documents('api::nomination.nomination').create({
+        data: {
+          electionSymbol,
+          electionRound,
+          candidate: candidate.documentId,
+          party: candidate.party.documentId,
+          election: electionId,
+          constituency: constituency.documentId
+        },
+        status: 'published'
+      });
+    }
   }
 }
 
