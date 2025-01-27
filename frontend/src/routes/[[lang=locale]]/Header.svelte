@@ -16,12 +16,10 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
   import { getLayoutContext } from '$lib/contexts/layout';
   import { AppLogo } from '$lib/templates/parts/appLogo';
   import Banner from './Banner.svelte';
-  import type { BasicPageProps } from '$lib/templates/basicPage';
 
-  export let navId: BasicPageProps['navId'];
-
+  export let menuId: string;
   export let openDrawer: () => void;
-  export let drawerOpen = false;
+  export let isDrawerOpen = false;
   export let drawerOpenElement: HTMLButtonElement | undefined;
 
   const { appSettings, darkMode, t } = getAppContext();
@@ -76,8 +74,8 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
     <button
       on:click={openDrawer}
       bind:this={drawerOpenElement}
-      aria-expanded={drawerOpen}
-      aria-controls={navId}
+      aria-expanded={isDrawerOpen}
+      aria-controls={menuId}
       aria-label={$t('common.openMenu')}
       class="btn btn-ghost drawer-button flex cursor-pointer items-center gap-md text-neutral">
       <Icon name="menu" />

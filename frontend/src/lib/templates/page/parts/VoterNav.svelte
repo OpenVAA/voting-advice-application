@@ -29,12 +29,16 @@ This is a dynamic component because it accesse the `VoterContext`.
 -->
 
 <script lang="ts">
+  import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
   import { openFeedbackModal } from '$lib/legacy-stores';
   import { surveyLink } from '$lib/utils/legacy-analytics/survey';
+  import { onDestroy } from 'svelte';
   import LanguageSelection from './LanguageSelection.svelte';
 
+  const { navigation } = getLayoutContext(onDestroy);
+  
   const {
     answers,
     appSettings,
@@ -49,7 +53,7 @@ This is a dynamic component because it accesse the `VoterContext`.
 </script>
 
 <Navigation on:keyboardFocusOut {...$$restProps}>
-  <slot />
+  <NavItem on:click={navigation.close} icon="close" text={$t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
   <NavGroup>
     <NavItem href={$getRoute('Home')} icon="home" text={$t('common.home')} />
     {#if $electionsSelectable}

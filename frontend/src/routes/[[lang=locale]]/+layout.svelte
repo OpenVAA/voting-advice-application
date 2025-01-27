@@ -23,7 +23,6 @@
   import { Loading } from '$lib/components/loading';
   import { initAppContext } from '$lib/contexts/app';
   import { initComponentContext } from '$lib/contexts/component';
-  import { initDataContext } from '$lib/contexts/data/dataContext';
   import { initI18nContext } from '$lib/contexts/i18n';
   import { initLayoutContext } from '$lib/contexts/layout';
   import { DataConsentPopup } from '$lib/dynamic-components/dataConsent/popup';
@@ -32,6 +31,7 @@
   import { logDebugError } from '$lib/utils/logger';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { LayoutData } from './$types';
+  import { initDataContext } from '$lib/contexts/data';
 
   export let data: LayoutData;
 
@@ -50,6 +50,7 @@
   initDataContext();
   const {
     appSettings,
+    dataRoot,
     openFeedbackModal,
     popupQueue,
     sendTrackingEvent,
@@ -61,9 +62,10 @@
   initLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
-  // Check appSettings and appCustomization
+  // Provide globally used data and check all loaded data
   ////////////////////////////////////////////////////////////////////
 
+  // TODO[Svelte 5]: See if this and others like it can be handled in a centralized manner in the DataContext. I.e. by subscribing to individual parts of $page.data.
   let error: Error | undefined;
   let ready: boolean;
   let underMaintenance: boolean;
@@ -72,7 +74,7 @@
     error = undefined;
     ready = false;
     underMaintenance = false;
-    Promise.all([data.appSettingsData, data.appCustomizationData]).then((data) => {
+    Promise.all([data.appSettingsData, data.appCustomizationData, data.electionData, data.constituencyData]).then((data) => {
       error = update(data);
     });
   }
@@ -82,14 +84,20 @@
    * Handle the update inside a function.
    * @returns `Error` if the data is invalid, `undefined` otherwise.
    */
-  function update([appSettingsData, appCustomizationData]: [
+  function update([appSettingsData, appCustomizationData, electionData, constituencyData]: [
     DPDataType['appSettings'] | Error,
-    DPDataType['appCustomization'] | Error
+    DPDataType['appCustomization'] | Error,
+    DPDataType['elections'] | Error,
+    DPDataType['constituencies'] | Error
   ]): Error | undefined {
     if (!isValidResult(appSettingsData, { allowEmpty: true })) return new Error('Error loading app settings data');
     if (!isValidResult(appCustomizationData, { allowEmpty: true })) return new Error('Error app customization data');
+    if (!isValidResult(electionData)) return new Error('Error loading constituency data');
+    if (!isValidResult(constituencyData)) return new Error('Error loading constituency data');
     underMaintenance = appSettingsData.underMaintenance ?? false;
-
+    $dataRoot.provideElectionData(electionData);
+    $dataRoot.provideConstituencyData(constituencyData);
+    // We don't do anything else with the data if they're okay, because the relevant stores will pick them up from $page.data
     ready = true;
   }
 
@@ -154,9 +162,6 @@
 {:else if underMaintenance}
   <MaintenancePage />
 {:else}
-  <!-- Skip links for screen readers and keyboard users. We use tabindex="1" so that's it's available before any alerts injected by layouts. -->
-  <!-- svelte-ignore a11y-positive-tabindex -->
-  <a href="#{mainId}" tabindex="1" class="sr-only focus:not-sr-only">{$t('common.skipToMain')}</a>
 
   <slot />
 

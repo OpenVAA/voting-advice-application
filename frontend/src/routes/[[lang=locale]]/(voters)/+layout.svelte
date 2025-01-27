@@ -2,7 +2,9 @@
 
 # Voter app main layout
 
+- Inits VoterContext
 - Sets top bar settings
+- Render the `Layout` component for the Voter App
 
 ### Settings
 
@@ -12,29 +14,23 @@
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { isValidResult } from '$lib/api/utils/isValidResult';
-  import { ErrorMessage } from '$lib/components/errorMessage';
-  import { Loading } from '$lib/components/loading';
-  import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
-  import { logDebugError } from '$lib/utils/logger';
-  import type { DPDataType } from '$lib/api/base/dataTypes';
-  import type { LayoutData } from './$types';
-
-  export let data: LayoutData;
-
+  import Layout from '../Layout.svelte';
+  import { VoterNav } from '$lib/templates/page/parts';
+  
   ////////////////////////////////////////////////////////////////////
   // Init Voter Context
   ////////////////////////////////////////////////////////////////////
 
-  initVoterContext();
-
-  const { appSettings, appType, dataRoot } = getAppContext();
+  const { appSettings, appType } = initVoterContext();
   $appType = 'voter';
 
-  const { topBarSettings } = getLayoutContext(onDestroy);
+  ////////////////////////////////////////////////////////////////////
+  // Layout
+  ////////////////////////////////////////////////////////////////////
 
+  const { navigation, topBarSettings } = getLayoutContext(onDestroy);
   topBarSettings.push({
     actions: {
       feedback: $appSettings.header.showFeedback ? 'show' : 'hide',
@@ -42,44 +38,20 @@
     }
   });
 
-  ////////////////////////////////////////////////////////////////////
-  // Provide globally used data and check all loaded data
-  ////////////////////////////////////////////////////////////////////
-
-  // TODO[Svelte 5]: See if this and others like it can be handled in a centralized manner in the DataContext. I.e. by subscribing to individual parts of $page.data.
-  let error: Error | undefined;
-  let ready: boolean;
-  $: {
-    // If data is updated, we want to prevent loading the slot until the promises resolve
-    error = undefined;
-    ready = false;
-    Promise.all([data.electionData, data.constituencyData]).then((data) => {
-      error = update(data);
-    });
-  }
-  $: if (error) logDebugError(error.message);
-
-  /**
-   * Handle the update inside a function so that we don't track $dataRoot, which would result in an infinite loop.
-   * @returns `Error` if the data is invalid, `undefined` otherwise.
-   */
-  function update([electionData, constituencyData]: [
-    DPDataType['elections'] | Error,
-    DPDataType['constituencies'] | Error
-  ]): Error | undefined {
-    if (!isValidResult(electionData)) return new Error('Error loading election data');
-    if (!isValidResult(constituencyData)) return new Error('Error loading constituency data');
-    $dataRoot.provideElectionData(electionData);
-    $dataRoot.provideConstituencyData(constituencyData);
-
-    ready = true;
-  }
+  const menuId = 'voter-app-menu';
+  let isDrawerOpen: boolean;
 </script>
 
-{#if error}
-  <ErrorMessage class="h-screen bg-base-300" />
-{:else if !ready}
-  <Loading class="h-screen bg-base-300" />
-{:else}
+<Layout 
+  {menuId} 
+  bind:isDrawerOpen>
+
+  <VoterNav 
+    on:keyboardFocusOut={navigation.close}
+    id={menuId}
+    hidden={!isDrawerOpen}
+    slot="menu" />
+
   <slot />
-{/if}
+  
+</Layout>
