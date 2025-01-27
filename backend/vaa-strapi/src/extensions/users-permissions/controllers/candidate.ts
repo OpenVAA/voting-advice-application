@@ -24,20 +24,17 @@ const validateRegisterBody = validateYupSchema(
  * Check that the registration key is valid for the Candidate and the User associated with it does not yet exist.
  * @returns An object with the candidate object along with the email associated with the registration key.
  */
-async function check(ctx: Context): Promise<{ candidate: Data.ContentType<CandidateApi> }> {
+async function check(ctx: Context): Promise<Pick<Data.ContentType<CandidateApi>, 'firstName' | 'lastName' | 'email'>> {
   const params = ctx.request.body;
   await validateCheckBody(params);
 
-  const candidate = await getCandidate(params.registrationKey).catch((e) => {
+  const { firstName, lastName, email } = await getCandidate(params.registrationKey).catch((e) => {
     throw e;
   });
-
   return {
-    candidate: {
-      ...(await sanitizeCandidate(candidate)),
-      // Return email associated with the registration key so that the login page can be prefilled on navigation
-      email: candidate.email
-    }
+    firstName,
+    lastName,
+    email
   };
 }
 
@@ -45,7 +42,7 @@ async function check(ctx: Context): Promise<{ candidate: Data.ContentType<Candid
  * Register a new User for the Candidate using the provided registration key and password.
  * @returns { success: true }
  */
-async function register(ctx: Context): Promise<{ success: true }> {
+async function register(ctx: Context): Promise<{ type: 'success' }> {
   const params: {
     registrationKey: string;
     password: string;
@@ -85,7 +82,7 @@ async function register(ctx: Context): Promise<{ success: true }> {
   });
 
   return {
-    success: true
+    type: 'success'
   };
 }
 
@@ -102,15 +99,6 @@ async function getCandidate(registrationKey: string): Promise<Data.ContentType<C
   if (!candidate) throw new ValidationError('Incorrect registration key');
   if (candidate.user) throw new ValidationError('The user associated with the registration key is already registered.');
   return candidate;
-}
-
-/**
- * Sanitize the Candidate object before returning it.
- */
-function sanitizeCandidate(candidate: Data.ContentType<CandidateApi>): Promise<Data.ContentType<CandidateApi>> {
-  // The Data definition for defaultSanitizeOutput is not up-to-date with the Document service API, so we need to assert it
-  const schema = strapi.getModel('api::candidate.candidate');
-  return strapi.contentAPI.sanitize.output(candidate, schema) as Promise<Data.ContentType<CandidateApi>>;
 }
 
 module.exports = {
