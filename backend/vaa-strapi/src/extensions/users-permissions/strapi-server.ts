@@ -15,6 +15,7 @@ const defaultPermissions: Array<{
 }> = [
   { action: 'plugin::users-permissions.candidate.check', roleType: 'public' },
   { action: 'plugin::users-permissions.candidate.register', roleType: 'public' },
+  { action: 'plugin::users-permissions.user.me', roleType: 'authenticated' },
   { action: 'plugin::upload.content-api.upload', roleType: 'authenticated' },
   { action: 'plugin::upload.content-api.destroy', roleType: 'authenticated' },
   { action: 'api::candidate.candidate.find', roleType: 'authenticated' },
@@ -90,6 +91,13 @@ module.exports = async (plugin: Core.Plugin) => {
     // Setup email template (the default template also does not make the URL clickable)
     const email = (await pluginStore.get({ key: 'email' })) as EmailTemplateOptions;
     email.reset_password.options.message = fs.readFileSync('config/email-templates/reset-password.html').toString();
+    // TODO: Insert AWS_SES env vars here
+    // const emailSender = {
+    //   name: '',
+    //   email: '',
+    // }
+    // email.reset_password.options.from = emailSender;
+    // email.email_confirmation.options.from = emailSender;
     await pluginStore.set({ key: 'email', value: email });
 
     return res;
@@ -124,26 +132,25 @@ module.exports = async (plugin: Core.Plugin) => {
 
   // Enforce our password validation to existing endpoints
   const authController = plugin.controllers.auth;
-
-  /**
-   * We only check the `password` field from the body even though there are multiple variations of the password field. This is because there's usually password confirmation which is compared against `password`, so the password equivalency check would fail anyway if the confirmation password does not match password requirements.
-   */
-  function checkPasswordRequirements(ctx: StrapiContext): void {
-    const { body } = ctx.request;
-    if (!body?.password || typeof body.password !== 'string')
-      throw new ValidationError('Missing password field in the body.');
-
-    const valid = validatePassword(body.password);
-    if (!valid) {
-      throw new ValidationError('Password does not meet requirements');
-    }
-  }
-
   authController.changePassword = detour(authController.changePassword, checkPasswordRequirements);
   authController.resetPassword = detour(authController.resetPassword, checkPasswordRequirements);
 
   return plugin;
 };
+
+/**
+ * We only check the `password` field from the body even though there are multiple variations of the password field. This is because there's usually password confirmation which is compared against `password`, so the password equivalency check would fail anyway if the confirmation password does not match password requirements.
+ */
+function checkPasswordRequirements(ctx: StrapiContext): void {
+  const { body } = ctx.request;
+  if (!body?.password || typeof body.password !== 'string')
+    throw new ValidationError('Missing password field in the body.');
+
+  const valid = validatePassword(body.password);
+  if (!valid) {
+    throw new ValidationError('Password does not meet requirements');
+  }
+}
 
 /**
  * Implements a curry function helper for detouring existing function, allowing to run some specific code before the real function.
@@ -157,7 +164,7 @@ function detour(detourFn: (...args: Array<unknown>) => unknown, fn: (ctx: Strapi
 
 /**
  * Incomplete typing
- * See: https://github.com/strapi/strapi/blob/2a2faea1d49c0d84077f66a57b3b73021a4c3ba7/packages/plugins/users-permissions/server/bootstrap/index.js#L85
+ * See: https://github.com/strapi/strapi/blob/008421e40e4f0fb98aab7504cea5a2b8ef7099d5/packages/plugins/users-permissions/server/bootstrap/index.js#L88
  */
 interface AdvancedOptions {
   allow_register: boolean;
