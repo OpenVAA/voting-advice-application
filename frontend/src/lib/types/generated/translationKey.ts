@@ -46,6 +46,7 @@ export type TranslationKey =
   | 'candidateApp.login.enterEmailAndPassword'
   | 'candidateApp.login.forgotPassword'
   | 'candidateApp.login.title'
+  | 'candidateApp.login.unknownError'
   | 'candidateApp.login.wrongEmailOrPassword'
   | 'candidateApp.logoutModal.continue'
   | 'candidateApp.logoutModal.ingress'
