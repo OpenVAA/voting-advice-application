@@ -16,7 +16,7 @@ The frontpage of the app for voters.
   import { getLayoutContext } from '$lib/contexts/layout';
   import { SurveyBanner } from '$lib/dynamic-components/survey/banner';
   import Footer from '$lib/templates/parts/footer/Footer.svelte';
-  import Layout from '../Layout.svelte';
+  import MainContent from '../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -37,7 +37,12 @@ The frontpage of the app for voters.
   });
 </script>
 
-<Layout title={$t('dynamic.appName')}>
+<MainContent title={$t('dynamic.appName')}>
+  
+  <!--- REMOVE -->
+  <Button text="Clear JWS token [debug]" variant="main" color="warning"
+  on:click={() => fetch('/api/candidate/logout', { method: 'POST' })} />
+
   <Button variant="main" href={$getRoute('Intro')} text={$t('dynamic.frontPage.startButton')} />
 
   <p class="mt-lg text-center">
@@ -54,4 +59,4 @@ The frontpage of the app for voters.
   {/if}
 
   <Footer />
-</Layout>
+</MainContent>
