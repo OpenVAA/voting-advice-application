@@ -1,5 +1,7 @@
 {
-  "candidateNoNomination": "Error: The candidate associated with the logged in user has no nomination. Please contact the system administrator.",
-  "nominationNoElection": "Error: The nominatinon associated with the candidate has no election. Please contact the system administrator.",
-  "userNoCandidate": "Error: The logged in user has no candidate info tied to it. Please contact the system administrator."
+  "candidateNoNomination": "The candidate associated with the logged in user has no nomination. Please contact support.",
+  "loginFailed": "Login failed. Please check your username and password.",
+  "nominationNoElection": "The nominatinon associated with the candidate has no election. Please contact support.",
+  "saveFailed": "We’re terribly sorry, there was a problem saving your answers. Please try again and if the problem persists, please contact support.",
+  "userNoCandidate": "The logged in user has no candidate info tied to it. Please contact support."
 }

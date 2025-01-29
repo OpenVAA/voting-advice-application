@@ -1,5 +1,9 @@
 {
   "disclaimer": "Your name and some other details are prefilled and cannot be changed. If there are any errors in them, please contact your party.",
+  "editableInfos": {
+    "description": "This information will appear in your profile.",
+    "title": "Your profile"
+  },
   "error": {
     "invalidQuestion": "Question type or answer type is invalid for question {questionId}"
   },
@@ -8,5 +12,6 @@
     "description": "These are the constituencies where you're nominated along with the election list and possible election symbol. If a nomination is marked 'Pending', your election symbol might not yet be defined.",
     "title": "Nominations"
   },
+  "requiredInfo": "Any fields marked with this icon must be filled before continuing.",
   "title": "Basic Information"
 }
