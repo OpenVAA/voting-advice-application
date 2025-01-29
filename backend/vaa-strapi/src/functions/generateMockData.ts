@@ -389,13 +389,13 @@ async function createCandidateNominations(duplicateFraction = 0.0) {
 
   for (const candidate of candidates) {
     const duplicate = Math.random() < duplicateFraction;
-    const electionSymbol = faker.number
-      .int({ min: 2, max: Math.ceil(candidates.length * (1 + duplicateFraction)) + 2 })
-      .toString();
     const electionRound = 1; // faker.number.int(1);
     const electionId = elections[0].documentId;
     // If duplicate create two nominations, otherwise one
     for (const constituency of faker.helpers.arrayElements(constituencies, duplicate ? 2 : 1)) {
+      const electionSymbol = faker.number
+        .int({ min: 2, max: Math.ceil(candidates.length * (1 + duplicateFraction)) + 2 })
+        .toString();
       await strapi.documents('api::nomination.nomination').create({
         data: {
           electionSymbol,

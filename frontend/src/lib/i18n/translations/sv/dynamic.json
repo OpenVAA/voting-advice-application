@@ -3,6 +3,7 @@
     "heroEmoji": "⚙️"
   },
   "appName": "Valkompassen",
+  "candidateAppName": "Valkompassen för kandidater",
   "constituencies": {
     "heroEmoji": "📍",
     "ingressSingleElection": "Kandidaterna och partierna är indelade i valkretsar. Du kan bara rösta på dem i din valkrets.",
@@ -61,6 +62,9 @@
   },
   "statistics": {
     "heroEmoji": "🧮"
+  },
+  "success": {
+    "heroEmoji": "🎉"
   },
   "survey": {
     "button": "Ta del av användarundersökning",

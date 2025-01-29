@@ -1,16 +1,17 @@
 {
-  "answerButton": "SV Answer this question",
+  "answerQuestion": "SV Answer this question",
   "answerSaveError": "SV Saving answer failed",
   "editAnswer": "SV Edit Your Answer",
-  "enterMissingAnswer": "SV Enter Missing Answers",
+  "enterMissingAnswers": "SV Enter Missing Answers",
   "error": {
     "answerNotFound": "SV Answer not found for question {questionId}",
     "invalidAnswer": "SV Answer is invalid for question {questionId}",
     "questionNotFound": "SV Question not found for question {questionId}"
   },
-  "ingress": "SV You can see all of your opinions below and edit them by tapping on them.",
-  "intro": {
-    "ingress": "SV Next, the app will ask your opinions on {numQuestions} statements about political issues and values. When voters use the Election Compass, they will also answer the same statements and see how well their opinions agree with the yours."
+  "ingress": {
+    "default": "SV You can see all of your opinions below and edit them.",
+    "empty": "SV Next, the app will ask your opinions on {numQuestions} statements about political issues and values. When voters use the Election Compass, they will also answer the same statements and see how well their opinions agree with the yours.",
+    "partial": "SV You can see all of your opinions below, edit them and answer the remaining ones."
   },
   "notAnswered": "SV You didn't answer this question.",
   "openAnswerPrompt": "SV Comment on this issue",

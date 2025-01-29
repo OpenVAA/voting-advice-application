@@ -1,5 +1,9 @@
 {
   "disclaimer": "Nimesi ja jotkin muut tiedot on täytetty valmiiksi, eikä niitä voi muuttaa. Jos niissä on virheitä, ota yhteyttä puolueeseesi.",
+  "editableInfos": {
+    "description": "Nämä tiedot näkyvät profiilisivullasi.",
+    "title": "Profiilisi"
+  },
   "error": {
     "invalidQuestion": "Kysymyksen tai vastauksen tyyppi oli virheellinen kysymykselle {questionId}."
   },
@@ -8,5 +12,6 @@
     "description": "Nämä ovat vaalipiirit, joissa olet ehdolla, sekä vaaliluettelo ja mahdollinen vaalitunnus. Jos ehdokkuus on merkitty merkinnällä ”Vireillä”, vaalitunnustasi ei välttämättä ole vielä määritelty.",
     "title": "Ehdokkuudet"
   },
+  "requiredInfo": "Sinun pitää täyttää tällä ikonilla merkityt kentät ennen jatkamista.",
   "title": "Perustiedot"
 }

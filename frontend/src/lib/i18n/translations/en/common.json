@@ -18,7 +18,10 @@
   "close": "Close",
   "closeDialog": "Close dialog",
   "closeMenu": "Close menu",
+  "confirmed": "Confirmed",
+  "constituency": "Constituency",
   "continue": "Continue",
+  "election": "Election",
   "electionList": "List",
   "electionSymbol": {
     "alliance": "Election Symbol",
@@ -39,12 +42,14 @@
   },
   "lastName": "Surname",
   "loading": "Loading…",
+  "locked": "Locked",
   "login": "Sign in",
   "logout": "Log Out",
   "madeWithPrefix": "Made with",
   "madeWithSuffix": "",
   "missingAnswer": "—",
   "multipleAnswerSeparator": " • ",
+  "nomination": "Nomination",
   "openCloseMenu": "Toggle menu",
   "openMenu": "Open menu",
   "openVAA": "OpenVAA",
@@ -53,7 +58,9 @@
     "plural": "parties",
     "singular": "party"
   },
-  "pending": "pending",
+  "password": "Password",
+  "passwordConfirmation": "Confirm password",
+  "pending": "Pending",
   "primaryActions": "Primary actions",
   "privacy": {
     "dataCollection": {
@@ -65,6 +72,7 @@
   "publishedBy": "Published by {publisher}",
   "question": "Question",
   "readMore": "Read More",
+  "required": "Required",
   "resetAnswers": "Clear your answers",
   "return": "Return",
   "returnHome": "Return Home",
@@ -72,6 +80,8 @@
   "saveAndReturn": "Save and Return",
   "showFullImage": "Show full image",
   "skipToMain": "Skip to main content",
+  "state": "State",
+  "success": "Action succesful!",
   "thanksNo": "No Thanks",
   "unaffiliated": "Unaffiliated",
   "website": "Website"
