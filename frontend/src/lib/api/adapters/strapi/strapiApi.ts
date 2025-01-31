@@ -43,6 +43,7 @@ export const STRAPI_API: Record<keyof StrapiApiReturnType, string> = {
   login: 'api/auth/local',
   overwriteAnswers: 'api/candidate/:id/overwrite-answers',
   registerCandidate: 'api/auth/candidate/register',
+  preregisterCandidate: 'api/auth/candidate/preregister', // +
   resetPassword: 'api/auth/reset-password',
   setProperties: 'api/candidate/:id/update-properties',
   setPassword: 'api/auth/change-password',
@@ -78,6 +79,7 @@ export type StrapiApiReturnType = {
   login: StrapiLoginData;
   overwriteAnswers: StrapiUpdateCandidateReturnData;
   registerCandidate: StrapiRegisterData;
+  preregisterCandidate: StrapiCandidateData;
   resetPassword: unknown;
   setProperties: StrapiUpdateCandidateReturnData;
   setPassword: unknown;

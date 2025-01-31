@@ -36,7 +36,7 @@ export async function POST({ cookies, request }: RequestEvent): Promise<Response
       publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
     });
 
-    cookies.set('signicat:id_token', idToken, {
+    cookies.set('id_token', idToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
@@ -50,7 +50,7 @@ export async function POST({ cookies, request }: RequestEvent): Promise<Response
 }
 
 export async function DELETE({ cookies }: RequestEvent): Promise<Response> {
-  cookies.delete('signicat:id_token', {
+  cookies.delete('id_token', {
     httpOnly: true,
     secure: true,
     sameSite: 'strict',
