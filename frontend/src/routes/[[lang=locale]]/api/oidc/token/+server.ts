@@ -1,25 +1,26 @@
-import { getUserInfo } from '@openvaa/app-shared';
 import { error, json, text } from '@sveltejs/kit';
 import {
-  SIGNICAT_CLIENT_SECRET,
-  SIGNICAT_JWKS_ENDPOINT,
-  SIGNICAT_PRIVATE_KEY,
-  SIGNICAT_TOKEN_ENDPOINT} from '$env/static/private';
-import { PUBLIC_SIGNICAT_CLIENT_ID } from '$env/static/public';
+  IDENTITY_PROVIDER_CLIENT_SECRET,
+  IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY,
+  IDENTITY_PROVIDER_JWKS_URI,
+  IDENTITY_PROVIDER_TOKEN_ENDPOINT
+} from '$env/static/private';
+import { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID } from '$env/static/public';
+import { getIdTokenClaims } from '$lib/api/utils/auth/getIdTokenClaims';
 import type { RequestEvent } from '@sveltejs/kit';
 
 export async function POST({ cookies, request }: RequestEvent): Promise<Response> {
   const { authorizationCode, redirectUri } = await request.json();
 
-  const signicatResponse = await fetch(SIGNICAT_TOKEN_ENDPOINT, {
+  const signicatResponse = await fetch(IDENTITY_PROVIDER_TOKEN_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       grant_type: 'authorization_code',
       code: authorizationCode,
       redirect_uri: redirectUri,
-      client_id: PUBLIC_SIGNICAT_CLIENT_ID,
-      client_secret: SIGNICAT_CLIENT_SECRET
+      client_id: PUBLIC_IDENTITY_PROVIDER_CLIENT_ID,
+      client_secret: IDENTITY_PROVIDER_CLIENT_SECRET
     }).toString()
   });
 
@@ -27,22 +28,22 @@ export async function POST({ cookies, request }: RequestEvent): Promise<Response
     return error(401, { message: 'Unauthorized' });
   }
 
-  const { id_token: IDToken } = await signicatResponse.json();
+  const { id_token: idToken } = await signicatResponse.json();
 
   try {
-    const userInfo = await getUserInfo(IDToken, {
-      privateEncryptionJWK: JSON.parse(SIGNICAT_PRIVATE_KEY),
-      publicSignatureJWKSetUri: SIGNICAT_JWKS_ENDPOINT
+    const claims = await getIdTokenClaims(idToken, {
+      privateEncryptionJWK: JSON.parse(IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY),
+      publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
     });
 
-    cookies.set('signicat:id_token', IDToken, {
+    cookies.set('signicat:id_token', idToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
       path: '/'
     });
 
-    return json({ userInfo: { ...userInfo, birthdate: undefined } });
+    return json({ userInfo: { ...claims, birthdate: undefined } });
   } catch {
     return error(401, { message: 'Unauthorized' });
   }

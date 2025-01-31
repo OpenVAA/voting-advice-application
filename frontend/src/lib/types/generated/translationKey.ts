@@ -62,6 +62,8 @@ export type TranslationKey =
   | 'candidateApp.notSupported.content'
   | 'candidateApp.notSupported.heroEmoji'
   | 'candidateApp.notSupported.title'
+  | 'candidateApp.preregister.identifyYourself'
+  | 'candidateApp.preregister.register'
   | 'candidateApp.preview.close'
   | 'candidateApp.preview.notFound'
   | 'candidateApp.preview.tip'

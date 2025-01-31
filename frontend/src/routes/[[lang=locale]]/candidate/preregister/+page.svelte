@@ -27,7 +27,7 @@
 
   async function authenticateWithOIDC() {
     if (browser) {
-      const clientId = constants.PUBLIC_SIGNICAT_CLIENT_ID;
+      const clientId = constants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
       const redirectUri = `${window.location.origin}${window.location.pathname}/signicat/oidc/callback`;
       window.location.href = `${constants.PUBLIC_SIGNICAT_AUTHORIZE_ENDPOINT}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=openid%20profile&prompt=login`;
     }
