@@ -14,6 +14,10 @@ export type QuestionBlocks = {
    */
   questions: Array<AnyQuestionVariant>;
   /**
+   * Array of questions in the order they were shown
+   */
+  shownQuestions: Array<AnyQuestionVariant>;
+  /**
    * Find a `QuestionBlock` by its `QuestionCategory`.
    * @param category - The `QuestionCategory` to find.
    * @returns The block and its index, or `undefined` if not found.
@@ -27,6 +31,11 @@ export type QuestionBlocks = {
   getByQuestion: (
     question: AnyQuestionVariant
   ) => { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
+  /**
+   * Add a question to the shown questions history
+   * @param question - The question to mark as shown
+   */
+  addShownQuestion: (question: AnyQuestionVariant) => void;
 };
 /**
  * An array of `Question`s.

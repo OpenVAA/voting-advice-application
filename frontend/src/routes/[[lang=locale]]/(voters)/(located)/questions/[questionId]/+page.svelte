@@ -123,7 +123,7 @@ Display a question for answering.
     const unansweredQuestions = allQuestions.filter(q => !$answers[q.id]?.value);
     
     if (unansweredQuestions.length === 0) {
-        return [];
+      return [];
     }
 
     const maxSuggestions = $appSettings.questions.questionOrdering?.suggestions ?? 3;
@@ -138,17 +138,8 @@ Display a question for answering.
     
     // Add delay before showing next question or choices
     setTimeout(() => {
-        if (useQuestionOrdering) {
-            nextQuestionChoices = getNextQuestionChoices();
-            if (nextQuestionChoices.length > 0) {
-                showNextQuestionChoices = true;
-            } else {
-                goto($getRoute('Results'));
-            }
-        } else {
-            handleJump();
-        }
-        disabled = false;
+      handleJump();
+      disabled = false;
     }, DELAY.md);
   }
 
@@ -164,47 +155,8 @@ Display a question for answering.
   function handleJump(steps = 1): void {
     if (!questionBlock) return;
     if (useQuestionOrdering) {
-        const orderedAnswers = answers.getAnswerOrder();
-        const currentIndex = orderedAnswers.indexOf(question.id);
-        
-        if (steps < 0) {
-            if (currentIndex >= 0) {
-                // If we're showing choices, stay on current question when going back
-                const previousIndex = currentIndex - (showNextQuestionChoices ? 0 : 1);
-                if (previousIndex >= 0) {
-                    const previousId = orderedAnswers[previousIndex];
-                    goto($getRoute({ route: 'Question', questionId: previousId }));
-                } else {
-                    goto($getRoute('Questions'));
-                }
-            } else {
-                // If current question isn't in history, go to last answered question
-                const lastAnsweredId = orderedAnswers[orderedAnswers.length - 1];
-                if (lastAnsweredId) {
-                    goto($getRoute({ route: 'Question', questionId: lastAnsweredId }));
-                } else {
-                    goto($getRoute('Questions'));
-                }
-            }
-        } else {
-            // When going forward, check if we're in the ordered answers
-            if (currentIndex >= 0 && currentIndex < orderedAnswers.length - 1) {
-                // If we're in the ordered answers, go to the next answered question
-                const nextId = orderedAnswers[currentIndex + 1];
-                goto($getRoute({ route: 'Question', questionId: nextId }));
-            } else {
-                // Only show choices if we're not in the ordered answers or at the end
-                nextQuestionChoices = getNextQuestionChoices();
-                if (nextQuestionChoices.length > 0) {
-                    showNextQuestionChoices = true;
-                } else {
-                    goto($getRoute('Results'));
-                }
-            }
-        }
-        
-        disabled = false;
-        return;
+      handleJumpForQuestionOrdering(steps);
+      return;
     }
 
     // Build the new URL based on appSettings and the new index
@@ -224,7 +176,6 @@ Display a question for answering.
       // TODO: Handle category showing more centrally, e.g. during onMount of this page, so that sources linking here need to concern themselves with choosing whether to show the category intro. In that case, though, another search param will be necessary that can be used to suppress category intro display.
       if (
         $appSettings.questions.questionsIntro.show &&
-        !useQuestionOrdering &&
         steps > 0 &&
         $selectedQuestionBlocks.getByQuestion(newQuestion)?.indexInBlock === 0
       ) {
@@ -234,6 +185,41 @@ Display a question for answering.
         url = $getRoute({ route: 'Question', questionId: newQuestion.id });
         // Disable scrolling when moving between questions for a smoother experience
         noScroll = true;
+      }
+    }
+    goto(url, { noScroll });
+    disabled = false;
+  }
+
+  // Jump to another question when question ordering is enabled
+  function handleJumpForQuestionOrdering(steps: number): void {
+    // Get shown questions and the current index
+    const shownQuestions = $selectedQuestionBlocks.shownQuestions;
+    const currentIndex = shownQuestions.findIndex(q => q.id === question.id);
+
+    // If showing choices view, stay on current question. Otherwise, move by steps. 
+    const newIndex = currentIndex + (showNextQuestionChoices ? 0 : steps);
+    let url: string;
+    let noScroll = false;
+      
+    // Go back to the questions overview if moving back from the first question
+    if (newIndex < 0) {
+      url = $getRoute('Questions');
+    // Go to previous/next question if moving within the shown questions
+    } else if (newIndex < shownQuestions.length) {
+      url = $getRoute({ route: 'Question', questionId: shownQuestions[newIndex].id });
+      noScroll = true;
+    // Handle end of shown questions
+    } else {
+      nextQuestionChoices = getNextQuestionChoices();
+      // If no more questions to answer, go to results
+      if (nextQuestionChoices.length <= 0) {
+        url = $getRoute('Results');
+      // Otherwise, show the next question choices
+      } else {
+        showNextQuestionChoices = true;
+        disabled = false;
+        return;
       }
     }
     goto(url, { noScroll });
@@ -285,6 +271,7 @@ Display a question for answering.
   } */
 
   function handleChoiceSelect(selectedQuestion: AnyQuestionVariant) {
+    $selectedQuestionBlocks.addShownQuestion(selectedQuestion);
     showNextQuestionChoices = false;
     goto($getRoute({ route: 'Question', questionId: selectedQuestion.id }));
     disabled = false;
@@ -292,11 +279,14 @@ Display a question for answering.
 
   // Replace the existing progress reactive block with:
   $: if (questionBlock) {
-    // Set current to number of answered questions
-    progress.current.set(Object.keys($answers).length);
-    // Set max to total number of questions
-    progress.max.set($selectedQuestionBlocks.questions.length);
+  if (useQuestionOrdering) {
+    const currentIndex = $selectedQuestionBlocks.shownQuestions.findIndex(q => q.id === question.id);
+    progress.current.set(currentIndex + 1);
+  } else {
+    progress.current.set(questionBlock.index + 1);
   }
+  progress.max.set($selectedQuestionBlocks.questions.length);
+}
 </script>
 
 {#if question && questionBlock}

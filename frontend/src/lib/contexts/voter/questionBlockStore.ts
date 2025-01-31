@@ -1,4 +1,4 @@
-import { derived } from 'svelte/store';
+import { derived, get, writable } from 'svelte/store';
 import { logDebugError } from '$lib/utils/logger';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
@@ -18,6 +18,9 @@ export function questionBlockStore({
   selectedElections: Readable<Array<Election>>;
   selectedConstituencies: Readable<Array<Constituency>>;
 }): Readable<QuestionBlocks> {
+  // Store for shown questions
+  const shownQuestions = writable<Array<AnyQuestionVariant>>([]);
+
   return derived(
     [
       firstQuestionId,
@@ -53,15 +56,26 @@ export function questionBlockStore({
         get questions() {
           return blocks.flat();
         },
+        shownQuestions: get(shownQuestions),
         getByCategory: ({ id }: QuestionCategory) => getByCategoryId(blocks, id),
-        getByQuestion: ({ id }: AnyQuestionVariant) => getByQuestionId(blocks, id)
+        getByQuestion: ({ id }: AnyQuestionVariant) => getByQuestionId(blocks, id),
+        addShownQuestion: (question: AnyQuestionVariant) => {
+          shownQuestions.update((questions) => {
+            if (!questions.find((q) => q.id === question.id)) {
+              return [...questions, question];
+            }
+            return questions;
+          });
+        }
       };
     },
     {
       blocks: [],
       questions: [],
+      shownQuestions: [],
       getByCategory: () => undefined,
-      getByQuestion: () => undefined
+      getByQuestion: () => undefined,
+      addShownQuestion: () => {}
     }
   );
 }
