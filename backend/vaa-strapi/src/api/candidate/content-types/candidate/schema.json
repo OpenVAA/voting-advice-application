@@ -24,6 +24,12 @@
       "private": true,
       "searchable": false
     },
+    "identifier": {
+      "configurable": false,
+      "type": "string",
+      "private": true,
+      "searchable": false
+    },
     "user": {
       "type": "relation",
       "relation": "oneToOne",
