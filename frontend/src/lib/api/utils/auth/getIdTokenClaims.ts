@@ -1,6 +1,6 @@
 import * as jose from 'jose';
 
-export async function getUserInfo(
+export async function getIdTokenClaims(
   idToken: string,
   options: { privateEncryptionJWK: jose.JWK; publicSignatureJWKSetUri: string }
 ) {

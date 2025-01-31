@@ -1,21 +1,21 @@
-import { getUserInfo } from '@openvaa/app-shared';
 import { fail } from '@sveltejs/kit';
-import { SIGNICAT_JWKS_ENDPOINT, SIGNICAT_PRIVATE_KEY } from '$env/static/private';
+import { IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY,IDENTITY_PROVIDER_JWKS_URI } from '$env/static/private';
+import { getIdTokenClaims } from '$lib/api/utils/auth/getIdTokenClaims';
 import type { Actions, Cookies } from '@sveltejs/kit';
 
 export async function load({ cookies }: { cookies: Cookies }) {
-  const IDToken = cookies.get('signicat:id_token');
+  const idToken = cookies.get('signicat:id_token');
 
-  if (!IDToken) {
+  if (!idToken) {
     return { userInfo: null };
   }
 
   try {
-    const userInfo = await getUserInfo(IDToken, {
-      privateEncryptionJWK: JSON.parse(SIGNICAT_PRIVATE_KEY),
-      publicSignatureJWKSetUri: SIGNICAT_JWKS_ENDPOINT
+    const claims = await getIdTokenClaims(idToken, {
+      privateEncryptionJWK: JSON.parse(IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY),
+      publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
     });
-    return { userInfo: { ...userInfo, birthdate: undefined } };
+    return { userInfo: { ...claims, birthdate: undefined } };
   } catch {
     cookies.delete('signicat:id_token', {
       httpOnly: true,
@@ -38,21 +38,21 @@ export const actions: Actions = {
     };
     */
 
-    const IDToken = cookies.get('signicat:id_token');
+    const idToken = cookies.get('signicat:id_token');
 
-    if (!IDToken) {
+    if (!idToken) {
       return fail(401);
     }
 
     /*
-    const userInfo = await getUserInfo(IDToken, {
-      privateEncryptionJWK: JSON.parse(SIGNICAT_PRIVATE_KEY),
-      publicSignatureJWKSetUri: SIGNICAT_JWKS_ENDPOINT
+    const userInfo = await getUserInfo(idToken, {
+      privateEncryptionJWK: JSON.parse(IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY),
+      publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
     });
     */
 
     // TODO: Call the Strapi API.
-    // const response = await preregister({ IDToken, email: data.email1 });
+    // const response = await preregister({ idToken, email: data.email1 });
 
     cookies.delete('signicat:id_token', {
       httpOnly: true,
