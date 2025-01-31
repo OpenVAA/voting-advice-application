@@ -15,25 +15,25 @@ Display a question for answering.
 -->
 
 <script lang="ts">
-  import { error } from '@sveltejs/kit';
-  import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { Loading } from '$lib/components/loading';
-  import { QuestionActions, QuestionInfo } from '$lib/components/questions';
+  import { QuestionActions } from '$lib/components/questions';
   import QuestionChoices from '$lib/components/questions/QuestionChoices.svelte';
+  import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
+  import type { QuestionBlock } from '$lib/contexts/voter/questionBlockStore.type';
+  import { QuestionExtendedInfoButton } from '$lib/dynamic-components/questionInfo';
   import { logDebugError } from '$lib/utils/logger';
   import { FIRST_QUESTION_ID, parseParams } from '$lib/utils/route';
   import { DELAY } from '$lib/utils/timing';
-  import Layout from '../../../../Layout.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
-  import type { QuestionBlock } from '$lib/contexts/voter/questionBlockStore.type';
-  import { Button } from '$lib/components/button';
-  import { getAppContext } from '$lib/contexts/app';
+  import { error } from '@sveltejs/kit';
+  import { onDestroy, onMount } from 'svelte';
+  import Layout from '../../../../Layout.svelte';
   //import {type VideoMode, Video} from '$lib/components/video';
 
   ////////////////////////////////////////////////////////////////////
@@ -255,26 +255,8 @@ Display a question for answering.
 
     <!-- !videoProps && -->
     {#if info && info !== ''}
-      {@const { infoSections } = customData}
       <div class="flex items-center justify-center">
-        <Button
-          text="Learn more"
-          icon="info"
-          iconPos="left"
-          on:click={() => {
-            handleInfoExpand();
-            modalStack.push(QuestionInfo, {
-              title: text,
-              info,
-              onCollapse: handleInfoCollapse,
-              infoSections: Object.values(infoSections ?? {})
-                .filter(({ visible }) => !!visible)
-                .map(({ title, text }) => ({
-                  title: title ?? '',
-                  content: text ?? ''
-                }))
-            });
-          }} />
+        <QuestionExtendedInfoButton {question} />
       </div>
     {/if}
 
@@ -287,8 +269,7 @@ Display a question for answering.
           {disabled}
           {question}
           {selectedId}
-          variant={// @ts-ignore
-          customData?.vertical ? 'vertical' : undefined}
+          variant={customData?.vertical ? 'vertical' : undefined}
           onChange={handleAnswer} />
       {:else}
         {$t('error.unsupportedQuestion')}
