@@ -20,6 +20,15 @@ const validateRegisterBody = validateYupSchema(
   })
 );
 
+const validatePreregisterBody = validateYupSchema(
+  yup.object({
+    firstName: yup.string().required(),
+    lastName: yup.string().required(),
+    identifier: yup.string().required(),
+    email: yup.string().required()
+  })
+);
+
 /**
  * Check that the registration key is valid for the Candidate and the User associated with it does not yet exist.
  * @returns An object with the candidate object along with the email associated with the registration key.
@@ -87,6 +96,50 @@ async function register(ctx: Context): Promise<{ type: 'success' }> {
 }
 
 /**
+ * Preregister a Candidate.
+ * @access Authorization: Bearer {API_KEY}
+ * @returns { success: true }
+ */
+async function preregister(ctx: Context): Promise<{ type: 'success' }> {
+  const params: {
+    firstName: string;
+    lastName: string;
+    identifier: string;
+    email: string;
+    // TODO: Add other fields.
+  } = ctx.request.body;
+
+  await validatePreregisterBody(params);
+
+  const candidate =
+    (await strapi.query('api::candidate.candidate').findOne({ where: { email: params.email } })) ??
+    (await strapi.query('api::candidate.candidate').findOne({
+      where: {
+        firstName: params.firstName,
+        lastName: params.lastName
+        // TODO: Add identifier/birthdate
+      }
+    }));
+
+  if (candidate) {
+    throw new ValidationError('Candidate already exists. Proceed to sign up or sign in.');
+  }
+
+  await strapi.documents('api::candidate.candidate').create({
+    data: {
+      firstName: params.firstName,
+      lastName: params.lastName,
+      email: params.email
+      // TODO: Add other fields.
+    }
+  });
+
+  return {
+    type: 'success'
+  };
+}
+
+/**
  * Get the Candidate with the registration key and check that the user does not exist.
  */
 async function getCandidate(registrationKey: string): Promise<Data.ContentType<CandidateApi>> {
@@ -103,5 +156,6 @@ async function getCandidate(registrationKey: string): Promise<Data.ContentType<C
 
 module.exports = {
   check,
-  register
+  register,
+  preregister
 };
