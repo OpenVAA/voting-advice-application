@@ -12,7 +12,7 @@ export type ModalStore = Readable<
    * Push a new popup component to the stack.
    * @param component - A component exposing the `onClose` prop.
    */
-  push: <T extends Record<string, unknown>>(component: ModalComponent<T>, props?: T) => void;
+  push: <TProps extends Record<string, unknown>>(component: ModalComponent<TProps>, props?: TProps) => void;
 
   /**
    * Remove the top popup component from the stack. Usually called internally when the popup is closed.

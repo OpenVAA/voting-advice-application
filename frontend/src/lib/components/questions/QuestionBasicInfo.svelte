@@ -17,32 +17,24 @@ Display the question's expandable information content.
 -->
 
 <script lang="ts">
-  import { Drawer } from '$lib/components/drawer';
+  import { Expander } from '$lib/components/expander';
   import { getComponentContext } from '$lib/contexts/component';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import { Button } from '../button';
-  import { Expander } from '../expander';
-  import Modal from '../modal/Modal.svelte';
-  import type { QuestionInfoProps } from './QuestionInfo.type';
+  import type { QuestionBasicInfoProps } from './QuestionBasicInfo.type';
 
-  type $$Props = QuestionInfoProps;
+  type $$Props = QuestionBasicInfoProps;
 
-  export let title: $$Props['title'];
   export let info: $$Props['info'];
-  export let infoSections: $$Props['infoSections'] = [];
   export let onCollapse: $$Props['onCollapse'] = undefined;
   export let onExpand: $$Props['onExpand'] = undefined;
 
   const { t } = getComponentContext();
 </script>
 
-<Drawer {title} on:close={() => onCollapse?.()}>
+<Expander
+  on:collapse={() => onCollapse?.()}
+  on:expand={() => onExpand?.()}
+  title={$t('common.readMore')}
+  {...$$restProps}>
   {@html sanitizeHtml(info)}
-  <div class="mt-16">
-    {#each infoSections ?? [] as { title, content }}
-      <Expander {title} {...$$restProps} titleClass="flex justify-between font-bold" contentClass="!text-left">
-        {@html sanitizeHtml(content)}
-      </Expander>
-    {/each}
-  </div>
-</Drawer>
+</Expander>
