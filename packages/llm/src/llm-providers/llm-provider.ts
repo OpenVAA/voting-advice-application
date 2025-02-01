@@ -1,14 +1,13 @@
-export enum Role {
-  SYSTEM = 'system',
-  USER = 'user'
-  // ASSISTANT = 'assistant'
-}
+export type Role = 'system' | 'user';
 
 export class Message {
-  constructor(
-    public role: Role,
-    public content: string
-  ) {}
+  public role: Role;
+  public content: string;
+
+  constructor({ role, content }: { role: Role; content: string }) {
+    this.role = role;
+    this.content = content;
+  }
 }
 
 export class UsageStats {
@@ -67,10 +66,10 @@ export class LLMResponse {
 // Abstract class for LLMProvider
 export abstract class LLMProvider {
   abstract generate(
-    messages: Message[],
+    messages: Array<Message>,
     temperature: number,
     maxTokens?: number,
-    stopSequences?: string[]
+    stopSequences?: Array<string>
   ): Promise<LLMResponse>;
 
   abstract countTokens(text: string): Promise<{

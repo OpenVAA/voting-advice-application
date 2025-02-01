@@ -1,10 +1,6 @@
 {
   "extends": "@strapi/typescript-utils/tsconfigs/server",
   "compilerOptions": {
-    "paths": {
-      "@openvaa/llm/*": ["../../packages/llm/src/*"],
-      "@openvaa/llm": ["../../packages/llm/src"]
-    },
     "outDir": "dist",
     "rootDir": ".",
     "allowJs": true

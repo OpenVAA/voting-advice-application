@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { Message, LLMResponse, UsageStats, LLMProvider, Role } from './llm-provider'; // Assuming the previous code is saved in another file
+import { LLMProvider, LLMResponse, Message, UsageStats } from './llm-provider'; // Assuming the previous code is saved in another file
 
 export class OpenAIProvider extends LLMProvider {
   private model: string;
@@ -20,21 +20,18 @@ export class OpenAIProvider extends LLMProvider {
   }
 
   async generate(
-    messages: Message[],
+    messages: Array<Message>,
     temperature: number = 0.7,
-    maxTokens?: number,
-    stopSequences?: string[]
+    maxTokens?: number
+    //stopSequences?: Array<string>
   ): Promise<LLMResponse> {
     // Convert our internal message format to OpenAI API format
-    const openAIMessages = messages.map((message) => ({
-      role: message.role.toLowerCase(),
-      content: message.content
-    }));
+    const openAIMessages: Array<OpenAI.ChatCompletionMessageParam> = messages.map(mapToMessageParam);
 
     try {
       const response = await this.openai.chat.completions.create({
         model: this.model,
-        messages: openAIMessages as any,
+        messages: openAIMessages,
         temperature,
         max_tokens: maxTokens
       });
@@ -69,5 +66,46 @@ export class OpenAIProvider extends LLMProvider {
     // Example logic: you can return how many arguments/messages fit into the max context
     const averageTokensPerMessage = 50; // Rough average tokens per message
     return Math.floor(this.maxContextTokens / averageTokensPerMessage);
+  }
+}
+
+function mapToMessageParam(message: { role: string; content: string }): OpenAI.ChatCompletionMessageParam {
+  // Convert role to lowercase for case-insensitive comparison
+  const role = message.role.toLowerCase();
+
+  switch (role) {
+    case 'system':
+      return {
+        role: 'system',
+        content: message.content
+      } as OpenAI.ChatCompletionSystemMessageParam;
+
+    case 'user':
+      return {
+        role: 'user',
+        content: message.content
+      } as OpenAI.ChatCompletionUserMessageParam;
+
+    case 'assistant':
+      return {
+        role: 'assistant',
+        content: message.content
+      } as OpenAI.ChatCompletionAssistantMessageParam;
+
+    case 'tool':
+      return {
+        role: 'tool',
+        content: message.content,
+        tool_call_id: '' // You'll need to provide this
+      } as OpenAI.ChatCompletionToolMessageParam;
+
+    case 'developer':
+      return {
+        role: 'developer',
+        content: message.content
+      } as OpenAI.ChatCompletionDeveloperMessageParam;
+
+    default:
+      throw new Error(`Unsupported role: ${role}`);
   }
 }

@@ -3,7 +3,7 @@
   "extends": "@openvaa/shared-config/ts",
   "compilerOptions": {
     "rootDir": "./src",
-    "composite": true
+    "outDir": "./build"
   },
   "include": ["src/**/*"],
   "exclude": ["tests/**/*", "**/*.test.ts"],

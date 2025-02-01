@@ -12,7 +12,7 @@
 
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
 import { dynamicSettings } from '@openvaa/app-shared';
-import { LLMResponse, OpenAIProvider, Role } from '@openvaa/llm';
+import { LLMResponse, OpenAIProvider } from '@openvaa/llm';
 import mockCandidateForTesting from './mockData/mockCandidateForTesting.json';
 import mockCategories from './mockData/mockCategories.json';
 import mockInfoQuestions from './mockData/mockInfoQuestions.json';
@@ -169,8 +169,6 @@ export async function generateMockData() {
     if (generateAiMockData) {
       console.info('generating LLM summaries');
       await generateMockLLMSummaries();
-      console.info('Done!');
-      console.info('#######################################');
     }
     console.info('Done!');
     console.info('#######################################');
@@ -678,17 +676,16 @@ async function createCandidateUsers() {
 }
 
 async function generateMockLLMSummaries() {
-  const OPEN_AI_API_KEY = process.env.OPEN_AI_API_KEY;
+  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   try {
-    const res: LLMResponse = await new OpenAIProvider({ apiKey: OPEN_AI_API_KEY })
-      .generate([
-        {
-          role: Role.SYSTEM,
-          content: 'message.content'
-        },
-        {
-          role: Role.USER,
-          content: `Write a lorem ipsum summary of this sentence: Taxes should be increased before cutting public spending
+    const res: LLMResponse = await new OpenAIProvider({ apiKey: OPENAI_API_KEY }).generate([
+      {
+        role: 'system',
+        content: 'message.content'
+      },
+      {
+        role: 'user',
+        content: `Write a lorem ipsum summary of this sentence: Taxes should be increased before cutting public spending
           Generate it in this format and change only the text part:
           {
           "infoSections": {
@@ -705,9 +702,8 @@ async function generateMockLLMSummaries() {
             }
           }
         }`
-        }
-      ])
-      .then((r) => r);
+      }
+    ]);
     // Api response with LLMResponse parameters
     // TODO: Type for this? Also handle error-responses
     const generatedCustomData = JSON.parse(res.content);

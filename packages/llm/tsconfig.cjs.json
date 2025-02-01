@@ -1,9 +1,13 @@
 {
-  "extends": "./tsconfig.base.json",
+  "extends": "./tsconfig.json",
   "compilerOptions": {
+    "target": "ESNext",
     "module": "CommonJS",
-    "moduleResolution": "Node",
+    "moduleResolution": "Node10",
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": true,
+
     "outDir": "./build/cjs",
-    "declarationMap": false
+    "tsBuildInfoFile": "./build/cjs/tsconfig.tsbuildinfo"
   }
 }
