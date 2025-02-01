@@ -38,6 +38,7 @@ services:
       AWS_S3_BUCKET: ${AWS_S3_BUCKET}
       STATIC_CONTENT_BASE_URL: ${STATIC_CONTENT_BASE_URL}
       STATIC_MEDIA_CONTENT_PATH: ${STATIC_MEDIA_CONTENT_PATH}
+      PUBLIC_BROWSER_FRONTEND_URL: ${PUBLIC_BROWSER_FRONTEND_URL}
     healthcheck:
       test: wget --no-verbose --tries=1 --spider ${STRAPI_HOST}:${STRAPI_PORT} || exit 1
       interval: 30s

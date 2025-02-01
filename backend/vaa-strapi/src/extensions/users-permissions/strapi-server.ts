@@ -4,6 +4,7 @@ import fs from 'fs';
 import * as candidate from './controllers/candidate';
 import type { Core, UID } from '@strapi/strapi';
 import { StrapiContext } from '../../../types/customStrapiTypes';
+import { frontendUrl } from '../../constants';
 
 const { ValidationError } = errors;
 
@@ -55,7 +56,7 @@ module.exports = async (plugin: Core.Plugin) => {
     // Disable registration by default
     advanced.allow_register = false;
     // Setup correct frontend URL for password resets
-    const url = new URL(process.env.PUBLIC_BROWSER_FRONTEND_URL ?? 'http://localhost:5173');
+    const url = new URL(frontendUrl);
     url.pathname = '/candidate/password-reset';
     advanced.email_reset_password = url;
     await pluginStore.set({ key: 'advanced', value: advanced });
