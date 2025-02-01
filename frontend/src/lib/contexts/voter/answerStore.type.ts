@@ -18,8 +18,4 @@ export type AnswerStore = Readable<Answers> & {
    * Delete all answers.
    */
   reset: () => void;
-  /**
-   * Get the order of answered questions.
-   */
-  getAnswerOrder: () => Array<string>;
 };
