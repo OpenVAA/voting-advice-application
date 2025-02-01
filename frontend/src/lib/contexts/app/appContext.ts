@@ -38,7 +38,7 @@ export function initAppContext(): AppContext {
   // App settings, customization and user preferences
   ////////////////////////////////////////////////////////////////////
 
-  const appType: Writable<AppType> = writable('voter');
+  const appType: Writable<AppType> = writable();
 
   // Both appSettings and appCustomization are updated directly from $page.data
 

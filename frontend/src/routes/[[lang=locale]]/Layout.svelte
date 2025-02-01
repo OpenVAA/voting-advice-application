@@ -22,7 +22,12 @@ Defines the layout of the `main` content of all the standard pages in the app.
 -->
 
 <script lang="ts">
-  import { getComponentContext } from '$lib/contexts/component';
+  import { onDestroy } from 'svelte';
+  import { getAppContext } from '$lib/contexts/app';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { NavItem } from '$lib/dynamic-components/navigation';
+  import { CandidateNav, VoterNav } from '$lib/templates/page/parts';
+  import Header from './Header.svelte';
   import type { BasicPageProps } from '$lib/templates/basicPage';
 
   export let title: BasicPageProps['title'];
@@ -31,7 +36,48 @@ Defines the layout of the `main` content of all the standard pages in the app.
   export let primaryActionsLabel: BasicPageProps['primaryActionsLabel'] = undefined;
   export let titleClass: BasicPageProps['titleClass'] = '';
 
-  const { t } = getComponentContext();
+  ////////////////////////////////////////////////////////////////////
+  // Constants
+  ////////////////////////////////////////////////////////////////////
+
+  const drawerToggleId = 'pageDrawerToggle';
+  const mainId = 'mainContent';
+  const navId = 'pageNav';
+
+  ////////////////////////////////////////////////////////////////////
+  // Layout and navigation menu management
+  ////////////////////////////////////////////////////////////////////
+
+  const { appType, startEvent, t } = getAppContext();
+
+  let drawerOpen = false;
+  let drawerOpenElement: HTMLButtonElement | undefined;
+
+  /**
+   * Open the drawer. We also focus on the relevant element to make it easy
+   * to toggle it back when using keyboard navigation.
+   */
+  function openDrawer() {
+    drawerOpen = true;
+    // We need a small timeout for drawerCloseButton to be focusable
+    setTimeout(() => document.getElementById('drawerCloseButton')?.focus(), 50);
+    startEvent('menu_open');
+  }
+
+  /**
+   * Close the drawer. We also focus on the relevant element to make it easy
+   * to toggle it back when using keyboard navigation.
+   */
+  function closeDrawer() {
+    drawerOpen = false;
+    drawerOpenElement?.focus();
+  }
+
+  /**
+   * Init the context for layout changes.
+   */
+  const { pageStyles, navigation } = getLayoutContext(onDestroy);
+  navigation.close = closeDrawer;
 
   /** We use `videoHeight` and `videoWidth` as proxies to check for the presence of content in the `video` slot. Note that we cannot merely check if the slot is provided, because it might be empty. */
   // let videoHeight = 0;
@@ -43,47 +89,79 @@ Defines the layout of the `main` content of all the standard pages in the app.
   <title>{title} – {$t('dynamic.appName')}</title>
 </svelte:head>
 
-<!-- Note -->
-{#if $$slots.note}
-  <div class={noteClass} role={noteRole}>
-    <slot name="note" />
+<!-- Drawer container -->
+<div class="drawer {$pageStyles.drawer.background}">
+  <!-- NB. The Wave ARIA checker will show an error for this, but the use of both the 
+    non-hidden labels in aria-labelledby should be okay for screen readers. -->
+  <input
+    id={drawerToggleId}
+    bind:checked={drawerOpen}
+    type="checkbox"
+    class="drawer-toggle"
+    tabindex="-1"
+    aria-hidden="true"
+    aria-label={$t('common.openCloseMenu')} />
+
+  <!-- Drawer content -->
+  <div class="drawer-content flex flex-col">
+    <Header {navId} {openDrawer} {drawerOpen} {drawerOpenElement} />
+    <main id={mainId} class="flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg">
+      <!-- Note -->
+      {#if $$slots.note}
+        <div class={noteClass} role={noteRole}>
+          <slot name="note" />
+        </div>
+      {/if}
+
+      <div class="flex w-full flex-grow flex-col items-stretch justify-center sm:items-center">
+        <!-- Video -->
+        <!-- {#if $$slots.video}
+                <div
+                  bind:clientHeight={videoHeight}
+                  bind:clientWidth={videoWidth}
+                  class="-ml-safelgl -mr-safelgr -mt-lg flex w-screen justify-center sm:w-full {hasVideo
+                    ? 'grow'
+                    : ''} sm:mt-[1.75rem] sm:grow-0">
+                  <slot name="video" />
+                </div>
+             {/if} -->
+
+        <!-- Hero image -->
+        <slot name="hero" />
+
+        <!-- Title block -->
+        <div class="w-full max-w-xl py-lg text-center {titleClass}">
+          <slot name="heading">
+            <h1>{title}</h1>
+          </slot>
+        </div>
+
+        <!-- Main content -->
+        <div class="flex w-full max-w-xl flex-col items-center">
+          <slot />
+        </div>
+      </div>
+
+      <!-- Main actions -->
+      {#if $$slots.primaryActions}
+        <section
+          class="flex w-full max-w-xl flex-col items-center justify-end"
+          aria-label={primaryActionsLabel ?? $t('common.primaryActions')}>
+          <slot name="primaryActions" />
+        </section>
+      {/if}
+    </main>
   </div>
-{/if}
 
-<div class="flex w-full flex-grow flex-col items-stretch justify-center sm:items-center">
-  <!-- Video -->
-  <!-- {#if $$slots.video}
-    <div
-      bind:clientHeight={videoHeight}
-      bind:clientWidth={videoWidth}
-      class="-ml-safelgl -mr-safelgr -mt-lg flex w-screen justify-center sm:w-full {hasVideo
-        ? 'grow'
-        : ''} sm:mt-[1.75rem] sm:grow-0">
-      <slot name="video" />
-    </div>
-  {/if} -->
-
-  <!-- Hero image -->
-  <slot name="hero" />
-
-  <!-- Title block -->
-  <div class="w-full max-w-xl py-lg text-center {titleClass}">
-    <slot name="heading">
-      <h1>{title}</h1>
-    </slot>
-  </div>
-
-  <!-- Main content -->
-  <div class="flex w-full max-w-xl flex-col items-center">
-    <slot />
+  <!-- Drawer side menu -->
+  <div class="drawer-side z-10">
+    <div on:click={closeDrawer} aria-hidden="true" class="drawer-overlay cursor-pointer" />
+    <svelte:component
+      this={$appType === 'candidate' ? CandidateNav : VoterNav}
+      on:keyboardFocusOut={closeDrawer}
+      class="min-h-full w-4/5 max-w-sm bg-base-100 {drawerOpen ? '' : 'hidden'}"
+      id={navId}>
+      <NavItem on:click={closeDrawer} icon="close" text={$t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
+    </svelte:component>
   </div>
 </div>
-
-<!-- Main actions -->
-{#if $$slots.primaryActions}
-  <section
-    class="flex w-full max-w-xl flex-col items-center justify-end"
-    aria-label={primaryActionsLabel ?? $t('common.primaryActions')}>
-    <slot name="primaryActions" />
-  </section>
-{/if}

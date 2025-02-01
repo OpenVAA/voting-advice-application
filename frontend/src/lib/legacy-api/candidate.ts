@@ -1,13 +1,17 @@
 import { get } from 'svelte/store';
+import { browser } from '$app/environment';
+import { goto } from '$app/navigation';
+import { page } from '$app/stores';
 import { locale } from '$lib/i18n';
 import { dataProvider } from '$lib/legacy-api/dataProvider/strapi/strapiDataProvider';
 import { constants } from '$lib/utils/constants';
 import { candidateContext } from '$lib/utils/legacy-candidateContext';
-import type { CandidateAnswer, Language, Photo, User } from '$types/legacy-candidateAttributes';
+import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+import type { Candidate, CandidateAnswer, Language, Photo, User } from '$types/legacy-candidateAttributes';
 import type { StrapiAnswerData, StrapiLanguageData, StrapiResponse } from './dataProvider/strapi';
 
 function getUrl(path: string, search: Record<string, string> = {}) {
-  const url = new URL(constants.PUBLIC_BACKEND_URL);
+  const url = new URL(browser ? constants.PUBLIC_BROWSER_BACKEND_URL : constants.PUBLIC_SERVER_BACKEND_URL);
   url.pathname = path;
   url.search = new URLSearchParams(search).toString();
 
@@ -94,6 +98,27 @@ export async function me(): Promise<User | undefined> {
   if (data?.error) return;
 
   return data;
+}
+
+/**
+ * Get the current candidate user
+ */
+export async function getGeneralUserData(token: string): Promise<Candidate | undefined> {
+  const res = await request(
+    getUrl('api/users/me', {
+      'populate[candidate][populate][appLanguage]': 'true'
+    }),
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+
+  if (!res?.ok) return;
+
+  const data: UserData = await res.json();
+  if (data?.error) return;
+
+  return data.candidate;
 }
 
 export async function updatePhoto(photo: Photo) {
@@ -332,14 +357,42 @@ export async function deleteFile(id: number) {
 }
 
 export async function request(url: string, options: RequestInit = {}) {
-  const token = candidateContext.token;
+  options.headers ??= {};
 
-  // Allow providing headers, but with an enforced Authorization header
-  if (!options.headers) options.headers = {};
-  (options.headers as Record<string, string>)['Authorization'] = `Bearer ${get(token)}`;
+  const headers = options.headers as Record<string, string>;
 
-  return await fetch(url, options).catch((error) => {
+  if (!headers['Authorization']) {
+    headers['Authorization'] = `Bearer ${get(page).data.token}`;
+  }
+
+  const response = await fetch(url, options).catch((error) => {
     console.error('Error in getting data from backend:', error);
     return undefined;
   });
+
+  if (response?.status === 401) {
+    await logout();
+  }
+
+  return response;
+}
+
+/**
+ * This function can be triggered by both Svelte server and client sides.
+ *  - Svelte's server fetch API requires an absolute URL
+ *  - a special host address is needed within the Docker network to reach a service (relevant for local environments and E2E tests)
+ */
+export async function logout() {
+  await fetch(
+    `${browser ? constants.PUBLIC_BROWSER_FRONTEND_URL : constants.PUBLIC_SERVER_FRONTEND_URL}/api/candidate/logout`,
+    {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }
+  );
+  candidateContext.user.set(null);
+  await goto(get(getRoute)(ROUTE.CandAppLogin), { invalidateAll: true });
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
+  import { getContext, onDestroy } from 'svelte';
   import { writable } from 'svelte/store';
   import { goto } from '$app/navigation';
   import {
@@ -15,13 +15,14 @@
   import { Field, FieldGroup } from '$lib/components/common/form';
   import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
   import Warning from '$lib/components/warning/Warning.svelte';
+  import { getLayoutContext } from '$lib/contexts/layout';
   import { defaultLocale, t } from '$lib/i18n';
   import { isTranslation, translate } from '$lib/i18n/utils/translate';
   import { addAnswer, updateAnswer } from '$lib/legacy-api/candidate';
   import { settings } from '$lib/legacy-stores';
-  import { BasicPage } from '$lib/templates/basicPage';
   import { answerIsEmpty } from '$lib/utils/legacy-answers';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import Layout from '../../../Layout.svelte';
   import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
   import type { TranslationKey } from '$types';
   import type { CandidateAnswer, Nomination } from '$types/legacy-candidateAttributes';
@@ -30,6 +31,9 @@
   const headerClass = 'uppercase mx-6 my-0 p-0 small-label';
   const inputClass =
     'input-ghost flex justify-end text-right input input-sm w-full pr-2 disabled:border-none disabled:bg-base-100';
+
+  const { pageStyles } = getLayoutContext(onDestroy);
+  pageStyles.push({ drawer: { background: 'bg-base-200' } });
 
   // get the user and necessary information from CandidateContext
   const {
@@ -82,6 +86,15 @@
     }
   }
 
+  // Before the redirect we want to make sure that the asyn derived store has been actually updated.
+  $: if ($unansweredRequiredInfoQuestions?.length === 0 && submitted) {
+    if ($unansweredOpinionQuestions?.length !== 0 && !$answersLocked) {
+      goto($getRoute(ROUTE.CandAppQuestions));
+    } else {
+      goto($getRoute(ROUTE.CandAppHome));
+    }
+  }
+
   // basic information
   type InfoField = ('firstName' | 'lastName' | 'party') & keyof LegacyCandidateProps;
 
@@ -116,6 +129,7 @@
   }
 
   let loading = false;
+  let submitted = false;
 
   async function submitForm() {
     if ($answersLocked) {
@@ -142,9 +156,8 @@
     }
 
     loading = false;
-
-    if ($unansweredOpinionQuestions?.length !== 0 && !$answersLocked) await goto($getRoute(ROUTE.CandAppQuestions));
-    else await goto($getRoute(ROUTE.CandAppHome));
+    previousStateHash = undefined;
+    submitted = true;
   }
 
   function updateInfoAnswerStore(
@@ -152,12 +165,13 @@
     question: LegacyQuestionProps,
     value: LegacyAnswerProps['value']
   ) {
-    if ($infoAnswers) {
-      $infoAnswers[question.id] = {
+    infoAnswers.update((current) => ({
+      ...current,
+      [question.id]: {
         id: answerId,
         value
-      };
-    }
+      }
+    }));
   }
 
   let clearLocalStorage: () => void;
@@ -228,13 +242,15 @@
 </script>
 
 {#if $parties && $infoAnswers && $infoQuestions}
-  <BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
-    <Warning display={!!$answersLocked} slot="note">
-      <p>{$t('candidateApp.common.editingNotAllowed')}</p>
-      {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
-        <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
-      {/if}
-    </Warning>
+  <Layout title={$t('candidateApp.basicInfo.title')}>
+    <div class="mt-xl text-center text-secondary" role="note" slot="note">
+      <Warning display={!!$answersLocked}>
+        <p>{$t('candidateApp.common.editingNotAllowed')}</p>
+        {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
+          <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
+        {/if}
+      </Warning>
+    </div>
 
     <PreventNavigation active={dirty && !loading && !$answersLocked} />
     <form on:submit|preventDefault={submitForm}>
@@ -340,5 +356,5 @@
         {/if}
       </div>
     </form>
-  </BasicPage>
+  </Layout>
 {/if}

@@ -2,22 +2,27 @@
   import { validatePassword } from '@openvaa/app-shared';
   import { getContext } from 'svelte';
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
   import { LogoutButton } from '$lib/candidate/components/logoutButton';
   import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { t } from '$lib/i18n';
-  import { register } from '$lib/legacy-api/candidate';
-  import { FrontPage } from '$lib/templates/frontPage';
+  import { logout, register } from '$lib/legacy-api/candidate';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
+  import Layout from '../../../Layout.svelte';
   import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
 
-  export let username: string;
-  export let registrationCode: string;
-  export let email: string;
+  const registrationCode = $page.url.searchParams.get('registrationCode') || '';
+  const username = $page.url.searchParams.get('username') || '';
+  const email = $page.url.searchParams.get('email') || '';
+
+  if (registrationCode === '' || username === '' || email === '') {
+    goto($getRoute(ROUTE.CandAppRegister));
+  }
 
   let password = '';
   let passwordConfirmation = '';
-  const { newUserEmail, user, logOut } = getContext<CandidateContext>('candidate');
+  const { newUserEmail, user } = getContext<CandidateContext>('candidate');
 
   let validPassword = false;
   let errorMessage = '';
@@ -46,34 +51,15 @@
       return;
     }
     if ($user) {
-      await logOut();
+      await logout();
     }
     newUserEmail.set(email);
     errorMessage = '';
-    goto($getRoute(ROUTE.CandAppHome));
+    await goto($getRoute(ROUTE.CandAppLogin));
   }
 </script>
 
-<!--
-@component
-Page where candidates can set their password when logging to the app for the first time.
-Registration code and email are required to complete the registration.
-Shows an error message if the registration is not successful.
-
-### Properties
-
-- `username` (required): name the user is greeted with
-- `registrationCode` (required): registration key of the user, used by the backend
-- `email` (required): email of the user, used for registration
-
-### Usage
-
-  ```tsx
-  <PasswordSetPage username="Barnabas" registrationCode="123-123-123" />
-  ```
--->
-
-<FrontPage title={$t('candidateApp.register.title')}>
+<Layout title={$t('candidateApp.register.title')}>
   <HeadingGroup slot="heading">
     <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
     <h1 class="my-24 text-2xl font-normal">
@@ -94,4 +80,4 @@ Shows an error message if the registration is not successful.
       bind:password
       bind:passwordConfirmation />
   </form>
-</FrontPage>
+</Layout>

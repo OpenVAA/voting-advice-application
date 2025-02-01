@@ -70,7 +70,7 @@ test.describe('when logged in with default user', async () => {
     await page.getByLabel(T.en['common.openMenu'], { exact: true }).click();
     await page.getByRole('link', { name: T.fi['lang.fi'], exact: true }).click();
 
-    await expect(page).toHaveURL(`${baseURL}/${LOCALE_FI}/${ROUTE.CandAppHome}`);
+    await expect(page).toHaveURL(`${baseURL}/${LOCALE_FI}/${ROUTE.CandAppLogin}`);
 
     //Sign in and expect language to automatically change to en
     await page.getByPlaceholder(T.fi['candidateApp.common.emailPlaceholder'], { exact: true }).fill(mockUser.email);

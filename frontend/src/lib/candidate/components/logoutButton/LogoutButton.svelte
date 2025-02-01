@@ -4,6 +4,7 @@
   import { Button } from '$lib/components/button';
   import { TimedModal } from '$lib/components/modal/timed';
   import { t } from '$lib/i18n';
+  import { logout as logoutRequest } from '$lib/legacy-api/candidate';
   import { settings } from '$lib/legacy-stores';
   import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
   import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
@@ -19,25 +20,25 @@
   let closeModal: () => void;
   let timeLeft = logoutModalTimer;
 
-  const { answersLocked, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, logOut } =
+  const { answersLocked, unansweredOpinionQuestions, unansweredRequiredInfoQuestions } =
     getContext<CandidateContext>('candidate');
 
-  function triggerLogout() {
+  async function triggerLogout() {
     if (
       !$answersLocked &&
       ($unansweredOpinionQuestions?.length !== 0 || $unansweredRequiredInfoQuestions?.length !== 0)
     ) {
       openModal();
     } else {
-      logout();
+      await logout();
     }
   }
 
   async function logout() {
-    await logOut();
+    await logoutRequest();
     closeModal();
     if (!stayOnPage) {
-      await goto($getRoute(ROUTE.CandAppHome));
+      await goto($getRoute(ROUTE.CandAppLogin), { invalidateAll: true });
     }
   }
 </script>

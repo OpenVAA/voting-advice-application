@@ -12,6 +12,8 @@ Accesses `AppContext` and optionally `VoterContext`.
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { LogoutButton } from '$candidate/components/logoutButton';
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
@@ -24,21 +26,15 @@ Accesses `AppContext` and optionally `VoterContext`.
   const { appType, getRoute, openFeedbackModal, t } = getAppContext();
   const resultsAvailable = $appType === 'voter' ? getVoterContext().resultsAvailable : undefined;
   const { topBarSettings } = getLayoutContext(onDestroy);
-
-  // TODO: When the Banner component is shared bring logout button back
-  // const userStore = getContext<CandidateContext>('candidate')?.user;
-  // We are in the candidate application and the user has logged in
-  // TODO: Figure out a way to define this LogoutButton part only within the candidate route. This can be done with the new, slot-less templates
-  // const showLogoutButton = $appType === 'candidate' && userStore;
 </script>
 
 <!-- style:--headerIcon-color={hasVideo && screenWidth < Breakpoints.sm
   ? 'white'
   : 'oklch(var(--p))' -->
 <div class="vaa-basicPage-actions flex gap-0" style:--headerIcon-color="oklch(var(--p))">
-  <!-- {#if showLogoutButton}
+  {#if $topBarSettings.actions.logout == 'show' && $appType === 'candidate' && $page.data.token}
     <LogoutButton variant="icon" />
-  {/if} -->
+  {/if}
 
   {#if $topBarSettings.actions.feedback === 'show'}
     <Button on:click={$openFeedbackModal} variant="icon" icon="feedback" text={$t('feedback.send')} />

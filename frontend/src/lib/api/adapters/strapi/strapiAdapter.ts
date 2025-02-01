@@ -24,7 +24,9 @@ export function strapiAdapterMixin<TBase extends Constructor>(base: TBase): Cons
 
     async apiFetch<TApi extends StrapiApi>({ endpoint, params, request }: FetchOptions<TApi>): Promise<Response> {
       if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
-      const url = new URL(`${browser ? constants.PUBLIC_BACKEND_URL : constants.BACKEND_URL}/${STRAPI_API[endpoint]}`);
+      const url = new URL(
+        `${browser ? constants.PUBLIC_BROWSER_BACKEND_URL : constants.PUBLIC_SERVER_BACKEND_URL}/${STRAPI_API[endpoint]}`
+      );
       if (params) url.search = qs.stringify(params, { encodeValuesOnly: true });
       const response = await this.fetch(url, request);
       if (!response.ok)

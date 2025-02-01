@@ -8,10 +8,10 @@ import type { StrapiImageData } from '../strapiDataProvider.type';
 export function parseImage(image: StrapiImageData): LegacyImageProps {
   const thumbnailUrl = image.formats?.thumbnail?.url || image.url;
 
-  const absoluteUrl = isAbsoluteUrl(image.url) ? image.url : `${constants.PUBLIC_BACKEND_URL}${image.url}`;
+  const absoluteUrl = isAbsoluteUrl(image.url) ? image.url : `${constants.PUBLIC_BROWSER_BACKEND_URL}${image.url}`;
   const absoluteThumbnailUrl = isAbsoluteUrl(thumbnailUrl)
     ? thumbnailUrl
-    : `${constants.PUBLIC_BACKEND_URL}${thumbnailUrl}`;
+    : `${constants.PUBLIC_BROWSER_BACKEND_URL}${thumbnailUrl}`;
 
   return {
     url: absoluteUrl,

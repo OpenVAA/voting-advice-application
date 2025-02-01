@@ -1,6 +1,13 @@
-import { env } from '$env/dynamic/public';
+import {
+  PUBLIC_BROWSER_BACKEND_URL,
+  PUBLIC_BROWSER_FRONTEND_URL,
+  PUBLIC_SERVER_BACKEND_URL,
+  PUBLIC_SERVER_FRONTEND_URL
+} from '$env/static/public';
 
 export const constants: Record<string, string> = {
-  BACKEND_URL: import.meta.env.VITE_BACKEND_URL || process.env.VITE_BACKEND_URL || '',
-  PUBLIC_BACKEND_URL: import.meta.env.PUBLIC_BACKEND_URL || env.PUBLIC_BACKEND_URL || '' // Accessed by the client-side, so must be loaded dynamically
+  PUBLIC_BROWSER_FRONTEND_URL: PUBLIC_BROWSER_FRONTEND_URL,
+  PUBLIC_SERVER_FRONTEND_URL: PUBLIC_SERVER_FRONTEND_URL,
+  PUBLIC_BROWSER_BACKEND_URL: PUBLIC_BROWSER_BACKEND_URL,
+  PUBLIC_SERVER_BACKEND_URL: PUBLIC_SERVER_BACKEND_URL
 };
