@@ -2,7 +2,7 @@
 @component
 A convenience wrapper for `Input` which fills in the necessary properties based on the info `Question` and possible `Answer` passed.
 
-NB. To show opinion `Question`s, use the components in `$lib/components/questions`.
+NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$lib/components/questions`.
 
 ### Properties
 
@@ -64,6 +64,7 @@ NB. To show opinion `Question`s, use the components in `$lib/components/question
 
   const type = INPUT_TYPES[question.type];
   const { id, info, name: label } = question;
+  const { fillingInfo } = customData;
 
   if (question instanceof ChoiceQuestion) {
     const options = question.choices;
@@ -71,7 +72,7 @@ NB. To show opinion `Question`s, use the components in `$lib/components/question
       type,
       id,
       label,
-      info,
+      info: fillingInfo ?? info,
       options,
       ordered: question instanceof MultipleChoiceQuestion ? true : undefined
     } as InputProps;

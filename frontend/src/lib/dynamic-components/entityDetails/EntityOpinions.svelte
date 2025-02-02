@@ -18,8 +18,7 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
 <script lang="ts">
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
-  import { QuestionOpenAnswer } from '$lib/components/questions';
-  import QuestionChoices from '$lib/components/questions/QuestionChoices.svelte';
+  import { OpinionQuestionInput, QuestionOpenAnswer } from '$lib/components/questions';
   import { getAppContext } from '$lib/contexts/app';
   import { unwrapEntity } from '$lib/utils/entities';
   import type { AnyEntityVariant, AnyQuestionVariant } from '@openvaa/data';
@@ -49,17 +48,14 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
   }
 </script>
 
-<div class="grid p-lg">
+<div class="grid px-lg mt-xl gap-xxl">
   {#each questions as question}
-    {@const { id, text, type, category } = question}
+    {@const { id, text, category } = question}
     {@const answer = nakedEntity.getAnswer(question)}
-    <!-- We need to be careful in the value conversion that we don't end up with an 'undefined' string -->
-    {@const otherSelected = answer?.value ? `${answer?.value}` : undefined}
-    {@const voterAnswer = answers ? `${$answers?.[id]?.value}` : undefined}
-    {@const headingId = `questionHeading-${id}`}
+    {@const voterAnswer = $answers?.[id]}
 
-    <div class="mb-xxl mt-lg grid">
-      <HeadingGroup id={headingId} class="mb-lg text-center">
+    <div class="grid">
+      <HeadingGroup class="mb-lg text-center">
         {#if $appSettings.questions.showCategoryTags && category}
           <PreHeading><CategoryTag {category} /></PreHeading>
         {/if}
@@ -88,21 +84,16 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
 
       <!-- Only show the answering choices if either one has answered -->
       {#if voterAnswer != null || answer != null}
-        {#if type === 'singleChoiceCategorical' || type === 'singleChoiceOrdinal'}
-          <QuestionChoices
-            {question}
-            aria-labelledby={headingId}
-            name={id}
-            mode="display"
-            selectedId={voterAnswer}
-            {otherSelected}
-            otherLabel={shortName} />
-        {:else}
-          {$t('error.general')}
-        {/if}
+
+        <OpinionQuestionInput
+          {question}
+          mode="display"
+          answer={voterAnswer}
+          otherAnswer={answer}
+          otherLabel={shortName}/>
 
         {#if answer?.info}
-          <QuestionOpenAnswer content={answer.info} />
+          <QuestionOpenAnswer content={answer.info} class="mt-md" />
         {/if}
       {/if}
     </div>
