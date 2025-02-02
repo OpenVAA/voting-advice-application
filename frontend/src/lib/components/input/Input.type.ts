@@ -49,10 +49,10 @@ export type InputPropsBase<TValue, TElement extends keyof SvelteHTMLElements = '
 > & {
   /**
    * The stylistic variant to use. @default 'default'
-   * - `default`. The input has a `base-300` background.
-   * - `on-shaded`. The input has a `base-100` background.
+   * - `default`. The label is shown next to the input.
+   * - `compact`. The label is only shown in the possible placeholder value and to screen readers. Onlu use when the function of the input is clear from the context.
    */
-  variant?: 'default' | 'on-shaded';
+  // variant?: 'default' | 'on-shaded';
   /**
    * The label to show for the input or group of inputs if `multilingual`.
    */
@@ -81,6 +81,10 @@ export type InputPropsBase<TValue, TElement extends keyof SvelteHTMLElements = '
    * Bindable: the value of the input.
    */
   value?: TValue | null;
+  /**
+   * Set to `true` if using the component on a dark (`base-300`) background. @default false
+   */
+  onShadedBg?: boolean;
   /**
    * Event handler triggered when the value changes.
    * @param value The new value of the input.

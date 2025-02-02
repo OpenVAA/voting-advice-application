@@ -17,9 +17,6 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   - `text-multilingual`: A multilingual single-line text input.
   - `textarea`: A multi-line text input.
   - `textarea-multilingual`: A multilingual multi-line text input.
-- `variant`: The stylistic variant to use. @default 'default':
-  - `default`. The input has a `base-300` background.
-  - `on-shaded`. The input has a `base-100` background.
 - `label`:  The label to show for the input or group of inputs if `multilingual`.
 - `containerProps`: Any additional props to be passed to the container element of the input. @default {}
 - `id`: The id of the input. If not provided, a unique id will be generated.
@@ -27,6 +24,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 - `disabled`: Works the same way as a normal `input`'s `disabled` attribute.
 - `locked`: If `locked` the input will be disabled and a lock icon is displayed.
 - `value`: Bindable: the value of the input. Depends on the `type` prop.
+- `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
 - `options`: The options to show for a `select` or `select-multiple` input.
 - `ordered`: If `true`, enables ordering of the values of a `select-multiple` input. @default false
 - Any valid attributes of the HTML element (`input`, `select` or `textarea`) used for the input.
@@ -67,12 +65,13 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 
   export let type: $$Props['type'];
   export let label: $$Props['label'];
-  export let variant: $$Props['variant'] = 'default';
+  // export let variant: $$Props['variant'] = 'default';
   export let containerProps: $$Props['containerProps'] = undefined;
   export let id: $$Props['id'] = getUUID();
   export let info: $$Props['info'] = undefined;
   export let locked: $$Props['locked'] = undefined;
   export let value: $$Props['value'] = undefined;
+  export let onShadedBg: $$Props['onShadedBg'] = undefined;
   export let onChange: ((value: $$Props['value']) => void) | undefined = undefined;
   export let placeholder: $$Props['placeholder'] = undefined;
   export let options: $$Props['options'] = undefined;
@@ -268,7 +267,8 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 <!-- Add containarProps to the outer container and set styles for it -->
 <div
   {...concatClass(containerProps ?? {}, 'w-full flex flex-col items-stretch')}
-  style:--inputBgColor={variant === 'default' ? 'oklch(var(--b3))' : 'oklch(var(--b1))'}>
+  style:--inputBgColor={onShadedBg ? 'oklch(var(--b1))' : 'oklch(var(--b3))'}>
+
   <!-- The label in small caps above the input -->
   {#if isLabelOutside}
     <!-- svelte-ignore a11y-label-has-associated-control -->
