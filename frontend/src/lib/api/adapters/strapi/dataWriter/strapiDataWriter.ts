@@ -21,6 +21,31 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
   // Registration
   ////////////////////////////////////////////////////////////////////
 
+  protected _preregister({
+    body,
+    authToken
+  }: {
+    body: {
+      firstName: string;
+      lastName: string;
+      identifier: string;
+      email: string;
+      electionDocumentIds?: Array<string>;
+      constituencyDocumentId?: string;
+    };
+  } & WithAuth): Promise<DataApiActionResult> {
+    // Throws if failed
+    return this.apiPost({
+      endpoint: 'preregisterCandidate',
+      body,
+      authToken
+    }).then(() => ({ type: 'success' }));
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Registration
+  ////////////////////////////////////////////////////////////////////
+
   protected _checkRegistrationKey(body: { registrationKey: string }): Promise<CheckRegistrationData> {
     // Throws if failed
     return this.apiPost({
