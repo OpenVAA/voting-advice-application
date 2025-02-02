@@ -8,10 +8,6 @@ Display a question for answering.
 
 - `questionId`: The `Id` of the question to display. If the value is the one defined by the const `FIRST_QUESTION_ID`, the first question in the `selectedQuestionBlocks` store will be displayed.
 - `start`: Optional. Set to a truish value to start answering questions from this question (and category). This will set the session persistent store `firstQuestionId` to the `Id` of the current question, which in turn will reorder the `selectedQuestionBlocks` store. The `firstQuestionId` store will be reset if the `/questions` intro page is visited or the use session is cleared.
-
-## TODO
-
-- Split this into parts so that it can be more easily used in the Candidate App
 -->
 
 <script lang="ts">
@@ -19,11 +15,8 @@ Display a question for answering.
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { CategoryTag } from '$lib/components/categoryTag';
-  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { Loading } from '$lib/components/loading';
-  import { QuestionActions, QuestionInfo } from '$lib/components/questions';
-  import QuestionChoices from '$lib/components/questions/QuestionChoices.svelte';
+  import { OpinionQuestionInput, QuestionActions, QuestionInfo } from '$lib/components/questions';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { logDebugError } from '$lib/utils/logger';
@@ -31,7 +24,8 @@ Display a question for answering.
   import { DELAY } from '$lib/utils/timing';
   import Layout from '../../../../Layout.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
-  import type { QuestionBlock } from '$lib/contexts/voter/questionBlockStore.type';
+  import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
+  import { QuestionHeading } from '$lib/dynamic-components/questionHeading';
   //import {type VideoMode, Video} from '$lib/components/video';
 
   ////////////////////////////////////////////////////////////////////
@@ -207,8 +201,7 @@ Display a question for answering.
 </script>
 
 {#if question && questionBlock}
-  {@const { category, id, info, text, type } = question}
-  {@const headingId = `questionHeading-${id}`}
+  {@const { info, text, type } = question}
   {@const questions = $selectedQuestionBlocks.questions}
 
   <!--
@@ -231,24 +224,10 @@ Display a question for answering.
       </svelte:fragment>
     -->
 
-    <svelte:fragment slot="heading">
-      <HeadingGroup id={headingId} class="relative">
-        <PreHeading>
-          {#if $appSettings.questions.showCategoryTags}
-            <CategoryTag {category} />
-            <!-- Index of question within category -->
-            <span class="text-secondary">{questionBlock.indexInBlock + 1}/{questionBlock.block.length}</span>
-          {:else}
-            <!-- Index of question within all questions -->
-            {$t('common.question')}
-            <span class="text-secondary">{questionBlock.index + 1}/{questions.length}</span>
-          {/if}
-        </PreHeading>
-
-        <!-- class={videoProps ? 'my-0 text-lg sm:my-md sm:text-xl' : ''} -->
-        <h1>{text}</h1>
-      </HeadingGroup>
-    </svelte:fragment>
+    <QuestionHeading
+      {question}
+      questionBlocks={$selectedQuestionBlocks}
+      slot="heading"/>
 
     <!-- !videoProps && -->
     {#if info && info !== ''}
@@ -256,19 +235,12 @@ Display a question for answering.
     {/if}
 
     <svelte:fragment slot="primaryActions">
-      {#if type === 'singleChoiceOrdinal' || type === 'singleChoiceCategorical'}
-        {@const selectedId = question.ensureValue($answers[question.id]?.value)}
-        <!-- onShadedBg={videoProps != null} -->
-        <QuestionChoices
-          aria-labelledby={headingId}
-          {disabled}
-          {question}
-          {selectedId}
-          variant={customData?.vertical ? 'vertical' : undefined}
-          onChange={handleAnswer} />
-      {:else}
-        {$t('error.unsupportedQuestion')}
-      {/if}
+
+      <OpinionQuestionInput
+        {question}
+        answer={$answers[question.id]}
+        onChange={handleAnswer}/>
+
       <QuestionActions
         answered={$answers[question.id]?.value != null}
         {disabled}
