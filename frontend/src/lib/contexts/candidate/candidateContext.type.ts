@@ -1,5 +1,6 @@
 import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
 import type { Readable, Writable } from 'svelte/store';
+import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { AppContext } from '../app';
 import type { QuestionBlocks } from '../utils/questionBlockStore.type';
@@ -92,6 +93,20 @@ export type CandidateContext = AppContext & {
    * @returns A `Promise` resolving to an `DataApiActionResult` object.
    */
   setPassword: (opts: { currentPassword: string; password: string }) => ReturnType<DataWriter['setPassword']>;
+
+  /**
+   * Creates a candidate with a nomination or nominations, then emails a registration link.
+   * Expects a valid ID token in the cookies.
+   * @param email - Email.
+   * @param electionIds - Election IDs.
+   * @param constituencyId - Constituency ID.
+   * @returns A `Promise` resolving to an `DataApiActionResult` object.
+   */
+  preregister: (opts: {
+    email: string;
+    electionIds?: Array<number>;
+    constituencyId?: number;
+  }) => Promise<DataApiActionResult>;
 
   ////////////////////////////////////////////////////////////////////
   // Other properties specific to CandidateContext
