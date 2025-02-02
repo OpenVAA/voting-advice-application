@@ -4,6 +4,7 @@ import { derived, type Readable } from 'svelte/store';
 import { ucFirst } from '$lib/utils/text/ucFirst';
 import { buildParentFilters } from './buildParentFilters';
 import { buildQuestionFilter } from './buildQuestionFilter';
+import type { CustomData } from '@openvaa/app-shared';
 import type { TranslationKey } from '$types';
 import type { NominationAndQuestionTree } from '../nominationAndQuestionStore';
 import type { SelectionTree } from '../selectionTree.type';
