@@ -25,7 +25,9 @@ const validatePreregisterBody = validateYupSchema(
     firstName: yup.string().required(),
     lastName: yup.string().required(),
     identifier: yup.string().required(),
-    email: yup.string().required()
+    email: yup.string().required(),
+    electionDocumentIds: yup.array(yup.string()).optional(),
+    constituencyDocumentId: yup.string().optional()
   })
 );
 
@@ -147,7 +149,8 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
             candidate: candidateDocumentId,
             election: electionDocumentId,
             electionRound: 1,
-            constituency: params.constituencyDocumentId
+            constituency: params.constituencyDocumentId,
+            unconfirmed: true
           },
           status: 'draft'
         })

@@ -9,7 +9,7 @@ import { constants } from '$lib/utils/constants';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
 export async function POST({ cookies, request }) {
-  const data: { email: string; electionsId?: Array<number>; constituencyId?: number } = await request.json();
+  const data: { email: string; electionIds?: Array<number>; constituencyId?: number } = await request.json();
 
   const idToken = cookies.get('id_token');
 
@@ -33,8 +33,8 @@ export async function POST({ cookies, request }) {
       firstName: claims.firstName,
       lastName: claims.lastName,
       identifier: claims.birthdate,
-      electionsId: data.electionsId,
-      constituencyId: data.constituencyId
+      electionDocumentIds: data.electionIds,
+      constituencyDocumentId: data.constituencyId
     })
   });
 
