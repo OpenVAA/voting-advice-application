@@ -24,6 +24,21 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   // PUBLIC METHODS
   ////////////////////////////////////////////////////////////////////
 
+  preregister(
+    opts: {
+      body: {
+        firstName: string;
+        lastName: string;
+        identifier: string;
+        email: string;
+        electionDocumentIds?: Array<string>;
+        constituencyDocumentId?: string;
+      };
+    } & WithAuth
+  ): DWReturnType<DataApiActionResult> {
+    return this._preregister(opts);
+  }
+
   checkRegistrationKey(opts: { registrationKey: string }): DWReturnType<CheckRegistrationData> {
     return this._checkRegistrationKey(opts);
   }
@@ -98,6 +113,18 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   // PROTECTED INTERNAL METHODS TO BE IMPLEMENTED BY SUBCLASSES
   /////////////////////////////////////////////////////////////////////
 
+  protected abstract _preregister(
+    opts: {
+      body: {
+        firstName: string;
+        lastName: string;
+        identifier: string;
+        email: string;
+        electionDocumentIds?: Array<string>;
+        constituencyDocumentId?: string;
+      };
+    } & WithAuth
+  ): DWReturnType<DataApiActionResult>;
   protected abstract _checkRegistrationKey(opts: { registrationKey: string }): DWReturnType<CheckRegistrationData>;
   protected abstract _register(opts: { registrationKey: string; password: string }): DWReturnType<DataApiActionResult>;
   protected abstract _login(opts: {
