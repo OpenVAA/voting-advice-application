@@ -97,7 +97,7 @@ async function register(ctx: Context): Promise<{ type: 'success' }> {
 
 /**
  * Preregister a Candidate.
- * @access Authorization: Bearer {API_KEY}
+ * @access Authorization: Bearer {BACKEND_API_TOKEN}
  * @returns { success: true }
  */
 async function preregister(ctx: Context): Promise<{ type: 'success' }> {
@@ -106,7 +106,8 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     lastName: string;
     identifier: string;
     email: string;
-    // TODO: Add other fields.
+    electionDocumentIds?: string[];
+    constituencyDocumentId?: string;
   } = ctx.request.body;
 
   await validatePreregisterBody(params);
@@ -116,8 +117,8 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     (await strapi.query('api::candidate.candidate').findOne({
       where: {
         firstName: params.firstName,
-        lastName: params.lastName
-        // TODO: Add identifier/birthdate
+        lastName: params.lastName,
+        identifier: params.identifier
       }
     }));
 
@@ -125,14 +126,33 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     throw new ValidationError('Candidate already exists. Proceed to sign up or sign in.');
   }
 
-  await strapi.documents('api::candidate.candidate').create({
+  const { documentId: candidateDocumentId } = await strapi.documents('api::candidate.candidate').create({
     data: {
+      email: params.email,
       firstName: params.firstName,
       lastName: params.lastName,
-      email: params.email
-      // TODO: Add other fields.
+      identifier: params.identifier
     }
   });
+
+  const electionDocumentIds = params.electionDocumentIds?.length
+    ? [...new Set(params.electionDocumentIds)]
+    : [undefined];
+
+  await Promise.all(
+    electionDocumentIds.map(
+      async (electionDocumentId) =>
+        await strapi.documents('api::nomination.nomination').create({
+          data: {
+            candidate: candidateDocumentId,
+            election: electionDocumentId,
+            electionRound: 1,
+            constituency: params.constituencyDocumentId
+          },
+          status: 'draft'
+        })
+    )
+  );
 
   return {
     type: 'success'
