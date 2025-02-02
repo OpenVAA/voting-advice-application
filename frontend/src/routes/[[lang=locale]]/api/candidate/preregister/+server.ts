@@ -4,12 +4,16 @@ import {
   IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY,
   IDENTITY_PROVIDER_JWKS_URI
 } from '$env/static/private';
+import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { getIdTokenClaims } from '$lib/api/utils/auth/getIdTokenClaims';
-import { constants } from '$lib/utils/constants';
+import { logDebugError } from '$lib/utils/logger';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
 export async function POST({ cookies, request }) {
-  const data: { email: string; electionIds?: Array<number>; constituencyId?: number } = await request.json();
+  const dataWriter = await dataWriterPromise;
+  dataWriter.init({ fetch });
+
+  const data: { email: string; electionIds?: Array<string>; constituencyId?: string } = await request.json();
 
   const idToken = cookies.get('id_token');
 
@@ -22,21 +26,22 @@ export async function POST({ cookies, request }) {
     publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
   });
 
-  await fetch(`${constants.PUBLIC_SERVER_BACKEND_URL}/api/auth/candidate/preregister`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${BACKEND_API_TOKEN}`
-    },
-    body: JSON.stringify({
-      email: data.email,
-      firstName: claims.firstName,
-      lastName: claims.lastName,
-      identifier: claims.birthdate,
-      electionDocumentIds: data.electionIds,
-      constituencyDocumentId: data.constituencyId
+  await dataWriter
+    .preregister({
+      body: {
+        email: data.email,
+        firstName: `${claims.firstName}`,
+        lastName: `${claims.lastName}`,
+        identifier: `${claims.birthdate}`,
+        electionDocumentIds: data.electionIds,
+        constituencyDocumentId: data.constituencyId
+      },
+      authToken: BACKEND_API_TOKEN
     })
-  });
+    .catch((e) => {
+      logDebugError(`Error creating a candidate: ${e?.message}`);
+      return undefined;
+    });
 
   cookies.delete('id_token', {
     httpOnly: true,

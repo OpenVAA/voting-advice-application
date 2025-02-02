@@ -10,6 +10,33 @@ import type { DPDataType } from './dataTypes';
  */
 export interface DataWriter<TType extends AdapterType = 'universal'> {
   ////////////////////////////////////////////////////////////////////
+  // Preregistration
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Create a candidate with a nomination or nominations and send a registration link.
+   * @param firstName - First name.
+   * @param lastName - Last name.
+   * @param identifier - Personal identifier such as a birthdate.
+   * @param email - Email.
+   * @param electionDocumentIds - Election document IDs.
+   * @param constituencyDocumentId - Constituency document ID.
+   * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
+   */
+  preregister: (
+    opts: {
+      body: {
+        firstName: string;
+        lastName: string;
+        identifier: string;
+        email: string;
+        electionDocumentIds?: Array<string>;
+        constituencyDocumentId?: string;
+      };
+    } & WithAuth
+  ) => DWReturnType<DataApiActionResult, TType>;
+
+  ////////////////////////////////////////////////////////////////////
   // Registration
   ////////////////////////////////////////////////////////////////////
 
