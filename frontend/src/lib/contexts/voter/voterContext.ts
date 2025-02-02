@@ -1,8 +1,7 @@
-import { type EntityType, QUESTION_CATEGORY_TYPE, QuestionCategory } from '@openvaa/data';
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openvaa/matching';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { derived, get, type Readable } from 'svelte/store';
+import { derived } from 'svelte/store';
 import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/utils/route';
 import { answerStore } from './answerStore';
 import { countAnswers } from './countAnswers';
@@ -13,8 +12,11 @@ import { getAppContext } from '../../contexts/app';
 import { dataCollectionStore } from '../utils/dataCollectionStore';
 import { paramStore } from '../utils/paramStore';
 import { questionBlockStore } from '../utils/questionBlockStore';
+import { extractInfoCategories, extractOpinionCategories, questionCategoryStore } from '../utils/questionCategoryStore';
+import { questionStore } from '../utils/questionStore';
 import { sessionStorageWritable } from '../utils/storageStore';
 import type { Id } from '@openvaa/core';
+import type { EntityType } from '@openvaa/data';
 import type { VoterContext } from './voterContext.type';
 
 const CONTEXT_KEY = Symbol();
@@ -67,7 +69,11 @@ export function initVoterContext(): VoterContext {
     });
   });
 
-  const selectedElections = dataCollectionStore(electionId, (id) => get(dataRoot).getElection(id));
+  const selectedElections = dataCollectionStore({
+    dataRoot,
+    idStore: electionId,
+    getter: (id, dr) => dr.getElection(id)
+  });
 
   /**
    * A paramStore with implied defaults.
@@ -77,7 +83,11 @@ export function initVoterContext(): VoterContext {
     return getImpliedConstituencyIds({ elections });
   });
 
-  const selectedConstituencies = dataCollectionStore(constituencyId, (id) => get(dataRoot).getConstituency(id));
+  const selectedConstituencies = dataCollectionStore({
+    dataRoot,
+    idStore: constituencyId,
+    getter: (id, dr) => dr.getConstituency(id)
+  });
 
   ////////////////////////////////////////////////////////////
   // Questions and QuestionCategories
@@ -86,48 +96,23 @@ export function initVoterContext(): VoterContext {
   /**
    * All applicable, non-empty question categories to be used as a base for the other stores.
    */
-  const questionCategories: Readable<Array<QuestionCategory>> = derived(
-    [dataRoot, selectedElections, selectedConstituencies],
-    ([dataRoot, elections, constituencies]) =>
-      dataRoot.questionCategories?.filter(
-        (c) =>
-          c.appliesTo({ elections, constituencies }) &&
-          c.getApplicableQuestions({ elections, constituencies }).length > 0
-      ) ?? [],
-    []
-  );
+  const questionCategories = questionCategoryStore({ dataRoot, selectedElections, selectedConstituencies });
 
-  const infoQuestionCategories = derived(
-    questionCategories,
-    (categories) => categories.filter((c) => c.type !== QUESTION_CATEGORY_TYPE.Opinion),
-    []
-  );
+  const infoQuestionCategories = extractInfoCategories(questionCategories);
 
-  const infoQuestions = derived(
-    [infoQuestionCategories, selectedElections, selectedConstituencies],
-    ([categories, elections, constituencies]) =>
-      categories.flatMap((c) => c.getApplicableQuestions({ elections, constituencies })),
-    []
-  );
+  const opinionQuestionCategories = extractOpinionCategories(questionCategories);
 
-  const opinionQuestionCategories = derived(
-    questionCategories,
-    (categories) => categories.filter((c) => c.type === QUESTION_CATEGORY_TYPE.Opinion),
-    []
-  );
+  const infoQuestions = questionStore({
+    categories: infoQuestionCategories,
+    selectedElections,
+    selectedConstituencies
+  });
 
-  const opinionQuestions = derived(
-    [opinionQuestionCategories, selectedElections, selectedConstituencies],
-    ([categories, elections, constituencies]) => {
-      const questions = categories.flatMap((c) => c.getApplicableQuestions({ elections, constituencies }));
-      // Ensure that all questions in the opinion question categories are matchable.
-      for (const q of questions) {
-        if (!q.isMatchable) error(500, `Opinion question ${q.id} is not matchable.`);
-      }
-      return questions;
-    },
-    []
-  );
+  const opinionQuestions = questionStore({
+    categories: opinionQuestionCategories,
+    selectedElections,
+    selectedConstituencies
+  });
 
   const selectedQuestionCategoryIds = sessionStorageWritable('voterContext-selectedCategoryIds', new Array<Id>());
 
@@ -180,13 +165,11 @@ export function initVoterContext(): VoterContext {
   const minAnswers = derived(appSettings, (appSettings) => appSettings.matching.minimumAnswers);
 
   /** Get the entityTypes whose cardContents include `submatches` */
-  const calcSubmatches = derived(appSettings, (appSettings) => {
-    console.info(appSettings);
-    return [];
-    return Object.entries(appSettings.results.cardContents)
+  const calcSubmatches = derived(appSettings, (appSettings) =>
+    Object.entries(appSettings.results.cardContents)
       .filter(([, value]) => value.includes('submatches'))
-      .map(([type]) => type as EntityType);
-  });
+      .map(([type]) => type as EntityType)
+  );
 
   const matches = matchStore({
     algorithm,

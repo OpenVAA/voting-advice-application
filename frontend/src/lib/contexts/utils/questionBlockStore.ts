@@ -1,20 +1,29 @@
-import { derived } from 'svelte/store';
+import { derived, readable } from 'svelte/store';
 import { logDebugError } from '$lib/utils/logger';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
-import type { Readable, Writable } from 'svelte/store';
+import type { Readable } from 'svelte/store';
 import type { QuestionBlock, QuestionBlocks } from './questionBlockStore.type';
 
+/**
+ * Create a derived store containing all `QuestionBlock`s, i.e., the `Question`s in the selected `QuestionCategory`s that are applicable to the selected elections and constituencies.
+ * @param firstQuestionId - A store containing the id of the `Question` to move first along its category, defaults to `null`.
+ * @param opinionQuestionCategories - A store containing `QuestionCategory`s of opinion questions.
+ * @param selectedQuestionCategoryIds - A store containing the ids of the `QuestionCategory`s to select. If empty (the default), all categories are selected.
+ * @param selectedElections - A store containing the selected `Election`s.
+ * @param selectedConstituencies - A store containing the selected `Constituency`s.
+ * @returns A `QuestionBlocks` store.
+ */
 export function questionBlockStore({
-  firstQuestionId,
+  firstQuestionId = readable(null),
   opinionQuestionCategories,
-  selectedQuestionCategoryIds,
+  selectedQuestionCategoryIds = readable([]),
   selectedElections,
   selectedConstituencies
 }: {
-  firstQuestionId: Writable<Id | null>;
+  firstQuestionId?: Readable<Id | null>;
   opinionQuestionCategories: Readable<Array<QuestionCategory>>;
-  selectedQuestionCategoryIds: Writable<Array<Id>>;
+  selectedQuestionCategoryIds?: Readable<Array<Id>>;
   selectedElections: Readable<Array<Election>>;
   selectedConstituencies: Readable<Array<Constituency>>;
 }): Readable<QuestionBlocks> {

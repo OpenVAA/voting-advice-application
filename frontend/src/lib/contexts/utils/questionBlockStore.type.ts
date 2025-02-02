@@ -2,6 +2,7 @@ import type { AnyQuestionVariant, QuestionCategory } from '@openvaa/data';
 
 /**
  * The `Question`s in the selected `QuestionCategory`s as well as some utility methods.
+ * This unseemly structure is needed to allow custom ordering of `Question`s and also to bypass having to call `getApplicableQuestions` for each `QuestionCategory`.
  */
 
 export type QuestionBlocks = {
