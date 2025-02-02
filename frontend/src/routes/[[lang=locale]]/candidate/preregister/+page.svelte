@@ -11,27 +11,21 @@
 
   // TODO: Use $t('candidateApp.preregister.identifyYourself')
 
-  export let data: { userInfo: { firstName: string; lastName: string } | null };
+  export let data: { claims: { firstName: string; lastName: string } | null };
 
+  let email1: string = '';
+  let email2: string = '';
   let electionIds: number[] = [];
   let constituencyId: number | undefined = undefined;
-  let email1: string | undefined = undefined;
-  let email2: string | undefined = undefined;
+
+  let errorMessage = '';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, t, userData } = getCandidateContext();
+  const { appCustomization, darkMode, t, userData, preregister } = getCandidateContext(); // TODO: Redirect to (where) if there's user data.
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
-
-  async function authenticateWithOIDC() {
-    if (browser) {
-      const clientId = constants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
-      const redirectUri = `${window.location.origin}${window.location.pathname}/signicat/oidc/callback`;
-      window.location.href = `${constants.PUBLIC_SIGNICAT_AUTHORIZE_ENDPOINT}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=openid%20profile&prompt=login`;
-    }
-  }
 
   ///////////////////////////////////////////////////////////////////
   // Top bar and styling
@@ -43,6 +37,33 @@
       ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
       : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
   });
+
+  async function redirectToIdentityProvider() {
+    if (browser) {
+      const clientId = constants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
+      const redirectUri = `${window.location.origin}${window.location.pathname}/signicat/oidc/callback`;
+      window.location.href = `${constants.PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=openid%20profile&prompt=login`;
+    }
+  }
+
+  async function onFormSubmit() {
+    // TODO: Validate all data.
+
+    if (email1 !== email2) {
+      errorMessage = 'TODO';
+      return;
+    }
+
+    const response = await preregister({ email: email1, electionIds, constituencyId });
+
+    if (!response?.ok) {
+      errorMessage = 'TODO';
+      // TODO
+      return;
+    }
+
+    // TODO: Go to the success page.
+  }
 </script>
 
 <svelte:head>
@@ -54,15 +75,15 @@
     <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
     <h1 class="text-3xl font-normal">{$page.data.election?.name}</h1>
   </HeadingGroup>
-  {#if data.userInfo}
-    <form class="flex flex-col flex-nowrap items-center" method="POST" action="?/register">
+  {#if data.claims}
+    <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onFormSubmit}>
       <input
         name="firstName"
         id="firstName"
         class="input mb-md w-full max-w-md"
         placeholder={$t('common.firstName')}
         aria-label={$t('common.firstName')}
-        value={data.userInfo.firstName}
+        value={data.claims.firstName}
         required
         disabled />
       <input
@@ -71,7 +92,7 @@
         class="input mb-md w-full max-w-md"
         placeholder={$t('common.lastName')}
         aria-label={$t('common.lastName')}
-        value={data.userInfo.lastName}
+        value={data.claims.lastName}
         required
         disabled />
       <input
@@ -96,6 +117,9 @@
       <Button type="reset" text={$t('common.cancel')} variant="secondary" />
     </form>
   {:else}
-    <Button type="submit" text="Identify yourself" variant="main" on:click={authenticateWithOIDC} />
+    <Button
+      text={$t('candidateApp.preregister.identifyYourself')}
+      variant="main"
+      on:click={redirectToIdentityProvider} />
   {/if}
 </MainContent>

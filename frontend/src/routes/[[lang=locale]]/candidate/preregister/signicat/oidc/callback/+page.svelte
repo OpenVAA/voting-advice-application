@@ -23,7 +23,7 @@
   $: authorizationCode = $page.url.searchParams.get('code');
 
   $: if (authorizationCode) {
-    fetch(`${browser ? constants.PUBLIC_FRONTEND_URL : constants.PUBLIC_DOCKER_FRONTEND_URL}/api/oidc/token`, {
+    fetch(`${browser ? constants.PUBLIC_BROWSER_FRONTEND_URL : constants.PUBLIC_SERVER_FRONTEND_URL}/api/oidc/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
