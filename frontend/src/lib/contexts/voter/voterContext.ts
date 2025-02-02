@@ -1,7 +1,9 @@
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openvaa/matching';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { derived } from 'svelte/store';
+import { derived, get } from 'svelte/store';
+import { goto } from '$app/navigation';
+import { logDebugError } from '$lib/utils/logger';
 import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/utils/route';
 import { answerStore } from './answerStore';
 import { countAnswers } from './countAnswers';
@@ -38,7 +40,7 @@ export function initVoterContext(): VoterContext {
   ////////////////////////////////////////////////////////////
 
   const appContext = getAppContext();
-  const { dataRoot, appSettings, locale, startEvent, t } = appContext;
+  const { appSettings, dataRoot, getRoute, locale, startEvent, t } = appContext;
 
   ////////////////////////////////////////////////////////////
   // Elections and Constituencies
@@ -72,7 +74,15 @@ export function initVoterContext(): VoterContext {
   const selectedElections = dataCollectionStore({
     dataRoot,
     idStore: electionId,
-    getter: (id, dr) => dr.getElection(id)
+    getter: (id, dr) => {
+      try {
+        return dr.getElection(id);
+      } catch (e) {
+        logDebugError(`[selectedElections] Error fetching election: ${e}`);
+        goto(get(getRoute)({ route: 'Elections', electionId: undefined, constituencyId: undefined }));
+        return undefined;
+      }
+    }
   });
 
   /**
@@ -86,7 +96,15 @@ export function initVoterContext(): VoterContext {
   const selectedConstituencies = dataCollectionStore({
     dataRoot,
     idStore: constituencyId,
-    getter: (id, dr) => dr.getConstituency(id)
+    getter: (id, dr) => {
+      try {
+        return dr.getConstituency(id);
+      } catch (e) {
+        logDebugError(`[selectedConstituencies] Error fetching constituency: ${e}`);
+        goto(get(getRoute)({ route: 'Constituencies', constituencyId: undefined }));
+        return undefined;
+      }
+    }
   });
 
   ////////////////////////////////////////////////////////////
@@ -145,7 +163,7 @@ export function initVoterContext(): VoterContext {
   );
 
   /** The types of entities we show in results */
-  const entityTypes = derived(appSettings, (appSettings) => appSettings.results.sections);
+  const entityTypes = derived(appSettings, (appSettings) => appSettings.results?.sections ?? []);
 
   // Matching and filtering depend on the available nominations and questions, for which we use a utility store
   const nominationsAndQuestions = nominationAndQuestionStore({
