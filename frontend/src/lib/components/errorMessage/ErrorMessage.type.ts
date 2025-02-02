@@ -8,4 +8,8 @@ export type ErrorMessageProps = SvelteHTMLElements['div'] & {
    * The message to display. @default `$t('error.default')`
    */
   message?: string | null;
+  /**
+   * The message to log in the console in development mode. @default value of `message`
+   */
+  logMessage?: string | null;
 };
