@@ -78,6 +78,10 @@ export type InputPropsBase<TValue, TElement extends keyof SvelteHTMLElements = '
    */
   locked?: boolean;
   /**
+   * If `true`, a badge will be displayed next to the input. @default false
+   */
+  required?: boolean;
+  /**
    * Bindable: the value of the input.
    */
   value?: TValue | null;
@@ -87,8 +91,8 @@ export type InputPropsBase<TValue, TElement extends keyof SvelteHTMLElements = '
   onShadedBg?: boolean;
   /**
    * Event handler triggered when the value changes.
-   * @param value The new value of the input.
    * NB. The type of `value` is `TValue` but TS will not let us define it here.
+   * @param value - The new value of the input. In case of an `image`, it will be a `ImageWithFile` object with a `file` property.
    */
   onChange?: (value: unknown) => void;
   /**
@@ -99,4 +103,8 @@ export type InputPropsBase<TValue, TElement extends keyof SvelteHTMLElements = '
    * If `true`, enables ordering of the values of a `select-multiple` input. @default false
    */
   ordered?: TValue extends Array<unknown> ? boolean : never;
+  /**
+   * The maximum file size for `image` inputs. @default 20 * 1024**2 (20MB)
+   */
+  maxFilesize?: TValue extends Image ? number : never;
 };

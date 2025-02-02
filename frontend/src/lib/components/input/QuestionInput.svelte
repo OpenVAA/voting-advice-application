@@ -8,6 +8,7 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
 
 - `question`: The `Question` for which to show the input. Not reactive.
 - `answer`: The `Answer` object to the question. Not reactive.
+- `disableMultilingual`:  If `true`, text inputs will not be multilingual. @default `false`
 - Any properties of `Input`, except `choices`, `ordered` and `type`. Note that `label`, `id` and `info` are prefilled but may be overridden.
 
 ### Callbacks
@@ -32,11 +33,13 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   import { logDebugError } from '$lib/utils/logger';
   import { Input, type InputProps } from '.';
   import type { QuestionInputProps } from './QuestionInput.type';
+  import { isLocalizedString, type CustomData } from '@openvaa/app-shared';
 
   type $$Props = QuestionInputProps;
 
   export let question: $$Props['question'];
   export let answer: $$Props['answer'] = undefined;
+  export let disableMultilingual: $$Props['disableMultilingual'] = undefined;
   export let onChange: $$Props['onChange'] = undefined;
 
   // TODO: Implement
@@ -61,28 +64,54 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   } as const;
 
   let inputProps: InputProps;
+  const customData: CustomData['Question'] = question.customData;
 
-  const type = INPUT_TYPES[question.type];
+  let type = INPUT_TYPES[question.type];
+
+  // Apply customData modifiers
+  if (customData.longText) {
+    if (type === 'text') type = 'textarea';
+    else if (type ==='text-multilingual') type ='textarea-multilingual';
+  }
+
+  // Apply multilingual support if not disabled
+  if (!disableMultilingual) {
+    if (type === 'text') type = 'text-multilingual';
+    else if (type === 'textarea') type = 'textarea-multilingual';
+  }
+
   const { id, info, name: label } = question;
-  const { fillingInfo } = customData;
+  const { fillingInfo, required } = customData;
+  const baseProps = { 
+    type, 
+    id, 
+    label, 
+    required,
+    info: fillingInfo ?? info,
+  };
 
   if (question instanceof ChoiceQuestion) {
     const options = question.choices;
     inputProps = {
-      type,
-      id,
-      label,
-      info: fillingInfo ?? info,
+      ...baseProps,
       options,
       ordered: question instanceof MultipleChoiceQuestion ? true : undefined
     } as InputProps;
   } else {
-    inputProps = { type, id, label, info };
+    inputProps = baseProps;
   }
 
-  const value = question.ensureAnswer(answer)?.value;
+  // Check that the answer value is valid, but we can't use `Question.ensureAnswer` for multilingual inputs
+  let value = answer?.value;
   if (value != null) {
-    inputProps.value = value instanceof Date ? value.toISOString().split('T')[0] : value;
+    if (type.endsWith('-multilingual')) {
+      value = isLocalizedString(value) || typeof value === 'string' ? value : undefined;
+    } else {
+      value = question.ensureValue(value);
+    }
+    // `DateQuestion`s have their values as `Date`s
+    if (value instanceof Date) value = value.toISOString().split('T')[0];
+    inputProps.value = value as InputProps['value'];
   }
 
   ////////////////////////////////////////////////////////////////////
