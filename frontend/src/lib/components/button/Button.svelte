@@ -3,6 +3,7 @@
 A component for buttons that mostly contain text and an icon. Use the `variant` prop to specify the button type. When using an `icon`, use `iconPos` to set the position of the icon relative to the text.
 
 - `main`: A large, prominent button that is used for the main action of the page. In general, there should only be one of these on a page.
+- `prominent`: A large, quite prominent button.
 - `icon`: A button containing only an icon. Note that you still need to provide the `text` property, which will be used as the `aria-label` and `title` of the button.
 - `responsive-icon`: A button rendered as icon only on small screens but which exposes the text label on large screens. Set the `iconPos` to `left` or `right` to control its location in the expanded view.
 - `secondary`: A button with a smaller (uppercase) text and possibly an icon.
@@ -18,7 +19,7 @@ The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<
 - `text`: The required text of the button. If `variant` is `icon`, the text will be used as the `aria-label` and `title` for the button. You can override both by providing them as attributes, e.g. `aria-label="Another text"`.
 - `variant`: The type of the button.
 - `icon`: The name of the icon to display.
-- `color`: The color of the icon.
+- `color`: The color of the button or text.
 - `iconPos`: The position of the icon relative to the text.
 - `disabled`: Whether the button is disabled. This can also be used with buttons rendered as `<a>` elements.
 - `class`: Additional class string to append to the element's default classes.
@@ -62,7 +63,7 @@ text="Add to list">
   export let disabled: $$Props['disabled'] = undefined;
 
   // Check iconPos
-  if ((variant === 'main' || variant === 'responsive-icon') && (iconPos === 'top' || iconPos === 'bottom')) {
+  if ((variant === 'main' || variant === 'prominent' || variant === 'responsive-icon') && (iconPos === 'top' || iconPos === 'bottom')) {
     iconPos = 'right';
   }
 
@@ -82,6 +83,7 @@ text="Add to list">
         classes += ' btn-ghost justify-start';
         break;
       case 'main':
+      case 'prominent':
         classes += ' w-full max-w-md justify-center';
         break;
       default:
@@ -109,7 +111,10 @@ text="Add to list">
       classes += ` ${variant === 'main' ? 'btn' : 'text'}-${color}`;
     }
 
-    // 5. Finally, define the class for the text label
+    // 5. Apply default btn color for the `prominent` variant
+    if (variant === 'prominent') classes += ' btn-base-300';
+
+    // 6. Finally, define the class for the text label
     switch (variant) {
       case 'main':
         labelClass += ' flex-grow text-center';
