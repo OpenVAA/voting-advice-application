@@ -60,6 +60,7 @@ export const ICONS = {
   privacy: ['material', 'security'],
   profile: ['material', 'face'],
   removeFromList: ['material', 'playlist_remove'],
+  required: ['material', 'error'],
   replay: ['material', 'replay'],
   research: ['material', 'science'],
   results: ['material', 'format_list_numbered'],
