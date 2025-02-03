@@ -103,6 +103,15 @@ export type DynamicSettings = {
    */
   questions: {
     /**
+     * Settings related to the interactive info view.
+     */
+    interactiveInfo?: {
+      /**
+       * Default `false`.
+       */
+      enabled?: boolean;
+    }
+    /**
      * Settings related to the optional category intro pages.
      */
     categoryIntros?: {
