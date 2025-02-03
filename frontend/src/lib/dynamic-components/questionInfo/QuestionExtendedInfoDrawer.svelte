@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Drawer } from '$lib/components/drawer';
+  import { Drawer } from '$lib/components/modal/drawer';
   import QuestionExtendedInfo from '$lib/components/questions/QuestionExtendedInfo.svelte';
   import type { QuestionExtendedInfoDrawerProps } from './QuestionExtendedInfoDrawer.type';
 
@@ -7,12 +7,13 @@
 
   export let question: $$Props['question'];
   let { customData }: { customData: CustomData['Question'] } = question;
+  console.log(customData);
 </script>
 
 <Drawer title={question?.text ?? ''}>
   <QuestionExtendedInfo
     info={question.info}
-    infoSections={Object.values(customData.infoSections ?? {})
+    infoSections={(customData.infoSections ?? [])
       .filter(({ visible }) => !!visible)
       .map(({ title, text }) => ({
         title: title ?? '',

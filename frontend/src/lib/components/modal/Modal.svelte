@@ -71,11 +71,13 @@ A modal dialog.
   import { attemptFocus, focusFirstDescendant } from '$lib/utils/aria/focus';
   import { concatClass, getUUID } from '$lib/utils/components';
   import type { ModalProps } from './Modal.type';
+  import ModalContainer from './ModalContainer.svelte';
 
   type $$Props = ModalProps;
 
   export let title: $$Props['title'];
   export let autofocusId: $$Props['autofocusId'] = undefined;
+  export let container: $$Props['container'] = ModalContainer;
   export let boxClass: $$Props['boxClass'] = '';
   export let closeOnBackdropClick: $$Props['closeOnBackdropClick'] = true;
   export let isOpen: $$Props['isOpen'] = false;
@@ -164,7 +166,7 @@ A modal dialog.
   aria-modal="true"
   aria-labelledby={titleId}
   {...concatClass($$restProps, 'modal modal-bottom sm:modal-middle backdrop:bg-neutral backdrop:opacity-60')}>
-  <div class="modal-box {boxClass ?? ''}">
+  <svelte:component this={container} class={boxClass}>
     <h2 id={titleId} class="mb-lg text-center">{title}</h2>
     <slot />
     {#if $$slots.actions}
@@ -178,7 +180,7 @@ A modal dialog.
         <span class="sr-only">{$t('common.closeDialog')}</span>
       </button>
     </form>
-  </div>
+  </svelte:component>
   {#if closeOnBackdropClick}
     <div class="modal-backdrop" aria-hidden="true">
       <button on:click={closeModal} tabindex="-1">{$t('common.closeDialog')}</button>

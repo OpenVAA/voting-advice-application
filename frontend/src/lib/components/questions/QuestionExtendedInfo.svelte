@@ -17,12 +17,8 @@ Display the question's expandable information content.
 -->
 
 <script lang="ts">
-  import { Drawer } from '$lib/components/drawer';
-  import { getComponentContext } from '$lib/contexts/component';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import { Button } from '../button';
   import { Expander } from '../expander';
-  import Modal from '../modal/Modal.svelte';
   import type { QuestionInfoProps } from './QuestionExtendedInfo.type';
 
   type $$Props = QuestionInfoProps;

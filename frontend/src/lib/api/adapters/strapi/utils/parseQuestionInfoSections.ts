@@ -1,26 +1,24 @@
-import { type AnyQuestionVariantData, type Choice, QUESTION_TYPE } from '@openvaa/data';
-import { formatId } from '$lib/api/utils/formatId';
 import { translate } from '$lib/i18n/utils';
-import type { StrapiChoice, StrapiDateType, StrapiQuestionData, StrapiQuestionTypeData } from '../strapiData.type';
+import type { StrapiQuestionData } from '../strapiData.type';
 
 export function parseQuestionInfoSections(
   data: StrapiQuestionData['attributes']['customData'],
   locale: string | null
-): QuestionInfoSections {
-  const out: QuestionInfoSections = {};
+): Array<QuestionInfoSection> {
+  const out: Array<QuestionInfoSection> = [];
 
-  for (const [key, value] of Object.entries((data as any)?.infoSections ?? {})) {
+  for (const value of (data as CustomData['Question'])?.infoSections ?? []) {
     const { title, text, visible } = value as {
       text?: LocalizedString;
       title?: LocalizedString;
       visible?: boolean;
     };
 
-    out[key] = {
+    out.push({
       title: translate(title, locale) || '',
       text: translate(text, locale) || '',
-      visible: Boolean(visible) ?? false
-    };
+      visible: Boolean(visible ?? false)
+    });
   }
 
   return out;

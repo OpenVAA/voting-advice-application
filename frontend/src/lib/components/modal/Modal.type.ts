@@ -1,3 +1,4 @@
+import type { ComponentType } from 'svelte';
 import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type ModalProps = SvelteHTMLElements['dialog'] & {
@@ -13,6 +14,7 @@ export type ModalProps = SvelteHTMLElements['dialog'] & {
    * Optional classes to add to the dialog box itself. Note that the basic `class` property is applied to the `<dialog>` element, which is rarely needed.
    */
   boxClass?: string;
+  container?: ComponentType;
   /**
    * Whether to allow closing the modal by clicking outside of it. @default true
    */
