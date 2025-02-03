@@ -2,8 +2,8 @@
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { getComponentContext } from '$lib/contexts/component';
-  import type { QuestionExtendedInfoButtonProps } from './QuestionExtendedInfoButton.type';
   import QuestionExtendedInfoDrawer from './QuestionExtendedInfoDrawer.svelte';
+  import type { QuestionExtendedInfoButtonProps } from './QuestionExtendedInfoButton.type';
 
   const { modalStack } = getAppContext();
   const { t } = getComponentContext();

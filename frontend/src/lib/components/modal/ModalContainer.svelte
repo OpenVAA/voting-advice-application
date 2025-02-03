@@ -15,9 +15,6 @@ You can override this by passing a different container to the
 
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
-  import type { ModalContainerProps } from './ModalContainer.type';
-
-  type $$Props = ModalContainerProps;
 </script>
 
 <div {...concatClass($$restProps, 'modal-box')}>

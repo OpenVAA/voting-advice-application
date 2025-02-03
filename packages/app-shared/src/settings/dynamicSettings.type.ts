@@ -110,7 +110,7 @@ export type DynamicSettings = {
        * Default `false`.
        */
       enabled?: boolean;
-    }
+    };
     /**
      * Settings related to the optional category intro pages.
      */

@@ -4,10 +4,10 @@ import type { ComponentContext } from '../component';
 import type { DataContext } from '../data';
 import type { AppCustomization } from './appCustomization.type';
 import type { getRoute } from './getRoute';
+import type { ModalStore } from './modal';
 import type { PopupStore } from './popup';
 import type { TrackingService } from './tracking';
 import type { UserPreferences } from './userPreferences.type';
-import type { ModalStore } from './modal';
 
 export type AppContext = ComponentContext &
   DataContext &
