@@ -42,6 +42,7 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
   import { Modal } from '..';
   import type { DrawerProps } from './Drawer.type';
   import DrawerContainer from './DrawerContainer.svelte';
+  import Button from '$lib/components/button/Button.svelte';
 
   type $$Props = DrawerProps;
 
@@ -75,4 +76,11 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
   container={DrawerContainer}>
   <slot name="actions" slot="actions" />
   <slot />
+  <Button
+    type="button"
+    variant="icon"
+    text="close"
+    class="!absolute bottom-16 right-16 rounded-full bg-base-300 p-14"
+    icon="close"
+    on:click={closeModal} />
 </Modal>
