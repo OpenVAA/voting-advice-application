@@ -70,8 +70,8 @@ A modal dialog.
   import { getComponentContext } from '$lib/contexts/component';
   import { attemptFocus, focusFirstDescendant } from '$lib/utils/aria/focus';
   import { concatClass, getUUID } from '$lib/utils/components';
-  import type { ModalProps } from './Modal.type';
   import ModalContainer from './ModalContainer.svelte';
+  import type { ModalProps } from './Modal.type';
 
   type $$Props = ModalProps;
 

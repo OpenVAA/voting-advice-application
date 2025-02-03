@@ -3,7 +3,7 @@ import type { ComponentType, SvelteComponent } from 'svelte';
 /**
  * A component that can be added to the popup queue.
  */
-export type ModalComponent<Props extends Record<string, unknown>> = ComponentType<SvelteComponent<Props>>;
+export type ModalComponent<TProps extends Record<string, unknown>> = ComponentType<SvelteComponent<TProps>>;
 
 export interface ModalComponentProps extends Record<string, unknown> {
   /**

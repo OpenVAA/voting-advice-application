@@ -39,10 +39,10 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
 
 <script lang="ts">
   import { onMount } from 'svelte';
+  import Button from '$lib/components/button/Button.svelte';
+  import DrawerContainer from './DrawerContainer.svelte';
   import { Modal } from '..';
   import type { DrawerProps } from './Drawer.type';
-  import DrawerContainer from './DrawerContainer.svelte';
-  import Button from '$lib/components/button/Button.svelte';
 
   type $$Props = DrawerProps;
 

@@ -50,7 +50,7 @@ export const dynamicSettings: DynamicSettings = {
       show: true
     },
     interactiveInfo: {
-      enabled: false,
+      enabled: false
     },
     showCategoryTags: true,
     showResultsLink: true

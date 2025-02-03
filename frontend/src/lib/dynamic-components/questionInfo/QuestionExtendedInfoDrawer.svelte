@@ -7,7 +7,6 @@
 
   export let question: $$Props['question'];
   let { customData }: { customData: CustomData['Question'] } = question;
-  console.log(customData);
 </script>
 
 <Drawer title={question?.text ?? ''}>

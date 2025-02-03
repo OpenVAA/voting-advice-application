@@ -15,6 +15,9 @@ Display a question for answering.
 -->
 
 <script lang="ts">
+  import { dynamicSettings } from '@openvaa/app-shared';
+  import { error } from '@sveltejs/kit';
+  import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { CategoryTag } from '$lib/components/categoryTag';
@@ -22,19 +25,15 @@ Display a question for answering.
   import { Loading } from '$lib/components/loading';
   import { QuestionActions, QuestionBasicInfo } from '$lib/components/questions';
   import QuestionChoices from '$lib/components/questions/QuestionChoices.svelte';
-  import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
-  import type { QuestionBlock } from '$lib/contexts/voter/questionBlockStore.type';
   import { QuestionExtendedInfoButton } from '$lib/dynamic-components/questionInfo';
   import { logDebugError } from '$lib/utils/logger';
   import { FIRST_QUESTION_ID, parseParams } from '$lib/utils/route';
   import { DELAY } from '$lib/utils/timing';
-  import type { AnyQuestionVariant } from '@openvaa/data';
-  import { error } from '@sveltejs/kit';
-  import { onDestroy, onMount } from 'svelte';
   import Layout from '../../../../Layout.svelte';
-  import { dynamicSettings } from '@openvaa/app-shared';
+  import type { AnyQuestionVariant } from '@openvaa/data';
+  import type { QuestionBlock } from '$lib/contexts/voter/questionBlockStore.type';
   //import {type VideoMode, Video} from '$lib/components/video';
 
   ////////////////////////////////////////////////////////////////////
@@ -53,7 +52,6 @@ Display a question for answering.
     t
   } = getVoterContext();
   const { progress } = getLayoutContext(onDestroy);
-  const { modalStack } = getAppContext();
 
   ////////////////////////////////////////////////////////////////////
   // Get the current question and update related variables
