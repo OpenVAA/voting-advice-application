@@ -58,7 +58,7 @@ declare global {
       longText?: boolean;
       vertical?: boolean;
       video?: CustomVideoProps;
-      infoSections?: QuestionInfoSections;
+      infoSections?: Array<QuestionInfoSection>;
     };
     QuestionCategory: {
       emoji?: string;
@@ -88,13 +88,11 @@ declare global {
   //     visible?: boolean;
   //   };
   // }
-  interface QuestionInfoSections {
-    [infoSection: string]: {
-      title?: string;
-      text?: string;
-      visible?: boolean;
-    };
-  }
+  type QuestionInfoSection = {
+    title?: string;
+    text?: string;
+    visible?: boolean;
+  };
 
   ///////////////////////////////////////////////
 
