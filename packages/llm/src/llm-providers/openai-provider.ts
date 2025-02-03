@@ -3,20 +3,16 @@ import { LLMProvider, LLMResponse, Message, UsageStats } from './llm-provider'; 
 
 export class OpenAIProvider extends LLMProvider {
   private model: string;
-
   private openai: OpenAI;
+  public readonly maxContextTokens: number;
 
-  constructor(options: { model?: string; apiKey?: string } = {}) {
+  constructor(options: { model?: string; apiKey?: string; maxContextTokens?: number } = {}) {
     super();
     this.model = options.model || 'gpt-4o-mini';
+    this.maxContextTokens = options.maxContextTokens || 4096;
     this.openai = new OpenAI({
       apiKey: options.apiKey ?? process.env.OPENAI_API_KEY
     });
-  }
-
-  // OpenAI models typically have a max context window of around 4096 tokens
-  get maxContextTokens(): number {
-    return 4096;
   }
 
   async generate(
