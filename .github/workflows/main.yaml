@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - feat/llm-features-pr
     paths-ignore:
       - '**.md'
       - '**/*/.env.example'
@@ -16,6 +17,7 @@ on:
       - ready_for_review
     branches:
       - main
+      - feat/llm-features-pr
     paths-ignore:
       - '**.md'
       - '**/*/.env.example'
