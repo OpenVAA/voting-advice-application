@@ -707,15 +707,28 @@ async function generateMockLLMSummaries() {
     // Api response with LLMResponse parameters
     // TODO: Type for this? Also handle error-responses
     const generatedCustomData = JSON.parse(res.content);
-    // Use the same response for all candidates
-    await strapi.db.query(API.Question).updateMany({
-      where: {
-        // Get all
-      },
-      data: {
-        customData: generatedCustomData
-      }
-    });
+
+    // Get all questions with their existing customData
+    const questions = await strapi.db.query(API.Question).findMany({});
+
+    // Update each question, merging the new data with existing customData
+    for (const question of questions) {
+      const existingCustomData = question.customData || {};
+      const mergedCustomData = {
+        ...existingCustomData,
+        infoSections: {
+          ...existingCustomData.infoSections,
+          ...generatedCustomData.infoSections
+        }
+      };
+
+      await strapi.db.query(API.Question).update({
+        where: { id: question.id },
+        data: {
+          customData: mergedCustomData
+        }
+      });
+    }
   } catch (error) {
     console.error('Failed to generate LLM summary, ', error);
   }
