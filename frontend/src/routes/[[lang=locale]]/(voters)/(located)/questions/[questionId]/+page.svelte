@@ -22,10 +22,12 @@ Display a question for answering.
   import { logDebugError } from '$lib/utils/logger';
   import { FIRST_QUESTION_ID, parseParams } from '$lib/utils/route';
   import { DELAY } from '$lib/utils/timing';
-  import Layout from '../../../../Layout.svelte';
+  import MainContent from '../../../../MainContent.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
   import { QuestionHeading } from '$lib/dynamic-components/questionHeading';
+  import type { CustomData } from '@openvaa/app-shared';
+
   //import {type VideoMode, Video} from '$lib/components/video';
 
   ////////////////////////////////////////////////////////////////////
@@ -209,7 +211,7 @@ Display a question for answering.
     titleClass={videoProps ? '!pb-0' : undefined}
   -->
 
-  <Layout title={text}>
+  <MainContent title={text}>
     <!--
       <svelte:fragment slot="video">
         {#if videoProps}
@@ -263,7 +265,7 @@ Display a question for answering.
           handleJump(+1);
         }} />
     </svelte:fragment>
-  </Layout>
+  </MainContent>
 {:else}
   <Loading class="mt-lg" />
 {/if}
