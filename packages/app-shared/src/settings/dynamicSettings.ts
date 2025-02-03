@@ -49,6 +49,9 @@ export const dynamicSettings: DynamicSettings = {
       allowCategorySelection: true,
       show: true
     },
+    interactiveInfo: {
+      enabled: false,
+    },
     showCategoryTags: true,
     showResultsLink: true
   },
