@@ -12,7 +12,7 @@ Displays information about the elections in the VAA.
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import Layout from '../../Layout.svelte';
+  import MainContent from '../../MainContent.svelte';
 
   const { dataRoot, getRoute, t } = getAppContext();
 
@@ -25,7 +25,7 @@ Displays information about the elections in the VAA.
   });
 </script>
 
-<Layout title={$t('info.title')}>
+<MainContent title={$t('info.title')}>
   <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.info.heroEmoji')} />
   </figure>
@@ -49,4 +49,4 @@ Displays information about the elections in the VAA.
   {/if}
 
   <Button slot="primaryActions" variant="main" href={$getRoute('Home')} text={$t('common.returnHome')} />
-</Layout>
+</MainContent>

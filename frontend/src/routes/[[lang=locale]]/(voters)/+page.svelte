@@ -39,10 +39,6 @@ The frontpage of the app for voters.
 
 <MainContent title={$t('dynamic.appName')}>
   
-  <!--- REMOVE -->
-  <Button text="Clear JWS token [debug]" variant="main" color="warning"
-  on:click={() => fetch('/api/candidate/logout', { method: 'POST' })} />
-
   <Button variant="main" href={$getRoute('Intro')} text={$t('dynamic.frontPage.startButton')} />
 
   <p class="mt-lg text-center">

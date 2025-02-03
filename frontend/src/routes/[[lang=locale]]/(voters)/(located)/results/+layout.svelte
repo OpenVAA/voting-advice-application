@@ -9,7 +9,7 @@ Shows an error message if there are no nominations yet. This is usually the case
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter/voterContext.js';
-  import Layout from '../../../Layout.svelte';
+  import MainContent from '../../../MainContent.svelte';
 
   const { getRoute, matches, t } = getVoterContext();
 </script>
@@ -17,7 +17,7 @@ Shows an error message if there are no nominations yet. This is usually the case
 {#if Object.values(matches).length > 0}
   <slot />
 {:else}
-  <Layout title={$t('error.noNominations')}>
+  <MainContent title={$t('error.noNominations')}>
     <figure role="presentation" slot="hero">
       <HeroEmoji emoji={$t('dynamic.error.heroEmoji')} />
     </figure>
@@ -26,5 +26,5 @@ Shows an error message if there are no nominations yet. This is usually the case
       <Button href={$getRoute('Questions')} text={$t('questions.title')} variant="main" icon="next" />
       <Button href={$getRoute('Home')} text={$t('common.returnHome')} />
     </svelte:fragment>
-  </Layout>
+  </MainContent>
 {/if}

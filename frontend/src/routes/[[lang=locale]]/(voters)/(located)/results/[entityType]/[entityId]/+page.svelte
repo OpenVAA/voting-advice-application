@@ -34,6 +34,7 @@ Used to show an entity's details using the `EntityDetails` component.
   import { logDebugError } from '$lib/utils/logger';
   import { findNomination } from '$lib/utils/matches';
   import type { AnyEntityVariant, EntityType } from '@openvaa/data';
+  import SingleCardContent from '../../../../../SingleCardContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -43,7 +44,7 @@ Used to show an entity's details using the `EntityDetails` component.
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
-  // Layout
+  // MainContent
   ////////////////////////////////////////////////////////////////////
 
   /**
@@ -70,6 +71,7 @@ Used to show an entity's details using the `EntityDetails` component.
   ////////////////////////////////////////////////////////////////////
 
   let entity: MaybeWrappedEntityVariant | undefined;
+  let title = '';
   $: {
     const entityType = $page.params.entityType as EntityType;
     const entityId = $page.params.entityId;
@@ -83,6 +85,7 @@ Used to show an entity's details using the `EntityDetails` component.
       } else {
         // Make sure that the nomination matches the entity we are looking for
         const { entity: nakedEntity } = unwrapEntity<AnyEntityVariant>(target);
+        title = nakedEntity.name;
         if (nakedEntity.id !== entityId) {
           handleError(`Nomination with ${nominationId} does not match that of entity ${entityId}.`);
         } else {
@@ -93,6 +96,7 @@ Used to show an entity's details using the `EntityDetails` component.
     } else {
       try {
         entity = $dataRoot.getEntity(entityType, entityId);
+        title = entity.name;
         doTrack();
       } catch {
         handleError(`Entity of type ${entityType} with id ${entityId} not found.`);
@@ -124,9 +128,8 @@ Used to show an entity's details using the `EntityDetails` component.
   }
 </script>
 
-<!-- The card -->
-<div
-  class="-mx-lg -mb-safelgb -mt-lg flex w-screen max-w-xl flex-grow self-center rounded-t-lg bg-base-100 pb-[3.5rem] match-w-xl:shadow-xl">
+<SingleCardContent {title}>
+  <!-- The card -->
   {#if entity}
     {#key entity}
       <EntityDetails {entity} />
@@ -134,4 +137,4 @@ Used to show an entity's details using the `EntityDetails` component.
   {:else}
     <Loading showLabel />
   {/if}
-</div>
+</SingleCardContent>
