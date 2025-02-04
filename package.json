@@ -8,6 +8,7 @@
     "dev:down": "docker compose -f docker-compose.dev.yml down -v --rmi all --remove-orphans",
     "dev:stop": "docker compose -f docker-compose.dev.yml stop",
     "prepare": "husky",
+    "sync:translations": "rsync -av --include='*/' --include='dynamic.json' --exclude='*' frontend/src/lib/i18n/translations/ backend/vaa-strapi/src/functions/utils/translations/",
     "prod": "docker compose -f docker-compose.yml -p vaa-prod up -d --build",
     "test:e2e": "playwright test -c ./tests/playwright.config.ts ./tests",
     "test:unit": "vitest run && yarn workspace @openvaa/frontend test:unit && yarn workspace @openvaa/strapi test:unit",
