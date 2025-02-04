@@ -1,19 +1,3 @@
-<script lang="ts">
-  import { getContext } from 'svelte';
-  import { page } from '$app/stores';
-  import { InfoBadge } from '$lib/components/infoBadge';
-  import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
-  import { t } from '$lib/i18n';
-  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
-  import LanguageSelection from './LanguageSelection.svelte';
-  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
-
-  const { unansweredRequiredInfoQuestions, unansweredOpinionQuestions } =
-    getContext<CandidateContext>('candidate') ?? {};
-
-  $: unauthorised = !$page.data.token;
-</script>
-
 <!--
 @component
 A template part that outputs the navigation menu for the Candidate App for use in the 
@@ -34,52 +18,68 @@ A template part that outputs the navigation menu for the Candidate App for use i
 ```
 -->
 
+<script lang="ts">
+  import { InfoBadge } from '$lib/components/infoBadge';
+  import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
+  import LanguageSelection from './LanguageSelection.svelte';
+  import { getCandidateContext } from '$lib/contexts/candidate';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { onDestroy } from 'svelte';
+
+  const { navigation } = getLayoutContext(onDestroy);
+  const { authToken, getRoute, t, unansweredRequiredInfoQuestions, unansweredOpinionQuestions } = getCandidateContext();
+</script>
+
 <Navigation slot="nav" on:navFocusOut {...$$restProps}>
-  <slot />
-  <NavGroup>
-    <NavItem
-      href={$getRoute(ROUTE.CandAppHome)}
-      icon="home"
-      text={$t('candidateApp.common.home')}
-      disabled={unauthorised} />
-    <NavItem
-      href={$getRoute(ROUTE.CandAppProfile)}
-      icon="profile"
-      text={$t('candidateApp.basicInfo.title')}
-      disabled={unauthorised} />
-    <NavItem
-      href={$getRoute(ROUTE.CandAppQuestions)}
-      icon="opinion"
-      text={$t('candidateApp.questions.title')}
-      disabled={unauthorised || $unansweredRequiredInfoQuestions?.length !== 0}>
-      {#if $unansweredRequiredInfoQuestions && $unansweredOpinionQuestions && $unansweredOpinionQuestions.length > 0}
-        <InfoBadge
-          text={String($unansweredOpinionQuestions.length)}
-          disabled={$unansweredRequiredInfoQuestions.length !== 0}
-          classes="-left-8 -top-4" />
-      {/if}
-    </NavItem>
-    <NavItem
-      href={$getRoute(ROUTE.CandAppSettings)}
-      icon="settings"
-      text={$t('candidateApp.settings.title')}
-      disabled={unauthorised} />
-    <NavItem
-      href={$getRoute(ROUTE.CandAppPreview)}
-      icon="previewProfile"
-      text={$t('candidateApp.preview.title')}
-      disabled={unauthorised} />
-    <NavItem
-      href={$getRoute(ROUTE.CandAppHelp)}
-      icon="help"
-      text={$t('candidateApp.help.title')}
-      disabled={unauthorised} />
-  </NavGroup>
+  <NavItem on:click={navigation.close} icon="close" text={$t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
+  {#if $authToken}
+    <NavGroup>
+      <NavItem
+        href={$getRoute('CandAppHome')}
+        icon="home"
+        text={$t('candidateApp.common.home')}/>
+      <NavItem
+        href={$getRoute('CandAppProfile')}
+        icon="profile"
+        text={$t('candidateApp.basicInfo.title')}/>
+      <NavItem
+        href={$getRoute('CandAppQuestions')}
+        icon="opinion"
+        text={$t('candidateApp.questions.title')}
+        disabled={$unansweredRequiredInfoQuestions?.length !== 0}>
+        {#if $unansweredRequiredInfoQuestions && $unansweredOpinionQuestions && $unansweredOpinionQuestions.length > 0}
+          <InfoBadge
+            text={String($unansweredOpinionQuestions.length)}
+            disabled={$unansweredRequiredInfoQuestions.length !== 0}
+            classes="-left-8 -top-4" />
+        {/if}
+      </NavItem>
+      <NavItem
+        href={$getRoute('CandAppSettings')}
+        icon="settings"
+        text={$t('candidateApp.settings.title')}/>
+      <NavItem
+        href={$getRoute('CandAppPreview')}
+        icon="previewProfile"
+        text={$t('candidateApp.preview.title')}/>
+      <NavItem
+        href={$getRoute('CandAppHelp')}
+        icon="help"
+        text={$t('candidateApp.help.title')}/>
+    </NavGroup>
+  {:else}
+    <NavGroup>
+      <NavItem
+        href={$getRoute('CandAppHome')}
+        icon="home"
+        text={$t('common.login')}/>
+    </NavGroup>
+  {/if}
   <!-- 
   <NavGroup>
-    <NavItem href={$getRoute(ROUTE.CandAppInfo)} icon="info" disabled text={$t('info.title')} />
+    <NavItem href={$getRoute('CandAppInfo)} icon="info" disabled text={$t('info.title'')} />
     <NavItem
-      href={$getRoute(ROUTE.CandAppFAQ)}
+      href={$getRoute('CandAppFAQ')}
       icon="info"
       disabled
       text={$t('candidateApp.info.title')} />

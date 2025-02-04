@@ -1,61 +1,78 @@
-<script lang="ts">
-  import { PasswordField } from '$candidate/components/passwordField';
-  import { PasswordValidator } from '$candidate/components/passwordValidator';
-  import { Button } from '$lib/components/button';
-  import { t } from '$lib/i18n';
-  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
-
-  export let password = '';
-  export let passwordConfirmation = '';
-  export let autocompleteString = 'new-password';
-  export let errorMessage = '';
-  export let validPassword = false;
-
-  $: disableSetButton = validPassword && passwordConfirmation.length > 0;
-  // Dispatcher used for a function that calls the submit button's function in parent component
-  export let buttonPressed: () => void;
-</script>
-
 <!--
 @component
-PasswordSetter is a component used by PasswordSetPage and PasswordResetPage that contains a password input field,
-a second confirmation password input field, a button for submitting the password, a button to contact support and informatory text
+Contains a password validator, a password input field and a second confirmation password input field.
+
+### Dynamic component
+
+Contains the dynamic `PasswordValidator` component.
 
 ### Properties
 
-- `password` : value for the first password field
-- `passwordConfirmation` : value for the second password field
-- `errorMessage` : message showing error if one exists
-- `validPassword` : variable used to determine if the password combination is valid
+- `password`: value for the password field
+- `autocomplete`: autocomplete attribute for the password input field
+- `errorMessage`: bindable error message if the password is invalid or doesn't match the confirmation password
+- `valid`: bindable property which can be read to see if the password is valid and the confirmation password matches
+- `reset`: bindable function with which to clear to form
 
 ### Usage
 
 ```tsx
 
-<PasswordSetComponent
-  bind:password={passwordOfContext1}
-  bind:passwordConfirmation={passwordOfContext2}
-  on:ButtonPressed={onSetButtonPressed}
-  bind:validPassword={validPasswordOfContext}
-  bind:errorMessage={errorMessageOfContext} />
+<PasswordSetter
+  bind:password={password}
+  bind:valid={canSubmit}/>
 ```
 -->
 
-<form class="m-0 flex w-full flex-col flex-nowrap items-center" on:submit|preventDefault={buttonPressed}>
-  <p class="m-0 text-center">
+<script lang="ts">
+  import { PasswordField } from '$candidate/components/passwordField';
+  import { PasswordValidator } from '$candidate/components/passwordValidator';
+  import { getComponentContext } from '$lib/contexts/component';
+  import { getUUID } from '$lib/utils/components';
+  
+  export let password = '';
+  export let autocomplete = 'new-password';
+  export let errorMessage: string | undefined = undefined;
+  export let valid = false;
+  export const reset = function() {
+    password = '';
+    passwordConfirmation = '';
+    errorMessage = undefined;
+  }
+  
+  const { t } = getComponentContext();
+  
+  const id = getUUID();
+
+  let passwordConfirmation = '';
+  let validPassword = false;
+
+  $: valid = !!(password && passwordConfirmation && validPassword && password === passwordConfirmation);
+  $: if (!validPassword) {
+    errorMessage = $t('candidateApp.setPassword.passwordNotValid');
+  } else if (password !== passwordConfirmation) {
+    errorMessage = $t('candidateApp.setPassword.passwordsDontMatch');
+  } else {
+    errorMessage = undefined;
+  }
+</script>
+
+<form class="m-0 flex w-full flex-col flex-nowrap items-center">
+  <p class="mx-md my-0 self-stretch">
     {$t('candidateApp.setPassword.ingress')}
   </p>
   <PasswordValidator bind:validPassword {password} />
-  <div class="mb-md flex w-full max-w-md flex-col gap-6">
-    <PasswordField bind:password id="password" autocomplete={autocompleteString} />
-    <PasswordField bind:password={passwordConfirmation} id="passwordConfirmation" autocomplete={autocompleteString} />
+  <div class="mt-md mb-md flex w-full flex-col gap-6">
+    <PasswordField 
+      bind:password 
+      id="password-{id}" 
+      label={$t('common.password')}
+      {autocomplete}/>
+    <PasswordField 
+      bind:password={passwordConfirmation} 
+      id="confirmation-{id}" 
+      label={$t('common.passwordConfirmation')}
+      {autocomplete}
+      />
   </div>
-
-  {#if errorMessage}
-    <p class="text-center text-error">
-      {errorMessage}
-    </p>
-  {/if}
-  <Button type="submit" disabled={!disableSetButton} variant="main" text={$t('candidateApp.setPassword.setPassword')} />
-  <Button href={$getRoute(ROUTE.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
 </form>

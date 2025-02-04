@@ -15,7 +15,6 @@ export function getI18nContext() {
  * @returns The context object
  */
 export function initI18nContext(): I18nContext {
-  console.info('[debug] initI18nContext()');
   if (hasContext(CONTEXT_KEY)) error(500, 'InitI18nContext() called for a second time');
   return setContext<I18nContext>(CONTEXT_KEY, { locale, locales, t, translate });
 }

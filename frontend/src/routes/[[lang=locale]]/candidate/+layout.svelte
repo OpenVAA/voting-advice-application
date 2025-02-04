@@ -1,32 +1,64 @@
+<!--@component
+
+# Candidate app main layout
+
+- Inits CandidateContext
+- Sets top bar settings
+- Render the `Layout` component for the Candidate App
+-->
+
 <script lang="ts">
   import { staticSettings } from '@openvaa/app-shared';
   import { error } from '@sveltejs/kit';
-  import { onDestroy, setContext } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { getAppContext } from '$lib/contexts/app';
+  import { initCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { t } from '$lib/i18n';
-  import { candidateContext } from '$lib/utils/legacy-candidateContext';
+  import { CandidateNav } from '$lib/dynamic-components/navigation/candidate';
+  import Layout from '../Layout.svelte';
 
-  setContext('candidate', candidateContext);
+  ////////////////////////////////////////////////////////////////////
+  // Get app context
+  ////////////////////////////////////////////////////////////////////
 
-  const { appType } = getAppContext();
+  const { appType, t } = getAppContext();
 
-  const { topBarSettings } = getLayoutContext(onDestroy);
+  ////////////////////////////////////////////////////////////////////
+  // Check support for Candidate App
+  ////////////////////////////////////////////////////////////////////
+
+  if (!staticSettings.dataAdapter.supportsCandidateApp) {
+    error(404, {
+      message: $t('candidateApp.notSupported.title'),
+      description: $t('candidateApp.notSupported.content'),
+      emoji: $t('candidateApp.notSupported.heroEmoji')
+    });
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Init Candidate Context
+  ////////////////////////////////////////////////////////////////////
+
+  initCandidateContext();
+  $appType = 'candidate';
+
+  ////////////////////////////////////////////////////////////////////
+  // Layout and top bar
+  ////////////////////////////////////////////////////////////////////
+
+  const { navigation, topBarSettings } = getLayoutContext(onDestroy);
   topBarSettings.push({
     actions: {
       logout: 'show'
     }
   });
 
-  if (!staticSettings.dataAdapter.supportsCandidateApp) {
-    error(404, {
-      message: $t('candidateApp.notSupported.title'),
-      description: $t('candidateApp.notSupported.content'),
-      emoji: $t('candidateApp.notSupported.emoji')
-    });
-  }
-
-  $appType = 'candidate';
+  const menuId = 'candidate-app-menu';
+  let isDrawerOpen: boolean;
 </script>
 
-<slot />
+<Layout {menuId} bind:isDrawerOpen>
+  <CandidateNav on:keyboardFocusOut={navigation.close} id={menuId} hidden={!isDrawerOpen} slot="menu" />
+
+  <slot />
+</Layout>
