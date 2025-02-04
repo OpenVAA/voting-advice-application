@@ -27,11 +27,11 @@
   import { initLayoutContext } from '$lib/contexts/layout';
   import { DataConsentPopup } from '$lib/dynamic-components/dataConsent/popup';
   import { FeedbackModal } from '$lib/dynamic-components/feedback/modal';
-  import { MaintenancePage } from '$lib/templates/maintenance';
   import { logDebugError } from '$lib/utils/logger';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { LayoutData } from './$types';
   import { initDataContext } from '$lib/contexts/data';
+  import MaintenancePage from './MaintenancePage.svelte';
 
   export let data: LayoutData;
 

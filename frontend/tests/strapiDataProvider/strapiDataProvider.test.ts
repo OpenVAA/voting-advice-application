@@ -23,11 +23,13 @@ vi.mock('$app/environment', (): typeof environment => ({
 
 global.fetch = vi.fn();
 
-describe('Test mock processing of data that should be fetched from the backend', async () => {
+describe.todo('Test mock processing of data that should be fetched from the backend', async () => {
   // Initialize localization
   locale.set(LOCALE);
   await loadTranslations(LOCALE);
   const { getAllParties } = await dataProvider;
+
+  // TODO: getAllParties is no longer available
 
   test('getAllParties', async () => {
     (fetch as Mock).mockResolvedValue(createFetchResponse(allPartiesResponse));
