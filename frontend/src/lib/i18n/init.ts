@@ -150,6 +150,8 @@ export function translate(strings: LocalizedString | string | undefined | null, 
 /**
  * Return the correct property for the `locale` using soft-matching from the supplied localized object.
  *
+ * NB. Empty strings and nullish values are replaced by the fallback locale.
+ *
  * @param strings - An object with locale-content key-value pairs
  * @param targetLocale - The target locale
  * @returns The localized content or `undefined`
@@ -161,13 +163,16 @@ export function translateObject<
   if (!isLocalizedString(obj)) return undefined;
   targetLocale ??= locale.get();
   let key: string | undefined;
-  if (targetLocale in obj) {
-    key = targetLocale;
-  } else {
-    const match = matchLocale(targetLocale, Object.keys(obj));
-    key = match ?? defaultLocale;
-  }
-  return (obj[key] ?? obj[defaultLocale] ?? Object.values(obj)[0] ?? undefined) as TValue | undefined;
+  // Treat keys with empty strings as undefined
+  const nonEmptyKeys = Object.entries(obj)
+    .filter(([, v]) => v != null && (typeof v !== 'string' || v !== ''))
+    .map(([k]) => k);
+  if (!nonEmptyKeys.length) return undefined;
+  // Try to get an exact or soft match for target locale
+  key = nonEmptyKeys.includes(targetLocale) ? targetLocale : matchLocale(targetLocale, nonEmptyKeys);
+  // If not, use the default locale if available or just the first non-empty key
+  key ??= nonEmptyKeys.includes(defaultLocale) ? defaultLocale : nonEmptyKeys[0];
+  return (obj[key] ?? undefined) as TValue | undefined;
 }
 
 /////////////////////////////////////////////////////
