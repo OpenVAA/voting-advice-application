@@ -19,7 +19,6 @@ export function getDataContext(): DataContext {
  * @returns The context object
  */
 export function initDataContext(): DataContext {
-  console.info('[debug] initDataContext()');
   if (hasContext(CONTEXT_KEY)) error(500, 'initDataContext() called for a second time');
   const { locale, t } = getI18nContext();
 
@@ -43,12 +42,7 @@ export function initDataContext(): DataContext {
     paramStore('lang').subscribe((value) => {
       if (dataRoot.locale === value) return;
 
-      console.info(
-        '[debug] DataContext: dataRoot: reset due to `lang` route param change.',
-        dataRoot.locale,
-        browser,
-        value
-      );
+      console.info(dataRoot.locale, browser, value);
 
       // Reset all existing subscriptions
       while (true) {
