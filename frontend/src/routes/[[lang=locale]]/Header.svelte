@@ -14,7 +14,7 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
   import { Icon } from '$lib/components/icon';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { AppLogo } from '$lib/templates/parts/appLogo';
+  import { AppLogo } from '$lib/dynamic-components/appLogo';
   import Banner from './Banner.svelte';
 
   export let menuId: string;

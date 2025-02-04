@@ -26,7 +26,7 @@ export type TranslationsPayload = Partial<{
   option: string;
   organization: string;
   partiesTerm: string;
-  partyMatchingMethod: AppSettingsGroupMatchingType;
+  partyMatchingMethod: AppSettings['matching']['organizationMatching'];
   partyPlural: string;
   partySingular: string;
   publisher: string;

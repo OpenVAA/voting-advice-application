@@ -17,7 +17,7 @@
   import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
   import Layout from '../Layout.svelte';
-  import { VoterNav } from '$lib/templates/page/parts';
+  import { VoterNav } from '$lib/dynamic-components/navigation/voter/';
   
   ////////////////////////////////////////////////////////////////////
   // Init Voter Context

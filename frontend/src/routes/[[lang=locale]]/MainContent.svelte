@@ -23,13 +23,15 @@ Defines the layout of the `main` content of all the standard pages in the app.
 
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
-  import type { BasicPageProps } from '$lib/templates/basicPage';
+  import type { MainContentProps } from './MainContent.type';
 
-  export let title: BasicPageProps['title'];
-  export let noteClass: BasicPageProps['noteClass'] = 'text-secondary text-center max-w-xl';
-  export let noteRole: BasicPageProps['noteRole'] = 'note';
-  export let primaryActionsLabel: BasicPageProps['primaryActionsLabel'] = undefined;
-  export let titleClass: BasicPageProps['titleClass'] = '';
+  type $$Props = MainContentProps;
+
+  export let title: $$Props['title'];
+  export let noteClass: $$Props['noteClass'] = 'text-secondary text-center max-w-xl';
+  export let noteRole: $$Props['noteRole'] = 'note';
+  export let primaryActionsLabel: $$Props['primaryActionsLabel'] = undefined;
+  export let titleClass: $$Props['titleClass'] = '';
 
   const { t } = getComponentContext();
 

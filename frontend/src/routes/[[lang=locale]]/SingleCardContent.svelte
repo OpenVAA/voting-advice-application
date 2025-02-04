@@ -18,11 +18,13 @@ Defines the layout of the `main` content for single cards, such as individual en
 
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
-  import type { BasicPageProps } from '$lib/templates/basicPage';
+  import type { MainContentProps } from './MainContent.type';
 
-  export let title: BasicPageProps['title'];
-  export let noteClass: BasicPageProps['noteClass'] = 'text-secondary text-center max-w-xl -mt-md mb-md';
-  export let noteRole: BasicPageProps['noteRole'] = 'note';
+  type $$Props = Pick<MainContentProps, 'title' | 'noteClass' | 'noteRole'>;
+
+  export let title: $$Props['title'];
+  export let noteClass: $$Props['noteClass'] = 'text-secondary text-center max-w-xl -mt-md mb-md';
+  export let noteRole: $$Props['noteRole'] = 'note';
 
   const { t } = getComponentContext();
 </script>

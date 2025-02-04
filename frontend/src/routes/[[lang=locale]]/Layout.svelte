@@ -20,13 +20,12 @@ Defines the outer layout for the application, including the header and menu.
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import Header from './Header.svelte';
+  import type { LayoutProps } from './Layout.type';
 
-  ////////////////////////////////////////////////////////////////////
-  // Properties
-  ////////////////////////////////////////////////////////////////////
+  type $$Props = LayoutProps;
 
-  export let isDrawerOpen = false;
-  export let menuId: string;
+  export let menuId: $$Props['menuId'];
+  export let isDrawerOpen: $$Props['isDrawerOpen'] = false;
 
   ////////////////////////////////////////////////////////////////////
   // Constants

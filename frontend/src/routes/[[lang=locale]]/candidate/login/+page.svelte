@@ -24,7 +24,7 @@
   import { HeadingGroup } from '$lib/components/headingGroup';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { Footer } from '$lib/templates/parts/footer';
+  import { Footer } from '$lib/dynamic-components/footer';
   import MainContent from '../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
