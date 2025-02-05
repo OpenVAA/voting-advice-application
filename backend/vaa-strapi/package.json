@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "strapi develop",
     "start": "strapi start",
-    "build": "strapi build",
+    "build": "yarn build:strapi-plugins && strapi build",
+    "build:strapi-plugins": "yarn workspace @openvaa/strapi-admin-tools build",
     "strapi": "strapi",
     "test:e2e": "jest --forceExit --detectOpenHandles",
     "test:unit": "vitest run ./src",
@@ -15,6 +16,7 @@
   "dependencies": {
     "@aws-sdk/client-ses": "^3.716.0",
     "@openvaa/app-shared": "workspace:^",
+    "@openvaa/strapi-admin-tools": "workspace:^",
     "@strapi/plugin-documentation": "^5.8.1",
     "@strapi/plugin-users-permissions": "^5.8.1",
     "@strapi/provider-email-nodemailer": "^5.8.1",
@@ -57,7 +59,8 @@
     "sqlite3": "^5.1.7",
     "supertest": "^6.3.4",
     "typescript": "^5.7.3",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "yalc": "^1.0.0-pre.53"
   },
   "packageManager": "yarn@4.6.0"
 }
