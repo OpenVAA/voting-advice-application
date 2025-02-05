@@ -1,3 +1,3 @@
-import type { ModalProps } from '..';
+import type { ModalContainerProps } from '../ModalContainer.type';
 
-export type DrawerProps = ModalProps & {};
+export type DrawerProps = ModalContainerProps & {};

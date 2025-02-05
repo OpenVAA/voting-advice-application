@@ -10,7 +10,7 @@ A modal dialog that looks like a drawer.
 ### Properties
 
 - `title`: The title of the modal
-- Any valid properties of a `<Modal>` component.
+- Any valid properties of a `<ModalContainer>` component.
 
 ### Bindable functions
 
@@ -25,7 +25,7 @@ A modal dialog that looks like a drawer.
 
 ### Accessibility
 
-See the [`<Modal>` component](../Modal.svelte) documentation for more information.
+See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation for more information.
 
 ### Usage
 
@@ -33,49 +33,48 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
 <Drawer title="Drawer">
   <p>Drawer content</p>
 </Drawer>
-
 ```
 -->
 
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { fly } from 'svelte/transition';
   import Button from '$lib/components/button/Button.svelte';
-  import DrawerContainer from './DrawerContainer.svelte';
-  import { Modal } from '..';
+  import { t } from '$lib/i18n';
+  import ModalContainer from '../ModalContainer.svelte';
   import type { DrawerProps } from './Drawer.type';
 
   type $$Props = DrawerProps;
 
   export let title: $$Props['title'];
-  export function closeModal() {
-    _closeModal();
-  }
-  export function openModal() {
-    _openModal();
-  }
-
-  let _openModal: () => void;
-  let _closeModal: () => void;
-
-  let isOpen: boolean;
+  export let isOpen: $$Props['isOpen'] = false;
+  export let closeModal: $$Props['closeModal'] = undefined;
+  export let openModal: $$Props['openModal'] = undefined;
 
   onMount(() => {
-    openModal();
+    openModal?.();
   });
 </script>
 
-<Modal
-  bind:closeModal={_closeModal}
-  bind:openModal={_openModal}
-  bind:isOpen
-  on:open
-  on:close
-  {title}
-  closeOnBackdropClick={true}
-  {...$$restProps}
-  container={DrawerContainer}>
-  <slot name="actions" slot="actions" />
-  <slot />
+<ModalContainer closeOnBackdropClick={true} {...$$restProps} {title} bind:isOpen bind:closeModal bind:openModal>
+  <div
+    class="max-w-80 relative col-span-1 col-start-1 row-span-1 row-start-1 h-[calc(100vh-2rem)] translate-y-[1rem] rounded-t-[2rem] bg-black p-24 pt-40"
+    in:fly={{ y: '100%', duration: 200 }}
+    out:fly={{ y: '100%', duration: 200 }}>
+    <h2 class="mb-lg text-center">{title}</h2>
+    <slot />
+    {#if $$slots.actions}
+      <div class="modal-action justify-center">
+        <slot name="actions" />
+      </div>
+    {/if}
+    <form method="dialog">
+      <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
+        <span aria-hidden="true">✕</span>
+        <span class="sr-only">{$t('common.closeDialog')}</span>
+      </button>
+    </form>
+  </div>
   <Button
     type="button"
     variant="icon"
@@ -83,4 +82,4 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
     class="!absolute bottom-16 right-16 rounded-full bg-base-300 p-14"
     icon="close"
     on:click={closeModal} />
-</Modal>
+</ModalContainer>
