@@ -48,7 +48,7 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
 <script lang="ts">
   import { createEventDispatcher, onDestroy } from 'svelte';
   import { tweened } from 'svelte/motion';
-  import { Modal } from '../';
+  import Modal from '../Modal.svelte';
   import type { TimedModalProps } from './TimedModal.type';
 
   type $$Props = TimedModalProps;
@@ -58,18 +58,12 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
   export let timerDuration: $$Props['timerDuration'] = DEFAULT_DURATION;
   export let timeLeft: $$Props['timeLeft'] = Math.ceil(timerDuration ?? DEFAULT_DURATION);
 
-  export function closeModal() {
-    _closeModal();
-  }
-  export function openModal() {
-    _openModal();
-  }
+  export let closeModal: $$Props['closeModal'] = undefined;
+  export let openModal: $$Props['openModal'] = undefined;
 
   const dispatchEvent = createEventDispatcher();
 
   let isOpen: boolean;
-  let _openModal: () => void;
-  let _closeModal: () => void;
 
   // Used for progress bar animation
   let progressBarTimer = tweened(timerDuration, { duration: 0 });
@@ -99,7 +93,7 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
       () => {
         if (isOpen) {
           dispatchEvent('timeout');
-          closeModal();
+          closeModal?.();
         }
       },
       (timerDuration ?? DEFAULT_DURATION) * 1000
@@ -115,8 +109,8 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
 </script>
 
 <Modal
-  bind:closeModal={_closeModal}
-  bind:openModal={_openModal}
+  bind:closeModal
+  bind:openModal
   bind:isOpen
   on:open={startTimeout}
   on:close={stopTimeout}
