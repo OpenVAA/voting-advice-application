@@ -1,4 +1,49 @@
 {
-  "register": "Register as a candidate",
-  "identifyYourself": "Identify yourself"
+  "identification": {
+    "start": {
+      "title": "Register as a candidate",
+      "content": "<p>Welcome to the Voting Advice Application!</p><p>To register as a candidate, you must first verify your identity using a Bank ID. When the candidate list is published on {date}, we will publish your profile in the app if you are on that list. We will use your full name and birthdate to verify this.</p><p>To complete your registration, follow these steps:</p>",
+      "step": {
+        "identification": "Identify yourself using a Bank ID",
+        "electionSelect": "Select the elections",
+        "constituencySelect": "Select the constituency",
+        "emailVerification": "Verify your email address",
+        "passwordSelect": "Select a password"
+      }
+    },
+    "error": {
+      "general": {
+        "title": "There was an error with the Bank ID login",
+        "content": "<p>We're sorry, something went wrong with your Bank ID login.</p><p>Click the button below to try logging in again. If the problem persists, please contact our support team.</p><p>support@openvaa.org</p>"
+      },
+      "expired": {
+        "title": "The session has ended",
+        "content": "<p>Please identify yourself again.</p>"
+      }
+    },
+    "success": {
+      "title": "Bank ID login is complete",
+      "content": "<p>Welcome to the Voting Advice Application, {firstName} {lastName}!</p><p>Click the button below to continue the registration process.</p>"
+    },
+    "identifyYourselfButton": "Identify yourself",
+    "identifyYourselHelpText": "Opens in a separate window. You will return to this page once the identification is complete."
+  },
+  "electionSelect": {
+    "title": "Which elections will you run in?",
+    "content": "<p>There are multiple elections due on {date}.</p><p>Select the elections are you going to stand in.</p>"
+  },
+  "constituencySelect": {
+    "title": "What is your home municipality?",
+    "content": "<p>Select your municipality so that we know which constituency you will be running in.</p>"
+  },
+  "emailVerification": {
+    "title": "Enter email address",
+    "content": "<p>In the future, your email address will act as your username. Please enter it below twice to confirm it's correct.</p><p>You will also need to accept the terms of use in order to continue.</p>",
+    "termsCheckbox": "I accept the terms of use for registering as a candidate"
+  },
+  "success": {
+    "title": "Confirm your email address",
+    "content": "<p>We've sent a message to your email address.</p><p>Please click on the link in the message to confirm your email address and complete the registration process.</p>",
+    "button": "Close this window"
+  }
 }
