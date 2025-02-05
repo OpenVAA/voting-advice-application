@@ -19,14 +19,13 @@ Display a question for answering.
   import { OpinionQuestionInput, QuestionActions, QuestionInfo } from '$lib/components/questions';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
+  import { QuestionHeading } from '$lib/dynamic-components/questionHeading';
   import { logDebugError } from '$lib/utils/logger';
   import { FIRST_QUESTION_ID, parseParams } from '$lib/utils/route';
   import { DELAY } from '$lib/utils/timing';
   import MainContent from '../../../../MainContent.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
-  import { QuestionHeading } from '$lib/dynamic-components/questionHeading';
-  import type { CustomData } from '@openvaa/app-shared';
 
   //import {type VideoMode, Video} from '$lib/components/video';
 
@@ -51,7 +50,6 @@ Display a question for answering.
   // Get the current question and update related variables
   ////////////////////////////////////////////////////////////////////
 
-  let customData: CustomData['Question'];
   let question: AnyQuestionVariant;
   let questionBlock: { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
   $: {
@@ -74,9 +72,8 @@ Display a question for answering.
       goto($getRoute('Questions'));
     } else {
       progress.current.set(questionBlock.index + 1);
-      customData = question.customData;
 
-      // Stashed video-related code:
+      // Stashed video-related code: TODO: Get videoProps from customData
       // // Track whether the previous question has video content
       // const previousHadVideo = videoProps != null;
       // // Check if this question has video content
@@ -203,7 +200,7 @@ Display a question for answering.
 </script>
 
 {#if question && questionBlock}
-  {@const { info, text, type } = question}
+  {@const { info, text } = question}
   {@const questions = $selectedQuestionBlocks.questions}
 
   <!--
@@ -226,10 +223,7 @@ Display a question for answering.
       </svelte:fragment>
     -->
 
-    <QuestionHeading
-      {question}
-      questionBlocks={$selectedQuestionBlocks}
-      slot="heading"/>
+    <QuestionHeading {question} questionBlocks={$selectedQuestionBlocks} slot="heading" />
 
     <!-- !videoProps && -->
     {#if info && info !== ''}
@@ -237,11 +231,7 @@ Display a question for answering.
     {/if}
 
     <svelte:fragment slot="primaryActions">
-
-      <OpinionQuestionInput
-        {question}
-        answer={$answers[question.id]}
-        onChange={handleAnswer}/>
+      <OpinionQuestionInput {question} answer={$answers[question.id]} onChange={handleAnswer} />
 
       <QuestionActions
         answered={$answers[question.id]?.value != null}

@@ -48,7 +48,7 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
   }
 </script>
 
-<div class="grid px-lg mt-xl gap-xxl">
+<div class="mt-xl grid gap-xxl px-lg">
   {#each questions as question}
     {@const { id, text, category } = question}
     {@const answer = nakedEntity.getAnswer(question)}
@@ -84,13 +84,12 @@ Used to show an entity's answers to `opinion` questions and possibly those of th
 
       <!-- Only show the answering choices if either one has answered -->
       {#if voterAnswer != null || answer != null}
-
         <OpinionQuestionInput
           {question}
           mode="display"
           answer={voterAnswer}
           otherAnswer={answer}
-          otherLabel={shortName}/>
+          otherLabel={shortName} />
 
         {#if answer?.info}
           <QuestionOpenAnswer content={answer.info} class="mt-md" />

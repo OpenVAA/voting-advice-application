@@ -20,6 +20,7 @@ A simple warning component to be used with BasicPage
   import { concatClass } from '$lib/utils/components';
   import type { WarningProps } from './Warning.type';
 
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   type $$Props = WarningProps;
 </script>
 

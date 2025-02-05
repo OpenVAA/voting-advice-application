@@ -23,23 +23,17 @@
   import { Loading } from '$lib/components/loading';
   import { initAppContext } from '$lib/contexts/app';
   import { initComponentContext } from '$lib/contexts/component';
+  import { initDataContext } from '$lib/contexts/data';
   import { initI18nContext } from '$lib/contexts/i18n';
   import { initLayoutContext } from '$lib/contexts/layout';
   import { DataConsentPopup } from '$lib/dynamic-components/dataConsent/popup';
   import { FeedbackModal } from '$lib/dynamic-components/feedback/modal';
   import { logDebugError } from '$lib/utils/logger';
+  import MaintenancePage from './MaintenancePage.svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { LayoutData } from './$types';
-  import { initDataContext } from '$lib/contexts/data';
-  import MaintenancePage from './MaintenancePage.svelte';
 
   export let data: LayoutData;
-
-  ////////////////////////////////////////////////////////////////////
-  // Constants
-  ////////////////////////////////////////////////////////////////////
-
-  const mainId = 'mainContent';
 
   ////////////////////////////////////////////////////////////////////
   // Initialize globally used contexts
@@ -74,9 +68,11 @@
     error = undefined;
     ready = false;
     underMaintenance = false;
-    Promise.all([data.appSettingsData, data.appCustomizationData, data.electionData, data.constituencyData]).then((data) => {
-      error = update(data);
-    });
+    Promise.all([data.appSettingsData, data.appCustomizationData, data.electionData, data.constituencyData]).then(
+      (data) => {
+        error = update(data);
+      }
+    );
   }
   $: if (error) logDebugError(error.message);
 
@@ -162,7 +158,6 @@
 {:else if underMaintenance}
   <MaintenancePage />
 {:else}
-
   <slot />
 
   <!-- Feedback modal -->

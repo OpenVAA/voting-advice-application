@@ -28,7 +28,7 @@ PasswordField is an input box for password that comes with a button to reveal an
 
   id ??= getUUID();
 
-  const { t } =  getComponentContext();
+  const { t } = getComponentContext();
 
   let passwordRevealed = false;
   /** variable used to refer to the input box in code to change its type*/

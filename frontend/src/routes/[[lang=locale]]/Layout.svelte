@@ -95,7 +95,7 @@ Defines the outer layout for the application, including the header and menu.
   <div class="drawer-content flex flex-col">
     <Header {menuId} {openDrawer} {isDrawerOpen} {drawerOpenElement} />
     <main id={mainId} class="flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg">
-      <slot/>
+      <slot />
     </main>
   </div>
 

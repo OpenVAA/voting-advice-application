@@ -63,7 +63,10 @@ text="Add to list">
   export let disabled: $$Props['disabled'] = undefined;
 
   // Check iconPos
-  if ((variant === 'main' || variant === 'prominent' || variant === 'responsive-icon') && (iconPos === 'top' || iconPos === 'bottom')) {
+  if (
+    (variant === 'main' || variant === 'prominent' || variant === 'responsive-icon') &&
+    (iconPos === 'top' || iconPos === 'bottom')
+  ) {
     iconPos = 'right';
   }
 

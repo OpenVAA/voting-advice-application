@@ -29,19 +29,19 @@ Contains the dynamic `PasswordValidator` component.
   import { PasswordValidator } from '$candidate/components/passwordValidator';
   import { getComponentContext } from '$lib/contexts/component';
   import { getUUID } from '$lib/utils/components';
-  
+
   export let password = '';
   export let autocomplete = 'new-password';
   export let errorMessage: string | undefined = undefined;
   export let valid = false;
-  export const reset = function() {
+  export function reset(): void {
     password = '';
     passwordConfirmation = '';
     errorMessage = undefined;
   }
-  
+
   const { t } = getComponentContext();
-  
+
   const id = getUUID();
 
   let passwordConfirmation = '';
@@ -62,17 +62,12 @@ Contains the dynamic `PasswordValidator` component.
     {$t('candidateApp.setPassword.ingress')}
   </p>
   <PasswordValidator bind:validPassword {password} />
-  <div class="mt-md mb-md flex w-full flex-col gap-6">
-    <PasswordField 
-      bind:password 
-      id="password-{id}" 
-      label={$t('common.password')}
-      {autocomplete}/>
-    <PasswordField 
-      bind:password={passwordConfirmation} 
-      id="confirmation-{id}" 
+  <div class="mb-md mt-md flex w-full flex-col gap-6">
+    <PasswordField bind:password id="password-{id}" label={$t('common.password')} {autocomplete} />
+    <PasswordField
+      bind:password={passwordConfirmation}
+      id="confirmation-{id}"
       label={$t('common.passwordConfirmation')}
-      {autocomplete}
-      />
+      {autocomplete} />
   </div>
 </form>

@@ -26,9 +26,8 @@ NB. Only single-row `Input`s are joined and they should not have the `info` prop
 
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
-  import type { InputGroupProps } from './InputGroup.type';
   import { infoClass, joinGap, outsideLabelClass } from './shared';
-
+  import type { InputGroupProps } from './InputGroup.type';
 
   type $$Props = InputGroupProps;
 
@@ -38,8 +37,6 @@ NB. Only single-row `Input`s are joined and they should not have the `info` prop
   ////////////////////////////////////////////////////////////////////
   // Styling
   ////////////////////////////////////////////////////////////////////
-
-  
 </script>
 
 <fieldset {...concatClass($$restProps, '')}>
@@ -59,10 +56,10 @@ NB. Only single-row `Input`s are joined and they should not have the `info` prop
 </fieldset>
 
 <style lang="postcss">
-:global(.vaa-input-container > :not(:first-child) .vaa-group-join-item) {
-  @apply rounded-t-none;
-}
-:global(.vaa-input-container > :not(:last-child) .vaa-group-join-item) {
-  @apply rounded-b-none;
-}
+  :global(.vaa-input-container > :not(:first-child) .vaa-group-join-item) {
+    @apply rounded-t-none;
+  }
+  :global(.vaa-input-container > :not(:last-child) .vaa-group-join-item) {
+    @apply rounded-b-none;
+  }
 </style>

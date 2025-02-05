@@ -16,29 +16,28 @@ A template part that outputs the navigation menu for the Candidate App for use i
 -->
 
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import { InfoBadge } from '$lib/components/infoBadge';
-  import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
-  import { LanguageSelection } from '../languages';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { onDestroy } from 'svelte';
+  import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
+  import { LanguageSelection } from '../languages';
 
   const { navigation } = getLayoutContext(onDestroy);
   const { authToken, getRoute, t, unansweredRequiredInfoQuestions, unansweredOpinionQuestions } = getCandidateContext();
 </script>
 
 <Navigation slot="nav" on:navFocusOut {...$$restProps}>
-  <NavItem on:click={navigation.close} icon="close" text={$t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
+  <NavItem
+    on:click={navigation.close}
+    icon="close"
+    text={$t('common.closeMenu')}
+    class="pt-16"
+    id="drawerCloseButton" />
   {#if $authToken}
     <NavGroup>
-      <NavItem
-        href={$getRoute('CandAppHome')}
-        icon="home"
-        text={$t('candidateApp.common.home')}/>
-      <NavItem
-        href={$getRoute('CandAppProfile')}
-        icon="profile"
-        text={$t('candidateApp.basicInfo.title')}/>
+      <NavItem href={$getRoute('CandAppHome')} icon="home" text={$t('candidateApp.common.home')} />
+      <NavItem href={$getRoute('CandAppProfile')} icon="profile" text={$t('candidateApp.basicInfo.title')} />
       <NavItem
         href={$getRoute('CandAppQuestions')}
         icon="opinion"
@@ -51,25 +50,13 @@ A template part that outputs the navigation menu for the Candidate App for use i
             classes="-left-8 -top-4" />
         {/if}
       </NavItem>
-      <NavItem
-        href={$getRoute('CandAppSettings')}
-        icon="settings"
-        text={$t('candidateApp.settings.title')}/>
-      <NavItem
-        href={$getRoute('CandAppPreview')}
-        icon="previewProfile"
-        text={$t('candidateApp.preview.title')}/>
-      <NavItem
-        href={$getRoute('CandAppHelp')}
-        icon="help"
-        text={$t('candidateApp.help.title')}/>
+      <NavItem href={$getRoute('CandAppSettings')} icon="settings" text={$t('candidateApp.settings.title')} />
+      <NavItem href={$getRoute('CandAppPreview')} icon="previewProfile" text={$t('candidateApp.preview.title')} />
+      <NavItem href={$getRoute('CandAppHelp')} icon="help" text={$t('candidateApp.help.title')} />
     </NavGroup>
   {:else}
     <NavGroup>
-      <NavItem
-        href={$getRoute('CandAppHome')}
-        icon="home"
-        text={$t('common.login')}/>
+      <NavItem href={$getRoute('CandAppHome')} icon="home" text={$t('common.login')} />
     </NavGroup>
   {/if}
   <!-- 

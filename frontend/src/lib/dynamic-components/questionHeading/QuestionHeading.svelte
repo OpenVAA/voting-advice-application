@@ -27,15 +27,15 @@ This is a dynamic component, because it accesses the settings via `AppContext`.
 -->
 
 <script lang="ts">
+  import { Election } from '@openvaa/data';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { ElectionTag } from '$lib/components/electionTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
-  import type { QuestionHeadingProps } from './QuestionHeading.type';
-  import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
   import { getElectionsToShow } from '$lib/utils/questions';
-  import { Election } from '@openvaa/data';
+  import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
+  import type { QuestionHeadingProps } from './QuestionHeading.type';
 
   type $$Props = QuestionHeadingProps;
 

@@ -47,9 +47,9 @@ You should not try to use a variant and customize at the same time.
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { Icon } from '$lib/components/icon';
+  import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import type { ExpanderProps } from './Expander.type';
-  import { getComponentContext } from '$lib/contexts/component';
 
   type $$Props = ExpanderProps;
 

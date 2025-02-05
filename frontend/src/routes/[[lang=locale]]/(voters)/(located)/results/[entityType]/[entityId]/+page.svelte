@@ -33,8 +33,8 @@ Used to show an entity's details using the `EntityDetails` component.
   import { unwrapEntity } from '$lib/utils/entities';
   import { logDebugError } from '$lib/utils/logger';
   import { findNomination } from '$lib/utils/matches';
-  import type { AnyEntityVariant, EntityType } from '@openvaa/data';
   import SingleCardContent from '../../../../../SingleCardContent.svelte';
+  import type { AnyEntityVariant, EntityType } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

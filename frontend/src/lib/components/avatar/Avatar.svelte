@@ -129,7 +129,12 @@ Display either an image or a initials-based avatar for an entity. The color of t
 <figure {...concatProps($$restProps, { class: classes, style: styles })}>
   {#if image && imageStatus !== 'error'}
     {#if linkFullImage}
-      <a href={image.url} target="_blank" title={$t('common.showFullImage')} aria-label={$t('common.showFullImage')} class="h-full w-full">
+      <a
+        href={image.url}
+        target="_blank"
+        title={$t('common.showFullImage')}
+        aria-label={$t('common.showFullImage')}
+        class="h-full w-full">
         <img
           class="border-bg-300 h-full w-full border-md object-cover"
           alt={name}

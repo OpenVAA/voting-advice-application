@@ -19,7 +19,6 @@ Used to display a message when an action succeeds.
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
-  import { sanitizeHtml } from '$lib/utils/sanitize';
   import { HeroEmoji } from '../heroEmoji';
   import type { SuccessMessageProps } from './SuccessMessage.type';
 
