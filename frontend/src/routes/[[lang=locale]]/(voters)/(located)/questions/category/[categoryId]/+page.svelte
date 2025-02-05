@@ -28,9 +28,9 @@ Display the intro to a question category and possibly a button with which to ski
   import { getVoterContext } from '$lib/contexts/voter';
   import { parseParams } from '$lib/utils/route';
   import MainContent from '../../../../../MainContent.svelte';
+  import type { CustomData } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
   import type { QuestionCategory } from '@openvaa/data';
-  import type { CustomData } from '@openvaa/app-shared';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

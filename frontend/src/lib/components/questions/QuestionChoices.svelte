@@ -210,7 +210,6 @@ The same component can also be used to display the answers of the voter and anot
   style:--line-bg={onShadedBg ? 'var(--b1)' : 'var(--b3)'}
   class:vertical
   {...$$restProps}>
-
   <!-- Add a label for screen readers -->
   <legend class="sr-only">{text}</legend>
 

@@ -91,7 +91,7 @@ See `+page.ts` for possible redirects.
               {/if}
             {/each}
           </div>
-        <!-- Use a simple ayout if there is only one constituency group -->
+          <!-- Use a simple ayout if there is only one constituency group -->
         {:else}
           <select class="select w-full max-w-md place-self-center" bind:value={selected[election.id]}>
             <option disabled selected value="">{$t('constituencies.selectPrompt')}</option>

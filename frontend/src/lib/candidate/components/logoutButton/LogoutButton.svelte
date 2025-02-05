@@ -39,7 +39,15 @@ Accesses `CandidateContext`.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { answersLocked, appSettings, getRoute, logout, unansweredOpinionQuestions, unansweredRequiredInfoQuestions, t } = getCandidateContext();
+  const {
+    answersLocked,
+    appSettings,
+    getRoute,
+    logout,
+    unansweredOpinionQuestions,
+    unansweredRequiredInfoQuestions,
+    t
+  } = getCandidateContext();
 
   ////////////////////////////////////////////////////////////////////
   // Handle logout and the modal

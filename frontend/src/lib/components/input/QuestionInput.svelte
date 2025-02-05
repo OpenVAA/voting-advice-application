@@ -23,6 +23,7 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
 -->
 
 <script lang="ts">
+  import { type CustomData, isLocalizedString } from '@openvaa/app-shared';
   import {
     ChoiceQuestion,
     DateQuestion,
@@ -33,7 +34,6 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   import { logDebugError } from '$lib/utils/logger';
   import { Input, type InputProps } from '.';
   import type { QuestionInputProps } from './QuestionInput.type';
-  import { isLocalizedString, type CustomData } from '@openvaa/app-shared';
 
   type $$Props = QuestionInputProps;
 
@@ -71,7 +71,7 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   // Apply customData modifiers
   if (customData.longText) {
     if (type === 'text') type = 'textarea';
-    else if (type ==='text-multilingual') type ='textarea-multilingual';
+    else if (type === 'text-multilingual') type = 'textarea-multilingual';
   }
 
   // Apply multilingual support if not disabled
@@ -82,12 +82,12 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
 
   const { id, info, name: label } = question;
   const { fillingInfo, required } = customData;
-  const baseProps = { 
-    type, 
-    id, 
-    label, 
+  const baseProps = {
+    type,
+    id,
+    label,
     required,
-    info: fillingInfo ?? info,
+    info: fillingInfo ?? info
   };
 
   if (question instanceof ChoiceQuestion) {

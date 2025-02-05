@@ -40,8 +40,8 @@ When using this component, the `validPassword` property should be bound to a boo
   import { onMount } from 'svelte';
   import { cubicOut } from 'svelte/easing';
   import { tweened } from 'svelte/motion';
-  import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { getComponentContext } from '$lib/contexts/component';
+  import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
 
   export let password = '';
   export let username = '';
@@ -110,7 +110,7 @@ When using this component, the `validPassword` property should be bound to a boo
     {#each Object.values(validationRules) as rule}
       <li>
         {#if rule.status}
-          <span class="text-primary font-bold">{rule.message}</span>
+          <span class="font-bold text-primary">{rule.message}</span>
         {:else}
           {rule.message}
         {/if}

@@ -14,8 +14,8 @@ The frontpage of the app for voters.
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { SurveyBanner } from '$lib/dynamic-components/survey/banner';
   import { Footer } from '$lib/dynamic-components/footer';
+  import { SurveyBanner } from '$lib/dynamic-components/survey/banner';
   import MainContent from '../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
@@ -38,7 +38,6 @@ The frontpage of the app for voters.
 </script>
 
 <MainContent title={$t('dynamic.appName')}>
-  
   <Button variant="main" href={$getRoute('Intro')} text={$t('dynamic.frontPage.startButton')} />
 
   <p class="mt-lg text-center">

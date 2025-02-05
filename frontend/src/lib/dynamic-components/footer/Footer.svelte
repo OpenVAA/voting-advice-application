@@ -26,7 +26,6 @@ A template part that is used to show the application's common footer, shown on s
   type $$Props = FooterProps; // eslint-disable-line @typescript-eslint/no-unused-vars
 
   const { appCustomization, t } = getAppContext();
-
 </script>
 
 <footer {...concatClass($$restProps, 'mt-lg pl-safelgl pr-safelgr pb-safelgb text-center text-sm text-secondary')}>

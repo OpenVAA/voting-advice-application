@@ -20,14 +20,14 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 -->
 
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
-  import { onDestroy } from 'svelte';
   import { LanguageSelection } from '../languages';
 
   const { navigation } = getLayoutContext(onDestroy);
-  
+
   const {
     answers,
     appSettings,
@@ -44,7 +44,12 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 </script>
 
 <Navigation on:keyboardFocusOut {...$$restProps}>
-  <NavItem on:click={navigation.close} icon="close" text={$t('common.closeMenu')} class="pt-16" id="drawerCloseButton" />
+  <NavItem
+    on:click={navigation.close}
+    icon="close"
+    text={$t('common.closeMenu')}
+    class="pt-16"
+    id="drawerCloseButton" />
   <NavGroup>
     <NavItem href={$getRoute('Home')} icon="home" text={$t('common.home')} />
     {#if $electionsSelectable}

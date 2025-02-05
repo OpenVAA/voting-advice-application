@@ -16,9 +16,9 @@
   import { onDestroy } from 'svelte';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
-  import Layout from '../Layout.svelte';
   import { VoterNav } from '$lib/dynamic-components/navigation/voter/';
-  
+  import Layout from '../Layout.svelte';
+
   ////////////////////////////////////////////////////////////////////
   // Init Voter Context
   ////////////////////////////////////////////////////////////////////
@@ -42,16 +42,8 @@
   let isDrawerOpen: boolean;
 </script>
 
-<Layout 
-  {menuId} 
-  bind:isDrawerOpen>
-
-  <VoterNav 
-    on:keyboardFocusOut={navigation.close}
-    id={menuId}
-    hidden={!isDrawerOpen}
-    slot="menu" />
+<Layout {menuId} bind:isDrawerOpen>
+  <VoterNav on:keyboardFocusOut={navigation.close} id={menuId} hidden={!isDrawerOpen} slot="menu" />
 
   <slot />
-  
 </Layout>

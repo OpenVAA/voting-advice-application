@@ -23,7 +23,7 @@ NB. Use this component only in cases of irrecoverable errors, as the template wi
   const { t, track } = getAppContext();
 
   track('maintenance_shown');
-  
+
   const title = $t('maintenance.title');
   const content = $t('dynamic.maintenance.content');
   const emoji = $t('dynamic.maintenance.heroEmoji');

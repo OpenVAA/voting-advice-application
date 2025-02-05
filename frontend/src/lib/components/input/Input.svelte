@@ -51,6 +51,8 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 -->
 
 <script lang="ts">
+  import { isLocalizedString } from '@openvaa/app-shared';
+  import { type Id, isEmptyValue } from '@openvaa/core';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Icon } from '$lib/components/icon';
@@ -59,11 +61,9 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   import { assertTranslationKey } from '$lib/i18n/utils';
   import { concatClass, getUUID } from '$lib/utils/components';
   import { logDebugError } from '$lib/utils/logger';
-  import { isEmptyValue, type Id } from '@openvaa/core';
+  import { iconBadgeClass, infoClass, joinGap, outsideLabelClass } from './shared';
   import type { AnyChoice, Image } from '@openvaa/data';
   import type { InputProps } from './Input.type';
-  import { iconBadgeClass, infoClass, joinGap, outsideLabelClass } from './shared';
-  import { isLocalizedString } from '@openvaa/app-shared';
 
   type $$Props = InputProps;
 
@@ -83,7 +83,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   export let ordered: $$Props['ordered'] = undefined;
   export let disabled: $$Props['disabled'] = undefined;
   export let maxFilesize: $$Props['maxFilesize'] = undefined;
-  
+
   const DEFAULT_MAX_FILE_SIZE = 20 * 1024 * 1024;
 
   ////////////////////////////////////////////////////////////////////
@@ -240,11 +240,11 @@ The input itself is wrapped in multiple container elements, the outermost of whi
       await new Promise<void>((resolve) => {
         isLoading = true;
         reader.onload = () => {
-          value = reader.result 
-            ? { 
-              url: `${new URL(reader.result.toString())}`,
-              file
-            } as ImageWithFile
+          value = reader.result
+            ? ({
+                url: `${new URL(reader.result.toString())}`,
+                file
+              } as ImageWithFile)
             : undefined;
           isLoading = false;
           resolve();
@@ -320,17 +320,16 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 <div
   {...concatClass(containerProps ?? {}, 'w-full flex flex-col items-stretch')}
   style:--inputBgColor={onShadedBg ? 'oklch(var(--b1))' : 'oklch(var(--b3))'}>
-
   <!-- The label in small caps above the input -->
   {#if isLabelOutside}
-    <div class="{outsideLabelClass} flex flex-row justify-between items-center me-8">
+    <div class="{outsideLabelClass} me-8 flex flex-row items-center justify-between">
       <!-- svelte-ignore a11y-label-has-associated-control -->
       <label id="{id}-label">{label}</label>
       {#if showRequired}
-        <div class="required-badge"><Icon name="required"/><span>{$t('common.required')}</span></div>
+        <div class="required-badge"><Icon name="required" /><span>{$t('common.required')}</span></div>
       {/if}
       {#if locked}
-        <div class="locked-badge"><Icon name="locked"/><span>{$t('common.locked')}</span></div>
+        <div class="locked-badge"><Icon name="locked" /><span>{$t('common.locked')}</span></div>
       {/if}
     </div>
   {/if}
@@ -427,10 +426,14 @@ The input itself is wrapped in multiple container elements, the outermost of whi
             <ErrorMessage message={$t('error.general')} />
           {/if}
           {#if showRequired}
-            <div class="required-badge"><Icon name="required" class={iconBadgeClass}/><span>{$t('common.required')}</span></div>
+            <div class="required-badge">
+              <Icon name="required" class={iconBadgeClass} /><span>{$t('common.required')}</span>
+            </div>
           {/if}
           {#if locked}
-            <div class="locked-badge"><Icon name="locked" class={iconBadgeClass}/><span>{$t('common.locked')}</span></div>
+            <div class="locked-badge">
+              <Icon name="locked" class={iconBadgeClass} /><span>{$t('common.locked')}</span>
+            </div>
           {/if}
         </div>
       </div>
@@ -495,10 +498,14 @@ The input itself is wrapped in multiple container elements, the outermost of whi
           on:change={handleChange}
           accept="image/jpeg, image/png, image/gif" />
         {#if showRequired}
-          <div class="required-badge"><Icon name="required" class={iconBadgeClass}/><span>{$t('common.required')}</span></div>
+          <div class="required-badge">
+            <Icon name="required" class={iconBadgeClass} /><span>{$t('common.required')}</span>
+          </div>
         {/if}
         {#if locked}
-          <div class="locked-badge"><Icon name="locked" class={iconBadgeClass}/><span>{$t('common.locked')}</span></div>
+          <div class="locked-badge">
+            <Icon name="locked" class={iconBadgeClass} /><span>{$t('common.locked')}</span>
+          </div>
         {/if}
       </div>
     </div>
@@ -540,14 +547,18 @@ The input itself is wrapped in multiple container elements, the outermost of whi
         {/if}
 
         {#if showRequired}
-          <div class="required-badge"><Icon name="required" class={iconBadgeClass}/><span>{$t('common.required')}</span></div>
+          <div class="required-badge">
+            <Icon name="required" class={iconBadgeClass} /><span>{$t('common.required')}</span>
+          </div>
         {/if}
         {#if locked}
-          <div class="locked-badge"><Icon name="locked" class={iconBadgeClass}/><span>{$t('common.locked')}</span></div>
+          <div class="locked-badge">
+            <Icon name="locked" class={iconBadgeClass} /><span>{$t('common.locked')}</span>
+          </div>
         {/if}
       </div>
     </div>
-  {/if} 
+  {/if}
 
   <!-- Optional elements below the form widgets -->
 
@@ -560,14 +571,15 @@ The input itself is wrapped in multiple container elements, the outermost of whi
       {/if}
       {#if multilingual}
         <Button
-          text={isTranslationsVisible ? $t('components.input.hideTranslations') : $t('components.input.showTranslations')}
+          text={isTranslationsVisible
+            ? $t('components.input.hideTranslations')
+            : $t('components.input.showTranslations')}
           icon={isTranslationsVisible ? 'hide' : 'language'}
           class="!w-auto self-end"
           on:click={handleToggleTranslations} />
       {/if}
     </div>
   {/if}
-  
 </div>
 
 <style lang="postcss">

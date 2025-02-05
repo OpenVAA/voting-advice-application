@@ -30,12 +30,12 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
 -->
 
 <script lang="ts">
+  import { SingleChoiceCategoricalQuestion, SingleChoiceOrdinalQuestion } from '@openvaa/data';
   import { getComponentContext } from '$lib/contexts/component';
   import { logDebugError } from '$lib/utils/logger';
-  import { SingleChoiceCategoricalQuestion, SingleChoiceOrdinalQuestion } from '@openvaa/data';
+  import QuestionChoices from './QuestionChoices.svelte';
   import ErrorMessage from '../errorMessage/ErrorMessage.svelte';
   import type { OpinionQuestionInputProps } from './OpinionQuestionInput.type';
-  import QuestionChoices from './QuestionChoices.svelte';
 
   type $$Props = OpinionQuestionInputProps;
 
@@ -57,17 +57,10 @@ NB. The layout differs from the `QuestionInput` component, which is used for inf
   const { t } = getComponentContext();
 </script>
 
-{#if question instanceof SingleChoiceOrdinalQuestion 
-  || question instanceof SingleChoiceCategoricalQuestion}
+{#if question instanceof SingleChoiceOrdinalQuestion || question instanceof SingleChoiceCategoricalQuestion}
   {@const selectedId = question.ensureValue(answer?.value)}
   {@const otherSelected = question.ensureValue(otherAnswer?.value)}
-  <QuestionChoices
-    {question}
-    {mode}
-    {selectedId}
-    {otherSelected}
-    {otherLabel}
-    {...$$restProps}/>
+  <QuestionChoices {question} {mode} {selectedId} {otherSelected} {otherLabel} {...$$restProps} />
 {:else}
-  <ErrorMessage inline message={$t('error.unsupportedQuestion')} class="text-center"/>
+  <ErrorMessage inline message={$t('error.unsupportedQuestion')} class="text-center" />
 {/if}

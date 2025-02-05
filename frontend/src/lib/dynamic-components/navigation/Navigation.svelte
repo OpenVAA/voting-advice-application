@@ -36,8 +36,8 @@ Create navigation menus for the application in a predefined style.
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
   import { concatClass } from '$lib/utils/components';
+  import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
   import type { NavigationProps } from './Navigation.type';
 
   type $$Props = NavigationProps;
@@ -53,9 +53,9 @@ Create navigation menus for the application in a predefined style.
   }
 </script>
 
-<nav 
-  use:onKeyboardFocusOut={keyboardFocusOut} 
+<nav
+  use:onKeyboardFocusOut={keyboardFocusOut}
   {...concatClass($$restProps, 'min-h-full w-4/5 max-w-sm bg-base-100')}
-  class:hidden={hidden}>
+  class:hidden>
   <slot />
 </nav>
