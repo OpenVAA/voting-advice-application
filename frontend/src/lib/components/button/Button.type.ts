@@ -11,7 +11,7 @@ export type ButtonProps = LinkOrButtonElementProps & {
    */
   icon?: IconName | null;
   /**
-   * The color of the icon. @default 'primary'
+   * The color of the button or text. @default 'primary'
    */
   color?: Color | null;
   /**
@@ -21,7 +21,7 @@ export type ButtonProps = LinkOrButtonElementProps & {
   /**
    * Type of the button, which defines it's appearance. @default 'normal'
    */
-  variant?: 'main' | 'icon' | 'normal' | 'responsive-icon' | 'secondary' | null;
+  variant?: 'main' | 'prominent' | 'icon' | 'normal' | 'responsive-icon' | 'secondary' | 'floating-icon' | null;
   /**
    * Position of the icon in the button. Only relevant if `icon` is not `null` and `variant` is not `icon`. Note that `top` and `bottom` are not supported if `variant='main'`. @default 'right' if `variant='main'`, otherwise `left`
    */
