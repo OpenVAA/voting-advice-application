@@ -35,7 +35,7 @@ export const ROUTE = {
   CandAppQuestion: `${CANDIDATE_PROT}/questions/[questionId]`,
   CandAppQuestions: `${CANDIDATE_PROT}/questions`,
   CandAppLogin: `${CANDIDATE}/login`,
-  /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/plugins/candidate-admin/server/services/email.js */
+  /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/services/email.js */
   CandAppRegister: `${CANDIDATE}/register`,
   CandAppSetPassword: `${CANDIDATE}/register/password`,
   /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/extensions/users-permissions/strapi-server.js */
