@@ -18,6 +18,7 @@ export const keys = [
   'candidateApp.notSupported',
   'candidateApp.preview',
   'candidateApp.questions',
+  'candidateApp.preregister',
   'candidateApp.register',
   'candidateApp.resetPassword',
   'candidateApp.setPassword',
