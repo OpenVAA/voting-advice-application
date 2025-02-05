@@ -21,9 +21,9 @@ export type ButtonProps = LinkOrButtonElementProps & {
   /**
    * Type of the button, which defines it's appearance. @default 'normal'
    */
-  variant?: 'main' | 'prominent' | 'icon' | 'normal' | 'responsive-icon' | 'secondary' | null;
+  variant?: 'main' | 'prominent' | 'icon' | 'normal' | 'responsive-icon' | 'secondary' | 'floating-icon' | null;
   /**
-   * Position of the icon in the button. Only relevant if `icon` is not `null` and `variant` is not `icon`. Note that `top` and `bottom` are not supported if `variant='main'`. @default 'right' if `variant='main'`, otherwise `left`
+   * Position of the icon in the button. Only relevant if `icon` is not `null` and `variant` is not `icon` or `floating-icon`. Note that `top` and `bottom` are not supported if `variant='main'`. @default 'right' if `variant='main'`, otherwise `left`
    */
   iconPos?: 'left' | 'right' | 'top' | 'bottom';
   /**
