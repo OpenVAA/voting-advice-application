@@ -18,7 +18,11 @@
       },
       "expired": {
         "title": "The session has ended",
-        "content": "<p>Please identify yourself again.</p>"
+        "content": "<p>Please, identify yourself again.</p>"
+      },
+      "duplicate": {
+        "title": "You are already preregistered as a candidate",
+        "content": "<p>Please, proceed to register or login with an email.</p>"
       }
     },
     "success": {
