@@ -69,6 +69,8 @@ export type TranslationKey =
   | 'candidateApp.preregister.emailVerification.content'
   | 'candidateApp.preregister.emailVerification.termsCheckbox'
   | 'candidateApp.preregister.emailVerification.title'
+  | 'candidateApp.preregister.identification.error.duplicate.content'
+  | 'candidateApp.preregister.identification.error.duplicate.title'
   | 'candidateApp.preregister.identification.error.expired.content'
   | 'candidateApp.preregister.identification.error.expired.title'
   | 'candidateApp.preregister.identification.error.general.content'
