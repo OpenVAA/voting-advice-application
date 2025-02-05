@@ -58,7 +58,7 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
 
 <ModalContainer closeOnBackdropClick={true} {...$$restProps} {title} bind:isOpen bind:closeModal bind:openModal>
   <div
-    class="max-w-80 relative col-span-1 col-start-1 row-span-1 row-start-1 h-[calc(100vh-2rem)] translate-y-[1rem] rounded-t-[2rem] bg-black p-24 pt-40"
+    class="max-w-80 relative col-span-1 col-start-1 row-span-1 row-start-1 h-[calc(100vh-2rem)] translate-y-[1rem] rounded-t-[2rem] bg-base-100 p-24 pt-40"
     in:fly={{ y: '100%', duration: 200 }}
     out:fly={{ y: '100%', duration: 200 }}>
     <h2 class="mb-lg text-center">{title}</h2>
@@ -75,11 +75,7 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
       </button>
     </form>
   </div>
-  <Button
-    type="button"
-    variant="icon"
-    text="close"
-    class="!absolute bottom-16 right-16 rounded-full bg-base-300 p-14"
-    icon="close"
-    on:click={closeModal} />
+  <div class="absolute bottom-16 right-16">
+    <Button type="button" variant="floating-icon" text="close" icon="close" on:click={closeModal} />
+  </div>
 </ModalContainer>
