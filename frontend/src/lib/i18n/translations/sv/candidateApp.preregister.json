@@ -13,20 +13,20 @@
     },
     "error": {
       "general": {
-        "title": "There was an error with the Bank ID login",
-        "content": "<p>We're sorry, something went wrong with your Bank ID login.</p><p>Click the button below to try logging in again. If the problem persists, please contact our support team.</p><p>support@openvaa.org</p>"
+        "title": "There was an issue with Bank ID authentication",
+        "content": "<p>Click the button below to try again or contact support if the problem persists.</p><p>support@openvaa.org</p>"
       },
       "expired": {
-        "title": "The session has ended",
-        "content": "<p>Please identify yourself again.</p>"
+        "title": "Your session has expired",
+        "content": "<p>Please identify yourself again to complete the registration process.</p>"
       },
       "preregistered": {
-        "title": "You are already preregistered as a candidate",
-        "content": "<p>Please, proceed to register or login with an email.</p>"
+        "title": "You are already registered as a candidate",
+        "content": "<p>It looks like you are already registered. Please check your email to confirm your registration. Once the registration is confirmed, you can login with your email and password.</p><p>Please contact support if you believe there is an error.</p><p>support@openvaa.org</p>"
       },
       "loggedIn": {
-        "title": "You are already registered and logged in",
-        "content": "<p>???</p>"
+        "title": "You are already logged in",
+        "content": "<p>You are already registered and logged in.</p>"
       }
     },
     "success": {
