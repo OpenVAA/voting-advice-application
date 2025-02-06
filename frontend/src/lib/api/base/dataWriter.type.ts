@@ -43,8 +43,8 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
 
   preregisterS: (opts: {
     email: string;
-    electionIds?: Array<number>;
-    constituencyId?: number;
+    electionIds?: Array<string>;
+    constituencyId?: string;
   }) => DWReturnType<DataApiActionResult>;
 
   ////////////////////////////////////////////////////////////////////
