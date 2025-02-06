@@ -10,9 +10,15 @@ export class OpenAIProvider extends LLMProvider {
     super();
     this.model = options.model || 'gpt-4o-mini';
     this.maxContextTokens = options.maxContextTokens || 4096;
-    this.openai = new OpenAI({
-      apiKey: options.apiKey ?? process.env.OPENAI_API_KEY
-    });
+    const apiKey = options.apiKey ?? process.env.OPENAI_API_KEY;
+
+    if (!apiKey) {
+      throw new Error(
+        'OpenAI API key is required. Provide it through constructor options or OPENAI_API_KEY environment variable.'
+      );
+    }
+
+    this.openai = new OpenAI({ apiKey });
   }
 
   async generate(
@@ -21,6 +27,14 @@ export class OpenAIProvider extends LLMProvider {
     maxTokens?: number
     //stopSequences?: Array<string>
   ): Promise<LLMResponse> {
+    if (!messages || messages.length === 0) {
+      throw new Error('At least one message is required for generation');
+    }
+
+    if (temperature < 0 || temperature > 1) {
+      throw new Error('Temperature must be between 0 and 1');
+    }
+
     // Convert our internal message format to OpenAI API format
     const openAIMessages: Array<OpenAI.ChatCompletionMessageParam> = messages.map(mapToMessageParam);
 
@@ -32,12 +46,20 @@ export class OpenAIProvider extends LLMProvider {
         max_tokens: maxTokens
       });
 
+      if (!response.choices || response.choices.length === 0) {
+        throw new Error('OpenAI API returned no choices');
+      }
+
       // Extract the relevant data from the OpenAI response
-      const choice = response.choices[0]; // Get the first response
+      const choice = response.choices[0];
       const usage = response.usage;
 
+      if (!choice.message.content) {
+        throw new Error('OpenAI API returned empty content');
+      }
+
       const llmResponse = new LLMResponse(
-        choice.message.content ?? '',
+        choice.message.content,
         new UsageStats(usage?.prompt_tokens ?? 0, usage?.completion_tokens ?? 0, usage?.total_tokens ?? 0),
         response.model,
         choice.finish_reason
@@ -45,7 +67,10 @@ export class OpenAIProvider extends LLMProvider {
 
       return llmResponse;
     } catch (error) {
-      throw new Error(`OpenAI API error: ${error}`);
+      if (error instanceof Error) {
+        throw new Error(`OpenAI API error: ${error.message}`);
+      }
+      throw new Error('Unknown error occurred while calling OpenAI API');
     }
   }
 
