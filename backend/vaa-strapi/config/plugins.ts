@@ -86,6 +86,10 @@ export default ({ env }) => {
     'llm-admin': {
       enabled: true,
       resolve: './src/plugins/llm-admin'
+    },
+    'hello-world': {
+      enabled: true,
+      resolve: './src/plugins/hello-world'
     }
   };
 };

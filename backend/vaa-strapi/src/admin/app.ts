@@ -3,7 +3,8 @@ export default {
     locales: ['en'],
     translations: {
       en: {
-        'llm-test': 'LLM Test'
+        'llm-test': 'LLM Test',
+        'llm-test.generate': 'Generate New Test'
       }
     },
     menu: {
@@ -19,5 +20,15 @@ export default {
       ]
     }
   },
-  bootstrap() {}
+  bootstrap() {},
+  register({ getPlugin }) {
+    const plugin = getPlugin('content-manager');
+    plugin.injectComponent('collectionType', 'api::llm-test.llm-test', 'listView', 'actions', {
+      name: 'generate-llm-test',
+      Component: async () => {
+        const component = await import('./components/GenerateLLMTest');
+        return component.default;
+      }
+    });
+  }
 };
