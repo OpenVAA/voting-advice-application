@@ -1,4 +1,5 @@
 'use strict';
+const { OpenAIProvider, Role } = require('@openvaa/llm');
 
 module.exports = {
   register({ strapi }) {
@@ -24,8 +25,33 @@ module.exports = {
         });
         console.log('Created initial LLM test entry');
       }
+
+      // Second entry using OpenAI
+      const OPEN_AI_API_KEY = process.env.OPEN_AI_API_KEY;
+      if (OPEN_AI_API_KEY) {
+        const provider = new OpenAIProvider({ apiKey: OPEN_AI_API_KEY });
+        const res = await provider.generate([
+          {
+            role: Role.SYSTEM,
+            content: 'You are a helpful assistant'
+          },
+          {
+            role: Role.USER,
+            content: 'Say something interesting about AI'
+          }
+        ]);
+
+        await strapi.entityService.create('api::llm-test.llm-test', {
+          data: {
+            prompt: 'AI Facts',
+            response: res.content,
+            timestamp: new Date()
+          }
+        });
+        console.log('Created LLM-generated test entry');
+      }
     } catch (error) {
-      console.error('Failed to create initial LLM test entry:', error);
+      console.error('Failed to create test entries:', error);
     }
   },
 
