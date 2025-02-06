@@ -1,6 +1,5 @@
 import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
 import type { Readable, Writable } from 'svelte/store';
-import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { AppContext } from '../app';
 import type { QuestionBlocks } from '../utils/questionBlockStore.type';
@@ -102,11 +101,9 @@ export type CandidateContext = AppContext & {
    * @param constituencyId - Constituency ID.
    * @returns A `Promise` resolving to an `DataApiActionResult` object.
    */
-  preregister: (opts: {
-    email: string;
-    electionIds?: Array<number>;
-    constituencyId?: number;
-  }) => Promise<DataApiActionResult>;
+  preregister: (opts: { email: string; electionIds?: Array<number>; constituencyId?: number }) => Promise<void>;
+
+  exchangeAuthorizationCode: (opts: { authorizationCode: string; redirectUri: string }) => Promise<void>;
 
   ////////////////////////////////////////////////////////////////////
   // Other properties specific to CandidateContext

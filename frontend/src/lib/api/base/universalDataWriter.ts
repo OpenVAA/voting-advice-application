@@ -51,6 +51,44 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     return this._login(opts);
   }
 
+  async preregisterS(opts: {
+    email: string;
+    electionIds?: Array<number>;
+    constituencyId?: number;
+  }): DWReturnType<DataApiActionResult> {
+    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+    const url = UNIVERSAL_API_ROUTES.preregister;
+    const response = await this.fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(opts)
+    });
+
+    return { type: response.ok ? 'success' : 'failure' };
+  }
+
+  async exchangeAuthorizationCode(opts: {
+    authorizationCode: string;
+    redirectUri: string;
+  }): DWReturnType<DataApiActionResult> {
+    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+    const url = UNIVERSAL_API_ROUTES.token;
+    const response = await this.fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        authorizationCode: opts.authorizationCode,
+        redirectUri: opts.redirectUri
+      })
+    });
+
+    return { type: response.ok ? 'success' : 'failure' };
+  }
+
   async logout(opts: WithAuth): DWReturnType<DataApiActionResult> {
     if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
     const url = UNIVERSAL_API_ROUTES.logout;
