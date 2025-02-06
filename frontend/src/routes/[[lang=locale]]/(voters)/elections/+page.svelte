@@ -10,6 +10,7 @@ See `+page.ts` for possible redirects.
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
+  import { ElectionSelector } from '$lib/components/electionSelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
   import MainContent from '../../MainContent.svelte';
@@ -45,14 +46,7 @@ See `+page.ts` for possible redirects.
     {$t('dynamic.elections.ingress')}
   </p>
 
-  <div class="grid gap-sm">
-    {#each $dataRoot.elections as { id, name }}
-      <label class="label cursor-pointer justify-start gap-sm !p-0">
-        <input type="checkbox" class="checkbox" name="selected-elections" value={id} bind:group={selected} />
-        <span class="label-text">{name}</span>
-      </label>
-    {/each}
-  </div>
+  <ElectionSelector elections={$dataRoot.elections} bind:selected on:change={console.error} />
 
   <Button
     slot="primaryActions"
