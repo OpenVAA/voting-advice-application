@@ -17,8 +17,6 @@ import type { CustomData } from '@openvaa/app-shared';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { CandidateContext } from './candidateContext.type';
-import { constants } from '$lib/utils/constants';
-import { browser } from '$app/environment';
 
 const CONTEXT_KEY = Symbol();
 
@@ -151,35 +149,24 @@ export function initCandidateContext(): CandidateContext {
     return dataWriter.setPassword({ ...opts, authToken: token });
   }
 
-  async function preregister({
-    email,
-    electionIds,
-    constituencyId
-  }: {
+  async function exchangeAuthorizationCode(opts: { authorizationCode: string; redirectUri: string }): Promise<void> {
+    const dataWriter = await prepareDataWriter(dataWriterPromise);
+    await dataWriter.exchangeAuthorizationCode(opts).catch((e) => {
+      logDebugError(`Error logging out: ${e?.message ?? '-'}`);
+    });
+    return goto(get(getRoute)('CandAppPreregister'));
+  }
+
+  async function preregister(opts: {
     email: string;
     electionIds?: Array<number>;
     constituencyId?: number;
-  }): Promise<DataApiActionResult> {
-    const response = await fetch(
-      `${browser ? constants.PUBLIC_BROWSER_FRONTEND_URL : constants.PUBLIC_SERVER_FRONTEND_URL}/api/candidate/preregister`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email,
-          electionIds,
-          constituencyId
-        })
-      }
-    );
-
-    if (response.ok) {
-      return { type: 'success' };
-    }
-
-    return { type: 'failure' };
+  }): Promise<void> {
+    const dataWriter = await prepareDataWriter(dataWriterPromise);
+    await dataWriter.preregisterS(opts).catch((e) => {
+      logDebugError(`Error logging out: ${e?.message ?? '-'}`);
+    });
+    return goto(get(getRoute)('CandAppPreregister'));
   }
 
   /**
@@ -251,6 +238,7 @@ export function initCandidateContext(): CandidateContext {
     setPassword,
     unansweredOpinionQuestions,
     unansweredRequiredInfoQuestions,
-    userData
+    userData,
+    exchangeAuthorizationCode
   });
 }
