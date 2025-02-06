@@ -1,0 +1,23 @@
+{
+  "kind": "collectionType",
+  "collectionName": "llm_tests",
+  "info": {
+    "singularName": "llm-test",
+    "pluralName": "llm-tests",
+    "displayName": "LLM Test"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "prompt": {
+      "type": "text"
+    },
+    "response": {
+      "type": "text"
+    },
+    "timestamp": {
+      "type": "datetime"
+    }
+  }
+} 

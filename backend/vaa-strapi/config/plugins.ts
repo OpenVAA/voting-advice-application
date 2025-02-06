@@ -82,6 +82,10 @@ export default ({ env }) => {
     'candidate-admin': {
       enabled: true,
       resolve: './src/plugins/candidate-admin'
+    },
+    'llm-admin': {
+      enabled: true,
+      resolve: './src/plugins/llm-admin'
     }
   };
 };
