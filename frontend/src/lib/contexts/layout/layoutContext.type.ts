@@ -21,6 +21,11 @@ export type LayoutContext = {
    * A context object that should contain a callback for closing the navigation menu.
    */
   navigation: Navigation;
+  /**
+   * A store containing navigation settings.
+   * NB. This is not contained under `navigation` for easier store access.
+   */
+  navigationSettings: StackedStore<NavigationSettings, DeepPartial<NavigationSettings>>;
 };
 
 export interface PageStyles {
@@ -54,4 +59,14 @@ interface Navigation {
    * A function that closes the navigation drawer.
    */
   close?: () => void;
+}
+
+/**
+ * A store containing navigation settings.
+ */
+export interface NavigationSettings {
+  /**
+   * Whether to hide the nav menu and the button opening it. Default is `false`.
+   */
+  hide?: boolean;
 }
