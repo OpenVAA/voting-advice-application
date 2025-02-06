@@ -4,7 +4,6 @@ A modal dialog that looks like a drawer.
 
 ### Slots
 
-- `actions`: The action buttons to display.
 - default: The content of the modal.
 
 ### Properties
@@ -63,11 +62,6 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
     out:fly={{ y: '100%', duration: 200 }}>
     <h2 class="mb-lg text-center">{title}</h2>
     <slot />
-    {#if $$slots.actions}
-      <div class="modal-action justify-center">
-        <slot name="actions" />
-      </div>
-    {/if}
     <form method="dialog">
       <button class="btn btn-circle btn-ghost btn-sm absolute right-2 top-2">
         <span aria-hidden="true">✕</span>
