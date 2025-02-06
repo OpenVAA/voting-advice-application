@@ -101,7 +101,7 @@ export type CandidateContext = AppContext & {
    * @param constituencyId - Constituency ID.
    * @returns A `Promise` resolving to an `DataApiActionResult` object.
    */
-  preregister: (opts: { email: string; electionIds?: Array<number>; constituencyId?: number }) => Promise<void>;
+  preregister: (opts: { email: string; electionIds?: Array<string>; constituencyId?: string }) => Promise<void>;
 
   exchangeAuthorizationCode: (opts: { authorizationCode: string; redirectUri: string }) => Promise<void>;
 
@@ -119,6 +119,7 @@ export type CandidateContext = AppContext & {
    * Holds the jwt token. NB. The context’s internal methods use it automatically for authentication.
    */
   authToken: Readable<string | undefined>;
+  // idTokenClaims: Readable<{ firstName: string; lastName: string } | undefined>;
   /**
    * Holds the user’s email so it can be prefilled during password changes.
    */
