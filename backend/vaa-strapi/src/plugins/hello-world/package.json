@@ -1,0 +1,10 @@
+{
+  "name": "hello-world",
+  "version": "0.0.1",
+  "description": "A simple hello world plugin",
+  "strapi": {
+    "name": "hello-world",
+    "description": "A simple hello world plugin",
+    "kind": "plugin"
+  }
+} 
