@@ -39,6 +39,8 @@ Defines the outer layout for the application, including the header and menu.
   ////////////////////////////////////////////////////////////////////
 
   const { startEvent, t } = getAppContext();
+  const { pageStyles, navigation, navigationSettings } = getLayoutContext(onDestroy);
+  navigation.close = closeDrawer;
 
   let drawerOpenElement: HTMLButtonElement | undefined;
 
@@ -47,6 +49,7 @@ Defines the outer layout for the application, including the header and menu.
    * to toggle it back when using keyboard navigation.
    */
   function openDrawer() {
+    if ($navigationSettings.hide) return;
     isDrawerOpen = true;
     // We need a small timeout for drawerCloseButton to be focusable
     setTimeout(() => document.getElementById('drawerCloseButton')?.focus(), 50);
@@ -61,12 +64,6 @@ Defines the outer layout for the application, including the header and menu.
     isDrawerOpen = false;
     drawerOpenElement?.focus();
   }
-
-  /**
-   * Init the context for layout changes.
-   */
-  const { pageStyles, navigation } = getLayoutContext(onDestroy);
-  navigation.close = closeDrawer;
 
   /** We use `videoHeight` and `videoWidth` as proxies to check for the presence of content in the `video` slot. Note that we cannot merely check if the slot is provided, because it might be empty. */
   // let videoHeight = 0;
@@ -87,6 +84,7 @@ Defines the outer layout for the application, including the header and menu.
     bind:checked={isDrawerOpen}
     type="checkbox"
     class="drawer-toggle"
+    disabled={$navigationSettings.hide}
     tabindex="-1"
     aria-hidden="true"
     aria-label={$t('common.openCloseMenu')} />
