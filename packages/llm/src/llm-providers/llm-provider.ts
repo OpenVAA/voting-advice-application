@@ -1,4 +1,4 @@
-export type Role = 'system' | 'user';
+export type Role = 'system' | 'user' | 'assistant' | 'developer';
 
 export class Message {
   public role: Role;
@@ -17,37 +17,15 @@ export class UsageStats {
     public totalTokens: number
   ) {}
 
+  /**
+   * Calculates the estimated cost of the API call based on token usage.
+   * Currently returns 0 as cost calculation depends on the specific model and pricing.
+   * Override this in provider-specific implementations if needed.
+   */
   get estimatedCost(): number {
-    // Calculate estimated cost based on token usage
-    return 0; // Implement cost calculation logic here
+    return 0;
   }
 }
-
-// class EmbeddingResponse {
-//     public embedding: NDArray<Float32Array>; // The actual embedding vector
-
-//     constructor(
-//         embedding: Float32Array | number[],
-//         public tokens: number,
-//         public model: string
-//     ) {
-//         // Convert list to NDArray if needed
-//         if (Array.isArray(embedding)) {
-//             this.embedding = new Float32Array(embedding);
-//         } else {
-//             this.embedding = embedding;
-//         }
-//     }
-
-//     get estimatedCost(): number {
-//         const costPer1kTokens = 0.0001; // $0.0001 per 1K tokens
-//         return (this.tokens / 1000) * costPer1kTokens;
-//     }
-
-//     get length(): number {
-//         return this.embedding.length;
-//     }
-// }
 
 export class LLMResponse {
   constructor(
@@ -57,28 +35,45 @@ export class LLMResponse {
     public finishReason?: string
   ) {}
 
+  /**
+   * Indicates whether the response was truncated due to length constraints
+   */
   get wasTruncated(): boolean {
-    // Check if response was truncated due to length
     return this.finishReason === 'length';
   }
 }
 
-// Abstract class for LLMProvider
+/**
+ * Abstract base class for LLM providers.
+ * Implement this class to add support for new LLM providers.
+ */
 export abstract class LLMProvider {
-  abstract generate(
-    messages: Array<Message>,
-    temperature: number,
-    maxTokens?: number,
-    stopSequences?: Array<string>
-  ): Promise<LLMResponse>;
+  /**
+   * Generates a response from the LLM based on the provided messages
+   * @param messages Array of messages to send to the LLM
+   * @param temperature Controls randomness in the response (0-1)
+   * @param maxTokens Optional maximum number of tokens to generate
+   */
+  abstract generate(messages: Array<Message>, temperature: number, maxTokens?: number): Promise<LLMResponse>;
 
+  /**
+   * Estimates the number of tokens in a text string
+   */
   abstract countTokens(text: string): Promise<{
     tokens: number;
   }>;
 
+  /**
+   * Maximum number of tokens that can be processed in a single request
+   */
   abstract get maxContextTokens(): number;
 
-  // To do: implement such that the fitting doesn't happen according to context length but performance
-  // This needs to be done because model performance drops if the input is too large
+  /**
+   * Calculates how many messages can fit within the context window
+   * while maintaining good model performance
+   *
+   * To do: implement such that the fitting doesn't happen according to context length but performance
+   * This needs to be done because model performance drops if the input is too large
+   */
   abstract fitCommentArgsCount(): Promise<number>;
 }

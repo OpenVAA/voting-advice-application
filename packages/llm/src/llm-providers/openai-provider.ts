@@ -21,12 +21,7 @@ export class OpenAIProvider extends LLMProvider {
     this.openai = new OpenAI({ apiKey });
   }
 
-  async generate(
-    messages: Array<Message>,
-    temperature: number = 0.7,
-    maxTokens?: number
-    //stopSequences?: Array<string>
-  ): Promise<LLMResponse> {
+  async generate(messages: Array<Message>, temperature: number = 0.7, maxTokens?: number): Promise<LLMResponse> {
     if (!messages || messages.length === 0) {
       throw new Error('At least one message is required for generation');
     }
@@ -35,7 +30,6 @@ export class OpenAIProvider extends LLMProvider {
       throw new Error('Temperature must be between 0 and 1');
     }
 
-    // Convert our internal message format to OpenAI API format
     const openAIMessages: Array<OpenAI.ChatCompletionMessageParam> = messages.map(mapToMessageParam);
 
     try {
@@ -50,7 +44,6 @@ export class OpenAIProvider extends LLMProvider {
         throw new Error('OpenAI API returned no choices');
       }
 
-      // Extract the relevant data from the OpenAI response
       const choice = response.choices[0];
       const usage = response.usage;
 
@@ -74,24 +67,29 @@ export class OpenAIProvider extends LLMProvider {
     }
   }
 
+  /**
+   * Estimates the number of tokens in a text string.
+   * Note: This is a simple approximation. For production use,
+   * consider using a proper tokenizer.
+   */
   async countTokens(text: string) {
-    // Call OpenAI to count tokens using a tokenizer API if available, or estimate based on simple heuristics
-    // For the sake of example, we will use a rough estimate where 1 token ~ 4 characters
     return {
       tokens: Math.ceil(text.length / 4)
     };
   }
 
+  /**
+   * Calculates how many messages can fit within the context window.
+   * Uses a conservative estimate of average tokens per message to ensure
+   * we don't exceed the model's context limit.
+   */
   async fitCommentArgsCount(): Promise<number> {
-    // Implement logic to fit comment args to the context window.
-    // Example logic: you can return how many arguments/messages fit into the max context
-    const averageTokensPerMessage = 50; // Rough average tokens per message
+    const averageTokensPerMessage = 50;
     return Math.floor(this.maxContextTokens / averageTokensPerMessage);
   }
 }
 
 function mapToMessageParam(message: { role: string; content: string }): OpenAI.ChatCompletionMessageParam {
-  // Convert role to lowercase for case-insensitive comparison
   const role = message.role.toLowerCase();
 
   switch (role) {
@@ -112,13 +110,6 @@ function mapToMessageParam(message: { role: string; content: string }): OpenAI.C
         role: 'assistant',
         content: message.content
       } as OpenAI.ChatCompletionAssistantMessageParam;
-
-    case 'tool':
-      return {
-        role: 'tool',
-        content: message.content,
-        tool_call_id: '' // You'll need to provide this
-      } as OpenAI.ChatCompletionToolMessageParam;
 
     case 'developer':
       return {
