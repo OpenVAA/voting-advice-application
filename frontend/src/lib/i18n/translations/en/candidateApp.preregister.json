@@ -20,9 +20,13 @@
         "title": "The session has ended",
         "content": "<p>Please, identify yourself again.</p>"
       },
-      "duplicate": {
+      "preregistered": {
         "title": "You are already preregistered as a candidate",
         "content": "<p>Please, proceed to register or login with an email.</p>"
+      },
+      "loggedIn": {
+        "title": "You are already registered and logged in",
+        "content": "<p>???</p>"
       }
     },
     "success": {
