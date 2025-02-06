@@ -14,22 +14,21 @@
     "generate:types": "strapi ts:generate-types"
   },
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.716.0",
+    "@aws-sdk/client-ses": "^3.741.0",
     "@openvaa/app-shared": "workspace:^",
     "@openvaa/strapi-admin-tools": "workspace:^",
-    "@strapi/plugin-documentation": "^5.8.1",
-    "@strapi/plugin-users-permissions": "^5.8.1",
-    "@strapi/provider-email-nodemailer": "^5.8.1",
-    "@strapi/provider-upload-aws-s3": "^5.8.1",
-    "@strapi/sdk-plugin": "^5.3.0",
-    "@strapi/strapi": "^5.8.1",
+    "@strapi/plugin-documentation": "^5.9.0",
+    "@strapi/plugin-users-permissions": "^5.9.0",
+    "@strapi/provider-email-nodemailer": "^5.9.0",
+    "@strapi/provider-upload-aws-s3": "^5.9.0",
+    "@strapi/strapi": "^5.9.0",
     "pg": "^8.13.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-is": "^19.0.0",
-    "react-router-dom": "^6.28.1",
+    "react-router-dom": "^6.29.0",
     "strapi-plugin-multi-select": "^2.1.1",
-    "styled-components": "^6.1.14"
+    "styled-components": "^6.1.15"
   },
   "author": {
     "name": "OpenVAA"
@@ -48,7 +47,8 @@
     "@babel/plugin-transform-modules-commonjs": "^7.26.3",
     "@faker-js/faker": "^8.4.1",
     "@openvaa/shared-config": "workspace:^",
-    "@strapi/typescript-utils": "^5.8.1",
+    "@strapi/sdk-plugin": "^5.3.0",
+    "@strapi/typescript-utils": "^5.9.0",
     "@types/babel__core": "^7.20.5",
     "@types/react": "^18.3.18",
     "@types/react-is": "^19.0.0",
