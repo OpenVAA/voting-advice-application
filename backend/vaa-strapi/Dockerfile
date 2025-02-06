@@ -33,6 +33,7 @@ WORKDIR /opt
 # Copy only the packages we need
 COPY --from=shared /opt/packages/app-shared ./packages/app-shared
 COPY --from=shared /opt/packages/core ./packages/core
+COPY --from=shared /opt/packages/llm ./packages/llm
 COPY --from=shared /opt/packages/data ./packages/data
 COPY --from=shared /opt/backend/vaa-strapi ./backend/vaa-strapi
 
