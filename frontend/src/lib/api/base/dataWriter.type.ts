@@ -13,6 +13,11 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   // Preregistration
   ////////////////////////////////////////////////////////////////////
 
+  exchangeAuthorizationCode: (opts: {
+    authorizationCode: string;
+    redirectUri: string;
+  }) => DWReturnType<DataApiActionResult>;
+
   /**
    * Create a candidate with a nomination or nominations and send a registration link.
    * @param firstName - First name.
@@ -35,6 +40,12 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
       };
     } & WithAuth
   ) => DWReturnType<DataApiActionResult, TType>;
+
+  preregisterS: (opts: {
+    email: string;
+    electionIds?: Array<number>;
+    constituencyId?: number;
+  }) => DWReturnType<DataApiActionResult>;
 
   ////////////////////////////////////////////////////////////////////
   // Registration
