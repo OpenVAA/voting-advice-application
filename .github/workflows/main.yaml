@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: "Checkout Frontend source code"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Yarn 4.6
         uses: threeal/setup-yarn-action@v2.0.0
@@ -36,7 +36,7 @@ jobs:
           version: 4.6
 
       - name: Setup Node.js 20.18.1
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20.18.1
           cache: "yarn"
@@ -70,7 +70,7 @@ jobs:
 
     steps:
       - name: "Checkout Backend source code"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -80,14 +80,14 @@ jobs:
           version: 4.6
 
       - name: Setup Node.js 20.18.1
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20.18.1
           cache: "yarn"
 
       - name: Cache node modules
         id: cache-npm-backend-main
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-node-modules
         with:
@@ -123,7 +123,7 @@ jobs:
 
     steps:
       - name: "Checkout source code"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -136,14 +136,14 @@ jobs:
           version: 4.6
   
       - name: Setup Node.js 20.18.1
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 20.18.1
           cache: "yarn"
 
       - name: Cache node modules
         id: cache-npm-e2e-main
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         env:
           cache-name: cache-node-modules-e2e
         with:
@@ -182,7 +182,7 @@ jobs:
           retention-days: 30
 
       - name: "Sleep for 30s to allow mock data generation to complete before running e2e tests"
-        uses: juliangruber/sleep-action@v2.0.0
+        uses: juliangruber/sleep-action@v2
         with:
           time: 30s
 
