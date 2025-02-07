@@ -1,31 +1,41 @@
 <script lang="ts">
-  import { page } from '$app/stores';
-  import { Button } from '$lib/components/button';
-  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { browser } from '$app/environment';
+  import { Button } from '$lib/components/button';
   import { constants } from '$lib/utils/constants';
-  import MainContent from '../../MainContent.svelte';
+  import { DEFAULT_DATE_FORMAT } from '../../../../../../packages/data/src/internal';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
+  import { goto } from '$app/navigation';
   import { onDestroy } from 'svelte';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
+  import MainContent from '../../MainContent.svelte';
 
-  // TODO: Use $t('candidateApp.preregister.identifyYourself')
-
+  // TODO: Move to CandidateContext.
   export let data: { claims: { firstName: string; lastName: string } | null };
-
-  let email1: string = '';
-  let email2: string = '';
-  let electionIds: number[] = [];
-  let constituencyId: number | undefined = undefined;
-
-  let errorMessage = '';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, t, userData, preregister } = getCandidateContext(); // TODO: Redirect to (where) if there's user data.
+  const { appCustomization, darkMode, t, userData, electionsSelectable, constituenciesSelectable, getRoute, locale } =
+    getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+
+  const publicationDate = new Date(); // TODO: Where does this come from?
+
+  const steps = [
+    $t('candidateApp.preregister.identification.start.step.identification'),
+    electionsSelectable ? $t('candidateApp.preregister.identification.start.step.electionSelect') : undefined,
+    constituenciesSelectable ? $t('candidateApp.preregister.identification.start.step.constituencySelect') : undefined,
+    $t('candidateApp.preregister.identification.start.step.emailVerification'),
+    $t('candidateApp.preregister.identification.start.step.passwordSelect')
+  ].filter(Boolean);
+
+  const nextRoute = electionsSelectable
+    ? 'CandAppPreregisterElection'
+    : constituenciesSelectable
+      ? 'CandAppPreregisterConstituency'
+      : 'CandAppPreregisterEmail';
 
   ///////////////////////////////////////////////////////////////////
   // Top bar and styling
@@ -39,87 +49,60 @@
   });
 
   async function redirectToIdentityProvider() {
-    if (browser) {
-      const clientId = constants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
-      const redirectUri = `${window.location.origin}${window.location.pathname}/signicat/oidc/callback`;
-      window.location.href = `${constants.PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=openid%20profile&prompt=login`;
-    }
-  }
-
-  async function onFormSubmit() {
-    // TODO: Validate all data.
-
-    if (email1 !== email2) {
-      errorMessage = 'TODO';
+    if (!browser) {
       return;
     }
-
-    const response = await preregister({ email: email1, electionIds, constituencyId });
-
-    if (!response?.ok) {
-      errorMessage = 'TODO';
-      // TODO
-      return;
-    }
-
-    // TODO: Go to the success page.
+    const clientId = constants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
+    const redirectUri = `${window.location.origin}${window.location.pathname}/signicat/oidc/callback`;
+    window.location.href = `${constants.PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=openid%20profile&prompt=login`;
   }
 </script>
 
 <svelte:head>
-  <title>{$t('candidateApp.register.title')} – {$t('dynamic.appName')}</title>
+  <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
 </svelte:head>
 
-<MainContent title={$t('candidateApp.register.title')}>
-  <HeadingGroup slot="heading">
-    <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
-    <h1 class="text-3xl font-normal">{$page.data.election?.name}</h1>
-  </HeadingGroup>
-  {#if data.claims}
-    <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onFormSubmit}>
-      <input
-        name="firstName"
-        id="firstName"
-        class="input mb-md w-full max-w-md"
-        placeholder={$t('common.firstName')}
-        aria-label={$t('common.firstName')}
-        value={data.claims.firstName}
-        required
-        disabled />
-      <input
-        name="lastName"
-        id="lastName"
-        class="input mb-md w-full max-w-md"
-        placeholder={$t('common.lastName')}
-        aria-label={$t('common.lastName')}
-        value={data.claims.lastName}
-        required
-        disabled />
-      <input
-        type="email"
-        name="email1"
-        id="email1"
-        class="input mb-md w-full max-w-md"
-        placeholder={$t('candidateApp.common.emailPlaceholder')}
-        aria-label={$t('candidateApp.common.emailPlaceholder')}
-        bind:value={email1}
-        required />
-      <input
-        type="email"
-        name="email2"
-        id="email2"
-        class="input mb-md w-full max-w-md"
-        placeholder={$t('candidateApp.common.emailPlaceholder')}
-        aria-label={$t('candidateApp.common.emailPlaceholder')}
-        bind:value={email2}
-        required />
-      <Button type="submit" text="Submit" variant="main" />
-      <Button type="reset" text={$t('common.cancel')} variant="secondary" />
-    </form>
-  {:else}
+{#if $userData}
+  <MainContent title={$t('candidateApp.preregister.identification.start.title')}>
+    <div class="mb-md text-center text-warning">
+      {@html sanitizeHtml($t('candidateApp.preregister.identification.error.loggedIn.content'))}
+    </div>
     <Button
-      text={$t('candidateApp.preregister.identifyYourself')}
+      text={$t('common.continue')}
+      variant="main"
+      on:click={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
+  </MainContent>
+{:else if data.claims}
+  <MainContent title={$t('candidateApp.preregister.identification.success.title')}>
+    <div class="mb-md text-center">
+      {@html sanitizeHtml(
+        $t('candidateApp.preregister.identification.success.content', {
+          firstName: data.claims.firstName,
+          lastName: data.claims.lastName
+        })
+      )}
+    </div>
+    <Button type="submit" text={$t('common.continue')} variant="main" on:click={() => goto($getRoute(nextRoute))} />
+    <Button type="reset" text={$t('common.cancel')} variant="secondary" />
+  </MainContent>
+{:else}
+  <MainContent title={$t('candidateApp.preregister.identification.start.title')}>
+    <div class="mb-md text-center">
+      {@html sanitizeHtml(
+        $t('candidateApp.preregister.identification.start.content', {
+          date: publicationDate.toLocaleDateString($locale, DEFAULT_DATE_FORMAT)
+        })
+      )}
+    </div>
+    <ol class="list-circled mb-md w-fit">
+      {#each steps as step}
+        <li>{step}</li>
+      {/each}
+    </ol>
+    <Button
+      text={$t('candidateApp.preregister.identification.identifyYourselfButton')}
       variant="main"
       on:click={redirectToIdentityProvider} />
-  {/if}
-</MainContent>
+    <p class="mb-md text-center">{$t('candidateApp.preregister.identification.identifyYourselHelpText')}</p>
+  </MainContent>
+{/if}
