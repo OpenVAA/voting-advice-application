@@ -44,6 +44,7 @@ This is a dynamic component because it accesse the `VoterContext`.
     resultsAvailable,
     selectedElections: elections,
     selectedConstituencies: constituencies,
+    selectedQuestionBlocks,
     t
   } = getVoterContext();
 </script>
@@ -79,6 +80,11 @@ This is a dynamic component because it accesse the `VoterContext`.
       on:click={() => answers.reset()}
       icon="close"
       text={$t('common.resetAnswers')} />
+    <NavItem
+      disabled={$selectedQuestionBlocks.shownQuestions.length === 0}
+      on:click={() => $selectedQuestionBlocks.resetShownQuestions()}
+      icon="close"
+      text={'reset shown questions'} />
   </NavGroup>
   <NavGroup>
     <NavItem href={$getRoute('Info')} icon="election" text={$t('info.title')} />

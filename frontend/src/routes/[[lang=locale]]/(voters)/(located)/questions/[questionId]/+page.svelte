@@ -194,11 +194,14 @@ Display a question for answering.
   // Jump to another question when question ordering is enabled
   function handleJumpForQuestionOrdering(steps: number): void {
     // Get shown questions and the current index
-    const shownQuestions = $selectedQuestionBlocks.shownQuestions;
-    const currentIndex = shownQuestions.findIndex(q => q.id === question.id);
+    const shownQuestionIds = $selectedQuestionBlocks.shownQuestions;
+    console.log('shownQuestionIds', shownQuestionIds);
+    const currentIndex = shownQuestionIds.findIndex(id => id === question.id);
+    console.log('currentIndex', currentIndex);
 
     // If showing choices view, stay on current question. Otherwise, move by steps. 
     const newIndex = currentIndex + (showNextQuestionChoices ? 0 : steps);
+    console.log('newIndex', newIndex);
     let url: string;
     let noScroll = false;
       
@@ -206,8 +209,8 @@ Display a question for answering.
     if (newIndex < 0) {
       url = $getRoute('Questions');
     // Go to previous/next question if moving within the shown questions
-    } else if (newIndex < shownQuestions.length) {
-      url = $getRoute({ route: 'Question', questionId: shownQuestions[newIndex].id });
+    } else if (newIndex < shownQuestionIds.length) {
+      url = $getRoute({ route: 'Question', questionId: shownQuestionIds[newIndex] });
       noScroll = true;
     // Handle end of shown questions
     } else {
@@ -271,7 +274,7 @@ Display a question for answering.
   } */
 
   function handleChoiceSelect(selectedQuestion: AnyQuestionVariant) {
-    $selectedQuestionBlocks.addShownQuestion(selectedQuestion);
+    $selectedQuestionBlocks.addShownQuestion(selectedQuestion.id);
     showNextQuestionChoices = false;
     goto($getRoute({ route: 'Question', questionId: selectedQuestion.id }));
     disabled = false;
@@ -279,14 +282,14 @@ Display a question for answering.
 
   // Replace the existing progress reactive block with:
   $: if (questionBlock) {
-  if (useQuestionOrdering) {
-    const currentIndex = $selectedQuestionBlocks.shownQuestions.findIndex(q => q.id === question.id);
-    progress.current.set(currentIndex + 1);
-  } else {
-    progress.current.set(questionBlock.index + 1);
+    if (useQuestionOrdering) {
+      const currentIndex = $selectedQuestionBlocks.shownQuestions.findIndex(id => id === question.id);
+      progress.current.set(currentIndex + 1);
+    } else {
+      progress.current.set(questionBlock.index + 1);
+    }
+    progress.max.set($selectedQuestionBlocks.questions.length);
   }
-  progress.max.set($selectedQuestionBlocks.questions.length);
-}
 </script>
 
 {#if question && questionBlock}

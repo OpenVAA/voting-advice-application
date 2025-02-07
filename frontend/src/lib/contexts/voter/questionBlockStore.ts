@@ -1,5 +1,6 @@
-import { derived, get, writable } from 'svelte/store';
+import { derived } from 'svelte/store';
 import { logDebugError } from '$lib/utils/logger';
+import { sessionStorageWritable } from '../utils/storageStore';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
 import type { Readable, Writable } from 'svelte/store';
@@ -19,7 +20,7 @@ export function questionBlockStore({
   selectedConstituencies: Readable<Array<Constituency>>;
 }): Readable<QuestionBlocks> {
   // Store for shown questions
-  const shownQuestions = writable<Array<AnyQuestionVariant>>([]);
+  const shownQuestions = sessionStorageWritable<Array<Id>>('voterContext-shownQuestions', []);
 
   return derived(
     [
@@ -27,9 +28,10 @@ export function questionBlockStore({
       opinionQuestionCategories,
       selectedQuestionCategoryIds,
       selectedElections,
-      selectedConstituencies
+      selectedConstituencies,
+      shownQuestions
     ],
-    ([firstId, categories, categoryIds, elections, constituencies]) => {
+    ([firstId, categories, categoryIds, elections, constituencies, shown]) => {
       // Get all questions
       if (categoryIds.length) categories = categories.filter((c) => categoryIds.includes(c.id));
       let blocks = categories
@@ -56,17 +58,18 @@ export function questionBlockStore({
         get questions() {
           return blocks.flat();
         },
-        shownQuestions: get(shownQuestions),
+        shownQuestions: shown,
         getByCategory: ({ id }: QuestionCategory) => getByCategoryId(blocks, id),
         getByQuestion: ({ id }: AnyQuestionVariant) => getByQuestionId(blocks, id),
-        addShownQuestion: (question: AnyQuestionVariant) => {
-          shownQuestions.update((questions) => {
-            if (!questions.find((q) => q.id === question.id)) {
-              return [...questions, question];
+        addShownQuestion: (id: Id) => {
+          shownQuestions.update((ids) => {
+            if (!ids.includes(id)) {
+              return [...ids, id];
             }
-            return questions;
+            return ids;
           });
-        }
+        },
+        resetShownQuestions: () => shownQuestions.set([])
       };
     },
     {
@@ -75,7 +78,8 @@ export function questionBlockStore({
       shownQuestions: [],
       getByCategory: () => undefined,
       getByQuestion: () => undefined,
-      addShownQuestion: () => {}
+      addShownQuestion: () => {},
+      resetShownQuestions: () => {}
     }
   );
 }
