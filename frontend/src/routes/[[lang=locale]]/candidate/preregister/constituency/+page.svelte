@@ -31,14 +31,6 @@
       ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
       : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
   });
-
-  async function redirectToIdentityProvider() {
-    if (browser) {
-      const clientId = constants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
-      const redirectUri = `${window.location.origin}${window.location.pathname}/signicat/oidc/callback`;
-      window.location.href = `${constants.PUBLIC_SIGNICAT_AUTHORIZE_ENDPOINT}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=openid%20profile&prompt=login`;
-    }
-  }
 </script>
 
 <svelte:head>
@@ -70,9 +62,8 @@
       {@html sanitizeHtml($t('candidateApp.preregister.identification.error.expired.content'))}
     </div>
     <Button
-      text={$t('candidateApp.preregister.identification.identifyYourselfButton')}
+      text={$t('common.continue')}
       variant="main"
-      on:click={redirectToIdentityProvider} />
-    <p class="mb-md text-center">{$t('candidateApp.preregister.identification.identifyYourselHelpText')}</p>
+      on:click={() => goto($getRoute('CandAppPreregister'), { invalidateAll: true })} />
   </MainContent>
 {/if}
