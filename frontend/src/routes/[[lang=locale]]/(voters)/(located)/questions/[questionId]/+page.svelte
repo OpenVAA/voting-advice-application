@@ -61,8 +61,8 @@ Display a question for answering.
   let question: AnyQuestionVariant;
   let questionBlock: { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
   let useQuestionOrdering = $appSettings.questions.questionOrdering?.enabled ?? false;
-  let showNextQuestionChoices = true;
-  let nextQuestionChoices: Array<AnyQuestionVariant> = getNextQuestionChoices();
+  // let showNextQuestionChoices = false;
+  let nextQuestionChoices: Array<AnyQuestionVariant> = [];
 
   $: {
     // Get question
@@ -98,6 +98,20 @@ Display a question for answering.
     }
   }
 
+  $: {
+    if ($selectedQuestionBlocks.showChoices) {
+      nextQuestionChoices = getNextQuestionChoices();
+    }
+  }
+
+  /*
+  // Compute showNextQuestionChoices based on shown questions
+  $: showNextQuestionChoices = $selectedQuestionBlocks.shownQuestionIds.length === 0
+    ? true
+    : $selectedQuestionBlocks.showChoices;
+    console.log('showNextQuestionChoices', showNextQuestionChoices);
+    */
+
   ////////////////////////////////////////////////////////////////////
   // Handle `start` query param
   ////////////////////////////////////////////////////////////////////
@@ -109,6 +123,7 @@ Display a question for answering.
       $firstQuestionId = question.id;
       startEvent('question_startFrom', { questionId: question.id });
     }
+    console.log('showChoices', $selectedQuestionBlocks.showChoices);
   });
 
   ////////////////////////////////////////////////////////////////////
@@ -127,9 +142,12 @@ Display a question for answering.
     }
 
     const maxSuggestions = $appSettings.questions.questionOrdering?.suggestions ?? 3;
-    return [...unansweredQuestions]
+    const choices = [...unansweredQuestions]
       .sort(() => Math.random() - 0.5)
       .slice(0, maxSuggestions);
+
+    $selectedQuestionBlocks.setShowChoices(true);
+    return choices;
   }
 
   function handleAnswer({ question, value }: { question: AnyQuestionVariant; value?: unknown }): void {
@@ -194,16 +212,20 @@ Display a question for answering.
   // Jump to another question when question ordering is enabled
   function handleJumpForQuestionOrdering(steps: number): void {
     // Get shown questions and the current index
-    const shownQuestionIds = $selectedQuestionBlocks.shownQuestions;
+    const shownQuestionIds = $selectedQuestionBlocks.shownQuestionIds;
     console.log('shownQuestionIds', shownQuestionIds);
     const currentIndex = shownQuestionIds.findIndex(id => id === question.id);
     console.log('currentIndex', currentIndex);
 
     // If showing choices view, stay on current question. Otherwise, move by steps. 
-    const newIndex = currentIndex + (showNextQuestionChoices ? 0 : steps);
+    const newIndex = currentIndex + ($selectedQuestionBlocks.showChoices ? 0 : steps);
     console.log('newIndex', newIndex);
     let url: string;
     let noScroll = false;
+
+    if (steps < 0) {
+      $selectedQuestionBlocks.setShowChoices(false);
+    }
       
     // Go back to the questions overview if moving back from the first question
     if (newIndex < 0) {
@@ -214,13 +236,12 @@ Display a question for answering.
       noScroll = true;
     // Handle end of shown questions
     } else {
-      nextQuestionChoices = getNextQuestionChoices();
       // If no more questions to answer, go to results
-      if (nextQuestionChoices.length <= 0) {
+      nextQuestionChoices = getNextQuestionChoices();
+      if (nextQuestionChoices.length === 0) {
         url = $getRoute('Results');
       // Otherwise, show the next question choices
       } else {
-        showNextQuestionChoices = true;
         disabled = false;
         return;
       }
@@ -274,16 +295,17 @@ Display a question for answering.
   } */
 
   function handleChoiceSelect(selectedQuestion: AnyQuestionVariant) {
-    $selectedQuestionBlocks.addShownQuestion(selectedQuestion.id);
-    showNextQuestionChoices = false;
+    $selectedQuestionBlocks.addShownQuestionId(selectedQuestion.id);
+    $selectedQuestionBlocks.setShowChoices(false);
     goto($getRoute({ route: 'Question', questionId: selectedQuestion.id }));
     disabled = false;
+    console.log('showChoices', $selectedQuestionBlocks.showChoices);
   }
 
   // Replace the existing progress reactive block with:
   $: if (questionBlock) {
     if (useQuestionOrdering) {
-      const currentIndex = $selectedQuestionBlocks.shownQuestions.findIndex(id => id === question.id);
+      const currentIndex = $selectedQuestionBlocks.shownQuestionIds.findIndex(id => id === question.id);
       progress.current.set(currentIndex + 1);
     } else {
       progress.current.set(questionBlock.index + 1);
@@ -318,18 +340,18 @@ Display a question for answering.
     -->
 
     <svelte:fragment slot="heading">
-      {#if useQuestionOrdering && showNextQuestionChoices}
+      {#if useQuestionOrdering && $selectedQuestionBlocks.showChoices}
         <h2 class="text-xl font-bold mb-4">{$t('questions.pickNext')}</h2>
       {/if}
-      {#each (useQuestionOrdering && showNextQuestionChoices) ? nextQuestionChoices : [question] as currentQuestion}
+      {#each (useQuestionOrdering && $selectedQuestionBlocks.showChoices) ? nextQuestionChoices : [question] as currentQuestion}
         <div
           transition:slide
           class="border-b border-base-300 last:border-none py-4"
         >
           <button
-            class="w-full text-left {(useQuestionOrdering && showNextQuestionChoices) ? 'hover:bg-base-200 transition-colors p-2 rounded-lg' : ''}"
-            on:click={() => (useQuestionOrdering && showNextQuestionChoices) && handleChoiceSelect(currentQuestion)}
-            disabled={!(useQuestionOrdering && showNextQuestionChoices)}
+            class="w-full text-left {(useQuestionOrdering && $selectedQuestionBlocks.showChoices) ? 'hover:bg-base-200 transition-colors p-2 rounded-lg' : ''}"
+            on:click={() => (useQuestionOrdering && $selectedQuestionBlocks.showChoices) && handleChoiceSelect(currentQuestion)}
+            disabled={!(useQuestionOrdering && $selectedQuestionBlocks.showChoices)}
           >
             <HeadingGroup
               id={`questionHeading-${currentQuestion.id}`}
@@ -346,7 +368,7 @@ Display a question for answering.
                 {:else}
                   {$t('common.question')}
                   <span class="text-secondary">
-                    {#if !(useQuestionOrdering && showNextQuestionChoices)}
+                    {#if !(useQuestionOrdering && $selectedQuestionBlocks.showChoices)}
                       {questionBlock.index + 1}/{questions.length}
                     {/if}
                   </span>
@@ -365,7 +387,7 @@ Display a question for answering.
     {/if}
 
     <svelte:fragment slot="primaryActions">
-      {#if !(useQuestionOrdering && showNextQuestionChoices)}
+      {#if !(useQuestionOrdering && $selectedQuestionBlocks.showChoices)}
         {#if type === 'singleChoiceOrdinal' || type === 'singleChoiceCategorical'}
           {@const selectedId = question.ensureValue($answers[question.id]?.value)}
           <QuestionChoices
@@ -405,7 +427,7 @@ Display a question for answering.
       {/if}
     </svelte:fragment>
 
-    {#if useQuestionOrdering && showNextQuestionChoices}
+    {#if useQuestionOrdering && $selectedQuestionBlocks.showChoices}
       <div
         role="group"
         aria-label={$t('questions.additionalActions')}
@@ -414,7 +436,6 @@ Display a question for answering.
         <Button
           on:click={() => {
             handleJump(-1);
-            showNextQuestionChoices = false;
           }}
           style="grid-row: 1; grid-column: 1"
           color="secondary"

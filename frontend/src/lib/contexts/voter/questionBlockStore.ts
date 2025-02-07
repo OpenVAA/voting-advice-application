@@ -20,7 +20,8 @@ export function questionBlockStore({
   selectedConstituencies: Readable<Array<Constituency>>;
 }): Readable<QuestionBlocks> {
   // Store for shown questions
-  const shownQuestions = sessionStorageWritable<Array<Id>>('voterContext-shownQuestions', []);
+  const shownQuestionIds = sessionStorageWritable<Array<Id>>('voterContext-shownQuestions', []);
+  const showChoices = sessionStorageWritable<boolean>('voterContext-showChoices', true);
 
   return derived(
     [
@@ -29,9 +30,10 @@ export function questionBlockStore({
       selectedQuestionCategoryIds,
       selectedElections,
       selectedConstituencies,
-      shownQuestions
+      shownQuestionIds,
+      showChoices
     ],
-    ([firstId, categories, categoryIds, elections, constituencies, shown]) => {
+    ([firstId, categories, categoryIds, elections, constituencies, shown, showingChoices]) => {
       // Get all questions
       if (categoryIds.length) categories = categories.filter((c) => categoryIds.includes(c.id));
       let blocks = categories
@@ -58,28 +60,32 @@ export function questionBlockStore({
         get questions() {
           return blocks.flat();
         },
-        shownQuestions: shown,
+        shownQuestionIds: shown,
+        showChoices: showingChoices,
         getByCategory: ({ id }: QuestionCategory) => getByCategoryId(blocks, id),
         getByQuestion: ({ id }: AnyQuestionVariant) => getByQuestionId(blocks, id),
-        addShownQuestion: (id: Id) => {
-          shownQuestions.update((ids) => {
+        addShownQuestionId: (id: Id) => {
+          shownQuestionIds.update((ids) => {
             if (!ids.includes(id)) {
               return [...ids, id];
             }
             return ids;
           });
         },
-        resetShownQuestions: () => shownQuestions.set([])
+        resetShownQuestionIds: () => shownQuestionIds.set([]),
+        setShowChoices: (value: boolean) => showChoices.set(value)
       };
     },
     {
       blocks: [],
       questions: [],
-      shownQuestions: [],
+      shownQuestionIds: [],
+      showChoices: true,
       getByCategory: () => undefined,
       getByQuestion: () => undefined,
-      addShownQuestion: () => {},
-      resetShownQuestions: () => {}
+      addShownQuestionId: () => {},
+      resetShownQuestionIds: () => {},
+      setShowChoices: () => {}
     }
   );
 }

@@ -81,8 +81,8 @@ This is a dynamic component because it accesse the `VoterContext`.
       icon="close"
       text={$t('common.resetAnswers')} />
     <NavItem
-      disabled={$selectedQuestionBlocks.shownQuestions.length === 0}
-      on:click={() => $selectedQuestionBlocks.resetShownQuestions()}
+      disabled={$selectedQuestionBlocks.shownQuestionIds.length === 0}
+      on:click={() => $selectedQuestionBlocks.resetShownQuestionIds()}
       icon="close"
       text={'reset shown questions'} />
   </NavGroup>

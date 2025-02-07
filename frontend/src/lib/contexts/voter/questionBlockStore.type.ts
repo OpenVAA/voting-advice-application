@@ -17,7 +17,11 @@ export type QuestionBlocks = {
   /**
    * Array of questions in the order they were shown
    */
-  shownQuestions: Array<Id>;
+  shownQuestionIds: Array<Id>;
+  /**
+   * Whether the question choices are currently being shown
+   */
+  showChoices: boolean;
   /**
    * Find a `QuestionBlock` by its `QuestionCategory`.
    * @param category - The `QuestionCategory` to find.
@@ -36,11 +40,15 @@ export type QuestionBlocks = {
    * Add a question to the shown questions history
    * @param question - The question to mark as shown
    */
-  addShownQuestion: (questionId: Id) => void;
+  addShownQuestionId: (questionId: Id) => void;
   /**
    * Reset the shown questions history
    */
-  resetShownQuestions: () => void;
+  resetShownQuestionIds: () => void;
+  /**
+   * Set the showChoices flag
+   */
+  setShowChoices: (showChoices: boolean) => void;
 };
 /**
  * An array of `Question`s.
