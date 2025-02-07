@@ -58,6 +58,15 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
       date: '2033-11-03',
       constituencyGroupIds: ['constituencyGroup-3'],
       subtype: 'municipal'
+    },
+    {
+      id: 'election-3',
+      name: 'Hyrule Village Elections 2033',
+      shortName: 'Village Elections 2033',
+      info: 'The village council members. The consituencies in this election can imply those in the Municipal Elections. Note! This election does not have any nominations. It’s only used for testing consituency group implication.',
+      date: '2033-11-03',
+      constituencyGroupIds: ['constituencyGroup-4'],
+      subtype: 'village'
     }
   ],
   constituencies: {
@@ -65,7 +74,7 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
       {
         id: 'constituencyGroup-1',
         name: 'Regions',
-        info: 'The regions in which your municipality is located.',
+        info: 'The regions in which your municipality is located. The Regions can be implied by the Municipalities.',
         constituencyIds: ['constituency-1-1', 'constituency-1-2', 'constituency-1-3']
       },
       {
@@ -91,6 +100,40 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
           // In Region 3
           'constituency-3-8',
           'constituency-3-9'
+        ]
+      },
+      {
+        id: 'constituencyGroup-4',
+        name: 'Villages',
+        info: 'The villages belong to Municipalities.',
+        constituencyIds: [
+          // In Municipality 3-1
+          'constituency-4-11',
+          'constituency-4-12',
+          // In Municipality 3-2
+          'constituency-4-21',
+          'constituency-4-22',
+          // In Municipality 3-3
+          'constituency-4-31',
+          'constituency-4-32',
+          // In Municipality 3-4
+          'constituency-4-41',
+          'constituency-4-42',
+          // In Municipality 3-5
+          'constituency-4-51',
+          'constituency-4-52',
+          // In Municipality 3-6
+          'constituency-4-61',
+          'constituency-4-62',
+          // In Municipality 3-7
+          'constituency-4-71',
+          'constituency-4-72',
+          // In Municipality 3-8
+          'constituency-4-81',
+          'constituency-4-82',
+          // In Municipality 3-9
+          'constituency-4-91',
+          'constituency-4-92'
         ]
       }
     ],
@@ -159,6 +202,96 @@ export const TEST_DATA: FullVaaData<EntityVariantTree, NominationVariantTree> = 
         id: 'constituency-3-9',
         name: 'Gerudo Canyon',
         parentId: 'constituency-1-3'
+      },
+      {
+        id: 'constituency-4-11',
+        name: 'Empty Village (4-11)',
+        parentId: 'constituency-3-1'
+      },
+      {
+        id: 'constituency-4-12',
+        name: 'Empty Village (4-12)',
+        parentId: 'constituency-3-1'
+      },
+      {
+        id: 'constituency-4-21',
+        name: 'Empty Village (4-21)',
+        parentId: 'constituency-3-2'
+      },
+      {
+        id: 'constituency-4-22',
+        name: 'Empty Village (4-22)',
+        parentId: 'constituency-3-2'
+      },
+      {
+        id: 'constituency-4-31',
+        name: 'Empty Village (4-31)',
+        parentId: 'constituency-3-3'
+      },
+      {
+        id: 'constituency-4-32',
+        name: 'Empty Village (4-32)',
+        parentId: 'constituency-3-3'
+      },
+      {
+        id: 'constituency-4-41',
+        name: 'Empty Village (4-41)',
+        parentId: 'constituency-3-4'
+      },
+      {
+        id: 'constituency-4-42',
+        name: 'Empty Village (4-42)',
+        parentId: 'constituency-3-4'
+      },
+      {
+        id: 'constituency-4-51',
+        name: 'Empty Village (4-51)',
+        parentId: 'constituency-3-5'
+      },
+      {
+        id: 'constituency-4-52',
+        name: 'Empty Village (4-52)',
+        parentId: 'constituency-3-5'
+      },
+      {
+        id: 'constituency-4-61',
+        name: 'Empty Village (4-61)',
+        parentId: 'constituency-3-6'
+      },
+      {
+        id: 'constituency-4-62',
+        name: 'Empty Village (4-62)',
+        parentId: 'constituency-3-6'
+      },
+      {
+        id: 'constituency-4-71',
+        name: 'Empty Village (4-71)',
+        parentId: 'constituency-3-7'
+      },
+      {
+        id: 'constituency-4-72',
+        name: 'Empty Village (4-72)',
+        parentId: 'constituency-3-7'
+      },
+      {
+        id: 'constituency-4-81',
+        name: 'Empty Village (4-81)',
+        parentId: 'constituency-3-8'
+      },
+      {
+        id: 'constituency-4-82',
+        name: 'Empty Village (4-82)',
+        parentId: 'constituency-3-8'
+      },
+      {
+        id: 'constituency-4-91',
+        name: 'Empty Village (4-91)',
+        parentId: 'constituency-3-9'
+      },
+      {
+        id: 'constituency-4-92',
+        name: 'Empty Village (4-92)',
+        parentId: 'constituency-3-9'
       }
     ]
   },
