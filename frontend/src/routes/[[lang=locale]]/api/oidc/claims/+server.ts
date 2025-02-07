@@ -1,13 +1,13 @@
+import { json } from '@sveltejs/kit';
 import { IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY, IDENTITY_PROVIDER_JWKS_URI } from '$env/static/private';
 import { getIdTokenClaims } from '$lib/api/utils/auth/getIdTokenClaims';
-import type { Cookies } from '@sveltejs/kit';
+import type { RequestEvent } from '@sveltejs/kit';
 
-// TODO: Move to CandidateContext.
-export async function load({ cookies }: { cookies: Cookies }) {
+export async function GET({ cookies }: RequestEvent): Promise<Response> {
   const idToken = cookies.get('id_token');
 
   if (!idToken) {
-    return { claims: null };
+    return json({ claims: null });
   }
 
   try {
@@ -16,7 +16,7 @@ export async function load({ cookies }: { cookies: Cookies }) {
       publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
     });
 
-    return { claims: { firstName: claims.firstName, lastName: claims.lastName } };
+    return json({ claims: { firstName: claims.firstName, lastName: claims.lastName } });
   } catch {
     cookies.delete('id_token', {
       httpOnly: true,
@@ -24,6 +24,6 @@ export async function load({ cookies }: { cookies: Cookies }) {
       sameSite: 'strict',
       path: '/'
     });
-    return { claims: null };
+    return json({ claims: null });
   }
 }
