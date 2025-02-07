@@ -7,7 +7,7 @@ const root = getTestDataRoot();
 const data = getTestData();
 
 test('Should have all elections', () => {
-  expect(root.elections?.length).toBe(2);
+  expect(root.elections?.length).toBe(3);
 });
 
 test('Should return null for invalid date', () => {
@@ -19,7 +19,8 @@ test('Should return null for invalid date', () => {
 test('Should have constituencyGroups', () => {
   const groupIds = {
     'election-1': ['constituencyGroup-1', 'constituencyGroup-2'],
-    'election-2': ['constituencyGroup-3']
+    'election-2': ['constituencyGroup-3'],
+    'election-3': ['constituencyGroup-4']
   };
   root.elections!.forEach((obj) => {
     const objData = data.elections.find((d) => d.id === obj.id);
@@ -34,7 +35,13 @@ test('Should have correct number of nominations', () => {
       .map((g) => g.constituencies)
       .flat()
       .forEach((c) => {
-        const constCounts = NOMINATION_COUNTS[election.id][c.id];
+        // If an election is not included in the NOMINATION_COUNTS object, expect it to have no nominations
+        const constCounts = NOMINATION_COUNTS[election.id]?.[c.id] ?? {
+          alliance: 0,
+          candidate: 0,
+          faction: 0,
+          organization: 0
+        };
         expect(election.getAllianceNominations(c).length, `Alliance nominations: ${election.id} / ${c.id}`).toEqual(
           constCounts.alliance
         );
