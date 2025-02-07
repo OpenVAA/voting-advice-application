@@ -1,7 +1,5 @@
 <script lang="ts">
   import { Button } from '$lib/components/button';
-  import { browser } from '$app/environment';
-  import { constants } from '$lib/utils/constants';
   import MainContent from '../../../MainContent.svelte';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
