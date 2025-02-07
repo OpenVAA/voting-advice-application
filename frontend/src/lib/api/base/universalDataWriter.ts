@@ -24,7 +24,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   // PUBLIC METHODS
   ////////////////////////////////////////////////////////////////////
 
-  preregister(
+  preregisterWithApiToken(
     opts: {
       body: {
         firstName: string;
@@ -51,13 +51,14 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     return this._login(opts);
   }
 
-  async preregisterS(opts: {
+  async preregisterWithIdToken(opts: {
     email: string;
     electionIds?: Array<string>;
     constituencyId?: string;
   }): DWReturnType<DataApiActionResult> {
     if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
     const url = UNIVERSAL_API_ROUTES.preregister;
+
     const response = await this.fetch(url, {
       method: 'POST',
       headers: {

@@ -19,16 +19,31 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   }) => DWReturnType<DataApiActionResult>;
 
   /**
-   * Create a candidate with a nomination or nominations and send a registration link.
+   * Creates a candidate with a nomination or nominations and send a registration link.
+   * @param email - Email.
+   * @param electionDocumentIds - Election document IDs.
+   * @param constituencyDocumentId - Constituency document ID.
+   * @access ID token.
+   * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
+   */
+  preregisterWithIdToken: (opts: {
+    email: string;
+    electionIds?: Array<string>;
+    constituencyId?: string;
+  }) => DWReturnType<DataApiActionResult>;
+
+  /**
+   * Creates a candidate with a nomination or nominations and send a registration link.
    * @param firstName - First name.
    * @param lastName - Last name.
    * @param identifier - Personal identifier such as a birthdate.
    * @param email - Email.
    * @param electionDocumentIds - Election document IDs.
    * @param constituencyDocumentId - Constituency document ID.
+   * @access API token.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
    */
-  preregister: (
+  preregisterWithApiToken: (
     opts: {
       body: {
         firstName: string;
@@ -40,12 +55,6 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
       };
     } & WithAuth
   ) => DWReturnType<DataApiActionResult, TType>;
-
-  preregisterS: (opts: {
-    email: string;
-    electionIds?: Array<string>;
-    constituencyId?: string;
-  }) => DWReturnType<DataApiActionResult>;
 
   ////////////////////////////////////////////////////////////////////
   // Registration

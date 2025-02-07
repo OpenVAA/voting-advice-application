@@ -163,7 +163,7 @@ export function initCandidateContext(): CandidateContext {
     constituencyId?: string;
   }): Promise<void> {
     const dataWriter = await prepareDataWriter(dataWriterPromise);
-    await dataWriter.preregisterS(opts).catch((e) => {
+    await dataWriter.preregisterWithIdToken(opts).catch((e) => {
       logDebugError(`Error logging out: ${e?.message ?? '-'}`);
     });
     return goto(get(getRoute)('CandAppPreregister'));

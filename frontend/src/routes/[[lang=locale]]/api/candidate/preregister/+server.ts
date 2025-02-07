@@ -27,7 +27,7 @@ export async function POST({ cookies, request }) {
   });
 
   await dataWriter
-    .preregister({
+    .preregisterWithApiToken({
       body: {
         email: data.email,
         firstName: `${claims.firstName}`,
