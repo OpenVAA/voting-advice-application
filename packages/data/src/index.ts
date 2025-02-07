@@ -20,6 +20,7 @@ export type {
   ChoiceQuestionData,
   ChoiceQuestionType,
   Colors,
+  CombinedElections,
   ConstituencyData,
   ConstituencyGroupData,
   DataObjectData,

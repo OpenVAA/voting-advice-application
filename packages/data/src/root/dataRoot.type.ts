@@ -106,3 +106,12 @@ export type FullVaaData<
    */
   nominations: TNominations;
 };
+
+/**
+ * Returned by `combineConstituencyGroups`.
+ */
+export type CombinedElections = {
+  type: 'combined';
+  constituencyGroup: ConstituencyGroup;
+  elections: Array<Election>;
+};
