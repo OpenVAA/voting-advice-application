@@ -170,6 +170,7 @@ export type TranslationKey =
   | 'common.question'
   | 'common.readMore'
   | 'common.resetAnswers'
+  | 'common.resetShownQuestions'
   | 'common.return'
   | 'common.returnHome'
   | 'common.saveAndContinue'
