@@ -6,8 +6,11 @@
   "candidateAppName": "Valkompassen för kandidater",
   "constituencies": {
     "heroEmoji": "📍",
-    "ingressSingleElection": "Kandidaterna och partierna är indelade i valkretsar. Du kan bara rösta på dem i din valkrets.",
-    "ingressMultipleElections": "Kandidaterna och partierna är indelade i valkretsar. Välj en valkrets för varje val."
+    "ingress": {
+      "singleElection": "Kandidaterna och partierna är indelade i valkretsar. Du kan bara rösta på dem i din valkrets.",
+      "singleGroup": "Kandidaterna och partierna är indelade i valkretsar. Välj en valkrets.",
+      "multipleElections": "Kandidaterna och partierna är indelade i valkretsar. Välj en valkrets för varje val."
+    }
   },
   "elections": {
     "heroEmoji": "🗳️",
