@@ -133,7 +133,10 @@ Display a general intro before starting answering the questions and possibly all
   {:else}
     <p class="text-center">
       {#if $appSettings.questions.questionOrdering?.enabled}
-        {"quesion ordering enabled"}
+        {$t('questions.intro.ingress.withDynamicOrdering', {
+          numQuestions: $selectedQuestionBlocks.questions.length,
+          numCategories: $opinionQuestionCategories.length
+        })}
       {:else}
         {$t('questions.intro.ingress.withoutCategorySelection', {
           numQuestions: $selectedQuestionBlocks.questions.length,

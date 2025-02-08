@@ -338,6 +338,7 @@ export type TranslationKey =
   | 'questions.chooseForMe'
   | 'questions.infoDescription'
   | 'questions.intro.ingress.withCategorySelection'
+  | 'questions.intro.ingress.withDynamicOrdering'
   | 'questions.intro.ingress.withoutCategorySelection'
   | 'questions.intro.start'
   | 'questions.next'
