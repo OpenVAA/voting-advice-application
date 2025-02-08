@@ -19,23 +19,27 @@ export function getImpliedElectionIds({
 
 /**
  * Try to imply the `constituencyIds` in cases when they need not to be selected. The function can be called with either just the `Election` objects or their and constituencies’ data, so that it can be used in SSR as well.
+ * @param selectedElectionIds - If specified, only these elections will be considered.
  * @returns An array of `Id`s if they can be implied, `undefined` otherwise.
  */
 export function getImpliedConstituencyIds({
   elections,
-  constituencies
+  constituencies,
+  selectedElectionIds
 }:
   | {
       elections: Array<Election>;
+      selectedElectionIds?: Array<Id>;
       constituencies?: never;
     }
   | {
       elections: DPDataType['elections'];
+      selectedElectionIds?: Array<Id>;
       constituencies: DPDataType['constituencies'];
     }): Array<Id> | undefined {
   const ids = new Array<Id>();
-  // To implie the constituencyIds, all elections must have a single constituency
-  for (const election of elections) {
+  // To imply the constituencyIds, all elections must have a single constituency
+  for (const election of elections.filter((e) => !selectedElectionIds || selectedElectionIds.includes(e.id))) {
     // A proper Election object
     if (election instanceof Election) {
       const constituency = election.singleConstituency;

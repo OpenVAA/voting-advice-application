@@ -43,7 +43,8 @@ export async function load({ fetch, parent, params: { lang }, untrack, url }) {
     const { constituencyData, electionData } = await parent();
     constituencyId = getImpliedConstituencyIds({
       elections: await electionData,
-      constituencies: await constituencyData
+      constituencies: await constituencyData,
+      selectedElectionIds: [electionId].flat()
     });
     if (!constituencyId) {
       redirect(
