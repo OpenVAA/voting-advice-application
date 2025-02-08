@@ -13,7 +13,9 @@ import { getAppContext } from '../app';
 import { questionBlockStore } from '../utils/questionBlockStore';
 import { extractInfoCategories, extractOpinionCategories, questionCategoryStore } from '../utils/questionCategoryStore';
 import { questionStore } from '../utils/questionStore';
+import { sessionStorageWritable } from '../utils/storageStore';
 import type { CustomData } from '@openvaa/app-shared';
+import type { Id } from '@openvaa/core';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { CandidateContext } from './candidateContext.type';
@@ -60,6 +62,12 @@ export function initCandidateContext(): CandidateContext {
   const constituenciesSelectable = derived(dataRoot, (dataRoot) =>
     dataRoot.elections?.some((e) => !e.singleConstituency)
   );
+
+  const preselectedElections = sessionStorageWritable('candidateContext-preselectedElectionIds', new Array<Id>());
+
+  const preselectedConstituencies = sessionStorageWritable<{
+    [electionId: Id]: Id;
+  }>('candidateContext-preselectedConstituencyIds', {});
 
   const selectedElections = derived(
     [dataRoot, userData],
@@ -239,6 +247,8 @@ export function initCandidateContext(): CandidateContext {
     unansweredOpinionQuestions,
     unansweredRequiredInfoQuestions,
     userData,
-    exchangeAuthorizationCode
+    exchangeAuthorizationCode,
+    preselectedElections,
+    preselectedConstituencies
   });
 }

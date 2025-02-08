@@ -6,6 +6,8 @@
   import { onDestroy } from 'svelte';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { goto } from '$app/navigation';
+  import { ConstituencySelector } from '$lib/components/constituencySelector';
+  import type { Id } from '@openvaa/core';
 
   export let data: { claims: { firstName: string; lastName: string } | null };
 
@@ -13,10 +15,22 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, t, userData, getRoute } = getCandidateContext();
+  const {
+    dataRoot,
+    appCustomization,
+    darkMode,
+    t,
+    userData,
+    getRoute,
+    preselectedElections,
+    preselectedConstituencies
+  } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   const nextStep = 'CandAppPreregisterEmail';
+  const elections = $dataRoot.elections.filter((e) => $preselectedElections.includes(e.id));
+
+  let selectionComplete = true; // TODO
 
   ///////////////////////////////////////////////////////////////////
   // Top bar and styling
@@ -49,7 +63,7 @@
     <div class="mb-md text-center">
       {@html sanitizeHtml($t('candidateApp.preregister.constituencySelect.content'))}
     </div>
-    <div class="mb-md text-center">TODO: Select component</div>
+    <ConstituencySelector {elections} bind:selected={$preselectedConstituencies} bind:selectionComplete />
     <Button type="submit" text={$t('common.continue')} variant="main" on:click={() => goto($getRoute(nextStep))} />
     <Button type="reset" text={$t('common.cancel')} variant="secondary" />
   </MainContent>
