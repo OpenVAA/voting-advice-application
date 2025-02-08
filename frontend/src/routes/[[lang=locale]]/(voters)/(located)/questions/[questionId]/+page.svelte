@@ -114,7 +114,6 @@ Display a question for answering.
       $firstQuestionId = question.id;
       startEvent('question_startFrom', { questionId: question.id });
     }
-    console.log('showChoices', $selectedQuestionBlocks.showChoices);
   });
 
   ////////////////////////////////////////////////////////////////////
@@ -210,13 +209,10 @@ Display a question for answering.
   function handleJumpForQuestionOrdering(steps: number): void {
     // Get shown questions and the current index
     const shownQuestionIds = $selectedQuestionBlocks.shownQuestionIds;
-    console.log('shownQuestionIds', shownQuestionIds);
     const currentIndex = shownQuestionIds.findIndex(id => id === question.id);
-    console.log('currentIndex', currentIndex);
 
     // If showing choices view, stay on current question. Otherwise, move by steps. 
     const newIndex = currentIndex + ($selectedQuestionBlocks.showChoices ? 0 : steps);
-    console.log('newIndex', newIndex);
     let url: string;
     let noScroll = false;
 
@@ -296,7 +292,6 @@ Display a question for answering.
     $selectedQuestionBlocks.setShowChoices(false);
     goto($getRoute({ route: 'Question', questionId: selectedQuestion.id }));
     disabled = false;
-    console.log('showChoices', $selectedQuestionBlocks.showChoices);
   }
 
   // Replace the existing progress reactive block with:
