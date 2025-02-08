@@ -31,6 +31,7 @@ Display the intro to a question category and possibly a button with which to ski
   import type { CustomData } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
   import type { QuestionCategory } from '@openvaa/data';
+  import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -43,6 +44,7 @@ Display the intro to a question category and possibly a button with which to ski
   // Get the current category and first question id
   ////////////////////////////////////////////////////////////////////
 
+  let block: { block: QuestionBlock; index: number } | undefined;
   let category: QuestionCategory;
   let customData: CustomData['QuestionCategory'];
   /** Used for the possible skip button */
@@ -52,7 +54,7 @@ Display the intro to a question category and possibly a button with which to ski
     const categoryId = parseParams($page).categoryId;
     if (!categoryId) error(500, 'No categoryId provided.');
     category = $dataRoot.getQuestionCategory(categoryId);
-    const block = $selectedQuestionBlocks.getByCategory(category);
+    block = $selectedQuestionBlocks.getByCategory(category);
     if (!block?.block[0]) error(404, `No applicable questions found for category ${categoryId}.`);
     questionId = block.block[0].id;
     customData = category.customData ?? {};
@@ -92,10 +94,10 @@ Display the intro to a question category and possibly a button with which to ski
 
     <svelte:fragment slot="heading">
       <HeadingGroup class="relative">
-        <h1><CategoryTag {category} class="text-xl" /></h1>
+        <h1><CategoryTag {category} class="text-xl"/></h1>
         <PreHeading class="text-secondary">
           {$t('questions.category.numQuestions', {
-            numQuestions: category.questions?.length ?? -1
+            numQuestions: block?.block.length ?? -1
           })}
         </PreHeading>
       </HeadingGroup>
