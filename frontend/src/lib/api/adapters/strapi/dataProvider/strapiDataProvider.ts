@@ -7,7 +7,6 @@ import {
 } from '@openvaa/data';
 import { UniversalDataProvider } from '$lib/api/base/universalDataProvider';
 import { translate, translateObject } from '$lib/i18n';
-import { ensureColors } from '$lib/utils/color/ensureColors';
 import { strapiAdapterMixin } from '../strapiAdapter';
 import {
   buildFilterParams,
@@ -215,7 +214,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       const customData: CustomData['QuestionCategory'] = { emoji };
       categories.push({
         ...parseBasics(category, locale),
-        ...ensureColors({ normal: color, dark: colorDark }),
+        color: { normal: color, dark: colorDark },
         constituencyIds: parseRelationIds(constituencies),
         electionIds: parseRelationIds(elections),
         customData,

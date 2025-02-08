@@ -14,11 +14,7 @@ export function buildFilterParams(
   if (constituencyId) filters.constituency = { documentId: makeRule(constituencyId) };
   if (electionId) filters.election = { documentId: makeRule(electionId) };
   if (entityType) filters.entityType = makeRule(entityType);
-  return Object.keys(filters).length > 1
-    ? { filters: { $and: Object.entries(filters).map(([k, v]) => ({ [k]: v })) } }
-    : Object.keys(filters).length === 1
-      ? { filters }
-      : {};
+  return Object.keys(filters).length ? { filters } : {};
 }
 
 /**
