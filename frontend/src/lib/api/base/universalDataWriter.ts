@@ -1,5 +1,6 @@
 import { UniversalAdapter } from './universalAdapter';
 import { UNIVERSAL_API_ROUTES } from './universalApiRoutes';
+import type { Id } from '@openvaa/core';
 import type { DataApiActionResult } from './actionResult.type';
 import type {
   BasicUserData,
@@ -31,8 +32,8 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
         lastName: string;
         identifier: string;
         email: string;
-        electionDocumentIds?: Array<string>;
-        constituencyDocumentId?: string;
+        electionDocumentIds?: Array<Id>;
+        constituencyDocumentId?: Id;
       };
     } & WithAuth
   ): DWReturnType<DataApiActionResult> {
@@ -159,8 +160,8 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
         lastName: string;
         identifier: string;
         email: string;
-        electionDocumentIds?: Array<string>;
-        constituencyDocumentId?: string;
+        electionDocumentIds?: Array<Id>;
+        constituencyDocumentId?: Id;
       };
     } & WithAuth
   ): DWReturnType<DataApiActionResult>;

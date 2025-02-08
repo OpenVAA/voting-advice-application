@@ -1,3 +1,4 @@
+import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
 import type { Readable, Writable } from 'svelte/store';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
@@ -18,6 +19,14 @@ export type CandidateContext = AppContext & {
    * Whether `Constituency`s can be selected.
    */
   constituenciesSelectable: Readable<boolean>;
+  /**
+   * The `Id`s ...
+   */
+  preselectedElections: Readable<Array<Id>>;
+  /**
+   * The `Id`s ...
+   */
+  preselectedConstituencies: Readable<{ [electionId: Id]: Id }>;
   /**
    * The `Election`s the `Candidate` is nominated in.
    */

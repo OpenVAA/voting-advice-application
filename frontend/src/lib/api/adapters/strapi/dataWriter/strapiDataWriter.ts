@@ -2,6 +2,7 @@ import { ENTITY_TYPE } from '@openvaa/data';
 import { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
 import { strapiAdapterMixin } from '../strapiAdapter';
 import { parseCandidate, parseNominations, parseUser } from '../utils';
+import type { Id } from '@openvaa/core';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type {
   BasicUserData,
@@ -30,8 +31,8 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
       lastName: string;
       identifier: string;
       email: string;
-      electionDocumentIds?: Array<string>;
-      constituencyDocumentId?: string;
+      electionDocumentIds?: Array<Id>;
+      constituencyDocumentId?: Id;
     };
   } & WithAuth): Promise<DataApiActionResult> {
     // Throws if failed

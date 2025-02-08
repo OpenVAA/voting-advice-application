@@ -43,12 +43,15 @@ export async function POST({ cookies, request }) {
       return undefined;
     });
 
+  /*
+  // TODO: Move this to a separate step.
   cookies.delete('id_token', {
     httpOnly: true,
     secure: true,
     sameSite: 'strict',
     path: '/'
   });
+  */
 
   return json({ ok: true, type: 'success' } as DataApiActionResult);
 }

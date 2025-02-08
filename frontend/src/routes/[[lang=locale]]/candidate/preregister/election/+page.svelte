@@ -7,6 +7,7 @@
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { goto } from '$app/navigation';
   import { DEFAULT_DATE_FORMAT } from '../../../../../../../packages/data/src/internal';
+  import { ElectionSelector } from '$lib/components/electionSelector';
 
   export let data: { claims: { firstName: string; lastName: string } | null };
 
@@ -14,7 +15,17 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, t, userData, constituenciesSelectable, locale, getRoute } = getCandidateContext(); // TODO: Redirect to (where) if there's user data.
+  const {
+    dataRoot,
+    appCustomization,
+    darkMode,
+    t,
+    userData,
+    constituenciesSelectable,
+    locale,
+    getRoute,
+    preselectedElections
+  } = getCandidateContext(); // TODO: Redirect to (where) if there's user data.
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   const electionDate = new Date(); // TODO: Where does this come from?
@@ -56,8 +67,13 @@
         })
       )}
     </div>
-    <div class="mb-md text-center">TODO: Select component</div>
-    <Button type="submit" text={$t('common.continue')} variant="main" on:click={() => goto($getRoute(nextRoute))} />
+    <ElectionSelector elections={$dataRoot.elections} bind:selected={$preselectedElections} />
+    <Button
+      type="submit"
+      text={$t('common.continue')}
+      variant="main"
+      disabled={$preselectedElections.length === 0}
+      on:click={() => goto($getRoute(nextRoute))} />
     <Button type="reset" text={$t('common.cancel')} variant="secondary" />
   </MainContent>
 {:else}
