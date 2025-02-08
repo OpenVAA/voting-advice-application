@@ -34,12 +34,12 @@ A template part that outputs the navigation menu for the Voter App for use in `L
   const { navigation } = getLayoutContext(onDestroy);
 
   const {
-    answers,
     appSettings,
     constituenciesSelectable,
     electionsSelectable,
     getRoute,
     openFeedbackModal,
+    resetVoterData,
     resultsAvailable,
     selectedElections: elections,
     selectedConstituencies: constituencies,
@@ -69,10 +69,10 @@ A template part that outputs the navigation menu for the Voter App for use in `L
         text={$t('constituencies.title')} />
     {/if}
     {#if $electionsSelectable && $appSettings.elections?.startFromConstituencyGroup}
-      <NavItem 
+      <NavItem
         disabled={!$constituencies.length}
-        href={$getRoute('Elections')} 
-        icon="election" 
+        href={$getRoute('Elections')}
+        icon="election"
         text={$t('elections.title')} />
     {/if}
     <NavItem
@@ -87,11 +87,7 @@ A template part that outputs the navigation menu for the Voter App for use in `L
       text={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')} />
   </NavGroup>
   <NavGroup>
-    <NavItem
-      disabled={Object.values($answers).length === 0}
-      on:click={() => answers.reset()}
-      icon="close"
-      text={$t('common.resetAnswers')} />
+    <NavItem on:click={() => resetVoterData()} icon="close" text={$t('common.resetAnswers')} />
   </NavGroup>
   <NavGroup>
     <NavItem href={$getRoute('Info')} icon="election" text={$t('info.title')} />
