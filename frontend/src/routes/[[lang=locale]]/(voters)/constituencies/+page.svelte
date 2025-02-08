@@ -2,15 +2,19 @@
 
 # Constituency selection page
 
-Display constituency selection inputs for all selected elections.
+Display constituency selection inputs.
 
 See `+page.ts` for possible redirects.
+
+### Settings
+
+- `elections.startFromConstituencyGroup`: If set, only this `ConstituencyGroup` will be displayed for selection. Also affects the route onto which the Continue button directs to.
 -->
 
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
-  import { ConstituencySelector } from '$lib/components/constituencySelector';
+  import { ConstituencySelector, SingleGroupConstituencySelector } from '$lib/components/constituencySelector';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
   import MainContent from '../../MainContent.svelte';
@@ -20,23 +24,31 @@ See `+page.ts` for possible redirects.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { getRoute, selectedElections: elections, t } = getVoterContext();
+  const { appSettings, dataRoot, getRoute, selectedElections: elections, t } = getVoterContext();
 
   ////////////////////////////////////////////////////////////////////
   // Selecting constituencies and submitting
   ////////////////////////////////////////////////////////////////////
 
-  /** The selected constituencyIds per election */
+  /** Set by `ConstituencySelector` */
+  let allSelected = false;
+  let canSubmit = false;
+  /** The selected `constituencyIds` per election */
   let selected: {
     [electionId: Id]: Id;
   } = {};
+  /** When `startFromConstituencyGroup` is set */
+  let singleSelected: Id = '';
 
-  // The selection can be submitted when all elections have a constituency selected.
-  let canSubmit = false;
+  $: canSubmit = $appSettings.elections?.startFromConstituencyGroup ? !!singleSelected : allSelected;
 
   function handleSubmit(): void {
     if (!canSubmit) return;
-    goto($getRoute({ route: 'Questions', constituencyId: Object.values(selected) }));
+    goto(
+      $appSettings.elections?.startFromConstituencyGroup
+        ? $getRoute({ route: 'Elections', constituencyId: singleSelected })
+        : $getRoute({ route: 'Questions', constituencyId: Object.values(selected) })
+    );
   }
 </script>
 
@@ -46,17 +58,20 @@ See `+page.ts` for possible redirects.
   </figure>
 
   <p class="text-center">
-    {$t(
-      $elections.length > 1
-        ? 'dynamic.constituencies.ingressMultipleElections'
-        : 'dynamic.constituencies.ingressSingleElection'
-    )}
+    {$appSettings.elections?.startFromConstituencyGroup
+      ? $t('dynamic.constituencies.ingress.singleGroup')
+      : $elections.length > 1
+        ? $t('dynamic.constituencies.ingress.multipleElections')
+        : $t('dynamic.constituencies.ingress.singleElection')}
   </p>
 
-  <ConstituencySelector
-    elections={$elections}
-    bind:selected
-    bind:selectionComplete={canSubmit}/>
+  {#if $appSettings.elections?.startFromConstituencyGroup}
+    <SingleGroupConstituencySelector
+      group={$dataRoot.getConstituencyGroup($appSettings.elections.startFromConstituencyGroup)}
+      bind:selected={singleSelected} />
+  {:else}
+    <ConstituencySelector elections={$elections} bind:selected bind:selectionComplete={allSelected} />
+  {/if}
 
   <Button
     slot="primaryActions"

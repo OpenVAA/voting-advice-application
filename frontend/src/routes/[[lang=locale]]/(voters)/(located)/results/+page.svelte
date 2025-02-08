@@ -47,6 +47,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   const {
     answers,
     appSettings,
+    electionsSelectable,
     entityFilters,
     getRoute,
     matches,
@@ -55,7 +56,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
     startEvent,
     startFeedbackPopupCountdown,
     startSurveyPopupCountdown,
-    t
+    t,
   } = getVoterContext();
 
   ////////////////////////////////////////////////////////////////////
@@ -170,16 +171,18 @@ The nominations applicable to these elections and constituencies are shown. Thes
   </div>
 
   <!-- Multi election selector
+    NB. We show the selector even if only one election is selected when the app has multiple elections. In such cases, the button is not clickable, however.
     TODO: Redesign layout -->
-  {#if $elections.length > 1}
+  {#if $electionsSelectable || $elections.length > 1}
     <div class="-mt-md mb-lg grid gap-md">
       {#each $elections as election}
         <button
           class="btn px-lg"
           class:bg-base-300={activeElectionId === election.id}
           class:font-bold={activeElectionId === election.id}
-          on:click={() => handleElectionChange(election)}>
-          {election.shortName}
+          class:pointer-events-none={$elections.length === 1}
+          on:click={$elections.length === 1 ? undefined : () => handleElectionChange(election)}>
+          {election.name}
         </button>
       {/each}
     </div>
