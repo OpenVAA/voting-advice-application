@@ -4,7 +4,7 @@ Show a `Question`’s text and metadata, such as category and applicable electio
 
 ### Dynamic component
 
-This is a dynamic component, because it accesses the settings via `AppContext`.
+This is a dynamic component, because it accesses the settings via `AppContext` and selected elections from `VoterContext` or `CandidateContext`.
 
 ### Properties
 
@@ -28,10 +28,13 @@ This is a dynamic component, because it accesses the settings via `AppContext`.
 
 <script lang="ts">
   import { Election } from '@openvaa/data';
+  import { type Readable,readable } from 'svelte/store';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { ElectionTag } from '$lib/components/electionTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { getAppContext } from '$lib/contexts/app';
+  import { getCandidateContext } from '$lib/contexts/candidate';
+  import { getVoterContext } from '$lib/contexts/voter';
   import { concatClass } from '$lib/utils/components';
   import { getElectionsToShow } from '$lib/utils/questions';
   import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
@@ -46,32 +49,36 @@ This is a dynamic component, because it accesses the settings via `AppContext`.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, t } = getAppContext();
+  const { appSettings, appType, dataRoot, t } = getAppContext();
+  let elections: Readable<Array<Election>>;
+  if ($appType === 'voter') {
+    elections = getVoterContext().selectedElections;
+  } else if ($appType === 'candidate') {
+    elections = getCandidateContext().selectedElections;
+  } else {
+    elections = readable($dataRoot.elections);
+  }
 
   ////////////////////////////////////////////////////////////////////
   // Prepare some properties
   ////////////////////////////////////////////////////////////////////
 
   let blockWithStats: { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
-  let elections: Array<Election>;
   let numQuestions: number | undefined;
 
   $: blockWithStats = questionBlocks?.getByQuestion(question);
   $: numQuestions = questionBlocks?.questions.length;
-  $: elections = getElectionsToShow(question);
 </script>
 
 <HeadingGroup {...concatClass($$restProps, 'relative')}>
-  <PreHeading>
-    {#each elections as election}
+  <PreHeading class="flex flex-row flex-wrap items-center justify-center gap-sm">
+    {#each getElectionsToShow({ question, elections: $elections }) as election}
       <ElectionTag {election} />
     {/each}
     {#if $appSettings.questions.showCategoryTags}
-      <CategoryTag category={question.category} />
-      {#if blockWithStats}
-        <!-- Index of question within category -->
-        <span class="text-secondary">{blockWithStats.indexInBlock + 1}/{blockWithStats.block.length}</span>
-      {/if}
+      <CategoryTag
+        category={question.category}
+        suffix={blockWithStats ? `${blockWithStats.indexInBlock + 1}/${blockWithStats.block.length}` : undefined} />
     {:else if blockWithStats}
       <!-- Index of question within all questions -->
       {$t('common.question')}

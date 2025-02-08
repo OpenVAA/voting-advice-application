@@ -92,7 +92,7 @@ Display the intro to a question category and possibly a button with which to ski
 
     <svelte:fragment slot="heading">
       <HeadingGroup class="relative">
-        <h1><CategoryTag {category} /></h1>
+        <h1><CategoryTag {category} class="text-xl" /></h1>
         <PreHeading class="text-secondary">
           {$t('questions.category.numQuestions', {
             numQuestions: category.questions?.length ?? -1
