@@ -13,7 +13,7 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, t, getRoute, exchangeAuthorizationCode } = getCandidateContext();
+  const { appCustomization, darkMode, t, getRoute, exchangeCodeForIdToken } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -23,7 +23,7 @@
   $: authorizationCode = $page.url.searchParams.get('code');
 
   $: if (authorizationCode) {
-    exchangeAuthorizationCode({
+    exchangeCodeForIdToken({
       authorizationCode,
       redirectUri: `${window.location.origin}${window.location.pathname}`
     });

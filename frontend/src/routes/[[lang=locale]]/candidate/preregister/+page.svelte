@@ -17,9 +17,21 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, t, userData, electionsSelectable, constituenciesSelectable, getRoute, locale } =
-    getCandidateContext();
+  const {
+    appCustomization,
+    constituenciesSelectable,
+    darkMode,
+    dataRoot,
+    electionsSelectable,
+    getRoute,
+    locale,
+    preselectedElections,
+    t,
+    userData
+  } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+
+  $preselectedElections = $dataRoot.elections.map(({ id }) => id);
 
   const publicationDate = new Date(); // TODO: Where does this come from?
 
@@ -31,9 +43,9 @@
     $t('candidateApp.preregister.identification.start.step.passwordSelect')
   ].filter(Boolean);
 
-  const nextRoute = electionsSelectable
+  const nextRoute = $electionsSelectable
     ? 'CandAppPreregisterElection'
-    : constituenciesSelectable
+    : $constituenciesSelectable
       ? 'CandAppPreregisterConstituency'
       : 'CandAppPreregisterEmail';
 

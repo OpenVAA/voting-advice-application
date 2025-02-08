@@ -157,9 +157,9 @@ export function initCandidateContext(): CandidateContext {
     return dataWriter.setPassword({ ...opts, authToken: token });
   }
 
-  async function exchangeAuthorizationCode(opts: { authorizationCode: string; redirectUri: string }): Promise<void> {
+  async function exchangeCodeForIdToken(opts: { authorizationCode: string; redirectUri: string }): Promise<void> {
     const dataWriter = await prepareDataWriter(dataWriterPromise);
-    await dataWriter.exchangeAuthorizationCode(opts).catch((e) => {
+    await dataWriter.exchangeCodeForIdToken(opts).catch((e) => {
       logDebugError(`Error logging out: ${e?.message ?? '-'}`);
     });
     return goto(get(getRoute)('CandAppPreregister'));
@@ -167,14 +167,20 @@ export function initCandidateContext(): CandidateContext {
 
   async function preregister(opts: {
     email: string;
-    electionIds?: Array<string>;
-    constituencyId?: string;
+    nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
   }): Promise<void> {
     const dataWriter = await prepareDataWriter(dataWriterPromise);
     await dataWriter.preregisterWithIdToken(opts).catch((e) => {
       logDebugError(`Error logging out: ${e?.message ?? '-'}`);
     });
     return goto(get(getRoute)('CandAppPreregister'));
+  }
+
+  async function clearIdToken(): Promise<void> {
+    const dataWriter = await prepareDataWriter(dataWriterPromise);
+    await dataWriter.clearIdToken().catch((e) => {
+      logDebugError(`Error logging out: ${e?.message ?? '-'}`);
+    });
   }
 
   /**
@@ -247,8 +253,9 @@ export function initCandidateContext(): CandidateContext {
     unansweredOpinionQuestions,
     unansweredRequiredInfoQuestions,
     userData,
-    exchangeAuthorizationCode,
+    exchangeCodeForIdToken,
     preselectedElections,
-    preselectedConstituencies
+    preselectedConstituencies,
+    clearIdToken
   });
 }

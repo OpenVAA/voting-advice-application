@@ -26,8 +26,7 @@ const validatePreregisterBody = validateYupSchema(
     lastName: yup.string().required(),
     identifier: yup.string().required(),
     email: yup.string().required(),
-    electionDocumentIds: yup.array(yup.string()).optional(),
-    constituencyDocumentId: yup.string().optional()
+    nominations: yup.array(yup.object({ electionDocumentId: yup.string(), constituencyDocumentId: yup.string() }))
   })
 );
 
@@ -108,8 +107,7 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     lastName: string;
     identifier: string;
     email: string;
-    electionDocumentIds?: string[];
-    constituencyDocumentId?: string;
+    nominations: Array<{ electionDocumentId: string; constituencyDocumentId: string }>;
   } = ctx.request.body;
 
   await validatePreregisterBody(params);
@@ -137,19 +135,15 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     }
   });
 
-  const electionDocumentIds = params.electionDocumentIds?.length
-    ? [...new Set(params.electionDocumentIds)]
-    : [undefined];
-
   await Promise.all(
-    electionDocumentIds.map(
-      async (electionDocumentId) =>
+    params.nominations.map(
+      async (nomination) =>
         await strapi.documents('api::nomination.nomination').create({
           data: {
             candidate: candidateDocumentId,
-            election: electionDocumentId,
+            election: nomination.electionDocumentId,
             electionRound: 1,
-            constituency: params.constituencyDocumentId,
+            constituency: nomination.constituencyDocumentId,
             unconfirmed: true
           },
           status: 'draft'
