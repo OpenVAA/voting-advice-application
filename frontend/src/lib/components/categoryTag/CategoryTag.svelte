@@ -5,7 +5,8 @@ Used to display a question category tag with the category's color.
 ### Properties
 
 - `category`: The `QuestionCategory` object.
-- `variant`: Whether to use an abbreviation or the full name. @default `'default'`
+- `variant`: Whether to use an abbreviation or the full name. @default `'full'`
+- `suffix`: An optional suffix to add after the category name, e.g. '1/3'. @default undefined
 - Any valid attributes of a `<span>` element.
 
 ### Usage
@@ -22,13 +23,14 @@ Used to display a question category tag with the category's color.
   type $$Props = CategoryTagProps;
 
   export let category: $$Props['category'];
-  export let variant: $$Props['variant'] = 'default';
+  export let variant: $$Props['variant'] = 'full';
+  export let suffix: $$Props['suffix'] = undefined;
 
   // Create styles
   let classes: string;
   let styles: string;
   $: {
-    classes = 'inline-block';
+    classes = 'tag bg-base-200';
     styles = '';
     if (category.color?.normal) {
       styles += ` --tag-color: ${category.color.normal};`;
@@ -46,5 +48,8 @@ Used to display a question category tag with the category's color.
     class: classes,
     style: styles
   })}>
-  {variant === 'short' ? category.shortName : category.name}
+  {variant === 'full' ? category.name : category.shortName}
+  {#if suffix}
+    <span>{suffix}</span>
+  {/if}
 </span>

@@ -6,7 +6,11 @@ export type CategoryTagProps = SvelteHTMLElements['span'] & {
    */
   category: QuestionCategory;
   /**
-   * Whether to use an abbreviation or the full name. @default 'default'
+   * Whether to use an abbreviation or the full name. @default 'full'
    */
-  variant?: 'default' | 'short';
+  variant?: 'short' | 'full';
+  /**
+   * An optional suffix to add after the category name, e.g. '1/3'. @default undefined
+   */
+  suffix?: string;
 };
