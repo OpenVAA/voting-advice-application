@@ -31,8 +31,7 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
       lastName: string;
       identifier: string;
       email: string;
-      electionDocumentIds?: Array<Id>;
-      constituencyDocumentId?: Id;
+      nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
     };
   } & WithAuth): Promise<DataApiActionResult> {
     // Throws if failed

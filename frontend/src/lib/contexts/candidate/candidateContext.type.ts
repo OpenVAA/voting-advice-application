@@ -102,6 +102,8 @@ export type CandidateContext = AppContext & {
    */
   setPassword: (opts: { currentPassword: string; password: string }) => ReturnType<DataWriter['setPassword']>;
 
+  exchangeCodeForIdToken: (opts: { authorizationCode: string; redirectUri: string }) => Promise<void>;
+
   /**
    * Creates a candidate with a nomination or nominations, then emails a registration link.
    * Expects a valid ID token in the cookies.
@@ -110,9 +112,12 @@ export type CandidateContext = AppContext & {
    * @param constituencyId - Constituency ID.
    * @returns A `Promise` resolving to an `DataApiActionResult` object.
    */
-  preregister: (opts: { email: string; electionIds?: Array<string>; constituencyId?: string }) => Promise<void>;
+  preregister: (opts: {
+    email: string;
+    nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
+  }) => Promise<void>;
 
-  exchangeAuthorizationCode: (opts: { authorizationCode: string; redirectUri: string }) => Promise<void>;
+  clearIdToken: () => Promise<void>;
 
   ////////////////////////////////////////////////////////////////////
   // Other properties specific to CandidateContext
