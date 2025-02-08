@@ -6,8 +6,11 @@
   "candidateAppName": "Election Compass for Candidates",
   "constituencies": {
     "heroEmoji": "📍",
-    "ingressSingleElection": "The candidates and parties are divided into constituencies. You can only vote for those in your constituency.",
-    "ingressMultipleElections": "The candidates and parties are divided into constituencies. Select a constituency for each election."
+    "ingress": {
+      "singleElection": "The candidates and parties are divided into constituencies. You can only vote for those in your constituency.",
+      "singleGroup": "The candidates and parties are divided into constituencies. Select a constituency below.",
+      "multipleElections": "The candidates and parties are divided into constituencies. Select a constituency for each election."
+    }
   },
   "elections": {
     "heroEmoji": "🗳️",

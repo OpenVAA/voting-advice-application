@@ -1,4 +1,7 @@
 {
+  "constituencySelector": {
+    "selectPrompt": "Valitse {constituencyGroup}"
+  },
   "headingGroup": {
     "roleDescription": "Otsikkoryhmä"
   },
