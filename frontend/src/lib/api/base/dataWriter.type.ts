@@ -28,8 +28,8 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    */
   preregisterWithIdToken: (opts: {
     email: string;
-    electionIds?: Array<string>;
-    constituencyId?: string;
+    electionIds?: Array<Id>;
+    constituencyId?: Id;
   }) => DWReturnType<DataApiActionResult>;
 
   /**
@@ -50,8 +50,8 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
         lastName: string;
         identifier: string;
         email: string;
-        electionDocumentIds?: Array<string>;
-        constituencyDocumentId?: string;
+        electionDocumentIds?: Array<Id>;
+        constituencyDocumentId?: Id;
       };
     } & WithAuth
   ) => DWReturnType<DataApiActionResult, TType>;

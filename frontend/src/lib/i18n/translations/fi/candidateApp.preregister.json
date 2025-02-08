@@ -26,7 +26,7 @@
       },
       "loggedIn": {
         "title": "You are already logged in",
-        "content": "<p>You are already registered and logged in.</p>"
+        "content": "<p>You're already registered as a candidate! Head over to your account to continue.</p>"
       }
     },
     "success": {
