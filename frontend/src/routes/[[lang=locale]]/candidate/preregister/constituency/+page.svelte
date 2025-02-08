@@ -7,7 +7,6 @@
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { goto } from '$app/navigation';
   import { ConstituencySelector } from '$lib/components/constituencySelector';
-  import type { Id } from '@openvaa/core';
 
   export let data: { claims: { firstName: string; lastName: string } | null };
 
@@ -28,9 +27,9 @@
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   const nextStep = 'CandAppPreregisterEmail';
-  const elections = $dataRoot.elections.filter((e) => $preselectedElections.includes(e.id));
 
-  let selectionComplete = true; // TODO
+  let elections = $dataRoot.elections.filter((e) => $preselectedElections.includes(e.id));
+  let selectionComplete: boolean;
 
   ///////////////////////////////////////////////////////////////////
   // Top bar and styling
@@ -64,7 +63,12 @@
       {@html sanitizeHtml($t('candidateApp.preregister.constituencySelect.content'))}
     </div>
     <ConstituencySelector {elections} bind:selected={$preselectedConstituencies} bind:selectionComplete />
-    <Button type="submit" text={$t('common.continue')} variant="main" on:click={() => goto($getRoute(nextStep))} />
+    <Button
+      type="submit"
+      text={$t('common.continue')}
+      variant="main"
+      on:click={() => goto($getRoute(nextStep))}
+      disabled={!selectionComplete} />
     <Button type="reset" text={$t('common.cancel')} variant="secondary" />
   </MainContent>
 {:else}

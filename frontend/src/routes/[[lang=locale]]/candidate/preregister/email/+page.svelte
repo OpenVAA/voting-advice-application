@@ -7,20 +7,36 @@
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { goto } from '$app/navigation';
 
-  let email1 = '';
-  let email2 = '';
-  let consentGranted = false;
-
   export let data: { claims: { firstName: string; lastName: string } | null };
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, t, userData, getRoute, preregister } = getCandidateContext(); // TODO: Redirect to (where) if there's user data.
+  const {
+    appCustomization,
+    darkMode,
+    t,
+    userData,
+    getRoute,
+    preregister,
+    dataRoot,
+    preselectedElections,
+    preselectedConstituencies
+  } = getCandidateContext(); // TODO: Redirect to (where) if there's user data.
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   const nextStep = 'CandAppPreregisterSuccess';
+
+  let email1 = '';
+  let email2 = '';
+  let nominations = $dataRoot.elections
+    .filter(({ id }) => $preselectedElections.includes(id))
+    .map((e) => ({
+      electionDocumentId: e.id,
+      constituencyDocumentId: $preselectedConstituencies[e.id] ?? e.constituencyGroups[0].constituencies[0].id // Does this fallback makes sense?
+    }));
+  let termsAccepted = false;
 
   ///////////////////////////////////////////////////////////////////
   // Top bar and styling
@@ -34,7 +50,7 @@
   });
 
   async function onSubmit() {
-    const response = await preregister({ email: 'email@example.com', electionIds: [], constituencyId: '' });
+    const response = await preregister({ email: email1, nominations }); // TODO
   }
 </script>
 
@@ -76,7 +92,7 @@
       bind:value={email2}
       required />
     <label class="label mb-md cursor-pointer justify-start gap-sm !p-0">
-      <input type="checkbox" class="checkbox" name="selected-elections" bind:group={consentGranted} />
+      <input type="checkbox" class="checkbox" name="selected-elections" bind:group={termsAccepted} />
       <span class="label-text">{$t('candidateApp.preregister.emailVerification.termsCheckbox')}</span>
     </label>
     <Button
@@ -85,7 +101,8 @@
       variant="main"
       on:click={() => {
         onSubmit().then((_) => goto($getRoute(nextStep))); // TODO: Error handling.
-      }} />
+      }}
+      disabled={!termsAccepted || !email1 || !(email1 === email2)} />
     <Button type="reset" text={$t('common.cancel')} variant="secondary" />
   </MainContent>
 {:else}

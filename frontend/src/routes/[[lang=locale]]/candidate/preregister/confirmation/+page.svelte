@@ -11,8 +11,10 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, t, userData, getRoute } = getCandidateContext();
+  const { appCustomization, darkMode, t, userData, getRoute, clearIdToken } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+
+  clearIdToken();
 
   ///////////////////////////////////////////////////////////////////
   // Top bar and styling

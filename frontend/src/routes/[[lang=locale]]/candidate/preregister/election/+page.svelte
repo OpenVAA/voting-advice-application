@@ -29,7 +29,6 @@
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   const electionDate = new Date(); // TODO: Where does this come from?
-
   const nextRoute = $constituenciesSelectable ? 'CandAppPreregisterConstituency' : 'CandAppPreregisterEmail';
 
   ///////////////////////////////////////////////////////////////////

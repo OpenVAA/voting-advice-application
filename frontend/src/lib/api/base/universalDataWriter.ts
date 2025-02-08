@@ -25,21 +25,6 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   // PUBLIC METHODS
   ////////////////////////////////////////////////////////////////////
 
-  preregisterWithApiToken(
-    opts: {
-      body: {
-        firstName: string;
-        lastName: string;
-        identifier: string;
-        email: string;
-        electionDocumentIds?: Array<Id>;
-        constituencyDocumentId?: Id;
-      };
-    } & WithAuth
-  ): DWReturnType<DataApiActionResult> {
-    return this._preregister(opts);
-  }
-
   checkRegistrationKey(opts: { registrationKey: string }): DWReturnType<CheckRegistrationData> {
     return this._checkRegistrationKey(opts);
   }
@@ -52,26 +37,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
     return this._login(opts);
   }
 
-  async preregisterWithIdToken(opts: {
-    email: string;
-    electionIds?: Array<string>;
-    constituencyId?: string;
-  }): DWReturnType<DataApiActionResult> {
-    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
-    const url = UNIVERSAL_API_ROUTES.preregister;
-
-    const response = await this.fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(opts)
-    });
-
-    return { type: response.ok ? 'success' : 'failure' };
-  }
-
-  async exchangeAuthorizationCode(opts: {
+  async exchangeCodeForIdToken(opts: {
     authorizationCode: string;
     redirectUri: string;
   }): DWReturnType<DataApiActionResult> {
@@ -88,6 +54,50 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
       })
     });
 
+    return { type: response.ok ? 'success' : 'failure' };
+  }
+
+  async preregisterWithIdToken(opts: {
+    email: string;
+    nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
+  }): DWReturnType<DataApiActionResult> {
+    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+    const url = UNIVERSAL_API_ROUTES.preregister;
+
+    const response = await this.fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(opts)
+    });
+
+    return { type: response.ok ? 'success' : 'failure' };
+  }
+
+  preregisterWithApiToken(
+    opts: {
+      body: {
+        firstName: string;
+        lastName: string;
+        identifier: string;
+        email: string;
+        nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
+      };
+    } & WithAuth
+  ): DWReturnType<DataApiActionResult> {
+    return this._preregister(opts);
+  }
+
+  async clearIdToken(): DWReturnType<DataApiActionResult> {
+    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+    const url = UNIVERSAL_API_ROUTES.token;
+    const response = await this.fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
     return { type: response.ok ? 'success' : 'failure' };
   }
 
@@ -160,8 +170,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
         lastName: string;
         identifier: string;
         email: string;
-        electionDocumentIds?: Array<Id>;
-        constituencyDocumentId?: Id;
+        nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
       };
     } & WithAuth
   ): DWReturnType<DataApiActionResult>;

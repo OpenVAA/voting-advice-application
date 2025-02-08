@@ -13,7 +13,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   // Preregistration
   ////////////////////////////////////////////////////////////////////
 
-  exchangeAuthorizationCode: (opts: {
+  exchangeCodeForIdToken: (opts: {
     authorizationCode: string;
     redirectUri: string;
   }) => DWReturnType<DataApiActionResult>;
@@ -28,8 +28,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    */
   preregisterWithIdToken: (opts: {
     email: string;
-    electionIds?: Array<Id>;
-    constituencyId?: Id;
+    nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
   }) => DWReturnType<DataApiActionResult>;
 
   /**
@@ -50,11 +49,12 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
         lastName: string;
         identifier: string;
         email: string;
-        electionDocumentIds?: Array<Id>;
-        constituencyDocumentId?: Id;
+        nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
       };
     } & WithAuth
   ) => DWReturnType<DataApiActionResult, TType>;
+
+  clearIdToken: () => DWReturnType<DataApiActionResult>;
 
   ////////////////////////////////////////////////////////////////////
   // Registration
