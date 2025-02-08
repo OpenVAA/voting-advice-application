@@ -92,23 +92,6 @@ Display a general intro before starting answering the questions and possibly all
     }
   }
 
-  /*
-  function handleSubmit(): void {
-    if (!canSubmit) return;
-    const categoryId = $selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
-    if (!categoryId) error(500, 'No question categories selected even though canSubmit is true');
-    
-    // Skip category intros if question ordering is enabled
-    goto(
-      $getRoute(
-        $appSettings.questions.categoryIntros?.show && !$appSettings.questions.questionOrdering?.enabled
-          ? { route: 'QuestionCategory', categoryId }
-          : { route: 'Question' }
-      )
-    );
-  }
-  */
-
   ////////////////////////////////////////////////////////////////////
   // Functions
   ////////////////////////////////////////////////////////////////////

@@ -126,14 +126,17 @@ Display a question for answering.
 
   function getNextQuestionChoices(): Array<AnyQuestionVariant> {
     const allQuestions = $selectedQuestionBlocks.questions;
-    const unansweredQuestions = allQuestions.filter(q => !$answers[q.id]?.value);
+    const shownIds = $selectedQuestionBlocks.shownQuestionIds;
+
+    // Get questions that haven't been shown yet
+    const unshownQuestions = allQuestions.filter(q => !shownIds.includes(q.id));
     
-    if (unansweredQuestions.length === 0) {
+    if (unshownQuestions.length === 0) {
       return [];
     }
 
     const maxSuggestions = $appSettings.questions.questionOrdering?.suggestions ?? 3;
-    const choices = [...unansweredQuestions]
+    const choices = [...unshownQuestions]
       .sort(() => Math.random() - 0.5)
       .slice(0, maxSuggestions);
 
