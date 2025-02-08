@@ -1,4 +1,7 @@
 {
+  "constituencySelector": {
+    "selectPrompt": "Välj {constituencyGroup}"
+  },
   "headingGroup": {
     "roleDescription": "Rubrikgrupp"
   },
