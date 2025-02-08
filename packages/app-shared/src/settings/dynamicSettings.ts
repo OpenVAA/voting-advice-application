@@ -62,7 +62,8 @@ export const dynamicSettings: DynamicSettings = {
     sections: ['candidate', 'organization']
   },
   elections: {
-    disallowSelection: false
+    disallowSelection: false,
+    startFromConstituencyGroup: undefined
   },
   underMaintenance: false,
   answersLocked: false
