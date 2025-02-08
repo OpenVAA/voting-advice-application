@@ -138,17 +138,37 @@ export type DynamicSettings = {
      */
     showResultsLink?: boolean;
     /**
-     * Settings related to question ordering.
+     * Settings related to the optional method of ordering questions dynamically based on their uncertainty reduction.
      */
-    questionOrdering?: {
+    dynamicOrdering?: {
       /**
-       * Whether to sort questions based on highest information gain.
+       * Whether dynamic ordering is enabled. Default `false`.
        */
-      enabled: boolean;
+      enabled?: boolean;
       /**
-       * Number of questions to suggest.
+       * The method used for dynamic ordering and its settings.
        */
-      suggestions: number;
+      config:
+        | {
+            /**
+             * The questions are ordered based on the amount of uncertainty they reduce with regard to the latent factors in the answer data.
+             */
+            type: 'factor-based';
+            /**
+             * The number of suggestions for the next questions to display to the user. If `1`, the next question will be automatically displayed. Default `1`.
+             */
+            numSuggestions?: number;
+          }
+        | {
+            /**
+             * The questions are ordered based on the amount of uncertainty they reduce in a iteratively reduced subset of targets under consideration.
+             */
+            type: 'eliminate-choices';
+            /**
+             * How close an agreement is required for targets not to be eliminated. Default `relaxed`.
+             */
+            eliminationType?: 'strict' | 'relaxed';
+          };
     };
   };
   /**

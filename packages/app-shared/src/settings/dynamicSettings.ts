@@ -51,9 +51,12 @@ export const dynamicSettings: DynamicSettings = {
     },
     showCategoryTags: true,
     showResultsLink: true,
-    questionOrdering: {
-      enabled: true,
-      suggestions: 3
+    dynamicOrdering: {
+      enabled: false,
+      config: {
+        type: 'factor-based',
+        numSuggestions: 3
+      }
     }
   },
   results: {

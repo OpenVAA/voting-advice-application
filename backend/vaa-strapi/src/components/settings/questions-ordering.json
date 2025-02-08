@@ -7,11 +7,11 @@
   "options": {},
   "attributes": {
     "enabled": {
-      "type": "boolean",
-      "required": true
+      "type": "boolean"
     },
-    "suggestions": {
-      "type": "integer",
+    "config": {
+      "type": "component",
+      "component": "settings.questions-ordering-config",
       "required": true
     }
   }

@@ -60,7 +60,7 @@ Display a question for answering.
   let customData: CustomData['Question'];
   let question: AnyQuestionVariant;
   let questionBlock: { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
-  let useQuestionOrdering = $appSettings.questions.questionOrdering?.enabled ?? false;
+  let useQuestionOrdering = $appSettings.questions.dynamicOrdering?.enabled ?? false;
   let nextQuestionChoices: Array<AnyQuestionVariant> = [];
 
   $: {
@@ -135,10 +135,13 @@ Display a question for answering.
       return [];
     }
 
-    const maxSuggestions = $appSettings.questions.questionOrdering?.suggestions ?? 3;
+    const config = $appSettings.questions.dynamicOrdering?.config;
+    const numSuggestions = config?.type === 'factor-based'
+      ? config.numSuggestions ?? 3
+      : 3;
     const choices = [...unshownQuestions]
       .sort(() => Math.random() - 0.5)
-      .slice(0, maxSuggestions);
+      .slice(0, numSuggestions);
 
     $selectedQuestionBlocks.setShowChoices(true);
     return choices;

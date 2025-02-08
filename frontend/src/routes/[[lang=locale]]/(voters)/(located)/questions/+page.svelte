@@ -70,7 +70,7 @@ Display a general intro before starting answering the questions and possibly all
   function handleSubmit(): void {
     if (!canSubmit) return;
     
-    if ($appSettings.questions.questionOrdering?.enabled) {
+    if ($appSettings.questions.dynamicOrdering?.enabled) {
       // If we have shown questions, go to the first one
       if ($selectedQuestionBlocks.shownQuestionIds.length > 0) {
         const firstShownId = $selectedQuestionBlocks.shownQuestionIds[0];
@@ -109,7 +109,7 @@ Display a general intro before starting answering the questions and possibly all
     <HeroEmoji emoji={$t('dynamic.questions.heroEmoji')} />
   </figure>
 
-  {#if $appSettings.questions.questionsIntro.allowCategorySelection && !$appSettings.questions.questionOrdering?.enabled}
+  {#if $appSettings.questions.questionsIntro.allowCategorySelection && !$appSettings.questions.dynamicOrdering?.enabled}
     <p class="text-center">
       {$t('questions.intro.ingress.withCategorySelection', {
         numCategories: $opinionQuestionCategories.length,
@@ -132,7 +132,7 @@ Display a general intro before starting answering the questions and possibly all
     </div>
   {:else}
     <p class="text-center">
-      {#if $appSettings.questions.questionOrdering?.enabled}
+      {#if $appSettings.questions.dynamicOrdering?.enabled}
         {$t('questions.intro.ingress.withDynamicOrdering', {
           numQuestions: $selectedQuestionBlocks.questions.length,
           numCategories: $opinionQuestionCategories.length

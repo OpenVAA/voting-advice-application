@@ -26,10 +26,9 @@
     "showResultsLink": {
       "type": "boolean"
     },
-    "questionOrdering": {
+    "dynamicOrdering": {
       "type": "component",
-      "component": "settings.questions-ordering",
-      "required": true
+      "component": "settings.questions-ordering"
     }
   }
 }

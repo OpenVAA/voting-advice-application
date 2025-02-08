@@ -71,7 +71,7 @@ export interface SettingsQuestions extends Schema.Component {
     questionsIntro: Attribute.Component<'settings.questions-intro'> & Attribute.Required;
     showCategoryTags: Attribute.Boolean & Attribute.Required;
     showResultsLink: Attribute.Boolean;
-    questionOrdering: Attribute.Component<'settings.questions-ordering'>;
+    dynamicOrdering: Attribute.Component<'settings.questions-ordering'>;
   };
 }
 
