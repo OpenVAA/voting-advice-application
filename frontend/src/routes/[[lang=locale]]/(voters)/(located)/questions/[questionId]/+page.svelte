@@ -61,7 +61,6 @@ Display a question for answering.
   let question: AnyQuestionVariant;
   let questionBlock: { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
   let useQuestionOrdering = $appSettings.questions.questionOrdering?.enabled ?? false;
-  // let showNextQuestionChoices = false;
   let nextQuestionChoices: Array<AnyQuestionVariant> = [];
 
   $: {
@@ -103,14 +102,6 @@ Display a question for answering.
       nextQuestionChoices = getNextQuestionChoices();
     }
   }
-
-  /*
-  // Compute showNextQuestionChoices based on shown questions
-  $: showNextQuestionChoices = $selectedQuestionBlocks.shownQuestionIds.length === 0
-    ? true
-    : $selectedQuestionBlocks.showChoices;
-    console.log('showNextQuestionChoices', showNextQuestionChoices);
-    */
 
   ////////////////////////////////////////////////////////////////////
   // Handle `start` query param

@@ -69,6 +69,32 @@ Display a general intro before starting answering the questions and possibly all
 
   function handleSubmit(): void {
     if (!canSubmit) return;
+    
+    if ($appSettings.questions.questionOrdering?.enabled) {
+      // If we have shown questions, go to the first one
+      if ($selectedQuestionBlocks.shownQuestionIds.length > 0) {
+        const firstShownId = $selectedQuestionBlocks.shownQuestionIds[0];
+        goto($getRoute({ route: 'Question', questionId: firstShownId }));
+      } else {
+        // Otherwise show choices for first question
+        $selectedQuestionBlocks.setShowChoices(true);
+        goto($getRoute({ route: 'Question' }));
+      }
+    } else {
+      const categoryId = $selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
+      if (!categoryId) error(500, 'No question categories selected even though canSubmit is true');
+      
+      goto($getRoute(
+        $appSettings.questions.categoryIntros?.show
+          ? { route: 'QuestionCategory', categoryId }
+          : { route: 'Question' }
+      ));
+    }
+  }
+
+  /*
+  function handleSubmit(): void {
+    if (!canSubmit) return;
     const categoryId = $selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
     if (!categoryId) error(500, 'No question categories selected even though canSubmit is true');
     
@@ -81,6 +107,7 @@ Display a general intro before starting answering the questions and possibly all
       )
     );
   }
+  */
 
   ////////////////////////////////////////////////////////////////////
   // Functions
