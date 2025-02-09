@@ -13,8 +13,7 @@ export async function POST({ cookies, request }) {
   const dataWriter = await dataWriterPromise;
   dataWriter.init({ fetch });
 
-  const data: { email: string; nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }> } =
-    await request.json();
+  const data: { email: string; nominations: Array<{ electionId: Id; constituencyId: Id }> } = await request.json();
 
   const idToken = cookies.get('id_token');
 

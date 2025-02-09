@@ -4,7 +4,6 @@ A module shared between `@openvaa/frontend` and `@openvaa/strapi`, which contain
 
 - The [application settings](./src/settings/)
 - Utilities for [password validation](./src/utils/passwordValidation.ts)
-- Utilities for ID token decryption and validation.
 
 ## Development
 

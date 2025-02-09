@@ -167,7 +167,7 @@ export function initCandidateContext(): CandidateContext {
 
   async function preregister(opts: {
     email: string;
-    nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
+    nominations: Array<{ electionId: Id; constituencyId: Id }>;
   }): Promise<DataApiActionResult & { response: Pick<Response, 'status'> }> {
     const dataWriter = await prepareDataWriter(dataWriterPromise);
     try {

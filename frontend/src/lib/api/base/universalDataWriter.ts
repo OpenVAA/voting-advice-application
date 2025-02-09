@@ -59,7 +59,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
 
   async preregisterWithIdToken(opts: {
     email: string;
-    nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
+    nominations: Array<{ electionId: Id; constituencyId: Id }>;
   }): DWReturnType<DataApiActionResult & { response: Pick<Response, 'status'> }> {
     if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
     const url = UNIVERSAL_API_ROUTES.preregister;
@@ -85,7 +85,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
         lastName: string;
         identifier: string;
         email: string;
-        nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
+        nominations: Array<{ electionId: Id; constituencyId: Id }>;
       };
     } & WithAuth
   ): DWReturnType<DataApiActionResult> {
@@ -173,7 +173,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
         lastName: string;
         identifier: string;
         email: string;
-        nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
+        nominations: Array<{ electionId: Id; constituencyId: Id }>;
       };
     } & WithAuth
   ): DWReturnType<DataApiActionResult>;

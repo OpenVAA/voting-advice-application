@@ -17,8 +17,7 @@
     "require": "./build/cjs/index.js"
   },
   "dependencies": {
-    "@openvaa/data": "workspace:^",
-    "jose": "^5.9.6"
+    "@openvaa/data": "workspace:^"
   },
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",
