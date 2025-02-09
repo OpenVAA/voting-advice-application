@@ -1,13 +1,11 @@
 <script lang="ts">
-  import { page } from '$app/state';
-  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
-  import { goto } from '$app/navigation';
-  import MainContent from '../../../../../MainContent.svelte';
-  import { getLayoutContext } from '$lib/contexts/layout';
-  import { onDestroy } from 'svelte';
   import { getCandidateContext } from '$lib/contexts/candidate';
-
-  // TODO: Move to just "/callback"
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { goto } from '$app/navigation';
+  import { Loading } from '$lib/components/loading';
+  import { onDestroy } from 'svelte';
+  import { page } from '$app/state';
+  import MainContent from '../../../../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -44,12 +42,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('candidateApp.register.title')} – {$t('dynamic.appName')}</title>
+  <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
 </svelte:head>
 
-<MainContent title={$t('candidateApp.register.title')}>
-  <HeadingGroup slot="heading">
-    <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
-  </HeadingGroup>
-  <p>Loading...</p>
-</MainContent>
+<MainContent title={$t('candidateApp.preregister.identification.start.title')}><Loading /></MainContent>
