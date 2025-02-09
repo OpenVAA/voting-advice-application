@@ -13,13 +13,19 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   // Preregistration
   ////////////////////////////////////////////////////////////////////
 
+  /**
+   * Exchange an authorization code for an ID token.
+   * @param authorizationCode - An authorization code received from an IdP.
+   * @param redirectUri - A redirect URI used to obtain the authorization code.
+   * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
+   */
   exchangeCodeForIdToken: (opts: {
     authorizationCode: string;
     redirectUri: string;
   }) => DWReturnType<DataApiActionResult>;
 
   /**
-   * Creates a candidate with a nomination or nominations and send a registration link.
+   * Create a candidate with a nomination or nominations and send a registration link.
    * @param email - Email.
    * @param nominations - Nominations.
    * @access ID token.
@@ -31,7 +37,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   }) => DWReturnType<DataApiActionResult & { response: Pick<Response, 'status'> }>;
 
   /**
-   * Creates a candidate with a nomination or nominations and send a registration link.
+   * Create a candidate with a nomination or nominations and send a registration link.
    * @param firstName - First name.
    * @param lastName - Last name.
    * @param identifier - Personal identifier such as a birthdate.
