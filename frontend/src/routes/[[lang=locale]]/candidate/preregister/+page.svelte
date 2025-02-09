@@ -24,8 +24,7 @@
     idTokenClaims,
     locale,
     preselectedElections,
-    t,
-    userData
+    t
   } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
@@ -72,17 +71,7 @@
   <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
 </svelte:head>
 
-{#if $userData}
-  <MainContent title={$t('candidateApp.preregister.identification.start.title')}>
-    <div class="mb-md text-center text-warning">
-      {@html sanitizeHtml($t('candidateApp.preregister.identification.error.loggedIn.content'))}
-    </div>
-    <Button
-      text={$t('common.continue')}
-      variant="main"
-      on:click={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
-  </MainContent>
-{:else if $idTokenClaims}
+{#if $idTokenClaims}
   <MainContent title={$t('candidateApp.preregister.identification.success.title')}>
     <div class="mb-md text-center">
       {@html sanitizeHtml($t('candidateApp.preregister.identification.success.content', $idTokenClaims))}

@@ -12,40 +12,34 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, t, userData, getRoute, clearIdToken } = getCandidateContext();
+  const { appCustomization, darkMode, t, getRoute, clearIdToken } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   $: error = page.url.searchParams.get('error');
 
-  $: content = $userData
+  $: content = !error
     ? ({
-        title: $t('candidateApp.preregister.identification.start.title'),
-        content: $t('candidateApp.preregister.identification.error.loggedIn.content'),
-        route: 'CandAppHome'
+        title: $t('candidateApp.preregister.success.title'),
+        content: $t('candidateApp.preregister.success.content'),
+        route: 'CandAppRegister'
       } as const)
-    : !error
+    : error === '401'
       ? ({
-          title: $t('candidateApp.preregister.success.title'),
-          content: $t('candidateApp.preregister.success.content'),
-          route: 'CandAppRegister'
+          title: $t('candidateApp.preregister.identification.error.expired.title'),
+          content: $t('candidateApp.preregister.identification.error.expired.content'),
+          route: 'CandAppPreregister'
         } as const)
-      : error === '401'
+      : error === '409'
         ? ({
-            title: $t('candidateApp.preregister.identification.error.expired.title'),
-            content: $t('candidateApp.preregister.identification.error.expired.content'),
+            title: $t('candidateApp.preregister.identification.error.preregistered.title'),
+            content: $t('candidateApp.preregister.identification.error.preregistered.content'),
             route: 'CandAppPreregister'
           } as const)
-        : error === '409'
-          ? ({
-              title: $t('candidateApp.preregister.identification.error.preregistered.title'),
-              content: $t('candidateApp.preregister.identification.error.preregistered.content'),
-              route: 'CandAppPreregister'
-            } as const)
-          : ({
-              title: $t('candidateApp.preregister.identification.error.unknown.title'),
-              content: $t('candidateApp.preregister.identification.error.unknown.content'),
-              route: 'CandAppPreregister'
-            } as const);
+        : ({
+            title: $t('candidateApp.preregister.identification.error.unknown.title'),
+            content: $t('candidateApp.preregister.identification.error.unknown.content'),
+            route: 'CandAppPreregister'
+          } as const);
 
   clearIdToken();
 
@@ -66,7 +60,7 @@
 </svelte:head>
 
 <MainContent title={content.title}>
-  <div class={`mb-md text-center ${$userData || error ? 'text-warning' : ''}`}>
+  <div class={`mb-md text-center ${error ? 'text-warning' : ''}`}>
     {@html sanitizeHtml(content.content)}
   </div>
   <Button
