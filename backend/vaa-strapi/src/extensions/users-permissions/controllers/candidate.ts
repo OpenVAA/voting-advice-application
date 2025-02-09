@@ -26,7 +26,7 @@ const validatePreregisterBody = validateYupSchema(
     lastName: yup.string().required(),
     identifier: yup.string().required(),
     email: yup.string().required(),
-    nominations: yup.array(yup.object({ electionDocumentId: yup.string(), constituencyDocumentId: yup.string() }))
+    nominations: yup.array(yup.object({ electionId: yup.string(), constituencyId: yup.string() }))
   })
 );
 
@@ -107,46 +107,36 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     lastName: string;
     identifier: string;
     email: string;
-    nominations: Array<{ electionDocumentId: string; constituencyDocumentId: string }>;
+    nominations: Array<{ electionId: string; constituencyId: string }>;
   } = ctx.request.body;
 
   await validatePreregisterBody(params);
 
+  const { email, nominations, ...identity } = params;
+
   const candidate =
-    (await strapi.query('api::candidate.candidate').findOne({ where: { email: params.email } })) ??
-    (await strapi.query('api::candidate.candidate').findOne({
-      where: {
-        firstName: params.firstName,
-        lastName: params.lastName,
-        identifier: params.identifier
-      }
-    }));
+    (await strapi.query('api::candidate.candidate').findOne({ where: { email } })) ??
+    (await strapi.query('api::candidate.candidate').findOne({ where: identity }));
 
   if (candidate) {
     throw new ValidationError('CANDIDATE_CONFLICT');
   }
 
   const { documentId: candidateDocumentId } = await strapi.documents('api::candidate.candidate').create({
-    data: {
-      email: params.email,
-      firstName: params.firstName,
-      lastName: params.lastName,
-      identifier: params.identifier
-    }
+    data: { email, ...identity }
   });
 
   await Promise.all(
-    params.nominations.map(
+    nominations.map(
       async (nomination) =>
         await strapi.documents('api::nomination.nomination').create({
           data: {
             candidate: candidateDocumentId,
-            election: nomination.electionDocumentId,
+            election: nomination.electionId,
             electionRound: 1,
-            constituency: nomination.constituencyDocumentId,
+            constituency: nomination.constituencyId,
             unconfirmed: true
-          },
-          status: 'draft'
+          }
         })
     )
   );

@@ -1,4 +1,3 @@
-export * from './auth/getIdTokenClaims.js';
 export * from './data/customData.type.js';
 export * from './data/extendedData.type.js';
 export * from './data/isImage.js';

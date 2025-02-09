@@ -114,7 +114,7 @@ export type CandidateContext = AppContext & {
    */
   preregister: (opts: {
     email: string;
-    nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
+    nominations: Array<{ electionId: Id; constituencyId: Id }>;
   }) => ReturnType<DataWriter['preregisterWithIdToken']>;
 
   clearIdToken: () => Promise<void>;

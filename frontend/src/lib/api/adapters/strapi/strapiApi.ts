@@ -79,7 +79,7 @@ export type StrapiApiReturnType = {
   login: StrapiLoginData;
   overwriteAnswers: StrapiUpdateCandidateReturnData;
   registerCandidate: StrapiRegisterData;
-  preregisterCandidate: StrapiCandidateData; // TODO!!!
+  preregisterCandidate: StrapiRegisterData;
   resetPassword: unknown;
   setProperties: StrapiUpdateCandidateReturnData;
   setPassword: unknown;
