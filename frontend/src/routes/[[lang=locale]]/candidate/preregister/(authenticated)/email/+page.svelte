@@ -92,5 +92,4 @@
     variant="main"
     on:click={() => onSubmit()}
     disabled={!termsAccepted || !email1 || !(email1 === email2)} />
-  <Button type="reset" text={$t('common.cancel')} variant="secondary" />
 </MainContent>
