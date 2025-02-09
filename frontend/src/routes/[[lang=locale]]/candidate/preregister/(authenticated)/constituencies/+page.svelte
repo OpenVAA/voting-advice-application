@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button } from '$lib/components/button';
-  import MainContent from '../../../MainContent.svelte';
+  import MainContent from '../../../../MainContent.svelte';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { onDestroy } from 'svelte';
@@ -8,21 +8,20 @@
   import { goto } from '$app/navigation';
   import { ConstituencySelector } from '$lib/components/constituencySelector';
 
-  export let data: { claims: { firstName: string; lastName: string } | null };
-
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
   const {
-    dataRoot,
     appCustomization,
     darkMode,
-    t,
-    userData,
+    dataRoot,
     getRoute,
+    idTokenClaims,
+    preselectedConstituencies,
     preselectedElections,
-    preselectedConstituencies
+    t,
+    userData
   } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
@@ -57,7 +56,7 @@
       variant="main"
       on:click={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
   </MainContent>
-{:else if data.claims}
+{:else if $idTokenClaims}
   <MainContent title={$t('candidateApp.preregister.constituencySelect.title')}>
     <div class="mb-md text-center">
       {@html sanitizeHtml($t('candidateApp.preregister.constituencySelect.content'))}

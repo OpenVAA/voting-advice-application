@@ -1,13 +1,11 @@
 <script lang="ts">
   import { Button } from '$lib/components/button';
-  import MainContent from '../../../MainContent.svelte';
+  import MainContent from '../../../../MainContent.svelte';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { onDestroy } from 'svelte';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { goto } from '$app/navigation';
-
-  export let data: { claims: { firstName: string; lastName: string } | null };
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -16,14 +14,15 @@
   const {
     appCustomization,
     darkMode,
-    t,
-    userData,
-    getRoute,
-    preregister,
     dataRoot,
+    getRoute,
+    idTokenClaims,
+    preregister,
+    preselectedConstituencies,
     preselectedElections,
-    preselectedConstituencies
-  } = getCandidateContext(); // TODO: Redirect to (where) if there's user data.
+    t,
+    userData
+  } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   let email1 = '';
@@ -73,7 +72,7 @@
       variant="main"
       on:click={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
   </MainContent>
-{:else if data.claims}
+{:else if $idTokenClaims}
   <MainContent title={$t('candidateApp.preregister.emailVerification.title')}>
     <div class="mb-md text-center">
       {@html sanitizeHtml($t('candidateApp.preregister.emailVerification.content'))}
