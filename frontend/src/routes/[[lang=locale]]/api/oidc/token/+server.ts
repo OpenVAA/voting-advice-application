@@ -1,4 +1,4 @@
-import { error, json, text } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 import {
   IDENTITY_PROVIDER_CLIENT_SECRET,
   IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY,
@@ -12,7 +12,7 @@ import type { RequestEvent } from '@sveltejs/kit';
 export async function POST({ cookies, request }: RequestEvent): Promise<Response> {
   const { authorizationCode, redirectUri } = await request.json();
 
-  const signicatResponse = await fetch(IDENTITY_PROVIDER_TOKEN_ENDPOINT, {
+  const idpResponse = await fetch(IDENTITY_PROVIDER_TOKEN_ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
@@ -24,29 +24,29 @@ export async function POST({ cookies, request }: RequestEvent): Promise<Response
     }).toString()
   });
 
-  if (!signicatResponse.ok) {
+  if (!idpResponse.ok) {
     return error(401, { message: 'Unauthorized' });
   }
 
-  const { id_token: idToken } = await signicatResponse.json();
+  const { id_token: idToken } = await idpResponse.json();
 
-  try {
-    const claims = await getIdTokenClaims(idToken, {
-      privateEncryptionJWK: JSON.parse(IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY),
-      publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
-    });
+  const claims = await getIdTokenClaims(idToken, {
+    privateEncryptionJWK: JSON.parse(IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY),
+    publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
+  });
 
-    cookies.set('id_token', idToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      path: '/'
-    });
-
-    return json({ userInfo: { ...claims, birthdate: undefined } });
-  } catch {
+  if (!claims.success) {
     return error(401, { message: 'Unauthorized' });
   }
+
+  cookies.set('id_token', idToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: 'strict',
+    path: '/'
+  });
+
+  return json({});
 }
 
 export async function DELETE({ cookies }: RequestEvent): Promise<Response> {
@@ -56,5 +56,5 @@ export async function DELETE({ cookies }: RequestEvent): Promise<Response> {
     sameSite: 'strict',
     path: '/'
   });
-  return text('OK');
+  return json({});
 }
