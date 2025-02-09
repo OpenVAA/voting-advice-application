@@ -69,7 +69,7 @@ Display a general intro before starting answering the questions and possibly all
 
   function handleSubmit(): void {
     if (!canSubmit) return;
-    
+
     if ($appSettings.questions.dynamicOrdering?.enabled) {
       // If we have shown questions, go to the first one
       if ($selectedQuestionBlocks.shownQuestionIds.length > 0) {
@@ -83,12 +83,14 @@ Display a general intro before starting answering the questions and possibly all
     } else {
       const categoryId = $selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
       if (!categoryId) error(500, 'No question categories selected even though canSubmit is true');
-      
-      goto($getRoute(
-        $appSettings.questions.categoryIntros?.show
-          ? { route: 'QuestionCategory', categoryId }
-          : { route: 'Question' }
-      ));
+
+      goto(
+        $getRoute(
+          $appSettings.questions.categoryIntros?.show
+            ? { route: 'QuestionCategory', categoryId }
+            : { route: 'Question' }
+        )
+      );
     }
   }
 

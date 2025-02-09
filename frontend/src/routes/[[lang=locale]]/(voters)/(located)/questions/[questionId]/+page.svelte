@@ -17,8 +17,10 @@ Display a question for answering.
 <script lang="ts">
   import { error } from '@sveltejs/kit';
   import { onDestroy, onMount } from 'svelte';
+  import { slide } from 'svelte/transition';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import { Button } from '$lib/components/button';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { Loading } from '$lib/components/loading';
@@ -32,8 +34,6 @@ Display a question for answering.
   import Layout from '../../../../Layout.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { QuestionBlock } from '$lib/contexts/voter/questionBlockStore.type';
-  import { Button } from '$lib/components/button';
-  import { slide } from 'svelte/transition';
   //import {type VideoMode, Video} from '$lib/components/video';
 
   ////////////////////////////////////////////////////////////////////
@@ -128,19 +128,15 @@ Display a question for answering.
     const shownIds = $selectedQuestionBlocks.shownQuestionIds;
 
     // Get questions that haven't been shown yet
-    const unshownQuestions = allQuestions.filter(q => !shownIds.includes(q.id));
-    
+    const unshownQuestions = allQuestions.filter((q) => !shownIds.includes(q.id));
+
     if (unshownQuestions.length === 0) {
       return [];
     }
 
     const config = $appSettings.questions.dynamicOrdering?.config;
-    const numSuggestions = config?.type === 'factor-based'
-      ? config.numSuggestions ?? 3
-      : 3;
-    const choices = [...unshownQuestions]
-      .sort(() => Math.random() - 0.5)
-      .slice(0, numSuggestions);
+    const numSuggestions = config?.type === 'factor-based' ? (config.numSuggestions ?? 3) : 3;
+    const choices = [...unshownQuestions].sort(() => Math.random() - 0.5).slice(0, numSuggestions);
 
     $selectedQuestionBlocks.setShowChoices(true);
     return choices;
@@ -149,7 +145,7 @@ Display a question for answering.
   function handleAnswer({ question, value }: { question: AnyQuestionVariant; value?: unknown }): void {
     disabled = true;
     answers.setAnswer(question.id, value);
-    
+
     // Add delay before showing next question or choices
     setTimeout(() => {
       handleJump();
@@ -209,9 +205,9 @@ Display a question for answering.
   function handleJumpForQuestionOrdering(steps: number): void {
     // Get shown questions and the current index
     const shownQuestionIds = $selectedQuestionBlocks.shownQuestionIds;
-    const currentIndex = shownQuestionIds.findIndex(id => id === question.id);
+    const currentIndex = shownQuestionIds.findIndex((id) => id === question.id);
 
-    // If showing choices view, stay on current question. Otherwise, move by steps. 
+    // If showing choices view, stay on current question. Otherwise, move by steps.
     const newIndex = currentIndex + ($selectedQuestionBlocks.showChoices ? 0 : steps);
     let url: string;
     let noScroll = false;
@@ -219,21 +215,21 @@ Display a question for answering.
     if (steps < 0) {
       $selectedQuestionBlocks.setShowChoices(false);
     }
-      
+
     // Go back to the questions overview if moving back from the first question
     if (newIndex < 0) {
       url = $getRoute('Questions');
-    // Go to previous/next question if moving within the shown questions
+      // Go to previous/next question if moving within the shown questions
     } else if (newIndex < shownQuestionIds.length) {
       url = $getRoute({ route: 'Question', questionId: shownQuestionIds[newIndex] });
       noScroll = true;
-    // Handle end of shown questions
+      // Handle end of shown questions
     } else {
       // If no more questions to answer, go to results
       nextQuestionChoices = getNextQuestionChoices();
       if (nextQuestionChoices.length === 0) {
         url = $getRoute('Results');
-      // Otherwise, show the next question choices
+        // Otherwise, show the next question choices
       } else {
         disabled = false;
         return;
@@ -297,7 +293,7 @@ Display a question for answering.
   // Replace the existing progress reactive block with:
   $: if (questionBlock) {
     if (useQuestionOrdering) {
-      const currentIndex = $selectedQuestionBlocks.shownQuestionIds.findIndex(id => id === question.id);
+      const currentIndex = $selectedQuestionBlocks.shownQuestionIds.findIndex((id) => id === question.id);
       progress.current.set(currentIndex + 1);
     } else {
       progress.current.set(questionBlock.index + 1);
@@ -307,7 +303,7 @@ Display a question for answering.
 </script>
 
 {#if question && questionBlock}
-  {@const { category, id, info, text, type } = question}
+  {@const { id, info, text, type } = question}
   {@const headingId = `questionHeading-${id}`}
   {@const questions = $selectedQuestionBlocks.questions}
 
@@ -333,22 +329,18 @@ Display a question for answering.
 
     <svelte:fragment slot="heading">
       {#if useQuestionOrdering && $selectedQuestionBlocks.showChoices}
-        <h2 class="text-xl font-bold mb-4">{$t('questions.pickNext')}</h2>
+        <h2 class="mb-4 text-xl font-bold">{$t('questions.pickNext')}</h2>
       {/if}
-      {#each (useQuestionOrdering && $selectedQuestionBlocks.showChoices) ? nextQuestionChoices : [question] as currentQuestion}
-        <div
-          transition:slide
-          class="border-b border-base-300 last:border-none py-4"
-        >
+      {#each useQuestionOrdering && $selectedQuestionBlocks.showChoices ? nextQuestionChoices : [question] as currentQuestion}
+        <div transition:slide class="border-b border-base-300 py-4 last:border-none">
           <button
-            class="w-full text-left {(useQuestionOrdering && $selectedQuestionBlocks.showChoices) ? 'hover:bg-base-200 transition-colors p-2 rounded-lg' : ''}"
-            on:click={() => (useQuestionOrdering && $selectedQuestionBlocks.showChoices) && handleChoiceSelect(currentQuestion)}
-            disabled={!(useQuestionOrdering && $selectedQuestionBlocks.showChoices)}
-          >
-            <HeadingGroup
-              id={`questionHeading-${currentQuestion.id}`}
-              class="relative"
-            >
+            class="w-full text-left {useQuestionOrdering && $selectedQuestionBlocks.showChoices
+              ? 'rounded-lg p-2 transition-colors hover:bg-base-200'
+              : ''}"
+            on:click={() =>
+              useQuestionOrdering && $selectedQuestionBlocks.showChoices && handleChoiceSelect(currentQuestion)}
+            disabled={!(useQuestionOrdering && $selectedQuestionBlocks.showChoices)}>
+            <HeadingGroup id={`questionHeading-${currentQuestion.id}`} class="relative">
               <PreHeading>
                 {#if $appSettings.questions.showCategoryTags}
                   <CategoryTag category={currentQuestion.category} />
@@ -388,8 +380,7 @@ Display a question for answering.
             {question}
             {selectedId}
             variant={customData?.vertical ? 'vertical' : undefined}
-            onChange={handleAnswer}
-          />
+            onChange={handleAnswer} />
         {:else}
           {$t('error.unsupportedQuestion')}
         {/if}
@@ -414,8 +405,7 @@ Display a question for answering.
           onSkip={() => {
             startEvent('question_skip', { questionIndex: questionBlock?.index });
             handleJump(+1);
-          }}
-        />
+          }} />
       {/if}
     </svelte:fragment>
 
@@ -423,8 +413,7 @@ Display a question for answering.
       <div
         role="group"
         aria-label={$t('questions.additionalActions')}
-        class="mt-lg grid w-full grid-cols-3 items-stretch gap-md"
-      >
+        class="mt-lg grid w-full grid-cols-3 items-stretch gap-md">
         <Button
           on:click={() => {
             handleJump(-1);
@@ -435,8 +424,7 @@ Display a question for answering.
           iconPos="left"
           class="content-start"
           icon="previous"
-          text={$t('questions.previous')}
-        />
+          text={$t('questions.previous')} />
         <Button
           on:click={() => {
             const randomIndex = Math.floor(Math.random() * nextQuestionChoices.length);
@@ -449,8 +437,7 @@ Display a question for answering.
           iconPos="right"
           class="content-end"
           icon="check"
-          text={$t('questions.chooseForMe')}
-        />
+          text={$t('questions.chooseForMe')} />
       </div>
     {/if}
   </Layout>
