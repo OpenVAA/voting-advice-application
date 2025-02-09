@@ -51,5 +51,4 @@
     variant="main"
     disabled={$preselectedElections.length === 0}
     on:click={() => goto($getRoute(nextRoute))} />
-  <Button type="reset" text={$t('common.cancel')} variant="secondary" />
 </MainContent>

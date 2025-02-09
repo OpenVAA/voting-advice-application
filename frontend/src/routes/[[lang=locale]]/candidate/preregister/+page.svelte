@@ -77,13 +77,6 @@
       {@html sanitizeHtml($t('candidateApp.preregister.identification.success.content', $idTokenClaims))}
     </div>
     <Button type="submit" text={$t('common.continue')} variant="main" on:click={() => goto($getRoute(nextRoute))} />
-    <Button
-      type="reset"
-      text={$t('common.cancel')}
-      variant="secondary"
-      on:click={() => {
-        /* TODO: Clear the ID token. */
-      }} />
   </MainContent>
 {:else}
   <MainContent title={$t('candidateApp.preregister.identification.start.title')}>

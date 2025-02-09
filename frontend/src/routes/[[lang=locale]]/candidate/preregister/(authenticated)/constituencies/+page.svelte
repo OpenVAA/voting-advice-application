@@ -48,5 +48,4 @@
     variant="main"
     on:click={() => goto($getRoute(nextStep))}
     disabled={!selectionComplete} />
-  <Button type="reset" text={$t('common.cancel')} variant="secondary" />
-</MainContent>
+  ]</MainContent>
