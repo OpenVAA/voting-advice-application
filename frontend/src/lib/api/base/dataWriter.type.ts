@@ -21,14 +21,13 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   /**
    * Creates a candidate with a nomination or nominations and send a registration link.
    * @param email - Email.
-   * @param electionDocumentIds - Election document IDs.
-   * @param constituencyDocumentId - Constituency document ID.
+   * @param nominations - Nominations.
    * @access ID token.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
    */
   preregisterWithIdToken: (opts: {
     email: string;
-    nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
+    nominations: Array<{ electionId: Id; constituencyId: Id }>;
   }) => DWReturnType<DataApiActionResult & { response: Pick<Response, 'status'> }>;
 
   /**
@@ -37,8 +36,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    * @param lastName - Last name.
    * @param identifier - Personal identifier such as a birthdate.
    * @param email - Email.
-   * @param electionDocumentIds - Election document IDs.
-   * @param constituencyDocumentId - Constituency document ID.
+   * @param nominations - Nominations.
    * @access API token.
    * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
    */
@@ -49,7 +47,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
         lastName: string;
         identifier: string;
         email: string;
-        nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
+        nominations: Array<{ electionId: Id; constituencyId: Id }>;
       };
     } & WithAuth
   ) => DWReturnType<DataApiActionResult, TType>;

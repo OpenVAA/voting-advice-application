@@ -31,8 +31,8 @@
   let nominations = $dataRoot.elections
     .filter(({ id }) => $preselectedElections.includes(id))
     .map((e) => ({
-      electionDocumentId: e.id,
-      constituencyDocumentId: $preselectedConstituencies[e.id] ?? e.constituencyGroups[0].constituencies[0].id // Does this fallback makes sense?
+      electionId: e.id,
+      constituencyId: $preselectedConstituencies[e.id] ?? e.constituencyGroups[0].constituencies[0].id // Does this fallback makes sense?
     }));
   let termsAccepted = false;
 
@@ -97,7 +97,7 @@
       bind:value={email2}
       required />
     <label class="label mb-md cursor-pointer justify-start gap-sm !p-0">
-      <input type="checkbox" class="checkbox" name="selected-elections" bind:group={termsAccepted} />
+      <input type="checkbox" class="checkbox" name="selected-elections" bind:checked={termsAccepted} />
       <span class="label-text">{$t('candidateApp.preregister.emailVerification.termsCheckbox')}</span>
     </label>
     <Button

@@ -66,7 +66,7 @@
 </svelte:head>
 
 <MainContent title={content.title}>
-  <div class="mb-md text-center text-warning">
+  <div class={`mb-md text-center ${$userData || error ? 'text-warning' : ''}`}>
     {@html sanitizeHtml(content.content)}
   </div>
   <Button
