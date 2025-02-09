@@ -164,7 +164,7 @@ export function initCandidateContext(): CandidateContext {
     await dataWriter.exchangeCodeForIdToken(opts).catch((e) => {
       logDebugError(`Error logging out: ${e?.message ?? '-'}`);
     });
-    return goto(get(getRoute)('CandAppPreregister'));
+    return goto(get(getRoute)('CandAppPreregister'), { invalidateAll: true });
   }
 
   async function preregister(opts: {
