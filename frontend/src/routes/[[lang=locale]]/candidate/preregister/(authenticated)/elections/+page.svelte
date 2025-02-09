@@ -1,30 +1,29 @@
 <script lang="ts">
   import { Button } from '$lib/components/button';
-  import MainContent from '../../../MainContent.svelte';
+  import MainContent from '../../../../MainContent.svelte';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { onDestroy } from 'svelte';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { goto } from '$app/navigation';
-  import { DEFAULT_DATE_FORMAT } from '../../../../../../../packages/data/src/internal';
+  import { DEFAULT_DATE_FORMAT } from '../../../../../../../../packages/data/src/internal';
   import { ElectionSelector } from '$lib/components/electionSelector';
-
-  export let data: { claims: { firstName: string; lastName: string } | null };
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
   const {
-    dataRoot,
     appCustomization,
-    darkMode,
-    t,
-    userData,
     constituenciesSelectable,
-    locale,
+    darkMode,
+    dataRoot,
     getRoute,
-    preselectedElections
+    idTokenClaims,
+    locale,
+    preselectedElections,
+    t,
+    userData
   } = getCandidateContext(); // TODO: Redirect to (where) if there's user data.
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
@@ -57,7 +56,7 @@
       variant="main"
       on:click={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
   </MainContent>
-{:else if data.claims}
+{:else if $idTokenClaims}
   <MainContent title={$t('candidateApp.preregister.electionSelect.title')}>
     <div class="mb-md text-center">
       {@html sanitizeHtml(
