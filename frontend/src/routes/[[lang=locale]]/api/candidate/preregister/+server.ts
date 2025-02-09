@@ -26,16 +26,16 @@ export async function POST({ cookies, request }) {
     publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
   });
 
-  if (!claims) {
+  if (!claims.success) {
     error(401, { message: 'ID token has expired.' });
   }
 
   try {
     await dataWriter.preregisterWithApiToken({
       body: {
-        firstName: `${claims.firstName}`,
-        lastName: `${claims.lastName}`,
-        identifier: `${claims.birthdate}`,
+        firstName: claims.data.firstName,
+        lastName: claims.data.lastName,
+        identifier: claims.data.identifier,
         email: data.email,
         nominations: data.nominations
       },
