@@ -40,8 +40,12 @@ export function strapiAdapterMixin<TBase extends Constructor>(base: TBase): Cons
       if (params) url.search = qs.stringify(params, { encodeValuesOnly: true });
       if (authToken) request = addHeader(request, 'Authorization', `Bearer ${authToken}`);
       const response = await this.fetch(url, request);
-      if (!response.ok)
-        throw new Error(`Error with apiFetch: ${response.status} (${response.statusText ?? '-'}) • ${url}`);
+      if (!response.ok) {
+        const { error } = await response.json();
+        throw new Error(`Error with apiFetch: ${response.status} (${response.statusText ?? '-'}) • ${url}`, {
+          cause: error?.message
+        });
+      }
       return response;
     }
 
