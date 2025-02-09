@@ -133,7 +133,10 @@ export type CandidateContext = AppContext & {
    * Holds the jwt token. NB. The context’s internal methods use it automatically for authentication.
    */
   authToken: Readable<string | undefined>;
-  // idTokenClaims: Readable<{ firstName: string; lastName: string } | undefined>;
+  /**
+   * Holds the ID token claims.
+   */
+  idTokenClaims: Readable<{ firstName: string; lastName: string } | undefined>;
   /**
    * Holds the user’s email so it can be prefilled during password changes.
    */

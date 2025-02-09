@@ -49,6 +49,8 @@ export function initCandidateContext(): CandidateContext {
 
   const authToken = derived(page, (page) => page.data.token ?? undefined);
 
+  const idTokenClaims = derived(page, (page) => page.data.claims ?? undefined);
+
   const userData = userDataStore({ answersLocked, authToken, dataWriterPromise, locale });
 
   const newUserEmail = writable<string | undefined>();
@@ -258,6 +260,7 @@ export function initCandidateContext(): CandidateContext {
     exchangeCodeForIdToken,
     preselectedElections,
     preselectedConstituencies,
-    clearIdToken
+    clearIdToken,
+    idTokenClaims
   });
 }

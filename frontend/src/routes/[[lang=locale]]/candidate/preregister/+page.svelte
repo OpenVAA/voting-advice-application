@@ -10,9 +10,6 @@
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../MainContent.svelte';
 
-  // TODO: Move to CandidateContext.
-  export let data: { claims: { firstName: string; lastName: string } | null };
-
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
@@ -24,6 +21,7 @@
     dataRoot,
     electionsSelectable,
     getRoute,
+    idTokenClaims,
     locale,
     preselectedElections,
     t,
@@ -84,10 +82,10 @@
       variant="main"
       on:click={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
   </MainContent>
-{:else if data.claims}
+{:else if $idTokenClaims}
   <MainContent title={$t('candidateApp.preregister.identification.success.title')}>
     <div class="mb-md text-center">
-      {@html sanitizeHtml($t('candidateApp.preregister.identification.success.content', data.claims))}
+      {@html sanitizeHtml($t('candidateApp.preregister.identification.success.content', $idTokenClaims))}
     </div>
     <Button type="submit" text={$t('common.continue')} variant="main" on:click={() => goto($getRoute(nextRoute))} />
     <Button
