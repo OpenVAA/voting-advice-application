@@ -77,6 +77,8 @@ export type TranslationKey =
   | 'candidateApp.preregister.identification.error.loggedIn.title'
   | 'candidateApp.preregister.identification.error.preregistered.content'
   | 'candidateApp.preregister.identification.error.preregistered.title'
+  | 'candidateApp.preregister.identification.error.unknown.content'
+  | 'candidateApp.preregister.identification.error.unknown.title'
   | 'candidateApp.preregister.identification.identifyYourselHelpText'
   | 'candidateApp.preregister.identification.identifyYourselfButton'
   | 'candidateApp.preregister.identification.start.content'

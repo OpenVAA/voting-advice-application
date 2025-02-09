@@ -29,7 +29,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   preregisterWithIdToken: (opts: {
     email: string;
     nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
-  }) => DWReturnType<DataApiActionResult>;
+  }) => DWReturnType<DataApiActionResult & { response: Pick<Response, 'status'> }>;
 
   /**
    * Creates a candidate with a nomination or nominations and send a registration link.

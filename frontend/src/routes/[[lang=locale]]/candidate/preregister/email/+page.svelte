@@ -26,8 +26,6 @@
   } = getCandidateContext(); // TODO: Redirect to (where) if there's user data.
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
-  const nextStep = 'CandAppPreregisterSuccess';
-
   let email1 = '';
   let email2 = '';
   let nominations = $dataRoot.elections
@@ -50,7 +48,14 @@
   });
 
   async function onSubmit() {
-    const response = await preregister({ email: email1, nominations }); // TODO
+    const { type, response } = await preregister({ email: email1, nominations });
+
+    goto(
+      $getRoute({
+        route: 'CandAppPreregisterStatus',
+        error: type === 'failure' ? `${response.status}` : undefined
+      })
+    );
   }
 </script>
 
@@ -99,9 +104,7 @@
       type="submit"
       text={$t('common.continue')}
       variant="main"
-      on:click={() => {
-        onSubmit().then((_) => goto($getRoute(nextStep))); // TODO: Error handling.
-      }}
+      on:click={() => onSubmit()}
       disabled={!termsAccepted || !email1 || !(email1 === email2)} />
     <Button type="reset" text={$t('common.cancel')} variant="secondary" />
   </MainContent>
