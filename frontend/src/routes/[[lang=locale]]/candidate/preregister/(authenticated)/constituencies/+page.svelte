@@ -12,17 +12,8 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const {
-    appCustomization,
-    darkMode,
-    dataRoot,
-    getRoute,
-    idTokenClaims,
-    preselectedConstituencies,
-    preselectedElections,
-    t,
-    userData
-  } = getCandidateContext();
+  const { appCustomization, darkMode, dataRoot, getRoute, preselectedConstituencies, preselectedElections, t } =
+    getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   const nextStep = 'CandAppPreregisterEmail';
@@ -46,38 +37,16 @@
   <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
 </svelte:head>
 
-{#if $userData}
-  <MainContent title={$t('candidateApp.preregister.identification.start.title')}>
-    <div class="mb-md text-center text-warning">
-      {@html sanitizeHtml($t('candidateApp.preregister.identification.error.loggedIn.content'))}
-    </div>
-    <Button
-      text={$t('common.continue')}
-      variant="main"
-      on:click={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
-  </MainContent>
-{:else if $idTokenClaims}
-  <MainContent title={$t('candidateApp.preregister.constituencySelect.title')}>
-    <div class="mb-md text-center">
-      {@html sanitizeHtml($t('candidateApp.preregister.constituencySelect.content'))}
-    </div>
-    <ConstituencySelector {elections} bind:selected={$preselectedConstituencies} bind:selectionComplete />
-    <Button
-      type="submit"
-      text={$t('common.continue')}
-      variant="main"
-      on:click={() => goto($getRoute(nextStep))}
-      disabled={!selectionComplete} />
-    <Button type="reset" text={$t('common.cancel')} variant="secondary" />
-  </MainContent>
-{:else}
-  <MainContent title={$t('candidateApp.preregister.identification.error.expired.title')}>
-    <div class="mb-md text-center">
-      {@html sanitizeHtml($t('candidateApp.preregister.identification.error.expired.content'))}
-    </div>
-    <Button
-      text={$t('common.continue')}
-      variant="main"
-      on:click={() => goto($getRoute('CandAppPreregister'), { invalidateAll: true })} />
-  </MainContent>
-{/if}
+<MainContent title={$t('candidateApp.preregister.constituencySelect.title')}>
+  <div class="mb-md text-center">
+    {@html sanitizeHtml($t('candidateApp.preregister.constituencySelect.content'))}
+  </div>
+  <ConstituencySelector {elections} bind:selected={$preselectedConstituencies} bind:selectionComplete />
+  <Button
+    type="submit"
+    text={$t('common.continue')}
+    variant="main"
+    on:click={() => goto($getRoute(nextStep))}
+    disabled={!selectionComplete} />
+  <Button type="reset" text={$t('common.cancel')} variant="secondary" />
+</MainContent>

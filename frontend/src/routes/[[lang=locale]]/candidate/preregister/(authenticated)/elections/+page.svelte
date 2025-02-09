@@ -13,18 +13,8 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const {
-    appCustomization,
-    constituenciesSelectable,
-    darkMode,
-    dataRoot,
-    getRoute,
-    idTokenClaims,
-    locale,
-    preselectedElections,
-    t,
-    userData
-  } = getCandidateContext(); // TODO: Redirect to (where) if there's user data.
+  const { appCustomization, constituenciesSelectable, darkMode, dataRoot, getRoute, locale, preselectedElections, t } =
+    getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   const electionDate = new Date(); // TODO: Where does this come from?
@@ -46,42 +36,20 @@
   <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
 </svelte:head>
 
-{#if $userData}
-  <MainContent title={$t('candidateApp.preregister.identification.start.title')}>
-    <div class="mb-md text-center text-warning">
-      {@html sanitizeHtml($t('candidateApp.preregister.identification.error.loggedIn.content'))}
-    </div>
-    <Button
-      text={$t('common.continue')}
-      variant="main"
-      on:click={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
-  </MainContent>
-{:else if $idTokenClaims}
-  <MainContent title={$t('candidateApp.preregister.electionSelect.title')}>
-    <div class="mb-md text-center">
-      {@html sanitizeHtml(
-        $t('candidateApp.preregister.electionSelect.content', {
-          date: electionDate.toLocaleDateString($locale, DEFAULT_DATE_FORMAT)
-        })
-      )}
-    </div>
-    <ElectionSelector elections={$dataRoot.elections} bind:selected={$preselectedElections} />
-    <Button
-      type="submit"
-      text={$t('common.continue')}
-      variant="main"
-      disabled={$preselectedElections.length === 0}
-      on:click={() => goto($getRoute(nextRoute))} />
-    <Button type="reset" text={$t('common.cancel')} variant="secondary" />
-  </MainContent>
-{:else}
-  <MainContent title={$t('candidateApp.preregister.identification.error.expired.title')}>
-    <div class="mb-md text-center">
-      {@html sanitizeHtml($t('candidateApp.preregister.identification.error.expired.content'))}
-    </div>
-    <Button
-      text={$t('common.continue')}
-      variant="main"
-      on:click={() => goto($getRoute('CandAppPreregister'), { invalidateAll: true })} />
-  </MainContent>
-{/if}
+<MainContent title={$t('candidateApp.preregister.electionSelect.title')}>
+  <div class="mb-md text-center">
+    {@html sanitizeHtml(
+      $t('candidateApp.preregister.electionSelect.content', {
+        date: electionDate.toLocaleDateString($locale, DEFAULT_DATE_FORMAT)
+      })
+    )}
+  </div>
+  <ElectionSelector elections={$dataRoot.elections} bind:selected={$preselectedElections} />
+  <Button
+    type="submit"
+    text={$t('common.continue')}
+    variant="main"
+    disabled={$preselectedElections.length === 0}
+    on:click={() => goto($getRoute(nextRoute))} />
+  <Button type="reset" text={$t('common.cancel')} variant="secondary" />
+</MainContent>
