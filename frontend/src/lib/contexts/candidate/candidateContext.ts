@@ -168,12 +168,14 @@ export function initCandidateContext(): CandidateContext {
   async function preregister(opts: {
     email: string;
     nominations: Array<{ electionDocumentId: Id; constituencyDocumentId: Id }>;
-  }): Promise<void> {
+  }): Promise<DataApiActionResult & { response: Pick<Response, 'status'> }> {
     const dataWriter = await prepareDataWriter(dataWriterPromise);
-    await dataWriter.preregisterWithIdToken(opts).catch((e) => {
-      logDebugError(`Error logging out: ${e?.message ?? '-'}`);
-    });
-    return goto(get(getRoute)('CandAppPreregister'));
+    try {
+      return await dataWriter.preregisterWithIdToken(opts);
+    } catch (e) {
+      logDebugError(`Error: ${e?.toString() ?? '-'}`);
+      return { type: 'failure', response: { status: 500 } };
+    }
   }
 
   async function clearIdToken(): Promise<void> {

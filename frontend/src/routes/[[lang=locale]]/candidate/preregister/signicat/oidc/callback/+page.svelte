@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { goto } from '$app/navigation';
   import MainContent from '../../../../../MainContent.svelte';
@@ -20,7 +20,7 @@
   // Handle exchanging the  authorization code
   ////////////////////////////////////////////////////////////////////
 
-  $: authorizationCode = $page.url.searchParams.get('code');
+  $: authorizationCode = page.url.searchParams.get('code');
 
   $: if (authorizationCode) {
     exchangeCodeForIdToken({

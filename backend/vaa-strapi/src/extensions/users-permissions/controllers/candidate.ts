@@ -123,7 +123,7 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     }));
 
   if (candidate) {
-    throw new ValidationError('Candidate already exists. Proceed to sign up or sign in.');
+    throw new ValidationError('CANDIDATE_CONFLICT');
   }
 
   const { documentId: candidateDocumentId } = await strapi.documents('api::candidate.candidate').create({
