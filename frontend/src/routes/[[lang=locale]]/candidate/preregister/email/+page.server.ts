@@ -10,14 +10,12 @@ export async function load({ cookies }: { cookies: Cookies }) {
     return { claims: null };
   }
 
-  try {
-    const claims = await getIdTokenClaims(idToken, {
-      privateEncryptionJWK: JSON.parse(IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY),
-      publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
-    });
+  const claims = await getIdTokenClaims(idToken, {
+    privateEncryptionJWK: JSON.parse(IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY),
+    publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
+  });
 
-    return { claims: { firstName: claims.firstName, lastName: claims.lastName } };
-  } catch {
+  if (!claims.success) {
     cookies.delete('id_token', {
       httpOnly: true,
       secure: true,
@@ -26,4 +24,6 @@ export async function load({ cookies }: { cookies: Cookies }) {
     });
     return { claims: null };
   }
+
+  return { claims: { firstName: claims.data.firstName, lastName: claims.data.lastName } };
 }
