@@ -5,7 +5,7 @@ import type { StackedStore } from '../utils/stackedStore';
 
 export type LayoutContext = {
   /**
-   * A store containing top bar actions settings.
+   * A store containing top bar actions settings. When showing some buttons, make sure to provide a callback if they define one.
    */
   topBarSettings: StackedStore<TopBarSettings, DeepPartial<TopBarSettings>>;
   /**
@@ -34,11 +34,13 @@ export interface PageStyles {
   };
 }
 
-type TopBarAction = 'return' | 'help' | 'feedback' | 'results' | 'logout';
+type TopBarAction = 'cancel' | 'feedback' | 'help' | 'logout' | 'results' | 'return';
 
 type TopBarActionsSettings = {
   [action in TopBarAction]: 'hide' | 'show';
 } & {
+  cancelButtonLabel: string;
+  cancelButtonCallback?: () => void;
   returnButtonLabel: string;
   returnButtonCallback?: () => void;
 };

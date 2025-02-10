@@ -4,6 +4,10 @@
 
 Contains the secondary action buttons in the header.
 
+### TODO
+
+Allow layouts to insert arbitrary content in the header and make this a static component [Svelte 5].
+
 ### Dynamic component
 
 Accesses `AppContext` and optionally `VoterContext`.
@@ -70,8 +74,18 @@ Accesses `AppContext` and optionally `VoterContext`.
       class="!text-neutral"
       variant="icon"
       icon="close"
-      text={$topBarSettings.actions.returnButtonLabel}
-      on:click={$topBarSettings.actions.returnButtonCallback || (() => goto($getRoute('Home')))} />
+      text={$topBarSettings.actions.returnButtonLabel || $t('common.return')}
+      on:click={$topBarSettings.actions.returnButtonCallback ||
+        (() => goto($appType === 'voter' ? $getRoute('Home') : $getRoute('CandAppHome')))} />
+  {/if}
+
+  {#if $topBarSettings.actions.cancel === 'show' && $topBarSettings.actions.cancelButtonCallback}
+    <Button
+      class="!text-warning"
+      variant="icon"
+      icon="close"
+      text={$topBarSettings.actions.cancelButtonLabel || $t('common.cancel')}
+      on:click={$topBarSettings.actions.cancelButtonCallback} />
   {/if}
 </div>
 
@@ -81,6 +95,6 @@ Accesses `AppContext` and optionally `VoterContext`.
   :global(.vaa-basicPage-actions > button:not([disabled])),
   :global(.vaa-basicPage-actions > * > button:not([disabled])) {
     /* !text is valid class prefix */
-    @apply !text-[var(--headerIcon-color)];
+    @apply text-[var(--headerIcon-color)];
   }
 </style>

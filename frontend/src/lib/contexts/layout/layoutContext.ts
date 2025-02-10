@@ -12,11 +12,13 @@ const CONTEXT_KEY = Symbol();
 export const DEFAULT_TOP_BAR_SETTINGS: TopBarSettings = {
   progress: 'hide',
   actions: {
-    return: 'hide',
-    help: 'hide',
+    cancel: 'hide',
+    cancelButtonLabel: '',
     feedback: 'hide',
+    help: 'hide',
     logout: 'hide',
     results: 'hide',
+    return: 'hide',
     returnButtonLabel: ''
   }
 };
