@@ -23,12 +23,12 @@
     getRoute,
     idTokenClaims,
     locale,
-    preselectedElections,
+    preregistrationElectionIds,
     t
   } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
-  $preselectedElections = $dataRoot.elections.map(({ id }) => id);
+  $preregistrationElectionIds = $dataRoot.elections.map(({ id }) => id);
 
   const publicationDate = new Date(); // TODO: Where does this come from?
 

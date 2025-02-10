@@ -7,6 +7,7 @@ import { page } from '$app/stores';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { logDebugError } from '$lib/utils/logger';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
+import { getImpliedElectionIds } from '$lib/utils/route';
 import { prepareDataWriter } from './prepareDataWriter';
 import { userDataStore } from './userDataStore';
 import { getAppContext } from '../app';
@@ -65,11 +66,34 @@ export function initCandidateContext(): CandidateContext {
     dataRoot.elections?.some((e) => !e.singleConstituency)
   );
 
-  const preselectedElections = sessionStorageWritable('candidateContext-preselectedElectionIds', new Array<Id>());
+  const preregistrationElectionIds = sessionStorageWritable('candidateContext-preselectedElectionIds', new Array<Id>());
 
-  const preselectedConstituencies = sessionStorageWritable<{
+  const preregistrationConstituencyIds = sessionStorageWritable<{
     [electionId: Id]: Id;
   }>('candidateContext-preselectedConstituencyIds', {});
+
+  const preregistrationElections = derived(
+    [appSettings, dataRoot, preregistrationElectionIds],
+    ([appSettings, dataRoot, preregistrationElectionIds]) => {
+      const ids = getImpliedElectionIds({ appSettings, elections: dataRoot.elections }) ?? preregistrationElectionIds;
+      return ids.map((id) => dataRoot.getElection(id));
+    }
+  );
+
+  const preregistrationNominations = derived(
+    [preregistrationElections, preregistrationConstituencyIds],
+    ([preregistrationElections, preregistrationConstituencyIds]) => {
+      return preregistrationElections
+        .map((e) => ({
+          constituencyId: preregistrationConstituencyIds[e.id] || e.singleConstituency?.id,
+          electionId: e.id
+        }))
+        .filter(({ constituencyId }) => !!constituencyId) as Array<{
+        electionId: Id;
+        constituencyId: Id;
+      }>;
+    }
+  );
 
   const selectedElections = derived(
     [dataRoot, userData],
@@ -164,6 +188,7 @@ export function initCandidateContext(): CandidateContext {
     await dataWriter.exchangeCodeForIdToken(opts).catch((e) => {
       logDebugError(`Error logging out: ${e?.message ?? '-'}`);
     });
+    // TODO: Handle error!
     return goto(get(getRoute)('CandAppPreregister'), { invalidateAll: true });
   }
 
@@ -258,9 +283,11 @@ export function initCandidateContext(): CandidateContext {
     unansweredRequiredInfoQuestions,
     userData,
     exchangeCodeForIdToken,
-    preselectedElections,
-    preselectedConstituencies,
+    preregistrationElectionIds,
+    preregistrationConstituencyIds,
     clearIdToken,
-    idTokenClaims
+    idTokenClaims,
+    preregistrationElections,
+    preregistrationNominations
   });
 }

@@ -11,26 +11,11 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const {
-    appCustomization,
-    darkMode,
-    dataRoot,
-    getRoute,
-    preregister,
-    preselectedConstituencies,
-    preselectedElections,
-    t
-  } = getCandidateContext();
+  const { appCustomization, darkMode, getRoute, preregister, preregistrationNominations, t } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   let email1 = '';
   let email2 = '';
-  let nominations = $dataRoot.elections
-    .filter(({ id }) => $preselectedElections.includes(id))
-    .map((e) => ({
-      electionId: e.id,
-      constituencyId: $preselectedConstituencies[e.id] ?? e.constituencyGroups[0].constituencies[0].id // Does this fallback makes sense?
-    }));
   let termsAccepted = false;
 
   ///////////////////////////////////////////////////////////////////
@@ -45,7 +30,7 @@
   });
 
   async function onSubmit() {
-    const { type, response } = await preregister({ email: email1, nominations });
+    const { type, response } = await preregister({ email: email1, nominations: $preregistrationNominations });
 
     goto(
       $getRoute({

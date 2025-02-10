@@ -20,13 +20,26 @@ export type CandidateContext = AppContext & {
    */
   constituenciesSelectable: Readable<boolean>;
   /**
-   * The `Id`s ...
+   * The `Id`s ... TODO
    */
-  preselectedElections: Readable<Array<Id>>;
+  preregistrationElectionIds: Readable<Array<Id>>;
   /**
-   * The `Id`s ...
+   * The `Id`s ... TODO
    */
-  preselectedConstituencies: Readable<{ [electionId: Id]: Id }>;
+  preregistrationConstituencyIds: Readable<{ [electionId: Id]: Id }>;
+  /**
+   * The `Election`s selected or implied in the pregistration process.
+   */
+  preregistrationElections: Readable<Array<Election>>;
+  /**
+   * The data for the preregistration `Nomination`s derived from selected `Constituency`s and `Election`s.
+   */
+  preregistrationNominations: Readable<
+    Array<{
+      electionId: Id;
+      constituencyId: Id;
+    }>
+  >;
   /**
    * The `Election`s the `Candidate` is nominated in.
    */
