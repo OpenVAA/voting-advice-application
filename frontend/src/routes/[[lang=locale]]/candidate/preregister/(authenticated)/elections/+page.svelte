@@ -13,8 +13,16 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, constituenciesSelectable, darkMode, dataRoot, getRoute, locale, preselectedElections, t } =
-    getCandidateContext();
+  const {
+    appCustomization,
+    constituenciesSelectable,
+    darkMode,
+    dataRoot,
+    getRoute,
+    locale,
+    preregistrationElectionIds,
+    t
+  } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   const electionDate = new Date(); // TODO: Where does this come from?
@@ -44,11 +52,11 @@
       })
     )}
   </div>
-  <ElectionSelector elections={$dataRoot.elections} bind:selected={$preselectedElections} />
+  <ElectionSelector elections={$dataRoot.elections} bind:selected={$preregistrationElectionIds} />
   <Button
     type="submit"
     text={$t('common.continue')}
     variant="main"
-    disabled={$preselectedElections.length === 0}
+    disabled={$preregistrationElectionIds.length === 0}
     on:click={() => goto($getRoute(nextRoute))} />
 </MainContent>

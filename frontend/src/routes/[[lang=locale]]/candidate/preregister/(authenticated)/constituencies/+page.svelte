@@ -12,13 +12,12 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, dataRoot, getRoute, preselectedConstituencies, preselectedElections, t } =
+  const { appCustomization, darkMode, getRoute, preregistrationElections, preregistrationConstituencyIds, t } =
     getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   const nextStep = 'CandAppPreregisterEmail';
 
-  let elections = $dataRoot.elections.filter((e) => $preselectedElections.includes(e.id));
   let selectionComplete: boolean;
 
   ///////////////////////////////////////////////////////////////////
@@ -41,11 +40,14 @@
   <div class="mb-md text-center">
     {@html sanitizeHtml($t('candidateApp.preregister.constituencySelect.content'))}
   </div>
-  <ConstituencySelector {elections} bind:selected={$preselectedConstituencies} bind:selectionComplete />
+  <ConstituencySelector
+    elections={$preregistrationElections}
+    bind:selected={$preregistrationConstituencyIds}
+    bind:selectionComplete />
   <Button
     type="submit"
     text={$t('common.continue')}
     variant="main"
     on:click={() => goto($getRoute(nextStep))}
     disabled={!selectionComplete} />
-  ]</MainContent>
+</MainContent>
