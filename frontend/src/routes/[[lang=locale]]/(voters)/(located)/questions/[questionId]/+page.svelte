@@ -15,6 +15,7 @@ Display a question for answering.
 -->
 
 <script lang="ts">
+  import { dynamicSettings } from '@openvaa/app-shared';
   import { error } from '@sveltejs/kit';
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
@@ -22,10 +23,11 @@ Display a question for answering.
   import { CategoryTag } from '$lib/components/categoryTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { Loading } from '$lib/components/loading';
-  import { QuestionActions, QuestionInfo } from '$lib/components/questions';
+  import { QuestionActions, QuestionBasicInfo } from '$lib/components/questions';
   import QuestionChoices from '$lib/components/questions/QuestionChoices.svelte';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
+  import { QuestionExtendedInfoButton } from '$lib/dynamic-components/questionInfo';
   import { logDebugError } from '$lib/utils/logger';
   import { FIRST_QUESTION_ID, parseParams } from '$lib/utils/route';
   import { DELAY } from '$lib/utils/timing';
@@ -251,8 +253,12 @@ Display a question for answering.
     </svelte:fragment>
 
     <!-- !videoProps && -->
-    {#if info && info !== ''}
-      <QuestionInfo {info} onCollapse={handleInfoCollapse} onExpand={handleInfoExpand} />
+    {#if dynamicSettings.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length)}
+      <div class="flex items-center justify-center">
+        <QuestionExtendedInfoButton {question} />
+      </div>
+    {:else if info}
+      <QuestionBasicInfo {info} onCollapse={handleInfoCollapse} onExpand={handleInfoExpand} />
     {/if}
 
     <svelte:fragment slot="primaryActions">
