@@ -11,6 +11,7 @@ See [`<ModalContainer>` component](./ModalContainer.svelte) for more information
 ### Properties
 
 - `title`: The title of the modal
+- `boxClass`: Optional classes to add to the dialog box itself. Note that the basic `class` property is applied to the `<dialog>` element, which is rarely needed.
 - Any valid properties of a `<ModalContainer>` component.
 
 ### Bindable functions
@@ -62,20 +63,22 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
 -->
 
 <script lang="ts">
-  import { t } from '$lib/i18n';
+  import { getComponentContext } from '$lib/contexts/component';
   import ModalContainer from './ModalContainer.svelte';
   import type { ModalProps } from './Modal.type';
+  const { t } = getComponentContext();
 
   type $$Props = ModalProps;
 
   export let title: $$Props['title'];
+  export let boxClass: $$Props['boxClass'] = '';
   export let isOpen: $$Props['isOpen'] = false;
   export let closeModal: $$Props['closeModal'] = undefined;
   export let openModal: $$Props['openModal'] = undefined;
 </script>
 
 <ModalContainer {...$$restProps} {title} bind:isOpen bind:closeModal bind:openModal on:open on:close>
-  <div class="modal-box">
+  <div class="modal-box {boxClass ?? ''}">
     <h2 class="mb-lg text-center">{title}</h2>
     <slot />
     {#if $$slots.actions}

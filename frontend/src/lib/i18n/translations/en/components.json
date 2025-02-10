@@ -60,7 +60,7 @@
     "unsupportedWarning": "Unfortunately, your browser does not support this kind of video.",
     "video": "Video"
   },
-  "questionExtendedInfoLauncher": {
+  "questionExtendedInfo": {
     "title": "Learn more"
   }
 }

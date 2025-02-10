@@ -55,9 +55,17 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
   });
 </script>
 
-<ModalContainer closeOnBackdropClick={true} {...$$restProps} {title} bind:isOpen bind:closeModal bind:openModal>
+<ModalContainer
+  closeOnBackdropClick={true}
+  {...$$restProps}
+  {title}
+  bind:isOpen
+  bind:closeModal
+  bind:openModal
+  on:open
+  on:close>
   <div
-    class="max-w-80 relative col-span-1 col-start-1 row-span-1 row-start-1 h-[calc(100vh-2rem)] translate-y-[1rem] rounded-t-[2rem] bg-base-100 p-24 pt-40"
+    class="max-w-80 relative col-span-1 col-start-1 row-span-1 row-start-1 h-[calc(100vh-2rem)] rounded-t-[2rem] bg-base-100 p-24 pt-40 sm:translate-y-[1rem]"
     in:fly={{ y: '100%', duration: 200 }}
     out:fly={{ y: '100%', duration: 200 }}>
     <h2 class="mb-lg text-center">{title}</h2>
@@ -68,8 +76,12 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
         <span class="sr-only">{$t('common.closeDialog')}</span>
       </button>
     </form>
-  </div>
-  <div class="absolute bottom-16 right-16">
-    <Button type="button" variant="floating-icon" text="close" icon="close" on:click={closeModal} />
+    <Button
+      type="button"
+      variant="floating-icon"
+      text="close"
+      icon="close"
+      on:click={closeModal}
+      class="!absolute bottom-0 right-0" />
   </div>
 </ModalContainer>

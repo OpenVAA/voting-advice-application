@@ -60,7 +60,7 @@
     "unsupportedWarning": "Tyvärr stöder inte din webbläsare den här typen av video.",
     "video": "Video"
   },
-  "questionExtendedInfoLauncher": {
+  "questionExtendedInfo": {
     "title": "Upptäck mer"
   }
 }

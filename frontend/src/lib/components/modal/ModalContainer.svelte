@@ -10,7 +10,6 @@ A modal dialog.
 
 - `title`: The title of the modal 
 - `autofocusId`: Optional id of the element to autofocus when the dialog has opened. Note that this must be a focusable element. By default, the first focusable descendant will be focused.
-- `boxClass`: Optional classes to add to the dialog box itself. Note that the basic `class` property is applied to the `<dialog>` element, which is rarely needed.
 - `closeOnBackdropClick`:  Whether to allow closing the modal by clicking outside of it. @default `true`
 - Any valid properties of a `<dialog>` element.
 
@@ -61,8 +60,6 @@ A modal dialog.
 
   export let title: $$Props['title'];
   export let autofocusId: $$Props['autofocusId'] = undefined;
-  // export let container: $$Props['container'] = ModalContainer;
-  // export let boxClass: $$Props['boxClass'] = '';
   export let closeOnBackdropClick: $$Props['closeOnBackdropClick'] = true;
   export let isOpen: $$Props['isOpen'] = false;
 

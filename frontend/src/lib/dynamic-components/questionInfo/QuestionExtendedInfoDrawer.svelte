@@ -6,14 +6,14 @@
   type $$Props = QuestionExtendedInfoDrawerProps;
 
   export let question: $$Props['question'];
-  let { customData }: { customData: CustomData['Question'] } = question;
+  const customData: CustomData['Question'] | null | undefined = question.customData;
 </script>
 
-<Drawer title={question?.text ?? ''}>
+<Drawer title={question.text}>
   <QuestionExtendedInfo
     info={question.info}
-    infoSections={(customData.infoSections ?? [])
-      .filter(({ visible }) => !!visible)
+    infoSections={customData?.infoSections
+      ?.filter(({ visible }) => !!visible)
       .map(({ title, text }) => ({
         title: title ?? '',
         content: text ?? ''
