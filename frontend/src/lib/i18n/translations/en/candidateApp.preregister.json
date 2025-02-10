@@ -12,7 +12,7 @@
       }
     },
     "success": {
-      "title": "Bank ID login complete",
+      "title": "Bank ID identification complete",
       "content": "<p>Welcome to the Voting Advice Application, {firstName} {lastName}!</p><p>Click the button below to continue the registration process.</p>"
     },
     "identifyYourselfButton": "Identify yourself",

@@ -41,6 +41,7 @@
     {@html sanitizeHtml($t('candidateApp.preregister.constituencySelect.content'))}
   </div>
   <ConstituencySelector
+    class="mb-md"
     elections={$preregistrationElections}
     bind:selected={$preregistrationConstituencyIds}
     bind:selectionComplete />
