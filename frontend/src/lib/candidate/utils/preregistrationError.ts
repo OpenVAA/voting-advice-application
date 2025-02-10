@@ -32,6 +32,6 @@ const CANDIDATE_PREREGISTRATION_ERROR: Record<string, { title: TranslationKey; c
 } as const;
 
 /**
- * The allowed error codes for candidate login to be displayed on the login page. These are subkeys of `candidateApp.error.` translations.
+ * The allowed error codes for candidate preregistration to be displayed on the preregistration page.
  */
 export type CandidatePreregistrationError = keyof typeof CANDIDATE_PREREGISTRATION_ERROR;
