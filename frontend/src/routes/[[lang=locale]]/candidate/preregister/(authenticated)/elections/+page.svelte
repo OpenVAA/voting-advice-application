@@ -52,7 +52,7 @@
       })
     )}
   </div>
-  <ElectionSelector elections={$dataRoot.elections} bind:selected={$preregistrationElectionIds} />
+  <ElectionSelector class="mb-md" elections={$dataRoot.elections} bind:selected={$preregistrationElectionIds} />
   <Button
     type="submit"
     text={$t('common.continue')}
