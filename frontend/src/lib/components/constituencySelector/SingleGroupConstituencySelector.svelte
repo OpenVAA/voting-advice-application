@@ -54,12 +54,20 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
   function handleChange(): void {
     onChange?.(selected);
   }
+
+  /**
+   * Make sure we can trigger an event if a single constituency is selected
+   */
+  function handleClick(): void {
+    if (group.singleConstituency) handleChange();
+  }
 </script>
 
 <select
   aria-label={label}
   {...concatClass($$restProps, 'select w-full max-w-md place-self-center')}
   bind:value={selected}
+  on:click={handleClick}
   on:change={handleChange}>
   {#if !group.singleConstituency}
     <option disabled selected value="">
