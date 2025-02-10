@@ -1,3 +1,4 @@
+import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
 import type { Readable, Writable } from 'svelte/store';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
@@ -18,6 +19,27 @@ export type CandidateContext = AppContext & {
    * Whether `Constituency`s can be selected.
    */
   constituenciesSelectable: Readable<boolean>;
+  /**
+   * The `Id`s ... TODO
+   */
+  preregistrationElectionIds: Readable<Array<Id>>;
+  /**
+   * The `Id`s ... TODO
+   */
+  preregistrationConstituencyIds: Readable<{ [electionId: Id]: Id }>;
+  /**
+   * The `Election`s selected or implied in the pregistration process.
+   */
+  preregistrationElections: Readable<Array<Election>>;
+  /**
+   * The data for the preregistration `Nomination`s derived from selected `Constituency`s and `Election`s.
+   */
+  preregistrationNominations: Readable<
+    Array<{
+      electionId: Id;
+      constituencyId: Id;
+    }>
+  >;
   /**
    * The `Election`s the `Candidate` is nominated in.
    */
@@ -93,6 +115,23 @@ export type CandidateContext = AppContext & {
    */
   setPassword: (opts: { currentPassword: string; password: string }) => ReturnType<DataWriter['setPassword']>;
 
+  exchangeCodeForIdToken: (opts: { authorizationCode: string; redirectUri: string }) => Promise<void>;
+
+  /**
+   * Creates a candidate with a nomination or nominations, then emails a registration link.
+   * Expects a valid ID token in the cookies.
+   * @param email - Email.
+   * @param electionIds - Election IDs.
+   * @param constituencyId - Constituency ID.
+   * @returns A `Promise` resolving to an `DataApiActionResult` object.
+   */
+  preregister: (opts: {
+    email: string;
+    nominations: Array<{ electionId: Id; constituencyId: Id }>;
+  }) => ReturnType<DataWriter['preregisterWithIdToken']>;
+
+  clearIdToken: () => Promise<void>;
+
   ////////////////////////////////////////////////////////////////////
   // Other properties specific to CandidateContext
   ////////////////////////////////////////////////////////////////////
@@ -107,6 +146,10 @@ export type CandidateContext = AppContext & {
    * Holds the jwt token. NB. The context’s internal methods use it automatically for authentication.
    */
   authToken: Readable<string | undefined>;
+  /**
+   * Holds the ID token claims.
+   */
+  idTokenClaims: Readable<{ firstName: string; lastName: string } | undefined>;
   /**
    * Holds the user’s email so it can be prefilled during password changes.
    */

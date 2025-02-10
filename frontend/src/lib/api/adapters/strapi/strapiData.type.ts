@@ -168,6 +168,10 @@ export type StrapiConstituencyData = StrapiObject<{
   shortName: LocalizedString;
   nominations: StrapiRelation<StrapiNominationData>;
   parent: StrapiSingleRelation<StrapiConstituencyData>;
+  /**
+   * This is the reverse of `parent` and not normally used.
+   */
+  constituencies: StrapiRelation<StrapiConstituencyData>;
 }>;
 
 export type StrapiCandidateData = StrapiObject<{

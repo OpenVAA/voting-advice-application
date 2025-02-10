@@ -124,6 +124,15 @@ module.exports = async (plugin: Core.Plugin) => {
       prefix: ''
     }
   });
+  plugin.routes['content-api'].routes.push({
+    method: 'POST',
+    path: '/auth/candidate/preregister',
+    handler: 'candidate.preregister',
+    config: {
+      middlewares: ['plugin::users-permissions.rateLimit'],
+      prefix: ''
+    }
+  });
 
   // Enforce ACL on the /users/me endpoint
   for (const route of plugin.routes['content-api'].routes) {

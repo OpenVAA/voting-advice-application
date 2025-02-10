@@ -75,4 +75,8 @@ export type VoterContext = AppContext & {
    * The `Question`s in the selected `QuestionCategory`s as well as some utility methods.
    */
   selectedQuestionBlocks: Readable<QuestionBlocks>;
+  /**
+   * Reset all saved voter data, except privacy preferences and survey status.
+   */
+  resetVoterData: () => void;
 };

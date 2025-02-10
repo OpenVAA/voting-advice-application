@@ -204,6 +204,16 @@ export function initVoterContext(): VoterContext {
   });
 
   ////////////////////////////////////////////////////////////
+  // Resetting voter data
+  ///////////////////////////////////////////////////////////
+
+  function resetVoterData(): void {
+    answers.reset();
+    firstQuestionId.set(null);
+    selectedQuestionCategoryIds.set([]);
+  }
+
+  ////////////////////////////////////////////////////////////
   // Build context
   ////////////////////////////////////////////////////////////
 
@@ -220,6 +230,7 @@ export function initVoterContext(): VoterContext {
     matches,
     opinionQuestionCategories,
     opinionQuestions,
+    resetVoterData,
     resultsAvailable,
     selectedConstituencies,
     selectedElections,

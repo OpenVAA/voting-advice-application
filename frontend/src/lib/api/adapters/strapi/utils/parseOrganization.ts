@@ -1,6 +1,5 @@
 import { ENTITY_TYPE, type OrganizationData } from '@openvaa/data';
 import { parseAnswers } from '$lib/api/adapters/strapi/utils/parseAnswers';
-import { ensureColors } from '$lib/utils/color/ensureColors';
 import { parseBasics } from './parseBasics';
 import { parseImage } from './parseImage';
 import type { StrapiPartyData } from '../strapiData.type';
@@ -10,7 +9,7 @@ export function parseOrganization(data: StrapiPartyData, locale: string | null):
   return {
     type: ENTITY_TYPE.Organization,
     ...parseBasics(data, locale),
-    color: ensureColors({ normal: color, dark: colorDark }),
+    color: { normal: color, dark: colorDark },
     image: parseImage(image),
     answers: parseAnswers(answers, locale)
   };

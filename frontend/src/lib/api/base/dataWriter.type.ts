@@ -10,6 +10,57 @@ import type { DPDataType } from './dataTypes';
  */
 export interface DataWriter<TType extends AdapterType = 'universal'> {
   ////////////////////////////////////////////////////////////////////
+  // Preregistration
+  ////////////////////////////////////////////////////////////////////
+
+  /**
+   * Exchange an authorization code for an ID token.
+   * @param authorizationCode - An authorization code received from an IdP.
+   * @param redirectUri - A redirect URI used to obtain the authorization code.
+   * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
+   */
+  exchangeCodeForIdToken: (opts: {
+    authorizationCode: string;
+    redirectUri: string;
+  }) => DWReturnType<DataApiActionResult>;
+
+  /**
+   * Create a candidate with a nomination or nominations and send a registration link.
+   * @param email - Email.
+   * @param nominations - Nominations.
+   * @access ID token.
+   * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
+   */
+  preregisterWithIdToken: (opts: {
+    email: string;
+    nominations: Array<{ electionId: Id; constituencyId: Id }>;
+  }) => DWReturnType<DataApiActionResult & { response: Pick<Response, 'status'> }>;
+
+  /**
+   * Create a candidate with a nomination or nominations and send a registration link.
+   * @param firstName - First name.
+   * @param lastName - Last name.
+   * @param identifier - Personal identifier such as a birthdate.
+   * @param email - Email.
+   * @param nominations - Nominations.
+   * @access API token.
+   * @returns A `Promise` resolving to an `DataApiActionResult` object or a `Response` containing one.
+   */
+  preregisterWithApiToken: (
+    opts: {
+      body: {
+        firstName: string;
+        lastName: string;
+        identifier: string;
+        email: string;
+        nominations: Array<{ electionId: Id; constituencyId: Id }>;
+      };
+    } & WithAuth
+  ) => DWReturnType<DataApiActionResult, TType>;
+
+  clearIdToken: () => DWReturnType<DataApiActionResult>;
+
+  ////////////////////////////////////////////////////////////////////
   // Registration
   ////////////////////////////////////////////////////////////////////
 

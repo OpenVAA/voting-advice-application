@@ -20,6 +20,16 @@ const validateRegisterBody = validateYupSchema(
   })
 );
 
+const validatePreregisterBody = validateYupSchema(
+  yup.object({
+    firstName: yup.string().required(),
+    lastName: yup.string().required(),
+    identifier: yup.string().required(),
+    email: yup.string().required(),
+    nominations: yup.array(yup.object({ electionId: yup.string(), constituencyId: yup.string() }))
+  })
+);
+
 /**
  * Check that the registration key is valid for the Candidate and the User associated with it does not yet exist.
  * @returns An object with the candidate object along with the email associated with the registration key.
@@ -87,6 +97,56 @@ async function register(ctx: Context): Promise<{ type: 'success' }> {
 }
 
 /**
+ * Preregister a Candidate.
+ * @access Authorization: Bearer {BACKEND_API_TOKEN}
+ * @returns { success: true }
+ */
+async function preregister(ctx: Context): Promise<{ type: 'success' }> {
+  const params: {
+    firstName: string;
+    lastName: string;
+    identifier: string;
+    email: string;
+    nominations: Array<{ electionId: string; constituencyId: string }>;
+  } = ctx.request.body;
+
+  await validatePreregisterBody(params);
+
+  const { email, nominations, ...identity } = params;
+
+  const candidate =
+    (await strapi.query('api::candidate.candidate').findOne({ where: { email } })) ??
+    (await strapi.query('api::candidate.candidate').findOne({ where: identity }));
+
+  if (candidate) {
+    throw new ValidationError('CANDIDATE_CONFLICT');
+  }
+
+  const { documentId: candidateDocumentId } = await strapi.documents('api::candidate.candidate').create({
+    data: { email, ...identity }
+  });
+
+  await Promise.all(
+    nominations.map(
+      async (nomination) =>
+        await strapi.documents('api::nomination.nomination').create({
+          data: {
+            candidate: candidateDocumentId,
+            election: nomination.electionId,
+            electionRound: 1,
+            constituency: nomination.constituencyId,
+            unconfirmed: true
+          }
+        })
+    )
+  );
+
+  return {
+    type: 'success'
+  };
+}
+
+/**
  * Get the Candidate with the registration key and check that the user does not exist.
  */
 async function getCandidate(registrationKey: string): Promise<Data.ContentType<CandidateApi>> {
@@ -103,5 +163,6 @@ async function getCandidate(registrationKey: string): Promise<Data.ContentType<C
 
 module.exports = {
   check,
-  register
+  register,
+  preregister
 };

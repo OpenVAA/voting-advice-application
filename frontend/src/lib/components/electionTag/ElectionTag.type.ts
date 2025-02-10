@@ -6,7 +6,7 @@ export type ElectionTagProps = SvelteHTMLElements['span'] & {
    */
   election: Election;
   /**
-   * Whether to use an abbreviation or the full name. @default 'default'
+   * Whether to use an abbreviation or the full name. @default 'short'
    */
-  variant?: 'default' | 'short';
+  variant?: 'short' | 'full';
 };

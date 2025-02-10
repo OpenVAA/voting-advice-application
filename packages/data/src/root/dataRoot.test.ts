@@ -256,3 +256,71 @@ describe('formatAnswer', () => {
     ).toBe('Choice 3, Choice 1, Choice 2');
   });
 });
+
+describe('getCombinedElections', () => {
+  test('Should returned combined elections for elections 2 and 3', () => {
+    const parentElection = root.getElection('election-2');
+    const childElection = root.getElection('election-3');
+    const unrelatedElection = root.getElection('election-1');
+    const expected = [
+      unrelatedElection,
+      {
+        type: 'combined',
+        elections: [parentElection, childElection],
+        constituencyGroup: childElection.constituencyGroups[0]
+      }
+    ];
+    const combined = root.getCombinedElections();
+    expect(combined).toEqual(expected);
+  });
+  test('Should chain three combined elections', () => {
+    // Make a copy, because we will edit the data
+    const root = getTestDataRoot();
+    const grandParentElection = root.getElection('election-1');
+    // Remove 'constituencyGroup-2' from 'election-1' so that it can chain all the way through
+    grandParentElection.data.constituencyGroupIds = ['constituencyGroup-1'];
+    const parentElection = root.getElection('election-2');
+    const childElection = root.getElection('election-3');
+    const expected = [
+      {
+        type: 'combined',
+        elections: [grandParentElection, parentElection, childElection],
+        constituencyGroup: childElection.constituencyGroups[0]
+      }
+    ];
+    const combined = root.getCombinedElections();
+    expect(combined).toEqual(expected);
+  });
+});
+
+describe('getApplicableElections', () => {
+  const grandParentElection = root.getElection('election-1');
+  const parentElection = root.getElection('election-2');
+  const childElection = root.getElection('election-3');
+  test('Should return same election', () => {
+    const constituency = grandParentElection.constituencyGroups[0].constituencies[0];
+    expect(constituency).toBeDefined();
+    expect(root.getApplicableElections(constituency)).toEqual([grandParentElection]);
+  });
+  test('Should return self and parent election', () => {
+    const constituency = parentElection.constituencyGroups[0].constituencies[0];
+    expect(constituency).toBeDefined();
+    const elections = root.getApplicableElections(constituency);
+    expect(elections).toEqual(expect.arrayContaining([grandParentElection, parentElection]));
+    expect(elections).toHaveLength(2);
+  });
+  test('Should return self, parent and gransparent election', () => {
+    const constituency = childElection.constituencyGroups[0].constituencies[0];
+    expect(constituency).toBeDefined();
+    const elections = root.getApplicableElections(constituency);
+    expect(elections).toEqual(expect.arrayContaining([grandParentElection, parentElection, childElection]));
+    expect(elections).toHaveLength(3);
+  });
+  test('Should not return unrelated elections', () => {
+    // parentElection.constituencyGroups[1] is not part of any other hierarchy
+    const constituency = grandParentElection.constituencyGroups[1].constituencies[0];
+    expect(constituency).toBeDefined();
+    const elections = root.getApplicableElections(constituency);
+    expect(elections).toEqual([grandParentElection]);
+  });
+});

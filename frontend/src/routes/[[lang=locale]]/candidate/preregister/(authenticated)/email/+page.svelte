@@ -1,0 +1,80 @@
+<script lang="ts">
+  import { Button } from '$lib/components/button';
+  import MainContent from '../../../../MainContent.svelte';
+  import { getCandidateContext } from '$lib/contexts/candidate';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { onDestroy } from 'svelte';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
+  import { goto } from '$app/navigation';
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { appCustomization, darkMode, getRoute, preregister, preregistrationNominations, t } = getCandidateContext();
+  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+
+  let email1 = '';
+  let email2 = '';
+  let termsAccepted = false;
+
+  ///////////////////////////////////////////////////////////////////
+  // Top bar and styling
+  ////////////////////////////////////////////////////////////////////
+
+  pageStyles.push({ drawer: { background: 'bg-base-300' } });
+  topBarSettings.push({
+    imageSrc: $darkMode
+      ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
+      : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
+  });
+
+  async function onSubmit() {
+    const { type, response } = await preregister({ email: email1, nominations: $preregistrationNominations });
+
+    goto(
+      $getRoute({
+        route: 'CandAppPreregisterStatus',
+        error: type === 'failure' ? `${response.status}` : undefined
+      })
+    );
+  }
+</script>
+
+<svelte:head>
+  <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
+</svelte:head>
+
+<MainContent title={$t('candidateApp.preregister.emailVerification.title')}>
+  <div class="mb-md text-center">
+    {@html sanitizeHtml($t('candidateApp.preregister.emailVerification.content'))}
+  </div>
+  <input
+    type="email"
+    name="email1"
+    id="email1"
+    class="input mb-md w-full max-w-md"
+    placeholder={$t('candidateApp.common.emailPlaceholder')}
+    aria-label={$t('candidateApp.common.emailPlaceholder')}
+    bind:value={email1}
+    required />
+  <input
+    type="email"
+    name="email2"
+    id="email2"
+    class="input mb-md w-full max-w-md"
+    placeholder={$t('candidateApp.common.emailPlaceholder')}
+    aria-label={$t('candidateApp.common.emailPlaceholder')}
+    bind:value={email2}
+    required />
+  <label class="label mb-md cursor-pointer justify-start gap-sm !p-0">
+    <input type="checkbox" class="checkbox" name="selected-elections" bind:checked={termsAccepted} />
+    <span class="label-text">{$t('candidateApp.preregister.emailVerification.termsCheckbox')}</span>
+  </label>
+  <Button
+    type="submit"
+    text={$t('common.continue')}
+    variant="main"
+    on:click={() => onSubmit()}
+    disabled={!termsAccepted || !email1 || !(email1 === email2)} />
+</MainContent>

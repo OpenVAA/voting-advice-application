@@ -1,3 +1,4 @@
+import { Id } from '@openvaa/core';
 import type { ENTITY_TYPE, EntityType } from '@openvaa/data';
 
 /**
@@ -185,13 +186,17 @@ export type DynamicSettings = {
     showSurveyPopup?: number;
   };
   /**
-   * Settings related to election selection in VAAs with multiple candidates. These have no effect if there is just one election.
+   * Settings related to election and constituency selection in VAAs with multiple elections. These have no effect if there is just one election.
    */
   elections?: {
     /**
      * If `true` all elections are selected by default.
      */
     disallowSelection?: boolean;
+    /**
+     * If `true` and there are multiple elections, the constituency selection page with this `ConstituencyGroup` as the only option will be shown first and the possible election selection only afterwards. Only those elections that are applicable to the selected constituency or its ancestors are shown. Election selection will be bypassed the same way as normally.
+     */
+    startFromConstituencyGroup?: Id;
   };
   /**
    * If `true`, an under maintenance error page will be shown.

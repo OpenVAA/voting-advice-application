@@ -2,6 +2,7 @@ import { ENTITY_TYPE } from '@openvaa/data';
 import { UniversalDataWriter } from '$lib/api/base/universalDataWriter';
 import { strapiAdapterMixin } from '../strapiAdapter';
 import { parseCandidate, parseNominations, parseUser } from '../utils';
+import type { Id } from '@openvaa/core';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type {
   BasicUserData,
@@ -17,6 +18,30 @@ import type {
 import type { Params } from '../strapiAdapter.type';
 
 export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
+  ////////////////////////////////////////////////////////////////////
+  // Registration
+  ////////////////////////////////////////////////////////////////////
+
+  protected _preregister({
+    body,
+    authToken
+  }: {
+    body: {
+      firstName: string;
+      lastName: string;
+      identifier: string;
+      email: string;
+      nominations: Array<{ electionId: Id; constituencyId: Id }>;
+    };
+  } & WithAuth): Promise<DataApiActionResult> {
+    // Throws if failed
+    return this.apiPost({
+      endpoint: 'preregisterCandidate',
+      body,
+      authToken
+    }).then(() => ({ type: 'success' }));
+  }
+
   ////////////////////////////////////////////////////////////////////
   // Registration
   ////////////////////////////////////////////////////////////////////
