@@ -33,9 +33,9 @@
 {#if $idTokenClaims}
   <slot />
 {:else}
-  <MainContent title={$t('candidateApp.preregister.identification.error.expired.title')}>
+  <MainContent title={$t('candidateApp.preregister.status.tokenExpiredError.title')}>
     <div class="mb-md text-center">
-      {@html sanitizeHtml($t('candidateApp.preregister.identification.error.expired.content'))}
+      {@html sanitizeHtml($t('candidateApp.preregister.status.tokenExpiredError.content'))}
     </div>
     <Button
       text={$t('common.continue')}

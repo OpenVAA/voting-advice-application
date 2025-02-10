@@ -5,7 +5,6 @@
   import { getLayoutContext } from '$lib/contexts/layout';
   import { onDestroy } from 'svelte';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import { goto } from '$app/navigation';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -30,14 +29,7 @@
   });
 
   async function onSubmit() {
-    const { type, response } = await preregister({ email: email1, nominations: $preregistrationNominations });
-
-    goto(
-      $getRoute({
-        route: 'CandAppPreregisterStatus',
-        error: type === 'failure' ? `${response.status}` : undefined
-      })
-    );
+    await preregister({ email: email1, nominations: $preregistrationNominations });
   }
 </script>
 

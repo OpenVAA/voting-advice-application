@@ -114,21 +114,22 @@ export type CandidateContext = AppContext & {
    * @returns A `Promise` resolving to an `DataApiActionResult` object.
    */
   setPassword: (opts: { currentPassword: string; password: string }) => ReturnType<DataWriter['setPassword']>;
-
-  exchangeCodeForIdToken: (opts: { authorizationCode: string; redirectUri: string }) => Promise<void>;
-
   /**
-   * Creates a candidate with a nomination or nominations, then emails a registration link.
+   * Exchange an authorization code for an ID token.
+   * @param authorizationCode - An authorization code received from an IdP.
+   * @param redirectUri - A redirect URI used to obtain the authorization code.
+   * @returns A `Promise` resolving when the redirection is complete.
+   */
+  exchangeCodeForIdToken: (opts: { authorizationCode: string; redirectUri: string }) => Promise<void>;
+  /**
+   * Create a candidate with a nomination or nominations, then emails a registration link.
    * Expects a valid ID token in the cookies.
    * @param email - Email.
    * @param electionIds - Election IDs.
    * @param constituencyId - Constituency ID.
-   * @returns A `Promise` resolving to an `DataApiActionResult` object.
+   * @returns A `Promise` resolving when the redirection is complete.
    */
-  preregister: (opts: {
-    email: string;
-    nominations: Array<{ electionId: Id; constituencyId: Id }>;
-  }) => ReturnType<DataWriter['preregisterWithIdToken']>;
+  preregister: (opts: { email: string; nominations: Array<{ electionId: Id; constituencyId: Id }> }) => Promise<void>;
 
   clearIdToken: () => Promise<void>;
 

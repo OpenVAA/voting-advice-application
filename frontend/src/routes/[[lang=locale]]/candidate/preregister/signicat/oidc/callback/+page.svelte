@@ -45,4 +45,4 @@
   <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
 </svelte:head>
 
-<MainContent title={$t('candidateApp.preregister.identification.start.title')}><Loading /></MainContent>
+<MainContent title=""><Loading /></MainContent>
