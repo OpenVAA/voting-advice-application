@@ -1,5 +1,6 @@
 import { derived } from 'svelte/store';
 import { logDebugError } from '$lib/utils/logger';
+import { sessionStorageWritable } from '../utils/storageStore';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
 import type { Readable, Writable } from 'svelte/store';
@@ -18,15 +19,21 @@ export function questionBlockStore({
   selectedElections: Readable<Array<Election>>;
   selectedConstituencies: Readable<Array<Constituency>>;
 }): Readable<QuestionBlocks> {
+  // Store for shown questions
+  const shownQuestionIds = sessionStorageWritable<Array<Id>>('voterContext-shownQuestions', []);
+  const showChoices = sessionStorageWritable<boolean>('voterContext-showChoices', true);
+
   return derived(
     [
       firstQuestionId,
       opinionQuestionCategories,
       selectedQuestionCategoryIds,
       selectedElections,
-      selectedConstituencies
+      selectedConstituencies,
+      shownQuestionIds,
+      showChoices
     ],
-    ([firstId, categories, categoryIds, elections, constituencies]) => {
+    ([firstId, categories, categoryIds, elections, constituencies, shown, showingChoices]) => {
       // Get all questions
       if (categoryIds.length) categories = categories.filter((c) => categoryIds.includes(c.id));
       let blocks = categories
@@ -53,15 +60,32 @@ export function questionBlockStore({
         get questions() {
           return blocks.flat();
         },
+        shownQuestionIds: shown,
+        showChoices: showingChoices,
         getByCategory: ({ id }: QuestionCategory) => getByCategoryId(blocks, id),
-        getByQuestion: ({ id }: AnyQuestionVariant) => getByQuestionId(blocks, id)
+        getByQuestion: ({ id }: AnyQuestionVariant) => getByQuestionId(blocks, id),
+        addShownQuestionId: (id: Id) => {
+          shownQuestionIds.update((ids) => {
+            if (!ids.includes(id)) {
+              return [...ids, id];
+            }
+            return ids;
+          });
+        },
+        resetShownQuestionIds: () => shownQuestionIds.set([]),
+        setShowChoices: (value: boolean) => showChoices.set(value)
       };
     },
     {
       blocks: [],
       questions: [],
+      shownQuestionIds: [],
+      showChoices: true,
       getByCategory: () => undefined,
-      getByQuestion: () => undefined
+      getByQuestion: () => undefined,
+      addShownQuestionId: () => {},
+      resetShownQuestionIds: () => {},
+      setShowChoices: () => {}
     }
   );
 }

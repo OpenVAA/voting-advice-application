@@ -50,7 +50,14 @@ export const dynamicSettings: DynamicSettings = {
       show: true
     },
     showCategoryTags: true,
-    showResultsLink: true
+    showResultsLink: true,
+    dynamicOrdering: {
+      enabled: false,
+      config: {
+        type: 'factor-based',
+        numSuggestions: 3
+      }
+    }
   },
   results: {
     cardContents: {
