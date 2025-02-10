@@ -10,6 +10,11 @@ A template part that outputs the navigation menu for the Voter App for use in `L
 
 - Any valid properties of a `Navigation` component.
 
+### Settings
+
+- `elections.disallowSelection`: Affects whether the select elections item is shown.
+- `elections.startFromConstituencyGroup`: Affects the order of the items shown and under which conditions they are disabled.
+
 ### Usage
 
 ```tsx
@@ -29,12 +34,12 @@ A template part that outputs the navigation menu for the Voter App for use in `L
   const { navigation } = getLayoutContext(onDestroy);
 
   const {
-    answers,
     appSettings,
     constituenciesSelectable,
     electionsSelectable,
     getRoute,
     openFeedbackModal,
+    resetVoterData,
     resultsAvailable,
     selectedElections: elections,
     selectedConstituencies: constituencies,
@@ -52,15 +57,23 @@ A template part that outputs the navigation menu for the Voter App for use in `L
     id="drawerCloseButton" />
   <NavGroup>
     <NavItem href={$getRoute('Home')} icon="home" text={$t('common.home')} />
-    {#if $electionsSelectable}
+    <!-- Elections are selected either before or after constituencies depending on `startFromConstituencyGroup` -->
+    {#if $electionsSelectable && !$appSettings.elections?.startFromConstituencyGroup}
       <NavItem href={$getRoute('Elections')} icon="election" text={$t('elections.title')} />
     {/if}
     {#if $constituenciesSelectable}
       <NavItem
-        disabled={!$elections.length}
+        disabled={!$appSettings.elections?.startFromConstituencyGroup && !$elections.length}
         href={$getRoute('Constituencies')}
         icon="constituency"
         text={$t('constituencies.title')} />
+    {/if}
+    {#if $electionsSelectable && $appSettings.elections?.startFromConstituencyGroup}
+      <NavItem
+        disabled={!$constituencies.length}
+        href={$getRoute('Elections')}
+        icon="election"
+        text={$t('elections.title')} />
     {/if}
     <NavItem
       disabled={!($elections.length && $constituencies.length)}
@@ -74,11 +87,7 @@ A template part that outputs the navigation menu for the Voter App for use in `L
       text={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')} />
   </NavGroup>
   <NavGroup>
-    <NavItem
-      disabled={Object.values($answers).length === 0}
-      on:click={() => answers.reset()}
-      icon="close"
-      text={$t('common.resetAnswers')} />
+    <NavItem on:click={() => resetVoterData()} icon="close" text={$t('common.resetAnswers')} />
   </NavGroup>
   <NavGroup>
     <NavItem href={$getRoute('Info')} icon="election" text={$t('info.title')} />

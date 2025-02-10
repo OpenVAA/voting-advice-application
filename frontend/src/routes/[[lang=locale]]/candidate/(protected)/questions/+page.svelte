@@ -35,10 +35,11 @@ Shows the opinion questions for the candidate to answer.
     opinionQuestions,
     profileComplete,
     questionBlocks,
-    unansweredRequiredInfoQuestions,
-    unansweredOpinionQuestions,
+    selectedElections,
     t,
     translate,
+    unansweredRequiredInfoQuestions,
+    unansweredOpinionQuestions,
     userData
   } = getCandidateContext();
   const { savedCandidateData } = userData;
@@ -147,7 +148,7 @@ Shows the opinion questions for the candidate to answer.
           <div class="grid gap-xxl p-lg">
             {#each questions as question}
               {@const { id, text } = question}
-              {@const elections = getElectionsToShow(question)}
+              {@const elections = getElectionsToShow({ question, elections: $selectedElections })}
               {@const answer = getSavedAnswer(question)}
 
               <div class="grid-line-x grid gap-lg">

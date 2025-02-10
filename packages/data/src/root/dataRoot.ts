@@ -12,6 +12,7 @@ import {
   Candidate,
   CandidateNomination,
   type Collection,
+  CombinedElections,
   Constituency,
   type ConstituencyData,
   ConstituencyGroup,
@@ -528,6 +529,63 @@ export class DataRoot extends Updatable {
    */
   getQuestionCategoriesByType(type: QuestionCategoryType): Array<QuestionCategory> {
     return this.questionCategories?.filter((qc) => qc.type === type);
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Other utility methods
+  //////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Get all the `Election`s that are applicable to the given `Constituency` or those implied by it.
+   */
+  getApplicableElections(constituency: Constituency): Array<Election> {
+    return this.elections.filter((e) => e.constituencyGroups.some((cg) => cg.getImpliedConstituency(constituency)));
+  }
+
+  /**
+   * A utility that tries to combine any `Election`s whose `ConstituencyGroup`s can be implied from others in the `DataRoot`.
+   * This can be used when showing a `Constituency` selector to the user so that they need not pick `Constituency`s for each `Election` if they can be implied from other choices.
+   * @param elections - An optional array of `Election`s to combine. If not provided, all `Election`s are considered.
+   * @returns An array of either `CombinedElections` or regular `Election`s.
+   */
+  getCombinedElections(elections?: Array<Election>): Array<CombinedElections | Election> {
+    elections ??= this.elections;
+    // Only elections with a single constituencyGroup are considered, we also order them from the smallest to the largest, because a larger group can never be implied from a smaller one
+    const possiblyCombinable = elections
+      .filter((e) => e.constituencyGroups.length === 1)
+      .sort((a, b) => a.constituencyGroups[0].constituencies.length - b.constituencyGroups[0].constituencies.length);
+    // Collect the implication chains here
+    const implied = new Array<Array<Election>>();
+    for (let i = 0; i < possiblyCombinable.length - 1; i++) {
+      const smaller = possiblyCombinable[i];
+      for (const larger of possiblyCombinable.slice(i + 1)) {
+        if (smaller.constituencyGroups[0].impliedBy(larger.constituencyGroups[0])) {
+          // Try to find an existing chain
+          const chain = implied.find((c) => c.includes(smaller));
+          if (chain) chain.push(larger);
+          else implied.push([smaller, larger]);
+        }
+      }
+    }
+    // Build output, maintaining original election order
+    const out = new Array<CombinedElections | Election>();
+    const seen = new Set<Election>();
+    for (const election of elections) {
+      if (seen.has(election)) continue;
+      const chain = implied.find((c) => c.includes(election));
+      if (chain) {
+        out.push({
+          type: 'combined',
+          elections: chain,
+          constituencyGroup: chain[chain.length - 1].constituencyGroups[0]
+        });
+        // Add all elements in the chain to the seen set so we don't process them again
+        chain.forEach((e) => seen.add(e));
+      } else {
+        out.push(election);
+      }
+    }
+    return out;
   }
 
   //////////////////////////////////////////////////////////////////////////////
