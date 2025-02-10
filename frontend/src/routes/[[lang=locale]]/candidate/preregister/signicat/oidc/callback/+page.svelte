@@ -4,7 +4,7 @@
   import { goto } from '$app/navigation';
   import { Loading } from '$lib/components/loading';
   import { onDestroy } from 'svelte';
-  import { page } from '$app/state';
+  import { page } from '$app/stores';
   import MainContent from '../../../../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
@@ -18,7 +18,7 @@
   // Handle exchanging the  authorization code
   ////////////////////////////////////////////////////////////////////
 
-  $: authorizationCode = page.url.searchParams.get('code');
+  $: authorizationCode = $page.url.searchParams.get('code');
 
   $: if (authorizationCode) {
     exchangeCodeForIdToken({
