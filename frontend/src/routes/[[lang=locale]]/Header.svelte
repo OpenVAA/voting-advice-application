@@ -7,6 +7,10 @@ Defines the global app header.
 ### Dynamic component
 
 Accesses `AppContext` and renders the dynamic `Banner` component.
+
+### Settings
+
+- `headerStyle`: affects the background color of the header.
 -->
 
 <script lang="ts">
@@ -24,16 +28,14 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
 
   const { appSettings, darkMode, t } = getAppContext();
 
-  const { topBarSettings, progress } = getLayoutContext(onDestroy);
+  const { navigationSettings, progress, topBarSettings } = getLayoutContext(onDestroy);
 
   const currentProgress = progress.current;
   const maxProgress = progress.max;
 
-  const headerStyle = $appSettings.headerStyle;
-
   let bgColor: string | undefined;
   $: {
-    const mode = $darkMode ? headerStyle.dark : headerStyle.light;
+    const mode = $darkMode ? $appSettings.headerStyle.dark : $appSettings.headerStyle.light;
     bgColor = $topBarSettings.imageSrc ? mode.overImgBgColor : mode.bgColor;
   }
 
@@ -60,8 +62,8 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
   class:prominent-top-bar-with-background={$topBarSettings.imageSrc}
   class:top-bar={!$topBarSettings.imageSrc}
   style:--image={$topBarSettings.imageSrc && `url(${$topBarSettings.imageSrc})`}
-  style:--background-size={$topBarSettings.imageSrc && headerStyle.imgSize}
-  style:--background-position={$topBarSettings.imageSrc && headerStyle.imgPosition}>
+  style:--background-size={$topBarSettings.imageSrc && $appSettings.headerStyle.imgSize}
+  style:--background-position={$topBarSettings.imageSrc && $appSettings.headerStyle.imgPosition}>
   {#if $topBarSettings.progress === 'show'}
     <progress
       class="progress progress-primary absolute left-0 top-0 h-2"
@@ -77,8 +79,9 @@ Accesses `AppContext` and renders the dynamic `Banner` component.
       aria-expanded={isDrawerOpen}
       aria-controls={menuId}
       aria-label={$t('common.openMenu')}
+      disabled={$navigationSettings.hide}
       class="btn btn-ghost drawer-button flex cursor-pointer items-center gap-md text-neutral">
-      <Icon name="menu" />
+      <Icon name="menu" class={$navigationSettings.hide ? 'hidden' : undefined} />
       <!-- inverse={invertLogo} -->
       <AppLogo inverse={false} aria-hidden="true" />
     </button>
