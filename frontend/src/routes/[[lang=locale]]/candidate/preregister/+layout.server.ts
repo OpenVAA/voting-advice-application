@@ -1,8 +1,9 @@
-import { IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY, IDENTITY_PROVIDER_JWKS_URI } from '$env/static/private';
 import { getIdTokenClaims } from '$lib/api/utils/auth/getIdTokenClaims';
+import { constants } from '$lib/server/constants';
 
 export async function load({ cookies }) {
   const idToken = cookies.get('id_token');
+  const { IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY, IDENTITY_PROVIDER_JWKS_URI } = constants;
 
   if (!idToken) {
     return { claims: undefined };

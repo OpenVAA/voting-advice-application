@@ -1,16 +1,18 @@
 import { error, json } from '@sveltejs/kit';
-import {
-  IDENTITY_PROVIDER_CLIENT_SECRET,
-  IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY,
-  IDENTITY_PROVIDER_JWKS_URI,
-  IDENTITY_PROVIDER_TOKEN_ENDPOINT
-} from '$env/static/private';
-import { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID } from '$env/static/public';
 import { getIdTokenClaims } from '$lib/api/utils/auth/getIdTokenClaims';
+import { constants } from '$lib/server/constants';
+import { constants as publicConstants } from '$lib/utils/constants';
 import type { RequestEvent } from '@sveltejs/kit';
 
 export async function POST({ cookies, request }: RequestEvent): Promise<Response> {
   const { authorizationCode, redirectUri } = await request.json();
+  const {
+    IDENTITY_PROVIDER_CLIENT_SECRET,
+    IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY,
+    IDENTITY_PROVIDER_JWKS_URI,
+    IDENTITY_PROVIDER_TOKEN_ENDPOINT
+  } = constants;
+  const { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID } = publicConstants;
 
   const idpResponse = await fetch(IDENTITY_PROVIDER_TOKEN_ENDPOINT, {
     method: 'POST',
