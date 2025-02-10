@@ -3961,7 +3961,6 @@ __metadata:
   dependencies:
     "@openvaa/data": "workspace:^"
     "@openvaa/shared-config": "workspace:^"
-    jose: "npm:^5.9.6"
     typescript: "npm:^5.7.3"
     vitest: "npm:^2.1.8"
   languageName: unknown
