@@ -33,7 +33,7 @@
 {#if $userData}
   <MainContent title={$t('candidateApp.preregister.identification.start.title')}>
     <div class="mb-md text-center text-warning">
-      {@html sanitizeHtml($t('candidateApp.preregister.identification.error.loggedIn.content'))}
+      {@html sanitizeHtml($t('candidateApp.preregister.status.loggedInError.content'))}
     </div>
     <Button
       text={$t('common.continue')}

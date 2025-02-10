@@ -11,28 +11,6 @@
         "passwordSelect": "Select a password"
       }
     },
-    "error": {
-      "general": {
-        "title": "There was an issue with Bank ID authentication",
-        "content": "<p>Click the button below to try again or contact support if the problem persists.</p><p>support@openvaa.org</p>"
-      },
-      "expired": {
-        "title": "Your session has expired",
-        "content": "<p>Please, identify yourself again to complete the registration process.</p>"
-      },
-      "preregistered": {
-        "title": "You are already registered as a candidate",
-        "content": "<p>It looks like you are already registered. Please check your email to confirm your registration. Once the registration is confirmed, you can login with your email and password.</p><p>Please contact support if you believe there is an error.</p><p>support@openvaa.org</p>"
-      },
-      "loggedIn": {
-        "title": "You are already logged in",
-        "content": "<p>You're already registered as a candidate! Head over to your account to continue.</p>"
-      },
-      "unknown": {
-        "title": "Something went wrong",
-        "content": "<p>Click the button below to try again or contact support if the problem persists.</p><p>support@openvaa.org</p>"
-      }
-    },
     "success": {
       "title": "Bank ID login complete",
       "content": "<p>Welcome to the Voting Advice Application, {firstName} {lastName}!</p><p>Click the button below to continue the registration process.</p>"
@@ -53,9 +31,30 @@
     "content": "<p>In the future, your email address will act as your username. Please enter it below twice to confirm it's correct.</p><p>You will also need to accept the terms of use in order to continue.</p>",
     "termsCheckbox": "I accept the terms of use for registering as a candidate"
   },
-  "success": {
-    "title": "Confirm your email address",
-    "content": "<p>We've sent a message to your email address.</p><p>Please click on the link in the message to confirm your email address and complete the registration process.</p>",
-    "button": "Close this window"
+  "status": {
+    "success": {
+      "title": "Confirm your email address",
+      "content": "<p>We've sent a message to your email address.</p><p>Please click on the link in the message to confirm your email address and complete the registration process.</p>"
+    },
+    "strongIdentificationError": {
+      "title": "There was an issue with Bank ID identification",
+      "content": "<p>Click the button below to try again or contact support if the problem persists.</p><p>support@openvaa.org</p>"
+    },
+    "tokenExpiredError": {
+      "title": "Your session has expired",
+      "content": "<p>Please identify yourself again to complete the registration process.</p>"
+    },
+    "candidateExistsError": {
+      "title": "You are already registered as a candidate",
+      "content": "<p>It looks like you are already registered. Please check your email to confirm your registration. Once the registration is confirmed, you can login with your email and password.</p><p>Contact support if you believe there is an error.</p><p>support@openvaa.org</p>"
+    },
+    "loggedInError": {
+      "title": "You are already logged in",
+      "content": "<p>You're already registered as a candidate! Head over to your account to continue.</p>"
+    },
+    "unknownError": {
+      "title": "Something went wrong",
+      "content": "<p>Click the button below to try again or contact support if the problem persists.</p><p>support@openvaa.org</p>"
+    }
   }
 }
