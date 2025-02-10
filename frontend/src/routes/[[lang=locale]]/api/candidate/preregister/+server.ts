@@ -1,15 +1,13 @@
 import { error, json } from '@sveltejs/kit';
-import {
-  BACKEND_API_TOKEN,
-  IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY,
-  IDENTITY_PROVIDER_JWKS_URI
-} from '$env/static/private';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { getIdTokenClaims } from '$lib/api/utils/auth/getIdTokenClaims';
+import { constants } from '$lib/server/constants';
 import { logDebugError } from '$lib/utils/logger';
 import type { Id } from '@openvaa/core';
 
 export async function POST({ cookies, request }) {
+  const { BACKEND_API_TOKEN, IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY, IDENTITY_PROVIDER_JWKS_URI } = constants;
+
   const dataWriter = await dataWriterPromise;
   dataWriter.init({ fetch });
 
