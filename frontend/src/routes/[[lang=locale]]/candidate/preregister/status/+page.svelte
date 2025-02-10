@@ -6,7 +6,7 @@
   import { onDestroy } from 'svelte';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { goto } from '$app/navigation';
-  import { page } from '$app/state';
+  import { page } from '$app/stores';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -15,7 +15,7 @@
   const { appCustomization, darkMode, t, getRoute, clearIdToken } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
-  $: error = page.url.searchParams.get('error');
+  $: error = $page.url.searchParams.get('error');
 
   $: content = !error
     ? ({
