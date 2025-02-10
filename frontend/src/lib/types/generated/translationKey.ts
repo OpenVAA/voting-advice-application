@@ -203,7 +203,7 @@ export type TranslationKey =
   | 'components.photoInput.tapToAddPhoto'
   | 'components.preHeading.roleDescription'
   | 'components.preventNavigation.unsavedChanges'
-  | 'components.questionExtendedInfoLauncher.title'
+  | 'components.questionExtendedInfo.title'
   | 'components.video.captions'
   | 'components.video.error'
   | 'components.video.hideCaptions'

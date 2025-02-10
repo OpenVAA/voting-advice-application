@@ -60,7 +60,7 @@
     "unsupportedWarning": "Selaimesi ei valitettavasti voi näyttää tätä videota.",
     "video": "Video"
   },
-  "questionExtendedInfoLauncher": {
+  "questionExtendedInfo": {
     "title": "Tutustu aiheeseen"
   }
 }

@@ -7,18 +7,24 @@ export function parseQuestionInfoSections(
 ): Array<QuestionInfoSection> {
   const out: Array<QuestionInfoSection> = [];
 
-  for (const value of (data as CustomData['Question'])?.infoSections ?? []) {
-    const { title, text, visible } = value as {
-      text?: LocalizedString;
-      title?: LocalizedString;
-      visible?: boolean;
-    };
+  if (data && typeof data === 'object' && 'infoSections' in data && Array.isArray(data.infoSections)) {
+    for (const value of (data as CustomData['Question'])?.infoSections ?? []) {
+      if (!value || typeof value !== 'object') continue;
 
-    out.push({
-      title: translate(title, locale) || '',
-      text: translate(text, locale) || '',
-      visible: Boolean(visible ?? false)
-    });
+      const { title, text, visible } = value as {
+        text?: LocalizedString;
+        title?: LocalizedString;
+        visible?: boolean;
+      };
+
+      if (title && text) {
+        out.push({
+          title: translate(title, locale) || '',
+          text: translate(text, locale) || '',
+          visible: !!visible
+        });
+      }
+    }
   }
 
   return out;

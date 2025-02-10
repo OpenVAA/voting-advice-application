@@ -5,18 +5,18 @@
   import QuestionExtendedInfoDrawer from './QuestionExtendedInfoDrawer.svelte';
   import type { QuestionExtendedInfoButtonProps } from './QuestionExtendedInfoButton.type';
 
-  const { modalStack } = getAppContext();
-  const { t } = getComponentContext();
-
   type $$Props = QuestionExtendedInfoButtonProps;
 
   export let question: $$Props['question'];
 
-  function handleOpen() {
+  const { modalStack } = getAppContext();
+  const { t } = getComponentContext();
+
+  function handleOpen(): void {
     modalStack.push(QuestionExtendedInfoDrawer, {
       question
     });
   }
 </script>
 
-<Button text={$t('components.questionExtendedInfoLauncher.title')} icon="info" iconPos="left" on:click={handleOpen} />
+<Button text={$t('components.questionExtendedInfo.title')} icon="info" iconPos="left" on:click={handleOpen} />

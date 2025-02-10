@@ -1,3 +1,3 @@
 import type { QuestionExtendedInfoDrawerProps } from './QuestionExtendedInfoDrawer.type';
 
-export type QuestionExtendedInfoButtonProps = {} & QuestionExtendedInfoDrawerProps;
+export type QuestionExtendedInfoButtonProps = QuestionExtendedInfoDrawerProps;

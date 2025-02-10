@@ -80,14 +80,6 @@ declare global {
   /**
    * The properties for defining generated question info in customData
    */
-  // TODO: Localize
-  // interface QuestionInfoSections {
-  //   [infoSection: string]: {
-  //     title?: LocalizedString
-  //     text?: LocalizedString;
-  //     visible?: boolean;
-  //   };
-  // }
   type QuestionInfoSection = {
     title?: string;
     text?: string;

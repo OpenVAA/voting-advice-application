@@ -257,7 +257,7 @@ Display a question for answering.
       <div class="flex items-center justify-center">
         <QuestionExtendedInfoButton {question} />
       </div>
-    {:else if info && info !== ''}
+    {:else if info}
       <QuestionBasicInfo {info} onCollapse={handleInfoCollapse} onExpand={handleInfoExpand} />
     {/if}
 
