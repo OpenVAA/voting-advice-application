@@ -7,6 +7,7 @@
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
+  import { getErrorTranslationKey } from '$candidate/utils/preregistrationError';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -14,34 +15,7 @@
 
   const { appCustomization, darkMode, t, getRoute, clearIdToken } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
-
-  $: error = $page.url.searchParams.get('error');
-
-  $: content = !error
-    ? ({
-        title: $t('candidateApp.preregister.success.title'),
-        content: $t('candidateApp.preregister.success.content'),
-        route: 'CandAppRegister'
-      } as const)
-    : error === '401'
-      ? ({
-          title: $t('candidateApp.preregister.identification.error.expired.title'),
-          content: $t('candidateApp.preregister.identification.error.expired.content'),
-          route: 'CandAppPreregister'
-        } as const)
-      : error === '409'
-        ? ({
-            title: $t('candidateApp.preregister.identification.error.preregistered.title'),
-            content: $t('candidateApp.preregister.identification.error.preregistered.content'),
-            route: 'CandAppPreregister'
-          } as const)
-        : ({
-            title: $t('candidateApp.preregister.identification.error.unknown.title'),
-            content: $t('candidateApp.preregister.identification.error.unknown.content'),
-            route: 'CandAppPreregister'
-          } as const);
-
-  clearIdToken();
+  $: code = $page.url.searchParams.get('code');
 
   ///////////////////////////////////////////////////////////////////
   // Top bar and styling
@@ -53,18 +27,32 @@
       ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
       : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
   });
+
+  clearIdToken();
 </script>
 
 <svelte:head>
   <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
 </svelte:head>
 
-<MainContent title={content.title}>
-  <div class={`mb-md text-center ${error ? 'text-warning' : ''}`}>
-    {@html sanitizeHtml(content.content)}
-  </div>
-  <Button
-    text={$t('common.continue')}
-    variant="main"
-    on:click={() => goto($getRoute(content.route), { invalidateAll: true })} />
-</MainContent>
+{#if code === 'success'}
+  <MainContent title={$t('candidateApp.preregister.status.success.title')}>
+    <div class="mb-md text-center">
+      {@html sanitizeHtml($t('candidateApp.preregister.status.success.content'))}
+    </div>
+    <Button
+      text={$t('common.continue')}
+      variant="main"
+      on:click={() => goto($getRoute('CandAppRegister'), { invalidateAll: true })} />
+  </MainContent>
+{:else}
+  <MainContent title={$t(getErrorTranslationKey(code).title)}>
+    <div class="mb-md text-center text-warning">
+      {@html sanitizeHtml($t(getErrorTranslationKey(code).content))}
+    </div>
+    <Button
+      text={$t('common.continue')}
+      variant="main"
+      on:click={() => goto($getRoute('CandAppPreregister'), { invalidateAll: true })} />
+  </MainContent>
+{/if}

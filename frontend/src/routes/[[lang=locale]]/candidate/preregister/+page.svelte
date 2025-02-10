@@ -96,7 +96,7 @@
       text={$t('candidateApp.preregister.identification.identifyYourselfButton')}
       variant="main"
       on:click={redirectToIdentityProvider} />
-    <p class="mb-md text-center text-xs text-secondary">
+    <p class="my-md text-center text-xs text-secondary">
       {$t('candidateApp.preregister.identification.identifyYourselHelpText')}
     </p>
   </MainContent>

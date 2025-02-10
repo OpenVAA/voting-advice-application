@@ -185,24 +185,44 @@ export function initCandidateContext(): CandidateContext {
 
   async function exchangeCodeForIdToken(opts: { authorizationCode: string; redirectUri: string }): Promise<void> {
     const dataWriter = await prepareDataWriter(dataWriterPromise);
-    await dataWriter.exchangeCodeForIdToken(opts).catch((e) => {
-      logDebugError(`Error logging out: ${e?.message ?? '-'}`);
-    });
-    // TODO: Handle error!
-    return goto(get(getRoute)('CandAppPreregister'), { invalidateAll: true });
+    try {
+      const result = await dataWriter.exchangeCodeForIdToken(opts);
+      if (result.type === 'success') {
+        return await goto(get(getRoute)('CandAppPreregister'), { invalidateAll: true });
+      }
+    } catch (e) {
+      logDebugError(`Error exchanging authorization code for ID token: ${e ?? '-'}`);
+    }
+    return await goto(
+      get(getRoute)({
+        route: 'CandAppPreregisterStatus',
+        code: 'strongIdentificationError'
+      }),
+      { invalidateAll: true }
+    );
   }
 
   async function preregister(opts: {
     email: string;
     nominations: Array<{ electionId: Id; constituencyId: Id }>;
-  }): Promise<DataApiActionResult & { response: Pick<Response, 'status'> }> {
+  }): Promise<void> {
     const dataWriter = await prepareDataWriter(dataWriterPromise);
     try {
-      return await dataWriter.preregisterWithIdToken(opts);
+      const result = await dataWriter.preregisterWithIdToken(opts);
+      const errorMap: Record<number, string> = { 401: 'tokenExpiredError', 409: 'candidateExistsError' };
+      return await goto(
+        get(getRoute)({
+          route: 'CandAppPreregisterStatus',
+          code: result.type === 'success' ? 'success' : (errorMap[result.response.status] ?? 'unknownError')
+        }),
+        { invalidateAll: true }
+      );
     } catch (e) {
-      logDebugError(`Error: ${e?.toString() ?? '-'}`);
-      return { type: 'failure', response: { status: 500 } };
+      logDebugError(`Error preregistering a candidate: ${e ?? '-'}`);
     }
+    return await goto(get(getRoute)({ route: 'CandAppPreregisterStatus', code: 'unknownError' }), {
+      invalidateAll: true
+    });
   }
 
   async function clearIdToken(): Promise<void> {
