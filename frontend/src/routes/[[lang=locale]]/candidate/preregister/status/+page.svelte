@@ -2,8 +2,6 @@
   import { Button } from '$lib/components/button';
   import MainContent from '../../../MainContent.svelte';
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import { getLayoutContext } from '$lib/contexts/layout';
-  import { onDestroy } from 'svelte';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
@@ -13,20 +11,8 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, t, getRoute, clearIdToken } = getCandidateContext();
-  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+  const { t, getRoute, clearIdToken } = getCandidateContext();
   $: code = $page.url.searchParams.get('code');
-
-  ///////////////////////////////////////////////////////////////////
-  // Top bar and styling
-  ////////////////////////////////////////////////////////////////////
-
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
-  topBarSettings.push({
-    imageSrc: $darkMode
-      ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-      : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-  });
 
   clearIdToken();
 </script>

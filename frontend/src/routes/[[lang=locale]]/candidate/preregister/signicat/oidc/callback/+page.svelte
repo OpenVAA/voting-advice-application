@@ -1,9 +1,7 @@
 <script lang="ts">
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import { getLayoutContext } from '$lib/contexts/layout';
   import { goto } from '$app/navigation';
   import { Loading } from '$lib/components/loading';
-  import { onDestroy } from 'svelte';
   import { page } from '$app/stores';
   import MainContent from '../../../../../MainContent.svelte';
 
@@ -11,8 +9,7 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, t, getRoute, exchangeCodeForIdToken } = getCandidateContext();
-  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+  const { t, getRoute, exchangeCodeForIdToken } = getCandidateContext();
 
   ////////////////////////////////////////////////////////////////////
   // Handle exchanging the  authorization code
@@ -28,17 +25,6 @@
   } else {
     goto($getRoute('CandAppPreregister'));
   }
-
-  ///////////////////////////////////////////////////////////////////
-  // Top bar and styling
-  ////////////////////////////////////////////////////////////////////
-
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
-  topBarSettings.push({
-    imageSrc: $darkMode
-      ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-      : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-  });
 </script>
 
 <svelte:head>

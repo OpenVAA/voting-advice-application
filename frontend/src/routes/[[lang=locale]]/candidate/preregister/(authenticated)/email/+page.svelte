@@ -2,31 +2,17 @@
   import { Button } from '$lib/components/button';
   import MainContent from '../../../../MainContent.svelte';
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import { getLayoutContext } from '$lib/contexts/layout';
-  import { onDestroy } from 'svelte';
   import { sanitizeHtml } from '$lib/utils/sanitize';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, getRoute, preregister, preregistrationNominations, t } = getCandidateContext();
-  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+  const { preregister, preregistrationNominations, t } = getCandidateContext();
 
   let email1 = '';
   let email2 = '';
   let termsAccepted = false;
-
-  ///////////////////////////////////////////////////////////////////
-  // Top bar and styling
-  ////////////////////////////////////////////////////////////////////
-
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
-  topBarSettings.push({
-    imageSrc: $darkMode
-      ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-      : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-  });
 
   async function onSubmit() {
     await preregister({ email: email1, nominations: $preregistrationNominations });
