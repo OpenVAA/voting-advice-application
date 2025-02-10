@@ -1,6 +1,6 @@
 import { default as sharedConfig } from '@openvaa/shared-config/eslint';
-import globals from 'globals';
 import tsParser from '@typescript-eslint/parser';
+import globals from 'globals';
 
 export default [
   ...sharedConfig,

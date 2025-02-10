@@ -1,7 +1,7 @@
 import { staticSettings } from '@openvaa/app-shared';
 import type { FeedbackWriter } from '$lib/api/base/feedbackWriter.type';
 
-let module: Promise<{ feedbackWriter?: FeedbackWriter }>;
+let module: Promise<{ feedbackWriter?: FeedbackWriter<'server'> }>;
 
 const { type } = staticSettings.dataAdapter;
 

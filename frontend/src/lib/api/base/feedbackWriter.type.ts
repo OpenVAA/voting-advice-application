@@ -1,14 +1,17 @@
+import type { DataApiActionResult } from './actionResult.type';
+import type { AdapterType } from './adapterType.type';
+
 /**
  * The `FeedbackWriter` interface defines the API call for writing feedback.
  */
-export interface FeedbackWriter {
+export interface FeedbackWriter<TType extends AdapterType = 'universal'> {
   /**
    * Post a new feedback item to the server.
    * @param data - The feedback data to send. Missing optional data are filled in.
    * @returns A `Promise` resolving to a `Response`.
    * @throws Error on failure.
    */
-  postFeedback: (data: FeedbackData) => Promise<Response>;
+  postFeedback: (data: FeedbackData) => Promise<TType extends 'server' ? Response : DataApiActionResult>;
 }
 
 /**

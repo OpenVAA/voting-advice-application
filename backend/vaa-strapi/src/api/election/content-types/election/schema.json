@@ -8,7 +8,7 @@
     "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
@@ -48,10 +48,6 @@
     "info": {
       "pluginOptions": {},
       "type": "json"
-    },
-    "answersLocked": {
-      "type": "boolean",
-      "default": false
     },
     "constituencyGroups": {
       "type": "relation",

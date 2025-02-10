@@ -1,5 +1,5 @@
 {
-  "kind": "collectionType",
+  "kind": "singleType",
   "collectionName": "app_settings",
   "info": {
     "singularName": "app-setting",
@@ -77,6 +77,9 @@
       "type": "component",
       "repeatable": false,
       "component": "settings.elections"
+    },
+    "answersLocked": {
+      "type": "boolean"
     }
   }
 }

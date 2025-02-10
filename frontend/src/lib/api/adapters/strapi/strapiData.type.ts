@@ -2,7 +2,7 @@
 // GENERAL TYPES
 /////////////////////////////////////////////////////////////////////
 
-import type { DynamicSettings } from '@openvaa/app-shared';
+import type { DynamicSettings, LocalizedAnswer, QuestionTypeSettings } from '@openvaa/app-shared';
 
 /**
  * The basic format for Strapi responses
@@ -15,7 +15,7 @@ export type StrapiResponse<TData> = {
  * A Strapi error containing an error
  */
 export interface StrapiError {
-  data: null;
+  data?: null;
   error: {
     details: unknown;
     message: string;
@@ -25,54 +25,41 @@ export interface StrapiError {
 }
 
 /**
- * The base format for all Strapi objects
+ * The base format for all Strapi objects.
+ * NB. The objects also have a numeric `id` but we don't want to use it.
  */
-export interface StrapiObject<TAttributes extends object = object> {
-  id: string;
+export type StrapiObject<TProperties extends object = object> = TProperties & {
+  documentId: string;
   locale: string;
-  attributes: TAttributes;
-}
+};
 
 /**
  * Format for multiple relations which may or may not be populated.
  */
-export type StrapiRelation<TTarget extends StrapiObject> =
-  | {
-      data: Array<TTarget>;
-    }
-  | undefined;
+export type StrapiRelation<TTarget extends StrapiObject> = Array<TTarget> | null | undefined;
 
 /**
  * Format for single relations which may or may not be populated.
  */
-export type StrapiSingleRelation<TTarget extends StrapiObject> =
-  | {
-      data: TTarget;
-    }
-  | undefined;
+export type StrapiSingleRelation<TTarget extends StrapiObject> = TTarget | null | undefined;
 
 /**
  * Format for images which may or may not be populated.
  */
-export type StrapiImage =
-  | {
-      data: {
-        id: number | string;
-        attributes: StrapiImageData;
-      };
-    }
-  | undefined;
+export type StrapiImage = StrapiImageData | null | undefined;
 
-export interface StrapiImageData extends StrapiImageFormatData {
-  alternativeText?: string;
-  caption?: string;
-  formats: {
-    thumbnail?: StrapiImageFormatData;
-    small?: StrapiImageFormatData;
-    medium?: StrapiImageFormatData;
-    large?: StrapiImageFormatData;
-  };
-}
+export type StrapiImageData = StrapiImageFormatData &
+  StrapiObject<{
+    id: string | number;
+    alternativeText?: string;
+    caption?: string;
+    formats: {
+      thumbnail?: StrapiImageFormatData;
+      small?: StrapiImageFormatData;
+      medium?: StrapiImageFormatData;
+      large?: StrapiImageFormatData;
+    };
+  }>;
 
 export interface StrapiImageFormatData {
   ext: string;
@@ -82,17 +69,6 @@ export interface StrapiImageFormatData {
   url: string;
   width?: number;
 }
-
-/**
- * Format for data localized in Strapi
- */
-export type LocalizedStrapiData<TData> = TData & {
-  attributes: {
-    localizations: {
-      data: Array<TData>;
-    };
-  };
-};
 
 type DateString = string;
 
@@ -133,66 +109,8 @@ export type StrapiAppCustomizationData = StrapiObject<{
 export type StrapiQuestionTypeData = StrapiObject<{
   info: string;
   name: string;
-  settings: StrapiQuestionTypeSettings;
+  settings: QuestionTypeSettings;
 }>;
-
-export type StrapiQuestionTypeSettings =
-  | {
-      type: 'text';
-      notLocalizable?: boolean;
-    }
-  | {
-      type: 'number';
-      min?: number;
-      max?: number;
-    }
-  | {
-      type: 'boolean';
-    }
-  // Not supported yet
-  // | {
-  //     type: 'photo';
-  //   }
-  | {
-      type: 'date';
-      dateType?: StrapiDateType;
-      min?: DateString;
-      max?: DateString;
-    }
-  | {
-      type: 'link';
-    }
-  | {
-      type: 'singleChoiceOrdinal';
-      values: Array<StrapiChoice>;
-      display?: 'vertical' | 'horizontal';
-    }
-  | {
-      type: 'singleChoiceCategorical';
-      values: Array<StrapiChoice>;
-      display?: 'vertical' | 'horizontal';
-    }
-  | {
-      type: 'multipleChoiceCategorical';
-      values: Array<StrapiChoice>;
-      display?: 'vertical' | 'horizontal';
-      min?: number;
-      max?: number;
-    };
-// Not supported yet
-// | {
-//     type: 'preferenceOrder';
-//     values: Array<StrapiChoice>;
-//     min?: number;
-//     max?: number;
-//   };
-
-export type StrapiDateType = 'yearMonthDay' | 'yearMonth' | 'monthDay' | 'month' | 'weekday';
-
-export type StrapiChoice = {
-  key: number;
-  label: LocalizedString;
-};
 
 export type StrapiQuestionData = StrapiObject<{
   allowOpen: boolean | null;
@@ -202,6 +120,7 @@ export type StrapiQuestionData = StrapiObject<{
   filterable: boolean | null;
   info: LocalizedString;
   order: number | null;
+  required: boolean | null;
   shortName: LocalizedString;
   text: LocalizedString;
   category: StrapiSingleRelation<StrapiQuestionCategoryData>;
@@ -213,6 +132,7 @@ export type StrapiQuestionCategoryData = StrapiObject<{
   color: string;
   colorDark: string;
   customData?: object | null;
+  emoji: string;
   info: LocalizedString;
   name: LocalizedString;
   order: number | null;
@@ -230,6 +150,7 @@ export type StrapiNominationData = StrapiObject<{
   constituency: StrapiSingleRelation<StrapiConstituencyData>;
   election: StrapiSingleRelation<StrapiElectionData>;
   party: StrapiSingleRelation<StrapiPartyData>;
+  unconfirmed: boolean | null;
 }>;
 
 export type StrapiConstituencyGroupData = StrapiObject<{
@@ -252,47 +173,25 @@ export type StrapiConstituencyData = StrapiObject<{
 export type StrapiCandidateData = StrapiObject<{
   firstName: string;
   lastName: string;
-  photo: StrapiImage;
-  answers: StrapiRelation<StrapiAnswerData>;
-  nomination: StrapiSingleRelation<StrapiNominationData>;
+  image: StrapiImage;
+  answers: StrapiAnswers | null;
+  nominations: StrapiRelation<StrapiNominationData>;
   party: StrapiSingleRelation<StrapiPartyData>;
 }>;
-
-export type StrapiAnswerData = StrapiObject<{
-  openAnswer: LocalizedString | null;
-  value: StrapiAnswerValues[keyof StrapiAnswerValues];
-  candidate: StrapiSingleRelation<StrapiCandidateData>;
-  party: StrapiSingleRelation<StrapiPartyData>;
-  question: StrapiSingleRelation<StrapiQuestionData>;
-}>;
-
-/**
- * The allowed `Answer` values for different `QuestionType`s based on their
- * `settings.type`.
- */
-export type StrapiAnswerValues = {
-  boolean: boolean;
-  date: DateString;
-  multipleChoiceCategorical: Array<StrapiChoice['key']>;
-  number: number;
-  photo: string;
-  preferenceOrder: Array<StrapiChoice['key']>;
-  singleChoiceCategorical: StrapiChoice['key'];
-  singleChoiceOrdinal: StrapiChoice['key'];
-  text: string | LocalizedString;
-};
 
 export type StrapiPartyData = StrapiObject<{
   color: string;
   colorDark: string;
   info: LocalizedString;
-  logo: StrapiImage;
+  image: StrapiImage;
   name: LocalizedString;
   shortName: LocalizedString;
-  answers: StrapiRelation<StrapiAnswerData>;
+  answers: StrapiAnswers | null;
   candidates: StrapiRelation<StrapiCandidateData>;
   nominations: StrapiRelation<StrapiNominationData>;
 }>;
+
+export type StrapiAnswers = { [questionId: string]: LocalizedAnswer };
 
 export type StrapiFeedbackData = StrapiObject<{
   date?: DateString;
@@ -301,3 +200,46 @@ export type StrapiFeedbackData = StrapiObject<{
   url?: string;
   userAgent?: string;
 }>;
+
+/////////////////////////////////////////////////////////////////////
+// DATA WRITER RETURN TYPES
+// NB. The typings are non-exhaustive
+// NB. The auth routes return the data in the root of the response
+// body instead of `data` like the public routes
+/////////////////////////////////////////////////////////////////////
+
+export type StrapiAuthResponse<TData> = TData;
+
+export type StrapiUserProperties = {
+  username: string;
+  email: string;
+  confirmed: boolean;
+  blocked: boolean;
+};
+
+export type StrapiBasicUserData = StrapiObject<StrapiUserProperties>;
+
+export type StrapiCandidateUserData = StrapiObject<
+  StrapiUserProperties & {
+    candidate: StrapiSingleRelation<StrapiCandidateData>;
+  }
+>;
+
+export type StrapiCheckRegistrationData = {
+  email: string;
+  firstName: string;
+  lastName: string;
+};
+
+export type StrapiLoginData = {
+  jwt: string;
+};
+
+export type StrapiRegisterData = {
+  type: 'success';
+};
+
+/**
+ * The custom candidate update API routes explicitly populate only some relations of the candidate object.
+ */
+export type StrapiUpdateCandidateReturnData = Omit<StrapiCandidateData, 'nominations' | 'party'>;

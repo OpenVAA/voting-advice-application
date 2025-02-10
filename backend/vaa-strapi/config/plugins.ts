@@ -79,9 +79,9 @@ export default ({ env }) => {
         }
       }
     },
-    'candidate-admin': {
+    'openvaa-admin-tools': {
       enabled: true,
-      resolve: './src/plugins/candidate-admin'
+      resolve: './src/plugins/openvaa-admin-tools'
     }
   };
 };

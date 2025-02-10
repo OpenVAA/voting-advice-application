@@ -4,7 +4,7 @@ Used to display a question category tag with the category's color.
 
 ### Properties
 
-- `category`: The QuestionCategory object.
+- `category`: The `QuestionCategory` object.
 - `variant`: Whether to use an abbreviation or the full name. @default `'default'`
 - Any valid attributes of a `<span>` element.
 

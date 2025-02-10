@@ -34,7 +34,7 @@ Put each component in its own folder in `$lib/components`. Multiple components t
 
 ### Component properties
 
-Currently, most components use attribute forwarding with [Svelte's `$$restProps` variable](https://svelte.dev/docs/basic-markup#attributes-and-props). This means that any HTML or SVG attributes that the main element of the component accepts can be passed as the components properties – or, in case of a component derived from another Svelte component, the parent components properties. See the examples for details on how this is done.
+Currently, most components use attribute forwarding with [Svelte's `$$restProps` variable](https://svelte.dev/docs/basic-markup#attributes-and-props). This means that any HTML or SVG attributes that the main element of the component accepts can be passed as the components properties – or, in case of a component derived from another Svelte component, the parent components properties. See the examples for details on how this is done. This is most commonly used for passing extra classes to the element.
 
 #### Default values for properties included `$$restProps`
 

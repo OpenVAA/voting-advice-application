@@ -47,6 +47,7 @@ You should not try to use a variant and customize at the same time.
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { Icon } from '$lib/components/icon';
+  import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
   import type { ExpanderProps } from './Expander.type';
 
@@ -60,6 +61,16 @@ You should not try to use a variant and customize at the same time.
   export let contentClass: $$Props['contentClass'] = '';
   export let defaultExpanded: $$Props['defaultExpanded'] = false;
 
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { t } = getComponentContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // Handle expansion/collapse
+  ////////////////////////////////////////////////////////////////////
+
   const dispatch = createEventDispatcher<{ expand: null; collapse: null }>();
 
   let expanded = defaultExpanded;
@@ -68,6 +79,10 @@ You should not try to use a variant and customize at the same time.
     expanded = !expanded;
     dispatch(expanded ? 'expand' : 'collapse');
   }
+
+  ////////////////////////////////////////////////////////////////////
+  // Styling
+  ////////////////////////////////////////////////////////////////////
 
   // Build classes
   // 1. Base classes for all collapse components
@@ -116,7 +131,7 @@ You should not try to use a variant and customize at the same time.
 </script>
 
 <div {...concatClass($$restProps, collapseClasses)}>
-  <input type="checkbox" aria-label="open ${title}" on:click={toggleExpanded} checked={expanded} />
+  <input type="checkbox" aria-label={$t('common.expandOrCollapse')} on:click={toggleExpanded} checked={expanded} />
   <div class={titleClasses}>
     {title}
     <div class="not-rotated-icon {expanded ? 'rotated-icon' : ''} ml-[0.4rem] {iconClass}">

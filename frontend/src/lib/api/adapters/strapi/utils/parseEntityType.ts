@@ -4,9 +4,7 @@ import type { StrapiQuestionData } from '../strapiData.type';
 /**
  * Parse a Strapi entity type enum value into a proper `EntityType` filter value.
  */
-export function parseEntityType(
-  type: StrapiQuestionData['attributes']['entityType']
-): FilterValue<EntityType> | undefined {
+export function parseEntityType(type: StrapiQuestionData['entityType']): FilterValue<EntityType> | undefined {
   switch (type) {
     case 'candidate':
       return 'candidate';

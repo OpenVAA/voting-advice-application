@@ -1,10 +1,17 @@
 /**
- * Load data used by the whole app.
+ * Load data used by the whole app:
+ * - translations
+ * - `AppSettings`
+ * - `AppCustomization`
+ * - `ElectionData`
+ * - `ConstituencyData`
  */
 import { dataProvider as dataProviderPromise } from '$lib/api/dataProvider';
 import { addTranslations, loadTranslations, locale, setRoute } from '$lib/i18n';
 
 export async function load({ fetch, params: { lang } }) {
+  if (!lang) throw new Error('No language provided');
+
   const dataProvider = await dataProviderPromise;
   dataProvider.init({ fetch });
 
@@ -27,6 +34,9 @@ export async function load({ fetch, params: { lang } }) {
   return {
     // Return the promise, so that it's in line with the other data passed as Promises
     appCustomizationData,
-    appSettingsData: dataProvider.getAppSettings().catch((e) => e)
+    appSettingsData: dataProvider.getAppSettings().catch((e) => e),
+    electionData: dataProvider.getElectionData({ locale: lang }).catch((e) => e),
+    // We need to greedily load constituency data bc it's needed by the intro route
+    constituencyData: dataProvider.getConstituencyData({ locale: lang }).catch((e) => e)
   };
 }

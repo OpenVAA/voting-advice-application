@@ -6,14 +6,14 @@ import type { StrapiObject, StrapiRelation, StrapiSingleRelation } from '../stra
  * Parse an `Array` of `Ids` from a possibly undefined `StrapiRelation` object. If the `relations` object is undefined, an empty array is returned.
  */
 export function parseRelationIds(relations: StrapiRelation<StrapiObject>): Array<Id> {
-  if (!relations?.data) return [];
-  return relations.data.map((rel) => formatId(rel.id));
+  if (!relations) return [];
+  return relations.map((rel) => formatId(rel.documentId));
 }
 
 /**
  * Parse an `Id` from a possibly undefined `StrapiSingleRelation` object. If the `relation` object is undefined, `undefined` is returned.
  */
 export function parseSingleRelationId(relation: StrapiSingleRelation<StrapiObject>): Id | undefined {
-  if (!relation?.data) return undefined;
-  return formatId(relation.data.id);
+  if (!relation) return undefined;
+  return formatId(relation.documentId);
 }

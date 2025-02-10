@@ -1,14 +1,13 @@
 import questionTypes from './defaultData/questionTypes.json';
-import { API } from './utils/api';
 
 /**
  * Load default data into Strapi.
  * NB. Currently, only creates default question types.
  */
 export async function loadDefaultData() {
-  if ((await strapi.entityService.findMany(API.QuestionType)).length > 0) {
+  if ((await strapi.documents('api::question-type.question-type').findMany()).length > 0) {
     console.info('[loadDefaultData] Question types found - skipping loading of default question types.');
   } else {
-    for (const data of questionTypes) await strapi.db.query(API.QuestionType).create({ data });
+    for (const data of questionTypes) await strapi.documents('api::question-type.question-type').create({ data });
   }
 }

@@ -1,104 +1,119 @@
+<!--@component
+
+# Candidate app register page
+
+- Shows a form in which to insert a registration key and continue to password selection.
+- Checks on load if the key is in a search param and automatically redirects to password selection if the key is valid.
+
+## Params
+
+- `registrationKey`: The registration key
+-->
+
 <script lang="ts">
-  import { getContext, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { LogoutButton } from '$lib/candidate/components/logoutButton';
   import { Button } from '$lib/components/button';
+  import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { t } from '$lib/i18n';
-  import { checkRegistrationKey } from '$lib/legacy-api/candidate';
-  import { customization } from '$lib/legacy-stores';
-  import { darkMode } from '$lib/utils/legacy-darkMode';
-  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
-  import Layout from '../../Layout.svelte';
-  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
+  import { logDebugError } from '$lib/utils/logger';
+  import MainContent from '../../MainContent.svelte';
 
-  let username = '';
-  let email = '';
-  let validRegistrationCode = false;
-  let loading = false;
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
 
-  $: registrationCode = $page.url.searchParams.get('registrationCode');
+  const { appCustomization, checkRegistrationKey, darkMode, getRoute, t, userData } = getCandidateContext();
+  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
-  $: if (registrationCode) {
-    loading = true;
-    checkRegistrationKey(registrationCode)
-      .then(async (response) => {
-        if (response.ok) {
-          validRegistrationCode = true;
-          const data = await response.json();
-          username = data.candidate.firstName;
-          email = data.candidate.email;
-          await goto(
-            $getRoute({
-              route: ROUTE.CandAppSetPassword,
-              params: {
-                registrationCode,
-                username,
-                email
-              }
-            })
-          );
-        } else {
-          validRegistrationCode = false;
-          username = '';
-          email = '';
-        }
+  ////////////////////////////////////////////////////////////////////
+  // Handle checking registration key
+  ////////////////////////////////////////////////////////////////////
+
+  let status: ActionStatus = 'idle';
+
+  // Get key from search params
+  let registrationKey = $page.url.searchParams.get('registrationKey');
+  if (registrationKey) checkKeyAndContinue(registrationKey);
+
+  /**
+   * Check the registration key and continue to password selection if valid. Otherwise, show an error message.
+   */
+  async function checkKeyAndContinue(registrationKey: string): Promise<void> {
+    status = 'loading';
+    const result = await checkRegistrationKey({ registrationKey }).catch((e) => {
+      logDebugError(`Error checking registration key: ${e?.message}`);
+      return undefined;
+    });
+    if (result?.type !== 'success') {
+      status = 'error';
+      return;
+    }
+    const { firstName, email } = result;
+    await goto(
+      $getRoute({
+        route: 'CandAppSetPassword',
+        registrationKey,
+        username: firstName,
+        email
       })
-      .finally(async () => {
-        loading = false;
-      });
+    );
+    status = 'success';
   }
 
-  const { user } = getContext<CandidateContext>('candidate');
+  function handleSubmit() {
+    if (registrationKey) checkKeyAndContinue(registrationKey);
+  }
 
-  const { topBarSettings } = getLayoutContext(onDestroy);
+  ///////////////////////////////////////////////////////////////////
+  // Top bar and styling
+  ////////////////////////////////////////////////////////////////////
+
+  pageStyles.push({ drawer: { background: 'bg-base-300' } });
   topBarSettings.push({
     imageSrc: $darkMode
-      ? ($customization.candPoster?.urlDark ?? $customization.candPoster?.url ?? '/images/hero-candidate.png')
-      : ($customization.candPoster?.url ?? '/images/hero-candidate.png')
+      ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
+      : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
   });
-
-  $: registrationCodeInput = registrationCode;
-
-  async function onRegistration() {
-    if (registrationCodeInput) {
-      await goto($getRoute({ route: ROUTE.CandAppRegister, params: { registrationCode: registrationCodeInput } }));
-    }
-  }
 </script>
 
-<Layout title={$t('candidateApp.register.title')}>
+<MainContent title={$t('candidateApp.register.title')}>
   <HeadingGroup slot="heading">
-    <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.appName')}</PreHeading>
+    <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.candidateAppName')}</PreHeading>
   </HeadingGroup>
-  <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onRegistration}>
-    <p class="max-w-md text-center">
-      {$t('candidateApp.register.enterCode')}
-    </p>
-    {#if $user}
+  <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={handleSubmit}>
+    {#if $userData}
       <p class="text-center text-warning">{$t('candidateApp.register.loggedInWarning')}</p>
       <div class="center pb-10">
         <LogoutButton buttonVariant="main" stayOnPage={true} />
       </div>
-    {/if}
-    <input
-      type="text"
-      name="registration-code"
-      id="registration-code"
-      class="input mb-md w-full max-w-md"
-      placeholder={$t('candidateApp.register.codePlaceholder')}
-      bind:value={registrationCodeInput}
-      aria-label={$t('candidateApp.register.code')}
-      required />
-    {#if registrationCode && !loading && !validRegistrationCode}
-      <p class="text-center text-error">
-        {$t('candidateApp.register.wrongRegistrationCode')}
+    {:else}
+      <p class="max-w-md text-center">
+        {$t('candidateApp.register.enterCode')}
       </p>
+      <input
+        type="text"
+        name="registration-code"
+        id="registration-code"
+        class="input mb-md w-full max-w-md"
+        placeholder={$t('candidateApp.register.codePlaceholder')}
+        bind:value={registrationKey}
+        aria-label={$t('candidateApp.register.code')}
+        required />
+      {#if status === 'error'}
+        <ErrorMessage inline message={$t('candidateApp.register.wrongRegistrationCode')} class="mb-lg mt-md" />
+      {/if}
+      <Button
+        type="submit"
+        disabled={status === 'loading'}
+        text={$t('candidateApp.register.register')}
+        variant="main" />
     {/if}
-    <Button type="submit" text={$t('candidateApp.register.register')} variant="main" />
-    <Button href={$getRoute(ROUTE.CandAppHelp)} text={$t('candidateApp.common.contactSupport')} />
-    <Button href={$getRoute(ROUTE.Home)} text={$t('candidateApp.common.voterApp')} />
+    <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.common.contactSupport')} />
+    <Button href={$getRoute('Home')} text={$t('candidateApp.common.voterApp')} />
   </form>
-</Layout>
+</MainContent>

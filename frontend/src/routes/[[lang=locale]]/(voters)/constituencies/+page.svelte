@@ -12,7 +12,7 @@ See `+page.ts` for possible redirects.
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
-  import Layout from '../../Layout.svelte';
+  import MainContent from '../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
 
   ////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ See `+page.ts` for possible redirects.
   }
 </script>
 
-<Layout title={$t('constituencies.title')}>
+<MainContent title={$t('constituencies.title')}>
   <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.constituencies.heroEmoji')} />
   </figure>
@@ -111,4 +111,4 @@ See `+page.ts` for possible redirects.
     variant="main"
     icon="next"
     text={$t('common.continue')} />
-</Layout>
+</MainContent>

@@ -3,6 +3,7 @@ import path from 'node:path';
 import { json } from '@sveltejs/kit';
 import { read } from '$app/server';
 import { CREATE_PATHS, type CreatePath, READ_PATHS, type ReadPath } from './localPaths';
+import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
 /**
  * A base class for all ApiRoute Data API services, implementing `read` and `create` methods.
@@ -61,6 +62,6 @@ export abstract class LocalServerAdapter {
       if (suffix > 98) throw new Error(`Too many retries when trying to find an unused filename: ${fp}`);
     }
     await fs.writeFile(fp, data);
-    return json({ filename: path.basename(fp) });
+    return json({ type: 'success' } as DataApiActionResult);
   }
 }

@@ -4,6 +4,7 @@
   "editingNotAllowed": "Vastausten muokkaaminen ei ole enää mahdollista, mutta voit silti tarkastella niitä. Ota yhteyttä ylläpitäjään, jos tiedoissa on virheitä.",
   "email": "Sähköposti",
   "emailPlaceholder": "esimerkki@osoite.fi",
+  "fullyCompleted": "Onneksi olkoon! Olet täyttänyt kaikki vaalikoneeseen tarvittavat tiedot.",
   "greeting": "Hei, {username}!",
   "home": "Alku",
   "isHiddenBecauseMissing": "Koska et vastannut kaikkiin kysymyksiin, profiiliasi ei näytetä.",

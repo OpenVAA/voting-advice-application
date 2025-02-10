@@ -27,7 +27,8 @@ Display the intro to a question category and possibly a button with which to ski
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { parseParams } from '$lib/utils/route';
-  import Layout from '../../../../../Layout.svelte';
+  import MainContent from '../../../../../MainContent.svelte';
+  import type { CustomData } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
   import type { QuestionCategory } from '@openvaa/data';
 
@@ -82,7 +83,7 @@ Display the intro to a question category and possibly a button with which to ski
 </script>
 
 {#if category}
-  <Layout title={category.name}>
+  <MainContent title={category.name}>
     <figure role="presentation" slot="hero">
       {#if customData?.emoji}
         <HeroEmoji emoji={customData?.emoji} />
@@ -117,7 +118,7 @@ Display the intro to a question category and possibly a button with which to ski
           class="justify-center" />
       {/if}
     </svelte:fragment>
-  </Layout>
+  </MainContent>
 {:else}
   <Loading />
 {/if}

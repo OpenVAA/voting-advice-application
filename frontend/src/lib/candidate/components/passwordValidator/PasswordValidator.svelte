@@ -1,18 +1,59 @@
+<!--
+@component
+Component for real-time password validation UI.
+Password is validated against rules defined in `passwordValidation.ts`.
+
+A progress bar is shown that indicates the number of completed rules.
+The progress bar is colored based on the validation state:
+
+There are two types of rules:
+- Positive rules: These are basic requirements that must be met for the password to be valid.
+These are always enforced and their status is shown in the UI.
+Completed positive rules are shown in a different color with a checkmark.
+- Negative rules: These are rules that are used to prevent bad password practises.
+These can be either enforced or non-enforced. Negative rules are shown if they are violated.
+
+Due to the use of debounced validation, the component will only update after a delay when the user stops typing.
+Therefore, the validity should be also checked on form submit as well and on the server side for security reasons.
+
+### Dynamic component
+
+Accesses validation functions from `@openvaa/app-shared`.
+
+### Properties
+- `password`: The password to validate
+- `username`: The username used to prevent the password from being too similar
+- `validPassword`: A boolean that is set to true when the password is valid
+
+### Usage
+
+When using this component, the `validPassword` property should be bound to a boolean variable that is used to enable/disable the submit button.
+`password` and `username` should be given as props.
+
+```tsx
+<PasswordValidator bind:validPassword={validPassword} password={password} username={username} />
+```
+-->
+
 <script lang="ts">
   import { minPasswordLength, validatePasswordDetails, type ValidationDetail } from '@openvaa/app-shared';
   import { onMount } from 'svelte';
   import { cubicOut } from 'svelte/easing';
   import { tweened } from 'svelte/motion';
-  import { t } from '$lib/i18n';
+  import { getComponentContext } from '$lib/contexts/component';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
+
   export let password = '';
   export let username = '';
   export let validPassword = false;
+
+  const { t } = getComponentContext();
 
   // Perform debounced validation, validation status is updated after a delay when the user stops typing
   let validationDetails: Record<string, ValidationDetail> = {};
   let validationProgress = 0;
   let timeout: NodeJS.Timeout;
+
   $: {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
@@ -63,59 +104,26 @@
   }
 </script>
 
-<!--
-@component
-Component for real-time password validation UI.
-Password is validated against rules defined in `passwordValidation.ts`.
-
-A progress bar is shown that indicates the number of completed rules.
-The progress bar is colored based on the validation state:
-
-There are two types of rules:
-- Positive rules: These are basic requirements that must be met for the password to be valid.
-These are always enforced and their status is shown in the UI.
-Completed positive rules are shown in a different color with a checkmark.
-- Negative rules: These are rules that are used to prevent bad password practises.
-These can be either enforced or non-enforced. Negative rules are shown if they are violated.
-
-Due to the use of debounced validation, the component will only update after a delay when the user stops typing.
-Therefore, the validity should be also checked on form submit as well and on the server side for security reasons.
-
-### Properties
-- `password`: The password to validate
-- `username`: The username used to prevent the password from being too similar
-- `validPassword`: A boolean that is set to true when the password is valid
-
-
-### Usage
-
-When using this component, the `validPassword` property should be bound to a boolean variable that is used to enable/disable the submit button.
-`password` and `username` should be given as props.
-```tsx
-<PasswordValidator bind:validPassword={validPassword} password={password} username={username} />
-```
--->
-
 <div class="m-sm flex w-full flex-col">
   <ul class="m-sm items-start">
     <!-- Show each validation rule and its state, completed rules are shown in a different color with a checkmark -->
     {#each Object.values(validationRules) as rule}
       <li>
         {#if rule.status}
-          <p class="text-primary">✓ <strong>{rule.message}</strong></p>
+          <span class="font-bold text-primary">{rule.message}</span>
         {:else}
-          <p>{rule.message}</p>
+          {rule.message}
         {/if}
       </li>
     {/each}
 
     <!-- Show negative rules if they are violated -->
     {#each Object.values(negativeEnforcedRules) as rule}
-      <li><p class="text-error">✘ <strong>{rule.message}</strong></p></li>
+      <li class="text-error">✘ {rule.message}</li>
     {/each}
 
     {#each Object.values(negativeNonEnforcedRules) as rule}
-      <li><p class="text-error">✗ {rule.message}</p></li>
+      <li class="text-error">✘ {rule.message}</li>
     {/each}
   </ul>
 

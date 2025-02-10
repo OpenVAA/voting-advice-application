@@ -1,6 +1,6 @@
-import type { DPDataType } from '$lib/api/base/dataTypes';
+import type { Serializable } from '@openvaa/core';
 import type { GetDataOptionsBase } from '$lib/api/base/getDataOptions.type';
-import type { ApiGetRoute, ApiPostRoute, ApiRoute } from './apiRoutes';
+import type { ApiGetRoute, ApiPostRoute, ApiRoute, ApiRouteReturnType } from './apiRoutes';
 
 /**
  * Common base mixin for all API Route Data API services.
@@ -22,15 +22,15 @@ export interface ApiRouteAdapter {
    * @param params - Optional `object` containing the query parameters for the request. It will be converted to a `URLSearchParams` object with `qs.stringify`.
    * @returns The ApiRoute data associated with the API endpoint.
    */
-  apiGet: <TApi extends ApiGetRoute>(opts: GetOptions<TApi>) => Promise<DPDataType[TApi]>;
+  apiGet: <TApi extends ApiGetRoute>(opts: GetOptions<TApi>) => Promise<ApiRouteReturnType<TApi>>;
 
   /**
-   * Perform a `POST` request to the ApiRoute API, using the `fetch` passed to the adapter.
+   * Perform a `POST` `'Content-Type': 'application/json'` request to the ApiRoute API, using the `fetch` passed to the adapter.
    * @param endpoint - The name of the ApiRoute API endpoint.
-   * @param request - Optional `RequestInit` for the request. `method: 'POST'` and `headers.'Content-Type': 'application/json'` will be automatically set if not set.
-   * @returns The `Response` from the ApiRoute API.
+   * @param body - Optional body for the `Request`.
+   * @returns The ApiRoute data associated with the API endpoint.
    */
-  apiPost: <TApi extends ApiPostRoute>(opts: PostOptions<TApi>) => Promise<Response>;
+  apiPost: <TApi extends ApiPostRoute>(opts: PostOptions<TApi>) => Promise<ApiRouteReturnType<TApi>>;
 }
 
 export type FetchOptions<TApi extends ApiRoute> = {
@@ -39,4 +39,6 @@ export type FetchOptions<TApi extends ApiRoute> = {
   request?: RequestInit;
 };
 export type GetOptions<TApi extends ApiGetRoute> = Omit<FetchOptions<TApi>, 'request'>;
-export type PostOptions<TApi extends ApiPostRoute> = Omit<FetchOptions<TApi>, 'params'>;
+export type PostOptions<TApi extends ApiPostRoute> = Omit<FetchOptions<TApi>, 'request' | 'params'> & {
+  body?: Serializable;
+};

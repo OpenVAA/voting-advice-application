@@ -3,10 +3,10 @@ import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } fro
 import type { MatchingAlgorithm } from '@openvaa/matching';
 import type { Readable, Writable } from 'svelte/store';
 import type { AppContext } from '../app';
+import type { QuestionBlocks } from '../utils/questionBlockStore.type';
 import type { AnswerStore } from './answerStore.type';
 import type { FilterTree } from './filters/filterStore';
 import type { MatchTree } from './matchStore';
-import type { QuestionBlocks } from './questionBlockStore.type';
 
 export type VoterContext = AppContext & {
   /**

@@ -1,18 +1,33 @@
+<!--@component
+
+# Candidate app help page
+
+Shows a FAQ and other support content for the candidate application.
+
+### Settings
+
+- `admin.email`: Shown for contacting support
+-->
+
 <script lang="ts">
   import { Button } from '$lib/components/button';
   import { Expander } from '$lib/components/expander';
-  import { t } from '$lib/i18n';
-  import { customization, settings } from '$lib/legacy-stores';
-  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
-  import Layout from '../../../Layout.svelte';
+  import { getCandidateContext } from '$lib/contexts/candidate';
+  import MainContent from '../../../MainContent.svelte';
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { appSettings, appCustomization, getRoute, t } = getCandidateContext();
 </script>
 
-<Layout title={$t('candidateApp.help.title')}>
+<MainContent title={$t('candidateApp.help.title')}>
   <div class="text-center">
     <p>{$t('candidateApp.help.ingress')}</p>
   </div>
 
-  {#each $customization.candidateAppFAQ ?? [] as faq}
+  {#each $appCustomization.candidateAppFAQ ?? [] as faq}
     <Expander title={faq.question} variant="question-help">
       {faq.answer}
     </Expander>
@@ -24,7 +39,7 @@
 
   <div class="mt-md">
     <Button
-      href="mailto:{$settings.admin.email}"
+      href="mailto:{$appSettings.admin.email}"
       icon="feedback"
       iconPos="left"
       text={$t('candidateApp.common.contactSupport')} />
@@ -35,6 +50,6 @@
       icon="next"
       variant="main"
       text={$t('candidateApp.common.continueFilling')}
-      href={$getRoute(ROUTE.CandAppHome)} />
+      href={$getRoute('CandAppHome')} />
   </svelte:fragment>
-</Layout>
+</MainContent>

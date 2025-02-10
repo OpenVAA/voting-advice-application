@@ -1,11 +1,12 @@
 <!--
 @component
-Used to display an error message.
+Used to display an error message. Also logs the error to the console.
 
 ### Properties
 
-- `inline`: Whether to show an inline version of the error message. By default the error tries to center itself in the available area and displays a large emoji. @default `false`
-- `message`: The error message to display. Default `$t('error.default')`
+- `inline`: Whether to show an inline version of the message. By default the message tries to center itself in the available area and displays a large emoji. @default `false`
+- `message`: The message to display. Default `$t('error.default')`
+- `logMessage`: The message to log in the console in development mode. @default value of `message`
 - Any valid attributes of a `<div>` element.
 
 ### Usage
@@ -18,6 +19,7 @@ Used to display an error message.
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
+  import { logDebugError } from '$lib/utils/logger';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { HeroEmoji } from '../heroEmoji';
   import type { ErrorMessageProps } from './ErrorMessage.type';
@@ -26,11 +28,18 @@ Used to display an error message.
 
   export let inline: $$Props['inline'] = false;
   export let message: $$Props['message'] = undefined;
+  export let logMessage: $$Props['logMessage'] = undefined;
 
   const { t } = getComponentContext();
 
   message ||= $t('error.default');
   const emoji = $t('dynamic.error.heroEmoji');
+
+  ////////////////////////////////////////////////////////////////////
+  // Log error
+  ////////////////////////////////////////////////////////////////////
+
+  logDebugError(`[ErrorMessage] ${logMessage || message}`);
 
   ////////////////////////////////////////////////////////////////////
   // Styling
@@ -43,7 +52,7 @@ Used to display an error message.
 
 <div {...concatClass($$restProps, classes)}>
   {#if inline}
-    <span class="text-center text-error">{message}</span>
+    <span class="text-center text-error">{emoji} {message}</span>
   {:else}
     {#if emoji}
       <figure role="presentation" class="my-lg">

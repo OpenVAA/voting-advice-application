@@ -4,6 +4,7 @@
   "editingNotAllowed": "SV Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data.",
   "email": "E-post",
   "emailPlaceholder": "example@email.com",
+  "fullyCompleted": "SV Congratulations! You have filled all of the information needed for the Election Compass.",
   "greeting": "SV Hello, {userName}!",
   "home": "SV Start",
   "isHiddenBecauseMissing": "SV Your profile won’t be shown because you didn’t answer all of the questions.",

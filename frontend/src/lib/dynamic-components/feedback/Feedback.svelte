@@ -100,7 +100,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
     setFeedbackStatus('received');
     status = 'sending';
     sendFeedback({ rating, description }).then((res) => {
-      if (!res?.ok) {
+      if (res?.type !== 'success') {
         startEvent('feedback_error', { rating, description });
         status = 'error';
         dispatch('error');

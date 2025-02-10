@@ -1,5 +1,7 @@
 {
-  "candidateNoNomination": "SV Error: The candidate associated with the logged in user has no nomination. Please contact the system administrator.",
-  "nominationNoElection": "SV Error: The nominatinon associated with the candidate has no election. Please contact the system administrator.",
-  "userNoCandidate": "SV Error: The logged in user has no candidate info tied to it. Please contact the system administrator."
+  "candidateNoNomination": "Kandidaten som är kopplad till den inloggade användaren har ingen nominering. Kontakta supporten.",
+  "loginFailed": "Inloggningen misslyckades. Kontrollera ditt användarnamn och lösenord.",
+  "nominationNoElection": "Nomineringen som är kopplad till kandidaten har inget val. Kontakta supporten.",
+  "saveFailed": "Vi beklagar, det uppstod ett problem med att spara dina svar. Försök igen och om problemet kvarstår, kontakta supporten.",
+  "userNoCandidate": "Den inloggade användaren har ingen kandidatinformation kopplad till sig. Kontakta supporten."
 }

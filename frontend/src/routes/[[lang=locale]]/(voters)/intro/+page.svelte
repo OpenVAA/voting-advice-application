@@ -13,12 +13,12 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getVoterContext } from '$lib/contexts/voter';
-  import Layout from '../../Layout.svelte';
+  import MainContent from '../../MainContent.svelte';
 
   const { constituenciesSelectable, electionsSelectable, getRoute, t } = getVoterContext();
 </script>
 
-<Layout title={$t('dynamic.intro.title')}>
+<MainContent title={$t('dynamic.intro.title')}>
   <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.intro.heroEmoji')} />
   </figure>
@@ -44,4 +44,4 @@ Shown after the front page in the voter app. Displays a list of the steps the vo
     variant="main"
     icon="next"
     text={$t('dynamic.intro.continue')} />
-</Layout>
+</MainContent>

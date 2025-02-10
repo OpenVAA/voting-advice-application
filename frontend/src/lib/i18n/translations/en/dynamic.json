@@ -3,6 +3,7 @@
     "heroEmoji": "⚙️"
   },
   "appName": "Election Compass",
+  "candidateAppName": "Election Compass for Candidates",
   "constituencies": {
     "heroEmoji": "📍",
     "ingressSingleElection": "The candidates and parties are divided into constituencies. You can only vote for those in your constituency.",
@@ -61,6 +62,9 @@
   },
   "statistics": {
     "heroEmoji": "🧮"
+  },
+  "success": {
+    "heroEmoji": "🎉"
   },
   "survey": {
     "button": "Take Part in User Survey",

@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "id": 1,
+      "documentId": 1,
       "attributes": {
         "color": "#bb9cd3",
         "name": {
@@ -29,7 +29,7 @@
         "answers": {
           "data": [
             {
-              "id": 521,
+              "documentId": 521,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -42,7 +42,7 @@
                 "publishedAt": "2024-06-07T13:12:42.069Z",
                 "question": {
                   "data": {
-                    "id": 1,
+                    "documentId": 1,
                     "attributes": {
                       "text": {
                         "en": "The state should preferably take on more debt rather than cut services.",
@@ -70,7 +70,7 @@
               }
             },
             {
-              "id": 522,
+              "documentId": 522,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -83,7 +83,7 @@
                 "publishedAt": "2024-06-07T13:12:42.073Z",
                 "question": {
                   "data": {
-                    "id": 2,
+                    "documentId": 2,
                     "attributes": {
                       "text": {
                         "en": "It's too easy to live on social support in Finland.",
@@ -111,7 +111,7 @@
               }
             },
             {
-              "id": 523,
+              "documentId": 523,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -124,7 +124,7 @@
                 "publishedAt": "2024-06-07T13:12:42.075Z",
                 "question": {
                   "data": {
-                    "id": 3,
+                    "documentId": 3,
                     "attributes": {
                       "text": {
                         "en": "Finland should introduce a third official gender.",
@@ -152,7 +152,7 @@
               }
             },
             {
-              "id": 524,
+              "documentId": 524,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -165,7 +165,7 @@
                 "publishedAt": "2024-06-07T13:12:42.077Z",
                 "question": {
                   "data": {
-                    "id": 4,
+                    "documentId": 4,
                     "attributes": {
                       "text": {
                         "en": "The teaching of religion in elementary schools should be replaced with ethics classes for all students.",
@@ -193,7 +193,7 @@
               }
             },
             {
-              "id": 525,
+              "documentId": 525,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -206,7 +206,7 @@
                 "publishedAt": "2024-06-07T13:12:42.079Z",
                 "question": {
                   "data": {
-                    "id": 5,
+                    "documentId": 5,
                     "attributes": {
                       "text": {
                         "en": "Agricultural subsidies should be tied more tightly to environmental protection than they are now.",
@@ -234,7 +234,7 @@
               }
             },
             {
-              "id": 526,
+              "documentId": 526,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -247,7 +247,7 @@
                 "publishedAt": "2024-06-07T13:12:42.081Z",
                 "question": {
                   "data": {
-                    "id": 6,
+                    "documentId": 6,
                     "attributes": {
                       "text": {
                         "en": "One must accept that there are fewer public services in rural areas.",
@@ -275,7 +275,7 @@
               }
             },
             {
-              "id": 527,
+              "documentId": 527,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -288,7 +288,7 @@
                 "publishedAt": "2024-06-07T13:12:42.083Z",
                 "question": {
                   "data": {
-                    "id": 7,
+                    "documentId": 7,
                     "attributes": {
                       "text": {
                         "en": "Finland's goal of being carbon neutral by 2035 is too ambitious.",
@@ -316,7 +316,7 @@
               }
             },
             {
-              "id": 528,
+              "documentId": 528,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -329,7 +329,7 @@
                 "publishedAt": "2024-06-07T13:12:42.084Z",
                 "question": {
                   "data": {
-                    "id": 8,
+                    "documentId": 8,
                     "attributes": {
                       "text": {
                         "en": "Finns must compromise on their standard of living if necessary for environmental sustainability.",
@@ -357,7 +357,7 @@
               }
             },
             {
-              "id": 529,
+              "documentId": 529,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -370,7 +370,7 @@
                 "publishedAt": "2024-06-07T13:12:42.086Z",
                 "question": {
                   "data": {
-                    "id": 9,
+                    "documentId": 9,
                     "attributes": {
                       "text": {
                         "en": "Everyone must study Swedish in elementary school.",
@@ -398,7 +398,7 @@
               }
             },
             {
-              "id": 530,
+              "documentId": 530,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -411,7 +411,7 @@
                 "publishedAt": "2024-06-07T13:12:42.088Z",
                 "question": {
                   "data": {
-                    "id": 10,
+                    "documentId": 10,
                     "attributes": {
                       "text": {
                         "en": "EU membership has been more beneficial than harmful for Finland.",
@@ -439,7 +439,7 @@
               }
             },
             {
-              "id": 531,
+              "documentId": 531,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -452,7 +452,7 @@
                 "publishedAt": "2024-06-07T13:12:42.090Z",
                 "question": {
                   "data": {
-                    "id": 11,
+                    "documentId": 11,
                     "attributes": {
                       "text": {
                         "en": "A Nato base should be stationed permanently in Finland.",
@@ -480,7 +480,7 @@
               }
             },
             {
-              "id": 532,
+              "documentId": 532,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -493,7 +493,7 @@
                 "publishedAt": "2024-06-07T13:12:42.093Z",
                 "question": {
                   "data": {
-                    "id": 12,
+                    "documentId": 12,
                     "attributes": {
                       "text": {
                         "en": "Finland spends too much money on asylum seekers and refugees.",
@@ -521,7 +521,7 @@
               }
             },
             {
-              "id": 533,
+              "documentId": 533,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -534,7 +534,7 @@
                 "publishedAt": "2024-06-07T13:12:42.095Z",
                 "question": {
                   "data": {
-                    "id": 13,
+                    "documentId": 13,
                     "attributes": {
                       "text": {
                         "en": "Finland must become a more attractive place for foreign workers.",
@@ -562,7 +562,7 @@
               }
             },
             {
-              "id": 534,
+              "documentId": 534,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -575,7 +575,7 @@
                 "publishedAt": "2024-06-07T13:12:42.097Z",
                 "question": {
                   "data": {
-                    "id": 14,
+                    "documentId": 14,
                     "attributes": {
                       "text": {
                         "en": "There should be more referendums in order to increase citizens' direct participation in decision-making.",
@@ -607,7 +607,7 @@
       }
     },
     {
-      "id": 2,
+      "documentId": 2,
       "attributes": {
         "color": "#afa152",
         "name": {
@@ -635,7 +635,7 @@
         "answers": {
           "data": [
             {
-              "id": 535,
+              "documentId": 535,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -648,7 +648,7 @@
                 "publishedAt": "2024-06-07T13:12:42.100Z",
                 "question": {
                   "data": {
-                    "id": 1,
+                    "documentId": 1,
                     "attributes": {
                       "text": {
                         "en": "The state should preferably take on more debt rather than cut services.",
@@ -676,7 +676,7 @@
               }
             },
             {
-              "id": 536,
+              "documentId": 536,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -689,7 +689,7 @@
                 "publishedAt": "2024-06-07T13:12:42.102Z",
                 "question": {
                   "data": {
-                    "id": 2,
+                    "documentId": 2,
                     "attributes": {
                       "text": {
                         "en": "It's too easy to live on social support in Finland.",
@@ -717,7 +717,7 @@
               }
             },
             {
-              "id": 537,
+              "documentId": 537,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -730,7 +730,7 @@
                 "publishedAt": "2024-06-07T13:12:42.104Z",
                 "question": {
                   "data": {
-                    "id": 3,
+                    "documentId": 3,
                     "attributes": {
                       "text": {
                         "en": "Finland should introduce a third official gender.",
@@ -758,7 +758,7 @@
               }
             },
             {
-              "id": 538,
+              "documentId": 538,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -771,7 +771,7 @@
                 "publishedAt": "2024-06-07T13:12:42.105Z",
                 "question": {
                   "data": {
-                    "id": 4,
+                    "documentId": 4,
                     "attributes": {
                       "text": {
                         "en": "The teaching of religion in elementary schools should be replaced with ethics classes for all students.",
@@ -799,7 +799,7 @@
               }
             },
             {
-              "id": 539,
+              "documentId": 539,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -812,7 +812,7 @@
                 "publishedAt": "2024-06-07T13:12:42.108Z",
                 "question": {
                   "data": {
-                    "id": 5,
+                    "documentId": 5,
                     "attributes": {
                       "text": {
                         "en": "Agricultural subsidies should be tied more tightly to environmental protection than they are now.",
@@ -840,7 +840,7 @@
               }
             },
             {
-              "id": 540,
+              "documentId": 540,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -853,7 +853,7 @@
                 "publishedAt": "2024-06-07T13:12:42.110Z",
                 "question": {
                   "data": {
-                    "id": 6,
+                    "documentId": 6,
                     "attributes": {
                       "text": {
                         "en": "One must accept that there are fewer public services in rural areas.",
@@ -881,7 +881,7 @@
               }
             },
             {
-              "id": 541,
+              "documentId": 541,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -894,7 +894,7 @@
                 "publishedAt": "2024-06-07T13:12:42.112Z",
                 "question": {
                   "data": {
-                    "id": 7,
+                    "documentId": 7,
                     "attributes": {
                       "text": {
                         "en": "Finland's goal of being carbon neutral by 2035 is too ambitious.",
@@ -922,7 +922,7 @@
               }
             },
             {
-              "id": 542,
+              "documentId": 542,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -935,7 +935,7 @@
                 "publishedAt": "2024-06-07T13:12:42.114Z",
                 "question": {
                   "data": {
-                    "id": 8,
+                    "documentId": 8,
                     "attributes": {
                       "text": {
                         "en": "Finns must compromise on their standard of living if necessary for environmental sustainability.",
@@ -963,7 +963,7 @@
               }
             },
             {
-              "id": 543,
+              "documentId": 543,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -976,7 +976,7 @@
                 "publishedAt": "2024-06-07T13:12:42.115Z",
                 "question": {
                   "data": {
-                    "id": 9,
+                    "documentId": 9,
                     "attributes": {
                       "text": {
                         "en": "Everyone must study Swedish in elementary school.",
@@ -1004,11 +1004,11 @@
               }
             },
             {
-              "id": 544,
+              "documentId": 544,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
-                  "en": "Desparatus defleo calamitas tamisium conicio id cognatus vobis certus perferendis.",
+                  "en": "Desparatus defleo calamitas tamisium conicio documentId cognatus vobis certus perferendis.",
                   "fi": "Tabesco cervus neque quo possimus.",
                   "es-CO": "Attero non crinis."
                 },
@@ -1017,7 +1017,7 @@
                 "publishedAt": "2024-06-07T13:12:42.117Z",
                 "question": {
                   "data": {
-                    "id": 10,
+                    "documentId": 10,
                     "attributes": {
                       "text": {
                         "en": "EU membership has been more beneficial than harmful for Finland.",
@@ -1045,7 +1045,7 @@
               }
             },
             {
-              "id": 545,
+              "documentId": 545,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -1058,7 +1058,7 @@
                 "publishedAt": "2024-06-07T13:12:42.119Z",
                 "question": {
                   "data": {
-                    "id": 11,
+                    "documentId": 11,
                     "attributes": {
                       "text": {
                         "en": "A Nato base should be stationed permanently in Finland.",
@@ -1086,7 +1086,7 @@
               }
             },
             {
-              "id": 546,
+              "documentId": 546,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -1099,7 +1099,7 @@
                 "publishedAt": "2024-06-07T13:12:42.121Z",
                 "question": {
                   "data": {
-                    "id": 12,
+                    "documentId": 12,
                     "attributes": {
                       "text": {
                         "en": "Finland spends too much money on asylum seekers and refugees.",
@@ -1127,7 +1127,7 @@
               }
             },
             {
-              "id": 547,
+              "documentId": 547,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -1140,7 +1140,7 @@
                 "publishedAt": "2024-06-07T13:12:42.124Z",
                 "question": {
                   "data": {
-                    "id": 13,
+                    "documentId": 13,
                     "attributes": {
                       "text": {
                         "en": "Finland must become a more attractive place for foreign workers.",
@@ -1168,7 +1168,7 @@
               }
             },
             {
-              "id": 548,
+              "documentId": 548,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -1181,7 +1181,7 @@
                 "publishedAt": "2024-06-07T13:12:42.126Z",
                 "question": {
                   "data": {
-                    "id": 14,
+                    "documentId": 14,
                     "attributes": {
                       "text": {
                         "en": "There should be more referendums in order to increase citizens' direct participation in decision-making.",
@@ -1213,7 +1213,7 @@
       }
     },
     {
-      "id": 3,
+      "documentId": 3,
       "attributes": {
         "color": "#9d22ee",
         "name": {
@@ -1241,7 +1241,7 @@
         "answers": {
           "data": [
             {
-              "id": 549,
+              "documentId": 549,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -1254,7 +1254,7 @@
                 "publishedAt": "2024-06-07T13:12:42.128Z",
                 "question": {
                   "data": {
-                    "id": 1,
+                    "documentId": 1,
                     "attributes": {
                       "text": {
                         "en": "The state should preferably take on more debt rather than cut services.",
@@ -1282,7 +1282,7 @@
               }
             },
             {
-              "id": 550,
+              "documentId": 550,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -1295,7 +1295,7 @@
                 "publishedAt": "2024-06-07T13:12:42.130Z",
                 "question": {
                   "data": {
-                    "id": 2,
+                    "documentId": 2,
                     "attributes": {
                       "text": {
                         "en": "It's too easy to live on social support in Finland.",
@@ -1323,7 +1323,7 @@
               }
             },
             {
-              "id": 551,
+              "documentId": 551,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -1336,7 +1336,7 @@
                 "publishedAt": "2024-06-07T13:12:42.131Z",
                 "question": {
                   "data": {
-                    "id": 3,
+                    "documentId": 3,
                     "attributes": {
                       "text": {
                         "en": "Finland should introduce a third official gender.",
@@ -1364,7 +1364,7 @@
               }
             },
             {
-              "id": 552,
+              "documentId": 552,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -1377,7 +1377,7 @@
                 "publishedAt": "2024-06-07T13:12:42.133Z",
                 "question": {
                   "data": {
-                    "id": 4,
+                    "documentId": 4,
                     "attributes": {
                       "text": {
                         "en": "The teaching of religion in elementary schools should be replaced with ethics classes for all students.",
@@ -1405,7 +1405,7 @@
               }
             },
             {
-              "id": 553,
+              "documentId": 553,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -1418,7 +1418,7 @@
                 "publishedAt": "2024-06-07T13:12:42.135Z",
                 "question": {
                   "data": {
-                    "id": 5,
+                    "documentId": 5,
                     "attributes": {
                       "text": {
                         "en": "Agricultural subsidies should be tied more tightly to environmental protection than they are now.",
@@ -1446,7 +1446,7 @@
               }
             },
             {
-              "id": 554,
+              "documentId": 554,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -1459,7 +1459,7 @@
                 "publishedAt": "2024-06-07T13:12:42.136Z",
                 "question": {
                   "data": {
-                    "id": 6,
+                    "documentId": 6,
                     "attributes": {
                       "text": {
                         "en": "One must accept that there are fewer public services in rural areas.",
@@ -1487,7 +1487,7 @@
               }
             },
             {
-              "id": 555,
+              "documentId": 555,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -1500,7 +1500,7 @@
                 "publishedAt": "2024-06-07T13:12:42.138Z",
                 "question": {
                   "data": {
-                    "id": 7,
+                    "documentId": 7,
                     "attributes": {
                       "text": {
                         "en": "Finland's goal of being carbon neutral by 2035 is too ambitious.",
@@ -1528,7 +1528,7 @@
               }
             },
             {
-              "id": 556,
+              "documentId": 556,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -1541,7 +1541,7 @@
                 "publishedAt": "2024-06-07T13:12:42.141Z",
                 "question": {
                   "data": {
-                    "id": 8,
+                    "documentId": 8,
                     "attributes": {
                       "text": {
                         "en": "Finns must compromise on their standard of living if necessary for environmental sustainability.",
@@ -1569,7 +1569,7 @@
               }
             },
             {
-              "id": 557,
+              "documentId": 557,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -1582,7 +1582,7 @@
                 "publishedAt": "2024-06-07T13:12:42.144Z",
                 "question": {
                   "data": {
-                    "id": 9,
+                    "documentId": 9,
                     "attributes": {
                       "text": {
                         "en": "Everyone must study Swedish in elementary school.",
@@ -1610,7 +1610,7 @@
               }
             },
             {
-              "id": 558,
+              "documentId": 558,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -1623,7 +1623,7 @@
                 "publishedAt": "2024-06-07T13:12:42.146Z",
                 "question": {
                   "data": {
-                    "id": 10,
+                    "documentId": 10,
                     "attributes": {
                       "text": {
                         "en": "EU membership has been more beneficial than harmful for Finland.",
@@ -1651,7 +1651,7 @@
               }
             },
             {
-              "id": 559,
+              "documentId": 559,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -1664,7 +1664,7 @@
                 "publishedAt": "2024-06-07T13:12:42.148Z",
                 "question": {
                   "data": {
-                    "id": 11,
+                    "documentId": 11,
                     "attributes": {
                       "text": {
                         "en": "A Nato base should be stationed permanently in Finland.",
@@ -1692,7 +1692,7 @@
               }
             },
             {
-              "id": 560,
+              "documentId": 560,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -1705,7 +1705,7 @@
                 "publishedAt": "2024-06-07T13:12:42.150Z",
                 "question": {
                   "data": {
-                    "id": 12,
+                    "documentId": 12,
                     "attributes": {
                       "text": {
                         "en": "Finland spends too much money on asylum seekers and refugees.",
@@ -1733,7 +1733,7 @@
               }
             },
             {
-              "id": 561,
+              "documentId": 561,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -1746,7 +1746,7 @@
                 "publishedAt": "2024-06-07T13:12:42.153Z",
                 "question": {
                   "data": {
-                    "id": 13,
+                    "documentId": 13,
                     "attributes": {
                       "text": {
                         "en": "Finland must become a more attractive place for foreign workers.",
@@ -1774,7 +1774,7 @@
               }
             },
             {
-              "id": 562,
+              "documentId": 562,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -1787,7 +1787,7 @@
                 "publishedAt": "2024-06-07T13:12:42.155Z",
                 "question": {
                   "data": {
-                    "id": 14,
+                    "documentId": 14,
                     "attributes": {
                       "text": {
                         "en": "There should be more referendums in order to increase citizens' direct participation in decision-making.",
@@ -1819,7 +1819,7 @@
       }
     },
     {
-      "id": 4,
+      "documentId": 4,
       "attributes": {
         "color": "#91218b",
         "name": {
@@ -1847,7 +1847,7 @@
         "answers": {
           "data": [
             {
-              "id": 563,
+              "documentId": 563,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -1860,7 +1860,7 @@
                 "publishedAt": "2024-06-07T13:12:42.158Z",
                 "question": {
                   "data": {
-                    "id": 1,
+                    "documentId": 1,
                     "attributes": {
                       "text": {
                         "en": "The state should preferably take on more debt rather than cut services.",
@@ -1888,7 +1888,7 @@
               }
             },
             {
-              "id": 564,
+              "documentId": 564,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -1901,7 +1901,7 @@
                 "publishedAt": "2024-06-07T13:12:42.160Z",
                 "question": {
                   "data": {
-                    "id": 2,
+                    "documentId": 2,
                     "attributes": {
                       "text": {
                         "en": "It's too easy to live on social support in Finland.",
@@ -1929,7 +1929,7 @@
               }
             },
             {
-              "id": 565,
+              "documentId": 565,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -1942,7 +1942,7 @@
                 "publishedAt": "2024-06-07T13:12:42.162Z",
                 "question": {
                   "data": {
-                    "id": 3,
+                    "documentId": 3,
                     "attributes": {
                       "text": {
                         "en": "Finland should introduce a third official gender.",
@@ -1970,7 +1970,7 @@
               }
             },
             {
-              "id": 566,
+              "documentId": 566,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -1983,7 +1983,7 @@
                 "publishedAt": "2024-06-07T13:12:42.163Z",
                 "question": {
                   "data": {
-                    "id": 4,
+                    "documentId": 4,
                     "attributes": {
                       "text": {
                         "en": "The teaching of religion in elementary schools should be replaced with ethics classes for all students.",
@@ -2011,7 +2011,7 @@
               }
             },
             {
-              "id": 567,
+              "documentId": 567,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -2024,7 +2024,7 @@
                 "publishedAt": "2024-06-07T13:12:42.165Z",
                 "question": {
                   "data": {
-                    "id": 5,
+                    "documentId": 5,
                     "attributes": {
                       "text": {
                         "en": "Agricultural subsidies should be tied more tightly to environmental protection than they are now.",
@@ -2052,7 +2052,7 @@
               }
             },
             {
-              "id": 568,
+              "documentId": 568,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -2065,7 +2065,7 @@
                 "publishedAt": "2024-06-07T13:12:42.167Z",
                 "question": {
                   "data": {
-                    "id": 6,
+                    "documentId": 6,
                     "attributes": {
                       "text": {
                         "en": "One must accept that there are fewer public services in rural areas.",
@@ -2093,7 +2093,7 @@
               }
             },
             {
-              "id": 569,
+              "documentId": 569,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -2106,7 +2106,7 @@
                 "publishedAt": "2024-06-07T13:12:42.168Z",
                 "question": {
                   "data": {
-                    "id": 7,
+                    "documentId": 7,
                     "attributes": {
                       "text": {
                         "en": "Finland's goal of being carbon neutral by 2035 is too ambitious.",
@@ -2134,7 +2134,7 @@
               }
             },
             {
-              "id": 570,
+              "documentId": 570,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -2147,7 +2147,7 @@
                 "publishedAt": "2024-06-07T13:12:42.170Z",
                 "question": {
                   "data": {
-                    "id": 8,
+                    "documentId": 8,
                     "attributes": {
                       "text": {
                         "en": "Finns must compromise on their standard of living if necessary for environmental sustainability.",
@@ -2175,7 +2175,7 @@
               }
             },
             {
-              "id": 571,
+              "documentId": 571,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -2188,7 +2188,7 @@
                 "publishedAt": "2024-06-07T13:12:42.172Z",
                 "question": {
                   "data": {
-                    "id": 9,
+                    "documentId": 9,
                     "attributes": {
                       "text": {
                         "en": "Everyone must study Swedish in elementary school.",
@@ -2216,7 +2216,7 @@
               }
             },
             {
-              "id": 572,
+              "documentId": 572,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -2229,7 +2229,7 @@
                 "publishedAt": "2024-06-07T13:12:42.175Z",
                 "question": {
                   "data": {
-                    "id": 10,
+                    "documentId": 10,
                     "attributes": {
                       "text": {
                         "en": "EU membership has been more beneficial than harmful for Finland.",
@@ -2257,7 +2257,7 @@
               }
             },
             {
-              "id": 573,
+              "documentId": 573,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -2270,7 +2270,7 @@
                 "publishedAt": "2024-06-07T13:12:42.176Z",
                 "question": {
                   "data": {
-                    "id": 11,
+                    "documentId": 11,
                     "attributes": {
                       "text": {
                         "en": "A Nato base should be stationed permanently in Finland.",
@@ -2298,7 +2298,7 @@
               }
             },
             {
-              "id": 574,
+              "documentId": 574,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -2311,7 +2311,7 @@
                 "publishedAt": "2024-06-07T13:12:42.178Z",
                 "question": {
                   "data": {
-                    "id": 12,
+                    "documentId": 12,
                     "attributes": {
                       "text": {
                         "en": "Finland spends too much money on asylum seekers and refugees.",
@@ -2339,7 +2339,7 @@
               }
             },
             {
-              "id": 575,
+              "documentId": 575,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -2352,7 +2352,7 @@
                 "publishedAt": "2024-06-07T13:12:42.180Z",
                 "question": {
                   "data": {
-                    "id": 13,
+                    "documentId": 13,
                     "attributes": {
                       "text": {
                         "en": "Finland must become a more attractive place for foreign workers.",
@@ -2380,7 +2380,7 @@
               }
             },
             {
-              "id": 576,
+              "documentId": 576,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -2393,7 +2393,7 @@
                 "publishedAt": "2024-06-07T13:12:42.182Z",
                 "question": {
                   "data": {
-                    "id": 14,
+                    "documentId": 14,
                     "attributes": {
                       "text": {
                         "en": "There should be more referendums in order to increase citizens' direct participation in decision-making.",
@@ -2425,7 +2425,7 @@
       }
     },
     {
-      "id": 5,
+      "documentId": 5,
       "attributes": {
         "color": "#a020f1",
         "name": {
@@ -2453,7 +2453,7 @@
         "answers": {
           "data": [
             {
-              "id": 577,
+              "documentId": 577,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -2466,7 +2466,7 @@
                 "publishedAt": "2024-06-07T13:12:42.184Z",
                 "question": {
                   "data": {
-                    "id": 1,
+                    "documentId": 1,
                     "attributes": {
                       "text": {
                         "en": "The state should preferably take on more debt rather than cut services.",
@@ -2494,7 +2494,7 @@
               }
             },
             {
-              "id": 578,
+              "documentId": 578,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -2507,7 +2507,7 @@
                 "publishedAt": "2024-06-07T13:12:42.185Z",
                 "question": {
                   "data": {
-                    "id": 2,
+                    "documentId": 2,
                     "attributes": {
                       "text": {
                         "en": "It's too easy to live on social support in Finland.",
@@ -2535,7 +2535,7 @@
               }
             },
             {
-              "id": 579,
+              "documentId": 579,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -2548,7 +2548,7 @@
                 "publishedAt": "2024-06-07T13:12:42.188Z",
                 "question": {
                   "data": {
-                    "id": 3,
+                    "documentId": 3,
                     "attributes": {
                       "text": {
                         "en": "Finland should introduce a third official gender.",
@@ -2576,7 +2576,7 @@
               }
             },
             {
-              "id": 580,
+              "documentId": 580,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -2589,7 +2589,7 @@
                 "publishedAt": "2024-06-07T13:12:42.190Z",
                 "question": {
                   "data": {
-                    "id": 4,
+                    "documentId": 4,
                     "attributes": {
                       "text": {
                         "en": "The teaching of religion in elementary schools should be replaced with ethics classes for all students.",
@@ -2617,7 +2617,7 @@
               }
             },
             {
-              "id": 581,
+              "documentId": 581,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -2630,7 +2630,7 @@
                 "publishedAt": "2024-06-07T13:12:42.193Z",
                 "question": {
                   "data": {
-                    "id": 5,
+                    "documentId": 5,
                     "attributes": {
                       "text": {
                         "en": "Agricultural subsidies should be tied more tightly to environmental protection than they are now.",
@@ -2658,7 +2658,7 @@
               }
             },
             {
-              "id": 582,
+              "documentId": 582,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -2671,7 +2671,7 @@
                 "publishedAt": "2024-06-07T13:12:42.195Z",
                 "question": {
                   "data": {
-                    "id": 6,
+                    "documentId": 6,
                     "attributes": {
                       "text": {
                         "en": "One must accept that there are fewer public services in rural areas.",
@@ -2699,7 +2699,7 @@
               }
             },
             {
-              "id": 583,
+              "documentId": 583,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -2712,7 +2712,7 @@
                 "publishedAt": "2024-06-07T13:12:42.196Z",
                 "question": {
                   "data": {
-                    "id": 7,
+                    "documentId": 7,
                     "attributes": {
                       "text": {
                         "en": "Finland's goal of being carbon neutral by 2035 is too ambitious.",
@@ -2740,7 +2740,7 @@
               }
             },
             {
-              "id": 584,
+              "documentId": 584,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -2753,7 +2753,7 @@
                 "publishedAt": "2024-06-07T13:12:42.198Z",
                 "question": {
                   "data": {
-                    "id": 8,
+                    "documentId": 8,
                     "attributes": {
                       "text": {
                         "en": "Finns must compromise on their standard of living if necessary for environmental sustainability.",
@@ -2781,7 +2781,7 @@
               }
             },
             {
-              "id": 585,
+              "documentId": 585,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -2794,7 +2794,7 @@
                 "publishedAt": "2024-06-07T13:12:42.200Z",
                 "question": {
                   "data": {
-                    "id": 9,
+                    "documentId": 9,
                     "attributes": {
                       "text": {
                         "en": "Everyone must study Swedish in elementary school.",
@@ -2822,7 +2822,7 @@
               }
             },
             {
-              "id": 586,
+              "documentId": 586,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -2835,7 +2835,7 @@
                 "publishedAt": "2024-06-07T13:12:42.202Z",
                 "question": {
                   "data": {
-                    "id": 10,
+                    "documentId": 10,
                     "attributes": {
                       "text": {
                         "en": "EU membership has been more beneficial than harmful for Finland.",
@@ -2863,7 +2863,7 @@
               }
             },
             {
-              "id": 587,
+              "documentId": 587,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -2876,7 +2876,7 @@
                 "publishedAt": "2024-06-07T13:12:42.204Z",
                 "question": {
                   "data": {
-                    "id": 11,
+                    "documentId": 11,
                     "attributes": {
                       "text": {
                         "en": "A Nato base should be stationed permanently in Finland.",
@@ -2904,7 +2904,7 @@
               }
             },
             {
-              "id": 588,
+              "documentId": 588,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -2917,7 +2917,7 @@
                 "publishedAt": "2024-06-07T13:12:42.206Z",
                 "question": {
                   "data": {
-                    "id": 12,
+                    "documentId": 12,
                     "attributes": {
                       "text": {
                         "en": "Finland spends too much money on asylum seekers and refugees.",
@@ -2945,7 +2945,7 @@
               }
             },
             {
-              "id": 589,
+              "documentId": 589,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -2958,7 +2958,7 @@
                 "publishedAt": "2024-06-07T13:12:42.208Z",
                 "question": {
                   "data": {
-                    "id": 13,
+                    "documentId": 13,
                     "attributes": {
                       "text": {
                         "en": "Finland must become a more attractive place for foreign workers.",
@@ -2986,7 +2986,7 @@
               }
             },
             {
-              "id": 590,
+              "documentId": 590,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -2999,7 +2999,7 @@
                 "publishedAt": "2024-06-07T13:12:42.209Z",
                 "question": {
                   "data": {
-                    "id": 14,
+                    "documentId": 14,
                     "attributes": {
                       "text": {
                         "en": "There should be more referendums in order to increase citizens' direct participation in decision-making.",
@@ -3031,7 +3031,7 @@
       }
     },
     {
-      "id": 6,
+      "documentId": 6,
       "attributes": {
         "color": "#4a8efb",
         "name": {
@@ -3045,7 +3045,7 @@
           "es-CO": "HPC"
         },
         "info": {
-          "en": "Animi vestigium defluo alias depulso desparatus. Villa contego tyrannus tabgo studio aperio surculus atavus verto tredecim. Tandem tepesco tantum odio eos id quos.",
+          "en": "Animi vestigium defluo alias depulso desparatus. Villa contego tyrannus tabgo studio aperio surculus atavus verto tredecim. Tandem tepesco tantum odio eos documentId quos.",
           "fi": "Tum ancilla basium quisquam coepi excepturi optio blanditiis iusto abeo. Tolero appositus votum timor quia sublime verbum. Commodo deserunt nesciunt arbitro dolorum tempus argentum venustas.",
           "es-CO": "Doloribus solium quibusdam antiquus delego amissio aliqua dicta bos depromo. Desparatus summopere consequuntur bibo commodi solvo tonsor aestas. Tergo volup arma adamo tres uterque."
         },
@@ -3059,7 +3059,7 @@
         "answers": {
           "data": [
             {
-              "id": 591,
+              "documentId": 591,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -3072,7 +3072,7 @@
                 "publishedAt": "2024-06-07T13:12:42.211Z",
                 "question": {
                   "data": {
-                    "id": 1,
+                    "documentId": 1,
                     "attributes": {
                       "text": {
                         "en": "The state should preferably take on more debt rather than cut services.",
@@ -3100,7 +3100,7 @@
               }
             },
             {
-              "id": 592,
+              "documentId": 592,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -3113,7 +3113,7 @@
                 "publishedAt": "2024-06-07T13:12:42.213Z",
                 "question": {
                   "data": {
-                    "id": 2,
+                    "documentId": 2,
                     "attributes": {
                       "text": {
                         "en": "It's too easy to live on social support in Finland.",
@@ -3141,7 +3141,7 @@
               }
             },
             {
-              "id": 593,
+              "documentId": 593,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -3154,7 +3154,7 @@
                 "publishedAt": "2024-06-07T13:12:42.214Z",
                 "question": {
                   "data": {
-                    "id": 3,
+                    "documentId": 3,
                     "attributes": {
                       "text": {
                         "en": "Finland should introduce a third official gender.",
@@ -3182,7 +3182,7 @@
               }
             },
             {
-              "id": 594,
+              "documentId": 594,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -3195,7 +3195,7 @@
                 "publishedAt": "2024-06-07T13:12:42.216Z",
                 "question": {
                   "data": {
-                    "id": 4,
+                    "documentId": 4,
                     "attributes": {
                       "text": {
                         "en": "The teaching of religion in elementary schools should be replaced with ethics classes for all students.",
@@ -3223,7 +3223,7 @@
               }
             },
             {
-              "id": 595,
+              "documentId": 595,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -3236,7 +3236,7 @@
                 "publishedAt": "2024-06-07T13:12:42.218Z",
                 "question": {
                   "data": {
-                    "id": 5,
+                    "documentId": 5,
                     "attributes": {
                       "text": {
                         "en": "Agricultural subsidies should be tied more tightly to environmental protection than they are now.",
@@ -3264,7 +3264,7 @@
               }
             },
             {
-              "id": 596,
+              "documentId": 596,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -3277,7 +3277,7 @@
                 "publishedAt": "2024-06-07T13:12:42.220Z",
                 "question": {
                   "data": {
-                    "id": 6,
+                    "documentId": 6,
                     "attributes": {
                       "text": {
                         "en": "One must accept that there are fewer public services in rural areas.",
@@ -3305,7 +3305,7 @@
               }
             },
             {
-              "id": 597,
+              "documentId": 597,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -3318,7 +3318,7 @@
                 "publishedAt": "2024-06-07T13:12:42.222Z",
                 "question": {
                   "data": {
-                    "id": 7,
+                    "documentId": 7,
                     "attributes": {
                       "text": {
                         "en": "Finland's goal of being carbon neutral by 2035 is too ambitious.",
@@ -3346,7 +3346,7 @@
               }
             },
             {
-              "id": 598,
+              "documentId": 598,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -3359,7 +3359,7 @@
                 "publishedAt": "2024-06-07T13:12:42.224Z",
                 "question": {
                   "data": {
-                    "id": 8,
+                    "documentId": 8,
                     "attributes": {
                       "text": {
                         "en": "Finns must compromise on their standard of living if necessary for environmental sustainability.",
@@ -3387,7 +3387,7 @@
               }
             },
             {
-              "id": 599,
+              "documentId": 599,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -3400,7 +3400,7 @@
                 "publishedAt": "2024-06-07T13:12:42.225Z",
                 "question": {
                   "data": {
-                    "id": 9,
+                    "documentId": 9,
                     "attributes": {
                       "text": {
                         "en": "Everyone must study Swedish in elementary school.",
@@ -3428,7 +3428,7 @@
               }
             },
             {
-              "id": 600,
+              "documentId": 600,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -3441,7 +3441,7 @@
                 "publishedAt": "2024-06-07T13:12:42.227Z",
                 "question": {
                   "data": {
-                    "id": 10,
+                    "documentId": 10,
                     "attributes": {
                       "text": {
                         "en": "EU membership has been more beneficial than harmful for Finland.",
@@ -3469,7 +3469,7 @@
               }
             },
             {
-              "id": 601,
+              "documentId": 601,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -3482,7 +3482,7 @@
                 "publishedAt": "2024-06-07T13:12:42.228Z",
                 "question": {
                   "data": {
-                    "id": 11,
+                    "documentId": 11,
                     "attributes": {
                       "text": {
                         "en": "A Nato base should be stationed permanently in Finland.",
@@ -3510,7 +3510,7 @@
               }
             },
             {
-              "id": 602,
+              "documentId": 602,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -3523,7 +3523,7 @@
                 "publishedAt": "2024-06-07T13:12:42.231Z",
                 "question": {
                   "data": {
-                    "id": 12,
+                    "documentId": 12,
                     "attributes": {
                       "text": {
                         "en": "Finland spends too much money on asylum seekers and refugees.",
@@ -3551,7 +3551,7 @@
               }
             },
             {
-              "id": 603,
+              "documentId": 603,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -3564,7 +3564,7 @@
                 "publishedAt": "2024-06-07T13:12:42.233Z",
                 "question": {
                   "data": {
-                    "id": 13,
+                    "documentId": 13,
                     "attributes": {
                       "text": {
                         "en": "Finland must become a more attractive place for foreign workers.",
@@ -3592,7 +3592,7 @@
               }
             },
             {
-              "id": 604,
+              "documentId": 604,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -3605,7 +3605,7 @@
                 "publishedAt": "2024-06-07T13:12:42.235Z",
                 "question": {
                   "data": {
-                    "id": 14,
+                    "documentId": 14,
                     "attributes": {
                       "text": {
                         "en": "There should be more referendums in order to increase citizens' direct participation in decision-making.",
@@ -3637,7 +3637,7 @@
       }
     },
     {
-      "id": 7,
+      "documentId": 7,
       "attributes": {
         "color": "#ced0ba",
         "name": {
@@ -3665,7 +3665,7 @@
         "answers": {
           "data": [
             {
-              "id": 605,
+              "documentId": 605,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -3678,7 +3678,7 @@
                 "publishedAt": "2024-06-07T13:12:42.237Z",
                 "question": {
                   "data": {
-                    "id": 1,
+                    "documentId": 1,
                     "attributes": {
                       "text": {
                         "en": "The state should preferably take on more debt rather than cut services.",
@@ -3706,7 +3706,7 @@
               }
             },
             {
-              "id": 606,
+              "documentId": 606,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -3719,7 +3719,7 @@
                 "publishedAt": "2024-06-07T13:12:42.239Z",
                 "question": {
                   "data": {
-                    "id": 2,
+                    "documentId": 2,
                     "attributes": {
                       "text": {
                         "en": "It's too easy to live on social support in Finland.",
@@ -3747,7 +3747,7 @@
               }
             },
             {
-              "id": 607,
+              "documentId": 607,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -3760,7 +3760,7 @@
                 "publishedAt": "2024-06-07T13:12:42.241Z",
                 "question": {
                   "data": {
-                    "id": 3,
+                    "documentId": 3,
                     "attributes": {
                       "text": {
                         "en": "Finland should introduce a third official gender.",
@@ -3788,7 +3788,7 @@
               }
             },
             {
-              "id": 608,
+              "documentId": 608,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -3801,7 +3801,7 @@
                 "publishedAt": "2024-06-07T13:12:42.242Z",
                 "question": {
                   "data": {
-                    "id": 4,
+                    "documentId": 4,
                     "attributes": {
                       "text": {
                         "en": "The teaching of religion in elementary schools should be replaced with ethics classes for all students.",
@@ -3829,7 +3829,7 @@
               }
             },
             {
-              "id": 609,
+              "documentId": 609,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -3842,7 +3842,7 @@
                 "publishedAt": "2024-06-07T13:12:42.244Z",
                 "question": {
                   "data": {
-                    "id": 5,
+                    "documentId": 5,
                     "attributes": {
                       "text": {
                         "en": "Agricultural subsidies should be tied more tightly to environmental protection than they are now.",
@@ -3870,7 +3870,7 @@
               }
             },
             {
-              "id": 610,
+              "documentId": 610,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -3883,7 +3883,7 @@
                 "publishedAt": "2024-06-07T13:12:42.246Z",
                 "question": {
                   "data": {
-                    "id": 6,
+                    "documentId": 6,
                     "attributes": {
                       "text": {
                         "en": "One must accept that there are fewer public services in rural areas.",
@@ -3911,7 +3911,7 @@
               }
             },
             {
-              "id": 611,
+              "documentId": 611,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -3924,7 +3924,7 @@
                 "publishedAt": "2024-06-07T13:12:42.247Z",
                 "question": {
                   "data": {
-                    "id": 7,
+                    "documentId": 7,
                     "attributes": {
                       "text": {
                         "en": "Finland's goal of being carbon neutral by 2035 is too ambitious.",
@@ -3952,7 +3952,7 @@
               }
             },
             {
-              "id": 612,
+              "documentId": 612,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -3965,7 +3965,7 @@
                 "publishedAt": "2024-06-07T13:12:42.249Z",
                 "question": {
                   "data": {
-                    "id": 8,
+                    "documentId": 8,
                     "attributes": {
                       "text": {
                         "en": "Finns must compromise on their standard of living if necessary for environmental sustainability.",
@@ -3993,7 +3993,7 @@
               }
             },
             {
-              "id": 613,
+              "documentId": 613,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -4006,7 +4006,7 @@
                 "publishedAt": "2024-06-07T13:12:42.252Z",
                 "question": {
                   "data": {
-                    "id": 9,
+                    "documentId": 9,
                     "attributes": {
                       "text": {
                         "en": "Everyone must study Swedish in elementary school.",
@@ -4034,7 +4034,7 @@
               }
             },
             {
-              "id": 614,
+              "documentId": 614,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -4047,7 +4047,7 @@
                 "publishedAt": "2024-06-07T13:12:42.253Z",
                 "question": {
                   "data": {
-                    "id": 10,
+                    "documentId": 10,
                     "attributes": {
                       "text": {
                         "en": "EU membership has been more beneficial than harmful for Finland.",
@@ -4075,7 +4075,7 @@
               }
             },
             {
-              "id": 615,
+              "documentId": 615,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -4088,7 +4088,7 @@
                 "publishedAt": "2024-06-07T13:12:42.255Z",
                 "question": {
                   "data": {
-                    "id": 11,
+                    "documentId": 11,
                     "attributes": {
                       "text": {
                         "en": "A Nato base should be stationed permanently in Finland.",
@@ -4116,7 +4116,7 @@
               }
             },
             {
-              "id": 616,
+              "documentId": 616,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -4129,7 +4129,7 @@
                 "publishedAt": "2024-06-07T13:12:42.258Z",
                 "question": {
                   "data": {
-                    "id": 12,
+                    "documentId": 12,
                     "attributes": {
                       "text": {
                         "en": "Finland spends too much money on asylum seekers and refugees.",
@@ -4157,7 +4157,7 @@
               }
             },
             {
-              "id": 617,
+              "documentId": 617,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -4170,7 +4170,7 @@
                 "publishedAt": "2024-06-07T13:12:42.260Z",
                 "question": {
                   "data": {
-                    "id": 13,
+                    "documentId": 13,
                     "attributes": {
                       "text": {
                         "en": "Finland must become a more attractive place for foreign workers.",
@@ -4198,7 +4198,7 @@
               }
             },
             {
-              "id": 618,
+              "documentId": 618,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -4211,7 +4211,7 @@
                 "publishedAt": "2024-06-07T13:12:42.261Z",
                 "question": {
                   "data": {
-                    "id": 14,
+                    "documentId": 14,
                     "attributes": {
                       "text": {
                         "en": "There should be more referendums in order to increase citizens' direct participation in decision-making.",
@@ -4243,7 +4243,7 @@
       }
     },
     {
-      "id": 8,
+      "documentId": 8,
       "attributes": {
         "color": "#91c5ab",
         "name": {
@@ -4271,7 +4271,7 @@
         "answers": {
           "data": [
             {
-              "id": 619,
+              "documentId": 619,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -4284,7 +4284,7 @@
                 "publishedAt": "2024-06-07T13:12:42.263Z",
                 "question": {
                   "data": {
-                    "id": 1,
+                    "documentId": 1,
                     "attributes": {
                       "text": {
                         "en": "The state should preferably take on more debt rather than cut services.",
@@ -4312,7 +4312,7 @@
               }
             },
             {
-              "id": 620,
+              "documentId": 620,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -4325,7 +4325,7 @@
                 "publishedAt": "2024-06-07T13:12:42.264Z",
                 "question": {
                   "data": {
-                    "id": 2,
+                    "documentId": 2,
                     "attributes": {
                       "text": {
                         "en": "It's too easy to live on social support in Finland.",
@@ -4353,7 +4353,7 @@
               }
             },
             {
-              "id": 621,
+              "documentId": 621,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -4366,7 +4366,7 @@
                 "publishedAt": "2024-06-07T13:12:42.267Z",
                 "question": {
                   "data": {
-                    "id": 3,
+                    "documentId": 3,
                     "attributes": {
                       "text": {
                         "en": "Finland should introduce a third official gender.",
@@ -4394,7 +4394,7 @@
               }
             },
             {
-              "id": 622,
+              "documentId": 622,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -4407,7 +4407,7 @@
                 "publishedAt": "2024-06-07T13:12:42.269Z",
                 "question": {
                   "data": {
-                    "id": 4,
+                    "documentId": 4,
                     "attributes": {
                       "text": {
                         "en": "The teaching of religion in elementary schools should be replaced with ethics classes for all students.",
@@ -4435,7 +4435,7 @@
               }
             },
             {
-              "id": 623,
+              "documentId": 623,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -4448,7 +4448,7 @@
                 "publishedAt": "2024-06-07T13:12:42.270Z",
                 "question": {
                   "data": {
-                    "id": 5,
+                    "documentId": 5,
                     "attributes": {
                       "text": {
                         "en": "Agricultural subsidies should be tied more tightly to environmental protection than they are now.",
@@ -4476,7 +4476,7 @@
               }
             },
             {
-              "id": 624,
+              "documentId": 624,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -4489,7 +4489,7 @@
                 "publishedAt": "2024-06-07T13:12:42.272Z",
                 "question": {
                   "data": {
-                    "id": 6,
+                    "documentId": 6,
                     "attributes": {
                       "text": {
                         "en": "One must accept that there are fewer public services in rural areas.",
@@ -4517,7 +4517,7 @@
               }
             },
             {
-              "id": 625,
+              "documentId": 625,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -4530,7 +4530,7 @@
                 "publishedAt": "2024-06-07T13:12:42.274Z",
                 "question": {
                   "data": {
-                    "id": 7,
+                    "documentId": 7,
                     "attributes": {
                       "text": {
                         "en": "Finland's goal of being carbon neutral by 2035 is too ambitious.",
@@ -4558,7 +4558,7 @@
               }
             },
             {
-              "id": 626,
+              "documentId": 626,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -4571,7 +4571,7 @@
                 "publishedAt": "2024-06-07T13:12:42.276Z",
                 "question": {
                   "data": {
-                    "id": 8,
+                    "documentId": 8,
                     "attributes": {
                       "text": {
                         "en": "Finns must compromise on their standard of living if necessary for environmental sustainability.",
@@ -4599,7 +4599,7 @@
               }
             },
             {
-              "id": 627,
+              "documentId": 627,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -4612,7 +4612,7 @@
                 "publishedAt": "2024-06-07T13:12:42.277Z",
                 "question": {
                   "data": {
-                    "id": 9,
+                    "documentId": 9,
                     "attributes": {
                       "text": {
                         "en": "Everyone must study Swedish in elementary school.",
@@ -4640,7 +4640,7 @@
               }
             },
             {
-              "id": 628,
+              "documentId": 628,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -4653,7 +4653,7 @@
                 "publishedAt": "2024-06-07T13:12:42.279Z",
                 "question": {
                   "data": {
-                    "id": 10,
+                    "documentId": 10,
                     "attributes": {
                       "text": {
                         "en": "EU membership has been more beneficial than harmful for Finland.",
@@ -4681,7 +4681,7 @@
               }
             },
             {
-              "id": 629,
+              "documentId": 629,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -4694,7 +4694,7 @@
                 "publishedAt": "2024-06-07T13:12:42.282Z",
                 "question": {
                   "data": {
-                    "id": 11,
+                    "documentId": 11,
                     "attributes": {
                       "text": {
                         "en": "A Nato base should be stationed permanently in Finland.",
@@ -4722,7 +4722,7 @@
               }
             },
             {
-              "id": 630,
+              "documentId": 630,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -4735,7 +4735,7 @@
                 "publishedAt": "2024-06-07T13:12:42.283Z",
                 "question": {
                   "data": {
-                    "id": 12,
+                    "documentId": 12,
                     "attributes": {
                       "text": {
                         "en": "Finland spends too much money on asylum seekers and refugees.",
@@ -4763,7 +4763,7 @@
               }
             },
             {
-              "id": 631,
+              "documentId": 631,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -4776,7 +4776,7 @@
                 "publishedAt": "2024-06-07T13:12:42.285Z",
                 "question": {
                   "data": {
-                    "id": 13,
+                    "documentId": 13,
                     "attributes": {
                       "text": {
                         "en": "Finland must become a more attractive place for foreign workers.",
@@ -4804,7 +4804,7 @@
               }
             },
             {
-              "id": 632,
+              "documentId": 632,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -4817,7 +4817,7 @@
                 "publishedAt": "2024-06-07T13:12:42.286Z",
                 "question": {
                   "data": {
-                    "id": 14,
+                    "documentId": 14,
                     "attributes": {
                       "text": {
                         "en": "There should be more referendums in order to increase citizens' direct participation in decision-making.",
@@ -4849,7 +4849,7 @@
       }
     },
     {
-      "id": 9,
+      "documentId": 9,
       "attributes": {
         "color": "#3eaad4",
         "name": {
@@ -4877,7 +4877,7 @@
         "answers": {
           "data": [
             {
-              "id": 633,
+              "documentId": 633,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -4890,7 +4890,7 @@
                 "publishedAt": "2024-06-07T13:12:42.288Z",
                 "question": {
                   "data": {
-                    "id": 1,
+                    "documentId": 1,
                     "attributes": {
                       "text": {
                         "en": "The state should preferably take on more debt rather than cut services.",
@@ -4918,7 +4918,7 @@
               }
             },
             {
-              "id": 634,
+              "documentId": 634,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -4931,7 +4931,7 @@
                 "publishedAt": "2024-06-07T13:12:42.290Z",
                 "question": {
                   "data": {
-                    "id": 2,
+                    "documentId": 2,
                     "attributes": {
                       "text": {
                         "en": "It's too easy to live on social support in Finland.",
@@ -4959,7 +4959,7 @@
               }
             },
             {
-              "id": 635,
+              "documentId": 635,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -4972,7 +4972,7 @@
                 "publishedAt": "2024-06-07T13:12:42.291Z",
                 "question": {
                   "data": {
-                    "id": 3,
+                    "documentId": 3,
                     "attributes": {
                       "text": {
                         "en": "Finland should introduce a third official gender.",
@@ -5000,7 +5000,7 @@
               }
             },
             {
-              "id": 636,
+              "documentId": 636,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -5013,7 +5013,7 @@
                 "publishedAt": "2024-06-07T13:12:42.293Z",
                 "question": {
                   "data": {
-                    "id": 4,
+                    "documentId": 4,
                     "attributes": {
                       "text": {
                         "en": "The teaching of religion in elementary schools should be replaced with ethics classes for all students.",
@@ -5041,7 +5041,7 @@
               }
             },
             {
-              "id": 637,
+              "documentId": 637,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -5054,7 +5054,7 @@
                 "publishedAt": "2024-06-07T13:12:42.296Z",
                 "question": {
                   "data": {
-                    "id": 5,
+                    "documentId": 5,
                     "attributes": {
                       "text": {
                         "en": "Agricultural subsidies should be tied more tightly to environmental protection than they are now.",
@@ -5082,7 +5082,7 @@
               }
             },
             {
-              "id": 638,
+              "documentId": 638,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -5095,7 +5095,7 @@
                 "publishedAt": "2024-06-07T13:12:42.297Z",
                 "question": {
                   "data": {
-                    "id": 6,
+                    "documentId": 6,
                     "attributes": {
                       "text": {
                         "en": "One must accept that there are fewer public services in rural areas.",
@@ -5123,7 +5123,7 @@
               }
             },
             {
-              "id": 639,
+              "documentId": 639,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -5136,7 +5136,7 @@
                 "publishedAt": "2024-06-07T13:12:42.299Z",
                 "question": {
                   "data": {
-                    "id": 7,
+                    "documentId": 7,
                     "attributes": {
                       "text": {
                         "en": "Finland's goal of being carbon neutral by 2035 is too ambitious.",
@@ -5164,7 +5164,7 @@
               }
             },
             {
-              "id": 640,
+              "documentId": 640,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -5177,7 +5177,7 @@
                 "publishedAt": "2024-06-07T13:12:42.301Z",
                 "question": {
                   "data": {
-                    "id": 8,
+                    "documentId": 8,
                     "attributes": {
                       "text": {
                         "en": "Finns must compromise on their standard of living if necessary for environmental sustainability.",
@@ -5205,7 +5205,7 @@
               }
             },
             {
-              "id": 641,
+              "documentId": 641,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -5218,7 +5218,7 @@
                 "publishedAt": "2024-06-07T13:12:42.302Z",
                 "question": {
                   "data": {
-                    "id": 9,
+                    "documentId": 9,
                     "attributes": {
                       "text": {
                         "en": "Everyone must study Swedish in elementary school.",
@@ -5246,7 +5246,7 @@
               }
             },
             {
-              "id": 642,
+              "documentId": 642,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -5259,7 +5259,7 @@
                 "publishedAt": "2024-06-07T13:12:42.304Z",
                 "question": {
                   "data": {
-                    "id": 10,
+                    "documentId": 10,
                     "attributes": {
                       "text": {
                         "en": "EU membership has been more beneficial than harmful for Finland.",
@@ -5287,7 +5287,7 @@
               }
             },
             {
-              "id": 643,
+              "documentId": 643,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -5300,7 +5300,7 @@
                 "publishedAt": "2024-06-07T13:12:42.306Z",
                 "question": {
                   "data": {
-                    "id": 11,
+                    "documentId": 11,
                     "attributes": {
                       "text": {
                         "en": "A Nato base should be stationed permanently in Finland.",
@@ -5328,7 +5328,7 @@
               }
             },
             {
-              "id": 644,
+              "documentId": 644,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -5341,7 +5341,7 @@
                 "publishedAt": "2024-06-07T13:12:42.307Z",
                 "question": {
                   "data": {
-                    "id": 12,
+                    "documentId": 12,
                     "attributes": {
                       "text": {
                         "en": "Finland spends too much money on asylum seekers and refugees.",
@@ -5369,7 +5369,7 @@
               }
             },
             {
-              "id": 645,
+              "documentId": 645,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -5382,7 +5382,7 @@
                 "publishedAt": "2024-06-07T13:12:42.310Z",
                 "question": {
                   "data": {
-                    "id": 13,
+                    "documentId": 13,
                     "attributes": {
                       "text": {
                         "en": "Finland must become a more attractive place for foreign workers.",
@@ -5410,20 +5410,20 @@
               }
             },
             {
-              "id": 646,
+              "documentId": 646,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
                   "en": "Quibusdam trepide nihil usus videlicet abutor derideo sollicito.",
                   "fi": "Amo autem corrigo dolores vado suscipit careo peior ante cruciamentum.",
-                  "es-CO": "Delectatio id adicio absum summopere curvo."
+                  "es-CO": "Delectatio documentId adicio absum summopere curvo."
                 },
                 "createdAt": "2024-06-07T13:12:42.311Z",
                 "updatedAt": "2024-06-07T13:12:42.311Z",
                 "publishedAt": "2024-06-07T13:12:42.311Z",
                 "question": {
                   "data": {
-                    "id": 14,
+                    "documentId": 14,
                     "attributes": {
                       "text": {
                         "en": "There should be more referendums in order to increase citizens' direct participation in decision-making.",
@@ -5455,7 +5455,7 @@
       }
     },
     {
-      "id": 10,
+      "documentId": 10,
       "attributes": {
         "color": "#35a7a1",
         "name": {
@@ -5483,7 +5483,7 @@
         "answers": {
           "data": [
             {
-              "id": 647,
+              "documentId": 647,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -5496,7 +5496,7 @@
                 "publishedAt": "2024-06-07T13:12:42.313Z",
                 "question": {
                   "data": {
-                    "id": 1,
+                    "documentId": 1,
                     "attributes": {
                       "text": {
                         "en": "The state should preferably take on more debt rather than cut services.",
@@ -5524,7 +5524,7 @@
               }
             },
             {
-              "id": 648,
+              "documentId": 648,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -5537,7 +5537,7 @@
                 "publishedAt": "2024-06-07T13:12:42.315Z",
                 "question": {
                   "data": {
-                    "id": 2,
+                    "documentId": 2,
                     "attributes": {
                       "text": {
                         "en": "It's too easy to live on social support in Finland.",
@@ -5565,7 +5565,7 @@
               }
             },
             {
-              "id": 649,
+              "documentId": 649,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -5578,7 +5578,7 @@
                 "publishedAt": "2024-06-07T13:12:42.317Z",
                 "question": {
                   "data": {
-                    "id": 3,
+                    "documentId": 3,
                     "attributes": {
                       "text": {
                         "en": "Finland should introduce a third official gender.",
@@ -5606,7 +5606,7 @@
               }
             },
             {
-              "id": 650,
+              "documentId": 650,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -5619,7 +5619,7 @@
                 "publishedAt": "2024-06-07T13:12:42.318Z",
                 "question": {
                   "data": {
-                    "id": 4,
+                    "documentId": 4,
                     "attributes": {
                       "text": {
                         "en": "The teaching of religion in elementary schools should be replaced with ethics classes for all students.",
@@ -5647,7 +5647,7 @@
               }
             },
             {
-              "id": 651,
+              "documentId": 651,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -5660,7 +5660,7 @@
                 "publishedAt": "2024-06-07T13:12:42.320Z",
                 "question": {
                   "data": {
-                    "id": 5,
+                    "documentId": 5,
                     "attributes": {
                       "text": {
                         "en": "Agricultural subsidies should be tied more tightly to environmental protection than they are now.",
@@ -5688,7 +5688,7 @@
               }
             },
             {
-              "id": 652,
+              "documentId": 652,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -5701,7 +5701,7 @@
                 "publishedAt": "2024-06-07T13:12:42.322Z",
                 "question": {
                   "data": {
-                    "id": 6,
+                    "documentId": 6,
                     "attributes": {
                       "text": {
                         "en": "One must accept that there are fewer public services in rural areas.",
@@ -5729,7 +5729,7 @@
               }
             },
             {
-              "id": 653,
+              "documentId": 653,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -5742,7 +5742,7 @@
                 "publishedAt": "2024-06-07T13:12:42.324Z",
                 "question": {
                   "data": {
-                    "id": 7,
+                    "documentId": 7,
                     "attributes": {
                       "text": {
                         "en": "Finland's goal of being carbon neutral by 2035 is too ambitious.",
@@ -5770,7 +5770,7 @@
               }
             },
             {
-              "id": 654,
+              "documentId": 654,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -5783,7 +5783,7 @@
                 "publishedAt": "2024-06-07T13:12:42.325Z",
                 "question": {
                   "data": {
-                    "id": 8,
+                    "documentId": 8,
                     "attributes": {
                       "text": {
                         "en": "Finns must compromise on their standard of living if necessary for environmental sustainability.",
@@ -5811,7 +5811,7 @@
               }
             },
             {
-              "id": 655,
+              "documentId": 655,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -5824,7 +5824,7 @@
                 "publishedAt": "2024-06-07T13:12:42.327Z",
                 "question": {
                   "data": {
-                    "id": 9,
+                    "documentId": 9,
                     "attributes": {
                       "text": {
                         "en": "Everyone must study Swedish in elementary school.",
@@ -5852,7 +5852,7 @@
               }
             },
             {
-              "id": 656,
+              "documentId": 656,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -5865,7 +5865,7 @@
                 "publishedAt": "2024-06-07T13:12:42.329Z",
                 "question": {
                   "data": {
-                    "id": 10,
+                    "documentId": 10,
                     "attributes": {
                       "text": {
                         "en": "EU membership has been more beneficial than harmful for Finland.",
@@ -5893,7 +5893,7 @@
               }
             },
             {
-              "id": 657,
+              "documentId": 657,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -5906,7 +5906,7 @@
                 "publishedAt": "2024-06-07T13:12:42.330Z",
                 "question": {
                   "data": {
-                    "id": 11,
+                    "documentId": 11,
                     "attributes": {
                       "text": {
                         "en": "A Nato base should be stationed permanently in Finland.",
@@ -5934,7 +5934,7 @@
               }
             },
             {
-              "id": 658,
+              "documentId": 658,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -5947,7 +5947,7 @@
                 "publishedAt": "2024-06-07T13:12:42.332Z",
                 "question": {
                   "data": {
-                    "id": 12,
+                    "documentId": 12,
                     "attributes": {
                       "text": {
                         "en": "Finland spends too much money on asylum seekers and refugees.",
@@ -5975,7 +5975,7 @@
               }
             },
             {
-              "id": 659,
+              "documentId": 659,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -5988,7 +5988,7 @@
                 "publishedAt": "2024-06-07T13:12:42.334Z",
                 "question": {
                   "data": {
-                    "id": 13,
+                    "documentId": 13,
                     "attributes": {
                       "text": {
                         "en": "Finland must become a more attractive place for foreign workers.",
@@ -6016,7 +6016,7 @@
               }
             },
             {
-              "id": 660,
+              "documentId": 660,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -6029,7 +6029,7 @@
                 "publishedAt": "2024-06-07T13:12:42.335Z",
                 "question": {
                   "data": {
-                    "id": 14,
+                    "documentId": 14,
                     "attributes": {
                       "text": {
                         "en": "There should be more referendums in order to increase citizens' direct participation in decision-making.",
@@ -6061,7 +6061,7 @@
       }
     },
     {
-      "id": 11,
+      "documentId": 11,
       "attributes": {
         "color": "#904bab",
         "name": {
@@ -6077,7 +6077,7 @@
         "info": {
           "en": "Celebrer conservo complectus ultra illum crapula demonstro. Nihil comminor cupressus sol excepturi autem deficio. Molestias ambitus verbera speculum accedo tres cauda temporibus artificiose vigor.",
           "fi": "Eos substantia cavus. Strenuus autem uxor sed vociferor atrox. Corona damnatio defessus.",
-          "es-CO": "Comitatus impedit stipes cernuus cur arbustum volutabrum. Tondeo denuo velit peior. Beatae eaque id creber."
+          "es-CO": "Comitatus impedit stipes cernuus cur arbustum volutabrum. Tondeo denuo velit peior. Beatae eaque documentId creber."
         },
         "colorDark": null,
         "createdAt": "2024-06-07T13:12:40.860Z",
@@ -6089,7 +6089,7 @@
         "answers": {
           "data": [
             {
-              "id": 661,
+              "documentId": 661,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -6102,7 +6102,7 @@
                 "publishedAt": "2024-06-07T13:12:42.337Z",
                 "question": {
                   "data": {
-                    "id": 1,
+                    "documentId": 1,
                     "attributes": {
                       "text": {
                         "en": "The state should preferably take on more debt rather than cut services.",
@@ -6130,7 +6130,7 @@
               }
             },
             {
-              "id": 662,
+              "documentId": 662,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -6143,7 +6143,7 @@
                 "publishedAt": "2024-06-07T13:12:42.339Z",
                 "question": {
                   "data": {
-                    "id": 2,
+                    "documentId": 2,
                     "attributes": {
                       "text": {
                         "en": "It's too easy to live on social support in Finland.",
@@ -6171,7 +6171,7 @@
               }
             },
             {
-              "id": 663,
+              "documentId": 663,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -6184,7 +6184,7 @@
                 "publishedAt": "2024-06-07T13:12:42.341Z",
                 "question": {
                   "data": {
-                    "id": 3,
+                    "documentId": 3,
                     "attributes": {
                       "text": {
                         "en": "Finland should introduce a third official gender.",
@@ -6212,7 +6212,7 @@
               }
             },
             {
-              "id": 664,
+              "documentId": 664,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -6225,7 +6225,7 @@
                 "publishedAt": "2024-06-07T13:12:42.342Z",
                 "question": {
                   "data": {
-                    "id": 4,
+                    "documentId": 4,
                     "attributes": {
                       "text": {
                         "en": "The teaching of religion in elementary schools should be replaced with ethics classes for all students.",
@@ -6253,7 +6253,7 @@
               }
             },
             {
-              "id": 665,
+              "documentId": 665,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -6266,7 +6266,7 @@
                 "publishedAt": "2024-06-07T13:12:42.344Z",
                 "question": {
                   "data": {
-                    "id": 5,
+                    "documentId": 5,
                     "attributes": {
                       "text": {
                         "en": "Agricultural subsidies should be tied more tightly to environmental protection than they are now.",
@@ -6294,7 +6294,7 @@
               }
             },
             {
-              "id": 666,
+              "documentId": 666,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -6307,7 +6307,7 @@
                 "publishedAt": "2024-06-07T13:12:42.345Z",
                 "question": {
                   "data": {
-                    "id": 6,
+                    "documentId": 6,
                     "attributes": {
                       "text": {
                         "en": "One must accept that there are fewer public services in rural areas.",
@@ -6335,7 +6335,7 @@
               }
             },
             {
-              "id": 667,
+              "documentId": 667,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -6348,7 +6348,7 @@
                 "publishedAt": "2024-06-07T13:12:42.347Z",
                 "question": {
                   "data": {
-                    "id": 7,
+                    "documentId": 7,
                     "attributes": {
                       "text": {
                         "en": "Finland's goal of being carbon neutral by 2035 is too ambitious.",
@@ -6376,7 +6376,7 @@
               }
             },
             {
-              "id": 668,
+              "documentId": 668,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -6389,7 +6389,7 @@
                 "publishedAt": "2024-06-07T13:12:42.349Z",
                 "question": {
                   "data": {
-                    "id": 8,
+                    "documentId": 8,
                     "attributes": {
                       "text": {
                         "en": "Finns must compromise on their standard of living if necessary for environmental sustainability.",
@@ -6417,7 +6417,7 @@
               }
             },
             {
-              "id": 669,
+              "documentId": 669,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -6430,7 +6430,7 @@
                 "publishedAt": "2024-06-07T13:12:42.350Z",
                 "question": {
                   "data": {
-                    "id": 9,
+                    "documentId": 9,
                     "attributes": {
                       "text": {
                         "en": "Everyone must study Swedish in elementary school.",
@@ -6458,7 +6458,7 @@
               }
             },
             {
-              "id": 670,
+              "documentId": 670,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -6471,7 +6471,7 @@
                 "publishedAt": "2024-06-07T13:12:42.352Z",
                 "question": {
                   "data": {
-                    "id": 10,
+                    "documentId": 10,
                     "attributes": {
                       "text": {
                         "en": "EU membership has been more beneficial than harmful for Finland.",
@@ -6499,7 +6499,7 @@
               }
             },
             {
-              "id": 671,
+              "documentId": 671,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -6512,7 +6512,7 @@
                 "publishedAt": "2024-06-07T13:12:42.354Z",
                 "question": {
                   "data": {
-                    "id": 11,
+                    "documentId": 11,
                     "attributes": {
                       "text": {
                         "en": "A Nato base should be stationed permanently in Finland.",
@@ -6540,7 +6540,7 @@
               }
             },
             {
-              "id": 672,
+              "documentId": 672,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -6553,7 +6553,7 @@
                 "publishedAt": "2024-06-07T13:12:42.355Z",
                 "question": {
                   "data": {
-                    "id": 12,
+                    "documentId": 12,
                     "attributes": {
                       "text": {
                         "en": "Finland spends too much money on asylum seekers and refugees.",
@@ -6581,7 +6581,7 @@
               }
             },
             {
-              "id": 673,
+              "documentId": 673,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -6594,7 +6594,7 @@
                 "publishedAt": "2024-06-07T13:12:42.356Z",
                 "question": {
                   "data": {
-                    "id": 13,
+                    "documentId": 13,
                     "attributes": {
                       "text": {
                         "en": "Finland must become a more attractive place for foreign workers.",
@@ -6622,7 +6622,7 @@
               }
             },
             {
-              "id": 674,
+              "documentId": 674,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -6635,7 +6635,7 @@
                 "publishedAt": "2024-06-07T13:12:42.358Z",
                 "question": {
                   "data": {
-                    "id": 14,
+                    "documentId": 14,
                     "attributes": {
                       "text": {
                         "en": "There should be more referendums in order to increase citizens' direct participation in decision-making.",
@@ -6667,7 +6667,7 @@
       }
     },
     {
-      "id": 12,
+      "documentId": 12,
       "attributes": {
         "color": "#fadfac",
         "name": {
@@ -6695,7 +6695,7 @@
         "answers": {
           "data": [
             {
-              "id": 675,
+              "documentId": 675,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -6708,7 +6708,7 @@
                 "publishedAt": "2024-06-07T13:12:42.360Z",
                 "question": {
                   "data": {
-                    "id": 1,
+                    "documentId": 1,
                     "attributes": {
                       "text": {
                         "en": "The state should preferably take on more debt rather than cut services.",
@@ -6736,7 +6736,7 @@
               }
             },
             {
-              "id": 676,
+              "documentId": 676,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -6749,7 +6749,7 @@
                 "publishedAt": "2024-06-07T13:12:42.362Z",
                 "question": {
                   "data": {
-                    "id": 2,
+                    "documentId": 2,
                     "attributes": {
                       "text": {
                         "en": "It's too easy to live on social support in Finland.",
@@ -6777,7 +6777,7 @@
               }
             },
             {
-              "id": 677,
+              "documentId": 677,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -6790,7 +6790,7 @@
                 "publishedAt": "2024-06-07T13:12:42.363Z",
                 "question": {
                   "data": {
-                    "id": 3,
+                    "documentId": 3,
                     "attributes": {
                       "text": {
                         "en": "Finland should introduce a third official gender.",
@@ -6818,7 +6818,7 @@
               }
             },
             {
-              "id": 678,
+              "documentId": 678,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -6831,7 +6831,7 @@
                 "publishedAt": "2024-06-07T13:12:42.365Z",
                 "question": {
                   "data": {
-                    "id": 4,
+                    "documentId": 4,
                     "attributes": {
                       "text": {
                         "en": "The teaching of religion in elementary schools should be replaced with ethics classes for all students.",
@@ -6859,7 +6859,7 @@
               }
             },
             {
-              "id": 679,
+              "documentId": 679,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -6872,7 +6872,7 @@
                 "publishedAt": "2024-06-07T13:12:42.367Z",
                 "question": {
                   "data": {
-                    "id": 5,
+                    "documentId": 5,
                     "attributes": {
                       "text": {
                         "en": "Agricultural subsidies should be tied more tightly to environmental protection than they are now.",
@@ -6900,7 +6900,7 @@
               }
             },
             {
-              "id": 680,
+              "documentId": 680,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -6913,7 +6913,7 @@
                 "publishedAt": "2024-06-07T13:12:42.368Z",
                 "question": {
                   "data": {
-                    "id": 6,
+                    "documentId": 6,
                     "attributes": {
                       "text": {
                         "en": "One must accept that there are fewer public services in rural areas.",
@@ -6941,7 +6941,7 @@
               }
             },
             {
-              "id": 681,
+              "documentId": 681,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -6954,7 +6954,7 @@
                 "publishedAt": "2024-06-07T13:12:42.370Z",
                 "question": {
                   "data": {
-                    "id": 7,
+                    "documentId": 7,
                     "attributes": {
                       "text": {
                         "en": "Finland's goal of being carbon neutral by 2035 is too ambitious.",
@@ -6982,7 +6982,7 @@
               }
             },
             {
-              "id": 682,
+              "documentId": 682,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -6995,7 +6995,7 @@
                 "publishedAt": "2024-06-07T13:12:42.371Z",
                 "question": {
                   "data": {
-                    "id": 8,
+                    "documentId": 8,
                     "attributes": {
                       "text": {
                         "en": "Finns must compromise on their standard of living if necessary for environmental sustainability.",
@@ -7023,7 +7023,7 @@
               }
             },
             {
-              "id": 683,
+              "documentId": 683,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -7036,7 +7036,7 @@
                 "publishedAt": "2024-06-07T13:12:42.373Z",
                 "question": {
                   "data": {
-                    "id": 9,
+                    "documentId": 9,
                     "attributes": {
                       "text": {
                         "en": "Everyone must study Swedish in elementary school.",
@@ -7064,7 +7064,7 @@
               }
             },
             {
-              "id": 684,
+              "documentId": 684,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -7077,7 +7077,7 @@
                 "publishedAt": "2024-06-07T13:12:42.375Z",
                 "question": {
                   "data": {
-                    "id": 10,
+                    "documentId": 10,
                     "attributes": {
                       "text": {
                         "en": "EU membership has been more beneficial than harmful for Finland.",
@@ -7105,7 +7105,7 @@
               }
             },
             {
-              "id": 685,
+              "documentId": 685,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -7118,7 +7118,7 @@
                 "publishedAt": "2024-06-07T13:12:42.376Z",
                 "question": {
                   "data": {
-                    "id": 11,
+                    "documentId": 11,
                     "attributes": {
                       "text": {
                         "en": "A Nato base should be stationed permanently in Finland.",
@@ -7146,7 +7146,7 @@
               }
             },
             {
-              "id": 686,
+              "documentId": 686,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -7159,7 +7159,7 @@
                 "publishedAt": "2024-06-07T13:12:42.378Z",
                 "question": {
                   "data": {
-                    "id": 12,
+                    "documentId": 12,
                     "attributes": {
                       "text": {
                         "en": "Finland spends too much money on asylum seekers and refugees.",
@@ -7187,7 +7187,7 @@
               }
             },
             {
-              "id": 687,
+              "documentId": 687,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -7200,7 +7200,7 @@
                 "publishedAt": "2024-06-07T13:12:42.379Z",
                 "question": {
                   "data": {
-                    "id": 13,
+                    "documentId": 13,
                     "attributes": {
                       "text": {
                         "en": "Finland must become a more attractive place for foreign workers.",
@@ -7228,7 +7228,7 @@
               }
             },
             {
-              "id": 688,
+              "documentId": 688,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -7241,7 +7241,7 @@
                 "publishedAt": "2024-06-07T13:12:42.381Z",
                 "question": {
                   "data": {
-                    "id": 14,
+                    "documentId": 14,
                     "attributes": {
                       "text": {
                         "en": "There should be more referendums in order to increase citizens' direct participation in decision-making.",
@@ -7273,7 +7273,7 @@
       }
     },
     {
-      "id": 13,
+      "documentId": 13,
       "attributes": {
         "color": "#e85a1c",
         "name": {
@@ -7301,7 +7301,7 @@
         "answers": {
           "data": [
             {
-              "id": 689,
+              "documentId": 689,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -7314,7 +7314,7 @@
                 "publishedAt": "2024-06-07T13:12:42.382Z",
                 "question": {
                   "data": {
-                    "id": 1,
+                    "documentId": 1,
                     "attributes": {
                       "text": {
                         "en": "The state should preferably take on more debt rather than cut services.",
@@ -7342,7 +7342,7 @@
               }
             },
             {
-              "id": 690,
+              "documentId": 690,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -7355,7 +7355,7 @@
                 "publishedAt": "2024-06-07T13:12:42.384Z",
                 "question": {
                   "data": {
-                    "id": 2,
+                    "documentId": 2,
                     "attributes": {
                       "text": {
                         "en": "It's too easy to live on social support in Finland.",
@@ -7383,7 +7383,7 @@
               }
             },
             {
-              "id": 691,
+              "documentId": 691,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -7396,7 +7396,7 @@
                 "publishedAt": "2024-06-07T13:12:42.386Z",
                 "question": {
                   "data": {
-                    "id": 3,
+                    "documentId": 3,
                     "attributes": {
                       "text": {
                         "en": "Finland should introduce a third official gender.",
@@ -7424,7 +7424,7 @@
               }
             },
             {
-              "id": 692,
+              "documentId": 692,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -7437,7 +7437,7 @@
                 "publishedAt": "2024-06-07T13:12:42.388Z",
                 "question": {
                   "data": {
-                    "id": 4,
+                    "documentId": 4,
                     "attributes": {
                       "text": {
                         "en": "The teaching of religion in elementary schools should be replaced with ethics classes for all students.",
@@ -7465,7 +7465,7 @@
               }
             },
             {
-              "id": 693,
+              "documentId": 693,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -7478,7 +7478,7 @@
                 "publishedAt": "2024-06-07T13:12:42.390Z",
                 "question": {
                   "data": {
-                    "id": 5,
+                    "documentId": 5,
                     "attributes": {
                       "text": {
                         "en": "Agricultural subsidies should be tied more tightly to environmental protection than they are now.",
@@ -7506,7 +7506,7 @@
               }
             },
             {
-              "id": 694,
+              "documentId": 694,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -7519,7 +7519,7 @@
                 "publishedAt": "2024-06-07T13:12:42.391Z",
                 "question": {
                   "data": {
-                    "id": 6,
+                    "documentId": 6,
                     "attributes": {
                       "text": {
                         "en": "One must accept that there are fewer public services in rural areas.",
@@ -7547,7 +7547,7 @@
               }
             },
             {
-              "id": 695,
+              "documentId": 695,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -7560,7 +7560,7 @@
                 "publishedAt": "2024-06-07T13:12:42.393Z",
                 "question": {
                   "data": {
-                    "id": 7,
+                    "documentId": 7,
                     "attributes": {
                       "text": {
                         "en": "Finland's goal of being carbon neutral by 2035 is too ambitious.",
@@ -7588,7 +7588,7 @@
               }
             },
             {
-              "id": 696,
+              "documentId": 696,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -7601,7 +7601,7 @@
                 "publishedAt": "2024-06-07T13:12:42.394Z",
                 "question": {
                   "data": {
-                    "id": 8,
+                    "documentId": 8,
                     "attributes": {
                       "text": {
                         "en": "Finns must compromise on their standard of living if necessary for environmental sustainability.",
@@ -7629,7 +7629,7 @@
               }
             },
             {
-              "id": 697,
+              "documentId": 697,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -7642,7 +7642,7 @@
                 "publishedAt": "2024-06-07T13:12:42.396Z",
                 "question": {
                   "data": {
-                    "id": 9,
+                    "documentId": 9,
                     "attributes": {
                       "text": {
                         "en": "Everyone must study Swedish in elementary school.",
@@ -7670,11 +7670,11 @@
               }
             },
             {
-              "id": 698,
+              "documentId": 698,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
-                  "en": "Conventus id perspiciatis ex tertius strenuus terga vociferor utroque suffoco.",
+                  "en": "Conventus documentId perspiciatis ex tertius strenuus terga vociferor utroque suffoco.",
                   "fi": "Usque ustulo accusamus apostolus crepusculum aperiam defaeco.",
                   "es-CO": "Crastinus adeo commemoro stips tenax supra alias debitis."
                 },
@@ -7683,7 +7683,7 @@
                 "publishedAt": "2024-06-07T13:12:42.398Z",
                 "question": {
                   "data": {
-                    "id": 10,
+                    "documentId": 10,
                     "attributes": {
                       "text": {
                         "en": "EU membership has been more beneficial than harmful for Finland.",
@@ -7711,7 +7711,7 @@
               }
             },
             {
-              "id": 699,
+              "documentId": 699,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -7724,7 +7724,7 @@
                 "publishedAt": "2024-06-07T13:12:42.399Z",
                 "question": {
                   "data": {
-                    "id": 11,
+                    "documentId": 11,
                     "attributes": {
                       "text": {
                         "en": "A Nato base should be stationed permanently in Finland.",
@@ -7752,7 +7752,7 @@
               }
             },
             {
-              "id": 700,
+              "documentId": 700,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -7765,7 +7765,7 @@
                 "publishedAt": "2024-06-07T13:12:42.402Z",
                 "question": {
                   "data": {
-                    "id": 12,
+                    "documentId": 12,
                     "attributes": {
                       "text": {
                         "en": "Finland spends too much money on asylum seekers and refugees.",
@@ -7793,7 +7793,7 @@
               }
             },
             {
-              "id": 701,
+              "documentId": 701,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -7806,7 +7806,7 @@
                 "publishedAt": "2024-06-07T13:12:42.403Z",
                 "question": {
                   "data": {
-                    "id": 13,
+                    "documentId": 13,
                     "attributes": {
                       "text": {
                         "en": "Finland must become a more attractive place for foreign workers.",
@@ -7834,7 +7834,7 @@
               }
             },
             {
-              "id": 702,
+              "documentId": 702,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -7847,7 +7847,7 @@
                 "publishedAt": "2024-06-07T13:12:42.405Z",
                 "question": {
                   "data": {
-                    "id": 14,
+                    "documentId": 14,
                     "attributes": {
                       "text": {
                         "en": "There should be more referendums in order to increase citizens' direct participation in decision-making.",
@@ -7879,7 +7879,7 @@
       }
     },
     {
-      "id": 14,
+      "documentId": 14,
       "attributes": {
         "color": "#ecdaae",
         "name": {
@@ -7907,7 +7907,7 @@
         "answers": {
           "data": [
             {
-              "id": 703,
+              "documentId": 703,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -7920,7 +7920,7 @@
                 "publishedAt": "2024-06-07T13:12:42.407Z",
                 "question": {
                   "data": {
-                    "id": 1,
+                    "documentId": 1,
                     "attributes": {
                       "text": {
                         "en": "The state should preferably take on more debt rather than cut services.",
@@ -7948,7 +7948,7 @@
               }
             },
             {
-              "id": 704,
+              "documentId": 704,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -7961,7 +7961,7 @@
                 "publishedAt": "2024-06-07T13:12:42.409Z",
                 "question": {
                   "data": {
-                    "id": 2,
+                    "documentId": 2,
                     "attributes": {
                       "text": {
                         "en": "It's too easy to live on social support in Finland.",
@@ -7989,7 +7989,7 @@
               }
             },
             {
-              "id": 705,
+              "documentId": 705,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -8002,7 +8002,7 @@
                 "publishedAt": "2024-06-07T13:12:42.410Z",
                 "question": {
                   "data": {
-                    "id": 3,
+                    "documentId": 3,
                     "attributes": {
                       "text": {
                         "en": "Finland should introduce a third official gender.",
@@ -8030,7 +8030,7 @@
               }
             },
             {
-              "id": 706,
+              "documentId": 706,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -8043,7 +8043,7 @@
                 "publishedAt": "2024-06-07T13:12:42.412Z",
                 "question": {
                   "data": {
-                    "id": 4,
+                    "documentId": 4,
                     "attributes": {
                       "text": {
                         "en": "The teaching of religion in elementary schools should be replaced with ethics classes for all students.",
@@ -8071,7 +8071,7 @@
               }
             },
             {
-              "id": 707,
+              "documentId": 707,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -8084,7 +8084,7 @@
                 "publishedAt": "2024-06-07T13:12:42.414Z",
                 "question": {
                   "data": {
-                    "id": 5,
+                    "documentId": 5,
                     "attributes": {
                       "text": {
                         "en": "Agricultural subsidies should be tied more tightly to environmental protection than they are now.",
@@ -8112,7 +8112,7 @@
               }
             },
             {
-              "id": 708,
+              "documentId": 708,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -8125,7 +8125,7 @@
                 "publishedAt": "2024-06-07T13:12:42.417Z",
                 "question": {
                   "data": {
-                    "id": 6,
+                    "documentId": 6,
                     "attributes": {
                       "text": {
                         "en": "One must accept that there are fewer public services in rural areas.",
@@ -8153,7 +8153,7 @@
               }
             },
             {
-              "id": 709,
+              "documentId": 709,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -8166,7 +8166,7 @@
                 "publishedAt": "2024-06-07T13:12:42.418Z",
                 "question": {
                   "data": {
-                    "id": 7,
+                    "documentId": 7,
                     "attributes": {
                       "text": {
                         "en": "Finland's goal of being carbon neutral by 2035 is too ambitious.",
@@ -8194,7 +8194,7 @@
               }
             },
             {
-              "id": 710,
+              "documentId": 710,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -8207,7 +8207,7 @@
                 "publishedAt": "2024-06-07T13:12:42.420Z",
                 "question": {
                   "data": {
-                    "id": 8,
+                    "documentId": 8,
                     "attributes": {
                       "text": {
                         "en": "Finns must compromise on their standard of living if necessary for environmental sustainability.",
@@ -8235,7 +8235,7 @@
               }
             },
             {
-              "id": 711,
+              "documentId": 711,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -8248,7 +8248,7 @@
                 "publishedAt": "2024-06-07T13:12:42.422Z",
                 "question": {
                   "data": {
-                    "id": 9,
+                    "documentId": 9,
                     "attributes": {
                       "text": {
                         "en": "Everyone must study Swedish in elementary school.",
@@ -8276,7 +8276,7 @@
               }
             },
             {
-              "id": 712,
+              "documentId": 712,
               "attributes": {
                 "value": 1,
                 "openAnswer": {
@@ -8289,7 +8289,7 @@
                 "publishedAt": "2024-06-07T13:12:42.423Z",
                 "question": {
                   "data": {
-                    "id": 10,
+                    "documentId": 10,
                     "attributes": {
                       "text": {
                         "en": "EU membership has been more beneficial than harmful for Finland.",
@@ -8317,7 +8317,7 @@
               }
             },
             {
-              "id": 713,
+              "documentId": 713,
               "attributes": {
                 "value": 3,
                 "openAnswer": {
@@ -8330,7 +8330,7 @@
                 "publishedAt": "2024-06-07T13:12:42.425Z",
                 "question": {
                   "data": {
-                    "id": 11,
+                    "documentId": 11,
                     "attributes": {
                       "text": {
                         "en": "A Nato base should be stationed permanently in Finland.",
@@ -8358,7 +8358,7 @@
               }
             },
             {
-              "id": 714,
+              "documentId": 714,
               "attributes": {
                 "value": 4,
                 "openAnswer": {
@@ -8371,7 +8371,7 @@
                 "publishedAt": "2024-06-07T13:12:42.427Z",
                 "question": {
                   "data": {
-                    "id": 12,
+                    "documentId": 12,
                     "attributes": {
                       "text": {
                         "en": "Finland spends too much money on asylum seekers and refugees.",
@@ -8399,7 +8399,7 @@
               }
             },
             {
-              "id": 715,
+              "documentId": 715,
               "attributes": {
                 "value": 2,
                 "openAnswer": {
@@ -8412,7 +8412,7 @@
                 "publishedAt": "2024-06-07T13:12:42.428Z",
                 "question": {
                   "data": {
-                    "id": 13,
+                    "documentId": 13,
                     "attributes": {
                       "text": {
                         "en": "Finland must become a more attractive place for foreign workers.",
@@ -8440,7 +8440,7 @@
               }
             },
             {
-              "id": 716,
+              "documentId": 716,
               "attributes": {
                 "value": 5,
                 "openAnswer": {
@@ -8453,7 +8453,7 @@
                 "publishedAt": "2024-06-07T13:12:42.431Z",
                 "question": {
                   "data": {
-                    "id": 14,
+                    "documentId": 14,
                     "attributes": {
                       "text": {
                         "en": "There should be more referendums in order to increase citizens' direct participation in decision-making.",

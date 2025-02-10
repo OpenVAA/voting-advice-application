@@ -1,3 +1,10 @@
+/**
+ * Load the env variables we need for the application and throw if these are not set.
+ */
+
+export const frontendUrl = process.env.PUBLIC_BROWSER_FRONTEND_URL;
+if (!frontendUrl) throw new Error('Missing PUBLIC_BROWSER_FRONTEND_URL environment variable');
+
 const nodeEnv = process.env.NODE_ENV;
 
 /**

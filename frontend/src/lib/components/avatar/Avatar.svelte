@@ -1,6 +1,6 @@
 <!--
 @component
-Display either a photo or a initials-based avatar for an entity. The color of the initials background is based on the entity's color or `'base-300'` by default. If the color is specified, it should be dark enough, because the `primary-content` color is used for the text.
+Display either an image or a initials-based avatar for an entity. The color of the initials background is based on the entity's color or `'base-300'` by default. If the color is specified, it should be dark enough, because the `primary-content` color is used for the text.
 
 ### Properties
 
@@ -129,7 +129,12 @@ Display either a photo or a initials-based avatar for an entity. The color of th
 <figure {...concatProps($$restProps, { class: classes, style: styles })}>
   {#if image && imageStatus !== 'error'}
     {#if linkFullImage}
-      <a href={image.url} target="_blank" title={$t('common.showFullImage')} aria-label={$t('common.showFullImage')}>
+      <a
+        href={image.url}
+        target="_blank"
+        title={$t('common.showFullImage')}
+        aria-label={$t('common.showFullImage')}
+        class="h-full w-full">
         <img
           class="border-bg-300 h-full w-full border-md object-cover"
           alt={name}

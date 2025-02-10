@@ -1,3 +1,5 @@
+export { default as OpinionQuestionInput } from './OpinionQuestionInput.svelte';
+export * from './OpinionQuestionInput.type';
 export { default as QuestionActions } from './QuestionActions.svelte';
 export * from './QuestionActions.type';
 export { default as QuestionChoices } from './QuestionChoices.svelte';

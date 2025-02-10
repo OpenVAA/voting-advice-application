@@ -1,41 +1,27 @@
+import { isLocalizedString } from '@openvaa/app-shared';
 import { formatId } from '$lib/api/utils/formatId';
-import { translate } from '$lib/i18n/utils/translate';
-import type { Serializable } from '@openvaa/core';
+import { translate } from '$lib/i18n';
 import type { Answers } from '@openvaa/data';
-import type { StrapiAnswerData, StrapiRelation } from '../strapiData.type';
+import type { LocalizedAnswers } from '$lib/api/base/dataWriter.type';
 
 /**
- * Parse Strapi Answer data.
- * NB. Answers whose question property is `null` are excluded. This can happen when questions are converted to drafts later.
- * @param answers Answer data from Strapi
- * @param locale Optional locale to use for translating localized strings
- * @returns The Answers as AnswerProps
+ * Translate answers stored as json.
+ * @param answers - Answer json from Strapi
+ * @param locale - Optional locale to use for translating localized strings
+ * @returns An `Answers` object
  */
-export function parseAnswers(answers: StrapiRelation<StrapiAnswerData>, locale: string | null): Answers | undefined {
+export function parseAnswers(answers: LocalizedAnswers | null, locale: string | null): Answers | undefined {
   if (!answers) return undefined;
   const dict = {} as Answers;
-  answers.data.forEach((a) => {
-    const { openAnswer, value, question } = a.attributes;
-    const qid = formatId(question?.data.id);
-    if (qid == null) throw new Error(`Missing question id in answer ${a.id}`);
+  Object.entries(answers).forEach(([questionId, answer]) => {
+    if (!answer) return;
+    const { info, value } = answer;
+    const qid = formatId(questionId);
+    const translated = isLocalizedString(value) ? translate(value, locale) : value;
     dict[qid] = {
-      value: dateToString(isLocalized(value) ? translate(value, locale) : value),
-      info: translate(openAnswer, locale)
+      value: translated instanceof Date ? translated.toISOString() : translated,
+      info: translate(info, locale)
     };
   });
   return dict;
-}
-
-/**
- * Convert a possible `Date` to string but otherwise do nothing.
- */
-function dateToString(value: Date | Serializable): Serializable {
-  return value instanceof Date ? value.toISOString() : value;
-}
-
-/**
- * Quick and dirty test to check whether and object may be a localized string
- */
-function isLocalized(value: unknown): value is LocalizedString {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

@@ -7,7 +7,7 @@ Show a tab title bar that can be used to switch between different tabs.
 - `activeIndex`: The index of the active tab. Bind to this to change or read the active tab. @default 0
 - Any valid attributes of a `<ul>` element
 
-### Callbacls
+### Callbacks
 
 - `onChange`: Callback for when the active tab changes. The event `details` contains the active tab as `tab` as well as its `index`. Note, it's preferable to just bind to the `activeTab` property instead.
 

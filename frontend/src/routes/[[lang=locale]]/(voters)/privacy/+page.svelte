@@ -20,7 +20,7 @@ Displays information about the privacy policy of the app as well as the possible
   import { DataConsent } from '$lib/dynamic-components/dataConsent';
   import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import Layout from '../../Layout.svelte';
+  import MainContent from '../../MainContent.svelte';
 
   const { appSettings, getRoute, t } = getAppContext();
 
@@ -33,7 +33,7 @@ Displays information about the privacy policy of the app as well as the possible
   });
 </script>
 
-<Layout title={$t('privacy.title')}>
+<MainContent title={$t('privacy.title')}>
   <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.privacy.heroEmoji')} />
   </figure>
@@ -66,7 +66,7 @@ Displays information about the privacy policy of the app as well as the possible
   </div>
 
   <Button slot="primaryActions" variant="main" href={$getRoute('Home')} text={$t('common.returnHome')} />
-</Layout>
+</MainContent>
 
 <style lang="postcss">
   h2 {

@@ -96,7 +96,6 @@ export class LocalServerDataProvider extends LocalServerAdapter implements DataP
     endpoint: TPath,
     filterFn?: (data: LocalDataType[TPath]) => LocalDataType[TPath]
   ): Promise<Response> {
-    console.info('[debug] localServerDataProvider.readAndFilter', endpoint);
     const response = this.read(endpoint);
     if (!filterFn) return Promise.resolve(response);
     // Parse the JSON data, filter it and serialize it back to a JSON response.

@@ -1,240 +1,185 @@
+<!--@component
+
+# Candidate app settings page
+
+Shows the candidate's user settings.
+
+### Settings
+
+- `entities.hideIfMissingAnswers.candidate`: Affects message shown.
+-->
+
 <script lang="ts">
-  import { validatePassword } from '@openvaa/app-shared';
-  import { getContext, onDestroy } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { PasswordValidator } from '$candidate/components/passwordValidator';
+  import { onDestroy } from 'svelte';
+  import { PasswordSetter } from '$candidate/components/passwordSetter';
   import { PasswordField } from '$lib/candidate/components/passwordField';
   import { Button } from '$lib/components/button';
-  import { Icon } from '$lib/components/icon';
+  import { ErrorMessage } from '$lib/components/errorMessage';
+  import { Input } from '$lib/components/input';
+  import SuccessMessage from '$lib/components/successMessage/SuccessMessage.svelte';
+  import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { t } from '$lib/i18n';
-  import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
-  import { changePassword, updateAppLanguage } from '$lib/legacy-api/candidate';
-  import { getRoute } from '$lib/utils/legacy-navigation';
-  import Layout from '../../../Layout.svelte';
-  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
-  import type { Language } from '$types/legacy-candidateAttributes';
+  import { logDebugError } from '$lib/utils/logger';
+  import MainContent from '../../../MainContent.svelte';
 
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { getRoute, setPassword, t, userData } = getCandidateContext();
   const { pageStyles } = getLayoutContext(onDestroy);
 
-  pageStyles.push({ drawer: { background: 'bg-base-200' } });
+  ////////////////////////////////////////////////////////////////////
+  // Handle password change
+  ////////////////////////////////////////////////////////////////////
 
-  const { user, loadUserData, allLanguages } = getContext<CandidateContext>('candidate');
-
-  // TODO: consider refactoring this as this uses same classes as profile/+page.svelte?
-  const labelClass = 'w-6/12 label-sm label mx-6 my-2 text-secondary';
-  const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
-  const headerClass = 'uppercase mx-6 my-0 p-0 text-m text-secondary';
-  const inputClass = 'input-ghost input input-sm w-full pr-2 text-right disabled:border-none disabled:bg-base-100';
-
+  let canSubmit = false;
   let currentPassword = '';
+  let isNewPasswordValid: boolean;
   let password = '';
-  let passwordConfirmation = '';
-  let validPassword = false;
-  let errorMessage = '';
-  let successMessage = '';
-  let languageErrorMessage = '';
+  let reset: () => void;
+  let status: ActionStatus = 'idle';
+  let submitLabel: string;
+  let validationError: string | undefined;
 
-  $: disableSetButton = !validPassword || passwordConfirmation.length === 0;
+  $: canSubmit = status !== 'loading' && isNewPasswordValid && !!password;
+  $: submitLabel = validationError || $t('candidateApp.settings.password.update');
 
-  // Variable for the user's chosen app language. Keep it updated if changed.
-  $: appLanguageCode = $user?.candidate?.appLanguage?.localisationCode;
-
-  // Handle the change when the app language is changed
-  async function handleLanguageSelect(e: Event) {
-    languageErrorMessage = '';
-
-    const chosenLanguage = $allLanguages
-      ? $allLanguages.find((lang) => lang.attributes.localisationCode === (e.target as HTMLSelectElement).value)
-      : undefined;
-
-    if (chosenLanguage) {
-      const languageObj: Language = {
-        id: chosenLanguage?.id,
-        localisationCode: chosenLanguage?.attributes?.localisationCode,
-        name: chosenLanguage?.attributes?.name
-      };
-
-      try {
-        await updateAppLanguage(languageObj);
-        await loadUserData(); // Reload user data so it's up to date
-        await goto($getRoute({ locale: languageObj.localisationCode })); // Change page language to the chosen one
-      } catch {
-        languageErrorMessage = $t('candidateApp.settings.error.changeLanguage');
-      }
+  async function handleSubmit(): Promise<void> {
+    if (!canSubmit) {
+      logDebugError('HandleSubmit called when canSubmit is false');
+      return undefined;
     }
-  }
+    status = 'loading';
 
-  async function onButtonPress() {
-    successMessage = '';
+    const result = await setPassword({ currentPassword, password }).catch((e) => {
+      logDebugError(`Error with register: ${e?.message}`);
+      return undefined;
+    });
 
-    if (password !== passwordConfirmation) {
-      errorMessage = $t('candidateApp.settings.password.dontMatch');
+    if (result?.type !== 'success') {
+      status = 'error';
       return;
     }
 
-    if (currentPassword === password) {
-      errorMessage = $t('candidateApp.settings.password.areSame');
-      return;
-    }
-
-    // Additional check before backend validation
-    if (!validatePassword(password)) {
-      errorMessage = $t('candidateApp.settings.password.notValid');
-      return;
-    }
-
-    const response = await changePassword(currentPassword, password);
-    // Ideally, we would also want to check if the current password was wrong, but Strapi does not return this information :/
-    if (!response?.ok) {
-      errorMessage = $t('candidateApp.settings.error.changePassword');
-      return;
-    }
-
+    status = 'success';
     // Clear fields on success
     currentPassword = '';
-    password = '';
-    passwordConfirmation = '';
-
-    errorMessage = '';
-    successMessage = $t('candidateApp.settings.password.updated');
+    reset();
   }
+
+  ///////////////////////////////////////////////////////////////////
+  // Top bar and styling
+  ////////////////////////////////////////////////////////////////////
+
+  pageStyles.push({ drawer: { background: 'bg-base-200' } });
+  const subheadingClass = 'text-lg mt-lg mb-md mx-md';
 </script>
 
-<Layout title={$t('candidateApp.settings.title')}>
+<MainContent title={$t('candidateApp.settings.title')}>
   <div class="text-center">
     <p>{$t('candidateApp.settings.ingress')}</p>
   </div>
 
-  <div class="mt-16 w-full">
-    <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
-      <div class="flex items-center justify-between bg-base-100 px-4">
-        <label for="email" class={labelClass}>
-          {$t('candidateApp.common.email')}
-        </label>
-        <div class="w-6/12 text-right text-secondary">
-          <input disabled type="text" id="email" value={$user?.email} class={inputClass} />
-        </div>
-        <Icon name="locked" class="text-secondary" />
-      </div>
-    </div>
-    <p class={disclaimerClass}>
-      {$t('candidateApp.settings.emailDescription')}
-    </p>
-  </div>
+  <!-- Immutable data -->
 
-  <div class="mt-16 w-full">
-    <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
-      <div class="flex items-center justify-between bg-base-100 px-4">
-        <label for="language" class={labelClass}>
-          {$t('candidateApp.settings.language')}
-        </label>
-        <div class="w-6/12 text-right text-secondary">
-          <select
-            id="language"
-            class="select select-sm w-6/12 text-primary"
-            on:change={handleLanguageSelect}
-            bind:value={appLanguageCode}>
-            {#each $allLanguages ?? [] as option}
-              <option
-                value={option.attributes.localisationCode}
-                selected={option.attributes.localisationCode === appLanguageCode}>
-                {$t(assertTranslationKey(`xxx.languages.${option.attributes.name}`))}</option>
-            {/each}
-          </select>
-        </div>
-      </div>
-    </div>
-    <p class={disclaimerClass}>
-      {$t('candidateApp.settings.languageDescription')}
-    </p>
-  </div>
+  <section class="mt-lg">
+    <Input
+      type="text"
+      label={$t('candidateApp.common.email')}
+      info={$t('candidateApp.settings.emailDescription')}
+      value={$userData?.user.email}
+      onShadedBg
+      locked />
+  </section>
 
-  {#if languageErrorMessage}
-    <p class="mb-0 mt-16 text-center text-error">
-      {languageErrorMessage}
-    </p>
-  {/if}
+  <!-- Editable data -->
 
-  <!-- TODO: save settings button -->
-  <!-- TODO: discard button -->
+  <section class="self-stretch">
+    <!-- Stashed language selector -->
 
-  <div class="mt-32 w-full">
-    <p class={headerClass}>
-      {$t('candidateApp.settings.password.title')}
-    </p>
-  </div>
-
-  <form class="flex-nowarp flex w-full flex-col items-center" on:submit|preventDefault={onButtonPress}>
-    <div class="w-full">
+    <!-- <div class="mt-16 w-full">
       <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
-        <div class="flex items-center justify-between bg-base-100">
-          <label for="currentPassword" class={labelClass}>
-            {$t('candidateApp.settings.password.current')}
+        <div class="flex items-center justify-between bg-base-100 px-4">
+          <label for="language" class={labelClass}>
+            {$t('candidateApp.settings.language')}
           </label>
           <div class="w-6/12 text-right text-secondary">
-            <PasswordField
-              id="currentPassword"
-              bind:password={currentPassword}
-              externalLabel={true}
-              autocomplete="current-password" />
+            <select
+              id="language"
+              class="select select-sm w-6/12 text-primary"
+              on:change={handleLanguageSelect}
+              bind:value={appLanguageCode}>
+              {#each $allLanguages ?? [] as option}
+                <option
+                  value={option.attributes.localisationCode}
+                  selected={option.attributes.localisationCode === appLanguageCode}>
+                  {$t(assertTranslationKey(`xxx.languages.${option.attributes.name}`))}</option>
+              {/each}
+            </select>
           </div>
         </div>
       </div>
       <p class={disclaimerClass}>
-        {$t('candidateApp.settings.password.currentDescription')}
+        {$t('candidateApp.settings.languageDescription')}
       </p>
     </div>
 
-    <PasswordValidator bind:validPassword {password} />
-
-    <div class="w-full">
-      <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
-        <div class="flex items-center justify-between bg-base-100">
-          <label for="newPassword" class={labelClass}>
-            {$t('candidateApp.settings.password.new')}
-          </label>
-          <div class="w-6/12 text-right text-secondary">
-            <PasswordField id="newPassword" bind:password externalLabel={true} autocomplete="new-password" />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="w-full">
-      <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
-        <div class="flex items-center justify-between bg-base-100">
-          <label for="newPasswordConfirmation" class={labelClass}>
-            {$t('candidateApp.settings.password.newConfirmation')}
-          </label>
-          <div class="w-6/12 text-right text-secondary">
-            <PasswordField
-              id="newPasswordConfirmation"
-              bind:password={passwordConfirmation}
-              externalLabel={true}
-              autocomplete="new-password" />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <Button
-      type="submit"
-      variant="main"
-      disabled={disableSetButton}
-      class="my-10"
-      text={$t('candidateApp.settings.password.update')} />
-
-    {#if errorMessage}
-      <p class="text-center text-error">
-        {errorMessage}
+    {#if languageErrorMessage}
+      <p class="mb-0 mt-16 text-center text-error">
+        {languageErrorMessage}
       </p>
     {/if}
 
-    {#if successMessage}
-      <p class="mt-2 text-center text-success">
-        {successMessage}
-      </p>
-    {/if}
-  </form>
-</Layout>
+    -->
+
+    <h2 class={subheadingClass}>{$t('candidateApp.settings.password.update')}</h2>
+
+    <div class="flex flex-col gap-md">
+      <!-- <p class="mx-md my-0">{$t('candidateApp.settings.password.currentDescription')}</p> -->
+
+      <div class="w-full">
+        <label for="currentPassword" class="mx-md my-2 px-0">
+          {$t('candidateApp.settings.password.current')}
+        </label>
+        <div class="my-6 flex w-full flex-col gap-2 overflow-hidden rounded-lg">
+          <PasswordField
+            id="currentPassword"
+            bind:password={currentPassword}
+            externalLabel={true}
+            autocomplete="current-password" />
+        </div>
+      </div>
+
+      <div class="flex-nowarp flex flex-col items-center">
+        <PasswordSetter bind:valid={isNewPasswordValid} bind:errorMessage={validationError} bind:password bind:reset />
+
+        {#if status === 'error'}
+          <ErrorMessage inline message={$t('candidateApp.settings.error.changePassword')} class="mb-lg mt-md" />
+        {:else if status === 'success'}
+          <SuccessMessage inline message={$t('candidateApp.settings.password.updated')} class="mb-lg mt-md" />
+        {/if}
+
+        <Button on:click={handleSubmit} disabled={!canSubmit} variant="main" text={submitLabel} />
+
+        <Button
+          href={$getRoute('CandAppHelp')}
+          text={$t('candidateApp.common.contactSupport')}
+          disabled={status === 'success'} />
+      </div>
+    </div>
+  </section>
+
+  <!-- Submit button and error messages -->
+
+  <svelte:fragment slot="primaryActions">
+    <div class="grid w-full justify-items-center">
+      <Button
+        text={$t('common.return')}
+        href={$getRoute('CandAppHome')}
+        icon="previous"
+        iconPos="left"
+        variant="prominent" />
+    </div>
+  </svelte:fragment>
+</MainContent>

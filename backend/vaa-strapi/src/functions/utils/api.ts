@@ -1,5 +1,13 @@
-export const PUBLIC_API = {
-  Answer: 'api::answer.answer',
+import type { UID } from '@strapi/strapi';
+
+/**
+ * These API listings are used for automated tasks targeting all APIs.
+ * With `strapi.documents('api::answer.answer')` you must, however, use literal strings to get proper typing.
+ */
+
+export const PUBLIC_API: {
+  [name: string]: UID.ContentType;
+} = {
   AppCustomization: 'api::app-customization.app-customization',
   AppSettings: 'api::app-setting.app-setting',
   Candidate: 'api::candidate.candidate',
@@ -14,11 +22,15 @@ export const PUBLIC_API = {
   QuestionType: 'api::question-type.question-type'
 } as const;
 
-export const PROTECTED_API = {
+export const PROTECTED_API: {
+  [name: string]: UID.ContentType;
+} = {
   User: 'plugin::users-permissions.user'
 } as const;
 
-export const API = {
+export const API: {
+  [name: string]: UID.ContentType;
+} = {
   ...PUBLIC_API,
   ...PROTECTED_API
 } as const;

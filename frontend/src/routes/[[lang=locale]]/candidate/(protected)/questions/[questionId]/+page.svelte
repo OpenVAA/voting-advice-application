@@ -1,230 +1,284 @@
+<!--@component
+
+# Candidate app question page
+
+Display a question for answering or for dispalay if `$answersLocked` is `true`.
+
+## Params
+
+- `questionId`: The `Id` of the question to display.
+
+## Settings
+
+- `questions.showCategoryTags`: Whether to show category tags for questions.
+-->
+
 <script lang="ts">
-  import { getContext, onDestroy } from 'svelte';
+  import { type AnyQuestionVariant, isEmptyValue } from '@openvaa/data';
+  import { error } from '@sveltejs/kit';
+  import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { MultilangTextInput } from '$candidate/components/textArea';
   import { Button } from '$lib/components/button';
-  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
-  import { CategoryTag } from '$lib/components/legacy/categoryTag';
-  import { LikertResponseButtons, QuestionInfo } from '$lib/components/legacy/questions';
+  import { ErrorMessage } from '$lib/components/errorMessage';
+  import { Input } from '$lib/components/input';
+  import { Loading } from '$lib/components/loading';
+  import { PreventNavigation } from '$lib/components/preventNavigation';
+  import { OpinionQuestionInput, QuestionInfo } from '$lib/components/questions';
   import { Warning } from '$lib/components/warning';
+  import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { t } from '$lib/i18n';
-  import { addAnswer, updateAnswer } from '$lib/legacy-api/candidate';
-  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
-  import Layout from '../../../../Layout.svelte';
-  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
-  import type { CandidateAnswer } from '$types/legacy-candidateAttributes';
-  import type { PageData } from './$types';
+  import { QuestionHeading } from '$lib/dynamic-components/questionHeading';
+  import { logDebugError } from '$lib/utils/logger';
+  import { parseParams } from '$lib/utils/route';
+  import MainContent from '../../../../MainContent.svelte';
+  import type { CustomData, LocalizedAnswer } from '@openvaa/app-shared';
+  import type { Id } from '@openvaa/core';
 
-  export let data: PageData;
-  const { editMode } = data;
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
 
+  const { answersLocked, dataRoot, getRoute, questionBlocks, unansweredOpinionQuestions, t, userData } =
+    getCandidateContext();
   const { pageStyles } = getLayoutContext(onDestroy);
-  pageStyles.push({ drawer: { background: 'bg-base-200' } });
 
-  const { opinionAnswers, answersLocked, opinionQuestions, unansweredOpinionQuestions } =
-    getContext<CandidateContext>('candidate');
+  ////////////////////////////////////////////////////////////////////
+  // State variables
+  ////////////////////////////////////////////////////////////////////
 
-  let answer: CandidateAnswer | undefined;
-  let category: LegacyQuestionCategoryProps;
-  let info: string | undefined;
-  let openAnswer: LocalizedString = {};
-  let openAnswerTextArea: MultilangTextInput; // Used to clear the local storage from the parent component
-  let options: Array<LegacyAnswerOption>;
-  let currentQuestion: LegacyQuestionProps;
-  let questionIndex: number | undefined;
-  let selectedKey: LegacyAnswerOption['key'] | undefined;
-  let likertLocal: string;
-  let openAnswerLocal: string;
+  const { hasUnsaved } = userData;
 
-  $: questionId = $page.params.questionId;
+  let bypassPreventNavigation = false;
+  let canSubmit: boolean;
+  let customData: CustomData['Question'];
+  let errorMessage: string | undefined;
+  let nextQuestionId: Id | undefined;
+  let question: AnyQuestionVariant;
+  let status: ActionStatus = 'loading';
+  let submitLabel: string;
+
+  ////////////////////////////////////////////////////////////////////
+  // Get the current and next question
+  ////////////////////////////////////////////////////////////////////
+
   $: {
-    $opinionQuestions?.some((question, index) => {
-      if (question.id === questionId) {
-        currentQuestion = question;
-        questionIndex = index;
-        category = question.category;
-        info = question.info;
-        options = question.values ?? [];
-        return true;
-      }
-      return false;
-    });
-
-    // Set the selected key on page load, local storage takes precedence
-    likertLocal = `candidate-app-question-${questionId}-likert`;
-    openAnswerLocal = `candidate-app-question-${questionId}-open`;
-
-    const localValue = localStorage.getItem(likertLocal);
-    if (localValue != null) {
-      const intValue = typeof localValue === 'number' ? localValue : parseInt(`${localValue}`);
-      if (`${intValue}` !== `${localValue}` || !Number.isInteger(intValue))
-        throw new Error(`Likert question answer value is not an integer: ${localValue}`);
-      answer = undefined;
-      selectedKey = intValue;
-    } else {
-      answer = $opinionAnswers?.[questionId]; // undefined if not answered
-      selectedKey = answer ? parseInt(`${answer.value}`) : undefined;
+    // Get question
+    const questionId = parseParams($page).questionId;
+    if (!questionId) error(500, 'No questionId provided.');
+    try {
+      question = $dataRoot.getQuestion(questionId);
+      customData = question.customData;
+      nextQuestionId = getNextQuestionId(question);
+      status = 'idle';
+    } catch {
+      error(404, `Question with id ${questionId} not found.`);
     }
   }
 
-  function saveLikertToLocal({ detail }: CustomEvent) {
-    selectedKey = detail.value;
-    localStorage.setItem(likertLocal, detail.value);
+  /**
+   * Returns the next unanswered question’s id. Wrapped in a function to not track `unansweredOpinionQuestions`.
+   */
+  function getNextQuestionId(question: AnyQuestionVariant): Id | undefined {
+    const index = $unansweredOpinionQuestions.findIndex((q) => q.id === question.id);
+    return index != null && index < $unansweredOpinionQuestions.length - 1
+      ? $unansweredOpinionQuestions[index + 1]?.id
+      : undefined;
   }
 
-  function removeLocalAnswerToQuestion() {
-    localStorage.removeItem(likertLocal);
-    openAnswerTextArea.deleteLocal();
-    openAnswer = {};
-  }
+  ////////////////////////////////////////////////////////////////////
+  // Check if the form is dirty or empty and define submit label
+  ////////////////////////////////////////////////////////////////////
 
-  let errorMessage = '';
-  let errorTimeout: NodeJS.Timeout;
+  $: canSubmit = status !== 'loading' && !isEmptyValue($userData?.candidate.answers?.[question.id]?.value);
 
-  function showError(message: string) {
-    errorMessage = message;
-    clearTimeout(errorTimeout);
-    errorTimeout = setTimeout(() => {
-      errorMessage = '';
-    }, 5000);
-  }
+  $: submitLabel = !$hasUnsaved
+    ? $t('common.continue')
+    : nextQuestionId == null
+      ? $t('common.saveAndReturn')
+      : $t('common.saveAndContinue');
 
-  async function saveToServer() {
-    if (!answer) {
-      // New answer
+  ////////////////////////////////////////////////////////////////////
+  // Handle saving answers
+  ////////////////////////////////////////////////////////////////////
 
-      // Likert is required for an answer to be saved
-      if (!selectedKey) {
-        return;
-      }
-
-      const response = await addAnswer(questionId, selectedKey, openAnswer);
-      if (!response?.ok) {
-        showError($t('candidateApp.questions.answerSaveError'));
-        return;
-      }
-
-      const data = await response.json();
-      const answerId = data.data.id;
-      updateAnswerStore(answerId, selectedKey, openAnswer);
-    } else {
-      // Editing existing answer
-
-      const likertAnswer = selectedKey ?? answer.value;
-      const response = await updateAnswer(answer.id, likertAnswer, openAnswer);
-      if (!response?.ok) {
-        showError($t('candidateApp.questions.answerSaveError'));
-        return;
-      }
-
-      updateAnswerStore(answer.id, likertAnswer, openAnswer);
-    }
-
-    removeLocalAnswerToQuestion();
-  }
-
-  function updateAnswerStore(answerId: string, value: LegacyAnswerProps['value'], openAnswer: LocalizedString) {
-    if ($opinionAnswers) {
-      $opinionAnswers[questionId] = {
-        id: String(answerId),
-        value: value,
-        openAnswer
-      };
-    }
-  }
-
-  async function saveAndReturn() {
-    await saveToServer();
-    goto($getRoute(ROUTE.CandAppQuestions));
-  }
-
-  async function saveAndContinue() {
-    await saveToServer();
-
-    if ($unansweredOpinionQuestions?.length === 0) {
-      // All questions answered
-      goto($getRoute(ROUTE.CandAppHome));
+  /**
+   * Handle `OpinionQuestionInput` value changes.
+   */
+  function handleValueChange({
+    value,
+    question: inputQuestion
+  }: {
+    value: unknown;
+    question: AnyQuestionVariant;
+  }): void {
+    if (inputQuestion.id !== question.id) {
+      status = 'error';
+      errorMessage = undefined;
+      logDebugError('handleValueChange: questionId mismatch');
       return;
     }
-    const nextUnansweredQuestion = $unansweredOpinionQuestions?.[0]?.id;
-    goto($getRoute({ route: ROUTE.CandAppQuestions, id: nextUnansweredQuestion }));
+    console.info('sdasd');
+    setAnswer({ value });
   }
 
-  function cancelAndReturn() {
-    removeLocalAnswerToQuestion();
-    goto($getRoute(ROUTE.CandAppQuestions));
+  /**
+   * Handle the open-answer `Input` value changes.
+   */
+  function handleInfoChange(info: unknown): void {
+    // We can be sure of the value type but it cannot be properly typed in `Input.type`
+    setAnswer({ info: info as LocalizedString });
   }
+
+  /**
+   * Merge info or value with the existing answer.
+   */
+  function setAnswer({ value, info }: { value?: unknown; info?: LocalizedString }): void {
+    if ($answersLocked) {
+      status = 'error';
+      errorMessage = $t('candidateApp.common.editingNotAllowed');
+      logDebugError('[Candidate app question page]: setAnswer called when answersLocked');
+      return;
+    }
+    if (value == null && info == null) {
+      status = 'error';
+      errorMessage = $t('candidateApp.common.editingNotAllowed');
+      logDebugError('[Candidate app question page]: setAnswer called with no value nor info');
+      return;
+    }
+    const answer: Partial<LocalizedAnswer> = $userData?.candidate.answers?.[question.id] ?? {};
+    if (customData.allowOpen && info) answer.info = info;
+    if (value != null) answer.value = value as LocalizedAnswer['value'];
+    userData.setAnswer(question.id, answer as LocalizedAnswer);
+    status = 'idle';
+  }
+
+  /**
+   * Handle the submit button click.
+   */
+  async function handleSubmit(): Promise<void> {
+    if (!canSubmit) {
+      status = 'error';
+      errorMessage = $t('candidateApp.error.saveFailed');
+      logDebugError('[Candidate app question page]: handleSubmit called when canSubmit is false');
+      return;
+    }
+    status = 'loading';
+    // Request email to be sent in the backend
+    const result = await userData.save().catch((e) => {
+      logDebugError(`Error saving userData: ${e?.message}`);
+      return undefined;
+    });
+    if (result?.type !== 'success') {
+      status = 'error';
+      errorMessage = $t('candidateApp.error.saveFailed');
+      return;
+    }
+    status = 'success';
+    goto(
+      nextQuestionId == null
+        ? $getRoute('CandAppQuestions')
+        : $getRoute({ route: 'CandAppQuestion', questionId: nextQuestionId })
+    );
+  }
+
+  /**
+   * Handle cancel button click.
+   */
+  function handleCancel(): void {
+    bypassPreventNavigation = true;
+    userData.resetUnsaved();
+    goto($getRoute('CandAppQuestions')).then(() => (bypassPreventNavigation = false));
+  }
+
+  /**
+   * Reset saved answers when leaving the page.
+   */
+  function handleNavigationConfirm(): void {
+    userData.resetUnsaved();
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Styling
+  ////////////////////////////////////////////////////////////////////
+
+  pageStyles.push({ drawer: { background: 'bg-base-200' } });
 </script>
 
-<Layout title={currentQuestion?.text || ''}>
-  <div class="mt-xl text-center text-secondary" role="note" slot="note">
-    <Warning display={!!$answersLocked}>{$t('candidateApp.common.editingNotAllowed')}</Warning>
-  </div>
+{#if status !== 'loading' && question}
+  {@const { info, text } = question}
+  {@const answer = $userData?.candidate.answers?.[question.id]}
+  {#key question.id}
+    <PreventNavigation
+      active={() => !bypassPreventNavigation && $hasUnsaved && !$answersLocked}
+      onConfirm={handleNavigationConfirm} />
 
-  <HeadingGroup slot="heading" id="hgroup-{questionId}">
-    <PreHeading>
-      {#if questionIndex != null && $opinionQuestions}
-        <!-- Index of question within all questions -->
-        {#if !category}
-          {$t('common.question')}
+    <MainContent title={text}>
+      <svelte:fragment slot="note">
+        {#if $answersLocked}
+          <Warning>
+            {$t('candidateApp.common.editingNotAllowed')}
+          </Warning>
         {/if}
-        <span class="text-secondary">{questionIndex + 1}/{$opinionQuestions.length}</span>
+      </svelte:fragment>
+
+      <QuestionHeading {question} questionBlocks={$questionBlocks} slot="heading" />
+
+      {#if info && info !== ''}
+        <QuestionInfo {info} />
       {/if}
-      {#if category}
-        <CategoryTag {category} />
-      {/if}
-    </PreHeading>
-    <h1>{currentQuestion?.text}</h1>
-  </HeadingGroup>
 
-  {#if info && info !== ''}
-    <QuestionInfo {info} />
-  {/if}
+      <div slot="primaryActions" class="grid w-full justify-items-center gap-lg">
+        <!-- Question answer proper -->
 
-  <svelte:fragment slot="primaryActions">
-    {#if currentQuestion?.type === 'singleChoiceOrdinal'}
-      <LikertResponseButtons
-        aria-labelledby="hgroup-{questionId}"
-        name={questionId}
-        mode={!$answersLocked ? 'answer' : 'display'}
-        {options}
-        {selectedKey}
-        on:change={saveLikertToLocal} />
-    {:else}
-      {$t('error.general')}
-    {/if}
+        <OpinionQuestionInput
+          {question}
+          {answer}
+          mode={$answersLocked ? 'display' : 'answer'}
+          onShadedBg
+          onChange={handleValueChange} />
 
-    <MultilangTextInput
-      id="openAnswer"
-      headerText={$t('candidateApp.questions.openAnswerPrompt')}
-      localStorageId={openAnswerLocal}
-      previouslySavedMultilang={answer?.openAnswer ?? undefined}
-      disabled={!selectedKey}
-      locked={!!$answersLocked}
-      placeholder="—"
-      bind:multilangText={openAnswer}
-      bind:this={openAnswerTextArea} />
+        <!-- Open answer -->
 
-    {#if errorMessage}
-      <p class="text-error">{errorMessage}</p>
-    {/if}
+        {#if customData.allowOpen}
+          <Input
+            type="textarea-multilingual"
+            label={$t('candidateApp.questions.openAnswerPrompt')}
+            value={answer?.info}
+            disabled={!canSubmit}
+            locked={$answersLocked}
+            placeholder="—"
+            onShadedBg
+            onChange={handleInfoChange} />
+        {/if}
 
-    {#if !!$answersLocked}
-      <Button on:click={() => goto($getRoute(ROUTE.CandAppQuestions))} variant="main" text={$t('common.return')} />
-    {:else if editMode}
-      <div class="grid w-full grid-cols-[1fr] justify-items-center">
-        <Button on:click={saveAndReturn} variant="main" text={$t('common.saveAndReturn')} />
-        <Button on:click={cancelAndReturn} color="warning" text={$t('common.cancel')} />
+        <!-- Error message -->
+
+        {#if status === 'error'}
+          <ErrorMessage inline message={errorMessage} class="mb-lg mt-md" />
+        {/if}
+
+        <!-- Submit or cancel -->
+
+        <div class="grid w-full justify-items-center">
+          {#if !$answersLocked}
+            <Button
+              text={submitLabel}
+              on:click={handleSubmit}
+              disabled={!canSubmit}
+              type="submit"
+              id="submitButton"
+              variant="main"
+              icon="next" />
+
+            <Button text={$t('common.cancel')} on:click={handleCancel} color="warning" />
+          {:else}
+            <Button text={$t('common.return')} href={$getRoute('CandAppQuestions')} variant="main" />
+          {/if}
+        </div>
       </div>
-    {:else}
-      <Button
-        on:click={saveAndContinue}
-        variant="main"
-        icon="next"
-        disabled={!selectedKey}
-        text={$t('common.saveAndContinue')} />
-    {/if}
-  </svelte:fragment>
-</Layout>
+    </MainContent>
+  {/key}
+{:else}
+  <Loading class="mt-lg" />
+{/if}

@@ -193,7 +193,14 @@ export type DynamicSettings = {
      */
     disallowSelection?: boolean;
   };
+  /**
+   * If `true`, an under maintenance error page will be shown.
+   */
   underMaintenance?: boolean;
+  /**
+   * If `true`, candidates can no longer edit their answers.
+   */
+  answersLocked?: boolean;
 };
 
 /**

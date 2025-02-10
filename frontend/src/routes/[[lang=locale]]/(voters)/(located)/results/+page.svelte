@@ -37,7 +37,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import { EntityList, EntityListControls } from '$lib/dynamic-components/entityList';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { ucFirst } from '$lib/utils/text/ucFirst';
-  import Layout from '../../../Layout.svelte';
+  import MainContent from '../../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
 
   ////////////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   let filteredEntities = new Array<MaybeWrappedEntityVariant>();
 </script>
 
-<Layout title={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}>
+<MainContent title={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}>
   <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.results.heroEmoji')} />
   </figure>
@@ -226,4 +226,4 @@ The nominations applicable to these elections and constituencies are shown. Thes
       </div>
     {/if}
   </StretchBackground>
-</Layout>
+</MainContent>

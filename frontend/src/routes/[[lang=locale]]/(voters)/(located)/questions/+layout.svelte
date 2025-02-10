@@ -12,7 +12,7 @@
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter/voterContext.js';
-  import Layout from '../../../Layout.svelte';
+  import MainContent from '../../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -38,7 +38,7 @@
 {#if $opinionQuestions.length > 0}
   <slot />
 {:else}
-  <Layout title={$t('error.noQuestions')}>
+  <MainContent title={$t('error.noQuestions')}>
     <figure role="presentation" slot="hero">
       <HeroEmoji emoji={$t('dynamic.error.heroEmoji')} />
     </figure>
@@ -47,5 +47,5 @@
       <Button href={$getRoute('Results')} text={$t('results.title.browse')} variant="main" icon="next" />
       <Button href={$getRoute('Home')} text={$t('common.returnHome')} />
     </svelte:fragment>
-  </Layout>
+  </MainContent>
 {/if}
