@@ -4,9 +4,7 @@
   import { constants } from '$lib/utils/constants';
   import { DEFAULT_DATE_FORMAT } from '../../../../../../packages/data/src/internal';
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import { getLayoutContext } from '$lib/contexts/layout';
   import { goto } from '$app/navigation';
-  import { onDestroy } from 'svelte';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../MainContent.svelte';
 
@@ -15,9 +13,7 @@
   ////////////////////////////////////////////////////////////////////
 
   const {
-    appCustomization,
     constituenciesSelectable,
-    darkMode,
     dataRoot,
     electionsSelectable,
     getRoute,
@@ -26,7 +22,6 @@
     preregistrationElectionIds,
     t
   } = getCandidateContext();
-  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   $preregistrationElectionIds = $dataRoot.elections.map(({ id }) => id);
 
@@ -45,17 +40,6 @@
     : $constituenciesSelectable
       ? 'CandAppPreregisterConstituency'
       : 'CandAppPreregisterEmail';
-
-  ///////////////////////////////////////////////////////////////////
-  // Top bar and styling
-  ////////////////////////////////////////////////////////////////////
-
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
-  topBarSettings.push({
-    imageSrc: $darkMode
-      ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-      : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-  });
 
   async function redirectToIdentityProvider() {
     if (!browser) {
