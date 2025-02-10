@@ -11,7 +11,7 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, getRoute, t, userData } = getCandidateContext();
+  const { appCustomization, darkMode, getRoute, t, userData, idTokenClaims, clearIdToken } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   ///////////////////////////////////////////////////////////////////
@@ -22,7 +22,15 @@
   topBarSettings.push({
     imageSrc: $darkMode
       ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-      : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
+      : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png'),
+    actions: {
+      cancel: $idTokenClaims ? 'show' : 'hide',
+      cancelButtonLabel: $t('common.cancel'),
+      cancelButtonCallback: async () => {
+        await clearIdToken();
+        await goto($getRoute('CandAppHome'), { invalidateAll: true });
+      }
+    }
   });
 </script>
 
