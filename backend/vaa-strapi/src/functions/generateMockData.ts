@@ -14,10 +14,10 @@ import mockInfoQuestions from './mockData/mockInfoQuestions.json';
 import mockQuestions from './mockData/mockQuestions.json';
 import mockQuestionTypes from './mockData/mockQuestionTypes.json';
 import mockUsers from './mockData/mockUsers.json';
-import { API } from './utils/api';
-import { getDynamicTranslations } from './utils/appCustomization';
-import { dropAllCollections } from './utils/drop';
 import { generateMockDataOnInitialise, generateMockDataOnRestart } from '../constants';
+import { API } from '../util/api';
+import { getDynamicTranslations } from '../util/appCustomization';
+import { dropAllCollections } from '../util/drop';
 import type { AnswerValue, LocalizedAnswer, LocalizedString, QuestionTypeSettings } from '@openvaa/app-shared';
 import type { Data } from '@strapi/strapi';
 

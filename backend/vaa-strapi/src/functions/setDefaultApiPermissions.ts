@@ -1,4 +1,4 @@
-import { PUBLIC_API } from './utils/api';
+import { PUBLIC_API } from '../util/api';
 
 export async function setDefaultApiPermissions() {
   console.info('[setDefaultApiPermissions] Setting default API permissions');
