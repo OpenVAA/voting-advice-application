@@ -10,11 +10,11 @@ export class OpenAIProvider extends LLMProvider {
     super();
     this.model = options.model || 'gpt-4o-mini';
     this.maxContextTokens = options.maxContextTokens || 4096;
-    const apiKey = options.apiKey ?? process.env.LLM_API_KEY;
+    const apiKey = options.apiKey ?? process.env.LLM_OPENAI_API_KEY;
 
     if (!apiKey) {
       throw new Error(
-        'OpenAI API key is required. Provide it through constructor options or LLM_API_KEY environment variable.'
+        'OpenAI API key is required. Provide it through constructor options or LLM_OPENAI_API_KEY environment variable.'
       );
     }
 

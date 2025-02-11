@@ -26,7 +26,7 @@ yarn workspaces focus @openvaa/llm
 import { OpenAIProvider } from '@openvaa/llm';
 
 const llm = new OpenAIProvider({
-  apiKey: 'your-api-key', // Optional if LLM_API_KEY env var is set
+  apiKey: 'your-api-key', // Optional if LLM_OPENAI_API_KEY env var is set
   model: 'gpt-4' // Optional, defaults to 'gpt-4-mini'
 });
 ```

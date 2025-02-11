@@ -40,7 +40,7 @@ describe('OpenAIProvider', () => {
   });
 
   it('should initialize with default values', async () => {
-    process.env.LLM_API_KEY = 'test-key';
+    process.env.LLM_OPENAI_API_KEY = 'test-key';
     const provider = new OpenAIProvider();
     expect(provider.maxContextTokens).toBe(4096);
     // Test that the default model is used in API calls
@@ -63,7 +63,7 @@ describe('OpenAIProvider', () => {
   });
 
   it('should throw error when no API key is provided', () => {
-    delete process.env.LLM_API_KEY;
+    delete process.env.LLM_OPENAI_API_KEY;
     expect(() => new OpenAIProvider()).toThrow('OpenAI API key is required');
   });
 

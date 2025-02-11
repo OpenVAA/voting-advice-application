@@ -679,9 +679,9 @@ async function createCandidateUsers() {
  * Generates a single llm-response that will be used for every answer.
  */
 async function generateMockLLMSummaries() {
-  const LLM_API_KEY = process.env.LLM_API_KEY;
+  const LLM_OPENAI_API_KEY = process.env.LLM_OPENAI_API_KEY;
   try {
-    const res: LLMResponse = await new OpenAIProvider({ apiKey: LLM_API_KEY }).generate({
+    const res: LLMResponse = await new OpenAIProvider({ apiKey: LLM_OPENAI_API_KEY }).generate({
       messages: [
         {
           role: 'system',
