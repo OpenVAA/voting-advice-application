@@ -41,7 +41,7 @@ describe('OpenAIProvider', () => {
 
   it('should initialize with default values', async () => {
     process.env.LLM_OPENAI_API_KEY = 'test-key';
-    const provider = new OpenAIProvider();
+    const provider = new OpenAIProvider({ apiKey: 'test-key' });
     expect(provider.maxContextTokens).toBe(4096);
     // Test that the default model is used in API calls
     const response = await provider.generate({ messages: [new Message({ role: 'user', content: 'test' })] });
@@ -63,8 +63,13 @@ describe('OpenAIProvider', () => {
   });
 
   it('should throw error when no API key is provided', () => {
-    delete process.env.LLM_OPENAI_API_KEY;
-    expect(() => new OpenAIProvider()).toThrow('OpenAI API key is required');
+    // @ts-expect-error Testing invalid input
+    expect(() => new OpenAIProvider({})).toThrow('OpenAI API key is required');
+  });
+
+  it('should create instance with API key', () => {
+    const provider = new OpenAIProvider({ apiKey: 'test-key' });
+    expect(provider).toBeInstanceOf(OpenAIProvider);
   });
 
   it('should generate response successfully', async () => {

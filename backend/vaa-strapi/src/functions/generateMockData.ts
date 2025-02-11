@@ -23,7 +23,12 @@ import { API } from './utils/api';
 import { getDynamicTranslations } from './utils/appCustomization';
 import { getCardContentsFromFile } from './utils/appSettings';
 import { dropAllCollections } from './utils/drop';
-import { generateAiMockData, generateMockDataOnInitialise, generateMockDataOnRestart } from '../constants';
+import {
+  generateAiMockData,
+  generateMockDataOnInitialise,
+  generateMockDataOnRestart,
+  LLM_OPENAI_API_KEY
+} from '../constants';
 import type { AnswerValue, EntityType, LocalizedString, QuestionTypeSettings } from './utils/data.type';
 
 const locales: Array<Locale> = [
@@ -679,7 +684,10 @@ async function createCandidateUsers() {
  * Generates a single llm-response that will be used for every answer.
  */
 async function generateMockLLMSummaries() {
-  const LLM_OPENAI_API_KEY = process.env.LLM_OPENAI_API_KEY;
+  if (!LLM_OPENAI_API_KEY) {
+    throw new Error('LLM_OPENAI_API_KEY is required for generating mock LLM summaries');
+  }
+
   try {
     const res: LLMResponse = await new OpenAIProvider({ apiKey: LLM_OPENAI_API_KEY }).generate({
       messages: [

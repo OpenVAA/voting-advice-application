@@ -6,19 +6,16 @@ export class OpenAIProvider extends LLMProvider {
   private openai: OpenAI;
   public readonly maxContextTokens: number;
 
-  constructor(options: { model?: string; apiKey?: string; maxContextTokens?: number } = {}) {
+  constructor(options: { model?: string; apiKey: string; maxContextTokens?: number }) {
     super();
     this.model = options.model || 'gpt-4o-mini';
     this.maxContextTokens = options.maxContextTokens || 4096;
-    const apiKey = options.apiKey ?? process.env.LLM_OPENAI_API_KEY;
 
-    if (!apiKey) {
-      throw new Error(
-        'OpenAI API key is required. Provide it through constructor options or LLM_OPENAI_API_KEY environment variable.'
-      );
+    if (!options.apiKey) {
+      throw new Error('OpenAI API key is required in constructor options.');
     }
 
-    this.openai = new OpenAI({ apiKey });
+    this.openai = new OpenAI({ apiKey: options.apiKey });
   }
 
   async generate({
