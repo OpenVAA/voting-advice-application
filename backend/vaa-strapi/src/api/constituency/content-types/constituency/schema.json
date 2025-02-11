@@ -44,6 +44,10 @@
     },
     "keywords": {
       "type": "json"
+    },
+    "externalId": {
+      "type": "string",
+      "private": true
     }
   }
 }

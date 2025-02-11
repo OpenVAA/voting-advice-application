@@ -48,6 +48,10 @@
       "relation": "manyToOne",
       "target": "api::candidate.candidate",
       "inversedBy": "nominations"
+    },
+    "externalId": {
+      "type": "string",
+      "private": true
     }
   }
 }

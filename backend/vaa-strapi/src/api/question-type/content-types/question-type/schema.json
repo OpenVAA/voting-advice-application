@@ -25,6 +25,10 @@
       "pluginOptions": {},
       "type": "text",
       "required": false
+    },
+    "externalId": {
+      "type": "string",
+      "private": true
     }
   }
 }
