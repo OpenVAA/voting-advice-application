@@ -54,6 +54,10 @@
     },
     "answers": {
       "type": "json"
+    },
+    "externalId": {
+      "type": "string",
+      "private": true
     }
   }
 }
