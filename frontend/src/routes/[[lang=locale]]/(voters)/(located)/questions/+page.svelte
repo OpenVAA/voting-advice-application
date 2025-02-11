@@ -137,7 +137,6 @@ Display a general intro before starting answering the questions and possibly all
       {#if $appSettings.questions.dynamicOrdering?.enabled}
         {$t('questions.intro.ingress.withDynamicOrdering', {
           numQuestions: $selectedQuestionBlocks.questions.length,
-          numCategories: $opinionQuestionCategories.length
         })}
       {:else}
         {$t('questions.intro.ingress.withoutCategorySelection', {
@@ -146,11 +145,13 @@ Display a general intro before starting answering the questions and possibly all
         })}
       {/if}
     </p>
-    <div class="grid justify-items-center gap-sm">
-      {#each $opinionQuestionCategories as category}
-        <CategoryTag {category} />
-      {/each}
-    </div>
+    {#if !$appSettings.questions.dynamicOrdering?.enabled}
+      <div class="grid justify-items-center gap-sm">
+        {#each $opinionQuestionCategories as category}
+          <CategoryTag {category} />
+        {/each}
+      </div>
+    {/if}
   {/if}
 
   <Button

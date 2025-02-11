@@ -15,7 +15,7 @@
     "ingress": {
       "withCategorySelection": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. {minQuestions, plural, =0 {} =1 {} other {Valitse kuitenkin teemat siten, että niissä on ainakin # kysymystä.}}",
       "withoutCategorySelection": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. {numCategories, plural, =0 {} =1 {} other {Ne on jaettu # teemaan.}}",
-      "withDynamicOrdering": "Vastaa seuraavaksi {numQuestions} kysymykseen. Voit valita useasta kysymyksestä joka vaiheessa. {numCategories, plural, =0 {} =1 {} other {Kysymykset on jaettu # kategoriaan.}}"
+      "withDynamicOrdering": "Vastaa seuraavaksi {numQuestions} kysymykseen. Voit valita useasta kysymyksestä joka vaiheessa."
     },
     "start": "Vastaa {numQuestions} kysymykseen"
   },
