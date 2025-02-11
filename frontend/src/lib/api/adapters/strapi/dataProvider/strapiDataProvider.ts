@@ -13,6 +13,7 @@ import {
   makeRule,
   parseBasics,
   parseCandidate,
+  parseFactorLoadings,
   parseImage,
   parseNominations,
   parseOrganization,
@@ -29,9 +30,9 @@ import type {
   GetConstituenciesOptions,
   GetElectionsOptions,
   GetEntitiesOptions,
+  GetFactorLoadingsOptions,
   GetNominationsOptions,
-  GetQuestionsOptions
-} from '$lib/api/base/getDataOptions.type';
+  GetQuestionsOptions} from '$lib/api/base/getDataOptions.type';
 import type { Params } from '../strapiAdapter.type';
 
 export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider) {
@@ -46,7 +47,15 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         headerStyle: { populate: '*' },
         matching: 'true',
         notifications: { populate: '*' },
-        questions: { populate: '*' },
+        questions: {
+          populate: {
+            categoryIntros: 'true',
+            questionsIntro: 'true',
+            dynamicOrdering: {
+              populate: 'config'
+            }
+          }
+        },
         results: { populate: '*' },
         survey: 'true'
       }
@@ -263,5 +272,31 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       categories,
       questions: [...allQuestions.values()]
     };
+  }
+
+  protected async _getFactorLoadingData(
+    options: GetFactorLoadingsOptions
+  ): Promise<DPDataType['factorLoadings']> {
+    try {
+      const params = buildFilterParams({ electionId: options.electionId });
+      params.populate = {
+        election: 'true'
+      };
+
+      // Get factor loadings with proper filtering
+      const response = await this.apiGet({
+        endpoint: 'factorLoadings',
+        params
+      });
+
+      if (!response?.length) {
+        return [];
+      }
+
+      return response.map((item) => parseFactorLoadings(item));
+    } catch (error) {
+      console.error('Error fetching factor loadings:', error);
+      return [];
+    }
   }
 }

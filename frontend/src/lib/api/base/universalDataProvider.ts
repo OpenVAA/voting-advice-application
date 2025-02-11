@@ -9,9 +9,9 @@ import type {
   GetConstituenciesOptions,
   GetElectionsOptions,
   GetEntitiesOptions,
+  GetFactorLoadingsOptions,
   GetNominationsOptions,
-  GetQuestionsOptions
-} from './getDataOptions.type';
+  GetQuestionsOptions} from './getDataOptions.type';
 
 /**
  * The abstract base class that all universal `DataProvider`s should extend. It implements error handling and pre-processing of raw data before it is provided to the `DataRoot`, such as color constrast enhancements.
@@ -69,6 +69,11 @@ export abstract class UniversalDataProvider extends UniversalAdapter implements 
     }));
   }
 
+  getFactorLoadingData(options: GetFactorLoadingsOptions): DPReturnType<'factorLoadings'> {
+      return this._getFactorLoadingData(options);
+  }
+
+
   /////////////////////////////////////////////////////////////////////
   // UTILITIES
   /////////////////////////////////////////////////////////////////////
@@ -94,4 +99,5 @@ export abstract class UniversalDataProvider extends UniversalAdapter implements 
   protected abstract _getNominationData(options?: GetNominationsOptions): Promise<DPDataType['nominations']>;
   protected abstract _getEntityData(options?: GetEntitiesOptions): Promise<DPDataType['entities']>;
   protected abstract _getQuestionData(options?: GetQuestionsOptions): Promise<DPDataType['questions']>;
+  protected abstract _getFactorLoadingData(options: GetFactorLoadingsOptions): Promise<DPDataType['factorLoadings']>;
 }
