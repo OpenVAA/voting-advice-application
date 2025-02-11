@@ -7,6 +7,7 @@
  */
 
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
+import crypto from 'crypto';
 import { loadDefaultAppSettings } from './loadDefaultAppSettings';
 import mockCandidateForTesting from './mockData/mockCandidateForTesting.json';
 import mockCategories from './mockData/mockCategories.json';
@@ -21,6 +22,10 @@ import { dropAllCollections } from '../util/drop';
 import type { AnswerValue, LocalizedAnswer, LocalizedString, QuestionTypeSettings } from '@openvaa/app-shared';
 import type { Data } from '@strapi/strapi';
 
+/**
+ * Used as a prefix for externalIds for generated mock data.
+ */
+const MOCK_EXTERNAL_ID_PREFIX = 'mock-';
 const N_ELECTIONS = 4;
 // Make the fourth election a single constituency one
 const N_CONSTITUENCIES_PER_ELECTION = Array.from({ length: N_ELECTIONS }, (_, i) => (i === 3 ? 1 : 10 + i * 20));
@@ -319,9 +324,9 @@ async function createConstituenciesAndGroups({
             name,
             shortName,
             info,
-            parent
-          },
-          status: 'published'
+            parent,
+            ...addMockId()
+          }
         })
         .catch((err) => {
           throw err;
@@ -338,9 +343,9 @@ async function createConstituenciesAndGroups({
         data: {
           name: fakeLocalized(() => `${capitaliseFirstLetter(type)} constituency group ${doLink ? '- linked' : ''}`),
           info: fakeLocalized((faker) => faker.lorem.paragraph(3)),
-          constituencies
-        },
-        status: 'published'
+          constituencies,
+          ...addMockId()
+        }
       })
       .catch((err) => {
         throw err;
@@ -371,10 +376,9 @@ async function createElections(numElections = 1) {
         electionDate,
         electionType,
         info,
-        publishedAt: new Date(),
-        constituencyGroups: [constituencyGroups[i % constituencyGroups.length]]
-      },
-      status: 'published'
+        constituencyGroups: [constituencyGroups[i % constituencyGroups.length]],
+        ...addMockId()
+      }
     });
   }
 }
@@ -400,9 +404,8 @@ async function createParties(length: number) {
         color,
         info,
         answers: generateAnswers(questions, 'party'),
-        publishedAt: new Date()
-      },
-      status: 'published'
+        ...addMockId()
+      }
     });
   }
 }
@@ -423,9 +426,9 @@ async function createCandidates(length: number) {
         lastName,
         email,
         party: party.documentId,
-        answers: generateAnswers(questions, 'candidate')
-      },
-      status: 'published'
+        answers: generateAnswers(questions, 'candidate'),
+        ...addMockId()
+      }
     });
   }
 }
@@ -444,9 +447,8 @@ async function createCandidateForTesting() {
       lastName,
       email,
       party: party.documentId,
-      publishedAt: new Date()
-    },
-    status: 'published'
+      ...addMockId()
+    }
   });
 }
 
@@ -501,9 +503,9 @@ async function createCandidateNominations(duplicateFraction = 0.0) {
           candidate: candidate.documentId,
           party: candidate.party.documentId,
           election: election.documentId,
-          constituency: constituency.documentId
-        },
-        status: 'published'
+          constituency: constituency.documentId,
+          ...addMockId()
+        }
       });
     }
   }
@@ -535,9 +537,9 @@ async function createPartyNominations(length: number) {
         electionRound,
         party: party.documentId,
         election: electionId,
-        constituency: constituency.documentId
-      },
-      status: 'published'
+        constituency: constituency.documentId,
+        ...addMockId()
+      }
     });
   }
 }
@@ -566,9 +568,9 @@ async function createQuestionCategories({ electionPctg = 0.2 }: { electionPctg?:
         info,
         type: 'opinion',
         color,
-        elections: election ? [election] : undefined
-      },
-      status: 'published'
+        elections: election ? [election] : undefined,
+        ...addMockId()
+      }
     });
   }
   // Category for basic info
@@ -582,9 +584,9 @@ async function createQuestionCategories({ electionPctg = 0.2 }: { electionPctg?:
       shortName,
       order,
       info,
-      type: 'info'
-    },
-    status: 'published'
+      type: 'info',
+      ...addMockId()
+    }
   });
 }
 
@@ -634,9 +636,8 @@ async function createQuestions({ constituencyPctg = 0.1 }: { constituencyPctg?: 
         questionType: questionType.documentId,
         category: category.documentId,
         constituencies: constituency ? [constituency.documentId] : [],
-        publishedAt: new Date()
-      },
-      status: 'published'
+        ...addMockId()
+      }
     });
   });
   // Create other questions:
@@ -654,9 +655,8 @@ async function createQuestions({ constituencyPctg = 0.1 }: { constituencyPctg?: 
         order,
         required,
         entityType: entityType as EntityType,
-        publishedAt: new Date()
-      },
-      status: 'published'
+        ...addMockId()
+      }
     });
   }
 }
@@ -700,9 +700,9 @@ async function createCandidateUsers() {
     await strapi.documents('api::candidate.candidate').update({
       documentId: candidateId,
       data: {
-        registrationKey: null
-      },
-      status: 'published'
+        registrationKey: null,
+        ...addMockId()
+      }
     });
   }
 }
@@ -824,6 +824,14 @@ function abbreviate(values: LocalizedString, options: AbbreviationOptions = { ty
       return [key, value];
     })
   );
+}
+
+/**
+ * Add a mock external ID to the object data.
+ */
+function addMockId(): { externalId: string } {
+  const externalId = `${MOCK_EXTERNAL_ID_PREFIX}${crypto.randomUUID()}`;
+  return { externalId };
 }
 
 interface AbbreviationOptions {
