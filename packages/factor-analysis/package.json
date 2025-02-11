@@ -1,0 +1,28 @@
+{
+  "private": true,
+  "name": "@openvaa/factor-analysis",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "yarn tsc --build && yarn tsc-esm-fix",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "clean": "rm -rf build *.tsbuildinfo",
+    "typecheck": "tsc --noEmit"
+  },
+  "type": "module",
+  "module": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    "import": "./build/index.js"
+  },
+  "devDependencies": {
+    "@openvaa/shared-config": "workspace:^",
+    "eslint": "^8.0.0",
+    "tsc-esm-fix": "^3.1.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "mathjs": "^14.0.1"
+  }
+}
