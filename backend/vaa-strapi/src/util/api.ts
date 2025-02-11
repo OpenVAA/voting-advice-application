@@ -5,11 +5,9 @@ import type { UID } from '@strapi/strapi';
  * With `strapi.documents('api::answer.answer')` you must, however, use literal strings to get proper typing.
  */
 
-export const PUBLIC_API: {
+export const CONTENT_API: {
   [name: string]: UID.ContentType;
 } = {
-  AppCustomization: 'api::app-customization.app-customization',
-  AppSettings: 'api::app-setting.app-setting',
   Candidate: 'api::candidate.candidate',
   Constituency: 'api::constituency.constituency',
   ConstituencyGroup: 'api::constituency-group.constituency-group',
@@ -20,6 +18,14 @@ export const PUBLIC_API: {
   Question: 'api::question.question',
   QuestionCategory: 'api::question-category.question-category',
   QuestionType: 'api::question-type.question-type'
+} as const;
+
+export const PUBLIC_API: {
+  [name: string]: UID.ContentType;
+} = {
+  AppCustomization: 'api::app-customization.app-customization',
+  AppSettings: 'api::app-setting.app-setting',
+  ...CONTENT_API
 } as const;
 
 export const PROTECTED_API: {
