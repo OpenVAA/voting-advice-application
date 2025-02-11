@@ -80,11 +80,13 @@ This is a dynamic component because it accesse the `VoterContext`.
       on:click={() => answers.reset()}
       icon="close"
       text={$t('common.resetAnswers')} />
-    <NavItem
-      disabled={$selectedQuestionBlocks.shownQuestionIds.length === 0}
-      on:click={() => $selectedQuestionBlocks.resetShownQuestionIds()}
-      icon="close"
-      text={$t('common.resetShownQuestions')} />
+    {#if $appSettings.questions.dynamicOrdering?.enabled}
+      <NavItem
+        disabled={$selectedQuestionBlocks.shownQuestionIds.length === 0}
+        on:click={() => $selectedQuestionBlocks.resetShownQuestionIds()}
+        icon="close"
+        text={$t('common.resetShownQuestions')} />
+    {/if}
   </NavGroup>
   <NavGroup>
     <NavItem href={$getRoute('Info')} icon="election" text={$t('info.title')} />
