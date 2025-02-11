@@ -72,6 +72,10 @@
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::constituency.constituency"
+    },
+    "externalId": {
+      "type": "string",
+      "private": true
     }
   }
 }

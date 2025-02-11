@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2025-02-08T11:20:42.493Z"
+    "x-generation-date": "2025-02-11T10:03:11.082Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -7531,114 +7531,9 @@
           },
           "disallowSelection": {
             "type": "boolean"
-          }
-        }
-      },
-      "CandidateRequest": {
-        "type": "object",
-        "required": [
-          "data"
-        ],
-        "properties": {
-          "data": {
-            "required": [
-              "firstName",
-              "lastName"
-            ],
-            "type": "object",
-            "properties": {
-              "email": {
-                "type": "string"
-              },
-              "registrationKey": {
-                "type": "string"
-              },
-              "identifier": {
-                "type": "string"
-              },
-              "user": {
-                "oneOf": [
-                  {
-                    "type": "integer"
-                  },
-                  {
-                    "type": "string"
-                  }
-                ],
-                "example": "string or id"
-              },
-              "firstName": {
-                "type": "string"
-              },
-              "lastName": {
-                "type": "string"
-              },
-              "photo": {
-                "oneOf": [
-                  {
-                    "type": "integer"
-                  },
-                  {
-                    "type": "string"
-                  }
-                ],
-                "example": "string or id"
-              },
-              "party": {
-                "oneOf": [
-                  {
-                    "type": "integer"
-                  },
-                  {
-                    "type": "string"
-                  }
-                ],
-                "example": "string or id"
-              },
-              "nominations": {
-                "type": "array",
-                "items": {
-                  "oneOf": [
-                    {
-                      "type": "integer"
-                    },
-                    {
-                      "type": "string"
-                    }
-                  ],
-                  "example": "string or id"
-                }
-              },
-              "appLanguage": {
-                "oneOf": [
-                  {
-                    "type": "integer"
-                  },
-                  {
-                    "type": "string"
-                  }
-                ],
-                "example": "string or id"
-              },
-              "answers": {},
-              "locale": {
-                "type": "string"
-              },
-              "localizations": {
-                "type": "array",
-                "items": {
-                  "oneOf": [
-                    {
-                      "type": "integer"
-                    },
-                    {
-                      "type": "string"
-                    }
-                  ],
-                  "example": "string or id"
-                }
-              }
-            }
+          },
+          "startFromConstituencyGroup": {
+            "type": "string"
           }
         }
       },
@@ -8797,6 +8692,9 @@
                                               }
                                             },
                                             "keywords": {},
+                                            "externalId": {
+                                              "type": "string"
+                                            },
                                             "createdAt": {
                                               "type": "string",
                                               "format": "date-time"
@@ -8857,6 +8755,9 @@
                                       "name": {},
                                       "shortName": {},
                                       "info": {},
+                                      "externalId": {
+                                        "type": "string"
+                                      },
                                       "createdAt": {
                                         "type": "string",
                                         "format": "date-time"
@@ -8910,6 +8811,9 @@
                                       }
                                     }
                                   }
+                                },
+                                "externalId": {
+                                  "type": "string"
                                 },
                                 "createdAt": {
                                   "type": "string",
@@ -9006,6 +8910,9 @@
                                 }
                               }
                             },
+                            "externalId": {
+                              "type": "string"
+                            },
                             "createdAt": {
                               "type": "string",
                               "format": "date-time"
@@ -9070,6 +8977,9 @@
                         "type": "string"
                       },
                       "answers": {},
+                      "externalId": {
+                        "type": "string"
+                      },
                       "createdAt": {
                         "type": "string",
                         "format": "date-time"
@@ -9206,6 +9116,9 @@
                     }
                   },
                   "answers": {},
+                  "externalId": {
+                    "type": "string"
+                  },
                   "createdAt": {
                     "type": "string",
                     "format": "date-time"
@@ -9484,6 +9397,9 @@
             }
           },
           "answers": {},
+          "externalId": {
+            "type": "string"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -9710,6 +9626,9 @@
                                   }
                                 },
                                 "keywords": {},
+                                "externalId": {
+                                  "type": "string"
+                                },
                                 "createdAt": {
                                   "type": "string",
                                   "format": "date-time"
@@ -10022,6 +9941,9 @@
                           "name": {},
                           "shortName": {},
                           "info": {},
+                          "externalId": {
+                            "type": "string"
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -10075,6 +9997,9 @@
                           }
                         }
                       }
+                    },
+                    "externalId": {
+                      "type": "string"
                     },
                     "createdAt": {
                       "type": "string",
@@ -11003,6 +10928,9 @@
                             }
                           },
                           "answers": {},
+                          "externalId": {
+                            "type": "string"
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -11081,6 +11009,9 @@
                       "type": "string"
                     },
                     "answers": {},
+                    "externalId": {
+                      "type": "string"
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -11153,6 +11084,9 @@
                       "type": "string"
                     }
                   }
+                },
+                "externalId": {
+                  "type": "string"
                 },
                 "createdAt": {
                   "type": "string",
@@ -11237,6 +11171,9 @@
             }
           },
           "keywords": {},
+          "externalId": {
+            "type": "string"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -11440,6 +11377,9 @@
                                 "name": {},
                                 "shortName": {},
                                 "info": {},
+                                "externalId": {
+                                  "type": "string"
+                                },
                                 "createdAt": {
                                   "type": "string",
                                   "format": "date-time"
@@ -11745,6 +11685,9 @@
                                 }
                               }
                             }
+                          },
+                          "externalId": {
+                            "type": "string"
                           },
                           "createdAt": {
                             "type": "string",
@@ -12673,6 +12616,9 @@
                                   }
                                 },
                                 "answers": {},
+                                "externalId": {
+                                  "type": "string"
+                                },
                                 "createdAt": {
                                   "type": "string",
                                   "format": "date-time"
@@ -12751,6 +12697,9 @@
                             "type": "string"
                           },
                           "answers": {},
+                          "externalId": {
+                            "type": "string"
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -12823,6 +12772,9 @@
                             "type": "string"
                           }
                         }
+                      },
+                      "externalId": {
+                        "type": "string"
                       },
                       "createdAt": {
                         "type": "string",
@@ -12907,6 +12859,9 @@
                   }
                 },
                 "keywords": {},
+                "externalId": {
+                  "type": "string"
+                },
                 "createdAt": {
                   "type": "string",
                   "format": "date-time"
@@ -12967,6 +12922,9 @@
           "name": {},
           "shortName": {},
           "info": {},
+          "externalId": {
+            "type": "string"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -13213,6 +13171,9 @@
                                   }
                                 },
                                 "keywords": {},
+                                "externalId": {
+                                  "type": "string"
+                                },
                                 "createdAt": {
                                   "type": "string",
                                   "format": "date-time"
@@ -13525,6 +13486,9 @@
                           "name": {},
                           "shortName": {},
                           "info": {},
+                          "externalId": {
+                            "type": "string"
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -13578,6 +13542,9 @@
                           }
                         }
                       }
+                    },
+                    "externalId": {
+                      "type": "string"
                     },
                     "createdAt": {
                       "type": "string",
@@ -14506,6 +14473,9 @@
                             }
                           },
                           "answers": {},
+                          "externalId": {
+                            "type": "string"
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -14584,6 +14554,9 @@
                       "type": "string"
                     },
                     "answers": {},
+                    "externalId": {
+                      "type": "string"
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -14657,6 +14630,9 @@
                     }
                   }
                 },
+                "externalId": {
+                  "type": "string"
+                },
                 "createdAt": {
                   "type": "string",
                   "format": "date-time"
@@ -14727,6 +14703,9 @@
                 }
               }
             }
+          },
+          "externalId": {
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
@@ -15819,6 +15798,9 @@
                           }
                         },
                         "keywords": {},
+                        "externalId": {
+                          "type": "string"
+                        },
                         "createdAt": {
                           "type": "string",
                           "format": "date-time"
@@ -16987,6 +16969,9 @@
                                 }
                               },
                               "answers": {},
+                              "externalId": {
+                                "type": "string"
+                              },
                               "createdAt": {
                                 "type": "string",
                                 "format": "date-time"
@@ -17065,6 +17050,9 @@
                           "type": "string"
                         },
                         "answers": {},
+                        "externalId": {
+                          "type": "string"
+                        },
                         "createdAt": {
                           "type": "string",
                           "format": "date-time"
@@ -17137,6 +17125,9 @@
                           "type": "string"
                         }
                       }
+                    },
+                    "externalId": {
+                      "type": "string"
                     },
                     "createdAt": {
                       "type": "string",
@@ -17226,6 +17217,9 @@
                     "name": {},
                     "shortName": {},
                     "info": {},
+                    "externalId": {
+                      "type": "string"
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -17279,6 +17273,9 @@
                     }
                   }
                 }
+              },
+              "externalId": {
+                "type": "string"
               },
               "createdAt": {
                 "type": "string",
@@ -17374,6 +17371,9 @@
                 "type": "string"
               }
             }
+          },
+          "externalId": {
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
@@ -18765,6 +18765,9 @@
                                             }
                                           },
                                           "keywords": {},
+                                          "externalId": {
+                                            "type": "string"
+                                          },
                                           "createdAt": {
                                             "type": "string",
                                             "format": "date-time"
@@ -18825,6 +18828,9 @@
                                     "name": {},
                                     "shortName": {},
                                     "info": {},
+                                    "externalId": {
+                                      "type": "string"
+                                    },
                                     "createdAt": {
                                       "type": "string",
                                       "format": "date-time"
@@ -18878,6 +18884,9 @@
                                     }
                                   }
                                 }
+                              },
+                              "externalId": {
+                                "type": "string"
                               },
                               "createdAt": {
                                 "type": "string",
@@ -18974,6 +18983,9 @@
                               }
                             }
                           },
+                          "externalId": {
+                            "type": "string"
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -19038,6 +19050,9 @@
                       "type": "string"
                     },
                     "answers": {},
+                    "externalId": {
+                      "type": "string"
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -19174,6 +19189,9 @@
                   }
                 },
                 "answers": {},
+                "externalId": {
+                  "type": "string"
+                },
                 "createdAt": {
                   "type": "string",
                   "format": "date-time"
@@ -19252,6 +19270,9 @@
             "type": "string"
           },
           "answers": {},
+          "externalId": {
+            "type": "string"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -19374,6 +19395,9 @@
               },
               "settings": {},
               "info": {
+                "type": "string"
+              },
+              "externalId": {
                 "type": "string"
               },
               "createdAt": {
@@ -19794,6 +19818,9 @@
                                 }
                               },
                               "keywords": {},
+                              "externalId": {
+                                "type": "string"
+                              },
                               "createdAt": {
                                 "type": "string",
                                 "format": "date-time"
@@ -20710,6 +20737,9 @@
                                       }
                                     },
                                     "answers": {},
+                                    "externalId": {
+                                      "type": "string"
+                                    },
                                     "createdAt": {
                                       "type": "string",
                                       "format": "date-time"
@@ -20788,6 +20818,9 @@
                                 "type": "string"
                               },
                               "answers": {},
+                              "externalId": {
+                                "type": "string"
+                              },
                               "createdAt": {
                                 "type": "string",
                                 "format": "date-time"
@@ -20860,6 +20893,9 @@
                                 "type": "string"
                               }
                             }
+                          },
+                          "externalId": {
+                            "type": "string"
                           },
                           "createdAt": {
                             "type": "string",
@@ -20949,6 +20985,9 @@
                           "name": {},
                           "shortName": {},
                           "info": {},
+                          "externalId": {
+                            "type": "string"
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -21002,6 +21041,9 @@
                           }
                         }
                       }
+                    },
+                    "externalId": {
+                      "type": "string"
                     },
                     "createdAt": {
                       "type": "string",
@@ -21132,6 +21174,9 @@
                         }
                       }
                     },
+                    "externalId": {
+                      "type": "string"
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -21213,6 +21258,9 @@
                     }
                   }
                 }
+              },
+              "externalId": {
+                "type": "string"
               },
               "createdAt": {
                 "type": "string",
@@ -21305,6 +21353,9 @@
                 }
               }
             }
+          },
+          "externalId": {
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
@@ -21521,6 +21572,9 @@
                             }
                           },
                           "keywords": {},
+                          "externalId": {
+                            "type": "string"
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -22689,6 +22743,9 @@
                                   }
                                 },
                                 "answers": {},
+                                "externalId": {
+                                  "type": "string"
+                                },
                                 "createdAt": {
                                   "type": "string",
                                   "format": "date-time"
@@ -22767,6 +22824,9 @@
                             "type": "string"
                           },
                           "answers": {},
+                          "externalId": {
+                            "type": "string"
+                          },
                           "createdAt": {
                             "type": "string",
                             "format": "date-time"
@@ -22839,6 +22899,9 @@
                             "type": "string"
                           }
                         }
+                      },
+                      "externalId": {
+                        "type": "string"
                       },
                       "createdAt": {
                         "type": "string",
@@ -22928,6 +22991,9 @@
                       "name": {},
                       "shortName": {},
                       "info": {},
+                      "externalId": {
+                        "type": "string"
+                      },
                       "createdAt": {
                         "type": "string",
                         "format": "date-time"
@@ -22981,6 +23047,9 @@
                       }
                     }
                   }
+                },
+                "externalId": {
+                  "type": "string"
                 },
                 "createdAt": {
                   "type": "string",
@@ -23064,6 +23133,9 @@
                     },
                     "settings": {},
                     "info": {
+                      "type": "string"
+                    },
+                    "externalId": {
                       "type": "string"
                     },
                     "createdAt": {
@@ -23190,6 +23262,9 @@
                         }
                       }
                     },
+                    "externalId": {
+                      "type": "string"
+                    },
                     "createdAt": {
                       "type": "string",
                       "format": "date-time"
@@ -23282,6 +23357,9 @@
                     }
                   }
                 },
+                "externalId": {
+                  "type": "string"
+                },
                 "createdAt": {
                   "type": "string",
                   "format": "date-time"
@@ -23363,6 +23441,9 @@
                 }
               }
             }
+          },
+          "externalId": {
+            "type": "string"
           },
           "createdAt": {
             "type": "string",
@@ -23480,6 +23561,9 @@
           },
           "settings": {},
           "info": {
+            "type": "string"
+          },
+          "externalId": {
             "type": "string"
           },
           "createdAt": {
@@ -23787,6 +23871,9 @@
                 },
                 "settings": {},
                 "info": {
+                  "type": "string"
+                },
+                "externalId": {
                   "type": "string"
                 },
                 "createdAt": {
