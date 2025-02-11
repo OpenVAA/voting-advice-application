@@ -1,4 +1,4 @@
-import { getDynamicTranslations } from './utils/appCustomization';
+import { getDynamicTranslations } from '../util/appCustomization';
 
 export async function loadDynamicTranslations() {
   if (await strapi.documents('api::app-customization.app-customization').findMany()) {

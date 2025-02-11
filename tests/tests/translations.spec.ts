@@ -12,10 +12,7 @@ test.describe('Shared translation files', () => {
     test(`Dynamic translations in backend match those in frontend for locale ${locale}`, () => {
       const backend = fs
         .readFileSync(
-          path.resolve(
-            TESTS_DIR,
-            path.join('../../backend/vaa-strapi/src/functions/utils/translations', locale, 'dynamic.json')
-          )
+          path.resolve(TESTS_DIR, path.join('../../backend/vaa-strapi/src/util/translations', locale, 'dynamic.json'))
         )
         .toString();
       const frontend = fs

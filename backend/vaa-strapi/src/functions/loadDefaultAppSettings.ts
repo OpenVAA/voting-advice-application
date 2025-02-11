@@ -1,6 +1,5 @@
 import { dynamicSettings } from '@openvaa/app-shared';
-import { getCardContentsFromFile } from './utils/appSettings';
-import { addMissingPartialRecords } from './utils/appSettings';
+import { addMissingPartialRecords, getCardContentsFromFile } from '../util/appSettings';
 
 /**
  * Add the settings from the `dynamicSettings.ts` file as defaults into Strapi if they don't exist yet.
