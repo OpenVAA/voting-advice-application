@@ -40,11 +40,11 @@ describe('OpenAIProvider', () => {
   });
 
   it('should initialize with default values', async () => {
-    process.env.OPENAI_API_KEY = 'test-key';
+    process.env.LLM_API_KEY = 'test-key';
     const provider = new OpenAIProvider();
     expect(provider.maxContextTokens).toBe(4096);
     // Test that the default model is used in API calls
-    const response = await provider.generate([new Message({ role: 'user', content: 'test' })]);
+    const response = await provider.generate({ messages: [new Message({ role: 'user', content: 'test' })] });
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         model: 'gpt-4o-mini'
@@ -63,7 +63,7 @@ describe('OpenAIProvider', () => {
   });
 
   it('should throw error when no API key is provided', () => {
-    delete process.env.OPENAI_API_KEY;
+    delete process.env.LLM_API_KEY;
     expect(() => new OpenAIProvider()).toThrow('OpenAI API key is required');
   });
 
@@ -74,7 +74,7 @@ describe('OpenAIProvider', () => {
       new Message({ role: 'user', content: 'Hello!' })
     ];
 
-    const response = await provider.generate(messages);
+    const response = await provider.generate({ messages });
     expect(response.content).toBe('Test response');
     expect(response.model).toBe('gpt-4o-mini');
     expect(response.usage.totalTokens).toBe(15);
@@ -82,13 +82,15 @@ describe('OpenAIProvider', () => {
 
   it('should throw error for empty messages array', async () => {
     const provider = new OpenAIProvider({ apiKey: 'test-key' });
-    await expect(provider.generate([])).rejects.toThrow('At least one message is required');
+    await expect(provider.generate({ messages: [] })).rejects.toThrow('At least one message is required');
   });
 
   it('should throw error for invalid temperature', async () => {
     const provider = new OpenAIProvider({ apiKey: 'test-key' });
     const messages = [new Message({ role: 'user', content: 'Hello!' })];
-    await expect(provider.generate(messages, 1.5)).rejects.toThrow('Temperature must be between 0 and 1');
+    await expect(provider.generate({ messages, temperature: 1.5 })).rejects.toThrow(
+      'Temperature must be between 0 and 1'
+    );
   });
 
   it('should count tokens approximately', async () => {

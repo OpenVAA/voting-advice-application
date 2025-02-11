@@ -10,18 +10,26 @@ export class OpenAIProvider extends LLMProvider {
     super();
     this.model = options.model || 'gpt-4o-mini';
     this.maxContextTokens = options.maxContextTokens || 4096;
-    const apiKey = options.apiKey ?? process.env.OPENAI_API_KEY;
+    const apiKey = options.apiKey ?? process.env.LLM_API_KEY;
 
     if (!apiKey) {
       throw new Error(
-        'OpenAI API key is required. Provide it through constructor options or OPENAI_API_KEY environment variable.'
+        'OpenAI API key is required. Provide it through constructor options or LLM_API_KEY environment variable.'
       );
     }
 
     this.openai = new OpenAI({ apiKey });
   }
 
-  async generate(messages: Array<Message>, temperature: number = 0.7, maxTokens?: number): Promise<LLMResponse> {
+  async generate({
+    messages,
+    temperature = 0.7,
+    maxTokens
+  }: {
+    messages: Array<Message>;
+    temperature?: number;
+    maxTokens?: number;
+  }): Promise<LLMResponse> {
     if (!messages || messages.length === 0) {
       throw new Error('At least one message is required for generation');
     }
@@ -51,12 +59,16 @@ export class OpenAIProvider extends LLMProvider {
         throw new Error('OpenAI API returned empty content');
       }
 
-      const llmResponse = new LLMResponse(
-        choice.message.content,
-        new UsageStats(usage?.prompt_tokens ?? 0, usage?.completion_tokens ?? 0, usage?.total_tokens ?? 0),
-        response.model,
-        choice.finish_reason
-      );
+      const llmResponse = new LLMResponse({
+        content: choice.message.content,
+        usage: new UsageStats({
+          promptTokens: usage?.prompt_tokens ?? 0,
+          completionTokens: usage?.completion_tokens ?? 0,
+          totalTokens: usage?.total_tokens ?? 0
+        }),
+        model: response.model,
+        finishReason: choice.finish_reason
+      });
 
       return llmResponse;
     } catch (error) {

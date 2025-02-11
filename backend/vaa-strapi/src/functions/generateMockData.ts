@@ -675,17 +675,21 @@ async function createCandidateUsers() {
   });
 }
 
+/**
+ * Generates a single llm-response that will be used for every answer.
+ */
 async function generateMockLLMSummaries() {
-  const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+  const LLM_API_KEY = process.env.LLM_API_KEY;
   try {
-    const res: LLMResponse = await new OpenAIProvider({ apiKey: OPENAI_API_KEY }).generate([
-      {
-        role: 'system',
-        content: 'message.content'
-      },
-      {
-        role: 'user',
-        content: `Write a lorem ipsum summary of this sentence: Taxes should be increased before cutting public spending
+    const res: LLMResponse = await new OpenAIProvider({ apiKey: LLM_API_KEY }).generate({
+      messages: [
+        {
+          role: 'system',
+          content: 'message.content'
+        },
+        {
+          role: 'user',
+          content: `Write a lorem ipsum summary of this sentence: Taxes should be increased before cutting public spending
           Generate it in this format and change only the text part:
           {
           "infoSections": {
@@ -702,8 +706,9 @@ async function generateMockLLMSummaries() {
             }
           }
         }`
-      }
-    ]);
+        }
+      ]
+    });
     // Api response with LLMResponse parameters
     // TODO: Type for this? Also handle error-responses
     const generatedCustomData = JSON.parse(res.content);

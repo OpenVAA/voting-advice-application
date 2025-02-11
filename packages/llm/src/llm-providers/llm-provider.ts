@@ -1,8 +1,8 @@
 export type Role = 'system' | 'user' | 'assistant' | 'developer';
 
 export class Message {
-  public role: Role;
-  public content: string;
+  role: Role;
+  content: string;
 
   constructor({ role, content }: { role: Role; content: string }) {
     this.role = role;
@@ -11,11 +11,23 @@ export class Message {
 }
 
 export class UsageStats {
-  constructor(
-    public promptTokens: number,
-    public completionTokens: number,
-    public totalTokens: number
-  ) {}
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+
+  constructor({
+    promptTokens,
+    completionTokens,
+    totalTokens
+  }: {
+    promptTokens: number;
+    completionTokens: number;
+    totalTokens: number;
+  }) {
+    this.promptTokens = promptTokens;
+    this.completionTokens = completionTokens;
+    this.totalTokens = totalTokens;
+  }
 
   /**
    * Calculates the estimated cost of the API call based on token usage.
@@ -28,12 +40,27 @@ export class UsageStats {
 }
 
 export class LLMResponse {
-  constructor(
-    public content: string,
-    public usage: UsageStats,
-    public model: string,
-    public finishReason?: string
-  ) {}
+  content: string;
+  usage: UsageStats;
+  model: string;
+  finishReason?: string;
+
+  constructor({
+    content,
+    usage,
+    model,
+    finishReason
+  }: {
+    content: string;
+    usage: UsageStats;
+    model: string;
+    finishReason?: string;
+  }) {
+    this.content = content;
+    this.usage = usage;
+    this.model = model;
+    this.finishReason = finishReason;
+  }
 
   /**
    * Indicates whether the response was truncated due to length constraints
@@ -54,7 +81,15 @@ export abstract class LLMProvider {
    * @param temperature Controls randomness in the response (0-1)
    * @param maxTokens Optional maximum number of tokens to generate
    */
-  abstract generate(messages: Array<Message>, temperature: number, maxTokens?: number): Promise<LLMResponse>;
+  abstract generate({
+    messages,
+    temperature,
+    maxTokens
+  }: {
+    messages: Array<Message>;
+    temperature: number;
+    maxTokens?: number;
+  }): Promise<LLMResponse>;
 
   /**
    * Estimates the number of tokens in a text string
@@ -69,8 +104,7 @@ export abstract class LLMProvider {
   abstract get maxContextTokens(): number;
 
   /**
-   * Calculates how many messages can fit within the context window
-   * while maintaining good model performance
+   * Calculates how many messages can fit within the context window while maintaining good model performance
    *
    * To do: implement such that the fitting doesn't happen according to context length but performance
    * This needs to be done because model performance drops if the input is too large

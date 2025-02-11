@@ -13,10 +13,10 @@ export const generateMockDataOnRestart =
   (process.env.GENERATE_MOCK_DATA_ON_RESTART === 'true' && nodeEnv === 'development') || false;
 
 /**
- * When set to true, generates a single llm-response that will be used for every answer
- * Only applicable in development environments
+ * When set to true, generates LLM mock data.
  */
-export const generateAiMockData = (process.env.GENERATE_AI_MOCK_DATA === 'true' && nodeEnv === 'development') || false;
+export const generateAiMockData =
+  (process.env.LLM_GENERATE_AI_MOCK_DATA === 'true' && nodeEnv === 'development') || false;
 
 /**
  * If available, data will be loaded from this folder on initialise, if the database contains no Election objects. This will override mock data generation
