@@ -6,7 +6,7 @@
 
 import { Data, factories } from '@strapi/strapi';
 import { StrapiContext } from '../../../../types/customStrapiTypes';
-import { parseStrapiCardContents } from '../../../functions/utils/appSettings';
+import { parseStrapiCardContents } from '../../..//util/appSettings';
 
 export default factories.createCoreController('api::app-setting.app-setting', () => ({
   async find(ctx: StrapiContext) {

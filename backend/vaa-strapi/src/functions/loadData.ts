@@ -6,7 +6,7 @@
 import fs from 'fs';
 import mime from 'mime-types';
 import Path from 'path';
-import { deleteMedia, dropAllCollections, getAllMedia } from './utils/drop';
+import { deleteMedia, dropAllCollections, getAllMedia } from '../util/drop';
 import type { UID } from '@strapi/strapi';
 
 /**
