@@ -1,0 +1,37 @@
+{
+  "infoSections": {
+    "background": {
+      "text": {
+        "en": "Generated background here",
+        "fi": "Generated background here suomeksi",
+        "sv": "Generated background here in swedish"
+      },
+      "title": {
+        "en": "Background"
+      },
+      "visible": true
+    },
+    "situation": {
+      "text": {
+        "en": "Generated situation summary here",
+        "fi": "Generated situation summary here in Finnish",
+        "sv": "Generated situation summary here in Swedish"
+      },
+      "title": {
+        "en": "Current Situation",
+        "fi": "Current Situation",
+        "sv": "Current Situation"
+      },
+      "visible": true
+    },
+    "terms": [
+      {
+        "term": {
+          "definition_en": "Explanation for term",
+          "definition_fi": "Selitys termille",
+          "definition_sv": "Förklaring av term"
+        }
+      }
+    ]
+  }
+}
