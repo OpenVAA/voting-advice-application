@@ -1,3 +1,4 @@
+import { QuestionOrderer } from './questionOrderer';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
 import type { MatchingAlgorithm } from '@openvaa/matching';
@@ -5,6 +6,8 @@ import type { Readable, Writable } from 'svelte/store';
 import type { AppContext } from '../app';
 import type { QuestionBlocks } from '../utils/questionBlockStore.type';
 import type { AnswerStore } from './answerStore.type';
+import type { FactorLoading } from './factorLoadings/factorLoading';
+import type { FactorLoadingData } from './factorLoadings/factorLoading.type';
 import type { FilterTree } from './filters/filterStore';
 import type { MatchTree } from './matchStore';
 
@@ -79,4 +82,15 @@ export type VoterContext = AppContext & {
    * Reset all saved voter data, except privacy preferences and survey status.
    */
   resetVoterData: () => void;
+  setFactorLoadingData: (data: Array<FactorLoadingData>) => void;
+  /**
+   * Factor loadings data for the current election, containing dimensionality reduction results
+   * and question-factor correlations. Returns null if no factor analysis has been performed
+   * or if there are insufficient responses.
+   */
+  factorLoadings: Readable<Array<FactorLoading>>;
+  /**
+   * Question ordering service - recalculated only when factorLoadings change
+   */
+  questionOrderer: Readable<QuestionOrderer>;
 };

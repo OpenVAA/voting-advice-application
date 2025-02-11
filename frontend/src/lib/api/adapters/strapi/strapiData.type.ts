@@ -211,6 +211,24 @@ export type StrapiPartyData = StrapiObject<{
   nominations: StrapiRelation<StrapiNominationData>;
 }>;
 
+export type StrapiFactorLoadingData = StrapiObject<{
+  election: StrapiSingleRelation<StrapiElectionData>;
+  results: {
+    questionFactorLoadings: Array<{
+      questionId: string;
+      factors: Array<number>;
+    }>;
+    explainedVariancePerFactor: Array<number>;
+    totalExplainedVariance: number;
+  };
+  metadata?: {
+    timestamp: string;
+    numberOfQuestions: number;
+    numberOfResponses: number;
+    converged: boolean;
+  };
+}>;
+
 export type StrapiAnswers = { [questionId: string]: LocalizedAnswer };
 
 export type StrapiFeedbackData = StrapiObject<{
@@ -262,4 +280,7 @@ export type StrapiRegisterData = {
 /**
  * The custom candidate update API routes explicitly populate only some relations of the candidate object.
  */
-export type StrapiUpdateCandidateReturnData = Omit<StrapiCandidateData, 'nominations' | 'party'>;
+export type StrapiUpdateCandidateReturnData = Omit<
+  StrapiCandidateData,
+  'nominations' | 'party'
+>;

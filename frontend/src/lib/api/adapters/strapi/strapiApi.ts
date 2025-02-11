@@ -8,6 +8,7 @@ import type {
   StrapiConstituencyData,
   StrapiConstituencyGroupData,
   StrapiElectionData,
+  StrapiFactorLoadingData,
   StrapiFeedbackData,
   StrapiImageData,
   StrapiLoginData,
@@ -48,7 +49,8 @@ export const STRAPI_API: Record<keyof StrapiApiReturnType, string> = {
   setProperties: 'api/candidate/:id/update-properties',
   setPassword: 'api/auth/change-password',
   upload: 'api/upload',
-  updateAnswers: 'api/candidate/:id/update-answers'
+  updateAnswers: 'api/candidate/:id/update-answers',
+  factorLoadings: 'api/factor-loadings'
 } as const;
 
 export type StrapiApi = keyof StrapiApiReturnType;
@@ -85,6 +87,7 @@ export type StrapiApiReturnType = {
   setPassword: unknown;
   upload: Array<StrapiImageData>;
   updateAnswers: StrapiUpdateCandidateReturnData;
+  factorLoadings: Array<StrapiFactorLoadingData>;
 };
 
 /**

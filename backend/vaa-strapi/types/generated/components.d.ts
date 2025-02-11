@@ -13,7 +13,8 @@ export interface CustomizationCandidateAppFaq extends Struct.ComponentSchema {
   };
 }
 
-export interface CustomizationTranslationOverride extends Struct.ComponentSchema {
+export interface CustomizationTranslationOverride
+  extends Struct.ComponentSchema {
   collectionName: 'components_customization_translation_overrides';
   info: {
     description: '';
@@ -21,11 +22,15 @@ export interface CustomizationTranslationOverride extends Struct.ComponentSchema
   };
   attributes: {
     translationKey: Schema.Attribute.String & Schema.Attribute.Required;
-    translations: Schema.Attribute.Component<'customization.translation-override-translation', true>;
+    translations: Schema.Attribute.Component<
+      'customization.translation-override-translation',
+      true
+    >;
   };
 }
 
-export interface CustomizationTranslationOverrideTranslation extends Struct.ComponentSchema {
+export interface CustomizationTranslationOverrideTranslation
+  extends Struct.ComponentSchema {
   collectionName: 'components_customization_translation_override_translations';
   info: {
     description: '';
@@ -70,7 +75,10 @@ export interface SettingsEntities extends Struct.ComponentSchema {
     displayName: 'Entities';
   };
   attributes: {
-    hideIfMissingAnswers: Schema.Attribute.Component<'settings.hide-if-missing-answers', false>;
+    hideIfMissingAnswers: Schema.Attribute.Component<
+      'settings.hide-if-missing-answers',
+      false
+    >;
   };
 }
 
@@ -81,10 +89,20 @@ export interface SettingsEntityDetails extends Struct.ComponentSchema {
     displayName: 'Entity Details';
   };
   attributes: {
-    contents: Schema.Attribute.Component<'settings.entity-details-contents', false> & Schema.Attribute.Required;
-    showMissingAnswers: Schema.Attribute.Component<'settings.entity-details-show-missing-answers', false> &
+    contents: Schema.Attribute.Component<
+      'settings.entity-details-contents',
+      false
+    > &
       Schema.Attribute.Required;
-    showMissingElectionSymbol: Schema.Attribute.Component<'settings.entity-details-show-missing-elsmbl', false> &
+    showMissingAnswers: Schema.Attribute.Component<
+      'settings.entity-details-show-missing-answers',
+      false
+    > &
+      Schema.Attribute.Required;
+    showMissingElectionSymbol: Schema.Attribute.Component<
+      'settings.entity-details-show-missing-elsmbl',
+      false
+    > &
       Schema.Attribute.Required;
   };
 }
@@ -98,14 +116,21 @@ export interface SettingsEntityDetailsContents extends Struct.ComponentSchema {
   attributes: {
     candidate: Schema.Attribute.JSON &
       Schema.Attribute.Required &
-      Schema.Attribute.CustomField<'plugin::multi-select.multi-select', ['info', 'opinions']>;
+      Schema.Attribute.CustomField<
+        'plugin::multi-select.multi-select',
+        ['info', 'opinions']
+      >;
     organization: Schema.Attribute.JSON &
       Schema.Attribute.Required &
-      Schema.Attribute.CustomField<'plugin::multi-select.multi-select', ['candidates', 'info', 'opinions']>;
+      Schema.Attribute.CustomField<
+        'plugin::multi-select.multi-select',
+        ['candidates', 'info', 'opinions']
+      >;
   };
 }
 
-export interface SettingsEntityDetailsShowMissingAnswers extends Struct.ComponentSchema {
+export interface SettingsEntityDetailsShowMissingAnswers
+  extends Struct.ComponentSchema {
   collectionName: 'components_settings_entity_details_show_missing_answers';
   info: {
     description: '';
@@ -117,7 +142,8 @@ export interface SettingsEntityDetailsShowMissingAnswers extends Struct.Componen
   };
 }
 
-export interface SettingsEntityDetailsShowMissingElsmbl extends Struct.ComponentSchema {
+export interface SettingsEntityDetailsShowMissingElsmbl
+  extends Struct.ComponentSchema {
   collectionName: 'components_settings_entity_details_show_missing_elsmbls';
   info: {
     description: '';
@@ -195,7 +221,9 @@ export interface SettingsMatching extends Struct.ComponentSchema {
   };
   attributes: {
     minimumAnswers: Schema.Attribute.Integer & Schema.Attribute.Required;
-    organizationMatching: Schema.Attribute.Enumeration<['none', 'answersOnly', 'mean', 'median']> &
+    organizationMatching: Schema.Attribute.Enumeration<
+      ['none', 'answersOnly', 'mean', 'median']
+    > &
       Schema.Attribute.Required;
   };
 }
@@ -207,12 +235,19 @@ export interface SettingsNotifications extends Struct.ComponentSchema {
     displayName: 'Notifications';
   };
   attributes: {
-    candidateApp: Schema.Attribute.Component<'settings.notifications-notification-data', false>;
-    voterApp: Schema.Attribute.Component<'settings.notifications-notification-data', false>;
+    candidateApp: Schema.Attribute.Component<
+      'settings.notifications-notification-data',
+      false
+    >;
+    voterApp: Schema.Attribute.Component<
+      'settings.notifications-notification-data',
+      false
+    >;
   };
 }
 
-export interface SettingsNotificationsNotificationData extends Struct.ComponentSchema {
+export interface SettingsNotificationsNotificationData
+  extends Struct.ComponentSchema {
   collectionName: 'components_settings_notifications_notification_data';
   info: {
     description: '';
@@ -233,14 +268,26 @@ export interface SettingsQuestions extends Struct.ComponentSchema {
     displayName: 'Questions';
   };
   attributes: {
-    categoryIntros: Schema.Attribute.Component<'settings.questions-category-intros', false>;
-    questionsIntro: Schema.Attribute.Component<'settings.questions-intro', false> & Schema.Attribute.Required;
+    categoryIntros: Schema.Attribute.Component<
+      'settings.questions-category-intros',
+      false
+    >;
+    dynamicOrdering: Schema.Attribute.Component<
+      'settings.questions-ordering',
+      false
+    >;
+    questionsIntro: Schema.Attribute.Component<
+      'settings.questions-intro',
+      false
+    > &
+      Schema.Attribute.Required;
     showCategoryTags: Schema.Attribute.Boolean & Schema.Attribute.Required;
     showResultsLink: Schema.Attribute.Boolean;
   };
 }
 
-export interface SettingsQuestionsCategoryIntros extends Struct.ComponentSchema {
+export interface SettingsQuestionsCategoryIntros
+  extends Struct.ComponentSchema {
   collectionName: 'components_settings_questions_category_intros';
   info: {
     description: '';
@@ -264,6 +311,44 @@ export interface SettingsQuestionsIntro extends Struct.ComponentSchema {
   };
 }
 
+export interface SettingsQuestionsOrdering extends Struct.ComponentSchema {
+  collectionName: 'components_settings_questions_ordering';
+  info: {
+    description: '';
+    displayName: 'Questions - Ordering';
+  };
+  attributes: {
+    config: Schema.Attribute.Component<
+      'settings.questions-ordering-config',
+      false
+    > &
+      Schema.Attribute.Required;
+    enabled: Schema.Attribute.Boolean;
+  };
+}
+
+export interface SettingsQuestionsOrderingConfig
+  extends Struct.ComponentSchema {
+  collectionName: 'components_settings_questions_ordering_config';
+  info: {
+    description: '';
+    displayName: 'Questions - Ordering Config';
+  };
+  attributes: {
+    eliminationType: Schema.Attribute.Enumeration<['strict', 'relaxed']>;
+    numSuggestions: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 5;
+          min: 1;
+        },
+        number
+      >;
+    type: Schema.Attribute.Enumeration<['factor-based', 'eliminate-choices']> &
+      Schema.Attribute.Required;
+  };
+}
+
 export interface SettingsResults extends Struct.ComponentSchema {
   collectionName: 'components_settings_results';
   info: {
@@ -271,38 +356,53 @@ export interface SettingsResults extends Struct.ComponentSchema {
     displayName: 'Results';
   };
   attributes: {
-    candidateCardContents: Schema.Attribute.Component<'settings.results-candidate-card-contents', true> &
+    candidateCardContents: Schema.Attribute.Component<
+      'settings.results-candidate-card-contents',
+      true
+    > &
       Schema.Attribute.Required;
-    organizationCardContents: Schema.Attribute.Component<'settings.results-party-card-contents', true> &
+    organizationCardContents: Schema.Attribute.Component<
+      'settings.results-party-card-contents',
+      true
+    > &
       Schema.Attribute.Required;
     sections: Schema.Attribute.JSON &
       Schema.Attribute.Required &
-      Schema.Attribute.CustomField<'plugin::multi-select.multi-select', ['candidate', 'organization']>;
+      Schema.Attribute.CustomField<
+        'plugin::multi-select.multi-select',
+        ['candidate', 'organization']
+      >;
     showFeedbackPopup: Schema.Attribute.Integer;
     showSurveyPopup: Schema.Attribute.Integer;
   };
 }
 
-export interface SettingsResultsCandidateCardContents extends Struct.ComponentSchema {
+export interface SettingsResultsCandidateCardContents
+  extends Struct.ComponentSchema {
   collectionName: 'components_settings_results_candidate_card_contents';
   info: {
     displayName: 'Results - Candidate Card Contents';
   };
   attributes: {
-    content: Schema.Attribute.Enumeration<['submatches', 'question']> & Schema.Attribute.Required;
+    content: Schema.Attribute.Enumeration<['submatches', 'question']> &
+      Schema.Attribute.Required;
     question_format: Schema.Attribute.Enumeration<['default', 'tag']>;
     question_hideLabel: Schema.Attribute.Boolean;
     question_id: Schema.Attribute.String;
   };
 }
 
-export interface SettingsResultsPartyCardContents extends Struct.ComponentSchema {
+export interface SettingsResultsPartyCardContents
+  extends Struct.ComponentSchema {
   collectionName: 'components_settings_results_party_card_contents';
   info: {
     displayName: 'Results - Candidate Card Contents';
   };
   attributes: {
-    content: Schema.Attribute.Enumeration<['submatches', 'candidates', 'question']> & Schema.Attribute.Required;
+    content: Schema.Attribute.Enumeration<
+      ['submatches', 'candidates', 'question']
+    > &
+      Schema.Attribute.Required;
     question_format: Schema.Attribute.Enumeration<['default', 'tag']>;
     question_hideLabel: Schema.Attribute.Boolean;
     question_id: Schema.Attribute.String;
@@ -350,6 +450,8 @@ declare module '@strapi/strapi' {
       'settings.questions': SettingsQuestions;
       'settings.questions-category-intros': SettingsQuestionsCategoryIntros;
       'settings.questions-intro': SettingsQuestionsIntro;
+      'settings.questions-ordering': SettingsQuestionsOrdering;
+      'settings.questions-ordering-config': SettingsQuestionsOrderingConfig;
       'settings.results': SettingsResults;
       'settings.results-candidate-card-contents': SettingsResultsCandidateCardContents;
       'settings.results-party-card-contents': SettingsResultsPartyCardContents;

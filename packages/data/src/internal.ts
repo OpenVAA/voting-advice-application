@@ -16,7 +16,14 @@ export type {
   Serializable,
   WrappedEntity
 } from '@openvaa/core';
-export { isValidId, isMissingValue, isEmptyValue, MISSING_VALUE, normalizeCoordinate, COORDINATE } from '@openvaa/core';
+export {
+  isValidId,
+  isMissingValue,
+  isEmptyValue,
+  MISSING_VALUE,
+  normalizeCoordinate,
+  COORDINATE
+} from '@openvaa/core';
 export * from './core/filter.type';
 export * from './core/collection.type';
 export * from './core/colors.type';

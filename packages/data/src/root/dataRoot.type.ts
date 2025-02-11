@@ -83,8 +83,12 @@ export type RootCollections = {
  * A hierarchical data format for providing all VAA data at once.
  */
 export type FullVaaData<
-  TEntities extends EntityVariantTree | Array<AnyEntityVariantData> = EntityVariantTree | Array<AnyEntityVariantData>,
-  TNominations extends NominationVariantTree | Array<AnyNominationVariantPublicData> =
+  TEntities extends EntityVariantTree | Array<AnyEntityVariantData> =
+    | EntityVariantTree
+    | Array<AnyEntityVariantData>,
+  TNominations extends
+    | NominationVariantTree
+    | Array<AnyNominationVariantPublicData> =
     | NominationVariantTree
     | Array<AnyNominationVariantPublicData>
 > = {
