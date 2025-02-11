@@ -10,6 +10,8 @@
  * and also it is not possible to create localizations using the bulk insert.
  */
 
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
 import { dynamicSettings } from '@openvaa/app-shared';
 import { LLMResponse, OpenAIProvider } from '@openvaa/llm';
@@ -678,6 +680,11 @@ async function createCandidateUsers() {
 async function generateMockLLMSummaries() {
   const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
   try {
+    const promptPath = join(__dirname, 'prompts', 'defaultPrompt.json');
+    const formatPath = join(__dirname, 'prompts', 'defaultQuestionsFormat.json');
+    const promptJSON = await readFile(promptPath, 'utf-8');
+    const prompt = JSON.parse(promptJSON).promptEn;
+    const format = await readFile(formatPath, 'utf-8');
     const res: LLMResponse = await new OpenAIProvider({ apiKey: OPENAI_API_KEY }).generate([
       {
         role: 'system',
@@ -685,27 +692,10 @@ async function generateMockLLMSummaries() {
       },
       {
         role: 'user',
-        content: `Write a lorem ipsum summary of this sentence: Taxes should be increased before cutting public spending
-          Generate it in this format and change only the text part:
-          {
-          "infoSections": {
-            "background": {
-              "text": {
-                "en": "Generated background here",
-                "fi": "Generated background here suomeksi",
-                "sv": "Generated background here in swedish"
-              },
-              "title": {
-                "en": "Background"
-              },
-              "visible": true
-            }
-          }
-        }`
+        content: prompt + format
       }
     ]);
     // Api response with LLMResponse parameters
-    // TODO: Type for this? Also handle error-responses
     const generatedCustomData = JSON.parse(res.content);
 
     // Get all questions with their existing customData
