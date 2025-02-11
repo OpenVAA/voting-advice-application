@@ -58,7 +58,8 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
           populate: {
             categoryIntros: 'true',
             questionsIntro: 'true',
-            dynamicOrdering: 'true'
+            dynamicOrdering: 'true',
+            config: 'true'
           }
         },
         results: { populate: { cardContents: 'true' } },
