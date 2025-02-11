@@ -407,39 +407,39 @@ Display a question for answering.
             handleJump(+1);
           }} />
       {/if}
+    
+      {#if useQuestionOrdering && $selectedQuestionBlocks.showChoices}
+        <div
+          role="group"
+          aria-label={$t('questions.additionalActions')}
+          class="mt-lg grid w-full grid-cols-3 items-stretch gap-md">
+          <Button
+            on:click={() => {
+              handleJump(-1);
+            }}
+            style="grid-row: 1; grid-column: 1"
+            color="secondary"
+            variant="secondary"
+            iconPos="left"
+            class="content-start"
+            icon="previous"
+            text={$t('questions.previous')} />
+          <Button
+            on:click={() => {
+              const randomIndex = Math.floor(Math.random() * nextQuestionChoices.length);
+              const randomChoice = nextQuestionChoices[randomIndex];
+              handleChoiceSelect(randomChoice);
+            }}
+            style="grid-row: 1; grid-column: 3"
+            color="secondary"
+            variant="secondary"
+            iconPos="right"
+            class="content-end"
+            icon="check"
+            text={$t('questions.chooseForMe')} />
+        </div>
+      {/if}
     </svelte:fragment>
-
-    {#if useQuestionOrdering && $selectedQuestionBlocks.showChoices}
-      <div
-        role="group"
-        aria-label={$t('questions.additionalActions')}
-        class="mt-lg grid w-full grid-cols-3 items-stretch gap-md">
-        <Button
-          on:click={() => {
-            handleJump(-1);
-          }}
-          style="grid-row: 1; grid-column: 1"
-          color="secondary"
-          variant="secondary"
-          iconPos="left"
-          class="content-start"
-          icon="previous"
-          text={$t('questions.previous')} />
-        <Button
-          on:click={() => {
-            const randomIndex = Math.floor(Math.random() * nextQuestionChoices.length);
-            const randomChoice = nextQuestionChoices[randomIndex];
-            handleChoiceSelect(randomChoice);
-          }}
-          style="grid-row: 1; grid-column: 3"
-          color="secondary"
-          variant="secondary"
-          iconPos="right"
-          class="content-end"
-          icon="check"
-          text={$t('questions.chooseForMe')} />
-      </div>
-    {/if}
   </Layout>
 {:else}
   <Loading class="mt-lg" />
