@@ -326,13 +326,15 @@ Display a question for answering.
         {/if}
       </svelte:fragment>
     -->
+    <svelte:fragment slot="hero">
+      {#if useQuestionOrdering && $selectedQuestionBlocks.showChoices}
+        <h3 class="text-lg text-secondary/80">{$t('questions.pickNext')}</h3>
+      {/if}
+    </svelte:fragment>
 
     <svelte:fragment slot="heading">
-      {#if useQuestionOrdering && $selectedQuestionBlocks.showChoices}
-        <h2 class="mb-4 text-xl font-bold">{$t('questions.pickNext')}</h2>
-      {/if}
       {#each useQuestionOrdering && $selectedQuestionBlocks.showChoices ? nextQuestionChoices : [question] as currentQuestion}
-        <div transition:slide class="border-b border-base-300 py-4 last:border-none">
+        <div transition:slide class="grid-line-x">
           <button
             class="w-full text-left {useQuestionOrdering && $selectedQuestionBlocks.showChoices
               ? 'rounded-lg p-2 transition-colors hover:bg-base-200'
@@ -365,8 +367,27 @@ Display a question for answering.
       {/each}
     </svelte:fragment>
 
+    <style>
+      .grid-line-x {
+        @apply relative 
+        before:absolute 
+        before:left-[40%] 
+        before:right-[40%] 
+        before:top-0 
+        before:border-md
+        before:content-[''];
+      }
+        /* Target all but first element */
+      .grid-line-x:not(:first-child) {
+        @apply pt-16 mt-16 before:block;
+      }
+      .grid-line-x:first-child {
+        @apply before:hidden;
+      }
+    </style>
+
     <!-- !videoProps && -->
-    {#if info && info !== ''}
+    {#if info && info !== '' && !$selectedQuestionBlocks.showChoices}
       <QuestionInfo {info} onCollapse={handleInfoCollapse} onExpand={handleInfoExpand} />
     {/if}
 
