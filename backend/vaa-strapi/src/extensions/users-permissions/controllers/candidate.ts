@@ -148,15 +148,6 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     )
   );
 
-  const registrationKey = candidate.registrationKey;
-
-  const emailPluginService = strapi.plugins['email'].services.email;
-  await emailPluginService.sendTemplatedEmail({
-    to: candidate.email,
-    subject: '',
-    text: ''
-  });
-
   // TODO: Load the full template.
   await strapi.plugins['email'].services.email.sendTemplatedEmail(
     { to: email },
@@ -172,7 +163,7 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     },
     {
       user: { firstName },
-      link: `${process.env.PUBLIC_BROWSER_FRONTEND_URL}/candidate/register?registrationKey=${registrationKey}`
+      link: `${process.env.PUBLIC_BROWSER_FRONTEND_URL}/candidate/register?registrationKey=${candidate.registrationKey}`
     }
   );
 
