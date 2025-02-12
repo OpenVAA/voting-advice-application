@@ -11,7 +11,7 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { t, getRoute, clearIdToken } = getCandidateContext();
+  const { appSettings, t, getRoute, clearIdToken } = getCandidateContext();
   $: code = $page.url.searchParams.get('code');
 
   clearIdToken();
@@ -37,8 +37,10 @@
       {@html sanitizeHtml($t(getErrorTranslationKey(code).content))}
     </div>
     <Button
+      class="mb-md"
       text={$t('common.continue')}
       variant="main"
       on:click={() => goto($getRoute('CandAppPreregister'), { invalidateAll: true })} />
+    <Button href="mailto:{$appSettings.admin.email}" text={$t('candidateApp.common.contactSupport')} />
   </MainContent>
 {/if}
