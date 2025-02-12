@@ -22,7 +22,7 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
   // Registration
   ////////////////////////////////////////////////////////////////////
 
-  protected _preregister({
+  protected async _preregister({
     body,
     authToken
   }: {
@@ -35,11 +35,12 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
     };
   } & WithAuth): Promise<DataApiActionResult> {
     // Throws if failed
-    return this.apiPost({
+    await this.apiPost({
       endpoint: 'preregisterCandidate',
       body,
       authToken
-    }).then(() => ({ type: 'success' }));
+    });
+    return { type: 'success' };
   }
 
   ////////////////////////////////////////////////////////////////////
