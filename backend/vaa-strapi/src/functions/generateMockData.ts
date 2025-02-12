@@ -4,10 +4,6 @@
  * Fake data can be generated if env variable GENERATE_MOCK_DATA_ON_INITIALISE=true is set.
  * Additionally, GENERATE_MOCK_DATA_ON_RESTART can be used in dev environment for
  * debugging & developing mock data generation functionality.
- *
- * IMPORTANT: As today, 29th of August of 2023, most of the fake data needs to be created using
- * the method `strapi.entityService.create()` as the bulk insert does not support relations,
- * and also it is not possible to create localizations using the bulk insert.
  */
 
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
@@ -25,7 +21,14 @@ import { generateMockDataOnInitialise, generateMockDataOnRestart } from '../cons
 import type { AnswerValue, LocalizedAnswer, LocalizedString, QuestionTypeSettings } from '@openvaa/app-shared';
 import type { Data } from '@strapi/strapi';
 
-const N_CONSTITUENCIES = 15;
+const N_ELECTIONS = 4;
+// Make the fourth election a single constituency one
+const N_CONSTITUENCIES_PER_ELECTION = Array.from({ length: N_ELECTIONS }, (_, i) => (i === 3 ? 1 : 10 + i * 20));
+/**
+ * If true and N_ELECTIONS >= 2, the constituencies in the second constituency group will be children of the first constituency group.
+ */
+const DO_LINK_CONSTITUENCIES = true;
+const N_CONSTITUENCIES = N_CONSTITUENCIES_PER_ELECTION.reduce((a, b) => a + b, 0);
 const N_CANDIDATES_PER_CONSTITUENCY = 10;
 const N_PARTIES = 10;
 const N_PARTIES_WITH_CLOSED_LISTS = 2;
@@ -82,7 +85,9 @@ export async function generateMockData() {
   try {
     if (generateMockDataOnRestart) {
       console.info('#######################################');
-      await dropAllCollections();
+      await dropAllCollections().catch((e) => {
+        throw e;
+      });
       console.info('dropped collections');
     }
 
@@ -102,65 +107,100 @@ export async function generateMockData() {
 
     console.info('#######################################');
     console.info('inserting app settings...');
-    await loadDefaultAppSettings();
+    await loadDefaultAppSettings().catch((e) => {
+      throw e;
+    });
     console.info('#######################################');
     console.info('inserting app customization...');
-    await createAppCustomization();
+    await createAppCustomization().catch((e) => {
+      throw e;
+    });
     console.info('#######################################');
     console.info('inserting languages');
-    await createLanguages();
+    await createLanguages().catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting strapi admin');
-    await createStrapiAdmin();
+    await createStrapiAdmin().catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting constituencies and constituency groups');
-    await createConstituenciesAndGroups(N_CONSTITUENCIES);
+    await createConstituenciesAndGroups({
+      numberPerGroup: N_CONSTITUENCIES_PER_ELECTION,
+      linkConstituencies: DO_LINK_CONSTITUENCIES
+    }).catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting one election');
-    await createElection();
+    await createElections(N_ELECTIONS).catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting question types');
-    await createQuestionTypes();
+    await createQuestionTypes().catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting question categories');
-    await createQuestionCategories();
+    await createQuestionCategories().catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting questions');
-    await createQuestions();
+    await createQuestions().catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting parties');
-    await createParties(N_PARTIES);
+    await createParties(N_PARTIES).catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidates');
-    await createCandidates(N_CONSTITUENCIES * N_CANDIDATES_PER_CONSTITUENCY);
+    await createCandidates(N_CONSTITUENCIES * N_CANDIDATES_PER_CONSTITUENCY).catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidate without answers for testing');
-    await createCandidateForTesting();
+    await createCandidateForTesting().catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidate nominations');
-    await createCandidateNominations(F_DUPLICATE_NOMINATIONS);
+    await createCandidateNominations(F_DUPLICATE_NOMINATIONS).catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting closed list parties');
-    await createParties(N_PARTIES_WITH_CLOSED_LISTS);
+    await createParties(N_PARTIES_WITH_CLOSED_LISTS).catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting party nominations');
-    await createPartyNominations(N_PARTIES_WITH_CLOSED_LISTS);
+    await createPartyNominations(N_PARTIES_WITH_CLOSED_LISTS).catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidate users');
-    await createCandidateUsers();
+    await createCandidateUsers().catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('Mock data generation completed successfully!');
@@ -241,68 +281,102 @@ async function createLanguages() {
 }
 
 /**
+ * Creates a constituency group for each election.
  * @param numberPerGroup - An Array of numbers representing the number of constituencies per constituency group.
+ * @param linkConstituencies - If true, there are at least two groups and the first one is smaller than the second one, the constituencies in the second constituency group will be children of the first constituency group.
  */
-async function createConstituenciesAndGroups(...numberPerGroup: Array<number>) {
+async function createConstituenciesAndGroups({
+  numberPerGroup,
+  linkConstituencies = false
+}: {
+  numberPerGroup: Array<number>;
+  linkConstituencies: boolean;
+}) {
+  /**
+   * Save the previous group’s constituency IDs to be used as parent IDs for the next group.
+   */
+  let previousConstituencies = new Array<string>();
   for (let i = 0; i < numberPerGroup.length; i++) {
     // Create Constituencies
     const constituencies = new Array<string>();
-    for (let j = 0; j < numberPerGroup[i]; j++) {
-      const name = fakeLocalized((faker) => faker.location.state());
-      const shortName = fakeLocalized((faker) => faker.location.state({ abbreviated: true }));
+    const numConstituencies = numberPerGroup[i];
+    const type = numConstituencies === 1 ? 'country' : numConstituencies > 10 ? 'city' : 'state';
+    // Possibly define parent constituency
+    const doLink = linkConstituencies && i === 1;
+    if (doLink && numConstituencies < previousConstituencies.length)
+      throw new Error('Not enough constituencies to link');
+    for (let j = 0; j < numConstituencies; j++) {
+      const name = fakeLocalized((faker) =>
+        type === 'country' ? 'Whole country' : type === 'city' ? faker.location.city() : faker.location.state()
+      );
+      const shortName = abbreviate(name);
       const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
-      const { documentId } = await strapi.documents('api::constituency.constituency').create({
-        data: {
-          name,
-          shortName,
-          info
-        },
-        status: 'published'
-      });
+      const parent = doLink ? previousConstituencies[j % previousConstituencies.length] : null;
+      const { documentId } = await strapi
+        .documents('api::constituency.constituency')
+        .create({
+          data: {
+            name,
+            shortName,
+            info,
+            parent
+          },
+          status: 'published'
+        })
+        .catch((err) => {
+          throw err;
+        });
       constituencies.push(documentId);
     }
+    // Save for possible use
+    previousConstituencies = [...constituencies];
     // Create Constituency Group
-    const subtype = i % 2 ? 'ethnic' : 'geographic';
-    await strapi.documents('api::constituency-group.constituency-group').create({
-      data: {
-        name: fakeLocalized(() => `${capitaliseFirstLetter(subtype)} constituency group`),
-        subtype,
-        info: fakeLocalized((faker) => faker.lorem.paragraph(3)),
-        constituencies
-      },
-      status: 'published'
-    });
+    // const subtype = i % 2 ? 'ethnic' : 'geographic';
+    await strapi
+      .documents('api::constituency-group.constituency-group')
+      .create({
+        data: {
+          name: fakeLocalized(() => `${capitaliseFirstLetter(type)} constituency group ${doLink ? '- linked' : ''}`),
+          info: fakeLocalized((faker) => faker.lorem.paragraph(3)),
+          constituencies
+        },
+        status: 'published'
+      })
+      .catch((err) => {
+        throw err;
+      });
   }
 }
 
-async function createElection() {
+async function createElections(numElections = 1) {
   const constituencyGroups = await strapi
     .documents('api::constituency-group.constituency-group')
     .findMany({})
     .then((res) => res.map((g) => g.documentId));
   const date = faker.date.future();
-  const types = ['local', 'presidential', 'congress'] as const;
-  const electionType = types[Math.floor(Math.random() * types.length)];
-  const name = fakeLocalized(
-    (faker, locale) => `${date.getFullYear()} ${faker.location.country()} ${electionType} (${locale.code})`
-  );
-  const shortName = name;
-  const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
-  const electionStartDate = date.toISOString().split('T')[0];
-  const electionDate = date.toISOString().split('T')[0];
-  await strapi.documents('api::election.election').create({
-    data: {
-      name,
-      shortName,
-      electionStartDate,
-      electionDate,
-      electionType,
-      info,
-      publishedAt: new Date(),
-      constituencyGroups
-    },
-    status: 'published'
-  });
+
+  for (let i = 0; i < numElections; i++) {
+    const types = ['local', 'presidential', 'congress'] as const;
+    const electionType = types[Math.floor(Math.random() * types.length)];
+    const name = fakeLocalized((faker, locale) => `${faker.location.country()} ${electionType} (${locale.code})`);
+    const shortName = fakeLocalized(() => capitaliseFirstLetter(electionType));
+    const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
+    const electionStartDate = date.toISOString().split('T')[0];
+    const electionDate = date.toISOString().split('T')[0];
+    await strapi.documents('api::election.election').create({
+      data: {
+        name,
+        shortName,
+        electionStartDate,
+        electionDate,
+        electionType,
+        info,
+        publishedAt: new Date(),
+        constituencyGroups: [constituencyGroups[i % constituencyGroups.length]]
+      },
+      status: 'published'
+    });
+  }
 }
 
 async function createParties(length: number) {
@@ -378,21 +452,45 @@ async function createCandidateForTesting() {
 
 /**
  * Create nominations for all candidates with possible duplicates.
- * @param duplicateFraction - Approximate fraction of candidates to nominate in two constituencies.
+ * @param duplicateFraction - Approximate fraction of candidates to nominate in multiple elections. This will have no effect if there is only one election.
  */
 async function createCandidateNominations(duplicateFraction = 0.0) {
-  const elections = await strapi.documents('api::election.election').findMany({});
-  const constituencies = await strapi.documents('api::constituency.constituency').findMany({});
+  const elections = await strapi.documents('api::election.election').findMany({
+    populate: {
+      constituencyGroups: {
+        populate: ['constituencies']
+      }
+    }
+  });
   const candidates = await strapi.documents('api::candidate.candidate').findMany({
     populate: ['party']
   });
 
-  for (const candidate of candidates) {
-    const duplicate = Math.random() < duplicateFraction;
-    const electionRound = 1; // faker.number.int(1);
-    const electionId = elections[0].documentId;
-    // If duplicate create two nominations, otherwise one
-    for (const constituency of faker.helpers.arrayElements(constituencies, duplicate ? 2 : 1)) {
+  // Split candidates into groups for each election
+  const candidatesByElection = new Array<typeof candidates>();
+  const allCandidates = [...candidates];
+  const numPerElection = Math.floor(candidates.length / elections.length);
+  for (let i = 0; i < elections.length; i++) {
+    // Ensure that all candidates are accounted for by assigning the rest to the last election
+    const electionCandidates = i < elections.length - 1 ? allCandidates.splice(0, numPerElection) : [...allCandidates];
+    // Insert some extra candidates if duplicateFraction > 0
+    if (duplicateFraction > 0) {
+      const availableCandidates = candidates.filter((c) => !electionCandidates.includes(c));
+      const numDuplicates = Math.min(availableCandidates.length, Math.floor(numPerElection * duplicateFraction));
+      if (numDuplicates) electionCandidates.push(...faker.helpers.arrayElements(availableCandidates, numDuplicates));
+    }
+    candidatesByElection.push(electionCandidates);
+  }
+
+  // Create nominations for each election
+  for (let i = 0; i < elections.length; i++) {
+    const election = elections[i];
+    const constituencies = election.constituencyGroups[0].constituencies;
+    const electionCandidates = candidatesByElection[i];
+    for (const candidate of electionCandidates) {
+      const electionRound = 1; // faker.number.int(1);
+      // If duplicate create two nominations, otherwise one
+      const constituency = faker.helpers.arrayElement(constituencies);
       const electionSymbol = faker.number
         .int({ min: 2, max: Math.ceil(candidates.length * (1 + duplicateFraction)) + 2 })
         .toString();
@@ -402,7 +500,7 @@ async function createCandidateNominations(duplicateFraction = 0.0) {
           electionRound,
           candidate: candidate.documentId,
           party: candidate.party.documentId,
-          election: electionId,
+          election: election.documentId,
           constituency: constituency.documentId
         },
         status: 'published'
@@ -412,11 +510,18 @@ async function createCandidateNominations(duplicateFraction = 0.0) {
 }
 
 async function createPartyNominations(length: number) {
-  const elections = await strapi.documents('api::election.election').findMany({});
-  const constituencies = await strapi.documents('api::constituency.constituency').findMany({});
+  const elections = await strapi.documents('api::election.election').findMany({
+    populate: {
+      constituencyGroups: {
+        populate: ['constituencies']
+      }
+    }
+  });
   const parties = await strapi.documents('api::party.party').findMany({});
 
   for (let i = 0; i <= length; i++) {
+    const election = faker.helpers.arrayElement(elections);
+    const constituencies = election.constituencyGroups[0].constituencies;
     const party = faker.helpers.arrayElement(parties);
     // Remove from list to prevent duplicates
     parties.splice(parties.indexOf(party), 1);
@@ -437,14 +542,22 @@ async function createPartyNominations(length: number) {
   }
 }
 
-async function createQuestionCategories() {
+/**
+ * Create questions
+ * @param options.electionPctg The fraction of opinion questions categories that will have their `election` relation set to a random election.
+ */
+async function createQuestionCategories({ electionPctg = 0.2 }: { electionPctg?: number } = {}) {
   const elections = await strapi.documents('api::election.election').findMany({});
-  for (const category of mockCategories) {
+  for (let i = 0; i < mockCategories.length; i++) {
+    const category = mockCategories[i];
     const name = fakeLocalized((faker) => faker.word.sample(15).toLocaleUpperCase(), category);
     const shortName = abbreviate(name, { type: 'truncate' });
     const order = mockCategories.indexOf(category);
     const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
     const color = faker.color.rgb();
+    let election: string | undefined;
+    if (i < mockCategories.length * electionPctg && elections.length > 0)
+      election = faker.helpers.arrayElement(elections).documentId;
     await strapi.documents('api::question-category.question-category').create({
       data: {
         name,
@@ -453,7 +566,7 @@ async function createQuestionCategories() {
         info,
         type: 'opinion',
         color,
-        election: elections[0].documentId
+        elections: election ? [election] : undefined
       },
       status: 'published'
     });
@@ -469,8 +582,7 @@ async function createQuestionCategories() {
       shortName,
       order,
       info,
-      type: 'info',
-      election: elections[0].documentId
+      type: 'info'
     },
     status: 'published'
   });
@@ -494,7 +606,7 @@ async function createQuestionTypes() {
  * @param options.constituencyPctg The fraction of Likert questions that will
  *   have their `constituency` relation set to a random constituency.
  */
-async function createQuestions(options: { constituencyPctg?: number } = {}) {
+async function createQuestions({ constituencyPctg = 0.1 }: { constituencyPctg?: number } = {}) {
   const questionTypes = await strapi.documents('api::question-type.question-type').findMany({});
   const likertTypes = questionTypes.filter(
     (questionType) => (questionType.settings as QuestionTypeSettings).type === 'singleChoiceOrdinal'
@@ -505,7 +617,6 @@ async function createQuestions(options: { constituencyPctg?: number } = {}) {
   const opinionCategories = questionCategories.filter((cat) => cat.type === 'opinion');
   const constituencies = await strapi.documents('api::constituency.constituency').findMany({});
 
-  const constituencyPctg = options.constituencyPctg ?? 0.1;
   // Create Opinion questions
   mockQuestions.forEach(async (question, index) => {
     const text = fakeLocalized((faker) => faker.lorem.sentence(), question);
@@ -696,7 +807,12 @@ function abbreviate(values: LocalizedString, options: AbbreviationOptions = { ty
         case 'acronym':
           value = value
             .split(/(\s|-)+/)
-            .map((w) => (w === '' || w === ' ' ? '' : w.substring(0, 1).toLocaleUpperCase(key)))
+            .map((w) => {
+              if (w.trim() === '') return '';
+              if (w.startsWith('(')) return '';
+              if (w.match(/^\d+$/)) return w;
+              return w.substring(0, 1).toLocaleUpperCase(key);
+            })
             .join('');
           break;
         case 'truncate':

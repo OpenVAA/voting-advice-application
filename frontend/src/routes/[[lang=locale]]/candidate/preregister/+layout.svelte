@@ -1,0 +1,53 @@
+<script lang="ts">
+  import { Button } from '$lib/components/button';
+  import { getCandidateContext } from '$lib/contexts/candidate';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { goto } from '$app/navigation';
+  import { onDestroy } from 'svelte';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
+  import MainContent from '../../MainContent.svelte';
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { appCustomization, darkMode, getRoute, t, userData, idTokenClaims, clearIdToken } = getCandidateContext();
+  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+
+  ///////////////////////////////////////////////////////////////////
+  // Top bar and styling
+  ////////////////////////////////////////////////////////////////////
+
+  pageStyles.push({ drawer: { background: 'bg-base-300' } });
+  topBarSettings.push({
+    imageSrc: $darkMode
+      ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
+      : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png'),
+    actions: {
+      cancel: $idTokenClaims ? 'show' : 'hide',
+      cancelButtonLabel: $t('common.cancel'),
+      cancelButtonCallback: async () => {
+        await clearIdToken();
+        await goto($getRoute('CandAppHome'), { invalidateAll: true });
+      }
+    }
+  });
+</script>
+
+<svelte:head>
+  <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
+</svelte:head>
+
+{#if $userData}
+  <MainContent title={$t('candidateApp.preregister.identification.start.title')}>
+    <div class="mb-md text-center text-warning">
+      {@html sanitizeHtml($t('candidateApp.preregister.status.loggedInError.content'))}
+    </div>
+    <Button
+      text={$t('common.continue')}
+      variant="main"
+      on:click={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
+  </MainContent>
+{:else}
+  <slot />
+{/if}

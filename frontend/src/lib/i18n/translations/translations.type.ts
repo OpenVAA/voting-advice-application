@@ -9,6 +9,7 @@ export type TranslationsPayload = Partial<{
   candidateSingular: string;
   consentDate: Date;
   constituency: string;
+  constituencyGroup: string;
   electionDate: Date;
   filters: string;
   minPasswordLength: number;

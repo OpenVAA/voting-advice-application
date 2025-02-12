@@ -32,8 +32,15 @@
     },
     "parent": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::constituency.constituency"
+      "relation": "manyToOne",
+      "target": "api::constituency.constituency",
+      "inversedBy": "constituencies"
+    },
+    "constituencies": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::constituency.constituency",
+      "mappedBy": "parent"
     },
     "keywords": {
       "type": "json"

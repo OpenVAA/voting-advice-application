@@ -4036,6 +4036,7 @@ __metadata:
     intl-messageformat: "npm:^10.7.11"
     isomorphic-dompurify: "npm:^2.19.0"
     jest: "npm:^29.7.0"
+    jose: "npm:^5.9.6"
     jsdom: "npm:^24.1.3"
     postcss: "npm:^8.4.49"
     prettier: "npm:^3.4.2"
@@ -16029,6 +16030,13 @@ __metadata:
   version: 4.15.9
   resolution: "jose@npm:4.15.9"
   checksum: 10c0/4ed4ddf4a029db04bd167f2215f65d7245e4dc5f36d7ac3c0126aab38d66309a9e692f52df88975d99429e357e5fd8bab340ff20baab544d17684dd1d940a0f4
+  languageName: node
+  linkType: hard
+
+"jose@npm:^5.9.6":
+  version: 5.9.6
+  resolution: "jose@npm:5.9.6"
+  checksum: 10c0/d6bcd8c7d655b5cda8e182952a76f0c093347f5476d74795405bb91563f7ab676f61540310dd4b1531c60d685335ceb600571a409551d2cbd2ab3e9f9fbf1e4d
   languageName: node
   linkType: hard
 

@@ -1,7 +1,7 @@
-import { validatePassword } from '@openvaa/app-shared';
-import type { Data } from '@strapi/strapi';
 import { errors, validateYupSchema, yup } from '@strapi/utils';
+import { validatePassword } from '@openvaa/app-shared';
 import type { Context } from 'koa';
+import type { Data } from '@strapi/strapi';
 
 const { ValidationError, ApplicationError } = errors;
 
@@ -17,6 +17,16 @@ const validateRegisterBody = validateYupSchema(
   yup.object({
     registrationKey: yup.string().required(),
     password: yup.string().required()
+  })
+);
+
+const validatePreregisterBody = validateYupSchema(
+  yup.object({
+    firstName: yup.string().required(),
+    lastName: yup.string().required(),
+    identifier: yup.string().required(),
+    email: yup.string().required(),
+    nominations: yup.array(yup.object({ electionId: yup.string(), constituencyId: yup.string() }))
   })
 );
 
@@ -87,6 +97,80 @@ async function register(ctx: Context): Promise<{ type: 'success' }> {
 }
 
 /**
+ * Preregister a Candidate.
+ * @access Authorization: Bearer {BACKEND_API_TOKEN}
+ * @returns { success: true }
+ */
+async function preregister(ctx: Context): Promise<{ type: 'success' }> {
+  const params: {
+    firstName: string;
+    lastName: string;
+    identifier: string;
+    email: string;
+    nominations: Array<{ electionId: string; constituencyId: string }>;
+  } = ctx.request.body;
+
+  await validatePreregisterBody(params);
+
+  const { firstName, lastName, identifier, nominations } = params;
+  const email = params.email.trim().toLowerCase();
+
+  const candidate =
+    (await strapi.documents('api::candidate.candidate').findFirst({ filters: { email: { $eqi: email } } })) ??
+    (await strapi.documents('api::candidate.candidate').findFirst({
+      filters: {
+        firstName: { $eqi: firstName },
+        lastName: { $eqi: lastName },
+        identifier: { $eqi: identifier }
+      }
+    }));
+
+  if (candidate) {
+    throw new ValidationError('CANDIDATE_CONFLICT');
+  }
+
+  const { documentId: candidateDocumentId } = await strapi.documents('api::candidate.candidate').create({
+    data: { email: email.trim().toLocaleLowerCase(), firstName, lastName, identifier }
+  });
+
+  await Promise.all(
+    nominations.map(
+      async (nomination) =>
+        await strapi.documents('api::nomination.nomination').create({
+          data: {
+            candidate: candidateDocumentId,
+            election: nomination.electionId,
+            electionRound: 1,
+            constituency: nomination.constituencyId,
+            unconfirmed: true
+          }
+        })
+    )
+  );
+
+  // TODO: Load the full template.
+  await strapi.plugins['email'].services.email.sendTemplatedEmail(
+    { to: email },
+    {
+      subject: 'Confirm your email address',
+      html: `<h2>Confirm your email address</h2>
+<p>Hi <%= user.firstName %>,</p>
+<p>
+  Thank you for registering as a candidate. To continue your registration, please confirm your email address by
+  clicking the button below:
+</p>
+<a href="<%= link %>" class="button">Confirm email</a>`
+    },
+    {
+      user: { firstName },
+      link: `${process.env.PUBLIC_BROWSER_FRONTEND_URL}/candidate/register?registrationKey=${candidate.registrationKey}`
+    }
+  );
+
+  return { type: 'success' };
+}
+
+/**
  * Get the Candidate with the registration key and check that the user does not exist.
  */
 async function getCandidate(registrationKey: string): Promise<Data.ContentType<CandidateApi>> {
@@ -103,5 +187,6 @@ async function getCandidate(registrationKey: string): Promise<Data.ContentType<C
 
 module.exports = {
   check,
-  register
+  register,
+  preregister
 };

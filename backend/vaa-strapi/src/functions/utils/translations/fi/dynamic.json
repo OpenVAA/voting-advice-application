@@ -6,8 +6,11 @@
   "candidateAppName": "Ehdokkaiden vaalikone",
   "constituencies": {
     "heroEmoji": "📍",
-    "ingressSingleElection": "Ehdokkaat ja puolueet on jaettu vaalipiireihin. Voit äänestää vain oman vaalipiirisi ehdokkaita.",
-    "ingressMultipleElections": "Ehdokkaat ja puolueet on jaettu vaalipiireihin. Valitse vaalipiirisi kullekin vaalille."
+    "ingress": {
+      "singleElection": "Ehdokkaat ja puolueet on jaettu vaalipiireihin. Voit äänestää vain oman vaalipiirisi ehdokkaita.",
+      "singleGroup": "Ehdokkaat ja puolueet on jaettu vaalipiireihin. Valitse vaalipiiri alta.",
+      "multipleElections": "Ehdokkaat ja puolueet on jaettu vaalipiireihin. Valitse vaalipiirisi kullekin vaalille."
+    }
   },
   "elections": {
     "heroEmoji": "🗳️",

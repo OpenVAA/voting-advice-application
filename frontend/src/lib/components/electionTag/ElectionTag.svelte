@@ -7,7 +7,7 @@ Used when the application has multiple elections and question may apply to only 
 ### Properties
 
 - `election`: The `Election` object.
-- `variant`: Whether to use an abbreviation or the full name. @default `'default'`
+- `variant`: Whether to use an abbreviation or the full name. @default `'short'`
 - Any valid attributes of a `<span>` element.
 
 ### Usage
@@ -24,13 +24,13 @@ Used when the application has multiple elections and question may apply to only 
   type $$Props = ElectionTagProps;
 
   export let election: $$Props['election'];
-  export let variant: $$Props['variant'] = 'default';
+  export let variant: $$Props['variant'] = 'short';
 
   // Create styles
   let classes: string;
   let styles: string;
   $: {
-    classes = 'inline-block';
+    classes = 'tag bg-base-200';
     styles = '';
     if (election.color?.normal) {
       styles += ` --tag-color: ${election.color.normal};`;
@@ -48,5 +48,5 @@ Used when the application has multiple elections and question may apply to only 
     class: classes,
     style: styles
   })}>
-  {variant === 'short' ? election.shortName : election.name}
+  {variant === 'full' ? election.name : election.shortName}
 </span>

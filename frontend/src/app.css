@@ -92,6 +92,13 @@
   }
 
   /**
+   * An element that should not yet be fully visible, akin to disabled inputs.
+   */
+  .faded {
+    @apply opacity-30;
+  }
+
+  /**
    * Small text in all caps used for, e.g., Likert button labels and data labels in entity details
    */
   .small-label {
@@ -103,7 +110,7 @@
    */
   .tag {
     /* last: is valid prefix */
-    @apply small-label me-md inline-block rounded-[1rem] bg-base-300 px-md py-sm last:me-0;
+    @apply small-label inline-block rounded-[1rem] bg-base-300 px-md py-sm;
   }
 
   /* Override DaisyUI components here */

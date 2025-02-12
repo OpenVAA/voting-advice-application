@@ -1,5 +1,6 @@
 import { UniversalAdapter } from './universalAdapter';
 import { UNIVERSAL_API_ROUTES } from './universalApiRoutes';
+import type { Id } from '@openvaa/core';
 import type { DataApiActionResult } from './actionResult.type';
 import type {
   BasicUserData,
@@ -34,6 +35,73 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
 
   login(opts: { username: string; password: string }): DWReturnType<DataApiActionResult & Partial<WithAuth>> {
     return this._login(opts);
+  }
+
+  async exchangeCodeForIdToken(opts: {
+    authorizationCode: string;
+    redirectUri: string;
+  }): DWReturnType<DataApiActionResult> {
+    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+    const url = UNIVERSAL_API_ROUTES.token;
+    const response = await this.fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        authorizationCode: opts.authorizationCode,
+        redirectUri: opts.redirectUri
+      })
+    });
+
+    return { type: response.ok ? 'success' : 'failure' };
+  }
+
+  async preregisterWithIdToken(opts: {
+    email: string;
+    nominations: Array<{ electionId: Id; constituencyId: Id }>;
+  }): DWReturnType<DataApiActionResult & { response: Pick<Response, 'status'> }> {
+    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+    const url = UNIVERSAL_API_ROUTES.preregister;
+
+    const response = await this.fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(opts)
+    });
+
+    return {
+      type: response.ok ? 'success' : 'failure',
+      response: { status: response.status }
+    };
+  }
+
+  preregisterWithApiToken(
+    opts: {
+      body: {
+        firstName: string;
+        lastName: string;
+        identifier: string;
+        email: string;
+        nominations: Array<{ electionId: Id; constituencyId: Id }>;
+      };
+    } & WithAuth
+  ): DWReturnType<DataApiActionResult> {
+    return this._preregister(opts);
+  }
+
+  async clearIdToken(): DWReturnType<DataApiActionResult> {
+    if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
+    const url = UNIVERSAL_API_ROUTES.token;
+    const response = await this.fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return { type: response.ok ? 'success' : 'failure' };
   }
 
   async logout(opts: WithAuth): DWReturnType<DataApiActionResult> {
@@ -98,6 +166,17 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
   // PROTECTED INTERNAL METHODS TO BE IMPLEMENTED BY SUBCLASSES
   /////////////////////////////////////////////////////////////////////
 
+  protected abstract _preregister(
+    opts: {
+      body: {
+        firstName: string;
+        lastName: string;
+        identifier: string;
+        email: string;
+        nominations: Array<{ electionId: Id; constituencyId: Id }>;
+      };
+    } & WithAuth
+  ): DWReturnType<DataApiActionResult>;
   protected abstract _checkRegistrationKey(opts: { registrationKey: string }): DWReturnType<CheckRegistrationData>;
   protected abstract _register(opts: { registrationKey: string; password: string }): DWReturnType<DataApiActionResult>;
   protected abstract _login(opts: {

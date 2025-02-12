@@ -1,4 +1,7 @@
 {
+  "constituencySelector": {
+    "selectPrompt": "Select {constituencyGroup}"
+  },
   "headingGroup": {
     "roleDescription": "Heading group"
   },

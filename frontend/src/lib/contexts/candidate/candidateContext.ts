@@ -7,13 +7,16 @@ import { page } from '$app/stores';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { logDebugError } from '$lib/utils/logger';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
+import { getImpliedElectionIds } from '$lib/utils/route';
 import { prepareDataWriter } from './prepareDataWriter';
 import { userDataStore } from './userDataStore';
 import { getAppContext } from '../app';
 import { questionBlockStore } from '../utils/questionBlockStore';
 import { extractInfoCategories, extractOpinionCategories, questionCategoryStore } from '../utils/questionCategoryStore';
 import { questionStore } from '../utils/questionStore';
+import { sessionStorageWritable } from '../utils/storageStore';
 import type { CustomData } from '@openvaa/app-shared';
+import type { Id } from '@openvaa/core';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
 import type { CandidateContext } from './candidateContext.type';
@@ -47,6 +50,8 @@ export function initCandidateContext(): CandidateContext {
 
   const authToken = derived(page, (page) => page.data.token ?? undefined);
 
+  const idTokenClaims = derived(page, (page) => page.data.claims ?? undefined);
+
   const userData = userDataStore({ answersLocked, authToken, dataWriterPromise, locale });
 
   const newUserEmail = writable<string | undefined>();
@@ -59,6 +64,35 @@ export function initCandidateContext(): CandidateContext {
 
   const constituenciesSelectable = derived(dataRoot, (dataRoot) =>
     dataRoot.elections?.some((e) => !e.singleConstituency)
+  );
+
+  const preregistrationElectionIds = sessionStorageWritable('candidateContext-preselectedElectionIds', new Array<Id>());
+
+  const preregistrationConstituencyIds = sessionStorageWritable<{
+    [electionId: Id]: Id;
+  }>('candidateContext-preselectedConstituencyIds', {});
+
+  const preregistrationElections = derived(
+    [appSettings, dataRoot, preregistrationElectionIds],
+    ([appSettings, dataRoot, preregistrationElectionIds]) => {
+      const ids = getImpliedElectionIds({ appSettings, elections: dataRoot.elections }) ?? preregistrationElectionIds;
+      return ids.map((id) => dataRoot.getElection(id));
+    }
+  );
+
+  const preregistrationNominations = derived(
+    [preregistrationElections, preregistrationConstituencyIds],
+    ([preregistrationElections, preregistrationConstituencyIds]) => {
+      return preregistrationElections
+        .map((e) => ({
+          constituencyId: preregistrationConstituencyIds[e.id] || e.singleConstituency?.id,
+          electionId: e.id
+        }))
+        .filter(({ constituencyId }) => !!constituencyId) as Array<{
+        electionId: Id;
+        constituencyId: Id;
+      }>;
+    }
   );
 
   const selectedElections = derived(
@@ -149,6 +183,55 @@ export function initCandidateContext(): CandidateContext {
     return dataWriter.setPassword({ ...opts, authToken: token });
   }
 
+  async function exchangeCodeForIdToken(opts: { authorizationCode: string; redirectUri: string }): Promise<void> {
+    const dataWriter = await prepareDataWriter(dataWriterPromise);
+    try {
+      const result = await dataWriter.exchangeCodeForIdToken(opts);
+      if (result.type === 'success') {
+        return await goto(get(getRoute)('CandAppPreregister'), { invalidateAll: true });
+      }
+    } catch (e) {
+      logDebugError(`Error exchanging authorization code for ID token: ${e ?? '-'}`);
+    }
+    return await goto(
+      get(getRoute)({
+        route: 'CandAppPreregisterStatus',
+        code: 'strongIdentificationError'
+      }),
+      { invalidateAll: true }
+    );
+  }
+
+  async function preregister(opts: {
+    email: string;
+    nominations: Array<{ electionId: Id; constituencyId: Id }>;
+  }): Promise<void> {
+    const dataWriter = await prepareDataWriter(dataWriterPromise);
+    try {
+      const result = await dataWriter.preregisterWithIdToken(opts);
+      const errorMap: Record<number, string> = { 401: 'tokenExpiredError', 409: 'candidateExistsError' };
+      return await goto(
+        get(getRoute)({
+          route: 'CandAppPreregisterStatus',
+          code: result.type === 'success' ? 'success' : (errorMap[result.response.status] ?? 'unknownError')
+        }),
+        { invalidateAll: true }
+      );
+    } catch (e) {
+      logDebugError(`Error preregistering a candidate: ${e ?? '-'}`);
+    }
+    return await goto(get(getRoute)({ route: 'CandAppPreregisterStatus', code: 'unknownError' }), {
+      invalidateAll: true
+    });
+  }
+
+  async function clearIdToken(): Promise<void> {
+    const dataWriter = await prepareDataWriter(dataWriterPromise);
+    await dataWriter.clearIdToken().catch((e) => {
+      logDebugError(`Error logging out: ${e?.message ?? '-'}`);
+    });
+  }
+
   /**
    * Utility for resetting all data. Note that `authToken` is not reset, becaue it's derived from `page.data.token`
    */
@@ -197,6 +280,7 @@ export function initCandidateContext(): CandidateContext {
     ...appContext,
     answersLocked,
     authToken,
+    preregister,
     checkRegistrationKey,
     constituenciesSelectable,
     selectedConstituencies,
@@ -217,6 +301,13 @@ export function initCandidateContext(): CandidateContext {
     setPassword,
     unansweredOpinionQuestions,
     unansweredRequiredInfoQuestions,
-    userData
+    userData,
+    exchangeCodeForIdToken,
+    preregistrationElectionIds,
+    preregistrationConstituencyIds,
+    clearIdToken,
+    idTokenClaims,
+    preregistrationElections,
+    preregistrationNominations
   });
 }
