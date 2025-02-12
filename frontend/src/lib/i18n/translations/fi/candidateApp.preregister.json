@@ -2,7 +2,7 @@
   "identification": {
     "start": {
       "title": "Rekisteröidy ehdokkaaksi",
-      "content": "<p>Welcome to the Voting Advice Application!</p><p>To register as a candidate, you must first verify your identity using a Bank ID. When the candidate list is published on {date}, we will publish your profile in the app if you are on that list. We will use your full name and birthdate to verify this.</p><p>To complete your registration, follow these steps:</p>",
+      "content": "<p>Welcome to the Voting Advice Application!</p><p>To register as a candidate, you must first verify your identity using a Bank ID. When the candidate list is published, we will publish your profile in the app if you are on that list. We will use your full name and birthdate to verify this.</p><p>To complete your registration, follow these steps:</p>",
       "step": {
         "identification": "Identify yourself using a Bank ID",
         "electionSelect": "Select the elections",
@@ -20,7 +20,7 @@
   },
   "electionSelect": {
     "title": "Which elections will you run in?",
-    "content": "<p>There are multiple elections due on {date}.</p><p>Select the elections are you going to stand in.</p>"
+    "content": "<p>Select the elections are you going to stand in.</p>"
   },
   "constituencySelect": {
     "title": "What is your home municipality?",
