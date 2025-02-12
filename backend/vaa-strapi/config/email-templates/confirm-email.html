@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Confirm your email address</title>
+    <style>
+      body {
+        background: #ffffff;
+        font-family: helvetica, arial, sans-serif;
+        padding: 1.5rem;
+        text-align: center;
+      }
+      p {
+        color: #000000;
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+      .button {
+        align-items: center;
+        background-color: oklch(75.7445% 0.137155 180.292077 / 1);
+        border-radius: 0.5rem;
+        color: #000000;
+        cursor: pointer;
+        display: inline-flex;
+        font-size: 0.9375rem;
+        font-weight: 400;
+        height: 3rem;
+        justify-content: center;
+        line-height: 1.5;
+        min-height: 3rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        text-decoration: none;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h2>Confirm your email address</h2>
+      <p>Hi <%= user.firstName %>,</p>
+      <p>
+        Thank you for registering as a candidate. To continue your registration, please confirm your email address by
+        clicking the button below:
+      </p>
+      <a href="<%= link %>" class="button">Confirm email</a>
+      <p>If the button doesn't work, copy and paste the link below instead:</p>
+      <p><%= link %></p>
+    </div>
+  </body>
+</html>
