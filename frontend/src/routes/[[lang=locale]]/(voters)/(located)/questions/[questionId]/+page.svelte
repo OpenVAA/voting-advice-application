@@ -326,9 +326,11 @@ Display a question for answering.
         {/if}
       </svelte:fragment>
     -->
-    <svelte:fragment slot="hero">
+    <svelte:fragment slot="note">
       {#if useQuestionOrdering && $selectedQuestionBlocks.showChoices}
-        <h3 class="text-lg text-secondary/80">{$t('questions.pickNext')}</h3>
+        <div class="mb-32">
+          <h3 class="text-lg text-secondary/80">{$t('questions.pickNext')}</h3>
+        </div>
       {/if}
     </svelte:fragment>
 
