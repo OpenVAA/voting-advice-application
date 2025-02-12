@@ -66,6 +66,8 @@ export type TranslationKey =
   | 'candidateApp.preregister.constituencySelect.title'
   | 'candidateApp.preregister.electionSelect.content'
   | 'candidateApp.preregister.electionSelect.title'
+  | 'candidateApp.preregister.email.html'
+  | 'candidateApp.preregister.email.subject'
   | 'candidateApp.preregister.emailVerification.content'
   | 'candidateApp.preregister.emailVerification.termsCheckbox'
   | 'candidateApp.preregister.emailVerification.title'
