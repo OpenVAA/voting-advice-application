@@ -2,7 +2,6 @@
   import { browser } from '$app/environment';
   import { Button } from '$lib/components/button';
   import { constants } from '$lib/utils/constants';
-  import { DEFAULT_DATE_FORMAT } from '../../../../../../packages/data/src/internal';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { goto } from '$app/navigation';
   import { sanitizeHtml } from '$lib/utils/sanitize';
@@ -24,8 +23,6 @@
   } = getCandidateContext();
 
   $preregistrationElectionIds = $dataRoot.elections.map(({ id }) => id);
-
-  const publicationDate = new Date(); // TODO: Where does this come from?
 
   const steps = [
     $t('candidateApp.preregister.identification.start.step.identification'),
@@ -65,11 +62,7 @@
 {:else}
   <MainContent title={$t('candidateApp.preregister.identification.start.title')}>
     <div class="mb-md text-center">
-      {@html sanitizeHtml(
-        $t('candidateApp.preregister.identification.start.content', {
-          date: publicationDate.toLocaleDateString($locale, DEFAULT_DATE_FORMAT)
-        })
-      )}
+      {@html sanitizeHtml($t('candidateApp.preregister.identification.start.content'))}
     </div>
     <ol class="list-circled mb-md w-fit">
       {#each steps as step}
