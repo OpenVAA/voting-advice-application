@@ -1,7 +1,7 @@
-import { validatePassword } from '@openvaa/app-shared';
-import type { Data } from '@strapi/strapi';
 import { errors, validateYupSchema, yup } from '@strapi/utils';
+import { validatePassword } from '@openvaa/app-shared';
 import type { Context } from 'koa';
+import type { Data } from '@strapi/strapi';
 
 const { ValidationError, ApplicationError } = errors;
 
@@ -112,15 +112,16 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
 
   await validatePreregisterBody(params);
 
-  const { email, nominations, ...identity } = params;
+  const { firstName, lastName, identifier, nominations } = params;
+  const email = params.email.trim().toLowerCase();
 
   const candidate =
-    (await strapi.documents('api::candidate.candidate').findFirst({ filters: { email: { $eqi: email.trim() } } })) ??
+    (await strapi.documents('api::candidate.candidate').findFirst({ filters: { email: { $eqi: email } } })) ??
     (await strapi.documents('api::candidate.candidate').findFirst({
       filters: {
-        firstName: { $eqi: identity.firstName },
-        lastName: { $eqi: identity.lastName },
-        identifier: { $eqi: identity.identifier }
+        firstName: { $eqi: firstName },
+        lastName: { $eqi: lastName },
+        identifier: { $eqi: identifier }
       }
     }));
 
@@ -129,7 +130,7 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
   }
 
   const { documentId: candidateDocumentId } = await strapi.documents('api::candidate.candidate').create({
-    data: { email: email.trim().toLocaleLowerCase(), ...identity }
+    data: { email: email.trim().toLocaleLowerCase(), firstName, lastName, identifier }
   });
 
   await Promise.all(
@@ -147,9 +148,34 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     )
   );
 
-  return {
-    type: 'success'
-  };
+  const registrationKey = candidate.registrationKey;
+
+  const emailPluginService = strapi.plugins['email'].services.email;
+  await emailPluginService.sendTemplatedEmail({
+    to: candidate.email,
+    subject: '',
+    text: ''
+  });
+
+  await strapi.plugins['email'].services.email.sendTemplatedEmail(
+    { to: email },
+    {
+      subject: 'Confirm your email address',
+      html: `<h2>Confirm your email address</h2>
+<p>Hi <%= user.firstName %>,</p>
+<p>
+  Thank you for registering as a candidate. To continue your registration, please confirm your email address by
+  clicking the button below:
+</p>
+<a href="<%= link %>" class="button">Confirm email</a>`
+    },
+    {
+      user: { firstName },
+      link: `${process.env.PUBLIC_BROWSER_FRONTEND_URL}/candidate/register?registrationKey=${registrationKey}`
+    }
+  );
+
+  return { type: 'success' };
 }
 
 /**
