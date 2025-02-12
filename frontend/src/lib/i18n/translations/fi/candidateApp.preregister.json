@@ -38,7 +38,7 @@
     },
     "strongIdentificationError": {
       "title": "There was an issue with Bank ID identification",
-      "content": "<p>Click the button below to try again or contact support if the problem persists.</p><p>support@openvaa.org</p>"
+      "content": "<p>Click the button below to try again or contact support if the problem persists.</p>"
     },
     "tokenExpiredError": {
       "title": "Your session has expired",
@@ -46,7 +46,7 @@
     },
     "candidateExistsError": {
       "title": "You are already registered as a candidate",
-      "content": "<p>It looks like you are already registered. Please check your email to confirm your registration. Once the registration is confirmed, you can login with your email and password.</p><p>Contact support if you believe there is an error.</p><p>support@openvaa.org</p>"
+      "content": "<p>It looks like you are already registered. Please check your email to confirm your registration. Once the registration is confirmed, you can login with your email and password.</p><p>Contact support if you believe there is an error.</p>"
     },
     "loggedInError": {
       "title": "You are already logged in",
@@ -54,7 +54,7 @@
     },
     "unknownError": {
       "title": "Something went wrong",
-      "content": "<p>Click the button below to try again or contact support if the problem persists.</p><p>support@openvaa.org</p>"
+      "content": "<p>Click the button below to try again or contact support if the problem persists.</p>"
     }
   }
 }
