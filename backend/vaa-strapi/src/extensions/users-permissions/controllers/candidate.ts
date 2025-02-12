@@ -157,6 +157,7 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     text: ''
   });
 
+  // TODO: Load the full template.
   await strapi.plugins['email'].services.email.sendTemplatedEmail(
     { to: email },
     {
