@@ -4,16 +4,13 @@
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { goto } from '$app/navigation';
-  import { DEFAULT_DATE_FORMAT } from '../../../../../../../../packages/data/src/internal';
   import { ElectionSelector } from '$lib/components/electionSelector';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { constituenciesSelectable, dataRoot, getRoute, locale, preregistrationElectionIds, t } = getCandidateContext();
-
-  const electionDate = new Date(); // TODO: Where does this come from?
+  const { constituenciesSelectable, dataRoot, getRoute, preregistrationElectionIds, t } = getCandidateContext();
   const nextRoute = $constituenciesSelectable ? 'CandAppPreregisterConstituency' : 'CandAppPreregisterEmail';
 </script>
 
@@ -23,11 +20,7 @@
 
 <MainContent title={$t('candidateApp.preregister.electionSelect.title')}>
   <div class="mb-md text-center">
-    {@html sanitizeHtml(
-      $t('candidateApp.preregister.electionSelect.content', {
-        date: electionDate.toLocaleDateString($locale, DEFAULT_DATE_FORMAT)
-      })
-    )}
+    {@html sanitizeHtml($t('candidateApp.preregister.electionSelect.content'))}
   </div>
   <ElectionSelector class="mb-md" elections={$dataRoot.elections} bind:selected={$preregistrationElectionIds} />
   <Button
