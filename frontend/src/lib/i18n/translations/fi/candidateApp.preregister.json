@@ -12,11 +12,11 @@
       }
     },
     "success": {
-      "title": "Bank ID identification is complete",
+      "title": "Bank ID authentication is complete",
       "content": "<p>Welcome to the Voting Advice Application, {firstName} {lastName}!</p><p>Click the button below to continue the registration process.</p>"
     },
     "identifyYourselfButton": "Tunnistaudu",
-    "identifyYourselHelpText": "Opens in a separate window. You will return to this page once the identification is complete."
+    "identifyYourselHelpText": "You’ll be redirected to the identity provider’s page. Once the authentication is complete, you will be redirected back to this page."
   },
   "electionSelect": {
     "title": "Which elections will you run in?",
@@ -37,7 +37,7 @@
       "content": "<p>We've sent a message to your email address.</p><p>Please click on the link in the message to confirm your email address and complete the registration process.</p>"
     },
     "strongIdentificationError": {
-      "title": "There was an issue with Bank ID identification",
+      "title": "There was an issue with Bank ID authentication",
       "content": "<p>Click the button below to try again or contact support if the problem persists.</p>"
     },
     "tokenExpiredError": {
@@ -56,5 +56,9 @@
       "title": "Something went wrong",
       "content": "<p>Click the button below to try again or contact support if the problem persists.</p>"
     }
+  },
+  "email": {
+    "subject": "Confirm your email address",
+    "html": "<!doctype html><html> <head> <meta charset=\"UTF-8\" /> <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" /> <title>Confirm your email address</title> <style> body { background: #ffffff; font-family: helvetica, arial, sans-serif; padding: 1.5rem; text-align: center; } p { color: #000000; font-size: 1rem; line-height: 1.5; } .button { align-items: center; background-color: oklch(75.7445% 0.137155 180.292077 / 1); border-radius: 0.5rem; color: #000000; cursor: pointer; display: inline-flex; font-size: 0.9375rem; font-weight: 400; height: 3rem; padding-left: 1rem; padding-right: 1rem; text-decoration: none; user-select: none; } </style> </head> <body> <div> <h2>Confirm your email address</h2> <p>Hi <%= user.firstName %>,</p> <p> Thank you for registering as a candidate. To continue your registration, please confirm your email address by clicking the button below: </p> <a href=\"<%= link %>\" class=\"button\">Confirm email</a> <p>If the button doesn't work, copy and paste the link below instead:</p> <p><%= link %></p> </div> </body></html>"
   }
 }
