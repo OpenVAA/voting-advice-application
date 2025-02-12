@@ -115,15 +115,21 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
   const { email, nominations, ...identity } = params;
 
   const candidate =
-    (await strapi.query('api::candidate.candidate').findOne({ where: { email } })) ??
-    (await strapi.query('api::candidate.candidate').findOne({ where: identity }));
+    (await strapi.documents('api::candidate.candidate').findFirst({ filters: { email: { $eqi: email.trim() } } })) ??
+    (await strapi.documents('api::candidate.candidate').findFirst({
+      filters: {
+        firstName: { $eqi: identity.firstName },
+        lastName: { $eqi: identity.lastName },
+        identifier: { $eqi: identity.identifier }
+      }
+    }));
 
   if (candidate) {
     throw new ValidationError('CANDIDATE_CONFLICT');
   }
 
   const { documentId: candidateDocumentId } = await strapi.documents('api::candidate.candidate').create({
-    data: { email, ...identity }
+    data: { email: email.trim().toLocaleLowerCase(), ...identity }
   });
 
   await Promise.all(
