@@ -129,9 +129,11 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     throw new ValidationError('CANDIDATE_CONFLICT');
   }
 
-  const { documentId: candidateDocumentId } = await strapi.documents('api::candidate.candidate').create({
-    data: { email: email.trim().toLocaleLowerCase(), firstName, lastName, identifier }
-  });
+  const { documentId: candidateDocumentId, registrationKey } = await strapi
+    .documents('api::candidate.candidate')
+    .create({
+      data: { email: email.trim().toLocaleLowerCase(), firstName, lastName, identifier }
+    });
 
   await Promise.all(
     nominations.map(
@@ -149,6 +151,7 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
   );
 
   // TODO: Load the full template.
+  const link = `${process.env.PUBLIC_BROWSER_FRONTEND_URL}/candidate/register?registrationKey=${registrationKey}`;
   await strapi.plugins['email'].services.email.sendTemplatedEmail(
     { to: email },
     {
@@ -159,11 +162,12 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
   Thank you for registering as a candidate. To continue your registration, please confirm your email address by
   clicking the button below:
 </p>
-<a href="<%= link %>" class="button">Confirm email</a>`
+<a href="<%= link %>" class="button">Confirm email</a>`,
+      text: `Confirm your email address\n\nHi ${firstName},\n\nThank you for registering as a candidate. To continue your registration, please confirm your email address by going to:\n\n${link}`
     },
     {
       user: { firstName },
-      link: `${process.env.PUBLIC_BROWSER_FRONTEND_URL}/candidate/register?registrationKey=${candidate.registrationKey}`
+      link
     }
   );
 
