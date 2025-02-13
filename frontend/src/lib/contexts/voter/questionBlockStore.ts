@@ -21,7 +21,6 @@ export function questionBlockStore({
 }): Readable<QuestionBlocks> {
   // Store for shown questions
   const shownQuestionIds = sessionStorageWritable<Array<Id>>('voterContext-shownQuestions', []);
-  const showChoices = sessionStorageWritable<boolean>('voterContext-showChoices', true);
 
   return derived(
     [
@@ -30,10 +29,9 @@ export function questionBlockStore({
       selectedQuestionCategoryIds,
       selectedElections,
       selectedConstituencies,
-      shownQuestionIds,
-      showChoices
+      shownQuestionIds
     ],
-    ([firstId, categories, categoryIds, elections, constituencies, shown, showingChoices]) => {
+    ([firstId, categories, categoryIds, elections, constituencies, shown]) => {
       // Get all questions
       if (categoryIds.length) categories = categories.filter((c) => categoryIds.includes(c.id));
       let blocks = categories
@@ -61,7 +59,6 @@ export function questionBlockStore({
           return blocks.flat();
         },
         shownQuestionIds: shown,
-        showChoices: showingChoices,
         getByCategory: ({ id }: QuestionCategory) => getByCategoryId(blocks, id),
         getByQuestion: ({ id }: AnyQuestionVariant) => getByQuestionId(blocks, id),
         addShownQuestionId: (id: Id) => {
@@ -72,20 +69,17 @@ export function questionBlockStore({
             return ids;
           });
         },
-        resetShownQuestionIds: () => shownQuestionIds.set([]),
-        setShowChoices: (value: boolean) => showChoices.set(value)
+        resetShownQuestionIds: () => shownQuestionIds.set([])
       };
     },
     {
       blocks: [],
       questions: [],
       shownQuestionIds: [],
-      showChoices: true,
       getByCategory: () => undefined,
       getByQuestion: () => undefined,
       addShownQuestionId: () => {},
-      resetShownQuestionIds: () => {},
-      setShowChoices: () => {}
+      resetShownQuestionIds: () => {}
     }
   );
 }

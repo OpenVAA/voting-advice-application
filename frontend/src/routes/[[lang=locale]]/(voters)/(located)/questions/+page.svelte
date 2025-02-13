@@ -76,9 +76,8 @@ Display a general intro before starting answering the questions and possibly all
         const firstShownId = $selectedQuestionBlocks.shownQuestionIds[0];
         goto($getRoute({ route: 'Question', questionId: firstShownId }));
       } else {
-        // Otherwise show choices for first question
-        $selectedQuestionBlocks.setShowChoices(true);
-        goto($getRoute({ route: 'Question' }));
+        // Otherwise show question selection for first question
+        goto($getRoute({ route: 'Question', showQuestionSelection: 'true' }))
       }
     } else {
       const categoryId = $selectedQuestionBlocks.blocks[0]?.[0]?.category.id;

@@ -97,8 +97,11 @@ Display a question for answering.
     }
   }
 
+  $: showQuestionSelection = $page.url.searchParams.get('showQuestionSelection') === 'true';
+  $: shouldShowQuestionSelection = useQuestionOrdering && showQuestionSelection;
+
   $: {
-    if ($selectedQuestionBlocks.showChoices) {
+    if (shouldShowQuestionSelection) {
       nextQuestionChoices = getNextQuestionChoices();
     }
   }
@@ -137,8 +140,6 @@ Display a question for answering.
     const config = $appSettings.questions.dynamicOrdering?.config;
     const numSuggestions = config?.type === 'factor-based' ? (config.numSuggestions ?? 3) : 3;
     const choices = [...unshownQuestions].sort(() => Math.random() - 0.5).slice(0, numSuggestions);
-
-    $selectedQuestionBlocks.setShowChoices(true);
     return choices;
   }
 
@@ -146,7 +147,7 @@ Display a question for answering.
     disabled = true;
     answers.setAnswer(question.id, value);
 
-    // Add delay before showing next question or choices
+    // Add delay before showing next question or question choices
     setTimeout(() => {
       handleJump();
       disabled = false;
@@ -206,15 +207,10 @@ Display a question for answering.
     // Get shown questions and the current index
     const shownQuestionIds = $selectedQuestionBlocks.shownQuestionIds;
     const currentIndex = shownQuestionIds.findIndex((id) => id === question.id);
-
-    // If showing choices view, stay on current question. Otherwise, move by steps.
-    const newIndex = currentIndex + ($selectedQuestionBlocks.showChoices ? 0 : steps);
+    // If showing question selection view, stay on current question. Otherwise, move by steps.
+    const newIndex = currentIndex + (showQuestionSelection ? 0 : steps);
     let url: string;
     let noScroll = false;
-
-    if (steps < 0) {
-      $selectedQuestionBlocks.setShowChoices(false);
-    }
 
     // Go back to the questions overview if moving back from the first question
     if (newIndex < 0) {
@@ -225,14 +221,16 @@ Display a question for answering.
       noScroll = true;
       // Handle end of shown questions
     } else {
-      // If no more questions to answer, go to results
       nextQuestionChoices = getNextQuestionChoices();
+      // If no more questions to answer, go to results
       if (nextQuestionChoices.length === 0) {
         url = $getRoute('Results');
-        // Otherwise, show the next question choices
+        // Otherwise, show the next question selection
       } else {
-        disabled = false;
-        return;
+        url = $getRoute({
+          route: 'Question',
+          questionId: shownQuestionIds[shownQuestionIds.length - 1],
+          showQuestionSelection: 'true'})
       }
     }
     goto(url, { noScroll });
@@ -285,7 +283,6 @@ Display a question for answering.
 
   function handleChoiceSelect(selectedQuestion: AnyQuestionVariant) {
     $selectedQuestionBlocks.addShownQuestionId(selectedQuestion.id);
-    $selectedQuestionBlocks.setShowChoices(false);
     goto($getRoute({ route: 'Question', questionId: selectedQuestion.id }));
     disabled = false;
   }
@@ -327,7 +324,7 @@ Display a question for answering.
       </svelte:fragment>
     -->
     <svelte:fragment slot="note">
-      {#if useQuestionOrdering && $selectedQuestionBlocks.showChoices}
+      {#if shouldShowQuestionSelection}
         <div class="mb-32">
           <h3 class="text-lg text-secondary/80">{$t('questions.pickNext')}</h3>
         </div>
@@ -335,15 +332,15 @@ Display a question for answering.
     </svelte:fragment>
 
     <svelte:fragment slot="heading">
-      {#each useQuestionOrdering && $selectedQuestionBlocks.showChoices ? nextQuestionChoices : [question] as currentQuestion}
+      {#each shouldShowQuestionSelection ? nextQuestionChoices : [question] as currentQuestion}
         <div transition:slide class="grid-line-x">
           <button
-            class="w-full text-left {useQuestionOrdering && $selectedQuestionBlocks.showChoices
+            class="w-full text-left {shouldShowQuestionSelection
               ? 'rounded-lg p-2 transition-colors hover:bg-base-200'
               : ''}"
             on:click={() =>
-              useQuestionOrdering && $selectedQuestionBlocks.showChoices && handleChoiceSelect(currentQuestion)}
-            disabled={!(useQuestionOrdering && $selectedQuestionBlocks.showChoices)}>
+              shouldShowQuestionSelection && handleChoiceSelect(currentQuestion)}
+            disabled={!(shouldShowQuestionSelection)}>
             <HeadingGroup id={`questionHeading-${currentQuestion.id}`} class="relative">
               <PreHeading>
                 {#if $appSettings.questions.showCategoryTags}
@@ -356,7 +353,7 @@ Display a question for answering.
                 {:else}
                   {$t('common.question')}
                   <span class="text-secondary">
-                    {#if !(useQuestionOrdering && $selectedQuestionBlocks.showChoices)}
+                    {#if !(shouldShowQuestionSelection)}
                       {questionBlock.index + 1}/{questions.length}
                     {/if}
                   </span>
@@ -389,12 +386,12 @@ Display a question for answering.
     </style>
 
     <!-- !videoProps && -->
-    {#if info && info !== '' && !$selectedQuestionBlocks.showChoices}
+    {#if info && info !== '' && !showQuestionSelection}
       <QuestionInfo {info} onCollapse={handleInfoCollapse} onExpand={handleInfoExpand} />
     {/if}
 
     <svelte:fragment slot="primaryActions">
-      {#if !(useQuestionOrdering && $selectedQuestionBlocks.showChoices)}
+      {#if !(shouldShowQuestionSelection)}
         {#if type === 'singleChoiceOrdinal' || type === 'singleChoiceCategorical'}
           {@const selectedId = question.ensureValue($answers[question.id]?.value)}
           <QuestionChoices
@@ -431,7 +428,7 @@ Display a question for answering.
           }} />
       {/if}
     
-      {#if useQuestionOrdering && $selectedQuestionBlocks.showChoices}
+      {#if shouldShowQuestionSelection}
         <div
           role="group"
           aria-label={$t('questions.additionalActions')}

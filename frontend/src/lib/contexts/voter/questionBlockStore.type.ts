@@ -19,10 +19,6 @@ export type QuestionBlocks = {
    */
   shownQuestionIds: Array<Id>;
   /**
-   * Whether the question choices are currently being shown
-   */
-  showChoices: boolean;
-  /**
    * Find a `QuestionBlock` by its `QuestionCategory`.
    * @param category - The `QuestionCategory` to find.
    * @returns The block and its index, or `undefined` if not found.
@@ -45,10 +41,6 @@ export type QuestionBlocks = {
    * Reset the shown questions history
    */
   resetShownQuestionIds: () => void;
-  /**
-   * Set the showChoices flag
-   */
-  setShowChoices: (showChoices: boolean) => void;
 };
 /**
  * An array of `Question`s.
