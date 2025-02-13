@@ -6,7 +6,7 @@ Defines the outer layout for the application, including the header and menu.
 
 ### Slots
 
-- default: main content of the page, normally a `Main` component.
+- default: main content of the page, normally a `MainContent` component.
 - `menu`: the navigation menu, normally a `VoterNav` or `CandidateNav` component.
 
 ### Properties
@@ -31,7 +31,7 @@ Defines the outer layout for the application, including the header and menu.
   // Constants
   ////////////////////////////////////////////////////////////////////
 
-  const mainId = 'mainContent';
+  const mainContentId = 'mainContent';
   const drawerToggleId = 'pageDrawerToggle';
 
   ////////////////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ Defines the outer layout for the application, including the header and menu.
 
 <!-- Skip link for screen readers and keyboard users. We use tabindex="1" so that's it's available before any alerts injected by layouts. -->
 <!-- svelte-ignore a11y-positive-tabindex -->
-<a href="#{mainId}" tabindex="1" class="sr-only focus:not-sr-only">{$t('common.skipToMain')}</a>
+<a href="#{mainContentId}" tabindex="1" class="sr-only focus:not-sr-only">{$t('common.skipToMain')}</a>
 
 <!-- Drawer container -->
 <div class="drawer {$pageStyles.drawer.background}">
@@ -92,9 +92,9 @@ Defines the outer layout for the application, including the header and menu.
   <!-- Drawer content -->
   <div class="drawer-content flex flex-col">
     <Header {menuId} {openDrawer} {isDrawerOpen} {drawerOpenElement} />
-    <main id={mainId} class="flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg">
+    <div id={mainContentId} class="flex flex-grow flex-col items-center">
       <slot />
-    </main>
+    </div>
   </div>
 
   <!-- Drawer side menu -->
