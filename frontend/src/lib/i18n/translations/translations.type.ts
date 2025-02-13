@@ -12,6 +12,7 @@ export type TranslationsPayload = Partial<{
   constituencyGroup: string;
   electionDate: Date;
   filters: string;
+  maxFilesize: number;
   minPasswordLength: number;
   minQuestions: number;
   minutes: number;
