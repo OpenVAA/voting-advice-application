@@ -12,6 +12,6 @@
     "description": "Nämä ovat vaalipiirit, joissa olet ehdolla, sekä vaaliluettelo ja mahdollinen vaalitunnus. Jos ehdokkuus on merkitty merkinnällä ”Vireillä”, vaalitunnustasi ei välttämättä ole vielä määritelty.",
     "title": "Ehdokkuudet"
   },
-  "requiredInfo": "Sinun pitää täyttää tällä ikonilla merkityt kentät ennen jatkamista.",
+  "requiredInfo": "Sinun pitää täyttää tällä ikonilla merkityt kentät ennen kuin voit vastata muihin kysymyksiin. Voit kuitenkin tallentaa tähänastiset vastauksesi ja jatkaa täyttämistä myöhemmin.",
   "title": "Perustiedot"
 }

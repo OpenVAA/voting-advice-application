@@ -1,5 +1,6 @@
 {
   "answerQuestion": "Answer this question",
+  "answerQuestionFirst": "Please answer the question first",
   "answerSaveError": "Saving answer failed",
   "editAnswer": "Edit Your Answer",
   "enterMissingAnswers": "Enter Missing Answers",
@@ -14,7 +15,7 @@
     "partial": "You can see all of your opinions below, edit them and answer the remaining ones."
   },
   "notAnswered": "You didn't answer this question.",
-  "openAnswerPrompt": "Comment on this issue",
+  "openAnswerPrompt": "Arguments",
   "start": "Enter your opinions",
   "tip": "You can see all your anwers on this page when you come back to it later.",
   "title": "Your Opinions",

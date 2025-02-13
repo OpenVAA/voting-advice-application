@@ -1,5 +1,6 @@
 {
   "answerQuestion": "SV Answer this question",
+  "answerQuestionFirst": "Vänligen svara frågan först",
   "answerSaveError": "SV Saving answer failed",
   "editAnswer": "SV Edit Your Answer",
   "enterMissingAnswers": "SV Enter Missing Answers",
@@ -14,7 +15,7 @@
     "partial": "SV You can see all of your opinions below, edit them and answer the remaining ones."
   },
   "notAnswered": "SV You didn't answer this question.",
-  "openAnswerPrompt": "SV Comment on this issue",
+  "openAnswerPrompt": "Resonemang",
   "start": "SV Enter your opinions",
   "tip": "SV You can see all your anwers on this page when you come back to it later.",
   "title": "SV Your Opinions",

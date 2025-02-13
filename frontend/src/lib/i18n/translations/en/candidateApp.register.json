@@ -1,7 +1,7 @@
 {
   "code": "registration code",
   "codePlaceholder": "E.g. CP23-174a-f4%&-aHAB",
-  "enterCode": "Enter the registration code that you've received from your party to register your account.",
+  "enterCode": "Enter the registration code that you’ve received by email to complete your registration.",
   "loggedInWarning": "A user is currently logged in. Log out before proceeding.",
   "passwordValidation": {
     "commonPatterns": "Contains common sequences or patterns",
@@ -15,5 +15,6 @@
   },
   "register": "Register",
   "title": "Registration",
+  "titleWithPreregistration": "Confirm your email address",
   "wrongRegistrationCode": "Wrong registration code"
 }
