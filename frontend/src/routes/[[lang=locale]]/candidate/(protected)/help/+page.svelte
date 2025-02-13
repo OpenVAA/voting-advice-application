@@ -49,7 +49,7 @@ Shows a FAQ and other support content for the candidate application.
     <Button
       icon="next"
       variant="main"
-      text={$t('candidateApp.common.continueFilling')}
-      href={$getRoute('CandAppHome')} />
+      text={$t('common.home')}
+      href={$getRoute('CandAppLogin')} />
   </svelte:fragment>
 </MainContent>
