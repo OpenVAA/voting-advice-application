@@ -1,4 +1,3 @@
-import { logDebugError } from '$lib/utils/logger';
 import { ucFirst } from '$lib/utils/text/ucFirst';
 
 /**
@@ -18,7 +17,6 @@ export function checkUrl(url: string): string | undefined {
     new URL(url);
     return url;
   } catch {
-    logDebugError(`Invalid url ${url}`);
     return undefined;
   }
 }
