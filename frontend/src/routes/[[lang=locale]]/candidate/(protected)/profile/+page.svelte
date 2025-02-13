@@ -52,6 +52,7 @@ Shows the candidate's basic information, some of which is editable.
 
   const { hasUnsaved } = userData;
 
+  let allRequiredFilled = false;
   let bypassPreventNavigation = false;
   let canSubmit: boolean;
   let nominations: Array<CandidateNomination>;
@@ -84,9 +85,9 @@ Shows the candidate's basic information, some of which is editable.
       if (!unconfirmed && parentNomination)
         unconfirmed = !!(parentNomination.customData as CustomData['Nomination']).unconfirmed;
       return {
-        election: election.shortName,
-        constituency: constituency.shortName,
-        organization: parentNomination ? parentNomination.entity.shortName : undefined,
+        election: election.name,
+        constituency: constituency.name,
+        organization: parentNomination ? parentNomination.entity.name : undefined,
         electionSymbol,
         unconfirmed
       };
@@ -99,17 +100,21 @@ Shows the candidate's basic information, some of which is editable.
   }
 
   ////////////////////////////////////////////////////////////////////
-  // Handle saving answers
+  // Handle saving answers and define submit label and notes
   ////////////////////////////////////////////////////////////////////
 
-  $: {
-    if ($unansweredOpinionQuestions.length && !$answersLocked) {
-      submitLabel = $t('common.saveAndContinue');
-      submitRoute = $getRoute('CandAppQuestions');
-    } else {
-      submitLabel = $answersLocked ? $t('common.return') : $t('common.saveAndReturn');
-      submitRoute = $getRoute('CandAppHome');
-    }
+  $: canSubmit = status !== 'loading';
+
+  $: allRequiredFilled = !$requiredInfoQuestions.some((q) => isEmptyValue($userData?.candidate.answers?.[q.id]?.value));
+
+  $: if (allRequiredFilled && $unansweredOpinionQuestions.length && !$answersLocked) {
+    submitLabel = $hasUnsaved ? $t('common.saveAndContinue') : $t('common.continue');
+    submitRoute = $getRoute('CandAppQuestions');
+  } else {
+    submitRoute = $getRoute('CandAppHome');
+    submitLabel = $answersLocked || !$hasUnsaved
+      ? $t('common.return') 
+      : $t('common.saveAndReturn');
   }
 
   function handleImageInputChange(value: unknown): void {
@@ -161,20 +166,6 @@ Shows the candidate's basic information, some of which is editable.
   function handleNavigationConfirm(): void {
     userData.resetUnsaved();
   }
-
-  ////////////////////////////////////////////////////////////////////
-  // Check if the form is dirty or empty and define submit label
-  ////////////////////////////////////////////////////////////////////
-
-  $: canSubmit =
-    status !== 'loading' &&
-    !$requiredInfoQuestions.some((q) => isEmptyValue($userData?.candidate.answers?.[q.id]?.value));
-
-  $: submitLabel = !$hasUnsaved
-    ? $t('common.continue')
-    : $unansweredOpinionQuestions?.length
-      ? $t('common.saveAndContinue')
-      : $t('common.saveAndReturn');
 
   ////////////////////////////////////////////////////////////////////
   // Styling
@@ -265,7 +256,6 @@ Shows the candidate's basic information, some of which is editable.
 
       {#each $infoQuestions as question}
         {@const answer = $userData?.candidate.answers?.[question.id]}
-
         <QuestionInput {question} {answer} onChange={handleQuestionInputChange} locked={$answersLocked} onShadedBg />
       {/each}
     </div>
@@ -274,8 +264,8 @@ Shows the candidate's basic information, some of which is editable.
   <!-- Submit button and error messages -->
 
   <svelte:fragment slot="primaryActions">
-    {#if !$answersLocked && $requiredInfoQuestions.length}
-      <div class="mx-md my-md transition-opacity" class:opacity-0={canSubmit}>
+    {#if !$answersLocked}
+      <div class="mx-md my-md transition-opacity" class:opacity-0={allRequiredFilled}>
         <Icon name="required" class="{iconBadgeClass} text-warning" /><span class="sr-only"
           >{$t('common.required')}</span>
         {$t('candidateApp.basicInfo.requiredInfo')}
