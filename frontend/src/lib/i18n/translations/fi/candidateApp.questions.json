@@ -1,5 +1,6 @@
 {
   "answerQuestion": "Vastaa tähän kysymykseen",
+  "answerQuestionFirst": "Vastaa ensin kysymykseen",
   "answerSaveError": "Vastauksen tallentaminen epäonnistui",
   "editAnswer": "Muokkaa vastaustasi",
   "enterMissingAnswers": "Vastaa puuttuviiin kysymyksiin",
@@ -14,7 +15,7 @@
     "partial": "Alla näet kaikki mielipiteesi. Voit halutessasi muokata niitä ja vastata niihin, joihin et vielä ole vastannut."
   },
   "notAnswered": "Et vastannut tähän kysymykseen",
-  "openAnswerPrompt": "Perustele vastauksesi",
+  "openAnswerPrompt": "Perustelut",
   "start": "Kerro mielipiteesi",
   "tip": "Näet kaikki vastauksesi tällä sivulla, kun palaat siihen myöhemmin.",
   "title": "Mielipiteesi",
