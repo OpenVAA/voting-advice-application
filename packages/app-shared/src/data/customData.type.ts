@@ -7,12 +7,20 @@ export type CustomData = {
   };
   Question: {
     allowOpen?: boolean;
+    /**
+     * For `QuestionInput`. If `true`, translations cannot be entered.
+     */
+    disableMultilingual?: boolean;
     fillingInfo?: string;
     filterable?: boolean;
     /**
      * For `QuestionInput`. If `true` for a text input, a `textarea` will be used instead of a `text` input.
      */
     longText?: boolean;
+    /**
+     * For `QuestionInput`. If provided, will set the `maxlength` of text inputs.
+     */
+    maxlength?: number;
     required?: boolean;
     vertical?: boolean;
     video?: CustomVideoProps;
