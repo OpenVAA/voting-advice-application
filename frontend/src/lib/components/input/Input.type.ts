@@ -7,6 +7,9 @@ export type InputProps =
       type: 'text';
     } & InputPropsBase<string>)
   | ({
+      type: 'url';
+    } & InputPropsBase<string>)
+  | ({
       type: 'text-multilingual';
     } & InputPropsBase<LocalizedString>)
   | ({
@@ -107,4 +110,8 @@ export type InputPropsBase<TValue, TElement extends keyof SvelteHTMLElements = '
    * The maximum file size for `image` inputs. @default 20 * 1024**2 (20MB)
    */
   maxFilesize?: TValue extends Image ? number : never;
+  /**
+   * Additional info displayed below the input for multilingual input together with possible `info`. @default $t('components.input.multilingualInfo')
+   */
+  multilingualInfo?: TValue extends LocalizedString ? string : never;
 };

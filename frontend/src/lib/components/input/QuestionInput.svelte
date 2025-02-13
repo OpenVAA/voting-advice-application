@@ -67,6 +67,8 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   const customData: CustomData['Question'] = question.customData;
 
   let type = INPUT_TYPES[question.type];
+  if (question.type === QUESTION_TYPE.Text && question.subtype === 'link') 
+    type = 'url';
 
   // Apply customData modifiers
   if (customData.longText) {
@@ -75,17 +77,18 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   }
 
   // Apply multilingual support if not disabled
-  if (!disableMultilingual) {
+  if (!disableMultilingual && !customData.disableMultilingual) {
     if (type === 'text') type = 'text-multilingual';
     else if (type === 'textarea') type = 'textarea-multilingual';
   }
 
   const { id, info, name: label } = question;
-  const { fillingInfo, required } = customData;
+  const { fillingInfo, maxlength, required } = customData;
   const baseProps = {
     type,
     id,
     label,
+    maxlength,
     required,
     info: fillingInfo ?? info
   };
