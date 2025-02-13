@@ -53,10 +53,12 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   let canSubmit: boolean;
   let customData: CustomData['Question'];
   let errorMessage: string | undefined;
+  let isLastUnanswered: boolean;
   let nextQuestionId: Id | undefined;
   let question: AnyQuestionVariant;
   let status: ActionStatus = 'loading';
   let submitLabel: string;
+  let submitRoute: string;
 
   ////////////////////////////////////////////////////////////////////
   // Get the current and next question
@@ -74,6 +76,14 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
     } catch {
       error(404, `Question with id ${questionId} not found.`);
     }
+    isLastUnanswered = getIsLastUnanswered();
+  }
+
+  /** 
+   * A non-reactive utility set the isLastUnanswered flag, which we use to route to the Home page after answering the last one.
+   */
+  function getIsLastUnanswered(): boolean {
+    return $unansweredOpinionQuestions.length === 1;
   }
 
   /**
@@ -92,11 +102,18 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 
   $: canSubmit = status !== 'loading' && !isEmptyValue($userData?.candidate.answers?.[question.id]?.value);
 
-  $: submitLabel = !$hasUnsaved
-    ? $t('common.continue')
-    : nextQuestionId == null
+  $: if (nextQuestionId) {
+    submitRoute = $getRoute({ route: 'CandAppQuestion', questionId: nextQuestionId });
+    submitLabel = $t('common.saveAndContinue');
+  } else if (isLastUnanswered) {
+    submitRoute = $getRoute('CandAppHome');
+    submitLabel = $t('common.saveAndContinue')
+  } else {
+    submitRoute = $getRoute('CandAppQuestions');
+    submitLabel = $hasUnsaved
       ? $t('common.saveAndReturn')
-      : $t('common.saveAndContinue');
+      : $t('common.return');
+  }
 
   ////////////////////////////////////////////////////////////////////
   // Handle saving answers
@@ -118,7 +135,6 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       logDebugError('handleValueChange: questionId mismatch');
       return;
     }
-    console.info('sdasd');
     setAnswer({ value });
   }
 
@@ -175,11 +191,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       return;
     }
     status = 'success';
-    goto(
-      nextQuestionId == null
-        ? $getRoute('CandAppQuestions')
-        : $getRoute({ route: 'CandAppQuestion', questionId: nextQuestionId })
-    );
+    goto(submitRoute);
   }
 
   /**
@@ -247,7 +259,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
             value={answer?.info}
             disabled={!canSubmit}
             locked={$answersLocked}
-            placeholder="—"
+            placeholder={canSubmit ? '' : $t('candidateApp.questions.answerQuestionFirst')}
             onShadedBg
             onChange={handleInfoChange} />
         {/if}
