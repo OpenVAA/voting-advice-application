@@ -19,7 +19,16 @@ Shows a FAQ and other support content for the candidate application.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, appCustomization, getRoute, t } = getCandidateContext();
+  const { appSettings, appCustomization, getRoute, t, userData } = getCandidateContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // Build support email link
+  ////////////////////////////////////////////////////////////////////
+  
+  const supportMailto = getEmailUrl({
+    subject: `${$t('candidateApp.help.supportEmailSubject')}: ${$t('dynamic.candidateAppName')}`,
+    to: $appSettings.admin.email,
+  });
 </script>
 
 <MainContent title={$t('candidateApp.help.title')}>
@@ -49,7 +58,7 @@ Shows a FAQ and other support content for the candidate application.
     <Button
       icon="next"
       variant="main"
-      text={$t('candidateApp.common.continueFilling')}
-      href={$getRoute('CandAppHome')} />
+      text={$t('common.home')}
+      href={$userData ? $getRoute('CandAppHome') : $getRoute('CandAppLogin')} />
   </svelte:fragment>
 </MainContent>
