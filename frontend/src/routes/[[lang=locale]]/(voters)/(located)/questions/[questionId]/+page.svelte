@@ -225,7 +225,12 @@ Display a question for answering.
       // If no more questions to answer, go to results
       if (nextQuestionChoices.length === 0) {
         url = $getRoute('Results');
-        // Otherwise, show the next question selection
+      // If one question to answer, go to that question
+      } else if (nextQuestionChoices.length === 1) {
+        const questionId = nextQuestionChoices[0].id;
+        $selectedQuestionBlocks.addShownQuestionId(questionId);
+        url = $getRoute({ route: 'Question', questionId });
+      // Otherwise, show the next question selection
       } else {
         url = $getRoute({
           route: 'Question',
