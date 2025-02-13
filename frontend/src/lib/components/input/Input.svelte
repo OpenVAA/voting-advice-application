@@ -29,7 +29,8 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 - `options`: The options to show for a `select` or `select-multiple` input.
 - `ordered`: If `true`, enables ordering of the values of a `select-multiple` input. @default false
 - `maxFilesize`: The maximum file size for `image` inputs. @default `20 * 1024**2` (20MB)
-- Any valid attributes of the HTML element (`input`, `select` or `textarea`) used for the input.
+- `multilingualInfo`: Additional info displayed below the input for multilingual input together with possible `info`. @default $t('components.input.multilingualInfo')
+- Any valid attributes of the HTML element (`input`, `select` or `textarea`) used for the input, except in the case of `image` whose input is hidden.
 
 ### Callbacks
 
@@ -64,6 +65,9 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   import { iconBadgeClass, infoClass, joinGap, outsideLabelClass } from './shared';
   import type { AnyChoice, Image } from '@openvaa/data';
   import type { InputProps } from './Input.type';
+  import { checkUrl } from '$lib/utils/links';
+  import type { TranslationKey } from '$types';
+  import type { TranslationsPayload } from '$lib/i18n/translations';
 
   type $$Props = InputProps;
 
@@ -83,8 +87,10 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   export let ordered: $$Props['ordered'] = undefined;
   export let disabled: $$Props['disabled'] = undefined;
   export let maxFilesize: $$Props['maxFilesize'] = undefined;
+  export let multilingualInfo: $$Props['multilingualInfo'] = undefined;
 
   const DEFAULT_MAX_FILE_SIZE = 20 * 1024 * 1024;
+  // const SAVE_INTERVAL_MS = 1000;
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -95,12 +101,19 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   ////////////////////////////////////////////////////////////////////
   // Handling multlinguality, disabled and other cases
   ////////////////////////////////////////////////////////////////////
-
+  
   const multilingual = type.endsWith('-multilingual');
   /** Whether the label is above the field or inside it */
   const isLabelOutside = multilingual || type.startsWith('textarea');
 
-  // Switches
+  /*** Extend info */
+  if (multilingual && multilingualInfo != '') {
+    multilingualInfo ??= $t('components.input.multilingualInfo');
+    info ??= '';
+    info += ` ${multilingualInfo}`;
+  }
+  
+  let error: string | undefined;
   let isDisabled: boolean;
   /** For image input */
   let isLoading = false;
@@ -138,7 +151,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
    */
   function ensureValue(): void {
     // Empty string values
-    if (type === 'text' || type === 'textarea') {
+    if (type === 'text' || type === 'textarea' || type === 'url') {
       value ??= '';
     }
     // Initialize the value for an empty `LocalizedString`
@@ -235,9 +248,13 @@ The input itself is wrapped in multiple container elements, the outermost of whi
       // Image
     } else if (currentTarget instanceof HTMLInputElement && currentTarget.type === 'file') {
       const file = currentTarget.files?.[0];
-      if (!file || !file.type.startsWith('image/') || file.size > (maxFilesize ?? DEFAULT_MAX_FILE_SIZE)) return;
+      maxFilesize ??= DEFAULT_MAX_FILE_SIZE; 
+      if (!file || !file.type.startsWith('image/'))
+        return handleError('components.input.error.invalidFile');
+      if (file.size > maxFilesize)
+        return handleError('components.input.error.oversizeFile', { maxFilesize });
       const reader = new FileReader();
-      await new Promise<void>((resolve) => {
+      const success = await new Promise<boolean>((resolve) => {
         isLoading = true;
         reader.onload = () => {
           value = reader.result
@@ -247,16 +264,27 @@ The input itself is wrapped in multiple container elements, the outermost of whi
               } as ImageWithFile)
             : undefined;
           isLoading = false;
-          resolve();
+          resolve(true);
         };
         reader.readAsDataURL(file);
-      });
-    }
+      }).catch(() => false);
+      if (!success) return handleError('components.input.error.fileLoadingError');
+    } else if (type === 'url') {
+      // Only update the value if it's an empty string or a valid URL
+      const currentValue = currentTarget.value.replaceAll(/\s+/g, '');
+      if (currentValue == '') {
+        value = '';
+      } else {
+        const url = checkUrl(currentValue);
+        if (url == null) return handleError('components.input.error.invalidUrl');
+        value = url;
+      }
 
     // All other types
-    else {
+    } else {
       value = currentTarget.value;
     }
+    error = undefined;
     onChange?.(value);
   }
 
@@ -270,31 +298,29 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   }
 
   ////////////////////////////////////////////////////////////////////
+  // Errors
+  ////////////////////////////////////////////////////////////////////
+
+  function handleError(key: TranslationKey, payload?: TranslationsPayload): void {
+    error = $t(key, payload);
+  }
+
+  ////////////////////////////////////////////////////////////////////
   // Periodical onChange firing with textarea
   ////////////////////////////////////////////////////////////////////
 
-  // const SAVE_INTERVAL_MS = 1000;
+  // TODO: Save focused element as the target, and call handleChange(target) periodically
+
   // let saveInterval: NodeJS.Timeout;
 
-  // onMount(() => {
-  //   if (localStorageId) {
-  //     const savedText = localStorage.getItem(localStorageId);
-  //     if (savedText) {
-  //       text = savedText;
-  //     } else {
-  //       text = previouslySaved ?? '';
-  //     }
+  // if (type.startsWith('textarea')) {
+  //   onMount(() => {
   //     saveInterval = setInterval(() => {
-  //       saveToLocalStorage();
+  //       // Handle value changes
   //     }, SAVE_INTERVAL_MS);
-  //   } else {
-  //     text = previouslySaved ?? '';
-  //   }
-  // });
-
-  // onDestroy(() => {
-  //   clearInterval(saveInterval);
-  // });
+  //   });
+  //   onDestroy(() => clearInterval(saveInterval));
+  // };
 
   ////////////////////////////////////////////////////////////////////
   // Styling
@@ -306,7 +332,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   // TODO[Svelte 5]: Use snippets instead of these clunky class variables
   const inputContainerClass =
     'flex min-h-touch items-center justify-between gap-2 overflow-hidden rounded-lg bg-[var(--inputBgColor)]';
-  const inputLabelClass = 'label-sm label pointer-events-none mx-md my-2 px-0 text-secondary';
+  const inputLabelClass = 'label-sm label pointer-events-none min-w-[4rem] mx-md my-2 px-0 text-secondary';
   const inputAndIconContainerClass = 'flex grow justify-end items-center pr-8';
   const inputClass =
     'input input-sm input-ghost grow justify-end px-0 text-end w-full disabled:border-none disabled:bg-[var(--inputBgColor)] disabled:text-neutral';
@@ -344,7 +370,10 @@ The input itself is wrapped in multiple container elements, the outermost of whi
             <div class="relative flex flex-col items-stretch">
               <!-- The language label inside the field -->
               <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label id="{id}-label-{locale}" class="small-label absolute left-md top-sm text-secondary"
+              <label 
+                id="{id}-label-{locale}" 
+                class="small-label absolute left-md top-sm text-secondary transition-opacity"
+                class:opacity-0={!isTranslationsVisible}
                 >{$t(assertTranslationKey(`lang.${locale}`))}</label>
               <!-- The actual textarea 
                    NB. Join does not work it, so we do it by hand -->
@@ -353,10 +382,11 @@ The input itself is wrapped in multiple container elements, the outermost of whi
                 aria-labelledby="{id}-label {id}-label-{locale}"
                 {placeholder}
                 disabled={isDisabled}
-                class="{textareaClass} pt-24"
+                rows="4"
+                {...concatClass($$restProps, `${textareaClass} transition-[padding]`)}
+                class:pt-24={isTranslationsVisible}
                 class:rounded-t-none={isTranslationsVisible && i > 0}
                 class:rounded-b-none={isTranslationsVisible && i !== $locales.length - 1}
-                rows="4"
                 bind:this={mainInputs[i]}
                 on:change={(e) => handleChange(e, locale)}
                 value={getLocalizedValue(locale)} />
@@ -365,7 +395,10 @@ The input itself is wrapped in multiple container elements, the outermost of whi
             <div class="{inputContainerClass} join-item">
               <!-- The language label inside the field -->
               <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label id="{id}-label-{locale}" class={inputLabelClass}
+              <label 
+                id="{id}-label-{locale}" 
+                class="{inputLabelClass} transition-opacity"
+                class:opacity-0={!isTranslationsVisible}
                 >{$t(assertTranslationKey(`lang.${locale}`))}</label>
               <div class={inputAndIconContainerClass}>
                 <!-- The actual text input -->
@@ -375,14 +408,14 @@ The input itself is wrapped in multiple container elements, the outermost of whi
                   aria-labelledby="{id}-label {id}-label-{locale}"
                   {placeholder}
                   disabled={isDisabled}
-                  class={inputClass}
+                  {...concatClass($$restProps, inputClass)}
                   bind:this={mainInputs[i]}
                   on:change={(e) => handleChange(e, locale)}
                   value={getLocalizedValue(locale)} />
               </div>
             </div>
           {:else}
-            <ErrorMessage message={$t('error.general')} />
+            <ErrorMessage inline message={$t('error.general')} />
           {/if}
         {/if}
       {/each}
@@ -397,8 +430,8 @@ The input itself is wrapped in multiple container elements, the outermost of whi
         aria-labelledby="{id}-label"
         {placeholder}
         disabled={isDisabled}
-        class="{textareaClass} vaa-group-join-item"
         rows="4"
+        {...concatClass($$restProps, `${textareaClass} vaa-group-join-item`)}
         on:change={handleChange}
         value={`${value}`} />
     </div>
@@ -410,7 +443,12 @@ The input itself is wrapped in multiple container elements, the outermost of whi
         <label class={inputLabelClass} for={id}>{label}</label>
         <div class={inputAndIconContainerClass}>
           {#if options?.length}
-            <select {id} disabled={isDisabled} class={selectClass} bind:this={mainInputs[0]} on:change={handleChange}>
+            <select 
+              {id} 
+              disabled={isDisabled} 
+              {...concatClass($$restProps, selectClass)}
+              bind:this={mainInputs[0]} 
+              on:change={handleChange}>
               <option disabled selected
                 >{placeholder ||
                   (selectedOptions.length > 0
@@ -423,7 +461,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
               {/each}
             </select>
           {:else}
-            <ErrorMessage message={$t('error.general')} />
+            <ErrorMessage inline message={$t('error.general')} />
           {/if}
           {#if showRequired}
             <div class="required-badge">
@@ -521,15 +559,19 @@ The input itself is wrapped in multiple container elements, the outermost of whi
             type="checkbox"
             {id}
             disabled={isDisabled}
-            class="toggle toggle-primary mr-md"
             {placeholder}
+            {...concatClass($$restProps, 'toggle toggle-primary mr-md')}
             checked={!!value}
             on:change={handleChange} />
 
           <!-- 5.2 Select -->
         {:else if type === 'select'}
           {#if options?.length}
-            <select {id} disabled={isDisabled} class={selectClass} on:change={handleChange}>
+            <select 
+              {id} 
+              disabled={isDisabled} 
+              {...concatClass($$restProps, selectClass)}
+              on:change={handleChange}>
               <option disabled selected={!value}>{placeholder || $t('components.input.selectOne')}</option>
               {#each options as { id, label }}
                 <option value={id} selected={value === id}>
@@ -543,7 +585,14 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 
           <!-- 5.3 All other inputs: date, number, text -->
         {:else}
-          <input {type} {id} disabled={isDisabled} class={inputClass} {placeholder} {value} on:change={handleChange} />
+          <input 
+            {type} 
+            {id} 
+            disabled={isDisabled} 
+            {placeholder} 
+            {...concatClass($$restProps, inputClass)}
+            {value} 
+            on:change={handleChange} />
         {/if}
 
         {#if showRequired}
@@ -558,6 +607,12 @@ The input itself is wrapped in multiple container elements, the outermost of whi
         {/if}
       </div>
     </div>
+  {/if}
+
+  <!-- Error messages -->
+
+  {#if error}
+    <ErrorMessage inline message={error} class="my-sm text-center"/>
   {/if}
 
   <!-- Optional elements below the form widgets -->

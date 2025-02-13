@@ -1,4 +1,3 @@
-import { logDebugError } from '$lib/utils/logger';
 import { ucFirst } from '$lib/utils/text/ucFirst';
 
 /**
@@ -11,16 +10,44 @@ export function isAbsoluteUrl(url: string): boolean {
 
 /**
  * Ensures an url is valid.
+ * @param url - The URL string to check.
+ * @param options.checkDomain - If `true`, the domain is checked.
+ * @param options.allowedProtocols - An array of the allowed protocols.
  * @returns the url or `undefined` if it is invalid.
  */
-export function checkUrl(url: string): string | undefined {
+export function checkUrl(
+  url: string,
+  {
+    checkDomain = true,
+    allowedProtocols = ['http:', 'https:']
+  }: {
+    checkDomain?: boolean;
+    allowedProtocols?: Array<string>;
+  } = {}
+): string | undefined {
+  let validUrl: URL;
   try {
-    new URL(url);
-    return url;
+    validUrl = new URL(url);
   } catch {
-    logDebugError(`Invalid url ${url}`);
-    return undefined;
+    try {
+      validUrl = new URL(`http://${url}`);
+    } catch {
+      return undefined;
+    }
   }
+  if (checkDomain && !isValidDomain(validUrl.hostname)) return undefined;
+  if (!allowedProtocols.includes(validUrl.protocol)) return undefined;
+  return `${validUrl}`;
+}
+
+/**
+ * Checks if the domain is valid by ensuring it has at least two parts.
+ * @param domain - The domain to check.
+ * @returns `true` if the domain is valid, false otherwise.
+ */
+function isValidDomain(domain: string): boolean {
+  const parts = domain.split('.');
+  return parts.length > 1 && parts.every((part) => part.length > 0);
 }
 
 /**
