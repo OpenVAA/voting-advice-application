@@ -8,8 +8,5 @@ export type QuestionInfoProps = Partial<ExpanderProps> & {
   /**
    * Additional expandable info sections shown as plain or HTML strings.
    */
-  infoSections?: Array<{
-    title: string;
-    content: string;
-  }>;
+  infoSections?: Array<QuestionInfoSection>;
 };

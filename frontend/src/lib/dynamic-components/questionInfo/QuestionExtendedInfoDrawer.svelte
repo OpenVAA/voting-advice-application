@@ -10,12 +10,5 @@
 </script>
 
 <Drawer title={question.text}>
-  <QuestionExtendedInfo
-    info={question.info}
-    infoSections={customData?.infoSections
-      ?.filter(({ visible }) => !!visible)
-      .map(({ title, text }) => ({
-        title: title ?? '',
-        content: text ?? ''
-      }))} />
+  <QuestionExtendedInfo info={question.info} infoSections={customData?.infoSections} />
 </Drawer>

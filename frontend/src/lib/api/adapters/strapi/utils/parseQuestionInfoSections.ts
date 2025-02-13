@@ -11,16 +11,16 @@ export function parseQuestionInfoSections(
     for (const value of (data as CustomData['Question'])?.infoSections ?? []) {
       if (!value || typeof value !== 'object') continue;
 
-      const { title, text, visible } = value as {
-        text?: LocalizedString;
+      const { title, content, visible } = value as {
+        content?: LocalizedString;
         title?: LocalizedString;
         visible?: boolean;
       };
 
-      if (title && text) {
+      if (title && content) {
         out.push({
-          title: translate(title, locale) || '',
-          text: translate(text, locale) || '',
+          title: translate(title, locale),
+          content: translate(content, locale),
           visible: !!visible
         });
       }

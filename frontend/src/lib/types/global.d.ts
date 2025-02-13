@@ -82,7 +82,7 @@ declare global {
    */
   type QuestionInfoSection = {
     title?: string;
-    text?: string;
+    content?: string;
     visible?: boolean;
   };
 
