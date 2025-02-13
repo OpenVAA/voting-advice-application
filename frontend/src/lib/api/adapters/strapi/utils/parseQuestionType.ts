@@ -39,18 +39,15 @@ export function parseQuestionType(
         subtype: 'link'
       };
     case 'singleChoiceOrdinal':
+      if (!s.choices?.length) throw new Error(`No choices provided for choice question: ${data.documentId}`);
       return {
         type,
         choices: parseOrdinalChoices(s.choices, locale),
         customData: { display: s.display }
       };
     case 'singleChoiceCategorical':
-      return {
-        type,
-        choices: parseCategoricalChoices(s.choices, locale),
-        customData: { display: s.display }
-      };
     case 'multipleChoiceCategorical':
+      if (!s.choices?.length) throw new Error(`No choices provided for choice question: ${data.documentId}`);
       return {
         type,
         choices: parseCategoricalChoices(s.choices, locale),
