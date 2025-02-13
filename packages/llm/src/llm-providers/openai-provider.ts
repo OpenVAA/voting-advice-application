@@ -6,16 +6,22 @@ export class OpenAIProvider extends LLMProvider {
   private openai: OpenAI;
   public readonly maxContextTokens: number;
 
-  constructor(options: { model?: string; apiKey: string; maxContextTokens?: number }) {
-    super();
-    this.model = options.model || 'gpt-4o-mini';
-    this.maxContextTokens = options.maxContextTokens || 4096;
-
-    if (!options.apiKey) {
+  constructor({
+    model = 'gpt-4o-mini',
+    apiKey,
+    maxContextTokens = 4096
+  }: {
+    model?: string;
+    apiKey: string;
+    maxContextTokens?: number;
+  }) {
+    if (!apiKey) {
       throw new Error('OpenAI API key is required in constructor options.');
     }
-
-    this.openai = new OpenAI({ apiKey: options.apiKey });
+    super();
+    this.model = model;
+    this.maxContextTokens = maxContextTokens;
+    this.openai = new OpenAI({ apiKey });
   }
 
   async generate({
@@ -77,9 +83,7 @@ export class OpenAIProvider extends LLMProvider {
   }
 
   /**
-   * Estimates the number of tokens in a text string.
-   * Note: This is a simple approximation. For production use,
-   * consider using a proper tokenizer.
+   * Estimates the number of tokens in a text string. Note: This is a simple approximation. For production use, consider using a proper tokenizer.
    */
   async countTokens(text: string) {
     return {
@@ -88,9 +92,7 @@ export class OpenAIProvider extends LLMProvider {
   }
 
   /**
-   * Calculates how many messages can fit within the context window.
-   * Uses a conservative estimate of average tokens per message to ensure
-   * we don't exceed the model's context limit.
+   * Calculates how many messages can fit within the context window. Uses a conservative estimate of average tokens per message to ensure we don't exceed the model's context limit.
    */
   async fitCommentArgsCount(): Promise<number> {
     const averageTokensPerMessage = 50;
@@ -98,35 +100,23 @@ export class OpenAIProvider extends LLMProvider {
   }
 }
 
-function mapToMessageParam(message: { role: string; content: string }): OpenAI.ChatCompletionMessageParam {
-  const role = message.role.toLowerCase();
+function mapToMessageParam({ role, content }: { role: string; content: string }): OpenAI.ChatCompletionMessageParam {
+  const normalizedRole = role.toLowerCase();
 
-  switch (role) {
+  switch (normalizedRole) {
     case 'system':
-      return {
-        role: 'system',
-        content: message.content
-      } as OpenAI.ChatCompletionSystemMessageParam;
+      return { role: 'system', content } as OpenAI.ChatCompletionSystemMessageParam;
 
     case 'user':
-      return {
-        role: 'user',
-        content: message.content
-      } as OpenAI.ChatCompletionUserMessageParam;
+      return { role: 'user', content } as OpenAI.ChatCompletionUserMessageParam;
 
     case 'assistant':
-      return {
-        role: 'assistant',
-        content: message.content
-      } as OpenAI.ChatCompletionAssistantMessageParam;
+      return { role: 'assistant', content } as OpenAI.ChatCompletionAssistantMessageParam;
 
     case 'developer':
-      return {
-        role: 'developer',
-        content: message.content
-      } as OpenAI.ChatCompletionDeveloperMessageParam;
+      return { role: 'developer', content } as OpenAI.ChatCompletionDeveloperMessageParam;
 
     default:
-      throw new Error(`Unsupported role: ${role}`);
+      throw new Error(`Unsupported role: ${normalizedRole}`);
   }
 }
