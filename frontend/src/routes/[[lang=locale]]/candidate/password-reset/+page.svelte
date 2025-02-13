@@ -35,7 +35,7 @@ Shows a form with which to set a new password when it has been reset.
 
   // If the reset code is not provided, redirect to home page
   const code = $page.url.searchParams.get('code');
-  if (!code) goto($getRoute('CandAppHome'));
+  if (!code) goto($getRoute('CandAppLogin'));
 
   let canSubmit: boolean;
   let isPasswordValid: boolean;
@@ -66,7 +66,7 @@ Shows a form with which to set a new password when it has been reset.
     }
 
     status = 'success';
-    await goto($getRoute('CandAppHome'));
+    await goto($getRoute('CandAppLogin'));
   }
 
   ///////////////////////////////////////////////////////////////////

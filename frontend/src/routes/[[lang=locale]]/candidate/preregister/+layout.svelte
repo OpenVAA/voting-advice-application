@@ -28,7 +28,7 @@
       cancelButtonLabel: $t('common.cancel'),
       cancelButtonCallback: async () => {
         await clearIdToken();
-        await goto($getRoute('CandAppHome'), { invalidateAll: true });
+        await goto($getRoute('CandAppLogin'), { invalidateAll: true });
       }
     }
   });
