@@ -84,12 +84,16 @@ async function main() {
 
   const condensedArguments = await condenser.processComments(comments, topic, N_COMMENTS, BATCH_SIZE);
 
-  // Export results
-  await exportResults(condensedArguments, RESULTS_PATH, ['txt', 'json', 'csv']);
+  // Export to files
+  const basePath = path.join(packageRoot, 'results', path.parse(FILE_NAME).name);
+  await exportResults(condensedArguments, basePath, ['txt', 'json', 'csv']);
+  console.log(`Results exported to ${basePath}.{txt,json,csv}`);
 
-  console.log(`Results exported to ${RESULTS_PATH}.{txt,json,csv}`);
+  return condensedArguments;
 }
 
 if (require.main === module) {
   main().catch(console.error);
 }
+
+export { main as processArguments };
