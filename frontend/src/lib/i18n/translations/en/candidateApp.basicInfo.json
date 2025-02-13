@@ -12,6 +12,6 @@
     "description": "These are the constituencies where you're nominated along with the election list and possible election symbol. If a nomination is marked 'Pending', your election symbol might not yet be defined.",
     "title": "Nominations"
   },
-  "requiredInfo": "Any fields marked with this icon must be filled before continuing.",
+  "requiredInfo": "You must fill in the fields marked with this icon before you can answer other questions. However, you can save your answers so far and continue filling them in later.",
   "title": "Basic Information"
 }
