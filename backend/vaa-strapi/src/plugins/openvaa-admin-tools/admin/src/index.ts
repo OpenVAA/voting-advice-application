@@ -1,3 +1,4 @@
+import { PluginIcon } from './components/PluginIcon';
 import { RegistrationEmailToAll } from './components/RegistrationEmailToAll';
 import { RegistrationEmailToOne } from './components/RegistrationEmailToOne';
 import { PLUGIN_ID } from './pluginId';
@@ -6,6 +7,19 @@ export default {
   // Typing for `app` doesn't seem to be available
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   register(app: any) {
+    app.addMenuLink({
+      to: `plugins/${PLUGIN_ID}`,
+      icon: PluginIcon,
+      intlLabel: {
+        id: `${PLUGIN_ID}.plugin.name`,
+        defaultMessage: PLUGIN_ID,
+      },
+      Component: async () => {
+        const { App } = await import('./pages/App');
+        return App;
+      },
+    });
+
     app.registerPlugin({
       id: PLUGIN_ID,
       name: PLUGIN_ID,
