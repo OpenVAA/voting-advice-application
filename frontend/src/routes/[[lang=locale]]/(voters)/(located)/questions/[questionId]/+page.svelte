@@ -339,13 +339,36 @@ Display a question for answering.
     <svelte:fragment slot="heading">
       {#each shouldShowQuestionSelection ? nextQuestionChoices : [question] as currentQuestion}
         <div transition:slide class="grid-line-x">
-          <button
-            class="w-full text-left {shouldShowQuestionSelection
-              ? 'rounded-lg p-2 transition-colors hover:bg-base-200'
-              : ''}"
-            on:click={() =>
-              shouldShowQuestionSelection && handleChoiceSelect(currentQuestion)}
-            disabled={!(shouldShowQuestionSelection)}>
+          {#if nextQuestionChoices.length}
+            <button
+              class="w-full text-left {shouldShowQuestionSelection
+                ? 'rounded-lg p-2 transition-colors hover:bg-base-200'
+                : ''}"
+              on:click={() =>
+                shouldShowQuestionSelection && handleChoiceSelect(currentQuestion)}
+              disabled={!(shouldShowQuestionSelection)}>
+              <HeadingGroup id={`questionHeading-${currentQuestion.id}`} class="relative">
+                <PreHeading>
+                  {#if $appSettings.questions.showCategoryTags}
+                    <CategoryTag category={currentQuestion.category} />
+                    <span class="text-secondary">
+                      {#if !useQuestionOrdering}
+                        {questionBlock.indexInBlock + 1}/{questionBlock.block.length}
+                      {/if}
+                    </span>
+                  {:else}
+                    {$t('common.question')}
+                    <span class="text-secondary">
+                      {#if !(shouldShowQuestionSelection)}
+                        {questionBlock.index + 1}/{questions.length}
+                      {/if}
+                    </span>
+                  {/if}
+                </PreHeading>
+                <h1>{currentQuestion.text}</h1>
+              </HeadingGroup>
+            </button>
+          {:else}
             <HeadingGroup id={`questionHeading-${currentQuestion.id}`} class="relative">
               <PreHeading>
                 {#if $appSettings.questions.showCategoryTags}
@@ -366,7 +389,7 @@ Display a question for answering.
               </PreHeading>
               <h1>{currentQuestion.text}</h1>
             </HeadingGroup>
-          </button>
+          {/if}
         </div>
       {/each}
     </svelte:fragment>
