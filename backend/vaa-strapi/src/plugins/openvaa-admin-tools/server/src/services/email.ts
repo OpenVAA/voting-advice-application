@@ -3,7 +3,7 @@ import type { Core } from '@strapi/strapi';
 if (!process.env.PUBLIC_BROWSER_FRONTEND_URL)
   throw new Error('Missing PUBLIC_BROWSER_FRONTEND_URL environment variable');
 
-export default function email({ strapi }: { strapi: Core.Strapi }) {
+export default function service({ strapi }: { strapi: Core.Strapi }) {
   return {
     sendEmail: async (
       candidateId,
