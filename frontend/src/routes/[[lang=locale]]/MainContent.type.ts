@@ -1,6 +1,6 @@
-import type { AriaRole } from 'svelte/elements';
+import type { AriaRole, SvelteHTMLElements } from 'svelte/elements';
 
-export type MainContentProps = {
+export type MainContentProps = SvelteHTMLElements['main'] & {
   /**
    * The required page `title`.
    */
