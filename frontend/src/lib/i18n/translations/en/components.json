@@ -10,11 +10,18 @@
     "allSelected": "All selected",
     "changeImage": "Change the image",
     "deleteOption": "Deselect {option}",
+    "error": {
+      "fileLoadingError": "Failed to load the file.",
+      "invalidFile": "The file is invalid.",
+      "invalidUrl": "The URL is not valid.",
+      "oversizeFile": "The file is too large. The maximum size is {maxFilesize} MB."
+    },
     "hideTranslations": "Hide translations",
+    "multilingualInfo": "You can enter your answer in all the languages of the voting aid if you wish. If you do not do so, your original answer will be displayed in other languages.",
     "noImage": "No image",
     "selectAnother": "Select another",
     "selectFirst": "Select first",
-    "selectOne": "Select one",
+    "selectOne": "Select",
     "showTranslations": "Show translations"
   },
   "matchScore": {

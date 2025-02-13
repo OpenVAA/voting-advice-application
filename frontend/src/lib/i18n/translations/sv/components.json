@@ -10,11 +10,18 @@
     "allSelected": "Alla valda",
     "changeImage": "Ändra bilden",
     "deleteOption": "Välj bort {option}",
+    "error": {
+      "fileLoadingError": "Det gick inte att ladda filen.",
+      "invalidFile": "Filen är ogiltig.",
+      "invalidUrl": "Webbadressen är inte giltig.",
+      "oversizeFile": "Filen är för stor. Den maximala storleken är {maxFilesize} MB."
+    },
     "hideTranslations": "Dölja översättningar",
+    "multilingualInfo": "Du kan skriva in ditt svar på alla valkomatens språk om du vill. Om du inte gör det visas ditt ursprungliga svar på de andra språken.",
     "noImage": "Ingen bild",
     "selectAnother": "Välj en annan",
     "selectFirst": "Välj först",
-    "selectOne": "Välj en",
+    "selectOne": "Välj",
     "showTranslations": "Visa översättningar"
   },
   "matchScore": {

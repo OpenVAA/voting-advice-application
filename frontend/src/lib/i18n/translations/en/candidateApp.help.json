@@ -1,5 +1,6 @@
 {
-  "ingress": "Answers to the most common questions with using this application are collected here.",
-  "noFAQ": "There no answers yet. You can contact support if you have a question.",
-  "title": "Help"
+  "ingress": "Below are answers to the most common questions about the Election Compass for candidates. If you don't find an answer to your issue below, you can contact support.",
+  "noFAQ": "There no answers yet.",
+  "supportEmailSubject": "Support request",
+  "title": "Candidate support"
 }

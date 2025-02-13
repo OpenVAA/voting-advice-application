@@ -12,6 +12,6 @@
     "description": "SV These are the constituencies where you're nominated along with the election list and possible election symbol. If a nomination is marked 'Pending', your election symbol might not yet be defined.",
     "title": "SV Nominations"
   },
-  "requiredInfo": "SV Any fields marked with this icon must be filled before continuing.",
+  "requiredInfo": "Du måste fylla i fälten markerade med denna ikon innan du kan svara på andra frågor. Du kan dock spara dina svar hittills och fortsätta fylla i dem senare.",
   "title": "SV Basic Information"
 }
