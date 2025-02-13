@@ -1,6 +1,6 @@
-import type { AriaRole } from 'svelte/elements';
+import type { AriaRole, SvelteHTMLElements } from 'svelte/elements';
 
-export type MainContentProps = {
+export type MainContentProps = SvelteHTMLElements['main'] & {
   /**
    * The required page `title`.
    */
@@ -21,4 +21,8 @@ export type MainContentProps = {
    * Optional class string to add to the `<div>` tag wrapping the `title` slot.
    */
   titleClass?: string;
+  /**
+   * Optional class string to add to the `<div>` tag wrapping the `default` slot.
+   */
+  contentClass?: string;
 };
