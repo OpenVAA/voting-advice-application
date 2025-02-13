@@ -22,7 +22,20 @@ module.exports = ({ env }) => [
   'strapi::cors',
   'strapi::poweredBy',
   'strapi::query',
-  'strapi::body',
+  /**
+   * Increase limits for importing data
+   */
+  {
+    name: 'strapi::body',
+    config: {
+      formLimit: '20mb', // modify form body
+      jsonLimit: '20mb', // modify JSON body
+      textLimit: '20mb', // modify text body
+      formidable: {
+        maxFileSize: 20 * 1024 * 1024 // multipart data, modify here limit of uploaded file size
+      }
+    }
+  },
   'strapi::session',
   'strapi::favicon',
   'strapi::public'
