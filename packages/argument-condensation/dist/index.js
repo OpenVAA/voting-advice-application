@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.processArguments = main;
+exports.processComments = processComments;
 const dotenv_1 = require("dotenv");
 const path_1 = __importDefault(require("path"));
 const Condenser_1 = require("./Condenser");
@@ -19,10 +19,6 @@ const API_KEY = process.env.OPENAI_API_KEY;
 const MODEL = 'o1-mini-2024-09-12';
 const BATCH_SIZE = 20;
 const N_COMMENTS = 100;
-const FILE_NAME = 'results_v0.txt';
-// Use absolute paths for data files
-const DATA_PATH = path_1.default.join(packageRoot, 'data', 'sources', 'kuntavaalit2021.csv');
-const RESULTS_PATH = path_1.default.join(packageRoot, 'results', FILE_NAME);
 async function exportResults(condensedArguments, basePath, formats = ['txt', 'json', 'csv']) {
     // Create results directory if it doesn't exist
     const resultsDir = path_1.default.dirname(basePath);
@@ -52,27 +48,31 @@ async function exportResults(condensedArguments, basePath, formats = ['txt', 'js
         }
     }
 }
-async function main() {
+async function processComments(comments, topic) {
     const provider = new llm_1.OpenAIProvider({
         apiKey: API_KEY,
         model: MODEL
     });
     const condenser = new Condenser_1.Condenser(provider);
-    // Load data
-    const data = await (0, promises_1.readFile)(DATA_PATH, 'utf-8');
-    const rows = data.split('\n').map((row) => row.split(','));
     // Process comments
     console.log('Processing comments...');
+    const condensedArguments = await condenser.processComments(comments, topic, N_COMMENTS, BATCH_SIZE);
+    // Export to files (optional)
+    const basePath = path_1.default.join(packageRoot, 'results', 'processed_arguments');
+    await exportResults(condensedArguments, basePath, ['txt', 'json', 'csv']);
+    console.log(`Results exported to ${basePath}.{txt,json,csv}`);
+    return condensedArguments;
+}
+// For testing/standalone use
+async function main() {
+    const DATA_PATH = path_1.default.join(packageRoot, 'data', 'sources', 'kuntavaalit2021.csv');
+    const data = await (0, promises_1.readFile)(DATA_PATH, 'utf-8');
+    const rows = data.split('\n').map((row) => row.split(','));
     const topic = 'Kuntavero ja pääomatulovero';
     const comments = rows
         .map((row) => row[8]) // q9.explanation_fi column
         .filter((comment) => comment);
-    const condensedArguments = await condenser.processComments(comments, topic, N_COMMENTS, BATCH_SIZE);
-    // Export to files
-    const basePath = path_1.default.join(packageRoot, 'results', path_1.default.parse(FILE_NAME).name);
-    await exportResults(condensedArguments, basePath, ['txt', 'json', 'csv']);
-    console.log(`Results exported to ${basePath}.{txt,json,csv}`);
-    return condensedArguments;
+    return await processComments(comments, topic);
 }
 if (require.main === module) {
     main().catch(console.error);

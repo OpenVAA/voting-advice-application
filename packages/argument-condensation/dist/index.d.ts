@@ -1,3 +1,3 @@
 import { Argument } from './types/Argument';
-declare function main(): Promise<Argument[]>;
-export { main as processArguments };
+declare function processComments(comments: string[], topic: string): Promise<Argument[]>;
+export { processComments };
