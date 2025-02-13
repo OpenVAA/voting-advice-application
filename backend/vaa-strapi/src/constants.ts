@@ -1,6 +1,11 @@
 const nodeEnv = process.env.NODE_ENV;
 
 /**
+ * OpenAI API key for LLM operations
+ */
+export const LLM_OPENAI_API_KEY = process.env.LLM_OPENAI_API_KEY;
+
+/**
  * When set to true, will generate mock data when app is started and database is empty.
  */
 export const generateMockDataOnInitialise = process.env.GENERATE_MOCK_DATA_ON_INITIALISE === 'true' || false;
@@ -11,6 +16,12 @@ export const generateMockDataOnInitialise = process.env.GENERATE_MOCK_DATA_ON_IN
  */
 export const generateMockDataOnRestart =
   (process.env.GENERATE_MOCK_DATA_ON_RESTART === 'true' && nodeEnv === 'development') || false;
+
+/**
+ * When set to true, generates LLM mock data.
+ */
+export const generateAiMockData =
+  (process.env.LLM_GENERATE_MOCK_DATA_ON_INITIALISE === 'true' && nodeEnv === 'development') || false;
 
 /**
  * If available, data will be loaded from this folder on initialise, if the database contains no Election objects. This will override mock data generation

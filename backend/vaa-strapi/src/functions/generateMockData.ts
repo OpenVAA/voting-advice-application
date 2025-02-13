@@ -12,6 +12,7 @@
 
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
 import { dynamicSettings } from '@openvaa/app-shared';
+import { LLMResponse, OpenAIProvider } from '@openvaa/llm';
 import mockCandidateForTesting from './mockData/mockCandidateForTesting.json';
 import mockCategories from './mockData/mockCategories.json';
 import mockInfoQuestions from './mockData/mockInfoQuestions.json';
@@ -22,7 +23,12 @@ import { API } from './utils/api';
 import { getDynamicTranslations } from './utils/appCustomization';
 import { getCardContentsFromFile } from './utils/appSettings';
 import { dropAllCollections } from './utils/drop';
-import { generateMockDataOnInitialise, generateMockDataOnRestart } from '../constants';
+import {
+  generateAiMockData,
+  generateMockDataOnInitialise,
+  generateMockDataOnRestart,
+  LLM_OPENAI_API_KEY
+} from '../constants';
 import type { AnswerValue, EntityType, LocalizedString, QuestionTypeSettings } from './utils/data.type';
 
 const locales: Array<Locale> = [
@@ -163,6 +169,12 @@ export async function generateMockData() {
     console.info('#######################################');
     console.info('inserting candidate users');
     await createCandidateUsers();
+    console.info('Done!');
+    console.info('#######################################');
+    if (generateAiMockData) {
+      console.info('generating LLM summaries');
+      await generateMockLLMSummaries();
+    }
     console.info('Done!');
     console.info('#######################################');
   } catch (e) {
@@ -666,6 +678,73 @@ async function createCandidateUsers() {
       registrationKey: null
     }
   });
+}
+
+/**
+ * Generates a single llm-response that will be used for every answer.
+ */
+async function generateMockLLMSummaries() {
+  if (!LLM_OPENAI_API_KEY) {
+    throw new Error('LLM_OPENAI_API_KEY is required for generating mock LLM summaries');
+  }
+
+  try {
+    const res: LLMResponse = await new OpenAIProvider({ apiKey: LLM_OPENAI_API_KEY }).generate({
+      messages: [
+        {
+          role: 'system',
+          content: 'message.content'
+        },
+        {
+          role: 'user',
+          content: `Write a lorem ipsum summary of this sentence: Taxes should be increased before cutting public spending
+          Generate it in this format and change only the text part:
+          {
+          "infoSections": {
+            "background": {
+              "text": {
+                "en": "Generated background here",
+                "fi": "Generated background here suomeksi",
+                "sv": "Generated background here in swedish"
+              },
+              "title": {
+                "en": "Background"
+              },
+              "visible": true
+            }
+          }
+        }`
+        }
+      ]
+    });
+    // Api response with LLMResponse parameters
+    // TODO: Type for this? Also handle error-responses
+    const generatedCustomData = JSON.parse(res.content);
+
+    // Get all questions with their existing customData
+    const questions = await strapi.db.query(API.Question).findMany({});
+
+    // Update each question, merging the new data with existing customData
+    for (const question of questions) {
+      const existingCustomData = question.customData || {};
+      const mergedCustomData = {
+        ...existingCustomData,
+        infoSections: {
+          ...existingCustomData.infoSections,
+          ...generatedCustomData.infoSections
+        }
+      };
+
+      await strapi.db.query(API.Question).update({
+        where: { id: question.id },
+        data: {
+          customData: mergedCustomData
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Failed to generate LLM summary, ', error);
+  }
 }
 
 /**
