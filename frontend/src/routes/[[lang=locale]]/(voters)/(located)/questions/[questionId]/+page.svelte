@@ -225,17 +225,18 @@ Display a question for answering.
       // If no more questions to answer, go to results
       if (nextQuestionChoices.length === 0) {
         url = $getRoute('Results');
-      // If one question to answer, go to that question
+        // If one question to answer, go to that question
       } else if (nextQuestionChoices.length === 1) {
         const questionId = nextQuestionChoices[0].id;
         $selectedQuestionBlocks.addShownQuestionId(questionId);
         url = $getRoute({ route: 'Question', questionId });
-      // Otherwise, show the next question selection
+        // Otherwise, show the next question selection
       } else {
         url = $getRoute({
           route: 'Question',
           questionId: shownQuestionIds[shownQuestionIds.length - 1],
-          showQuestionSelection: 'true'})
+          showQuestionSelection: 'true'
+        });
       }
     }
     goto(url, { noScroll });
@@ -344,9 +345,8 @@ Display a question for answering.
               class="w-full text-left {shouldShowQuestionSelection
                 ? 'rounded-lg p-2 transition-colors hover:bg-base-200'
                 : ''}"
-              on:click={() =>
-                shouldShowQuestionSelection && handleChoiceSelect(currentQuestion)}
-              disabled={!(shouldShowQuestionSelection)}>
+              on:click={() => shouldShowQuestionSelection && handleChoiceSelect(currentQuestion)}
+              disabled={!shouldShowQuestionSelection}>
               <HeadingGroup id={`questionHeading-${currentQuestion.id}`} class="relative">
                 <PreHeading>
                   {#if $appSettings.questions.showCategoryTags}
@@ -359,7 +359,7 @@ Display a question for answering.
                   {:else}
                     {$t('common.question')}
                     <span class="text-secondary">
-                      {#if !(shouldShowQuestionSelection)}
+                      {#if !shouldShowQuestionSelection}
                         {questionBlock.index + 1}/{questions.length}
                       {/if}
                     </span>
@@ -381,7 +381,7 @@ Display a question for answering.
                 {:else}
                   {$t('common.question')}
                   <span class="text-secondary">
-                    {#if !(shouldShowQuestionSelection)}
+                    {#if !shouldShowQuestionSelection}
                       {questionBlock.index + 1}/{questions.length}
                     {/if}
                   </span>
@@ -396,17 +396,11 @@ Display a question for answering.
 
     <style>
       .grid-line-x {
-        @apply relative 
-        before:absolute 
-        before:left-[40%] 
-        before:right-[40%] 
-        before:top-0 
-        before:border-md
-        before:content-[''];
+        @apply relative before:absolute before:left-[40%] before:right-[40%] before:top-0 before:border-md before:content-[''];
       }
-        /* Target all but first element */
+      /* Target all but first element */
       .grid-line-x:not(:first-child) {
-        @apply pt-16 mt-16 before:block;
+        @apply mt-16 pt-16 before:block;
       }
       .grid-line-x:first-child {
         @apply before:hidden;
@@ -419,7 +413,7 @@ Display a question for answering.
     {/if}
 
     <svelte:fragment slot="primaryActions">
-      {#if !(shouldShowQuestionSelection)}
+      {#if !shouldShowQuestionSelection}
         {#if type === 'singleChoiceOrdinal' || type === 'singleChoiceCategorical'}
           {@const selectedId = question.ensureValue($answers[question.id]?.value)}
           <QuestionChoices
@@ -455,7 +449,7 @@ Display a question for answering.
             handleJump(+1);
           }} />
       {/if}
-    
+
       {#if shouldShowQuestionSelection}
         <div
           role="group"

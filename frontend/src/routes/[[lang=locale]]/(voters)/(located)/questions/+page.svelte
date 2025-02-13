@@ -77,7 +77,7 @@ Display a general intro before starting answering the questions and possibly all
         goto($getRoute({ route: 'Question', questionId: firstShownId }));
       } else {
         // Otherwise show question selection for first question
-        goto($getRoute({ route: 'Question', showQuestionSelection: 'true' }))
+        goto($getRoute({ route: 'Question', showQuestionSelection: 'true' }));
       }
     } else {
       const categoryId = $selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
@@ -135,7 +135,7 @@ Display a general intro before starting answering the questions and possibly all
     <p class="text-center">
       {#if $appSettings.questions.dynamicOrdering?.enabled}
         {$t('questions.intro.ingress.withDynamicOrdering', {
-          numQuestions: $selectedQuestionBlocks.questions.length,
+          numQuestions: $selectedQuestionBlocks.questions.length
         })}
       {:else}
         {$t('questions.intro.ingress.withoutCategorySelection', {
