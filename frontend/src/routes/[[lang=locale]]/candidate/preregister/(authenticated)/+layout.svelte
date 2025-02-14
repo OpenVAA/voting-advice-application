@@ -1,20 +1,30 @@
+<!--@component
+
+# Candidate app pre-registration authenticated layout
+
+Contains the parts of the pre-registration process taking part after a successful ID provider authentication.
+
+- Shows an error if the authentication token has expired
+- Hides the navigation menu
+-->
+
 <script lang="ts">
   import { Button } from '$lib/components/button';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { goto } from '$app/navigation';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../../MainContent.svelte';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { onDestroy } from 'svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
   const { getRoute, idTokenClaims, t } = getCandidateContext();
+  const { navigationSettings } = getLayoutContext(onDestroy);
+  navigationSettings.push({ hide: true });
 </script>
-
-<svelte:head>
-  <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
-</svelte:head>
 
 {#if $idTokenClaims}
   <slot />

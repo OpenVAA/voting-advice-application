@@ -16,6 +16,10 @@ export type SingleGroupConstituencySelectorProps = SvelteHTMLElements['select'] 
    */
   disableSorting?: boolean;
   /**
+   * Set to `true` if using the component on a dark (`base-300`) background. @default false
+   */
+  onShadedBg?: boolean;
+  /**
    * Bindable value for the `Id`s of the selected `Constituency`.
    */
   selected?: Id;

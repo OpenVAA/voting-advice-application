@@ -14,16 +14,13 @@
   const nextRoute = $constituenciesSelectable ? 'CandAppPreregisterConstituency' : 'CandAppPreregisterEmail';
 </script>
 
-<svelte:head>
-  <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
-</svelte:head>
-
 <MainContent title={$t('candidateApp.preregister.electionSelect.title')}>
   <div class="mb-md text-center">
     {@html sanitizeHtml($t('candidateApp.preregister.electionSelect.content'))}
   </div>
   <ElectionSelector class="mb-md" elections={$dataRoot.elections} bind:selected={$preregistrationElectionIds} />
   <Button
+    slot="primaryActions"
     type="submit"
     text={$t('common.continue')}
     variant="main"
