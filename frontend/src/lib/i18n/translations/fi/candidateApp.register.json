@@ -1,7 +1,7 @@
 {
   "code": "Rekisteröintikoodi",
   "codePlaceholder": "Esimerkiksi CP23-174a-f4%&-aHAB",
-  "enterCode": "Kirjoita rekisteröintikoodi, jonka olet saanut puolueeltasi, rekisteröidäksesi tilisi.",
+  "enterCode": "Kirjoita sähköpostitse saamasi rekisteröintikoodi viimeistelläksesi rekisteröitymisen.",
   "loggedInWarning": "Käyttäjä on tällä hetkellä kirjautunut sisään. Kirjaudu ulos ennen kuin jatkat rekisteröintiin.",
   "passwordValidation": {
     "commonPatterns": "Sisältää yleisiä merkkisarjoja",
@@ -14,6 +14,7 @@
     "username": "Vältä nimesi käyttämistä salasanassa"
   },
   "register": "Rekisteröidy",
-  "title": "Rekisteröinti",
+  "title": "Rekisteröidy",
+  "titleWithPreregistration": "Vahvista sähköpostiosoitteesi",
   "wrongRegistrationCode": "Väärä rekisteröintikoodi"
 }

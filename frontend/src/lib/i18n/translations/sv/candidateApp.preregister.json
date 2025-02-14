@@ -2,7 +2,8 @@
   "identification": {
     "start": {
       "title": "Registrera dig som kandidat",
-      "content": "<p>Welcome to the Voting Advice Application!</p><p>To register as a candidate, you must first verify your identity using a Bank ID. When the candidate list is published, we will publish your profile in the app if you are on that list. We will use your full name and birthdate to verify this.</p><p>To complete your registration, follow these steps:</p>",
+      "heroEmoji": "🖋️",
+      "content": "<p>To register as a candidate, you must first verify your identity using a Bank ID. When the candidate list is published, we will publish your profile in the app if you are on that list. We will use your full name and birthdate to verify this.</p><p>To complete your registration, follow these steps:</p>",
       "step": {
         "identification": "Identify yourself using a Bank ID",
         "electionSelect": "Select the elections",
@@ -12,8 +13,9 @@
       }
     },
     "success": {
-      "title": "Bank ID authentication is complete",
-      "content": "<p>Welcome to the Voting Advice Application, {firstName} {lastName}!</p><p>Click the button below to continue the registration process.</p>"
+      "title": "Välkommen till valkompassen, {firstName} {lastName}!",
+      "heroEmoji": "",
+      "content": "<p>Identifieringen lyckades. Tryck på knappen nedan för att fortsätta registreringen.</p>"
     },
     "identifyYourselfButton": "Identifiera dig",
     "identifyYourselHelpText": "You’ll be redirected to the identity provider’s page. Once the authentication is complete, you will be redirected back to this page."
@@ -34,6 +36,7 @@
   "status": {
     "success": {
       "title": "Confirm your email address",
+      "heroEmoji": "✉️",
       "content": "<p>We've sent a message to your email address.</p><p>Please click on the link in the message to confirm your email address and complete the registration process.</p>"
     },
     "strongIdentificationError": {
