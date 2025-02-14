@@ -37,6 +37,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
   protected async _getAppSettings(): Promise<DPDataType['appSettings']> {
     const params: Params = {
       populate: {
+        access: 'true',
         elections: 'true',
         entities: { populate: '*' },
         entityDetails: { populate: '*' },

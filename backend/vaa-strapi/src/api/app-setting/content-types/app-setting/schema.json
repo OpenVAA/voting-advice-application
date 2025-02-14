@@ -12,10 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "underMaintenance": {
-      "type": "boolean",
-      "default": false
-    },
     "allowOverwrite": {
       "type": "boolean",
       "default": false
@@ -78,8 +74,11 @@
       "repeatable": false,
       "component": "settings.elections"
     },
-    "answersLocked": {
-      "type": "boolean"
+    "access": {
+      "displayName": "Access",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.access"
     }
   }
 }

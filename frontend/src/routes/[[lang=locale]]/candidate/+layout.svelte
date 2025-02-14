@@ -5,6 +5,11 @@
 - Inits CandidateContext
 - Sets top bar settings
 - Render the `Layout` component for the Candidate App
+- Shows a maintenance page if the Candidate App is not accessible yet or not supported
+
+### Settings
+
+- `access.candidateApp`: Whether to show the Candidate App.
 -->
 
 <script lang="ts">
@@ -16,24 +21,13 @@
   import { getLayoutContext } from '$lib/contexts/layout';
   import { CandidateNav } from '$lib/dynamic-components/navigation/candidate';
   import Layout from '../Layout.svelte';
+  import MaintenancePage from '../MaintenancePage.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get app context
   ////////////////////////////////////////////////////////////////////
 
-  const { appType, t } = getAppContext();
-
-  ////////////////////////////////////////////////////////////////////
-  // Check support for Candidate App
-  ////////////////////////////////////////////////////////////////////
-
-  if (!staticSettings.dataAdapter.supportsCandidateApp) {
-    error(404, {
-      message: $t('candidateApp.notSupported.title'),
-      description: $t('candidateApp.notSupported.content'),
-      emoji: $t('candidateApp.notSupported.heroEmoji')
-    });
-  }
+  const { appSettings, appType, t } = getAppContext();
 
   ////////////////////////////////////////////////////////////////////
   // Init Candidate Context
@@ -57,8 +51,19 @@
   let isDrawerOpen: boolean;
 </script>
 
-<Layout {menuId} bind:isDrawerOpen>
-  <CandidateNav on:keyboardFocusOut={navigation.close} id={menuId} hidden={!isDrawerOpen} slot="menu" />
+{#if !$appSettings.dataAdapter.supportsCandidateApp}
+  <MaintenancePage
+    title={$t('candidateApp.notSupported.title')}
+    content={$t('candidateApp.notSupported.content')}
+    emoji={$t('candidateApp.notSupported.heroEmoji')} />
+{:else if !$appSettings.access.candidateApp}
+  <MaintenancePage
+    title={$t('dynamic.candidateAppNotAccessible.title')}
+    content={$t('dynamic.candidateAppNotAccessible.content')} />
+{:else}
+  <Layout {menuId} bind:isDrawerOpen>
+    <CandidateNav on:keyboardFocusOut={navigation.close} id={menuId} hidden={!isDrawerOpen} slot="menu" />
+    <slot />
+  </Layout>
+{/if}
 
-  <slot />
-</Layout>
