@@ -27,18 +27,21 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, checkRegistrationKey, darkMode, getRoute, t, userData } = getCandidateContext();
-  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
+  const { appSettings, checkRegistrationKey, getRoute, t, userData } = getCandidateContext();
+  const { pageStyles } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
   // Handle checking registration key
   ////////////////////////////////////////////////////////////////////
 
+  let canSubmit: boolean;
   let status: ActionStatus = 'idle';
 
   // Get key from search params
   let registrationKey = $page.url.searchParams.get('registrationKey');
   if (registrationKey) checkKeyAndContinue(registrationKey);
+
+  $: canSubmit = !!(status !== 'loading' && registrationKey);
 
   /**
    * Check the registration key and continue to password selection if valid. Otherwise, show an error message.
@@ -74,18 +77,15 @@
   ////////////////////////////////////////////////////////////////////
 
   pageStyles.push({ drawer: { background: 'bg-base-300' } });
-  topBarSettings.push({
-    imageSrc: $darkMode
-      ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-      : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-  });
 </script>
 
-<MainContent title={$t('candidateApp.register.title')}>
+<MainContent title={$appSettings.preRegistration?.enabled 
+  ? $t('candidateApp.register.titleWithPreregistration')
+  : $t('candidateApp.register.title')}>
   <HeadingGroup slot="heading">
     <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.candidateAppName')}</PreHeading>
   </HeadingGroup>
-  <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={handleSubmit}>
+  <form class="flex flex-col flex-nowrap items-center">
     {#if $userData}
       <p class="text-center text-warning">{$t('candidateApp.register.loggedInWarning')}</p>
       <div class="center pb-10">
@@ -107,13 +107,16 @@
       {#if status === 'error'}
         <ErrorMessage inline message={$t('candidateApp.register.wrongRegistrationCode')} class="mb-lg mt-md" />
       {/if}
-      <Button
-        type="submit"
-        disabled={status === 'loading'}
-        text={$t('candidateApp.register.register')}
-        variant="main" />
     {/if}
-    <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.common.contactSupport')} />
-    <Button href={$getRoute('Home')} text={$t('candidateApp.common.voterApp')} />
   </form>
+  <svelte:fragment slot="primaryActions">
+    <Button
+      disabled={!canSubmit}
+      text={$t('candidateApp.register.register')}
+      variant="main" 
+      on:click={handleSubmit}/>
+    <Button 
+      href={$getRoute('CandAppHelp')} 
+      text={$t('candidateApp.help.title')} />
+  </svelte:fragment>
 </MainContent>

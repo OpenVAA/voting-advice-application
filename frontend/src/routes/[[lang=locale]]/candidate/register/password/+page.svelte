@@ -93,17 +93,17 @@
 
 <MainContent title={$t('candidateApp.register.title')}>
   <HeadingGroup slot="heading">
-    <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.candidateAppName')}</PreHeading>
-    <h1 class="my-24 text-2xl font-normal">
-      {$t('candidateApp.common.greeting', { username })}
-    </h1>
+    <h1>{$t('candidateApp.common.greeting', { username })}</h1>
   </HeadingGroup>
   <div class="flex-nowarp flex flex-col items-center">
     <PasswordSetter bind:valid={isPasswordValid} bind:errorMessage={validationError} bind:password />
     {#if status === 'error'}
       <ErrorMessage inline message={$t('candidateApp.setPassword.registrationError')} class="mb-lg mt-md" />
     {/if}
+  </div>
+
+  <svelte:fragment slot="primaryActions">
     <Button on:click={handleSubmit} disabled={!canSubmit} variant="main" text={submitLabel} />
     <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.common.contactSupport')} />
-  </div>
+  </svelte:fragment>
 </MainContent>

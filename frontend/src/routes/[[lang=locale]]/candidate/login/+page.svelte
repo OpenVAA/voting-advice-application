@@ -41,8 +41,10 @@
   const errorParam = $page.url.searchParams.get('errorMessage');
   const redirectTo = $page.url.searchParams.get('redirectTo');
 
+  let canSubmit: boolean;
   let email = '';
   let errorMessage: string | undefined;
+  let password = '';
   let showPasswordSetMessage = false;
   let status: ActionStatus = 'idle';
 
@@ -57,6 +59,9 @@
     showPasswordSetMessage = true;
     $newUserEmail = undefined;
   }
+
+  $: canSubmit = !!(status !== 'loading' && email && password);
+
 
   ///////////////////////////////////////////////////////////////////
   // Top bar and styling
@@ -114,19 +119,34 @@
       autocomplete="email"
       required />
     <div class="mb-md w-full max-w-md">
-      <PasswordField autocomplete="current-password" id="password" />
+      <PasswordField autocomplete="current-password" id="password" bind:password />
     </div>
     {#if status === 'error'}
       <ErrorMessage inline message={errorMessage} class="mb-md" />
     {/if}
 
-    <Button type="submit" disabled={status === 'loading'} text={$t('common.login')} variant="main" />
-    <Button href={$getRoute('CandAppForgotPassword')} text={$t('candidateApp.login.forgotPassword')} />
-    <Button href="mailto:{$appSettings.admin.email}" text={$t('candidateApp.common.contactSupport')} />
-    <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
-    <Button
-      on:click={() => goto($getRoute('Home'), { invalidateAll: true })}
-      text={$t('candidateApp.common.voterApp')} />
+    <Button 
+      type="submit" 
+      disabled={!canSubmit} 
+      text={$t('common.login')} 
+      variant="main" />
+
+    {#if $appSettings.preRegistration?.enabled}
+      <div class="divider">{$t('common.or')}</div>
+      <Button 
+        href={$getRoute('CandAppPreregister')} 
+        text={$t('candidateApp.preregister.identification.start.title')} 
+        variant="main" />
+    {/if}
+
+    <div class="mt-lg">
+      <Button href={$getRoute('CandAppForgotPassword')} text={$t('candidateApp.login.forgotPassword')} />
+      <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.help.title')} />
+      <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
+      <Button
+        on:click={() => goto($getRoute('Home'), { invalidateAll: true })}
+        text={$t('candidateApp.common.voterApp')} />
+    </div>
   </form>
 
   <Footer />

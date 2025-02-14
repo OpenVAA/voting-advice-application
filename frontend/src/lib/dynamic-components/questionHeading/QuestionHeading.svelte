@@ -10,6 +10,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
 - `question`: The `Question` whose text and metadata to show.
 - `questionBlocks`: The `QuestionBlocks` containing the question.
+- `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
 - Any valid properties of a `HeadingGroup` component.
 
 ### Settings
@@ -44,6 +45,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
   export let question: $$Props['question'];
   export let questionBlocks: $$Props['questionBlocks'] = undefined;
+  export let onShadedBg: $$Props['onShadedBg'] = undefined;
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -72,13 +74,16 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
 <HeadingGroup {...concatClass($$restProps, 'relative')}>
   <PreHeading class="flex flex-row flex-wrap items-center justify-center gap-sm">
-    {#each getElectionsToShow({ question, elections: $elections }) as election}
-      <ElectionTag {election} />
-    {/each}
+    {#if $appSettings.elections.showElectionTags}
+      {#each getElectionsToShow({ question, elections: $elections }) as election}
+        <ElectionTag {election} {onShadedBg} />
+      {/each}
+    {/if}
     {#if $appSettings.questions.showCategoryTags}
       <CategoryTag
         category={question.category}
-        suffix={blockWithStats ? `${blockWithStats.indexInBlock + 1}/${blockWithStats.block.length}` : undefined} />
+        suffix={blockWithStats ? `${blockWithStats.indexInBlock + 1}/${blockWithStats.block.length}` : undefined} 
+        {onShadedBg}/>
     {:else if blockWithStats}
       <!-- Index of question within all questions -->
       {$t('common.question')}

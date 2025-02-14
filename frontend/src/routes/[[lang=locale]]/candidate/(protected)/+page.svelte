@@ -12,6 +12,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
 <script lang="ts">
   import { LogoutButton } from '$lib/candidate/components/logoutButton';
   import { Button } from '$lib/components/button';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
   import { InfoBadge } from '$lib/components/infoBadge';
   import { Warning } from '$lib/components/warning';
   import { getCandidateContext } from '$lib/contexts/candidate';
@@ -109,6 +110,10 @@ Shows a dynamic list of the actions the candidate should take to be included in 
     {/if}
   </svelte:fragment>
 
+  <figure role="presentation" slot="hero">
+    <HeroEmoji emoji={$profileComplete ? $t('dynamic.success.heroEmoji') : undefined} />
+  </figure>  
+
   <p class="text-center">
     {nextAction.explanation}
   </p>
@@ -119,33 +124,35 @@ Shows a dynamic list of the actions the candidate should take to be included in 
     </p>
   {/if}
 
-  <Button text={nextAction.buttonTextBasicInfo} icon="profile" iconPos="left" href={$getRoute('CandAppProfile')}>
-    <svelte:fragment slot="badge">
-      {#if $unansweredRequiredInfoQuestions && $unansweredRequiredInfoQuestions.length > 0}
-        <InfoBadge text={String($unansweredRequiredInfoQuestions.length)} />
-      {/if}
-    </svelte:fragment>
-  </Button>
-  <Button
-    text={nextAction.buttonTextQuestion}
-    icon="opinion"
-    iconPos="left"
-    disabled={$unansweredRequiredInfoQuestions?.length !== 0}
-    href={$getRoute('CandAppQuestions')}>
-    <svelte:fragment slot="badge">
-      {#if $unansweredOpinionQuestions && $unansweredOpinionQuestions?.length > 0}
-        <InfoBadge
-          text={$unansweredOpinionQuestions.length}
-          disabled={$unansweredRequiredInfoQuestions?.length !== 0} />
-      {/if}
-    </svelte:fragment>
-  </Button>
-  <Button
-    text={$t('candidateApp.home.preview')}
-    icon="previewProfile"
-    iconPos="left"
-    disabled={$unansweredRequiredInfoQuestions?.length !== 0}
-    href={$getRoute('CandAppPreview')} />
+  <div>
+    <Button text={nextAction.buttonTextBasicInfo} icon="profile" iconPos="left" href={$getRoute('CandAppProfile')}>
+      <svelte:fragment slot="badge">
+        {#if $unansweredRequiredInfoQuestions && $unansweredRequiredInfoQuestions.length > 0}
+          <InfoBadge text={String($unansweredRequiredInfoQuestions.length)} />
+        {/if}
+      </svelte:fragment>
+    </Button>
+    <Button
+      text={nextAction.buttonTextQuestion}
+      icon="opinion"
+      iconPos="left"
+      disabled={$unansweredRequiredInfoQuestions?.length !== 0}
+      href={$getRoute('CandAppQuestions')}>
+      <svelte:fragment slot="badge">
+        {#if $unansweredOpinionQuestions && $unansweredOpinionQuestions?.length > 0}
+          <InfoBadge
+            text={$unansweredOpinionQuestions.length}
+            disabled={$unansweredRequiredInfoQuestions?.length !== 0} />
+        {/if}
+      </svelte:fragment>
+    </Button>
+    <Button
+      text={$t('candidateApp.home.preview')}
+      icon="previewProfile"
+      iconPos="left"
+      disabled={$unansweredRequiredInfoQuestions?.length !== 0}
+      href={$getRoute('CandAppPreview')} />
+  </div>
 
   <div class="flex w-full flex-col items-center justify-center" slot="primaryActions">
     <Button variant="main" text={nextAction.buttonTextPrimaryActions} icon="next" href={nextAction.href} />
