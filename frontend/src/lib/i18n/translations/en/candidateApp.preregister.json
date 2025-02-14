@@ -59,7 +59,7 @@
   },
   "email": {
     "subject": "Please confirm your email address",
-    "text": "Hi <%= candidate.firstName %>,\nThank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:\n{registrationRoute}<%= candidate.registrationKey %>",
-    "html": "<p>Hi <%= candidate.firstName %>,</p><p>Thank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:</p><p><a href=\"{registrationRoute}<%= candidate.registrationKey %>\">{registrationRoute}<%= candidate.registrationKey %></a></p>"
+    "text": "Hi {firstName},\nThank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:\n{registrationUrl}",
+    "html": "<p>Hi {firstName},</p><p>Thank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p>"
   }
 }

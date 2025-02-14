@@ -8,22 +8,25 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { preregister, preregistrationNominations, t, getRoute } = getCandidateContext();
+  const { idTokenClaims, preregister, preregistrationNominations, t, getRoute } = getCandidateContext();
 
   let email1 = '';
   let email2 = '';
   let termsAccepted = false;
 
   async function onSubmit() {
-    const registrationRoute = `${window.location.origin}${$getRoute('CandAppRegister')}?registrationKey=`;
+    const templatePayload = {
+      registrationUrl: `${window.location.origin}${$getRoute('CandAppRegister')}?registrationKey=<%= candidate.registrationKey %>`,
+      firstName: $idTokenClaims?.firstName
+    };
     await preregister({
       email: email1,
       nominations: $preregistrationNominations,
       extra: {
         emailTemplate: {
           subject: $t('candidateApp.preregister.email.subject'),
-          text: $t('candidateApp.preregister.email.text', { registrationRoute }),
-          html: $t('candidateApp.preregister.email.html', { registrationRoute })
+          text: $t('candidateApp.preregister.email.text', templatePayload),
+          html: $t('candidateApp.preregister.email.html', templatePayload)
         }
       }
     });
