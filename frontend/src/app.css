@@ -84,11 +84,17 @@
     @apply mt-12 first:mt-0;
   }
   .circled {
-    @apply absolute left-0 -mt-2 grid h-24 w-24 place-items-center rounded-full border-md border-[var(--line-color)] text-md;
+    @apply absolute left-0 -mt-2 grid h-24 w-24 place-items-center rounded-full bg-base-300 text-md;
+  }
+  .circled-on-shaded {
+    @apply bg-base-100;
   }
   .list-circled li::before {
     content: counter(steps);
     @apply circled;
+  }
+  .list-circled-on-shaded li::before {
+    @apply circled-on-shaded;
   }
 
   /**
@@ -103,6 +109,13 @@
    */
   .small-label {
     @apply text-xs font-normal uppercase text-secondary;
+  }
+
+  /**
+   * Small info used for, e.g., info displayed under inputs or buttons.
+   */
+   .small-info {
+    @apply text-sm text-secondary;
   }
 
   /**

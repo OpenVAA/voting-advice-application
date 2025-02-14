@@ -830,10 +830,10 @@ Accesses
     @apply mb-sm;
   }
   :global(.video-transcript figure) {
-    @apply mb-lg text-center text-sm;
+    @apply mb-lg text-center small-info;
   }
   :global(.video-transcript figcaption) {
-    @apply text-center text-sm;
+    @apply text-center small-info;
   }
 
   :global(.video-transcript h1),
