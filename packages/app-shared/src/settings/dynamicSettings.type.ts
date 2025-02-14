@@ -188,11 +188,15 @@ export type DynamicSettings = {
   /**
    * Settings related to election and constituency selection in VAAs with multiple elections. These have no effect if there is just one election.
    */
-  elections?: {
+  elections: {
     /**
      * If `true` all elections are selected by default.
      */
     disallowSelection?: boolean;
+    /**
+     * Whether to show the election tags along the question text. Only applicable when there are multiple elections.
+     */
+    showElectionTags: boolean;
     /**
      * If `true` and there are multiple elections, the constituency selection page with this `ConstituencyGroup` as the only option will be shown first and the possible election selection only afterwards. Only those elections that are applicable to the selected constituency or its ancestors are shown. Election selection will be bypassed the same way as normally.
      */
