@@ -11,4 +11,8 @@ export type QuestionHeadingProps = HeadingGroupProps & {
    * The `QuestionBlocks` containing the question.
    */
   questionBlocks?: QuestionBlocks;
+  /**
+   * Set to `true` if using the component on a dark (`base-300`) background. @default false
+   */
+  onShadedBg?: boolean;
 };

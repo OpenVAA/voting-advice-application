@@ -1,6 +1,6 @@
 {
   "close": "Sulje esikatselu",
   "notFound": "Profiilia ei löytynyt",
-  "tip": "Tämä on esikatselu siitä, miltä profiilisi näyttää äänestäjille.",
+  "tip": "Tämä on alustava esikatselu siitä, miltä profiilisi näyttää äänestäjille. Julkaistun versiomn ulkoasu saattaa olla hieman erilainen. Jos olet ehdolla useissa vaaleissa, näytetään vain ne vastaukset, jotka liittyvät äänestäjän valitsemaan vaaliin.",
   "title": "Esikatselu"
 }
