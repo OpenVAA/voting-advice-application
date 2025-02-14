@@ -60,6 +60,13 @@ A template part that outputs the navigation menu for the Candidate App for use i
       {#if $appSettings.preRegistration?.enabled}
         <NavItem href={$getRoute('CandAppPreregister')} icon="create" text={$t('candidateApp.preregister.identification.start.title')} />
       {/if}
+      <NavItem href={$getRoute('CandAppRegister')} icon="check" text={
+        $appSettings.preRegistration?.enabled 
+        ? $t('candidateApp.register.titleWithPreregistration')
+        : $t('candidateApp.register.title')
+      } />
+    </NavGroup>
+    <NavGroup>
       <NavItem href={$getRoute('CandAppForgotPassword')} icon="help" text={$t('candidateApp.login.forgotPassword')} />
       <NavItem href={$getRoute('CandAppHelp')} icon="help" text={$t('candidateApp.help.title')} />
     </NavGroup>
