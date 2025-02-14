@@ -33,8 +33,8 @@ Shows a FAQ and other support content for the candidate application.
 </script>
 
 <MainContent title={$t('candidateApp.help.title')}>
-  <div class="text-center">
-    <p>{$t('candidateApp.help.ingress')}</p>
+  <div class="text-center mb-lg">
+    {$t('candidateApp.help.ingress')}
   </div>
 
   {#each $appCustomization.candidateAppFAQ ?? [] as faq}
@@ -47,14 +47,13 @@ Shows a FAQ and other support content for the candidate application.
     </p>
   {/each}
 
-  <div class="mt-md">
     <Button
       href={supportMailto}
+      variant="prominent"
       target="_blank"
       icon="feedback"
-      iconPos="left"
-      text={$t('candidateApp.common.contactSupport')} />
-  </div>
+      text={$t('candidateApp.common.contactSupport')}
+      class="mt-lg" />
 
   <svelte:fragment slot="primaryActions">
     <Button
