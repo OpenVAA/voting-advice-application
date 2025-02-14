@@ -1,4 +1,4 @@
-import { isLocalizedString, staticSettings } from '@openvaa/app-shared';
+import { isLocalizedObject, staticSettings } from '@openvaa/app-shared';
 import { error } from '@sveltejs/kit';
 import I18n from '@sveltekit-i18n/base';
 import parser, { type Config } from '@sveltekit-i18n/parser-icu';
@@ -160,7 +160,7 @@ export function translateObject<
   TObject extends Record<string, unknown> | null | undefined,
   TValue = TObject extends Record<string, infer V> ? V : never
 >(obj: TObject, targetLocale?: string | null): TValue | undefined {
-  if (!isLocalizedString(obj)) return undefined;
+  if (!isLocalizedObject(obj)) return undefined;
   targetLocale ??= locale.get();
   let key: string | undefined;
   // Treat keys with empty strings as undefined
