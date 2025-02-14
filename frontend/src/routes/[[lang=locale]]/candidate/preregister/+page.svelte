@@ -6,6 +6,9 @@
   import { goto } from '$app/navigation';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../MainContent.svelte';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { onDestroy } from 'svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -21,6 +24,7 @@
     preregistrationElectionIds,
     t
   } = getCandidateContext();
+  const { navigationSettings } = getLayoutContext(onDestroy);
 
   $preregistrationElectionIds = $dataRoot.elections.map(({ id }) => id);
 
@@ -46,35 +50,54 @@
     const redirectUri = `${window.location.origin}/${$locale}/candidate/preregister/signicat/oidc/callback`; // TODO: Shorter URI.
     window.location.href = `${constants.PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=openid%20profile&prompt=login`;
   }
+
+  ////////////////////////////////////////////////////////////////////
+  // Top bar
+  ////////////////////////////////////////////////////////////////////
+
+  if ($idTokenClaims) navigationSettings.push({ hide: true });
 </script>
 
-<svelte:head>
-  <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
-</svelte:head>
-
 {#if $idTokenClaims}
-  <MainContent title={$t('candidateApp.preregister.identification.success.title')}>
+
+  <MainContent title={$t('candidateApp.preregister.identification.success.title', $idTokenClaims)}>
+    <figure role="presentation" slot="hero">
+      <HeroEmoji emoji={$t('candidateApp.preregister.identification.success.heroEmoji')} />
+    </figure>
     <div class="mb-md text-center">
-      {@html sanitizeHtml($t('candidateApp.preregister.identification.success.content', $idTokenClaims))}
+      {@html sanitizeHtml($t('candidateApp.preregister.identification.success.content'))}
     </div>
-    <Button type="submit" text={$t('common.continue')} variant="main" on:click={() => goto($getRoute(nextRoute))} />
+    <Button 
+      slot="primaryActions" 
+      type="submit" 
+      text={$t('common.continue')} 
+      variant="main" 
+      on:click={() => goto($getRoute(nextRoute))} />
   </MainContent>
+
 {:else}
+
   <MainContent title={$t('candidateApp.preregister.identification.start.title')}>
+    <figure role="presentation" slot="hero">
+      <HeroEmoji emoji={$t('candidateApp.preregister.identification.start.heroEmoji')} />
+    </figure>
     <div class="mb-md text-center">
       {@html sanitizeHtml($t('candidateApp.preregister.identification.start.content'))}
     </div>
-    <ol class="list-circled mb-md w-fit">
+    <ol class="list-circled list-circled-on-shaded my-md w-fit">
       {#each steps as step}
         <li>{step}</li>
       {/each}
     </ol>
-    <Button
-      text={$t('candidateApp.preregister.identification.identifyYourselfButton')}
-      variant="main"
-      on:click={redirectToIdentityProvider} />
-    <p class="my-md text-center text-xs text-secondary">
-      {$t('candidateApp.preregister.identification.identifyYourselHelpText')}
-    </p>
+    <svelte:fragment slot="primaryActions">
+      <Button
+        text={$t('candidateApp.preregister.identification.identifyYourselfButton')}
+        variant="main"
+        on:click={redirectToIdentityProvider} />
+      <p class="my-md text-center small-info">
+        {$t('candidateApp.preregister.identification.identifyYourselHelpText')}
+      </p>
+    </svelte:fragment>
   </MainContent>
+
 {/if}

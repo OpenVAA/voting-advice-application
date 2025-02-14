@@ -6,41 +6,54 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { getErrorTranslationKey } from '$candidate/utils/preregistrationError';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, t, getRoute, clearIdToken } = getCandidateContext();
+  const { clearIdToken, getRoute, t } = getCandidateContext();
   $: code = $page.url.searchParams.get('code');
 
   clearIdToken();
 </script>
 
-<svelte:head>
-  <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
-</svelte:head>
-
 {#if code === 'success'}
+
   <MainContent title={$t('candidateApp.preregister.status.success.title')}>
+    <figure role="presentation" slot="hero">
+      <HeroEmoji emoji={$t('candidateApp.preregister.status.success.heroEmoji')} />
+    </figure>  
     <div class="mb-md text-center">
       {@html sanitizeHtml($t('candidateApp.preregister.status.success.content'))}
     </div>
     <Button
-      text={$t('common.continue')}
-      variant="main"
-      on:click={() => goto($getRoute('CandAppRegister'), { invalidateAll: true })} />
+      slot="primaryActions"
+      text={$t('common.return')}
+      href={$getRoute('CandAppLogin')} 
+      variant="main"/>
   </MainContent>
+
 {:else}
+
   <MainContent title={$t(getErrorTranslationKey(code).title)}>
-    <div class="mb-md text-center text-warning">
+    <figure role="presentation" slot="hero">
+      <HeroEmoji emoji={$t('dynamic.error.heroEmoji')} />
+    </figure>  
+    <div class="mb-lg text-center text-warning">
       {@html sanitizeHtml($t(getErrorTranslationKey(code).content))}
     </div>
-    <Button
-      class="mb-md"
-      text={$t('common.continue')}
-      variant="main"
-      on:click={() => goto($getRoute('CandAppPreregister'), { invalidateAll: true })} />
-    <Button href="mailto:{$appSettings.admin.email}" text={$t('candidateApp.common.contactSupport')} />
+
+    <svelte:fragment slot="primaryActions">
+      <Button
+        class="mb-md"
+        text={$t('common.return')}
+        variant="main"
+        on:click={() => goto($getRoute('CandAppPreregister'), { invalidateAll: true })} />
+      <Button 
+        href={$getRoute('CandAppHelp')} 
+        text={$t('candidateApp.help.title')} />
+    </svelte:fragment>
   </MainContent>
+
 {/if}

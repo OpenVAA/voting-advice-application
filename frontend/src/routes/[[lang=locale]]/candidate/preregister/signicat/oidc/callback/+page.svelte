@@ -27,8 +27,4 @@
   }
 </script>
 
-<svelte:head>
-  <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
-</svelte:head>
-
-<MainContent title=""><Loading /></MainContent>
+<MainContent title={$t('common.loading')}><Loading /></MainContent>
