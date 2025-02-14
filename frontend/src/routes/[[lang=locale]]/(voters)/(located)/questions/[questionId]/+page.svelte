@@ -97,12 +97,14 @@ Display a question for answering.
     }
   }
 
-  $: showQuestionSelection = $page.url.searchParams.get('showQuestionSelection') === 'true';
-  $: shouldShowQuestionSelection = useQuestionOrdering && showQuestionSelection;
+  $: shouldShowQuestionSelection =
+    useQuestionOrdering && $page.url.searchParams.get('showQuestionSelection') === 'true';
 
   $: {
     if (shouldShowQuestionSelection) {
       nextQuestionChoices = getNextQuestionChoices();
+    } else {
+      nextQuestionChoices = [];
     }
   }
 
@@ -208,7 +210,7 @@ Display a question for answering.
     const shownQuestionIds = $selectedQuestionBlocks.shownQuestionIds;
     const currentIndex = shownQuestionIds.findIndex((id) => id === question.id);
     // If showing question selection view, stay on current question. Otherwise, move by steps.
-    const newIndex = currentIndex + (showQuestionSelection ? 0 : steps);
+    const newIndex = currentIndex + (shouldShowQuestionSelection ? 0 : steps);
     let url: string;
     let noScroll = false;
 
@@ -340,54 +342,41 @@ Display a question for answering.
     <svelte:fragment slot="heading">
       {#each shouldShowQuestionSelection ? nextQuestionChoices : [question] as currentQuestion}
         <div transition:slide class="grid-line-x">
-          {#if nextQuestionChoices.length}
+          {#if shouldShowQuestionSelection && nextQuestionChoices.length}
             <button
-              class="w-full text-left {shouldShowQuestionSelection
-                ? 'rounded-lg p-2 transition-colors hover:bg-base-200'
-                : ''}"
-              on:click={() => shouldShowQuestionSelection && handleChoiceSelect(currentQuestion)}
-              disabled={!shouldShowQuestionSelection}>
+              class="w-full rounded-lg p-2 text-left transition-colors hover:bg-base-200"
+              on:click={() => handleChoiceSelect(currentQuestion)}>
               <HeadingGroup id={`questionHeading-${currentQuestion.id}`} class="relative">
                 <PreHeading>
                   {#if $appSettings.questions.showCategoryTags}
                     <CategoryTag category={currentQuestion.category} />
-                    <span class="text-secondary">
-                      {#if !useQuestionOrdering}
-                        {questionBlock.indexInBlock + 1}/{questionBlock.block.length}
-                      {/if}
-                    </span>
                   {:else}
                     {$t('common.question')}
-                    <span class="text-secondary">
-                      {#if !shouldShowQuestionSelection}
-                        {questionBlock.index + 1}/{questions.length}
-                      {/if}
-                    </span>
                   {/if}
                 </PreHeading>
                 <h1>{currentQuestion.text}</h1>
               </HeadingGroup>
             </button>
           {:else}
-            <HeadingGroup id={`questionHeading-${currentQuestion.id}`} class="relative">
+            <HeadingGroup id={`questionHeading-${question.id}`} class="relative">
               <PreHeading>
                 {#if $appSettings.questions.showCategoryTags}
-                  <CategoryTag category={currentQuestion.category} />
-                  <span class="text-secondary">
-                    {#if !useQuestionOrdering}
+                  <CategoryTag category={question.category} />
+                  {#if !useQuestionOrdering}
+                    <span class="text-secondary">
                       {questionBlock.indexInBlock + 1}/{questionBlock.block.length}
-                    {/if}
-                  </span>
+                    </span>
+                  {/if}
                 {:else}
                   {$t('common.question')}
-                  <span class="text-secondary">
-                    {#if !shouldShowQuestionSelection}
+                  {#if !useQuestionOrdering}
+                    <span class="text-secondary">
                       {questionBlock.index + 1}/{questions.length}
-                    {/if}
-                  </span>
+                    </span>
+                  {/if}
                 {/if}
               </PreHeading>
-              <h1>{currentQuestion.text}</h1>
+              <h1>{question.text}</h1>
             </HeadingGroup>
           {/if}
         </div>
@@ -408,7 +397,7 @@ Display a question for answering.
     </style>
 
     <!-- !videoProps && -->
-    {#if info && info !== '' && !showQuestionSelection}
+    {#if info && info !== '' && !shouldShowQuestionSelection}
       <QuestionInfo {info} onCollapse={handleInfoCollapse} onExpand={handleInfoExpand} />
     {/if}
 
