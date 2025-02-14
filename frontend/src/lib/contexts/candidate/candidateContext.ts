@@ -205,6 +205,13 @@ export function initCandidateContext(): CandidateContext {
   async function preregister(opts: {
     email: string;
     nominations: Array<{ electionId: Id; constituencyId: Id }>;
+    extra: {
+      emailTemplate: {
+        subject: string;
+        text: string;
+        html: string;
+      };
+    };
   }): Promise<void> {
     const dataWriter = await prepareDataWriter(dataWriterPromise);
     try {

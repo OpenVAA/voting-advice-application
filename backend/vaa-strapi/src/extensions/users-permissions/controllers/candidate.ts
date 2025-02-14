@@ -26,7 +26,14 @@ const validatePreregisterBody = validateYupSchema(
     lastName: yup.string().required(),
     identifier: yup.string().required(),
     email: yup.string().required(),
-    nominations: yup.array(yup.object({ electionId: yup.string(), constituencyId: yup.string() }))
+    nominations: yup.array(yup.object({ electionId: yup.string(), constituencyId: yup.string() })),
+    extra: yup.object({
+      emailTemplate: yup.object({
+        subject: yup.string().required(),
+        text: yup.string().required(),
+        html: yup.string().required()
+      })
+    })
   })
 );
 
@@ -108,11 +115,18 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     identifier: string;
     email: string;
     nominations: Array<{ electionId: string; constituencyId: string }>;
+    extra: {
+      emailTemplate: {
+        subject: string;
+        text: string;
+        html: string;
+      };
+    };
   } = ctx.request.body;
 
   await validatePreregisterBody(params);
 
-  const { firstName, lastName, identifier, nominations } = params;
+  const { firstName, lastName, identifier, nominations, extra } = params;
   const email = params.email.trim().toLowerCase();
 
   const candidate =
@@ -129,9 +143,16 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     throw new ValidationError('CANDIDATE_CONFLICT');
   }
 
-  const { documentId: candidateDocumentId } = await strapi.documents('api::candidate.candidate').create({
-    data: { email: email.trim().toLocaleLowerCase(), firstName, lastName, identifier }
-  });
+  const { documentId: candidateDocumentId, registrationKey } = await strapi
+    .documents('api::candidate.candidate')
+    .create({
+      data: {
+        email: email.trim().toLocaleLowerCase(),
+        firstName,
+        lastName,
+        identifier
+      }
+    });
 
   await Promise.all(
     nominations.map(
@@ -148,24 +169,12 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     )
   );
 
-  // TODO: Load the full template.
-  await strapi.plugins['email'].services.email.sendTemplatedEmail(
-    { to: email },
-    {
-      subject: 'Confirm your email address',
-      html: `<h2>Confirm your email address</h2>
-<p>Hi <%= user.firstName %>,</p>
-<p>
-  Thank you for registering as a candidate. To continue your registration, please confirm your email address by
-  clicking the button below:
-</p>
-<a href="<%= link %>" class="button">Confirm email</a>`
-    },
-    {
-      user: { firstName },
-      link: `${process.env.PUBLIC_BROWSER_FRONTEND_URL}/candidate/register?registrationKey=${candidate.registrationKey}`
+  await strapi.plugins['email'].services.email.sendTemplatedEmail({ to: email }, extra.emailTemplate, {
+    candidate: {
+      firstName,
+      registrationKey
     }
-  );
+  });
 
   return { type: 'success' };
 }
