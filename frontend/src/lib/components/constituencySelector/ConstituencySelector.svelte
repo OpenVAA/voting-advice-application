@@ -10,6 +10,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 
 - `elections`: The `Election`s for which to show the `Constituency`s.
 - `disableSorting`: If `true`, the `Constituency`s are not ordered alphabetically. Default `false`.
+- `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
 - `selected`: Bindable value for the `Id`s of the selected `Constituency`s organized by `Election`.
 - `selectionComplete`: A utility bindable value which is `true` when a selection has been made for each `Election`.
 - `onChange`: Callback triggered when the selection changes.
@@ -38,6 +39,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
 
   export let elections: $$Props['elections'];
   export let disableSorting: $$Props['disableSorting'] = undefined;
+  export let onShadedBg: $$Props['onShadedBg'] = undefined;
   export let selected: NonNullable<$$Props['selected']> = {};
   export let selectionComplete: $$Props['selectionComplete'] = false;
   export let onChange: $$Props['onChange'] = undefined;
@@ -159,7 +161,10 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
         <!-- Show an number in front of heading if multiple selections need be made -->
         {#if sections.length > 1}
           <h3 class="relative pl-[2rem]">
-            <span class="circled">{sectionIndex + 1}</span>
+            <span 
+              class="circled"
+              class:circled-on-shaded={onShadedBg}
+            >{sectionIndex + 1}</span>
             {applicableElections
               .toReversed()
               .map((e) => e.name)
@@ -184,6 +189,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
                 <SingleGroupConstituencySelector
                   {group}
                   {disableSorting}
+                  {onShadedBg}
                   bind:selected={sectionSelected[sectionIndex]}
                   on:change={handleChange} />
               </div>
@@ -199,6 +205,7 @@ If any of the `ConstituencyGroup`s for the `Election`s are shared, only a single
           <SingleGroupConstituencySelector
             {group}
             {disableSorting}
+            {onShadedBg}
             bind:selected={sectionSelected[sectionIndex]}
             onChange={handleChange} />
 

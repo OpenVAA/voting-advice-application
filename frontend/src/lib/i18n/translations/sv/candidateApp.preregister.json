@@ -37,7 +37,7 @@
     "success": {
       "title": "Confirm your email address",
       "heroEmoji": "✉️",
-      "content": "<p>We've sent a message to your email address.</p><p>Please click on the link in the message to confirm your email address and complete the registration process.</p>"
+      "content": "<p>We've sent a message to your email address.</p><p>Please click on the link in the message to confirm your email address and complete the registration process.</p><p>You can now close this window.</p>"
     },
     "strongIdentificationError": {
       "title": "There was an issue with Bank ID authentication",

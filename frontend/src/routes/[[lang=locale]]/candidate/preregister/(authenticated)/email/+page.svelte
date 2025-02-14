@@ -14,7 +14,7 @@
   let email2 = '';
   let termsAccepted = false;
 
-  async function onSubmit() {
+  async function handleSubmit() {
     const templatePayload = {
       registrationUrl: `${window.location.origin}${$getRoute('CandAppRegister')}?registrationKey=<%= candidate.registrationKey %>`,
       firstName: $idTokenClaims?.firstName
@@ -33,12 +33,8 @@
   }
 </script>
 
-<svelte:head>
-  <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
-</svelte:head>
-
 <MainContent title={$t('candidateApp.preregister.emailVerification.title')}>
-  <form class="flex flex-col flex-nowrap items-center" on:submit|preventDefault={onSubmit}>
+  <form class="flex flex-col flex-nowrap items-center">
     <div class="mb-md text-center">
       {@html sanitizeHtml($t('candidateApp.preregister.emailVerification.content'))}
     </div>
@@ -66,10 +62,13 @@
       <input type="checkbox" class="checkbox" name="selected-elections" bind:checked={termsAccepted} />
       <span class="label-text">{$t('candidateApp.preregister.emailVerification.termsCheckbox')}</span>
     </label>
-    <Button
-      type="submit"
-      text={$t('common.continue')}
-      variant="main"
-      disabled={!termsAccepted || !email1.trim() || !(email1.trim() === email2.trim())} />
   </form>
+
+  <Button
+    slot="primaryActions"
+    text={$t('common.continue')}
+    variant="main"
+    disabled={!termsAccepted || !email1.trim() || !(email1.trim() === email2.trim())} 
+    on:click={handleSubmit}/>
+
 </MainContent>

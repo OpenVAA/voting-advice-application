@@ -15,20 +15,18 @@
   let selectionComplete: boolean;
 </script>
 
-<svelte:head>
-  <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
-</svelte:head>
-
 <MainContent title={$t('candidateApp.preregister.constituencySelect.title')}>
   <div class="mb-md text-center">
     {@html sanitizeHtml($t('candidateApp.preregister.constituencySelect.content'))}
   </div>
   <ConstituencySelector
+    onShadedBg
     class="mb-md"
     elections={$preregistrationElections}
     bind:selected={$preregistrationConstituencyIds}
     bind:selectionComplete />
   <Button
+    slot="primaryActions"
     type="submit"
     text={$t('common.continue')}
     variant="main"
