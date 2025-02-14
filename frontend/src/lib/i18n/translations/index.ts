@@ -17,6 +17,7 @@ export const keys = [
   'candidateApp.logoutModal',
   'candidateApp.notSupported',
   'candidateApp.preview',
+  'candidateApp.privacy',
   'candidateApp.questions',
   'candidateApp.preregister',
   'candidateApp.register',
