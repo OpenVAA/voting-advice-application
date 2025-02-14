@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_settings_notifications_notification_data",
+  "info": {
+    "displayName": "Notifications - NotificationData",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "show": {
+      "type": "boolean"
+    },
+    "title": {
+      "type": "json",
+      "required": true
+    },
+    "content": {
+      "type": "json",
+      "required": true
+    },
+    "icon": {
+      "type": "string"
+    }
+  }
+}

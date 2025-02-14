@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2025-02-14T17:33:08.551Z"
+    "x-generation-date": "2025-02-14T18:38:03.981Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -6814,6 +6814,9 @@
           "access": {
             "$ref": "#/components/schemas/SettingsAccessComponent"
           },
+          "notifications": {
+            "$ref": "#/components/schemas/SettingsNotificationsComponent"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -7146,6 +7149,9 @@
                 },
                 "access": {
                   "$ref": "#/components/schemas/SettingsAccessComponent"
+                },
+                "notifications": {
+                  "$ref": "#/components/schemas/SettingsNotificationsComponent"
                 },
                 "createdAt": {
                   "type": "string",
@@ -7551,6 +7557,36 @@
           },
           "answersLocked": {
             "type": "boolean"
+          }
+        }
+      },
+      "SettingsNotificationsNotificationDataComponent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "show": {
+            "type": "boolean"
+          },
+          "title": {},
+          "content": {},
+          "icon": {
+            "type": "string"
+          }
+        }
+      },
+      "SettingsNotificationsComponent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "candidateApp": {
+            "$ref": "#/components/schemas/SettingsNotificationsNotificationDataComponent"
+          },
+          "voterApp": {
+            "$ref": "#/components/schemas/SettingsNotificationsNotificationDataComponent"
           }
         }
       },

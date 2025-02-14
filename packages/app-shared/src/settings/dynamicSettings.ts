@@ -71,5 +71,9 @@ export const dynamicSettings: DynamicSettings = {
     voterApp: true,
     underMaintenance: false,
     answersLocked: false
+  },
+  notifications: {
+    candidateApp: undefined,
+    voterApp: undefined
   }
 };
