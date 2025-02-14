@@ -14,7 +14,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "x-generation-date": "2025-02-14T15:47:07.558Z"
+    "x-generation-date": "2025-02-14T17:33:08.551Z"
   },
   "x-strapi-config": {
     "plugins": [
@@ -6781,9 +6781,6 @@
           "documentId": {
             "type": "string"
           },
-          "underMaintenance": {
-            "type": "boolean"
-          },
           "allowOverwrite": {
             "type": "boolean"
           },
@@ -6814,8 +6811,8 @@
           "elections": {
             "$ref": "#/components/schemas/SettingsElectionsComponent"
           },
-          "answersLocked": {
-            "type": "boolean"
+          "access": {
+            "$ref": "#/components/schemas/SettingsAccessComponent"
           },
           "createdAt": {
             "type": "string",
@@ -7117,9 +7114,6 @@
                 "documentId": {
                   "type": "string"
                 },
-                "underMaintenance": {
-                  "type": "boolean"
-                },
                 "allowOverwrite": {
                   "type": "boolean"
                 },
@@ -7150,8 +7144,8 @@
                 "elections": {
                   "$ref": "#/components/schemas/SettingsElectionsComponent"
                 },
-                "answersLocked": {
-                  "type": "boolean"
+                "access": {
+                  "$ref": "#/components/schemas/SettingsAccessComponent"
                 },
                 "createdAt": {
                   "type": "string",
@@ -7536,6 +7530,26 @@
             "type": "string"
           },
           "showElectionTags": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SettingsAccessComponent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "candidateApp": {
+            "type": "boolean"
+          },
+          "voterApp": {
+            "type": "boolean"
+          },
+          "underMaintenance": {
+            "type": "boolean"
+          },
+          "answersLocked": {
             "type": "boolean"
           }
         }

@@ -143,10 +143,12 @@
     <div class="mt-lg">
       <Button href={$getRoute('CandAppForgotPassword')} text={$t('candidateApp.login.forgotPassword')} />
       <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.help.title')} />
-      <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
-      <Button
-        on:click={() => goto($getRoute('Home'), { invalidateAll: true })}
-        text={$t('candidateApp.common.voterApp')} />
+      {#if $appSettings.access.voterApp}
+        <!-- We call invalidateAll when navigation to the Voter App to remove the Nominations we have added when loading User data -->
+        <Button
+          on:click={() => goto($getRoute('Home'), { invalidateAll: true })}
+          text={$t('candidateApp.common.voterApp')} />
+      {/if}
     </div>
   </form>
 

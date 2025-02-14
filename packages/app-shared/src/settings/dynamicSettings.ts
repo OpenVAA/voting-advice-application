@@ -66,6 +66,10 @@ export const dynamicSettings: DynamicSettings = {
     showElectionTags: true,
     startFromConstituencyGroup: undefined
   },
-  underMaintenance: false,
-  answersLocked: false
+  access: {
+    candidateApp: true,
+    voterApp: true,
+    underMaintenance: false,
+    answersLocked: false
+  }
 };
