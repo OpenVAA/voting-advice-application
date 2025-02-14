@@ -109,7 +109,7 @@ export function initAppContext(): AppContext {
   function startFeedbackPopupCountdown(delay = 3 * 60): void {
     if (feedbackTimeout) return;
     feedbackTimeout = setTimeout(() => {
-      if (get(userPreferences).feedback?.status !== 'received') popupQueue.push(FeedbackPopup);
+      if (get(userPreferences).feedback?.status !== 'received') popupQueue.push({ component: FeedbackPopup });
     }, delay * 1000);
   }
 
@@ -118,7 +118,7 @@ export function initAppContext(): AppContext {
   function startSurveyPopupCountdown(delay = 5 * 60): void {
     if (surveyTimeout) return;
     surveyTimeout = setTimeout(() => {
-      if (get(userPreferences).survey?.status !== 'received') popupQueue.push(SurveyPopup);
+      if (get(userPreferences).survey?.status !== 'received') popupQueue.push({ component: SurveyPopup });
     }, delay * 1000);
   }
 

@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_settings_notifications",
+  "info": {
+    "displayName": "Notifications",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "candidateApp": {
+      "displayName": "Notifications - NotificationData",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.notifications-notification-data"
+    },
+    "voterApp": {
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.notifications-notification-data"
+    }
+  }
+}

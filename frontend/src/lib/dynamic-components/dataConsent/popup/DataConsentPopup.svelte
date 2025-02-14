@@ -28,7 +28,7 @@ Show a popup with a data consent form, if data consent has not been given yet.
 </script>
 
 <Alert bind:closeAlert title={$t('common.privacy.dataCollection.title')} icon="privacy" {...$$restProps}>
-  <div class="grid grid-flow-row sm:grid-flow-col">
+  <div class="grid grid-flow-row gap-md">
     <p class="my-0">
       {$t('dynamic.privacy.dataConsentIntro.popup')}
     </p>
