@@ -619,7 +619,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 
   {#if multilingual || info}
     <!-- If both info and the multilingual button are shown, they're arranged side by side -->
-    <div class="flex gap-md {multilingual && info ? 'flex-row' : 'flex-col'}">
+    <div class="flex gap-md {multilingual && info ? 'flex-row items-start' : 'flex-col'}">
       {#if info}
         <!-- pt-4 aligns the info more nicely with the multilingual button -->
         <div class="{infoClass} {multilingual ? 'pt-4' : ''} grow">{info}</div>
@@ -630,7 +630,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
             ? $t('components.input.hideTranslations')
             : $t('components.input.showTranslations')}
           icon={isTranslationsVisible ? 'hide' : 'language'}
-          class="!w-auto self-end"
+          class="!w-auto"
           on:click={handleToggleTranslations} />
       {/if}
     </div>
