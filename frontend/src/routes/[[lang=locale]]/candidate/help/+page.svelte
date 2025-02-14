@@ -60,6 +60,6 @@ Shows a FAQ and other support content for the candidate application.
       icon="next"
       variant="main"
       text={$t('common.home')}
-      href={$getRoute('CandAppHome')} />
+      href={$getRoute('CandAppLogin')} />
   </svelte:fragment>
 </MainContent>
