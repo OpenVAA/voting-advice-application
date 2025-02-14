@@ -129,7 +129,17 @@ export type CandidateContext = AppContext & {
    * @param constituencyId - Constituency ID.
    * @returns A `Promise` resolving when the redirection is complete.
    */
-  preregister: (opts: { email: string; nominations: Array<{ electionId: Id; constituencyId: Id }> }) => Promise<void>;
+  preregister: (opts: {
+    email: string;
+    nominations: Array<{ electionId: Id; constituencyId: Id }>;
+    extra: {
+      emailTemplate: {
+        subject: string;
+        text: string;
+        html: string;
+      };
+    };
+  }) => Promise<void>;
 
   clearIdToken: () => Promise<void>;
 

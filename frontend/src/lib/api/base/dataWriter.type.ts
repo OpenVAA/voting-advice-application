@@ -34,6 +34,13 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
   preregisterWithIdToken: (opts: {
     email: string;
     nominations: Array<{ electionId: Id; constituencyId: Id }>;
+    extra: {
+      emailTemplate: {
+        subject: string;
+        text: string;
+        html: string;
+      };
+    };
   }) => DWReturnType<DataApiActionResult & { response: Pick<Response, 'status'> }>;
 
   /**
