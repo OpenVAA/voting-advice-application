@@ -11,7 +11,7 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, getRoute, t, userData, idTokenClaims, clearIdToken } = getCandidateContext();
+  const { getRoute, t, userData, idTokenClaims, clearIdToken } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   ///////////////////////////////////////////////////////////////////
@@ -20,9 +20,6 @@
 
   pageStyles.push({ drawer: { background: 'bg-base-300' } });
   topBarSettings.push({
-    imageSrc: $darkMode
-      ? ($appCustomization.candPoster?.urlDark ?? $appCustomization.candPoster?.url ?? '/images/hero-candidate.png')
-      : ($appCustomization.candPoster?.url ?? '/images/hero-candidate.png'),
     actions: {
       cancel: $idTokenClaims ? 'show' : 'hide',
       cancelButtonLabel: $t('common.cancel'),
@@ -33,10 +30,6 @@
     }
   });
 </script>
-
-<svelte:head>
-  <title>{$t('candidateApp.preregister.identification.start.title')} – {$t('dynamic.appName')}</title>
-</svelte:head>
 
 {#if $userData}
   <MainContent title={$t('candidateApp.preregister.identification.start.title')}>

@@ -120,6 +120,7 @@ text="Add to list">
     // 6. Finally, define the class for the text label
     switch (variant) {
       case 'main':
+      case 'prominent':
         labelClass += ' flex-grow text-center';
         if (icon) {
           // If an icon is used, add left or right margin so that the text is  nicely centered: ml/r is calculated so that it is the sum of the gap (4) and icon widths (24) = 28/16 rem
