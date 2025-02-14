@@ -28,7 +28,7 @@ A template part that is used to show the application's common footer, shown on s
   const { appCustomization, t } = getAppContext();
 </script>
 
-<footer {...concatClass($$restProps, 'mt-lg pl-safelgl pr-safelgr pb-safelgb text-center text-sm text-secondary')}>
+<footer {...concatClass($$restProps, 'mt-lg pl-safelgl pr-safelgr pb-safelgb text-center small-info')}>
   {#if $appCustomization.publisherName}
     {$t('common.publishedBy', { publisher: $appCustomization.publisherName })} •
   {/if}

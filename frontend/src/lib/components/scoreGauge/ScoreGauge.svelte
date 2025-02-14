@@ -81,16 +81,16 @@ Show a radial or a linear score gauge for a sub-match.
       class="radial-progress flex-shrink-0 self-center"
       style="--value:{(score / (max ?? 100)) * 100};">
       {#if showScore}
-        <span class="text-sm text-secondary" aria-hidden="true">{score}{unit}</span>
+        <span class="small-info" aria-hidden="true">{score}{unit}</span>
       {/if}
     </div>
   {/if}
   <div class="grid grid-cols-[minmax(0,_1fr)_fit-content(100%)] gap-sm justify-self-stretch">
-    <label class="grow truncate text-sm text-secondary" for={labelId} id={labelId} aria-hidden="true">
+    <label class="grow truncate small-info" for={labelId} id={labelId} aria-hidden="true">
       {label}
     </label>
     {#if variant === 'linear' && showScore}
-      <div class="shrink-0 text-sm text-secondary" aria-hidden="true">
+      <div class="shrink-0 small-info" aria-hidden="true">
         {score}{unit}
       </div>
     {/if}
