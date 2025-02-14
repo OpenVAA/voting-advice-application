@@ -18,6 +18,9 @@ const config = {
       $types: path.resolve('./src/lib/types'),
       $voter: path.resolve('./src/lib/voter'),
       $candidate: path.resolve('./src/lib/candidate')
+    },
+    version: {
+      pollInterval: 5 * 60 * 1000 // Poll every 5 minutes for SvelteKit updates
     }
   }
 };

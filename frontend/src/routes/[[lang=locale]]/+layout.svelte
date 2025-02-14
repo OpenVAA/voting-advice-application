@@ -17,7 +17,7 @@
   import '../../app.css';
   import { staticSettings } from '@openvaa/app-shared';
   import { onDestroy } from 'svelte';
-  import { afterNavigate, onNavigate } from '$app/navigation';
+  import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
@@ -31,6 +31,7 @@
   import MaintenancePage from './MaintenancePage.svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { LayoutData } from './$types';
+  import { updated } from '$app/stores';
 
   export let data: LayoutData;
 
@@ -100,6 +101,10 @@
   // Tracking
   ////////////////////////////////////////////////////////////////////
 
+  // Check if the app has been updated and if so, reload the app. The version is checked based on `pollInterval` in frontend/svelte.config.js
+  beforeNavigate(({ willUnload, to }) => {
+		if ($updated && !willUnload && to?.url) location.href = to.url.href;
+	});
   onNavigate(() => submitAllEvents());
   onDestroy(() => submitAllEvents());
   afterNavigate(({ from, to }) => {
