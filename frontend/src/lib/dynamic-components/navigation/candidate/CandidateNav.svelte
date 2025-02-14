@@ -50,9 +50,12 @@ A template part that outputs the navigation menu for the Candidate App for use i
             classes="-left-8 -top-4" />
         {/if}
       </NavItem>
-      <NavItem href={$getRoute('CandAppSettings')} icon="settings" text={$t('candidateApp.settings.title')} />
       <NavItem href={$getRoute('CandAppPreview')} icon="previewProfile" text={$t('candidateApp.preview.title')} />
+      <NavItem href={$getRoute('CandAppSettings')} icon="settings" text={$t('candidateApp.settings.title')} />
+    </NavGroup>
+    <NavGroup>
       <NavItem href={$getRoute('CandAppHelp')} icon="help" text={$t('candidateApp.help.title')} />
+      <NavItem href={$getRoute('CandAppPrivacy')} icon="privacy" text={$t('candidateApp.privacy.shortTitle')} />
     </NavGroup>
   {:else}
     <NavGroup>
@@ -69,6 +72,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
     <NavGroup>
       <NavItem href={$getRoute('CandAppForgotPassword')} icon="help" text={$t('candidateApp.login.forgotPassword')} />
       <NavItem href={$getRoute('CandAppHelp')} icon="help" text={$t('candidateApp.help.title')} />
+      <NavItem href={$getRoute('CandAppPrivacy')} icon="privacy" text={$t('candidateApp.privacy.shortTitle')} />
     </NavGroup>
   {/if}
   {#if $openFeedbackModal}

@@ -105,6 +105,21 @@
   }
 
   /**
+   * Use for longer text blocks
+   */
+  .prose h2 {
+    @apply mb-md mt-xl;
+  }
+  .prose h3,
+  .prose h4 {
+    @apply mb-md mt-[1.75rem];
+  }
+  .prose h5,
+  .prose h6 {
+    @apply mb-md mt-lg;
+  }
+
+  /**
    * Small text in all caps used for, e.g., Likert button labels and data labels in entity details
    */
   .small-label {
@@ -114,7 +129,7 @@
   /**
    * Small info used for, e.g., info displayed under inputs or buttons.
    */
-   .small-info {
+  .small-info {
     @apply text-sm text-secondary;
   }
 
