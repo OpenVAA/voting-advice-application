@@ -36,6 +36,7 @@ export type TranslationKey =
   | 'candidateApp.error.userNoCandidate'
   | 'candidateApp.help.ingress'
   | 'candidateApp.help.noFAQ'
+  | 'candidateApp.help.supportEmailSubject'
   | 'candidateApp.help.title'
   | 'candidateApp.home.basicInfo.edit'
   | 'candidateApp.home.basicInfo.enter'
