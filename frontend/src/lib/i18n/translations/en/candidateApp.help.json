@@ -1,5 +1,6 @@
 {
   "ingress": "Answers to the most common questions with using this application are collected here.",
   "noFAQ": "There no answers yet. You can contact support if you have a question.",
+  "supportEmailSubject": "Support request",
   "title": "Help"
 }

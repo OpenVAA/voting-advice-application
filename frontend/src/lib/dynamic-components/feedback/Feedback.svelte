@@ -48,6 +48,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
   import type { FeedbackProps } from './Feedback.type';
+  import { getEmailUrl } from '$lib/utils/email';
 
   type $$Props = FeedbackProps;
 
@@ -141,22 +142,11 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
    * Construct an email link with the subject and body of the email.
    */
   function getErrorEmail() {
-    const subject = encodeURIComponent(`${$t('feedback.error.emailSubject')}: ${$t('dynamic.appName')}`);
-    const start = `mailto:${$appSettings.admin.email}?subject=${encodeURIComponent(subject)}`;
-    let end = `\n\nDate: ${new Date()}`;
-    end += `\nURL: ${window?.location?.href ?? '-'}`;
-    if (navigator?.userAgent) end += `\nUser Agent: ${navigator?.userAgent ?? '-'}`;
-    end = encodeURIComponent(end);
-    // Truncate description if the url would get too long so that we don't get an error when sending the email. See https://stackoverflow.com/questions/13317429/mailto-max-length-of-each-internet-browsers/33041454#33041454
-    // We need to check the length after encoding all the parts
-    let mailto = '';
-    let trimmedDescription = description.replaceAll(/(\n *)+/g, '\n').substring(0, 1850);
-    while (!mailto || mailto.length > 1900) {
-      mailto = `${start}&body=${encodeURIComponent(trimmedDescription)}${end}`;
-      // Trim the description in chunks of 10 characters. We don't want to truncate the encoded string, because it might get corrupted if trim in the middle of an encoded character
-      trimmedDescription = trimmedDescription.substring(0, trimmedDescription.length - 10);
-    }
-    return mailto;
+    return getEmailUrl({
+      subject: `${$t('feedback.error.emailSubject')}: ${$t('dynamic.appName')}`,
+      to: $appSettings.admin.email,
+      body: description ?? '',
+    });
   }
 </script>
 
@@ -204,9 +194,10 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   <!-- Email info and error -->
   {#if status !== 'error'}
     {#if variant !== 'compact' && $appSettings.admin.email}
+      {@const mailto = getErrorEmail()}
       <p class="text-center">
         {$t('feedback.emailIntro')}
-        <a href="mailto:{$appSettings.admin.email}" target="_blank">{$appSettings.admin.email}</a>.
+        <a href={mailto} target="_blank">{$appSettings.admin.email}</a>.
       </p>
     {/if}
   {:else}
