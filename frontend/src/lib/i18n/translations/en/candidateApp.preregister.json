@@ -31,7 +31,7 @@
   "emailVerification": {
     "title": "Enter email address",
     "content": "<p>In the future, your email address will act as your username. Please enter it below twice to confirm it's correct.</p><p>You will also need to accept the terms of use in order to continue.</p>",
-    "termsCheckbox": "I accept the terms of use for registering as a candidate"
+    "termsCheckbox": "I consent to the use and storage of my data according to the terms of use."
   },
   "status": {
     "success": {

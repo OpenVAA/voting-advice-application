@@ -31,6 +31,7 @@ export const ROUTE = {
   CandAppHelp: `${CANDIDATE}/help`,
   CandAppHome: CANDIDATE,
   CandAppPreview: `${CANDIDATE_PROT}/preview`,
+  CandAppPrivacy: `${CANDIDATE}/privacy`,
   CandAppProfile: `${CANDIDATE_PROT}/profile`,
   CandAppQuestion: `${CANDIDATE_PROT}/questions/[questionId]`,
   CandAppQuestions: `${CANDIDATE_PROT}/questions`,
