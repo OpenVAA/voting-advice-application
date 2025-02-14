@@ -24,7 +24,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
   import { LanguageSelection } from '../languages';
 
   const { navigation } = getLayoutContext(onDestroy);
-  const { authToken, getRoute, t, unansweredRequiredInfoQuestions, unansweredOpinionQuestions } = getCandidateContext();
+  const { appSettings, authToken, getRoute, openFeedbackModal, t, unansweredRequiredInfoQuestions, unansweredOpinionQuestions } = getCandidateContext();
 </script>
 
 <Navigation slot="nav" on:navFocusOut {...$$restProps}>
@@ -56,27 +56,25 @@ A template part that outputs the navigation menu for the Candidate App for use i
     </NavGroup>
   {:else}
     <NavGroup>
-      <NavItem href={$getRoute('CandAppLogin')} icon="home" text={$t('common.login')} />
+      <NavItem href={$getRoute('CandAppLogin')} icon="login" text={$t('common.login')} />
+      {#if $appSettings.preRegistration?.enabled}
+        <NavItem href={$getRoute('CandAppPreregister')} icon="create" text={$t('candidateApp.preregister.identification.start.title')} />
+      {/if}
+      <NavItem href={$getRoute('CandAppRegister')} icon="check" text={
+        $appSettings.preRegistration?.enabled 
+        ? $t('candidateApp.register.titleWithPreregistration')
+        : $t('candidateApp.register.title')
+      } />
+    </NavGroup>
+    <NavGroup>
+      <NavItem href={$getRoute('CandAppForgotPassword')} icon="help" text={$t('candidateApp.login.forgotPassword')} />
       <NavItem href={$getRoute('CandAppHelp')} icon="help" text={$t('candidateApp.help.title')} />
     </NavGroup>
   {/if}
-  <!-- 
-  <NavGroup>
-    <NavItem href={$getRoute('CandAppInfo)} icon="info" disabled text={$t('info.title'')} />
-    <NavItem
-      href={$getRoute('CandAppFAQ')}
-      icon="info"
-      disabled
-      text={$t('candidateApp.info.title')} />
-  </NavGroup> 
-  -->
-  <!-- 
-  TODO: Uncomment when Candidate App is refactored to use contexts
   {#if $openFeedbackModal}
     <NavGroup>
       <NavItem on:click={$openFeedbackModal} icon="feedback" text={$t('feedback.send')} />
     </NavGroup>
   {/if} 
-  -->
   <LanguageSelection />
 </Navigation>
