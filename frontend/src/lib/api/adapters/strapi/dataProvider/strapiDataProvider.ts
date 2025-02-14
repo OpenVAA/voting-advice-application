@@ -44,6 +44,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         header: 'true',
         headerStyle: { populate: '*' },
         matching: 'true',
+        notifications: { populate: '*' },
         questions: { populate: '*' },
         results: { populate: '*' },
         survey: 'true'

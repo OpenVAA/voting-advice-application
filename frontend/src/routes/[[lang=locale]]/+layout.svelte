@@ -11,13 +11,12 @@
 
 - `access.underMaintanance`: If `true`, the app will display a maintenance page instead of any content.
 - `analytics.platform`: Affects whether the analytics service is loaded.
-- `analytics.trackEvents`: Affects whether the data consent popup is shown.
 -->
 
 <script lang="ts">
   import '../../app.css';
   import { staticSettings } from '@openvaa/app-shared';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { afterNavigate, onNavigate } from '$app/navigation';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { ErrorMessage } from '$lib/components/errorMessage';
@@ -27,7 +26,6 @@
   import { initDataContext } from '$lib/contexts/data';
   import { initI18nContext } from '$lib/contexts/i18n';
   import { initLayoutContext } from '$lib/contexts/layout';
-  import { DataConsentPopup } from '$lib/dynamic-components/dataConsent/popup';
   import { FeedbackModal } from '$lib/dynamic-components/feedback/modal';
   import { logDebugError } from '$lib/utils/logger';
   import MaintenancePage from './MaintenancePage.svelte';
@@ -108,21 +106,6 @@
     startPageview(to?.url?.href ?? '', from?.url?.href);
   });
 
-  ////////////////////////////////////////////////////////////////////
-  // Popup management
-  ////////////////////////////////////////////////////////////////////
-
-  // Ask for event tracking consent if we have no explicit answer
-  onMount(() => {
-    if (
-      $appSettings.analytics?.platform &&
-      $appSettings.analytics?.trackEvents &&
-      (!$userPreferences.dataCollection?.consent || $userPreferences.dataCollection?.consent === 'indetermined')
-    ) {
-      popupQueue.push(DataConsentPopup);
-    }
-  });
-
   // Stashed for use with [video]
   // let screenWidth = 0;
   // <svelte:window bind:innerWidth={screenWidth} />
@@ -167,7 +150,10 @@
   <!-- Popup service -->
   {#if $popupQueue}
     {#key $popupQueue}
-      <svelte:component this={$popupQueue} onClose={popupQueue.shift} />
+      <svelte:component 
+        this={$popupQueue.component} 
+        onClose={popupQueue.shift} 
+        {...$popupQueue.props}/>
     {/key}
   {/if}
 

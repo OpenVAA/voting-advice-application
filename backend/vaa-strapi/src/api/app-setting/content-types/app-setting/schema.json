@@ -79,6 +79,12 @@
       "type": "component",
       "repeatable": false,
       "component": "settings.access"
+    },
+    "notifications": {
+      "displayName": "Notifications",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.notifications"
     }
   }
 }
