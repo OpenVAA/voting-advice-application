@@ -78,7 +78,6 @@ type DateString = string;
 /////////////////////////////////////////////////////////////////////
 
 export type StrapiElectionData = StrapiObject<{
-  answersLocked: boolean;
   electionDate: DateString;
   electionStartDate: DateString;
   electionType: 'local' | 'presidential' | 'congress' | null;

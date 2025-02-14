@@ -4,6 +4,10 @@
   },
   "appName": "Valkompassen",
   "candidateAppName": "Valkompassen för kandidater",
+  "candidateAppNotAccessible": {
+    "title": "Tyvärr är kandidaternas valkompass ännu inte tillgänglig",
+    "content": "Kandidaternas valkompass har ännu inte publicerats. Återkom till denna adress när den blir tillgänglig."
+  },
   "constituencies": {
     "heroEmoji": "📍",
     "ingress": {
@@ -76,5 +80,9 @@
     "popupTitle": "Vill du hjälpa till att förbättra valkompasserna?",
     "thanks": "Tack för att du fyllde i enkäten!",
     "title": "Ta del i användarundersökningen"
+  },
+  "voterAppNotAccessible": {
+  "title": "Tyvärr har valkompassen ännu inte publicerats",
+  "content": "Väljarnas valkompass har ännu inte publicerats. Återkom till denna adress när den blir tillgänglig."
   }
 }

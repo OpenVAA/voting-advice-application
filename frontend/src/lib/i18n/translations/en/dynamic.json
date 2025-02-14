@@ -4,6 +4,10 @@
   },
   "appName": "Election Compass",
   "candidateAppName": "Election Compass for Candidates",
+  "candidateAppNotAccessible": {
+    "title": "Sorry, the Election Compass for Candidates is not yet available",
+    "content": "The Election Compass for Candidates has not been released yet. Please return to this address when it becomes available."
+  },
   "constituencies": {
     "heroEmoji": "📍",
     "ingress": {
@@ -76,5 +80,9 @@
     "popupTitle": "Would you like to help improve Election Compasses?",
     "thanks": "Thanks for Filling the Survey!",
     "title": "Take Part in User Survey"
+  },
+  "voterAppNotAccessible": {
+    "title": "Sorry, the Election Compass has not been released yet",
+    "content": "The Election Compass has not been released yet. Please return to this address when it becomes available."
   }
 }
