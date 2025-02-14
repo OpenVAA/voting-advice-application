@@ -11,7 +11,17 @@ export async function POST({ cookies, request }) {
   const dataWriter = await dataWriterPromise;
   dataWriter.init({ fetch });
 
-  const data: { email: string; nominations: Array<{ electionId: Id; constituencyId: Id }> } = await request.json();
+  const data: {
+    email: string;
+    nominations: Array<{ electionId: Id; constituencyId: Id }>;
+    extra: {
+      emailTemplate: {
+        subject: string;
+        text: string;
+        html: string;
+      };
+    };
+  } = await request.json();
 
   const idToken = cookies.get('id_token');
 
@@ -31,11 +41,8 @@ export async function POST({ cookies, request }) {
   try {
     await dataWriter.preregisterWithApiToken({
       body: {
-        firstName: claims.data.firstName,
-        lastName: claims.data.lastName,
-        identifier: claims.data.identifier,
-        email: data.email,
-        nominations: data.nominations
+        ...claims.data,
+        ...data
       },
       authToken: BACKEND_API_TOKEN
     });
