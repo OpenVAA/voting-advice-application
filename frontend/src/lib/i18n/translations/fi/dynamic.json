@@ -4,6 +4,10 @@
   },
   "appName": "Vaalikone",
   "candidateAppName": "Ehdokkaiden vaalikone",
+  "candidateAppNotAccessible": {
+    "title": "Pahoittelut, ehdokkaiden vaalikone ei ole vielä käytössä",
+    "content": "Ehdokkaiden vaalikonetta ei ole vielä julkaistu. Palaa tähän osoitteeseen, kun se on käytettävissä."
+  },
   "constituencies": {
     "heroEmoji": "📍",
     "ingress": {
@@ -76,5 +80,9 @@
     "popupTitle": "Haluaisitko auttaa vaalikoneiden kehittämisessä?",
     "thanks": "Kiitos kyselyyn vastaamisesta!",
     "title": "Osallistu käyttäjäkyselyyn"
+  },
+  "voterAppNotAccessible": {
+    "title": "Pahoittelut, vaalikone ei ole vielä käytössä",
+    "content": "Vaalikonetta ei ole vielä julkaistu. Palaathan tähän osoitteeseen, kun se on käytettävissä."
   }
 }

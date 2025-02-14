@@ -9,6 +9,7 @@
 
 ### Settings
 
+- `access.underMaintanance`: If `true`, the app will display a maintenance page instead of any content.
 - `analytics.platform`: Affects whether the analytics service is loaded.
 - `analytics.trackEvents`: Affects whether the data consent popup is shown.
 -->
@@ -90,7 +91,7 @@
     if (!isValidResult(appCustomizationData, { allowEmpty: true })) return new Error('Error app customization data');
     if (!isValidResult(electionData)) return new Error('Error loading constituency data');
     if (!isValidResult(constituencyData)) return new Error('Error loading constituency data');
-    underMaintenance = appSettingsData.underMaintenance ?? false;
+    underMaintenance = appSettingsData.access?.underMaintenance ?? false;
     $dataRoot.provideElectionData(electionData);
     $dataRoot.provideConstituencyData(constituencyData);
     // We don't do anything else with the data if they're okay, because the relevant stores will pick them up from $page.data

@@ -203,13 +203,26 @@ export type DynamicSettings = {
     startFromConstituencyGroup?: Id;
   };
   /**
-   * If `true`, an under maintenance error page will be shown.
+   * Settings related to access to the applications.
    */
-  underMaintenance?: boolean;
-  /**
-   * If `true`, candidates can no longer edit their answers.
-   */
-  answersLocked?: boolean;
+  access: {
+    /**
+     * If `true`, the Candidate App can be accessed.
+     */
+    candidateApp: boolean;
+    /**
+     * If `true`, the Voter App can be accessed.
+     */
+    voterApp: boolean;
+    /**
+     * If `true`, an under maintenance error page will be shown.
+     */
+    underMaintenance?: boolean;
+    /**
+     * If `true`, candidates can no longer edit their answers.
+     */
+    answersLocked?: boolean;
+  };
 };
 
 /**

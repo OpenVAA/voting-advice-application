@@ -46,7 +46,7 @@ export function initCandidateContext(): CandidateContext {
   // User data, authentication and answersLocked
   ////////////////////////////////////////////////////////////////////
 
-  const answersLocked = derived(appSettings, (appSettings) => !!appSettings.answersLocked);
+  const answersLocked = derived(appSettings, (appSettings) => !!appSettings.access.answersLocked);
 
   const authToken = derived(page, (page) => page.data.token ?? undefined);
 
