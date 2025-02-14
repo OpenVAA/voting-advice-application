@@ -72,9 +72,11 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
 <HeadingGroup {...concatClass($$restProps, 'relative')}>
   <PreHeading class="flex flex-row flex-wrap items-center justify-center gap-sm">
-    {#each getElectionsToShow({ question, elections: $elections }) as election}
-      <ElectionTag {election} />
-    {/each}
+    {#if $appSettings.elections.showElectionTags}
+      {#each getElectionsToShow({ question, elections: $elections }) as election}
+        <ElectionTag {election} />
+      {/each}
+    {/if}
     {#if $appSettings.questions.showCategoryTags}
       <CategoryTag
         category={question.category}
