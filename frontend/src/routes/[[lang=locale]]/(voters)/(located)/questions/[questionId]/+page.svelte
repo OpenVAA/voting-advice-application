@@ -350,8 +350,6 @@ Display a question for answering.
                 <PreHeading>
                   {#if $appSettings.questions.showCategoryTags}
                     <CategoryTag category={currentQuestion.category} />
-                  {:else}
-                    {$t('common.question')}
                   {/if}
                 </PreHeading>
                 <h1>{currentQuestion.text}</h1>
