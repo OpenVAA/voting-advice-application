@@ -153,7 +153,7 @@ Shows the opinion questions for the candidate to answer.
 
               <div class="grid-line-x grid gap-lg">
                 <HeadingGroup class="text-center">
-                  {#if elections.length}
+                  {#if $appSettings.elections.showElectionTags && elections.length}
                     <PreHeading>
                       {#each elections as election}
                         <ElectionTag {election} />

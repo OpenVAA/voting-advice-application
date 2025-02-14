@@ -63,6 +63,7 @@ export const dynamicSettings: DynamicSettings = {
   },
   elections: {
     disallowSelection: false,
+    showElectionTags: true,
     startFromConstituencyGroup: undefined
   },
   underMaintenance: false,
