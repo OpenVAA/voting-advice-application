@@ -54,7 +54,7 @@ Show a popup asking for user feedback.
   </div>
   <div slot="actions">
     <SurveyButton on:click={onClick} variant="main" />
-    <p class="my-sm text-sm">
+    <p class="my-sm small-info">
       {$t('dynamic.survey.popupInfo')}
     </p>
     <Button on:click={closeAlert} text={$t('common.thanksNo')} color="warning" />
