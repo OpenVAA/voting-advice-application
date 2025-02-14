@@ -28,7 +28,7 @@ export const ROUTE = {
 
   // Candidate App
   CandAppForgotPassword: `${CANDIDATE}/forgot-password`,
-  CandAppHelp: `${CANDIDATE_PROT}/help`,
+  CandAppHelp: `${CANDIDATE}/help`,
   CandAppHome: CANDIDATE,
   CandAppPreview: `${CANDIDATE_PROT}/preview`,
   CandAppProfile: `${CANDIDATE_PROT}/profile`,

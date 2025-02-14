@@ -13,7 +13,7 @@ Shows a FAQ and other support content for the candidate application.
   import { Button } from '$lib/components/button';
   import { Expander } from '$lib/components/expander';
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import MainContent from '../../../MainContent.svelte';
+  import MainContent from '../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -40,6 +40,7 @@ Shows a FAQ and other support content for the candidate application.
   <div class="mt-md">
     <Button
       href="mailto:{$appSettings.admin.email}"
+      target="_blank"
       icon="feedback"
       iconPos="left"
       text={$t('candidateApp.common.contactSupport')} />
