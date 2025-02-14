@@ -206,8 +206,8 @@ The same component can also be used to display the answers of the voter and anot
 
 <fieldset
   use:onKeyboardFocusOut={handleGroupFocusOut}
-  style:--radio-bg={onShadedBg ? 'var(--b3)' : 'var(--b1)'}
-  style:--line-bg={onShadedBg ? 'var(--b1)' : 'var(--b3)'}
+  style:--radio-bg={onShadedBg ? 'var(--b2)' : 'var(--b1)'}
+  style:--line-bg={onShadedBg ? 'var(--b1)' : 'var(--b2)'}
   class:vertical
   {...$$restProps}>
   <!-- Add a label for screen readers -->
