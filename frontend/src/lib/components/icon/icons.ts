@@ -46,6 +46,7 @@ export const ICONS = {
   language: ['material', 'language'],
   list: ['material', 'format_list_bulleted'],
   locked: ['material', 'lock'],
+  login: ['material', 'login'],
   logout: ['material', 'logout'],
   menu: ['material', 'menu'],
   missingIcon: ['custom', 'missing_icon'],
