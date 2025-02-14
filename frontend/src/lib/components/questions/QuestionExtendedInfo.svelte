@@ -28,19 +28,18 @@ Display the question's expandable information content.
 
   export let info: $$Props['info'];
   export let infoSections: $$Props['infoSections'] = [];
-  $: visibleInfoSections = infoSections?.filter(
-    (section): section is Required<QuestionInfoSection> => !!section?.title && !!section?.content && !!section?.visible
-  );
 </script>
 
 <div>
   {@html sanitizeHtml(info)}
-  {#if visibleInfoSections?.length}
+  {#if infoSections?.length}
     <div class="mt-16">
-      {#each visibleInfoSections as { title, content }}
-        <Expander {title} {...$$restProps} titleClass="flex justify-between font-bold" contentClass="!text-left">
-          {@html sanitizeHtml(content)}
-        </Expander>
+      {#each infoSections as { title, content }}
+        {#if title}
+          <Expander {title} {...$$restProps} titleClass="flex justify-between font-bold" contentClass="!text-left">
+            {@html sanitizeHtml(content)}
+          </Expander>
+        {/if}
       {/each}
     </div>
   {/if}

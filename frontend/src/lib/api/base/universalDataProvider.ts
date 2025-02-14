@@ -52,7 +52,19 @@ export abstract class UniversalDataProvider extends UniversalAdapter implements 
   getQuestionData(options?: GetQuestionsOptions): DPReturnType<'questions'> {
     return this._getQuestionData(options).then(({ categories, questions }) => ({
       categories: this.ensureColors(categories),
-      questions
+      questions: questions.map((q) => {
+        const infoSections = (q.customData as CustomData['Question'])?.infoSections?.filter(
+          (s) => s.title && s.content && s.visible
+        );
+
+        return {
+          ...q,
+          customData: {
+            ...q.customData,
+            infoSections
+          }
+        };
+      })
     }));
   }
 
