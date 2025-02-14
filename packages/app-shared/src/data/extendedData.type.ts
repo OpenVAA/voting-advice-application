@@ -5,6 +5,11 @@
 import type { Choice, Image, QUESTION_TYPE } from '@openvaa/data';
 
 /**
+ * An object translated into different languages.
+ */
+export type LocalizedObject = Record<string, unknown>;
+
+/**
  * A string translated into different languages.
  */
 export type LocalizedString = {
