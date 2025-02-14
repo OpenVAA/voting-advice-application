@@ -88,14 +88,14 @@ You should not try to use a variant and customize at the same time.
   // 1. Base classes for all collapse components
   let collapseClasses = 'collapse rounded-none min-h-touch min-w-touch h-auto w-full';
   let titleClasses = 'collapse-title text-center';
-  let contentClasses = 'collapse-content !px-0 py-md';
+  let contentClasses = 'collapse-content py-md';
   let iconClass = '';
 
   // 2. Variant-defined classes
   switch (variant) {
     case 'read-more':
       titleClasses += ' !px-0 ext-primary';
-      contentClasses += ' text-center';
+      contentClasses += ' !px-0 text-center';
       break;
     case 'category':
       titleClasses += ' !px-md text-xl bg-base-300 font-bold';
@@ -104,6 +104,7 @@ You should not try to use a variant and customize at the same time.
       break;
     case 'question':
       titleClasses += ' !px-0 text-lg font-bold';
+      contentClasses += ' !px-0';
       break;
     case 'question-help':
       titleClasses += ' text-lg font-bold flex flex-row justify-between !text-left';
@@ -134,7 +135,7 @@ You should not try to use a variant and customize at the same time.
   <input type="checkbox" aria-label={$t('common.expandOrCollapse')} on:click={toggleExpanded} checked={expanded} />
   <div class={titleClasses}>
     {title}
-    <div class="not-rotated-icon {expanded ? 'rotated-icon' : ''} ml-[0.4rem] {iconClass}">
+    <div class="not-rotated-icon {expanded ? 'rotated-icon' : ''} ml-md {iconClass}">
       <Icon name="next" size="sm" color={iconColor} />
     </div>
   </div>
@@ -145,7 +146,7 @@ You should not try to use a variant and customize at the same time.
   {/if}
 </div>
 
-<style>
+<style lang="postcss">
   .not-rotated-icon {
     --tw-rotate: 90deg;
     transition: transform 0.2s linear;
@@ -157,24 +158,16 @@ You should not try to use a variant and customize at the same time.
   }
 
   .collapse-title {
-    padding: 0.7rem;
-    align-items: center;
-    text-align: center;
+    @apply p-md items-center text-center;
   }
 
   .collapse-content {
-    text-align: center;
-    padding-right: 1.25rem;
-    padding-left: 1.25rem;
-    padding-top: 0;
-    padding-bottom: 0;
+    @apply px-md py-0 text-center;
   }
 
   /* This is needed to add padding to collapse content only when collapse is open */
   .collapse:not(.collapse-close) > input[type='checkbox']:checked ~ .collapse-content {
-    padding-top: 0.7rem;
-    padding-bottom: 0.7rem;
-    transition: padding-top 0.2s;
+    @apply py-md transition-[padding];
   }
 
   /* This is needed to remove the excisting
