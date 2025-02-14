@@ -3,6 +3,8 @@
   import MainContent from '../../../../MainContent.svelte';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { sanitizeHtml } from '$lib/utils/sanitize';
+  import { Expander } from '$lib/components/expander';
+  import { TermsOfUse } from '$candidate/components/termsOfUse';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -62,6 +64,13 @@
       <input type="checkbox" class="checkbox" name="selected-elections" bind:checked={termsAccepted} />
       <span class="label-text">{$t('candidateApp.preregister.emailVerification.termsCheckbox')}</span>
     </label>
+    <Expander 
+      title={$t('candidateApp.privacy.title')}
+      contentClass="prose bg-base-100 rounded-lg">
+      <div class="m-lg">
+        <TermsOfUse />
+      </div>
+    </Expander>
   </form>
 
   <Button
