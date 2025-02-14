@@ -87,15 +87,15 @@ You should not try to use a variant and customize at the same time.
   // Build classes
   // 1. Base classes for all collapse components
   let collapseClasses = 'collapse rounded-none min-h-touch min-w-touch h-auto w-full';
-  let titleClasses = 'collapse-title text-center';
-  let contentClasses = 'collapse-content py-md';
+  let titleClasses = 'collapse-title text-center px-md';
+  let contentClasses = 'collapse-content p-md';
   let iconClass = '';
 
   // 2. Variant-defined classes
   switch (variant) {
     case 'read-more':
-      titleClasses += ' !px-0 ext-primary';
-      contentClasses += ' !px-0 text-center';
+      titleClasses += ' !px-0 text-primary';
+      contentClasses += ' !px-0';
       break;
     case 'category':
       titleClasses += ' !px-md text-xl bg-base-300 font-bold';
@@ -122,7 +122,7 @@ You should not try to use a variant and customize at the same time.
       break;
   }
 
-  // 4. Set colors for all custom color variables execpt icon, which is defined later
+  // 4. Add custom classes
   if (contentClass) {
     contentClasses += ` ${contentClass}`;
   }
@@ -155,14 +155,6 @@ You should not try to use a variant and customize at the same time.
 
   .rotated-icon {
     transform: rotate(270deg);
-  }
-
-  .collapse-title {
-    @apply p-md items-center text-center;
-  }
-
-  .collapse-content {
-    @apply px-md py-0 text-center;
   }
 
   /* This is needed to add padding to collapse content only when collapse is open */

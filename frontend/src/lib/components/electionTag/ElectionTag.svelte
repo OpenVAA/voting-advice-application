@@ -8,6 +8,7 @@ Used when the application has multiple elections and question may apply to only 
 
 - `election`: The `Election` object.
 - `variant`: Whether to use an abbreviation or the full name. @default `'short'`
+- `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
 - Any valid attributes of a `<span>` element.
 
 ### Usage
@@ -25,12 +26,13 @@ Used when the application has multiple elections and question may apply to only 
 
   export let election: $$Props['election'];
   export let variant: $$Props['variant'] = 'short';
+  export let onShadedBg: $$Props['onShadedBg'] = undefined;
 
   // Create styles
   let classes: string;
   let styles: string;
   $: {
-    classes = 'tag bg-base-200';
+    classes = `tag ${onShadedBg ? 'bg-base-100' : 'bg-base-200'}`;
     styles = '';
     if (election.color?.normal) {
       styles += ` --tag-color: ${election.color.normal};`;

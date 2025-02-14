@@ -13,4 +13,8 @@ export type CategoryTagProps = SvelteHTMLElements['span'] & {
    * An optional suffix to add after the category name, e.g. '1/3'. @default undefined
    */
   suffix?: string;
+  /**
+   * Set to `true` if using the component on a dark (`base-300`) background. @default false
+   */
+  onShadedBg?: boolean;
 };

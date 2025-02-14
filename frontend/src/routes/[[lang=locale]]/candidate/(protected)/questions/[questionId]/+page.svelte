@@ -234,7 +234,11 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
         {/if}
       </svelte:fragment>
 
-      <QuestionHeading {question} questionBlocks={$questionBlocks} slot="heading" />
+      <QuestionHeading 
+        slot="heading"
+        {question} 
+        questionBlocks={$questionBlocks}
+        onShadedBg />
 
       {#if info && info !== ''}
         <QuestionInfo {info} />

@@ -1,6 +1,6 @@
 {
   "close": "Close preview",
   "notFound": "Profile not found",
-  "tip": "This is a preview of how your profile will look to voters.",
+  "tip": "This is a preliminary preview of how your profile will look to voters. The published version may look a bit different. If you’re standing in multiple elections, only answers relevant to the election the voter is interested in will be displayed.",
   "title": "Preview"
 }
