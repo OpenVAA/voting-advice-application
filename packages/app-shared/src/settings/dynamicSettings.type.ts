@@ -1,4 +1,5 @@
 import { Id } from '@openvaa/core';
+import { LocalizedString } from '../data/extendedData.type';
 import type { ENTITY_TYPE, EntityType } from '@openvaa/data';
 
 /**
@@ -223,6 +224,19 @@ export type DynamicSettings = {
      */
     answersLocked?: boolean;
   };
+  /**
+   * Settings related to important notifications shown to users.
+   */
+  notifications: {
+    /**
+     * The notification shown to users of the Candidate App.
+     */
+    candidateApp?: NotificationData | null;
+    /**
+     * The notification shown to users of the Voter App.
+     */
+    voterApp?: NotificationData | null;
+  };
 };
 
 /**
@@ -252,3 +266,26 @@ export type EntityDetailsContent = 'info' | 'opinions';
  * The possible content tabs to show for `Organization`s.
  */
 export type OrganizationDetailsContent = 'candidates';
+
+/**
+ * The data for a notification to be shown to users.
+ */
+export type NotificationData = {
+  /**
+   * If `true`, the notification will be shown the next time the user loads the app.
+   */
+  show?: boolean;
+  /**
+   * The title of the notification.
+   */
+  title: LocalizedString;
+  /**
+   * The content of the notification.
+   */
+  content: LocalizedString;
+  /**
+   * The `Icon.name` to display in the notification. @default important
+   * NB. The proper type is not accessible to `app-shared`.
+   */
+  icon?: string;
+};
