@@ -57,6 +57,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
   {:else}
     <NavGroup>
       <NavItem href={$getRoute('CandAppLogin')} icon="home" text={$t('common.login')} />
+      <NavItem href={$getRoute('CandAppHelp')} icon="help" text={$t('candidateApp.help.title')} />
     </NavGroup>
   {/if}
   <!-- 
