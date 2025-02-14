@@ -11,6 +11,9 @@
     },
     "startFromConstituencyGroup": {
       "type": "string"
+    },
+    "showElectionTags": {
+      "type": "boolean"
     }
   }
 }
