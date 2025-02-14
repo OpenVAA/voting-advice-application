@@ -14,13 +14,15 @@ Defines the layout of the `main` content for single cards, such as individual en
 - `title`: The required page `title`.
 - `noteClass`: Optional class string to add to the `<div>` tag wrapping the `note` slot.
 - `noteRole`: Aria role for the `note` slot. @default 'note'
+- Any valid attributes of a `<main>` element.
 -->
 
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
+  import { concatClass } from '$lib/utils/components';
   import type { MainContentProps } from './MainContent.type';
 
-  type $$Props = Pick<MainContentProps, 'title' | 'noteClass' | 'noteRole'>;
+  type $$Props = Omit<MainContentProps, 'titleClass' | 'primaryActionsLabel'>;
 
   export let title: $$Props['title'];
   export let noteClass: $$Props['noteClass'] = 'text-secondary text-center max-w-xl -mt-md mb-md';
@@ -33,15 +35,17 @@ Defines the layout of the `main` content for single cards, such as individual en
   <title>{title} – {$t('dynamic.appName')}</title>
 </svelte:head>
 
-<!-- Note -->
-{#if $$slots.note}
-  <div class={noteClass} role={noteRole}>
-    <slot name="note" />
-  </div>
-{/if}
+<main {...concatClass($$restProps, 'flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg')}>
+  <!-- Note -->
+  {#if $$slots.note}
+    <div class={noteClass} role={noteRole}>
+      <slot name="note" />
+    </div>
+  {/if}
 
-<div
-  class="-mx-lg -mb-safelgb -mt-lg flex w-screen max-w-xl flex-grow self-center rounded-t-lg bg-base-100 pb-[3.5rem] match-w-xl:shadow-xl">
-  <!-- Main content -->
-  <slot />
-</div>
+  <div
+    class="-mx-lg -mb-safelgb -mt-lg flex w-screen max-w-xl flex-grow self-center rounded-t-lg bg-base-100 pb-[3.5rem] match-w-xl:shadow-xl">
+    <!-- Main content -->
+    <slot />
+  </div>
+</main>
