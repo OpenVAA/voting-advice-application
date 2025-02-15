@@ -5,7 +5,7 @@ import { addMissingPartialRecords, getCardContentsFromFile } from '../util/appSe
  * Add the settings from the `dynamicSettings.ts` file as defaults into Strapi if they don't exist yet.
  */
 export async function loadDefaultAppSettings(): Promise<void> {
-  if ((await strapi.documents('api::app-setting.app-setting').findMany()).length > 0) {
+  if (await strapi.documents('api::app-setting.app-setting').findFirst()) {
     console.info('[loadDefaultAppSettings] App settings found - skipping loading of default app settings.');
     return;
   }
