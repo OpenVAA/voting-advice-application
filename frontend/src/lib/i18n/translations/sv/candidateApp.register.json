@@ -1,20 +1,20 @@
 {
-  "code": "SV registration code",
-  "codePlaceholder": "SV E.g. CP23-174a-f4%&-aHAB",
+  "code": "registreringskod",
+  "codePlaceholder": "T.ex. CP23-174a-f4%&-aHAB",
   "enterCode": "Ange registreringskoden som du har fått via e-post för att slutföra din registrering.",
-  "loggedInWarning": "SV A user is currently logged in. Log out before proceeding.",
+  "loggedInWarning": "En användare är för närvarande inloggad. Logga ut innan du fortsätter.",
   "passwordValidation": {
-    "commonPatterns": "SV Contains common sequences or patterns",
-    "length": "SV At least {minPasswordLength} characters",
-    "lowercase": "SV Lowercase letter",
-    "number": "SV Number",
-    "repetition": "SV Contains character repetition",
-    "symbol": "SV Symbol",
-    "uppercase": "SV Uppercase letter",
-    "username": "SV Avoid using your name in the password"
+    "commonPatterns": "Innehåller vanliga sekvenser eller mönster",
+    "length": "Minst {minPasswordLength} tecken",
+    "lowercase": "Liten bokstav",
+    "number": "Nummer",
+    "repetition": "Innehåller upprepning av tecken",
+    "symbol": "Symbol",
+    "uppercase": "Stor bokstav",
+    "username": "Undvik att använda ditt namn i lösenordet"
   },
-  "register": "SV Register",
-  "title": "SV Registration",
+  "register": "Registrera",
+  "title": "Registrering",
   "titleWithPreregistration": "Bekräfta din e-postadress",
-  "wrongRegistrationCode": "SV Wrong registration code"
+  "wrongRegistrationCode": "Fel registreringskod"
 }

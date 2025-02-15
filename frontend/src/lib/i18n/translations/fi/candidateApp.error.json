@@ -1,7 +1,7 @@
 {
-  "candidateNoNomination": "Ehdokkaalta puuttuu vaalipiiri. Ota yhteyttä käyttäjätukeen.",
+  "candidateNoNomination": "Ehdokkaalta puuttuu vaalipiiri. Ota yhteyttä tukeen.",
   "loginFailed": "Kirjautuminen epäonnistui. Tarkista käyttäjätunnus ja salasana.",
-  "nominationNoElection": "Ehdokkaalta puuttuu vaali. Ota yhteyttä käyttäjätukeen.",
-  "saveFailed": "Anteeksi! Vastaustesi tallentaminen ei onnistunut. Yritä uudelleen ja jos ongelma jatkuu, ota yhteyttä käyttäjätukeen.",
-  "userNoCandidate": "Sisäänkirjautuneeseen käyttäjään ei ole yhdistetty ehdokastietoja. Ota yhteyttä käyttäjätukeen."
+  "nominationNoElection": "Ehdokkaalta puuttuu vaali. Ota yhteyttä tukeen.",
+  "saveFailed": "Anteeksi! Vastaustesi tallentaminen ei onnistunut. Yritä uudelleen ja jos ongelma jatkuu, ota yhteyttä tukeen.",
+  "userNoCandidate": "Sisäänkirjautuneeseen käyttäjään ei ole yhdistetty ehdokastietoja. Ota yhteyttä tukeen."
 }

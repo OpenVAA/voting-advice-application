@@ -1,19 +1,19 @@
 {
   "basicInfo": {
-    "edit": "SV Edit your basic information",
-    "enter": "SV Enter your basic information",
-    "view": "SV View your basic information"
+    "edit": "Redigera din grundläggande information",
+    "enter": "Ange din grundläggande information",
+    "view": "Visa din grundläggande information"
   },
   "ingress": {
-    "notDone": "SV In order to appear in the Election Compass, you have to enter some basic information about yourself as well as answer opinion statements concerning political issues.",
-    "ready": "SV You have filled all of the information needed for the Election Compass. You can still edit your answers and even log in later to do that."
+    "notDone": "För att synas i valkompassen måste du ange viss grundläggande information om dig själv samt besvara påståenden om politiska frågor.",
+    "ready": "Du har fyllt i all information som behövs för valkompassen. Du kan fortfarande redigera dina svar och logga in senare för att göra det."
   },
-  "preview": "SV Preview your profile",
-  "previewTip": "SV If you want to see how the voters will see your profile, you can preview it.",
+  "preview": "Förhandsgranska din profil",
+  "previewTip": "Om du vill se hur väljarna kommer att se din profil kan du förhandsgranska den.",
   "questions": {
-    "edit": "SV Edit your opinions",
-    "enter": "SV Tell your opinions",
-    "view": "SV View your opinions"
+    "edit": "Redigera dina åsikter",
+    "enter": "Berätta dina åsikter",
+    "view": "Visa dina åsikter"
   },
-  "ready": "SV You’re Ready to Roll!"
+  "ready": "Du är redo att köra!"
 }
