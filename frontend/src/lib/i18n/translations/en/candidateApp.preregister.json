@@ -1,72 +1,72 @@
 {
-  "identification": {
-    "start": {
-      "title": "Register as a candidate",
-      "heroEmoji": "🖋️",
-      "content": "<p>To register as a candidate, you must first verify your identity using a Bank ID. When the candidate list is published, we will publish your profile in the app if you are on that list. We will use your full name and birthdate to verify this.</p><p>To complete your registration, follow these steps:</p>",
-      "step": {
-        "identification": "Identify yourself using a Bank ID",
-        "electionSelect": "Select the elections",
-        "constituencySelect": "Select the constituency",
-        "emailVerification": "Verify your email address",
-        "passwordSelect": "Select a password"
-      }
-    },
-    "success": {
-      "title": "Welcome to the voting aid, {firstName} {lastName}!",
-      "heroEmoji": "",
-      "content": "<p>Authentication was successful. Press the button below to continue registration.</p>"
-    },
-    "identifyYourselfButton": "Identify yourself",
-    "identifyYourselHelpText": "You’ll be redirected to the identity provider’s page. Once the authentication is complete, you will be redirected back to this page."
+  "constituencySelect": {
+    "content": "<p>Select the constituency you will be running in.</p>",
+    "title": "What is your constituency?"
   },
   "electionSelect": {
-    "title": "Which elections will you run in?",
-    "content": "<p>Select the elections are you going to stand in.</p>"
-  },
-  "constituencySelect": {
-    "title": "What is your home municipality?",
-    "content": "<p>Select your municipality so that we know which constituency you will be running in.</p>"
-  },
-  "emailVerification": {
-    "title": "Enter email address",
-    "content": "<p>In the future, your email address will act as your username. Please enter it below twice to confirm it's correct.</p><p>You will also need to accept the terms of use in order to continue.</p>",
-    "termsCheckbox": "I consent to the use and storage of my data according to the terms of use."
-  },
-  "status": {
-    "success": {
-      "title": "Confirm your email address",
-      "heroEmoji": "✉️",
-      "content": "<p>We've sent a message to your email address.</p><p>Please click on the link in the message to confirm your email address and complete the registration process.</p><p>You can now close this window.</p>"
-    },
-    "strongIdentificationError": {
-      "title": "There was an issue with Bank ID authentication",
-      "content": "<p>Click the button below to try again or contact support if the problem persists.</p>"
-    },
-    "tokenExpiredError": {
-      "title": "Your session has expired",
-      "content": "<p>Please identify yourself again to complete the registration process.</p>"
-    },
-    "candidateExistsError": {
-      "title": "You are already registered as a candidate",
-      "content": "<p>It looks like you are already registered. Please check your email to confirm your registration. Once the registration is confirmed, you can login with your email and password.</p><p>Contact support if you believe there is an error.</p>"
-    },
-    "loggedInError": {
-      "title": "You are already logged in",
-      "content": "<p>You're already registered as a candidate! Head over to your account to continue.</p>"
-    },
-    "unknownError": {
-      "title": "Something went wrong",
-      "content": "<p>Click the button below to try again or contact support if the problem persists.</p>"
-    }
+    "content": "<p>Select the elections are you going to stand in.</p>",
+    "title": "Which elections will you run in?"
   },
   "email": {
+    "html": "<p>Hi {firstName},</p><p>Thank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:</p><p><a href='{registrationUrl}'>{registrationUrl}</a></p><p>You will be asked to select a password after that.</p>",
     "subject": "Please confirm your email address",
-    "text": "Hi {firstName},\nThank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:\n{registrationUrl}",
-    "html": "<p>Hi {firstName},</p><p>Thank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p>"
+    "text": "Hi {firstName},\nThank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:\n{registrationUrl}\nYou will be asked to select a password after that."
+  },
+  "emailVerification": {
+    "content": "<p>In the future, your email address will act as your username. Please enter it below twice to confirm it's correct.</p><p>You will also need to accept the terms of use in order to continue.</p>",
+    "termsCheckbox": "I consent to the use and storage of my data according to the terms of use.",
+    "title": "Enter email address"
+  },
+  "identification": {
+    "identifyYourselfButton": "Identify yourself",
+    "identifyYourselHelpText": "You’ll be redirected to the Bank ID service. Once the authentication is complete, you will be redirected back to this page.",
+    "start": {
+      "content": "<p>To register as a candidate, you must first verify your identity using a Bank ID. When the official candidate list is confirmed, we will publish your profile if we can find you on that list. We will use your full name and birthdate to verify this.</p>",
+      "heroEmoji": "🖋️",
+      "step": {
+        "constituencySelect": "Select your constituency",
+        "electionSelect": "Select the elections",
+        "emailVerification": "Verify your email address",
+        "identification": "Identify yourself using a Bank ID",
+        "passwordSelect": "Select a password"
+      },
+      "title": "Register as a candidate"
+    },
+    "success": {
+      "content": "<p>Authentication was successful. Press the button below to continue registration.</p>",
+      "heroEmoji": "👍",
+      "title": "Welcome to the Election Compass, {firstName} {lastName}!"
+    }
   },
   "isPreregisteredNotification": {
-    "title": "It looks like you are already registered",
-    "content": "Please login with your email and password instead or check your email for the confirmation link."
+    "content": "Please login with your email and password instead or check your email for the confirmation link.",
+    "title": "It looks like you are already registered"
+  },
+  "status": {
+    "candidateExistsError": {
+      "content": "<p>It looks like you are already registered. Please check your email to confirm your registration. Once the registration is confirmed, you can login with your email and password.</p><p>Contact support if you believe there is an error.</p>",
+      "title": "You are already registered as a candidate"
+    },
+    "loggedInError": {
+      "content": "<p>You're already registered as a candidate. Head over to your account to continue.</p>",
+      "title": "You are already logged in"
+    },
+    "strongIdentificationError": {
+      "content": "<p>Click the button below to try again or contact support if the problem persists.</p>",
+      "title": "There was an issue with Bank ID authentication"
+    },
+    "success": {
+      "content": "<p>We've sent a message to your email address.</p><p>Please click on the link in the message to confirm your email address and complete the registration process.</p><p>You can now close this window.</p>",
+      "heroEmoji": "✉️",
+      "title": "Confirm your email address"
+    },
+    "tokenExpiredError": {
+      "content": "<p>Please identify yourself again to complete the registration process.</p>",
+      "title": "Your session has expired"
+    },
+    "unknownError": {
+      "content": "<p>Click the button below to try again or contact support if the problem persists.</p>",
+      "title": "Something went wrong"
+    }
   }
 }

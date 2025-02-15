@@ -28,11 +28,6 @@
     "label": "sopivuus",
     "score": "{score}%"
   },
-  "multiLangInput": {
-    "hide": "Piilota kentän käännökset",
-    "info": "Voit antaa omat käännökset kielille, joilla sovellus on saatavilla. Jos et kirjoita omia käännöksiäsi, alkuperäinen vastaus näytetään.",
-    "show": "Näytä kentän käännökset"
-  },
   "passwordInput": {
     "hidePassword": "Piilota salasana",
     "password": "Salasana",

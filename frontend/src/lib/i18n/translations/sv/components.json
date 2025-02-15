@@ -28,22 +28,17 @@
     "label": "matchning",
     "score": "{score}%"
   },
-  "multiLangInput": {
-    "hide": "SV Hide translations for this field",
-    "info": "SV You can supply your own translations for the languages the application is available in. If you don’t write your own translations, your original response will be shown.",
-    "show": "SV Show translations for this field"
-  },
   "passwordInput": {
-    "hidePassword": "SV Hide pasprettier-plugin-sveltesword",
+    "hidePassword": "Dölj lösenord",
     "password": "Lösenord",
     "placeholder": "T.ex. CP23-174a-f4%&-aHAB",
-    "showPassword": "SV Reveal password"
+    "showPassword": "Visa lösenord"
   },
   "preHeading": {
     "roleDescription": "Förtexter"
   },
   "preventNavigation": {
-    "unsavedChanges": "SV You have unsaved changes. Are you sure you want to leave this page?"
+    "unsavedChanges": "Du har osparade ändringar. Är du säker på att du vill lämna denna sida?"
   },
   "video": {
     "captions": "Bildtexter",

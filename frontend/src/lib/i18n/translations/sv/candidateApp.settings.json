@@ -1,23 +1,23 @@
 {
-  "emailDescription": "SV We use this email to connect to you and for password reset. It will not be shown on your public profile.",
+  "emailDescription": "Vi använder denna e-post för att kontakta dig och för återställning av lösenord. Den kommer inte att visas i din offentliga profil.",
   "error": {
-    "changeLanguage": "SV An error occurred while changing the application language.",
-    "changePassword": "SV Password change failed. Make sure that your current password is correct."
+    "changeLanguage": "Ett fel inträffade vid byte av applikationsspråk.",
+    "changePassword": "Lösenordsändring misslyckades. Kontrollera att ditt nuvarande lösenord är korrekt."
   },
-  "ingress": "SV These settings only affect the way you use this app. Any information you enter here will not be shown to the public.",
-  "language": "SV App Language",
-  "languageDescription": "SV Use this application in this language. It will not be shown on your public profile.",
+  "ingress": "Dessa inställningar påverkar endast hur du använder denna applikation. Ingen information du anger här kommer att visas för allmänheten.",
+  "language": "Applikationsspråk",
+  "languageDescription": "Använd denna applikation på detta språk. Det kommer inte att visas i din offentliga profil.",
   "password": {
-    "areSame": "SV The new password is the same as the current password",
-    "current": "SV Current Password",
-    "currentDescription": "SV Enter your existing account password that you want to change.",
-    "dontMatch": "SV Passwords don't match",
-    "new": "SV New Password",
-    "newConfirmation": "SV New Password Confirmation",
-    "notValid": "SV Password is not valid",
-    "title": "SV Account Password",
-    "update": "SV Update Password",
-    "updated": "SV The password has been updated!"
+    "areSame": "Det nya lösenordet är detsamma som det nuvarande lösenordet",
+    "current": "Nuvarande lösenord",
+    "currentDescription": "Ange lösenordet för det befintliga kontot du vill ändra.",
+    "dontMatch": "Lösenorden matchar inte",
+    "new": "Nytt lösenord",
+    "newConfirmation": "Bekräfta nytt lösenord",
+    "notValid": "Lösenordet är ogiltigt",
+    "title": "Kontolösenord",
+    "update": "Uppdatera lösenord",
+    "updated": "Lösenordet har uppdaterats!"
   },
-  "title": "SV Settings"
+  "title": "Inställningar"
 }
