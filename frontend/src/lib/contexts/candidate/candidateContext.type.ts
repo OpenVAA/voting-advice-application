@@ -185,4 +185,9 @@ export type CandidateContext = AppContext & {
    * Whether the profile is fully complete.
    */
   profileComplete: Readable<boolean>;
+  /**
+   * A locally stored store set to `true` when the user has completed the preregistration process.
+   * Can be used to prompt the user to log in instead of preregistering again.
+   */
+  isPreregistered: Writable<boolean>;
 };

@@ -1,3 +1,12 @@
+<!--@component
+
+# Candidate app preregistration start page
+
+- Shows the steps needed for preregistration.
+- Shows a button for opening the authentication provider service.
+- Shows a popup prompting the user to log in instead of preregistering again if they've already preregistered.
+-->
+
 <script lang="ts">
   import { browser } from '$app/environment';
   import { Button } from '$lib/components/button';
@@ -8,7 +17,8 @@
   import MainContent from '../../MainContent.svelte';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
+  import { PreregisteredNotification } from '$candidate/components/preregisteredNotification';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -20,12 +30,30 @@
     electionsSelectable,
     getRoute,
     idTokenClaims,
+    isPreregistered,
     locale,
+    popupQueue,
     preregistrationElectionIds,
     t
   } = getCandidateContext();
   const { navigationSettings } = getLayoutContext(onDestroy);
 
+ ////////////////////////////////////////////////////////////////////
+  // Popup management
+  ////////////////////////////////////////////////////////////////////
+
+  onMount(() => {
+    // Show possible notification
+    if ($isPreregistered && !$idTokenClaims)
+      popupQueue.push({ 
+        component: PreregisteredNotification
+      });
+  });
+  
+  ////////////////////////////////////////////////////////////////////
+  // Build steps, init elections and handle redirection
+  ////////////////////////////////////////////////////////////////////
+ 
   $preregistrationElectionIds = $dataRoot.elections.map(({ id }) => id);
 
   const steps = [

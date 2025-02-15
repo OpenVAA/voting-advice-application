@@ -14,7 +14,7 @@ import { getAppContext } from '../app';
 import { questionBlockStore } from '../utils/questionBlockStore';
 import { extractInfoCategories, extractOpinionCategories, questionCategoryStore } from '../utils/questionCategoryStore';
 import { questionStore } from '../utils/questionStore';
-import { sessionStorageWritable } from '../utils/storageStore';
+import { localStorageWritable, sessionStorageWritable } from '../utils/storageStore';
 import type { CustomData } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
@@ -202,6 +202,8 @@ export function initCandidateContext(): CandidateContext {
     );
   }
 
+  const isPreregistered = localStorageWritable('candidateContext-selisPreregisteredectedCategoryIds', false);
+
   async function preregister(opts: {
     email: string;
     nominations: Array<{ electionId: Id; constituencyId: Id }>;
@@ -217,10 +219,17 @@ export function initCandidateContext(): CandidateContext {
     try {
       const result = await dataWriter.preregisterWithIdToken(opts);
       const errorMap: Record<number, string> = { 401: 'tokenExpiredError', 409: 'candidateExistsError' };
+      let code: string;
+      if (result.type === 'success') {
+        isPreregistered.set(true);
+        code = 'success';
+      } else {
+        code = errorMap[result.response.status] ?? 'unknownError';
+      }
       return await goto(
         get(getRoute)({
           route: 'CandAppPreregisterStatus',
-          code: result.type === 'success' ? 'success' : (errorMap[result.response.status] ?? 'unknownError')
+          code
         }),
         { invalidateAll: true }
       );
@@ -295,6 +304,7 @@ export function initCandidateContext(): CandidateContext {
     electionsSelectable,
     infoQuestionCategories,
     infoQuestions,
+    isPreregistered,
     logout,
     newUserEmail,
     opinionQuestionCategories,
