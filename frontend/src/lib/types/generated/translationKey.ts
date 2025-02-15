@@ -86,6 +86,8 @@ export type TranslationKey =
   | 'candidateApp.preregister.identification.success.content'
   | 'candidateApp.preregister.identification.success.heroEmoji'
   | 'candidateApp.preregister.identification.success.title'
+  | 'candidateApp.preregister.isPreregisteredNotification.content'
+  | 'candidateApp.preregister.isPreregisteredNotification.title'
   | 'candidateApp.preregister.status.candidateExistsError.content'
   | 'candidateApp.preregister.status.candidateExistsError.title'
   | 'candidateApp.preregister.status.loggedInError.content'
