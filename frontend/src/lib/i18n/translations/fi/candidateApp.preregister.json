@@ -64,5 +64,9 @@
     "subject": "Please confirm your email address",
     "text": "Hi {firstName},\nThank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:\n{registrationUrl}",
     "html": "<p>Hi {firstName},</p><p>Thank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p>"
+  },
+  "isPreregisteredNotification": {
+    "title": "It looks like you are already registered",
+    "content": "Please login with your email and password instead or check your email for the confirmation link."
   }
 }
