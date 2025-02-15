@@ -41,7 +41,7 @@ Logo files for use on a light and a dark background can be defined. If the latte
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, darkMode, t } = getAppContext();
+  const { appCustomization, darkMode, locale, t } = getAppContext();
 
   ////////////////////////////////////////////////////////////////////
   // Get logo image
@@ -50,9 +50,9 @@ Logo files for use on a light and a dark background can be defined. If the latte
   // Retrieve app logo from settings
   let logoSrc: string | undefined;
   let inverseSrc: string | undefined;
-  $: if ($appCustomization.publisherLogo) {
-    logoSrc = $appCustomization.publisherLogo.url;
-    inverseSrc = $appCustomization.publisherLogo.urlDark ?? $appCustomization.publisherLogo.url;
+  $: {
+    logoSrc = $locale === 'sv' ? '/images/nuorisoala-logo-black-sv.png' : '/images/nuorisoala-logo-black-fi.png';
+    inverseSrc = $locale === 'sv' ? '/images/nuorisoala-logo-white-sv.png' : '/images/nuorisoala-logo-white-fi.png';
     alt ??= $appCustomization.publisherName;
   }
 
