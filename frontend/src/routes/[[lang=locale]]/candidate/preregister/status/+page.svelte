@@ -29,9 +29,9 @@
     </div>
     <Button
       slot="primaryActions"
-      text={$t('common.close')}
-      variant="main"
-      on:click={() => window.close()} />
+      text={$t('common.return')}
+      href={$getRoute('CandAppLogin')} 
+      variant="main"/>
   </MainContent>
 
 {:else}
