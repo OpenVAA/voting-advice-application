@@ -136,6 +136,7 @@
       <Button 
         href={$getRoute('CandAppPreregister')} 
         text={$t('candidateApp.preregister.identification.start.title')} 
+        class="transition-opacity {canSubmit ? 'opacity-30' : ''}"
         variant="main" />
     {/if}
 
