@@ -8,7 +8,7 @@
     "title": "Vilka val kommer du att kandidera i?"
   },
   "email": {
-    "html": "<p>Hej {firstName},</p><p>Tack för att du registrerade dig som kandidat! För att slutföra din registrering, bekräfta din e-postadress genom att följa länken nedan:</p><p><a href='{registrationUrl}'>{registrationUrl}</a></p><p>Efter det blir du ombedd att välja ett lösenord.</p>",
+    "html": "<p>Hej {firstName},</p><p>Tack för att du registrerade dig som kandidat! För att slutföra din registrering, bekräfta din e-postadress genom att följa länken nedan:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p><p>Efter det blir du ombedd att välja ett lösenord.</p>",
     "subject": "Bekräfta din e-postadress",
     "text": "Hej {firstName},\nTack för att du registrerade dig som kandidat! För att slutföra din registrering, bekräfta din e-postadress genom att följa länken nedan:\n{registrationUrl}\nEfter det blir du ombedd att välja ett lösenord."
   },

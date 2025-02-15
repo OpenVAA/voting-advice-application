@@ -8,7 +8,7 @@
     "title": "Missä vaaleissa asetut ehdolle?"
   },
   "email": {
-    "html": "<p>Hei {firstName},</p><p>Kiitos rekisteröitymisestäsi ehdokkaaksi! Viimeistelläksesi rekisteröitymisen, vahvista sähköpostiosoitteesi seuraavasta linkistä:</p><p><a href='{registrationUrl}'>{registrationUrl}</a></p><p>Tämän jälkeen sinua pyydetään valitsemaan salasana.</p>",
+    "html": "<p>Hei {firstName},</p><p>Kiitos rekisteröitymisestäsi ehdokkaaksi! Viimeistelläksesi rekisteröitymisen, vahvista sähköpostiosoitteesi seuraavasta linkistä:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p><p>Tämän jälkeen sinua pyydetään valitsemaan salasana.</p>",
     "subject": "Vahvista sähköpostiosoitteesi",
     "text": "Hei {firstName},\nKiitos rekisteröitymisestäsi ehdokkaaksi! Viimeistelläksesi rekisteröitymisen, vahvista sähköpostiosoitteesi seuraavasta linkistä:\n{registrationUrl}\nTämän jälkeen sinua pyydetään valitsemaan salasana."
   },

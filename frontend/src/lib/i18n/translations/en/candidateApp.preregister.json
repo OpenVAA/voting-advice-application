@@ -8,7 +8,7 @@
     "title": "Which elections will you run in?"
   },
   "email": {
-    "html": "<p>Hi {firstName},</p><p>Thank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:</p><p><a href='{registrationUrl}'>{registrationUrl}</a></p><p>You will be asked to select a password after that.</p>",
+    "html": "<p>Hi {firstName},</p><p>Thank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p><p>You will be asked to select a password after that.</p>",
     "subject": "Please confirm your email address",
     "text": "Hi {firstName},\nThank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:\n{registrationUrl}\nYou will be asked to select a password after that."
   },
