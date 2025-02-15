@@ -1,72 +1,72 @@
 {
-  "identification": {
-    "start": {
-      "title": "Registrera dig som kandidat",
-      "heroEmoji": "🖋️",
-      "content": "<p>To register as a candidate, you must first verify your identity using a Bank ID. When the candidate list is published, we will publish your profile in the app if you are on that list. We will use your full name and birthdate to verify this.</p><p>To complete your registration, follow these steps:</p>",
-      "step": {
-        "identification": "Identify yourself using a Bank ID",
-        "electionSelect": "Select the elections",
-        "constituencySelect": "Select the constituency",
-        "emailVerification": "Verify your email address",
-        "passwordSelect": "Select a password"
-      }
-    },
-    "success": {
-      "title": "Välkommen till valkompassen, {firstName} {lastName}!",
-      "heroEmoji": "",
-      "content": "<p>Identifieringen lyckades. Tryck på knappen nedan för att fortsätta registreringen.</p>"
-    },
-    "identifyYourselfButton": "Identifiera dig",
-    "identifyYourselHelpText": "You’ll be redirected to the identity provider’s page. Once the authentication is complete, you will be redirected back to this page."
+  "constituencySelect": {
+    "content": "<p>Välj valdistriktet du kandiderar i.</p>",
+    "title": "Vilket är ditt valdistrikt?"
   },
   "electionSelect": {
-    "title": "Which elections will you run in?",
-    "content": "<p>Select the elections are you going to stand in.</p>"
-  },
-  "constituencySelect": {
-    "title": "What is your home municipality?",
-    "content": "<p>Select your municipality so that we know which constituency you will be running in.</p>"
-  },
-  "emailVerification": {
-    "title": "Enter email address",
-    "content": "<p>In the future, your email address will act as your username. Please enter it below twice to confirm it's correct.</p><p>You will also need to accept the terms of use in order to continue.</p>",
-    "termsCheckbox": "I consent to the use and storage of my data according to the terms of use."
-  },
-  "status": {
-    "success": {
-      "title": "Confirm your email address",
-      "heroEmoji": "✉️",
-      "content": "<p>We've sent a message to your email address.</p><p>Please click on the link in the message to confirm your email address and complete the registration process.</p><p>You can now close this window.</p>"
-    },
-    "strongIdentificationError": {
-      "title": "There was an issue with Bank ID authentication",
-      "content": "<p>Click the button below to try again or contact support if the problem persists.</p>"
-    },
-    "tokenExpiredError": {
-      "title": "Your session has expired",
-      "content": "<p>Please identify yourself again to complete the registration process.</p>"
-    },
-    "candidateExistsError": {
-      "title": "You are already registered as a candidate",
-      "content": "<p>It looks like you are already registered. Please check your email to confirm your registration. Once the registration is confirmed, you can login with your email and password.</p><p>Contact support if you believe there is an error.</p>"
-    },
-    "loggedInError": {
-      "title": "You are already logged in",
-      "content": "<p>You're already registered as a candidate! Head over to your account to continue.</p>"
-    },
-    "unknownError": {
-      "title": "Something went wrong",
-      "content": "<p>Click the button below to try again or contact support if the problem persists.</p>"
-    }
+    "content": "<p>Välj de val du tänker ställa upp i.</p>",
+    "title": "Vilka val kommer du att kandidera i?"
   },
   "email": {
-    "subject": "Please confirm your email address",
-    "text": "Hi {firstName},\nThank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:\n{registrationUrl}",
-    "html": "<p>Hi {firstName},</p><p>Thank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p>"
+    "html": "<p>Hej {firstName},</p><p>Tack för att du registrerade dig som kandidat! För att slutföra din registrering, bekräfta din e-postadress genom att följa länken nedan:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p><p>Efter det blir du ombedd att välja ett lösenord.</p>",
+    "subject": "Bekräfta din e-postadress",
+    "text": "Hej {firstName},\nTack för att du registrerade dig som kandidat! För att slutföra din registrering, bekräfta din e-postadress genom att följa länken nedan:\n{registrationUrl}\nEfter det blir du ombedd att välja ett lösenord."
+  },
+  "emailVerification": {
+    "content": "<p>Din e-postadress kommer i framtiden att fungera som ditt användarnamn. Ange den nedan två gånger för att bekräfta att den är korrekt.</p><p>Du måste också godkänna användarvillkoren för att fortsätta.</p>",
+    "termsCheckbox": "I consent to the use and storage of my data according to the terms of use.",
+    "title": "Ange e-postadress"
+  },
+  "identification": {
+    "identifyYourselfButton": "Identifiera dig",
+    "identifyYourselHelpText": "Du kommer att omdirigeras till bank-id-tjänsten. När autentiseringen är klar kommer du att omdirigeras tillbaka till denna sida.",
+    "start": {
+      "content": "<p>För att registrera dig som kandidat måste du först verifiera din identitet med ett bank-id. När den officiella kandidatlistan bekräftas kommer vi att publicera din profil om vi kan hitta dig på den listan. Vi kommer att använda ditt fullständiga namn och födelsedatum för att verifiera detta.</p>",
+      "heroEmoji": "🖋️",
+      "step": {
+        "constituencySelect": "Välj ditt valdistrikt",
+        "electionSelect": "Välj valen",
+        "emailVerification": "Bekräfta din e-postadress",
+        "identification": "Identifiera dig med bank-id",
+        "passwordSelect": "Välj ett lösenord"
+      },
+      "title": "Registrera dig som kandidat"
+    },
+    "success": {
+      "content": "<p>Identifieringen lyckades. Tryck på knappen nedan för att fortsätta registreringen.</p>",
+      "heroEmoji": "👍",
+      "title": "Välkommen till valkompassen, {firstName} {lastName}!"
+    }
   },
   "isPreregisteredNotification": {
-    "title": "It looks like you are already registered",
-    "content": "Please login with your email and password instead or check your email for the confirmation link."
+    "content": "Logga in med din e-postadress och ditt lösenord istället eller kontrollera din e-post för bekräftelselänken.",
+    "title": "Det verkar som att du redan är registrerad"
+  },
+  "status": {
+    "candidateExistsError": {
+      "content": "<p>Det verkar som att du redan är registrerad. Kontrollera din e-post för att bekräfta din registrering. När registreringen är bekräftad kan du logga in med din e-post och ditt lösenord.</p><p>Kontakta support om du tror att det är ett fel.</p>",
+      "title": "Du är redan registrerad som kandidat"
+    },
+    "loggedInError": {
+      "content": "<p>Du är redan registrerad som kandidat. Gå till ditt konto för att fortsätta.</p>",
+      "title": "Du är redan inloggad"
+    },
+    "strongIdentificationError": {
+      "content": "<p>Klicka på knappen nedan för att försöka igen eller kontakta support om problemet kvarstår.</p>",
+      "title": "Det uppstod ett problem med bank-id-autentiseringen"
+    },
+    "success": {
+      "content": "<p>Vi har skickat ett meddelande till din e-postadress.</p><p>Klicka på länken i meddelandet för att bekräfta din e-postadress och slutföra registreringen.</p><p>Du kan nu stänga detta fönster.</p>",
+      "heroEmoji": "✉️",
+      "title": "Bekräfta din e-postadress"
+    },
+    "tokenExpiredError": {
+      "content": "<p>Identifiera dig igen för att slutföra registreringen.</p>",
+      "title": "Din session har löpt ut"
+    },
+    "unknownError": {
+      "content": "<p>Klicka på knappen nedan för att försöka igen eller kontakta support om problemet kvarstår.</p>",
+      "title": "Något gick fel"
+    }
   }
 }

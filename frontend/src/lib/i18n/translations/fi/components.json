@@ -28,15 +28,10 @@
     "label": "sopivuus",
     "score": "{score}%"
   },
-  "multiLangInput": {
-    "hide": "Piilota kentän käännökset",
-    "info": "Voit antaa omat käännökset kielille, joilla sovellus on saatavilla. Jos et kirjoita omia käännöksiäsi, alkuperäinen vastaus näytetään.",
-    "show": "Näytä kentän käännökset"
-  },
   "passwordInput": {
     "hidePassword": "Piilota salasana",
     "password": "Salasana",
-    "placeholder": "Esim. CP23-174a-f4%&-aHAB",
+    "placeholder": "Salasana",
     "showPassword": "Näytä salasana"
   },
   "preHeading": {
