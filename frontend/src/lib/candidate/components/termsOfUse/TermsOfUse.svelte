@@ -8,6 +8,7 @@ A utility component for displaying candidate app terms of use and privacy statem
 -->
 
 <script lang="ts">
+  import { Button } from '$lib/components/button';
   import { getComponentContext } from '$lib/contexts/component';
   import { sanitizeHtml } from '$lib/utils/sanitize';
 
@@ -44,7 +45,10 @@ A utility component for displaying candidate app terms of use and privacy statem
     <h2>{$t('dynamic.candidateAppPrivacy.termsOfUse.title')}</h2>
     <div class="prose">
       {@html sanitizeHtml(termsOfUse)}
-
     </div>
+    <Button 
+      href="https://nuorisoala.fi/palvelut/yhdenvertaisuus/turvallisemman-tilan-periaatteet-ja-vihapuheesta-vapaan-keskustelun-saannot/"
+      target="_blank"
+      text={$t('common.info')}/>
   </section>
 {/if}
