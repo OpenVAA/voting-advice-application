@@ -37,13 +37,29 @@ export interface CustomizationTranslationOverrideTranslation extends Struct.Comp
   };
 }
 
+export interface SettingsAccess extends Struct.ComponentSchema {
+  collectionName: 'components_settings_accesses';
+  info: {
+    displayName: 'Access';
+  };
+  attributes: {
+    answersLocked: Schema.Attribute.Boolean;
+    candidateApp: Schema.Attribute.Boolean;
+    underMaintenance: Schema.Attribute.Boolean;
+    voterApp: Schema.Attribute.Boolean;
+  };
+}
+
 export interface SettingsElections extends Struct.ComponentSchema {
   collectionName: 'components_settings_elections';
   info: {
+    description: '';
     displayName: 'Elections';
   };
   attributes: {
     disallowSelection: Schema.Attribute.Boolean;
+    showElectionTags: Schema.Attribute.Boolean;
+    startFromConstituencyGroup: Schema.Attribute.String;
   };
 }
 
@@ -184,6 +200,32 @@ export interface SettingsMatching extends Struct.ComponentSchema {
   };
 }
 
+export interface SettingsNotifications extends Struct.ComponentSchema {
+  collectionName: 'components_settings_notifications';
+  info: {
+    description: '';
+    displayName: 'Notifications';
+  };
+  attributes: {
+    candidateApp: Schema.Attribute.Component<'settings.notifications-notification-data', false>;
+    voterApp: Schema.Attribute.Component<'settings.notifications-notification-data', false>;
+  };
+}
+
+export interface SettingsNotificationsNotificationData extends Struct.ComponentSchema {
+  collectionName: 'components_settings_notifications_notification_data';
+  info: {
+    description: '';
+    displayName: 'Notifications - NotificationData';
+  };
+  attributes: {
+    content: Schema.Attribute.JSON & Schema.Attribute.Required;
+    icon: Schema.Attribute.String;
+    show: Schema.Attribute.Boolean;
+    title: Schema.Attribute.JSON & Schema.Attribute.Required;
+  };
+}
+
 export interface SettingsQuestions extends Struct.ComponentSchema {
   collectionName: 'components_settings_questions';
   info: {
@@ -290,6 +332,7 @@ declare module '@strapi/strapi' {
       'customization.candidate-app-faq': CustomizationCandidateAppFaq;
       'customization.translation-override': CustomizationTranslationOverride;
       'customization.translation-override-translation': CustomizationTranslationOverrideTranslation;
+      'settings.access': SettingsAccess;
       'settings.elections': SettingsElections;
       'settings.entities': SettingsEntities;
       'settings.entity-details': SettingsEntityDetails;
@@ -302,6 +345,8 @@ declare module '@strapi/strapi' {
       'settings.header-style-light': SettingsHeaderStyleLight;
       'settings.hide-if-missing-answers': SettingsHideIfMissingAnswers;
       'settings.matching': SettingsMatching;
+      'settings.notifications': SettingsNotifications;
+      'settings.notifications-notification-data': SettingsNotificationsNotificationData;
       'settings.questions': SettingsQuestions;
       'settings.questions-category-intros': SettingsQuestionsCategoryIntros;
       'settings.questions-intro': SettingsQuestionsIntro;

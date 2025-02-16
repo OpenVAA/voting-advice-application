@@ -328,33 +328,6 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiAnswerAnswer extends Struct.CollectionTypeSchema {
-  collectionName: 'answers';
-  info: {
-    description: '';
-    displayName: 'Answers';
-    pluralName: 'answers';
-    singularName: 'answer';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    candidate: Schema.Attribute.Relation<'manyToOne', 'api::candidate.candidate'>;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<'oneToMany', 'api::answer.answer'> & Schema.Attribute.Private;
-    openAnswer: Schema.Attribute.JSON;
-    party: Schema.Attribute.Relation<'manyToOne', 'api::party.party'>;
-    publishedAt: Schema.Attribute.DateTime;
-    question: Schema.Attribute.Relation<'manyToOne', 'api::question.question'>;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-    value: Schema.Attribute.JSON & Schema.Attribute.Required;
-  };
-}
-
 export interface ApiAppCustomizationAppCustomization extends Struct.SingleTypeSchema {
   collectionName: 'app_customizations';
   info: {
@@ -399,6 +372,7 @@ export interface ApiAppSettingAppSetting extends Struct.SingleTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    access: Schema.Attribute.Component<'settings.access', false>;
     allowOverwrite: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
@@ -410,11 +384,11 @@ export interface ApiAppSettingAppSetting extends Struct.SingleTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::app-setting.app-setting'> & Schema.Attribute.Private;
     matching: Schema.Attribute.Component<'settings.matching', false> & Schema.Attribute.Required;
+    notifications: Schema.Attribute.Component<'settings.notifications', false>;
     publishedAt: Schema.Attribute.DateTime;
     questions: Schema.Attribute.Component<'settings.questions', false> & Schema.Attribute.Required;
     results: Schema.Attribute.Component<'settings.results', false> & Schema.Attribute.Required;
     survey: Schema.Attribute.Component<'settings.survey', false>;
-    underMaintenance: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
   };
@@ -437,13 +411,15 @@ export interface ApiCandidateCandidate extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
     email: Schema.Attribute.String & Schema.Attribute.Private;
+    externalId: Schema.Attribute.String & Schema.Attribute.Private;
     firstName: Schema.Attribute.String & Schema.Attribute.Required;
+    identifier: Schema.Attribute.String & Schema.Attribute.Private;
+    image: Schema.Attribute.Media<'images'>;
     lastName: Schema.Attribute.String & Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::candidate.candidate'> & Schema.Attribute.Private;
-    nomination: Schema.Attribute.Relation<'oneToOne', 'api::nomination.nomination'>;
+    nominations: Schema.Attribute.Relation<'oneToMany', 'api::nomination.nomination'>;
     party: Schema.Attribute.Relation<'manyToOne', 'api::party.party'>;
-    photo: Schema.Attribute.Media<'images'>;
     publishedAt: Schema.Attribute.DateTime;
     registrationKey: Schema.Attribute.String & Schema.Attribute.Private;
     updatedAt: Schema.Attribute.DateTime;
@@ -467,6 +443,7 @@ export interface ApiConstituencyGroupConstituencyGroup extends Struct.Collection
     constituencies: Schema.Attribute.Relation<'oneToMany', 'api::constituency.constituency'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
+    externalId: Schema.Attribute.String & Schema.Attribute.Private;
     info: Schema.Attribute.JSON;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::constituency-group.constituency-group'> &
@@ -492,15 +469,17 @@ export interface ApiConstituencyConstituency extends Struct.CollectionTypeSchema
     draftAndPublish: false;
   };
   attributes: {
+    constituencies: Schema.Attribute.Relation<'oneToMany', 'api::constituency.constituency'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
+    externalId: Schema.Attribute.String & Schema.Attribute.Private;
     info: Schema.Attribute.JSON;
     keywords: Schema.Attribute.JSON;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::constituency.constituency'> & Schema.Attribute.Private;
     name: Schema.Attribute.JSON;
     nominations: Schema.Attribute.Relation<'oneToMany', 'api::nomination.nomination'>;
-    parent: Schema.Attribute.Relation<'oneToOne', 'api::constituency.constituency'>;
+    parent: Schema.Attribute.Relation<'manyToOne', 'api::constituency.constituency'>;
     publishedAt: Schema.Attribute.DateTime;
     shortName: Schema.Attribute.JSON;
     updatedAt: Schema.Attribute.DateTime;
@@ -520,13 +499,13 @@ export interface ApiElectionElection extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    answersLocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     constituencyGroups: Schema.Attribute.Relation<'oneToMany', 'api::constituency-group.constituency-group'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
     electionDate: Schema.Attribute.Date & Schema.Attribute.Required;
     electionStartDate: Schema.Attribute.Date & Schema.Attribute.Required;
     electionType: Schema.Attribute.Enumeration<['local', 'presidential', 'congress']>;
+    externalId: Schema.Attribute.String & Schema.Attribute.Private;
     info: Schema.Attribute.JSON;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::election.election'> & Schema.Attribute.Private;
@@ -609,13 +588,14 @@ export interface ApiNominationNomination extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    candidate: Schema.Attribute.Relation<'oneToOne', 'api::candidate.candidate'>;
+    candidate: Schema.Attribute.Relation<'manyToOne', 'api::candidate.candidate'>;
     constituency: Schema.Attribute.Relation<'manyToOne', 'api::constituency.constituency'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
     election: Schema.Attribute.Relation<'manyToOne', 'api::election.election'>;
     electionRound: Schema.Attribute.Integer & Schema.Attribute.Required & Schema.Attribute.DefaultTo<1>;
     electionSymbol: Schema.Attribute.String;
+    externalId: Schema.Attribute.String & Schema.Attribute.Private;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::nomination.nomination'> & Schema.Attribute.Private;
     party: Schema.Attribute.Relation<'manyToOne', 'api::party.party'>;
@@ -644,10 +624,11 @@ export interface ApiPartyParty extends Struct.CollectionTypeSchema {
     colorDark: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
+    externalId: Schema.Attribute.String & Schema.Attribute.Private;
+    image: Schema.Attribute.Media<'images'>;
     info: Schema.Attribute.JSON;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::party.party'> & Schema.Attribute.Private;
-    logo: Schema.Attribute.Media<'images'>;
     name: Schema.Attribute.JSON;
     nominations: Schema.Attribute.Relation<'oneToMany', 'api::nomination.nomination'>;
     publishedAt: Schema.Attribute.DateTime;
@@ -676,6 +657,7 @@ export interface ApiQuestionCategoryQuestionCategory extends Struct.CollectionTy
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
     customData: Schema.Attribute.JSON;
     elections: Schema.Attribute.Relation<'oneToMany', 'api::election.election'>;
+    externalId: Schema.Attribute.String & Schema.Attribute.Private;
     info: Schema.Attribute.JSON;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::question-category.question-category'> &
@@ -705,6 +687,7 @@ export interface ApiQuestionTypeQuestionType extends Struct.CollectionTypeSchema
   attributes: {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
+    externalId: Schema.Attribute.String & Schema.Attribute.Private;
     info: Schema.Attribute.Text;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::question-type.question-type'> &
@@ -736,6 +719,7 @@ export interface ApiQuestionQuestion extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
     customData: Schema.Attribute.JSON;
     entityType: Schema.Attribute.Enumeration<['all', 'candidate', 'party']> & Schema.Attribute.DefaultTo<'all'>;
+    externalId: Schema.Attribute.String & Schema.Attribute.Private;
     fillingInfo: Schema.Attribute.JSON;
     filterable: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     info: Schema.Attribute.JSON;
@@ -747,28 +731,6 @@ export interface ApiQuestionQuestion extends Struct.CollectionTypeSchema {
     required: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
     shortName: Schema.Attribute.JSON;
     text: Schema.Attribute.JSON;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-  };
-}
-
-export interface ApiTestTest extends Struct.CollectionTypeSchema {
-  collectionName: 'tests';
-  info: {
-    displayName: 'Test';
-    pluralName: 'tests';
-    singularName: 'test';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
-    json: Schema.Attribute.JSON;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<'oneToMany', 'api::test.test'> & Schema.Attribute.Private;
-    publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
   };
@@ -1183,7 +1145,6 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
-      'api::answer.answer': ApiAnswerAnswer;
       'api::app-customization.app-customization': ApiAppCustomizationAppCustomization;
       'api::app-setting.app-setting': ApiAppSettingAppSetting;
       'api::candidate.candidate': ApiCandidateCandidate;
@@ -1197,7 +1158,6 @@ declare module '@strapi/strapi' {
       'api::question-category.question-category': ApiQuestionCategoryQuestionCategory;
       'api::question-type.question-type': ApiQuestionTypeQuestionType;
       'api::question.question': ApiQuestionQuestion;
-      'api::test.test': ApiTestTest;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;
