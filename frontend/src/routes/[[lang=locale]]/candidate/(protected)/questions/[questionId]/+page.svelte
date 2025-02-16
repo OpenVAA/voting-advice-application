@@ -32,7 +32,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   import { logDebugError } from '$lib/utils/logger';
   import { parseParams } from '$lib/utils/route';
   import MainContent from '../../../../MainContent.svelte';
-  import type { CustomData, LocalizedAnswer } from '@openvaa/app-shared';
+  import { getCustomData, type CustomData, type LocalizedAnswer } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
 
   ////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
     if (!questionId) error(500, 'No questionId provided.');
     try {
       question = $dataRoot.getQuestion(questionId);
-      customData = question.customData;
+      customData = getCustomData(question);
       nextQuestionId = getNextQuestionId(question);
       status = 'idle';
     } catch {

@@ -28,7 +28,7 @@ Display the intro to a question category and possibly a button with which to ski
   import { getVoterContext } from '$lib/contexts/voter';
   import { parseParams } from '$lib/utils/route';
   import MainContent from '../../../../../MainContent.svelte';
-  import type { CustomData } from '@openvaa/app-shared';
+  import { getCustomData, type CustomData } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
   import type { QuestionCategory } from '@openvaa/data';
   import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
@@ -57,7 +57,7 @@ Display the intro to a question category and possibly a button with which to ski
     block = $selectedQuestionBlocks.getByCategory(category);
     if (!block?.block[0]) error(404, `No applicable questions found for category ${categoryId}.`);
     questionId = block.block[0].id;
-    customData = category.customData ?? {};
+    customData = getCustomData(category);
     if (block.index < $selectedQuestionBlocks.blocks.length - 1) {
       nextCategoryId = $selectedQuestionBlocks.blocks[block.index + 1][0]?.category.id;
       if (!nextCategoryId) error(404, `Next category not found after category ${categoryId}.`);
