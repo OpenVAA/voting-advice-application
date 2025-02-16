@@ -12,11 +12,13 @@
 
   const { idTokenClaims, preregister, preregistrationNominations, t, getRoute } = getCandidateContext();
 
+  let status: ActionStatus = 'idle';
   let email1 = '';
   let email2 = '';
   let termsAccepted = false;
 
   async function handleSubmit() {
+    status = 'loading';
     const templatePayload = {
       registrationUrl: `${window.location.origin}${$getRoute('CandAppRegister')}?registrationKey=<%= candidate.registrationKey %>`,
       firstName: $idTokenClaims?.firstName
@@ -32,6 +34,7 @@
         }
       }
     });
+    status = 'idle';
   }
 </script>
 
@@ -77,7 +80,8 @@
     slot="primaryActions"
     text={$t('common.continue')}
     variant="main"
-    disabled={!termsAccepted || !email1.trim() || !(email1.trim() === email2.trim())} 
+    disabled={!termsAccepted || !email1.trim() || !(email1.trim() === email2.trim())}
+    loading={status === 'loading'}
     on:click={handleSubmit}/>
 
 </MainContent>
