@@ -158,6 +158,17 @@
     @apply text-md;
   }
 
+  /**
+   * To prevent iOS Safari auto-zoom
+   */
+  @supports (-webkit-touch-callout: none) {
+    .input,
+    .textarea,
+    .select {
+      @apply text-[max(16px,_0.9375rem)];
+    }
+  }
+
   /* Style buttons */
   .btn {
     @apply px-10 font-normal;
