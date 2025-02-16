@@ -143,6 +143,32 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
     throw new ValidationError('CANDIDATE_CONFLICT');
   }
 
+  // Custom for Nuorten Vaalikone
+  // Try to find the age question, election date and calculate candidate age if available
+  let answers = {};
+  const ageQuestion = await strapi
+    .documents('api::question.question')
+    .findFirst({ filters: { externalId: 'question-Age' } });
+  const election = await strapi.documents('api::election.election').findFirst();
+  if (ageQuestion && election?.electionDate) {
+    const electionDate = new Date(election.electionDate);
+    const birthDate = new Date(identifier);
+    if (!isNaN(electionDate.getTime()) && !isNaN(birthDate.getTime())) {
+      let age = electionDate.getFullYear() - birthDate.getFullYear();
+      if (
+        electionDate.getMonth() < birthDate.getMonth() ||
+        (electionDate.getMonth() === birthDate.getMonth() && electionDate.getDate() < birthDate.getDate())
+      ) {
+        age--;
+      }
+      answers = {
+        [ageQuestion.documentId]: {
+          value: age
+        }
+      };
+    }
+  }
+
   const { documentId: candidateDocumentId, registrationKey } = await strapi
     .documents('api::candidate.candidate')
     .create({
@@ -150,7 +176,8 @@ async function preregister(ctx: Context): Promise<{ type: 'success' }> {
         email: email.trim().toLocaleLowerCase(),
         firstName,
         lastName,
-        identifier
+        identifier,
+        answers
       }
     });
 
