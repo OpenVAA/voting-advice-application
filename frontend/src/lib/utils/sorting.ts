@@ -1,4 +1,5 @@
-import type { AnyNominationVariant } from '@openvaa/data';
+import { order } from '@openvaa/data';
+import type { AnyNominationVariant, AnyQuestionVariant } from '@openvaa/data';
 
 /**
  * Moves items with a specified value to the front of the array while retaining the order of other items.
@@ -31,4 +32,16 @@ export function compareElectionSymbols(
   return `${aInt}` === a.electionSymbol && `${bInt}` === b.electionSymbol
     ? aInt - bInt
     : a.electionSymbol.localeCompare(b.electionSymbol, locale);
+}
+
+/**
+ * Sort `Question`s by their category and own order.
+ * TODO: This may deprecated in the future, if we extend `@openvaa/data` a bit.
+ */
+export function sortQuestions(questions: Array<AnyQuestionVariant>): Array<AnyQuestionVariant> {
+  return questions.toSorted((a, b) => {
+    const categoryOrder = order(a.category, b.category);
+    if (categoryOrder !== 0) return categoryOrder;
+    return order(a, b);
+  });
 }

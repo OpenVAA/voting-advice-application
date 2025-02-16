@@ -46,6 +46,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import type { AnswerStore } from '$lib/contexts/voter';
   import type { MatchTree } from '$lib/contexts/voter/matchStore';
   import type { EntityDetailsProps } from './EntityDetails.type';
+  import { sortQuestions } from '$lib/utils/sorting';
 
   type $$Props = EntityDetailsProps;
 
@@ -95,8 +96,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     if (tabs.includes('info') || tabs.includes('opinions')) {
       // If we're showing a nominated entity, we show the questions applicable to the election and constituency, otherwise default to all questions the entity has answered
       const questions = nomination ? nomination.applicableQuestions : nakedEntity.answeredQuestions;
-      infoQuestions = questions.filter((q) => q.category.type !== 'opinion');
-      opinionQuestions = questions.filter((q) => q.category.type === 'opinion');
+      infoQuestions = sortQuestions(questions.filter((q) => q.category.type !== 'opinion'));
+      opinionQuestions = sortQuestions(questions.filter((q) => q.category.type === 'opinion'));
     } else {
       infoQuestions = [];
       opinionQuestions = [];

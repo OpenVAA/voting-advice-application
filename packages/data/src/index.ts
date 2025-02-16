@@ -110,6 +110,7 @@ export {
   isEmptyValue,
   isEntityType,
   isLocalizedValue,
+  order,
   parseEntityTree,
   parseFullVaaData,
   parseNominationTree,
