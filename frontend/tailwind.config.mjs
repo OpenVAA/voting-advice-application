@@ -119,7 +119,7 @@ export default {
     },
     fontSize: ({ theme }) => ({
       xs: [`${11.5 / 16}rem`, { lineHeight: theme('lineHeight.sm') }], // label in all caps
-      sm: [`${12 / 16}rem`, { lineHeight: theme('lineHeight.sm') }], // margins, badges, non-important info
+      sm: [`${13 / 16}rem`, { lineHeight: theme('lineHeight.md') }], // non-important info
       md: [`${15 / 16}rem`, { lineHeight: theme('lineHeight.md') }], // base, body text
       base: [`${15 / 16}rem`, { lineHeight: theme('lineHeight.md') }], // base, body text
       lg: [`${17 / 16}rem`, { lineHeight: theme('lineHeight.sm') }], // h3: card title
