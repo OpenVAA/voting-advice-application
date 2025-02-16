@@ -271,11 +271,11 @@ The input itself is wrapped in multiple container elements, the outermost of whi
       if (!success) return handleError('components.input.error.fileLoadingError');
     } else if (type === 'url') {
       // Only update the value if it's an empty string or a valid URL
-      const currentValue = currentTarget.value.trim();
+      const currentValue = currentTarget.value.replaceAll(/\s+/g, '');
       if (currentValue == '') {
         value = '';
       } else {
-        const url = checkUrl(currentTarget.value);
+        const url = checkUrl(currentValue);
         if (url == null) return handleError('components.input.error.invalidUrl');
         value = url;
       }
