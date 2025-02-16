@@ -140,7 +140,7 @@ Shows the candidate's basic information, some of which is editable.
     status = 'loading';
     // Request email to be sent in the backend
     const result = await userData.save().catch((e) => {
-      logDebugError(`Error saving userData: ${e?.message}`);
+      logDebugError(`[Candidate app question page] Error saving userData: ${e?.message}`);
       return undefined;
     });
     if (result?.type !== 'success') {
@@ -265,7 +265,9 @@ Shows the candidate's basic information, some of which is editable.
 
   <svelte:fragment slot="primaryActions">
     {#if !$answersLocked}
-      <div class="mx-md my-md transition-opacity" class:opacity-0={allRequiredFilled}>
+      <div 
+        class="mx-md my-md transition-opacity" 
+        class:opacity-0={status === 'loading' || allRequiredFilled}>
         <Icon name="required" class="{iconBadgeClass} text-warning" /><span class="sr-only"
           >{$t('common.required')}</span>
         {$t('candidateApp.basicInfo.requiredInfo')}
@@ -282,11 +284,16 @@ Shows the candidate's basic information, some of which is editable.
           text={submitLabel}
           on:click={handleSubmit}
           disabled={!canSubmit}
+          loading={status === 'loading'}
+          loadingText={$t('common.saving')}
           type="submit"
           data-testid="submitButton"
           variant="main"
           icon="next" />
-        <Button text={$t('common.cancel')} on:click={handleCancel} color="warning" />
+        <Button 
+          text={status === 'loading' ? $t('common.return') : $t('common.cancel')} 
+          on:click={handleCancel} 
+          color="warning" />
       {:else}
         <Button text={$t('common.return')} href={$getRoute('CandAppHome')} variant="main" />
       {/if}
