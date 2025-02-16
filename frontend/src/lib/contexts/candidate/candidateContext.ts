@@ -1,3 +1,4 @@
+import { getCustomData } from '@openvaa/app-shared';
 import { isEmptyValue } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
@@ -15,7 +16,6 @@ import { questionBlockStore } from '../utils/questionBlockStore';
 import { extractInfoCategories, extractOpinionCategories, questionCategoryStore } from '../utils/questionCategoryStore';
 import { questionStore } from '../utils/questionStore';
 import { localStorageWritable, sessionStorageWritable } from '../utils/storageStore';
-import type { CustomData } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { DataWriter } from '$lib/api/base/dataWriter.type';
@@ -262,7 +262,10 @@ export function initCandidateContext(): CandidateContext {
   const { savedCandidateData } = userData;
 
   const requiredInfoQuestions = derived(infoQuestions, (infoQuestions) =>
-    infoQuestions.filter((q) => (q.customData as CustomData['Question'])?.required)
+    infoQuestions.filter((q) => {
+      const customData = getCustomData(q);
+      return !customData.locked && customData.required;
+    })
   );
 
   const unansweredRequiredInfoQuestions = derived(
