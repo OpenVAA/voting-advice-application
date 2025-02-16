@@ -12,12 +12,18 @@
 
   const { idTokenClaims, preregister, preregistrationNominations, t, getRoute } = getCandidateContext();
 
-  let status: ActionStatus = 'idle';
+  ////////////////////////////////////////////////////////////////////
+  // Handle submitting
+  ////////////////////////////////////////////////////////////////////
+
+  let form: HTMLFormElement;
   let email1 = '';
   let email2 = '';
+  let status: ActionStatus = 'idle';
   let termsAccepted = false;
 
   async function handleSubmit() {
+    if (!form.reportValidity()) return;
     status = 'loading';
     const templatePayload = {
       registrationUrl: `${window.location.origin}${$getRoute('CandAppRegister')}?registrationKey=<%= candidate.registrationKey %>`,
@@ -39,7 +45,7 @@
 </script>
 
 <MainContent title={$t('candidateApp.preregister.emailVerification.title')}>
-  <form class="flex flex-col flex-nowrap items-center">
+  <form class="flex flex-col flex-nowrap items-center" bind:this={form}>
     <div class="mb-md text-center">
       {@html sanitizeHtml($t('candidateApp.preregister.emailVerification.content'))}
     </div>
