@@ -185,8 +185,6 @@ export function userDataStore({
         answers
       });
       if (!updated) throw new Error('Failed to update answers');
-      // Only reset the answers after successful save
-      resetAnswers();
     }
 
     if (image) {
@@ -195,12 +193,13 @@ export function userDataStore({
         properties: { image }
       });
       if (!updated) throw new Error('Failed to update image');
-      // Only reset the answers after successful save
-      resetImage();
     }
 
     // Update the user data
     if (updated) updateCandidateData(updated);
+    // Only reset the answers after successful save
+    resetAnswers();
+    resetImage();
 
     return { type: 'success' };
   }
