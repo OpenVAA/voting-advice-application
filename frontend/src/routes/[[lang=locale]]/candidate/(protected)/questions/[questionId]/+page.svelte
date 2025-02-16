@@ -217,7 +217,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   pageStyles.push({ drawer: { background: 'bg-base-200' } });
 </script>
 
-{#if status !== 'loading' && question}
+{#if question}
   {@const { info, text } = question}
   {@const answer = $userData?.candidate.answers?.[question.id]}
   {#key question.id}
@@ -282,12 +282,16 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
               text={submitLabel}
               on:click={handleSubmit}
               disabled={!canSubmit}
+              loading={status === 'loading'}
+              loadingText={$t('common.saving')}
               type="submit"
               id="submitButton"
               variant="main"
               icon="next" />
-
-            <Button text={$t('common.cancel')} on:click={handleCancel} color="warning" />
+            <Button 
+              text={status === 'loading' ? $t('common.return') : $t('common.cancel')} 
+              on:click={handleCancel} 
+              color="warning" />
           {:else}
             <Button text={$t('common.return')} href={$getRoute('CandAppQuestions')} variant="main" />
           {/if}

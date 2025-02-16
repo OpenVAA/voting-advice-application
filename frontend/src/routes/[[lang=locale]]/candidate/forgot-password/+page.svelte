@@ -20,7 +20,7 @@ Shows a form with which to request a password reset email.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { requestForgotPasswordEmail, t } = getCandidateContext();
+  const { getRoute, requestForgotPasswordEmail, t } = getCandidateContext();
   const { pageStyles } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -81,11 +81,15 @@ Shows a form with which to request a password reset email.
       <SuccessMessage inline message={$t('candidateApp.resetPassword.emailSentText')} class="mb-lg mt-md" />
     {/if}
 
-    <Button
-      type="submit"
-      disabled={status === 'loading'}
-      variant="main"
-      class="btn btn-primary mb-md w-full max-w-md"
-      text={$t('candidateApp.resetPassword.sendLink')} />
+    {#if status === 'success'}
+      <Button href={$getRoute('CandAppLogin')} variant="main" text={$t('common.home')} />
+    {:else}
+      <Button
+        type="submit"
+        loading={status === 'loading'}
+        variant="main"
+        class="btn btn-primary mb-md w-full max-w-md"
+        text={$t('candidateApp.resetPassword.sendLink')} />
+    {/if}
   </form>
 </MainContent>
