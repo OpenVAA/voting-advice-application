@@ -1,10 +1,10 @@
+import { getCustomData } from '@openvaa/app-shared';
 import { ENTITY_TYPE } from '@openvaa/data';
 import { Filter, FilterGroup } from '@openvaa/filters';
 import { derived, type Readable } from 'svelte/store';
 import { ucFirst } from '$lib/utils/text/ucFirst';
 import { buildParentFilters } from './buildParentFilters';
 import { buildQuestionFilter } from './buildQuestionFilter';
-import type { CustomData } from '@openvaa/app-shared';
 import type { TranslationKey } from '$types';
 import type { NominationAndQuestionTree } from '../nominationAndQuestionStore';
 import type { SelectionTree } from '../selectionTree.type';
@@ -52,9 +52,7 @@ export function filterStore({
             }
 
             // Build info question filters
-            const filterableQuestions = infoQuestions.filter(
-              (q) => (q.customData as CustomData['Question']).filterable
-            );
+            const filterableQuestions = infoQuestions.filter((q) => getCustomData(q).filterable);
             filters.push(
               ...filterableQuestions.map((q) => buildQuestionFilter({ question: q, locale })).filter((f) => f != null)
             );
