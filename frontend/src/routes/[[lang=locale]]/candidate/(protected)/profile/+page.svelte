@@ -201,29 +201,33 @@ Shows the candidate's basic information, some of which is editable.
 
   <!-- Immutable personal data -->
 
-  <InputGroup info={$t('candidateApp.basicInfo.disclaimer')} class="mt-lg">
-    <Input type="text" label={$t('common.firstName')} value={$userData?.candidate.firstName} onShadedBg locked />
-    <Input type="text" label={$t('common.lastName')} value={$userData?.candidate.lastName} onShadedBg locked />
+  <section>
+    <h2 class={subheadingClass}>{$t('dynamic.candidateAppBasicInfo.immutableData.title')}</h2>
+    <p class="mx-md">{$t('dynamic.candidateAppBasicInfo.immutableData.ingress')}</p>
+    <InputGroup class="mt-lg">
+      <Input type="text" label={$t('common.firstName')} value={$userData?.candidate.firstName} onShadedBg locked />
+      <Input type="text" label={$t('common.lastName')} value={$userData?.candidate.lastName} onShadedBg locked />
 
-    <!-- Locked Info questions -->
-    {#each $infoQuestions.filter((q) => getCustomData(q).locked) as question}
-      {@const answer = $userData?.candidate.answers?.[question.id]}
-      <QuestionInput {question} {answer} locked onShadedBg disableMultilingual />
-    {/each}
+      <!-- Locked Info questions -->
+      {#each $infoQuestions.filter((q) => getCustomData(q).locked) as question}
+        {@const answer = $userData?.candidate.answers?.[question.id]}
+        <QuestionInput {question} {answer} locked onShadedBg disableMultilingual />
+      {/each}
 
-  </InputGroup>
+    </InputGroup>
+
+  </section>
 
   <!-- Immutable nominations -->
 
-  <section class="self-stretch">
+  <section>
     <h2 class={subheadingClass}>{$t('candidateApp.basicInfo.nominations.title')}</h2>
+    <p class="mx-md">{$t('candidateApp.basicInfo.nominations.description')}</p>
 
     <div class="flex flex-col gap-lg">
       {#each nominations as nomination, i}
         {@const { election, constituency, organization, electionSymbol, unconfirmed } = parseNomination(nomination)}
-        <InputGroup
-          title={election}
-          info={i === nominations.length - 1 ? $t('candidateApp.basicInfo.nominations.description') : undefined}>
+        <InputGroup title={election}>
           {#if constituency}
             <Input type="text" label={$t('common.constituency')} value={constituency} onShadedBg locked />
           {/if}
@@ -246,7 +250,7 @@ Shows the candidate's basic information, some of which is editable.
 
   <!-- Editable data -->
 
-  <section class="self-stretch">
+  <section>
     <h2 class={subheadingClass}>{$t('candidateApp.basicInfo.editableInfos.title')}</h2>
 
     <div class="flex flex-col gap-md">
@@ -274,7 +278,7 @@ Shows the candidate's basic information, some of which is editable.
   <svelte:fragment slot="primaryActions">
     {#if !$answersLocked}
       <div 
-        class="mx-md my-md transition-opacity" 
+        class="mx-md mt-md mb-lg transition-opacity" 
         class:opacity-0={status === 'loading' || allRequiredFilled}>
         <Icon name="required" class="{iconBadgeClass} text-warning" /><span class="sr-only"
           >{$t('common.required')}</span>
@@ -299,7 +303,8 @@ Shows the candidate's basic information, some of which is editable.
           variant="main"
           icon="next" />
         <Button 
-          text={status === 'loading' ? $t('common.return') : $t('common.cancel')} 
+          text={$t('common.cancel')} 
+          disabled={!$hasUnsaved}
           on:click={handleCancel} 
           color="warning" />
       {:else}
@@ -308,3 +313,9 @@ Shows the candidate's basic information, some of which is editable.
     </div>
   </svelte:fragment>
 </MainContent>
+
+<style lang="postcss">
+  section {
+    @apply self-stretch mt-lg;
+  }
+</style>
