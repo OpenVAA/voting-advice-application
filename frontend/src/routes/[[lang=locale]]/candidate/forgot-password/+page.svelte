@@ -90,6 +90,7 @@ Shows a form with which to request a password reset email.
         variant="main"
         class="btn btn-primary mb-md w-full max-w-md"
         text={$t('candidateApp.resetPassword.sendLink')} />
+      <Button href={$getRoute('CandAppLogin')} text={$t('common.return')} />
     {/if}
   </form>
 </MainContent>
