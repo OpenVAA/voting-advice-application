@@ -26,6 +26,14 @@ export type ButtonProps = LinkOrButtonElementProps & {
    * Position of the icon in the button. Only relevant if `icon` is not `null` and `variant` is not `icon`. Note that `top` and `bottom` are not supported if `variant='main'`. @default 'right' if `variant='main'`, otherwise `left`
    */
   iconPos?: 'left' | 'right' | 'top' | 'bottom';
+  /**
+   * Set to `true` to show a loading spinner instead of the possible icon and disable the button. @default false
+   */
+  loading?: boolean;
+  /**
+   * The text shown when `loading` is `true`. @default $t('common.loading')
+   */
+  loadingText?: string;
 };
 
 /**

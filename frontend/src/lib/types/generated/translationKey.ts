@@ -232,6 +232,7 @@ export type TranslationKey =
   | 'common.returnHome'
   | 'common.saveAndContinue'
   | 'common.saveAndReturn'
+  | 'common.saving'
   | 'common.showFullImage'
   | 'common.skipToMain'
   | 'common.state'

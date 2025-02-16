@@ -141,6 +141,13 @@
     @apply small-label inline-block rounded-[1rem] bg-base-300 px-md py-sm;
   }
 
+  /**
+   * Make the first letter uppercase. Note that this makes the element inline-block.
+   */
+  .uc-first {
+    @apply inline-block first-letter:uppercase;
+  }
+
   /* Override DaisyUI components here */
 
   /* Reset font sizes to base */
