@@ -61,7 +61,7 @@ export const staticSettings: StaticSettings = {
     trackEvents: true,
     platform: {
       name: 'umami',
-      code: 'd3ba4528bcfa4aca4ca576071b212498432a164e', // Staging code
+      code: 'dfa57a1c-ac5e-4d14-aa6e-829525babea6',
       infoUrl: 'https://umami.is/'
     }
   },
