@@ -31,7 +31,7 @@
   "passwordInput": {
     "hidePassword": "Dölj lösenord",
     "password": "Lösenord",
-    "placeholder": "T.ex. CP23-174a-f4%&-aHAB",
+    "placeholder": "Lösenord",
     "showPassword": "Visa lösenord"
   },
   "preHeading": {

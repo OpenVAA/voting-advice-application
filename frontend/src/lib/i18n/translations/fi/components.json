@@ -31,7 +31,7 @@
   "passwordInput": {
     "hidePassword": "Piilota salasana",
     "password": "Salasana",
-    "placeholder": "Esim. CP23-174a-f4%&-aHAB",
+    "placeholder": "Salasana",
     "showPassword": "Näytä salasana"
   },
   "preHeading": {

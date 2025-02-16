@@ -3,7 +3,7 @@
   "continueFilling": "Jatka täyttämistä",
   "editingNotAllowed": "Vastausten muokkaaminen ei ole enää mahdollista, mutta voit silti tarkastella niitä. Ota yhteyttä tukeen, jos tiedoissa on virheitä.",
   "email": "Sähköposti",
-  "emailPlaceholder": "esimerkki@osoite.fi",
+  "emailPlaceholder": "Sähköposti",
   "fullyCompleted": "Onneksi olkoon! Olet täyttänyt kaikki vaalikoneeseen tarvittavat tiedot.",
   "greeting": "Hei, {username}!",
   "home": "Alku",
