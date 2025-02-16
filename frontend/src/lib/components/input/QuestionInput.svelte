@@ -23,7 +23,7 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
 -->
 
 <script lang="ts">
-  import { type CustomData, isLocalizedString } from '@openvaa/app-shared';
+  import { getCustomData, isLocalizedString } from '@openvaa/app-shared';
   import {
     ChoiceQuestion,
     DateQuestion,
@@ -64,7 +64,7 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   } as const;
 
   let inputProps: InputProps;
-  const customData: CustomData['Question'] = question.customData;
+  const customData = getCustomData(question);
 
   let type = INPUT_TYPES[question.type];
   if (question.type === QUESTION_TYPE.Text && question.subtype === 'link') 

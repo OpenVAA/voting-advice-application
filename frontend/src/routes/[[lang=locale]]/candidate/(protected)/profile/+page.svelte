@@ -25,7 +25,7 @@ Shows the candidate's basic information, some of which is editable.
   import { getLayoutContext } from '$lib/contexts/layout';
   import { logDebugError } from '$lib/utils/logger';
   import MainContent from '../../../MainContent.svelte';
-  import type { CustomData, LocalizedAnswer } from '@openvaa/app-shared';
+  import { getCustomData, type CustomData, type LocalizedAnswer } from '@openvaa/app-shared';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -79,11 +79,12 @@ Shows the candidate's basic information, some of which is editable.
     unconfirmed?: boolean;
   } {
     try {
-      const { election, constituency, electionSymbol, parentNomination, customData } = nomination;
+      const { election, constituency, electionSymbol, parentNomination } = nomination;
+      const customData = getCustomData(nomination);
       // Unconfirmed may be inherited from parent nomination
-      let unconfirmed = !!(customData as CustomData['Nomination']).unconfirmed;
+      let unconfirmed = !!customData.unconfirmed;
       if (!unconfirmed && parentNomination)
-        unconfirmed = !!(parentNomination.customData as CustomData['Nomination']).unconfirmed;
+        unconfirmed = !!getCustomData(parentNomination).unconfirmed;
       return {
         election: election.name,
         constituency: constituency.name,
@@ -252,7 +253,7 @@ Shows the candidate's basic information, some of which is editable.
         locked={$answersLocked}
         onShadedBg />
 
-      <!-- Info questions -->
+      <!-- Editable Info questions -->
 
       {#each $infoQuestions as question}
         {@const answer = $userData?.candidate.answers?.[question.id]}
