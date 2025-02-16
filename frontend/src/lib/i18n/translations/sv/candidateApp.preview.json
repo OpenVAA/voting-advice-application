@@ -1,6 +1,6 @@
 {
   "close": "Stäng förhandsvisning",
   "notFound": "Profilen hittades inte",
-  "tip": "Detta är en preliminär förhandsgranskning av hur din profil kommer att se ut för väljarna. Den publicerade versionen kan se lite annorlunda ut.",
+  "tip": "Detta är en preliminär förhandsgranskning av hur din profil kommer att se ut för väljarna. Den publicerade versionen kan se något annorlunda ut. Om du ställer upp i flera val kommer endast de svar som är relevanta för det val som väljaren är intresserad av att visas.",
   "title": "Förhandsgranska"
 }
