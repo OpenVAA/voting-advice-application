@@ -16,7 +16,7 @@ Shows a registry and privacy statement
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { getRoute, t } = getCandidateContext();
+  const { getRoute, t, userData } = getCandidateContext();
 
 </script>
 
@@ -34,6 +34,6 @@ Shows a registry and privacy statement
       icon="next"
       variant="main"
       text={$t('common.home')}
-      href={$getRoute('CandAppLogin')} />
+      href={$userData ? $getRoute('CandAppHome') : $getRoute('CandAppLogin')} />
   </svelte:fragment>
 </MainContent>

@@ -20,7 +20,7 @@ Shows a FAQ and other support content for the candidate application.
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, appCustomization, getRoute, t } = getCandidateContext();
+  const { appSettings, appCustomization, getRoute, t, userData } = getCandidateContext();
 
   ////////////////////////////////////////////////////////////////////
   // Build support email link
@@ -60,6 +60,6 @@ Shows a FAQ and other support content for the candidate application.
       icon="next"
       variant="main"
       text={$t('common.home')}
-      href={$getRoute('CandAppLogin')} />
+      href={$userData ? $getRoute('CandAppHome') : $getRoute('CandAppLogin')} />
   </svelte:fragment>
 </MainContent>
