@@ -1,3 +1,4 @@
+import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, QuestionCategory } from '@openvaa/data';
 
 /**
@@ -14,6 +15,10 @@ export type QuestionBlocks = {
    */
   questions: Array<AnyQuestionVariant>;
   /**
+   * Array of questions in the order they were shown
+   */
+  shownQuestionIds: Array<Id>;
+  /**
    * Find a `QuestionBlock` by its `QuestionCategory`.
    * @param category - The `QuestionCategory` to find.
    * @returns The block and its index, or `undefined` if not found.
@@ -27,6 +32,15 @@ export type QuestionBlocks = {
   getByQuestion: (
     question: AnyQuestionVariant
   ) => { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
+  /**
+   * Add a question to the shown questions history
+   * @param question - The question to mark as shown
+   */
+  addShownQuestionId: (questionId: Id) => void;
+  /**
+   * Reset the shown questions history
+   */
+  resetShownQuestionIds: () => void;
 };
 /**
  * An array of `Question`s.

@@ -14,7 +14,8 @@
   "intro": {
     "ingress": {
       "withCategorySelection": "Frågorna är indelade i {numCategories} kategorier. Du kan svarar på dem alla eller välja de du vill ha. {minQuestions, plural, =0 {} =1 {} other {Välj dock tillräckligt många kategorier för att få minst # frågor totalt.}}",
-      "withoutCategorySelection": "Svara sedan på {numQuestions} frågor om politik och värderingar. {numCategories, plural, =0 {} =1 {} other {Frågorna är indelade i # kategorier.}}"
+      "withoutCategorySelection": "Svara sedan på {numQuestions} frågor om politik och värderingar. {numCategories, plural, =0 {} =1 {} other {Frågorna är indelade i # kategorier.}}",
+      "withDynamicOrdering": "Härnäst ska du svara på {numQuestions} frågor. Du kan välja mellan flera frågor i varje steg."
     },
     "start": "Börja svara på frågor"
   },
@@ -23,5 +24,7 @@
   "remove": "Radera svar",
   "skip": "Hoppa över",
   "skipToResults": "Hoppa till resultat",
-  "title": "Yttranden"
+  "title": "Yttranden",
+  "pickNext": "Välj nästa fråga",
+  "chooseForMe": "Välj åt mig"
 }

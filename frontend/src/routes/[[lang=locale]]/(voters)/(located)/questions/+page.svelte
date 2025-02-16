@@ -69,13 +69,28 @@ Display a general intro before starting answering the questions and possibly all
 
   function handleSubmit(): void {
     if (!canSubmit) return;
-    const categoryId = $selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
-    if (!categoryId) error(500, 'No question categories selected even though canSubmit is true');
-    goto(
-      $getRoute(
-        $appSettings.questions.categoryIntros?.show ? { route: 'QuestionCategory', categoryId } : { route: 'Question' }
-      )
-    );
+
+    if ($appSettings.questions.dynamicOrdering?.enabled) {
+      // If we have shown questions, go to the first one
+      if ($selectedQuestionBlocks.shownQuestionIds.length > 0) {
+        const firstShownId = $selectedQuestionBlocks.shownQuestionIds[0];
+        goto($getRoute({ route: 'Question', questionId: firstShownId }));
+      } else {
+        // Otherwise show question selection for first question
+        goto($getRoute({ route: 'Question', showQuestionSelection: 'true' }));
+      }
+    } else {
+      const categoryId = $selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
+      if (!categoryId) error(500, 'No question categories selected even though canSubmit is true');
+
+      goto(
+        $getRoute(
+          $appSettings.questions.categoryIntros?.show
+            ? { route: 'QuestionCategory', categoryId }
+            : { route: 'Question' }
+        )
+      );
+    }
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -95,7 +110,7 @@ Display a general intro before starting answering the questions and possibly all
     <HeroEmoji emoji={$t('dynamic.questions.heroEmoji')} />
   </figure>
 
-  {#if $appSettings.questions.questionsIntro.allowCategorySelection}
+  {#if $appSettings.questions.questionsIntro.allowCategorySelection && !$appSettings.questions.dynamicOrdering?.enabled}
     <p class="text-center">
       {$t('questions.intro.ingress.withCategorySelection', {
         numCategories: $opinionQuestionCategories.length,
@@ -118,16 +133,24 @@ Display a general intro before starting answering the questions and possibly all
     </div>
   {:else}
     <p class="text-center">
-      {$t('questions.intro.ingress.withoutCategorySelection', {
-        numCategories: $opinionQuestionCategories.length,
-        minQuestions: $appSettings.matching.minimumAnswers
-      })}
+      {#if $appSettings.questions.dynamicOrdering?.enabled}
+        {$t('questions.intro.ingress.withDynamicOrdering', {
+          numQuestions: $selectedQuestionBlocks.questions.length
+        })}
+      {:else}
+        {$t('questions.intro.ingress.withoutCategorySelection', {
+          numQuestions: $selectedQuestionBlocks.questions.length,
+          numCategories: $opinionQuestionCategories.length
+        })}
+      {/if}
     </p>
-    <div class="grid justify-items-center gap-sm">
-      {#each $opinionQuestionCategories as category}
-        <CategoryTag {category} />
-      {/each}
-    </div>
+    {#if !$appSettings.questions.dynamicOrdering?.enabled}
+      <div class="grid justify-items-center gap-sm">
+        {#each $opinionQuestionCategories as category}
+          <CategoryTag {category} />
+        {/each}
+      </div>
+    {/if}
   {/if}
 
   <Button
