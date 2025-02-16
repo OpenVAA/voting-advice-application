@@ -17,6 +17,7 @@
       "oversizeFile": "Filen är för stor. Den maximala storleken är {maxFilesize} MB."
     },
     "hideTranslations": "Dölja",
+    "imageInfo": "Den maximala storleken för bilden är {maxFilesize} MB. Ha tålamod vid sparande, det kan ta en stund att ladda upp bilden.",
     "multilingualInfo": "Du kan skriva in ditt svar på alla valkomatens språk om du vill.",
     "noImage": "Ingen bild",
     "selectAnother": "Välj en annan",
