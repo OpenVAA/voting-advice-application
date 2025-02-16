@@ -172,8 +172,7 @@ export function initCandidateContext(): CandidateContext {
     await dataWriter.logout({ authToken: token }).catch((e) => {
       logDebugError(`Error logging out: ${e?.message ?? '-'}`);
     });
-    _reset();
-    return goto(get(getRoute)('CandAppLogin'), { invalidateAll: true });
+    return goto(get(getRoute)('CandAppLogin'), { invalidateAll: true }).then(_reset);
   }
 
   async function setPassword(opts: { currentPassword: string; password: string }): Promise<DataApiActionResult> {
