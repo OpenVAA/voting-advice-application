@@ -17,6 +17,7 @@
       "oversizeFile": "Tiedosto on liian suuri. Enimmäiskoko on {maxFilesize} Mt."
     },
     "hideTranslations": "Piilota",
+    "imageInfo": "Kuvan enimmäiskoko on {maxFilesize} Mt. Olethan kärsivällinen tallennettaessa, sillä kuvan latautuminen voi kestää hetken.",
     "multilingualInfo": "Voit syöttää vastauksesi halutessasi kaikilla vaalikoneen kielillä.",
     "noImage": "Ei kuvaa",
     "selectAnother": "Valitse lisää",

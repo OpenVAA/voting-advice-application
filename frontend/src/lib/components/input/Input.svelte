@@ -86,10 +86,9 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   export let options: $$Props['options'] = undefined;
   export let ordered: $$Props['ordered'] = undefined;
   export let disabled: $$Props['disabled'] = undefined;
-  export let maxFilesize: $$Props['maxFilesize'] = undefined;
+  export let maxFilesize: $$Props['maxFilesize'] = 20 * 1024 * 1024;
   export let multilingualInfo: $$Props['multilingualInfo'] = undefined;
 
-  const DEFAULT_MAX_FILE_SIZE = 20 * 1024 * 1024;
   // const SAVE_INTERVAL_MS = 1000;
 
   ////////////////////////////////////////////////////////////////////
@@ -99,9 +98,10 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   const { locale: currentLocale, locales, t } = getComponentContext();
 
   ////////////////////////////////////////////////////////////////////
-  // Handling multlinguality, disabled and other cases
+  // Handling multilinguality, disabled and other cases
   ////////////////////////////////////////////////////////////////////
   
+  const maxFilesizeInMB = Math.floor((maxFilesize ?? 0) / (1024 * 1024));
   const multilingual = type.endsWith('-multilingual');
   /** Whether the label is above the field or inside it */
   const isLabelOutside = multilingual || type.startsWith('textarea');
@@ -111,6 +111,10 @@ The input itself is wrapped in multiple container elements, the outermost of whi
     multilingualInfo ??= $t('components.input.multilingualInfo');
     info ??= '';
     info += ` ${multilingualInfo}`;
+  }
+  if (type === 'image') {
+    info ??= '';
+    info += ` ${$t('components.input.imageInfo', { maxFilesize: maxFilesizeInMB })}`;
   }
   
   let error: string | undefined;
@@ -248,11 +252,10 @@ The input itself is wrapped in multiple container elements, the outermost of whi
       // Image
     } else if (currentTarget instanceof HTMLInputElement && currentTarget.type === 'file') {
       const file = currentTarget.files?.[0];
-      maxFilesize ??= DEFAULT_MAX_FILE_SIZE; 
       if (!file || !file.type.startsWith('image/'))
         return handleError('components.input.error.invalidFile');
-      if (file.size > maxFilesize)
-        return handleError('components.input.error.oversizeFile', { maxFilesize });
+      if (maxFilesize && file.size > maxFilesize)
+        return handleError('components.input.error.oversizeFile', { maxFilesize: maxFilesizeInMB });
       const reader = new FileReader();
       const success = await new Promise<boolean>((resolve) => {
         isLoading = true;

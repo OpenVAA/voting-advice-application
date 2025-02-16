@@ -251,6 +251,7 @@ export type TranslationKey =
   | 'components.input.error.invalidUrl'
   | 'components.input.error.oversizeFile'
   | 'components.input.hideTranslations'
+  | 'components.input.imageInfo'
   | 'components.input.multilingualInfo'
   | 'components.input.noImage'
   | 'components.input.selectAnother'
