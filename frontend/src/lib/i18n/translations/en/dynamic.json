@@ -3,6 +3,12 @@
     "heroEmoji": "⚙️"
   },
   "appName": "Election Compass",
+  "candidateAppBasicInfo": {
+    "immutableData": {
+      "title": "Personal Information",
+      "ingress": "Your name and some other information have been prefilled or will be completed when the candidate lists are confirmed. You cannot change this information yourself, but if there are any errors, please contact candidate support."
+    }
+  },
   "candidateAppName": "Election Compass for Candidates",
   "candidateAppNotAccessible": {
     "content": "The Election Compass for Candidates has not been released yet. Please return to this address when it becomes available.",
