@@ -204,6 +204,13 @@ Shows the candidate's basic information, some of which is editable.
   <InputGroup info={$t('candidateApp.basicInfo.disclaimer')} class="mt-lg">
     <Input type="text" label={$t('common.firstName')} value={$userData?.candidate.firstName} onShadedBg locked />
     <Input type="text" label={$t('common.lastName')} value={$userData?.candidate.lastName} onShadedBg locked />
+
+    <!-- Locked Info questions -->
+    {#each $infoQuestions.filter((q) => getCustomData(q).locked) as question}
+      {@const answer = $userData?.candidate.answers?.[question.id]}
+      <QuestionInput {question} {answer} locked onShadedBg disableMultilingual />
+    {/each}
+
   </InputGroup>
 
   <!-- Immutable nominations -->
@@ -255,7 +262,7 @@ Shows the candidate's basic information, some of which is editable.
 
       <!-- Editable Info questions -->
 
-      {#each $infoQuestions as question}
+      {#each $infoQuestions.filter((q) => !getCustomData(q).locked) as question}
         {@const answer = $userData?.candidate.answers?.[question.id]}
         <QuestionInput {question} {answer} onChange={handleQuestionInputChange} locked={$answersLocked} onShadedBg />
       {/each}
