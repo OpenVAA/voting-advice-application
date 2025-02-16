@@ -17,7 +17,7 @@ export type CustomData = {
     fillingInfo?: string;
     filterable?: boolean;
     /**
-     * If `true`, Candidates cannot edit the question. A locked question is never considered `required`. Default `false`.
+     * If `true`, Candidates cannot edit the question. A locked question is never considered `required`. Has no effect on opinion questions. Default `false`.
      */
     locked?: boolean;
     /**

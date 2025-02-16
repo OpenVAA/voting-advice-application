@@ -83,13 +83,15 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   }
 
   const { id, info, name: label } = question;
-  const { fillingInfo, maxlength, required } = customData;
+  const { fillingInfo, locked, maxlength, required } = customData;
   const baseProps = {
     type,
     id,
     label,
+    locked,
     maxlength,
-    required,
+    // Locked questions cannot be required
+    required: required == null ? undefined : !locked && required,
     info: fillingInfo ?? info
   };
 
