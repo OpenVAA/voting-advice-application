@@ -125,6 +125,7 @@
       <p class="my-md text-center small-info">
         {$t('candidateApp.preregister.identification.identifyYourselHelpText')}
       </p>
+      <Button href={$getRoute('CandAppLogin')} text={$t('common.return')} />
     </svelte:fragment>
   </MainContent>
 
