@@ -128,6 +128,7 @@
     <Button 
       type="submit" 
       disabled={!canSubmit} 
+      loading={status === 'loading'} 
       text={$t('common.login')} 
       variant="main" />
 
@@ -136,7 +137,7 @@
       <Button 
         href={$getRoute('CandAppPreregister')} 
         text={$t('candidateApp.preregister.identification.start.title')} 
-        class="transition-opacity {canSubmit ? 'opacity-30' : ''}"
+        class="transition-opacity {canSubmit || status === 'loading' ? 'opacity-30' : ''}"
         variant="main" />
     {/if}
 
