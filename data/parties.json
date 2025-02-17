@@ -1,0 +1,1769 @@
+[
+  {
+    "externalId": "party-0001",
+    "name": {
+      "fi": "Sosialidemokraatit",
+      "sv": "Socialdemokraterna",
+      "en": "Social Democratic Party"
+    },
+    "shortName": {
+      "fi": "SDP",
+      "sv": "SDP",
+      "en": "SDP"
+    },
+    "color": "#f43636",
+    "info": {
+      "fi": "<p>SDP:n päämääränä on yhteiskunta, jossa vapaus voittaa alistamisen, humaanisuus suvaitsemattomuuden ja oikeudenmukaisuus itsekkyyden. Yhteiskunnan on taattava jokaiselle jäsenelleen reilut mahdollisuudet oman elämänsä rakentamisessa. Puoleen perusarvoja ovat vapaus, tasa-arvo ja solidaarisuus ja niitä toteutetaan demokratian, hyvinvointiyhteiskunnan ja yhteistyön kautta. Demareille tärkeää ovat työ ja reilu työelämä, toimivat julkiset palvelut ja turvalliset asuinympäristöt, ihmisistä huolehtiminen, ympäristönsuojelu sekä koulutuksen turvaaminen ja vaaliminen. SDP:n toiminta on hyvin kansainvälistä ja sosialidemokraatit ovat merkittävä poliittinen voima lähes kaikissa Euroopan maissa.</p>",
+      "sv": "<p>SDP:s mål är ett samhälle där frihet övervinner underkuvning, mänsklighet intolerans och rättvisa egoism. Samhället måste garantera alla sina medlemmar rättvisa möjligheter att bygga sitt eget liv. Partiets grundläggande värderingar är frihet, jämlikhet och solidaritet, och dessa förverkligas genom demokrati, välfärdssamhälle och samarbete. Viktiga teman för socialdemokraterna är arbete och ett rättvist arbetsliv, fungerande offentliga tjänster och säkra boendemiljöer, omsorg om människor, miljöskydd samt att trygga och värna om utbildningen. SDP:s verksamhet är mycket internationell, och socialdemokraterna är en betydande politisk kraft i nästan alla länder i Europa.</p>",
+      "en": "<p>SDP aims for a society where freedom overcomes subjugation, humanity overcomes intolerance and fairness overcomes selfishness. Society must guarantee each of its members a fair opportunity to build their own lives. The party's fundamental values of freedom, equality and solidarity are implemented through democracy, the welfare society and cooperation. For the Social Democrats, work and a fair working life, well-functioning public services and safe living environments, caring for people, environmental protection and securing and nurturing education are important. SDP’s activities are highly international and Social Democrats are a significant political force in almost all European countries.</p>"
+    }
+  },
+  {
+    "externalId": "party-0002",
+    "name": {
+      "fi": "Suomen Keskusta",
+      "sv": "Centern i Finland",
+      "en": "Centre Party"
+    },
+    "shortName": {
+      "fi": "Kesk.",
+      "sv": "Cent.",
+      "en": "Cent."
+    },
+    "color": "#4caf50",
+    "info": {
+      "fi": "<p>Keskustalle olennaisia arvoja ovat esimerkiksi vapauden ja vastuullisuuden tasapaino, kestävä luontosuhde ja paikallisuus. Keskusta korostaa politiikassaan usein lasten, nuorten ja perheiden hyvinvointia. Keskustalle on tärkeää, että kaikkia Suomen alueita kehitetään ja kohdellaan tasa-arvoisesti. Puolue korostaa ohjelmissaan ihmisten mahdollisuutta asua, opiskella ja tehdä työtä siellä, missä he tuntevat itsensä onnellisiksi.</p><p>Keskustalle koulutus on politiikan ydinasioita. Puolue haluaa, että kaikilla on mahdollisuus opiskella ja sivistää itseään niin pitkälle kuin motivaatio ja osaaminen riittävät, omasta ja perheen varallisuudesta tai asuinpaikasta riippumatta.</p>",
+      "sv": "<p>Viktiga värden för Centern är till exempel balansen mellan frihet och ansvar, ett hållbart naturförhållande och lokal anknytning. Centern betonar ofta barns, ungdomars och familjers välbefinnande i sin politik. Det är viktigt för Centern att alla områden i Finland utvecklas och behandlas lika. Partiet betonar i sina program människors möjlighet att bo, studera och arbeta där var de känner sig lyckliga.</p><p>För Centern är utbildning en central politisk fråga. Partiet vill att alla ska ha möjlighet att studera och utbilda sig så långt motivationen och kompetensen räcker, oavsett den egna och familjens förmögenhet eller bostadsort.</p>",
+      "en": "<p>Important values for the Centre Party include a balance of freedom and responsibility, a sustainable nature relationship and locality. In its politics, the Centre Party often emphasises the well-being of children, young people and families. It is important for the Centre Party that all areas in Finland are developed and treated equally. In its programmes, the party emphasises the possibility for people to live, study and work where they feel happy.</p><p>For the Centre Party, education is a key political issue. The party wants everyone to have the opportunity to study and educate themselves as far as their motivation and skills take them, regardless of their own and their family’s wealth or place of residence.</p>"
+    }
+  },
+  {
+    "externalId": "party-0004",
+    "name": {
+      "fi": "Kansallinen Kokoomus",
+      "sv": "Samlingspartiet",
+      "en": "National Coalition Party"
+    },
+    "shortName": {
+      "fi": "Kok.",
+      "sv": "Saml.",
+      "en": "NCP"
+    },
+    "color": "#3f51b5",
+    "info": {
+      "fi": "<p>Kokoomukselle keskeisiä teemoja ovat yksilönvapaus, yrittäjyys, kestävä kehitys, tarkka taloudenpito, kansainvälisyys, perinteet ja sivistys. Kokoomus haluaa myös edistää yhtenäistä ja vahvaa Euroopan unionia eli EU:ta ja pitää Suomen Nato-jäsenyyttä myönteisenä asiana.</p><p>Kokoomus on talouspoliittisesti oikeistolainen puolue, joka painottaa politiikassaan valtion talouden tasapainottamista. Kokoomukselle on tärkeää, että velkaa ei oteta tulevien sukupolvien kustannuksella.</p>",
+      "sv": "<p>Individuell frihet, entreprenörskap, hållbar utveckling, noggrann koll på ekonomin, internationalitet, traditioner och bildning är centrala teman för Samlingspartiet. Samlingspartiet vill också främja en enhetlig och stark Europeisk union, dvs. EU, och ser Finlands Nato-medlemskap som en positiv sak.</p><p>Samlingspartiet är ett ekonomiskt sett högerorienterat parti, som i sin politik lägger vikt vid att balansera statens ekonomi. Det är viktigt för Samlingspartiet att vi inte skuldsätter oss på bekostnad av kommande generationer.</p>",
+      "en": "<p>The National Coalition Party focuses on individual freedom, entrepreneurship, sustainable development, careful economic management, internationality, traditions and civilisation. The National Coalition Party also wants to promote a unified and strong European Union, i.e. the EU, and sees Finland’s membership of NATO as a positive thing.</p><p>The National Coalition Party is economically a right-wing party and, in its policy, it emphasises balancing of the state’s economy. It is important to the National Coalition Party that debt is not raised at the expense of future generations.</p>"
+    }
+  },
+  {
+    "externalId": "party-0005",
+    "name": {
+      "fi": "Ruotsalainen kansanpuolue",
+      "sv": "Svenska folkpartiet",
+      "en": "Swedish People’s Party"
+    },
+    "shortName": {
+      "fi": "RKP",
+      "sv": "SFP",
+      "en": "SPP"
+    },
+    "color": "#ffc107",
+    "info": {
+      "fi": "<p>Suomen ruotsalaiselle kansanpuolueelle eli RKP:lle tärkeitä asioita ovat ruotsin kielen asema Suomessa, tasa-arvo ja yhdenvertaisuus sekä yrittäjyyden tukeminen. RKP:n politiikassa korostuu tavoite siitä, että Suomessa on kaksi vahvaa kansalliskieltä, ruotsi ja suomi, ja että kaksikieliset palvelut ovat toimivia ja niihin on varattu tarpeeksi rahaa.</p><p>RKP on arvoliberaali puolue, eli se painottaa vahvasti esimerkiksi sukupuolten tasa-arvoon, seksuaali- ja sukupuolivähemmistöjen oikeuksiin ja rasismin vastustamiseen liittyviä asioita.</p>",
+      "sv": "<p>Viktiga frågor för det Svenska folkpartiet i Finland (SFP) är svenskans ställning i Finland, jämlikhet och jämställdhet samt stöd till entreprenörskap. I SFP:s politik betonas målet att Finland ska ha två starka nationella språk, svenska och finska, samt att de tvåspråkiga tjänsterna ska fungera och att tillräckligt med pengar har reserverats för dem.</p><p>SFP är ett värdeliberalt parti som lägger stor vikt vid frågor som till exempel jämställdhet mellan könen, sexuella och könsminoriteters rättigheter samt rasismbekämpning.</p>",
+      "en": "<p>Important issues for the Swedish People’s Party in Finland (SFP) include the Swedish language’s position in Finland, equality and equal opportunities, and support for entrepreneurship. SFP's politics emphasise the objective that Finland has two strong national languages, Swedish and Finnish, and that bilingual services are functional and have sufficient funds.</p><p>The SFP is a value liberal party, i.e. it places a strong emphasis on issues such as gender equality, sexual and gender minority rights and the fight against racism.</p>"
+    }
+  },
+  {
+    "externalId": "party-0008",
+    "name": {
+      "fi": "Suomen Kommunistinen Puolue",
+      "sv": "Finlands Kommunistiska Parti",
+      "en": "Communist Party of Finland"
+    },
+    "shortName": {
+      "fi": "SKP",
+      "sv": "FKP",
+      "en": "CPF"
+    },
+    "color": "#859195",
+    "info": {
+      "fi": "<p>Suomen kommunistinen puolue eli SKP on kommunismia kannattava puolue. Puolueelle tärkeää on työväenluokan etujen puolustaminen, kansainvälinen solidaarisuus ja rauha, luokkataistelu sekä ihmiskunnan ja maapallon kestävä tulevaisuus. SKP vastustaa Suomen Nato-jäsenyyttä ja puolustusyhteistyösopimusta Yhdysvaltain kanssa, vaatii eroa EU:sta sekä paluuta sotilaalliseen liittoutumattomuuteen ulko- ja turvallisuuspolitiikassa.</p>",
+      "sv": "<p>Finlands kommunistiska parti, SKP, är ett parti som stödjer kommunismen. Viktiga saker för partiet är försvarande av arbetarklassens intressen, internationell solidaritet och fred, klasskamp och en hållbar framtid för mänskligheten och planeten. SKP motsätter sig Finlands medlemskap i Nato och försvarssamarbetsavtalet med USA, kräver utträde ur EU samt en återgång till militär icke-allians i utrikes- och säkerhetspolitiken.</p>",
+      "en": "<p>The Communist Party of Finland, or CPF, is a party that supports communism. Defending the interests of the working class, international solidarity and peace, class struggle and a sustainable future for humanity and the planet are important to the party. The CPF is opposed to Finland’s membership of NATO and the Defence Cooperation Agreement with the US, demands a withdrawal from the EU and a return to military non-alliance in foreign and security policy.</p>"
+    }
+  },
+  {
+    "externalId": "party-0009",
+    "name": {
+      "fi": "Kristillisdemokraatit",
+      "sv": "Kristdemokraterna",
+      "en": "Christian Democrats"
+    },
+    "shortName": {
+      "fi": "KD",
+      "sv": "KD",
+      "en": "CD"
+    },
+    "color": "#673ab7",
+    "info": {
+      "fi": "<p>Kristillisdemokraatit eli KD haluaa rakentaa yhteiskuntaa, jossa julkinen talous on tasapainossa, työntekoon ja yrittäjyyteen kannustetaan ja heikoimmassa asemassa olevista pidetään huolta. Kristillisdemokraattien politiikassa korostuvat lapsiperheiden asiat, kristillinen arvoperusta sekä yrittäjyyden tukeminen.</p><p>KD on arvokonservatiivinen puolue, eli se korostaa niin kutsuttuja perinteisiä arvoja, kuten isänmaallisuutta sekä perheen ja lähiyhteisöjen merkitystä. Puolue esimerkiksi painottaa, että sen tavoitteena ei ole sukupuolierojen häivyttäminen.</p>",
+      "sv": "<p>Kristdemokraterna, eller KD, vill bygga ett samhälle där den offentliga ekonomin är i balans, där arbete och entreprenörskap uppmuntras och där de mest utsatta tas om hand. I Kristdemokraternas politik betonas barnfamiljers angelägenheter, den kristna värdegrunden och stödet till entreprenörskap.</p><p>KD är ett värdekonservativt parti som betonar så kallade traditionella värderingar som patriotism samt familjens och lokalsamhällenas betydelse. Partiet betonar till exempel att dess mål inte är att minska könsskillnaderna.</p>",
+      "en": "<p>The Christian Democrats want to build a society where the public finances are in balance, where work and entrepreneurship are encouraged and where the most vulnerable are cared for. The Christian Democrats’ politics emphasise the issues of families with children, the Christian foundation of values and the support of entrepreneurship.</p><p>The Christian Democrats is a value-conservative party, which emphasises so-called traditional values such as patriotism and the importance of family and local communities. The party emphasises, for example, that its aim is not to reduce gender disparities.</p>"
+    }
+  },
+  {
+    "externalId": "party-0013",
+    "name": {
+      "fi": "Vihreä liitto",
+      "sv": "Gröna förbundet",
+      "en": "Green League"
+    },
+    "shortName": {
+      "fi": "Vihr.",
+      "sv": "Gröna",
+      "en": "Greens"
+    },
+    "color": "#8bc34a",
+    "info": {
+      "fi": "<p>Vihreille politiikan tärkeitä asioita ovat erityisesti ilmastonmuutoksen pysäyttäminen sekä luonnonsuojelu ja ympäristökysymykset. Puolue korostaa eriarvoisuuden ja köyhyyden vähentämistä sekä sitä, että myös haavoittuvassa asemassa olevat saavat äänensä kuuluviin.</p><p>Vihreät on myös arvoliberaali puolue, eli se painottaa vahvasti esimerkiksi sukupuolten tasa-arvoon, seksuaali- ja sukupuolivähemmistöjen oikeuksiin ja rasismin vastustamiseen liittyviä asioita.</p>",
+      "sv": "<p>Viktiga politiska frågor för De Gröna är framför allt att stoppa klimatförändringen samt naturskydds- och miljöfrågor. Partiet betonar att man ska minska ojämlikhet och fattigdom samt att även de som befinner sig i en sårbar ställning ska få sin röst hörd. </p><p>De Gröna är också ett värdeliberalt parti som lägger stor vikt vid frågor som till exempel jämställdhet mellan könen, sexuella och könsminoriteters rättigheter samt rasismbekämpning.</p>",
+      "en": "<p>For the Greens, particularly important political issues include stopping climate change and protecting nature and the environment. The party emphasises the reduction of inequality and poverty and the need for vulnerable people to get their voices heard. </p><p>The Greens are also a value liberal party, which puts a strong emphasis on issues such as gender equality, sexual and gender minority rights and the fight against racism.</p>"
+    }
+  },
+  {
+    "externalId": "party-0015",
+    "name": {
+      "fi": "Vasemmistoliitto",
+      "sv": "Vänsterförbundet",
+      "en": "Left Alliance"
+    },
+    "shortName": {
+      "fi": "Vas.",
+      "sv": "Vänst.",
+      "en": "Left"
+    },
+    "color": "#d51a46",
+    "info": {
+      "fi": "<p>Vasemmistoliiton perusarvoja ovat vapaus, solidaarisuus ja tasa-arvo. Puolue tahtoo rakentaa ekologisesti kestävää ja sosiaalisesti oikeudenmukaista yhteiskuntaa. Tämä tarkoittaa, että ilmastonmuutosta sekä luontokatoa vastustetaan päättäväisin toimin ja että jokaisella ihmisellä on mahdollisuus riittävään toimeentuloon, julkisiin palveluihin sekä laadukkaaseen terveydenhuoltoon ja hoivaan.</p><p>Vasemmistoliitto on talouspoliittisesti vasemmistolainen puolue, eli jos on valittava julkisista palveluista leikkaamisen tai rikkaiden ja suuryritysten verotuksen kiristämisen välillä, vasemmistoliittolainen valitsee jälkimmäisen. Puolue haluaa vähentää köyhyyttä ja eriarvoisuutta sekä varmistaa, ettei taloudellinen asema vaikuta ihmisen mahdollisuuksiin elämässä.</p>",
+      "sv": "<p>Vänsterförbundets grundvärderingar är frihet, solidaritet och jämlikhet. Partiet vill bygga ett ekologiskt hållbart och socialt rättvist samhälle. Detta innebär att klimatförändringen och minskningen av biologisk mångfald bekämpas genom beslutsamma åtgärder och att alla människor har tillgång till tillräcklig utkomst, offentliga tjänster samt hälso- och sjukvård av hög kvalitet.</p><p>Vänsterförbundet är ekonomiskt sett ett vänsterparti, dvs. om man måste välja mellan att skära ner på offentliga tjänster eller strama åt beskattningen av rika och storföretag, väljer vänsterförbundet det senare. Partiet vill minska fattigdom och ojämlikhet och se till att människors ekonomiska ställning inte påverkar deras möjligheter i livet.</p>",
+      "en": "<p>Freedom, solidarity and equality are the fundamental values of the Left Alliance. The party wants to build an environmentally sustainable and socially just society. This means decisive actions against climate change and loss of biodiversity, and that every person has access to adequate livelihoods, public services and quality health care.</p><p>In economic policy, the Left Party is a left-wing party, i.e. if you have to choose between cutting public services or tightening taxes on rich people and large companies, the left-wing party chooses the latter. The party wants to reduce poverty and inequality and to ensure that people’s financial position does not affect their opportunities in life.</p>"
+    }
+  },
+  {
+    "externalId": "party-0023",
+    "name": {
+      "fi": "Perussuomalaiset",
+      "sv": "Sannfinländarna",
+      "en": "Finns Party"
+    },
+    "shortName": {
+      "fi": "PS",
+      "sv": "SF",
+      "en": "Finns"
+    },
+    "color": "#03a9f4",
+    "info": {
+      "fi": "<p>Perussuomalaisille eli PS:lle tärkeitä asioita politiikassa ovat isänmaallisuus, maahanmuutto- ja EU-kriittisyys. Ilmastopolitiikassa PS on kriittinen sellaisia ilmastotoimia kohtaan, jotka vaikuttavat kohtuuttomasti suomalaisten työpaikkoihin, elinkeinoon ja talouteen. Perussuomalaiset on arvokonservatiivinen puolue, eli se korostaa niin kutsuttuja perinteisiä arvoja, kuten isänmaallisuutta, ydinperheen merkitystä ja perinteisiä sukupuolirooleja.</p>",
+      "sv": "<p>För Sannfinländarna, eller PS, är patriotism, invandringskritiskhet och EU-kritiskhet viktiga politiska frågor. I klimatpolitiken är PS kritisk till klimatåtgärder som otillbörligt påverkar finländarnas arbetsplatser, näringsliv och ekonomi. Sannfinländarna är ett värdekonservativt parti, det vill säga ett parti som betonar så kallade traditionella värderingar som patriotism, kärnfamiljens betydelse och traditionella könsroller. </p>",
+      "en": "<p>Political issues that are important to the Finns Party, or PS, are patriotism, immigration and EU criticism. In climate politics, the Finns Party is critical of climate actions that have an unreasonable impact on Finns’ jobs, business and economy. The Finns Party is a value-conservative party, which emphasises so-called traditional values such as patriotism, the importance of nuclear families and traditional gender roles. </p>"
+    }
+  },
+  {
+    "externalId": "party-0033",
+    "name": {
+      "fi": "Liberaalipuolue",
+      "sv": "Liberalpartiet",
+      "en": "Liberal Party"
+    },
+    "shortName": {
+      "fi": "Lib.",
+      "sv": "Lib.",
+      "en": "Lib."
+    },
+    "color": "#ff5722",
+    "info": {
+      "fi": "<p>Liberaalipuolue on talous- ja arvoliberaali puolue, joka pyrkii edistämään laajaa yksilöiden ja elinkeinojen vapautta. Liberaalipuolueen tavoitteita ovat muun muassa elinkeino- ja yksilönvapauden sääntelyn purkaminen, verotuksen keventäminen, julkisen sektorin supistaminen sekä sosiaaliturvan perustulomalliin siirtyminen.</p>",
+      "sv": "<p>Liberalpartiet är ett ekonomiskt liberalt och värdeliberalt parti som strävar efter att främja omfattande frihet för individer och näringslivet. Liberalpartiets mål är bland annat att upphäva regleringen av näringsfriheten och den individuella friheten, minska beskattningen, minska den offentliga sektorn och övergå till en basinkomstmodell för socialskyddet.</p>",
+      "en": "<p>The Liberal Party is an economic liberal and value liberal party that strives to promote the broad freedom of individuals and the freedom to conduct a business. The Liberal Party’s goals include the deregulation of the freedom to conduct a business and the freedom of individuals, tax cuts, reduction of the public sector and the transition to a universal basic social security income model.</p>"
+    }
+  },
+  {
+    "externalId": "party-0034",
+    "name": {
+      "fi": "Eläinoikeuspuolue",
+      "sv": "Djurrättspartiet",
+      "en": "Animal Justice Party of Finland"
+    },
+    "shortName": {
+      "fi": "EOP",
+      "sv": "DRP",
+      "en": "AJP"
+    }
+  },
+  {
+    "externalId": "party-0040",
+    "name": {
+      "fi": "Liike Nyt",
+      "sv": "Rörelse Nu",
+      "en": "Movement Now"
+    },
+    "shortName": {
+      "fi": "Liik.",
+      "sv": "Rör.",
+      "en": "Mov."
+    },
+    "color": "#a03173",
+    "info": {
+      "fi": "<p>Liike Nyt haluaa muuttaa tapaa, jolla politiikka tehdään. Se esimerkiksi järjestää netissä neuvoa-antavia äänestyksiä, joiden tulokset voivat vaikuttaa puolueen kantoihin. Muita puolueelle tärkeitä asioita ovat yrittäjyyden helpottaminen sääntelyä ja verotusta vähentämällä, yksilönvapaus sekä Eurooppa-myönteisyys.</p>",
+      "sv": "<p>Rörelse Nu vill förändra hur politik görs. Partiet anordnar till exempel rådgivande omröstningar på nätet vars resultat kan påverka partiets ståndpunkter. Andra frågor som är viktiga för partiet är att underlätta företagandet genom att minska reglering och beskattning, individuell frihet och Europa-positivitet.</p>",
+      "en": "<p>Liike Nyt Movement wants to change the way politics is done. For example, it organises online advisory voting, the results of which may affect the party’s positions. Other important issues for the party include facilitating entrepreneurship by reducing regulation and taxation, individual freedom and being Europe-positive.</p>"
+    }
+  },
+  {
+    "externalId": "party-0041",
+    "name": {
+      "fi": "Avoin Puolue",
+      "sv": "Öppna Partiet",
+      "en": "The Open Party"
+    },
+    "shortName": {
+      "fi": "AP",
+      "sv": "ÖP",
+      "en": "OP"
+    },
+    "color": "#859195",
+    "info": {
+      "fi": "<p>Avoin puolue on uudistusmielinen arvoliberaali puolue. Esimerkiksi yksilönvapaus, erilaisuuden kunnioitus ja mm. mielenterveyteen liittyvien stigmojen poistaminen ovat sille tärkeitä tavoitteita. Yhteiskunnan tasa-arvoa Avoin puolue pyrkii lisäämään esimerkiksi perustulon avulla. Uudistuksissa puolue pyrkii käytännönläheisyyteen tieteellistä tietoa ja nykyaikaista teknologiaa hyödyntäen.</p><p>Puolueen ehdotukset ovat usein varsin konkreettisia, esimerkiksi ilmastonmuutoksen torjumiseksi puolue kannattaa ydinvoiman lisärakentamista, talouden tasapainottamiseksi ydinjätteiden säilömistä Suomen kallioperään ja kasvavaan työvoimapulaan maahanmuuton helpottamista ja maahanmuuttajien aseman parantamista.",
+      "sv": "<p>Öppna partiet är ett reformvänligt och värdeliberalt parti. Till exempel individuell frihet, respekt för olikheter och bl.a. att eliminera stigmatiseringar kopplade till psykisk hälsa är viktiga mål för partiet. Öppna partiet strävar efter att öka jämställdheten i samhället, till exempel genom basinkomst. I reformerna strävar partiet efter pragmatism med hjälp av vetenskaplig kunskap och modern teknologi.</p><p>Partiets förslag är ofta ganska konkreta, till exempel för att bekämpa klimatförändringen förespråkar partiet ytterligare byggande av kärnkraft, för att balansera ekonomin kärnavfallsförvaring i Finlands berggrund, och för att åtgärda den växande bristen på arbetskraft, underlättande av invandring och förbättring av invandrarnas ställning.</p>",
+      "en": "<p>The Open Party is a reform-minded value-liberal party. For example, individual freedom, respect for diversity and eliminating mental health -related stigmas are important goals for it. The Open Party seeks to increase equality in society, for example through universal basic income. Through the reforms, the party strives for practicality by using scientific knowledge and modern technology.</p><p>The party’s proposals are often quite concrete, e.g. in order to combat climate change, the party advocates additional nuclear power construction, in order to balance the economy, it advocates storing of nuclear waste in the Finnish bedrock, and as a solution to the growing labour shortage, it advocates facilitating immigration and improving the position of immigrants.</p>"
+    }
+  },
+  {
+    "externalId": "party-0042",
+    "name": {
+      "fi": "Kristallipuolue",
+      "sv": "Kristall Parti",
+      "en": "Kristallipuolue"
+    },
+    "shortName": {
+      "fi": "KriP",
+      "sv": "KriP",
+      "en": "KriP"
+    },
+    "color": "#859195"
+  },
+  {
+    "externalId": "party-0043",
+    "name": {
+      "fi": "Valta kuuluu kansalle",
+      "sv": "Valta kuuluu kansalle",
+      "en": "Valta kuuluu kansalle"
+    },
+    "shortName": {
+      "fi": "VKK",
+      "sv": "VKK",
+      "en": "VKK"
+    },
+    "color": "#859195"
+  },
+  {
+    "externalId": "party-0044",
+    "name": {
+      "fi": "Vapauden liitto",
+      "sv": "Frihetsallians",
+      "en": "Freedom Alliance"
+    },
+    "shortName": {
+      "fi": "VL",
+      "sv": "FA",
+      "en": "FA"
+    },
+    "color": "#859195",
+    "info": {
+      "fi": "<p>Vapauden liitto on vapauden puolesta taisteleville ihmisille heitä yhdistävä henkinen koti ja toiminta-alusta sekä poliittinen työkalu, jonka avulla voimme yhdessä ajaa kansakuntamme ja kansalaistemme etuja. Päätavoitteitamme ovat sekä Suomen valtiollisen vapauden että yksilöä koskevien vapauksien puolustaminen ja edistäminen.</p><p>Vapauden liitto on lokalistipuolueena selkeä vastavoima globalisteille; kannatamme itsenäistä kansallisvaltiota ja sen myötä paikallista päätöksentekoa sekä mahdollisimman suurta ja laaja-alaista kansallista omavaraisuutta, jotka yhdessä johtavat työpaikkoihin, hyvinvointiin, vaurauteen ja turvallisuuteen. Puolue pyrkii palauttamaan päätöksenteon oikeuden yksilölle itselleen.</p>",
+      "sv": "<p>Frihetsalliansen är ett intellektuellt hem och en handlingsplattform som förenar människor som kämpar för frihet, och ett politiskt verktyg med vilket vi tillsammans kan driva vår nations och våra medborgares intressen. Våra huvudmål är att försvara och främja både Finlands statliga frihet och friheter som gäller individen.</p><p>Frihetsalliansen är som lokalistparti en tydlig motkraft till globalisterna; vi stödjer en självständig nationalstat och därmed lokalt beslutsfattande samt så stor och omfattande nationell självständighet som möjligt, vilket sammantaget leder till arbetsplatser, välfärd, välstånd och säkerhet. Partiet strävar efter att återställa individens rättighet till beslutsfattande.</p>",
+      "en": "<p>For people fighting for freedom, the Freedom Alliance is a mental home and action platform that unites them and a political tool that enables us to work together to promote the interests of our nation and our citizens. Our main goals are to defend and promote both the Finnish State's freedom and individual freedoms.</p><p>As a localist party, the Freedom Alliance is a clear counterpart to the globalists; we support an independent national state and, thus, local decision-making as well as the greatest and widest possible national independence, which together lead to jobs, well-being, wealth and security. The party strives to restore the right to make decisions to the individual.</p>"
+    }
+  },
+  {
+    "externalId": "party-0107",
+    "name": {
+      "fi": "ALAVUS ENSIN -yhteislista",
+      "sv": "ALAVUS ENSIN -yhteislista",
+      "en": "ALAVUS ENSIN -yhteislista"
+    },
+    "shortName": {
+      "fi": "YL1",
+      "sv": "YL1",
+      "en": "YL1"
+    }
+  },
+  {
+    "externalId": "party-0169",
+    "name": {
+      "fi": "Kotikunta yhteislista",
+      "sv": "Kotikunta yhteislista",
+      "en": "Kotikunta yhteislista"
+    },
+    "shortName": {
+      "fi": "Kotu",
+      "sv": "Kotu",
+      "en": "Kotu"
+    }
+  },
+  {
+    "externalId": "party-0212",
+    "name": {
+      "fi": "Uudenmaan sitoutumattomien Keski-Uudenmaan yhteislista",
+      "sv": "Uudenmaan sitoutumattomien Keski-Uudenmaan yhteislista",
+      "en": "Uudenmaan sitoutumattomien Keski-Uudenmaan yhteislista"
+    },
+    "shortName": {
+      "fi": "KEUSIT",
+      "sv": "KEUSIT",
+      "en": "KEUSIT"
+    }
+  },
+  {
+    "externalId": "party-0414",
+    "name": {
+      "fi": "Jari Hovinen",
+      "sv": "Jari Hovinen",
+      "en": "Jari Hovinen"
+    }
+  },
+  {
+    "externalId": "party-0476",
+    "name": {
+      "fi": "Yhteislista Kuntalaiset",
+      "sv": "Yhteislista Kuntalaiset",
+      "en": "Yhteislista Kuntalaiset"
+    },
+    "shortName": {
+      "fi": "YLK",
+      "sv": "YLK",
+      "en": "YLK"
+    }
+  },
+  {
+    "externalId": "party-0477",
+    "name": {
+      "fi": "Johtti Sápmelaccat yhteislista",
+      "sv": "Johtti Sápmelaccat yhteislista",
+      "en": "Johtti Sápmelaccat yhteislista"
+    },
+    "shortName": {
+      "fi": "JSYL",
+      "sv": "JSYL",
+      "en": "JSYL"
+    }
+  },
+  {
+    "externalId": "party-0698",
+    "name": {
+      "fi": "Haapajärven Hyväksi yhteislista",
+      "sv": "Haapajärven Hyväksi yhteislista",
+      "en": "Haapajärven Hyväksi yhteislista"
+    },
+    "shortName": {
+      "fi": "HHYL",
+      "sv": "HHYL",
+      "en": "HHYL"
+    }
+  },
+  {
+    "externalId": "party-0699",
+    "name": {
+      "fi": "Vesa Puputti",
+      "sv": "Vesa Puputti",
+      "en": "Vesa Puputti"
+    }
+  },
+  {
+    "externalId": "party-0716",
+    "name": {
+      "fi": "Haapavesi-ryhmä yhteislista",
+      "sv": "Haapavesi-ryhmä yhteislista",
+      "en": "Haapavesi-ryhmä yhteislista"
+    },
+    "shortName": {
+      "fi": "Hary",
+      "sv": "Hary",
+      "en": "Hary"
+    }
+  },
+  {
+    "externalId": "party-0788",
+    "name": {
+      "fi": "Rolf Nyström",
+      "sv": "Rolf Nyström",
+      "en": "Rolf Nyström"
+    }
+  },
+  {
+    "externalId": "party-0816",
+    "name": {
+      "fi": "Pirkanmaan Sitoutumattomat yhteislista, PirSit",
+      "sv": "Pirkanmaan Sitoutumattomat yhteislista, PirSit",
+      "en": "Pirkanmaan Sitoutumattomat yhteislista, PirSit"
+    },
+    "shortName": {
+      "fi": "PirSit",
+      "sv": "PirSit",
+      "en": "PirSit"
+    }
+  },
+  {
+    "externalId": "party-0817",
+    "name": {
+      "fi": "Timo Virtanen",
+      "sv": "Timo Virtanen",
+      "en": "Timo Virtanen"
+    }
+  },
+  {
+    "externalId": "party-0828",
+    "name": {
+      "fi": "Huomisen Hattula yhteislista",
+      "sv": "Huomisen Hattula yhteislista",
+      "en": "Huomisen Hattula yhteislista"
+    },
+    "shortName": {
+      "fi": "HHYL",
+      "sv": "HHYL",
+      "en": "HHYL"
+    }
+  },
+  {
+    "externalId": "party-0907",
+    "name": {
+      "fi": "Heinäveden Sitoutumattomat yhteislista",
+      "sv": "Heinäveden Sitoutumattomat yhteislista",
+      "en": "Heinäveden Sitoutumattomat yhteislista"
+    },
+    "shortName": {
+      "fi": "SIT",
+      "sv": "SIT",
+      "en": "SIT"
+    }
+  },
+  {
+    "externalId": "party-0912",
+    "name": {
+      "fi": "Esko Jäkkö",
+      "sv": "Esko Jäkkö",
+      "en": "Esko Jäkkö"
+    }
+  },
+  {
+    "externalId": "party-0913",
+    "name": {
+      "fi": "Viivi Rantajääskö",
+      "sv": "Viivi Rantajääskö",
+      "en": "Viivi Rantajääskö"
+    }
+  },
+  {
+    "externalId": "party-0988",
+    "name": {
+      "fi": "Esko Jäkkö",
+      "sv": "Esko Jäkkö",
+      "en": "Esko Jäkkö"
+    }
+  },
+  {
+    "externalId": "party-1111",
+    "name": {
+      "fi": "Pienten kuntien puolesta -yhteislista",
+      "sv": "Pienten kuntien puolesta -yhteislista",
+      "en": "Pienten kuntien puolesta -yhteislista"
+    },
+    "shortName": {
+      "fi": "YL1",
+      "sv": "YL1",
+      "en": "YL1"
+    }
+  },
+  {
+    "externalId": "party-1311",
+    "name": {
+      "fi": "Tapani Karvinen",
+      "sv": "Tapani Karvinen",
+      "en": "Tapani Karvinen"
+    }
+  },
+  {
+    "externalId": "party-1427",
+    "name": {
+      "fi": "Aito Iitti yhteislista",
+      "sv": "Aito Iitti yhteislista",
+      "en": "Aito Iitti yhteislista"
+    },
+    "shortName": {
+      "fi": "AI",
+      "sv": "AI",
+      "en": "AI"
+    }
+  },
+  {
+    "externalId": "party-1439",
+    "name": {
+      "fi": "Vetovoimainen Ikaalinen -yhteislista",
+      "sv": "Vetovoimainen Ikaalinen -yhteislista",
+      "en": "Vetovoimainen Ikaalinen -yhteislista"
+    },
+    "shortName": {
+      "fi": "VVI",
+      "sv": "VVI",
+      "en": "VVI"
+    }
+  },
+  {
+    "externalId": "party-1499",
+    "name": {
+      "fi": "För Ingå gemensam lista / Inkoon puolesta yhteislista",
+      "sv": "För Ingå gemensam lista / Inkoon puolesta yhteislista",
+      "en": "För Ingå gemensam lista / Inkoon puolesta yhteislista"
+    },
+    "shortName": {
+      "fi": "FIIP",
+      "sv": "FIIP",
+      "en": "FIIP"
+    }
+  },
+  {
+    "externalId": "party-1659",
+    "name": {
+      "fi": "Janakkalan sitoutumattomien yhteislista",
+      "sv": "Janakkalan sitoutumattomien yhteislista",
+      "en": "Janakkalan sitoutumattomien yhteislista"
+    },
+    "shortName": {
+      "fi": "JnPoSi",
+      "sv": "JnPoSi",
+      "en": "JnPoSi"
+    }
+  },
+  {
+    "externalId": "party-1710",
+    "name": {
+      "fi": "Mustasaaren Suomenkielisten kunnallisjärjestö ryn yhteislista",
+      "sv": "Mustasaaren Suomenkielisten kunnallisjärjestö ryn yhteislista",
+      "en": "Mustasaaren Suomenkielisten kunnallisjärjestö ryn yhteislista"
+    },
+    "shortName": {
+      "fi": "MSK ry",
+      "sv": "MSK ry",
+      "en": "MSK ry"
+    }
+  },
+  {
+    "externalId": "party-1828",
+    "name": {
+      "fi": "Uusi Suunta yhteislista",
+      "sv": "Uusi Suunta yhteislista",
+      "en": "Uusi Suunta yhteislista"
+    },
+    "shortName": {
+      "fi": "US",
+      "sv": "US",
+      "en": "US"
+    }
+  },
+  {
+    "externalId": "party-1829",
+    "name": {
+      "fi": "Peruskallio yhteislista",
+      "sv": "Peruskallio yhteislista",
+      "en": "Peruskallio yhteislista"
+    },
+    "shortName": {
+      "fi": "Pk",
+      "sv": "Pk",
+      "en": "Pk"
+    }
+  },
+  {
+    "externalId": "party-2011",
+    "name": {
+      "fi": "Veli-Matti Surakka",
+      "sv": "Veli-Matti Surakka",
+      "en": "Veli-Matti Surakka"
+    }
+  },
+  {
+    "externalId": "party-2047",
+    "name": {
+      "fi": "Rakentava Kaavi yhteislista",
+      "sv": "Rakentava Kaavi yhteislista",
+      "en": "Rakentava Kaavi yhteislista"
+    },
+    "shortName": {
+      "fi": "YL1",
+      "sv": "YL1",
+      "en": "YL1"
+    }
+  },
+  {
+    "externalId": "party-2059",
+    "name": {
+      "fi": "Veli-Matti Surakka",
+      "sv": "Veli-Matti Surakka",
+      "en": "Veli-Matti Surakka"
+    }
+  },
+  {
+    "externalId": "party-2113",
+    "name": {
+      "fi": "Lapin Sitoutumattomat - yhteislista",
+      "sv": "Lapin Sitoutumattomat - yhteislista",
+      "en": "Lapin Sitoutumattomat - yhteislista"
+    },
+    "shortName": {
+      "fi": "LAPSIT",
+      "sv": "LAPSIT",
+      "en": "LAPSIT"
+    }
+  },
+  {
+    "externalId": "party-2114",
+    "name": {
+      "fi": "Juha Mäkimartti",
+      "sv": "Juha Mäkimartti",
+      "en": "Juha Mäkimartti"
+    }
+  },
+  {
+    "externalId": "party-2119",
+    "name": {
+      "fi": "Meidän Kangasala yhteislista",
+      "sv": "Meidän Kangasala yhteislista",
+      "en": "Meidän Kangasala yhteislista"
+    },
+    "shortName": {
+      "fi": "MeKa",
+      "sv": "MeKa",
+      "en": "MeKa"
+    }
+  },
+  {
+    "externalId": "party-2137",
+    "name": {
+      "fi": "Samuli Arkko",
+      "sv": "Samuli Arkko",
+      "en": "Samuli Arkko"
+    }
+  },
+  {
+    "externalId": "party-2177",
+    "name": {
+      "fi": "Kannuksen sitoutumattomat yhteislista",
+      "sv": "Kannuksen sitoutumattomat yhteislista",
+      "en": "Kannuksen sitoutumattomat yhteislista"
+    },
+    "shortName": {
+      "fi": "KSIT",
+      "sv": "KSIT",
+      "en": "KSIT"
+    }
+  },
+  {
+    "externalId": "party-2418",
+    "name": {
+      "fi": "Keminmaalaisten Parhaaksi yhteislista",
+      "sv": "Keminmaalaisten Parhaaksi yhteislista",
+      "en": "Keminmaalaisten Parhaaksi yhteislista"
+    },
+    "shortName": {
+      "fi": "KemPar",
+      "sv": "KemPar",
+      "en": "KemPar"
+    }
+  },
+  {
+    "externalId": "party-2419",
+    "name": {
+      "fi": "Juha Mäkimartti",
+      "sv": "Juha Mäkimartti",
+      "en": "Juha Mäkimartti"
+    }
+  },
+  {
+    "externalId": "party-2507",
+    "name": {
+      "fi": "Yhteislista Savupirtti",
+      "sv": "Yhteislista Savupirtti",
+      "en": "Yhteislista Savupirtti"
+    },
+    "shortName": {
+      "fi": "YLS",
+      "sv": "YLS",
+      "en": "YLS"
+    }
+  },
+  {
+    "externalId": "party-2508",
+    "name": {
+      "fi": "Hannu Tiainen",
+      "sv": "Hannu Tiainen",
+      "en": "Hannu Tiainen"
+    }
+  },
+  {
+    "externalId": "party-2564",
+    "name": {
+      "fi": "Kinnulan Tulevaisuus yhteislista",
+      "sv": "Kinnulan Tulevaisuus yhteislista",
+      "en": "Kinnulan Tulevaisuus yhteislista"
+    },
+    "shortName": {
+      "fi": "KT",
+      "sv": "KT",
+      "en": "KT"
+    }
+  },
+  {
+    "externalId": "party-2653",
+    "name": {
+      "fi": "Yhteislista Kivijärvisten parhaaksi",
+      "sv": "Yhteislista Kivijärvisten parhaaksi",
+      "en": "Yhteislista Kivijärvisten parhaaksi"
+    },
+    "shortName": {
+      "fi": "YLKP",
+      "sv": "YLKP",
+      "en": "YLKP"
+    }
+  },
+  {
+    "externalId": "party-2736",
+    "name": {
+      "fi": "Kolarin kylät ja tunturit yhteislista",
+      "sv": "Kolarin kylät ja tunturit yhteislista",
+      "en": "Kolarin kylät ja tunturit yhteislista"
+    },
+    "shortName": {
+      "fi": "KKTYL",
+      "sv": "KKTYL",
+      "en": "KKTYL"
+    }
+  },
+  {
+    "externalId": "party-2737",
+    "name": {
+      "fi": "Kolari 21 yhteislista",
+      "sv": "Kolari 21 yhteislista",
+      "en": "Kolari 21 yhteislista"
+    },
+    "shortName": {
+      "fi": "K21YL",
+      "sv": "K21YL",
+      "en": "K21YL"
+    }
+  },
+  {
+    "externalId": "party-2916",
+    "name": {
+      "fi": "Avoin Kuhmoinen yhteislista",
+      "sv": "Avoin Kuhmoinen yhteislista",
+      "en": "Avoin Kuhmoinen yhteislista"
+    },
+    "shortName": {
+      "fi": "AKu",
+      "sv": "AKu",
+      "en": "AKu"
+    }
+  },
+  {
+    "externalId": "party-3046",
+    "name": {
+      "fi": "Pro Kustavi yhteislista",
+      "sv": "Pro Kustavi yhteislista",
+      "en": "Pro Kustavi yhteislista"
+    },
+    "shortName": {
+      "fi": "YL1",
+      "sv": "YL1",
+      "en": "YL1"
+    }
+  },
+  {
+    "externalId": "party-3058",
+    "name": {
+      "fi": "Joukamo Kortesalmi",
+      "sv": "Joukamo Kortesalmi",
+      "en": "Joukamo Kortesalmi"
+    }
+  },
+  {
+    "externalId": "party-3166",
+    "name": {
+      "fi": "Kärkölä-Ryhmä yhteislista",
+      "sv": "Kärkölä-Ryhmä yhteislista",
+      "en": "Kärkölä-Ryhmä yhteislista"
+    },
+    "shortName": {
+      "fi": "KÄRRY",
+      "sv": "KÄRRY",
+      "en": "KÄRRY"
+    }
+  },
+  {
+    "externalId": "party-3209",
+    "name": {
+      "fi": "Yhteinen Kemijärvi -yhteislista",
+      "sv": "Yhteinen Kemijärvi -yhteislista",
+      "en": "Yhteinen Kemijärvi -yhteislista"
+    },
+    "shortName": {
+      "fi": "YKY",
+      "sv": "YKY",
+      "en": "YKY"
+    }
+  },
+  {
+    "externalId": "party-3229",
+    "name": {
+      "fi": "Fri Samverkan gemensamma listan - Vapaa Yhteistoiminta yhteislista",
+      "sv": "Fri Samverkan gemensamma listan - Vapaa Yhteistoiminta yhteislista",
+      "en": "Fri Samverkan gemensamma listan - Vapaa Yhteistoiminta yhteislista"
+    },
+    "shortName": {
+      "fi": "FS",
+      "sv": "FS",
+      "en": "FS"
+    }
+  },
+  {
+    "externalId": "party-3999",
+    "name": {
+      "fi": "Miska Autiorinne",
+      "sv": "Miska Autiorinne",
+      "en": "Miska Autiorinne"
+    }
+  },
+  {
+    "externalId": "party-4008",
+    "name": {
+      "fi": "Laitilan puolesta yhteislista",
+      "sv": "Laitilan puolesta yhteislista",
+      "en": "Laitilan puolesta yhteislista"
+    },
+    "shortName": {
+      "fi": "LPYL",
+      "sv": "LPYL",
+      "en": "LPYL"
+    }
+  },
+  {
+    "externalId": "party-4028",
+    "name": {
+      "fi": "Meidän Lapinlahti yhteislista",
+      "sv": "Meidän Lapinlahti yhteislista",
+      "en": "Meidän Lapinlahti yhteislista"
+    },
+    "shortName": {
+      "fi": "ML",
+      "sv": "ML",
+      "en": "ML"
+    }
+  },
+  {
+    "externalId": "party-4339",
+    "name": {
+      "fi": "Lopen Sitoutumattomat -yhteislista",
+      "sv": "Lopen Sitoutumattomat -yhteislista",
+      "en": "Lopen Sitoutumattomat -yhteislista"
+    },
+    "shortName": {
+      "fi": "LopSit",
+      "sv": "LopSit",
+      "en": "LopSit"
+    }
+  },
+  {
+    "externalId": "party-4365",
+    "name": {
+      "fi": "Juuso Ervasti",
+      "sv": "Juuso Ervasti",
+      "en": "Juuso Ervasti"
+    }
+  },
+  {
+    "externalId": "party-4846",
+    "name": {
+      "fi": "Kim Karrenberg",
+      "sv": "Kim Karrenberg",
+      "en": "Kim Karrenberg"
+    }
+  },
+  {
+    "externalId": "party-4914",
+    "name": {
+      "fi": "Ympäristöpuolue-yhteislista",
+      "sv": "Ympäristöpuolue-yhteislista",
+      "en": "Ympäristöpuolue-yhteislista"
+    },
+    "shortName": {
+      "fi": "Ymp",
+      "sv": "Ymp",
+      "en": "Ymp"
+    }
+  },
+  {
+    "externalId": "party-4915",
+    "name": {
+      "fi": "Valta Kuuluu Teekkareille -yhteislista",
+      "sv": "Valta Kuuluu Teekkareille -yhteislista",
+      "en": "Valta Kuuluu Teekkareille -yhteislista"
+    },
+    "shortName": {
+      "fi": "VKT",
+      "sv": "VKT",
+      "en": "VKT"
+    }
+  },
+  {
+    "externalId": "party-4947",
+    "name": {
+      "fi": "Muhoksen sitoutumattomat yhteislista",
+      "sv": "Muhoksen sitoutumattomat yhteislista",
+      "en": "Muhoksen sitoutumattomat yhteislista"
+    },
+    "shortName": {
+      "fi": "MuSiYL",
+      "sv": "MuSiYL",
+      "en": "MuSiYL"
+    }
+  },
+  {
+    "externalId": "party-4948",
+    "name": {
+      "fi": "Olavi Rönkä",
+      "sv": "Olavi Rönkä",
+      "en": "Olavi Rönkä"
+    }
+  },
+  {
+    "externalId": "party-4998",
+    "name": {
+      "fi": "Mustasaaren suomenkielisten kunnallisjärjestö ry yhteislista",
+      "sv": "Mustasaaren suomenkielisten kunnallisjärjestö ry yhteislista",
+      "en": "Mustasaaren suomenkielisten kunnallisjärjestö ry yhteislista"
+    },
+    "shortName": {
+      "fi": "MSK",
+      "sv": "MSK",
+      "en": "MSK"
+    }
+  },
+  {
+    "externalId": "party-5078",
+    "name": {
+      "fi": "Puolueisiin sitoutumattomien yhteislista (Sit.)",
+      "sv": "Puolueisiin sitoutumattomien yhteislista (Sit.)",
+      "en": "Puolueisiin sitoutumattomien yhteislista (Sit.)"
+    },
+    "shortName": {
+      "fi": "Sit.",
+      "sv": "Sit.",
+      "en": "Sit."
+    }
+  },
+  {
+    "externalId": "party-5387",
+    "name": {
+      "fi": "PRO Nousiainen yhteislista",
+      "sv": "PRO Nousiainen yhteislista",
+      "en": "PRO Nousiainen yhteislista"
+    },
+    "shortName": {
+      "fi": "PRO",
+      "sv": "PRO",
+      "en": "PRO"
+    }
+  },
+  {
+    "externalId": "party-5766",
+    "name": {
+      "fi": "Kuntalaisten Padasjoki -yhteislista",
+      "sv": "Kuntalaisten Padasjoki -yhteislista",
+      "en": "Kuntalaisten Padasjoki -yhteislista"
+    },
+    "shortName": {
+      "fi": "KPY",
+      "sv": "KPY",
+      "en": "KPY"
+    }
+  },
+  {
+    "externalId": "party-5807",
+    "name": {
+      "fi": "Parikkala-ryhmän yhteislista",
+      "sv": "Parikkala-ryhmän yhteislista",
+      "en": "Parikkala-ryhmän yhteislista"
+    },
+    "shortName": {
+      "fi": "PRY",
+      "sv": "PRY",
+      "en": "PRY"
+    }
+  },
+  {
+    "externalId": "party-5834",
+    "name": {
+      "fi": "Pyhä-Pelkosenniemi yhteislista",
+      "sv": "Pyhä-Pelkosenniemi yhteislista",
+      "en": "Pyhä-Pelkosenniemi yhteislista"
+    },
+    "shortName": {
+      "fi": "PPYL",
+      "sv": "PPYL",
+      "en": "PPYL"
+    }
+  },
+  {
+    "externalId": "party-5958",
+    "name": {
+      "fi": "Avoin Pielavesi yhteislista",
+      "sv": "Avoin Pielavesi yhteislista",
+      "en": "Avoin Pielavesi yhteislista"
+    },
+    "shortName": {
+      "fi": "APYL",
+      "sv": "APYL",
+      "en": "APYL"
+    }
+  },
+  {
+    "externalId": "party-5989",
+    "name": {
+      "fi": "PRO Pietarsaari - Jakobstad yhteislista",
+      "sv": "PRO Pietarsaari - Jakobstad yhteislista",
+      "en": "PRO Pietarsaari - Jakobstad yhteislista"
+    },
+    "shortName": {
+      "fi": "PRO",
+      "sv": "PRO",
+      "en": "PRO"
+    }
+  },
+  {
+    "externalId": "party-6016",
+    "name": {
+      "fi": "Pihtiputaan Parhaaksi yhteislista",
+      "sv": "Pihtiputaan Parhaaksi yhteislista",
+      "en": "Pihtiputaan Parhaaksi yhteislista"
+    },
+    "shortName": {
+      "fi": "PP",
+      "sv": "PP",
+      "en": "PP"
+    }
+  },
+  {
+    "externalId": "party-6206",
+    "name": {
+      "fi": "Puolangan puolesta yhteislista",
+      "sv": "Puolangan puolesta yhteislista",
+      "en": "Puolangan puolesta yhteislista"
+    },
+    "shortName": {
+      "fi": "YL1",
+      "sv": "YL1",
+      "en": "YL1"
+    }
+  },
+  {
+    "externalId": "party-6317",
+    "name": {
+      "fi": "Yhteislista Yhteinen Pyhäranta",
+      "sv": "Yhteislista Yhteinen Pyhäranta",
+      "en": "Yhteislista Yhteinen Pyhäranta"
+    },
+    "shortName": {
+      "fi": "YP",
+      "sv": "YP",
+      "en": "YP"
+    }
+  },
+  {
+    "externalId": "party-6836",
+    "name": {
+      "fi": "Ranuan Sitoutumattomat Ry yhteislista",
+      "sv": "Ranuan Sitoutumattomat Ry yhteislista",
+      "en": "Ranuan Sitoutumattomat Ry yhteislista"
+    },
+    "shortName": {
+      "fi": "RSYL",
+      "sv": "RSYL",
+      "en": "RSYL"
+    }
+  },
+  {
+    "externalId": "party-6837",
+    "name": {
+      "fi": "Yhteinen kotikuntamme -yhteislista",
+      "sv": "Yhteinen kotikuntamme -yhteislista",
+      "en": "Yhteinen kotikuntamme -yhteislista"
+    },
+    "shortName": {
+      "fi": "YKK",
+      "sv": "YKK",
+      "en": "YKK"
+    }
+  },
+  {
+    "externalId": "party-6896",
+    "name": {
+      "fi": "PRO Rautjärvi yhteislista",
+      "sv": "PRO Rautjärvi yhteislista",
+      "en": "PRO Rautjärvi yhteislista"
+    },
+    "shortName": {
+      "fi": "PRORjY",
+      "sv": "PRORjY",
+      "en": "PRORjY"
+    }
+  },
+  {
+    "externalId": "party-6916",
+    "name": {
+      "fi": "Vapaa Reisjärvi yhteislista",
+      "sv": "Vapaa Reisjärvi yhteislista",
+      "en": "Vapaa Reisjärvi yhteislista"
+    },
+    "shortName": {
+      "fi": "VaReYL",
+      "sv": "VaReYL",
+      "en": "VaReYL"
+    }
+  },
+  {
+    "externalId": "party-7029",
+    "name": {
+      "fi": "Ruoveden Etu yhteislista",
+      "sv": "Ruoveden Etu yhteislista",
+      "en": "Ruoveden Etu yhteislista"
+    },
+    "shortName": {
+      "fi": "Ruotu",
+      "sv": "Ruotu",
+      "en": "Ruotu"
+    }
+  },
+  {
+    "externalId": "party-7397",
+    "name": {
+      "fi": "Pro Savitaipale yhteislista",
+      "sv": "Pro Savitaipale yhteislista",
+      "en": "Pro Savitaipale yhteislista"
+    },
+    "shortName": {
+      "fi": "ProSle",
+      "sv": "ProSle",
+      "en": "ProSle"
+    }
+  },
+  {
+    "externalId": "party-7425",
+    "name": {
+      "fi": "Yhteislista Ryhmä 25 Sitoutumattomat",
+      "sv": "Yhteislista Ryhmä 25 Sitoutumattomat",
+      "en": "Yhteislista Ryhmä 25 Sitoutumattomat"
+    },
+    "shortName": {
+      "fi": "R25S",
+      "sv": "R25S",
+      "en": "R25S"
+    }
+  },
+  {
+    "externalId": "party-7558",
+    "name": {
+      "fi": "Ympäristöpuolue - yhteislista",
+      "sv": "Ympäristöpuolue - yhteislista",
+      "en": "Ympäristöpuolue - yhteislista"
+    },
+    "shortName": {
+      "fi": "YYL",
+      "sv": "YYL",
+      "en": "YYL"
+    }
+  },
+  {
+    "externalId": "party-7589",
+    "name": {
+      "fi": "Kuntalaiset - yhteislista",
+      "sv": "Kuntalaiset - yhteislista",
+      "en": "Kuntalaiset - yhteislista"
+    },
+    "shortName": {
+      "fi": "YL2",
+      "sv": "YL2",
+      "en": "YL2"
+    }
+  },
+  {
+    "externalId": "party-7618",
+    "name": {
+      "fi": "Someron Edistys yhteislista",
+      "sv": "Someron Edistys yhteislista",
+      "en": "Someron Edistys yhteislista"
+    },
+    "shortName": {
+      "fi": "SEYL",
+      "sv": "SEYL",
+      "en": "SEYL"
+    }
+  },
+  {
+    "externalId": "party-7816",
+    "name": {
+      "fi": "Yhteislista Avoin Sysmä",
+      "sv": "Yhteislista Avoin Sysmä",
+      "en": "Yhteislista Avoin Sysmä"
+    },
+    "shortName": {
+      "fi": "AvoinS",
+      "sv": "AvoinS",
+      "en": "AvoinS"
+    }
+  },
+  {
+    "externalId": "party-7858",
+    "name": {
+      "fi": "Marko Hiltunen",
+      "sv": "Marko Hiltunen",
+      "en": "Marko Hiltunen"
+    }
+  },
+  {
+    "externalId": "party-8317",
+    "name": {
+      "fi": "Taipalsaari liikkeen yhteislista",
+      "sv": "Taipalsaari liikkeen yhteislista",
+      "en": "Taipalsaari liikkeen yhteislista"
+    },
+    "shortName": {
+      "fi": "TLY",
+      "sv": "TLY",
+      "en": "TLY"
+    }
+  },
+  {
+    "externalId": "party-8328",
+    "name": {
+      "fi": "Taivalkosken Sitoutumattomien yhteislista",
+      "sv": "Taivalkosken Sitoutumattomien yhteislista",
+      "en": "Taivalkosken Sitoutumattomien yhteislista"
+    },
+    "shortName": {
+      "fi": "TKENSI",
+      "sv": "TKENSI",
+      "en": "TKENSI"
+    }
+  },
+  {
+    "externalId": "party-8348",
+    "name": {
+      "fi": "Meidän Tammela yhteislista",
+      "sv": "Meidän Tammela yhteislista",
+      "en": "Meidän Tammela yhteislista"
+    },
+    "shortName": {
+      "fi": "MeTa",
+      "sv": "MeTa",
+      "en": "MeTa"
+    }
+  },
+  {
+    "externalId": "party-8455",
+    "name": {
+      "fi": "Sitoutumaton Tervola yhteislista",
+      "sv": "Sitoutumaton Tervola yhteislista",
+      "en": "Sitoutumaton Tervola yhteislista"
+    },
+    "shortName": {
+      "fi": "SITERY",
+      "sv": "SITERY",
+      "en": "SITERY"
+    }
+  },
+  {
+    "externalId": "party-8518",
+    "name": {
+      "fi": "Tornion Sitoutumattomat -yhteislista",
+      "sv": "Tornion Sitoutumattomat -yhteislista",
+      "en": "Tornion Sitoutumattomat -yhteislista"
+    },
+    "shortName": {
+      "fi": "TSY",
+      "sv": "TSY",
+      "en": "TSY"
+    }
+  },
+  {
+    "externalId": "party-8519",
+    "name": {
+      "fi": "Koko Tornio -yhteislista",
+      "sv": "Koko Tornio -yhteislista",
+      "en": "Koko Tornio -yhteislista"
+    },
+    "shortName": {
+      "fi": "KTY",
+      "sv": "KTY",
+      "en": "KTY"
+    }
+  },
+  {
+    "externalId": "party-9113",
+    "name": {
+      "fi": "Ympäristöpuolue -yhteislista",
+      "sv": "Ympäristöpuolue -yhteislista",
+      "en": "Ympäristöpuolue -yhteislista"
+    },
+    "shortName": {
+      "fi": "YMPYL",
+      "sv": "YMPYL",
+      "en": "YMPYL"
+    }
+  },
+  {
+    "externalId": "party-9114",
+    "name": {
+      "fi": "Asukkaiden ääni -yhteislista",
+      "sv": "Asukkaiden ääni -yhteislista",
+      "en": "Asukkaiden ääni -yhteislista"
+    },
+    "shortName": {
+      "fi": "ASYL",
+      "sv": "ASYL",
+      "en": "ASYL"
+    }
+  },
+  {
+    "externalId": "party-9115",
+    "name": {
+      "fi": "Samuli Yliluoma",
+      "sv": "Samuli Yliluoma",
+      "en": "Samuli Yliluoma"
+    }
+  },
+  {
+    "externalId": "party-9159",
+    "name": {
+      "fi": "Tapani Karvinen",
+      "sv": "Tapani Karvinen",
+      "en": "Tapani Karvinen"
+    }
+  },
+  {
+    "externalId": "party-9215",
+    "name": {
+      "fi": "Vantaan sitoutumattomat yhteislista",
+      "sv": "Vantaan sitoutumattomat yhteislista",
+      "en": "Vantaan sitoutumattomat yhteislista"
+    },
+    "shortName": {
+      "fi": "VSYL",
+      "sv": "VSYL",
+      "en": "VSYL"
+    }
+  },
+  {
+    "externalId": "party-9256",
+    "name": {
+      "fi": "Vieremä 2000 ry yhteislista",
+      "sv": "Vieremä 2000 ry yhteislista",
+      "en": "Vieremä 2000 ry yhteislista"
+    },
+    "shortName": {
+      "fi": "VYL",
+      "sv": "VYL",
+      "en": "VYL"
+    }
+  },
+  {
+    "externalId": "party-9257",
+    "name": {
+      "fi": "Pasi Tirkkonen",
+      "sv": "Pasi Tirkkonen",
+      "en": "Pasi Tirkkonen"
+    }
+  },
+  {
+    "externalId": "party-9317",
+    "name": {
+      "fi": "Jyrki Koskela",
+      "sv": "Jyrki Koskela",
+      "en": "Jyrki Koskela"
+    }
+  },
+  {
+    "externalId": "party-9367",
+    "name": {
+      "fi": "Virtain Valtin yhteislista",
+      "sv": "Virtain Valtin yhteislista",
+      "en": "Virtain Valtin yhteislista"
+    },
+    "shortName": {
+      "fi": "VV",
+      "sv": "VV",
+      "en": "VV"
+    }
+  },
+  {
+    "externalId": "party-9765",
+    "name": {
+      "fi": "Ylitornion parhaaksi-yhteislista",
+      "sv": "Ylitornion parhaaksi-yhteislista",
+      "en": "Ylitornion parhaaksi-yhteislista"
+    },
+    "shortName": {
+      "fi": "YPL",
+      "sv": "YPL",
+      "en": "YPL"
+    }
+  },
+  {
+    "externalId": "party-9808",
+    "name": {
+      "fi": "Suomen Kataja ry yhteislista",
+      "sv": "Suomen Kataja ry yhteislista",
+      "en": "Suomen Kataja ry yhteislista"
+    },
+    "shortName": {
+      "fi": "Kataja",
+      "sv": "Kataja",
+      "en": "Kataja"
+    }
+  },
+  {
+    "externalId": "party-9809",
+    "name": {
+      "fi": "Jorma Grönlund",
+      "sv": "Jorma Grönlund",
+      "en": "Jorma Grönlund"
+    }
+  },
+  {
+    "externalId": "party-9929",
+    "name": {
+      "fi": "Yhteislista Äänekosken Maltilliset",
+      "sv": "Yhteislista Äänekosken Maltilliset",
+      "en": "Yhteislista Äänekosken Maltilliset"
+    },
+    "shortName": {
+      "fi": "MALT",
+      "sv": "MALT",
+      "en": "MALT"
+    }
+  },
+  {
+    "externalId": "party-10911",
+    "name": {
+      "fi": "Noora Vennamo",
+      "sv": "Noora Vennamo",
+      "en": "Noora Vennamo"
+    }
+  },
+  {
+    "externalId": "party-17914",
+    "name": {
+      "fi": "Päivi Korpivaara",
+      "sv": "Päivi Korpivaara",
+      "en": "Päivi Korpivaara"
+    }
+  },
+  {
+    "externalId": "party-18610",
+    "name": {
+      "fi": "Järvenpään Plus yhteislista",
+      "sv": "Järvenpään Plus yhteislista",
+      "en": "Järvenpään Plus yhteislista"
+    },
+    "shortName": {
+      "fi": "Plus",
+      "sv": "Plus",
+      "en": "Plus"
+    }
+  },
+  {
+    "externalId": "party-22410",
+    "name": {
+      "fi": "Karkkilaan sitoutuneet yhteislista",
+      "sv": "Karkkilaan sitoutuneet yhteislista",
+      "en": "Karkkilaan sitoutuneet yhteislista"
+    },
+    "shortName": {
+      "fi": "KS",
+      "sv": "KS",
+      "en": "KS"
+    }
+  },
+  {
+    "externalId": "party-22411",
+    "name": {
+      "fi": "Keijo Salmi",
+      "sv": "Keijo Salmi",
+      "en": "Keijo Salmi"
+    }
+  },
+  {
+    "externalId": "party-24011",
+    "name": {
+      "fi": "Kemin Sitoutumattomat yhteislista",
+      "sv": "Kemin Sitoutumattomat yhteislista",
+      "en": "Kemin Sitoutumattomat yhteislista"
+    },
+    "shortName": {
+      "fi": "KSY",
+      "sv": "KSY",
+      "en": "KSY"
+    }
+  },
+  {
+    "externalId": "party-24510",
+    "name": {
+      "fi": "Matias Ovaska",
+      "sv": "Matias Ovaska",
+      "en": "Matias Ovaska"
+    }
+  },
+  {
+    "externalId": "party-25712",
+    "name": {
+      "fi": "Pro Kirkkonummi, Pro Kyrkslätt yhteislista",
+      "sv": "Pro Kirkkonummi, Pro Kyrkslätt yhteislista",
+      "en": "Pro Kirkkonummi, Pro Kyrkslätt yhteislista"
+    },
+    "shortName": {
+      "fi": "ProK",
+      "sv": "ProK",
+      "en": "ProK"
+    }
+  },
+  {
+    "externalId": "party-32010",
+    "name": {
+      "fi": "Sitoutumaton mahdollisuus -yhteislista",
+      "sv": "Sitoutumaton mahdollisuus -yhteislista",
+      "en": "Sitoutumaton mahdollisuus -yhteislista"
+    },
+    "shortName": {
+      "fi": "SMY",
+      "sv": "SMY",
+      "en": "SMY"
+    }
+  },
+  {
+    "externalId": "party-32210",
+    "name": {
+      "fi": "Janne Salonen",
+      "sv": "Janne Salonen",
+      "en": "Janne Salonen"
+    }
+  },
+  {
+    "externalId": "party-39811",
+    "name": {
+      "fi": "Pro Lahti yhteislista",
+      "sv": "Pro Lahti yhteislista",
+      "en": "Pro Lahti yhteislista"
+    },
+    "shortName": {
+      "fi": "ProL",
+      "sv": "ProL",
+      "en": "ProL"
+    }
+  },
+  {
+    "externalId": "party-39812",
+    "name": {
+      "fi": "Viivi Rantajääskö",
+      "sv": "Viivi Rantajääskö",
+      "en": "Viivi Rantajääskö"
+    }
+  },
+  {
+    "externalId": "party-43011",
+    "name": {
+      "fi": "Meidän Loimaa -yhteislista",
+      "sv": "Meidän Loimaa -yhteislista",
+      "en": "Meidän Loimaa -yhteislista"
+    },
+    "shortName": {
+      "fi": "MLYL",
+      "sv": "MLYL",
+      "en": "MLYL"
+    }
+  },
+  {
+    "externalId": "party-44412",
+    "name": {
+      "fi": "Meidän Lohja Yhteislista",
+      "sv": "Meidän Lohja Yhteislista",
+      "en": "Meidän Lohja Yhteislista"
+    },
+    "shortName": {
+      "fi": "ML",
+      "sv": "ML",
+      "en": "ML"
+    }
+  },
+  {
+    "externalId": "party-44413",
+    "name": {
+      "fi": "Kommunistisen työväenpuolueen yhteislista",
+      "sv": "Kommunistisen työväenpuolueen yhteislista",
+      "en": "Kommunistisen työväenpuolueen yhteislista"
+    },
+    "shortName": {
+      "fi": "KTP",
+      "sv": "KTP",
+      "en": "KTP"
+    }
+  },
+  {
+    "externalId": "party-59310",
+    "name": {
+      "fi": "Pieksämäen parhaaksi yhteislista",
+      "sv": "Pieksämäen parhaaksi yhteislista",
+      "en": "Pieksämäen parhaaksi yhteislista"
+    },
+    "shortName": {
+      "fi": "PiPa",
+      "sv": "PiPa",
+      "en": "PiPa"
+    }
+  },
+  {
+    "externalId": "party-60411",
+    "name": {
+      "fi": "Harri Aalto",
+      "sv": "Harri Aalto",
+      "en": "Harri Aalto"
+    }
+  },
+  {
+    "externalId": "party-70210",
+    "name": {
+      "fi": "Ruoveden sitoutumattomat yhteislista",
+      "sv": "Ruoveden sitoutumattomat yhteislista",
+      "en": "Ruoveden sitoutumattomat yhteislista"
+    },
+    "shortName": {
+      "fi": "RuoSit",
+      "sv": "RuoSit",
+      "en": "RuoSit"
+    }
+  },
+  {
+    "externalId": "party-71010",
+    "name": {
+      "fi": "Fredrika Åkerö",
+      "sv": "Fredrika Åkerö",
+      "en": "Fredrika Åkerö"
+    }
+  },
+  {
+    "externalId": "party-73410",
+    "name": {
+      "fi": "Kalevi Satopää",
+      "sv": "Kalevi Satopää",
+      "en": "Kalevi Satopää"
+    }
+  },
+  {
+    "externalId": "party-75810",
+    "name": {
+      "fi": "Oikeus ja kohtuus - yhteislista",
+      "sv": "Oikeus ja kohtuus - yhteislista",
+      "en": "Oikeus ja kohtuus - yhteislista"
+    },
+    "shortName": {
+      "fi": "YL1",
+      "sv": "YL1",
+      "en": "YL1"
+    }
+  },
+  {
+    "externalId": "party-83716",
+    "name": {
+      "fi": "Kommunistisen Työväenpuolueen yhteislista",
+      "sv": "Kommunistisen Työväenpuolueen yhteislista",
+      "en": "Kommunistisen Työväenpuolueen yhteislista"
+    },
+    "shortName": {
+      "fi": "KTPYL",
+      "sv": "KTPYL",
+      "en": "KTPYL"
+    }
+  },
+  {
+    "externalId": "party-83717",
+    "name": {
+      "fi": "Riemuisan avara yhteislista",
+      "sv": "Riemuisan avara yhteislista",
+      "en": "Riemuisan avara yhteislista"
+    },
+    "shortName": {
+      "fi": "RAYL",
+      "sv": "RAYL",
+      "en": "RAYL"
+    }
+  },
+  {
+    "externalId": "party-83718",
+    "name": {
+      "fi": "Seppo Lehto",
+      "sv": "Seppo Lehto",
+      "en": "Seppo Lehto"
+    }
+  },
+  {
+    "externalId": "party-85313",
+    "name": {
+      "fi": "Asukkaiden Turku -yhteislista",
+      "sv": "Asukkaiden Turku -yhteislista",
+      "en": "Asukkaiden Turku -yhteislista"
+    },
+    "shortName": {
+      "fi": "YL1",
+      "sv": "YL1",
+      "en": "YL1"
+    }
+  },
+  {
+    "externalId": "party-85314",
+    "name": {
+      "fi": "Johan Kustonen",
+      "sv": "Johan Kustonen",
+      "en": "Johan Kustonen"
+    }
+  },
+  {
+    "externalId": "party-85811",
+    "name": {
+      "fi": "Tuusulan Puolesta ry yhteislista",
+      "sv": "Tuusulan Puolesta ry yhteislista",
+      "en": "Tuusulan Puolesta ry yhteislista"
+    },
+    "shortName": {
+      "fi": "TuPu",
+      "sv": "TuPu",
+      "en": "TuPu"
+    }
+  },
+  {
+    "externalId": "party-85812",
+    "name": {
+      "fi": "Raimo Stenvall",
+      "sv": "Raimo Stenvall",
+      "en": "Raimo Stenvall"
+    }
+  }
+]

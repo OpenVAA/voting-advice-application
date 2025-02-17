@@ -1,0 +1,463 @@
+{
+  "questions": [
+    {
+      "externalId": "question-opinion-18-hel",
+      "questionType": {
+        "externalId": "questionType-Likert5"
+      },
+      "category": {
+        "externalId": "questionCategory-municipalities"
+      },
+      "order": 118,
+      "text": {
+        "fi": "Perusterveydenhuollon järjestämisessä tulee hyödyntää nykyistä enemmän yksityisiä palveluntarjoajia.",
+        "en": "Private service providers should be utilized more in the provision of primary healthcare.",
+        "sv": "Privata tjänsteleverantörer bör utnyttjas mer än tidigare i organiseringen av primärvården."
+      },
+      "info": {
+        "fi": "<p>Perusterveydenhuolto kattaa keskeiset tavanomaiset terveyspalvelut, kuten terveyskeskuskäynnit, rokotukset ja kiireettömän hoidon. Perusterveydenhuollon järjestämisestä vastaavat hyvinvointialueet ja Helsingin kaupunki, mutta yksityiset palveluntarjoajat täydentävät tätä kokonaisuutta. Yksityisiä palveluntarjoajia ovat esimerkiksi yksityiset lääkäriasemat ja erilaiset terveyspalveluita tarjoavat yritykset. Hyvinvointialueiden haasteina ovat olleet pitkät jonotusajat ja resurssipula, jotka ovat lisänneet tarvetta yksityisten toimijoiden käytölle erityisesti suurimmissa kaupungeissa.</p><p>Yksityisten palveluntarjoajien hyödyntäminen voi lisätä valinnanvapautta ja nopeuttaa hoitoon pääsyä. Samalla se voi vähentää julkisen terveydenhuollon kuormitusta. Toisaalta yksityisten palveluiden lisääminen saattaa kasvattaa kustannuksia, jolloin saatavilla olevat palvelut voivat vaihdella hyvinvointialueiden välillä. Lisäksi yksityisten palveluntuottajien roolista suomalaisessa terveydenhuoltojärjestelmässä voidaan olla eri mieltä poliittisista syistä. Yksityisten toimijoiden rooli perusterveydenhuollossa riippuu pitkälti hyvinvointialueiden päätöksistä.</p>",
+        "en": "<p>Primary healthcare includes essential routine health services such as health centre visits, vaccinations, and non-urgent care. The responsibility for organizing primary healthcare lies with the wellbeing services counties and the City of Helsinki, but private service providers complement the system. These providers include private medical clinics and various companies that provide health services. Challenges in the wellbeing services counties, such as long waiting times and resource shortages, have increased the need for private sector involvement, particularly in larger cities.</p><p>Utilizing private service providers can increase patient choice and reduce waiting times for treatment. It can also ease the burden on public healthcare. However, expanding private healthcare services may lead to higher costs and create disparities in service availability between different wellbeing services counties. Additionally, the role of private service providers in the Finnish healthcare system is a politically debated issue. The extent to which private operators are involved in primary healthcare largely depends on the decisions made by the wellbeing services counties.</p>",
+        "sv": "<p>Primärvården omfattar centrala grundläggande hälsovårdstjänster, såsom besök på hälsovårdscentralen, vaccinationer och icke-brådskande vård. Ansvaret för att organisera primärvården ligger hos välfärdsområdena och Helsingfors stad, men privata tjänsteleverantörer kompletterar helheten. Privata tjänsteleverantörer inkluderar till exempel privata läkarstationer och olika företag som erbjuder hälsovårdstjänster. Välfärdsområdenas utmaningar har varit långa köer och resursbrist, vilket har ökat behovet av att använda privata aktörer, särskilt i de största städerna.</p><p>Att utnyttja privata tjänsteleverantörer kan öka valfriheten och förkorta väntetiderna för vård. Samtidigt kan det minska belastningen på den offentliga hälsovården. Å andra sidan kan en ökad användning av privata tjänster höja kostnaderna, vilket kan leda till variationer i tillgången till tjänster mellan olika välfärdsområden. Dessutom råder det av politiska orsaker oenighet om de privata serviceproducenternas roll i det finska hälsovårdssystemet. I slutändan är det välfärdsområdenas beslut som avgör hur stor roll privata aktörer får inom primärvården.</p>"
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "fi": "Nykytilanne",
+              "en": "Current situation",
+              "sv": "Nuvarande situation"
+            },
+            "content": {
+              "fi": "<p>Suomessa yksityisiä palveluntarjoajia käytetään jo täydentämään julkista perusterveydenhuoltoa esimerkiksi ostopalveluiden kautta. Hyvinvointialueet päättävät yksityisten toimijoiden hyödyntämisestä alueellaan. Yksityisten toimijoiden rooli vaihtelee merkittävästi alueittain. Yksityisen palveluiden rooli herättää erimielisyyksiä poliittisessa keskustelussa, ja muutokset yksityisten palveluntarjoajien käytössä riippuvat pitkälti poliittisista päätöksistä ja alueellisista tarpeista.</p>",
+              "en": "<p>In Finland, private service providers already complement public primary healthcare, for example through outsourced services. Each wellbeing services county determines the extent to which private providers are utilized in its area. The role of private healthcare services varies significantly between counties. The use of private service providers remains a controversial political issue, and changes in their involvement depend largely on political decisions and county needs.</p>",
+              "sv": "<p> I Finland används redan privata tjänsteleverantörer som ett komplement till den offentliga primärvården, exempelvis genom köpta tjänster. Välfärdsområdena beslutar i vilken omfattning de använder privata aktörer inom sitt område. Rollen för privata tjänsteleverantörer varierar mycket mellan olika områden. Frågan om de privata aktörernas roll inom hälsovården är omtvistad i den politiska debatten, och förändringar i användningen av dem beror till stor del på politiska beslut och de regionala behoven.</p>"
+            }
+          },
+          {
+            "title": {
+              "fi": "Termit",
+              "en": "Terms",
+              "sv": "Begrepp"
+            },
+            "content": {
+              "fi": "<p>Perusterveydenhuolto: Julkisen sektorin tarjoamat tavanomaiset terveyspalvelut, kuten terveyskeskuskäynnit ja hammastarkastukset.</p><p>Yksityiset palveluntarjoajat: Yritykset ja organisaatiot, jotka tarjoavat terveyspalveluita maksua vastaan.</p>",
+              "en": "<p>Primary healthcare: Routine health services provided by the public sector, such as health centre visits and dental check-ups.</p><p>Private service providers: Companies and organizations that offer healthcare services for a fee.</p>",
+              "sv": "<p>Primärvård: Grundläggande hälsovårdstjänster som tillhandahålls av den offentliga sektorn, såsom besök på hälsovårdscentralen och tandundersökningar.</p><p>Privata tjänsteleverantörer: Företag och organisationer som erbjuder hälsovårdstjänster mot betalning.</p>"
+            }
+          }
+        ]
+      },
+      "constituencies": {
+        "externalId": "municipality-091"
+      }
+    },
+    {
+      "externalId": "question-opinion-19-hel",
+      "questionType": {
+        "externalId": "questionType-Likert5"
+      },
+      "category": {
+        "externalId": "questionCategory-municipalities"
+      },
+      "order": 119,
+      "text": {
+        "fi": "Helsingin tulee tarjota alle 25-vuotiaille maksuton ehkäisy.",
+        "en": "Helsinki should provide free contraception for individuals under 25.",
+        "sv": "Helsingfors bör erbjuda personer under 25 år gratis preventivmedel."
+      },
+      "info": {
+        "fi": "<p>Maksuttoman ehkäisyn tarjoaminen alle 25-vuotiaille on ollut keskustelun aiheena monilla hyvinvointialueilla ja Helsingissä. Tavoitteena on edistää nuorten seksuaaliterveyttä, vähentää raskauden keskeytyksiä ja seksitautien leviämistä sekä parantaa yhdenvertaisuutta ehkäisyn saatavuudessa. Useat tutkimukset ovat osoittaneet, että maksuton ehkäisy lisää ehkäisyn käyttöä erityisesti nuorten keskuudessa.</p><p>Suomessa osa hyvinvointialueista on tarjonnut maksutonta ehkäisyä nuorille, mutta käytännöt vaihtelevat alueittain. Maksuttomuus voi koskea esimerkiksi ehkäisypillereitä, kierukoita tai kondomeja, ja sitä voidaan tarjota joko määräajaksi tai tietylle ikäryhmälle. Laajempi maksuttoman ehkäisyn tarjoaminen voisi yhtenäistää käytäntöjä ja vähentää alueellista eriarvoisuutta. Toisaalta maksuttoman ehkäisyn tarjoaminen vaatii hyvinvointialueilta taloudellista panostusta. Osa hyvinvointialueista on päättänyt taloudellisista syistä luopua maksuttoman ehkäisyn tarjoamisesta nuorille.</p>",
+        "en": "<p>The provision of free contraception for individuals under 25 has been a topic of discussion in many wellbeing services counties and in Helsinki. The aim is to promote young people's sexual health, reduce induced terminations of pregnancies and the spread of sexually transmitted infections (STIs), and improve equality in access to contraception. Several studies have shown that free contraception increases its use, particularly among young people.</p><p>In Finland, some wellbeing services counties have offered free contraception to young people, but practices vary by county. Free contraception may include birth control pills, intrauterine devices (IUDs), or condoms, and it can be provided for a limited time or to a specific age group. Expanding free contraception programmes could standardize practices and reduce regional disparities. However, providing free contraception requires financial investment from the wellbeing services counties. Due to financial reasons, some counties have decided to discontinue free contraception for young people.</p>",
+        "sv": "<p>Att erbjuda gratis preventivmedel till personer under 25 år har varit föremål för diskussion i många välfärdsområden och i Helsinfors. Målet är att främja de ungas sexuella hälsa, minska antalet aborter och spridningen av könssjukdomar samt förbättra jämlikheten i fråga om tillgången till preventivmedel. Flera studier har visat att gratis preventivmedel ökar användningen, särskilt bland unga.</p><p>I Finland har en del välfärdsområden erbjudit gratis preventivmedel för unga, men praxis varierar mellan olika områden. Kostnadsfriheten kan gälla exempelvis p-piller, spiraler eller kondomer och kan erbjudas antingen för en viss tid eller till en specifik åldersgrupp. Att erbjuda gratis preventivmedel i större omfattning skulle kunna skapa enhetligare praxis och minska de regionala skillnaderna. Å andra sidan kräver tillhandahållandet av gratis preventivmedel ekonomiska satsningar av välfärdsområdena. En del välfärdsområden har av ekonomiska skäl valt att sluta erbjuda gratis preventivmedel till unga.</p>"
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "fi": "Nykytilanne",
+              "en": "Current situation",
+              "sv": "Nuvarande situation"
+            },
+            "content": {
+              "fi": "<p>Tällä hetkellä Suomessa ei ole valtakunnallista linjausta maksuttoman ehkäisyn tarjoamisesta nuorille, vaan hyvinvointialueet päättävät asiasta itsenäisesti. Jotkut hyvinvointialueet tarjoavat maksutonta ehkäisyä alle 25-vuotiaille, kun taas toisilla alueilla palvelua ei ole järjestetty.</p>",
+              "en": "<p>Currently, there is no national policy in Finland regarding free contraception for young people, and each wellbeing services county makes its own decision on the matter. Some counties provide free contraception for individuals under 25, while others do not offer the service at all.</p>",
+              "sv": "<p>För närvarande finns det ingen nationell riktlinje i Finland för att erbjuda gratis preventivmedel till unga, utan varje välfärdsområde fattar självständigt beslut i frågan. En del välfärdsområden erbjuder gratis preventivmedel till personer under 25 år, medan andra områden inte har tillhandahållit denna tjänst.</p>"
+            }
+          },
+          {
+            "title": {
+              "fi": "Termit",
+              "en": "Terms",
+              "sv": "Begrepp"
+            },
+            "content": {
+              "fi": "<p>Ehkäisy: Menetelmät ja välineet, joiden avulla estetään raskaaksi tuleminen tai sukupuolitautien leviäminen. Esimerkkejä ovat kondomit, ehkäisypillerit ja kierukat.</p>",
+              "en": "<p>Contraception: Methods and devices used to prevent pregnancy or the transmission of sexually transmitted infections (STIs). Examples include condoms, birth control pills, and intrauterine devices (IUDs).</p>",
+              "sv": "<p>Preventivmedel: Metoder och medel som används för att förhindra graviditet eller spridning av könssjukdomar. Kondomer, p-piller och spiraler är några exempel.</p>"
+            }
+          }
+        ]
+      },
+      "constituencies": {
+        "externalId": "municipality-091"
+      }
+    },
+    {
+      "externalId": "question-opinion-20-hel",
+      "questionType": {
+        "externalId": "questionType-Likert5"
+      },
+      "category": {
+        "externalId": "questionCategory-municipalities"
+      },
+      "order": 120,
+      "text": {
+        "fi": "Helsingin tulee tarjota enemmän digipalveluita ja vähemmän lähipalveluita.",
+        "en": "Helsinki should offer more digital services and fewer local services.",
+        "sv": "Helsingfors bör erbjuda fler digitala tjänster och färre närtjänster."
+      },
+      "info": {
+        "fi": "<p>Digipalveluiden, kuten etävastaanottojen ja sähköisen asioinnin kehittäminen on yksi tapa parantaa palveluiden saavutettavuutta ja tehostaa resurssien käyttöä hyvinvointialueilla. Digipalvelut voivat vähentää matkustustarvetta sekä nopeuttaa hoitoonpääsyä erityisesti harvaan asutuilla alueilla.</p><p>Lähipalvelut, kuten terveysasemat ja erilaiset toimipisteet, ovat kuitenkin tärkeitä erityisesti niille, jotka eivät voi tai osaa käyttää digipalveluita. Tämä koskee esimerkiksi ikääntyneitä ja muita erityisryhmiä. Siirtymä kohti digipalveluita saattaa lisätä eriarvoisuutta.</p><p>Hyvinvointialueiden rahoitus on rajallinen, joten niiden on tehtävä valintoja eri palvelumuotojen välillä. Digipalveluiden järjestäminen voi olla halvempaa, mutta samalla ne eivät sovi kaikille.</p>",
+        "en": "<p>The development of digital services, such as remote consultations and online transactions, is one way to improve service accessibility and optimize the use of resources in wellbeing services counties. Digital services can reduce the need for travel and speed up access to care, especially in sparsely populated areas.</p><p>However, local services, such as health centres and physical service locations, remain essential particularly for those who cannot or do not know how to use digital services. This is particularly relevant for the elderly and other special groups. The transition to digital services may increase inequality.</p><p>The funding resources of wellbeing services counties are limited, forcing them to make choices between different service models. Digital services may be less expensive to provide, but they are not suitable for everyone.</p>",
+        "sv": "<p>Utvecklingen av digitala tjänster, såsom distansmottagningar och elektronisk ärendehantering, är ett sätt att förbättra tillgången till tjänster och effektivisera resursanvändningen i välfärdsområdena. Digitala tjänster kan minska behovet av resor och göra att man snabbare får vård, särskilt i glesbefolkade områden.</p><p>Närtjänster, såsom hälsovårdscentraler och olika slags mottagningar, är dock viktiga särskilt för dem som inte kan eller vet hur man använder digitala tjänster. Detta gäller exempelvis äldre och andra särskilda grupper. En övergång till digitala tjänster kan därför öka ojämlikheten.</p><p>Välfärdsområdenas finansiering är begränsad, vilket innebär att de måste prioritera mellan olika serviceformer. Att tillhandahålla digitala tjänster kan vara billigare, men de passar inte alla.</p>"
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "fi": "Nykytilanne",
+              "en": "Current situation",
+              "sv": "Nuvarande situation"
+            },
+            "content": {
+              "fi": "<p>Hyvinvointialueet ovat jo ottaneet käyttöön monia digitaalisia ratkaisuja, kuten sähköisiä ajanvarausjärjestelmiä ja etävastaanottoja. Lähipalveluita on joillain alueilla vähennetty, mikä on herättänyt huolta palveluiden saavutettavuudesta erityisesti ikääntyneiden ja syrjäseutujen asukkaiden keskuudessa. Valtion rahoitusmalli kannustaa hyvinvointialueita lisäämään kustannustehokkaampia palveluita, mutta samalla niiden on lain mukaan pidettävä huolta palveluiden yhdenvertaisesta saatavuudesta.</p>",
+              "en": "<p>Wellbeing services counties have already implemented various digital solutions, including online appointment booking systems and remote consultations. In some areas, local services have been reduced, raising concerns about service accessibility, particularly among the elderly and residents of remote areas. The state funding model encourages wellbeing services counties to pursue more cost-efficient services, but by law, they must also ensure equal access to services for all residents.</p>",
+              "sv": "<p>Välfärdsområdena har redan infört många digitala lösningar, såsom elektroniska bokningssystem och distansmottagningar. I en del områden har närtjänster dragits in, vilket har väckt oro över tillgången till tjänster, särskilt bland äldre och invånare i glesbygdsområden. Statens finansieringsmodell uppmuntrar välfärdsområdena att införa fler kostnadseffektiva tjänster, men samtidigt är de enligt lag skyldiga att säkerställa en jämlik tillgång till tjänster.</p>"
+            }
+          },
+          {
+            "title": {
+              "fi": "Termit",
+              "en": "Terms",
+              "sv": "Begrepp"
+            },
+            "content": {
+              "fi": "<p>Digipalvelut: Sähköiset palvelut, kuten etävastaanotot, sähköinen ajanvaraus ja sähköpostikonsultaatiot, joita voi käyttää internetin tai mobiilisovellusten kautta.</p><p>Lähipalvelut: Palvelut joissa asiakkaat voivat asioida kasvotusten sosiaali- ja terveyspalveluiden ammattilaisten kanssa.</p>",
+              "en": "<p>Digital services: Online services, such as remote consultations, online appointment booking, and email consultations, accessible via the internet or mobile applications.</p><p>Local services: In-person services where clients interact directly with social and healthcare professionals.</p>",
+              "sv": "<p>Digitala tjänster: Elektroniska tjänster såsom distansmottagningar, digital tidsbokning och e-postkonsultationer som kan användas via internet eller mobilapplikationer.</p><p>Närtjänster: Tjänster där klienter kan få vård och stöd genom fysiska möten med social- och hälsovårdspersonal.</p>"
+            }
+          }
+        ]
+      },
+      "constituencies": {
+        "externalId": "municipality-091"
+      }
+    },
+    {
+      "externalId": "question-opinion-21-hel",
+      "questionType": {
+        "externalId": "questionType-Likert5"
+      },
+      "category": {
+        "externalId": "questionCategory-municipalities"
+      },
+      "order": 121,
+      "text": {
+        "fi": "Hyvinvointialueilla pitää olla verotusoikeus.",
+        "en": "Wellbeing services counties should have taxation rights.",
+        "sv": "Välfärdsområden bör ha beskattningsrätt."
+      },
+      "info": {
+        "fi": "<p>Hyvinvointialueiden rahoitus tulee pääosin valtion budjetista, eikä niillä ole oikeutta kerätä veroja. Verotusoikeus tarkoittaisi sitä, että hyvinvointialueet voisivat itsenäisesti kerätä tuloja omien palveluidensa rahoittamiseen, kuten kunnat tekevät keräämällä kuntaveroa. Hyvinvointialueet eivät voi päättää verotusoikeudesta itsenäisesti. Helsinki vertautuu hyvinvointialueisiin sosiaali- ja terveyspalveluiden rahoituksessa.</p><p>Verotusoikeuden kannattajat uskovat, että se lisäisi hyvinvointialueiden taloudellista itsenäisyyttä ja voisi parantaa alueiden rahoitustilannetta. Vastustajien mukaan verotusoikeus voisi kuitenkin johtaa alueellisiin eroihin palveluiden laadussa ja niiden rahoituksessa. Tämä saattaisi lisätä eriarvoisuutta kansalaisten välillä.</p><p>Suomessa on keskusteltu siitä, pitäisikö hyvinvointialueille antaa verotusoikeus vai pitäisikö rahoitus hoitaa jatkossakin valtion kautta. Asiaan liittyy myös kysymyksiä verotuksen määrästä ja siitä, miten verotusoikeuden käyttöönotto vaikuttaisi kuntien ja valtion rahoitukseen.</p>",
+        "en": "<p>The funding for wellbeing services counties primarily comes from the state budget, and they do not have the right to collect taxes. Taxation rights would mean that wellbeing services counties could independently generate revenue to finance their own services, as municipalities do by collecting municipal taxes. However, wellbeing services counties cannot decide on taxation rights independently. Helsinki is comparable to welfare service counties in the funding of social and healthcare services.</p><p>Supporters of taxation rights argue that they would increase the financial autonomy of wellbeing services counties and improve their funding situation. Opponents, however, believe that taxation rights could lead to regional disparities in the quality and financing of services, potentially increasing inequality among citizens.</p><p>There has been an ongoing debate in Finland about whether wellbeing services counties should be granted taxation rights or if their funding should continue to be managed solely through the state. The discussion also includes questions about the tax rates and how taxation rights would impact municipal and state finances.</p>",
+        "sv": "<p>Välfärdsområdena finansieras huvudsakligen genom statens budget och har inte rätt att ta ut skatter. Beskattningsrätt skulle innebära att välfärdsområdena själva kunde samla in inkomster för att finansiera sina tjänster, på samma sätt som kommunerna gör genom kommunalskatten. Välfärdsområden kan dock inte själva besluta om att införa beskattningsrätt. Helsingfors är jämförbar med välfärdsområden när det gäller finansiering av social- och hälsovårdstjänster.</p><p>Förespråkare för beskattningsrätt anser att en sådan skulle öka välfärdsområdenas ekonomiska självständighet och förbättra deras finansieringssituation. Motståndare menar däremot att beskattningsrätt kunde leda till regionala skillnader i tjänsternas kvalitet och finansieringen av dem, vilket kunde öka ojämlikheten mellan medborgarna.</p><p>I Finland har det diskuterats huruvida välfärdsområdena borde få beskattningsrätt eller om finansieringen även i framtiden ska ske via staten. Frågan handlar också om nivån på beskattningen och hur en eventuell beskattningsrätt skulle påverka kommunernas och statens ekonomi.</p>"
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "fi": "Nykytilanne",
+              "en": "Current situation",
+              "sv": "Nuvarande situation"
+            },
+            "content": {
+              "fi": "<p>Tällä hetkellä hyvinvointialueilla ei ole verotusoikeutta. Niiden rahoitus perustuu valtion myöntämään rahoitukseen, joka määräytyy alueiden tarpeiden ja asukasluvun perusteella. Valtio on sitoutunut seuraamaan hyvinvointialueiden toiminnan toteutumista ja rahoituksen riittävyyttä, mutta verotusoikeuden käyttöönotosta ei ole toistaiseksi tehty konkreettisia päätöksiä. Asia on kuitenkin esillä poliittisessa keskustelussa, ja monet tahot ovat tuoneet esiin sekä verotusoikeuden mahdolliset hyödyt että haitat.</p>",
+              "en": "<p>Currently, wellbeing services counties do not have taxation rights. Their financing is based on funding granted by the state, which is determined by regional needs and population size. The state is committed to monitoring the operations of wellbeing services counties and the adequacy of their funding, but no concrete decisions have so far been made regarding the introduction of taxation rights. The issue remains a topic of political debate, and many parties have highlighted the potential benefits and drawbacks of granting taxation rights.</p>",
+              "sv": "<p>För närvarande har välfärdsområdena ingen beskattningsrätt. Deras finansiering baseras på statliga anslag, som fastställs utifrån områdenas behov och befolkningsmängd. Staten har åtagit sig att övervaka välfärdsområdenas verksamhet och säkerställa tillräcklig finansiering, men det har ännu inte fattats några konkreta beslut om att införa beskattningsrätt. Frågan är dock en del av den politiska debatten, och många aktörer har lyft fram både fördelar och nackdelar med en eventuell beskattningsrätt.</p>"
+            }
+          },
+          {
+            "title": {
+              "fi": "Termit",
+              "en": "Terms",
+              "sv": "Begrepp"
+            },
+            "content": {
+              "fi": "<p>Verotusoikeus: Oikeus kerätä veroja omien palveluiden rahoittamiseksi, esimerkiksi kuntavero kunnilla.</p><p>Valtion rahoitus: Hyvinvointialueiden saama rahoitus, joka tulee valtion budjetista ilman alueiden omaa verotusta.</p>",
+              "en": "<p>Taxation rights: The right to collect taxes to finance public services, such as municipal taxes collected by municipalities.</p><p>State funding: The funding received by wellbeing services counties from the state budget, without the ability to levy their own taxes.</p>",
+              "sv": "<p>Beskattningsrätt: Rätt att ta ut skatter för att finansiera egna tjänster, exempelvis kommunernas kommunalskatt.</p><p>Statlig finansiering: Finansiering som välfärdsområdena får ur statens budget utan egen beskattning.</p>"
+            }
+          }
+        ]
+      },
+      "constituencies": {
+        "externalId": "municipality-091"
+      }
+    },
+    {
+      "externalId": "question-opinion-22-hel",
+      "questionType": {
+        "externalId": "questionType-Likert5"
+      },
+      "category": {
+        "externalId": "questionCategory-municipalities"
+      },
+      "order": 122,
+      "text": {
+        "fi": "Helsingissä ei tule aloittaa huumeiden käyttöhuonekokeilua, vaikka laki sen sallisi.",
+        "en": "Helsinki should not start a drug consumption room trial, even if the law allowed it.",
+        "sv": "Helsingfors bör inte inleda försök med övervakade injiceringsrum, även om lagen skulle tillåta det."
+      },
+      "info": {
+        "fi": "<p>Huumeiden käyttöhuoneet ovat tiloja, joissa ihmiset voivat käyttää huumeita valvotuissa ja turvallisemmissa olosuhteissa. Näiden tilojen tarkoituksena on vähentää huumeidenkäyttöön liittyviä haittoja, kuten yliannostuksia, tartuntatauteja ja julkista huumeiden käyttöä. Lisäksi käyttöhuoneet voivat toimia matalan kynnyksen paikkoina, joissa käyttäjät saavat yhteyden terveys- ja sosiaalipalveluihin.</p><p>Käyttöhuoneiden käyttöönotto on kiistanalainen aihe. Niiden kannattajat korostavat, että ne vähentävät kuolemantapauksia ja parantavat yleistä turvallisuutta. Käyttöhuoneiden vastustajat ovat esittäneet huolensa siitä, että käyttöhuoneet voisivat normalisoida tai lisätä huumeiden käyttöä.</p><p>Suomessa lainsäädäntö ei toistaiseksi salli käyttöhuoneiden perustamista, mutta aiheesta on käyty keskustelua. Jos lainsäädäntö muuttuisi, hyvinvointialueilla olisi mahdollisuus harkita käyttöhuonekokeilujen aloittamista paikallisten tarpeiden ja poliittisten päätösten pohjalta.</p>",
+        "en": "<p>Drug consumption rooms are facilities where individuals can use drugs in a supervised and safer environment. The purpose of these spaces is to reduce the harms associated with drug use, such as overdoses, infectious diseases, and public drug use. Additionally, consumption rooms can serve as low-threshold access points where users can connect with healthcare and social services.</p><p>The establishment of drug consumption rooms is a controversial issue. Supporters argue that these facilities reduce fatalities and improve overall public safety. Opponents, however, express concerns that consumption rooms could normalize or increase drug use.</p><p>In Finland, current legislation does not allow the establishment of drug consumption rooms, but the issue has been widely debated. If the law were to change, wellbeing services counties would have the possibility to consider launching consumption room trials based on local needs and political decisions.</p>",
+        "sv": "<p>Injiceringsrum är platser där människor kan använda droger under övervakade och säkrare förhållanden. Syftet med dessa lokaler är att minska skadeverkningarna av drogbruk, såsom överdoser, smittsamma sjukdomar och offentligt drogbruk. Dessutom kan injiceringsrummen fungera som lättillgängliga mottagningar där användare kommer i kontakt med hälso- och socialtjänster.</p><p>Införandet av injiceringsrum är en omtvistad fråga. Förespråkare framhåller att de minskar antalet dödsfall och förbättrar den allmänna säkerheten. Motståndare uttrycker oro över att sådana rum kan normalisera eller öka drogbruket.</p><p>I Finland tillåter nuvarande lagstiftning inte att injiceringsrum inrättas, men frågan har diskuterats. Om lagstiftningen skulle ändras, skulle välfärdsområdena ha möjlighet att överväga att inleda försök med injiceringsrum på basis av de lokala behoven och politiska beslut.</p>"
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "fi": "Nykytilanne",
+              "en": "Current situation",
+              "sv": "Nuvarande situation"
+            },
+            "content": {
+              "fi": "<p>Suomessa huumeiden käyttöhuoneita ei ole toistaiseksi perustettu, sillä ne ovat nykyisen lainsäädännön mukaan laittomia, koska huumeiden käyttö on Suomessa laitonta. Aiheesta on kuitenkin käyty keskustelua erityisesti suurissa kaupungeissa, joissa huumeiden käytön haitat näkyvät selkeästi esimerkiksi leikkipuistoissa ja juna-asemilla. Käyttöhuonekokeilujen sallimista käsitellään aika ajoin poliittisessa päätöksenteossa, mutta tällä hetkellä ei ole voimassa olevaa lakia, joka sallisi niiden perustamisen.</p>",
+              "en": "<p>As of now, no drug consumption rooms have been established in Finland, as they are illegal under existing laws that prohibit drug use. However, the topic has been discussed, particularly in major cities where the negative effects of drug use are more visible, for example in playgrounds and train stations. The possibility of allowing consumption room trials is periodically discussed in political decision-making, but currently, there is no legislation in place that permits their establishment.</p>",
+              "sv": "<p>I Finland har inga övervakade injiceringsrum ännu inrättats, eftersom de är olagliga enligt nuvarande lagstiftning, då narkotikabruk är olagligt i landet. Ämnet har dock diskuterats, särskilt i de stora städerna där skadeverkningarna av drogbruk är synliga, exempelvis i lekparker och vid tågstationer. Frågan om att tillåta försök med injiceringsrum tas med jämna mellanrum upp i politiska diskussioner, men för närvarande finns ingen gällande lagstiftning som möjliggör inrättande av sådana.</p>"
+            }
+          },
+          {
+            "title": {
+              "fi": "Termit",
+              "en": "Terms",
+              "sv": "Begrepp"
+            },
+            "content": {
+              "fi": "<p>Käyttöhuone: Valvottu tila, jossa huumeiden käyttäjät voivat käyttää hankkimiaan huumeita turvallisesti. Käytöhuoneiden tarkoituksena on vähentää terveysriskejä ja tarjota mahdollisuuksia ohjata käyttäjiä hoitoon.</p>",
+              "en": "<p>Drug consumption room: A supervised facility where drug users can consume their own drugs safely. The purpose of these spaces is to reduce health risks and provide opportunities to direct users toward treatment.</p>",
+              "sv": "<p>Övervakat injiceringsrum: En övervakad plats där droganvändare kan använda egna droger under säkra förhållanden. Syftet med injiceringsrummen är att minska hälsoriskerna och skapa möjligheter att hänvisa användare till vård.</p>"
+            }
+          }
+        ]
+      },
+      "constituencies": {
+        "externalId": "municipality-091"
+      }
+    },
+    {
+      "externalId": "question-opinion-23-hel",
+      "questionType": {
+        "externalId": "questionType-Likert5"
+      },
+      "category": {
+        "externalId": "questionCategory-municipalities"
+      },
+      "order": 123,
+      "text": {
+        "fi": "Asiakasmaksuihin tehtävät suuret korotukset ovat hyvä keino tasapainottaa Helsingin sosiaali- ja terveydenhuollon budjettia.",
+        "en": "Significant increases in client fees are an effective way to balance the finances of Helsinki.",
+        "sv": "Stora höjningar av klientavgifter är ett bra sätt att balansera budgeten för Helsingfors social- och hälsovårdssystem."
+      },
+      "info": {
+        "fi": "<p>Hyvinvointialueet ja Helsinki kamppailevat tällä hetkellä suurten sosiaali- ja terveydenhuoltoon liittyvien taloushaasteiden kanssa, jotka johtuvat esimerkiksi väestön ikääntymisestä, kasvavista palvelutarpeista ja kustannusten noususta. Asiakasmaksuihin tehtävillä korotuksilla voidaan kasvattaa hyvinvointialueiden tuloja, mutta samalla tämä rahoituskeino herättää huolta erityisesti pienituloisten ja haavoittuvassa asemassa olevien ihmisten palvelujen saatavuudesta.</p><p>Suuret asiakasmaksujen korotukset voivat vähentää ihmisten halukkuutta käyttää tarvittavia palveluita, mikä voi johtaa ongelmien kasaantumiseen ja pitkällä aikavälillä suurempiin kustannuksiin. Toisaalta kohtuulliset korotukset maksuihin voivat helpottaa hyvinvointialueiden taloudellista tilannetta ilman merkittäviä vaikutuksia palvelujen käyttöön.</p><p>Asiakasmaksuista ja niiden korotuksista päättävät hyvinvointialueet, mutta valtio voi asettaa asiakasmaksuille ylärajoja ja muita säädöksiä rajoittaakseen maksujen haittavaikutuksia.Lähes kaikilla hyvinvointialueilla asiakasmaksut on nostettu lain sallimaan ylärajaan.</p>",
+        "en": "<p>Wellbeing services counties are currently facing major financial challenges due to factors such as an ageing population, increasing service demands, and rising costs. Raising client fees can generate additional revenue for wellbeing services counties, but this approach raises concerns about access to services, particularly for low-income and vulnerable individuals.</p><p>Large increases in client fees may discourage people from using necessary services, potentially leading to the accumulation of problems and higher costs in the long run. On the other hand, moderate fee increases can help improve the financial situation of wellbeing services counties without significantly impacting service usage.</p><p>Wellbeing services counties decide on client fees and their increases, but the state can impose upper limits on client fees and other regulations to limit the negative effects of fees. Currently, almost all wellbeing services counties have raised their client fees to the maximum level permitted by law.</p>",
+        "sv": "<p>Välfärdsområdena och Helsingfors kämpar för närvarande med stora ekonomiska utmaningar inom social- och hälsovården, bland annat på grund av en åldrande befolkning, ökande servicebehov och stigande kostnader. Genom att höja klientavgifterna kan välfärdsområdena öka sina intäkter, men detta finansieringssätt väcker samtidigt oro, särskilt när det gäller tillgången till tjänster för låginkomsttagare och utsatta grupper.</p><p>Stora höjningar av klientavgifter kan minska människors benägenhet att använda nödvändiga tjänster, vilket kan leda till att problem hopar sig och på lång sikt orsaka ännu högre kostnader. Å andra sidan kan måttliga avgiftshöjningar förbättra välfärdsområdenas ekonomi utan någon betydande inverkan på användningen av tjänster.</p><p>Beslut om klientavgifter och höjningar av dem fattas av välfärdsområdena, men staten kan fastställa avgiftstak och andra regler för att begränsa de negativa effekterna av höjningar. Nästan alla välfärdsområden har redan höjt klientavgifterna till den lagstadgade maxnivån.</p>"
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "fi": "Nykytilanne",
+              "en": "Current situation",
+              "sv": "Nuvarande situation"
+            },
+            "content": {
+              "fi": "<p>Hyvinvointialueet ovat monin paikoin taloudellisissa vaikeuksissa, ja asiakasmaksujen korotuksia on harkittu osana ratkaisua. Vuonna 2023 asiakasmaksujen enimmäisrajoja nostettiin, mutta asiantuntijat ovat varoittaneet, että liian suuret korotukset voivat lisätä eriarvoisuutta ja vähentää palveluiden käyttöä. Lisäksi poliittinen keskustelu asiakasmaksujen oikeudenmukaisuudesta jatkuu, sillä osa väestöstä kokee jo nykyiset maksut liian korkeiksi. Kysymys on erityisen herkkä, koska hyvinvointialueiden rahoitusta ei toistaiseksi ole saatu täysin vakaaksi.</p>",
+              "en": "<p>Many wellbeing services counties are struggling financially, and increasing client fees has been considered as part of the solution. In 2023, the maximum limits for client fees were raised, but experts have warned that excessive increases could lead to greater inequality and reduced service usage. The political debate over the fairness of client fees continues, as some residents already find the current fees too high. The issue remains particularly sensitive since the funding for wellbeing services counties has not yet been fully stabilized.</p>",
+              "sv": "<p>Många välfärdsområden har ekonomiska svårigheter och har övervägt höjningar av klientavgifterna som en del av lösningen. År 2023 höjdes maxgränserna för klientavgifter, men experter har varnat för att alltför stora höjningar kan öka ojämlikheten och minska användningen av tjänster. Dessutom pågår en politisk debatt om hur rättvisa klientavgifterna är, eftersom en del av befolkningen redan upplever att avgifterna är för höga. Frågan är särskilt känslig, eftersom man ännu inte helt har kunnat stabilisera välfärdsområdenas finansiering.</p>"
+            }
+          },
+          {
+            "title": {
+              "fi": "Termit",
+              "en": "Terms",
+              "sv": "Begrepp"
+            },
+            "content": {
+              "fi": "<p>Asiakasmaksut: Palveluiden käyttäjiltä perittäviä maksuja, joita sovelletaan esimerkiksi terveydenhuollon ja sosiaalipalveluiden palveluissa.</p><p>Asiakasmaksujen enimmäisrajat: Lainsäädännössä määrätty asiakasmaksujen yläraja, jota hyvinvointialueet eivät saa ylittää.</p>",
+              "en": "<p>Client fees: Charges imposed on service users, applied in sectors such as healthcare and social services.</p><p>Maximum limits for client fees: Legal caps on client fees that wellbeing services counties are not allowed to exceed.</p>",
+              "sv": "<p>Klientavgifter: Avgifter som tas ut av tjänsteanvändare, till exempel inom hälso- och socialvårdstjänster.</p><p>Maxgränser för klientavgifter: Den lagstadgade övre gränsen för klientavgifter som välfärdsområdena inte får överskrida.</p>"
+            }
+          }
+        ]
+      },
+      "constituencies": {
+        "externalId": "municipality-091"
+      }
+    },
+    {
+      "externalId": "question-opinion-24-hel",
+      "questionType": {
+        "externalId": "questionType-Likert5"
+      },
+      "category": {
+        "externalId": "questionCategory-municipalities"
+      },
+      "order": 124,
+      "text": {
+        "fi": "Suomessa oleskelevilla paperittomilla maahanmuuttajilla tulee olla oikeus myös kiireettömiin mutta välttämättömiin terveydenhuollon palveluihin.",
+        "en": "Undocumented immigrants residing in Finland should also have the right to non-urgent but necessary healthcare services.",
+        "sv": "Papperslösa invandrare som vistas i Finland bör ha rätt till även icke-brådskande men nödvändiga hälsovårdstjänster."
+      },
+      "info": {
+        "fi": "<p>Paperittomilla maahanmuuttajilla tarkoitetaan henkilöitä, jotka oleskelevat Suomessa ilman laillista oleskelulupaa tai muuta virallista asemaa. Heidän mahdollisuutensa saada terveydenhuoltopalveluita vaihtelevat merkittävästi. Suomessa paperittomilla maahanmuuttajilla on tällä hetkellä oikeus vain kiireelliseen hoitoon. Tämä tarkoittaa tilanteita, joissa henki on vaarassa tai joissa henkilön hoitamatta jättäminen aiheuttaisi vakavaa haittaa terveydelle. Kuitenkin kiireettömät mutta välttämättömät hoitotoimenpiteet, kuten esimerkiksi pitkäaikaissairauksien hoito tai raskauden seuranta, jäävät usein paperittomilta maahanmuuttajilta saamatta. Tämä voi johtaa vakaviin terveysongelmiin pitkällä aikavälillä ja kasvattaa yhteiskunnan terveydenhuollon kokonaiskustannuksia.</p><p>Toisaalta laajojen perusterveydenhuollon palveluiden tarjoaminen myös muille kuin Suomen tai Euroopan unionin kansalaisille voi aiheuttaa taloudellisia kustannuksia hyvinvointialueille. Hyvinvointialueilla on ollut merkittäviä taloushaasteita. Lisäksi paperittomien maahanmuuttajien hoidon laajentamista vastustavat ovat perustelleet kantaansa huolella paperittoman maahanmuuton lisääntymisestä palveluiden parantumisen johdosta.</p>",
+        "en": "<p>Undocumented immigrants refer to individuals residing in Finland without a legal residence permit or other official status. Their access to healthcare services varies significantly. Currently, undocumented immigrants in Finland are only entitled to emergency care. This applies to situations where a person's life is in danger or where failure to provide treatment would cause serious harm to their health. However, non-urgent but necessary treatments, such as chronic disease management or prenatal care, are often unavailable to undocumented immigrants. This can lead to severe long-term health issues and increase the overall costs of healthcare to society.</p><p>On the other hand, providing extensive primary healthcare services also to individuals who are not citizens of Finland or the European Union could impose financial burdens on wellbeing services counties, which are already facing significant economic challenges. Opponents of expanding healthcare services for undocumented immigrants argue that improving access to care could encourage more undocumented immigration.</p>",
+        "sv": "<p> Med papperslösa invandrare avses personer som vistas i Finland utan lagligt uppehållstillstånd eller annan officiell status. Deras möjligheter att få hälsovårdstjänster varierar mycket. För närvarande har papperslösa invandrare i Finland endast rätt till akutvård. Detta innebär situationer där livet är i fara eller där utebliven vård skulle orsaka allvarlig hälsoskada. Däremot omfattas de inte av icke-brådskande men nödvändiga vårdinsatser, såsom behandling av kroniska sjukdomar eller graviditetsuppföljning. Detta kan på lång sikt leda till allvarliga hälsoproblem och öka samhällets totala vårdkostnader.</p><p>Å andra sidan kan en utökad rätt till primärvårdstjänster för personer utan finskt medborgarskap eller EU-medborgarskap innebära ekonomiska kostnader för välfärdsområdena, som redan har stora ekonomiska utmaningar. Motståndare till en utvidgad rätt till vård för papperslösa har uttryckt oro över att bättre tjänster kan öka den papperslösa invandringen.</p>"
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "fi": "Nykytilanne",
+              "en": "Current situation",
+              "sv": "Nuvarande situation"
+            },
+            "content": {
+              "fi": "<p>Suomessa paperittomilla maahanmuuttajilla on oikeus vain kiireelliseen terveydenhoitoon, joka kattaa hätätilanteet. Kiireettömät mutta välttämättömät hoitotoimenpiteet jäävät heidän maksettavakseen, mikä tekee hoitoon pääsyn lähes mahdottomaksi ilman taloudellisia resursseja. Järjestöt tarjoavat paperittomille vapaaehtoisten varassa toimivia terveyspalveluita, mutta näiden palveluiden saatavuus on rajallista. Keskustelua laajemmasta terveydenhuolto-oikeudesta paperittomille on käyty, mutta asiasta ei ole tehty merkittäviä lainsäädäntöpäätöksiä.</p>",
+              "en": "<p>In Finland, undocumented immigrants are currently entitled only to emergency healthcare services, which cover life-threatening situations. The costs of non-urgent but necessary treatment must be paid by the persons themselves, making access to healthcare nearly impossible for those without financial resources. Some organizations provide volunteer-based healthcare services for undocumented immigrants, but the availability of these services is limited. Discussions about expanding the healthcare rights of undocumented immigrants have taken place, but no significant legislative decisions have been made on the issue.</p>",
+              "sv": "<p>I Finland har papperslösa invandrare för närvarande endast rätt till akutvård, vilket omfattar nödsituationer. Kostnaderna för icke-brådskande men nödvändiga vårdinsatser måste de själva stå för, vilket gör det nästan omöjligt att få vård utan ekonomiska resurser. Olika organisationer erbjuder hälsotjänster för papperslösa med hjälp av frivilliga, men tillgången till dessa tjänster är begränsad. Diskussioner om en utvidgad rätt till hälsovård för papperslösa har förts, men inga betydande lagstiftningsbeslut har fattats i frågan.</p>"
+            }
+          },
+          {
+            "title": {
+              "fi": "Termit",
+              "en": "Terms",
+              "sv": "Begrepp"
+            },
+            "content": {
+              "fi": "<p>Paperiton maahanmuuttaja: Henkilö, joka oleskelee maassa ilman voimassaolevaa oleskelulupaa tai muuta virallista asemaa, kuten turvapaikanhakijastatusta.</p><p>Kiireellinen hoito: Terveydenhuollon palvelut, jotka toteutetaan välittömästi hengen pelastamiseksi tai vakavan terveydentilan heikkenemisen estämiseksi.</p><p>Kiireetön mutta välttämätön hoito: Hoitotoimenpiteet, jotka eivät ole kiireellisiä, mutta ovat olennaisia terveyden ylläpitämiseksi tai sairauksien hoitamiseksi ennen niiden pahenemista.</p>",
+              "en": "<p>Undocumented immigrant: A person residing in a country without a valid residence permit or other official status, such as asylum seeker status.</p><p>Emergency care: Healthcare services provided immediately to save a person’s life or prevent a severe deterioration in health.</p><p>Non-urgent but necessary care: Medical treatments that are not immediate emergencies but are essential for maintaining health or managing conditions before they worsen.</p>",
+              "sv": "<p>Papperslös invandrare: En person som vistas i ett land utan giltigt uppehållstillstånd eller annan officiell status, såsom asylsökandestatus.</p><p>Akutvård: Hälsovårdstjänster som ges omedelbart för att rädda liv eller förhindra allvarlig försämring av hälsotillståndet.</p><p>Icke-brådskande men nödvändig vård: Vårdinsatser som inte är akuta men som är väsentliga för att upprätthålla hälsan eller behandla sjukdomar innan de förvärras.</p>"
+            }
+          }
+        ]
+      },
+      "constituencies": {
+        "externalId": "municipality-091"
+      }
+    },
+    {
+      "externalId": "question-opinion-25-hel",
+      "questionType": {
+        "externalId": "questionType-Likert5"
+      },
+      "category": {
+        "externalId": "questionCategory-municipalities"
+      },
+      "order": 125,
+      "text": {
+        "fi": "Helsingin tulee palkata ulkomailta lisää henkilöstöä sosiaali- ja terveydenhuollon palveluihin, esimerkiksi sairaanhoitajia.",
+        "en": "Helsinki should hire more healthcare and social welfare sector staff from abroad, such as nurses.",
+        "sv": "Helsingfors bör anställa mer personal för social- och hälsovårdstjänster från utlandet, till exempel sjukskötare."
+      },
+      "info": {
+        "fi": "<p>Suomessa sosiaali- ja terveydenhuollon alalla on vaihtelevaa työvoimapulaa, joka vaikuttaa palveluiden saatavuuteen ja henkilöstön hyvinvointiin. Väestön ikääntyminen lisää erityisesti hoitajien ja lääkäreiden tarvetta, mutta samalla alalta poistuu paljon työntekijöitä eläkkeelle. Työntekijöiden palkkaaminen ulkomailta on yksi keino vastata työvoimapulaan, ja monilla hyvinvointialueilla on jo käynnistetty kansainvälisiä rekrytointiohjelmia. Tällaiset ohjelmat edellyttävät esimerkiksi työntekijöiden perehdyttämistä ja kielikoulutusta.</p><p>Ulkomailta rekrytointi voi auttaa paikkaamaan työvoimavajetta nopeasti, mutta se voi myös aiheuttaa haasteita. Näitä ovat esimerkiksi kieli- ja kulttuurierot, työntekijöiden sopeutuminen suomalaiseen työpaikkaan sekä kansainvälisen rekrytoinnin eettiset näkökulmat, kuten työvoiman palkkaaminen Suomea köyhemmistä maista, joissa on jo valmiiksi pulaa hoitohenkilökunnasta.</p><p>Hyvinvointialueilla on mahdollisuus päättää, miten työvoimatarpeeseen vastataan, mutta ulkomailta palkkaaminen edellyttää usein poliittista ja taloudellista tukea ja selkeitä kansallisia linjauksia.</p>",
+        "en": "<p>Finland’s healthcare and social welfare sector is experiencing varying degrees of labour shortages, affecting service availability and staff well-being. An ageing population is increasing the demand for nurses and doctors, while at the same time, many employees are retiring from the field. Recruiting workers from abroad is one way to address the labour shortage, and many wellbeing services counties have already launched international recruitment programmes. These programmes typically require onboarding processes and language training for foreign employees.</p><p>Hiring staff from abroad can help fill labour gaps quickly, but it can also present challenges. These include language and cultural differences, employee integration into Finnish workplaces, and ethical concerns related to international recruitment, such as recruiting from poorer countries where there is already a shortage of healthcare workers. Wellbeing services counties have the authority to decide how they respond to labour needs but hiring from abroad often requires political and financial support as well as clear national policies.</p>",
+        "sv": "<p>I Finland råder det varierande brist på arbetskraft inom social- och hälsovårdssektorn, vilket påverkar tillgången till tjänster och personalens välbefinnande. Den åldrande befolkningen ökar särskilt behovet av vårdare och läkare, samtidigt som många anställda inom sektorn går i pension. Att rekrytera personal från utlandet är ett sätt att hantera bristen på arbetskraft, och många välfärdsområden har redan inlett internationella rekryteringsprogram. Dessa program kräver dock exempelvis att arbetstagarna får introduktion och språkutbildning.</p><p>Att rekrytera från utlandet kan snabbt bidra till att minska bristen på arbetskraft, men det kan också innebära utmaningar. Sådana utmaningar är till exempel språkliga och kulturella skillnader, anpassning till en finländsk arbetsplats samt etiska frågor kring internationell rekrytering, såsom att anställa arbetskraft från länder fattigare än Finland där det redan råder brist på vårdpersonal. Välfärdsområdena kan besluta hur de ska lösa sitt behov av arbetskraft, men rekrytering från utlandet kräver ofta politiskt och ekonomiskt stöd samt tydliga nationella riktlinjer.</p>"
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "fi": "Nykytilanne",
+              "en": "Current situation",
+              "sv": "Nuvarande situation"
+            },
+            "content": {
+              "fi": "<p>Monilla hyvinvointialueilla on jo aloitettu ulkomaalaisten työntekijöiden rekrytointiohjelmia, ja esimerkiksi Filippiineiltä ja muista Aasian maista on saapunut sairaanhoitajia Suomeen. Työvoimapula on kuitenkin edelleen ongelma, ja ulkomailta rekrytoitujen työntekijöiden määrä ei ole toistaiseksi riittänyt ratkaisemaan sitä. Lisäksi kielikoulutus ja pätevyyksien varmistaminen ovat osoittautuneet ajoittain hitaiksi prosesseiksi.</p>",
+              "en": "<p>Many wellbeing services counties have already initiated international recruitment programmes, bringing in nurses from countries such as the Philippines and other parts of Asia to Finland. However, labour shortages remain a significant issue, and the number of foreign recruits has not yet been sufficient to resolve the problem. Additionally, language training and qualification recognition have sometimes proved to be slow processes.</p>",
+              "sv": "<p>Många välfärdsområden har redan inlett rekryteringsprogram för utländska arbetstagare, och exempelvis från Filippinerna och andra asiatiska länder har sjukskötare anlänt till Finland. Arbetskraftsbristen är dock fortfarande ett problem, och antalet rekryterade arbetstagare från utlandet har ännu inte varit tillräckligt för att lösa det. Dessutom har språkutbildning och validering av kvalifikationer ibland visat sig vara långsamma processer.</p>"
+            }
+          },
+          {
+            "title": {
+              "fi": "Termit",
+              "en": "Terms",
+              "sv": "Begrepp"
+            },
+            "content": {
+              "fi": "<p>Kansainvälinen rekrytointi: Prosessi, jossa ulkomailta palkataan työntekijöitä täyttämään työvoimatarpeita. Tämä usein sisältää työntekijöiden perehdyttämisen ja kielikoulutuksen.</p>",
+              "en": "<p>International recruitment: The process of hiring employees from abroad to meet labour needs. This often includes onboarding and language training.</p>",
+              "sv": "<p>Internationell rekrytering: En process där arbetskraft anställs från utlandet för att täcka behovet av arbetskraft. Detta inkluderar ofta introduktion och språkutbildning för de nyanställda.</p>"
+            }
+          }
+        ]
+      },
+      "constituencies": {
+        "externalId": "municipality-091"
+      }
+    },
+    {
+      "externalId": "question-opinion-26-hel",
+      "questionType": {
+        "externalId": "questionType-Likert5"
+      },
+      "category": {
+        "externalId": "questionCategory-municipalities"
+      },
+      "order": 126,
+      "text": {
+        "fi": "Terapiatakuu tulee laajentaa koskemaan kaikkia alle 29-vuotiaita alueellani.",
+        "en": "The therapy guarantee should be expanded to cover all individuals under 29.",
+        "sv": "Terapigarantin bör utvidgas till alla under 29 år."
+      },
+      "info": {
+        "fi": "<p>Terapiatakuu tarkoittaa sitä, että henkilö saa tiettyjä mielenterveyspalveluita nopeasti ja matalalla kynnyksellä. Terapiatakuuta on ehdotettu ratkaisuksi mielenterveyspalveluiden ruuhkien purkamiseen ja ongelmien pitkittymiseen.</p><p>Eduskunta on hyväksynyt hallituksen esityksen lasten ja nuorten terapiatakuusta, jonka myötä alle 23-vuotiaat pääsevät 1.5.2025 alkaen terapiatakuun piiriin. Tavoitteena on, että mielenterveyspalveluita saisi viimeistään noin kuukauden sisällä.</p><p>Mielenterveysongelmat ovat yleisiä nuorilla ja nuorilla aikuisilla, ja ne voivat johtaa muun muassa opiskelu- tai työkyvyn heikkenemiseen. Terapiatakuun laajentamista alle 23-vuotiaista kaikkiin alle 29-vuotiaisiin on ehdotettu, jotta apua saataisiin ajoissa ja elämän kriisitilanteet eivät johtaisi pitkittyneisiin ongelmiin. Kaikki alle 29-vuotiaat ovat myös nuorisolain mukaisesti nuoria, joten jako alle ja yli 23-vuotiaisiin voidaan nähdä tarpeettomana.</p><p>Kustannuskysymykset ja ammattilaisten saatavuus ovat keskeisiä haasteita terapiatakuun laajentamisessa. Mielenterveyspalveluiden saatavuudessa on suuria alueellisia eroja. Toisaalta mielenterveysongelmien ennaltaehkäisy ja nopea hoito voivat vähentää myöhempiä kustannuksia esimerkiksi erikoissairaanhoidossa.</p>",
+        "en": "<p>The therapy guarantee ensures that individuals can access certain low-threshold mental health services quickly. It has been proposed as a solution to reduce backlogs in mental health services and prevent long-term mental health issues.</p><p>The Finnish Parliament has approved the government’s proposal for a therapy guarantee for children and young people, which will make individuals under 23 years of age eligible for the therapy guarantee from 1 May 2025. The aim is to guarantee access to mental health services within approximately one month.</p><p>Mental health issues are common among young people and young adults, often reducing their ability to study or work. Expanding the therapy guarantee from those under 23 years old to all individuals under 29 has been proposed to ensure timely support and prevent life crises from leading to prolonged problems. Additionally, according to the Finnish Youth Act, all individuals under 29 are considered young people, making the division at age 23 seem unnecessary.</p><p>Cost concerns and the availability of mental health professionals are key challenges in expanding the therapy guarantee. There are significant regional differences in mental health service availability. However, the prevention and early treatment of mental health issues can reduce future costs, such as those related to specialized health care.</p>",
+        "sv": "<p>Terapigarantin innebär att en person snabbt och med låg tröskel får tillgång till vissa mentalvårdstjänster. Terapigarantin har föreslagits som en lösning för att minska köerna inom mentalvården och förhindra att problemen förvärras över tid.</p><p>Riksdagen har godkänt regeringens förslag om en terapigaranti för barn och unga, vilket innebär att personer under 23 år från och med den 1 maj 2025 kommer att omfattas av garantin. Målet är att en person ska få tillgång till mentalvårdstjänster senast inom ungefär en månad.</p><p>Psykisk ohälsa är vanlig bland unga och unga vuxna och kan leda till försämrad studie- eller arbetsförmåga. Det har föreslagits att terapigarantin utvidgas från 23 år till alla under 29 år för att säkerställa att hjälp ges i tid och förhindra att livskriser leder till långvariga problem. Enligt ungdomslagen betraktas alla under 29 år som unga, vilket gör uppdelningen vid 23 års ålder onödig.</p><p>Kostnaderna och tillgången på yrkesutbildad personal är centrala utmaningar vid en utvidgning av terapigarantin. Tillgången till mentalvårdstjänster varierar kraftigt mellan olika regioner. Samtidigt kan förebyggande och tidig vård av psykiska problem minska senare kostnader, exempelvis inom den specialiserade sjukvården.</p>"
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "fi": "Nykytilanne",
+              "en": "Current situation",
+              "sv": "Nuvarande situation"
+            },
+            "content": {
+              "fi": "<p>Lasten ja nuorten terapiatakuu alle 23-vuotiaille tulee voimaan 1.5.2025 alkaen. Yli 23-vuotiaat nuoret ovat siitä eteenpäin eri asemassa alle 23-vuotiaiden nuorten kanssa. Useilla alueilla nuorten mielenterveyspalvelut ovat ruuhkautuneet, ja hoitoon pääsy voi kestää kuukausia. Joillain hyvinvointialueilla on aloitettu pilotointihankkeita terapiatakuun toteuttamisesta. Palveluiden saatavuus ja laatu vaihtelevat merkittävästi alueittain.</p>",
+              "en": "<p>The therapy guarantee for children and young people under 23 will take effect on 1 May 2025. From then on, young people over 23 will be treated differently from those under 23. In many areas, youth mental health services are backlogged, and it can take months to get access to treatment. Some wellbeing services counties have launched pilot initiatives to implement the therapy guarantee. Service availability and quality vary significantly across counties.</p>",
+              "sv": "<p>Terapigarantin för barn och unga under 23 år träder i kraft den 1 maj 2025. Efter detta kommer unga över 23 år att befinna sig i en annan situation än unga under 23 år. I många områden är mentalvårdstjänsterna för unga redan överbelastade, och det kan ta månader att få vård. I en del välfärdsområden har pilotprojekt för att genomföra terapigarantin inletts. Tillgången till och kvaliteten på tjänsterna varierar avsevärt mellan olika områden.</p>"
+            }
+          },
+          {
+            "title": {
+              "fi": "Termit",
+              "en": "Terms",
+              "sv": "Begrepp"
+            },
+            "content": {
+              "fi": "<p>Terapiatakuu: Järjestelmä, jonka avulla mielenterveyspalveluita tarvitseva saa hoitoa nopeasti, yleensä noin kuukauden sisällä.</p><p>Matalan kynnyksen palvelut: Palveluita, joihin on helppo hakeutua ilman monimutkaisia lähetteitä tai pitkiä odotusaikoja.</p>",
+              "en": "<p>Therapy guarantee: A system that allows an individual in need of mental health services to receive treatment quickly, usually within about one month.</p><p>Low-threshold services: Services that are easy to access without complex referrals or long waiting times.</p>",
+              "sv": "<p>Terapigaranti: Ett system som säkerställer att personer med psykisk ohälsa får vård snabbt, vanligtvis inom cirka en månad.</p><p>Lågtröskeltjänster: Tjänster som är lättillgängliga utan komplicerade remisser eller långa väntetider.</p>"
+            }
+          }
+        ]
+      },
+      "constituencies": {
+        "externalId": "municipality-091"
+      }
+    }
+  ]
+}
