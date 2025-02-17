@@ -2,7 +2,6 @@ import { DataRoot } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { readable } from 'svelte/store';
-import { browser } from '$app/environment';
 import { getI18nContext } from '../i18n';
 import { paramStore } from '../utils/paramStore';
 import type { DataContext } from './dataContext.type';
@@ -41,8 +40,6 @@ export function initDataContext(): DataContext {
     // Recreate `dataRoot` when the locale changes, because all data need to be provided again
     paramStore('lang').subscribe((value) => {
       if (dataRoot.locale === value) return;
-
-      console.info(dataRoot.locale, browser, value);
 
       // Reset all existing subscriptions
       while (true) {
