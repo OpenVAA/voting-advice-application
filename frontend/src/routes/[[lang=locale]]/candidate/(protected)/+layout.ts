@@ -22,7 +22,14 @@ export async function load({ fetch, parent, params: { lang } }) {
 
   // Get authToken
   const authToken = (await parent()).token;
-  if (!authToken) return await handleError('loginFailed');
+  if (!authToken)
+    return redirect(
+      307,
+      buildRoute({
+        route: 'CandAppLogin',
+        lang
+      })
+    );
 
   // Get user data
   const userData = await dataWriter.getCandidateUserData({ authToken, loadNominations: true }).catch((e) => {
