@@ -48,6 +48,12 @@
     "externalId": {
       "type": "string",
       "private": true
+    },
+    "alliance": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::alliance.alliance",
+      "inversedBy": "constituencies"
     }
   }
 }

@@ -57,6 +57,12 @@
     "externalId": {
       "type": "string",
       "private": true
+    },
+    "alliance": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::alliance.alliance",
+      "mappedBy": "election"
     }
   }
 }

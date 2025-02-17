@@ -1,0 +1,62 @@
+{
+  "kind": "collectionType",
+  "collectionName": "alliances",
+  "info": {
+    "singularName": "alliance",
+    "pluralName": "alliances",
+    "displayName": "Alliance",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "json"
+    },
+    "shortName": {
+      "type": "json"
+    },
+    "info": {
+      "type": "blocks"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files"
+      ]
+    },
+    "color": {
+      "type": "string"
+    },
+    "colorDark": {
+      "type": "string"
+    },
+    "parties": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::party.party",
+      "mappedBy": "alliance"
+    },
+    "election": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::election.election",
+      "inversedBy": "alliance"
+    },
+    "constituencies": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::constituency.constituency",
+      "mappedBy": "alliance"
+    },
+    "externalId": {
+      "type": "string",
+      "private": true
+    }
+  }
+}

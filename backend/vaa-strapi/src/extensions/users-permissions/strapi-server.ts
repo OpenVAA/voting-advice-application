@@ -25,6 +25,8 @@ const defaultPermissions: Array<{
   { action: 'api::candidate.candidate.findOne', roleType: 'authenticated' },
   { action: 'api::candidate.candidate.update', roleType: 'authenticated' },
   { action: 'api::candidate.properties.update', roleType: 'authenticated' },
+  { action: 'api::alliance.alliance.find', roleType: 'authenticated' },
+  { action: 'api::alliance.alliance.findOne', roleType: 'authenticated' },
   { action: 'api::constituency.constituency.find', roleType: 'authenticated' },
   { action: 'api::constituency.constituency.findOne', roleType: 'authenticated' },
   { action: 'api::constituency-group.constituency-group.find', roleType: 'authenticated' },

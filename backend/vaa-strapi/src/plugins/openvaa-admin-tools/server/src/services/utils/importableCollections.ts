@@ -12,6 +12,14 @@ export const IMPORTABLE_COLLECTIONS: Record<
     singleType?: boolean;
   }
 > = {
+  alliances: {
+    api: 'api::alliance.alliance',
+    externalRelations: {
+      election: 'api::election.election',
+      constituencies: 'api::constituency.constituency',
+      parties: 'api::party.party',
+    },
+  },
   appCustomization: {
     api: 'api::app-customization.app-customization',
     externalRelations: {},

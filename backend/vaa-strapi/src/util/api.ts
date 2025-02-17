@@ -8,6 +8,7 @@ import type { UID } from '@strapi/strapi';
 export const CONTENT_API: {
   [name: string]: UID.ContentType;
 } = {
+  Alliance: 'api::alliance.alliance',
   Candidate: 'api::candidate.candidate',
   Constituency: 'api::constituency.constituency',
   ConstituencyGroup: 'api::constituency-group.constituency-group',
