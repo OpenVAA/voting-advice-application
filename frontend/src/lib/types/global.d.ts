@@ -58,6 +58,7 @@ declare global {
       longText?: boolean;
       vertical?: boolean;
       video?: CustomVideoProps;
+      infoSections?: Array<QuestionInfoSection>;
     };
     QuestionCategory: {
       emoji?: string;
@@ -75,6 +76,15 @@ declare global {
     aspectRatio: number;
     transcript?: string;
   }
+
+  /**
+   * The properties for defining generated question info in customData
+   */
+  type QuestionInfoSection = {
+    title?: string;
+    content?: string;
+    visible?: boolean;
+  };
 
   ///////////////////////////////////////////////
 

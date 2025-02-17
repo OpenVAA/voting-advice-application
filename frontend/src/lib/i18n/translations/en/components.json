@@ -59,5 +59,8 @@
     "unmute": "Unmute",
     "unsupportedWarning": "Unfortunately, your browser does not support this kind of video.",
     "video": "Video"
+  },
+  "questionExtendedInfo": {
+    "title": "Learn more"
   }
 }

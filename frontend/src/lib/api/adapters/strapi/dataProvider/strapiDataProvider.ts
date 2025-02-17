@@ -17,6 +17,7 @@ import {
   parseImage,
   parseNominations,
   parseOrganization,
+  parseQuestionInfoSections,
   parseQuestionType,
   parseRelationIds,
   parseSingleRelationId
@@ -247,7 +248,8 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
             ...typeCustom,
             allowOpen,
             fillingInfo,
-            filterable
+            filterable,
+            infoSections: parseQuestionInfoSections(customData, locale)
           }
         } as AnyQuestionVariantData);
       }

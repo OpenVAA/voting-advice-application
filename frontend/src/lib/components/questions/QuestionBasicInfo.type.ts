@@ -1,6 +1,6 @@
 import type { ExpanderProps } from '$lib/components/expander';
 
-export type QuestionInfoProps = Partial<ExpanderProps> & {
+export type QuestionBasicInfoProps = Partial<ExpanderProps> & {
   /**
    * The info content to show as a plain or HTML string.
    */

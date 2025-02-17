@@ -20,9 +20,9 @@ Display the question's expandable information content.
   import { Expander } from '$lib/components/expander';
   import { getComponentContext } from '$lib/contexts/component';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import type { QuestionInfoProps } from './QuestionInfo.type';
+  import type { QuestionBasicInfoProps } from './QuestionBasicInfo.type';
 
-  type $$Props = QuestionInfoProps;
+  type $$Props = QuestionBasicInfoProps;
 
   export let info: $$Props['info'];
   export let onCollapse: $$Props['onCollapse'] = undefined;
