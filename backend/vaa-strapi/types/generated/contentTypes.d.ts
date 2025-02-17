@@ -328,6 +328,38 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAllianceAlliance extends Struct.CollectionTypeSchema {
+  collectionName: 'alliances';
+  info: {
+    description: '';
+    displayName: 'Alliance';
+    pluralName: 'alliances';
+    singularName: 'alliance';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    color: Schema.Attribute.String;
+    colorDark: Schema.Attribute.String;
+    constituencies: Schema.Attribute.Relation<'oneToMany', 'api::constituency.constituency'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
+    election: Schema.Attribute.Relation<'oneToOne', 'api::election.election'>;
+    externalId: Schema.Attribute.String & Schema.Attribute.Private;
+    image: Schema.Attribute.Media<'images' | 'files'>;
+    info: Schema.Attribute.Blocks;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::alliance.alliance'> & Schema.Attribute.Private;
+    name: Schema.Attribute.JSON;
+    parties: Schema.Attribute.Relation<'oneToMany', 'api::party.party'>;
+    publishedAt: Schema.Attribute.DateTime;
+    shortName: Schema.Attribute.JSON;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
+  };
+}
+
 export interface ApiAppCustomizationAppCustomization extends Struct.SingleTypeSchema {
   collectionName: 'app_customizations';
   info: {
@@ -469,6 +501,7 @@ export interface ApiConstituencyConstituency extends Struct.CollectionTypeSchema
     draftAndPublish: false;
   };
   attributes: {
+    alliance: Schema.Attribute.Relation<'manyToOne', 'api::alliance.alliance'>;
     constituencies: Schema.Attribute.Relation<'oneToMany', 'api::constituency.constituency'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
@@ -499,6 +532,7 @@ export interface ApiElectionElection extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    alliance: Schema.Attribute.Relation<'oneToOne', 'api::alliance.alliance'>;
     constituencyGroups: Schema.Attribute.Relation<'oneToMany', 'api::constituency-group.constituency-group'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
@@ -618,6 +652,7 @@ export interface ApiPartyParty extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    alliance: Schema.Attribute.Relation<'manyToOne', 'api::alliance.alliance'>;
     answers: Schema.Attribute.JSON;
     candidates: Schema.Attribute.Relation<'oneToMany', 'api::candidate.candidate'>;
     color: Schema.Attribute.String;
@@ -718,6 +753,7 @@ export interface ApiQuestionQuestion extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> & Schema.Attribute.Private;
     customData: Schema.Attribute.JSON;
+    elections: Schema.Attribute.Relation<'oneToMany', 'api::election.election'>;
     entityType: Schema.Attribute.Enumeration<['all', 'candidate', 'party']> & Schema.Attribute.DefaultTo<'all'>;
     externalId: Schema.Attribute.String & Schema.Attribute.Private;
     fillingInfo: Schema.Attribute.JSON;
@@ -725,6 +761,7 @@ export interface ApiQuestionQuestion extends Struct.CollectionTypeSchema {
     info: Schema.Attribute.JSON;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::question.question'> & Schema.Attribute.Private;
+    locked: Schema.Attribute.Boolean;
     order: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     publishedAt: Schema.Attribute.DateTime;
     questionType: Schema.Attribute.Relation<'oneToOne', 'api::question-type.question-type'>;
@@ -1145,6 +1182,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::alliance.alliance': ApiAllianceAlliance;
       'api::app-customization.app-customization': ApiAppCustomizationAppCustomization;
       'api::app-setting.app-setting': ApiAppSettingAppSetting;
       'api::candidate.candidate': ApiCandidateCandidate;
