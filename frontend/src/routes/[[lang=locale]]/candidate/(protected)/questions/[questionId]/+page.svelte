@@ -50,6 +50,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   const { hasUnsaved } = userData;
 
   let bypassPreventNavigation = false;
+  let cancelLabel: string;
   let canSubmit: boolean;
   let customData: CustomData['Question'];
   let errorMessage: string | undefined;
@@ -97,7 +98,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   }
 
   ////////////////////////////////////////////////////////////////////
-  // Check if the form is dirty or empty and define submit label
+  // Check if the form is dirty or empty and define button labels
   ////////////////////////////////////////////////////////////////////
 
   $: canSubmit = status !== 'loading' && !isEmptyValue($userData?.candidate.answers?.[question.id]?.value);
@@ -114,6 +115,9 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       ? $t('common.saveAndReturn')
       : $t('common.return');
   }
+
+  // The label is return when loading, bc saving isn't cancellable anymore
+  $: cancelLabel = (status === 'loading' || !$hasUnsaved) ? $t('common.return') : $t('common.cancel');
 
   ////////////////////////////////////////////////////////////////////
   // Handle saving answers
@@ -289,7 +293,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
               variant="main"
               icon="next" />
             <Button 
-              text={status === 'loading' ? $t('common.return') : $t('common.cancel')} 
+              text={cancelLabel} 
               on:click={handleCancel} 
               color="warning" />
           {:else}
