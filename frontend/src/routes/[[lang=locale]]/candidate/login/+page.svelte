@@ -4,16 +4,23 @@
 
 - The `/candidate` routes redirect here if there is not auth token in the cookie and show a possible error defined by the `errorMessage` seach param
 - Shows login form
+- Shows the pre-registration button if enabled
 - Uses 'frontpage' layout
 
 ## Params
 
 - `redirectTo`: The path to redirect to after successful login
 - `errorMessage`: The `CandidateLoginError` to show, if the user has been forcibly logged out after an error
+
+## Settings
+
+- `preRegistration.enabled`: Whether the pre-registration button is shown and the login details collapsed.
+- `access.voterApp`: Whether a link to the voter app is shown.
+
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount, tick } from 'svelte';
   import { applyAction, enhance } from '$app/forms';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
@@ -26,6 +33,9 @@
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
   import MainContent from '../../MainContent.svelte';
+
+  import { slide } from 'svelte/transition';
+  import { DELAY } from '$lib/utils/timing';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -43,7 +53,9 @@
 
   let canSubmit: boolean;
   let email = '';
+  let emailInput: HTMLInputElement | undefined;
   let errorMessage: string | undefined;
+  let focusPassword: () => void | undefined;
   let password = '';
   let showPasswordSetMessage = false;
   let status: ActionStatus = 'idle';
@@ -62,6 +74,27 @@
 
   $: canSubmit = !!(status !== 'loading' && email && password);
 
+  ///////////////////////////////////////////////////////////////////
+  // Showing the login form and autofocusing inputs
+  ////////////////////////////////////////////////////////////////////
+
+  /** Whether to show the login details */
+  let isLoginShown: boolean;
+  /** The `showLogin` flag is set by the button to show the login */
+  let showLogin = false;
+
+  // If preregistration is enabled, login details will be collapsed by default. They will be shown, however, if the email is defined, the show login button has been clicked or there was a login error
+  $: isLoginShown = !!(email || showLogin || !$appSettings.preRegistration?.enabled || status === 'error');
+
+  onMount(() => {
+    if (email) focusPassword();
+  });
+
+  function handleShowLogin(event: { preventDefault: () => unknown }): void {
+    event.preventDefault();
+    showLogin = true;
+    tick().then(() => emailInput?.focus());
+  }
 
   ///////////////////////////////////////////////////////////////////
   // Top bar and styling
@@ -102,42 +135,57 @@
         status = 'success';
       };
     }}>
-    {#if !showPasswordSetMessage}
-      <p class="max-w-md text-center">
-        {$t('candidateApp.login.enterEmailAndPassword')}
-      </p>
+    {#if isLoginShown}
+      <div transition:slide={{duration: DELAY.sm}} class="w-full flex flex-col items-center">
+        {#if !showPasswordSetMessage}
+          <p class="max-w-md text-center">
+            {$t('candidateApp.login.enterEmailAndPassword')}
+          </p>
+        {/if}
+        <label for="email" class="hidden">{$t('candidateApp.common.email')}</label>
+        <input hidden name="redirectTo" value={redirectTo} />
+        <input
+          type="email"
+          name="email"
+          id="email"
+          bind:this={emailInput}
+          bind:value={email}
+          class="input mb-md w-full max-w-md"
+          placeholder={$t('candidateApp.common.emailPlaceholder')}
+          autocomplete="email"
+          required />
+        <div class="mb-md w-full max-w-md">
+          <PasswordField 
+            autocomplete="current-password" 
+            id="password" 
+            bind:password
+            bind:focus={focusPassword} />
+        </div>
+        {#if status === 'error'}
+          <ErrorMessage inline message={errorMessage} class="mb-md" />
+        {/if}
+        <Button 
+          type="submit" 
+          disabled={!canSubmit} 
+          loading={status === 'loading'} 
+          text={$t('common.login')} 
+          variant="main" />
+      </div>
+    {:else}
+      <div transition:slide={{duration: DELAY.sm}} class="w-full flex flex-col items-center">
+        <Button 
+          on:click={handleShowLogin} 
+          text={$t('common.login')} 
+          variant="main" />
+      </div>
     {/if}
-    <label for="email" class="hidden">{$t('candidateApp.common.email')}</label>
-    <input hidden name="redirectTo" value={redirectTo} />
-    <input
-      type="email"
-      name="email"
-      id="email"
-      bind:value={email}
-      class="input mb-md w-full max-w-md"
-      placeholder={$t('candidateApp.common.emailPlaceholder')}
-      autocomplete="email"
-      required />
-    <div class="mb-md w-full max-w-md">
-      <PasswordField autocomplete="current-password" id="password" bind:password />
-    </div>
-    {#if status === 'error'}
-      <ErrorMessage inline message={errorMessage} class="mb-md" />
-    {/if}
-
-    <Button 
-      type="submit" 
-      disabled={!canSubmit} 
-      loading={status === 'loading'} 
-      text={$t('common.login')} 
-      variant="main" />
 
     {#if $appSettings.preRegistration?.enabled}
       <div class="divider">{$t('common.or')}</div>
       <Button 
         href={$getRoute('CandAppPreregister')} 
         text={$t('candidateApp.preregister.identification.start.title')} 
-        class="transition-opacity {canSubmit || status === 'loading' ? 'opacity-30' : ''}"
+        class="transition-opacity {isLoginShown || status === 'loading' ? 'opacity-30' : ''}"
         variant="main" />
     {/if}
 

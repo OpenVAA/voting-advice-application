@@ -8,6 +8,7 @@ PasswordField is an input box for password that comes with a button to reveal an
 - `autoComplete` : autocomplete value for password input
 - `label`: the label for the password field. Defaults to `$t('common.password')`
 - `externalLabel` : whether the label is outside the component and should not be rendered inside
+- `focus`: bindable function to set focus to the password input
 
 ### Usage
 ```tsx
@@ -25,6 +26,9 @@ PasswordField is an input box for password that comes with a button to reveal an
   export let autocomplete = '';
   export let label: string | undefined = undefined;
   export let externalLabel = false;
+  export function focus(): void {
+    input?.focus();
+  }
 
   id ??= getUUID();
 
@@ -32,11 +36,11 @@ PasswordField is an input box for password that comes with a button to reveal an
 
   let passwordRevealed = false;
   /** variable used to refer to the input box in code to change its type*/
-  let inputbox: HTMLInputElement;
+  let input: HTMLInputElement;
   /** function that hides and reveals the password and changes the icon of the button*/
   function toggleRevealed() {
     passwordRevealed = !passwordRevealed;
-    inputbox.type = passwordRevealed ? 'text' : 'password';
+    input.type = passwordRevealed ? 'text' : 'password';
   }
 </script>
 
@@ -51,7 +55,7 @@ PasswordField is an input box for password that comes with a button to reveal an
     class="input w-full"
     placeholder={$t('components.passwordInput.placeholder')}
     bind:value={password}
-    bind:this={inputbox}
+    bind:this={input}
     {autocomplete}
     required />
   <Button
