@@ -117,9 +117,7 @@
         src="/images/nuorten-vaalikone-logo-{$locale ?? 'fi'}-{$darkMode ? 'white' : 'black'}.svg"
         alt={$t('dynamic.appName')}
         class="w-[26rem]" /></PreHeading>
-    <h1>
-      {showPasswordSetMessage ? $t('candidateApp.setPassword.passwordSetSuccesfully') : $t('dynamic.candidateAppName')}
-    </h1>
+    <h1>{$t('dynamic.candidateAppName')}</h1>
   </HeadingGroup>
 
   <form
@@ -147,6 +145,10 @@
         {#if !showPasswordSetMessage}
           <p class="max-w-md text-center">
             {$t('candidateApp.login.enterEmailAndPassword')}
+          </p>
+        {:else}
+          <p class="max-w-md text-center font-bold text-lg">
+            {$t('candidateApp.setPassword.passwordSetSuccesfully')}
           </p>
         {/if}
         <label for="email" class="hidden">{$t('candidateApp.common.email')}</label>
