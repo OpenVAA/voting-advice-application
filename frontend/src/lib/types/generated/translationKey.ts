@@ -290,6 +290,7 @@ export type TranslationKey =
   | 'constituencies.title'
   | 'dynamic.about.heroEmoji'
   | 'dynamic.appName'
+  | 'dynamic.candidateAppBasicInfo.immutableData.emptyPlaceholder'
   | 'dynamic.candidateAppBasicInfo.immutableData.ingress'
   | 'dynamic.candidateAppBasicInfo.immutableData.title'
   | 'dynamic.candidateAppName'
