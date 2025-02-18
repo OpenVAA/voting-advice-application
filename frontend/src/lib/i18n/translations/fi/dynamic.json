@@ -6,7 +6,8 @@
   "candidateAppBasicInfo": {
     "immutableData": {
       "title": "Henkilötiedot",
-      "ingress": "Nimesi ja eräät muut tiedot on täytetty valmiiksi tai täydennetään, kun vaaliluettelot vahvistetaan. Et voi itse muuttaa näitä tietoja, mutta jos tiedoissa on virheitä, ota yhteyttä ehdokastukeen."
+      "ingress": "Nimesi ja eräät muut tiedot on täytetty valmiiksi tai täydennetään, kun vaaliluettelot vahvistetaan. Et voi itse muuttaa näitä tietoja, mutta jos tiedoissa on virheitä, ota yhteyttä ehdokastukeen.",
+      "emptyPlaceholder": "Vaaliluettelon mukaan"
     }
   },
   "candidateAppName": "Ehdokkaiden vaalikone",
