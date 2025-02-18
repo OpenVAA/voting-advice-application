@@ -56,7 +56,7 @@
       "title": "Pankkitunnistautumisessa ilmeni ongelma"
     },
     "success": {
-      "content": "<p>Olemme lähettäneet viestin sähköpostiisi.</p><p>Napsauta viestin linkkiä vahvistaaksesi sähköpostiosoitteesi ja viimeistelläksesi rekisteröitymisen.</p><p>Voit nyt sulkea tämän ikkunan.</p>",
+      "content": "<p>Olemme lähettäneet viestin sähköpostiisi. Napsauta viestin linkkiä vahvistaaksesi sähköpostiosoitteesi ja viimeistelläksesi rekisteröitymisen.</p><p>Huomaathan, että sähköpostin saapumisessa saattaa kestää jonkin aikaa. Tarkista myös roskaposti, jos viestiä ei kuulu.</p><p>Voit nyt sulkea tämän ikkunan.</p>",
       "heroEmoji": "✉️",
       "title": "Vahvista sähköpostiosoitteesi"
     },

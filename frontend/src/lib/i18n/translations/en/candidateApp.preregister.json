@@ -56,7 +56,7 @@
       "title": "There was an issue with Bank ID authentication"
     },
     "success": {
-      "content": "<p>We've sent a message to your email address.</p><p>Please click on the link in the message to confirm your email address and complete the registration process.</p><p>You can now close this window.</p>",
+      "content": "<p>We have sent a message to your email. Click the link in the message to confirm your email address and complete the registration.</p><p>Please note that it may take some time for the email to arrive. Also, check your spam folder if you do not receive the message.</p><p>You can now close this window.</p>",
       "heroEmoji": "✉️",
       "title": "Confirm your email address"
     },

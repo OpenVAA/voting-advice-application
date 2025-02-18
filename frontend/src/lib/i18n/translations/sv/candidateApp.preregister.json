@@ -56,7 +56,7 @@
       "title": "Det uppstod ett problem med bank-id-autentiseringen"
     },
     "success": {
-      "content": "<p>Vi har skickat ett meddelande till din e-postadress.</p><p>Klicka på länken i meddelandet för att bekräfta din e-postadress och slutföra registreringen.</p><p>Du kan nu stänga detta fönster.</p>",
+      "content": "<p>Vi har skickat ett meddelande till din e-post. Klicka på länken i meddelandet för att bekräfta din e-postadress och slutföra registreringen.</p><p>Observera att det kan ta en stund innan e-postmeddelandet kommer fram. Kontrollera även din skräppost om du inte får meddelandet.</p><p>Du kan nu stänga detta fönster.</p>",
       "heroEmoji": "✉️",
       "title": "Bekräfta din e-postadress"
     },
