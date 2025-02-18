@@ -5,8 +5,9 @@
   "appName": "Valkompassen",
   "candidateAppBasicInfo": {
     "immutableData": {
-      "title": "Uppgifter från kandidatlistan",
-      "ingress": "Ditt namn och andra uppgifter från kandidatlistan har fyllts i i förväg eller kommer att kompletteras när kandidatlistorna bekräftas. Du kan inte ändra dessa uppgifter själv, men om det finns fel i dem, kontakta kandidatsupporten."
+      "title": "Personuppgifter",
+      "ingress": "Ditt namn och några andra uppgifter har fyllts i i förväg eller kommer att kompletteras när kandidatlistorna bekräftas. Du kan inte ändra dessa uppgifter själv, men om det finns fel i dem, kontakta kandidatsupporten.",
+      "emptyPlaceholder": "Enligt kandidatlistan"
     }
   },
   "candidateAppName": "Valkompassen för kandidater",
