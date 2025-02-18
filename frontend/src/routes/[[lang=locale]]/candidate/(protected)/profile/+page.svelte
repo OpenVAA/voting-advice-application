@@ -211,7 +211,13 @@ Shows the candidate's basic information, some of which is editable.
       <!-- Locked Info questions -->
       {#each $infoQuestions.filter((q) => getCustomData(q).locked) as question}
         {@const answer = $userData?.candidate.answers?.[question.id]}
-        <QuestionInput {question} {answer} locked onShadedBg disableMultilingual />
+        <QuestionInput 
+          {question} 
+          {answer} 
+          locked 
+          onShadedBg 
+          disableMultilingual
+          placeholder={$t('dynamic.candidateAppBasicInfo.immutableData.emptyPlaceholder')} />
       {/each}
 
     </InputGroup>

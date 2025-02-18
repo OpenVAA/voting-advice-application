@@ -5,8 +5,9 @@
   "appName": "Election Compass",
   "candidateAppBasicInfo": {
     "immutableData": {
-      "title": "Candidate List Information",
-      "ingress": "Your name and other candidate list information have been prefilled or will be completed when the candidate lists are confirmed. You cannot change this information yourself, but if there are any errors, please contact candidate support."
+      "title": "Personal Information",
+      "ingress": "Your name and some other information have been prefilled or will be completed when the candidate lists are confirmed. You cannot change this information yourself, but if there are any errors, please contact candidate support.",
+      "emptyPlaceholder": "Based on candidate list"
     }
   },
   "candidateAppName": "Election Compass for Candidates",
