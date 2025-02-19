@@ -8,7 +8,7 @@ export async function POST({ cookies, request }: RequestEvent): Promise<Response
   const { authorizationCode, redirectUri } = await request.json();
   const {
     IDENTITY_PROVIDER_CLIENT_SECRET,
-    IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY,
+    IDENTITY_PROVIDER_DECRYPTION_JWKS,
     IDENTITY_PROVIDER_JWKS_URI,
     IDENTITY_PROVIDER_TOKEN_ENDPOINT,
     IDENTITY_PROVIDER_ISSUER
@@ -34,7 +34,7 @@ export async function POST({ cookies, request }: RequestEvent): Promise<Response
   const { id_token: idToken } = await idpResponse.json();
 
   const claims = await getIdTokenClaims(idToken, {
-    privateEncryptionJWK: JSON.parse(IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY),
+    privateEncryptionJWKSet: JSON.parse(IDENTITY_PROVIDER_DECRYPTION_JWKS),
     publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI,
     audience: PUBLIC_IDENTITY_PROVIDER_CLIENT_ID,
     issuer: IDENTITY_PROVIDER_ISSUER
