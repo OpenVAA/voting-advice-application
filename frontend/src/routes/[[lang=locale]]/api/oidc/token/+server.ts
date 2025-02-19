@@ -10,7 +10,8 @@ export async function POST({ cookies, request }: RequestEvent): Promise<Response
     IDENTITY_PROVIDER_CLIENT_SECRET,
     IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY,
     IDENTITY_PROVIDER_JWKS_URI,
-    IDENTITY_PROVIDER_TOKEN_ENDPOINT
+    IDENTITY_PROVIDER_TOKEN_ENDPOINT,
+    IDENTITY_PROVIDER_ISSUER
   } = constants;
   const { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID } = publicConstants;
 
@@ -34,7 +35,9 @@ export async function POST({ cookies, request }: RequestEvent): Promise<Response
 
   const claims = await getIdTokenClaims(idToken, {
     privateEncryptionJWK: JSON.parse(IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY),
-    publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
+    publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI,
+    audience: PUBLIC_IDENTITY_PROVIDER_CLIENT_ID,
+    issuer: IDENTITY_PROVIDER_ISSUER
   });
 
   if (!claims.success) {
