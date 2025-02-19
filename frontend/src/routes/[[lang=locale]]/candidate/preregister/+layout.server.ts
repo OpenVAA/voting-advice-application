@@ -17,7 +17,7 @@ export async function load({ cookies, locals }) {
   }
 
   const idToken = cookies.get('id_token');
-  const { IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY, IDENTITY_PROVIDER_JWKS_URI, IDENTITY_PROVIDER_ISSUER } = constants;
+  const { IDENTITY_PROVIDER_DECRYPTION_JWKS, IDENTITY_PROVIDER_JWKS_URI, IDENTITY_PROVIDER_ISSUER } = constants;
   const { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID } = publicConstants;
 
   if (!idToken) {
@@ -25,7 +25,7 @@ export async function load({ cookies, locals }) {
   }
 
   const claims = await getIdTokenClaims(idToken, {
-    privateEncryptionJWK: JSON.parse(IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY),
+    privateEncryptionJWKSet: JSON.parse(IDENTITY_PROVIDER_DECRYPTION_JWKS),
     publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI,
     audience: PUBLIC_IDENTITY_PROVIDER_CLIENT_ID,
     issuer: IDENTITY_PROVIDER_ISSUER
