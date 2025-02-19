@@ -21,6 +21,7 @@ export interface DataWriter<TType extends AdapterType = 'universal'> {
    */
   exchangeCodeForIdToken: (opts: {
     authorizationCode: string;
+    codeVerifier: string;
     redirectUri: string;
   }) => DWReturnType<DataApiActionResult>;
 

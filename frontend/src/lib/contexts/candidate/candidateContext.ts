@@ -182,7 +182,11 @@ export function initCandidateContext(): CandidateContext {
     return dataWriter.setPassword({ ...opts, authToken: token });
   }
 
-  async function exchangeCodeForIdToken(opts: { authorizationCode: string; redirectUri: string }): Promise<void> {
+  async function exchangeCodeForIdToken(opts: {
+    authorizationCode: string;
+    codeVerifier: string;
+    redirectUri: string;
+  }): Promise<void> {
     const dataWriter = await prepareDataWriter(dataWriterPromise);
     try {
       const result = await dataWriter.exchangeCodeForIdToken(opts);

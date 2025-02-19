@@ -120,7 +120,11 @@ export type CandidateContext = AppContext & {
    * @param redirectUri - A redirect URI used to obtain the authorization code.
    * @returns A `Promise` resolving when the redirection is complete.
    */
-  exchangeCodeForIdToken: (opts: { authorizationCode: string; redirectUri: string }) => Promise<void>;
+  exchangeCodeForIdToken: (opts: {
+    authorizationCode: string;
+    codeVerifier: string;
+    redirectUri: string;
+  }) => Promise<void>;
   /**
    * Create a candidate with a nomination or nominations, then emails a registration link.
    * Expects a valid ID token in the cookies.

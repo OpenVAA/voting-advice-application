@@ -5,7 +5,7 @@ import { constants as publicConstants } from '$lib/utils/constants';
 import type { RequestEvent } from '@sveltejs/kit';
 
 export async function POST({ cookies, request }: RequestEvent): Promise<Response> {
-  const { authorizationCode, redirectUri } = await request.json();
+  const { authorizationCode, codeVerifier, redirectUri } = await request.json();
   const {
     IDENTITY_PROVIDER_CLIENT_SECRET,
     IDENTITY_PROVIDER_DECRYPTION_JWKS,
@@ -21,6 +21,7 @@ export async function POST({ cookies, request }: RequestEvent): Promise<Response
     body: new URLSearchParams({
       grant_type: 'authorization_code',
       code: authorizationCode,
+      code_verifier: codeVerifier,
       redirect_uri: redirectUri,
       client_id: PUBLIC_IDENTITY_PROVIDER_CLIENT_ID,
       client_secret: IDENTITY_PROVIDER_CLIENT_SECRET
