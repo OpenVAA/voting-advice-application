@@ -81,7 +81,7 @@
 
     const clientId = constants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
     const authorizationEndpointUri = constants.PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT;
-    const redirectUri = `${window.location.origin}/${$locale}/candidate/preregister/signicat/oidc/callback`; // TODO: Shorter URI.
+    const redirectUri = `${window.location.origin}${$getRoute('CandAppPreregisterIdentityProviderCallback')}`;
     window.location.href = `${authorizationEndpointUri}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=openid%20profile&prompt=login&code_challenge=${codeChallenge}&code_challenge_method=S256`;
   }
 
