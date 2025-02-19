@@ -7,12 +7,8 @@ import { logDebugError } from '$lib/utils/logger';
 import type { Id } from '@openvaa/core';
 
 export async function POST({ cookies, request }) {
-  const {
-    BACKEND_API_TOKEN,
-    IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY,
-    IDENTITY_PROVIDER_JWKS_URI,
-    IDENTITY_PROVIDER_ISSUER
-  } = constants;
+  const { BACKEND_API_TOKEN, IDENTITY_PROVIDER_DECRYPTION_JWKS, IDENTITY_PROVIDER_JWKS_URI, IDENTITY_PROVIDER_ISSUER } =
+    constants;
   const { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID } = publicConstants;
 
   const dataWriter = await dataWriterPromise;
@@ -37,7 +33,7 @@ export async function POST({ cookies, request }) {
   }
 
   const claims = await getIdTokenClaims(idToken, {
-    privateEncryptionJWK: JSON.parse(IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY),
+    privateEncryptionJWKSet: JSON.parse(IDENTITY_PROVIDER_DECRYPTION_JWKS),
     publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI,
     audience: PUBLIC_IDENTITY_PROVIDER_CLIENT_ID,
     issuer: IDENTITY_PROVIDER_ISSUER
