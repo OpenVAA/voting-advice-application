@@ -39,6 +39,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
 
   async exchangeCodeForIdToken(opts: {
     authorizationCode: string;
+    codeVerifier: string;
     redirectUri: string;
   }): DWReturnType<DataApiActionResult> {
     if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
@@ -50,6 +51,7 @@ export abstract class UniversalDataWriter extends UniversalAdapter implements Da
       },
       body: JSON.stringify({
         authorizationCode: opts.authorizationCode,
+        codeVerifier: opts.codeVerifier,
         redirectUri: opts.redirectUri
       })
     });

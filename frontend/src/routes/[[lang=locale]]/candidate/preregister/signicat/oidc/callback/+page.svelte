@@ -20,6 +20,7 @@
   $: if (authorizationCode) {
     exchangeCodeForIdToken({
       authorizationCode,
+      codeVerifier: localStorage.getItem('codeVerifier') ?? '',
       redirectUri: `${window.location.origin}${window.location.pathname}`
     });
   } else {
