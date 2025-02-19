@@ -19,7 +19,7 @@
   import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
-  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { HeadingGroup } from '$lib/components/headingGroup';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { logDebugError } from '$lib/utils/logger';

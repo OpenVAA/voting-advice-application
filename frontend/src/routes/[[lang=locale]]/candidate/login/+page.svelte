@@ -21,6 +21,7 @@
 
 <script lang="ts">
   import { onDestroy, onMount, tick } from 'svelte';
+  import { slide } from 'svelte/transition';
   import { applyAction, enhance } from '$app/forms';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
@@ -32,10 +33,8 @@
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
-  import MainContent from '../../MainContent.svelte';
-
-  import { slide } from 'svelte/transition';
   import { DELAY } from '$lib/utils/timing';
+  import MainContent from '../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -136,7 +135,7 @@
       };
     }}>
     {#if isLoginShown}
-      <div transition:slide={{duration: DELAY.sm}} class="w-full flex flex-col items-center">
+      <div transition:slide={{ duration: DELAY.sm }} class="flex w-full flex-col items-center">
         {#if !showPasswordSetMessage}
           <p class="max-w-md text-center">
             {$t('candidateApp.login.enterEmailAndPassword')}
@@ -155,36 +154,29 @@
           autocomplete="email"
           required />
         <div class="mb-md w-full max-w-md">
-          <PasswordField 
-            autocomplete="current-password" 
-            id="password" 
-            bind:password
-            bind:focus={focusPassword} />
+          <PasswordField autocomplete="current-password" id="password" bind:password bind:focus={focusPassword} />
         </div>
         {#if status === 'error'}
           <ErrorMessage inline message={errorMessage} class="mb-md" />
         {/if}
-        <Button 
-          type="submit" 
-          disabled={!canSubmit} 
-          loading={status === 'loading'} 
-          text={$t('common.login')} 
+        <Button
+          type="submit"
+          disabled={!canSubmit}
+          loading={status === 'loading'}
+          text={$t('common.login')}
           variant="main" />
       </div>
     {:else}
-      <div transition:slide={{duration: DELAY.sm}} class="w-full flex flex-col items-center">
-        <Button 
-          on:click={handleShowLogin} 
-          text={$t('common.login')} 
-          variant="main" />
+      <div transition:slide={{ duration: DELAY.sm }} class="flex w-full flex-col items-center">
+        <Button on:click={handleShowLogin} text={$t('common.login')} variant="main" />
       </div>
     {/if}
 
     {#if $appSettings.preRegistration?.enabled}
       <div class="divider">{$t('common.or')}</div>
-      <Button 
-        href={$getRoute('CandAppPreregister')} 
-        text={$t('candidateApp.preregister.identification.start.title')} 
+      <Button
+        href={$getRoute('CandAppPreregister')}
+        text={$t('candidateApp.preregister.identification.start.title')}
         class="transition-opacity {isLoginShown || status === 'loading' ? 'opacity-30' : ''}"
         variant="main" />
     {/if}

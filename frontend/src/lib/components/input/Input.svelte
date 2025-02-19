@@ -61,13 +61,13 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   import { getComponentContext } from '$lib/contexts/component';
   import { assertTranslationKey } from '$lib/i18n/utils';
   import { concatClass, getUUID } from '$lib/utils/components';
+  import { checkUrl } from '$lib/utils/links';
   import { logDebugError } from '$lib/utils/logger';
   import { iconBadgeClass, infoClass, joinGap, outsideLabelClass } from './shared';
   import type { AnyChoice, Image } from '@openvaa/data';
-  import type { InputProps } from './Input.type';
-  import { checkUrl } from '$lib/utils/links';
-  import type { TranslationKey } from '$types';
   import type { TranslationsPayload } from '$lib/i18n/translations';
+  import type { TranslationKey } from '$types';
+  import type { InputProps } from './Input.type';
 
   type $$Props = InputProps;
 
@@ -100,7 +100,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   ////////////////////////////////////////////////////////////////////
   // Handling multilinguality, disabled and other cases
   ////////////////////////////////////////////////////////////////////
-  
+
   const maxFilesizeInMB = Math.floor((maxFilesize ?? 0) / (1024 * 1024));
   const multilingual = type.endsWith('-multilingual');
   /** Whether the label is above the field or inside it */
@@ -116,7 +116,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
     info ??= '';
     info += ` ${$t('components.input.imageInfo', { maxFilesize: maxFilesizeInMB })}`;
   }
-  
+
   let error: string | undefined;
   let isDisabled: boolean;
   /** For image input */
@@ -252,8 +252,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
       // Image
     } else if (currentTarget instanceof HTMLInputElement && currentTarget.type === 'file') {
       const file = currentTarget.files?.[0];
-      if (!file || !file.type.startsWith('image/'))
-        return handleError('components.input.error.invalidFile');
+      if (!file || !file.type.startsWith('image/')) return handleError('components.input.error.invalidFile');
       if (maxFilesize && file.size > maxFilesize)
         return handleError('components.input.error.oversizeFile', { maxFilesize: maxFilesizeInMB });
       const reader = new FileReader();
@@ -283,7 +282,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
         value = url;
       }
 
-    // All other types
+      // All other types
     } else {
       value = currentTarget.value;
     }
@@ -373,11 +372,10 @@ The input itself is wrapped in multiple container elements, the outermost of whi
             <div class="relative flex flex-col items-stretch">
               <!-- The language label inside the field -->
               <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label 
-                id="{id}-label-{locale}" 
+              <label
+                id="{id}-label-{locale}"
                 class="small-label absolute left-md top-sm text-secondary transition-opacity"
-                class:opacity-0={!isTranslationsVisible}
-                >{$t(assertTranslationKey(`lang.${locale}`))}</label>
+                class:opacity-0={!isTranslationsVisible}>{$t(assertTranslationKey(`lang.${locale}`))}</label>
               <!-- The actual textarea 
                    NB. Join does not work it, so we do it by hand -->
               <textarea
@@ -398,11 +396,10 @@ The input itself is wrapped in multiple container elements, the outermost of whi
             <div class="{inputContainerClass} join-item">
               <!-- The language label inside the field -->
               <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label 
-                id="{id}-label-{locale}" 
+              <label
+                id="{id}-label-{locale}"
                 class="{inputLabelClass} transition-opacity"
-                class:opacity-0={!isTranslationsVisible}
-                >{$t(assertTranslationKey(`lang.${locale}`))}</label>
+                class:opacity-0={!isTranslationsVisible}>{$t(assertTranslationKey(`lang.${locale}`))}</label>
               <div class={inputAndIconContainerClass}>
                 <!-- The actual text input -->
                 <input
@@ -446,11 +443,11 @@ The input itself is wrapped in multiple container elements, the outermost of whi
         <label class={inputLabelClass} for={id}>{label}</label>
         <div class={inputAndIconContainerClass}>
           {#if options?.length}
-            <select 
-              {id} 
-              disabled={isDisabled} 
+            <select
+              {id}
+              disabled={isDisabled}
               {...concatClass($$restProps, selectClass)}
-              bind:this={mainInputs[0]} 
+              bind:this={mainInputs[0]}
               on:change={handleChange}>
               <option disabled selected
                 >{placeholder ||
@@ -570,11 +567,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
           <!-- 5.2 Select -->
         {:else if type === 'select'}
           {#if options?.length}
-            <select 
-              {id} 
-              disabled={isDisabled} 
-              {...concatClass($$restProps, selectClass)}
-              on:change={handleChange}>
+            <select {id} disabled={isDisabled} {...concatClass($$restProps, selectClass)} on:change={handleChange}>
               <option disabled selected={!value}>{placeholder || $t('components.input.selectOne')}</option>
               {#each options as { id, label }}
                 <option value={id} selected={value === id}>
@@ -588,13 +581,13 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 
           <!-- 5.3 All other inputs: date, number, text -->
         {:else}
-          <input 
-            {type} 
-            {id} 
-            disabled={isDisabled} 
-            {placeholder} 
+          <input
+            {type}
+            {id}
+            disabled={isDisabled}
+            {placeholder}
             {...concatClass($$restProps, inputClass)}
-            {value} 
+            {value}
             on:change={handleChange} />
         {/if}
 
@@ -615,7 +608,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   <!-- Error messages -->
 
   {#if error}
-    <ErrorMessage inline message={error} class="my-sm text-center"/>
+    <ErrorMessage inline message={error} class="my-sm text-center" />
   {/if}
 
   <!-- Optional elements below the form widgets -->

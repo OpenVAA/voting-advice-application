@@ -1,10 +1,10 @@
 <script lang="ts">
+  import { TermsOfUse } from '$candidate/components/termsOfUse';
   import { Button } from '$lib/components/button';
-  import MainContent from '../../../../MainContent.svelte';
+  import { Expander } from '$lib/components/expander';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import { Expander } from '$lib/components/expander';
-  import { TermsOfUse } from '$candidate/components/termsOfUse';
+  import MainContent from '../../../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -73,9 +73,7 @@
       <input type="checkbox" class="checkbox" name="selected-elections" bind:checked={termsAccepted} />
       <span class="label-text">{$t('candidateApp.preregister.emailVerification.termsCheckbox')}</span>
     </label>
-    <Expander 
-      title={$t('candidateApp.privacy.title')}
-      contentClass="prose bg-base-100 rounded-lg">
+    <Expander title={$t('candidateApp.privacy.title')} contentClass="prose bg-base-100 rounded-lg">
       <div class="m-lg">
         <TermsOfUse />
       </div>
@@ -88,6 +86,5 @@
     variant="main"
     disabled={!termsAccepted || !email1.trim() || !(email1.trim() === email2.trim())}
     loading={status === 'loading'}
-    on:click={handleSubmit}/>
-
+    on:click={handleSubmit} />
 </MainContent>

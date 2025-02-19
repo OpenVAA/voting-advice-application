@@ -8,17 +8,17 @@
 -->
 
 <script lang="ts">
+  import { onDestroy, onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import { Button } from '$lib/components/button';
-  import { constants } from '$lib/utils/constants';
-  import { getCandidateContext } from '$lib/contexts/candidate';
   import { goto } from '$app/navigation';
+  import { PreregisteredNotification } from '$candidate/components/preregisteredNotification';
+  import { Button } from '$lib/components/button';
+  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { getCandidateContext } from '$lib/contexts/candidate';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { constants } from '$lib/utils/constants';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../MainContent.svelte';
-  import { HeroEmoji } from '$lib/components/heroEmoji';
-  import { getLayoutContext } from '$lib/contexts/layout';
-  import { onDestroy, onMount } from 'svelte';
-  import { PreregisteredNotification } from '$candidate/components/preregisteredNotification';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -38,22 +38,22 @@
   } = getCandidateContext();
   const { navigationSettings } = getLayoutContext(onDestroy);
 
- ////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
   onMount(() => {
     // Show possible notification
     if ($isPreregistered && !$idTokenClaims)
-      popupQueue.push({ 
+      popupQueue.push({
         component: PreregisteredNotification
       });
   });
-  
+
   ////////////////////////////////////////////////////////////////////
   // Build steps, init elections and handle redirection
   ////////////////////////////////////////////////////////////////////
- 
+
   $preregistrationElectionIds = $dataRoot.elections.map(({ id }) => id);
 
   const steps = [
@@ -87,7 +87,6 @@
 </script>
 
 {#if $idTokenClaims}
-
   <MainContent title={$t('candidateApp.preregister.identification.success.title', $idTokenClaims)}>
     <figure role="presentation" slot="hero">
       <HeroEmoji emoji={$t('candidateApp.preregister.identification.success.heroEmoji')} />
@@ -95,16 +94,14 @@
     <div class="mb-md text-center">
       {@html sanitizeHtml($t('candidateApp.preregister.identification.success.content'))}
     </div>
-    <Button 
-      slot="primaryActions" 
-      type="submit" 
-      text={$t('common.continue')} 
-      variant="main" 
+    <Button
+      slot="primaryActions"
+      type="submit"
+      text={$t('common.continue')}
+      variant="main"
       on:click={() => goto($getRoute(nextRoute))} />
   </MainContent>
-
 {:else}
-
   <MainContent title={$t('candidateApp.preregister.identification.start.title')}>
     <figure role="presentation" slot="hero">
       <HeroEmoji emoji={$t('candidateApp.preregister.identification.start.heroEmoji')} />
@@ -122,11 +119,10 @@
         text={$t('candidateApp.preregister.identification.identifyYourselfButton')}
         variant="main"
         on:click={redirectToIdentityProvider} />
-      <p class="my-md text-center small-info">
+      <p class="small-info my-md text-center">
         {$t('candidateApp.preregister.identification.identifyYourselHelpText')}
       </p>
       <Button href={$getRoute('CandAppLogin')} text={$t('common.return')} />
     </svelte:fragment>
   </MainContent>
-
 {/if}

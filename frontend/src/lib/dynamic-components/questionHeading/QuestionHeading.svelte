@@ -29,7 +29,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
 <script lang="ts">
   import { Election } from '@openvaa/data';
-  import { type Readable,readable } from 'svelte/store';
+  import { type Readable, readable } from 'svelte/store';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { ElectionTag } from '$lib/components/electionTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
@@ -82,8 +82,8 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
     {#if $appSettings.questions.showCategoryTags}
       <CategoryTag
         category={question.category}
-        suffix={blockWithStats ? `${blockWithStats.indexInBlock + 1}/${blockWithStats.block.length}` : undefined} 
-        {onShadedBg}/>
+        suffix={blockWithStats ? `${blockWithStats.indexInBlock + 1}/${blockWithStats.block.length}` : undefined}
+        {onShadedBg} />
     {:else if blockWithStats}
       <!-- Index of question within all questions -->
       {$t('common.question')}

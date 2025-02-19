@@ -67,8 +67,7 @@ NB. To show opinion `Question`s, use the `OpinionQuestionInput` component in `$l
   const customData = getCustomData(question);
 
   let type = INPUT_TYPES[question.type];
-  if (question.type === QUESTION_TYPE.Text && question.subtype === 'link') 
-    type = 'url';
+  if (question.type === QUESTION_TYPE.Text && question.subtype === 'link') type = 'url';
 
   // Apply customData modifiers
   if (customData.longText) {

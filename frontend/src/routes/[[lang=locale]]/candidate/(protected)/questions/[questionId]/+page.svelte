@@ -14,6 +14,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
 -->
 
 <script lang="ts">
+  import { type CustomData, getCustomData, type LocalizedAnswer } from '@openvaa/app-shared';
   import { type AnyQuestionVariant, isEmptyValue } from '@openvaa/data';
   import { error } from '@sveltejs/kit';
   import { onDestroy } from 'svelte';
@@ -32,7 +33,6 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   import { logDebugError } from '$lib/utils/logger';
   import { parseParams } from '$lib/utils/route';
   import MainContent from '../../../../MainContent.svelte';
-  import { getCustomData, type CustomData, type LocalizedAnswer } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
 
   ////////////////////////////////////////////////////////////////////
@@ -80,7 +80,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
     isLastUnanswered = getIsLastUnanswered();
   }
 
-  /** 
+  /**
    * A non-reactive utility set the isLastUnanswered flag, which we use to route to the Home page after answering the last one.
    */
   function getIsLastUnanswered(): boolean {
@@ -108,16 +108,14 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
     submitLabel = $t('common.saveAndContinue');
   } else if (isLastUnanswered) {
     submitRoute = $getRoute('CandAppHome');
-    submitLabel = $t('common.saveAndContinue')
+    submitLabel = $t('common.saveAndContinue');
   } else {
     submitRoute = $getRoute('CandAppQuestions');
-    submitLabel = $hasUnsaved
-      ? $t('common.saveAndReturn')
-      : $t('common.return');
+    submitLabel = $hasUnsaved ? $t('common.saveAndReturn') : $t('common.return');
   }
 
   // The label is return when loading, bc saving isn't cancellable anymore
-  $: cancelLabel = (status === 'loading' || !$hasUnsaved) ? $t('common.return') : $t('common.cancel');
+  $: cancelLabel = status === 'loading' || !$hasUnsaved ? $t('common.return') : $t('common.cancel');
 
   ////////////////////////////////////////////////////////////////////
   // Handle saving answers
@@ -238,11 +236,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
         {/if}
       </svelte:fragment>
 
-      <QuestionHeading 
-        slot="heading"
-        {question} 
-        questionBlocks={$questionBlocks}
-        onShadedBg />
+      <QuestionHeading slot="heading" {question} questionBlocks={$questionBlocks} onShadedBg />
 
       {#if info && info !== ''}
         <QuestionInfo {info} />
@@ -292,10 +286,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
               id="submitButton"
               variant="main"
               icon="next" />
-            <Button 
-              text={cancelLabel} 
-              on:click={handleCancel} 
-              color="warning" />
+            <Button text={cancelLabel} on:click={handleCancel} color="warning" />
           {:else}
             <Button text={$t('common.return')} href={$getRoute('CandAppQuestions')} variant="main" />
           {/if}

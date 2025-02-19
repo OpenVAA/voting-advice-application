@@ -79,9 +79,10 @@
   pageStyles.push({ drawer: { background: 'bg-base-300' } });
 </script>
 
-<MainContent title={$appSettings.preRegistration?.enabled 
-  ? $t('candidateApp.register.titleWithPreregistration')
-  : $t('candidateApp.register.title')}>
+<MainContent
+  title={$appSettings.preRegistration?.enabled
+    ? $t('candidateApp.register.titleWithPreregistration')
+    : $t('candidateApp.register.title')}>
   <HeadingGroup slot="heading">
     <PreHeading class="text-2xl font-bold text-primary">{$t('dynamic.candidateAppName')}</PreHeading>
   </HeadingGroup>
@@ -110,13 +111,7 @@
     {/if}
   </form>
   <svelte:fragment slot="primaryActions">
-    <Button
-      disabled={!canSubmit}
-      text={$t('candidateApp.register.register')}
-      variant="main" 
-      on:click={handleSubmit}/>
-    <Button 
-      href={$getRoute('CandAppHelp')} 
-      text={$t('candidateApp.help.title')} />
+    <Button disabled={!canSubmit} text={$t('candidateApp.register.register')} variant="main" on:click={handleSubmit} />
+    <Button href={$getRoute('CandAppHelp')} text={$t('candidateApp.help.title')} />
   </svelte:fragment>
 </MainContent>

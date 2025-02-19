@@ -56,7 +56,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
     startEvent,
     startFeedbackPopupCountdown,
     startSurveyPopupCountdown,
-    t,
+    t
   } = getVoterContext();
 
   ////////////////////////////////////////////////////////////////////

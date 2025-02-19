@@ -86,11 +86,11 @@ Show a radial or a linear score gauge for a sub-match.
     </div>
   {/if}
   <div class="grid grid-cols-[minmax(0,_1fr)_fit-content(100%)] gap-sm justify-self-stretch">
-    <label class="grow truncate small-info" for={labelId} id={labelId} aria-hidden="true">
+    <label class="small-info grow truncate" for={labelId} id={labelId} aria-hidden="true">
       {label}
     </label>
     {#if variant === 'linear' && showScore}
-      <div class="shrink-0 small-info" aria-hidden="true">
+      <div class="small-info shrink-0" aria-hidden="true">
         {score}{unit}
       </div>
     {/if}

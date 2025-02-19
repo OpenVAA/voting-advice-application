@@ -15,6 +15,7 @@ Display the intro to a question category and possibly a button with which to ski
 -->
 
 <script lang="ts">
+  import { type CustomData, getCustomData } from '@openvaa/app-shared';
   import { error } from '@sveltejs/kit';
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
@@ -28,7 +29,6 @@ Display the intro to a question category and possibly a button with which to ski
   import { getVoterContext } from '$lib/contexts/voter';
   import { parseParams } from '$lib/utils/route';
   import MainContent from '../../../../../MainContent.svelte';
-  import { getCustomData, type CustomData } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
   import type { QuestionCategory } from '@openvaa/data';
   import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
@@ -94,7 +94,7 @@ Display the intro to a question category and possibly a button with which to ski
 
     <svelte:fragment slot="heading">
       <HeadingGroup class="relative">
-        <h1><CategoryTag {category} class="text-xl"/></h1>
+        <h1><CategoryTag {category} class="text-xl" /></h1>
         <PreHeading class="text-secondary">
           {$t('questions.category.numQuestions', {
             numQuestions: block?.block.length ?? -1

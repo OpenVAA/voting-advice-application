@@ -16,23 +16,23 @@ popupQueue.push({
 -->
 
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { Alert, type AlertProps } from '$lib/components/alert';
   import { Button } from '$lib/components/button';
-  import { sanitizeHtml } from '$lib/utils/sanitize';
   import { getAppContext } from '$lib/contexts/app';
+  import { sanitizeHtml } from '$lib/utils/sanitize';
   import type { Route } from '$lib/utils/route';
-  import { goto } from '$app/navigation';
-  
+
   /* eslint-disable @typescript-eslint/no-unused-vars */
   type $$Props = Partial<AlertProps>;
-  
+
   const { getRoute, t } = getAppContext();
 
   let closeAlert: () => void;
 
   const title = $t('candidateApp.preregister.isPreregisteredNotification.title');
   const content = $t('candidateApp.preregister.isPreregisteredNotification.content');
-  
+
   function handleClick(route: Route): void {
     closeAlert();
     goto($getRoute(route));
@@ -45,13 +45,7 @@ popupQueue.push({
     {@html sanitizeHtml(content)}
   </div>
   <svelte:fragment slot="actions">
-    <Button 
-      on:click={() => handleClick('CandAppLogin')}
-      text={$t('common.login')} 
-      variant="main" 
-      class="mb-md" />
-    <Button 
-      on:click={() => handleClick('CandAppForgotPassword')}
-      text={$t('candidateApp.login.forgotPassword')} />
+    <Button on:click={() => handleClick('CandAppLogin')} text={$t('common.login')} variant="main" class="mb-md" />
+    <Button on:click={() => handleClick('CandAppForgotPassword')} text={$t('candidateApp.login.forgotPassword')} />
   </svelte:fragment>
 </Alert>

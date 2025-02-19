@@ -40,13 +40,13 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { concatClass } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
   import { findCandidateNominations } from '$lib/utils/matches';
+  import { sortQuestions } from '$lib/utils/sorting';
   import { EntityChildren, EntityInfo, EntityOpinions } from './';
   import type { EntityDetailsContent, OrganizationDetailsContent } from '@openvaa/app-shared';
   import type { Readable } from 'svelte/store';
   import type { AnswerStore } from '$lib/contexts/voter';
   import type { MatchTree } from '$lib/contexts/voter/matchStore';
   import type { EntityDetailsProps } from './EntityDetails.type';
-  import { sortQuestions } from '$lib/utils/sorting';
 
   type $$Props = EntityDetailsProps;
 

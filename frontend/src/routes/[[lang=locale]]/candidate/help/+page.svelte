@@ -25,15 +25,15 @@ Shows a FAQ and other support content for the candidate application.
   ////////////////////////////////////////////////////////////////////
   // Build support email link
   ////////////////////////////////////////////////////////////////////
-  
+
   const supportMailto = getEmailUrl({
     subject: `${$t('candidateApp.help.supportEmailSubject')}: ${$t('dynamic.candidateAppName')}`,
-    to: $appSettings.admin.email,
+    to: $appSettings.admin.email
   });
 </script>
 
 <MainContent title={$t('candidateApp.help.title')}>
-  <div class="text-center mb-lg">
+  <div class="mb-lg text-center">
     {$t('candidateApp.help.ingress')}
   </div>
 
@@ -47,13 +47,13 @@ Shows a FAQ and other support content for the candidate application.
     </p>
   {/each}
 
-    <Button
-      href={supportMailto}
-      variant="prominent"
-      target="_blank"
-      icon="feedback"
-      text={$t('candidateApp.common.contactSupport')}
-      class="mt-lg" />
+  <Button
+    href={supportMailto}
+    variant="prominent"
+    target="_blank"
+    icon="feedback"
+    text={$t('candidateApp.common.contactSupport')}
+    class="mt-lg" />
 
   <svelte:fragment slot="primaryActions">
     <Button

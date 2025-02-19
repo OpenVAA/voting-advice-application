@@ -47,8 +47,8 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
-  import type { FeedbackProps } from './Feedback.type';
   import { getEmailUrl } from '$lib/utils/email';
+  import type { FeedbackProps } from './Feedback.type';
 
   type $$Props = FeedbackProps;
 
@@ -145,7 +145,7 @@ Accesses the `AppContext` and the `FeedbackWriter` api.
     return getEmailUrl({
       subject: `${$t('feedback.error.emailSubject')}: ${$t('dynamic.appName')}`,
       to: $appSettings.admin.email,
-      body: description ?? '',
+      body: description ?? ''
     });
   }
 </script>

@@ -24,7 +24,15 @@ A template part that outputs the navigation menu for the Candidate App for use i
   import { LanguageSelection } from '../languages';
 
   const { navigation } = getLayoutContext(onDestroy);
-  const { appSettings, authToken, getRoute, openFeedbackModal, t, unansweredRequiredInfoQuestions, unansweredOpinionQuestions } = getCandidateContext();
+  const {
+    appSettings,
+    authToken,
+    getRoute,
+    openFeedbackModal,
+    t,
+    unansweredRequiredInfoQuestions,
+    unansweredOpinionQuestions
+  } = getCandidateContext();
 </script>
 
 <Navigation slot="nav" on:navFocusOut {...$$restProps}>
@@ -61,13 +69,17 @@ A template part that outputs the navigation menu for the Candidate App for use i
     <NavGroup>
       <NavItem href={$getRoute('CandAppLogin')} icon="login" text={$t('common.login')} />
       {#if $appSettings.preRegistration?.enabled}
-        <NavItem href={$getRoute('CandAppPreregister')} icon="create" text={$t('candidateApp.preregister.identification.start.title')} />
+        <NavItem
+          href={$getRoute('CandAppPreregister')}
+          icon="create"
+          text={$t('candidateApp.preregister.identification.start.title')} />
       {/if}
-      <NavItem href={$getRoute('CandAppRegister')} icon="check" text={
-        $appSettings.preRegistration?.enabled 
-        ? $t('candidateApp.register.titleWithPreregistration')
-        : $t('candidateApp.register.title')
-      } />
+      <NavItem
+        href={$getRoute('CandAppRegister')}
+        icon="check"
+        text={$appSettings.preRegistration?.enabled
+          ? $t('candidateApp.register.titleWithPreregistration')
+          : $t('candidateApp.register.title')} />
     </NavGroup>
     <NavGroup>
       <NavItem href={$getRoute('CandAppForgotPassword')} icon="help" text={$t('candidateApp.login.forgotPassword')} />
@@ -79,6 +91,6 @@ A template part that outputs the navigation menu for the Candidate App for use i
     <NavGroup>
       <NavItem on:click={$openFeedbackModal} icon="feedback" text={$t('feedback.send')} />
     </NavGroup>
-  {/if} 
+  {/if}
   <LanguageSelection />
 </Navigation>

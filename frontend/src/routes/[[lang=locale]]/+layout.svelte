@@ -18,6 +18,7 @@
   import { staticSettings } from '@openvaa/app-shared';
   import { onDestroy } from 'svelte';
   import { afterNavigate, beforeNavigate, onNavigate } from '$app/navigation';
+  import { updated } from '$app/stores';
   import { isValidResult } from '$lib/api/utils/isValidResult';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Loading } from '$lib/components/loading';
@@ -31,7 +32,6 @@
   import MaintenancePage from './MaintenancePage.svelte';
   import type { DPDataType } from '$lib/api/base/dataTypes';
   import type { LayoutData } from './$types';
-  import { updated } from '$app/stores';
 
   export let data: LayoutData;
 
@@ -42,17 +42,8 @@
   initI18nContext();
   initComponentContext();
   initDataContext();
-  const {
-    appSettings,
-    dataRoot,
-    openFeedbackModal,
-    popupQueue,
-    sendTrackingEvent,
-    startPageview,
-    submitAllEvents,
-    t,
-    userPreferences
-  } = initAppContext();
+  const { appSettings, dataRoot, openFeedbackModal, popupQueue, sendTrackingEvent, startPageview, submitAllEvents, t } =
+    initAppContext();
   initLayoutContext();
 
   ////////////////////////////////////////////////////////////////////
@@ -103,8 +94,8 @@
 
   // Check if the app has been updated and if so, reload the app. The version is checked based on `pollInterval` in frontend/svelte.config.js
   beforeNavigate(({ willUnload, to }) => {
-		if ($updated && !willUnload && to?.url) location.href = to.url.href;
-	});
+    if ($updated && !willUnload && to?.url) location.href = to.url.href;
+  });
   onNavigate(() => submitAllEvents());
   onDestroy(() => submitAllEvents());
   afterNavigate(({ from, to }) => {
@@ -155,10 +146,7 @@
   <!-- Popup service -->
   {#if $popupQueue}
     {#key $popupQueue}
-      <svelte:component 
-        this={$popupQueue.component} 
-        onClose={popupQueue.shift} 
-        {...$popupQueue.props}/>
+      <svelte:component this={$popupQueue.component} onClose={popupQueue.shift} {...$popupQueue.props} />
     {/key}
   {/if}
 

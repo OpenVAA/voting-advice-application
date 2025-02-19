@@ -112,7 +112,7 @@ Shows a dynamic list of the actions the candidate should take to be included in 
 
   <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$profileComplete ? $t('dynamic.success.heroEmoji') : undefined} />
-  </figure>  
+  </figure>
 
   <p class="text-center">
     {nextAction.explanation}

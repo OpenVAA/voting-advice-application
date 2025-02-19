@@ -35,7 +35,8 @@ Defines the layout of the `main` content for single cards, such as individual en
   <title>{title} – {$t('dynamic.appName')}</title>
 </svelte:head>
 
-<main {...concatClass($$restProps, 'flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg')}>
+<main
+  {...concatClass($$restProps, 'flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg')}>
   <!-- Note -->
   {#if $$slots.note}
     <div class={noteClass} role={noteRole}>

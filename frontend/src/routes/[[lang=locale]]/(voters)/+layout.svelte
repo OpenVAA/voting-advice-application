@@ -20,13 +20,13 @@
 
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
+  import { Notification } from '$lib/components/notification';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
-  import { Notification } from '$lib/components/notification';
+  import { DataConsentPopup } from '$lib/dynamic-components/dataConsent/popup';
   import { VoterNav } from '$lib/dynamic-components/navigation/voter/';
   import Layout from '../Layout.svelte';
   import MaintenancePage from '../MaintenancePage.svelte';
-  import { DataConsentPopup } from '$lib/dynamic-components/dataConsent/popup';
   import type { PopupComponent } from '$lib/contexts/app/popup';
 
   ////////////////////////////////////////////////////////////////////
@@ -44,8 +44,8 @@
     if (!$appSettings.access.voterApp) return;
     // Show possible notification
     if ($appSettings.notifications.voterApp?.show)
-      popupQueue.push({ 
-        component: Notification as unknown as PopupComponent, 
+      popupQueue.push({
+        component: Notification as unknown as PopupComponent,
         props: { data: $appSettings.notifications.voterApp }
       });
     // Ask for event tracking consent if we have no explicit answer
@@ -53,7 +53,8 @@
       $appSettings.analytics?.platform &&
       $appSettings.analytics?.trackEvents &&
       (!$userPreferences.dataCollection?.consent || $userPreferences.dataCollection?.consent === 'indetermined')
-    ) popupQueue.push({ component: DataConsentPopup });
+    )
+      popupQueue.push({ component: DataConsentPopup });
   });
 
   ////////////////////////////////////////////////////////////////////
