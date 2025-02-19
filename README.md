@@ -17,6 +17,8 @@ The project is coordinated by the Finnish non-profit association [OpenVAA](https
 - 🕶️ Privacy-preserving
 - 🎓 Informed by research and research-friendly
 
+See full list of [features](/docs/features/).
+
 ## 🔨 Use cases
 
 - Collect candidates’ or parties’ answers and publish a VAA for voters
@@ -82,7 +84,7 @@ See [the contribution guide](docs/contributing/CONTRIBUTING.md) for further info
 
 ## Getting started
 
-You can run the whole application in a single Docker image, or run the frontend or backend separately depending on your preferences. Using the Docker image is recommended and the quickest way to set up the application.
+You can run the whole application in Docker containers (frontend, backend, postgres database,and AWS local stack for developing), or run the frontend or backend separately depending on your preferences. Using the Docker image is recommended and the quickest way to set up the application.
 
 - See [the Docker setup guide](docs/docker-setup-guide.md) for running the whole application.
 - See [the frontend Readme](frontend/README.md) for instructions on running the frontend individually.
@@ -98,6 +100,7 @@ The project is a monorepo and it consists of several yarn workspaces (each is a 
 - Application
   - [`@openvaa/app-shared`](./packages/app-shared/)
   - [`@openvaa/strapi`](./backend/vaa-strapi/)
+  - [`@openvaa/strapi-admin-tools`](./backend/vaa-strapi/src/plugins/openvaa-admin-tools/)
   - [`@openvaa/frontend`](./frontend/)
 - Development
   - [`@openvaa/shared-config`](./packages/shared-config/)
@@ -152,6 +155,10 @@ In other words, you DO NOT have to build the **dependee** modules in order for t
 When you use Yarn and during runtime NPM/Node module resolution mechanism is used instead. It relies on various pointers defined in `package.json` files of the corresponding modules (e.g. `main`, `module` or `exports`). These pointers usually refer to `build`/`dist` directory containing already transpiled TS sources of a given module (`.js` files). This directory subsequently gets symlinked by `yarn install` in a `node_modules` directory of a **dependent** module.
 
 In other words, you DO have to build the **dependee** modules prior to running a **dependent** module or using Yarn on it, so that NPM/Node can find the transpiled `.js` sources and pick up changes you make in the original `.ts` code (see also on hot module reloading support or a lack of such [here](./docs/docker-setup-guide.md#hot-reloading)).
+
+## Deploying
+
+See [deployment guide](/docs/deploying/).
 
 ## Maintaining dependencies
 

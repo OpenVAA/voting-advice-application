@@ -3,6 +3,8 @@
 This document describes the process for running the frontend separately on your local machine without Docker. You can
 find [instructions on running the project with Docker here](../docs/docker-setup-guide.md).
 
+> See also the main [documentation for the frontend](/docs/frontend/).
+
 ## Run The Frontend
 
 Frontend module depends on `@openvaa/app-shared` and you need to build it prior to using `@openvaa/frontend` directly (no need if you use it via Docker):

@@ -8,6 +8,7 @@ The documentation for the frontend consists of:
 - [Accessing data and state management](data-and-state-management.md)
 - [Data API](data-api.md)
 - [Contexts](contexts.md)
+- [Environmental variables](env-variables.md)
 
 See also:
 

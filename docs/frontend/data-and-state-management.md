@@ -1,13 +1,12 @@
 # Accessing data and state management
 
-> 🚧 **Legacy code** 🚧 There exist a number of utilities, stores, API services, components and types prefixed with `legacy` or `Legacy` either in their names or filepaths. These are needed only as long as the Candidate App is refactored to follow the same Data API and context paradigm as the Voter App.
-
 The overall model for loading and writing data and managing the application state is as follows.
 
-1. External data is loaded (and written) using the [Data API](#data-api). The API is accessed by universal `load` functions in `+layout.ts` files.
+1. External data is loaded (and written) using the [Data API](#data-api). The API is accessed by universal `load` functions in `+layout.ts` files, the `Context`s or some API routes.
    - Depending on [settings](../../packages/app-shared/src/settings/staticSettings.type.ts), either a Strapi backend is accessed or data is read from local `json` files.
 2. The loaded data is passed to the `dataRoot` store accessible via the `DataContext` and converted into functional objects using the [`@openvaa/data` model](../../packages/data/).
    - All pages, some other [contexts](contexts.md) and [dynamic components](./components.md) can access the `DataContext`.
+   - Some data in the Candidate App is contained in a `UserDataStore` instead of the `dataRoot` store.
 3. All other shared stores are contained in [contexts](./contexts.md).
    - Some contexts are globally available and some to only certain parts of the application.
 
