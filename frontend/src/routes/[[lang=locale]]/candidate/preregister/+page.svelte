@@ -10,6 +10,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { browser } from '$app/environment';
+  import { generateChallenge } from '$lib/api/utils/auth/generateChallenge';
   import { goto } from '$app/navigation';
   import { PreregisteredNotification } from '$candidate/components/preregisteredNotification';
   import { Button } from '$lib/components/button';
@@ -70,35 +71,18 @@
       ? 'CandAppPreregisterConstituency'
       : 'CandAppPreregisterEmail';
 
-  function toBase64(arrayBuffer: Uint8Array<ArrayBuffer>) {
-    return btoa(String.fromCharCode(...arrayBuffer))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
-  }
-
-  async function generatePKCE() {
-    const array = new Uint8Array(32);
-    window.crypto.getRandomValues(array);
-    const codeVerifier = toBase64(array);
-
-    return {
-      codeVerifier,
-      codeChallenge: toBase64(
-        new Uint8Array(await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier)))
-      )
-    };
-  }
-
   async function redirectToIdentityProvider() {
     if (!browser) {
       return;
     }
+
+    const { codeVerifier, codeChallenge } = await generateChallenge(window.crypto);
+    localStorage.setItem('code_verifier', codeVerifier);
+
     const clientId = constants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
+    const authorizationEndpointUri = constants.PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT;
     const redirectUri = `${window.location.origin}/${$locale}/candidate/preregister/signicat/oidc/callback`; // TODO: Shorter URI.
-    const { codeVerifier, codeChallenge } = await generatePKCE();
-    localStorage.setItem('codeVerifier', codeVerifier);
-    window.location.href = `${constants.PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=openid%20profile&prompt=login&code_challenge=${codeChallenge}&code_challenge_method=S256`;
+    window.location.href = `${authorizationEndpointUri}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=openid%20profile&prompt=login&code_challenge=${codeChallenge}&code_challenge_method=S256`;
   }
 
   ////////////////////////////////////////////////////////////////////
