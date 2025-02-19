@@ -21,9 +21,5 @@
 </script>
 
 <svelte:head>
-  <script
-    defer
-    src={scriptSrc}
-    data-website-id={websiteId}
-    data-auto-track="true"></script>
+  <script defer src={scriptSrc} data-website-id={websiteId} data-auto-track="true"></script>
 </svelte:head>

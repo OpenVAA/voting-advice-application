@@ -37,7 +37,7 @@
   initCandidateContext();
   $appType = 'candidate';
 
- ////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////
   // Popup management
   ////////////////////////////////////////////////////////////////////
 
@@ -45,12 +45,12 @@
     if (!$appSettings.access.candidateApp || !$appSettings.dataAdapter.supportsCandidateApp) return;
     // Show possible notification
     if ($appSettings.notifications.candidateApp?.show)
-      popupQueue.push({ 
-        component: Notification as unknown as PopupComponent, 
+      popupQueue.push({
+        component: Notification as unknown as PopupComponent,
         props: { data: $appSettings.notifications.candidateApp }
       });
   });
-  
+
   ////////////////////////////////////////////////////////////////////
   // Layout and top bar
   ////////////////////////////////////////////////////////////////////
@@ -81,4 +81,3 @@
     <slot />
   </Layout>
 {/if}
-

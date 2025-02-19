@@ -80,9 +80,7 @@ text="Add to list">
   let effectiveText: typeof text;
 
   $: {
-    effectiveText = loading 
-      ? (loadingText || $t('common.loading'))
-      : text;
+    effectiveText = loading ? loadingText || $t('common.loading') : text;
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -179,7 +177,7 @@ text="Add to list">
   {#if loading || icon}
     <div class="relative">
       {#if loading}
-        <Loading inline size="sm" class="pe-2"/>
+        <Loading inline size="sm" class="pe-2" />
       {:else if icon}
         <Icon name={icon} />
       {/if}
@@ -192,7 +190,7 @@ text="Add to list">
   {/if}
   {#if variant !== 'icon'}
     <div class={labelClass}>
-      <span class="relative uc-first">
+      <span class="uc-first relative">
         {effectiveText}
         {#if $$slots.badge && !icon && variant !== 'main'}
           <div class="absolute -end-20 -top-8">

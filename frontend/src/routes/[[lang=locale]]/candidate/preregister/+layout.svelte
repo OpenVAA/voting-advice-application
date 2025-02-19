@@ -1,9 +1,9 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
+  import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
-  import { goto } from '$app/navigation';
-  import { onDestroy } from 'svelte';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../MainContent.svelte';
 

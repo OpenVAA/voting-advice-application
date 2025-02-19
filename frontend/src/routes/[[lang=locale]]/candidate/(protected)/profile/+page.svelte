@@ -10,6 +10,7 @@ Shows the candidate's basic information, some of which is editable.
 -->
 
 <script lang="ts">
+  import { getCustomData, type LocalizedAnswer } from '@openvaa/app-shared';
   import { type AnyQuestionVariant, CandidateNomination, ENTITY_TYPE, isEmptyValue } from '@openvaa/data';
   import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
@@ -25,7 +26,6 @@ Shows the candidate's basic information, some of which is editable.
   import { getLayoutContext } from '$lib/contexts/layout';
   import { logDebugError } from '$lib/utils/logger';
   import MainContent from '../../../MainContent.svelte';
-  import { getCustomData, type CustomData, type LocalizedAnswer } from '@openvaa/app-shared';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -83,8 +83,7 @@ Shows the candidate's basic information, some of which is editable.
       const customData = getCustomData(nomination);
       // Unconfirmed may be inherited from parent nomination
       let unconfirmed = !!customData.unconfirmed;
-      if (!unconfirmed && parentNomination)
-        unconfirmed = !!getCustomData(parentNomination).unconfirmed;
+      if (!unconfirmed && parentNomination) unconfirmed = !!getCustomData(parentNomination).unconfirmed;
       return {
         election: election.name,
         constituency: constituency.name,
@@ -113,9 +112,7 @@ Shows the candidate's basic information, some of which is editable.
     submitRoute = $getRoute('CandAppQuestions');
   } else {
     submitRoute = $getRoute('CandAppHome');
-    submitLabel = $answersLocked || !$hasUnsaved
-      ? $t('common.return') 
-      : $t('common.saveAndReturn');
+    submitLabel = $answersLocked || !$hasUnsaved ? $t('common.return') : $t('common.saveAndReturn');
   }
 
   function handleImageInputChange(value: unknown): void {
@@ -211,17 +208,15 @@ Shows the candidate's basic information, some of which is editable.
       <!-- Locked Info questions -->
       {#each $infoQuestions.filter((q) => getCustomData(q).locked) as question}
         {@const answer = $userData?.candidate.answers?.[question.id]}
-        <QuestionInput 
-          {question} 
-          {answer} 
-          locked 
-          onShadedBg 
+        <QuestionInput
+          {question}
+          {answer}
+          locked
+          onShadedBg
           disableMultilingual
           placeholder={$t('dynamic.candidateAppBasicInfo.immutableData.emptyPlaceholder')} />
       {/each}
-
     </InputGroup>
-
   </section>
 
   <!-- Immutable nominations -->
@@ -231,7 +226,7 @@ Shows the candidate's basic information, some of which is editable.
     <p class="mx-md">{$t('candidateApp.basicInfo.nominations.description')}</p>
 
     <div class="flex flex-col gap-lg">
-      {#each nominations as nomination, i}
+      {#each nominations as nomination}
         {@const { election, constituency, organization, electionSymbol, unconfirmed } = parseNomination(nomination)}
         <InputGroup title={election}>
           {#if constituency}
@@ -283,9 +278,7 @@ Shows the candidate's basic information, some of which is editable.
 
   <svelte:fragment slot="primaryActions">
     {#if !$answersLocked}
-      <div 
-        class="mx-md mt-md mb-lg transition-opacity" 
-        class:opacity-0={status === 'loading' || allRequiredFilled}>
+      <div class="mx-md mb-lg mt-md transition-opacity" class:opacity-0={status === 'loading' || allRequiredFilled}>
         <Icon name="required" class="{iconBadgeClass} text-warning" /><span class="sr-only"
           >{$t('common.required')}</span>
         {$t('candidateApp.basicInfo.requiredInfo')}
@@ -308,11 +301,7 @@ Shows the candidate's basic information, some of which is editable.
           data-testid="submitButton"
           variant="main"
           icon="next" />
-        <Button 
-          text={$t('common.cancel')} 
-          disabled={!$hasUnsaved}
-          on:click={handleCancel} 
-          color="warning" />
+        <Button text={$t('common.cancel')} disabled={!$hasUnsaved} on:click={handleCancel} color="warning" />
       {:else}
         <Button text={$t('common.return')} href={$getRoute('CandAppHome')} variant="main" />
       {/if}
@@ -322,6 +311,6 @@ Shows the candidate's basic information, some of which is editable.
 
 <style lang="postcss">
   section {
-    @apply self-stretch mt-lg;
+    @apply mt-lg self-stretch;
   }
 </style>

@@ -49,8 +49,8 @@ Defines the layout of the `main` content of all the standard pages in the app.
   <title>{title} – {$t('dynamic.appName')}</title>
 </svelte:head>
 
-<main {...concatClass($$restProps, 'flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg')}>
-
+<main
+  {...concatClass($$restProps, 'flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg')}>
   <!-- Note -->
   {#if $$slots.note}
     <div class={noteClass} role={noteRole}>
@@ -95,5 +95,4 @@ Defines the layout of the `main` content of all the standard pages in the app.
       <slot name="primaryActions" />
     </section>
   {/if}
-
 </main>

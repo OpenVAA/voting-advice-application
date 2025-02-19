@@ -9,13 +9,13 @@ Contains the parts of the pre-registration process taking part after a successfu
 -->
 
 <script lang="ts">
+  import { onDestroy } from 'svelte';
+  import { goto } from '$app/navigation';
   import { Button } from '$lib/components/button';
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import { goto } from '$app/navigation';
+  import { getLayoutContext } from '$lib/contexts/layout';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import MainContent from '../../../MainContent.svelte';
-  import { getLayoutContext } from '$lib/contexts/layout';
-  import { onDestroy } from 'svelte';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts

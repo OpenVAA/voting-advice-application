@@ -20,14 +20,14 @@ A utility component for displaying candidate app terms of use and privacy statem
   ////////////////////////////////////////////////////////////////////
   // Build content
   ////////////////////////////////////////////////////////////////////
-  
+
   let registryStatement: string;
   let termsOfUse: string;
 
   $: {
     const appName = $t('dynamic.appName');
-    registryStatement = $t('dynamic.candidateAppPrivacy.registryStatement.content', {  appName });
-    termsOfUse = $t('dynamic.candidateAppPrivacy.termsOfUse.content', {  appName });
+    registryStatement = $t('dynamic.candidateAppPrivacy.registryStatement.content', { appName });
+    termsOfUse = $t('dynamic.candidateAppPrivacy.termsOfUse.content', { appName });
   }
 </script>
 
@@ -44,7 +44,6 @@ A utility component for displaying candidate app terms of use and privacy statem
     <h2>{$t('dynamic.candidateAppPrivacy.termsOfUse.title')}</h2>
     <div class="prose">
       {@html sanitizeHtml(termsOfUse)}
-
     </div>
   </section>
 {/if}

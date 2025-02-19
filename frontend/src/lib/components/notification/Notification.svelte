@@ -16,16 +16,16 @@ Show a notification popup to the user.
 
 <script lang="ts">
   import { Alert } from '$lib/components/alert';
-  import { getComponentContext } from '$lib/contexts/component';
-  import { type IconName, ICONS } from '$lib/components/icon';
-  import type { NotificationProps } from './Notification.type';
   import { Button } from '$lib/components/button';
+  import { type IconName, ICONS } from '$lib/components/icon';
+  import { getComponentContext } from '$lib/contexts/component';
   import { sanitizeHtml } from '$lib/utils/sanitize';
+  import type { NotificationProps } from './Notification.type';
 
   type $$Props = NotificationProps;
 
   export let data: $$Props['data'];
-  
+
   const { t, translate } = getComponentContext();
 
   let title: string;
@@ -36,7 +36,7 @@ Show a notification popup to the user.
   $: {
     title = translate(data.title);
     content = translate(data.content);
-    icon = ((data.icon && data.icon in ICONS) ? data.icon : 'important') as IconName;
+    icon = (data.icon && data.icon in ICONS ? data.icon : 'important') as IconName;
   }
 </script>
 
@@ -45,9 +45,5 @@ Show a notification popup to the user.
     <h3>{title}</h3>
     {@html sanitizeHtml(content)}
   </div>
-  <Button 
-    slot="actions"
-    variant="main"
-    text={$t('common.close')} 
-    on:click={closeAlert} />
+  <Button slot="actions" variant="main" text={$t('common.close')} on:click={closeAlert} />
 </Alert>

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { getCandidateContext } from '$lib/contexts/candidate';
   import { goto } from '$app/navigation';
-  import { Loading } from '$lib/components/loading';
   import { page } from '$app/stores';
+  import { Loading } from '$lib/components/loading';
+  import { getCandidateContext } from '$lib/contexts/candidate';
   import MainContent from '../../../../../MainContent.svelte';
 
   ////////////////////////////////////////////////////////////////////

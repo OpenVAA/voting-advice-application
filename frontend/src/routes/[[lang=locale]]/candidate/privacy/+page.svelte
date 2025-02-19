@@ -17,7 +17,6 @@ Shows a registry and privacy statement
   ////////////////////////////////////////////////////////////////////
 
   const { getRoute, t, userData } = getCandidateContext();
-
 </script>
 
 <MainContent title={$t('candidateApp.privacy.title')}>
@@ -25,7 +24,7 @@ Shows a registry and privacy statement
     <HeroEmoji emoji={$t('dynamic.candidateAppPrivacy.heroEmoji')} />
   </figure>
 
-  <div class="flex flex-col gap-xl my-lg">
+  <div class="my-lg flex flex-col gap-xl">
     <TermsOfUse />
   </div>
 
