@@ -3,6 +3,7 @@ import { redirect } from '@sveltejs/kit';
 import { getIdTokenClaims } from '$lib/api/utils/auth/getIdTokenClaims';
 import { constants } from '$lib/server/constants';
 import { buildRoute } from '$lib/utils/route';
+import { constants as publicConstants } from '$lib/utils/constants';
 
 export async function load({ cookies, locals }) {
   if (!staticSettings.preRegistration.enabled) {
@@ -16,7 +17,8 @@ export async function load({ cookies, locals }) {
   }
 
   const idToken = cookies.get('id_token');
-  const { IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY, IDENTITY_PROVIDER_JWKS_URI } = constants;
+  const { IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY, IDENTITY_PROVIDER_JWKS_URI, IDENTITY_PROVIDER_ISSUER } = constants;
+  const { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID } = publicConstants;
 
   if (!idToken) {
     return { claims: undefined };
@@ -24,7 +26,9 @@ export async function load({ cookies, locals }) {
 
   const claims = await getIdTokenClaims(idToken, {
     privateEncryptionJWK: JSON.parse(IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY),
-    publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
+    publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI,
+    audience: PUBLIC_IDENTITY_PROVIDER_CLIENT_ID,
+    issuer: IDENTITY_PROVIDER_ISSUER
   });
 
   if (!claims.success) {

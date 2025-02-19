@@ -2,7 +2,7 @@ import * as jose from 'jose';
 
 export async function getIdTokenClaims(
   idToken: string,
-  options: { privateEncryptionJWK: jose.JWK; publicSignatureJWKSetUri: string }
+  options: { privateEncryptionJWK: jose.JWK; publicSignatureJWKSetUri: string; audience?: string; issuer?: string }
 ): Promise<
   | { success: true; data: { firstName: string; lastName: string; identifier: string } }
   | { success: false; error: { code?: string } }
@@ -11,7 +11,8 @@ export async function getIdTokenClaims(
     const { plaintext } = await jose.compactDecrypt(idToken, await jose.importJWK(options.privateEncryptionJWK));
     const { payload } = await jose.jwtVerify(
       new TextDecoder().decode(plaintext),
-      jose.createRemoteJWKSet(new URL(options.publicSignatureJWKSetUri))
+      jose.createRemoteJWKSet(new URL(options.publicSignatureJWKSetUri)),
+      { audience: options.audience, issuer: options?.issuer }
     );
 
     return {

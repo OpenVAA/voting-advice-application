@@ -2,11 +2,18 @@ import { error, json } from '@sveltejs/kit';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { getIdTokenClaims } from '$lib/api/utils/auth/getIdTokenClaims';
 import { constants } from '$lib/server/constants';
+import { constants as publicConstants } from '$lib/utils/constants';
 import { logDebugError } from '$lib/utils/logger';
 import type { Id } from '@openvaa/core';
 
 export async function POST({ cookies, request }) {
-  const { BACKEND_API_TOKEN, IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY, IDENTITY_PROVIDER_JWKS_URI } = constants;
+  const {
+    BACKEND_API_TOKEN,
+    IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY,
+    IDENTITY_PROVIDER_JWKS_URI,
+    IDENTITY_PROVIDER_ISSUER
+  } = constants;
+  const { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID } = publicConstants;
 
   const dataWriter = await dataWriterPromise;
   dataWriter.init({ fetch });
@@ -31,7 +38,9 @@ export async function POST({ cookies, request }) {
 
   const claims = await getIdTokenClaims(idToken, {
     privateEncryptionJWK: JSON.parse(IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY),
-    publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
+    publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI,
+    audience: PUBLIC_IDENTITY_PROVIDER_CLIENT_ID,
+    issuer: IDENTITY_PROVIDER_ISSUER
   });
 
   if (!claims.success) {
