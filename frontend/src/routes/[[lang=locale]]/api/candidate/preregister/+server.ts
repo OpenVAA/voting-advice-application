@@ -2,14 +2,11 @@ import { error, json } from '@sveltejs/kit';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { getIdTokenClaims } from '$lib/api/utils/auth/getIdTokenClaims';
 import { constants } from '$lib/server/constants';
-import { constants as publicConstants } from '$lib/utils/constants';
 import { logDebugError } from '$lib/utils/logger';
 import type { Id } from '@openvaa/core';
 
 export async function POST({ cookies, request }) {
-  const { BACKEND_API_TOKEN, IDENTITY_PROVIDER_DECRYPTION_JWKS, IDENTITY_PROVIDER_JWKS_URI, IDENTITY_PROVIDER_ISSUER } =
-    constants;
-  const { PUBLIC_IDENTITY_PROVIDER_CLIENT_ID } = publicConstants;
+  const { BACKEND_API_TOKEN } = constants;
 
   const dataWriter = await dataWriterPromise;
   dataWriter.init({ fetch });
@@ -32,12 +29,7 @@ export async function POST({ cookies, request }) {
     error(401, { message: 'ID token has expired.' });
   }
 
-  const claims = await getIdTokenClaims(idToken, {
-    privateEncryptionJWKSet: JSON.parse(IDENTITY_PROVIDER_DECRYPTION_JWKS),
-    publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI,
-    audience: PUBLIC_IDENTITY_PROVIDER_CLIENT_ID,
-    issuer: IDENTITY_PROVIDER_ISSUER
-  });
+  const claims = await getIdTokenClaims(idToken);
 
   if (!claims.success) {
     error(401, { message: 'ID token has expired.' });

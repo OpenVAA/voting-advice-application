@@ -1,8 +1,22 @@
 import * as jose from 'jose';
+import { constants } from '$lib/server/constants';
+import { constants as publicConstants } from '$lib/utils/constants';
+
+export const defaultOptions = {
+  privateEncryptionJWKSet: JSON.parse(constants.IDENTITY_PROVIDER_DECRYPTION_JWKS),
+  publicSignatureJWKSetUri: constants.IDENTITY_PROVIDER_JWKS_URI,
+  audience: publicConstants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID,
+  issuer: constants.IDENTITY_PROVIDER_ISSUER
+} as const;
 
 export async function getIdTokenClaims(
   idToken: string,
-  options: { privateEncryptionJWKSet: Array<jose.JWK>; publicSignatureJWKSetUri: string; audience?: string; issuer?: string }
+  options: {
+    privateEncryptionJWKSet: Array<jose.JWK>;
+    publicSignatureJWKSetUri: string;
+    audience?: string;
+    issuer?: string;
+  } = defaultOptions
 ): Promise<
   | { success: true; data: { firstName: string; lastName: string; identifier: string } }
   | { success: false; error: { code?: string } }
