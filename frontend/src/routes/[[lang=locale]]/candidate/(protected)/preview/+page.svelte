@@ -20,6 +20,7 @@ Used to show a preview of the candidate’s own profile using the `EntityDetails
   import { getLayoutContext } from '$lib/contexts/layout';
   import { EntityDetails } from '$lib/dynamic-components/entityDetails';
   import { logDebugError } from '$lib/utils/logger';
+  import { toNameCase } from '$lib/utils/text/toNameCase';
   import SingleCardContent from '../../../SingleCardContent.svelte';
   import type { Candidate } from '@openvaa/data';
 
@@ -57,6 +58,16 @@ Used to show a preview of the candidate’s own profile using the `EntityDetails
       return;
     }
     try {
+      // Custom for Nuorten Vaalikone
+      // Use nickname and proper name case
+      const nickname = result.answers?.['g859ggb3qdecapyb0j251ysr']?.value;
+      const firstName = nickname ? `${nickname}` : (toNameCase(result.firstName).split(/\s+/)[0] ?? '');
+      const lastName = toNameCase(result.lastName);
+      result.firstName = firstName;
+      result.lastName = lastName;
+      // Remove nickname from answer so it's not shown again
+      delete result.answers?.['g859ggb3qdecapyb0j251ysr'];
+
       $dataRoot.provideEntityData([translateLocalizedCandidate(result, $locale)]);
       entity = $dataRoot.getCandidate(result.id);
       status = 'success';
