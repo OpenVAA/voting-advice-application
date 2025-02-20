@@ -32,7 +32,6 @@
     getRoute,
     idTokenClaims,
     isPreregistered,
-    locale,
     popupQueue,
     preregistrationElectionIds,
     t
