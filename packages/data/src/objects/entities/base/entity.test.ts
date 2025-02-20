@@ -84,6 +84,8 @@ test('Should get formatted answer', () => {
 });
 
 test('Should return answeredQuestions', () => {
+  const UNAVAILABLE_QUESTION_ID = 'UNAVAILABLE_QUESTION';
+  expect(() => root.getQuestion(UNAVAILABLE_QUESTION_ID)).toThrow();
   const candidate = new Candidate({
     root,
     data: {
@@ -95,7 +97,9 @@ test('Should return answeredQuestions', () => {
         'question-1': { value: 'Answer 1' },
         // The ones below should not be included in answeredQuestions
         'question-2': null,
-        'question-3': { value: undefined }
+        'question-3': { value: undefined },
+        // This is not available but `answeredQuestions` should not throw
+        [UNAVAILABLE_QUESTION_ID]: { value: undefined }
       }
     }
   });

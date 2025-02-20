@@ -46,12 +46,14 @@ export abstract class Entity<TType extends EntityType, TData extends EntityData<
   //////////////////////////////////////////////////////////////////////////////
 
   /**
-   * All `Question`s that have been answered by this entity.
+   * All `Question`s that have been answered by this entity. Only returns those available in the `DataRoot`.
    */
   get answeredQuestions(): Array<AnyQuestionVariant> {
+    const questions = this.root.questions;
     return Object.entries(this.answers)
       .filter(([, answer]) => answer?.value != null)
-      .map(([id]) => this.root.getQuestion(id));
+      .map(([id]) => questions.find((q) => q.id === id))
+      .filter((q) => q != null);
   }
 
   /**
