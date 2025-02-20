@@ -4617,7 +4617,7 @@
         "externalId": "questionType-2"
       },
       "fillingInfo": {
-        "fi": "Jos käytä virallisen etunimesi sijaan toista kutsumanimeä, kirjoita se tähän. Muussa tapauksessa jätä tämä kenttä tyhjäksi.",
+        "fi": "Jos käytät virallisen etunimesi sijaan toista kutsumanimeä, kirjoita se tähän. Muussa tapauksessa jätä tämä kenttä tyhjäksi.",
         "sv": "Om du använder ett annat smeknamn istället för ditt officiella förnamn, skriv det här. Annars, lämna detta fält tomt.",
         "en": "If you use a different nickname instead of your official first name, enter it here. Otherwise, leave this field empty."
       },
