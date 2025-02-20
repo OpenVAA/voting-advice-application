@@ -10,9 +10,9 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import { generateChallenge } from '$lib/api/utils/auth/generateChallenge';
   import { goto } from '$app/navigation';
   import { PreregisteredNotification } from '$candidate/components/preregisteredNotification';
+  import { generateChallenge } from '$lib/api/utils/auth/generateChallenge';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getCandidateContext } from '$lib/contexts/candidate';
@@ -32,7 +32,6 @@
     getRoute,
     idTokenClaims,
     isPreregistered,
-    locale,
     popupQueue,
     preregistrationElectionIds,
     t
