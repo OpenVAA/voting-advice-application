@@ -1,5 +1,5 @@
 import type { UID } from '@strapi/strapi';
-import type { ExternalRelationConfig } from './data.type';
+import type { ExternalRelationConfig } from '../data.type';
 
 /**
  * Any importable collection.
@@ -77,7 +77,7 @@ export const IMPORTABLE_COLLECTIONS: Record<
     externalRelations: {
       category: 'api::question-category.question-category',
       questionType: 'api::question-type.question-type',
-      constituency: 'api::constituency.constituency',
+      constituencies: 'api::constituency.constituency',
     },
   },
 } as const;

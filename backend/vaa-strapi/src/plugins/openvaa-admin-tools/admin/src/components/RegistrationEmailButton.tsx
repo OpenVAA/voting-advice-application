@@ -1,13 +1,15 @@
 import { Button, Field, Modal, Textarea, TextInput, Typography } from '@strapi/design-system';
 import { CheckCircle, Mail, WarningCircle } from '@strapi/icons';
 import { ReactElement, useState } from 'react';
+import { REGISTRATION_LINK_PLACEHOLDER } from '../../../server/src/services/utils/emailPlaceholders';
+import type { SendEmailResult } from '../../../server/src/services/email.type';
 
 export function RegistrationEmailButton({
   instructions,
   confirmFunction,
 }: {
   instructions: string;
-  confirmFunction: (args: { subject: string; content: string }) => Promise<Response>;
+  confirmFunction: (args: { subject: string; content: string }) => Promise<SendEmailResult>;
 }): ReactElement | null {
   // Only show this button in candidate collection
   // TODO: Use a more sophisticated way to check if the component should be shown
@@ -24,23 +26,25 @@ export function RegistrationEmailButton({
   const [status, setStatus] = useState('idle');
   const [info, setInfo] = useState('');
 
-  async function handleSubmit() {
-    if (!content.includes('{LINK}')) {
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+    if (!content.includes(REGISTRATION_LINK_PLACEHOLDER)) {
       setStatus('warning');
-      setInfo('Email content doesn’t include {LINK}');
+      setInfo(`Email content doesn’t include ${REGISTRATION_LINK_PLACEHOLDER}`);
     } else if (subject.length == 0) {
       setStatus('warning');
       setInfo('Email subject is empty');
     } else {
       const result = await confirmFunction({ subject, content }).catch(() => {
-        return { ok: false };
+        return { type: 'failure', cause: 'There was an error sending the email' };
       });
-      if (!result?.ok) {
+      if (result?.type !== 'success') {
         setStatus('warning');
-        setInfo('There was an error sending the email');
+        setInfo(result.cause || 'There was an error sending the email');
       } else {
         setStatus('success');
-        setInfo('Registration email was sent successfully');
+        const { sent = 1 } = result as SendEmailResult;
+        setInfo(`${sent} registration email(s) sent successfully`);
         setTimeout(() => setOpen(false), 5000);
       }
     }

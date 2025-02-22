@@ -1,6 +1,6 @@
 import { findOneByExternalId, parseExternalRelations } from './externalRelations';
 import { IMPORTABLE_COLLECTIONS } from './importableCollections';
-import type { ImportableCollection, ImportDatum } from './data.type';
+import type { ImportableCollection, ImportDatum } from '../data.type';
 
 /**
  * Create or update existing data based on `externalId` or `documentId` if provided.

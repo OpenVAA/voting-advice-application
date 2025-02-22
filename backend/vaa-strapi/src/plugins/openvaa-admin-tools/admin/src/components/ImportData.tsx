@@ -9,18 +9,13 @@ import { importData } from '../api/data';
  * A component for accessing the `/openvaa-admin-tools/import-data` endpoint.
  */
 export function ImportData(): ReactElement {
-  const title = 'Import data';
   const submitLabel = 'Import';
-  async function submitHandler(data: object): Promise<ApiResult> {
-    const result = await importData(data);
-    if (result.type !== 'success') return result;
+  async function submitHandler(data: Record<string, unknown>): Promise<ApiResult> {
+    const { type, cause, ...rest } = await importData(data);
+    if (type !== 'success') return { type, cause };
     return {
       type: 'success',
-      message: `Data imported successfully. Created: ${Object.entries(result.created ?? {})
-        .map(([k, v]) => `${v} ${k}`)
-        .join(' • ')}. Updated: ${Object.entries(result.updated ?? {})
-        .map(([k, v]) => `${v} ${k}`)
-        .join(' • ')}.`,
+      data: rest,
     };
   }
   const intro = (
@@ -56,7 +51,5 @@ export function ImportData(): ReactElement {
       </p>
     </Flex>
   );
-  return (
-    <DataBase title={title} intro={intro} submitLabel={submitLabel} submitHandler={submitHandler} />
-  );
+  return <DataBase intro={intro} submitLabel={submitLabel} submitHandler={submitHandler} />;
 }

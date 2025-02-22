@@ -1,10 +1,13 @@
+import { Data } from '@strapi/strapi';
 import { apiPost } from './utils/apiPost';
 import type {
   DeleteDataResult,
+  FindDataResult,
   ImportDataResult,
-} from '../../../server/src/services/utils/data.type';
+  RegistrationStatus,
+} from '../../../server/src/services/data.type';
 
-export async function importData(data: object): Promise<ImportDataResult> {
+export async function importData(data: Record<string, unknown>): Promise<ImportDataResult> {
   const response = await apiPost('/openvaa-admin-tools/import-data', {
     data,
   }).catch((e) => e);
@@ -24,7 +27,7 @@ export async function importData(data: object): Promise<ImportDataResult> {
   return error ? { type: 'failure', cause: error } : { type: 'success', created, updated };
 }
 
-export async function deleteData(data: object): Promise<DeleteDataResult> {
+export async function deleteData(data: Record<string, unknown>): Promise<DeleteDataResult> {
   const response = await apiPost('/openvaa-admin-tools/delete-data', {
     data,
   }).catch((e) => e);
@@ -33,7 +36,7 @@ export async function deleteData(data: object): Promise<DeleteDataResult> {
   if (response instanceof Error) {
     error = response.message;
   } else if (!response.ok) {
-    error = 'There was an error deletingh the data';
+    error = 'There was an error deleting the data';
   } else {
     const data: DeleteDataResult = await response.json();
     const { type, cause } = data;
@@ -41,4 +44,41 @@ export async function deleteData(data: object): Promise<DeleteDataResult> {
     else ({ deleted } = data);
   }
   return error ? { type: 'failure', cause: error } : { type: 'success', deleted };
+}
+
+export async function findData(args: Record<string, unknown>): Promise<FindDataResult> {
+  const response = await apiPost('/openvaa-admin-tools/find-data', args).catch((e) => e);
+  let error: string | undefined;
+  let data: Array<Data.Entity> | undefined;
+  if (response instanceof Error) {
+    error = response.message;
+  } else if (!response.ok) {
+    error = 'There was an error finding the data';
+  } else {
+    const result: FindDataResult = await response.json();
+    const { type, cause } = result;
+    if (type !== 'success') error = cause ?? 'There was an error finding the data';
+    else ({ data } = result);
+  }
+  return error ? { type: 'failure', cause: error } : { type: 'success', data };
+}
+
+export async function findCandidates(args: {
+  registrationStatus: RegistrationStatus;
+  constituency?: string;
+}): Promise<FindDataResult> {
+  const response = await apiPost('/openvaa-admin-tools/find-candidates', args).catch((e) => e);
+  let error: string | undefined;
+  let data: Array<Data.Entity> | undefined;
+  if (response instanceof Error) {
+    error = response.message;
+  } else if (!response.ok) {
+    error = 'There was an error finding the candidates';
+  } else {
+    const result: FindDataResult = await response.json();
+    const { type, cause } = result;
+    if (type !== 'success') error = cause ?? 'There was an error finding the candidates';
+    else ({ data } = result);
+  }
+  return error ? { type: 'failure', cause: error } : { type: 'success', data };
 }

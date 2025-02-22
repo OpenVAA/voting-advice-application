@@ -1,5 +1,6 @@
-import { UID } from '@strapi/strapi';
-import { IMPORTABLE_COLLECTIONS } from './importableCollections';
+import type { Data, UID } from '@strapi/strapi';
+import type { ActionResult } from './actionResult.type';
+import type { IMPORTABLE_COLLECTIONS } from './utils/importableCollections';
 
 /**
  * Any importable collection.
@@ -18,7 +19,7 @@ export type ImportData = {
  */
 export type ImportDatum = Record<string, unknown>;
 
-export interface ImportDataResult extends DataResult {
+export interface ImportDataResult extends ActionResult {
   created?: Record<string, number>;
   updated?: Record<string, number>;
 }
@@ -42,11 +43,15 @@ export type DeleteData = {
   [KCollection in ImportableCollection]?: string;
 };
 
-export interface DeleteDataResult extends DataResult {
+export interface DeleteDataResult extends ActionResult {
   deleted?: Record<string, number>;
 }
 
-export interface DataResult {
-  type: 'success' | 'failure';
-  cause?: string;
+export interface FindDataResult extends ActionResult {
+  data?: Array<Data.Entity>;
 }
+
+/**
+ * The registration status of a candidate.
+ */
+export type RegistrationStatus = 'all' | 'unregistered' | 'registered';
