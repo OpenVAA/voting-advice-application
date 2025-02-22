@@ -1,6 +1,14 @@
 import { processComments } from '@openvaa/argument-condensation';
 import { generateAnswersCSV } from '../utils/csv-generator';
+import { finnishConfig } from '@openvaa/argument-condensation';
+import { OpenAIProvider } from '@openvaa/llm'; 
 
+// Initialize the OpenAI provider
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const model = 'gpt-4o-mini';
+const llmProvider = new OpenAIProvider({ apiKey: OPENAI_API_KEY, model });
+
+// Testing function for condensing arguments from strapi (currently lorem ipsum)
 export default {
   async condense(ctx) {
     try {
@@ -12,19 +20,19 @@ export default {
       });
 
       // Filter for Likert questions
-      const likertQuestions = questions.filter(
-        (q) => q.questionType?.name === 'Likert-4' || q.questionType?.name === 'Likert-5'
+      let likertQuestions = questions.filter(
+        (q) => q.questionType?.name === 'Likert-5'
       );
 
-      console.log(`Found ${likertQuestions.length} Likert-4/5 questions out of ${questions.length} total`);
+      console.log(`Found ${likertQuestions.length} Likert-5 questions out of ${questions.length} total`);
 
       // Generate CSV file for debugging
       console.log('\n=== Generating CSV for Debugging ===');
       await generateAnswersCSV(likertQuestions);
 
-      // Process each question
+      // Process each question, NOTE: CURRENTLY ONLY 1 QUESTION (remove slice(0, 1) to process all)
       console.log('\n=== Processing Questions ===');
-      for (const question of likertQuestions) {
+      for (const question of likertQuestions.slice(0, 1)) { 
         console.log(`\nProcessing Question ID ${question.id}:`);
         console.log('Text (FI):', question.text?.fi);
         console.log('Type:', question.questionType?.name);
@@ -40,9 +48,13 @@ export default {
         console.log(`Using ${comments.length} out of ${answers.length} total answers`);
 
         if (comments.length > 0) {
-          console.log('Processing comments with OpenAI...');
           // Process the comments for this question
-          const condensedArguments = await processComments(comments, question.text?.fi || '');
+          const condensedArguments = await processComments(
+            llmProvider, 
+            finnishConfig, 
+            comments, 
+            question.text?.fi || 'Unknown Topic'
+          );
           console.log('Condensed Arguments:', condensedArguments);
 
           // Update question with condensed arguments
