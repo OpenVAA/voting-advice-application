@@ -1,6 +1,14 @@
 import { processComments } from '@openvaa/argument-condensation';
-import { generateAnswersJSON } from '../utils/debug-data-generator';
+import { generateAnswersCSV } from '../utils/csv-generator';
+import { finnishConfig } from '@openvaa/argument-condensation';
+import { OpenAIProvider } from '@openvaa/llm'; 
 
+// Initialize the OpenAI provider
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const model = 'gpt-4o-mini';
+const llmProvider = new OpenAIProvider({ apiKey: OPENAI_API_KEY, model });
+
+// Testing function for condensing arguments from strapi (currently lorem ipsum)
 export default {
   async condense(ctx) {
     try {
@@ -12,11 +20,11 @@ export default {
       });
 
       // Filter for Likert questions
-      const likertQuestions = questions.filter(
-        (q) => q.questionType?.name === 'Likert-4' || q.questionType?.name === 'Likert-5'
+      let likertQuestions = questions.filter(
+        (q) => q.questionType?.name === 'Likert-5'
       );
 
-      console.log(`Found ${likertQuestions.length} Likert-4/5 questions total`);
+      console.log(`Found ${likertQuestions.length} Likert-5 questions out of ${questions.length} total`);
 
       // Take only the first question for debugging
       const questionToProcess = likertQuestions[0];
@@ -25,14 +33,12 @@ export default {
       console.log('Text (FI):', questionToProcess.text?.fi);
       console.log('Type:', questionToProcess.questionType?.name);
 
-      // Generate JSON file for debugging
-      console.log('\n=== Generating JSON for Debugging ===');
-      try {
-        await generateAnswersJSON([questionToProcess]);
-      } catch (jsonError) {
-        console.error('Error generating JSON file:', jsonError);
-        // Continue execution even if JSON generation fails
-      }
+      // Process each question, NOTE: CURRENTLY ONLY 1 QUESTION (remove slice(0, 1) to process all)
+      console.log('\n=== Processing Questions ===');
+      for (const question of likertQuestions.slice(0, 1)) { 
+        console.log(`\nProcessing Question ID ${question.id}:`);
+        console.log('Text (FI):', question.text?.fi);
+        console.log('Type:', question.questionType?.name);
 
       // Get all answers for this question
       const answers = questionToProcess.answers;
@@ -44,11 +50,15 @@ export default {
       console.log('Finnish Open Answers (first 10):', comments);
       console.log(`Using ${comments.length} out of ${answers.length} total answers`);
 
-      if (comments.length > 0) {
-        console.log('Processing comments with OpenAI...');
-        // Process the comments for this question
-        const condensedArguments = await processComments(comments, questionToProcess.text?.fi || '');
-        console.log('Condensed Arguments:', condensedArguments);
+        if (comments.length > 0) {
+          // Process the comments for this question
+          const condensedArguments = await processComments(
+            llmProvider, 
+            finnishConfig, 
+            comments, 
+            question.text?.fi || 'Unknown Topic'
+          );
+          console.log('Condensed Arguments:', condensedArguments);
 
         // Update question with condensed arguments
         await strapi.db.query('api::question.question').update({

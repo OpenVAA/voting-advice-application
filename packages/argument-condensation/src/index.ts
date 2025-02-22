@@ -1,25 +1,23 @@
 import { config } from 'dotenv';
 import path from 'path';
-import { LLMProvider } from './llm/LLMProvider';
 import { Condenser } from './Condenser';
-import { readFile, writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { Argument } from './types/Argument';
-import { OpenAIProvider } from '@openvaa/llm';
+import { LLMProvider } from '@openvaa/llm';
 import fs from 'fs';
-
-// Get the package root directory
-const packageRoot = path.resolve(__dirname, '..');
-
-// TODO: Fix .env file location
+import { LanguageConfig } from './types/LanguageConfig';
 
 // Load .env from project root
 config();
 
-const API_KEY = process.env.OPENAI_API_KEY;
-const MODEL = 'o1-mini-2024-09-12';
-const BATCH_SIZE = 20;
-const N_COMMENTS = 100;
 
+// EXPORT FOR TESTING
+/**
+ * Exports condensed arguments to multiple file formats
+ * @param condensedArguments - Array of condensed arguments to export
+ * @param basePath - Base path for output files (without extension)
+ * @param formats - Array of output formats ('txt', 'json', 'csv')
+ */
 async function exportResults(
   condensedArguments: Argument[],
   basePath: string,
@@ -33,65 +31,67 @@ async function exportResults(
     const filePath = `${basePath}.${fmt}`;
 
     if (fmt === 'txt') {
+      // Plain text format with simple formatting
       const content = condensedArguments
-        .map((arg, i) => `\n                                      *Argumentti ${i + 1}*\n${arg.mainArgument}\n`)
+        .map((arg, i) => `\n                                      *Argument ${i + 1}*\n${arg.argument}\n`)
         .join('\n');
       await writeFile(filePath, content, 'utf-8');
     } else if (fmt === 'json') {
+      // Structured JSON format with all argument details
       const jsonData = condensedArguments.map((arg, i) => ({
         argument_id: i + 1,
         topic: arg.topic,
-        main_argument: arg.mainArgument,
-        sources: arg.sources,
+        main_argument: arg.argument,
+        sources: arg.sourceComments,
         source_indices: arg.sourceIndices
       }));
       await writeFile(filePath, JSON.stringify(jsonData, null, 2), 'utf-8');
     } else if (fmt === 'csv') {
+      // CSV format for spreadsheet compatibility
       const header = 'argument_id,topic,main_argument,sources,source_indices\n';
       const rows = condensedArguments.map((arg, i) =>
-        [i + 1, arg.topic, arg.mainArgument, arg.sources.join('|'), arg.sourceIndices.join(',')].join(',')
+        [i + 1, arg.topic, arg.argument, arg.sourceComments.join('|'), arg.sourceIndices.join(',')].join(',')
       );
-
       await writeFile(filePath, header + rows.join('\n'), 'utf-8');
     }
   }
 }
 
-async function processComments(comments: string[], topic: string) {
-  const provider = new OpenAIProvider({
-    apiKey: API_KEY!,
-    model: MODEL
-  });
-  const condenser = new Condenser(provider);
-
-  // Process comments
-  console.log('Processing comments...');
-  const condensedArguments = await condenser.processComments(comments, topic, N_COMMENTS, BATCH_SIZE);
-
-  // Export to files (optional)
-  const basePath = path.join(packageRoot, 'results', 'processed_arguments');
-  await exportResults(condensedArguments, basePath, ['txt', 'json', 'csv']);
-  console.log(`Results exported to ${basePath}.{txt,json,csv}`);
-
-  return condensedArguments;
+/**
+ * Process comments to extract distinct arguments
+ * @param llmProvider - Provider for language model interactions
+ * @param languageConfig - Language-specific configuration
+ * @param comments - Array of text comments to process
+ * @param topic - The topic these comments relate to
+ * @param batchSize - Number of comments to process in each batch
+ * @returns Promise<Argument[]> Array of condensed arguments
+ */
+async function processComments(
+  llmProvider: LLMProvider,
+  languageConfig: LanguageConfig,
+  comments: string[], 
+  topic: string,
+  batchSize: number = 30
+): Promise<Argument[]> {
+  const condenser = new Condenser(llmProvider, languageConfig);
+  return await condenser.processComments(comments, topic, batchSize);
 }
 
-// For testing/standalone use
-async function main() {
-  const DATA_PATH = path.join(packageRoot, 'data', 'sources', 'kuntavaalit2021.csv');
-  const data = await readFile(DATA_PATH, 'utf-8');
-  const rows = data.split('\n').map((row) => row.split(','));
+// Export main functionality
+export { processComments, exportResults };
+export { Condenser } from './Condenser';
 
-  const topic = 'Kuntavero ja pääomatulovero';
-  const comments = rows
-    .map((row) => row[8]) // q9.explanation_fi column
-    .filter((comment) => comment);
+// Export types
+export type { Argument } from './types/Argument';
+export type { LanguageConfig, SupportedLanguage } from './types/LanguageConfig';
 
-  return await processComments(comments, topic);
-}
+// Export language configs
+export { finnishConfig } from './languageOptions/finnish';
+export { englishConfig } from './languageOptions/english';
 
-if (require.main === module) {
-  main().catch(console.error);
-}
-
-export { processComments };
+// Export errors
+export {
+  ArgumentCondensationError,
+  LLMError,
+  ParsingError
+} from './types/Errors';
