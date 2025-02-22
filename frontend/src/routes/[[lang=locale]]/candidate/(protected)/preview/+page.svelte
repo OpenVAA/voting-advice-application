@@ -61,7 +61,7 @@ Used to show a preview of the candidate’s own profile using the `EntityDetails
       // Custom for Nuorten Vaalikone
       // Use nickname and proper name case
       const nickname = result.answers?.['g859ggb3qdecapyb0j251ysr']?.value;
-      const firstName = nickname ? `${nickname}` : toNameCase(result.firstName);
+      const firstName = nickname ? `${nickname}` : (toNameCase(result.firstName).split(/\s+/)[0] ?? '');
       const lastName = toNameCase(result.lastName);
       result.firstName = firstName;
       result.lastName = lastName;
