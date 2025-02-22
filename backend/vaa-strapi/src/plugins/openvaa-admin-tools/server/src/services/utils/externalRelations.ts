@@ -1,5 +1,5 @@
 import type { UID } from '@strapi/strapi';
-import type { ExternalRelation, ExternalRelationConfig, ImportDatum } from './data.type';
+import type { ExternalRelation, ExternalRelationConfig, ImportDatum } from '../data.type';
 
 /**
  * Convert any `ExternalRelation`s in `datum` to actual Strapi document IDs.

@@ -1,7 +1,4 @@
-import { Button, Field } from '@strapi/design-system';
-import { Flex } from '@strapi/design-system';
-import { JSONInput } from '@strapi/design-system';
-import { Typography } from '@strapi/design-system';
+import { Button, Field, Flex, JSONInput, Typography } from '@strapi/design-system';
 import { CheckCircle, Upload, WarningCircle } from '@strapi/icons';
 import { FormEvent, ReactElement, useState } from 'react';
 import { ApiResult } from 'src/api/utils/apiResult.type';
@@ -10,23 +7,22 @@ import { ApiResult } from 'src/api/utils/apiResult.type';
  * A base component for handling posting JSON data to the `/openvaa-admin-tools/data-{foo}` endpoints.
  */
 export function DataBase({
-  title,
   intro,
   submitLabel,
   submitHandler,
 }: {
-  title: string;
   intro: ReactElement;
   submitLabel: string;
-  submitHandler: (data: object) => Promise<ApiResult>;
+  submitHandler: (data: Record<string, unknown>) => Promise<ApiResult>;
 }): ReactElement {
   const [info, setInfo] = useState('');
   const [status, setStatus] = useState('idle');
   const [data, setData] = useState('');
+  const [result, setResult] = useState('');
 
   async function handleSubmit(event: FormEvent): Promise<void> {
     event.preventDefault();
-    let parsedData: object;
+    let parsedData: Record<string, unknown>;
     try {
       parsedData = JSON.parse(data);
     } catch (error) {
@@ -37,23 +33,25 @@ export function DataBase({
     const result = await submitHandler(parsedData);
     if (result.type !== 'success') {
       setStatus('warning');
-      setInfo(result.cause || result.message || 'There was an error comleting the action.');
+      setInfo(result.cause || 'There was an error completing the action.');
       return;
     }
     setStatus('success');
-    setInfo(result.message || 'Action succesfully completed.');
+    setInfo('Action succesfully completed.');
+    setResult(JSON.stringify(result.data ?? {}, null, 2));
   }
 
   return (
     <form onSubmit={handleSubmit}>
       <Flex direction="column" gap={5} alignItems="stretch">
-        <Typography variant="beta">
-          <h2>{title}</h2>
-        </Typography>
         <Typography variant="epsilon">{intro}</Typography>
         <Field.Root>
           <Field.Label>Data as JSON</Field.Label>
-          <JSONInput value={''} height="30rem" onChange={setData} />
+          <JSONInput value={''} height="20rem" maxWidth="80vw" onChange={setData} />
+        </Field.Root>
+        <Field.Root>
+          <Field.Label>Result as JSON</Field.Label>
+          <JSONInput value={result} height="20rem" maxWidth="80vw" />
         </Field.Root>
         {status !== 'idle' && (
           <Typography variant="epsilon">
