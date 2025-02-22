@@ -9,16 +9,13 @@ import { deleteData } from '../api/data';
  * A component for accessing the `/openvaa-admin-tools/delete-data` endpoint.
  */
 export function DeleteData(): ReactElement {
-  const title = 'Delete data';
   const submitLabel = 'Delete';
-  async function submitHandler(data: object): Promise<ApiResult> {
-    const result = await deleteData(data);
-    if (result.type !== 'success') return result;
+  async function submitHandler(data: Record<string, unknown>): Promise<ApiResult> {
+    const { type, cause, ...rest } = await deleteData(data);
+    if (type !== 'success') return { type, cause };
     return {
       type: 'success',
-      message: `Data deleted successfully. Deleted: ${Object.entries(result.deleted ?? {})
-        .map(([k, v]) => `${v} ${k}`)
-        .join(' • ')}.`,
+      data: rest,
     };
   }
   const intro = (
@@ -52,7 +49,5 @@ export function DeleteData(): ReactElement {
       </p>
     </Flex>
   );
-  return (
-    <DataBase title={title} intro={intro} submitLabel={submitLabel} submitHandler={submitHandler} />
-  );
+  return <DataBase intro={intro} submitLabel={submitLabel} submitHandler={submitHandler} />;
 }
