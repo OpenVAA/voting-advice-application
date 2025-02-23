@@ -203,6 +203,13 @@ export type DynamicSettings = {
     disallowSelection?: boolean;
   };
   underMaintenance?: boolean;
+  /**
+   * Default prompt and answer format for generating llm-summaries from question descriptions. The llm-generated answers needs to be in a JSON-format and needs to be specified in the answerFormat
+   */
+  LLMSettings: {
+    prompt: string;
+    answerFormat: string;
+  };
 };
 
 /**
