@@ -69,7 +69,8 @@ export const dynamicSettings: DynamicSettings = {
   },
   underMaintenance: false,
   LLMSettings: {
-    prompt:  '1. Read all the examples of election machine statements below, with which the user can either agree or disagree, as well as the related brief background information. 2. Create a short text of a few sentences for the statement that explains what the current state of the matter presented in the statement is. 4. If the statement contains terms that may be unclear to ordinary people, add a one-sentence explanation for each term. Add them under terms. 5. Present these texts according to the JSON format below. 6. Return only the JSON-formatted response. Answer only with a valid JSON-formatted response. Do not add formatting to the response.',
+    prompt:
+      '1. Read all the examples of election machine statements below, with which the user can either agree or disagree, as well as the related brief background information. 2. Create a short text of a few sentences for the statement that explains what the current state of the matter presented in the statement is. 4. If the statement contains terms that may be unclear to ordinary people, add a one-sentence explanation for each term. Add them under terms. 5. Present these texts according to the JSON format below. 6. Return only the JSON-formatted response. Answer only with a valid JSON-formatted response. Do not add formatting to the response.',
     answerFormat: `
     {
       "infoSections": {

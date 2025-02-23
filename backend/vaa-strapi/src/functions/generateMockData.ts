@@ -689,7 +689,6 @@ async function generateMockLLMSummaries() {
   }
 
   try {
-
     const res: LLMResponse = await new OpenAIProvider({ apiKey: LLM_OPENAI_API_KEY }).generate({
       messages: [
         {
