@@ -72,11 +72,9 @@ export async function load({ fetch, parent, params: { lang } }) {
    * Call logout and redirect to the login page with an error message.
    */
   async function handleError(error: CandidateLoginError): Promise<void> {
-    console.error(`[Candidate App protected layout] Error handling candidate login: ${error}`);
-    const res = await dataWriter
+    await dataWriter
       .logout({ authToken: authToken ?? '' })
       .catch((e) => logDebugError(`[Candidate App protected layout] Error logging out: ${e?.message ?? '-'}`));
-    console.error('logout', res);
     redirect(
       307,
       buildRoute({
