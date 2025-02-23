@@ -697,23 +697,7 @@ async function generateMockLLMSummaries() {
         },
         {
           role: 'user',
-          content: `Write a lorem ipsum summary of this sentence: Taxes should be increased before cutting public spending
-          Generate it in this format and change only the content part:
-          {
-            "infoSections": [
-              {
-                "content": {
-                  "en": "Generated background here",
-                  "fi": "Generated background here suomeksi",
-                  "sv": "Generated background here in swedish"
-                },
-                "title": {
-                  "en": "Background"
-                },
-                "visible": true
-              }
-            ]
-          }`
+          content: dynamicSettings.llm.prompt + dynamicSettings.llm.answerFormat
         }
       ]
     });
