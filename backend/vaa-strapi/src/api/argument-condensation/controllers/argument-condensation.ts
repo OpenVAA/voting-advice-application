@@ -56,7 +56,7 @@ export default {
           llmProvider,
           finnishConfig,
           comments,
-          question.text?.fi || 'Unknown Topic'
+          questionToProcess.text?.fi || 'Unknown Topic'
         );
         console.log('Condensed Arguments:', condensedArguments);
 
