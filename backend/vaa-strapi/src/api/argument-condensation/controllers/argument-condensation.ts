@@ -50,15 +50,15 @@ export default {
       console.log('Finnish Open Answers (first 10):', comments);
       console.log(`Using ${comments.length} out of ${answers.length} total answers`);
 
-        if (comments.length > 0) {
-          // Process the comments for this question
-          const condensedArguments = await processComments(
-            llmProvider, 
-            finnishConfig, 
-            comments, 
-            question.text?.fi || 'Unknown Topic'
-          );
-          console.log('Condensed Arguments:', condensedArguments);
+      if (comments.length > 0) {
+        // Process the comments for this question
+        const condensedArguments = await processComments(
+          llmProvider,
+          finnishConfig,
+          comments,
+          questionToProcess.text?.fi || 'Unknown Topic'
+        );
+        console.log('Condensed Arguments:', condensedArguments);
 
         // Update question with condensed arguments
         await strapi.db.query('api::question.question').update({
