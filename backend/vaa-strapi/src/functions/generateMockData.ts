@@ -15,12 +15,23 @@ import mockInfoQuestions from './mockData/mockInfoQuestions.json';
 import mockQuestions from './mockData/mockQuestions.json';
 import mockQuestionTypes from './mockData/mockQuestionTypes.json';
 import mockUser from './mockData/mockUser.json';
+import mockAnswers from './mockData/mockAnswers.json';
 import { API } from './utils/api';
 import { getDynamicTranslations } from './utils/appCustomization';
 import { getCardContentsFromFile } from './utils/appSettings';
 import { dropAllCollections } from './utils/drop';
 import { generateAiMockData, generateMockDataOnInitialise, generateMockDataOnRestart } from '../constants';
 import type { AnswerValue, EntityType, LocalizedString, QuestionTypeSettings } from './utils/data.type';
+
+interface MockAnswer {
+  questionId: string;
+  questionText: string;
+  value: string;
+  openAnswer: { fi: string };
+  party_id: string;
+  constituency_id: string;
+  answer_id: string;
+}
 
 const locales: Array<Locale> = [
   {
@@ -151,18 +162,6 @@ export async function generateMockData() {
     console.info('#######################################');
     console.info('inserting parties');
     await createParties(N_PARTIES).catch((e) => {
-      throw e;
-    });
-    console.info('Done!');
-    console.info('#######################################');
-    console.info('inserting candidates');
-    await createCandidates(N_CONSTITUENCIES * N_CANDIDATES_PER_CONSTITUENCY).catch((e) => {
-      throw e;
-    });
-    console.info('Done!');
-    console.info('#######################################');
-    console.info('inserting candidate without answers for testing');
-    await createCandidateForTesting().catch((e) => {
       throw e;
     });
     console.info('Done!');
@@ -654,6 +653,58 @@ async function createQuestions({ constituencyPctg = 0.1 }: { constituencyPctg?: 
       }
     });
   }
+}
+
+async function createAnswers(entityType: Omit<EntityType, 'all'>) {
+  // Create a mock entity
+  const entity = await strapi.db.query(entityType === 'candidate' ? API.Candidate : API.Party).create({
+    data: {
+      firstName: 'Mock',
+      lastName: 'Entity',
+      email: 'mock@example.com',
+      publishedAt: new Date(),
+      // Add party relation for candidates
+      ...(entityType === 'candidate'
+        ? {
+            party: (await strapi.db.query(API.Party).findOne())?.id
+          }
+        : {})
+    }
+  });
+
+  const questions = await strapi.db.query(API.Question).findMany({
+    populate: ['questionType']
+  });
+
+  // Track unique answers
+  const processedAnswers = new Set<string>();
+
+  for (const mockAnswer of mockAnswers as MockAnswer[]) {
+    // Skip if we've already processed this answer
+    if (processedAnswers.has(mockAnswer.answer_id)) continue;
+
+    const question = questions.find((q) => q.text.fi === mockAnswer.questionText);
+    if (!question) {
+      console.log(`No matching question found for: "${mockAnswer.questionText}"`);
+      continue;
+    }
+
+    try {
+      await strapi.db.query(API.Answer).create({
+        data: {
+          value: mockAnswer.value,
+          openAnswer: mockAnswer.openAnswer,
+          question: question.id,
+          ...(entityType === 'candidate' ? { candidate: entity.id } : { party: entity.id })
+        }
+      });
+      processedAnswers.add(mockAnswer.answer_id);
+    } catch (error) {
+      console.error(`Failed to create answer for question "${mockAnswer.questionText}":`, error);
+    }
+  }
+
+  console.log(`Created ${processedAnswers.size} unique answers for mock ${entityType}`);
 }
 
 async function createCandidateUsers() {
