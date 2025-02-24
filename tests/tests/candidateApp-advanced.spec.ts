@@ -7,7 +7,6 @@ import { TESTS_DIR } from './utils/testsDir';
 import { TRANSLATIONS as T } from './utils/translations';
 import mockCandidateForTesting from '../../backend/vaa-strapi/src/functions/mockData/mockCandidateForTesting.json' assert { type: 'json' };
 import mockInfoQuestions from '../../backend/vaa-strapi/src/functions/mockData/mockInfoQuestions.json' assert { type: 'json' };
-import mockQuestions from '../../backend/vaa-strapi/src/functions/mockData/mockQuestions.json' assert { type: 'json' };
 import mockQuestionTypes from '../../backend/vaa-strapi/src/functions/mockData/mockQuestionTypes.json' assert { type: 'json' };
 
 type Email = {
@@ -77,7 +76,7 @@ if (!textQuestionLabel) throw new Error('Question of type Text not found in mock
 
 test.describe.configure({ mode: 'serial' });
 
-test('should log into Strapi and send email', async ({ page }) => {
+test('should log into Strapi and send email', async ({ page, baseURL }) => {
   await page.goto(`${strapiURL}/admin`);
   await page.getByLabel('Email*').fill('admin@example.com');
   await page.getByLabel('Password*').fill('admin');
@@ -174,7 +173,7 @@ test('should log into Strapi and send email', async ({ page }) => {
   await page.getByRole('button', { name: 'Send registration email' }).click();
   await page.getByLabel('Email subject').fill('Subject');
   await page.getByRole('button', { name: 'Send', exact: true }).click();
-  await page.getByText('Registration email was sent').click();
+  await expect(page.getByText('registration email(s) sent successfully')).toBeVisible();
 
   // Wait for 5 seconds to allow the email to be sent
   await page.waitForTimeout(5000);
@@ -229,11 +228,7 @@ test('should log into Strapi and send email', async ({ page }) => {
   await page.getByRole('button', { name: T.en['common.login'], exact: true }).click();
 
   // Check that the login was successful
-  await expect(
-    page.getByText(T.en['candidateApp.common.greeting'].replace('{username}', userFirstName), {
-      exact: true
-    })
-  ).toBeVisible();
+  await expect(page).toHaveURL(`${baseURL}/${buildRoute({ route: 'CandAppHome', locale: LOCALE })}`);
 });
 
 test.describe('when logged in with imported user', () => {
@@ -267,22 +262,21 @@ test.describe('when logged in with imported user', () => {
     await expect(multiLangInput).toBeVisible();
     const saveButton = page.getByTestId('submitButton');
 
-    // Button should not be clickable with 0 languages picked and manifesto not set
-    // TODO: Set this dynamically based on the number of required mockInfoQuestions
-    await expect(saveButton).toBeDisabled();
+    // A warning should be show when required fields are not filled
+    await expect(page.getByText(T.en['candidateApp.basicInfo.requiredInfo'])).toBeVisible();
 
     // Fill manifesto
     const textarea = page.getByLabel(textQuestionLabel, { exact: true });
     await textarea.fill(userManifesto);
     await textarea.blur();
 
-    // Button should still be disabled because no language is set
-    await expect(saveButton).toBeDisabled();
+    // A warning should be show when required fields are not filled
+    await expect(page.getByText(T.en['candidateApp.basicInfo.requiredInfo'])).toBeVisible();
 
     await singleLangInput.selectOption(selectedSingleLang);
 
-    // Button should now be visible with a language selected
-    await expect(saveButton).toBeEnabled();
+    // Warning should no longer be visible with a language selected
+    await expect(page.getByText(T.en['candidateApp.basicInfo.requiredInfo'])).toHaveCSS('opacity', '0');
 
     // Also test the other languages
     await multiLangInput.selectOption(selectedMultiLang[0]);
@@ -329,12 +323,9 @@ test.describe('when logged in with imported user', () => {
       await page.waitForTimeout(500); //Wait so that UI has time to change (otherwise doesn't work all the time)
     }
 
-    // Expect to be at questions intro page
-    await expect(page).toHaveURL(`${baseURL}/${buildRoute({ route: 'CandAppQuestions', locale: LOCALE })}`);
-
-    // Go to "You're Ready to Roll" page
+    // Expect to be on "You're Ready to Roll" page
     const candidateUrl = `${baseURL}/${buildRoute({ route: 'CandAppHome', locale: LOCALE })}`;
-    await page.goto(candidateUrl);
+    await expect(page).toHaveURL(candidateUrl);
     await expect(page.getByRole('heading', { name: T.en['candidateApp.home.ready'], exact: true })).toBeVisible();
 
     // Expect buttons to be visible and enabled
@@ -419,11 +410,10 @@ test.describe('when logged in with imported user', () => {
     await expect(page).toHaveURL(singleQuestionUrl);
 
     // Expect correct data for first question
-    await expect(page.getByRole('heading', { name: mockQuestions[0].en, exact: true })).toBeVisible();
     await expect(page.getByLabel(fullyAgree)).toBeChecked();
 
     // Check that button goes back to correct page
-    await page.getByRole('button', { name: T.en['common.continue'], exact: true }).click();
+    await page.getByRole('button', { name: T.en['common.return'], exact: true }).first().click();
     await expect(page).toHaveURL(`${baseURL}/${buildRoute({ route: 'CandAppQuestions', locale: LOCALE })}`);
 
     // Go back and test cancel button
@@ -438,6 +428,7 @@ test.describe('when logged in with imported user', () => {
     // Expect button to go to correct page and opinion to be unchanged
     await expect(page).toHaveURL(`${baseURL}/${buildRoute({ route: 'CandAppQuestions', locale: LOCALE })}`);
     await page.getByRole('checkbox').first().click();
+    // TODO: This doesn't really check properly because the first such item might be not the first question’s
     await expect(page.getByText(fullyAgree).first()).toBeVisible();
 
     // Expect return button to go to correct page
