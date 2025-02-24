@@ -1,5 +1,5 @@
 import { processComments } from '@openvaa/argument-condensation';
-import { generateAnswersCSV } from '../utils/csv-generator';
+import { generateAnswersJSON } from '../utils/debug-data-generator';
 
 export default {
   async condense(ctx) {
@@ -16,57 +16,62 @@ export default {
         (q) => q.questionType?.name === 'Likert-4' || q.questionType?.name === 'Likert-5'
       );
 
-      console.log(`Found ${likertQuestions.length} Likert-4/5 questions out of ${questions.length} total`);
+      console.log(`Found ${likertQuestions.length} Likert-4/5 questions total`);
 
-      // Generate CSV file for debugging
-      console.log('\n=== Generating CSV for Debugging ===');
-      await generateAnswersCSV(likertQuestions);
+      // Take only the first question for debugging
+      const questionToProcess = likertQuestions[0];
+      console.log('\n=== Processing Single Question for Debug ===');
+      console.log('Question ID:', questionToProcess.id);
+      console.log('Text (FI):', questionToProcess.text?.fi);
+      console.log('Type:', questionToProcess.questionType?.name);
 
-      // Process each question
-      console.log('\n=== Processing Questions ===');
-      for (const question of likertQuestions) {
-        console.log(`\nProcessing Question ID ${question.id}:`);
-        console.log('Text (FI):', question.text?.fi);
-        console.log('Type:', question.questionType?.name);
+      // Generate JSON file for debugging
+      console.log('\n=== Generating JSON for Debugging ===');
+      try {
+        await generateAnswersJSON([questionToProcess]);
+      } catch (jsonError) {
+        console.error('Error generating JSON file:', jsonError);
+        // Continue execution even if JSON generation fails
+      }
 
-        // Get all answers for this question
-        const answers = question.answers;
-        const comments = answers
-          .map((answer) => answer.openAnswer?.fi) // Only select Finnish answers
-          .filter((openAnswer) => openAnswer)
-          .slice(0, 10); // Take only first 10 answers
+      // Get all answers for this question
+      const answers = questionToProcess.answers;
+      const comments = answers
+        .map((answer) => answer.openAnswer?.fi)
+        .filter((openAnswer) => openAnswer)
+        .slice(0, 10);
 
-        console.log('Finnish Open Answers (first 10):', comments);
-        console.log(`Using ${comments.length} out of ${answers.length} total answers`);
+      console.log('Finnish Open Answers (first 10):', comments);
+      console.log(`Using ${comments.length} out of ${answers.length} total answers`);
 
-        if (comments.length > 0) {
-          console.log('Processing comments with OpenAI...');
-          // Process the comments for this question
-          const condensedArguments = await processComments(comments, question.text?.fi || '');
-          console.log('Condensed Arguments:', condensedArguments);
+      if (comments.length > 0) {
+        console.log('Processing comments with OpenAI...');
+        // Process the comments for this question
+        const condensedArguments = await processComments(comments, questionToProcess.text?.fi || '');
+        console.log('Condensed Arguments:', condensedArguments);
 
-          // Update question with condensed arguments
-          await strapi.db.query('api::question.question').update({
-            where: { id: question.id },
-            data: {
-              customData: {
-                ...question.customData,
-                argumentSummary: condensedArguments
-              }
+        // Update question with condensed arguments
+        await strapi.db.query('api::question.question').update({
+          where: { id: questionToProcess.id },
+          data: {
+            customData: {
+              ...questionToProcess.customData,
+              argumentSummary: condensedArguments
             }
-          });
+          }
+        });
 
-          console.log(`Updated question ${question.id} with ${condensedArguments.length} arguments`);
-        } else {
-          console.log('Skipping question - no valid Finnish comments found');
-        }
+        console.log(`Updated question ${questionToProcess.id} with ${condensedArguments.length} arguments`);
+      } else {
+        console.log('Skipping question - no valid Finnish comments found');
       }
 
       console.log('\n=== Process Complete ===');
       ctx.body = {
         data: {
-          message: `Successfully processed all questions`,
-          processedCount: likertQuestions.length
+          message: 'Successfully processed single question for debugging',
+          questionId: questionToProcess.id,
+          processedAnswers: comments.length
         }
       };
     } catch (error) {
