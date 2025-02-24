@@ -6,7 +6,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
 
 - `filter`: The filter object
 - `targets`: An array of target entities or rankings
-- Any valid attributes of a `<form>` element
+- Any valid attributes of a `<div>` element
 
 ### Usage
 
@@ -49,15 +49,15 @@ Render an enumerated filter for entities that displays a list of values to inclu
   // Initialize values and possibly saved filter state
   const values = filter.parseValues(targets);
   let selected: Array<MaybeMissing<string>>;
+  /** Track whether `toggleSelectAll()` will select or deselect all */
+  let allSelected: boolean;
+  $: allSelected = selected.length === values.length;
+
   updateSelected();
 
   ////////////////////////////////////////////////////////////////////
   // Set filter
   ////////////////////////////////////////////////////////////////////
-
-  /** Track whether `toggleSelectAll()` will select or deselect all */
-  let allSelected: boolean;
-  $: allSelected = selected.length === values.length;
 
   // Update filter values when selection changes
   $: filter.include = parseSelected(selected);
@@ -77,6 +77,8 @@ Render an enumerated filter for entities that displays a list of values to inclu
    */
   function updateSelected() {
     selected = convertMissingForInputs(filter.include?.length ? filter.include : values.map((v) => v.value));
+    // TODO[Svelte 5]: This extra setting may not be needed, but currently it's necessary
+    allSelected = selected.length === values.length;
   }
 
   /**
@@ -124,7 +126,7 @@ Render an enumerated filter for entities that displays a list of values to inclu
   }
 </script>
 
-<form
+<div
   {...concatProps($$restProps, {
     class: 'grid grid-flow-row gap-x-xl gap-y-sm items-start',
     style: 'grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));'
@@ -153,4 +155,4 @@ Render an enumerated filter for entities that displays a list of values to inclu
       </button>
     </div>
   {/if}
-</form>
+</div>

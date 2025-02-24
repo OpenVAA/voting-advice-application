@@ -6,7 +6,7 @@ Render a numeric filter for entities.
 
 - `filter`: The filter object
 - `targets`: An array of target entities or rankings
-- Any valid attributes of a `<form>` element
+- Any valid attributes of a `<div>` element
 
 ### Usage
 
@@ -77,7 +77,7 @@ Render a numeric filter for entities.
 </script>
 
 {#if (range.min != null && range.max != null) || range.missingValues}
-  <form {...concatClass($$restProps, '')}>
+  <div {...concatClass($$restProps, '')}>
     {#if range.min != null && range.max != null}
       <label class="label gap-xs !px-0">
         <span class="text-label min-w-[6rem] text-start">{$t('entityFilters.numeric.minLabel')}</span>
@@ -101,7 +101,7 @@ Render a numeric filter for entities.
           disabled={range.min == null || range.max == null} />
       </label>
     {/if}
-  </form>
+  </div>
 {:else}
   <div class="w-full text-center text-warning">{$t('entityFilters.error')}</div>
 {/if}
