@@ -6,7 +6,7 @@ Render a text filter for entities.
 
 - `filter`: The text filter object to render.
 - `placeholder`: The placeholder text. @default `$t('entityFilters.text.placeholder')`
-- Any valid attributes of a `<form>` element
+- Any valid attributes of a `<div>` element
 
 ### Usage
 
@@ -75,7 +75,7 @@ Render a text filter for entities.
   }
 </script>
 
-<form {...concatClass($$restProps, '')}>
+<div {...concatClass($$restProps, '')}>
   <label class={labelClass}>
     <span class="sr-only">{$t('entityFilters.text.ariaLabel')}</span>
     <input
@@ -91,4 +91,4 @@ Render a text filter for entities.
       </button>
     {/if}
   </label>
-</form>
+</div>

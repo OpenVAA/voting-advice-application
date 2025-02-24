@@ -2,7 +2,7 @@ import type { AnyEntityVariant } from '@openvaa/data';
 import type { ChoiceQuestionFilter, ObjectFilter } from '@openvaa/filters';
 import type { SvelteHTMLElements } from 'svelte/elements';
 
-export type EnumeratedEntityFilterProps = SvelteHTMLElements['form'] & {
+export type EnumeratedEntityFilterProps = SvelteHTMLElements['div'] & {
   /**
    * The object filter object.
    */

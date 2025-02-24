@@ -1,7 +1,7 @@
 import type { NumberFilter } from '@openvaa/filters';
 import type { SvelteHTMLElements } from 'svelte/elements';
 
-export type NumericEntityFilterProps = SvelteHTMLElements['form'] & {
+export type NumericEntityFilterProps = SvelteHTMLElements['div'] & {
   /**
    * The text filter object.
    */
