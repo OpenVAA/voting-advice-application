@@ -19,12 +19,23 @@ import mockInfoQuestions from './mockData/mockInfoQuestions.json';
 import mockQuestions from './mockData/mockQuestions.json';
 import mockQuestionTypes from './mockData/mockQuestionTypes.json';
 import mockUser from './mockData/mockUser.json';
+import mockAnswers from './mockData/mockAnswers.json';
 import { API } from './utils/api';
 import { getDynamicTranslations } from './utils/appCustomization';
 import { getCardContentsFromFile } from './utils/appSettings';
 import { dropAllCollections } from './utils/drop';
 import { generateAiMockData, generateMockDataOnInitialise, generateMockDataOnRestart } from '../constants';
 import type { AnswerValue, EntityType, LocalizedString, QuestionTypeSettings } from './utils/data.type';
+
+interface MockAnswer {
+  questionId: string;
+  questionText: string;
+  value: string;
+  openAnswer: { fi: string };
+  party_id: string;
+  constituency_id: string;
+  answer_id: string;
+}
 
 const locales: Array<Locale> = [
   {
@@ -140,14 +151,6 @@ export async function generateMockData() {
     console.info('#######################################');
     console.info('inserting candidate answers');
     await createAnswers('candidate');
-    console.info('Done!');
-    console.info('#######################################');
-    console.info('inserting party answers');
-    await createAnswers('party');
-    console.info('Done!');
-    console.info('#######################################');
-    console.info('inserting candidate without answers for testing');
-    await createCandidateForTesting();
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidate nominations');
@@ -548,74 +551,55 @@ async function createQuestions(options: { constituencyPctg?: number } = {}) {
 }
 
 async function createAnswers(entityType: Omit<EntityType, 'all'>) {
-  const entities: Array<HasId> = await strapi.db
-    .query(entityType === 'candidate' ? API.Candidate : API.Party)
-    .findMany({});
-
-  const questions: Array<
-    HasId & {
-      allowOpen: boolean;
-      entityType?: EntityType;
-      questionType: { settings: QuestionTypeSettings };
+  // Create a mock entity
+  const entity = await strapi.db.query(entityType === 'candidate' ? API.Candidate : API.Party).create({
+    data: {
+      firstName: 'Mock',
+      lastName: 'Entity',
+      email: 'mock@example.com',
+      publishedAt: new Date(),
+      // Add party relation for candidates
+      ...(entityType === 'candidate'
+        ? {
+            party: (await strapi.db.query(API.Party).findOne())?.id
+          }
+        : {})
     }
-  > = await strapi.db.query(API.Question).findMany({
+  });
+
+  const questions = await strapi.db.query(API.Question).findMany({
     populate: ['questionType']
   });
 
-  for (const entity of entities) {
-    for (const question of questions) {
-      if (question.entityType && question.entityType !== 'all' && question.entityType !== entityType) continue;
-      const settings = question.questionType.settings;
-      let value: AnswerValue[keyof AnswerValue];
-      switch (settings.type) {
-        case 'text':
-          value = settings.notLocalizable ? faker.lorem.sentence() : fakeLocalized((faker) => faker.lorem.sentence());
-          break;
-        case 'boolean':
-          value = faker.helpers.arrayElement([true, false]);
-          break;
-        case 'number':
-          value = faker.number.int({ min: settings.min, max: settings.max });
-          break;
-        case 'date':
-          if (settings.min) {
-            if (settings.max) {
-              value = faker.date.between({ from: settings.min, to: settings.max }).toISOString().split('T')[0];
-            } else {
-              value = faker.date.future({ refDate: settings.min }).toISOString().split('T')[0];
-            }
-          } else {
-            value = faker.date.past({ refDate: settings.max }).toISOString().split('T')[0];
-          }
-          break;
-        case 'singleChoiceCategorical':
-        case 'singleChoiceOrdinal':
-          value = faker.helpers.arrayElement(settings.values).key;
-          break;
-        case 'multipleChoiceCategorical':
-        case 'preferenceOrder':
-          value = faker.helpers
-            .arrayElements(settings.values, {
-              min: settings.min ?? 1,
-              max: settings.max ?? settings.values.length
-            })
-            .map((v) => v.key);
-          break;
-        default:
-          throw new Error(`Unsupported question type: ${settings.type}`);
-      }
-      const openAnswer = question.allowOpen ? fakeLocalized((faker) => faker.lorem.sentence()) : null;
-      const entityRelation = entityType === 'candidate' ? { candidate: entity.id } : { party: entity.id };
+  // Track unique answers
+  const processedAnswers = new Set<string>();
+
+  for (const mockAnswer of mockAnswers as MockAnswer[]) {
+    // Skip if we've already processed this answer
+    if (processedAnswers.has(mockAnswer.answer_id)) continue;
+
+    const question = questions.find((q) => q.text.fi === mockAnswer.questionText);
+    if (!question) {
+      console.log(`No matching question found for: "${mockAnswer.questionText}"`);
+      continue;
+    }
+
+    try {
       await strapi.db.query(API.Answer).create({
         data: {
-          value,
-          openAnswer,
+          value: mockAnswer.value,
+          openAnswer: mockAnswer.openAnswer,
           question: question.id,
-          ...entityRelation
+          ...(entityType === 'candidate' ? { candidate: entity.id } : { party: entity.id })
         }
       });
+      processedAnswers.add(mockAnswer.answer_id);
+    } catch (error) {
+      console.error(`Failed to create answer for question "${mockAnswer.questionText}":`, error);
     }
   }
+
+  console.log(`Created ${processedAnswers.size} unique answers for mock ${entityType}`);
 }
 
 async function createCandidateUsers() {
