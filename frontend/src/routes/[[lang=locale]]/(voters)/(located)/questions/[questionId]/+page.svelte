@@ -8,25 +8,30 @@ Display a question for answering.
 
 - `questionId`: The `Id` of the question to display. If the value is the one defined by the const `FIRST_QUESTION_ID`, the first question in the `selectedQuestionBlocks` store will be displayed.
 - `start`: Optional. Set to a truish value to start answering questions from this question (and category). This will set the session persistent store `firstQuestionId` to the `Id` of the current question, which in turn will reorder the `selectedQuestionBlocks` store. The `firstQuestionId` store will be reset if the `/questions` intro page is visited or the use session is cleared.
+
+## Settings
+
+- `questions.interactiveInfo.enabled`: Whether to display interactive information popup or just a basic info expander.
 -->
 
 <script lang="ts">
+  import { getCustomData } from '@openvaa/app-shared';
   import { error } from '@sveltejs/kit';
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { Loading } from '$lib/components/loading';
-  import { OpinionQuestionInput, QuestionActions, QuestionInfo } from '$lib/components/questions';
+  import { OpinionQuestionInput, QuestionActions, QuestionBasicInfo } from '$lib/components/questions';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { QuestionHeading } from '$lib/dynamic-components/questionHeading';
+  import { QuestionExtendedInfoButton } from '$lib/dynamic-components/questionInfo';
   import { logDebugError } from '$lib/utils/logger';
   import { FIRST_QUESTION_ID, parseParams } from '$lib/utils/route';
   import { DELAY } from '$lib/utils/timing';
   import MainContent from '../../../../MainContent.svelte';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
-
   //import {type VideoMode, Video} from '$lib/components/video';
 
   ////////////////////////////////////////////////////////////////////
@@ -158,6 +163,7 @@ Display a question for answering.
   // Tracking
   ////////////////////////////////////////////////////////////////////
 
+  // TODO: Re-enable
   function handleInfoCollapse(): void {
     startEvent('questionInfo_collapse');
   }
@@ -201,6 +207,7 @@ Display a question for answering.
 
 {#if question && questionBlock}
   {@const { info, text } = question}
+  {@const customData = getCustomData(question)}
   {@const questions = $selectedQuestionBlocks.questions}
 
   <!--
@@ -226,8 +233,12 @@ Display a question for answering.
     <QuestionHeading {question} questionBlocks={$selectedQuestionBlocks} slot="heading" />
 
     <!-- !videoProps && -->
-    {#if info && info !== ''}
-      <QuestionInfo {info} onCollapse={handleInfoCollapse} onExpand={handleInfoExpand} />
+    {#if $appSettings.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length)}
+      <div class="flex items-center justify-center">
+        <QuestionExtendedInfoButton {question} />
+      </div>
+    {:else if info}
+      <QuestionBasicInfo {info} onCollapse={handleInfoCollapse} onExpand={handleInfoExpand} />
     {/if}
 
     <svelte:fragment slot="primaryActions">
