@@ -2,6 +2,12 @@ import { expect, test } from 'vitest';
 import { defaultLocale, translate } from '../';
 import { canonize, isLocale, matchLocale, parseAcceptedLanguages } from '../utils';
 
+// This is needed for `/utils/constants.ts` to not throw. We don't actually need the variables.
+// TODO[Svelte 5]: Probably not needed anymore
+vi.mock('$env/dynamic/public', () => ({
+  env: {}
+}));
+
 test('canonize and isLocale', () => {
   // Locale names are based on the examples in the RFC:
   // https://datatracker.ietf.org/doc/html/rfc5646#appendix-A
