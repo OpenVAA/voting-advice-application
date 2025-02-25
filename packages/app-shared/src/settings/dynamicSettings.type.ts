@@ -118,6 +118,15 @@ export type DynamicSettings = {
       show: boolean;
     };
     /**
+     * Settings related to the interactive info view.
+     */
+    interactiveInfo?: {
+      /**
+       * Default `false`.
+       */
+      enabled?: boolean;
+    };
+    /**
      * Settings related to the optional questions intro page, shown before going to questions.
      */
     questionsIntro: {
