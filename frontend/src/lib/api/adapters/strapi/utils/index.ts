@@ -5,6 +5,7 @@ export * from './parseEntityType';
 export * from './parseImage';
 export * from './parseNominations';
 export * from './parseOrganization';
+export * from './parseQuestionInfoSections';
 export * from './parseQuestionType';
 export * from './parseRelationIds';
 export * from './parseUser';
