@@ -266,6 +266,7 @@ export type TranslationKey =
   | 'components.passwordInput.showPassword'
   | 'components.preHeading.roleDescription'
   | 'components.preventNavigation.unsavedChanges'
+  | 'components.questionExtendedInfo.title'
   | 'components.video.captions'
   | 'components.video.error'
   | 'components.video.hideCaptions'
