@@ -62,5 +62,8 @@
     "unmute": "Äänet päälle",
     "unsupportedWarning": "Selaimesi ei valitettavasti voi näyttää tätä videota.",
     "video": "Video"
+  },
+  "questionExtendedInfo": {
+    "title": "Tutustu aiheeseen"
   }
 }
