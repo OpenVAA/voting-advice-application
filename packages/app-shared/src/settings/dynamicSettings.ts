@@ -45,6 +45,9 @@ export const dynamicSettings: DynamicSettings = {
       allowSkip: true,
       show: true
     },
+    interactiveInfo: {
+      enabled: false
+    },
     questionsIntro: {
       allowCategorySelection: true,
       show: true
