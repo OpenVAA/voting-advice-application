@@ -795,22 +795,22 @@ async function generateMockLLMSummaries() {
         {
           role: 'user',
           content: `Write a lorem ipsum summary of this sentence: Taxes should be increased before cutting public spending
-          Generate it in this format and change only the text part:
+          Generate it in this format and change only the content part:
           {
-          "infoSections": {
-            "background": {
-              "text": {
-                "en": "Generated background here",
-                "fi": "Generated background here suomeksi",
-                "sv": "Generated background here in swedish"
-              },
-              "title": {
-                "en": "Background"
-              },
-              "visible": true
-            }
-          }
-        }`
+            "infoSections": [
+              {
+                "content": {
+                  "en": "Generated background here",
+                  "fi": "Generated background here suomeksi",
+                  "sv": "Generated background here in swedish"
+                },
+                "title": {
+                  "en": "Background"
+                },
+                "visible": true
+              }
+            ]
+          }`
         }
       ]
     });
@@ -826,10 +826,7 @@ async function generateMockLLMSummaries() {
       const existingCustomData = question.customData || {};
       const mergedCustomData = {
         ...existingCustomData,
-        infoSections: {
-          ...existingCustomData.infoSections,
-          ...generatedCustomData.infoSections
-        }
+        infoSections: [...(existingCustomData.infoSections || []), ...(generatedCustomData.infoSections || [])]
       };
 
       await strapi.db.query(API.Question).update({
