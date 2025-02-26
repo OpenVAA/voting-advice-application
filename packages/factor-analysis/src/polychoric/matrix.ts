@@ -16,9 +16,9 @@ export function computePolychoricMatrix(
   if (!responses?.length || !responses[0]?.length) {
     throw new Error('Empty response matrix');
   }
-
   const nQuestions = responses.length;
-  const nResponses = responses[0]?.length; // Length of first row
+  const nResponses = responses[0]?.length;
+  const MIN_VALID_PAIRS = 1; // TODO make this configurable. be also wary of UTs
 
   if (!nResponses) {
     throw new Error('Empty response matrix');
@@ -27,10 +27,9 @@ export function computePolychoricMatrix(
   // Validate input dimensions and data
   for (const row of responses) {
     if (row.length !== nResponses) {
-      // Check against nResponses instead of nVars
       throw new Error('All response rows must have same length');
     }
-    if (row.some((val) => !Number.isInteger(val) || isNaN(val))) {
+    if (row.some((val) => !isNaN(val) && !Number.isInteger(val))) {
       throw new Error('All values must be integers');
     }
   }
@@ -44,8 +43,21 @@ export function computePolychoricMatrix(
   for (let i = 0; i < nQuestions; i++) {
     for (let j = i + 1; j < nQuestions; j++) {
       // Extract columns i and j from responses
-      const var1 = responses[i];
-      const var2 = responses[j];
+      const var1 = [];
+      const var2 = [];
+
+      // Single sweep collecting pairs where both values exist
+      for (let k = 0; k < nResponses; k++) {
+        if (!isNaN(responses[i][k]) && !isNaN(responses[j][k])) {
+          var1.push(responses[i][k]);
+          var2.push(responses[j][k]);
+        }
+      }
+
+      if (var1.length < MIN_VALID_PAIRS) {
+        matrix[i][j] = matrix[j][i] = NaN;
+        continue;
+      } // TODO this should probably throw an error
 
       // Compute polychoric correlation
       const { correlation } = polychoricCorrelation({

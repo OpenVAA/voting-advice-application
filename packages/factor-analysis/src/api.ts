@@ -14,16 +14,16 @@ export function analyzeFactors(
   if (!input.responses?.length) {
     throw new Error('Empty response matrix');
   }
-
   for (const questionResponses of input.responses) {
     if (!questionResponses?.length) {
       throw new Error('Empty response array');
     }
-    for (const response of questionResponses) {
-      // TODO: add more sophisticated handling of missing values. Most likely some kind of mixture of pair-wise imputation and median filling
-      if (typeof response !== 'number' || Number.isNaN(response)) {
-        throw new Error('Invalid response value');
-      }
+    // Check that we have at least some valid responses
+    const validCount = questionResponses.filter(
+      (r) => typeof r === 'number' && !Number.isNaN(r)
+    ).length;
+    if (validCount === 0) {
+      throw new Error('No valid responses for question');
     }
   }
 

@@ -34,6 +34,7 @@ WORKDIR /opt
 COPY --from=shared /opt/packages/app-shared ./packages/app-shared
 COPY --from=shared /opt/packages/core ./packages/core
 COPY --from=shared /opt/packages/data ./packages/data
+COPY --from=shared /opt/packages/factor-analysis ./packages/factor-analysis
 COPY --from=shared /opt/backend/vaa-strapi ./backend/vaa-strapi
 
 FROM strapi AS development
