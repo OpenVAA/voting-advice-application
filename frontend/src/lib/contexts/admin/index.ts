@@ -1,15 +1,14 @@
 import { getContext, setContext } from 'svelte';
-import type { AppType } from '../app';
 
-const ADMIN_CONTEXT_KEY = 'admin';
+const ADMIN_CONTEXT_KEY = Symbol('admin');
 
 export interface AdminContext {
-  // Add admin-specific context properties here
+  isAuthenticated: boolean;
 }
 
 export function initAdminContext() {
   const adminContext: AdminContext = {
-    // Initialize admin context properties
+    isAuthenticated: false
   };
 
   setContext<AdminContext>(ADMIN_CONTEXT_KEY, adminContext);

@@ -44,17 +44,12 @@
 
 {#if !$appSettings.dataAdapter.supportsAdminApp}
   <MaintenancePage
-    title={$t('adminApp.notSupported.title')}
-    content={$t('adminApp.notSupported.content')}
-    emoji={$t('adminApp.notSupported.heroEmoji')} />
+    title={$t('info.adminApp.notSupported.title')}
+    content={$t('info.adminApp.notSupported.content')}
+    emoji={$t('info.adminApp.notSupported.heroEmoji')} />
 {:else}
   <Layout {menuId} bind:isDrawerOpen>
-    <nav
-      class="flex flex-col gap-4 p-4"
-      on:keyboardFocusOut={navigation.close}
-      id={menuId}
-      hidden={!isDrawerOpen}
-      slot="menu">
+    <nav class="flex flex-col gap-4 p-4" on:blur={navigation.close} id={menuId} hidden={!isDrawerOpen} slot="menu">
       <a href="/admin" class="hover:text-primary-600 flex items-center gap-2 text-gray-700">
         <span class="material-icons">home</span>
         <span>Start</span>

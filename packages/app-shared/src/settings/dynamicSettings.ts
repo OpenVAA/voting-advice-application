@@ -72,6 +72,7 @@ export const dynamicSettings: DynamicSettings = {
   access: {
     candidateApp: true,
     voterApp: true,
+    adminApp: true,
     underMaintenance: false,
     answersLocked: false
   },
