@@ -71,7 +71,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 
   type $$Props = InputProps;
 
-  export let type: $$Props['type'];
+  export let type: 'text' | 'email' | 'password' | 'url' | 'select' | 'textarea' | 'date' = 'text';
   export let label: $$Props['label'];
   // export let variant: $$Props['variant'] = 'default';
   export let containerProps: $$Props['containerProps'] = undefined;
