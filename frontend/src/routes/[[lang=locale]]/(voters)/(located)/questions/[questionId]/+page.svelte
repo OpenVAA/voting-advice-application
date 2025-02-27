@@ -32,6 +32,7 @@ Display a question for answering.
   import { FIRST_QUESTION_ID, parseParams } from '$lib/utils/route';
   import { DELAY } from '$lib/utils/timing';
   import Layout from '../../../../Layout.svelte';
+  import { QuestionOrderer, getMockFactorData } from './questionOrderer';
   import type { AnyQuestionVariant } from '@openvaa/data';
   import type { QuestionBlock } from '$lib/contexts/voter/questionBlockStore.type';
   //import {type VideoMode, Video} from '$lib/components/video';
@@ -131,8 +132,8 @@ Display a question for answering.
   function getNextQuestionChoices(): Array<AnyQuestionVariant> {
     const allQuestions = $selectedQuestionBlocks.questions;
     const shownIds = $selectedQuestionBlocks.shownQuestionIds;
+    console.log('Already shown questions:', shownIds);
 
-    // Get questions that haven't been shown yet
     const unshownQuestions = allQuestions.filter((q) => !shownIds.includes(q.id));
 
     if (unshownQuestions.length === 0) {
@@ -141,8 +142,25 @@ Display a question for answering.
 
     const config = $appSettings.questions.dynamicOrdering?.config;
     const numSuggestions = config?.type === 'factor-based' ? (config.numSuggestions ?? 3) : 3;
-    const choices = [...unshownQuestions].sort(() => Math.random() - 0.5).slice(0, numSuggestions);
-    return choices;
+
+    if (config?.type === 'factor-based') {
+      // Generate mock factor data for all questions
+      const mockFactors = getMockFactorData(allQuestions.length);
+      console.log('Factor loadings:', mockFactors.questionFactorLoadings);
+      
+      // Create question orderer
+      const orderer = new QuestionOrderer(allQuestions, mockFactors);
+      
+      // Get next questions with highest information gain
+      const nextQuestions = orderer.getNextQuestions(shownIds, numSuggestions);
+      console.log('Recommended next questions:', nextQuestions.map(q => q.id));
+      return nextQuestions;
+    }
+
+    // Fallback to random selection
+    return [...unshownQuestions]
+      .sort(() => Math.random() - 0.5)
+      .slice(0, numSuggestions);
   }
 
   function handleAnswer({ question, value }: { question: AnyQuestionVariant; value?: unknown }): void {
