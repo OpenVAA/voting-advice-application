@@ -101,7 +101,7 @@ text="Add to list">
 
   $: {
     // 1. Base classes
-    classes = 'btn relative flex flex-nowrap min-h-touch min-w-touch h-auto flex items-center gap-y-6 gap-x-6';
+    classes = 'btn relative flex flex-nowrap min-h-touch min-w-touch h-auto items-center gap-y-6 gap-x-6';
     labelClass = 'vaa-button-label first-letter:uppercase';
 
     // 2. Variant-defined classes

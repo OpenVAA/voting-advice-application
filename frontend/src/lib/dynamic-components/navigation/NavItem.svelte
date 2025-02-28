@@ -31,7 +31,6 @@ Accesses `LayoutContext`.
   import { Icon } from '$lib/components/icon';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { concatClass } from '$lib/utils/components';
-  import { ucFirst } from '$lib/utils/text/ucFirst';
   import type { NavItemProps } from './NavItem.type';
   type $$Props = NavItemProps;
 
@@ -70,7 +69,7 @@ Accesses `LayoutContext`.
     {#if icon}
       <Icon name={icon} />
     {/if}
-    <span>{ucFirst(text)}</span>
+    <span class="uc-first">{text}</span>
     <slot />
   </svelte:element>
 </div>
