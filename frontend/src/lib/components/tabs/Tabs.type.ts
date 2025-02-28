@@ -9,7 +9,7 @@ export type TabsProps = SvelteHTMLElements['ul'] & {
    */
   activeIndex?: number;
   /**
-   * Callback for when the active tab changes. The event `details` contains the active tab as `tab` as well as its `index`. Note, it's preferable to just bind to the `activeTab` property instead.
+   * Callback for when the active tab changes. The event `details` contains the active tab as `tab` as well as its `index`.
    */
   onChange?: (details: { index?: number; tab: Tab }) => void;
 };
