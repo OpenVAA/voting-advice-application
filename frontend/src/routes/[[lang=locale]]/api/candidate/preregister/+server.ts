@@ -6,7 +6,7 @@ import { logDebugError } from '$lib/utils/logger';
 import type { Id } from '@openvaa/core';
 
 export async function POST({ cookies, request }) {
-  const { BACKEND_API_TOKEN, IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY, IDENTITY_PROVIDER_JWKS_URI } = constants;
+  const { BACKEND_API_TOKEN } = constants;
 
   const dataWriter = await dataWriterPromise;
   dataWriter.init({ fetch });
@@ -29,10 +29,7 @@ export async function POST({ cookies, request }) {
     error(401, { message: 'ID token has expired.' });
   }
 
-  const claims = await getIdTokenClaims(idToken, {
-    privateEncryptionJWK: JSON.parse(IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY),
-    publicSignatureJWKSetUri: IDENTITY_PROVIDER_JWKS_URI
-  });
+  const claims = await getIdTokenClaims(idToken);
 
   if (!claims.success) {
     error(401, { message: 'ID token has expired.' });

@@ -12,6 +12,7 @@
   import { browser } from '$app/environment';
   import { goto } from '$app/navigation';
   import { PreregisteredNotification } from '$candidate/components/preregisteredNotification';
+  import { generateChallenge } from '$lib/api/utils/auth/generateChallenge';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getCandidateContext } from '$lib/contexts/candidate';
@@ -31,7 +32,6 @@
     getRoute,
     idTokenClaims,
     isPreregistered,
-    locale,
     popupQueue,
     preregistrationElectionIds,
     t
@@ -74,9 +74,14 @@
     if (!browser) {
       return;
     }
+
+    const { codeVerifier, codeChallenge } = await generateChallenge(window.crypto);
+    localStorage.setItem('code_verifier', codeVerifier);
+
     const clientId = constants.PUBLIC_IDENTITY_PROVIDER_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/${$locale}/candidate/preregister/signicat/oidc/callback`; // TODO: Shorter URI.
-    window.location.href = `${constants.PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=openid%20profile&prompt=login`;
+    const authorizationEndpointUri = constants.PUBLIC_IDENTITY_PROVIDER_AUTHORIZATION_ENDPOINT;
+    const redirectUri = `${window.location.origin}${$getRoute('CandAppPreregisterIdentityProviderCallback')}`;
+    window.location.href = `${authorizationEndpointUri}?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}&scope=openid%20profile&prompt=login&code_challenge=${codeChallenge}&code_challenge_method=S256`;
   }
 
   ////////////////////////////////////////////////////////////////////
