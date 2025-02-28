@@ -1,4 +1,7 @@
 {
+  "accordionSelect": {
+    "collapsedAriaInfo": "Napauta näyttääksesi kaikki vaihtoehdot"
+  },
   "constituencySelector": {
     "selectPrompt": "Valitse {constituencyGroup}"
   },
