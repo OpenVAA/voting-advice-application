@@ -1,4 +1,7 @@
 {
+  "accordionSelect": {
+    "collapsedAriaInfo": "Tryck för att visa alla alternativ"
+  },
   "constituencySelector": {
     "selectPrompt": "Välj {constituencyGroup}"
   },

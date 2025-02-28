@@ -239,6 +239,7 @@ export type TranslationKey =
   | 'common.thanksNo'
   | 'common.unaffiliated'
   | 'common.website'
+  | 'components.accordionSelect.collapsedAriaInfo'
   | 'components.constituencySelector.selectPrompt'
   | 'components.headingGroup.roleDescription'
   | 'components.input.addImage'
