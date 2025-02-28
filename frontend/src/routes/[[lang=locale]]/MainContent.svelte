@@ -10,6 +10,7 @@ Defines the layout of the `main` content of all the standard pages in the app.
 - `note`: optional content for the complementary notification displayed at the top of the page, right below the `<header>`
 - `hero`: an optional hero image
 - `heading`: optional content for the main title block, defaults to a `<h1>` element containing the required `title` property
+- `fullWidth`: optional full width content displayed between the default slot and `primaryActions`
 - `primaryActions`: optional content for the primary actions displayed at the bottom of the page
 
 ### Properties
@@ -86,6 +87,13 @@ Defines the layout of the `main` content of all the standard pages in the app.
       <slot />
     </div>
   </div>
+
+  <!-- Full-width content -->
+  {#if $$slots.fullWidth}
+    <div class="-mb-safelgb -ml-safelgl -mr-safelgr flex flex-col items-stretch self-stretch">
+      <slot name="fullWidth" />
+    </div>
+  {/if}
 
   <!-- Main actions -->
   {#if $$slots.primaryActions}

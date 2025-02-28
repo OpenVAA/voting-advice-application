@@ -31,7 +31,6 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { Icon } from '$lib/components/icon';
   import { Loading } from '$lib/components/loading';
-  import { StretchBackground } from '$lib/components/stretchBackground';
   import { type Tab, Tabs } from '$lib/components/tabs';
   import { getVoterContext } from '$lib/contexts/voter';
   import { EntityList, EntityListControls } from '$lib/dynamic-components/entityList';
@@ -195,38 +194,40 @@ The nominations applicable to these elections and constituencies are shown. Thes
     {/if}
   {/if}
 
-  <StretchBackground padding="medium" bgColor="base-300" toBottom class="min-h-[75vh]">
-    <!-- EntityType selector if there are multiple -->
-    {#if Object.keys($matches[activeElectionId]).length > 1}
-      <Tabs tabs={entityTabs} activeIndex={initialEntityTabIndex} onChange={handleEntityTabChange} />
-    {/if}
-
-    <!-- We need to add mx-10 below to match the margins to the basic page margins, except for the EntityList components which we want to give more width -->
-
-    {#if activeEntityType}
-      {#if activeMatches}
-        {#key activeMatches}
-          <h2 class="mx-10 mb-md mt-md">
-            {$t(`results.${activeEntityType}.numShown`, { numShown: filteredEntities?.length })}
-            {#if filteredEntities?.length !== activeMatches.length}
-              <span class="font-normal text-secondary"
-                >{$t('results.numTotal', { numTotal: activeMatches.length })}</span>
-            {/if}
-          </h2>
-          <EntityListControls
-            entities={activeMatches}
-            onUpdate={(results) => (filteredEntities = results)}
-            filterGroup={$entityFilters[activeElectionId][activeEntityType]}
-            class="mx-10 mb-md" />
-          <EntityList cards={filteredEntities.map((e) => ({ entity: e }))} class="mb-lg" />
-        {/key}
-      {:else}
-        <Loading />
+  <div slot="fullWidth" class="flex min-h-[75vh] flex-col items-center bg-base-300">
+    <div class="w-full max-w-xl pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0">
+      <!-- EntityType selector if there are multiple -->
+      {#if Object.keys($matches[activeElectionId]).length > 1}
+        <Tabs tabs={entityTabs} activeIndex={initialEntityTabIndex} onChange={handleEntityTabChange} />
       {/if}
-    {:else}
-      <div class="py-lg text-center text-lg text-error">
-        {$t('error.noNominations')}
-      </div>
-    {/if}
-  </StretchBackground>
+
+      <!-- We need to add mx-10 below to match the margins to the basic page margins, except for the EntityList components which we want to give more width -->
+
+      {#if activeEntityType}
+        {#if activeMatches}
+          {#key activeMatches}
+            <h2 class="mx-10 mb-md mt-md">
+              {$t(`results.${activeEntityType}.numShown`, { numShown: filteredEntities?.length })}
+              {#if filteredEntities?.length !== activeMatches.length}
+                <span class="font-normal text-secondary"
+                  >{$t('results.numTotal', { numTotal: activeMatches.length })}</span>
+              {/if}
+            </h2>
+            <EntityListControls
+              entities={activeMatches}
+              onUpdate={(results) => (filteredEntities = results)}
+              filterGroup={$entityFilters[activeElectionId][activeEntityType]}
+              class="mx-10 mb-md" />
+            <EntityList cards={filteredEntities.map((e) => ({ entity: e }))} class="mb-lg" />
+          {/key}
+        {:else}
+          <Loading />
+        {/if}
+      {:else}
+        <div class="py-lg text-center text-lg text-error">
+          {$t('error.noNominations')}
+        </div>
+      {/if}
+    </div>
+  </div>
 </MainContent>
