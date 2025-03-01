@@ -1,5 +1,6 @@
-import { derived, readable } from 'svelte/store';
+import { readable } from 'svelte/store';
 import { logDebugError } from '$lib/utils/logger';
+import { parsimoniusDerived } from './parsimoniusDerived';
 import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant, Constituency, Election, QuestionCategory } from '@openvaa/data';
 import type { Readable } from 'svelte/store';
@@ -27,7 +28,7 @@ export function questionBlockStore({
   selectedElections: Readable<Array<Election>>;
   selectedConstituencies: Readable<Array<Constituency>>;
 }): Readable<QuestionBlocks> {
-  return derived(
+  return parsimoniusDerived(
     [
       firstQuestionId,
       opinionQuestionCategories,
@@ -67,10 +68,12 @@ export function questionBlockStore({
       };
     },
     {
-      blocks: [],
-      questions: [],
-      getByCategory: () => undefined,
-      getByQuestion: () => undefined
+      initialValue: {
+        blocks: [],
+        questions: [],
+        getByCategory: () => undefined,
+        getByQuestion: () => undefined
+      }
     }
   );
 }
