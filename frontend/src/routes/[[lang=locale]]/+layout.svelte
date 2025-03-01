@@ -82,8 +82,10 @@
     if (!isValidResult(electionData)) return new Error('Error loading constituency data');
     if (!isValidResult(constituencyData)) return new Error('Error loading constituency data');
     underMaintenance = appSettingsData.access?.underMaintenance ?? false;
-    $dataRoot.provideElectionData(electionData);
-    $dataRoot.provideConstituencyData(constituencyData);
+    $dataRoot.update(() => {
+      $dataRoot.provideElectionData(electionData);
+      $dataRoot.provideConstituencyData(constituencyData);
+    });
     // We don't do anything else with the data if they're okay, because the relevant stores will pick them up from $page.data
     ready = true;
   }
