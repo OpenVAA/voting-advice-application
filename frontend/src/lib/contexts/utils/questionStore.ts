@@ -6,7 +6,8 @@ import {
   type QuestionCategory
 } from '@openvaa/data';
 import { error } from '@sveltejs/kit';
-import { derived, type Readable } from 'svelte/store';
+import { parsimoniusDerived } from './parsimoniusDerived';
+import type { Readable } from 'svelte/store';
 
 /**
  * Create a derived store containing all `AnyQuestionVariant`s that apply to the selected elections and constituencies.
@@ -21,7 +22,7 @@ export function questionStore({
   selectedElections: Readable<Array<Election>>;
   selectedConstituencies: Readable<Array<Constituency>>;
 }): Readable<Array<AnyQuestionVariant>> {
-  return derived(
+  return parsimoniusDerived(
     [categories, selectedElections, selectedConstituencies],
     ([categories, elections, constituencies]) =>
       categories.flatMap((c) => {
@@ -30,6 +31,6 @@ export function questionStore({
           error(500, `Some opinion questions in category ${c.id} is not matchable.`);
         return questions;
       }),
-    []
+    { initialValue: [] }
   );
 }

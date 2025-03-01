@@ -46,9 +46,11 @@ Provides the data used by the located – i.e. those requiring the elections and
   ]): Error | undefined {
     if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
     if (!isValidResult(nominationData, { allowEmpty: true })) return new Error('Error loading nomination data');
-    $dataRoot.provideQuestionData(questionData);
-    $dataRoot.provideEntityData(nominationData.entities);
-    $dataRoot.provideNominationData(nominationData.nominations);
+    $dataRoot.update(() => {
+      $dataRoot.provideQuestionData(questionData);
+      $dataRoot.provideEntityData(nominationData.entities);
+      $dataRoot.provideNominationData(nominationData.nominations);
+    });
     ready = true;
   }
 </script>

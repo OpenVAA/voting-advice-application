@@ -8,7 +8,8 @@ import {
   type EntityType,
   QUESTION_CATEGORY_TYPE
 } from '@openvaa/data';
-import { derived, type Readable } from 'svelte/store';
+import { type Readable } from 'svelte/store';
+import { parsimoniusDerived } from '../utils/parsimoniusDerived';
 import type { SelectionTree } from './selectionTree.type';
 
 /**
@@ -33,7 +34,7 @@ export function nominationAndQuestionStore({
   elections: Readable<Array<Election> | undefined>;
   entityTypes: Readable<Array<EntityType>>;
 }): Readable<NominationAndQuestionTree> {
-  return derived(
+  return parsimoniusDerived(
     [dataRoot, constituencies, elections, entityTypes],
     ([dataRoot, constituencies, elections, entityTypes]) => {
       if (!dataRoot || !elections || !constituencies) return {};

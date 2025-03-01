@@ -1,7 +1,7 @@
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openvaa/matching';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { derived, get } from 'svelte/store';
+import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { logDebugError } from '$lib/utils/logger';
 import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/utils/route';
@@ -13,6 +13,7 @@ import { nominationAndQuestionStore } from './nominationAndQuestionStore';
 import { getAppContext } from '../../contexts/app';
 import { dataCollectionStore } from '../utils/dataCollectionStore';
 import { paramStore } from '../utils/paramStore';
+import { parsimoniusDerived } from '../utils/parsimoniusDerived';
 import { questionBlockStore } from '../utils/questionBlockStore';
 import { extractInfoCategories, extractOpinionCategories, questionCategoryStore } from '../utils/questionCategoryStore';
 import { questionStore } from '../utils/questionStore';
@@ -48,12 +49,12 @@ export function initVoterContext(): VoterContext {
 
   // Stores related to selection pages
 
-  const electionsSelectable = derived(
+  const electionsSelectable = parsimoniusDerived(
     [appSettings, dataRoot],
     ([appSettings, dataRoot]) => !appSettings.elections?.disallowSelection && dataRoot.elections?.length !== 1
   );
 
-  const constituenciesSelectable = derived(dataRoot, (dataRoot) =>
+  const constituenciesSelectable = parsimoniusDerived(dataRoot, (dataRoot) =>
     dataRoot.elections?.some((e) => !e.singleConstituency)
   );
 
@@ -62,14 +63,18 @@ export function initVoterContext(): VoterContext {
   /**
    * A paramStore with implied defaults.
    */
-  const electionId = derived([paramStore('electionId'), appSettings, dataRoot], ([param, appSettings, dataRoot]) => {
-    if (param) return param;
-    if (dataRoot.elections.length === 0) return undefined;
-    return getImpliedElectionIds({
-      appSettings,
-      elections: dataRoot.elections
-    });
-  });
+  const electionId = parsimoniusDerived(
+    [paramStore('electionId'), appSettings, dataRoot],
+    ([param, appSettings, dataRoot]) => {
+      if (param) return param;
+      if (dataRoot.elections.length === 0) return undefined;
+      return getImpliedElectionIds({
+        appSettings,
+        elections: dataRoot.elections
+      });
+    },
+    { differenceChecker: JSON.stringify }
+  );
 
   const selectedElections = dataCollectionStore({
     dataRoot,
@@ -88,10 +93,14 @@ export function initVoterContext(): VoterContext {
   /**
    * A paramStore with implied defaults.
    */
-  const constituencyId = derived([paramStore('constituencyId'), selectedElections], ([param, elections]) => {
-    if (param) return param;
-    return getImpliedConstituencyIds({ elections });
-  });
+  const constituencyId = parsimoniusDerived(
+    [paramStore('constituencyId'), selectedElections],
+    ([param, elections]) => {
+      if (param) return param;
+      return getImpliedConstituencyIds({ elections });
+    },
+    { differenceChecker: JSON.stringify }
+  );
 
   const selectedConstituencies = dataCollectionStore({
     dataRoot,
@@ -150,7 +159,7 @@ export function initVoterContext(): VoterContext {
 
   const answers = answerStore({ startEvent });
 
-  const resultsAvailable = derived(
+  const resultsAvailable = parsimoniusDerived(
     [appSettings, opinionQuestions, answers, selectedElections],
     ([appSettings, questions, answers, selectedElections]) => {
       // For results to be available, we need at least the specified number of answers for each election
@@ -163,7 +172,7 @@ export function initVoterContext(): VoterContext {
   );
 
   /** The types of entities we show in results */
-  const entityTypes = derived(appSettings, (appSettings) => appSettings.results?.sections ?? []);
+  const entityTypes = parsimoniusDerived(appSettings, (appSettings) => appSettings.results?.sections ?? []);
 
   // Matching and filtering depend on the available nominations and questions, for which we use a utility store
   const nominationsAndQuestions = nominationAndQuestionStore({
@@ -180,10 +189,10 @@ export function initVoterContext(): VoterContext {
     }
   });
 
-  const minAnswers = derived(appSettings, (appSettings) => appSettings.matching.minimumAnswers);
+  const minAnswers = parsimoniusDerived(appSettings, (appSettings) => appSettings.matching.minimumAnswers);
 
   /** Get the entityTypes whose cardContents include `submatches` */
-  const calcSubmatches = derived(appSettings, (appSettings) =>
+  const calcSubmatches = parsimoniusDerived(appSettings, (appSettings) =>
     Object.entries(appSettings.results.cardContents)
       .filter(([, value]) => value.includes('submatches'))
       .map(([type]) => type as EntityType)
