@@ -29,12 +29,10 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
 <script lang="ts">
   import { getCustomData, type TermDefinition } from '@openvaa/app-shared';
-  import { Election } from '@openvaa/data';
-  import { type Readable, readable } from 'svelte/store';
+  import { Term } from '$lib/components/term';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { ElectionTag } from '$lib/components/electionTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
-  import { Term } from '$lib/components/term';
   import { getAppContext } from '$lib/contexts/app';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getVoterContext } from '$lib/contexts/voter';
@@ -42,6 +40,8 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   import { getElectionsToShow } from '$lib/utils/questions';
   import { escapeRegExp } from '$lib/utils/regexp';
   import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
+  import { Election } from '@openvaa/data';
+  import { type Readable, readable } from 'svelte/store';
   import type { QuestionHeadingProps } from './QuestionHeading.type';
 
   type $$Props = QuestionHeadingProps;
@@ -71,6 +71,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
   let blockWithStats: { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
   let numQuestions: number | undefined;
+  let titleSections: { text?: string; term?: string; explanation?: string }[] = [{ text: question.text }];
 
   $: customData = getCustomData(question);
   $: titleParts = addTermsToTitle(customData.terms);
