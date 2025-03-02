@@ -86,7 +86,7 @@ Accesses `CandidateContext`.
   bind:timeLeft
   bind:openModal
   bind:closeModal
-  on:timeout={handleLogout}
+  onTimeout={handleLogout}
   title={$t('candidateApp.logoutModal.title')}
   timerDuration={logoutModalTimer}>
   <!-- <div class="notification max-w-md text-center"> -->

@@ -14,16 +14,15 @@ See [`<ModalContainer>` component](./ModalContainer.svelte) for more information
 - `boxClass`: Optional classes to add to the dialog box itself. Note that the basic `class` property is applied to the `<dialog>` element, which is rarely needed.
 - Any valid properties of a `<ModalContainer>` component.
 
+### Callbacks
+
+- `onClose`: Callback for when the modal closes. Note that the modal may still be transitioning to `hidden`.
+- `onOpen`: Callback for when the modal opens. Note that the modal may still be transitioning from `hidden`.
+
 ### Bindable functions
 
 - `openModal`: Opens the modal
 - `closeModal`: Closes the modal
-
-### Events
-
-- `open`: Fired after the modal is opened. Note that the modal may still be transitioning from `hidden`.
-- `close`: Fired when the modal is closed by any means. Note that the modal may still be transitioning to `hidden`.
-- Neither event has any details.
 
 ### Accessibility
 
@@ -51,8 +50,8 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
   bind:closeModal
   bind:openModal
   title="What's your answer?"
-  on:open={() => answer = '?'}
-  on:close={() => setAnswer('No')}>
+  onOpen={() => answer = '?'}
+  onClose={() => setAnswer('No')}>
   <p>Click below or hit ESC to exit.</p>
   <div slot="actions" class="flex flex-col w-full max-w-md mx-auto">
     <Button on:click={() => {setAnswer('Yes'); closeModal();}} text="Yes" variant="main"/>
@@ -64,6 +63,7 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
 
 <script lang="ts">
   import { getComponentContext } from '$lib/contexts/component';
+  import { concatClass } from '$lib/utils/components';
   import ModalContainer from './ModalContainer.svelte';
   import type { ModalProps } from './Modal.type';
 
@@ -78,7 +78,12 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
   const { t } = getComponentContext();
 </script>
 
-<ModalContainer {...$$restProps} {title} bind:isOpen bind:closeModal bind:openModal on:open on:close>
+<ModalContainer
+  {...concatClass($$restProps, 'modal-bottom sm:modal-middle')}
+  {title}
+  bind:isOpen
+  bind:closeModal
+  bind:openModal>
   <div class="modal-box {boxClass ?? ''}">
     <h2 class="mb-lg text-center">{title}</h2>
     <slot />

@@ -21,11 +21,15 @@ Display a question for answering.
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { Loading } from '$lib/components/loading';
-  import { OpinionQuestionInput, QuestionActions, QuestionBasicInfo } from '$lib/components/questions';
+  import {
+    OpinionQuestionInput,
+    QuestionActions,
+    QuestionBasicInfo,
+    QuestionExtendedInfoButton
+  } from '$lib/components/questions';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { QuestionHeading } from '$lib/dynamic-components/questionHeading';
-  import { QuestionExtendedInfoButton } from '$lib/dynamic-components/questionInfo';
   import { logDebugError } from '$lib/utils/logger';
   import { FIRST_QUESTION_ID, parseParams } from '$lib/utils/route';
   import { DELAY } from '$lib/utils/timing';
