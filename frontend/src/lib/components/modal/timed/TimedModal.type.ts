@@ -9,4 +9,8 @@ export type TimedModalProps = ModalProps & {
    * Bind to this to get time left in seconds
    */
   timeLeft?: number;
+  /**
+   * Callback triggered right before the modal is closed due to a timeout. Note that the `onClose` callback will be triggered after this.
+   */
+  onTimeout?: () => void;
 };

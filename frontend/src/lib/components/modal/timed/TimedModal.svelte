@@ -14,17 +14,16 @@ A modal dialog that will automatically close after a set amount of time.
 - `timeLeft`: Bind to this to get time left in seconds 
 - Any valid properties of a `<Modal>` component.
 
+### Callbacks
+
+- `onClose`: Callback for when the modal closes. Note that the modal may still be transitioning to `hidden`.
+- `onOpen`: Callback for when the modal opens. Note that the modal may still be transitioning from `hidden`.
+- `timeout`: Callback triggered right before the modal is closed due to a timeout. Note that the `onClose` callback will be triggered after this.
+
 ### Bindable functions
 
 - `openModal`: Opens the modal
 - `closeModal`: Closes the modal
-
-### Events
-
-- `open`: Fired after the modal is opened. Note that the modal may still be transitioning from `hidden`.
-- `close`: Fired when the modal is closed by any means. Note that the modal may still be transitioning to `hidden`.
-- `timeout`: Fired right before the modal is closed due to a timeout. Note that the `close` event will be fired after this.
-- Neither event has any details.
 
 ### Accessibility
 
@@ -36,9 +35,9 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
 <TimedModal 
   bind:closeModal
   title="Timout modal"
-  on:open={() => console.info('Opened')}
-  on:close={() => console.info('Closed')}
-  on:timeout={() => console.info('Timeout!')}>
+  onOpen={() => console.info('Opened')}
+  onClose={() => console.info('Closed')}
+  onTimeout={() => console.info('Timeout!')}>
   <p>Wait for it…</p>
   <Button slot="actions" on:click={closeModal} text="Close" variant="main"/>
 </TimedModal>
@@ -46,7 +45,7 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
 -->
 
 <script lang="ts">
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { tweened } from 'svelte/motion';
   import Modal from '../Modal.svelte';
   import type { TimedModalProps } from './TimedModal.type';
@@ -57,11 +56,12 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
   export let title: $$Props['title'];
   export let timerDuration: $$Props['timerDuration'] = DEFAULT_DURATION;
   export let timeLeft: $$Props['timeLeft'] = Math.ceil(timerDuration ?? DEFAULT_DURATION);
+  export let onClose: $$Props['onClose'] = undefined;
+  export let onOpen: $$Props['onOpen'] = undefined;
+  export let onTimeout: $$Props['onTimeout'] = undefined;
 
   export let closeModal: $$Props['closeModal'] = undefined;
   export let openModal: $$Props['openModal'] = undefined;
-
-  const dispatchEvent = createEventDispatcher();
 
   let isOpen: boolean;
 
@@ -81,6 +81,20 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
     if (timeout) clearTimeout(timeout);
   });
 
+  ////////////////////////////////////////////////////////////////////
+  // Events
+  ////////////////////////////////////////////////////////////////////
+
+  function handleOpen() {
+    startTimeout();
+    onOpen?.();
+  }
+
+  function handleClose() {
+    stopTimeout();
+    onClose?.();
+  }
+
   /** Start or reset the timeout and the progress bar */
   function startTimeout() {
     if (timeout) clearTimeout(timeout);
@@ -92,7 +106,7 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
     timeout = setTimeout(
       () => {
         if (isOpen) {
-          dispatchEvent('timeout');
+          onTimeout?.();
           closeModal?.();
         }
       },
@@ -112,10 +126,8 @@ See the [`<Modal>` component](../Modal.svelte) documentation for more informatio
   bind:closeModal
   bind:openModal
   bind:isOpen
-  on:open={startTimeout}
-  on:close={stopTimeout}
-  on:open
-  on:close
+  onOpen={handleOpen}
+  onClose={handleClose}
   {title}
   closeOnBackdropClick={false}
   {...$$restProps}>

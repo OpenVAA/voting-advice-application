@@ -20,7 +20,8 @@ export function parseQuestionInfoSections(
         out.push({
           title: translate(title, locale),
           content: translate(content, locale),
-          visible: !!visible
+          // True by default
+          visible: visible !== false
         });
       }
     }

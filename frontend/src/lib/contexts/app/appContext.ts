@@ -8,7 +8,6 @@ import { FeedbackPopup } from '$lib/dynamic-components/feedback/popup';
 import { SurveyPopup } from '$lib/dynamic-components/survey/popup';
 import { mergeAppSettings } from '$lib/utils/settings';
 import { getRoute } from './getRoute';
-import { modalStore } from './modal';
 import { popupStore } from './popup';
 import { surveyLink } from './survey';
 import { trackingService } from './tracking';
@@ -87,8 +86,6 @@ export function initAppContext(): AppContext {
 
   const popupQueue = popupStore();
 
-  const modalStack = modalStore();
-
   // TODO: Refactor when Cand App is refactored
   const openFeedbackModal: Writable<() => void | undefined> = writable();
 
@@ -159,7 +156,6 @@ export function initAppContext(): AppContext {
     getRoute,
     openFeedbackModal,
     popupQueue,
-    modalStack,
     sendFeedback,
     setDataConsent,
     setFeedbackStatus,
