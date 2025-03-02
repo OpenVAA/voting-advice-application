@@ -13,16 +13,15 @@ A modal dialog.
 - `closeOnBackdropClick`:  Whether to allow closing the modal by clicking outside of it. @default `true`
 - Any valid properties of a `<dialog>` element.
 
+### Callbacks
+
+- `onClose`: Callback for when the modal closes. Note that the modal may still be transitioning to `hidden`.
+- `onOpen`: Callback for when the modal opens. Note that the modal may still be transitioning from `hidden`.
+
 ### Bindable functions
 
 - `openModal`: Opens the modal
 - `closeModal`: Closes the modal
-
-### Events
-
-- `open`: Fired after the modal is opened. Note that the modal may still be transitioning from `hidden`.
-- `close`: Fired when the modal is closed by any means. Note that the modal may still be transitioning to `hidden`.
-- Neither event has any details.
 
 ### Accessibility
 
@@ -40,7 +39,7 @@ A modal dialog.
   export let openModal;
 </script>
 
-<ModalContainer {...$$restProps} {title} bind:isOpen bind:closeModal bind:openModal on:open on:close>
+<ModalContainer {...$$restProps} {title} bind:isOpen bind:closeModal bind:openModal>
   <div class="modal-box">
     <h2 class="mb-lg text-center">{title}</h2>
     <slot />
@@ -50,10 +49,10 @@ A modal dialog.
 -->
 
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
   import { attemptFocus, focusFirstDescendant } from '$lib/utils/aria/focus';
   import { concatClass } from '$lib/utils/components';
+  import { DELAY } from '$lib/utils/timing';
   import type { ModalContainerProps } from './ModalContainer.type';
 
   type $$Props = ModalContainerProps;
@@ -62,21 +61,18 @@ A modal dialog.
   export let autofocusId: $$Props['autofocusId'] = undefined;
   export let closeOnBackdropClick: $$Props['closeOnBackdropClick'] = true;
   export let isOpen: $$Props['isOpen'] = false;
+  export let onClose: $$Props['onClose'] = undefined;
+  export let onOpen: $$Props['onOpen'] = undefined;
 
   /** Bind to open the modal dialog */
   export function openModal() {
-    if (!isOpen) {
-      modalContainer?.showModal();
-      onOpen();
-    }
-  }
-  /** Bind to close the modal dialog */
-  export function closeModal() {
-    if (isOpen) modalContainer?.close();
+    handleOpen();
   }
 
-  // We need a small timeout before trying to focus for the dialog to be visible
-  const FOCUS_TIMEOUT = 225;
+  /** Bind to close the modal dialog */
+  export function closeModal() {
+    handleClose();
+  }
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -87,8 +83,6 @@ A modal dialog.
   ////////////////////////////////////////////////////////////////////
   // Events
   ////////////////////////////////////////////////////////////////////
-
-  const dispatchEvent = createEventDispatcher();
 
   // Used to track the animation when the element is being hidden
   let inTransition = false;
@@ -101,35 +95,37 @@ A modal dialog.
    */
   function handleEscape(e: KeyboardEvent) {
     if (isOpen && e.key == 'Escape') {
-      closeModal();
+      handleClose();
       e.stopPropagation();
     }
   }
 
-  function onClose() {
+  function handleClose() {
+    modalContainer?.close();
     inTransition = true;
     isOpen = false;
-    dispatchEvent('close');
+    onClose?.();
   }
 
-  function onOpen() {
+  function handleOpen() {
+    modalContainer?.showModal();
     inTransition = false;
     isOpen = true;
-    dispatchEvent('open');
+    onOpen?.();
     setTimeout(() => {
       if (!isOpen) return;
       if (modalContainer) {
-        if (autofocusId != null) {
+        if (autofocusId) {
           const el = modalContainer.querySelector(`#${autofocusId}`);
           if (el) attemptFocus(el);
-        } else {
+        } else if (autofocusId !== false) {
           focusFirstDescendant(modalContainer);
         }
       }
-    }, FOCUS_TIMEOUT);
+    }, DELAY.sm);
   }
 
-  function onTransitionEnd() {
+  function handleTransitionEnd() {
     inTransition = false;
   }
 </script>
@@ -138,16 +134,16 @@ A modal dialog.
 
 <dialog
   bind:this={modalContainer}
-  on:close={onClose}
-  on:transitionend={onTransitionEnd}
+  on:close={handleClose}
+  on:transitionend={handleTransitionEnd}
   class:hidden={!isOpen && !inTransition}
   aria-modal="true"
   aria-label={title}
-  {...concatClass($$restProps, 'modal modal-bottom sm:modal-middle backdrop:bg-neutral backdrop:opacity-60')}>
+  {...concatClass($$restProps, 'modal backdrop:bg-neutral backdrop:opacity-60')}>
   <slot />
   {#if closeOnBackdropClick}
-    <div class="modal-backdrop" aria-hidden="true">
-      <button on:click={closeModal} tabindex="-1">{$t('common.closeDialog')}</button>
+    <div class="modal-backdrop">
+      <button on:click={handleClose} tabindex="-1">{$t('common.closeDialog')}</button>
     </div>
   {/if}
 </dialog>
