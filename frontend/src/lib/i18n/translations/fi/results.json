@@ -8,11 +8,11 @@
   "faction": {
     "numShown": "{numShown, plural, =0 {Ei ryhmittymiä} =1 {1 ryhmittymä} other {# ryhmittymää}}"
   },
+  "inConstituency": "vaalipiirissä",
   "ingress": {
     "answerMinQuestions": "Jos haluat löytää eniten kanssasi samaa mieltä olevat {candidatePlural} ja {partyPlural}, {questionsLink} ensin.",
     "questionsLinkText": "vastaa ainakin {numQuestions, plural, =1 {yhteen kysymykseen} other {# kysymykseen}}"
   },
-  "numTotal": "({numTotal})",
   "organization": {
     "numShown": "{numShown, plural, =0 {Ei puolueita} =1 {1 puolue} other {# puoluetta}}"
   },

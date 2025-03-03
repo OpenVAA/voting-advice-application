@@ -2,7 +2,7 @@
 
 # Matching results or browse nominations page
 
-Display the matching results or, if these are unavailable, all nominations for each election and entity type enabled in settings.
+Display the matching results or, if these are unavailable, all nominations for each election and entity type enabled in settings. Entities are opened in a `Drawer` modal unless they're opened in new tabs.
 
 ## Params
 
@@ -26,16 +26,22 @@ The nominations applicable to these elections and constituencies are shown. Thes
 
 <script lang="ts">
   import { Election, type EntityType } from '@openvaa/data';
-  import { type Snapshot } from '@sveltejs/kit';
   import { onMount } from 'svelte';
+  import { slide } from 'svelte/transition';
+  import { beforeNavigate, pushState } from '$app/navigation';
+  import { page } from '$app/stores';
+  import AccordionSelect from '$lib/components/accordionSelect/AccordionSelect.svelte';
   import { HeroEmoji } from '$lib/components/heroEmoji';
-  import { Icon } from '$lib/components/icon';
   import { Loading } from '$lib/components/loading';
   import { type Tab, Tabs } from '$lib/components/tabs';
   import { getVoterContext } from '$lib/contexts/voter';
+  import { EntityDetailsDrawer, type EntityDetailsDrawerProps } from '$lib/dynamic-components/entityDetails';
   import { EntityList, EntityListControls } from '$lib/dynamic-components/entityList';
+  import { getEntityAndTitle } from '$lib/utils/entityDetails';
+  import { parseParams, ROUTE } from '$lib/utils/route';
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { ucFirst } from '$lib/utils/text/ucFirst';
+  import { DELAY } from '$lib/utils/timing';
   import MainContent from '../../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
 
@@ -46,11 +52,14 @@ The nominations applicable to these elections and constituencies are shown. Thes
   const {
     answers,
     appSettings,
+    constituenciesSelectable,
+    dataRoot,
     electionsSelectable,
     entityFilters,
     getRoute,
     matches,
     resultsAvailable,
+    selectedConstituencies: constituencies,
     selectedElections: elections,
     startEvent,
     startFeedbackPopupCountdown,
@@ -81,8 +90,8 @@ The nominations applicable to these elections and constituencies are shown. Thes
   /** For use with the `Tabs` component */
   type EntityTab = { type: EntityType; label: string };
 
-  /** The id of the currently active election, defaulting to the first or only election.  */
-  let activeElectionId = $elections[0].id;
+  /** The id of the currently active election */
+  let activeElectionId: Id | undefined;
   /** A utility for easier access to the election object */
   let activeElection: Election;
   /** The currently active EntityType */
@@ -91,9 +100,14 @@ The nominations applicable to these elections and constituencies are shown. Thes
   let activeMatches: Array<MaybeWrappedEntityVariant> | undefined;
   /** The tabs for entity selection that are available for the active election */
   let entityTabs: Array<EntityTab>;
+  /** The initially selected tab, updated when the election is changed and when the snapshot is restored */
+  let initialEntityTabIndex = 0;
+
+  // Pre-select election if there’s only one
+  if ($elections.length === 1) activeElectionId = $elections[0].id;
 
   // React to changes in activeElectionId to updadate entityTabs
-  $: {
+  $: if (activeElectionId) {
     entityTabs = Object.keys($matches[activeElectionId]).map((type) => ({
       type: type as EntityType,
       label: ucFirst($t(`common.${type as EntityType}.plural`))
@@ -104,12 +118,27 @@ The nominations applicable to these elections and constituencies are shown. Thes
   }
 
   // Update the activeMatches when either the active election or entity type changes. If activeEntityType is undefined, this is due to an error
-  $: {
+  $: if (activeElectionId) {
     activeMatches = activeEntityType ? $matches[activeElectionId][activeEntityType] : undefined;
     setInitialEntityTab();
   }
 
-  function handleElectionChange({ id }: Election): void {
+  /** Set initial tab based on activeEntityType */
+  function setInitialEntityTab(): void {
+    const index = entityTabs.findIndex((tab) => tab.type === activeEntityType);
+    initialEntityTabIndex = index === -1 ? 0 : index;
+  }
+
+  function getName(e: unknown): string {
+    return (e as Election).name;
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Handle selections
+  ////////////////////////////////////////////////////////////////////
+
+  function handleElectionChange(details: { option: unknown }): void {
+    const { id } = details.option as Election;
     activeElectionId = id;
     startEvent('results_changeElection', { election: id });
   }
@@ -119,22 +148,33 @@ The nominations applicable to these elections and constituencies are shown. Thes
     startEvent('results_changeTab', { section: activeEntityType });
   }
 
-  /** The initially selected tab, updated when the election is changed and when the snapshot is restored */
-  let initialEntityTabIndex = 0;
+  ////////////////////////////////////////////////////////////////////
+  // Open entity details in a Drawer
+  ////////////////////////////////////////////////////////////////////
 
-  /** Set initial tab based on activeEntityType */
-  function setInitialEntityTab(): void {
-    const index = entityTabs.findIndex((tab) => tab.type === activeEntityType);
-    initialEntityTabIndex = index === -1 ? 0 : index;
+  beforeNavigate(({ cancel, to }) => {
+    if (to?.route.id !== ROUTE.ResultEntity) return;
+    const { entityType, entityId, nominationId } = parseParams(to);
+    if (!entityType || !entityId || !nominationId || Array.isArray(nominationId)) return;
+    pushState(to.url, {
+      resultsShowEntity: {
+        entityType: entityType as EntityType,
+        entityId,
+        nominationId
+      }
+    });
+    cancel();
+  });
+
+  function getDrawerProps(opts: { entityType: EntityType; entityId: Id; nominationId?: Id }): EntityDetailsDrawerProps {
+    return {
+      entity: getEntityAndTitle({
+        dataRoot: $dataRoot,
+        matches: $matches,
+        ...opts
+      }).entity
+    };
   }
-
-  // Restore the currently open section when returning
-  export const snapshot: Snapshot<{ activeElectionId: Id; activeEntityType?: EntityType }> = {
-    capture: () => ({ activeElectionId, activeEntityType }),
-    restore: (values) => {
-      ({ activeElectionId, activeEntityType } = values);
-    }
-  };
 
   ////////////////////////////////////////////////////////////////////
   // Filters
@@ -144,6 +184,12 @@ The nominations applicable to these elections and constituencies are shown. Thes
   // TODO: Combine EntityListControls and List components into one
   let filteredEntities = new Array<MaybeWrappedEntityVariant>();
 </script>
+
+{#if $page.state.resultsShowEntity}
+  {#key $page.state.resultsShowEntity}
+    <EntityDetailsDrawer {...getDrawerProps($page.state.resultsShowEntity)} />
+  {/key}
+{/if}
 
 <MainContent title={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}>
   <figure role="presentation" slot="hero">
@@ -169,65 +215,66 @@ The nominations applicable to these elections and constituencies are shown. Thes
     {/if}
   </div>
 
-  <!-- Multi election selector
-    NB. We show the selector even if only one election is selected when the app has multiple elections. In such cases, the button is not clickable, however.
-    TODO: Redesign layout -->
+  <!-- Multi election selector -->
   {#if $electionsSelectable || $elections.length > 1}
-    <div class="-mt-md mb-lg grid gap-md">
-      {#each $elections as election}
-        <button
-          class="btn px-lg"
-          class:bg-base-300={activeElectionId === election.id}
-          class:font-bold={activeElectionId === election.id}
-          class:pointer-events-none={$elections.length === 1}
-          on:click={$elections.length === 1 ? undefined : () => handleElectionChange(election)}>
-          {election.name}
-        </button>
-      {/each}
-    </div>
+    {@const activeIndex = $elections.findIndex((e) => e.id === activeElectionId)}
+    <AccordionSelect
+      options={$elections}
+      {activeIndex}
+      labelGetter={getName}
+      onChange={handleElectionChange}
+      class="-mt-md mb-lg" />
 
-    {#if activeElection.info}
-      <p class="text-center text-secondary">
-        <Icon name="info" />
+    {#if activeElection?.info}
+      <p transition:slide={{ duration: DELAY.sm }} class="text-center text-sm text-secondary">
         {activeElection.info}
       </p>
     {/if}
   {/if}
 
-  <div slot="fullWidth" class="flex min-h-[75vh] flex-col items-center bg-base-300">
-    <div class="w-full max-w-xl pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0">
-      <!-- EntityType selector if there are multiple -->
-      {#if Object.keys($matches[activeElectionId]).length > 1}
-        <Tabs tabs={entityTabs} activeIndex={initialEntityTabIndex} onChange={handleEntityTabChange} />
-      {/if}
-
-      <!-- We need to add mx-10 below to match the margins to the basic page margins, except for the EntityList components which we want to give more width -->
-
-      {#if activeEntityType}
-        {#if activeMatches}
-          {#key activeMatches}
-            <h2 class="mx-10 mb-md mt-md">
-              {$t(`results.${activeEntityType}.numShown`, { numShown: filteredEntities?.length })}
-              {#if filteredEntities?.length !== activeMatches.length}
-                <span class="font-normal text-secondary"
-                  >{$t('results.numTotal', { numTotal: activeMatches.length })}</span>
-              {/if}
-            </h2>
-            <EntityListControls
-              entities={activeMatches}
-              onUpdate={(results) => (filteredEntities = results)}
-              filterGroup={$entityFilters[activeElectionId][activeEntityType]}
-              class="mx-10 mb-md" />
-            <EntityList cards={filteredEntities.map((e) => ({ entity: e }))} class="mb-lg" />
-          {/key}
-        {:else}
-          <Loading />
+  <!-- Set min-h-[120vh] to prevent scrolling changes when filters yield no results 
+    TODO: When we get nice transitions for the list items, check whether this is still necessary -->
+  <div
+    slot="fullWidth"
+    class="flex min-h-[120vh] flex-col items-center transition-colors"
+    class:bg-base-300={activeElectionId}>
+    {#if activeElectionId}
+      <div class="w-full max-w-xl pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0">
+        <!-- EntityType selector if there are multiple -->
+        {#if Object.keys($matches[activeElectionId]).length > 1}
+          <Tabs tabs={entityTabs} activeIndex={initialEntityTabIndex} onChange={handleEntityTabChange} />
         {/if}
-      {:else}
-        <div class="py-lg text-center text-lg text-error">
-          {$t('error.noNominations')}
-        </div>
-      {/if}
-    </div>
+
+        <!-- We need to add mx-10 below to match the margins to the basic page margins, except for the EntityList components which we want to give more width -->
+
+        {#if activeEntityType}
+          {#if activeMatches}
+            {#key activeMatches}
+              <h3 class="mx-10 my-lg text-xl">
+                {$t(`results.${activeEntityType}.numShown`, { numShown: activeMatches.length })}
+                {#if $constituenciesSelectable}
+                  <span class="font-normal">
+                    {$t('results.inConstituency')}
+                    {activeElection.getApplicableConstituency($constituencies)?.name || '—'}
+                  </span>
+                {/if}
+              </h3>
+              <EntityListControls
+                entities={activeMatches}
+                onUpdate={(results) => (filteredEntities = results)}
+                filterGroup={$entityFilters[activeElectionId][activeEntityType]}
+                class="mx-10 mb-md" />
+              <EntityList cards={filteredEntities.map((e) => ({ entity: e }))} class="mb-lg" />
+            {/key}
+          {:else}
+            <Loading />
+          {/if}
+        {:else}
+          <div class="py-lg text-center text-lg text-error">
+            {$t('error.noNominations')}
+          </div>
+        {/if}
+      </div>
+    {/if}
   </div>
 </MainContent>
