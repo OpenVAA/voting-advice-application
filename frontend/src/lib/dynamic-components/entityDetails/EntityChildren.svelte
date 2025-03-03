@@ -54,9 +54,9 @@ Used to show an entity's children in an `EntityDetails` component.
   }
 </script>
 
-<div class="-mb-[3.5rem] grow px-md py-lg pb-safelgb" class:bg-base-300={!!entities.length}>
+<div class="grow px-md py-lg pb-safelgb" class:bg-base-300={!!entities.length}>
   {#if entities.length}
-    <h3 class="mx-10 mb-md mt-md">
+    <h3 class="m-md">
       {$t(`results.${entityType}.numShown`, { numShown: filteredEntities.length })}
       {#if filteredEntities.length !== entities.length}
         <span class="font-normal text-secondary">{$t('results.numTotal', { numTotal: entities.length })}</span>

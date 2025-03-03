@@ -24,36 +24,27 @@ Used to show an entity's details using the `EntityDetails` component.
 <script lang="ts">
   import { Match } from '@openvaa/matching';
   import { onDestroy } from 'svelte';
-  import { afterNavigate, goto } from '$app/navigation';
+  import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { Loading } from '$lib/components/loading';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { EntityDetails } from '$lib/dynamic-components/entityDetails';
-  import { unwrapEntity } from '$lib/utils/entities';
+  import { getEntityAndTitle } from '$lib/utils/entityDetails';
   import { logDebugError } from '$lib/utils/logger';
-  import { findNomination } from '$lib/utils/matches';
   import SingleCardContent from '../../../../../SingleCardContent.svelte';
-  import type { AnyEntityVariant, EntityType } from '@openvaa/data';
+  import type { EntityType } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { dataRoot, getRoute, locale, matches, startEvent, t } = getVoterContext();
+  const { dataRoot, getRoute, matches, startEvent, t } = getVoterContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
   // MainContent
   ////////////////////////////////////////////////////////////////////
-
-  /**
-   * We determine if we arrived via an external link or from within the app, so we can use `history.back()`. However, if we changed the locale, we shouldn't use back() either.
-   * TODO: Handle this in the topBar component or in the contexts
-   */
-  let useBack = false;
-  let initialLocale = $locale;
-  afterNavigate((n) => (useBack = n.from?.route != null && initialLocale === $locale));
 
   pageStyles.push({ drawer: { background: 'bg-base-300' } });
   topBarSettings.push({
@@ -62,7 +53,7 @@ Used to show an entity's details using the `EntityDetails` component.
       feedback: 'hide',
       return: 'show',
       returnButtonLabel: $t('common.back'),
-      returnButtonCallback: () => (useBack ? history.back() : goto($getRoute('Results')))
+      returnButtonCallback: () => goto($getRoute('Results'))
     }
   });
 
@@ -75,32 +66,22 @@ Used to show an entity's details using the `EntityDetails` component.
   $: {
     const entityType = $page.params.entityType as EntityType;
     const entityId = $page.params.entityId;
-    const nominationId = $page.url.searchParams.get('nominationId');
-
-    if (nominationId) {
-      // Find the nomination in the matches, so we get the score. Note that target may be either a Match or a Nomination
-      const target = findNomination({ matches: $matches, entityType, nominationId });
-      if (!target) {
-        handleError(`Nomination of type ${entityType} with id ${nominationId} not found.`);
-      } else {
-        // Make sure that the nomination matches the entity we are looking for
-        const { entity: nakedEntity } = unwrapEntity<AnyEntityVariant>(target);
-        title = nakedEntity.name;
-        if (nakedEntity.id !== entityId) {
-          handleError(`Nomination with ${nominationId} does not match that of entity ${entityId}.`);
-        } else {
-          entity = target;
-          doTrack();
-        }
-      }
-    } else {
-      try {
-        entity = $dataRoot.getEntity(entityType, entityId);
-        title = entity.name;
-        doTrack();
-      } catch {
-        handleError(`Entity of type ${entityType} with id ${entityId} not found.`);
-      }
+    const nominationId = $page.url.searchParams.get('nominationId') ?? undefined;
+    try {
+      ({ entity, title } = getEntityAndTitle({
+        dataRoot: $dataRoot,
+        matches: $matches,
+        entityType,
+        entityId,
+        nominationId
+      }));
+      doTrack();
+    } catch (e) {
+      handleError(
+        e instanceof Error
+          ? e.message
+          : `Entity of type ${entityType} with id ${entityId} and nomination ${nominationId} not found.`
+      );
     }
   }
 

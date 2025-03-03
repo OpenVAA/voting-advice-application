@@ -8,11 +8,11 @@
   "faction": {
     "numShown": "{numShown, plural, =0 {No factions} =1 {1 faction} other {# factions}}"
   },
+  "inConstituency": "in constituency",
   "ingress": {
     "answerMinQuestions": "If you want to find the {candidatePlural} and {partyPlural} that agree with you the most, {questionsLink} first.",
     "questionsLinkText": "answer at least {numQuestions, plural, =1 {one question} other {# questions}}"
   },
-  "numTotal": "of {numTotal}",
   "organization": {
     "numShown": "{numShown, plural, =0 {No {partyPlural}} =1 {1 {partySingular}} other {# {partyPlural}}}"
   },
