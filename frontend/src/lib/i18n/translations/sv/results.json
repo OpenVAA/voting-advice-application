@@ -8,11 +8,11 @@
   "faction": {
     "numShown": "{numShown, plural, =0 {Inga fraktioner} =1 {1 fraktion} other {# fraktioner}}"
   },
+  "inConstituency": "i valkretsen",
   "ingress": {
     "answerMinQuestions": "Om du vill för att hitta de kandidaterna och partierna som håller med dig mest, {questionsLink} först.",
     "questionsLinkText": "svara minst {numQuestions, plural, =1 {en fråga} other {# frågor}}"
   },
-  "numTotal": "av {numTotal}",
   "organization": {
     "numShown": "{numShown, plural, =0 {Inga {partyPlural}} =1 {1 {partySingular}} other {# {partyPlural}}}"
   },

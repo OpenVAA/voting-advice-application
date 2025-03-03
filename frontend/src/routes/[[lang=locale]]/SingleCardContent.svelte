@@ -45,7 +45,7 @@ Defines the layout of the `main` content for single cards, such as individual en
   {/if}
 
   <div
-    class="-mx-lg -mb-safelgb -mt-lg flex w-screen max-w-xl flex-grow self-center rounded-t-lg bg-base-100 pb-[3.5rem] match-w-xl:shadow-xl">
+    class="-mx-lg -mb-safelgb -mt-lg flex w-screen max-w-xl flex-grow self-center rounded-t-lg bg-base-100 match-w-xl:shadow-xl">
     <!-- Main content -->
     <slot />
   </div>

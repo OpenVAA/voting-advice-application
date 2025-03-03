@@ -57,7 +57,7 @@ Used to show an entity's basic info and their answers to `info` questions in an 
   }
 </script>
 
-<div class="grid p-lg">
+<div class="grid p-lg pb-safelgb">
   <!-- We don't want to render an empty infoGroup, so we need to do these unseemly double-checks -->
   {#if nakedEntity.info || nomination?.parentNomination || electionSymbol || $appSettings.entityDetails.showMissingElectionSymbol[entityType]}
     <div class="infoGroup" role="group">
