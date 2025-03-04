@@ -110,7 +110,7 @@ See the instructions in the component for further info.
 - API: `/openvaa-admin-tools/find-data`
 - Required permission: `plugin::openvaa-admin-tools.import-data`
 
-Find any data accesible by the data tools by providing arbitrary filters.
+Find any data accessible by the data tools by providing arbitrary filters. You can also select the relations to populate.
 
 See the instructions in the component for further info.
 
