@@ -2,10 +2,18 @@
 @component
 Used to show an entity's basic info and their answers to `info` questions in an `EntityDetails` component.
 
+### Dynamic component
+
+This is a dynamic component, because it accesses `appSettings` and `dataRoot` from `AppContext`.
+
 ### Properties
 
 - `entity`: A possibly ranked entity, e.g. candidate or a party.
 - `questions`: An array of `info` questions 
+
+### Settings
+
+- `survey.showIn: 'entityDetails'`: Whether to show the survey banner.
 
 ### Usage
 
@@ -23,6 +31,7 @@ Used to show an entity's basic info and their answers to `info` questions in an 
     ENTITY_TYPE,
     type EntityType
   } from '@openvaa/data';
+  import { ElectionSymbol } from '$lib/components/electionSymbol';
   import { EntityTag } from '$lib/components/entityTag';
   import { InfoAnswer } from '$lib/components/infoAnswer';
   import { getAppContext } from '$lib/contexts/app';
@@ -39,61 +48,77 @@ Used to show an entity's basic info and their answers to `info` questions in an 
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appSettings, getRoute, t } = getAppContext();
+  const { appSettings, dataRoot, getRoute, t } = getAppContext();
 
   ////////////////////////////////////////////////////////////////////
   // Parse entity components
   ////////////////////////////////////////////////////////////////////
 
-  let electionSymbol: string | undefined;
   let entityType: EntityType;
   let nakedEntity: AnyEntityVariant;
   let nomination: AnyNominationVariant | undefined;
 
   $: {
     ({ entity: nakedEntity, nomination } = unwrapEntity(entity));
-    electionSymbol = nomination?.electionSymbol;
     entityType = nakedEntity.type;
   }
 </script>
 
 <div class="grid p-lg pb-safelgb">
-  <!-- We don't want to render an empty infoGroup, so we need to do these unseemly double-checks -->
-  {#if nakedEntity.info || nomination?.parentNomination || electionSymbol || $appSettings.entityDetails.showMissingElectionSymbol[entityType]}
+  {#if nakedEntity.info}
     <div class="infoGroup" role="group">
-      {#if nakedEntity.info}
-        <div>
-          {@html sanitizeHtml(nakedEntity.info)}
-        </div>
+      <div>
+        {@html sanitizeHtml(nakedEntity.info)}
+      </div>
+    </div>
+  {/if}
+
+  {#if nomination}
+    {@const { election, electionSymbol, constituency, parentNomination } = nomination}
+    <div class="infoGroup" role="group">
+      {#if $dataRoot.elections.length > 1}
+        <InfoItem label={$t('common.election')}>
+          {election.name}
+        </InfoItem>
       {/if}
-      {#if nomination?.parentNomination}
+      {#if !election.singleConstituency}
+        <InfoItem label={$t('common.constituency')}>
+          {constituency.name}
+        </InfoItem>
+      {/if}
+      {#if parentNomination}
         <InfoItem label={$t('common.electionList')}>
           <!-- Add a link to the entity page for parties -->
-          {#if nomination.parentNomination.entityType === ENTITY_TYPE.Organization}
+          {#if parentNomination.entityType === ENTITY_TYPE.Organization}
             <a
               href={$getRoute({
                 route: 'ResultEntity',
-                entityType: nomination.parentNomination.entityType,
-                entityId: nomination.parentNomination.entity.id,
-                nominationId: nomination.parentNomination.id
+                entityType: parentNomination.entityType,
+                entityId: parentNomination.entity.id,
+                nominationId: parentNomination.id
               })}>
-              <EntityTag entity={nomination.parentNomination} variant="full" />
+              <EntityTag entity={parentNomination} variant="full" />
             </a>
           {:else}
-            <EntityTag entity={nomination.parentNomination} variant="full" />
+            <EntityTag entity={parentNomination} variant="full" />
           {/if}
-          {#if nakedEntity instanceof Candidate && nakedEntity.organization && nakedEntity.organization !== nomination.parentNomination.entity}
+          {#if nakedEntity instanceof Candidate && nakedEntity.organization && nakedEntity.organization !== parentNomination.entity}
             ({$t('entityDetails.memberOfOrganization', { organization: nakedEntity.organization.shortName })})
           {/if}
         </InfoItem>
       {/if}
       {#if electionSymbol || $appSettings.entityDetails.showMissingElectionSymbol[entityType]}
         <InfoItem label={$t(`common.electionSymbol.${entityType}`)}>
-          {electionSymbol ?? $t('common.missingAnswer')}
+          {#if electionSymbol}
+            <ElectionSymbol text={electionSymbol} />
+          {:else}
+            {$t('common.missingAnswer')}
+          {/if}
         </InfoItem>
       {/if}
     </div>
   {/if}
+
   {#if questions?.length}
     {@const nonLinkQuestions = questions.filter((q) => q.subtype !== 'link')}
     {@const linkQuestions = questions.filter((q) => q.subtype === 'link')}
@@ -120,6 +145,7 @@ Used to show an entity's basic info and their answers to `info` questions in an 
       {/if}
     </div>
   {/if}
+
   {#if $appSettings.survey?.showIn?.includes('entityDetails')}
     <SurveyBanner class="mt-lg" />
   {/if}
