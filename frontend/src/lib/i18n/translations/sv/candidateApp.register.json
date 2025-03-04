@@ -9,7 +9,7 @@
     "lowercase": "Liten bokstav",
     "number": "Nummer",
     "repetition": "Innehåller upprepning av tecken",
-    "symbol": "Symbol",
+    "symbol": "Specialtecken (såsom !?%#€)",
     "uppercase": "Stor bokstav",
     "username": "Undvik att använda ditt namn i lösenordet"
   },
