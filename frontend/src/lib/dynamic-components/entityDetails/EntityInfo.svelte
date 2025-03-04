@@ -87,7 +87,8 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
         </InfoItem>
       {/if}
       {#if parentNomination}
-        <InfoItem label={$t('common.electionList')}>
+        <InfoItem
+          label={entityType === ENTITY_TYPE.Organization ? $t('common.alliance.singular') : $t('common.electionList')}>
           <!-- Add a link to the entity page for parties -->
           {#if parentNomination.entityType === ENTITY_TYPE.Organization}
             <a
