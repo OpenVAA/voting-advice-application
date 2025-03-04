@@ -9,7 +9,7 @@
     "lowercase": "Lowercase letter",
     "number": "Number",
     "repetition": "Contains character repetition",
-    "symbol": "Symbol",
+    "symbol": "Symbol (such as !?%#€)",
     "uppercase": "Uppercase letter",
     "username": "Avoid using your name in the password"
   },
