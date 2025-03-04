@@ -12,7 +12,7 @@ export default {
       path: '/candidate/:id/overwrite-answers',
       handler: 'answers.overwrite',
       config: {
-        policies: ['global::user-owns-candidate']
+        policies: ['global::user-owns-candidate', 'global::not-answers-locked']
       }
     } as Core.RouteConfig,
     {
@@ -20,7 +20,7 @@ export default {
       path: '/candidate/:id/update-answers',
       handler: 'answers.update',
       config: {
-        policies: ['global::user-owns-candidate']
+        policies: ['global::user-owns-candidate', 'global::not-answers-locked']
       }
     } as Core.RouteConfig,
     {
@@ -28,7 +28,7 @@ export default {
       path: '/candidate/:id/update-properties',
       handler: 'properties.update',
       config: {
-        policies: ['global::user-owns-candidate']
+        policies: ['global::user-owns-candidate', 'global::not-answers-locked']
       }
     } as Core.RouteConfig
   ]
