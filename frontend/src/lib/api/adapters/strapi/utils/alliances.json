@@ -1,0 +1,2138 @@
+{
+  "vzrmfatxpudypabsvacxu7ho": {
+    "1": {
+      "xt9v57gor72s47qp38zodl1z": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "aiolg12wuehehb481szsdo0g": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          },
+          "shortName": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          }
+        },
+        {
+          "organizations": ["kdl4vl5pxqydplo1z4vhduyo", "btokj3fwtqj2bvkijvyf2sct"],
+          "name": {
+            "fi": "KRIP+VL",
+            "sv": "KRIP+FA"
+          },
+          "shortName": {
+            "fi": "KRIP+VL",
+            "sv": "KRIP+FA"
+          }
+        }
+      ],
+      "qoy3r5u8d881ch9l7nykeqm1": [
+        {
+          "organizations": ["pbwbsce4t2fxnpkuloe9631w", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KD+LIIK",
+            "sv": "KD+RN"
+          },
+          "shortName": {
+            "fi": "KD+LIIK",
+            "sv": "KD+RN"
+          }
+        },
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        }
+      ],
+      "bl24ufz75s97rh0tzuzhpqf9": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        }
+      ],
+      "s881332l1apuaj6p4lovckg3": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "qe75ygwry1xmtcwz1zrocahr"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        }
+      ],
+      "ftw18l9t32fgu5gdmshew1uj": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        },
+        {
+          "organizations": ["btokj3fwtqj2bvkijvyf2sct", "kdl4vl5pxqydplo1z4vhduyo"],
+          "name": {
+            "fi": "KRIP+VL",
+            "sv": "KRIP+FA"
+          },
+          "shortName": {
+            "fi": "KRIP+VL",
+            "sv": "KRIP+FA"
+          }
+        }
+      ],
+      "nox67rjj7vswoecet0nrzqav": [
+        {
+          "organizations": ["pbwbsce4t2fxnpkuloe9631w", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KD+LIIK",
+            "sv": "KD+RN"
+          },
+          "shortName": {
+            "fi": "KD+LIIK",
+            "sv": "KD+RN"
+          }
+        },
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        }
+      ],
+      "cow54cxra42ilxcjpj1txpdd": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        },
+        {
+          "organizations": ["btokj3fwtqj2bvkijvyf2sct", "kdl4vl5pxqydplo1z4vhduyo", "jwgmh2appmwnm5r6ut39u5xv"],
+          "name": {
+            "fi": "KRIP+VKK+VL",
+            "sv": "KRIP+VKK+FA"
+          },
+          "shortName": {
+            "fi": "KRIP+VKK+VL",
+            "sv": "KRIP+VKK+FA"
+          }
+        }
+      ],
+      "cifg7m59nyiv0bfajoxzf412": [
+        {
+          "organizations": ["btokj3fwtqj2bvkijvyf2sct", "jwgmh2appmwnm5r6ut39u5xv"],
+          "name": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          },
+          "shortName": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          }
+        }
+      ],
+      "d3gn2rnvm4brgrgdqb6ui0j4": [
+        {
+          "organizations": ["jwgmh2appmwnm5r6ut39u5xv", "btokj3fwtqj2bvkijvyf2sct"],
+          "name": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          },
+          "shortName": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          }
+        }
+      ],
+      "g7zajleul4sz7t3jqduahzy7": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        },
+        {
+          "organizations": ["btokj3fwtqj2bvkijvyf2sct", "jwgmh2appmwnm5r6ut39u5xv"],
+          "name": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          },
+          "shortName": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          }
+        }
+      ],
+      "mwufndfpowoa2m7c4q6nhsdc": [
+        {
+          "organizations": ["btokj3fwtqj2bvkijvyf2sct", "kdl4vl5pxqydplo1z4vhduyo", "jwgmh2appmwnm5r6ut39u5xv"],
+          "name": {
+            "fi": "KRIP+VKK+VL",
+            "sv": "KRIP+VKK+FA"
+          },
+          "shortName": {
+            "fi": "KRIP+VKK+VL",
+            "sv": "KRIP+VKK+FA"
+          }
+        }
+      ],
+      "tnaqy1z731y5crs3rnvg56m0": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "qe75ygwry1xmtcwz1zrocahr"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        }
+      ],
+      "dkvxcr44j9e7l5x22w8pld77": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h", "qe75ygwry1xmtcwz1zrocahr"],
+          "name": {
+            "fi": "KOK+RKP+KD",
+            "sv": "SAML+SFP+KD"
+          },
+          "shortName": {
+            "fi": "KOK+RKP+KD",
+            "sv": "SAML+SFP+KD"
+          }
+        },
+        {
+          "organizations": ["btokj3fwtqj2bvkijvyf2sct", "jwgmh2appmwnm5r6ut39u5xv"],
+          "name": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          },
+          "shortName": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          }
+        }
+      ],
+      "d8kxli84rc9zhzst78n1zj5m": [
+        {
+          "organizations": ["jwgmh2appmwnm5r6ut39u5xv", "btokj3fwtqj2bvkijvyf2sct"],
+          "name": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          },
+          "shortName": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          }
+        }
+      ],
+      "dysqk3wkdwoks06zo7cxwm1t": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ]
+    }
+  },
+  "fgvyvd6vm2s8762oh0ztsvd7": {
+    "1": {
+      "t2ablsoe4qmjnqpno2jsz4q7": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "qe75ygwry1xmtcwz1zrocahr"],
+          "name": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          },
+          "shortName": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          }
+        },
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        },
+        {
+          "organizations": ["n1ts1eawrg2nu4rw0vpxequx", "o1vcthnl2b1yltoj59lcgzew", "m3gb7u7iv97hsb0vuhjcn8iu"],
+          "name": {
+            "fi": "SDP+VIHR+VAS",
+            "sv": "SDP+GRÖNA+VÄNST"
+          },
+          "shortName": {
+            "fi": "SDP+VIHR+VAS",
+            "sv": "SDP+GRÖNA+VÄNST"
+          }
+        }
+      ],
+      "ueh9oxobcy7ig6xwoqh3xo70": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "buog4babs004a5oiz9q0898e": [
+        {
+          "organizations": ["o1vcthnl2b1yltoj59lcgzew", "m3gb7u7iv97hsb0vuhjcn8iu"],
+          "name": {
+            "fi": "SDP+VIHR",
+            "sv": "SDP+GRÖNA"
+          },
+          "shortName": {
+            "fi": "SDP+VIHR",
+            "sv": "SDP+GRÖNA"
+          }
+        }
+      ],
+      "ueefm04rjlwdj2flfcq4yck7": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "szp107ormfgjhhyn1p1k2zis": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "bbqa1grpx8cfn31qv5144mfr": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "qe75ygwry1xmtcwz1zrocahr"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        }
+      ],
+      "gx0iufqg2agxn83x70uyjenq": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          },
+          "shortName": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          }
+        }
+      ],
+      "ccwj49wky8auo77aacbt7u7e": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "plm43ke0s28ruqhrix0xrgik", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KESK+RKP+KD",
+            "sv": "CENT+SFP+KD"
+          },
+          "shortName": {
+            "fi": "KESK+RKP+KD",
+            "sv": "CENT+SFP+KD"
+          }
+        }
+      ],
+      "hduo1blv6a8964kit7yvxc91": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          },
+          "shortName": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          }
+        }
+      ],
+      "i8qhv9l36165rmkeg1atlwm5": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "pqxe6460b0vnuq1koz1yn4ko": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          },
+          "shortName": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          }
+        }
+      ],
+      "isnc0snzeoeso6bb1yw818aq": [
+        {
+          "organizations": ["pbwbsce4t2fxnpkuloe9631w", "df2rq6890t707e204a5wsf07"],
+          "name": {
+            "fi": "LIIK+LIBE",
+            "sv": "RN+LIBE"
+          },
+          "shortName": {
+            "fi": "LIIK+LIBE",
+            "sv": "RN+LIBE"
+          }
+        }
+      ],
+      "iaw1eg9zqj00prvyehyhnlpt": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "azkoz27g2tr1os0srlcn5bk6"],
+          "name": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          },
+          "shortName": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          }
+        }
+      ],
+      "bzjknxls04qa6ad1va3leja7": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "mqzc2k2xtu3w6twb5s0xu1y1": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "yp2yptvoo7kwnf3xnto5ymhu": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "a03d87ecgg4g1hvcjspq2r3s": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "zd0e53ifu8qswfsa8qu9pld5": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "qe75ygwry1xmtcwz1zrocahr"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        }
+      ],
+      "jnefjrly4osq884shkyqp2rw": [
+        {
+          "organizations": ["df2rq6890t707e204a5wsf07", "pbwbsce4t2fxnpkuloe9631w"],
+          "name": {
+            "fi": "LIIK+LIBE",
+            "sv": "RN+LIBE"
+          },
+          "shortName": {
+            "fi": "LIIK+LIBE",
+            "sv": "RN+LIBE"
+          }
+        }
+      ],
+      "kpdmnkqfggepd1jh9kwopscx": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+RKP+KD",
+            "sv": "SAML+SFP+KD"
+          },
+          "shortName": {
+            "fi": "KOK+RKP+KD",
+            "sv": "SAML+SFP+KD"
+          }
+        }
+      ],
+      "asmo7uei2tdcbodfme2734am": [
+        {
+          "organizations": ["pbwbsce4t2fxnpkuloe9631w", "u2po78objpazdzedvz2ch68h", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+KD+LIIK",
+            "sv": "CENT+KD+RN"
+          },
+          "shortName": {
+            "fi": "KESK+KD+LIIK",
+            "sv": "CENT+KD+RN"
+          }
+        }
+      ],
+      "a4e1sxv1gkl49vnilh0xks3o": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "ybwwrz58sov1cq7saf2o0kpz": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "lufo2j4grw43twwojj23rapz": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "qe75ygwry1xmtcwz1zrocahr"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        }
+      ],
+      "izd0wxb7kv1a9vr7k9ig78ok": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "eepb4jk4j0w5g5i8iz95uead": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KESK+KD",
+            "sv": "SAML+CENT+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KESK+KD",
+            "sv": "SAML+CENT+KD"
+          }
+        }
+      ],
+      "d8h7lxy0mzkfims73axsv5xk": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "obso78s5y700h0l1bkcbvleu": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "qe75ygwry1xmtcwz1zrocahr"],
+          "name": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          },
+          "shortName": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          }
+        },
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "azkoz27g2tr1os0srlcn5bk6"],
+          "name": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          },
+          "shortName": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          }
+        }
+      ],
+      "azxxtq2y349etgqoeffxo0ai": [
+        {
+          "organizations": ["azkoz27g2tr1os0srlcn5bk6", "pbwbsce4t2fxnpkuloe9631w", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+PS+LIIK",
+            "sv": "SAML+SAF+RN"
+          },
+          "shortName": {
+            "fi": "KOK+PS+LIIK",
+            "sv": "SAML+SAF+RN"
+          }
+        }
+      ],
+      "mkg256gwzta0uamgeig7f1dd": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "xmj3gm7lti8qdl9xjilxtbwm": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "qe75ygwry1xmtcwz1zrocahr", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+RKP+KD",
+            "sv": "SAML+SFP+KD"
+          },
+          "shortName": {
+            "fi": "KOK+RKP+KD",
+            "sv": "SAML+SFP+KD"
+          }
+        }
+      ],
+      "rvrtv8q48e070v8won05xdwh": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "zihh111gyx159i0zgoy4avox": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        },
+        {
+          "organizations": ["n1ts1eawrg2nu4rw0vpxequx", "o1vcthnl2b1yltoj59lcgzew"],
+          "name": {
+            "fi": "VIHR+VAS",
+            "sv": "GRÖNA+VÄNST"
+          },
+          "shortName": {
+            "fi": "VIHR+VAS",
+            "sv": "GRÖNA+VÄNST"
+          }
+        }
+      ],
+      "ysig8h4ajs8ff6utx3kikco9": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        },
+        {
+          "organizations": ["o1vcthnl2b1yltoj59lcgzew", "m3gb7u7iv97hsb0vuhjcn8iu"],
+          "name": {
+            "fi": "SDP+VIHR",
+            "sv": "SDP+GRÖNA"
+          },
+          "shortName": {
+            "fi": "SDP+VIHR",
+            "sv": "SDP+GRÖNA"
+          }
+        }
+      ],
+      "oz276syhs2m7b85ajnp5bi4w": [
+        {
+          "organizations": ["pbwbsce4t2fxnpkuloe9631w", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+LIIK",
+            "sv": "SAML+RN"
+          },
+          "shortName": {
+            "fi": "KOK+LIIK",
+            "sv": "SAML+RN"
+          }
+        },
+        {
+          "organizations": ["m3gb7u7iv97hsb0vuhjcn8iu", "n1ts1eawrg2nu4rw0vpxequx"],
+          "name": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          },
+          "shortName": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          }
+        }
+      ],
+      "wlex0bor8mv3rrw7l6ncbtw5": [
+        {
+          "organizations": ["o1vcthnl2b1yltoj59lcgzew", "n1ts1eawrg2nu4rw0vpxequx"],
+          "name": {
+            "fi": "VIHR+VAS",
+            "sv": "GRÖNA+VÄNST"
+          },
+          "shortName": {
+            "fi": "VIHR+VAS",
+            "sv": "GRÖNA+VÄNST"
+          }
+        }
+      ],
+      "i1dak2l516jejq751z10u8ju": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "h037y6o9m4oqgnc3up442gh7": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "omt2ch6o098q4tjd96c7ep57": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "u2po78objpazdzedvz2ch68h", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+RKP+KD",
+            "sv": "CENT+SFP+KD"
+          },
+          "shortName": {
+            "fi": "KESK+RKP+KD",
+            "sv": "CENT+SFP+KD"
+          }
+        },
+        {
+          "organizations": ["m3gb7u7iv97hsb0vuhjcn8iu", "n1ts1eawrg2nu4rw0vpxequx"],
+          "name": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          },
+          "shortName": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          }
+        }
+      ],
+      "esaqw6avxddtadv5b2m3gk4w": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "sxmtj0tyn5ra4wldwmmsnsb7": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "l90lailo3160dt9epmyo27en": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "azkoz27g2tr1os0srlcn5bk6"],
+          "name": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          },
+          "shortName": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          }
+        },
+        {
+          "organizations": ["m3gb7u7iv97hsb0vuhjcn8iu", "n1ts1eawrg2nu4rw0vpxequx"],
+          "name": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          },
+          "shortName": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          }
+        }
+      ],
+      "chu7lkl8dwdici17tdzl5y2f": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        }
+      ],
+      "jljkzpsrkuaz2dglnnlz87if": [
+        {
+          "organizations": ["azkoz27g2tr1os0srlcn5bk6", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          },
+          "shortName": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          }
+        }
+      ],
+      "okjtrd40otsjjy2r9gkd06qo": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "rqxm0f4u959p3rigtyos9wrr": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        },
+        {
+          "organizations": ["azkoz27g2tr1os0srlcn5bk6", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "PS+KESK",
+            "sv": "SAF+CENT"
+          },
+          "shortName": {
+            "fi": "PS+KESK",
+            "sv": "SAF+CENT"
+          }
+        }
+      ],
+      "n44l6lmhp9wwcav2fmypzmv1": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        }
+      ],
+      "ergea333h6m32kv1k3p3y1dp": [
+        {
+          "organizations": ["pbwbsce4t2fxnpkuloe9631w", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KD+LIIK",
+            "sv": "KD+RN"
+          },
+          "shortName": {
+            "fi": "KD+LIIK",
+            "sv": "KD+RN"
+          }
+        }
+      ],
+      "ivy6fu9mldvm22pjkhkm9du2": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        },
+        {
+          "organizations": ["df2rq6890t707e204a5wsf07", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+LIBE",
+            "sv": "SAML+LIBE"
+          },
+          "shortName": {
+            "fi": "KOK+LIBE",
+            "sv": "SAML+LIBE"
+          }
+        }
+      ],
+      "rxfc00fkan5lwmkis33q8qrt": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "hygm3l9kae8lrvasvj2xi6y0": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "xzbdglrjmekxkuip4u2hahu8": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "ds3621y629hi8xstdsp289k3": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        }
+      ],
+      "jkkte2qznq7qerp6idfm7dlu": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        },
+        {
+          "organizations": ["btokj3fwtqj2bvkijvyf2sct", "kdl4vl5pxqydplo1z4vhduyo"],
+          "name": {
+            "fi": "KRIP+VL",
+            "sv": "KRIP+FA"
+          },
+          "shortName": {
+            "fi": "KRIP+VL",
+            "sv": "KRIP+FA"
+          }
+        }
+      ],
+      "kk9v9173skligurls5abkxr6": [
+        {
+          "organizations": ["pbwbsce4t2fxnpkuloe9631w", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KD+LIIK",
+            "sv": "KD+RN"
+          },
+          "shortName": {
+            "fi": "KD+LIIK",
+            "sv": "KD+RN"
+          }
+        }
+      ],
+      "lgshxwi5rxdisgyi1cuam214": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "vy9558h1hv3xjoih16o15djm": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "pbwbsce4t2fxnpkuloe9631w", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+KD+LIIK",
+            "sv": "CENT+KD+RN"
+          },
+          "shortName": {
+            "fi": "KESK+KD+LIIK",
+            "sv": "CENT+KD+RN"
+          }
+        },
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "qe75ygwry1xmtcwz1zrocahr"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        }
+      ],
+      "y2bq2wjbugc9av18n8f3hyv2": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "nt95on5ed74i0enpnk9p2wwu": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "azkoz27g2tr1os0srlcn5bk6"],
+          "name": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          },
+          "shortName": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          }
+        }
+      ],
+      "kl88ex1ey5ifw3tsg7x3xzrl": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "qe75ygwry1xmtcwz1zrocahr"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        }
+      ],
+      "hb4vtvn83mmepb4ijuaer20b": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        },
+        {
+          "organizations": ["jwgmh2appmwnm5r6ut39u5xv", "kdl4vl5pxqydplo1z4vhduyo", "btokj3fwtqj2bvkijvyf2sct"],
+          "name": {
+            "fi": "KRIP+VKK+VL",
+            "sv": "KRIP+VKK+FA"
+          },
+          "shortName": {
+            "fi": "KRIP+VKK+VL",
+            "sv": "KRIP+VKK+FA"
+          }
+        }
+      ],
+      "rp483ztdmbakj50uyap1rtmb": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "ehpnxk8c7gumscoxduvr508x": [
+        {
+          "organizations": ["btokj3fwtqj2bvkijvyf2sct", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KD+VL",
+            "sv": "KD+FA"
+          },
+          "shortName": {
+            "fi": "KD+VL",
+            "sv": "KD+FA"
+          }
+        }
+      ],
+      "lxfjsxtee15mjtukmejp4x57": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "utec8pqx3htlw79tf61yvezr": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "wiuan7hms07bxa076wjzmqs5": [
+        {
+          "organizations": ["n1ts1eawrg2nu4rw0vpxequx", "m3gb7u7iv97hsb0vuhjcn8iu"],
+          "name": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          },
+          "shortName": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          }
+        }
+      ],
+      "hiowrtg06s94t1r5qrwjhzus": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "chlabjls0jdx223tv3pj3ybc": [
+        {
+          "organizations": ["btokj3fwtqj2bvkijvyf2sct", "jwgmh2appmwnm5r6ut39u5xv"],
+          "name": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          },
+          "shortName": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          }
+        }
+      ],
+      "hnmx97sq9oto4d0kfvh1s6pa": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "k41cykvoaszexr2ubhl107kk": [
+        {
+          "organizations": ["n1ts1eawrg2nu4rw0vpxequx", "o1vcthnl2b1yltoj59lcgzew"],
+          "name": {
+            "fi": "VIHR+VAS",
+            "sv": "GRÖNA+VÄNST"
+          },
+          "shortName": {
+            "fi": "VIHR+VAS",
+            "sv": "GRÖNA+VÄNST"
+          }
+        }
+      ],
+      "dau0rhpf5pogcygfvmh2dcte": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "y38hqjhk7xt8zityojrzeokq": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        },
+        {
+          "organizations": ["n1ts1eawrg2nu4rw0vpxequx", "o1vcthnl2b1yltoj59lcgzew"],
+          "name": {
+            "fi": "VIHR+VAS",
+            "sv": "GRÖNA+VÄNST"
+          },
+          "shortName": {
+            "fi": "VIHR+VAS",
+            "sv": "GRÖNA+VÄNST"
+          }
+        }
+      ],
+      "uoicdkgk81aakmshkj6wv1n2": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        },
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "azkoz27g2tr1os0srlcn5bk6"],
+          "name": {
+            "fi": "KOK+PS",
+            "sv": "SAML+SAF"
+          },
+          "shortName": {
+            "fi": "KOK+PS",
+            "sv": "SAML+SAF"
+          }
+        }
+      ],
+      "n57m6ty7cr3h9nqakgedbwyv": [
+        {
+          "organizations": ["jwgmh2appmwnm5r6ut39u5xv", "btokj3fwtqj2bvkijvyf2sct"],
+          "name": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          },
+          "shortName": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          }
+        }
+      ],
+      "gjzwpd9xzhoc1vqxkjcptc2h": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "cnxxgml0fk3yt1ibucooyk5m": [
+        {
+          "organizations": ["n1ts1eawrg2nu4rw0vpxequx", "m3gb7u7iv97hsb0vuhjcn8iu"],
+          "name": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          },
+          "shortName": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          }
+        }
+      ],
+      "jdu72lupu05pc6hw3p7ulf88": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        }
+      ],
+      "o0uh1bc6iceyl4l1rms0at55": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "m3gb7u7iv97hsb0vuhjcn8iu"],
+          "name": {
+            "fi": "SDP+KESK",
+            "sv": "SDP+CENT"
+          },
+          "shortName": {
+            "fi": "SDP+KESK",
+            "sv": "SDP+CENT"
+          }
+        }
+      ],
+      "dajxh0se1ce4pi8fq6hkxil7": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "qe75ygwry1xmtcwz1zrocahr", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+RKP+KD",
+            "sv": "SAML+SFP+KD"
+          },
+          "shortName": {
+            "fi": "KOK+RKP+KD",
+            "sv": "SAML+SFP+KD"
+          }
+        }
+      ],
+      "r2auuz0hflwp49fbnleanb4b": [
+        {
+          "organizations": ["n1ts1eawrg2nu4rw0vpxequx", "o1vcthnl2b1yltoj59lcgzew"],
+          "name": {
+            "fi": "VIHR+VAS",
+            "sv": "GRÖNA+VÄNST"
+          },
+          "shortName": {
+            "fi": "VIHR+VAS",
+            "sv": "GRÖNA+VÄNST"
+          }
+        }
+      ],
+      "mp9arxejiyy1tkkr0g59e2zo": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "azkoz27g2tr1os0srlcn5bk6"],
+          "name": {
+            "fi": "KOK+PS",
+            "sv": "SAML+SAF"
+          },
+          "shortName": {
+            "fi": "KOK+PS",
+            "sv": "SAML+SAF"
+          }
+        }
+      ],
+      "eax4axxfhzogleno0rpo84ie": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KOK+KESK",
+            "sv": "SAML+CENT"
+          },
+          "shortName": {
+            "fi": "KOK+KESK",
+            "sv": "SAML+CENT"
+          }
+        }
+      ],
+      "mp1lxnskb271uliabi4rl401": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "o1vcthnl2b1yltoj59lcgzew", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+VIHR+KD",
+            "sv": "SAML+GRÖNA+KD"
+          },
+          "shortName": {
+            "fi": "KOK+VIHR+KD",
+            "sv": "SAML+GRÖNA+KD"
+          }
+        }
+      ],
+      "pw29zooylkwamkp5faptj8zh": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "azkoz27g2tr1os0srlcn5bk6"],
+          "name": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          },
+          "shortName": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          }
+        }
+      ],
+      "ct8tldmubi87mlvj9s1mr5sf": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "db389o7glguvh0affcf4xbkd": [
+        {
+          "organizations": ["n1ts1eawrg2nu4rw0vpxequx", "m3gb7u7iv97hsb0vuhjcn8iu"],
+          "name": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          },
+          "shortName": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          }
+        }
+      ],
+      "igi3l9q4egla26jc9gj2lk7b": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "gq4yr3580lnvt71bk49dmntt": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          },
+          "shortName": {
+            "fi": "KESK+KD",
+            "sv": "CENT+KD"
+          }
+        },
+        {
+          "organizations": ["o1vcthnl2b1yltoj59lcgzew", "n1ts1eawrg2nu4rw0vpxequx"],
+          "name": {
+            "fi": "VIHR+VAS",
+            "sv": "GRÖNA+VÄNST"
+          },
+          "shortName": {
+            "fi": "VIHR+VAS",
+            "sv": "GRÖNA+VÄNST"
+          }
+        }
+      ],
+      "lg5d3mqemwc5ntxborfh0hlz": [
+        {
+          "organizations": ["n1ts1eawrg2nu4rw0vpxequx", "o1vcthnl2b1yltoj59lcgzew"],
+          "name": {
+            "fi": "VIHR+VAS",
+            "sv": "GRÖNA+VÄNST"
+          },
+          "shortName": {
+            "fi": "VIHR+VAS",
+            "sv": "GRÖNA+VÄNST"
+          }
+        }
+      ],
+      "aplrpwqr7ehx29lmhhmodica": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "oy8tnhhvzpx5b5vxqqgurbe7": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KESK",
+            "sv": "SAML+CENT"
+          },
+          "shortName": {
+            "fi": "KOK+KESK",
+            "sv": "SAML+CENT"
+          }
+        }
+      ],
+      "hh5390pmghpv94yfrilmu3bn": [
+        {
+          "organizations": ["n1ts1eawrg2nu4rw0vpxequx", "m3gb7u7iv97hsb0vuhjcn8iu"],
+          "name": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          },
+          "shortName": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          }
+        }
+      ],
+      "q6n1ov77wqiam6o7ldlq5rvx": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KESK",
+            "sv": "SAML+CENT"
+          },
+          "shortName": {
+            "fi": "KOK+KESK",
+            "sv": "SAML+CENT"
+          }
+        }
+      ],
+      "hy5rog24qw9kd3wctk1f9xme": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "ps199no06tjg0c30no90zu0q": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "wpawa4py71g96bnhkztog9v4": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "r6cryzyo885q2hhz8klvhc7j": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "b3trnlj7a9801bytgsa8wgj1": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "s5gmhp9kcyq6ctg53qb1g61c": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        },
+        {
+          "organizations": ["m3gb7u7iv97hsb0vuhjcn8iu", "n1ts1eawrg2nu4rw0vpxequx", "o1vcthnl2b1yltoj59lcgzew"],
+          "name": {
+            "fi": "SDP+VIHR+VAS",
+            "sv": "SDP+GRÖNA+VÄNST"
+          },
+          "shortName": {
+            "fi": "SDP+VIHR+VAS",
+            "sv": "SDP+GRÖNA+VÄNST"
+          }
+        }
+      ],
+      "it8gwarnqvzmkkywiw2e8v2v": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          },
+          "shortName": {
+            "fi": "KOK+RKP",
+            "sv": "SAML+SFP"
+          }
+        },
+        {
+          "organizations": ["jwgmh2appmwnm5r6ut39u5xv", "btokj3fwtqj2bvkijvyf2sct"],
+          "name": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          },
+          "shortName": {
+            "fi": "VKK+VL",
+            "sv": "VKK+FA"
+          }
+        }
+      ],
+      "d4z3n8vfre8fr9p9jg9qnznj": [
+        {
+          "organizations": ["qe75ygwry1xmtcwz1zrocahr", "plm43ke0s28ruqhrix0xrgik"],
+          "name": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          },
+          "shortName": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          }
+        },
+        {
+          "organizations": ["azkoz27g2tr1os0srlcn5bk6", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          },
+          "shortName": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          }
+        }
+      ],
+      "glgl496haibv25y3122pxn0j": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "azkoz27g2tr1os0srlcn5bk6"],
+          "name": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          },
+          "shortName": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          }
+        }
+      ],
+      "bf31yr2g4skfd7ahjhq4qur4": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "azkoz27g2tr1os0srlcn5bk6"],
+          "name": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          },
+          "shortName": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          }
+        }
+      ],
+      "kyfreh4omwp687bhobuz6um5": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "d95ukq568pnwxovyzc3q4ucx": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "azkoz27g2tr1os0srlcn5bk6"],
+          "name": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          },
+          "shortName": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          }
+        }
+      ],
+      "ro3n5b3kvahywfdttkp6q3z6": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "yh7w8ybqxo4aepktvbztklc5": [
+        {
+          "organizations": ["azkoz27g2tr1os0srlcn5bk6", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          },
+          "shortName": {
+            "fi": "PS+KD",
+            "sv": "SAF+KD"
+          }
+        }
+      ],
+      "dkqeb39eyr0d44sea6tgaxop": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "rhlinl3n8eorg78po8wz41j2": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "eg0l4pkxqii0g5nz9nwn2k90": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "uvgqfommrzsp8amllu4kl1af": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KESK",
+            "sv": "SAML+CENT"
+          },
+          "shortName": {
+            "fi": "KOK+KESK",
+            "sv": "SAML+CENT"
+          }
+        },
+        {
+          "organizations": ["m3gb7u7iv97hsb0vuhjcn8iu", "n1ts1eawrg2nu4rw0vpxequx"],
+          "name": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          },
+          "shortName": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          }
+        }
+      ],
+      "itlq42np74r44006npkxix8s": [
+        {
+          "organizations": ["n1ts1eawrg2nu4rw0vpxequx", "m3gb7u7iv97hsb0vuhjcn8iu"],
+          "name": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          },
+          "shortName": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          }
+        }
+      ],
+      "ek11wq003rqkxkwrfw354rwf": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "h1aitezesx5qgxiprx26mkm2": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "m5xem7rp2ycupahvr4yokixq": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "azkoz27g2tr1os0srlcn5bk6"],
+          "name": {
+            "fi": "KOK+PS",
+            "sv": "SAML+SAF"
+          },
+          "shortName": {
+            "fi": "KOK+PS",
+            "sv": "SAML+SAF"
+          }
+        }
+      ],
+      "szysflyrtf6p3p8jznhafvxh": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "v9hzlkk4qhmlptt379woe1en": [
+        {
+          "organizations": ["u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "rr0wcbsvqbgf6d2lqwuuydin": [
+        {
+          "organizations": ["o1vcthnl2b1yltoj59lcgzew", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+VIHR",
+            "sv": "SAML+GRÖNA"
+          },
+          "shortName": {
+            "fi": "KOK+VIHR",
+            "sv": "SAML+GRÖNA"
+          }
+        }
+      ],
+      "yxmpgo9g6dwbsa65mb0p4ffo": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "ctiyg4620sm8bsfuljihcfzi": [
+        {
+          "organizations": ["df2rq6890t707e204a5wsf07", "u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+KD+LIBE",
+            "sv": "SAML+KD+LIBE"
+          },
+          "shortName": {
+            "fi": "KOK+KD+LIBE",
+            "sv": "SAML+KD+LIBE"
+          }
+        }
+      ],
+      "xfcm6im3xeo5fya6ej481m10": [
+        {
+          "organizations": ["z3vt97kjnny5ucq4r27148x1", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          },
+          "shortName": {
+            "fi": "KOK+KD",
+            "sv": "SAML+KD"
+          }
+        }
+      ],
+      "x5uptxtej6o7j73z0aes3cm0": [
+        {
+          "organizations": ["plm43ke0s28ruqhrix0xrgik", "qe75ygwry1xmtcwz1zrocahr"],
+          "name": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          },
+          "shortName": {
+            "fi": "KESK+RKP",
+            "sv": "CENT+SFP"
+          }
+        },
+        {
+          "organizations": ["azkoz27g2tr1os0srlcn5bk6", "u2po78objpazdzedvz2ch68h", "z3vt97kjnny5ucq4r27148x1"],
+          "name": {
+            "fi": "KOK+PS+KD",
+            "sv": "SAML+SAF+KD"
+          },
+          "shortName": {
+            "fi": "KOK+PS+KD",
+            "sv": "SAML+SAF+KD"
+          }
+        }
+      ],
+      "wv8dxabkrxz64p9buojy5zog": [
+        {
+          "organizations": ["m3gb7u7iv97hsb0vuhjcn8iu", "n1ts1eawrg2nu4rw0vpxequx"],
+          "name": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          },
+          "shortName": {
+            "fi": "SDP+VAS",
+            "sv": "SDP+VÄNST"
+          }
+        }
+      ],
+      "w2bo8mvdv5639n1zfleysf4m": [
+        {
+          "organizations": ["pbwbsce4t2fxnpkuloe9631w", "u2po78objpazdzedvz2ch68h"],
+          "name": {
+            "fi": "KD+LIIK",
+            "sv": "KD+RN"
+          },
+          "shortName": {
+            "fi": "KD+LIIK",
+            "sv": "KD+RN"
+          }
+        }
+      ]
+    }
+  }
+}
