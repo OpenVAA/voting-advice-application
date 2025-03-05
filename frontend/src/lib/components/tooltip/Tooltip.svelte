@@ -23,8 +23,23 @@ Show a tooltip when hovering over text.
 
   export let title: $$Props['title'] = '';
   export let tip: $$Props['tip'] = '';
+  // This allows the tooltip to be viewed with touch controls when hover is not available
+  let open = false;
 </script>
 
-<span class="tooltip underline decoration-dotted" data-tip={title ? `${title}: ${tip}` : tip}>
+<button
+  class={'tooltip underline decoration-dotted ' + (open ? 'tooltip-open' : '')}
+  data-tip={title ? `${title}: ${tip}` : tip}
+  on:click|self={() => (open = !open)}>
   <slot />
-</span>
+  {#if open}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <div
+      class="fixed inset-0 z-40"
+      on:click={() => {
+        open = false;
+      }}>
+    </div>
+  {/if}
+</button>
