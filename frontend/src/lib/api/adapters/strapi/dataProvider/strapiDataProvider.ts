@@ -16,6 +16,7 @@ import {
   parseImage,
   parseNominations,
   parseOrganization,
+  parseQuestionInfoSections,
   parseQuestionType,
   parseRelationIds,
   parseSingleRelationId
@@ -245,7 +246,8 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
           allowOpen: !!allowOpen,
           fillingInfo: translate(fillingInfo, locale),
           filterable: !!filterable,
-          required: !!required
+          required: !!required,
+          infoSections: parseQuestionInfoSections(customData, locale)
         };
         allQuestions.set(documentId, {
           ...parseBasics(question, locale),

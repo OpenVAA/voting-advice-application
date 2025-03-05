@@ -7,37 +7,31 @@
  */
 
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
-import crypto from 'crypto';
-import { loadDefaultAppSettings } from './loadDefaultAppSettings';
+import { dynamicSettings } from '@openvaa/app-shared';
+import { LLMResponse, OpenAIProvider, Role } from '@openvaa/llm';
 import mockCandidateForTesting from './mockData/mockCandidateForTesting.json';
 import mockCategories from './mockData/mockCategories.json';
 import mockInfoQuestions from './mockData/mockInfoQuestions.json';
 import mockQuestions from './mockData/mockQuestions.json';
 import mockQuestionTypes from './mockData/mockQuestionTypes.json';
-import mockUsers from './mockData/mockUsers.json';
-import { generateMockDataOnInitialise, generateMockDataOnRestart } from '../constants';
-import { API } from '../util/api';
-import { getDynamicTranslations } from '../util/appCustomization';
-import { dropAllCollections } from '../util/drop';
-import type { AnswerValue, LocalizedAnswer, LocalizedString, QuestionTypeSettings } from '@openvaa/app-shared';
-import type { Data } from '@strapi/strapi';
+import mockUser from './mockData/mockUser.json';
+import mockAnswers from './mockData/mockAnswers.json';
+import { API } from './utils/api';
+import { getDynamicTranslations } from './utils/appCustomization';
+import { getCardContentsFromFile } from './utils/appSettings';
+import { dropAllCollections } from './utils/drop';
+import { generateAiMockData, generateMockDataOnInitialise, generateMockDataOnRestart } from '../constants';
+import type { AnswerValue, EntityType, LocalizedString, QuestionTypeSettings } from './utils/data.type';
 
-/**
- * Used as a prefix for externalIds for generated mock data.
- */
-const MOCK_EXTERNAL_ID_PREFIX = 'mock-';
-const N_ELECTIONS = 4;
-// Make the fourth election a single constituency one
-const N_CONSTITUENCIES_PER_ELECTION = Array.from({ length: N_ELECTIONS }, (_, i) => (i === 3 ? 1 : 10 + i * 20));
-/**
- * If true and N_ELECTIONS >= 2, the constituencies in the second constituency group will be children of the first constituency group.
- */
-const DO_LINK_CONSTITUENCIES = true;
-const N_CONSTITUENCIES = N_CONSTITUENCIES_PER_ELECTION.reduce((a, b) => a + b, 0);
-const N_CANDIDATES_PER_CONSTITUENCY = 10;
-const N_PARTIES = 10;
-const N_PARTIES_WITH_CLOSED_LISTS = 2;
-const F_DUPLICATE_NOMINATIONS = 0.2;
+interface MockAnswer {
+  questionId: string;
+  questionText: string;
+  value: string;
+  openAnswer: { fi: string };
+  party_id: string;
+  constituency_id: string;
+  answer_id: string;
+}
 
 const locales: Array<Locale> = [
   {
@@ -166,22 +160,8 @@ export async function generateMockData() {
     });
     console.info('Done!');
     console.info('#######################################');
-    console.info('inserting parties');
-    await createParties(N_PARTIES).catch((e) => {
-      throw e;
-    });
-    console.info('Done!');
-    console.info('#######################################');
-    console.info('inserting candidates');
-    await createCandidates(N_CONSTITUENCIES * N_CANDIDATES_PER_CONSTITUENCY).catch((e) => {
-      throw e;
-    });
-    console.info('Done!');
-    console.info('#######################################');
-    console.info('inserting candidate without answers for testing');
-    await createCandidateForTesting().catch((e) => {
-      throw e;
-    });
+    console.info('inserting candidate answers');
+    await createAnswers('candidate');
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidate nominations');
@@ -208,7 +188,27 @@ export async function generateMockData() {
     });
     console.info('Done!');
     console.info('#######################################');
-    console.info('Mock data generation completed successfully!');
+    if (generateAiMockData) {
+      console.info('generating LLM summaries');
+      await generateMockLLMSummaries();
+    }
+    console.info('Done!');
+    console.info('#######################################');
+    if (generateAiMockData) {
+      console.info('generating LLM summaries');
+      await generateMockLLMSummaries();
+      console.info('Done!');
+      console.info('#######################################');
+    }
+    console.info('Done!');
+    console.info('#######################################');
+    if (generateAiMockData) {
+      console.info('generating LLM summaries');
+      await generateMockLLMSummaries();
+      console.info('Done!');
+      console.info('#######################################');
+    }
+    console.info('Done!');
     console.info('#######################################');
   } catch (e) {
     console.error('Mock data generation failed because of error ', JSON.stringify(e));
@@ -661,6 +661,58 @@ async function createQuestions({ constituencyPctg = 0.1 }: { constituencyPctg?: 
   }
 }
 
+async function createAnswers(entityType: Omit<EntityType, 'all'>) {
+  // Create a mock entity
+  const entity = await strapi.db.query(entityType === 'candidate' ? API.Candidate : API.Party).create({
+    data: {
+      firstName: 'Mock',
+      lastName: 'Entity',
+      email: 'mock@example.com',
+      publishedAt: new Date(),
+      // Add party relation for candidates
+      ...(entityType === 'candidate'
+        ? {
+            party: (await strapi.db.query(API.Party).findOne())?.id
+          }
+        : {})
+    }
+  });
+
+  const questions = await strapi.db.query(API.Question).findMany({
+    populate: ['questionType']
+  });
+
+  // Track unique answers
+  const processedAnswers = new Set<string>();
+
+  for (const mockAnswer of mockAnswers as MockAnswer[]) {
+    // Skip if we've already processed this answer
+    if (processedAnswers.has(mockAnswer.answer_id)) continue;
+
+    const question = questions.find((q) => q.text.fi === mockAnswer.questionText);
+    if (!question) {
+      console.log(`No matching question found for: "${mockAnswer.questionText}"`);
+      continue;
+    }
+
+    try {
+      await strapi.db.query(API.Answer).create({
+        data: {
+          value: mockAnswer.value,
+          openAnswer: mockAnswer.openAnswer,
+          question: question.id,
+          ...(entityType === 'candidate' ? { candidate: entity.id } : { party: entity.id })
+        }
+      });
+      processedAnswers.add(mockAnswer.answer_id);
+    } catch (error) {
+      console.error(`Failed to create answer for question "${mockAnswer.questionText}":`, error);
+    }
+  }
+
+  console.log(`Created ${processedAnswers.size} unique answers for mock ${entityType}`);
+}
+
 async function createCandidateUsers() {
   if (process.env.NODE_ENV === 'production') {
     console.warn('Skipped - running in production mode.');
@@ -764,6 +816,166 @@ function generateAnswers(
     answers[question.documentId] = { value, info };
   }
   return answers as JSONValue;
+}
+
+/**
+ * Generates a single llm-response that will be used for every answer.
+ */
+async function generateMockLLMSummaries() {
+  if (!LLM_OPENAI_API_KEY) {
+    throw new Error('LLM_OPENAI_API_KEY is required for generating mock LLM summaries');
+  }
+
+  try {
+    const res: LLMResponse = await new OpenAIProvider({ apiKey: LLM_OPENAI_API_KEY }).generate({
+      messages: [
+        {
+          role: 'system',
+          content: 'message.content'
+        },
+        {
+          role: 'user',
+          content: `Write a lorem ipsum summary of this sentence: Taxes should be increased before cutting public spending
+          Generate it in this format and change only the content part:
+          {
+            "infoSections": [
+              {
+                "content": {
+                  "en": "Generated background here",
+                  "fi": "Generated background here suomeksi",
+                  "sv": "Generated background here in swedish"
+                },
+                "title": {
+                  "en": "Background"
+                },
+                "visible": true
+              }
+            ]
+          }`
+        }
+      ]
+    });
+    // Api response with LLMResponse parameters
+    // TODO: Type for this? Also handle error-responses
+    const generatedCustomData = JSON.parse(res.content);
+
+    // Get all questions with their existing customData
+    const questions = await strapi.db.query(API.Question).findMany({});
+
+    // Update each question, merging the new data with existing customData
+    for (const question of questions) {
+      const existingCustomData = question.customData || {};
+      const mergedCustomData = {
+        ...existingCustomData,
+        infoSections: [...(existingCustomData.infoSections || []), ...(generatedCustomData.infoSections || [])]
+      };
+
+      await strapi.db.query(API.Question).update({
+        where: { id: question.id },
+        data: {
+          customData: mergedCustomData
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Failed to generate LLM summary, ', error);
+  }
+}
+
+async function generateMockLLMSummaries() {
+  const OPEN_AI_API_KEY = process.env.OPEN_AI_API_KEY;
+  try {
+    const res: LLMResponse = await new OpenAIProvider({ apiKey: OPEN_AI_API_KEY })
+      .generate([
+        {
+          role: Role.SYSTEM,
+          content: 'message.content'
+        },
+        {
+          role: Role.USER,
+          content: `Write a lorem ipsum summary of this sentence: Taxes should be increased before cutting public spending
+          Generate it in this format and change only the text part:
+          {
+          "infoSections": {
+            "background": {
+              "text": {
+                "en": "Generated background here",
+                "fi": "Generated background here suomeksi",
+                "sv": "Generated background here in swedish"
+              },
+              "title": {
+                "en": "Background"
+              },
+              "visible": true
+            }
+          }
+        }`
+        }
+      ])
+      .then((r) => r);
+    // Api response with LLMResponse parameters
+    // TODO: Type for this? Also handle error-responses
+    const generatedCustomData = JSON.parse(res.content);
+    // Use the same response for all candidates
+    await strapi.db.query(API.Question).updateMany({
+      where: {
+        // Get all
+      },
+      data: {
+        customData: generatedCustomData
+      }
+    });
+  } catch (error) {
+    console.error('Failed to generate LLM summary, ', error);
+  }
+}
+
+async function generateMockLLMSummaries() {
+  const OPEN_AI_API_KEY = process.env.OPEN_AI_API_KEY;
+  try {
+    const res: LLMResponse = await new OpenAIProvider({ apiKey: OPEN_AI_API_KEY })
+      .generate([
+        {
+          role: Role.SYSTEM,
+          content: 'message.content'
+        },
+        {
+          role: Role.USER,
+          content: `Write a lorem ipsum summary of this sentence: Taxes should be increased before cutting public spending
+          Generate it in this format and change only the text part:
+          {
+          "infoSections": {
+            "background": {
+              "text": {
+                "en": "Generated background here",
+                "fi": "Generated background here suomeksi",
+                "sv": "Generated background here in swedish"
+              },
+              "title": {
+                "en": "Background"
+              },
+              "visible": true
+            }
+          }
+        }`
+        }
+      ])
+      .then((r) => r);
+    // Api response with LLMResponse parameters
+    // TODO: Type for this? Also handle error-responses
+    const generatedCustomData = JSON.parse(res.content);
+    // Use the same response for all candidates
+    await strapi.db.query(API.Question).updateMany({
+      where: {
+        // Get all
+      },
+      data: {
+        customData: generatedCustomData
+      }
+    });
+  } catch (error) {
+    console.error('Failed to generate LLM summary, ', error);
+  }
 }
 
 /**

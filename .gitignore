@@ -1,12 +1,14 @@
 .idea/
 .DS_STORE
 .env
+.vscode
 !.env.example
 node_modules
 
 # Yarn 4 without Zero-installs
 .pnp.*
 .yarn/*
+yarn.lock
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases

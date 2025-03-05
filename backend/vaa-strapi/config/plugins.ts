@@ -82,7 +82,15 @@ export default ({ env }) => {
     },
     'openvaa-admin-tools': {
       enabled: true,
-      resolve: './src/plugins/openvaa-admin-tools'
+      resolve: './src/plugins/candidate-admin'
+    },
+    'llm-admin': {
+      enabled: true,
+      resolve: './src/plugins/llm-admin'
+    },
+    'hello-world': {
+      enabled: true,
+      resolve: './src/plugins/hello-world'
     }
   };
 };
