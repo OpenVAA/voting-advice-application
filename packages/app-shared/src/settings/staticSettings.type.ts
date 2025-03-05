@@ -133,11 +133,11 @@ export type StaticSettings = {
 export type StrapiDataAdapter = {
   readonly type: 'strapi';
   readonly supportsCandidateApp: true;
-  readonly supportsAdminApp: boolean;
+  readonly supportsAdminApp: true;
 };
 
 export type LocalDataAdapter = {
   readonly type: 'local';
   readonly supportsCandidateApp: false;
-  readonly supportsAdminApp: boolean;
+  readonly supportsAdminApp: false;
 };
