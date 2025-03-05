@@ -28,7 +28,7 @@ export class Condenser {
     if (!config) {
       throw new ArgumentCondensationError('Language configuration is required');
     }
-    
+
     this.llmProvider = llmProvider;
     this.config = config;
     this.parser = new OutputParser(this.config);
@@ -58,11 +58,7 @@ export class Condenser {
    * @throws {ArgumentCondensationError} If input validation fails
    * @throws {LLMError} If language model processing fails
    */
-  async processComments(
-    comments: string[],
-    topic: string,
-    batchSize: number = 30 
-  ): Promise<Argument[]> {
+  async processComments(comments: string[], topic: string, batchSize: number = 30): Promise<Argument[]> {
     try {
       // Input validation
       if (comments.length === 0) {
@@ -89,7 +85,7 @@ export class Condenser {
       }
 
       // Check for oversized comments
-      const longComments = comments.filter(c => c.length > MAX_COMMENT_LENGTH);
+      const longComments = comments.filter((c) => c.length > MAX_COMMENT_LENGTH);
       if (longComments.length > 0) {
         throw new ArgumentCondensationError(
           `${longComments.length} comment(s) exceed the maximum length of ${MAX_COMMENT_LENGTH} characters`
@@ -151,17 +147,16 @@ export class Condenser {
         .join('\n');
 
       // Construct the prompt
-      const prompt = this.PROMPT_TEMPLATE
-        .replace('{topic}', topic)
+      const prompt = this.PROMPT_TEMPLATE.replace('{topic}', topic)
         .replace('{existingArguments}', existingArgs.length ? existingArgsText : '')
         .replace('{comments}', commentsText);
 
-      console.log('Prompt:', prompt);
+      // console.log('Prompt:', prompt);
 
       // Has retry logic with exponential backoff
       // To do: we need to think about possible errors like
       // - Rate limits
-      // 
+      //
       // and how to handle them
       const maxRetries = 3;
       let lastError: Error | null = null;
@@ -170,7 +165,7 @@ export class Condenser {
         try {
           // Generate response from language model
           const response = await this.llmProvider.generate([new Message(Role.USER, prompt)], 1);
-          
+
           // Parse arguments and source indices from response
           const newArgStrings = this.parser.parseArguments(response.content);
           const sourceIndices = this.parser.parseSourceIndices(response.content);
@@ -180,8 +175,9 @@ export class Condenser {
             const localIndices = sourceIndices[i] || [];
             // Convert local indices to global indices based on batch position
             const globalIndices = localIndices.map((idx) => nIteration * batchSize + (idx - 1));
-            const sourceComments = localIndices.map((idx) => batch[idx - 1])
-              .filter((_, idx) => idx >= 0 && idx < batch.length); 
+            const sourceComments = localIndices
+              .map((idx) => batch[idx - 1])
+              .filter((_, idx) => idx >= 0 && idx < batch.length);
 
             return {
               argument,
@@ -192,21 +188,19 @@ export class Condenser {
           });
         } catch (error) {
           lastError = error as Error;
-          
+
           if (attempt === maxRetries) {
             throw new LLMError(`Failed after ${maxRetries} attempts`, lastError);
           }
-          
+
           // Exponential backoff (delay) between retries
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+          await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 1000));
         }
       }
-      
+
       throw new LLMError('Failed to process batch', lastError);
     } catch (error) {
-      if (error instanceof ArgumentCondensationError || 
-          error instanceof LLMError || 
-          error instanceof ParsingError) {
+      if (error instanceof ArgumentCondensationError || error instanceof LLMError || error instanceof ParsingError) {
         throw error;
       }
       throw new ArgumentCondensationError('Batch processing failed', error);

@@ -1,0 +1,64 @@
+{
+    "argumentSummary": [
+      {
+        "topic": "Kuntani pitää tarjota maksuton ehkäisy alle 25-vuotiaille.",
+        "argument": "Maksuton ehkäisy on inhimillisesti ja taloudellisesti parempi vaihtoehto kuin ei toivottu raskaus ja raskauden keskeytys, sillä se luo nuorille mahdollisuuden suunnitella elämäänsä paremmalla tavalla.",
+        "sourceIndices": [
+          23,
+          28
+        ],
+        "sourceComments": [
+          "Maksuton ehkäisy on inhimillisesti ja taloudellisesti parempi vaihtoehto kuin ei toivottu raskaus ja raskauden keskeytys",
+          "Tämä voisi olla järkevä ennaltaehkäisevä toimi ja kädenojennus nuorille. "
+        ]
+      },
+      {
+        "topic": "Kuntani pitää tarjota maksuton ehkäisy alle 25-vuotiaille.",
+        "argument": "Helpompi ja halvempi tapa ehkäistä ei toivottuja lapsia on maksuton ehkäisy, joka voi vähentää nuorten ahdistusta ja stressiä perhesuunnittelun suhteen.",
+        "sourceIndices": [
+          27,
+          4
+        ],
+        "sourceComments": [
+          "Helpoin ja halvin tapa ehkäistä ei toivottuja lapsia",
+          "Ehkäisy voi olla nuorille kohtuuttoman kallista ja ehkäisystä aiheutuvat kustannukset voivat muodostaa esteen sopivan ehkäisyn käytölle. Maksuttomalla ehkäisyllä ja ehkäisyneuvonnalla edistetään niin nuorten terveyttä kuin hyvinvointia. "
+        ]
+      },
+      {
+        "topic": "Kuntani pitää tarjota maksuton ehkäisy alle 25-vuotiaille.",
+        "argument": "Kunnan tarjoama maksuton ehkäisy voi toimia ennaltaehkäisevänä toimenpiteenä, joka auttaa nuoria tekemään parempia päätöksiä suhteissaan ja ehkäisyssä.",
+        "sourceIndices": [
+          29,
+          10
+        ],
+        "sourceComments": [
+          "Terveyden edistäminen, neuvontaa ammatti-ihmisiltä. Ehkäisee raskauden keskeytyksiä ja sukupuoli tartuntoja.",
+          "Olisi ehkä paikallaan, koska useimmiten kyseessä on opiskelevia ja aktiivisia nuoria. Lisää valistusta ja neuvontaa. Monissa tapauksissa ei toivotut raskaudet nuorilla voivat lisätä muita ongelmia ja haasteita hyvään ja tasapainoiseen elämään, jotka sitten taas vaikuttavat koko yhteiskunnalliseen hyvinvointiin ja turvallisuuteen."
+        ]
+      },
+      {
+        "topic": "Kuntani pitää tarjota maksuton ehkäisy alle 25-vuotiaille.",
+        "argument": "Maksuttoman ehkäisyn tarjoaminen nuorille voi vähentää ei-toivottuja raskauksia ja siten alentaa terveydenhuollon kustannuksia pitkällä aikavälillä.",
+        "sourceIndices": [
+          2,
+          18
+        ],
+        "sourceComments": [
+          "On tutkittu, että usein maksuton ehkäisy kuitenkin jää hakematta.",
+          "Tämä on halpa vakuutus ja ymmärtääkseni tästä on jo päätetty. "
+        ]
+      },
+      {
+        "topic": "Kuntani pitää tarjota maksuton ehkäisy alle 25-vuotiaille.",
+        "argument": "Kun nuorille tarjotaan maksuton ehkäisy, se voi auttaa vähentämään stigmaa ja pelkoa, joka liittyy ehkäisyvälineiden hankintaan, erityisesti vähävaraisilta.",
+        "sourceIndices": [
+          15,
+          8
+        ],
+        "sourceComments": [
+          "Varattomille voisi tarjota.",
+          "Näin vähävaraisetkin saavat ehkäisyn."
+        ]
+      }
+    ]
+  }
