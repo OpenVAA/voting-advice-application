@@ -74,7 +74,7 @@ class Condenser {
                 throw new Errors_1.ArgumentCondensationError(`Batch size must be between 1 and ${MAX_BATCH_SIZE}`);
             }
             // Check for oversized comments
-            const longComments = comments.filter(c => c.length > MAX_COMMENT_LENGTH);
+            const longComments = comments.filter((c) => c.length > MAX_COMMENT_LENGTH);
             if (longComments.length > 0) {
                 throw new Errors_1.ArgumentCondensationError(`${longComments.length} comment(s) exceed the maximum length of ${MAX_COMMENT_LENGTH} characters`);
             }
@@ -120,15 +120,14 @@ class Condenser {
                 .map((arg, i) => `${this.config.outputArgumentPrefix} ${i + 1}: ${arg.argument}`)
                 .join('\n');
             // Construct the prompt
-            const prompt = this.PROMPT_TEMPLATE
-                .replace('{topic}', topic)
+            const prompt = this.PROMPT_TEMPLATE.replace('{topic}', topic)
                 .replace('{existingArguments}', existingArgs.length ? existingArgsText : '')
                 .replace('{comments}', commentsText);
-            console.log('Prompt:', prompt);
+            // console.log('Prompt:', prompt);
             // Has retry logic with exponential backoff
             // To do: we need to think about possible errors like
             // - Rate limits
-            // 
+            //
             // and how to handle them
             const maxRetries = 3;
             let lastError = null;
@@ -144,7 +143,8 @@ class Condenser {
                         const localIndices = sourceIndices[i] || [];
                         // Convert local indices to global indices based on batch position
                         const globalIndices = localIndices.map((idx) => nIteration * batchSize + (idx - 1));
-                        const sourceComments = localIndices.map((idx) => batch[idx - 1])
+                        const sourceComments = localIndices
+                            .map((idx) => batch[idx - 1])
                             .filter((_, idx) => idx >= 0 && idx < batch.length);
                         return {
                             argument,
@@ -160,15 +160,13 @@ class Condenser {
                         throw new Errors_1.LLMError(`Failed after ${maxRetries} attempts`, lastError);
                     }
                     // Exponential backoff (delay) between retries
-                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+                    await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 1000));
                 }
             }
             throw new Errors_1.LLMError('Failed to process batch', lastError);
         }
         catch (error) {
-            if (error instanceof Errors_1.ArgumentCondensationError ||
-                error instanceof Errors_1.LLMError ||
-                error instanceof Errors_1.ParsingError) {
+            if (error instanceof Errors_1.ArgumentCondensationError || error instanceof Errors_1.LLMError || error instanceof Errors_1.ParsingError) {
                 throw error;
             }
             throw new Errors_1.ArgumentCondensationError('Batch processing failed', error);

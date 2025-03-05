@@ -1,7 +1,7 @@
 import { processComments } from '@openvaa/argument-condensation';
 import { generateAnswersCSV } from '../utils/csv-generator';
 import { finnishConfig } from '@openvaa/argument-condensation';
-import { OpenAIProvider } from '@openvaa/llm'; 
+import { OpenAIProvider } from '@openvaa/llm';
 
 // Initialize the OpenAI provider
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
@@ -20,68 +20,54 @@ export default {
       });
 
       // Filter for Likert questions
-      let likertQuestions = questions.filter(
-        (q) => q.questionType?.name === 'Likert-5'
-      );
+      let likertQuestions = questions.filter((q) => q.questionType?.name === 'Likert-5');
+      console.log(`Found ${likertQuestions.length} Likert-5 questions total`);
 
-      console.log(`Found ${likertQuestions.length} Likert-5 questions out of ${questions.length} total`);
+      // Process all Likert questions
+      for (const questionToProcess of likertQuestions) {
+        console.log('\n=== Processing Question ===');
+        console.log('Question ID:', questionToProcess.id);
+        console.log('Text (FI):', questionToProcess.text?.fi);
+        console.log('Type:', questionToProcess.questionType?.name);
 
-      // Take only the first question for debugging
-      const questionToProcess = likertQuestions[0];
-      console.log('\n=== Processing Single Question for Debug ===');
-      console.log('Question ID:', questionToProcess.id);
-      console.log('Text (FI):', questionToProcess.text?.fi);
-      console.log('Type:', questionToProcess.questionType?.name);
+        // Get all answers for this question
+        const answers = questionToProcess.answers;
+        const comments = answers.map((answer) => answer.openAnswer?.fi).filter((openAnswer) => openAnswer);
 
-      // Process each question, NOTE: CURRENTLY ONLY 1 QUESTION (remove slice(0, 1) to process all)
-      console.log('\n=== Processing Questions ===');
-      for (const question of likertQuestions.slice(0, 1)) { 
-        console.log(`\nProcessing Question ID ${question.id}:`);
-        console.log('Text (FI):', question.text?.fi);
-        console.log('Type:', question.questionType?.name);
+        console.log(`Using ${comments.length} out of ${answers.length} total answers`);
 
-      // Get all answers for this question
-      const answers = questionToProcess.answers;
-      const comments = answers
-        .map((answer) => answer.openAnswer?.fi)
-        .filter((openAnswer) => openAnswer)
-        .slice(0, 10);
+        if (comments.length > 0) {
+          // Process the comments for this question
+          const condensedArguments = await processComments(
+            llmProvider,
+            finnishConfig,
+            comments,
+            questionToProcess.text?.fi || 'Unknown Topic'
+          );
+          console.log('Condensed Arguments:', condensedArguments);
 
-      console.log('Finnish Open Answers (first 10):', comments);
-      console.log(`Using ${comments.length} out of ${answers.length} total answers`);
-
-      if (comments.length > 0) {
-        // Process the comments for this question
-        const condensedArguments = await processComments(
-          llmProvider,
-          finnishConfig,
-          comments,
-          questionToProcess.text?.fi || 'Unknown Topic'
-        );
-        console.log('Condensed Arguments:', condensedArguments);
-
-        // Update question with condensed arguments
-        await strapi.db.query('api::question.question').update({
-          where: { id: questionToProcess.id },
-          data: {
-            customData: {
-              ...questionToProcess.customData,
-              argumentSummary: condensedArguments
+          // Update question with condensed arguments
+          await strapi.db.query('api::question.question').update({
+            where: { id: questionToProcess.id },
+            data: {
+              customData: {
+                ...questionToProcess.customData,
+                argumentSummary: condensedArguments
+              }
             }
-          }
-        });
+          });
 
-        console.log(`Updated question ${questionToProcess.id} with ${condensedArguments.length} arguments`);
-      } else {
-        console.log('Skipping question - no valid Finnish comments found');
+          console.log(`Updated question ${questionToProcess.id} with ${condensedArguments.length} arguments`);
+        } else {
+          console.log('Skipping question - no valid Finnish comments found');
+        }
       }
 
       console.log('\n=== Process Complete ===');
       ctx.body = {
         data: {
-          message: 'Successfully processed single question for debugging',
-          questionId: questionToProcess.id,
-          processedAnswers: comments.length
+          message: 'Successfully processed all Likert questions',
+          processedQuestions: likertQuestions.length
         }
       };
     } catch (error) {
