@@ -14,6 +14,7 @@
   import MaintenancePage from '../MaintenancePage.svelte';
   import { initAdminContext } from '$lib/contexts/admin';
   import { Loading } from '$lib/components/loading';
+  import { AdminNav } from '$lib/dynamic-components/navigation/admin';
 
   ////////////////////////////////////////////////////////////////////
   // Get app context
@@ -66,16 +67,7 @@
   <MaintenancePage title={$t('maintenance.title')} content={$t('info.adminApp.notSupported.content')} />
 {:else}
   <Layout {menuId} bind:isDrawerOpen>
-    <nav class="flex flex-col gap-4 p-4" on:blur={navigation.close} id={menuId} hidden={!isDrawerOpen} slot="menu">
-      <a href="/admin" class="hover:text-primary-600 flex items-center gap-2 text-gray-700">
-        <span class="material-icons">home</span>
-        <span>Start</span>
-      </a>
-      <a href="/admin/factor-analysis" class="hover:text-primary-600 flex items-center gap-2 text-gray-700">
-        <span class="material-icons">analytics</span>
-        <span>Factor analysis</span>
-      </a>
-    </nav>
+    <AdminNav on:keyboardFocusOut={navigation.close} id={menuId} hidden={!isDrawerOpen} slot="menu" />
     <slot />
   </Layout>
 {/if}

@@ -15,10 +15,6 @@ Main landing page for admin section showing available tools
 </script>
 
 <MainContent {title}>
-  <figure role="presentation" slot="hero">
-    <HeroEmoji emoji="🛠️" />
-  </figure>
-
   <p class="text-center">Use the tools below to manage the voting advice application.</p>
 
   <div class="flex flex-col gap-sm">
