@@ -71,7 +71,6 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
   let blockWithStats: { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
   let numQuestions: number | undefined;
-  let titleSections: { text?: string; term?: string; explanation?: string }[] = [{ text: question.text }];
 
   $: customData = getCustomData(question);
   $: titleParts = addTermsToTitle(customData.terms);
