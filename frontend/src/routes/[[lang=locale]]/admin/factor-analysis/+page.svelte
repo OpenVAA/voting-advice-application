@@ -8,8 +8,8 @@ Page for computing and managing factor analysis for elections
   import { enhance } from '$app/forms';
   import { getAppContext } from '$lib/contexts/app';
   import { Button } from '$lib/components/button';
-  import { Card } from '$lib/components/card';
   import { Checkbox } from '$lib/components/checkbox';
+  import MainContent from '../../MainContent.svelte';
 
   const { t } = getAppContext();
 
@@ -35,48 +35,83 @@ Page for computing and managing factor analysis for elections
   };
 </script>
 
-<div class="container mx-auto p-6">
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold">Factor analysis</h1>
-    <p class="mt-2 text-gray-600">Compute the latent factors from the answers given by candidates and parties.</p>
-  </div>
+<MainContent title="Factor analysis">
+  <div class="flex flex-col items-center">
+    <p class="mb-lg max-w-xl text-center">
+      Compute the latent factors from the answers given by candidates and parties.
+    </p>
 
-  <Card class="max-w-2xl">
-    <div class="p-6">
-      <h2 class="font-semibold text-xl">Compute factors</h2>
-      <p class="mt-2 text-gray-600">Select the elections for which to compute the factors.</p>
+    <form method="POST" class="grid w-full max-w-xl gap-lg" use:enhance={handleSubmit}>
+      <h2 class="font-medium">Compute factors</h2>
 
-      <form method="POST" class="mt-6 space-y-4" use:enhance={handleSubmit}>
-        <div class="space-y-4">
-          <Checkbox name="parliamentary" bind:checked={selectedElections.parliamentary} label="Parliamentary Elections">
-            <span slot="description" class="text-sm text-gray-500">250 candidates and 0 parties have answered</span>
-          </Checkbox>
+      <p class="mb-lg max-w-xl">Select the elections for which to compute the factors.</p>
 
-          <Checkbox name="municipal" bind:checked={selectedElections.municipal} label="Municipal Elections">
-            <span slot="description" class="text-sm text-gray-500">
-              1,050 candidates and 13 parties have answered
-            </span>
-          </Checkbox>
+      <div class="grid gap-md">
+        <label class="flex items-start">
+          <input
+            type="checkbox"
+            name="parliamentary"
+            bind:checked={selectedElections.parliamentary}
+            class="checkbox-primary checkbox checkbox-lg" />
+          <div class="ml-4">
+            <span class="font-medium">Parliamentary Elections</span>
+            <div class="mt-1">
+              <span class="text-sm text-neutral">250 candidates and 0 parties have answered</span>
+            </div>
+          </div>
+        </label>
 
-          <Checkbox name="mayoral" bind:checked={selectedElections.mayoral} label="Mayoral Elections">
-            <span slot="description" class="text-sm text-gray-500">16 candidates and no parties have answered</span>
-          </Checkbox>
-        </div>
+        <label class="flex items-start">
+          <input
+            type="checkbox"
+            name="municipal"
+            bind:checked={selectedElections.municipal}
+            class="checkbox-primary checkbox checkbox-lg" />
+          <div class="ml-4">
+            <span class="font-medium">Municipal Elections</span>
+            <div class="mt-1">
+              <span class="text-sm text-neutral">1,050 candidates and 13 parties have answered</span>
+            </div>
+          </div>
+        </label>
 
-        {#if error}
-          <p class="text-sm text-red-600">{error}</p>
-        {/if}
+        <label class="flex items-start">
+          <input
+            type="checkbox"
+            name="mayoral"
+            bind:checked={selectedElections.mayoral}
+            class="checkbox-primary checkbox checkbox-lg" />
+          <div class="ml-4">
+            <span class="font-medium">Mayoral Elections</span>
+            <div class="mt-1">
+              <span class="text-sm text-neutral">16 candidates and no parties have answered</span>
+            </div>
+          </div>
+        </label>
+      </div>
 
+      {#if error}
+        <p class="text-sm text-error">{error}</p>
+      {/if}
+
+      <div class="flex flex-col items-center gap-sm">
         <Button
           text={isComputing ? 'Computing factors...' : 'Compute factors'}
           type="submit"
           variant="main"
-          disabled={isComputing || !Object.values(selectedElections).some(Boolean)} />
+          disabled={isComputing || !Object.values(selectedElections).some(Boolean)}
+          on:click={(e) => {
+            e.preventDefault();
+            isComputing = true;
+            setTimeout(() => {
+              isComputing = false;
+            }, 3000);
+          }} />
 
         {#if isComputing}
-          <p class="text-center text-sm text-gray-500">This may take some time.</p>
+          <p class="text-sm text-neutral">This may take some time.</p>
         {/if}
-      </form>
-    </div>
-  </Card>
-</div>
+      </div>
+    </form>
+  </div>
+</MainContent>

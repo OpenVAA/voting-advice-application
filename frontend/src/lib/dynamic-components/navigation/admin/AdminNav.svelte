@@ -39,10 +39,10 @@ A template part that outputs the navigation menu for the Admin App for use in `L
     id="drawerCloseButton" />
 
   <NavGroup>
-    <NavItem href="/admin" icon="home" text={$t('common.home')} />
-    <NavItem href="/admin/factor-analysis" icon="create" text="Factor analysis" />
-    <NavItem href="/admin/question-info" icon="create" text="Question info generation" disabled />
-    <NavItem href="/admin/argument-condensation" icon="create" text="Argument condensation" disabled />
+    <NavItem href="/en/admin" icon="home" text={$t('common.home')} />
+    <NavItem href="/en/admin/factor-analysis" icon="create" text="Factor analysis" />
+    <NavItem href="/en/admin/question-info" icon="create" text="Question info generation" disabled />
+    <NavItem href="/en/admin/argument-condensation" icon="create" text="Argument condensation" disabled />
   </NavGroup>
 
   <NavGroup>

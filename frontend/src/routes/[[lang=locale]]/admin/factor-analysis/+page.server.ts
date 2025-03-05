@@ -3,9 +3,9 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
   // Check if user is admin
-  if (locals.user?.role !== 'admin') {
-    throw new Error('Unauthorized');
-  }
+  // if (locals.user?.role !== 'admin') {
+  //   throw new Error('Unauthorized');
+  // }
 };
 
 export const actions: Actions = {
