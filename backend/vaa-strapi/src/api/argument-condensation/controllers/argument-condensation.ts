@@ -1,5 +1,5 @@
 import { processComments } from '@openvaa/argument-condensation';
-import { generateAnswersCSV } from '../utils/csv-generator';
+import { generateAnswersJSON } from '../utils/debug-data-generator';
 import { finnishConfig } from '@openvaa/argument-condensation';
 import { OpenAIProvider } from '@openvaa/llm';
 
