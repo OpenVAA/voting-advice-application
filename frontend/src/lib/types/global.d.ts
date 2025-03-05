@@ -49,17 +49,6 @@ declare global {
     file?: File;
   };
 
-  type QuestionTermDefinition = {
-    /** The strings that trigger the popup. There may in theory be many different forms in the same question. */
-    triggers: Array<string>;
-
-    title: string;
-
-    content: string;
-  };
-
-  ///////////////////////////////////////////////
-
   /**
    * The application settings, combined from both local settings and those retrieved from the database.
    */
