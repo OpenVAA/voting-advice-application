@@ -18,13 +18,18 @@ Main landing page for admin section showing available tools
   <p class="text-center">Use the tools below to manage the voting advice application.</p>
 
   <div class="flex flex-col gap-sm">
-    <Button href="/admin/factor-analysis" text="Factor analysis" icon="create" iconPos="left" variant="normal">
+    <Button href="/en/admin/factor-analysis" text="Factor analysis" icon="create" iconPos="left" variant="normal">
       <svelte:fragment slot="badge">
         <span class="text-primary-600 font-mono"></span>
       </svelte:fragment>
     </Button>
 
-    <Button text="Question info generation" icon="create" iconPos="left" variant="normal" disabled>
+    <Button
+      href="/en/admin/question-info"
+      text="Question info generation"
+      icon="create"
+      iconPos="left"
+      variant="normal">
       <svelte:fragment slot="badge">
         <span class="font-mono text-gray-400"></span>
       </svelte:fragment>
