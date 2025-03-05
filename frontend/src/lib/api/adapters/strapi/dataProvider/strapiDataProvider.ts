@@ -22,6 +22,7 @@ import {
   parseSingleRelationId
 } from '../utils';
 import { parseEntityType } from '../utils/parseEntityType';
+import { parseQuestionTerms } from '../utils/parseQuestionTerms';
 import type { CustomData } from '@openvaa/app-shared';
 import type { DPDataType } from '$lib/api/base/dataTypes';
 import type {
@@ -247,7 +248,8 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
           fillingInfo: translate(fillingInfo, locale),
           filterable: !!filterable,
           required: !!required,
-          infoSections: parseQuestionInfoSections(customData, locale)
+          infoSections: parseQuestionInfoSections(customData, locale),
+          terms: parseQuestionTerms(customData, locale)
         };
         allQuestions.set(documentId, {
           ...parseBasics(question, locale),

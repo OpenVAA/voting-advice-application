@@ -28,26 +28,28 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 -->
 
 <script lang="ts">
+  import { getCustomData, type TermDefinition } from '@openvaa/app-shared';
+  import { Election } from '@openvaa/data';
+  import { type Readable, readable } from 'svelte/store';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { ElectionTag } from '$lib/components/electionTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { Tooltip } from '$lib/components/tooltip';
   import { getAppContext } from '$lib/contexts/app';
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
   import { getVoterContext } from '$lib/contexts/voter';
   import { concatClass } from '$lib/utils/components';
   import { getElectionsToShow } from '$lib/utils/questions';
-  import { Election } from '@openvaa/data';
-  import { type Readable, readable } from 'svelte/store';
+  import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
   import type { QuestionHeadingProps } from './QuestionHeading.type';
+  import { escapeRegExp } from '$lib/utils/regexp';
 
   type $$Props = QuestionHeadingProps;
+  type TitlePart = { text?: string; term?: string; explanation?: string; title?: string };
 
   export let question: $$Props['question'];
   export let questionBlocks: $$Props['questionBlocks'] = undefined;
   export let onShadedBg: $$Props['onShadedBg'] = undefined;
-  export let terms: QuestionTermDefinition[] = [];
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -69,31 +71,42 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 
   let blockWithStats: { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
   let numQuestions: number | undefined;
-  let titleSections: { text?: string; term?: string; explanation?: string }[] = [{ text: question.text }];
 
+  $: customData = getCustomData(question);
+  $: titleParts = addTermsToTitle(customData.terms);
   $: blockWithStats = questionBlocks?.getByQuestion(question);
   $: numQuestions = questionBlocks?.questions.length;
-  $: {
-    terms.forEach((term) => {
-      term.triggers.forEach((trigger) => {
-        titleSections.forEach((section, i) => {
-          if (!section.text) return;
 
-          const index = titleSections.indexOf(section);
-          const newSectionStrings = section.text.split(trigger);
-          if (newSectionStrings.length === 1) return;
+  ////////////////////////////////////////////////////////////////////
+  // Functions
+  ////////////////////////////////////////////////////////////////////
 
-          newSectionStrings.forEach((s, i) => {
-            if (i === 0) {
-              titleSections[index].text = s;
-            } else {
-              titleSections.splice(index + i, 0, { term: trigger, explanation: term.content });
-              titleSections.splice(index + i + 1, 0, { text: newSectionStrings[i] });
-            }
-          });
-        });
-      });
+  function addTermsToTitle(terms?: Array<TermDefinition>) {
+    const out: Array<TitlePart> = [];
+
+    // Sort from longest to shortest, so we cover cases where one terms is a substring of another, and escape regex characters
+    // NB. It'd be tempting to add \b word boundaries but, alas, that'd result in errors in, e.g., Japanese
+    const triggers = terms
+      ?.flatMap((t) => t.triggers ?? [])
+      ?.sort((a, b) => b.length - a.length)
+      .map(escapeRegExp);
+
+    if (!triggers) return out;
+
+    const re = new RegExp(`(${triggers.join('|')})`);
+    const parts = question.text.split(re); // Splitting with a regexp that has a match group includes the match group in the results
+
+    parts.forEach((part) => {
+      const term = terms?.find((t) => t.triggers?.includes(part));
+
+      if (term) {
+        out.push({ term: part, explanation: term.content, title: term.title });
+      } else {
+        out.push({ text: part });
+      }
     });
+
+    return out;
   }
 </script>
 
@@ -116,13 +129,12 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
     {/if}
   </PreHeading>
   <!-- class={videoProps ? 'my-0 text-lg sm:my-md sm:text-xl' : ''} -->
-  <!-- <h1>{question.text}</h1> -->
   <h1>
-    {#each titleSections as { text, term, explanation }}
+    {#each titleParts as { text, term, explanation, title }}
       {#if text}
-        <span>{text}</span>
+        {text}
       {:else if term && explanation}
-        <Tooltip tip={explanation}>
+        <Tooltip tip={explanation} {title}>
           {term}
         </Tooltip>
       {/if}
