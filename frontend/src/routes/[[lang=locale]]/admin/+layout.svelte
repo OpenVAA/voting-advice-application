@@ -13,6 +13,7 @@
   import Layout from '../Layout.svelte';
   import MaintenancePage from '../MaintenancePage.svelte';
   import { initAdminContext } from '$lib/contexts/admin';
+  import { Loading } from '$lib/components/loading';
 
   ////////////////////////////////////////////////////////////////////
   // Get app context
@@ -40,13 +41,29 @@
 
   const menuId = 'admin-app-menu';
   let isDrawerOpen: boolean;
+
+  ////////////////////////////////////////////////////////////////////
+  // Data loading
+  ////////////////////////////////////////////////////////////////////
+
+  let ready = false;
+  onMount(() => {
+    // Wait for the next tick to ensure all data is loaded
+    setTimeout(() => {
+      ready = true;
+    }, 0);
+  });
 </script>
 
-{#if !$appSettings.dataAdapter.supportsAdminApp}
+{#if !ready}
+  <Loading />
+{:else if $appSettings.dataAdapter.supportsAdminApp}
   <MaintenancePage
     title={$t('info.adminApp.notSupported.title')}
     content={$t('info.adminApp.notSupported.content')}
     emoji={$t('info.adminApp.notSupported.heroEmoji')} />
+{:else if !$appSettings.access.adminApp}
+  <MaintenancePage title={$t('maintenance.title')} content={$t('info.adminApp.notSupported.content')} />
 {:else}
   <Layout {menuId} bind:isDrawerOpen>
     <nav class="flex flex-col gap-4 p-4" on:blur={navigation.close} id={menuId} hidden={!isDrawerOpen} slot="menu">
