@@ -40,11 +40,18 @@
       "required": true,
       "default": 1
     },
+    "unconfirmed": {
+      "type": "boolean"
+    },
     "candidate": {
       "type": "relation",
-      "relation": "oneToOne",
+      "relation": "manyToOne",
       "target": "api::candidate.candidate",
-      "mappedBy": "nomination"
+      "inversedBy": "nominations"
+    },
+    "externalId": {
+      "type": "string",
+      "private": true
     }
   }
 }

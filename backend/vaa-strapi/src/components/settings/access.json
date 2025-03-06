@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_settings_accesses",
+  "info": {
+    "displayName": "Access"
+  },
+  "options": {},
+  "attributes": {
+    "candidateApp": {
+      "type": "boolean"
+    },
+    "voterApp": {
+      "type": "boolean"
+    },
+    "underMaintenance": {
+      "type": "boolean"
+    },
+    "answersLocked": {
+      "type": "boolean"
+    }
+  }
+}

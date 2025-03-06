@@ -66,7 +66,6 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
   import { getComponentContext } from '$lib/contexts/component';
   import ModalContainer from './ModalContainer.svelte';
   import type { ModalProps } from './Modal.type';
-  const { t } = getComponentContext();
 
   type $$Props = ModalProps;
 
@@ -75,6 +74,8 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
   export let isOpen: $$Props['isOpen'] = false;
   export let closeModal: $$Props['closeModal'] = undefined;
   export let openModal: $$Props['openModal'] = undefined;
+
+  const { t } = getComponentContext();
 </script>
 
 <ModalContainer {...$$restProps} {title} bind:isOpen bind:closeModal bind:openModal on:open on:close>

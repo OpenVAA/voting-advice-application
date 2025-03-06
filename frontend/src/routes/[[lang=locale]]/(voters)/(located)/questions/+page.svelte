@@ -19,7 +19,7 @@ Display a general intro before starting answering the questions and possibly all
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
-  import Layout from '../../../Layout.svelte';
+  import MainContent from '../../../MainContent.svelte';
   import type { QuestionCategory } from '@openvaa/data';
 
   ////////////////////////////////////////////////////////////////////
@@ -90,7 +90,7 @@ Display a general intro before starting answering the questions and possibly all
   }
 </script>
 
-<Layout title={$t('questions.title')}>
+<MainContent title={$t('questions.title')}>
   <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.questions.heroEmoji')} />
   </figure>
@@ -139,4 +139,4 @@ Display a general intro before starting answering the questions and possibly all
     text={$t('questions.intro.start', {
       numQuestions: $selectedQuestionCategoryIds.length > 0 ? $selectedQuestionBlocks.questions.length : 0
     })} />
-</Layout>
+</MainContent>

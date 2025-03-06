@@ -1,38 +1,59 @@
+<!--@component
+
+# Candidate app questions layout
+
+- Display an error if we can't load the questions.
+- Set top bar actions and initiate progess.
+- Redirects to the basic info page if required basic info has not been filled out.
+-->
+
 <script lang="ts">
-  import { getContext } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import { LoadingSpinner } from '$candidate/components/loadingSpinner';
   import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
-  import { t } from '$lib/i18n';
-  import { BasicPage } from '$lib/templates/basicPage';
-  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
-  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
+  import { getCandidateContext } from '$lib/contexts/candidate';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import MainContent from '../../../MainContent.svelte';
 
-  const { opinionQuestions, unansweredRequiredInfoQuestions } = getContext<CandidateContext>('candidate');
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
 
-  $: if ($unansweredRequiredInfoQuestions?.length) {
-    goto($getRoute(ROUTE.CandAppProfile));
+  const { getRoute, opinionQuestions, t, unansweredOpinionQuestions, unansweredRequiredInfoQuestions } =
+    getCandidateContext();
+  const { progress, topBarSettings } = getLayoutContext(onDestroy);
+
+  ////////////////////////////////////////////////////////////////////
+  // Redirect if basic info has not been filled out
+  ////////////////////////////////////////////////////////////////////
+
+  $: if ($unansweredRequiredInfoQuestions.length) {
+    goto($getRoute('CandAppProfile'));
   }
+
+  ////////////////////////////////////////////////////////////////////
+  // Set progress
+  ////////////////////////////////////////////////////////////////////
+
+  topBarSettings.push({
+    progress: 'show'
+  });
+
+  $: progress.max.set($opinionQuestions.length);
+  $: progress.current.set($opinionQuestions.length - $unansweredOpinionQuestions.length);
 </script>
 
-<svelte:head>
-  <title>{$t('questions.title')}</title>
-</svelte:head>
-
-{#if $unansweredRequiredInfoQuestions?.length}
-  <LoadingSpinner />
-{:else if !$opinionQuestions || !Object.values($opinionQuestions).length}
-  <BasicPage title={$t('error.noQuestions')}>
-    <HeroEmoji emoji={$t('dynamic.error.heroEmoji')} slot="hero" />
-    <Button
-      href={$getRoute(ROUTE.CandAppHome)}
-      text={$t('common.return')}
-      variant="main"
-      icon="previous"
-      iconPos="left"
-      slot="primaryActions" />
-  </BasicPage>
-{:else}
+{#if $unansweredRequiredInfoQuestions.length === 0 && $opinionQuestions.length > 0}
   <slot />
+{:else}
+  <MainContent title={$t('error.noQuestions')}>
+    <figure role="presentation" slot="hero">
+      <HeroEmoji emoji={$t('dynamic.error.heroEmoji')} />
+    </figure>
+
+    <svelte:fragment slot="primaryActions">
+      <Button href={$getRoute('CandAppHome')} text={$t('common.return')} variant="main" />
+    </svelte:fragment>
+  </MainContent>
 {/if}

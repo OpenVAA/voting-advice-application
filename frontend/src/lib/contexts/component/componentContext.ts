@@ -16,7 +16,6 @@ export function getComponentContext() {
  * @returns The context object
  */
 export function initComponentContext(): ComponentContext {
-  console.info('[debug] initComponentContext()');
   if (hasContext(CONTEXT_KEY)) error(500, 'InitComponentsContext() called for a second time');
   return setContext<ComponentContext>(CONTEXT_KEY, {
     ...getI18nContext(),

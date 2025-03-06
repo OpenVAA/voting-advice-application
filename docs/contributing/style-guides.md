@@ -12,6 +12,40 @@ We follow the conventions of [TypeScript Style Guide](https://mkosir.github.io/t
 
 - [The naming conventions](https://mkosir.github.io/typescript-style-guide/#variables-1) for booleans are optional but if possible should be adhered to.
 
+Common errors, which will be flagged, include:
+
+- `Array<Foo>` must be used instead of `Foo[]`
+- Type parameters cannot be single letters: `type Foo<TBar> = ...` instead of `type Foo<T>`.
+
+### Function parameters
+
+> This requirement is not flagged by automatic checks.
+
+To avoid bugs, try to always use named parameters to functions and methods, when there is any risk of confusion, i.e., in most cases where the functions expects more than one parameter.
+
+To make things smooth, try to use the same names for parameter across the board, so they can be destructured and passed as is, e.g.
+
+```typescript
+const { foo } = getFoo();
+const { bar } = getBar();
+foobar({ foo, bar }); // Instead of foobar({ foo: foo, bar: bar })
+function foobar({ foo, bar }: { foo: string; bar: string }) {
+  // Do smth
+}
+```
+
+#### TS Style
+
+We use https://mkosir.github.io/typescript-style-guide/ for the most parts. Most issues should be automatically flagged by Github workflows, but keep your especially open for these common issues:
+
+#### File organization
+
+Try to separate pure type files from the functional ones and keep them next to each other, as well as tests. Do not usually collect these into separate folders. E.g.
+
+- `foo.ts`: The file to compile
+- `foo.type.ts`: Related types and types only
+- `foo.test.ts`: The unit tests
+
 ## CSS
 
 See the [styling guide](../frontend/styling.md) for information about using Tailwind classes.
@@ -34,7 +68,7 @@ Put each component in its own folder in `$lib/components`. Multiple components t
 
 ### Component properties
 
-Currently, most components use attribute forwarding with [Svelte's `$$restProps` variable](https://svelte.dev/docs/basic-markup#attributes-and-props). This means that any HTML or SVG attributes that the main element of the component accepts can be passed as the components properties – or, in case of a component derived from another Svelte component, the parent components properties. See the examples for details on how this is done.
+Currently, most components use attribute forwarding with [Svelte's `$$restProps` variable](https://svelte.dev/docs/basic-markup#attributes-and-props). This means that any HTML or SVG attributes that the main element of the component accepts can be passed as the components properties – or, in case of a component derived from another Svelte component, the parent components properties. See the examples for details on how this is done. This is most commonly used for passing extra classes to the element.
 
 #### Default values for properties included `$$restProps`
 
@@ -72,5 +106,12 @@ let className: $$Props['class'] = $$props['class'];
 ### Documentation
 
 Follow Svelte's [guidelines for component documentation](https://svelte.dev/docs/faq#how-do-i-document-my-components). For an example, see [`IconBase`](../../frontend/src/lib/components/icon/base/IconBase.svelte) component and its associated [type definition](../../frontend/src/lib/components/icon/base/IconBase.type.ts).
+
+Place the Svelte docstring at the top of the file, before the `<script>` block.
+
+Add documentation for pages, layouts and other non-reusable components, detailing their main purpose. Include in their documentation under separate subheadings:
+
+- `Settings` affecting the page
+- Route and query `Params` affecting the behaviour
 
 It is not necessary to duplicate the documentation of the individual properties in the doc string of the `.svelte` file, because the properties should have their explanations directly in the interface definition in the `.type.ts` file (using [`/** ... */` JSDoc comments](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html)). The component's possible slots should, however, be included in the doc string.

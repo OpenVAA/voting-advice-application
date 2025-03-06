@@ -1,5 +1,4 @@
 export * from './buildFilterParams';
-export * from './parseAnswers';
 export * from './parseBasics';
 export * from './parseCandidate';
 export * from './parseEntityType';
@@ -9,3 +8,4 @@ export * from './parseOrganization';
 export * from './parseQuestionInfoSections';
 export * from './parseQuestionType';
 export * from './parseRelationIds';
+export * from './parseUser';

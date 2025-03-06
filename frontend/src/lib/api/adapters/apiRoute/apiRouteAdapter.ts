@@ -1,6 +1,6 @@
 import qs from 'qs';
-import { API_ROUTES, type ApiGetRoute, type ApiPostRoute, type ApiRoute } from './apiRoutes';
-import type { DPDataType } from '$lib/api/base/dataTypes';
+import { addHeader } from '$lib/api/utils/addHeader';
+import { API_ROUTES, type ApiGetRoute, type ApiPostRoute, type ApiRoute, type ApiRouteReturnType } from './apiRoutes';
 import type { UniversalAdapter } from '$lib/api/base/universalAdapter';
 import type { ApiRouteAdapter, FetchOptions, GetOptions, PostOptions } from './apiRouteAdapter.type';
 
@@ -31,16 +31,17 @@ export function apiRouteAdapterMixin<TBase extends Constructor>(base: TBase): Co
       return response;
     }
 
-    async apiGet<TApi extends ApiGetRoute>({ endpoint, params }: GetOptions<TApi>): Promise<DPDataType[TApi]> {
+    async apiGet<TApi extends ApiGetRoute>({ endpoint, params }: GetOptions<TApi>): Promise<ApiRouteReturnType<TApi>> {
       const response = await this.apiFetch({ endpoint, params });
       return response.json();
     }
 
-    async apiPost<TApi extends ApiPostRoute>({ endpoint, request }: PostOptions<TApi>): Promise<Response> {
-      request ??= {};
+    async apiPost<TApi extends ApiPostRoute>({ endpoint, body }: PostOptions<TApi>): Promise<ApiRouteReturnType<TApi>> {
+      const request = addHeader({}, 'Content-Type', 'application/json');
       request.method = 'POST';
-      request.headers ??= { 'Content-Type': 'application/json' };
-      return this.apiFetch({ endpoint, request });
+      if (body) request.body = JSON.stringify(body);
+      const response = await this.apiFetch({ endpoint, request });
+      return response.json();
     }
   }
 

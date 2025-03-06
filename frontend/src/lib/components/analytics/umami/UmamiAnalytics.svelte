@@ -6,6 +6,7 @@
   type $$Props = UmamiAnalyticsProps;
 
   export let websiteId: $$Props['websiteId'];
+  export let scriptSrc: $$Props['scriptSrc'] = 'https://cloud.umami.is/script.js';
   export const trackEvent: $$Props['trackEvent'] = sendUmamiEvent;
 
   function sendUmamiEvent({ name, data }: TrackingEvent<Record<string, JSONData>>) {
@@ -20,9 +21,5 @@
 </script>
 
 <svelte:head>
-  <script
-    defer
-    src="https://analytics.eu.umami.is/script.js"
-    data-website-id={websiteId}
-    data-auto-track="true"></script>
+  <script defer src={scriptSrc} data-website-id={websiteId} data-auto-track="true"></script>
 </svelte:head>

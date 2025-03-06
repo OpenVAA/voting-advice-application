@@ -45,12 +45,12 @@ export const dynamicSettings: DynamicSettings = {
       allowSkip: true,
       show: true
     },
+    interactiveInfo: {
+      enabled: false
+    },
     questionsIntro: {
       allowCategorySelection: true,
       show: true
-    },
-    interactiveInfo: {
-      enabled: false
     },
     showCategoryTags: true,
     showResultsLink: true
@@ -65,12 +65,13 @@ export const dynamicSettings: DynamicSettings = {
     sections: ['candidate', 'organization']
   },
   elections: {
-    disallowSelection: false
+    disallowSelection: false,
+    showElectionTags: true,
+    startFromConstituencyGroup: undefined
   },
-  underMaintenance: false,
   llm: {
     prompt:
-      '1. Read all the examples of election machine statements below, with which the user can either agree or disagree, as well as the related brief background information. 2. Create a short text of a few sentences for the statement that explains what the current state of the matter presented in the statement is. 4. If the statement contains terms that may be unclear to ordinary people, add a one-sentence explanation for each term. Add them under terms. 5. Present these texts according to the JSON format below. 6. Return only the JSON-formatted response. Answer only with a valid JSON-formatted response. Do not add formatting to the response. In the case of no ',
+      '1. Read all the examples of election machine statements below, with which the user can either agree or disagree, as well as the related brief background information. 2. Create a short text of a few sentences for the statement that explains what the current state of the matter presented in the statement is. 4. If the statement contains terms that may be unclear to ordinary people, add a one-sentence explanation for each term. Add them under terms. Add all strings that contain the term or its inflected forms under triggers. 5. Present these texts according to the JSON format below. 6. Return only the JSON-formatted response. Answer only with a valid JSON-formatted response. Do not add formatting to the response. In the case of no ',
     answerFormat: `
     {
       "infoSections": [
@@ -101,10 +102,25 @@ export const dynamicSettings: DynamicSettings = {
           },
           "terms": [
             {
-              "term": {
-                "definition_en": "Explanation for term",
-                "definition_fi": "Selitys termille",
-                "definition_sv": "Förklaring av term"
+              "triggers": [
+                "trigger1", "trigger2", "trigger3"
+              ],
+              "title": "Title",
+              "content": {
+                "en": "Term in english",
+                "fi": "Termi suomeksi",
+                "sv": "Term på svenska"
+              }
+            },
+            {
+              "triggers": [
+                "trigger1", "trigger2", "trigger3"
+              ],
+              "title": "Title",
+              "content": {
+                "en": "Term in english",
+                "fi": "Termi suomeksi",
+                "sv": "Term på svenska"
               }
             }
           ]
@@ -112,5 +128,15 @@ export const dynamicSettings: DynamicSettings = {
       ]
     }
     `
+  },
+  access: {
+    candidateApp: true,
+    voterApp: true,
+    underMaintenance: false,
+    answersLocked: false
+  },
+  notifications: {
+    candidateApp: undefined,
+    voterApp: undefined
   }
 };

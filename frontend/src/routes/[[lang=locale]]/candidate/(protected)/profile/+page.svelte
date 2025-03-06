@@ -1,344 +1,316 @@
+<!--@component
+
+# Candidate app profile basic info page
+
+Shows the candidate's basic information, some of which is editable.
+
+### Settings
+
+- `entities.hideIfMissingAnswers.candidate`: Affects message shown.
+-->
+
 <script lang="ts">
-  import { getContext } from 'svelte';
-  import { writable } from 'svelte/store';
+  import { getCustomData, type LocalizedAnswer } from '@openvaa/app-shared';
+  import { type AnyQuestionVariant, CandidateNomination, ENTITY_TYPE, isEmptyValue } from '@openvaa/data';
+  import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
-  import {
-    BooleanInput,
-    DateInput,
-    MultipleChoiceInput,
-    PhotoInput,
-    SingleChoiceInput,
-    TextInput
-  } from '$candidate/components/input';
-  import InputContainer from '$candidate/components/input/InputContainer.svelte';
   import { Button } from '$lib/components/button';
-  import { Field, FieldGroup } from '$lib/components/common/form';
+  import { ErrorMessage } from '$lib/components/errorMessage';
+  import { Icon } from '$lib/components/icon';
+  import { Input, InputGroup, QuestionInput } from '$lib/components/input';
+  import { iconBadgeClass } from '$lib/components/input';
   import PreventNavigation from '$lib/components/preventNavigation/PreventNavigation.svelte';
-  import Warning from '$lib/components/warning/Warning.svelte';
-  import { defaultLocale, t } from '$lib/i18n';
-  import { isTranslation, translate } from '$lib/i18n/utils/translate';
-  import { addAnswer, updateAnswer } from '$lib/legacy-api/candidate';
-  import { settings } from '$lib/legacy-stores';
-  import { BasicPage } from '$lib/templates/basicPage';
-  import { answerIsEmpty } from '$lib/utils/legacy-answers';
-  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
-  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
-  import type { TranslationKey } from '$types';
-  import type { CandidateAnswer, Nomination } from '$types/legacy-candidateAttributes';
+  import { SuccessMessage } from '$lib/components/successMessage';
+  import { Warning } from '$lib/components/warning';
+  import { getCandidateContext } from '$lib/contexts/candidate';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { logDebugError } from '$lib/utils/logger';
+  import MainContent from '../../../MainContent.svelte';
 
-  const disclaimerClass = 'mx-6 my-0 p-0 text-sm text-secondary';
-  const headerClass = 'uppercase mx-6 my-0 p-0 small-label';
-  const inputClass =
-    'input-ghost flex justify-end text-right input input-sm w-full pr-2 disabled:border-none disabled:bg-base-100';
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
 
-  // get the user and necessary information from CandidateContext
   const {
-    user,
-    infoAnswers,
     answersLocked,
+    appSettings,
+    dataRoot,
+    getRoute,
     infoQuestions,
-    unansweredOpinionQuestions,
+    profileComplete,
+    requiredInfoQuestions,
     unansweredRequiredInfoQuestions,
-    parties
-  } = getContext<CandidateContext>('candidate');
+    unansweredOpinionQuestions,
+    t,
+    userData
+  } = getCandidateContext();
+  const { pageStyles } = getLayoutContext(onDestroy);
 
-  const unsavedInfoAnswers = writable<LegacyAnswerDict>({});
+  ////////////////////////////////////////////////////////////////////
+  // State variables
+  ////////////////////////////////////////////////////////////////////
 
-  // initialize infoQuestions and unsavedInfoAnswers
-  let unsavedInfoAnswersInitialized = false;
-  $: {
-    if ($infoQuestions && !unsavedInfoAnswersInitialized) {
-      $infoQuestions.forEach((question) => {
-        if ($infoAnswers?.[question.id]) {
-          $unsavedInfoAnswers[question.id] = { value: $infoAnswers[question.id].value };
-        } else {
-          // Initialize unsavedInfoAnswers with undefined values for type consistency
-          $unsavedInfoAnswers[question.id] = { value: undefined };
-        }
-      });
-      unsavedInfoAnswersInitialized = true;
-    }
-  }
+  const { hasUnsaved } = userData;
 
-  // Hash form state in order to detect changes
-  let previousStateHash: string | undefined;
-  let dirty = false;
+  let allRequiredFilled = false;
+  let bypassPreventNavigation = false;
+  let canSubmit: boolean;
+  let nominations: Array<CandidateNomination>;
+  let status: ActionStatus = 'idle';
+  let submitLabel: string;
+  let submitRoute: string;
 
-  // Check if the form is dirty
-  $: {
-    const currentStateHash = JSON.stringify(Object.values($unsavedInfoAnswers));
-    previousStateHash = previousStateHash ?? currentStateHash;
-    dirty = currentStateHash !== previousStateHash;
-  }
+  ////////////////////////////////////////////////////////////////////
+  // Display immutable data
+  ////////////////////////////////////////////////////////////////////
 
-  // follow allFilledPrivate to check if all the required questions are answered.
-  let allFilledPrivate: boolean = false;
-  $: {
-    if ($infoQuestions) {
-      const requiredQuestions = $infoQuestions.filter((question) => question.required);
-      allFilledPrivate = requiredQuestions.every((question) => {
-        return !answerIsEmpty(question, $unsavedInfoAnswers[question.id]);
-      });
-    }
-  }
+  $: nominations = $userData?.candidate
+    ? $dataRoot.getNominationsForEntity({ type: ENTITY_TYPE.Candidate, id: $userData.candidate.id })
+    : [];
 
-  // basic information
-  type InfoField = ('firstName' | 'lastName' | 'party') & keyof LegacyCandidateProps;
-
-  const basicInfoFields = new Array<InfoField>('firstName', 'lastName', 'party');
-
-  const basicInfoLabels: Record<InfoField, TranslationKey> = {
-    firstName: 'common.firstName',
-    lastName: 'common.lastName',
-    party: 'common.organization.singular'
-  };
-
-  const basicInfoData: Record<InfoField, string | undefined> = {
-    firstName: $user?.candidate?.firstName,
-    lastName: $user?.candidate?.lastName,
-    party: translate($user?.candidate?.party?.shortName)
-  };
-
-  let nomination = $user?.candidate?.nomination;
-  let photo = $user?.candidate?.photo;
-
-  let uploadPhoto: () => Promise<void>;
-
-  let errorMessage = '';
-  let errorTimeout: NodeJS.Timeout;
-
-  function showError(message: string) {
-    errorMessage = message;
-    clearTimeout(errorTimeout);
-    errorTimeout = setTimeout(() => {
-      errorMessage = '';
-    }, 5000);
-  }
-
-  let loading = false;
-
-  async function submitForm() {
-    if ($answersLocked) {
-      await goto($getRoute(ROUTE.CandAppHome));
-      return;
-    }
-
-    if (!allFilledPrivate) {
-      return;
-    }
-
-    loading = true;
-
-    if (!$infoQuestions) return;
-
-    await Promise.all(
-      $infoQuestions.map((question) => {
-        saveToServer(question);
-      })
-    );
-    await uploadPhoto();
-    if ($user?.candidate) {
-      $user.candidate.photo = photo;
-    }
-
-    loading = false;
-
-    if ($unansweredOpinionQuestions?.length !== 0 && !$answersLocked) await goto($getRoute(ROUTE.CandAppQuestions));
-    else await goto($getRoute(ROUTE.CandAppHome));
-  }
-
-  function updateInfoAnswerStore(
-    answerId: CandidateAnswer['id'],
-    question: LegacyQuestionProps,
-    value: LegacyAnswerProps['value']
-  ) {
-    if ($infoAnswers) {
-      $infoAnswers[question.id] = {
-        id: answerId,
-        value
+  /**
+   * Return the data from a nomination needed for displaying it.
+   */
+  function parseNomination(nomination: CandidateNomination): {
+    election?: string;
+    constituency?: string;
+    organization?: string;
+    electionSymbol?: string;
+    unconfirmed?: boolean;
+  } {
+    try {
+      const { election, constituency, electionSymbol, parentNomination } = nomination;
+      const customData = getCustomData(nomination);
+      // Unconfirmed may be inherited from parent nomination
+      let unconfirmed = !!customData.unconfirmed;
+      if (!unconfirmed && parentNomination) unconfirmed = !!getCustomData(parentNomination).unconfirmed;
+      return {
+        election: election.name,
+        constituency: constituency.name,
+        organization: parentNomination ? parentNomination.entity.name : undefined,
+        electionSymbol,
+        unconfirmed
+      };
+    } catch (e) {
+      logDebugError(`Error formatting nomination: ${e}`);
+      return {
+        unconfirmed: true
       };
     }
   }
 
-  let clearLocalStorage: () => void;
+  ////////////////////////////////////////////////////////////////////
+  // Handle saving answers and define submit label and notes
+  ////////////////////////////////////////////////////////////////////
 
-  async function saveToServer(question: LegacyQuestionProps) {
-    if (!$infoAnswers || $unsavedInfoAnswers[question.id].value === undefined) return;
-    if ($infoAnswers[question.id] === undefined) {
-      // New answer
-      const response = await addAnswer(question.id, $unsavedInfoAnswers[question.id].value);
-      if (!response?.ok) {
-        showError($t('candidateApp.questions.answerSaveError'));
-        return;
-      } else if (question.type === 'text') {
-        clearLocalStorage();
-      }
-      const data = await response.json();
-      const answerId = data.data.id;
-      updateInfoAnswerStore(answerId, question, $unsavedInfoAnswers[question.id].value);
-    } else if ($unsavedInfoAnswers[question.id].value !== undefined) {
-      // Editing existing answer
-      const savedAnswer = $infoAnswers[question.id];
-      const unsavedAnswer = $unsavedInfoAnswers[question.id];
-      const response = await updateAnswer(savedAnswer.id, unsavedAnswer.value);
+  $: canSubmit = status !== 'loading';
 
-      if (!response?.ok) {
-        showError($t('candidateApp.questions.answerSaveError'));
-        return;
-      } else if (question.type === 'text') {
-        clearLocalStorage();
-      }
-      updateInfoAnswerStore(savedAnswer.id, question, unsavedAnswer.value);
+  $: allRequiredFilled = !$requiredInfoQuestions.some((q) => isEmptyValue($userData?.candidate.answers?.[q.id]?.value));
+
+  $: if (allRequiredFilled && $unansweredOpinionQuestions.length && !$answersLocked) {
+    submitLabel = $hasUnsaved ? $t('common.saveAndContinue') : $t('common.continue');
+    submitRoute = $getRoute('CandAppQuestions');
+  } else {
+    submitRoute = $getRoute('CandAppHome');
+    submitLabel = $answersLocked || !$hasUnsaved ? $t('common.return') : $t('common.saveAndReturn');
+  }
+
+  function handleImageInputChange(value: unknown): void {
+    if (!value) {
+      userData.resetImage();
+      return;
     }
+    const image = value as ImageWithFile;
+    userData.setImage(image);
   }
 
-  let submitButtonText = '';
+  function handleQuestionInputChange({ value, question }: { value: unknown; question: AnyQuestionVariant }): void {
+    const answer = { value } as LocalizedAnswer;
+    userData.setAnswer(question.id, answer);
+  }
 
-  $: {
-    if ($unansweredOpinionQuestions?.length && !$answersLocked) submitButtonText = $t('common.saveAndContinue');
-    else if ($answersLocked) submitButtonText = $t('common.return');
-    else submitButtonText = $t('common.saveAndReturn');
+  async function handleSubmit(): Promise<void> {
+    if (!canSubmit) {
+      status = 'error';
+      logDebugError('[Candidate app question page]: handleSubmit called when canSubmit is false');
+      return;
+    }
+    status = 'loading';
+    // Request email to be sent in the backend
+    const result = await userData.save().catch((e) => {
+      logDebugError(`[Candidate app question page] Error saving userData: ${e?.message}`);
+      return undefined;
+    });
+    if (result?.type !== 'success') {
+      status = 'error';
+      return;
+    }
+    status = 'success';
+    goto(submitRoute);
   }
 
   /**
-   * This is a hacky, temporary way of ensuring that the inputs to `TextInput` are always `LocalizedString` instances even when only one locale is supported.
-   * TODO: This will be deprecated when all the input components are refactored in [PR #580](https://github.com/OpenVAA/voting-advice-application/pull/580)
-   * @param value A `LocalizedString` or a `string`
+   * Handle cancel button click.
    */
-  function ensureLocalizedString(value: LegacyAnswerPropsValue): LocalizedString | undefined {
-    return !value ? undefined : isTranslation(value) ? value : { [defaultLocale]: `${value}` };
-  }
-
-  function onChange(details: { questionId: string; value: LegacyAnswerPropsValue }) {
-    $unsavedInfoAnswers[details.questionId].value = details.value;
+  function handleCancel(): void {
+    bypassPreventNavigation = true;
+    userData.resetUnsaved();
+    goto($getRoute('CandAppHome')).then(() => (bypassPreventNavigation = false));
   }
 
   /**
-   * Format a nomination for display.
+   * Reset saved answers when leaving the page.
    */
-  function formatNomination(nomination: Nomination): string {
-    return [
-      translate(nomination.constituency?.shortName ?? nomination.constituency?.name),
-      translate(nomination.party?.shortName),
-      nomination.electionSymbol
-    ]
-      .filter((v) => v != null && v !== '')
-      .join($t('common.multipleAnswerSeparator'));
+  function handleNavigationConfirm(): void {
+    userData.resetUnsaved();
   }
+
+  ////////////////////////////////////////////////////////////////////
+  // Styling
+  ////////////////////////////////////////////////////////////////////
+
+  pageStyles.push({ drawer: { background: 'bg-base-200' } });
+
+  const subheadingClass = 'text-lg mt-lg mb-md mx-md';
 </script>
 
-{#if $parties && $infoAnswers && $infoQuestions}
-  <BasicPage title={$t('candidateApp.basicInfo.title')} mainClass="bg-base-200">
-    <Warning display={!!$answersLocked} slot="note">
-      <p>{$t('candidateApp.common.editingNotAllowed')}</p>
-      {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
-        <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
-      {/if}
-    </Warning>
+<PreventNavigation
+  active={() => !bypassPreventNavigation && $hasUnsaved && !$answersLocked}
+  onConfirm={handleNavigationConfirm} />
 
-    <PreventNavigation active={dirty && !loading && !$answersLocked} />
-    <form on:submit|preventDefault={submitForm}>
-      <p class="text-center">
-        {$t('candidateApp.basicInfo.instructions')}
-      </p>
-
-      <div class="flex flex-col items-center gap-16">
-        <FieldGroup>
-          <!-- Don't show the party field if no parties exist -->
-          {#each basicInfoFields.filter((f) => f !== 'party' || $parties.length) as field}
-            <Field id={field} label={$t(basicInfoLabels[field])}>
-              <InputContainer locked>
-                <input type="text" disabled id={field} value={basicInfoData[field]} class={inputClass} />
-              </InputContainer>
-            </Field>
-          {/each}
-          <p class={disclaimerClass} slot="footer">
-            {$t('candidateApp.basicInfo.disclaimer')}
-          </p>
-        </FieldGroup>
-        <FieldGroup>
-          <p class={headerClass} slot="header">
-            {$t('candidateApp.basicInfo.nominations.title')}
-          </p>
-          {#if nomination}
-            <Field id="nomination" label={formatNomination(nomination)}>
-              <InputContainer locked>
-                <input
-                  disabled
-                  type="text"
-                  id="nomination"
-                  value={nomination.electionSymbol ? null : $t('common.pending')}
-                  class={inputClass} />
-              </InputContainer>
-            </Field>
-          {/if}
-
-          <p class={disclaimerClass} slot="footer">
-            {$t('candidateApp.basicInfo.nominations.description')}
-          </p>
-        </FieldGroup>
-
-        <FieldGroup>
-          <PhotoInput bind:photo bind:uploadPhoto disabled={$answersLocked} onChange={() => (dirty = true)} />
-        </FieldGroup>
-
-        {#each $infoQuestions as question}
-          {@const value = $unsavedInfoAnswers[question.id].value}
-          {#if question.type === 'singleChoiceCategorical' && (typeof value === 'number' || value == null)}
-            <SingleChoiceInput
-              questionId={question.id}
-              options={question.values}
-              headerText={question.text}
-              locked={$answersLocked}
-              {value}
-              {onChange} />
-          {:else if question.type === 'multipleChoiceCategorical' && ((Array.isArray(value) && value.every((v) => typeof v === 'number')) || value == null)}
-            <MultipleChoiceInput
-              questionId={question.id}
-              options={question.values}
-              headerText={question.text}
-              locked={$answersLocked}
-              {value}
-              {onChange} />
-          {:else if question.type === 'boolean' && (typeof value === 'boolean' || value == null)}
-            <BooleanInput
-              questionId={question.id}
-              headerText={question.text}
-              locked={$answersLocked}
-              footerText={$t('xxx.basicInfo.unaffiliatedDescription')}
-              value={value ? value : false}
-              {onChange} />
-          {:else if question.type === 'text'}
-            <TextInput
-              questionId={question.id}
-              headerText={question.text}
-              locked={$answersLocked}
-              compact={question.textType === 'short'}
-              bind:clearLocalStorage
-              value={ensureLocalizedString(value)}
-              previousValue={ensureLocalizedString($infoAnswers[question.id]?.value)}
-              {onChange} />
-          {:else if question.type === 'date' && (typeof value === 'string' || value == null)}
-            <DateInput questionId={question.id} headerText={question.text} locked={$answersLocked} {value} {onChange} />
-          {:else}
-            {showError($t('candidateApp.basicInfo.error.invalidQuestion', { questionId: question.id }))}
-          {/if}
-        {/each}
-
-        <Button
-          disabled={!allFilledPrivate}
-          text={submitButtonText}
-          type="submit"
-          id="submitButton"
-          variant="main"
-          icon="next"
-          slot="primaryActions" />
-        {#if errorMessage}
-          <div class="text-error">
-            {errorMessage}
-          </div>
+<MainContent title={$t('candidateApp.basicInfo.title')}>
+  <svelte:fragment slot="note">
+    {#if $answersLocked}
+      <Warning>
+        {$t('candidateApp.common.editingNotAllowed')}
+        {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
+          {$t('candidateApp.common.isHiddenBecauseMissing')}
         {/if}
+      </Warning>
+    {:else if $profileComplete}
+      <SuccessMessage inline message={$t('candidateApp.common.fullyCompleted')} />
+    {/if}
+  </svelte:fragment>
+
+  <p class="text-center">
+    {$t('candidateApp.basicInfo.instructions')}
+  </p>
+
+  <!-- Immutable personal data -->
+
+  <section>
+    <h2 class={subheadingClass}>{$t('dynamic.candidateAppBasicInfo.immutableData.title')}</h2>
+    <p class="mx-md">{$t('dynamic.candidateAppBasicInfo.immutableData.ingress')}</p>
+    <InputGroup class="mt-lg">
+      <Input type="text" label={$t('common.firstName')} value={$userData?.candidate.firstName} onShadedBg locked />
+      <Input type="text" label={$t('common.lastName')} value={$userData?.candidate.lastName} onShadedBg locked />
+
+      <!-- Locked Info questions -->
+      {#each $infoQuestions.filter((q) => getCustomData(q).locked) as question}
+        {@const answer = $userData?.candidate.answers?.[question.id]}
+        <QuestionInput
+          {question}
+          {answer}
+          locked
+          onShadedBg
+          disableMultilingual
+          placeholder={$t('dynamic.candidateAppBasicInfo.immutableData.emptyPlaceholder')} />
+      {/each}
+    </InputGroup>
+  </section>
+
+  <!-- Immutable nominations -->
+
+  <section>
+    <h2 class={subheadingClass}>{$t('candidateApp.basicInfo.nominations.title')}</h2>
+    <p class="mx-md">{$t('candidateApp.basicInfo.nominations.description')}</p>
+
+    <div class="flex flex-col gap-lg">
+      {#each nominations as nomination}
+        {@const { election, constituency, organization, electionSymbol, unconfirmed } = parseNomination(nomination)}
+        <InputGroup title={election}>
+          {#if constituency}
+            <Input type="text" label={$t('common.constituency')} value={constituency} onShadedBg locked />
+          {/if}
+          {#if organization}
+            <Input type="text" label={$t('common.electionList')} value={organization} onShadedBg locked />
+          {/if}
+          {#if electionSymbol}
+            <Input type="text" label={$t('common.electionSymbol.candidate')} value={electionSymbol} onShadedBg locked />
+          {/if}
+          <Input
+            type="text"
+            label={$t('common.state')}
+            value={unconfirmed ? $t('common.pending') : $t('common.confirmed')}
+            onShadedBg
+            locked />
+        </InputGroup>
+      {/each}
+    </div>
+  </section>
+
+  <!-- Editable data -->
+
+  <section>
+    <h2 class={subheadingClass}>{$t('candidateApp.basicInfo.editableInfos.title')}</h2>
+
+    <div class="flex flex-col gap-md">
+      <!-- Image -->
+
+      <Input
+        type="image"
+        label={$t('common.candidatePortrait')}
+        value={$userData?.candidate.image}
+        onChange={handleImageInputChange}
+        locked={$answersLocked}
+        onShadedBg />
+
+      <!-- Editable Info questions -->
+
+      {#each $infoQuestions.filter((q) => !getCustomData(q).locked) as question}
+        {@const answer = $userData?.candidate.answers?.[question.id]}
+        <QuestionInput {question} {answer} onChange={handleQuestionInputChange} locked={$answersLocked} onShadedBg />
+      {/each}
+    </div>
+  </section>
+
+  <!-- Submit button and error messages -->
+
+  <svelte:fragment slot="primaryActions">
+    {#if !$answersLocked}
+      <div class="mx-md mb-lg mt-md transition-opacity" class:opacity-0={status === 'loading' || allRequiredFilled}>
+        <Icon name="required" class="{iconBadgeClass} text-warning" /><span class="sr-only"
+          >{$t('common.required')}</span>
+        {$t('candidateApp.basicInfo.requiredInfo')}
       </div>
-    </form>
-  </BasicPage>
-{/if}
+    {/if}
+
+    {#if status === 'error'}
+      <ErrorMessage inline message={$t('candidateApp.error.saveFailed')} class="mb-lg mt-md" />
+    {/if}
+
+    <div class="grid w-full justify-items-center">
+      {#if !$answersLocked}
+        <Button
+          text={submitLabel}
+          on:click={handleSubmit}
+          disabled={!canSubmit}
+          loading={status === 'loading'}
+          loadingText={$t('common.saving')}
+          type="submit"
+          data-testid="submitButton"
+          variant="main"
+          icon="next" />
+        <Button text={$t('common.cancel')} disabled={!$hasUnsaved} on:click={handleCancel} color="warning" />
+      {:else}
+        <Button text={$t('common.return')} href={$getRoute('CandAppHome')} variant="main" />
+      {/if}
+    </div>
+  </svelte:fragment>
+</MainContent>
+
+<style lang="postcss">
+  section {
+    @apply mt-lg self-stretch;
+  }
+</style>

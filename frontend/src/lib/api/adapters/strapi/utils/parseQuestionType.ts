@@ -1,13 +1,14 @@
 import { type AnyQuestionVariantData, type Choice, QUESTION_TYPE } from '@openvaa/data';
 import { formatId } from '$lib/api/utils/formatId';
-import { translate } from '$lib/i18n/utils';
-import type { StrapiChoice, StrapiDateType, StrapiQuestionTypeData } from '../strapiData.type';
+import { translate } from '$lib/i18n';
+import type { LocalizedChoice, QuestionSettingsDateType } from '@openvaa/app-shared';
+import type { StrapiQuestionTypeData } from '../strapiData.type';
 
 export function parseQuestionType(
   data: StrapiQuestionTypeData,
   locale: string | null
 ): Partial<AnyQuestionVariantData> {
-  const s = data.attributes.settings;
+  const s = data.settings;
   const { type } = s;
   switch (type) {
     case 'text':
@@ -38,21 +39,18 @@ export function parseQuestionType(
         subtype: 'link'
       };
     case 'singleChoiceOrdinal':
+      if (!s.choices?.length) throw new Error(`No choices provided for choice question: ${data.documentId}`);
       return {
         type,
-        choices: parseOrdinalChoices(s.values, locale),
+        choices: parseOrdinalChoices(s.choices, locale),
         customData: { display: s.display }
       };
     case 'singleChoiceCategorical':
-      return {
-        type,
-        choices: parseCategoricalChoices(s.values, locale),
-        customData: { display: s.display }
-      };
     case 'multipleChoiceCategorical':
+      if (!s.choices?.length) throw new Error(`No choices provided for choice question: ${data.documentId}`);
       return {
         type,
-        choices: parseCategoricalChoices(s.values, locale),
+        choices: parseCategoricalChoices(s.choices, locale),
         customData: { display: s.display }
       };
     default:
@@ -63,7 +61,7 @@ export function parseQuestionType(
 /**
  * The date formats passed to `new Date().toLocaleDateString()` when displaying dates.
  */
-const DATE_FORMATS: Record<StrapiDateType, Intl.DateTimeFormatOptions> = {
+const DATE_FORMATS: Record<QuestionSettingsDateType, Intl.DateTimeFormatOptions> = {
   yearMonthDay: {
     year: 'numeric',
     month: 'numeric',
@@ -85,17 +83,23 @@ const DATE_FORMATS: Record<StrapiDateType, Intl.DateTimeFormatOptions> = {
   }
 };
 
-function parseCategoricalChoices(choices: Array<StrapiChoice>, locale?: string | null): Array<Choice> {
-  return choices.map(({ key, label }) => ({
-    id: formatId(key),
-    label: translate(label, locale)
+function parseCategoricalChoices(choices: Array<LocalizedChoice>, locale?: string | null): Array<Choice> {
+  return choices.map(({ id, label, ...rest }) => ({
+    id: formatId(id),
+    label: translate(label, locale),
+    ...rest
   }));
 }
 
-function parseOrdinalChoices(choices: Array<StrapiChoice>, locale?: string | null): Array<Choice<number>> {
-  return choices.map(({ key, label }) => ({
-    id: formatId(key),
-    label: translate(label, locale),
-    normalizableValue: +key
-  }));
+function parseOrdinalChoices(choices: Array<LocalizedChoice>, locale?: string | null): Array<Choice<number>> {
+  return choices.map(({ id, label, normalizableValue, ...rest }) => {
+    if (normalizableValue == null)
+      throw new Error(`Missing 'normalizableValue' in ordinal choice ${id} • ${translate(label, locale)}`);
+    return {
+      id: formatId(id),
+      label: translate(label, locale),
+      normalizableValue,
+      ...rest
+    };
+  });
 }

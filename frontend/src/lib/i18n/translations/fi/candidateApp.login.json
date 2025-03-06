@@ -1,6 +1,7 @@
 {
-  "enterEmailAndPassword": "Syötä puolueelta saamasi sähköposti ja salasana, niin voit täyttää tietosi",
+  "enterEmailAndPassword": "Syötä sähköpostisi ja salasanasi kirjautuaksesi sisään.",
   "forgotPassword": "Unohditko salasanan?",
   "title": "Kirjaudu",
+  "unknownError": "Käyttäjätietojesi haku ei onnistunut. Ole hyvä ja ota yhteyttä tukeen, jos virhe toistuu.",
   "wrongEmailOrPassword": "Väärä sähköposti tai salasana"
 }

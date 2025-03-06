@@ -1,12 +1,13 @@
 <script lang="ts">
+  import { getCustomData } from '@openvaa/app-shared';
   import { Drawer } from '$lib/components/modal/drawer';
-  import QuestionExtendedInfo from '$lib/components/questions/QuestionExtendedInfo.svelte';
+  import { QuestionExtendedInfo } from '$lib/components/questions';
   import type { QuestionExtendedInfoDrawerProps } from './QuestionExtendedInfoDrawer.type';
 
   type $$Props = QuestionExtendedInfoDrawerProps;
 
   export let question: $$Props['question'];
-  const customData: CustomData['Question'] | null | undefined = question.customData;
+  const customData = getCustomData(question);
 </script>
 
 <Drawer title={question.text}>

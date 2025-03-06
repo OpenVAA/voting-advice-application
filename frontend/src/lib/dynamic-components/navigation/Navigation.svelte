@@ -9,6 +9,7 @@ Create navigation menus for the application in a predefined style.
 
 ### Properties
 
+- `hidden`: Set to `true` to whenever the navigation is hidden. @default false
 - Any valid attributes of a `<nav>` element.
 
 ### Events
@@ -35,7 +36,13 @@ Create navigation menus for the application in a predefined style.
 
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
+  import { concatClass } from '$lib/utils/components';
   import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
+  import type { NavigationProps } from './Navigation.type';
+
+  type $$Props = NavigationProps;
+
+  export let hidden: $$Props['hidden'] = false;
 
   // Dispatch a `keyboardFocusOut` event when the component loses focus
   // This can be used to automatically close a drawer menu this is
@@ -46,6 +53,9 @@ Create navigation menus for the application in a predefined style.
   }
 </script>
 
-<nav use:onKeyboardFocusOut={keyboardFocusOut} {...$$restProps}>
+<nav
+  use:onKeyboardFocusOut={keyboardFocusOut}
+  {...concatClass($$restProps, 'min-h-full w-4/5 max-w-sm bg-base-100')}
+  class:hidden>
   <slot />
 </nav>

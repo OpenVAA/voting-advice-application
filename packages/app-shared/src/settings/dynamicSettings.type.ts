@@ -1,3 +1,5 @@
+import { Id } from '@openvaa/core';
+import { LocalizedString } from '../data/extendedData.type';
 import type { ENTITY_TYPE, EntityType } from '@openvaa/data';
 
 /**
@@ -103,15 +105,6 @@ export type DynamicSettings = {
    */
   questions: {
     /**
-     * Settings related to the interactive info view.
-     */
-    interactiveInfo?: {
-      /**
-       * Default `false`.
-       */
-      enabled?: boolean;
-    };
-    /**
      * Settings related to the optional category intro pages.
      */
     categoryIntros?: {
@@ -123,6 +116,15 @@ export type DynamicSettings = {
        * Whether to show category intro pages before the first question of each category.
        */
       show: boolean;
+    };
+    /**
+     * Settings related to the interactive info view.
+     */
+    interactiveInfo?: {
+      /**
+       * Default `false`.
+       */
+      enabled?: boolean;
     };
     /**
      * Settings related to the optional questions intro page, shown before going to questions.
@@ -194,15 +196,56 @@ export type DynamicSettings = {
     showSurveyPopup?: number;
   };
   /**
-   * Settings related to election selection in VAAs with multiple candidates. These have no effect if there is just one election.
+   * Settings related to election and constituency selection in VAAs with multiple elections. These have no effect if there is just one election.
    */
-  elections?: {
+  elections: {
     /**
      * If `true` all elections are selected by default.
      */
     disallowSelection?: boolean;
+    /**
+     * Whether to show the election tags along the question text. Only applicable when there are multiple elections.
+     */
+    showElectionTags: boolean;
+    /**
+     * If `true` and there are multiple elections, the constituency selection page with this `ConstituencyGroup` as the only option will be shown first and the possible election selection only afterwards. Only those elections that are applicable to the selected constituency or its ancestors are shown. Election selection will be bypassed the same way as normally.
+     */
+    startFromConstituencyGroup?: Id;
   };
-  underMaintenance?: boolean;
+  /**
+   * Settings related to access to the applications.
+   */
+  access: {
+    /**
+     * If `true`, the Candidate App can be accessed.
+     */
+    candidateApp: boolean;
+    /**
+     * If `true`, the Voter App can be accessed.
+     */
+    voterApp: boolean;
+    /**
+     * If `true`, an under maintenance error page will be shown.
+     */
+    underMaintenance?: boolean;
+    /**
+     * If `true`, candidates can no longer edit their answers.
+     */
+    answersLocked?: boolean;
+  };
+  /**
+   * Settings related to important notifications shown to users.
+   */
+  notifications: {
+    /**
+     * The notification shown to users of the Candidate App.
+     */
+    candidateApp?: NotificationData | null;
+    /**
+     * The notification shown to users of the Voter App.
+     */
+    voterApp?: NotificationData | null;
+  };
   /**
    * Default prompt and answer format for generating llm-summaries from question descriptions. The llm-generated answers needs to be in a JSON-format and needs to be specified in the answerFormat
    */
@@ -239,3 +282,26 @@ export type EntityDetailsContent = 'info' | 'opinions';
  * The possible content tabs to show for `Organization`s.
  */
 export type OrganizationDetailsContent = 'candidates';
+
+/**
+ * The data for a notification to be shown to users.
+ */
+export type NotificationData = {
+  /**
+   * If `true`, the notification will be shown the next time the user loads the app.
+   */
+  show?: boolean;
+  /**
+   * The title of the notification.
+   */
+  title: LocalizedString;
+  /**
+   * The content of the notification.
+   */
+  content: LocalizedString;
+  /**
+   * The `Icon.name` to display in the notification. @default important
+   * NB. The proper type is not accessible to `app-shared`.
+   */
+  icon?: string;
+};

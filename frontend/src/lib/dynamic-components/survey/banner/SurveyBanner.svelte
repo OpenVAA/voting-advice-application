@@ -42,7 +42,7 @@ Accesses `AppContext` to get `appSettings` and `userPreferences`.
     )}>
     <SurveyButton bind:clicked />
     {#if variant !== 'compact'}
-      <div class="text-center text-sm text-secondary">{$t('dynamic.survey.info')}</div>
+      <div class="small-info text-center">{$t('dynamic.survey.info')}</div>
     {/if}
   </div>
 {/if}

@@ -6,6 +6,7 @@ import {
   type OrganizationData
 } from '@openvaa/data';
 import { parseCandidate, parseOrganization, parseSingleRelationId } from '../utils';
+import type { CustomData } from '@openvaa/app-shared';
 import type { Id } from '@openvaa/core';
 import type { StrapiNominationData } from '../strapiData.type';
 
@@ -26,28 +27,43 @@ export function parseNominations(
   const candidates = new Map<Id, CandidateData>();
   const organizations = new Map<Id, OrganizationData>();
 
-  for (const { id, attributes } of data) {
-    const { electionSymbol, candidate, constituency, election, party } = attributes;
-    const electionRound = attributes.electionRound ?? 1;
+  for (const {
+    documentId,
+    electionSymbol,
+    candidate,
+    constituency,
+    election,
+    electionRound: _electionRound,
+    party,
+    unconfirmed
+  } of data) {
+    // Ensure that the electionRound is valid (and not zero)
+    const electionRound = _electionRound || 1;
+
+    // Add unconfirmed status to the custom data object if provided
+    const customData: CustomData['Nomination'] | undefined =
+      unconfirmed != null ? { unconfirmed: !!unconfirmed } : undefined;
+
     const [electionId, constituencyId, candidateId, partyId] = [election, constituency, candidate, party].map((d) =>
       parseSingleRelationId(d)
     );
 
-    if (!electionId || !constituencyId || (!candidateId && !partyId)) throw new Error(`Error parsing Nomination ${id}`);
+    if (!electionId || !constituencyId || (!candidateId && !partyId))
+      throw new Error(`Error parsing Nomination ${documentId}`);
 
     // 1. Parse data for any related entities
 
     if (candidateId && !candidates.has(candidateId)) {
-      candidates.set(candidateId, parseCandidate(candidate!.data, locale));
+      candidates.set(candidateId, parseCandidate(candidate!, locale));
       // Also include possible party the candidate belongs to
-      const candParty = candidate!.data.attributes.party;
-      if (candParty && !organizations.has(candParty.data.id)) {
-        organizations.set(candParty.data.id, parseOrganization(candParty.data, locale));
+      const candParty = candidate!.party;
+      if (candParty && !organizations.has(candParty.documentId)) {
+        organizations.set(candParty.documentId, parseOrganization(candParty, locale));
       }
     }
 
     if (partyId && !organizations.has(partyId)) {
-      organizations.set(partyId, parseOrganization(party!.data, locale));
+      organizations.set(partyId, parseOrganization(party!, locale));
     }
 
     // 2. Parse data for the `Nomination`
@@ -60,14 +76,15 @@ export function parseNominations(
 
     if (!partyId) {
       // This is a candidate nomination without a nominating party
-      branch.candidates.add({ electionSymbol, entityId: candidateId! });
+      branch.candidates.add({ electionSymbol, entityId: candidateId!, customData });
       continue;
     }
 
     // This is either a new organization nomination or an added candidate to an existing nomination
     branch.organizations[partyId] ??= {
       entityId: partyId,
-      candidates: new Set()
+      candidates: new Set(),
+      customData
     };
     const orgNom = branch.organizations[partyId];
     if (candidateId) {
@@ -84,6 +101,7 @@ export function parseNominations(
     entities: [...candidates.values(), ...organizations.values()]
   };
 }
+
 /**
  * Parse a `PartialNominationTree` into `AnyNominationVariantPublicData` objects.
  */
@@ -98,24 +116,24 @@ function parsePartialTree(tree: PartialNominationTree): Array<AnyNominationVaria
           electionRound: +electionRound,
           constituencyId
         };
-        nominations.push(
-          ...Object.values(organizations).map(({ candidates, ...rest }) => ({
-            ...rest,
-            ...base,
-            entityType: ENTITY_TYPE.Organization,
-            candidates: [...candidates.values()]
-          })),
-          ...candidates.values().map((c) => ({
-            ...c,
-            ...base,
-            entityType: ENTITY_TYPE.Candidate
-          }))
-        );
+        const orgNominations = Object.values(organizations).map(({ candidates: orgCandidates, ...rest }) => ({
+          ...rest,
+          ...base,
+          entityType: ENTITY_TYPE.Organization,
+          candidates: [...orgCandidates.values()]
+        }));
+        const candNominations = [...candidates.values()].map((c) => ({
+          ...c,
+          ...base,
+          entityType: ENTITY_TYPE.Candidate
+        }));
+        nominations.push(...orgNominations, ...candNominations);
       }
     }
   }
   return nominations;
 }
+
 type PartialNominationTree = {
   [electionId: string]: {
     [electionRound: number]: {
@@ -128,10 +146,13 @@ type PartialNominationTree = {
     };
   };
 };
+
 type PartialNomination = {
   electionSymbol?: string | null;
   entityId: Id;
+  customData?: CustomData['Nomination'] | null;
 };
+
 type PartialOrganizationNomination = PartialNomination & {
   candidates: Set<PartialNomination>;
 };

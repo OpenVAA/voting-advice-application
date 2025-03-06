@@ -1,10 +1,13 @@
+const CANDIDATE = '/[[lang=locale]]/candidate';
+const CANDIDATE_PROT = `${CANDIDATE}/(protected)`;
 const VOTER = '/[[lang=locale]]/(voters)';
-const LOCATED = `${VOTER}/(located)`;
+const VOTER_LOCATED = `${VOTER}/(located)`;
 
 /**
  * Available routes and their ids.
  */
 export const ROUTE = {
+  // Voter App
   About: `${VOTER}/about`,
   Elections: `${VOTER}/elections`,
   Constituencies: `${VOTER}/constituencies`,
@@ -14,30 +17,36 @@ export const ROUTE = {
   Info: `${VOTER}/info`,
   Intro: `${VOTER}/intro`,
   Privacy: `${VOTER}/privacy`,
-  Question: `${LOCATED}/questions/[questionId]`,
-  QuestionCategory: `${LOCATED}/questions/category/[categoryId]`,
-  Questions: `${LOCATED}/questions`,
-  ResultCandidate: `${LOCATED}/results/[entityType]/[entityId]`,
-  ResultEntity: `${LOCATED}/results/[entityType]/[entityId]`,
-  ResultParty: `${LOCATED}/results/[entityType]/[entityId]`,
-  Results: `${LOCATED}/results`,
-  Statistics: `${LOCATED}/results/statistics`
+  Question: `${VOTER_LOCATED}/questions/[questionId]`,
+  QuestionCategory: `${VOTER_LOCATED}/questions/category/[categoryId]`,
+  Questions: `${VOTER_LOCATED}/questions`,
+  ResultCandidate: `${VOTER_LOCATED}/results/[entityType]/[entityId]`,
+  ResultEntity: `${VOTER_LOCATED}/results/[entityType]/[entityId]`,
+  ResultParty: `${VOTER_LOCATED}/results/[entityType]/[entityId]`,
+  Results: `${VOTER_LOCATED}/results`,
+  Statistics: `${VOTER_LOCATED}/results/statistics`,
 
-  // CandAppFAQ: 'candidate/faq',
-  // CandAppFeedback: 'candidate/feedback',
-  // CandAppForgotPassword: 'candidate/forgot-password',
-  // CandAppHelp: 'candidate/help',
-  // CandAppHome: 'candidate',
-  // CandAppInfo: 'candidate/info',
-  // CandAppPreview: 'candidate/preview',
-  // CandAppProfile: 'candidate/profile',
-  // CandAppQuestions: 'candidate/questions',
-  // CandAppQuestionEdit: 'candidate/questions/edit',
-  // /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/plugins/candidate-admin/server/services/email.js */
-  // CandAppRegister: 'candidate/register',
-  // /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/extensions/users-permissions/strapi-server.js */
-  // CandAppResetPassword: 'candidate/password-reset',
-  // CandAppSettings: 'candidate/settings',
+  // Candidate App
+  CandAppForgotPassword: `${CANDIDATE}/forgot-password`,
+  CandAppHelp: `${CANDIDATE}/help`,
+  CandAppHome: CANDIDATE,
+  CandAppPreview: `${CANDIDATE_PROT}/preview`,
+  CandAppPrivacy: `${CANDIDATE}/privacy`,
+  CandAppProfile: `${CANDIDATE_PROT}/profile`,
+  CandAppQuestion: `${CANDIDATE_PROT}/questions/[questionId]`,
+  CandAppQuestions: `${CANDIDATE_PROT}/questions`,
+  CandAppPreregister: `${CANDIDATE}/preregister`,
+  CandAppPreregisterElection: `${CANDIDATE}/preregister/elections`,
+  CandAppPreregisterConstituency: `${CANDIDATE}/preregister/constituencies`,
+  CandAppPreregisterEmail: `${CANDIDATE}/preregister/email`,
+  CandAppPreregisterStatus: `${CANDIDATE}/preregister/status`,
+  CandAppLogin: `${CANDIDATE}/login`,
+  /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/plugins/openvaa-admin-tools/server/services/email.js */
+  CandAppRegister: `${CANDIDATE}/register`,
+  CandAppSetPassword: `${CANDIDATE}/register/password`,
+  /** NB! If this route is changed, make sure to update the Strapi config at backend/vaa-strapi/src/extensions/users-permissions/strapi-server.js */
+  CandAppResetPassword: `${CANDIDATE}/password-reset`,
+  CandAppSettings: `${CANDIDATE_PROT}/settings`
 } as const;
 
 /**

@@ -84,11 +84,39 @@
     @apply mt-12 first:mt-0;
   }
   .circled {
-    @apply absolute left-0 -mt-2 grid h-24 w-24 place-items-center rounded-full border-md border-[var(--line-color)] text-md;
+    @apply absolute left-0 -mt-2 grid h-24 w-24 place-items-center rounded-full bg-base-300 text-md;
+  }
+  .circled-on-shaded {
+    @apply bg-base-100;
   }
   .list-circled li::before {
     content: counter(steps);
     @apply circled;
+  }
+  .list-circled-on-shaded li::before {
+    @apply circled-on-shaded;
+  }
+
+  /**
+   * An element that should not yet be fully visible, akin to disabled inputs.
+   */
+  .faded {
+    @apply opacity-30;
+  }
+
+  /**
+   * Use for longer text blocks
+   */
+  .prose h2 {
+    @apply mb-md mt-xl;
+  }
+  .prose h3,
+  .prose h4 {
+    @apply mb-md mt-[1.75rem];
+  }
+  .prose h5,
+  .prose h6 {
+    @apply mb-md mt-lg;
   }
 
   /**
@@ -99,11 +127,25 @@
   }
 
   /**
+   * Small info used for, e.g., info displayed under inputs or buttons.
+   */
+  .small-info {
+    @apply text-sm text-secondary;
+  }
+
+  /**
    * Small pilled text
    */
   .tag {
     /* last: is valid prefix */
-    @apply small-label me-md inline-block rounded-[1rem] bg-base-300 px-md py-sm last:me-0;
+    @apply small-label inline-block rounded-[1rem] bg-base-300 px-md py-sm;
+  }
+
+  /**
+   * Make the first letter uppercase. Note that this makes the element inline-block.
+   */
+  .uc-first {
+    @apply inline-block first-letter:uppercase;
   }
 
   /* Override DaisyUI components here */
@@ -114,6 +156,17 @@
   .textarea,
   .select {
     @apply text-md;
+  }
+
+  /**
+   * To prevent iOS Safari auto-zoom
+   */
+  @supports (-webkit-touch-callout: none) {
+    .input,
+    .textarea,
+    .select {
+      @apply text-[max(16px,_0.9375rem)];
+    }
   }
 
   /* Style buttons */

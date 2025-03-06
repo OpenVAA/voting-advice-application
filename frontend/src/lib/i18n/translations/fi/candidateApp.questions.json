@@ -1,19 +1,21 @@
 {
-  "answerButton": "Vastaa tähän kysymykseen",
+  "answerQuestion": "Vastaa tähän kysymykseen",
+  "answerQuestionFirst": "Vastaa ensin kysymykseen",
   "answerSaveError": "Vastauksen tallentaminen epäonnistui",
   "editAnswer": "Muokkaa vastaustasi",
-  "enterMissingAnswer": "Vastaa puuttuviiin kysymyksiin",
+  "enterMissingAnswers": "Vastaa puuttuviiin kysymyksiin",
   "error": {
     "answerNotFound": "Vastausta kysymykselle {questionId} ei löytynyt",
     "invalidAnswer": "Tallennettu vastaus kysymykseen {questionId} on virheellinen",
     "questionNotFound": "Kysymystä {questionId} ei löytynyt"
   },
-  "ingress": "Näet kaikki mielipiteesi alla ja voit muokata niitä napauttamalla niitä.",
-  "intro": {
-    "ingress": "Seuraavaksi sovellus kysyy mielipidettäsi {numQuestions} väittämään poliittisista kysymyksistä ja arvoista. Kun äänestäjät käyttävät vaalikonetta, he vastaavat myös samoihin väittämiin ja näkevät, kuinka hyvin heidän mielipiteensä vastaavat sinun mielipiteitäsi."
+  "ingress": {
+    "default": "Alla näet kaikki mielipiteesi ja voit halutessasi muokata niitä.",
+    "empty": "Seuraavaksi sovellus kysyy mielipidettäsi {numQuestions} väittämään poliittisista kysymyksistä ja arvoista. Kun äänestäjät käyttävät vaalikonetta, he vastaavat myös samoihin väittämiin ja näkevät, kuinka hyvin heidän mielipiteensä vastaavat sinun mielipiteitäsi.",
+    "partial": "Alla näet kaikki mielipiteesi. Voit halutessasi muokata niitä ja vastata niihin, joihin et vielä ole vastannut."
   },
   "notAnswered": "Et vastannut tähän kysymykseen",
-  "openAnswerPrompt": "Perustele vastauksesi",
+  "openAnswerPrompt": "Perustelut",
   "start": "Kerro mielipiteesi",
   "tip": "Näet kaikki vastauksesi tällä sivulla, kun palaat siihen myöhemmin.",
   "title": "Mielipiteesi",

@@ -1,3 +1,4 @@
+import type { QuestionInfoSection } from '@openvaa/app-shared';
 import type { ExpanderProps } from '$lib/components/expander';
 
 export type QuestionInfoProps = Partial<ExpanderProps> & {

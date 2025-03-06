@@ -15,6 +15,7 @@ Display the intro to a question category and possibly a button with which to ski
 -->
 
 <script lang="ts">
+  import { type CustomData, getCustomData } from '@openvaa/app-shared';
   import { error } from '@sveltejs/kit';
   import { onDestroy, onMount } from 'svelte';
   import { goto } from '$app/navigation';
@@ -27,9 +28,10 @@ Display the intro to a question category and possibly a button with which to ski
   import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { parseParams } from '$lib/utils/route';
-  import Layout from '../../../../../Layout.svelte';
+  import MainContent from '../../../../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
   import type { QuestionCategory } from '@openvaa/data';
+  import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -42,6 +44,7 @@ Display the intro to a question category and possibly a button with which to ski
   // Get the current category and first question id
   ////////////////////////////////////////////////////////////////////
 
+  let block: { block: QuestionBlock; index: number } | undefined;
   let category: QuestionCategory;
   let customData: CustomData['QuestionCategory'];
   /** Used for the possible skip button */
@@ -51,10 +54,10 @@ Display the intro to a question category and possibly a button with which to ski
     const categoryId = parseParams($page).categoryId;
     if (!categoryId) error(500, 'No categoryId provided.');
     category = $dataRoot.getQuestionCategory(categoryId);
-    const block = $selectedQuestionBlocks.getByCategory(category);
+    block = $selectedQuestionBlocks.getByCategory(category);
     if (!block?.block[0]) error(404, `No applicable questions found for category ${categoryId}.`);
     questionId = block.block[0].id;
-    customData = category.customData ?? {};
+    customData = getCustomData(category);
     if (block.index < $selectedQuestionBlocks.blocks.length - 1) {
       nextCategoryId = $selectedQuestionBlocks.blocks[block.index + 1][0]?.category.id;
       if (!nextCategoryId) error(404, `Next category not found after category ${categoryId}.`);
@@ -82,7 +85,7 @@ Display the intro to a question category and possibly a button with which to ski
 </script>
 
 {#if category}
-  <Layout title={category.name}>
+  <MainContent title={category.name}>
     <figure role="presentation" slot="hero">
       {#if customData?.emoji}
         <HeroEmoji emoji={customData?.emoji} />
@@ -91,10 +94,10 @@ Display the intro to a question category and possibly a button with which to ski
 
     <svelte:fragment slot="heading">
       <HeadingGroup class="relative">
-        <h1><CategoryTag {category} /></h1>
+        <h1><CategoryTag {category} class="text-xl" /></h1>
         <PreHeading class="text-secondary">
           {$t('questions.category.numQuestions', {
-            numQuestions: category.questions?.length ?? -1
+            numQuestions: block?.block.length ?? -1
           })}
         </PreHeading>
       </HeadingGroup>
@@ -117,7 +120,7 @@ Display the intro to a question category and possibly a button with which to ski
           class="justify-center" />
       {/if}
     </svelte:fragment>
-  </Layout>
+  </MainContent>
 {:else}
   <Loading />
 {/if}

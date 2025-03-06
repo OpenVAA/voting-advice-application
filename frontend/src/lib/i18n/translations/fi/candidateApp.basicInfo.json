@@ -1,13 +1,16 @@
 {
-  "addAnother": "Lisää uusi",
-  "disclaimer": "Nimesi ja jotkin muut tiedot on täytetty valmiiksi, eikä niitä voi muuttaa. Jos niissä on virheitä, ota yhteyttä puolueeseesi.",
+  "editableInfos": {
+    "description": "Nämä tiedot näkyvät profiilisivullasi.",
+    "title": "Profiilisi"
+  },
   "error": {
     "invalidQuestion": "Kysymyksen tai vastauksen tyyppi oli virheellinen kysymykselle {questionId}."
   },
-  "instructions": "Täytä ensin perustietosi ja lataa valokuva. Tämän jälkeen sinulta kysytään poliittisia mielipiteitäsi.",
+  "instructions": "Täytä ensin perustietosi ja lataa halutessasi valokuva. Tämän jälkeen sinulta kysytään poliittisia mielipiteitäsi.",
   "nominations": {
-    "description": "Nämä ovat vaalipiirit, joissa olet ehdolla, sekä vaaliluettelo ja mahdollinen vaalitunnus. Jos ehdokkuus on merkitty merkinnällä ”Vireillä”, vaalitunnustasi ei välttämättä ole vielä määritelty.",
+    "description": "Nämä ovat vaalipiirit, joissa olet ehdolla. Jos ehdokaslista tai -numero puuttuvat, ne täytetään automaattisesti, kun vaaliluettelot on vahvistettu.",
     "title": "Ehdokkuudet"
   },
+  "requiredInfo": "Sinun pitää täyttää tällä ikonilla merkityt kentät ennen kuin voit vastata muihin kysymyksiin. Voit kuitenkin tallentaa tähänastiset vastauksesi ja jatkaa täyttämistä myöhemmin.",
   "title": "Perustiedot"
 }

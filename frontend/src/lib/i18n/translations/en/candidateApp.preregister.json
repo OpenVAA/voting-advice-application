@@ -1,0 +1,72 @@
+{
+  "constituencySelect": {
+    "content": "<p>Select the constituency you will be running in.</p>",
+    "title": "What is your constituency?"
+  },
+  "electionSelect": {
+    "content": "<p>Select the elections are you going to stand in.</p>",
+    "title": "Which elections will you run in?"
+  },
+  "email": {
+    "html": "<p>Hi {firstName},</p><p>Thank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p><p>You will be asked to select a password after that.</p>",
+    "subject": "Please confirm your email address",
+    "text": "Hi {firstName},\nThank you for registering as a candidate! To complete your registration, please confirm your email address by following the link below:\n{registrationUrl}\nYou will be asked to select a password after that."
+  },
+  "emailVerification": {
+    "content": "<p>In the future, your email address will act as your username. Please enter it below twice to confirm it's correct.</p><p>You will also need to accept the terms of use in order to continue.</p>",
+    "termsCheckbox": "I consent to the use and storage of my data according to the terms of use.",
+    "title": "Enter email address"
+  },
+  "identification": {
+    "identifyYourselfButton": "Identify yourself",
+    "identifyYourselHelpText": "You’ll be redirected to the Bank ID service. Once the authentication is complete, you will be redirected back to this page.",
+    "start": {
+      "content": "<p>To register as a candidate, you must first verify your identity using a Bank ID. When the official candidate list is confirmed, we will publish your profile if we can find you on that list. We will use your full name and birthdate to verify this.</p>",
+      "heroEmoji": "🖋️",
+      "step": {
+        "constituencySelect": "Select your constituency",
+        "electionSelect": "Select the elections",
+        "emailVerification": "Verify your email address",
+        "identification": "Identify yourself using a Bank ID",
+        "passwordSelect": "Select a password"
+      },
+      "title": "Register as a candidate"
+    },
+    "success": {
+      "content": "<p>Authentication was successful. Press the button below to continue registration.</p>",
+      "heroEmoji": "👍",
+      "title": "Welcome to the Election Compass, {firstName} {lastName}!"
+    }
+  },
+  "isPreregisteredNotification": {
+    "content": "Please login with your email and password instead or check your email for the confirmation link.",
+    "title": "It looks like you are already registered"
+  },
+  "status": {
+    "candidateExistsError": {
+      "content": "<p>It looks like you are already registered. Please check your email to confirm your registration. Once the registration is confirmed, you can login with your email and password.</p><p>Contact support if you believe there is an error.</p>",
+      "title": "You are already registered as a candidate"
+    },
+    "loggedInError": {
+      "content": "<p>You're already registered as a candidate. Head over to your account to continue.</p>",
+      "title": "You are already logged in"
+    },
+    "strongIdentificationError": {
+      "content": "<p>Click the button below to try again or contact support if the problem persists.</p>",
+      "title": "There was an issue with Bank ID authentication"
+    },
+    "success": {
+      "content": "<p>We have sent a message to your email. Click the link in the message to confirm your email address and complete the registration.</p><p>Please note that it may take some time for the email to arrive. Also, check your spam folder if you do not receive the message.</p><p>You can now close this window.</p>",
+      "heroEmoji": "✉️",
+      "title": "Confirm your email address"
+    },
+    "tokenExpiredError": {
+      "content": "<p>Please identify yourself again to complete the registration process.</p>",
+      "title": "Your session has expired"
+    },
+    "unknownError": {
+      "content": "<p>Click the button below to try again or contact support if the problem persists.</p>",
+      "title": "Something went wrong"
+    }
+  }
+}

@@ -29,7 +29,7 @@ Used to show a label-content pair in a Candidate's basic information.
 
 <div class="grid justify-start gap-md {vertical ? 'vertical-grid' : 'horizontal-grid'}">
   <!-- pt-[0.3rem] matches the baselines of the small label and the content text -->
-  <div class="test-label small-label pt-[0.3rem] text-left align-top {vertical ? 'w-max' : 'min-w-[10rem]'}">
+  <div class="test-label small-label pt-[0.3rem] text-left align-top {vertical ? 'w-auto' : 'min-w-[10rem]'}">
     {label}
   </div>
   <div class="overflow-hidden align-top">

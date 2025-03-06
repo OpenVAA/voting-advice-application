@@ -38,9 +38,9 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
 <script lang="ts">
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
-  import Button from '$lib/components/button/Button.svelte';
-  import { t } from '$lib/i18n';
-  import ModalContainer from '../ModalContainer.svelte';
+  import { Button } from '$lib/components/button';
+  import { getComponentContext } from '$lib/contexts/component';
+  import { ModalContainer } from '..';
   import type { DrawerProps } from './Drawer.type';
 
   type $$Props = DrawerProps;
@@ -49,6 +49,8 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
   export let isOpen: $$Props['isOpen'] = false;
   export let closeModal: $$Props['closeModal'] = undefined;
   export let openModal: $$Props['openModal'] = undefined;
+
+  const { t } = getComponentContext();
 
   onMount(() => {
     openModal?.();
@@ -65,7 +67,7 @@ See the [`<ModalContainer>` component](../ModalContainer.svelte) documentation f
   on:open
   on:close>
   <div
-    class="max-w-80 relative col-span-1 col-start-1 row-span-1 row-start-1 h-[calc(100vh-2rem)] rounded-t-[2rem] bg-base-100 p-24 pt-40 sm:translate-y-[1rem]"
+    class="relative col-span-1 col-start-1 row-span-1 row-start-1 h-[calc(100vh-3rem)] max-w-2xl rounded-t-lg bg-base-100 p-24 pt-40 sm:translate-y-[1rem]"
     in:fly={{ y: '100%', duration: 200 }}
     out:fly={{ y: '100%', duration: 200 }}>
     <h2 class="mb-lg text-center">{title}</h2>

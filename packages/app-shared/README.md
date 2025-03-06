@@ -3,7 +3,7 @@
 A module shared between `@openvaa/frontend` and `@openvaa/strapi`, which contains:
 
 - The [application settings](./src/settings/)
-- Utilities for [password valiation](./src/utils/passwordValidation.ts)
+- Utilities for [password validation](./src/utils/passwordValidation.ts)
 
 ## Development
 

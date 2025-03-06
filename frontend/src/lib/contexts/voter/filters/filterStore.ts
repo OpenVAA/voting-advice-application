@@ -1,3 +1,4 @@
+import { getCustomData } from '@openvaa/app-shared';
 import { ENTITY_TYPE } from '@openvaa/data';
 import { Filter, FilterGroup } from '@openvaa/filters';
 import { derived, type Readable } from 'svelte/store';
@@ -51,9 +52,7 @@ export function filterStore({
             }
 
             // Build info question filters
-            const filterableQuestions = infoQuestions.filter(
-              (q) => (q.customData as CustomData['Question']).filterable
-            );
+            const filterableQuestions = infoQuestions.filter((q) => getCustomData(q).filterable);
             filters.push(
               ...filterableQuestions.map((q) => buildQuestionFilter({ question: q, locale })).filter((f) => f != null)
             );

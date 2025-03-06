@@ -1,12 +1,13 @@
 {
   "contactSupport": "Kontakta support",
-  "continueFilling": "SV Continue Filling",
-  "editingNotAllowed": "SV Editing of your answers is no longer possible, but you can still view them. Please contact the administrator if there are some errors in the data.",
+  "continueFilling": "Fortsätt fylla i",
+  "editingNotAllowed": "Redigering av dina svar är inte längre möjlig, men du kan fortfarande se dem. Kontakta support om det finns fel i uppgifterna.",
   "email": "E-post",
-  "emailPlaceholder": "example@email.com",
-  "greeting": "SV Hello, {userName}!",
-  "home": "SV Start",
-  "isHiddenBecauseMissing": "SV Your profile won’t be shown because you didn’t answer all of the questions.",
-  "willBeHiddenIfMissing": "SV Your profile won’t be shown in the application before you have answered all of the questions.",
-  "voterApp": "Valkompass för väljare"
+  "emailPlaceholder": "E-post",
+  "fullyCompleted": "Grattis! Du har fyllt i all information som behövs för valkompassen.",
+  "greeting": "Hej, {username}!",
+  "home": "Starta",
+  "isHiddenBecauseMissing": "Din profil kommer inte att visas eftersom du inte besvarade alla frågor.",
+  "voterApp": "Valkompass för väljare",
+  "willBeHiddenIfMissing": "Din profil kommer inte att visas i applikationen förrän du har besvarat alla frågor."
 }

@@ -16,7 +16,9 @@ export const keys = [
   'candidateApp.login',
   'candidateApp.logoutModal',
   'candidateApp.notSupported',
+  'candidateApp.preregister',
   'candidateApp.preview',
+  'candidateApp.privacy',
   'candidateApp.questions',
   'candidateApp.register',
   'candidateApp.resetPassword',
@@ -40,7 +42,6 @@ export const keys = [
   'questions',
   'results',
   'statistics',
-  'xxx',
   'yourList'
 ];
 export const locales = { en: 'English', fi: 'Suomi', sv: 'Svenska' };

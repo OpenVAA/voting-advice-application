@@ -1,4 +1,4 @@
-import { staticSettings } from '@openvaa/app-shared';
+import { isLocalizedObject, staticSettings } from '@openvaa/app-shared';
 import { error } from '@sveltejs/kit';
 import I18n from '@sveltekit-i18n/base';
 import parser, { type Config } from '@sveltekit-i18n/parser-icu';
@@ -80,8 +80,9 @@ const i18n = new I18n(config);
 
 /**
  * A store providing the translate function wrapped in a try block because `intl-messageformat` throws an error if it encounters a malformed message string.
- * @param key The key to translate.
- * @param payload A record of values to replace in the message.
+ *
+ * @param key - The key to translate.
+ * @param payload - A record of values to replace in the message.
  * @returns The translated and interpolated string or `key` if there was an error.
  */
 export const t = {
@@ -116,9 +117,9 @@ export { defaultLocale };
  *  "date": "Today is: {value, date, ::yyyyMd}"
  *  }
  *
- * @param message The ICU message string
- * @param payload A record of values to replace in the message
- * @param useLocale An optional locale to use instead of the current locale
+ * @param message - The ICU message string
+ * @param payload - A record of values to replace in the message
+ * @param useLocale - An optional locale to use instead of the current locale
  * @returns The string with the values interpolated
  */
 export function parse(message: string, payload: Record<string, unknown> = {}, useLocale?: string) {
@@ -133,6 +134,45 @@ export function parse(message: string, payload: Record<string, unknown> = {}, us
     logDebugError(e);
   }
   return parsed == null ? message : parsed;
+}
+
+/**
+ * Return the correct string for the `locale` using soft-matching from the supplied `LocalizedString` object.
+ *
+ * @param strings - An object with locale-translation key-value pairs or a raw string
+ * @param locale - The target locale
+ * @returns The translalated string or ''
+ */
+export function translate(strings: LocalizedString | string | undefined | null, locale?: string | null): string {
+  return typeof strings === 'string' ? strings : ((translateObject(strings, locale) as string) ?? '');
+}
+
+/**
+ * Return the correct property for the `locale` using soft-matching from the supplied localized object.
+ *
+ * NB. Empty strings and nullish values are replaced by the fallback locale.
+ *
+ * @param strings - An object with locale-content key-value pairs
+ * @param targetLocale - The target locale
+ * @returns The localized content or `undefined`
+ */
+export function translateObject<
+  TObject extends Record<string, unknown> | null | undefined,
+  TValue = TObject extends Record<string, infer V> ? V : never
+>(obj: TObject, targetLocale?: string | null): TValue | undefined {
+  if (!isLocalizedObject(obj)) return undefined;
+  targetLocale ??= locale.get();
+  let key: string | undefined;
+  // Treat keys with empty strings as undefined
+  const nonEmptyKeys = Object.entries(obj)
+    .filter(([, v]) => v != null && (typeof v !== 'string' || v !== ''))
+    .map(([k]) => k);
+  if (!nonEmptyKeys.length) return undefined;
+  // Try to get an exact or soft match for target locale
+  key = nonEmptyKeys.includes(targetLocale) ? targetLocale : matchLocale(targetLocale, nonEmptyKeys);
+  // If not, use the default locale if available or just the first non-empty key
+  key ??= nonEmptyKeys.includes(defaultLocale) ? defaultLocale : nonEmptyKeys[0];
+  return (obj[key] ?? undefined) as TValue | undefined;
 }
 
 /////////////////////////////////////////////////////

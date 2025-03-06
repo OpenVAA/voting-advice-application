@@ -1,5 +1,6 @@
 {
-  "ingress": "SV Here you can find answers to the most common questions with using this application.",
-  "noFAQ": "SV There no answers yet. You can contact support if you have a question.",
-  "title": "SV Help"
+  "ingress": "Nedan finns svar på de vanligaste frågorna om kandidaternas användning av valkompassen. Om du inte hittar svar på din fråga nedan kan du kontakta supporten.",
+  "noFAQ": "Det finns inga svar ännu.",
+  "supportEmailSubject": "Supportförfrågan",
+  "title": "Kandidatstöd"
 }

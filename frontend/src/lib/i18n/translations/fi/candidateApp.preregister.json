@@ -1,0 +1,72 @@
+{
+  "constituencySelect": {
+    "content": "<p>Valitse vaalipiiri, jossa asetut ehdolle.</p>",
+    "title": "Mikä on vaalipiirisi?"
+  },
+  "electionSelect": {
+    "content": "<p>Valitse vaalit, joissa aiot asettua ehdolle.</p>",
+    "title": "Missä vaaleissa asetut ehdolle?"
+  },
+  "email": {
+    "html": "<p>Hei {firstName},</p><p>Kiitos rekisteröitymisestäsi ehdokkaaksi! Viimeistelläksesi rekisteröitymisen, vahvista sähköpostiosoitteesi seuraavasta linkistä:</p><p><a href=\"{registrationUrl}\">{registrationUrl}</a></p><p>Tämän jälkeen sinua pyydetään valitsemaan salasana.</p>",
+    "subject": "Vahvista sähköpostiosoitteesi",
+    "text": "Hei {firstName},\nKiitos rekisteröitymisestäsi ehdokkaaksi! Viimeistelläksesi rekisteröitymisen, vahvista sähköpostiosoitteesi seuraavasta linkistä:\n{registrationUrl}\nTämän jälkeen sinua pyydetään valitsemaan salasana."
+  },
+  "emailVerification": {
+    "content": "<p>Jatkossa sähköpostiosoitteesi toimii käyttäjätunnuksenasi. Kirjoita se alle kahdesti varmistaaksesi, että se on oikein.</p><p>Sinun on myös hyväksyttävä käyttöehdot jatkaaksesi.</p>",
+    "termsCheckbox": "Hyväksyn tietojeni tallentamisen ja käytön käyttöehtojen mukaisesti.",
+    "title": "Syötä sähköpostiosoite"
+  },
+  "identification": {
+    "identifyYourselfButton": "Tunnistaudu",
+    "identifyYourselHelpText": "Sinut ohjataan pankkitunnistautumispalveluun. Kun tunnistautuminen on valmis, sinut ohjataan takaisin tälle sivulle.",
+    "start": {
+      "content": "<p>Rekisteröityäksesi ehdokkaaksi sinun on ensin vahvistettava henkilöllisyytesi pankkitunnuksilla. Kun virallinen ehdokaslista on vahvistettu, julkaisemme profiilisi, mikäli löydämme sinut listalta. Käytämme tähän koko nimeäsi ja syntymäaikaasi.</p>",
+      "heroEmoji": "🖋️",
+      "step": {
+        "constituencySelect": "Valitse vaalipiirisi",
+        "electionSelect": "Valitse vaalit",
+        "emailVerification": "Vahvista sähköpostiosoitteesi",
+        "identification": "Tunnistaudu pankkitunnuksilla",
+        "passwordSelect": "Valitse salasana"
+      },
+      "title": "Rekisteröidy ehdokkaaksi"
+    },
+    "success": {
+      "content": "<p>Tunnistautuminen onnistui. Paina alla olevaa nappia jatkaaksesi rekisteröitymistä.</p>",
+      "heroEmoji": "👍",
+      "title": "Tervetuloa vaalikoneeseen, {firstName} {lastName}!"
+    }
+  },
+  "isPreregisteredNotification": {
+    "content": "Kirjaudu sisään sähköpostilla ja salasanalla tai tarkista sähköpostisi vahvistuslinkin varalta.",
+    "title": "Näyttää siltä, että olet jo rekisteröitynyt"
+  },
+  "status": {
+    "candidateExistsError": {
+      "content": "<p>Näyttää siltä, että olet jo rekisteröitynyt. Tarkista sähköpostisi ja vahvista rekisteröitymisesi. Kun rekisteröinti on vahvistettu, voit kirjautua sisään sähköpostillasi ja salasanallasi.</p><p>Ota yhteyttä tukeen, jos uskot, että on tapahtunut virhe.</p>",
+      "title": "Olet jo rekisteröitynyt ehdokkaaksi"
+    },
+    "loggedInError": {
+      "content": "<p>Olet jo rekisteröitynyt ehdokkaaksi. Siirry tilillesi jatkaaksesi.</p>",
+      "title": "Olet jo kirjautunut sisään"
+    },
+    "strongIdentificationError": {
+      "content": "<p>Paina alla olevaa painiketta yrittääksesi uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.</p>",
+      "title": "Pankkitunnistautumisessa ilmeni ongelma"
+    },
+    "success": {
+      "content": "<p>Olemme lähettäneet viestin sähköpostiisi. Napsauta viestin linkkiä vahvistaaksesi sähköpostiosoitteesi ja viimeistelläksesi rekisteröitymisen.</p><p>Huomaathan, että sähköpostin saapumisessa saattaa kestää jonkin aikaa. Tarkista myös roskaposti, jos viestiä ei kuulu.</p><p>Voit nyt sulkea tämän ikkunan.</p>",
+      "heroEmoji": "✉️",
+      "title": "Vahvista sähköpostiosoitteesi"
+    },
+    "tokenExpiredError": {
+      "content": "<p>Tunnistaudu uudelleen viimeistelläksesi rekisteröitymisen.</p>",
+      "title": "Istuntosi on vanhentunut"
+    },
+    "unknownError": {
+      "content": "<p>Paina alla olevaa painiketta yrittääksesi uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.</p>",
+      "title": "Jotain meni pieleen"
+    }
+  }
+}

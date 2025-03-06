@@ -60,7 +60,7 @@
     },
     "type": "Boolean",
     "order": 4,
-    "required": true,
+    "required": false,
     "entityType": "candidate"
   },
   {

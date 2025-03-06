@@ -81,29 +81,3 @@ election,constituency,email,party,electionSymbol,published
 <electionId>,<constituencyId>,alice@example.com,<partyId>,1,true
 <electionId>,<constituencyId>,bob@example.com,,2,false
 ```
-
-## Implementation details
-
-The import functionality has been implemented by modifying the [import-export-entries strapi plugin](https://market.strapi.io/plugins/strapi-plugin-import-export-entries).
-
-The following files have been changed:
-
-### [admin/src/components/ImportButton/ImportButton.js](../../backend/vaa-strapi/strapi-plugin-import-export-entries/admin/src/components/ImportButton/ImportButton.js)
-
-The file was modified so that the import button is only visible on certain pages. The pages that it is visible on is hard coded into the file.
-
-### [admin/src/components/ImportModal/ImportModal.js](../../backend/vaa-strapi/strapi-plugin-import-export-entries/admin/src/components/ImportModal/ImportModal.js)
-
-Originally, the plugin had an option to write the csv directly into the modal. This file was modified so that the text editor is hidden.
-
-### [admin/src/components/ImportModal/components/ImportEditor](../../backend/vaa-strapi/strapi-plugin-import-export-entries/admin/src/components/ImportModal/components/ImportEditor/ImportEditor.js)
-
-Originally, the import modal had an option tab for choosing the id field. This was removed as it is not needed.
-
-### [admin/src/index.js](../../backend/vaa-strapi/strapi-plugin-import-export-entries/admin/src/index.js)
-
-In this file, the export button and editView options were made hidden.
-
-### [src/server/services/import/import.js](../../backend/vaa-strapi/strapi-plugin-import-export-entries/src/server/services/import/import.js)
-
-This is the main file for the import logic. In this file, new functions were created for importing candidates and nominations. These functions contain custom logic that the original plugin didn't support.

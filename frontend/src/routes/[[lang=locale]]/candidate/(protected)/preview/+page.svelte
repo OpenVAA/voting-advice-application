@@ -1,77 +1,97 @@
+<!--@component
+
+# Candidate app preview own profile page
+
+Used to show a preview of the candidate’s own profile using the `EntityDetails` component.
+
+## Settings
+
+- See the `EntityDetails` component.
+-->
+
 <script lang="ts">
-  import { getContext } from 'svelte';
-  import { afterNavigate, goto } from '$app/navigation';
-  import { LogoutButton } from '$lib/candidate/components/logoutButton';
-  import { Button } from '$lib/components/button';
+  import { onDestroy } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { translateLocalizedCandidate } from '$lib/api/utils/translateLocalizedCandidate';
+  import { ErrorMessage } from '$lib/components/errorMessage';
   import { Icon } from '$lib/components/icon';
-  import { EntityDetails } from '$lib/components/legacy/entityDetails';
   import { Loading } from '$lib/components/loading';
-  import { locale, t } from '$lib/i18n';
-  import { dataProvider } from '$lib/legacy-api/getData';
-  import { SingleCardPage } from '$lib/templates/singleCardPage';
-  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
-  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
+  import { getCandidateContext } from '$lib/contexts/candidate';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import { EntityDetails } from '$lib/dynamic-components/entityDetails';
+  import { logDebugError } from '$lib/utils/logger';
+  import SingleCardContent from '../../../SingleCardContent.svelte';
+  import type { Candidate } from '@openvaa/data';
 
-  const { user } = getContext<CandidateContext>('candidate');
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
 
-  let infoQuestions: Array<LegacyQuestionProps>;
-  let opinionQuestions: Array<LegacyQuestionProps>;
-  let candidate: LegacyCandidateProps | undefined;
-  let loadData: Promise<void>;
+  const { dataRoot, getRoute, locale, t, userData } = getCandidateContext();
+  const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
-  async function fetchData() {
-    const { getInfoQuestions, getOpinionQuestions, getNominatedCandidates } = await dataProvider;
-    const [infoRes, opinionRes, candidateRes] = await Promise.all([
-      getInfoQuestions({ locale: $locale }),
-      getOpinionQuestions({ locale: $locale }),
-      getNominatedCandidates({
-        loadAnswers: true,
-        locale: $locale,
-        id: `${$user?.candidate?.id}`
-      })
-    ]);
+  ////////////////////////////////////////////////////////////////////
+  // Get the candidate object
+  ////////////////////////////////////////////////////////////////////
 
-    infoQuestions = infoRes;
-    opinionQuestions = opinionRes;
-    candidate = candidateRes[0];
-  }
+  let status: ActionStatus = 'loading';
+  let entity: Candidate | undefined;
 
   $: {
-    loadData = fetchData();
+    loadCandidate();
+    // React to locale changes
     $locale; // eslint-disable-line @typescript-eslint/no-unused-expressions
   }
 
   /**
-   * We determine if we arrived via an external link or from within the app, so we can use `history.back()`. However, if we changed the locale, we shouldn't use back() either.
+   * Reload the candidate data, provide it to `DataRoot` and save the `Candidate` to `entity`
    */
-  let useBack = false;
-  let initialLocale = $locale;
-  afterNavigate((n) => (useBack = n.from?.route != null && initialLocale === $locale));
+  async function loadCandidate(): Promise<void> {
+    status = 'loading';
+    const result = await userData.reloadCandidateData().catch((e) => {
+      logDebugError(`Error with reloadCandidateData: ${e?.message}`);
+      return undefined;
+    });
+    if (!result) {
+      status = 'error';
+      return;
+    }
+    try {
+      $dataRoot.provideEntityData([translateLocalizedCandidate(result, $locale)]);
+      entity = $dataRoot.getCandidate(result.id);
+      status = 'success';
+    } catch (e) {
+      logDebugError(`Error providing candidate data to dataRoot or  getting the object: ${e}`);
+      status = 'error';
+      return;
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Styling
+  ////////////////////////////////////////////////////////////////////
+
+  pageStyles.push({ drawer: { background: 'bg-base-300' } });
+  topBarSettings.push({
+    actions: {
+      return: 'show',
+      returnButtonLabel: $t('candidateApp.preview.close'),
+      returnButtonCallback: () => goto($getRoute('CandAppHome'))
+    }
+  });
 </script>
 
-<SingleCardPage title={$t('candidateApp.preview.title')}>
+<SingleCardContent title={$t('candidateApp.preview.title')}>
   <svelte:fragment slot="note">
     <Icon name="info" />
     {$t('candidateApp.preview.tip')}
   </svelte:fragment>
-  <svelte:fragment slot="banner">
-    <LogoutButton variant="icon" />
-    <Button
-      slot="banner"
-      class="!text-neutral"
-      variant="icon"
-      icon="close"
-      on:click={() => (useBack ? history.back() : goto($getRoute(ROUTE.CandAppHome)))}
-      text={$t('candidateApp.preview.close')} />
-  </svelte:fragment>
-
-  {#await loadData}
+  <!-- The card -->
+  {#if status === 'success' && entity}
+    <EntityDetails {entity} />
+  {:else if status === 'error'}
+    <ErrorMessage inline message={$t('candidateApp.preview.notFound')} />
+  {:else}
     <Loading showLabel />
-  {:then}
-    {#if candidate}
-      <EntityDetails content={candidate} {opinionQuestions} {infoQuestions} />
-    {:else}
-      <div class="w-full text-center text-warning">{$t('candidateApp.preview.notFound')}</div>
-    {/if}
-  {/await}
-</SingleCardPage>
+  {/if}
+</SingleCardContent>

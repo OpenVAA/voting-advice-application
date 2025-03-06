@@ -113,7 +113,7 @@ Used to show an entity's basic info and their answers to `info` questions in an 
           {#each linkQuestions as question}
             {@const answer = nakedEntity.getAnswer(question)}
             {#if answer}
-              <InfoAnswer {answer} {question} class="mb-sm" />
+              <InfoAnswer {answer} {question} class="tag mb-sm me-sm last:me-0" />
             {/if}
           {/each}
         </InfoItem>

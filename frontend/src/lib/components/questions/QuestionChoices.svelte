@@ -45,14 +45,12 @@ The same component can also be used to display the answers of the voter and anot
 
 ```tsx
 <QuestionChoices
-  aria-labelledby="questionHeadingId"
   {question}
   selectedId={$voterAnswers[question.id]}
   onChange={answerQuestion}
   onReselect={doFoo} />
 
 <QuestionChoices
-  aria-labelledby="questionHeadingId"
   {question}
   mode="display"
   selectedId={$voterAnswers[question.id]}
@@ -64,7 +62,6 @@ The same component can also be used to display the answers of the voter and anot
 <script lang="ts">
   import { type Choice, SingleChoiceCategoricalQuestion, SingleChoiceOrdinalQuestion } from '@openvaa/data';
   import { getComponentContext } from '$lib/contexts/component';
-  import { logDebugError } from '$lib/utils/logger';
   import { onKeyboardFocusOut } from '$lib/utils/onKeyboardFocusOut';
   import type { Id } from '@openvaa/core';
   import type { QuestionChoicesProps } from './QuestionChoices.type';
@@ -83,12 +80,10 @@ The same component can also be used to display the answers of the voter and anot
   export let onReselect: $$Props['onReselect'] = undefined;
   export let onChange: $$Props['onChange'] = undefined;
 
-  if (mode === 'display' && otherSelected && !otherLabel)
-    logDebugError('You should supply an otherLabel when mode is "display" and otherSelected is provided');
-
   // For convenience
   let choices: Array<Choice<undefined>> | Array<Choice<unknown>>;
-  $: ({ choices } = question);
+  let text: string;
+  $: ({ choices, text } = question);
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -211,10 +206,13 @@ The same component can also be used to display the answers of the voter and anot
 
 <fieldset
   use:onKeyboardFocusOut={handleGroupFocusOut}
-  style:--radio-bg={onShadedBg ? 'var(--b3)' : 'var(--b1)'}
-  style:--line-bg={onShadedBg ? 'var(--b1)' : 'var(--b3)'}
+  style:--radio-bg={onShadedBg ? 'var(--b2)' : 'var(--b1)'}
+  style:--line-bg={onShadedBg ? 'var(--b1)' : 'var(--b2)'}
   class:vertical
   {...$$restProps}>
+  <!-- Add a label for screen readers -->
+  <legend class="sr-only">{text}</legend>
+
   <!-- The line behind the choices -->
   {#if doShowLine}
     {#if vertical}

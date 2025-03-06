@@ -3,18 +3,18 @@ import type { FilterParams, Params } from '../strapiAdapter.type';
 
 /**
  * Build a `Params` object from the getData options’ possible filters. If multiple, they are joined with `$and`.
+ * @param useDocumentId - The `id` param is converted into `documentId` by default. Set to `false` to disable this conversion.
  */
-export function buildFilterParams({ id, constituencyId, electionId, entityType }: AnyFilter = {}): Params {
+export function buildFilterParams(
+  { id, constituencyId, electionId, entityType }: AnyFilter = {},
+  { useDocumentId } = { useDocumentId: true }
+): Params {
   const filters: FilterParams = {};
-  if (id) filters.id = makeRule(id);
-  if (constituencyId) filters.constituency = { id: makeRule(constituencyId) };
-  if (electionId) filters.election = { id: makeRule(electionId) };
+  if (id) filters[useDocumentId ? 'documentId' : 'id'] = makeRule(id);
+  if (constituencyId) filters.constituency = { documentId: makeRule(constituencyId) };
+  if (electionId) filters.election = { documentId: makeRule(electionId) };
   if (entityType) filters.entityType = makeRule(entityType);
-  return Object.keys(filters).length > 1
-    ? { filters: { $and: Object.entries(filters).map(([k, v]) => ({ [k]: v })) } }
-    : Object.keys(filters).length === 1
-      ? { filters }
-      : {};
+  return Object.keys(filters).length ? { filters } : {};
 }
 
 /**

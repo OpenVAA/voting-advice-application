@@ -1,13 +1,16 @@
 {
-  "addAnother": "SV Add another",
-  "disclaimer": "SV Your name and some other details are prefilled and cannot be changed. If there are any errors in them, please contact your party. If your Election Number is not visible, it will be automatically set after the candidate registration period ends on Oct 29.",
+  "editableInfos": {
+    "description": "Denna information kommer att visas i din profil.",
+    "title": "Din profil"
+  },
   "error": {
-    "invalidQuestion": "SV Question type or answer type is invalid for question {questionId}"
+    "invalidQuestion": "Frågetyp eller svarstyp är ogiltig för frågan {questionId}"
   },
-  "instructions": "SV Fill in first your basic details and upload a photo. You'll be asked for your political opinions thereafter.",
+  "instructions": "Fyll först i dina grundläggande uppgifter och ladda upp ett foto om du vill. Därefter får du svara på frågor om dina politiska åsikter.",
   "nominations": {
-    "description": "SV These are the constituencies where you're nominated along with the election list and possible election symbol. If a nomination is marked 'Pending', your election symbol might not yet be defined.",
-    "title": "SV Nominations"
+    "description": "Detta är de valkretsar där du är nominerad. Om vallistan eller valsymbolen saknas kommer de att läggas till automatiskt när kandidatlistorna bekräftas.",
+    "title": "Nomineringslistor"
   },
-  "title": "SV Basic Information"
+  "requiredInfo": "Du måste fylla i fälten markerade med denna ikon innan du kan svara på andra frågor. Du kan dock spara dina svar hittills och fortsätta fylla i dem senare.",
+  "title": "Grundläggande information"
 }

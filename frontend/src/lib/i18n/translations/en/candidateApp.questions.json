@@ -1,22 +1,24 @@
 {
-  "answerButton": "Answer this question",
+  "answerQuestion": "Answer this question",
+  "answerQuestionFirst": "Please answer the question first",
   "answerSaveError": "Saving answer failed",
   "editAnswer": "Edit Your Answer",
-  "enterMissingAnswer": "Enter Missing Answers",
+  "enterMissingAnswers": "Enter Missing Answers",
   "error": {
     "answerNotFound": "Answer not found for question {questionId}",
     "invalidAnswer": "Answer is invalid for question {questionId}",
-    "questionNotFound": "Question not found for question {questionId}"
+    "questionNotFound": "Question {questionId} not found"
   },
-  "ingress": "You can see all of your opinions below and edit them by tapping on them.",
-  "intro": {
-    "ingress": "Next, the app will ask your opinions on {numQuestions} statements about political issues and values. When voters use the Election Compass, they will also answer the same statements and see how well their opinions agree with the yours."
+  "ingress": {
+    "default": "You can see all of your opinions below and edit them.",
+    "empty": "Next, the app will ask your opinions on {numQuestions} statements about political issues and values. When voters use the Election Compass, they will also answer the same statements and see how well their opinions agree with the yours.",
+    "partial": "You can see all of your opinions below, edit them and answer the remaining ones."
   },
   "notAnswered": "You didn't answer this question.",
-  "openAnswerPrompt": "Comment on this issue",
+  "openAnswerPrompt": "Arguments",
   "start": "Enter your opinions",
   "tip": "You can see all your anwers on this page when you come back to it later.",
   "title": "Your Opinions",
-  "unansweredWarning": "You still have {numUnansweredQuestions} unanswered questions.",
+  "unansweredWarning": "You still have {numUnansweredQuestions, plural, =1 {one unanswered question} other {# unanswered questions}}.",
   "viewAnswer": "View Your Answer"
 }

@@ -1,4 +1,5 @@
-import { DP_METHOD } from '$lib/api/base/dataTypes';
+import { DP_METHOD, type DPDataType } from '$lib/api/base/dataTypes';
+import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
 export const API_ROOT = '/api';
 
@@ -9,7 +10,7 @@ export const API_GET_ROUTES = Object.fromEntries(
 export type ApiGetRoute = keyof typeof API_GET_ROUTES;
 
 export const API_POST_ROUTES = {
-  feedbacks: `${API_ROOT}/feedback`
+  setFeedback: `${API_ROOT}/feedback`
 };
 
 export type ApiPostRoute = keyof typeof API_POST_ROUTES;
@@ -17,3 +18,7 @@ export type ApiPostRoute = keyof typeof API_POST_ROUTES;
 export const API_ROUTES = { ...API_GET_ROUTES, ...API_POST_ROUTES };
 
 export type ApiRoute = keyof typeof API_ROUTES;
+
+export type ApiRouteReturnType<TApi extends ApiRoute> = TApi extends ApiGetRoute
+  ? DPDataType[TApi]
+  : DataApiActionResult;

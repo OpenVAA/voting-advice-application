@@ -1,6 +1,7 @@
 {
-  "enterEmailAndPassword": "Enter the email and password you've received from your party to edit your data and opinions.",
+  "enterEmailAndPassword": "Enter your email and password to log in.",
   "forgotPassword": "Forgot Password?",
   "title": "Sign in",
+  "unknownError": "There was an error with your user data. Please contact support if the issue persists.",
   "wrongEmailOrPassword": "Wrong email or password"
 }

@@ -1,5 +1,6 @@
 import { ensureColors } from '$lib/utils/color/ensureColors';
 import { UniversalAdapter } from './universalAdapter';
+import type { CustomData } from '@openvaa/app-shared';
 import type { DataObjectData } from '@openvaa/data';
 import type { DataProvider, DPReturnType } from './dataProvider.type';
 import type { DPDataType } from './dataTypes';
@@ -15,7 +16,7 @@ import type {
 /**
  * The abstract base class that all universal `DataProvider`s should extend. It implements error handling and pre-processing of raw data before it is provided to the `DataRoot`, such as color constrast enhancements.
  *
- * The subclasses must implement the protected `_getFoo` methods paired with each public `getFoo` method. The implementations may freely throw errors as these will be caught by the public methods and converted to a `DataApiError`.
+ * The subclasses must implement the protected `_getFoo` methods paired with each public `getFoo` method.
  */
 export abstract class UniversalDataProvider extends UniversalAdapter implements DataProvider {
   /////////////////////////////////////////////////////////////////////

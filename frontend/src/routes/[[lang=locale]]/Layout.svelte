@@ -1,37 +1,69 @@
 <!--@component
 
-# App `main` content layout
+# App outer layout
 
-Defines the layout of the `main` content of all the standard pages in the app.
+Defines the outer layout for the application, including the header and menu.
 
 ### Slots
 
-- default: main content of the page
-- `note`: optional content for the complementary notification displayed at the top of the page, right below the `<header>`
-- `hero`: an optional hero image
-- `heading`: optional content for the main title block, defaults to a `<h1>` element containing the required `title` property
-- `primaryActions`: optional content for the primary actions displayed at the bottom of the page
+- default: main content of the page, normally a `MainContent` component.
+- `menu`: the navigation menu, normally a `VoterNav` or `CandidateNav` component.
 
 ### Properties
 
-- `title`: The required page `title`.
-- `noteClass`: Optional class string to add to the `<div>` tag wrapping the `note` slot.
-- `noteRole`: Aria role for the `note` slot. @default 'note'
-- `primaryActionsLabel`: Optional `aria-label` for the section that contains the primary page actions. @default $t('common.primaryActions')
-- `titleClass`: Optional class string to add to the `<div>` tag wrapping the `title` slot.
+- `menuId`: the id of the navigation menu in the `menu` slot.
+- `isDrawerOpen`: a bindable boolean indicating whether the drawer is open or not. NB. To close the drawer, use the method in `LayoutContext.navigation`.
 -->
 
 <script lang="ts">
-  import { getComponentContext } from '$lib/contexts/component';
-  import type { BasicPageProps } from '$lib/templates/basicPage';
+  import { onDestroy } from 'svelte';
+  import { getAppContext } from '$lib/contexts/app';
+  import { getLayoutContext } from '$lib/contexts/layout';
+  import Header from './Header.svelte';
+  import type { LayoutProps } from './Layout.type';
 
-  export let title: BasicPageProps['title'];
-  export let noteClass: BasicPageProps['noteClass'] = 'text-secondary text-center max-w-xl';
-  export let noteRole: BasicPageProps['noteRole'] = 'note';
-  export let primaryActionsLabel: BasicPageProps['primaryActionsLabel'] = undefined;
-  export let titleClass: BasicPageProps['titleClass'] = '';
+  type $$Props = LayoutProps;
 
-  const { t } = getComponentContext();
+  export let menuId: $$Props['menuId'];
+  export let isDrawerOpen: $$Props['isDrawerOpen'] = false;
+
+  ////////////////////////////////////////////////////////////////////
+  // Constants
+  ////////////////////////////////////////////////////////////////////
+
+  const mainContentId = 'mainContent';
+  const drawerToggleId = 'pageDrawerToggle';
+
+  ////////////////////////////////////////////////////////////////////
+  // Layout and navigation menu management
+  ////////////////////////////////////////////////////////////////////
+
+  const { startEvent, t } = getAppContext();
+  const { pageStyles, navigation, navigationSettings } = getLayoutContext(onDestroy);
+  navigation.close = closeDrawer;
+
+  let drawerOpenElement: HTMLButtonElement | undefined;
+
+  /**
+   * Open the drawer. We also focus on the relevant element to make it easy
+   * to toggle it back when using keyboard navigation.
+   */
+  function openDrawer() {
+    if ($navigationSettings.hide) return;
+    isDrawerOpen = true;
+    // We need a small timeout for drawerCloseButton to be focusable
+    setTimeout(() => document.getElementById('drawerCloseButton')?.focus(), 50);
+    startEvent('menu_open');
+  }
+
+  /**
+   * Close the drawer. We also focus on the relevant element to make it easy
+   * to toggle it back when using keyboard navigation.
+   */
+  function closeDrawer() {
+    isDrawerOpen = false;
+    drawerOpenElement?.focus();
+  }
 
   /** We use `videoHeight` and `videoWidth` as proxies to check for the presence of content in the `video` slot. Note that we cannot merely check if the slot is provided, because it might be empty. */
   // let videoHeight = 0;
@@ -39,51 +71,35 @@ Defines the layout of the `main` content of all the standard pages in the app.
   // let hasVideo = videoWidth > 0 && videoHeight > 0;
 </script>
 
-<svelte:head>
-  <title>{title} – {$t('dynamic.appName')}</title>
-</svelte:head>
+<!-- Skip link for screen readers and keyboard users. We use tabindex="1" so that's it's available before any alerts injected by layouts. -->
+<!-- svelte-ignore a11y-positive-tabindex -->
+<a href="#{mainContentId}" tabindex="1" class="sr-only focus:not-sr-only">{$t('common.skipToMain')}</a>
 
-<!-- Note -->
-{#if $$slots.note}
-  <div class={noteClass} role={noteRole}>
-    <slot name="note" />
-  </div>
-{/if}
+<!-- Drawer container -->
+<div class="drawer {$pageStyles.drawer.background}">
+  <!-- NB. The Wave ARIA checker will show an error for this, but the use of both the 
+    non-hidden labels in aria-labelledby should be okay for screen readers. -->
+  <input
+    id={drawerToggleId}
+    bind:checked={isDrawerOpen}
+    type="checkbox"
+    class="drawer-toggle"
+    disabled={$navigationSettings.hide}
+    tabindex="-1"
+    aria-hidden="true"
+    aria-label={$t('common.openCloseMenu')} />
 
-<div class="flex w-full flex-grow flex-col items-stretch justify-center sm:items-center">
-  <!-- Video -->
-  <!-- {#if $$slots.video}
-    <div
-      bind:clientHeight={videoHeight}
-      bind:clientWidth={videoWidth}
-      class="-ml-safelgl -mr-safelgr -mt-lg flex w-screen justify-center sm:w-full {hasVideo
-        ? 'grow'
-        : ''} sm:mt-[1.75rem] sm:grow-0">
-      <slot name="video" />
+  <!-- Drawer content -->
+  <div class="drawer-content flex flex-col">
+    <Header {menuId} {openDrawer} {isDrawerOpen} {drawerOpenElement} />
+    <div id={mainContentId} class="flex flex-grow flex-col items-center">
+      <slot />
     </div>
-  {/if} -->
-
-  <!-- Hero image -->
-  <slot name="hero" />
-
-  <!-- Title block -->
-  <div class="w-full max-w-xl py-lg text-center {titleClass}">
-    <slot name="heading">
-      <h1>{title}</h1>
-    </slot>
   </div>
 
-  <!-- Main content -->
-  <div class="flex w-full max-w-xl flex-col items-center">
-    <slot />
+  <!-- Drawer side menu -->
+  <div class="drawer-side z-10">
+    <div on:click={closeDrawer} aria-hidden="true" class="drawer-overlay cursor-pointer" />
+    <slot name="menu" />
   </div>
 </div>
-
-<!-- Main actions -->
-{#if $$slots.primaryActions}
-  <section
-    class="flex w-full max-w-xl flex-col items-center justify-end"
-    aria-label={primaryActionsLabel ?? $t('common.primaryActions')}>
-    <slot name="primaryActions" />
-  </section>
-{/if}

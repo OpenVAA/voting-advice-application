@@ -48,10 +48,7 @@ Display an `Entity`’s open answer to a question. If the content is empty, noth
     class:collapsible
     class:expanded
     style:--full-height={fullHeight}
-    {...concatClass(
-      $$restProps,
-      'relative grid max-h-[8rem] overflow-hidden mt-16 rounded-md bg-base-200 text-center'
-    )}>
+    {...concatClass($$restProps, 'relative grid max-h-[8rem] overflow-hidden rounded-md bg-base-200 text-center')}>
     {#if collapsible}
       <button
         on:click={() => {

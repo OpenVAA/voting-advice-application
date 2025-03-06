@@ -21,7 +21,7 @@ Usually accessed by direct link only and not meant for the wide public.
   import { getVoterContext } from '$lib/contexts/voter';
   import { unwrapEntity } from '$lib/utils/entities';
   import { removeDuplicates } from '$lib/utils/removeDuplicates';
-  import Layout from '../../../../Layout.svelte';
+  import MainContent from '../../../../MainContent.svelte';
   import type { Id, MaybeWrappedEntity } from '@openvaa/core';
   import type { MatchTree } from '$lib/contexts/voter/matchStore';
 
@@ -93,7 +93,7 @@ Usually accessed by direct link only and not meant for the wide public.
   }
 </script>
 
-<Layout title={$t('statistics.title')}>
+<MainContent title={$t('statistics.title')}>
   <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.statistics.heroEmoji')} />
   </figure>
@@ -169,4 +169,4 @@ Usually accessed by direct link only and not meant for the wide public.
       </Expander>
     {/each}
   </div>
-</Layout>
+</MainContent>

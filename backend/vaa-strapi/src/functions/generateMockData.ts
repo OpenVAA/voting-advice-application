@@ -4,32 +4,46 @@
  * Fake data can be generated if env variable GENERATE_MOCK_DATA_ON_INITIALISE=true is set.
  * Additionally, GENERATE_MOCK_DATA_ON_RESTART can be used in dev environment for
  * debugging & developing mock data generation functionality.
- *
- * IMPORTANT: As today, 29th of August of 2023, most of the fake data needs to be created using
- * the method `strapi.entityService.create()` as the bulk insert does not support relations,
- * and also it is not possible to create localizations using the bulk insert.
  */
 
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
-import { dynamicSettings } from '@openvaa/app-shared';
 import { LLMResponse, OpenAIProvider } from '@openvaa/llm';
+import crypto from 'crypto';
+import { loadDefaultAppSettings } from './loadDefaultAppSettings';
 import mockCandidateForTesting from './mockData/mockCandidateForTesting.json';
 import mockCategories from './mockData/mockCategories.json';
 import mockInfoQuestions from './mockData/mockInfoQuestions.json';
 import mockQuestions from './mockData/mockQuestions.json';
 import mockQuestionTypes from './mockData/mockQuestionTypes.json';
-import mockUser from './mockData/mockUser.json';
-import { API } from './utils/api';
-import { getDynamicTranslations } from './utils/appCustomization';
-import { getCardContentsFromFile } from './utils/appSettings';
-import { dropAllCollections } from './utils/drop';
+import mockUsers from './mockData/mockUsers.json';
 import {
   generateAiMockData,
   generateMockDataOnInitialise,
   generateMockDataOnRestart,
   LLM_OPENAI_API_KEY
 } from '../constants';
-import type { AnswerValue, EntityType, LocalizedString, QuestionTypeSettings } from './utils/data.type';
+import { API } from '../util/api';
+import { getDynamicTranslations } from '../util/appCustomization';
+import { dropAllCollections } from '../util/drop';
+import type { AnswerValue, LocalizedAnswer, LocalizedString, QuestionTypeSettings } from '@openvaa/app-shared';
+import type { Data } from '@strapi/strapi';
+
+/**
+ * Used as a prefix for externalIds for generated mock data.
+ */
+const MOCK_EXTERNAL_ID_PREFIX = 'mock-';
+const N_ELECTIONS = 4;
+// Make the fourth election a single constituency one
+const N_CONSTITUENCIES_PER_ELECTION = Array.from({ length: N_ELECTIONS }, (_, i) => (i === 3 ? 1 : 10 + i * 20));
+/**
+ * If true and N_ELECTIONS >= 2, the constituencies in the second constituency group will be children of the first constituency group.
+ */
+const DO_LINK_CONSTITUENCIES = true;
+const N_CONSTITUENCIES = N_CONSTITUENCIES_PER_ELECTION.reduce((a, b) => a + b, 0);
+const N_CANDIDATES_PER_CONSTITUENCY = 10;
+const N_PARTIES = 10;
+const N_PARTIES_WITH_CLOSED_LISTS = 2;
+const F_DUPLICATE_NOMINATIONS = 0.2;
 
 const locales: Array<Locale> = [
   {
@@ -60,8 +74,8 @@ export async function generateMockData() {
     if (generateMockDataOnInitialise && !generateMockDataOnRestart) {
       for (const collection of Object.values(API)) {
         if (
-          await strapi.db
-            .query(collection)
+          await strapi
+            .documents(collection)
             .count({})
             .then((number) => number)
         ) {
@@ -82,7 +96,9 @@ export async function generateMockData() {
   try {
     if (generateMockDataOnRestart) {
       console.info('#######################################');
-      await dropAllCollections();
+      await dropAllCollections().catch((e) => {
+        throw e;
+      });
       console.info('dropped collections');
     }
 
@@ -102,73 +118,100 @@ export async function generateMockData() {
 
     console.info('#######################################');
     console.info('inserting app settings...');
-    await createAppSettings();
+    await loadDefaultAppSettings().catch((e) => {
+      throw e;
+    });
     console.info('#######################################');
     console.info('inserting app customization...');
-    await createAppCustomization();
+    await createAppCustomization().catch((e) => {
+      throw e;
+    });
     console.info('#######################################');
     console.info('inserting languages');
-    await createLanguages();
+    await createLanguages().catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting strapi admin');
-    await createStrapiAdmin();
+    await createStrapiAdmin().catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting constituencies and constituency groups');
-    await createConstituenciesAndGroups(15);
-    console.info('Done!');
-    console.info('#######################################');
-    console.info('inserting question types');
-    await createQuestionTypes();
+    await createConstituenciesAndGroups({
+      numberPerGroup: N_CONSTITUENCIES_PER_ELECTION,
+      linkConstituencies: DO_LINK_CONSTITUENCIES
+    }).catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting one election');
-    await createElection();
+    await createElections(N_ELECTIONS).catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
-    console.info('inserting parties');
-    await createParties(10);
-    console.info('Done!');
-    console.info('#######################################');
-    console.info('inserting candidates');
-    await createCandidates(15 * 50);
+    console.info('inserting question types');
+    await createQuestionTypes().catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting question categories');
-    await createQuestionCategories();
+    await createQuestionCategories().catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting questions');
-    await createQuestions();
+    await createQuestions().catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
-    console.info('inserting candidate answers');
-    await createAnswers('candidate');
+    console.info('inserting parties');
+    await createParties(N_PARTIES).catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
-    console.info('inserting party answers');
-    await createAnswers('party');
+    console.info('inserting candidates');
+    await createCandidates(N_CONSTITUENCIES * N_CANDIDATES_PER_CONSTITUENCY).catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidate without answers for testing');
-    await createCandidateForTesting();
+    await createCandidateForTesting().catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidate nominations');
-    await createCandidateNominations(15 * 50);
+    await createCandidateNominations(F_DUPLICATE_NOMINATIONS).catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting closed list parties');
-    await createParties(2);
+    await createParties(N_PARTIES_WITH_CLOSED_LISTS).catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting party nominations');
-    await createPartyNominations(2);
+    await createPartyNominations(N_PARTIES_WITH_CLOSED_LISTS).catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     console.info('inserting candidate users');
-    await createCandidateUsers();
+    await createCandidateUsers().catch((e) => {
+      throw e;
+    });
     console.info('Done!');
     console.info('#######################################');
     if (generateAiMockData) {
@@ -177,8 +220,9 @@ export async function generateMockData() {
     }
     console.info('Done!');
     console.info('#######################################');
+    console.info('Mock data generation completed successfully!');
   } catch (e) {
-    console.error('Mock data generation failed because of error ', e);
+    console.error('Mock data generation failed because of error ', JSON.stringify(e));
   }
 }
 
@@ -207,17 +251,6 @@ async function createStrapiAdmin() {
   }
 }
 
-async function createAppSettings() {
-  const cardContents = getCardContentsFromFile();
-
-  await strapi.entityService.create(API.AppSettings, {
-    data: {
-      ...dynamicSettings,
-      results: { ...dynamicSettings.results, ...cardContents }
-    }
-  });
-}
-
 async function createAppCustomization() {
   const faqs = [];
   locales.forEach(({ code }) => {
@@ -230,101 +263,141 @@ async function createAppCustomization() {
     }
   });
 
-  await strapi.entityService.create(API.AppCustomization, {
+  await strapi.documents('api::app-customization.app-customization').create({
     data: {
       publisherName: fakeLocalized((faker) => faker.company.name()),
       translationOverrides: getDynamicTranslations(),
       candidateAppFAQ: faqs
-    }
+    },
+    status: 'published'
   });
 }
 
 async function createLanguages() {
-  await strapi.db.query(API.Language).createMany({
-    data: [
-      {
-        name: 'English',
-        localisationCode: 'en',
-        publishedAt: new Date()
-      },
-      {
-        name: 'Finnish',
-        localisationCode: 'fi',
-        publishedAt: new Date()
-      },
-      {
-        name: 'Swedish',
-        localisationCode: 'sv',
-        publishedAt: new Date()
-      }
-    ]
-  });
+  const locales = [
+    {
+      name: 'English',
+      localisationCode: 'en',
+      publishedAt: new Date()
+    },
+    {
+      name: 'Finnish',
+      localisationCode: 'fi',
+      publishedAt: new Date()
+    },
+    {
+      name: 'Swedish',
+      localisationCode: 'sv',
+      publishedAt: new Date()
+    }
+  ];
+  for (const data of locales) {
+    await strapi.documents('api::language.language').create({ data, status: 'published' });
+  }
 }
 
 /**
+ * Creates a constituency group for each election.
  * @param numberPerGroup - An Array of numbers representing the number of constituencies per constituency group.
+ * @param linkConstituencies - If true, there are at least two groups and the first one is smaller than the second one, the constituencies in the second constituency group will be children of the first constituency group.
  */
-async function createConstituenciesAndGroups(...numberPerGroup: Array<number>) {
+async function createConstituenciesAndGroups({
+  numberPerGroup,
+  linkConstituencies = false
+}: {
+  numberPerGroup: Array<number>;
+  linkConstituencies: boolean;
+}) {
+  /**
+   * Save the previous group’s constituency IDs to be used as parent IDs for the next group.
+   */
+  let previousConstituencies = new Array<string>();
   for (let i = 0; i < numberPerGroup.length; i++) {
     // Create Constituencies
-    const constituencies = new Array<number>();
-    for (let j = 0; j < numberPerGroup[i]; j++) {
-      const name = fakeLocalized((faker) => faker.location.state());
-      const shortName = fakeLocalized((faker) => faker.location.state({ abbreviated: true }));
+    const constituencies = new Array<string>();
+    const numConstituencies = numberPerGroup[i];
+    const type = numConstituencies === 1 ? 'country' : numConstituencies > 10 ? 'city' : 'state';
+    // Possibly define parent constituency
+    const doLink = linkConstituencies && i === 1;
+    if (doLink && numConstituencies < previousConstituencies.length)
+      throw new Error('Not enough constituencies to link');
+    for (let j = 0; j < numConstituencies; j++) {
+      const name = fakeLocalized((faker) =>
+        type === 'country' ? 'Whole country' : type === 'city' ? faker.location.city() : faker.location.state()
+      );
+      const shortName = abbreviate(name);
       const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
-      const { id } = await strapi.db.query(API.Constituency).create({
-        data: {
-          name,
-          shortName,
-          info
-        }
-      });
-      constituencies.push(id);
+      const parent = doLink ? previousConstituencies[j % previousConstituencies.length] : null;
+      const { documentId } = await strapi
+        .documents('api::constituency.constituency')
+        .create({
+          data: {
+            name,
+            shortName,
+            info,
+            parent,
+            ...addMockId()
+          }
+        })
+        .catch((err) => {
+          throw err;
+        });
+      constituencies.push(documentId);
     }
+    // Save for possible use
+    previousConstituencies = [...constituencies];
     // Create Constituency Group
-    const subtype = i % 2 ? 'ethnic' : 'geographic';
-    await strapi.db.query(API.ConstituencyGroup).create({
+    // const subtype = i % 2 ? 'ethnic' : 'geographic';
+    await strapi
+      .documents('api::constituency-group.constituency-group')
+      .create({
+        data: {
+          name: fakeLocalized(() => `${capitaliseFirstLetter(type)} constituency group ${doLink ? '- linked' : ''}`),
+          info: fakeLocalized((faker) => faker.lorem.paragraph(3)),
+          constituencies,
+          ...addMockId()
+        }
+      })
+      .catch((err) => {
+        throw err;
+      });
+  }
+}
+
+async function createElections(numElections = 1) {
+  const constituencyGroups = await strapi
+    .documents('api::constituency-group.constituency-group')
+    .findMany({})
+    .then((res) => res.map((g) => g.documentId));
+  const date = faker.date.future();
+
+  for (let i = 0; i < numElections; i++) {
+    const types = ['local', 'presidential', 'congress'] as const;
+    const electionType = types[Math.floor(Math.random() * types.length)];
+    const name = fakeLocalized((faker, locale) => `${faker.location.country()} ${electionType} (${locale.code})`);
+    const shortName = fakeLocalized(() => capitaliseFirstLetter(electionType));
+    const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
+    const electionStartDate = date.toISOString().split('T')[0];
+    const electionDate = date.toISOString().split('T')[0];
+    await strapi.documents('api::election.election').create({
       data: {
-        name: fakeLocalized(() => `${capitaliseFirstLetter(subtype)} constituency group`),
-        subtype,
-        info: fakeLocalized((faker) => faker.lorem.paragraph(3)),
-        constituencies
+        name,
+        shortName,
+        electionStartDate,
+        electionDate,
+        electionType,
+        info,
+        constituencyGroups: [constituencyGroups[i % constituencyGroups.length]],
+        ...addMockId()
       }
     });
   }
 }
 
-async function createElection() {
-  const constituencyGroups = await strapi.db
-    .query(API.ConstituencyGroup)
-    .findMany({})
-    .then((res) => res.map((g) => g.id));
-  const date = faker.date.future();
-  const types = ['local', 'presidential', 'congress'];
-  const electionType = types[Math.floor(Math.random() * types.length)];
-  const name = fakeLocalized(
-    (faker, locale) => `${date.getFullYear()} ${faker.location.country()} ${electionType} (${locale.code})`
-  );
-  const shortName = name;
-  const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
-  const electionStartDate = date.toISOString().split('T')[0];
-  const electionDate = date.toISOString().split('T')[0];
-  await strapi.db.query(API.Election).create({
-    data: {
-      name,
-      shortName,
-      electionStartDate,
-      electionDate,
-      electionType,
-      info,
-      publishedAt: new Date(),
-      answersLocked: false,
-      constituencyGroups
-    }
-  });
-}
-
 async function createParties(length: number) {
+  const questions = await strapi.documents('api::question.question').findMany({
+    populate: ['questionType']
+  });
   for (let i = 0; i <= length; i++) {
     const name = fakeLocalized(
       (faker) =>
@@ -335,32 +408,37 @@ async function createParties(length: number) {
     const shortName = abbreviate(name);
     const info = fakeLocalized((faker) => faker.lorem.sentences(3));
     const color = faker.color.rgb();
-    await strapi.db.query(API.Party).create({
+    await strapi.documents('api::party.party').create({
       data: {
         name,
         shortName,
         color,
         info,
-        publishedAt: new Date()
+        answers: generateAnswers(questions, 'party'),
+        ...addMockId()
       }
     });
   }
 }
 
 async function createCandidates(length: number) {
-  const parties = await strapi.db.query(API.Party).findMany({});
+  const parties = await strapi.documents('api::party.party').findMany({});
+  const questions = await strapi.documents('api::question.question').findMany({
+    populate: ['questionType']
+  });
   for (let i = 0; i <= length; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
-    const party: HasId = faker.helpers.arrayElement(parties);
+    const party = faker.helpers.arrayElement(parties);
     const email = `${firstName}.${lastName}@example.com`;
-    await strapi.db.query(API.Candidate).create({
+    await strapi.documents('api::candidate.candidate').create({
       data: {
         firstName,
         lastName,
         email,
-        party: party.id,
-        publishedAt: new Date()
+        party: party.documentId,
+        answers: generateAnswers(questions, 'candidate'),
+        ...addMockId()
       }
     });
   }
@@ -371,82 +449,129 @@ async function createCandidates(length: number) {
  * NB. Do this after generating answers but before generating nominations, so that the profile will not be complete.
  */
 async function createCandidateForTesting() {
-  const parties = await strapi.db.query(API.Party).findMany({});
+  const parties = await strapi.documents('api::party.party').findMany({});
   const { firstName, lastName, email } = mockCandidateForTesting;
-  const party: HasId = faker.helpers.arrayElement(parties);
-  await strapi.db.query(API.Candidate).create({
+  const party = faker.helpers.arrayElement(parties);
+  await strapi.documents('api::candidate.candidate').create({
     data: {
       firstName,
       lastName,
       email,
-      party: party.id,
-      publishedAt: new Date()
+      party: party.documentId,
+      ...addMockId()
     }
   });
 }
 
-async function createCandidateNominations(length: number) {
-  const elections: Array<HasId> = await strapi.db.query(API.Election).findMany({});
-  const constituencies: Array<HasId> = await strapi.db.query(API.Constituency).findMany({});
-  const candidates: Array<{ id: string | number; party: HasId }> = await strapi.db.query(API.Candidate).findMany({
+/**
+ * Create nominations for all candidates with possible duplicates.
+ * @param duplicateFraction - Approximate fraction of candidates to nominate in multiple elections. This will have no effect if there is only one election.
+ */
+async function createCandidateNominations(duplicateFraction = 0.0) {
+  const elections = await strapi.documents('api::election.election').findMany({
+    populate: {
+      constituencyGroups: {
+        populate: ['constituencies']
+      }
+    }
+  });
+  const candidates = await strapi.documents('api::candidate.candidate').findMany({
     populate: ['party']
   });
 
-  for (let i = 0; i <= length; i++) {
-    const candidate = faker.helpers.arrayElement(candidates);
-    // Remove from list to prevent duplicates
-    candidates.splice(candidates.indexOf(candidate), 1);
-    const electionSymbol = faker.number.int({ min: 2, max: length + 2 }).toString();
-    const electionRound = 1; // faker.number.int(1);
-    const constituency = faker.helpers.arrayElement(constituencies);
-    const electionId = elections[0].id;
-    await strapi.db.query(API.Nomination).create({
-      data: {
-        electionSymbol,
-        electionRound,
-        candidate: candidate.id,
-        party: candidate.party.id,
-        election: electionId,
-        constituency: constituency.id
-      }
-    });
+  // Split candidates into groups for each election
+  const candidatesByElection = new Array<typeof candidates>();
+  const allCandidates = [...candidates];
+  const numPerElection = Math.floor(candidates.length / elections.length);
+  for (let i = 0; i < elections.length; i++) {
+    // Ensure that all candidates are accounted for by assigning the rest to the last election
+    const electionCandidates = i < elections.length - 1 ? allCandidates.splice(0, numPerElection) : [...allCandidates];
+    // Insert some extra candidates if duplicateFraction > 0
+    if (duplicateFraction > 0) {
+      const availableCandidates = candidates.filter((c) => !electionCandidates.includes(c));
+      const numDuplicates = Math.min(availableCandidates.length, Math.floor(numPerElection * duplicateFraction));
+      if (numDuplicates) electionCandidates.push(...faker.helpers.arrayElements(availableCandidates, numDuplicates));
+    }
+    candidatesByElection.push(electionCandidates);
+  }
+
+  // Create nominations for each election
+  for (let i = 0; i < elections.length; i++) {
+    const election = elections[i];
+    const constituencies = election.constituencyGroups[0].constituencies;
+    const electionCandidates = candidatesByElection[i];
+    for (const candidate of electionCandidates) {
+      const electionRound = 1; // faker.number.int(1);
+      // If duplicate create two nominations, otherwise one
+      const constituency = faker.helpers.arrayElement(constituencies);
+      const electionSymbol = faker.number
+        .int({ min: 2, max: Math.ceil(candidates.length * (1 + duplicateFraction)) + 2 })
+        .toString();
+      await strapi.documents('api::nomination.nomination').create({
+        data: {
+          electionSymbol,
+          electionRound,
+          candidate: candidate.documentId,
+          party: candidate.party.documentId,
+          election: election.documentId,
+          constituency: constituency.documentId,
+          ...addMockId()
+        }
+      });
+    }
   }
 }
 
 async function createPartyNominations(length: number) {
-  const elections: Array<HasId> = await strapi.db.query(API.Election).findMany({});
-  const constituencies: Array<HasId> = await strapi.db.query(API.Constituency).findMany({});
-  const parties: Array<HasId> = await strapi.db.query(API.Party).findMany({});
+  const elections = await strapi.documents('api::election.election').findMany({
+    populate: {
+      constituencyGroups: {
+        populate: ['constituencies']
+      }
+    }
+  });
+  const parties = await strapi.documents('api::party.party').findMany({});
 
   for (let i = 0; i <= length; i++) {
+    const election = faker.helpers.arrayElement(elections);
+    const constituencies = election.constituencyGroups[0].constituencies;
     const party = faker.helpers.arrayElement(parties);
     // Remove from list to prevent duplicates
     parties.splice(parties.indexOf(party), 1);
     const electionSymbol = faker.number.int({ min: 2, max: length + 2 }).toString();
     const electionRound = faker.number.int(1);
     const constituency = faker.helpers.arrayElement(constituencies);
-    const electionId = elections[0].id;
-    await strapi.db.query(API.Nomination).create({
+    const electionId = elections[0].documentId;
+    await strapi.documents('api::nomination.nomination').create({
       data: {
         electionSymbol,
         electionRound,
-        party: party.id,
+        party: party.documentId,
         election: electionId,
-        constituency: constituency.id
+        constituency: constituency.documentId,
+        ...addMockId()
       }
     });
   }
 }
 
-async function createQuestionCategories() {
-  const elections: Array<HasId> = await strapi.db.query(API.Election).findMany({});
-  for (const category of mockCategories) {
+/**
+ * Create questions
+ * @param options.electionPctg The fraction of opinion questions categories that will have their `election` relation set to a random election.
+ */
+async function createQuestionCategories({ electionPctg = 0.2 }: { electionPctg?: number } = {}) {
+  const elections = await strapi.documents('api::election.election').findMany({});
+  for (let i = 0; i < mockCategories.length; i++) {
+    const category = mockCategories[i];
     const name = fakeLocalized((faker) => faker.word.sample(15).toLocaleUpperCase(), category);
     const shortName = abbreviate(name, { type: 'truncate' });
     const order = mockCategories.indexOf(category);
     const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
     const color = faker.color.rgb();
-    await strapi.db.query(API.QuestionCategory).create({
+    let election: string | undefined;
+    if (i < mockCategories.length * electionPctg && elections.length > 0)
+      election = faker.helpers.arrayElement(elections).documentId;
+    await strapi.documents('api::question-category.question-category').create({
       data: {
         name,
         shortName,
@@ -454,7 +579,8 @@ async function createQuestionCategories() {
         info,
         type: 'opinion',
         color,
-        election: elections[0].id
+        elections: election ? [election] : undefined,
+        ...addMockId()
       }
     });
   }
@@ -463,14 +589,14 @@ async function createQuestionCategories() {
   const shortName = abbreviate(name, { type: 'truncate' });
   const order = 0;
   const info = fakeLocalized((faker) => faker.lorem.paragraph(3));
-  await strapi.db.query(API.QuestionCategory).create({
+  await strapi.documents('api::question-category.question-category').create({
     data: {
       name,
       shortName,
       order,
       info,
       type: 'info',
-      election: elections[0].id
+      ...addMockId()
     }
   });
 }
@@ -481,11 +607,10 @@ async function createQuestionTypes() {
     info: string;
     settings: QuestionTypeSettings;
   }>) {
-    await strapi.db.query(API.QuestionType).create({
-      data: {
-        ...questionType
-      }
-    });
+    // We need explicit typing bc of Strapi's buggy JSON type definition
+    const create = strapi['documents']('api::question-type.question-type').create;
+    type Data = Parameters<typeof create>[0];
+    await create({ data: questionType } as Data);
   }
 }
 
@@ -494,20 +619,17 @@ async function createQuestionTypes() {
  * @param options.constituencyPctg The fraction of Likert questions that will
  *   have their `constituency` relation set to a random constituency.
  */
-async function createQuestions(options: { constituencyPctg?: number } = {}) {
-  const questionTypes: Array<HasId & { name: string; settings: QuestionTypeSettings }> = await strapi.db
-    .query(API.QuestionType)
-    .findMany({});
-  const likertTypes = questionTypes.filter((questionType) => questionType.settings.type === 'singleChoiceOrdinal');
+async function createQuestions({ constituencyPctg = 0.1 }: { constituencyPctg?: number } = {}) {
+  const questionTypes = await strapi.documents('api::question-type.question-type').findMany({});
+  const likertTypes = questionTypes.filter(
+    (questionType) => (questionType.settings as QuestionTypeSettings).type === 'singleChoiceOrdinal'
+  );
 
-  const questionCategories: Array<HasId & { type: 'opinion' | 'info' }> = await strapi.db
-    .query(API.QuestionCategory)
-    .findMany({});
+  const questionCategories = await strapi.documents('api::question-category.question-category').findMany({});
 
   const opinionCategories = questionCategories.filter((cat) => cat.type === 'opinion');
-  const constituencies: Array<HasId> = await strapi.db.query(API.Constituency).findMany({});
+  const constituencies = await strapi.documents('api::constituency.constituency').findMany({});
 
-  const constituencyPctg = options.constituencyPctg ?? 0.1;
   // Create Opinion questions
   mockQuestions.forEach(async (question, index) => {
     const text = fakeLocalized((faker) => faker.lorem.sentence(), question);
@@ -516,25 +638,25 @@ async function createQuestions(options: { constituencyPctg?: number } = {}) {
     const category = opinionCategories[index % opinionCategories.length];
     // const category = faker.helpers.arrayElement(opinionCategories);
     const constituency = Math.random() < constituencyPctg ? faker.helpers.arrayElement(constituencies) : null;
-    await strapi.db.query(API.Question).create({
+    await strapi.documents('api::question.question').create({
       data: {
         text,
         info,
         order: index,
         allowOpen: true,
-        questionType: questionType.id,
-        category: category.id,
-        constituencies: constituency ? [constituency.id] : [],
-        publishedAt: new Date()
+        questionType: questionType.documentId,
+        category: category.documentId,
+        constituencies: constituency ? [constituency.documentId] : [],
+        ...addMockId()
       }
     });
   });
   // Create other questions:
   // Languages, gender, election manifesto, unaffiliated
-  const infoCategoryId = questionCategories.filter((cat) => cat.type === 'info')[0]?.id;
+  const infoCategoryId = questionCategories.filter((cat) => cat.type === 'info')[0]?.documentId;
   for (const { text, info, type, order, required, entityType } of mockInfoQuestions) {
-    const typeId = questionTypes.filter((qt) => qt.name === type)[0]?.id;
-    await strapi.db.query(API.Question).create({
+    const typeId = questionTypes.filter((qt) => qt.name === type)[0]?.documentId;
+    await strapi.documents('api::question.question').create({
       data: {
         text,
         info,
@@ -543,81 +665,10 @@ async function createQuestions(options: { constituencyPctg?: number } = {}) {
         category: infoCategoryId,
         order,
         required,
-        entityType,
-        publishedAt: new Date()
+        entityType: entityType as EntityType,
+        ...addMockId()
       }
     });
-  }
-}
-
-async function createAnswers(entityType: Omit<EntityType, 'all'>) {
-  const entities: Array<HasId> = await strapi.db
-    .query(entityType === 'candidate' ? API.Candidate : API.Party)
-    .findMany({});
-
-  const questions: Array<
-    HasId & {
-      allowOpen: boolean;
-      entityType?: EntityType;
-      questionType: { settings: QuestionTypeSettings };
-    }
-  > = await strapi.db.query(API.Question).findMany({
-    populate: ['questionType']
-  });
-
-  for (const entity of entities) {
-    for (const question of questions) {
-      if (question.entityType && question.entityType !== 'all' && question.entityType !== entityType) continue;
-      const settings = question.questionType.settings;
-      let value: AnswerValue[keyof AnswerValue];
-      switch (settings.type) {
-        case 'text':
-          value = settings.notLocalizable ? faker.lorem.sentence() : fakeLocalized((faker) => faker.lorem.sentence());
-          break;
-        case 'boolean':
-          value = faker.helpers.arrayElement([true, false]);
-          break;
-        case 'number':
-          value = faker.number.int({ min: settings.min, max: settings.max });
-          break;
-        case 'date':
-          if (settings.min) {
-            if (settings.max) {
-              value = faker.date.between({ from: settings.min, to: settings.max }).toISOString().split('T')[0];
-            } else {
-              value = faker.date.future({ refDate: settings.min }).toISOString().split('T')[0];
-            }
-          } else {
-            value = faker.date.past({ refDate: settings.max }).toISOString().split('T')[0];
-          }
-          break;
-        case 'singleChoiceCategorical':
-        case 'singleChoiceOrdinal':
-          value = faker.helpers.arrayElement(settings.values).key;
-          break;
-        case 'multipleChoiceCategorical':
-        case 'preferenceOrder':
-          value = faker.helpers
-            .arrayElements(settings.values, {
-              min: settings.min ?? 1,
-              max: settings.max ?? settings.values.length
-            })
-            .map((v) => v.key);
-          break;
-        default:
-          throw new Error(`Unsupported question type: ${settings.type}`);
-      }
-      const openAnswer = question.allowOpen ? fakeLocalized((faker) => faker.lorem.sentence()) : null;
-      const entityRelation = entityType === 'candidate' ? { candidate: entity.id } : { party: entity.id };
-      await strapi.db.query(API.Answer).create({
-        data: {
-          value,
-          openAnswer,
-          question: question.id,
-          ...entityRelation
-        }
-      });
-    }
   }
 }
 
@@ -637,47 +688,93 @@ async function createCandidateUsers() {
     }
   });
 
-  const candidates = await strapi.db.query(API.Candidate).findMany({});
-  await strapi.entityService.create(API.User, {
-    data: {
-      username: mockUser[0].username,
-      email: mockUser[0].email,
-      password: mockUser[0].password,
-      provider: 'local',
-      confirmed: true,
-      blocked: false,
-      role: authenticated.id,
-      candidate: candidates[0].id
-    }
-  });
+  const candidates = await strapi.documents('api::candidate.candidate').findMany({});
 
-  await strapi.entityService.create(API.User, {
-    data: {
-      username: mockUser[1].username,
-      email: mockUser[1].email,
-      password: mockUser[1].password,
-      provider: 'local',
-      confirmed: true,
-      blocked: false,
-      role: authenticated.id,
-      candidate: candidates[1].id
-    }
-  });
+  for (let i = 0; i < mockUsers.length; i++) {
+    const { email, username, password } = mockUsers[i];
+    const candidateId = candidates[i].documentId;
 
-  // Disable registration key for the candidate we chose as they're already registered
-  await strapi.query(API.User).update({
-    where: { id: candidates[0].id },
-    data: {
-      registrationKey: null
-    }
-  });
+    await strapi.documents('plugin::users-permissions.user').create({
+      data: {
+        username,
+        email,
+        password,
+        provider: 'local',
+        confirmed: true,
+        blocked: false,
+        role: authenticated.id,
+        candidate: candidateId
+      }
+    });
 
-  await strapi.query(API.User).update({
-    where: { id: candidates[1].id },
-    data: {
-      registrationKey: null
+    // Disable registration key for the candidate we chose as they're already registered
+    await strapi.documents('api::candidate.candidate').update({
+      documentId: candidateId,
+      data: {
+        registrationKey: null,
+        ...addMockId()
+      }
+    });
+  }
+}
+
+/**
+ * Create the `answers` json object for the given questions and the entity type.
+ * @param questions - The questions for which the answers should be created.
+ * @param entityType - The type of the entity for which the answers should be created. The questions will be filtered to those applicable to the given entity type.
+ * @returns The answers forcibly typed as `object` because of Strapi's buggy `JSONValue` type.
+ */
+function generateAnswers(
+  questions: Array<Data.ContentType<'api::question.question'>>,
+  entityType: EntityType = 'all'
+): JSONValue {
+  const answers: Record<string, LocalizedAnswer> = {};
+
+  for (const question of questions) {
+    if (question.entityType && question.entityType !== 'all' && question.entityType !== entityType) continue;
+    const settings = question.questionType.settings as QuestionTypeSettings;
+    let value: AnswerValue[keyof AnswerValue];
+    switch (settings.type) {
+      case 'text':
+        value = settings.notLocalizable ? faker.lorem.sentence() : fakeLocalized((faker) => faker.lorem.sentence());
+        break;
+      case 'boolean':
+        value = faker.helpers.arrayElement([true, false]);
+        break;
+      case 'number':
+        value = faker.number.int({ min: settings.min, max: settings.max });
+        break;
+      case 'date':
+        if (settings.min) {
+          if (settings.max) {
+            value = faker.date.between({ from: settings.min, to: settings.max }).toISOString().split('T')[0];
+          } else {
+            value = faker.date.future({ refDate: settings.min }).toISOString().split('T')[0];
+          }
+        } else {
+          value = faker.date.past({ refDate: settings.max }).toISOString().split('T')[0];
+        }
+        break;
+      case 'singleChoiceCategorical':
+      case 'singleChoiceOrdinal':
+        value = faker.helpers.arrayElement(settings.choices).id;
+        break;
+      case 'multipleChoiceCategorical':
+        // case 'preferenceOrder':
+        value = faker.helpers
+          .arrayElements(settings.choices, {
+            min: settings.min ?? 1,
+            max: settings.max ?? settings.choices.length
+          })
+          .map((v) => v.id);
+        break;
+      default:
+        throw new Error(`Unsupported question type: ${settings.type}`);
     }
-  });
+    const info = question.allowOpen ? fakeLocalized((faker) => faker.lorem.sentence()) : null;
+    answers[question.documentId] = { value, info };
+  }
+  return answers as JSONValue;
 }
 
 /**
@@ -697,7 +794,23 @@ async function generateMockLLMSummaries() {
         },
         {
           role: 'user',
-          content: dynamicSettings.llm.prompt + dynamicSettings.llm.answerFormat
+          content: `Write a lorem ipsum summary of this sentence: Taxes should be increased before cutting public spending
+          Generate it in this format and change only the content part:
+          {
+            "infoSections": [
+              {
+                "content": {
+                  "en": "Generated background here",
+                  "fi": "Generated background here suomeksi",
+                  "sv": "Generated background here in swedish"
+                },
+                "title": {
+                  "en": "Background"
+                },
+                "visible": true
+              }
+            ]
+          }`
         }
       ]
     });
@@ -769,7 +882,12 @@ function abbreviate(values: LocalizedString, options: AbbreviationOptions = { ty
         case 'acronym':
           value = value
             .split(/(\s|-)+/)
-            .map((w) => (w === '' || w === ' ' ? '' : w.substring(0, 1).toLocaleUpperCase(key)))
+            .map((w) => {
+              if (w.trim() === '') return '';
+              if (w.startsWith('(')) return '';
+              if (w.match(/^\d+$/)) return w;
+              return w.substring(0, 1).toLocaleUpperCase(key);
+            })
             .join('');
           break;
         case 'truncate':
@@ -783,6 +901,14 @@ function abbreviate(values: LocalizedString, options: AbbreviationOptions = { ty
   );
 }
 
+/**
+ * Add a mock external ID to the object data.
+ */
+function addMockId(): { externalId: string } {
+  const externalId = `${MOCK_EXTERNAL_ID_PREFIX}${crypto.randomUUID()}`;
+  return { externalId };
+}
+
 interface AbbreviationOptions {
   type: 'acronym' | 'truncate';
   length?: number;
@@ -792,13 +918,14 @@ function capitaliseFirstLetter(word: string) {
   return word.charAt(0).toUpperCase() + word.slice(1);
 }
 
-interface HasId {
-  id: number | string;
-}
-
 interface Locale {
   code: string;
   name: string;
   localeObject: unknown;
   faker: Faker;
 }
+
+type EntityType = 'candidate' | 'party' | 'all';
+
+/** We need this for explicit typing */
+type JSONValue = Data.ContentType<'api::candidate.candidate'>['answers'];

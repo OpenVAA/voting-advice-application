@@ -1,5 +1,5 @@
 {
-  "kind": "collectionType",
+  "kind": "singleType",
   "collectionName": "app_settings",
   "info": {
     "singularName": "app-setting",
@@ -12,10 +12,6 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "underMaintenance": {
-      "type": "boolean",
-      "default": false
-    },
     "allowOverwrite": {
       "type": "boolean",
       "default": false
@@ -77,6 +73,18 @@
       "type": "component",
       "repeatable": false,
       "component": "settings.elections"
+    },
+    "access": {
+      "displayName": "Access",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.access"
+    },
+    "notifications": {
+      "displayName": "Notifications",
+      "type": "component",
+      "repeatable": false,
+      "component": "settings.notifications"
     }
   }
 }

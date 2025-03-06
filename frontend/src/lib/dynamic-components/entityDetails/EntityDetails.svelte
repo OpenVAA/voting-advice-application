@@ -40,6 +40,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { concatClass } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
   import { findCandidateNominations } from '$lib/utils/matches';
+  import { sortQuestions } from '$lib/utils/sorting';
   import { EntityChildren, EntityInfo, EntityOpinions } from './';
   import type { EntityDetailsContent, OrganizationDetailsContent } from '@openvaa/app-shared';
   import type { Readable } from 'svelte/store';
@@ -95,8 +96,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     if (tabs.includes('info') || tabs.includes('opinions')) {
       // If we're showing a nominated entity, we show the questions applicable to the election and constituency, otherwise default to all questions the entity has answered
       const questions = nomination ? nomination.applicableQuestions : nakedEntity.answeredQuestions;
-      infoQuestions = questions.filter((q) => q.category.type !== 'opinion');
-      opinionQuestions = questions.filter((q) => q.category.type === 'opinion');
+      infoQuestions = sortQuestions(questions.filter((q) => q.category.type !== 'opinion'));
+      opinionQuestions = sortQuestions(questions.filter((q) => q.category.type === 'opinion'));
     } else {
       infoQuestions = [];
       opinionQuestions = [];

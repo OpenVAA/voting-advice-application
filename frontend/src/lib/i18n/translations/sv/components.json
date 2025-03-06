@@ -1,4 +1,7 @@
 {
+  "constituencySelector": {
+    "selectPrompt": "Välj {constituencyGroup}"
+  },
   "headingGroup": {
     "roleDescription": "Rubrikgrupp"
   },
@@ -7,36 +10,36 @@
     "allSelected": "Alla valda",
     "changeImage": "Ändra bilden",
     "deleteOption": "Välj bort {option}",
-    "hideTranslations": "Dölja översättningar",
+    "error": {
+      "fileLoadingError": "Det gick inte att ladda filen.",
+      "invalidFile": "Filen är ogiltig.",
+      "invalidUrl": "Webbadressen är inte giltig.",
+      "oversizeFile": "Filen är för stor. Den maximala storleken är {maxFilesize} MB."
+    },
+    "hideTranslations": "Dölja",
+    "imageInfo": "Den maximala storleken för bilden är {maxFilesize} MB. Ha tålamod vid sparande, det kan ta en stund att ladda upp bilden.",
+    "multilingualInfo": "Du kan skriva in ditt svar på alla valkomatens språk om du vill.",
     "noImage": "Ingen bild",
     "selectAnother": "Välj en annan",
     "selectFirst": "Välj först",
-    "selectOne": "Välj en",
-    "showTranslations": "Visa översättningar"
+    "selectOne": "Välj",
+    "showTranslations": "Översättningar"
   },
   "matchScore": {
     "label": "matchning",
     "score": "{score}%"
   },
-  "multiLangInput": {
-    "hide": "SV Hide translations for this field",
-    "info": "SV You can supply your own translations for the languages the application is available in. If you don’t write your own translations, your original response will be shown.",
-    "show": "SV Show translations for this field"
-  },
   "passwordInput": {
-    "hidePassword": "SV Hide pasprettier-plugin-sveltesword",
+    "hidePassword": "Dölj lösenord",
     "password": "Lösenord",
-    "placeholder": "T.ex. CP23-174a-f4%&-aHAB",
-    "showPassword": "SV Reveal password"
-  },
-  "photoInput": {
-    "tapToAddPhoto": "SV Tap to add photo"
+    "placeholder": "Lösenord",
+    "showPassword": "Visa lösenord"
   },
   "preHeading": {
     "roleDescription": "Förtexter"
   },
   "preventNavigation": {
-    "unsavedChanges": "SV You have unsaved changes. Are you sure you want to leave this page?"
+    "unsavedChanges": "Du har osparade ändringar. Är du säker på att du vill lämna denna sida?"
   },
   "video": {
     "captions": "Bildtexter",

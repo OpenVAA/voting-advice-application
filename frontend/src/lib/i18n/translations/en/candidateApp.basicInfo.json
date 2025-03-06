@@ -1,13 +1,16 @@
 {
-  "addAnother": "Add another",
-  "disclaimer": "Your name and some other details are prefilled and cannot be changed. If there are any errors in them, please contact your party.",
+  "editableInfos": {
+    "description": "This information will appear in your profile.",
+    "title": "Your Profile"
+  },
   "error": {
     "invalidQuestion": "Question type or answer type is invalid for question {questionId}"
   },
-  "instructions": "Fill in first your basic details and upload a photo. You'll be asked for your political opinions thereafter.",
+  "instructions": "Fill in first your basic details and, if you wish, upload a photo. You'll be asked for your political opinions thereafter.",
   "nominations": {
-    "description": "These are the constituencies where you're nominated along with the election list and possible election symbol. If a nomination is marked 'Pending', your election symbol might not yet be defined.",
+    "description": "These are the constituencies where you're nominated. If the election list or election symbol are missing, they will be automatically added later when candidate lists are confirmed.",
     "title": "Nominations"
   },
+  "requiredInfo": "You must fill in the fields marked with this icon before you can answer other questions. However, you can save your answers so far and continue filling them in later.",
   "title": "Basic Information"
 }

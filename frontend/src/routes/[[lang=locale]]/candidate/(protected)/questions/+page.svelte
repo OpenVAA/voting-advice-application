@@ -1,129 +1,211 @@
+<!--@component
+
+# Candidate app questions intro page
+
+Shows the opinion questions for the candidate to answer.
+
+### Settings
+
+- `entities.hideIfMissingAnswers.candidate`: Affects message shown.
+-->
+
 <script lang="ts">
-  import { getContext } from 'svelte';
-  import { AnsweredQuestion, QuestionsStartPage, UnAnsweredQuestion } from '$lib/candidate/components/questionsPage';
+  import { isLocalizedString } from '@openvaa/app-shared';
   import { Button } from '$lib/components/button';
+  import ElectionTag from '$lib/components/electionTag/ElectionTag.svelte';
   import { Expander } from '$lib/components/expander';
+  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { Icon } from '$lib/components/icon';
+  import { OpinionQuestionInput, QuestionOpenAnswer } from '$lib/components/questions';
+  import { SuccessMessage } from '$lib/components/successMessage';
   import { Warning } from '$lib/components/warning';
-  import { t } from '$lib/i18n';
-  import { settings } from '$lib/legacy-stores';
-  import { BasicPage } from '$lib/templates/basicPage';
-  import { getRoute, ROUTE } from '$lib/utils/legacy-navigation';
-  import type { CandidateContext } from '$lib/utils/legacy-candidateContext';
+  import { getCandidateContext } from '$lib/contexts/candidate';
+  import { getElectionsToShow } from '$lib/utils/questions';
+  import MainContent from '../../../MainContent.svelte';
+  import type { Answer, AnyQuestionVariant } from '@openvaa/data';
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
 
   const {
-    opinionQuestions,
-    opinionAnswers,
-    progress,
     answersLocked,
+    appSettings,
+    getRoute,
+    opinionQuestions,
+    profileComplete,
+    questionBlocks,
+    selectedElections,
+    t,
+    translate,
     unansweredRequiredInfoQuestions,
-    unansweredOpinionQuestions
-  } = getContext<CandidateContext>('candidate');
+    unansweredOpinionQuestions,
+    userData
+  } = getCandidateContext();
+  const { savedCandidateData } = userData;
 
-  let questionsByCategory: Record<string, Array<LegacyQuestionProps>>;
+  ////////////////////////////////////////////////////////////////////
+  // Choose page variant to show
+  ////////////////////////////////////////////////////////////////////
 
-  let loading = true;
-  let unansweredCategories = Array<string>();
+  let completion: 'empty' | 'partial' | 'full';
+  $: completion =
+    $unansweredOpinionQuestions.length === 0
+      ? 'full'
+      : $unansweredOpinionQuestions.length === $opinionQuestions.length
+        ? 'empty'
+        : 'partial';
 
-  $: {
-    if ($opinionQuestions) {
-      questionsByCategory = $opinionQuestions.reduce(
-        (acc, question) => {
-          if (!question.category) {
-            return acc;
-          }
-          const category = question.category.name;
+  ////////////////////////////////////////////////////////////////////
+  // Handle answers
+  ////////////////////////////////////////////////////////////////////
 
-          if (acc[category]) {
-            acc[category].push(question);
-          } else {
-            acc[category] = [question];
-          }
-          return acc;
-        },
-        {} as NonNullable<typeof questionsByCategory>
-      );
-    }
+  /**
+   * A utility for getting the saved answer for a given question, translating it if necessary, because the saved answers are `LocalizedAnswer`s.
+   * NB. This makes answers non-reactive.
+   */
+  function getSavedAnswer(question: AnyQuestionVariant): Answer | undefined {
+    const localizedAnswer = $savedCandidateData?.answers?.[question.id];
+    if (!localizedAnswer?.value) return undefined;
+    const { value, info } = localizedAnswer;
+    const answer = {
+      value: isLocalizedString(value) ? translate(value) : value,
+      info: isLocalizedString(info) ? translate(info) : info
+    };
+    return question.ensureAnswer(answer);
   }
-
-  $: {
-    if ($opinionQuestions) {
-      loading = true;
-
-      if ($opinionAnswers) {
-        loading = false;
-        if (questionsByCategory) {
-          unansweredCategories = Object.keys(questionsByCategory).filter(
-            (category) => !questionsByCategory?.[category].every((question) => $opinionAnswers?.[question.id])
-          );
-        }
-      }
-    }
-  }
-
-  $: nextUnansweredQuestion = $opinionQuestions?.find((question) => !$opinionAnswers?.[question.id]);
 </script>
 
-{#if $opinionAnswers && !$answersLocked && Object.keys($opinionAnswers).length === 0}
-  <QuestionsStartPage />
-{:else}
-  <BasicPage title={$t('candidateApp.questions.title')} progress={$progress?.progress} progressMax={$progress?.max}>
-    <Warning display={!!$answersLocked} slot="note">
-      <p>{$t('candidateApp.common.editingNotAllowed')}</p>
-      {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($settings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
-        <p>{$t('candidateApp.common.isHiddenBecauseMissing')}</p>
-      {/if}
-    </Warning>
+<MainContent title={completion === 'empty' ? $t('candidateApp.questions.start') : $t('candidateApp.questions.title')}>
+  <!-- Tip or notification -->
 
-    <p class="pb-20 text-center">
-      {$t('candidateApp.questions.ingress')}
-    </p>
-    {#if $unansweredOpinionQuestions?.length !== 0 && !loading && !$answersLocked}
-      <div class="pb-6 text-center text-warning">
-        {$t('candidateApp.questions.unansweredWarning', {
-          numUnansweredQuestions: $unansweredOpinionQuestions?.length
-        })}
-        {#if $settings.entities?.hideIfMissingAnswers?.candidate}
-          {$t('candidateApp.common.willBeHiddenIfMissing')}
+  <svelte:fragment slot="note">
+    {#if completion === 'empty' && !$answersLocked}
+      <Icon name="tip" />
+      {$t('candidateApp.questions.tip')}
+    {/if}
+    {#if $answersLocked}
+      <Warning>
+        {$t('candidateApp.common.editingNotAllowed')}
+        {#if $unansweredRequiredInfoQuestions?.length !== 0 || ($appSettings.entities?.hideIfMissingAnswers?.candidate && $unansweredOpinionQuestions?.length !== 0)}
+          {$t('candidateApp.common.isHiddenBecauseMissing')}
         {/if}
-      </div>
-      <div class="flex w-full justify-center pb-40 pt-20">
+      </Warning>
+    {:else if $profileComplete}
+      <SuccessMessage inline message={$t('candidateApp.common.fullyCompleted')} />
+    {/if}
+  </svelte:fragment>
+
+  {#if completion === 'empty' && !$answersLocked}
+    <!-- Page content when no answers have yet been given -->
+
+    <div class="mb-lg grid justify-items-center gap-md">
+      <p class="text-center">
+        {$t('candidateApp.questions.ingress.empty', { numQuestions: $opinionQuestions.length })}
+      </p>
+      <Button
+        slot="primaryActions"
+        href={$getRoute({ route: 'CandAppQuestion', questionId: $unansweredOpinionQuestions[0]?.id })}
+        variant="main"
+        icon="next"
+        text={$t('common.continue')} />
+    </div>
+  {:else}
+    <!-- Page content when some or all answers have been given -->
+
+    <div class="mb-lg grid justify-items-center gap-md">
+      <p class="text-center">
+        {completion === 'partial'
+          ? $t('candidateApp.questions.ingress.partial')
+          : $t('candidateApp.questions.ingress.default')}
+      </p>
+      {#if completion !== 'full' && !$answersLocked}
+        <div class="text-center text-warning">
+          {$t('candidateApp.questions.unansweredWarning', {
+            numUnansweredQuestions: $unansweredOpinionQuestions?.length
+          })}
+          {#if $appSettings.entities?.hideIfMissingAnswers?.candidate}
+            {$t('candidateApp.common.willBeHiddenIfMissing')}
+          {/if}
+        </div>
+        <!-- Shortcut to the next unanswered question -->
         <Button
-          href={$getRoute({ route: ROUTE.CandAppQuestions, id: nextUnansweredQuestion?.id })}
-          text={$t('candidateApp.questions.enterMissingAnswer')}
+          href={$getRoute({ route: 'CandAppQuestion', questionId: $unansweredOpinionQuestions[0]?.id })}
+          text={$t('candidateApp.questions.enterMissingAnswers')}
           variant="main"
           icon="next" />
-      </div>
-    {/if}
+      {/if}
+    </div>
 
-    {#each Object.entries(questionsByCategory) as [category, categoryQuestions]}
-      <div class="edgetoedge-x">
+    <div class="edgetoedge-x mt-lg grid gap-xs !px-0">
+      {#each $questionBlocks.blocks.filter((b) => b.length) as questions}
+        {@const category = questions[0].category}
         <Expander
-          title={category || ''}
+          title={category.name}
           variant="category"
-          defaultExpanded={unansweredCategories.includes(category ?? '')}>
-          <div class="px-lg">
-            {#each categoryQuestions as question}
-              {#if $opinionAnswers?.[question.id]}
-                <AnsweredQuestion {question} {categoryQuestions} />
-              {:else}
-                <UnAnsweredQuestion {question} {categoryQuestions} />
-              {/if}
+          defaultExpanded={$unansweredOpinionQuestions.some((q) => q.category.id === category.id)}
+          class="match-w-xl:rounded-md">
+          <div class="grid gap-xxl p-lg">
+            {#each questions as question}
+              {@const { id, text } = question}
+              {@const elections = getElectionsToShow({ question, elections: $selectedElections })}
+              {@const answer = getSavedAnswer(question)}
+
+              <div class="grid-line-x grid gap-lg">
+                <HeadingGroup class="text-center">
+                  {#if $appSettings.elections.showElectionTags && elections.length}
+                    <PreHeading>
+                      {#each elections as election}
+                        <ElectionTag {election} />
+                      {/each}
+                    </PreHeading>
+                  {/if}
+                  <h3>{text}</h3>
+                </HeadingGroup>
+
+                <!-- Only show the answering choices if the question has been answered -->
+                {#if answer != null}
+                  <OpinionQuestionInput {question} mode="display" {answer} />
+                  {#if answer?.info}
+                    <QuestionOpenAnswer content={answer.info} />
+                  {/if}
+                {/if}
+
+                <Button
+                  text={$answersLocked
+                    ? $t('candidateApp.questions.viewAnswer')
+                    : answer == null
+                      ? $t('candidateApp.questions.answerQuestion')
+                      : $t('candidateApp.questions.editAnswer')}
+                  href={$getRoute({ route: 'CandAppQuestion', questionId: id })}
+                  icon={$answersLocked ? 'show' : 'create'}
+                  variant={answer == null ? 'main' : undefined}
+                  iconPos="left"
+                  class="!w-auto place-self-center" />
+              </div>
             {/each}
           </div>
         </Expander>
-      </div>
-    {/each}
+      {/each}
+    </div>
 
     <div class="flex w-full justify-center py-40">
-      <Button text={$t('common.return')} variant="main" href={$getRoute({ route: ROUTE.CandAppHome })} />
+      <Button
+        text={$t('common.home')}
+        variant={completion === 'full' ? 'main' : 'prominent'}
+        icon="previous"
+        iconPos="left"
+        href={$getRoute('CandAppHome')} />
     </div>
-  </BasicPage>
-{/if}
+  {/if}
+</MainContent>
 
-<style>
-  /* Hotfix for making the expander span the whole width of the page */
-  .edgetoedge-x {
-    padding-left: 0;
-    padding-right: 0;
+<style lang="postcss">
+  /**
+   * Add a line between grid rows. Apply to grid cells.
+   * NB: before: is a valid Tailwind prefix.
+   */
+  .grid-line-x {
+    @apply relative before:absolute before:left-0 before:right-0 before:top-[-1.8rem] before:border-md before:content-[''] first:before:content-none;
   }
 </style>

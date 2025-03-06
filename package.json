@@ -7,10 +7,12 @@
     "dev:attach": "docker compose -f docker-compose.dev.yml up --force-recreate --build",
     "dev:down": "docker compose -f docker-compose.dev.yml down -v --rmi all --remove-orphans",
     "dev:stop": "docker compose -f docker-compose.dev.yml stop",
+    "docker:delete-all": "docker rm --force --volumes $(docker ps -q) && docker volume rm --force $(docker volume ls -q) && docker image rm --force $(docker images -q) && docker builder prune -f && rm ~/Library/Containers/com.docker.docker/Data/vms/0/data/Docker.raw",
     "prepare": "husky",
+    "sync:translations": "rsync -av --include='*/' --include='dynamic.json' --exclude='*' frontend/src/lib/i18n/translations/ backend/vaa-strapi/src/util/translations/",
     "prod": "docker compose -f docker-compose.yml -p vaa-prod up -d --build",
     "test:e2e": "playwright test -c ./tests/playwright.config.ts ./tests",
-    "test:unit": "vitest run && yarn workspace @openvaa/frontend test:unit",
+    "test:unit": "vitest run && yarn workspace @openvaa/frontend test:unit && yarn workspace @openvaa/strapi test:unit",
     "test:unit:watch": "echo '###################################\nNB! Running only tests in /packages\n###################################\n' && vitest",
     "format": "yarn build:app-shared && prettier --write .",
     "format:check": "yarn build:app-shared && prettier --check .",
@@ -23,7 +25,7 @@
     "@playwright/test": "^1.49.1",
     "@types/cheerio": "^0.22.35",
     "@types/mailparser": "^3.4.5",
-    "@types/node": "^20.17.11",
+    "@types/node": "^20.17.12",
     "cheerio": "^1.0.0",
     "dotenv": "^16.4.7",
     "eslint": "~9.14.0",
@@ -43,6 +45,7 @@
   "workspaces": [
     "packages/*",
     "backend/vaa-strapi",
+    "backend/vaa-strapi/src/plugins/*",
     "frontend"
   ],
   "packageManager": "yarn@4.6.0"

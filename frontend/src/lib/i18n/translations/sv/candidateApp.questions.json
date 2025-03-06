@@ -1,22 +1,24 @@
 {
-  "answerButton": "SV Answer this question",
-  "answerSaveError": "SV Saving answer failed",
-  "editAnswer": "SV Edit Your Answer",
-  "enterMissingAnswer": "SV Enter Missing Answers",
+  "answerQuestion": "Besvara denna fråga",
+  "answerQuestionFirst": "Vänligen svara frågan först",
+  "answerSaveError": "Det gick inte att spara svaret",
+  "editAnswer": "Redigera ditt svar",
+  "enterMissingAnswers": "Fyll i saknade svar",
   "error": {
-    "answerNotFound": "SV Answer not found for question {questionId}",
-    "invalidAnswer": "SV Answer is invalid for question {questionId}",
-    "questionNotFound": "SV Question not found for question {questionId}"
+    "answerNotFound": "Svar hittades inte för frågan {questionId}",
+    "invalidAnswer": "Svaret är ogiltigt för frågan {questionId}",
+    "questionNotFound": "Fråga {questionId} hittades inte"
   },
-  "ingress": "SV You can see all of your opinions below and edit them by tapping on them.",
-  "intro": {
-    "ingress": "SV Next, the app will ask your opinions on {numQuestions} statements about political issues and values. When voters use the Election Compass, they will also answer the same statements and see how well their opinions agree with the yours."
+  "ingress": {
+    "default": "Du kan se alla dina åsikter nedan och redigera dem.",
+    "empty": "Nästa steg är att applikationen kommer att be om dina åsikter om {numQuestions} påståenden om politiska frågor och värderingar. När väljarna använder valkompassen kommer de att besvara samma påståenden och se hur deras åsikter stämmer överens med dina.",
+    "partial": "Du kan se alla dina åsikter nedan, redigera dem och besvara de återstående."
   },
-  "notAnswered": "SV You didn't answer this question.",
-  "openAnswerPrompt": "SV Comment on this issue",
-  "start": "SV Enter your opinions",
-  "tip": "SV You can see all your anwers on this page when you come back to it later.",
-  "title": "SV Your Opinions",
-  "unansweredWarning": "SV You still have {numUnansweredQuestions} unanswered questions.",
-  "viewAnswer": "SV View Your Answer"
+  "notAnswered": "Du besvarade inte denna fråga.",
+  "openAnswerPrompt": "Argument",
+  "start": "Ange dina åsikter",
+  "tip": "Du kan se alla dina svar på denna sida när du kommer tillbaka senare.",
+  "title": "Dina åsikter",
+  "unansweredWarning": "Du har fortfarande {numUnansweredQuestions, plural, =1 {en obesvarad fråga} other {# obesvarade frågor}}.",
+  "viewAnswer": "Visa ditt svar"
 }

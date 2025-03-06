@@ -70,7 +70,8 @@ export default ({ env }) => {
               ACL: 'private',
               Bucket: env('AWS_S3_BUCKET')
             }
-          }
+          },
+          sizeLimit: 20 * 1024 * 1024 // ~20mb in bytes
         },
         actionOptions: {
           upload: {},
@@ -79,9 +80,9 @@ export default ({ env }) => {
         }
       }
     },
-    'candidate-admin': {
+    'openvaa-admin-tools': {
       enabled: true,
-      resolve: './src/plugins/candidate-admin'
+      resolve: './src/plugins/openvaa-admin-tools'
     }
   };
 };

@@ -5,17 +5,20 @@ import { tweened } from 'svelte/motion';
 import { writable } from 'svelte/store';
 import { type DeepPartial, mergeSettings } from '$lib/utils/merge';
 import { stackedStore } from '../utils/stackedStore';
-import type { LayoutContext, PageStyles, TopBarSettings } from './layoutContext.type';
+import type { LayoutContext, NavigationSettings, PageStyles, TopBarSettings } from './layoutContext.type';
 
 const CONTEXT_KEY = Symbol();
 
 export const DEFAULT_TOP_BAR_SETTINGS: TopBarSettings = {
   progress: 'hide',
   actions: {
-    return: 'hide',
-    help: 'hide',
+    cancel: 'hide',
+    cancelButtonLabel: '',
     feedback: 'hide',
+    help: 'hide',
+    logout: 'hide',
     results: 'hide',
+    return: 'hide',
     returnButtonLabel: ''
   }
 };
@@ -24,6 +27,10 @@ export const DEFAULT_PAGE_STYLES: PageStyles = {
   drawer: {
     background: 'bg-base-100'
   }
+} as const;
+
+export const DEFAULT_NAVIGATION_SETTINGS: NavigationSettings = {
+  hide: false
 } as const;
 
 /**
@@ -43,6 +50,11 @@ export function initLayoutContext(): LayoutContext {
     (current, value) => [...current, mergeSettings(current[current.length - 1], value)]
   );
 
+  const navigationSettings = stackedStore<NavigationSettings, DeepPartial<NavigationSettings>>(
+    DEFAULT_NAVIGATION_SETTINGS,
+    (current, value) => [...current, mergeSettings(current[current.length - 1], value)]
+  );
+
   const progress = {
     max: writable(0),
     current: tweened(0, {
@@ -57,7 +69,8 @@ export function initLayoutContext(): LayoutContext {
     pageStyles,
     topBarSettings,
     progress,
-    navigation
+    navigation,
+    navigationSettings
   });
 }
 
@@ -71,9 +84,11 @@ export function getLayoutContext(onDestroy: (fn: () => unknown) => void) {
   const ctx = getContext<LayoutContext>(CONTEXT_KEY);
   const indexPageStyle = ctx.pageStyles.getLength() - 1;
   const indexTopBar = ctx.topBarSettings.getLength() - 1;
+  const indexNavigation = ctx.navigationSettings.getLength() - 1;
   onDestroy(() => {
     ctx.pageStyles.revert(indexPageStyle);
     ctx.topBarSettings.revert(indexTopBar);
+    ctx.navigationSettings.revert(indexNavigation);
   });
   return ctx;
 }

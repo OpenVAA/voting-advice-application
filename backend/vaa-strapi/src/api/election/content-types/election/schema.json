@@ -8,7 +8,7 @@
     "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
@@ -49,14 +49,20 @@
       "pluginOptions": {},
       "type": "json"
     },
-    "answersLocked": {
-      "type": "boolean",
-      "default": false
-    },
     "constituencyGroups": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::constituency-group.constituency-group"
+    },
+    "externalId": {
+      "type": "string",
+      "private": true
+    },
+    "alliance": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::alliance.alliance",
+      "mappedBy": "election"
     }
   }
 }

@@ -18,7 +18,7 @@ Displays information about the application.
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import Layout from '../../Layout.svelte';
+  import MainContent from '../../MainContent.svelte';
 
   const { appSettings, getRoute, t } = getAppContext();
 
@@ -31,7 +31,7 @@ Displays information about the application.
   });
 </script>
 
-<Layout title={$t('about.title')}>
+<MainContent title={$t('about.title')}>
   <figure role="presentation" slot="hero">
     <HeroEmoji emoji={$t('dynamic.about.heroEmoji')} />
   </figure>
@@ -62,4 +62,4 @@ Displays information about the application.
   {/if}
 
   <Button slot="primaryActions" variant="main" href={$getRoute('Home')} text={$t('common.returnHome')} />
-</Layout>
+</MainContent>

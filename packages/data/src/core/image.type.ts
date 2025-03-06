@@ -8,7 +8,7 @@ export interface Image extends ImageBase {
   formats?: Record<string, ImageBase> | null;
 }
 
-interface ImageBase {
+interface ImageBase extends Record<string, unknown> {
   /**
    * The alt text of the image.
    */

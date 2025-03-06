@@ -5,7 +5,7 @@ import type { StackedStore } from '../utils/stackedStore';
 
 export type LayoutContext = {
   /**
-   * A store containing top bar actions settings.
+   * A store containing top bar actions settings. When showing some buttons, make sure to provide a callback if they define one.
    */
   topBarSettings: StackedStore<TopBarSettings, DeepPartial<TopBarSettings>>;
   /**
@@ -21,19 +21,26 @@ export type LayoutContext = {
    * A context object that should contain a callback for closing the navigation menu.
    */
   navigation: Navigation;
+  /**
+   * A store containing navigation settings.
+   * NB. This is not contained under `navigation` for easier store access.
+   */
+  navigationSettings: StackedStore<NavigationSettings, DeepPartial<NavigationSettings>>;
 };
 
 export interface PageStyles {
   drawer: {
-    background: 'bg-base-100' | 'bg-base-300';
+    background: 'bg-base-100' | 'bg-base-200' | 'bg-base-300';
   };
 }
 
-type TopBarAction = 'return' | 'help' | 'feedback' | 'results';
+type TopBarAction = 'cancel' | 'feedback' | 'help' | 'logout' | 'results' | 'return';
 
 type TopBarActionsSettings = {
   [action in TopBarAction]: 'hide' | 'show';
 } & {
+  cancelButtonLabel: string;
+  cancelButtonCallback?: () => void;
   returnButtonLabel: string;
   returnButtonCallback?: () => void;
 };
@@ -54,4 +61,14 @@ interface Navigation {
    * A function that closes the navigation drawer.
    */
   close?: () => void;
+}
+
+/**
+ * A store containing navigation settings.
+ */
+export interface NavigationSettings {
+  /**
+   * Whether to hide the nav menu and the button opening it. Default is `false`.
+   */
+  hide?: boolean;
 }

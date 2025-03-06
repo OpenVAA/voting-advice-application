@@ -4,9 +4,10 @@
     "info": "A Likert question with 4 options.",
     "settings": {
       "type": "singleChoiceOrdinal",
-      "values": [
+      "choices": [
         {
-          "key": 1,
+          "id": "1",
+          "normalizableValue": "1",
           "label": {
             "en": "Fully disagree",
             "fi": "FI Fully disagree",
@@ -14,7 +15,8 @@
           }
         },
         {
-          "key": 2,
+          "id": "2",
+          "normalizableValue": "2",
           "label": {
             "en": "Disagree",
             "fi": "FI Disagree",
@@ -22,7 +24,8 @@
           }
         },
         {
-          "key": 3,
+          "id": "3",
+          "normalizableValue": "3",
           "label": {
             "en": "Agree",
             "fi": "FI Agree",
@@ -30,7 +33,8 @@
           }
         },
         {
-          "key": 4,
+          "id": "4",
+          "normalizableValue": "4",
           "label": {
             "en": "Fully agree",
             "fi": "FI Fully agree",
@@ -45,9 +49,10 @@
     "info": "A Likert question with 5 options.",
     "settings": {
       "type": "singleChoiceOrdinal",
-      "values": [
+      "choices": [
         {
-          "key": 1,
+          "id": "1",
+          "normalizableValue": "1",
           "label": {
             "en": "Fully disagree",
             "fi": "FI Fully disagree",
@@ -55,7 +60,8 @@
           }
         },
         {
-          "key": 2,
+          "id": "2",
+          "normalizableValue": "2",
           "label": {
             "en": "Somewhat disagree",
             "fi": "FI Somewhat disagree",
@@ -63,7 +69,8 @@
           }
         },
         {
-          "key": 3,
+          "id": "3",
+          "normalizableValue": "3",
           "label": {
             "en": "Neither agree nor disagree",
             "fi": "FI Neither agree nor disagree",
@@ -71,7 +78,8 @@
           }
         },
         {
-          "key": 4,
+          "id": "4",
+          "normalizableValue": "4",
           "label": {
             "en": "Somewhat agree",
             "fi": "FI Somewhat agree",
@@ -79,7 +87,8 @@
           }
         },
         {
-          "key": 5,
+          "id": "5",
+          "normalizableValue": "5",
           "label": {
             "en": "Fully agree",
             "fi": "FI Fully agree",
@@ -116,9 +125,9 @@
     "info": "A list of genders.",
     "settings": {
       "type": "singleChoiceCategorical",
-      "values": [
+      "choices": [
         {
-          "key": 1,
+          "id": "1",
           "label": {
             "en": "Female",
             "fi": "FI Female",
@@ -126,7 +135,7 @@
           }
         },
         {
-          "key": 2,
+          "id": "2",
           "label": {
             "en": "Male",
             "fi": "FI Male",
@@ -134,7 +143,7 @@
           }
         },
         {
-          "key": 3,
+          "id": "3",
           "label": {
             "en": "Non-binary",
             "fi": "FI Non-binary",
@@ -142,7 +151,7 @@
           }
         },
         {
-          "key": 4,
+          "id": "4",
           "label": {
             "en": "Prefer not to answer",
             "fi": "FI Prefer not to answer",
@@ -157,9 +166,9 @@
     "info": "A single language choice question.",
     "settings": {
       "type": "singleChoiceCategorical",
-      "values": [
+      "choices": [
         {
-          "key": 0,
+          "id": "0",
           "label": {
             "en": "English",
             "fi": "FI English",
@@ -167,7 +176,7 @@
           }
         },
         {
-          "key": 1,
+          "id": "1",
           "label": {
             "en": "Finnish",
             "fi": "FI Finnish",
@@ -175,7 +184,7 @@
           }
         },
         {
-          "key": 2,
+          "id": "2",
           "label": {
             "en": "Spanish",
             "fi": "FI Spanish",
@@ -183,7 +192,7 @@
           }
         },
         {
-          "key": 3,
+          "id": "3",
           "label": {
             "en": "Volapük",
             "fi": "FI Volapük",
@@ -191,7 +200,7 @@
           }
         },
         {
-          "key": 4,
+          "id": "4",
           "label": {
             "en": "Finnish sign language",
             "fi": "FI Finnish sign language",
@@ -206,9 +215,9 @@
     "info": "A multiple language choice question.",
     "settings": {
       "type": "multipleChoiceCategorical",
-      "values": [
+      "choices": [
         {
-          "key": 0,
+          "id": "0",
           "label": {
             "en": "English",
             "fi": "FI English",
@@ -216,7 +225,7 @@
           }
         },
         {
-          "key": 1,
+          "id": "1",
           "label": {
             "en": "Finnish",
             "fi": "FI Finnish",
@@ -224,7 +233,7 @@
           }
         },
         {
-          "key": 2,
+          "id": "2",
           "label": {
             "en": "Spanish",
             "fi": "FI Spanish",
@@ -232,7 +241,7 @@
           }
         },
         {
-          "key": 3,
+          "id": "3",
           "label": {
             "en": "Volapük",
             "fi": "FI Volapük",
@@ -240,7 +249,7 @@
           }
         },
         {
-          "key": 4,
+          "id": "4",
           "label": {
             "en": "Finnish sign language",
             "fi": "FI Finnish sign language",

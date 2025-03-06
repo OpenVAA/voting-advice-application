@@ -1,11 +1,18 @@
 {
   "collectionName": "components_settings_elections",
   "info": {
-    "displayName": "Elections"
+    "displayName": "Elections",
+    "description": ""
   },
   "options": {},
   "attributes": {
     "disallowSelection": {
+      "type": "boolean"
+    },
+    "startFromConstituencyGroup": {
+      "type": "string"
+    },
+    "showElectionTags": {
       "type": "boolean"
     }
   }

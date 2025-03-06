@@ -23,7 +23,8 @@ The button is rendered as an `<a>` element if `href` is supplied. Otherwise a `<
 - `color`: The color of the button or text.
 - `iconPos`: The position of the icon relative to the text.
 - `disabled`: Whether the button is disabled. This can also be used with buttons rendered as `<a>` elements.
-- `class`: Additional class string to append to the element's default classes.
+- `loading`: Set to `true` to show a loading spinner instead of the possible icon and disable the button. @default false
+- `loadingText`: The text shown when `loading` is `true`. @default $t('common.loading')
 - Any valid attributes of either an `<a>` or `<button>` element depending whether `href` was defined or not, respectively.
 
 ### Slots
@@ -50,7 +51,9 @@ text="Add to list">
 
 <script lang="ts">
   import { Icon } from '$lib/components/icon';
+  import { getComponentContext } from '$lib/contexts/component';
   import { concatClass } from '$lib/utils/components';
+  import { Loading } from '../loading';
   import type { ButtonProps } from './Button.type';
 
   type $$Props = ButtonProps;
@@ -62,6 +65,28 @@ text="Add to list">
   export let color: $$Props['color'] = 'primary';
   export let href: $$Props['href'] = undefined;
   export let disabled: $$Props['disabled'] = undefined;
+  export let loading: $$Props['loading'] = undefined;
+  export let loadingText: $$Props['loadingText'] = undefined;
+
+  ////////////////////////////////////////////////////////////////////
+  // Get contexts
+  ////////////////////////////////////////////////////////////////////
+
+  const { t } = getComponentContext();
+
+  ////////////////////////////////////////////////////////////////////
+  // Handle loading state
+  ////////////////////////////////////////////////////////////////////
+
+  let effectiveText: typeof text;
+
+  $: {
+    effectiveText = loading ? loadingText || $t('common.loading') : text;
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Styling
+  ////////////////////////////////////////////////////////////////////
 
   // Check iconPos
   if (
@@ -121,9 +146,13 @@ text="Add to list">
     // 5. Apply default btn color for the `prominent` variant
     if (variant === 'prominent') classes += ' btn-base-300';
 
-    // 6. Finally, define the class for the text label
+    // 6. Apply bg color for the `floating-icon` variants
+    if (variant === 'floating-icon') classes += ' bg-primary';
+
+    // 7. Finally, define the class for the text label
     switch (variant) {
       case 'main':
+      case 'prominent':
         labelClass += ' flex-grow text-center';
         if (icon) {
           // If an icon is used, add left or right margin so that the text is  nicely centered: ml/r is calculated so that it is the sum of the gap (4) and icon widths (24) = 28/16 rem
@@ -148,13 +177,17 @@ text="Add to list">
   role="button"
   tabindex={disabled ? -1 : 0}
   href={disabled ? undefined : href}
-  aria-label={variant === 'icon' ? text : undefined}
-  title={variant === 'icon' || variant === 'responsive-icon' ? text : undefined}
-  disabled={disabled || undefined}
+  aria-label={variant === 'icon' ? effectiveText : undefined}
+  title={variant === 'icon' || variant === 'responsive-icon' ? effectiveText : undefined}
+  disabled={disabled || loading || undefined}
   {...concatClass($$restProps, classes)}>
-  {#if icon}
+  {#if loading || icon}
     <div class="relative">
-      <Icon name={icon} />
+      {#if loading}
+        <Loading inline size="sm" class="pe-2" />
+      {:else if icon}
+        <Icon name={icon} />
+      {/if}
       {#if $$slots.badge && variant !== 'main'}
         <div class="absolute -end-6 -top-8">
           <slot name="badge" />
@@ -164,8 +197,8 @@ text="Add to list">
   {/if}
   {#if variant !== 'icon' && variant !== 'floating-icon'}
     <div class={labelClass}>
-      <span class="relative">
-        {text.charAt(0).toUpperCase() + text.slice(1)}
+      <span class="uc-first relative">
+        {effectiveText}
         {#if $$slots.badge && !icon && variant !== 'main'}
           <div class="absolute -end-20 -top-8">
             <slot name="badge" />

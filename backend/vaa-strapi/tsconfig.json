@@ -5,7 +5,10 @@
     "rootDir": ".",
     "allowJs": true
   },
-  "include": ["./", "src/**/*.json"],
+  "include": [
+    "./",
+    "src/**/*.json"
+  ],
   "exclude": [
     "node_modules/",
     "build/",
@@ -15,7 +18,6 @@
     "src/admin/",
     "**/*.test.ts",
     "src/plugins/**",
-    "types/generated/**",
     "eslint.config.mjs"
   ],
   "references": [

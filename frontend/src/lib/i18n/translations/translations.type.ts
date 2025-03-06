@@ -9,8 +9,10 @@ export type TranslationsPayload = Partial<{
   candidateSingular: string;
   consentDate: Date;
   constituency: string;
+  constituencyGroup: string;
   electionDate: Date;
   filters: string;
+  maxFilesize: number;
   minPasswordLength: number;
   minQuestions: number;
   minutes: number;
@@ -23,9 +25,10 @@ export type TranslationsPayload = Partial<{
   numTotal: number;
   numUnansweredQuestions: number;
   openVAA: string;
+  option: string;
   organization: string;
   partiesTerm: string;
-  partyMatchingMethod: AppSettingsGroupMatchingType;
+  partyMatchingMethod: AppSettings['matching']['organizationMatching'];
   partyPlural: string;
   partySingular: string;
   publisher: string;

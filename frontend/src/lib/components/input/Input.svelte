@@ -17,19 +17,20 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   - `text-multilingual`: A multilingual single-line text input.
   - `textarea`: A multi-line text input.
   - `textarea-multilingual`: A multilingual multi-line text input.
-- `variant`: The stylistic variant to use. @default 'default':
-  - `default`. The input has a `base-300` background.
-  - `on-shaded`. The input has a `base-100` background.
 - `label`:  The label to show for the input or group of inputs if `multilingual`.
 - `containerProps`: Any additional props to be passed to the container element of the input. @default {}
 - `id`: The id of the input. If not provided, a unique id will be generated.
 - `info`: Additional info displayed below the input.
 - `disabled`: Works the same way as a normal `input`'s `disabled` attribute.
 - `locked`: If `locked` the input will be disabled and a lock icon is displayed.
+- `required`: If `true`, a badge will be displayed next to the input when its value is empty. @default false
 - `value`: Bindable: the value of the input. Depends on the `type` prop.
+- `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
 - `options`: The options to show for a `select` or `select-multiple` input.
 - `ordered`: If `true`, enables ordering of the values of a `select-multiple` input. @default false
-- Any valid attributes of the HTML element (`input`, `select` or `textarea`) used for the input.
+- `maxFilesize`: The maximum file size for `image` inputs. @default `20 * 1024**2` (20MB)
+- `multilingualInfo`: Additional info displayed below the input for multilingual input together with possible `info`. @default $t('components.input.multilingualInfo')
+- Any valid attributes of the HTML element (`input`, `select` or `textarea`) used for the input, except in the case of `image` whose input is hidden.
 
 ### Callbacks
 
@@ -51,33 +52,44 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 -->
 
 <script lang="ts">
+  import { isLocalizedString } from '@openvaa/app-shared';
+  import { type Id, isEmptyValue } from '@openvaa/core';
   import { Button } from '$lib/components/button';
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { Icon } from '$lib/components/icon';
   import { Loading } from '$lib/components/loading';
   import { getComponentContext } from '$lib/contexts/component';
-  import { assertTranslationKey, isTranslation } from '$lib/i18n/utils';
+  import { assertTranslationKey } from '$lib/i18n/utils';
   import { concatClass, getUUID } from '$lib/utils/components';
+  import { checkUrl } from '$lib/utils/links';
   import { logDebugError } from '$lib/utils/logger';
-  import type { Id } from '@openvaa/core';
+  import { iconBadgeClass, infoClass, joinGap, outsideLabelClass } from './shared';
   import type { AnyChoice, Image } from '@openvaa/data';
+  import type { TranslationsPayload } from '$lib/i18n/translations';
+  import type { TranslationKey } from '$types';
   import type { InputProps } from './Input.type';
 
   type $$Props = InputProps;
 
   export let type: $$Props['type'];
   export let label: $$Props['label'];
-  export let variant: $$Props['variant'] = 'default';
+  // export let variant: $$Props['variant'] = 'default';
   export let containerProps: $$Props['containerProps'] = undefined;
   export let id: $$Props['id'] = getUUID();
   export let info: $$Props['info'] = undefined;
   export let locked: $$Props['locked'] = undefined;
+  export let required: $$Props['required'] = undefined;
   export let value: $$Props['value'] = undefined;
+  export let onShadedBg: $$Props['onShadedBg'] = undefined;
   export let onChange: ((value: $$Props['value']) => void) | undefined = undefined;
   export let placeholder: $$Props['placeholder'] = undefined;
   export let options: $$Props['options'] = undefined;
   export let ordered: $$Props['ordered'] = undefined;
   export let disabled: $$Props['disabled'] = undefined;
+  export let maxFilesize: $$Props['maxFilesize'] = 20 * 1024 * 1024;
+  export let multilingualInfo: $$Props['multilingualInfo'] = undefined;
+
+  // const SAVE_INTERVAL_MS = 1000;
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -86,18 +98,31 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   const { locale: currentLocale, locales, t } = getComponentContext();
 
   ////////////////////////////////////////////////////////////////////
-  // Handling multlinguality, disabled and other cases
+  // Handling multilinguality, disabled and other cases
   ////////////////////////////////////////////////////////////////////
 
+  const maxFilesizeInMB = Math.floor((maxFilesize ?? 0) / (1024 * 1024));
   const multilingual = type.endsWith('-multilingual');
   /** Whether the label is above the field or inside it */
   const isLabelOutside = multilingual || type.startsWith('textarea');
 
-  // Switches
+  /*** Extend info */
+  if (multilingual && multilingualInfo != '') {
+    multilingualInfo ??= $t('components.input.multilingualInfo');
+    info ??= '';
+    info += ` ${multilingualInfo}`;
+  }
+  if (type === 'image') {
+    info ??= '';
+    info += ` ${$t('components.input.imageInfo', { maxFilesize: maxFilesizeInMB })}`;
+  }
+
+  let error: string | undefined;
   let isDisabled: boolean;
   /** For image input */
   let isLoading = false;
   let isTranslationsVisible = false;
+  let showRequired = false;
   $: isDisabled = !!(disabled || locked);
 
   function handleToggleTranslations(): void {
@@ -109,24 +134,10 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   // Value initialization and handling in special cases
   ////////////////////////////////////////////////////////////////////
 
-  if (type === 'text' || type === 'textarea') {
-    value ??= '';
-  }
-
-  // Initialize the value for an empty `LocalizedString`
-  if (multilingual && !isTranslation(value)) {
-    value = typeof value === 'string' ? { [$currentLocale]: value } : {};
-  }
-
-  // Ensure `select` values are present in the options
-  if (type.startsWith('select') && options) {
-    if (type === 'select-multiple') {
-      if (!Array.isArray(value)) value = [];
-      else value = value.filter((v) => options.some((o) => o.id === v));
-    } else {
-      if (!value || !options.some((o) => o.id === value)) value = undefined;
-    }
-  }
+  // Make a clone of the initial value to prevent modification of the original value
+  if (typeof value === 'object' && value !== null) value = structuredClone(value);
+  // Make sure the initial value is valid
+  ensureValue();
 
   // For easier handling of selected options when multiple can be selected
   let selectedOptions = new Array<AnyChoice>();
@@ -140,10 +151,33 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   }
 
   /**
+   * Ensure that the value is valid for the given type.
+   */
+  function ensureValue(): void {
+    // Empty string values
+    if (type === 'text' || type === 'textarea' || type === 'url') {
+      value ??= '';
+    }
+    // Initialize the value for an empty `LocalizedString`
+    if (multilingual && !isLocalizedString(value)) {
+      value = typeof value === 'string' ? { [$currentLocale]: value } : {};
+    }
+    // Ensure `select` values are present in the options
+    if (type.startsWith('select') && options) {
+      if (type === 'select-multiple') {
+        if (!Array.isArray(value)) value = [];
+        else value = value.filter((v) => options.some((o) => o.id === v));
+      } else {
+        if (!value || !options.some((o) => o.id === value)) value = undefined;
+      }
+    }
+  }
+
+  /**
    * Gets the subvalue of `value` for `locale`. Used to ensure typing.
    */
   function getLocalizedValue(locale: string): string {
-    return isTranslation(value) ? ((value as LocalizedString)[locale] ?? '') : '';
+    return isLocalizedString(value) ? ((value as LocalizedString)[locale] ?? '') : '';
   }
 
   /**
@@ -192,6 +226,7 @@ The input itself is wrapped in multiple container elements, the outermost of whi
     },
     locale?: string
   ): Promise<void> {
+    ensureValue();
     // We use strong assertions below, because we've already checked the validity of `options`, `value` etc. earlier
 
     // Any multilingual inputs
@@ -217,23 +252,41 @@ The input itself is wrapped in multiple container elements, the outermost of whi
       // Image
     } else if (currentTarget instanceof HTMLInputElement && currentTarget.type === 'file') {
       const file = currentTarget.files?.[0];
-      if (!file || !file.type.startsWith('image/')) return;
+      if (!file || !file.type.startsWith('image/')) return handleError('components.input.error.invalidFile');
+      if (maxFilesize && file.size > maxFilesize)
+        return handleError('components.input.error.oversizeFile', { maxFilesize: maxFilesizeInMB });
       const reader = new FileReader();
-      await new Promise<void>((resolve) => {
+      const success = await new Promise<boolean>((resolve) => {
         isLoading = true;
         reader.onload = () => {
-          value = reader.result ? { url: `${new URL(reader.result.toString())}` } : undefined;
+          value = reader.result
+            ? ({
+                url: `${new URL(reader.result.toString())}`,
+                file
+              } as ImageWithFile)
+            : undefined;
           isLoading = false;
-          resolve();
+          resolve(true);
         };
         reader.readAsDataURL(file);
-      });
-    }
+      }).catch(() => false);
+      if (!success) return handleError('components.input.error.fileLoadingError');
+    } else if (type === 'url') {
+      // Only update the value if it's an empty string or a valid URL
+      const currentValue = currentTarget.value.replaceAll(/\s+/g, '');
+      if (currentValue == '') {
+        value = '';
+      } else {
+        const url = checkUrl(currentValue);
+        if (url == null) return handleError('components.input.error.invalidUrl');
+        value = url;
+      }
 
-    // All other types
-    else {
+      // All other types
+    } else {
       value = currentTarget.value;
     }
+    error = undefined;
     onChange?.(value);
   }
 
@@ -247,37 +300,71 @@ The input itself is wrapped in multiple container elements, the outermost of whi
   }
 
   ////////////////////////////////////////////////////////////////////
+  // Errors
+  ////////////////////////////////////////////////////////////////////
+
+  function handleError(key: TranslationKey, payload?: TranslationsPayload): void {
+    error = $t(key, payload);
+  }
+
+  ////////////////////////////////////////////////////////////////////
+  // Periodical onChange firing with textarea
+  ////////////////////////////////////////////////////////////////////
+
+  // TODO: Save focused element as the target, and call handleChange(target) periodically
+
+  // let saveInterval: NodeJS.Timeout;
+
+  // if (type.startsWith('textarea')) {
+  //   onMount(() => {
+  //     saveInterval = setInterval(() => {
+  //       // Handle value changes
+  //     }, SAVE_INTERVAL_MS);
+  //   });
+  //   onDestroy(() => clearInterval(saveInterval));
+  // };
+
+  ////////////////////////////////////////////////////////////////////
   // Styling
   ////////////////////////////////////////////////////////////////////
+
+  // Show required icon only if the input is empty
+  $: showRequired = !!required && isEmptyValue(value);
 
   // TODO[Svelte 5]: Use snippets instead of these clunky class variables
   const inputContainerClass =
     'flex min-h-touch items-center justify-between gap-2 overflow-hidden rounded-lg bg-[var(--inputBgColor)]';
-  const inputLabelClass = 'label-sm label pointer-events-none mx-md my-2 px-0 whitespace-nowrap text-secondary';
-  const inputAndLockContainerClass = 'flex grow justify-end pr-8';
+  const inputLabelClass = 'label-sm label pointer-events-none min-w-[4rem] mx-md my-2 px-0 text-secondary';
+  const inputAndIconContainerClass = 'flex grow justify-end items-center pr-8';
   const inputClass =
-    'input input-sm input-ghost grow justify-end px-0 text-right disabled:border-none disabled:bg-[var(--inputBgColor)]';
-  const lockClass = 'my-auto flex-shrink-0 text-secondary';
+    'input input-sm input-ghost grow justify-end px-0 text-end w-full disabled:border-none disabled:bg-[var(--inputBgColor)] disabled:text-neutral';
   const selectClass =
-    'select select-sm grow text-end !bg-transparent disabled:border-none disabled:bg-[var(--inputBgColor)]';
-  const textareaLockPosition = 'absolute bottom-sm right-md';
+    'select select-sm grow text-end w-full !bg-transparent disabled:border-none disabled:bg-[var(--inputBgColor)]';
   const textareaClass =
-    'textarea bg-[var(--inputBgColor)] resize-none px-md py-sm !outline-none disabled:bg-[var(--inputBgColor)]';
+    'textarea bg-[var(--inputBgColor)] resize-none px-md py-sm !outline-none disabled:bg-[var(--inputBgColor)] disabled:text-neutral';
 </script>
 
 <!-- Add containarProps to the outer container and set styles for it -->
 <div
   {...concatClass(containerProps ?? {}, 'w-full flex flex-col items-stretch')}
-  style:--inputBgColor={variant === 'default' ? 'oklch(var(--b3))' : 'oklch(var(--b1))'}>
+  style:--inputBgColor={onShadedBg ? 'oklch(var(--b1))' : 'oklch(var(--b3))'}>
   <!-- The label in small caps above the input -->
   {#if isLabelOutside}
-    <!-- svelte-ignore a11y-label-has-associated-control -->
-    <label id="{id}-label" class="small-label mx-md my-8">{label}</label>
+    <div class="{outsideLabelClass} me-8 flex flex-row items-center justify-between">
+      <!-- svelte-ignore a11y-label-has-associated-control -->
+      <label id="{id}-label">{label}</label>
+      {#if showRequired}
+        <div class="required-badge"><Icon name="required" /><span>{$t('common.required')}</span></div>
+      {/if}
+      {#if locked}
+        <div class="locked-badge"><Icon name="locked" /><span>{$t('common.locked')}</span></div>
+      {/if}
+    </div>
   {/if}
 
   <!-- 1. Multilingual text inputs and textareas -->
   {#if multilingual}
-    <div class="join join-vertical items-stretch gap-xs">
+    <div class="join join-vertical items-stretch {joinGap}">
       <!-- Show the field for the current locale and for all others, if translations are visible -->
       {#each [$currentLocale, ...$locales.filter((l) => l !== $currentLocale)] as locale, i}
         {#if locale === $currentLocale || isTranslationsVisible}
@@ -285,8 +372,10 @@ The input itself is wrapped in multiple container elements, the outermost of whi
             <div class="relative flex flex-col items-stretch">
               <!-- The language label inside the field -->
               <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label id="{id}-label-{locale}" class="small-label absolute left-md top-sm text-secondary"
-                >{$t(assertTranslationKey(`lang.${locale}`))}</label>
+              <label
+                id="{id}-label-{locale}"
+                class="small-label absolute left-md top-sm text-secondary transition-opacity"
+                class:opacity-0={!isTranslationsVisible}>{$t(assertTranslationKey(`lang.${locale}`))}</label>
               <!-- The actual textarea 
                    NB. Join does not work it, so we do it by hand -->
               <textarea
@@ -294,27 +383,24 @@ The input itself is wrapped in multiple container elements, the outermost of whi
                 aria-labelledby="{id}-label {id}-label-{locale}"
                 {placeholder}
                 disabled={isDisabled}
-                class="{textareaClass} pt-24"
+                rows="4"
+                {...concatClass($$restProps, `${textareaClass} transition-[padding]`)}
+                class:pt-24={isTranslationsVisible}
                 class:rounded-t-none={isTranslationsVisible && i > 0}
                 class:rounded-b-none={isTranslationsVisible && i !== $locales.length - 1}
-                rows="4"
                 bind:this={mainInputs[i]}
                 on:change={(e) => handleChange(e, locale)}
                 value={getLocalizedValue(locale)} />
-              <!-- Possible lock icon, shown for each translation -->
-              {#if locked}
-                <div class={textareaLockPosition}>
-                  <Icon name="locked" class={lockClass} />
-                </div>
-              {/if}
             </div>
           {:else if type === 'text-multilingual'}
             <div class="{inputContainerClass} join-item">
               <!-- The language label inside the field -->
               <!-- svelte-ignore a11y-label-has-associated-control -->
-              <label id="{id}-label-{locale}" class={inputLabelClass}
-                >{$t(assertTranslationKey(`lang.${locale}`))}</label>
-              <div class={inputAndLockContainerClass}>
+              <label
+                id="{id}-label-{locale}"
+                class="{inputLabelClass} transition-opacity"
+                class:opacity-0={!isTranslationsVisible}>{$t(assertTranslationKey(`lang.${locale}`))}</label>
+              <div class={inputAndIconContainerClass}>
                 <!-- The actual text input -->
                 <input
                   type="text"
@@ -322,18 +408,14 @@ The input itself is wrapped in multiple container elements, the outermost of whi
                   aria-labelledby="{id}-label {id}-label-{locale}"
                   {placeholder}
                   disabled={isDisabled}
-                  class={inputClass}
+                  {...concatClass($$restProps, inputClass)}
                   bind:this={mainInputs[i]}
                   on:change={(e) => handleChange(e, locale)}
                   value={getLocalizedValue(locale)} />
-                <!-- Possible lock icon, shown for each translation -->
-                {#if locked}
-                  <Icon name="locked" class={lockClass} />
-                {/if}
               </div>
             </div>
           {:else}
-            <ErrorMessage message={$t('error.general')} />
+            <ErrorMessage inline message={$t('error.general')} />
           {/if}
         {/if}
       {/each}
@@ -348,26 +430,25 @@ The input itself is wrapped in multiple container elements, the outermost of whi
         aria-labelledby="{id}-label"
         {placeholder}
         disabled={isDisabled}
-        class={textareaClass}
         rows="4"
+        {...concatClass($$restProps, `${textareaClass} vaa-group-join-item`)}
         on:change={handleChange}
         value={`${value}`} />
-      <!-- Possible lock icon, shown for each translation -->
-      {#if locked}
-        <div class={textareaLockPosition}>
-          <Icon name="locked" class={lockClass} />
-        </div>
-      {/if}
     </div>
 
     <!-- 3. Select multiple -->
   {:else if type === 'select-multiple'}
-    <div class="join join-vertical items-stretch gap-xs">
+    <div class="join join-vertical items-stretch {joinGap}">
       <div class="{inputContainerClass} join-item">
         <label class={inputLabelClass} for={id}>{label}</label>
-        <div class={inputAndLockContainerClass}>
+        <div class={inputAndIconContainerClass}>
           {#if options?.length}
-            <select {id} disabled={isDisabled} class={selectClass} bind:this={mainInputs[0]} on:change={handleChange}>
+            <select
+              {id}
+              disabled={isDisabled}
+              {...concatClass($$restProps, selectClass)}
+              bind:this={mainInputs[0]}
+              on:change={handleChange}>
               <option disabled selected
                 >{placeholder ||
                   (selectedOptions.length > 0
@@ -380,7 +461,17 @@ The input itself is wrapped in multiple container elements, the outermost of whi
               {/each}
             </select>
           {:else}
-            <ErrorMessage message={$t('error.general')} />
+            <ErrorMessage inline message={$t('error.general')} />
+          {/if}
+          {#if showRequired}
+            <div class="required-badge">
+              <Icon name="required" class={iconBadgeClass} /><span>{$t('common.required')}</span>
+            </div>
+          {/if}
+          {#if locked}
+            <div class="locked-badge">
+              <Icon name="locked" class={iconBadgeClass} /><span>{$t('common.locked')}</span>
+            </div>
           {/if}
         </div>
       </div>
@@ -388,16 +479,14 @@ The input itself is wrapped in multiple container elements, the outermost of whi
       <!-- Selected options -->
       {#each selectedOptions as option}
         {@const buttonLabel = $t('components.input.deleteOption', { option: option.label })}
-        <div class="{inputContainerClass} join-item !justify-end !bg-base-200">
+        <div class="{inputContainerClass} join-item !justify-end">
           <span class={inputLabelClass}>{option.label}</span>
-          <div class="{inputAndLockContainerClass} grow-0">
+          <div class="{inputAndIconContainerClass} grow-0">
             {#if !locked}
               <button type="button" title={buttonLabel} on:click={() => handleDeleteOption(option.id)}>
                 <span class="sr-only">{buttonLabel}, {label}</span>
-                <Icon name="close" class={lockClass} />
+                <Icon name="close" class={iconBadgeClass} />
               </button>
-            {:else}
-              <Icon name="locked" class={lockClass} />
             {/if}
           </div>
         </div>
@@ -407,16 +496,17 @@ The input itself is wrapped in multiple container elements, the outermost of whi
     <!-- 4. Image input -->
   {:else if type === 'image'}
     {@const url = getImageUrl(value)}
-    <div class={inputContainerClass}>
+    <div class="{inputContainerClass} vaa-group-join-item">
       <!-- svelte-ignore a11y-label-has-associated-control -->
       <label id="{id}-label" class={inputLabelClass}>{label}</label>
-      <div class={inputAndLockContainerClass}>
+      <div class={inputAndIconContainerClass}>
         <!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-no-noninteractive-element-interactions a11y-label-has-associated-control -->
         <label
           id="{id}-image-label"
           tabindex="0"
           class="flex h-60 justify-stretch text-primary"
           class:cursor-pointer={!isDisabled}
+          on:click={() => fileInput?.click()}
           on:keydown={handleFileInputLabelKeydown}>
           {#if isLoading}
             <Loading inline />
@@ -445,32 +535,39 @@ The input itself is wrapped in multiple container elements, the outermost of whi
           bind:this={fileInput}
           on:change={handleChange}
           accept="image/jpeg, image/png, image/gif" />
+        {#if showRequired}
+          <div class="required-badge">
+            <Icon name="required" class={iconBadgeClass} /><span>{$t('common.required')}</span>
+          </div>
+        {/if}
         {#if locked}
-          <Icon name="locked" class={lockClass} />
+          <div class="locked-badge">
+            <Icon name="locked" class={iconBadgeClass} /><span>{$t('common.locked')}</span>
+          </div>
         {/if}
       </div>
     </div>
 
     <!-- 5. Other single-row inputs -->
   {:else}
-    <div class={inputContainerClass}>
+    <div class="{inputContainerClass} vaa-group-join-item">
       <label class={inputLabelClass} for={id}>{label}</label>
-      <div class={inputAndLockContainerClass}>
+      <div class={inputAndIconContainerClass}>
         <!-- 5.1 Boolean -->
         {#if type === 'boolean'}
           <input
             type="checkbox"
             {id}
             disabled={isDisabled}
-            class="toggle toggle-primary mr-md"
             {placeholder}
+            {...concatClass($$restProps, 'toggle toggle-primary mr-md')}
             checked={!!value}
             on:change={handleChange} />
 
           <!-- 5.2 Select -->
         {:else if type === 'select'}
           {#if options?.length}
-            <select {id} disabled={isDisabled} class={selectClass} on:change={handleChange}>
+            <select {id} disabled={isDisabled} {...concatClass($$restProps, selectClass)} on:change={handleChange}>
               <option disabled selected={!value}>{placeholder || $t('components.input.selectOne')}</option>
               {#each options as { id, label }}
                 <option value={id} selected={value === id}>
@@ -484,27 +581,67 @@ The input itself is wrapped in multiple container elements, the outermost of whi
 
           <!-- 5.3 All other inputs: date, number, text -->
         {:else}
-          <input {type} {id} disabled={isDisabled} class={inputClass} {placeholder} {value} on:change={handleChange} />
+          <input
+            {type}
+            {id}
+            disabled={isDisabled}
+            {placeholder}
+            {...concatClass($$restProps, inputClass)}
+            {value}
+            on:change={handleChange} />
         {/if}
 
+        {#if showRequired}
+          <div class="required-badge">
+            <Icon name="required" class={iconBadgeClass} /><span>{$t('common.required')}</span>
+          </div>
+        {/if}
         {#if locked}
-          <Icon name="locked" class={lockClass} />
+          <div class="locked-badge">
+            <Icon name="locked" class={iconBadgeClass} /><span>{$t('common.locked')}</span>
+          </div>
         {/if}
       </div>
     </div>
   {/if}
 
+  <!-- Error messages -->
+
+  {#if error}
+    <ErrorMessage inline message={error} class="my-sm text-center" />
+  {/if}
+
   <!-- Optional elements below the form widgets -->
 
-  {#if info}
-    <div class="m-md text-sm text-secondary">{info}</div>
-  {/if}
-
-  {#if multilingual}
-    <Button
-      text={isTranslationsVisible ? $t('components.input.hideTranslations') : $t('components.input.showTranslations')}
-      icon={isTranslationsVisible ? 'hide' : 'language'}
-      class="!w-auto self-end"
-      on:click={handleToggleTranslations} />
+  {#if multilingual || info}
+    <!-- If both info and the multilingual button are shown, they're arranged side by side -->
+    <div class="flex gap-md {multilingual && info ? 'flex-row items-start' : 'flex-col'}">
+      {#if info}
+        <!-- pt-4 aligns the info more nicely with the multilingual button -->
+        <div class="{infoClass} {multilingual ? 'pt-4' : ''} grow">{info}</div>
+      {/if}
+      {#if multilingual}
+        <Button
+          text={isTranslationsVisible
+            ? $t('components.input.hideTranslations')
+            : $t('components.input.showTranslations')}
+          icon={isTranslationsVisible ? 'hide' : 'language'}
+          class="!w-auto"
+          on:click={handleToggleTranslations} />
+      {/if}
+    </div>
   {/if}
 </div>
+
+<style lang="postcss">
+  .locked-badge {
+    @apply text-secondary;
+  }
+  .required-badge {
+    @apply text-warning;
+  }
+  .locked-badge > span,
+  .required-badge > span {
+    @apply sr-only;
+  }
+</style>

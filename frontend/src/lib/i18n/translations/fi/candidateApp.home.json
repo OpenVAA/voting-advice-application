@@ -6,7 +6,7 @@
   },
   "ingress": {
     "notDone": "Näkyäksesi vaalikoneessa sinun on annettava joitakin perustietoja itsestäsi ja vastattava mielipidekysymyksiin.",
-    "ready": "Olet täyttänyt kaikki vaalikoneen tarvittavat tiedot. Voit vielä muokata vastauksiasi ja jopa kirjautua sisään myöhemmin sitä varten."
+    "ready": "Olet täyttänyt kaikki vaalikoneeseen tarvittavat tiedot. Voit vielä muokata vastauksiasi ja kirjautua sisään myöhemmin sitä varten."
   },
   "preview": "Esikatsele profiiliasi",
   "previewTip": "Jos haluat nähdä, miten äänestäjät näkevät profiilisi, voit esikatsella sitä.",
