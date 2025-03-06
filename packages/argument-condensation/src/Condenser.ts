@@ -14,6 +14,10 @@ export class Condenser {
   private existingArguments: Argument[] = [];
   private config: LanguageConfig;
   private readonly PROMPT_TEMPLATE: string;
+  private readonly MAX_COMMENT_LENGTH: number;
+  private readonly MAX_TOPIC_LENGTH: number;
+  private readonly MAX_BATCH_SIZE: number;
+  private readonly MAX_PROMPT_LENGTH: number;
 
   /**
    * Creates a new Condenser instance
@@ -47,6 +51,12 @@ export class Condenser {
     ${this.config.outputFormat.sourcesPrefix}: ${this.config.outputFormat.sourcesExplanation}
     </ARGUMENTS>
   `;
+
+    // Constants for limits
+    this.MAX_COMMENT_LENGTH = 2000;
+    this.MAX_TOPIC_LENGTH = 200;
+    this.MAX_BATCH_SIZE = 200;
+    this.MAX_PROMPT_LENGTH = 30000;
   }
 
   /**
@@ -68,40 +78,21 @@ export class Condenser {
         throw new ArgumentCondensationError('Topic cannot be empty');
       }
 
-      // Constants for limits
-      const MAX_COMMENT_LENGTH = 2000;
-      const MAX_TOPIC_LENGTH = 200;
-      const MAX_BATCH_SIZE = 200;
-      const MAX_PROMPT_LENGTH = 30000;
-
       // Validate input lengths
-      if (topic.length > MAX_TOPIC_LENGTH) {
-        throw new ArgumentCondensationError(`Topic must be less than ${MAX_TOPIC_LENGTH} characters`);
+      if (topic.length > this.MAX_TOPIC_LENGTH) {
+        throw new ArgumentCondensationError(`Topic must be less than ${this.MAX_TOPIC_LENGTH} characters`);
       }
 
       // Validate batch size
-      if (batchSize < 1 || batchSize > MAX_BATCH_SIZE) {
-        throw new ArgumentCondensationError(`Batch size must be between 1 and ${MAX_BATCH_SIZE}`);
+      if (batchSize < 1 || batchSize > this.MAX_BATCH_SIZE) {
+        throw new ArgumentCondensationError(`Batch size must be between 1 and ${this.MAX_BATCH_SIZE}`);
       }
 
       // Check for oversized comments
-      const longComments = comments.filter((c) => c.length > MAX_COMMENT_LENGTH);
+      const longComments = comments.filter((c) => c.length > this.MAX_COMMENT_LENGTH);
       if (longComments.length > 0) {
         throw new ArgumentCondensationError(
-          `${longComments.length} comment(s) exceed the maximum length of ${MAX_COMMENT_LENGTH} characters`
-        );
-      }
-
-      // Validate total prompt length for first batch
-      const commentsText = comments
-        .slice(0, batchSize)
-        .map((comment, i) => `${this.config.inputCommentPrefix} ${i + 1}: ${comment}`)
-        .join('\n');
-
-      const promptLength = this.PROMPT_TEMPLATE.length + commentsText.length;
-      if (promptLength > MAX_PROMPT_LENGTH) {
-        throw new ArgumentCondensationError(
-          `Total prompt length (${promptLength}) exceeds maximum of ${MAX_PROMPT_LENGTH} characters`
+          `${longComments.length} comment(s) exceed the maximum length of ${this.MAX_COMMENT_LENGTH} characters. Please reduce the length of the comments.`
         );
       }
 
@@ -151,12 +142,21 @@ export class Condenser {
         .replace('{existingArguments}', existingArgs.length ? existingArgsText : '')
         .replace('{comments}', commentsText);
 
+      // Validate prompt length
+      const promptLength = prompt.length;
+      if (promptLength > this.MAX_PROMPT_LENGTH) {
+        throw new ArgumentCondensationError(
+          `Total prompt length (${promptLength}) exceeds maximum of ${this.MAX_PROMPT_LENGTH} characters. Please reduce the number and/or the length of the comments.`
+        );
+      }
+
       // console.log('Prompt:', prompt);
 
       // Has retry logic with exponential backoff
       // To do: we need to think about possible errors like
       // - Rate limits
-      //
+      // - API errors
+      // - Other errors
       // and how to handle them
       const maxRetries = 3;
       let lastError: Error | null = null;
