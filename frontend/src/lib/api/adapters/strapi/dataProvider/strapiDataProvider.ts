@@ -154,7 +154,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       },
       party: { populate: { image: 'true' } }
     };
-    const data = await this.apiGet({ endpoint: 'nominations', params });
+    const data = await this.apiGet({ endpoint: 'nominationsWithRelations', params });
     return parseNominations(data, locale);
   }
 

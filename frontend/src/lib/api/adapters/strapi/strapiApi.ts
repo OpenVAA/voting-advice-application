@@ -29,6 +29,7 @@ export const STRAPI_API: Record<keyof StrapiApiReturnType, string> = {
   constituencyGroups: 'api/constituency-groups',
   elections: 'api/elections',
   nominations: 'api/nominations',
+  nominationsWithRelations: 'api/nominations/with-relations',
   parties: 'api/parties',
   questions: 'api/questions',
   questionTypes: 'api/question-types',
@@ -65,6 +66,7 @@ export type StrapiApiReturnType = {
   constituencyGroups: Array<StrapiConstituencyGroupData>;
   elections: Array<StrapiElectionData>;
   nominations: Array<StrapiNominationData>;
+  nominationsWithRelations: Array<StrapiNominationData>;
   parties: Array<StrapiPartyData>;
   questions: Array<StrapiQuestionData>;
   questionTypes: Array<StrapiQuestionTypeData>;
