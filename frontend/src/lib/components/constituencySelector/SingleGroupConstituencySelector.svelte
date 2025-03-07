@@ -10,7 +10,7 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
 - `label`: The `aria-label` and placeholder text for the select input. Default `$t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name })`.
 - `disableSorting`: If `true`, the `Constituency`s are not ordered alphabetically. Default `false`.
 - `onShadedBg`: Set to `true` if using the component on a dark (`base-300`) background. @default false
-- `selected`: Bindable value for the `Id`s of the selected `Constituency`.
+- `selected`: Bindable value for the `Id` of the selected `Constituency`.
 - `onChange`: Callback triggered when the selection changes.
 - Any valid attributes of a `<select>` element.
 
@@ -91,6 +91,7 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
 <select
   aria-label={label}
   {...concatClass($$restProps, classes)}
+  class:text-secondary={selected === ''}
   bind:value={selected}
   on:click={handleClick}
   on:change={handleChange}>
