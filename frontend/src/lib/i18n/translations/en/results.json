@@ -16,6 +16,7 @@
   "organization": {
     "numShown": "{numShown, plural, =0 {No {partyPlural}} =1 {1 {partySingular}} other {# {partyPlural}}}"
   },
+  "selectElectionFirst": "Select an election first",
   "title": {
     "browse": "Browse {candidatePlural} and {partyPlural}",
     "results": "Results"

@@ -54,7 +54,6 @@ The nominations applicable to these elections and constituencies are shown. Thes
     appSettings,
     constituenciesSelectable,
     dataRoot,
-    electionsSelectable,
     entityFilters,
     getRoute,
     matches,
@@ -216,7 +215,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   </div>
 
   <!-- Multi election selector -->
-  {#if $electionsSelectable || $elections.length > 1}
+  {#if $dataRoot.elections.length > 1}
     {@const activeIndex = $elections.findIndex((e) => e.id === activeElectionId)}
     <AccordionSelect
       options={$elections}
@@ -234,10 +233,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
 
   <!-- Set min-h-[120vh] to prevent scrolling changes when filters yield no results 
     TODO: When we get nice transitions for the list items, check whether this is still necessary -->
-  <div
-    slot="fullWidth"
-    class="flex min-h-[120vh] flex-col items-center transition-colors"
-    class:bg-base-300={activeElectionId}>
+  <div slot="fullWidth" class="flex min-h-[120vh] flex-col items-center bg-base-300">
     {#if activeElectionId}
       <div class="w-full max-w-xl pb-safelgb pl-safemdl pr-safemdr match-w-xl:px-0">
         <!-- EntityType selector if there are multiple -->
@@ -275,6 +271,8 @@ The nominations applicable to these elections and constituencies are shown. Thes
           </div>
         {/if}
       </div>
+    {:else}
+      <p class="mt-[2rem] text-center text-sm text-secondary" transition:slide>{$t('results.selectElectionFirst')}</p>
     {/if}
   </div>
 </MainContent>

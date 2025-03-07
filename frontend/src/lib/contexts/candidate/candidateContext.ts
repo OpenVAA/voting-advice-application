@@ -75,7 +75,7 @@ export function initCandidateContext(): CandidateContext {
   const preregistrationElections = derived(
     [appSettings, dataRoot, preregistrationElectionIds],
     ([appSettings, dataRoot, preregistrationElectionIds]) => {
-      const ids = getImpliedElectionIds({ appSettings, elections: dataRoot.elections }) ?? preregistrationElectionIds;
+      const ids = getImpliedElectionIds({ appSettings, dataRoot }) ?? preregistrationElectionIds;
       return ids.map((id) => dataRoot.getElection(id));
     }
   );
