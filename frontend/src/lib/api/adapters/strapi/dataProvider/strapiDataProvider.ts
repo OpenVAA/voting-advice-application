@@ -137,18 +137,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
   protected async _getNominationData(options: GetNominationsOptions = {}): Promise<DPDataType['nominations']> {
     const locale = options.locale ?? null;
     const params = buildFilterParams(options);
-    params.populate = {
-      constituency: 'true',
-      election: 'true',
-      candidate: {
-        populate: {
-          image: 'true',
-          party: 'true'
-        }
-      },
-      party: { populate: { image: 'true' } }
-    };
-    const data = await this.apiGet({ endpoint: 'nominations', params });
+    const data = await this.apiGet({ endpoint: 'nominationsWithRelations', params });
     return parseNominations(data, locale);
   }
 
