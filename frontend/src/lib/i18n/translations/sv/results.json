@@ -16,6 +16,7 @@
   "organization": {
     "numShown": "{numShown, plural, =0 {Inga {partyPlural}} =1 {1 {partySingular}} other {# {partyPlural}}}"
   },
+  "selectElectionFirst": "Välj val först",
   "title": {
     "browse": "Bläddra bland {candidatePlural} och {partyPlural}",
     "results": "Resultat"

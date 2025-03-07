@@ -4,6 +4,8 @@
 
 Display constituency selection inputs for elections.
 
+If there’s only one option, it is automatically selected and no interactions are allowed.
+
 ### Properties
 
 - `elections`: The `Election`s to show.
@@ -33,6 +35,12 @@ Display constituency selection inputs for elections.
 
   const groupName = getUUID();
 
+  // If there’s only one option, it is automatically selected
+  if (elections.length === 1 && !selected.length) {
+    selected = [elections[0].id];
+    handleChange();
+  }
+
   function handleChange(): void {
     onChange?.(selected);
   }
@@ -40,12 +48,13 @@ Display constituency selection inputs for elections.
 
 <div {...concatClass($$restProps, 'grid gap-sm')}>
   {#each elections as { id, name }}
-    <label class="label cursor-pointer justify-start gap-sm !p-0">
+    <label class="label cursor-pointer justify-start gap-sm !p-0" class:pointer-events-none={elections.length === 1}>
       <input
         type="checkbox"
         class="checkbox"
         name={groupName}
         value={id}
+        disabled={elections.length === 1}
         bind:group={selected}
         on:change={handleChange} />
       <span class="label-text">

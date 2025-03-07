@@ -11,7 +11,6 @@ import { filterStore } from './filters/filterStore';
 import { matchStore } from './matchStore';
 import { nominationAndQuestionStore } from './nominationAndQuestionStore';
 import { getAppContext } from '../../contexts/app';
-import { dataCollectionStore } from '../utils/dataCollectionStore';
 import { paramStore } from '../utils/paramStore';
 import { parsimoniusDerived } from '../utils/parsimoniusDerived';
 import { questionBlockStore } from '../utils/questionBlockStore';
@@ -60,61 +59,52 @@ export function initVoterContext(): VoterContext {
 
   // Param-based collection stores
 
-  /**
-   * A paramStore with implied defaults.
-   */
-  const electionId = parsimoniusDerived(
-    [paramStore('electionId'), appSettings, dataRoot],
-    ([param, appSettings, dataRoot]) => {
-      if (param) return param;
-      if (dataRoot.elections.length === 0) return undefined;
-      return getImpliedElectionIds({
-        appSettings,
-        elections: dataRoot.elections
-      });
-    },
-    { differenceChecker: JSON.stringify }
-  );
+  const electionId = paramStore('electionId');
 
-  const selectedElections = dataCollectionStore({
-    dataRoot,
-    idStore: electionId,
-    getter: (id, dr) => {
+  const constituencyId = paramStore('constituencyId');
+
+  const selectedElections = parsimoniusDerived(
+    [dataRoot, appSettings, electionId, constituencyId],
+    ([dataRoot, appSettings, electionId, constituencyId]) => {
+      if (!dataRoot.elections.length) return [];
+      const ids = electionId?.length
+        ? electionId
+        : getImpliedElectionIds({
+            appSettings,
+            dataRoot,
+            selectedConstituencyIds: constituencyId
+          });
+      if (!ids?.length) return [];
       try {
-        return dr.getElection(id);
+        return ids.map((id) => dataRoot.getElection(id));
       } catch (e) {
         logDebugError(`[selectedElections] Error fetching election: ${e}`);
         goto(get(getRoute)({ route: 'Elections', electionId: undefined, constituencyId: undefined }));
-        return undefined;
+        return [];
       }
     }
-  });
-
-  /**
-   * A paramStore with implied defaults.
-   */
-  const constituencyId = parsimoniusDerived(
-    [paramStore('constituencyId'), selectedElections],
-    ([param, elections]) => {
-      if (param) return param;
-      return getImpliedConstituencyIds({ elections });
-    },
-    { differenceChecker: JSON.stringify }
   );
 
-  const selectedConstituencies = dataCollectionStore({
-    dataRoot,
-    idStore: constituencyId,
-    getter: (id, dr) => {
+  const selectedConstituencies = parsimoniusDerived(
+    [dataRoot, constituencyId, electionId],
+    ([dataRoot, constituencyId, electionId]) => {
+      if (!dataRoot.constituencies.length) return [];
+      const ids = constituencyId?.length
+        ? constituencyId
+        : getImpliedConstituencyIds({
+            dataRoot,
+            selectedElectionIds: electionId
+          });
+      if (!ids?.length) return [];
       try {
-        return dr.getConstituency(id);
+        return ids.map((id) => dataRoot.getConstituency(id));
       } catch (e) {
         logDebugError(`[selectedConstituencies] Error fetching constituency: ${e}`);
         goto(get(getRoute)({ route: 'Constituencies', constituencyId: undefined }));
-        return undefined;
+        return [];
       }
     }
-  });
+  );
 
   ////////////////////////////////////////////////////////////
   // Questions and QuestionCategories
