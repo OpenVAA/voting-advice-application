@@ -96,9 +96,9 @@ export type DynamicSettings = {
      */
     minimumAnswers: number;
     /**
-     * The method with which parties are matched. • None: no party matching is done • answersOnly: matching is only performed on the parties explicit answers • Mean/Median: missing party answers are replaced with the mean, median or mode of the party's candidates' answers. Nb. Mode is not yet implemented because of difficulty of handling multiple modes when the counts are tied.
+     * The method with which parties are matched. • None: no party matching is done • answersOnly: matching is only performed on the parties explicit answers • Impute: missing party answers are substituted with an anwswer imputed from the party's candidates' answers.
      */
-    organizationMatching: 'none' | 'answersOnly' | 'mean' | 'median';
+    organizationMatching: 'none' | 'answersOnly' | 'impute';
   };
   /**
    * Settings related to the question view.
