@@ -13,6 +13,17 @@
     "answerMinQuestions": "Om du vill för att hitta de kandidaterna och partierna som håller med dig mest, {questionsLink} först.",
     "questionsLinkText": "svara minst {numQuestions, plural, =1 {en fråga} other {# frågor}}"
   },
+  "missingNominations": {
+    "noNominations": {
+      "title": "Det finns inga kandidater eller partier i din valkrets som har svarat på valkompassen",
+      "content": "Du kan granska frågorna om du vill, men inga resultat kan visas."
+    },
+    "someNominations": {
+      "title": "Vissa kandidater eller partier har inte svarat på valkompassen",
+      "content": "Det finns inga svar från kandidater eller partier för alla val i din valkrets. Resultaten kommer endast att visa de val där svar finns tillgängliga."
+    },
+    "noNominationsForElection": "inte tillgängligt"
+  },
   "organization": {
     "numShown": "{numShown, plural, =0 {Inga {partyPlural}} =1 {1 {partySingular}} other {# {partyPlural}}}"
   },

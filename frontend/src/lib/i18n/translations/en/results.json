@@ -13,6 +13,17 @@
     "answerMinQuestions": "If you want to find the {candidatePlural} and {partyPlural} that agree with you the most, {questionsLink} first.",
     "questionsLinkText": "answer at least {numQuestions, plural, =1 {one question} other {# questions}}"
   },
+  "missingNominations": {
+    "noNominations": {
+      "title": "There are no candidates or parties in your constituency who have responded to the Election Compass",
+      "content": "You can review the questions if you wish, but results cannot be displayed."
+    },
+    "someNominations": {
+      "title": "Some election candidates or parties have not responded to the Election Compass",
+      "content": "There are no candidate or party responses available for all elections in your constituency. The results will only display elections for which responses are available."
+    },
+    "noNominationsForElection": "not available"
+  },
   "organization": {
     "numShown": "{numShown, plural, =0 {No {partyPlural}} =1 {1 {partySingular}} other {# {partyPlural}}}"
   },
