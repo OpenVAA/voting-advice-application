@@ -41,7 +41,9 @@
       "default": 1
     },
     "unconfirmed": {
-      "type": "boolean"
+      "type": "boolean",
+      "required": false,
+      "default": false
     },
     "candidate": {
       "type": "relation",
