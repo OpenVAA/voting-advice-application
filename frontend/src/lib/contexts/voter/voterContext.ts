@@ -179,6 +179,15 @@ export function initVoterContext(): VoterContext {
     parentMatchingMethod
   });
 
+  const nominationsAvailable = parsimoniusDerived(nominationsAndQuestions, (nominationsAndQuestions) =>
+    Object.fromEntries(
+      Object.entries(nominationsAndQuestions).map(([id, contents]) => [
+        id,
+        Object.values(contents).some(({ nominations }) => nominations.length > 0)
+      ])
+    )
+  );
+
   const algorithm = new MatchingAlgorithm({
     distanceMetric: DISTANCE_METRIC.Manhattan,
     missingValueOptions: {
@@ -234,6 +243,7 @@ export function initVoterContext(): VoterContext {
     infoQuestionCategories,
     infoQuestions,
     matches,
+    nominationsAvailable,
     opinionQuestionCategories,
     opinionQuestions,
     resetVoterData,
