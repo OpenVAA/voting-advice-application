@@ -52,6 +52,11 @@ Display a general intro before starting answering the questions and possibly all
     if (!$appSettings.questions.questionsIntro.show) {
       return goto($getRoute({ route: 'Question' }), { replaceState: true });
     }
+    // Check that the selected categories are still available (because they might be specific to the election and constituency)
+    $selectedQuestionCategoryIds = $selectedQuestionCategoryIds.filter((id) =>
+      $opinionQuestionCategories.find((c) => c.id === id)
+    );
+    // Preselect all if there's no selection yet
     if ($selectedQuestionCategoryIds.length === 0)
       $selectedQuestionCategoryIds = $opinionQuestionCategories.map((c) => c.id);
   });
