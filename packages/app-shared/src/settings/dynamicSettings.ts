@@ -38,7 +38,7 @@ export const dynamicSettings: DynamicSettings = {
   },
   matching: {
     minimumAnswers: 5,
-    organizationMatching: 'median'
+    organizationMatching: 'impute'
   },
   questions: {
     categoryIntros: {

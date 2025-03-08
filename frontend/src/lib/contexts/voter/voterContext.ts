@@ -164,12 +164,19 @@ export function initVoterContext(): VoterContext {
   /** The types of entities we show in results */
   const entityTypes = parsimoniusDerived(appSettings, (appSettings) => appSettings.results?.sections ?? []);
 
+  /** The parent entity matching method */
+  const parentMatchingMethod = parsimoniusDerived(
+    appSettings,
+    (appSettings) => appSettings.matching?.organizationMatching || 'none'
+  );
+
   // Matching and filtering depend on the available nominations and questions, for which we use a utility store
   const nominationsAndQuestions = nominationAndQuestionStore({
     constituencies: selectedConstituencies,
     dataRoot,
     elections: selectedElections,
-    entityTypes
+    entityTypes,
+    parentMatchingMethod
   });
 
   const algorithm = new MatchingAlgorithm({
