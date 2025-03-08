@@ -11,10 +11,10 @@ Shows an error message if there are no nominations yet. This is usually the case
   import { getVoterContext } from '$lib/contexts/voter/voterContext.js';
   import MainContent from '../../../MainContent.svelte';
 
-  const { getRoute, matches, t } = getVoterContext();
+  const { getRoute, nominationsAvailable, t } = getVoterContext();
 </script>
 
-{#if Object.values(matches).length > 0}
+{#if Object.values($nominationsAvailable).some(Boolean)}
   <slot />
 {:else}
   <MainContent title={$t('error.noNominations')}>

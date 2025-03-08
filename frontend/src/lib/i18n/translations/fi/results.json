@@ -13,6 +13,17 @@
     "answerMinQuestions": "Jos haluat löytää eniten kanssasi samaa mieltä olevat {candidatePlural} ja {partyPlural}, {questionsLink} ensin.",
     "questionsLinkText": "vastaa ainakin {numQuestions, plural, =1 {yhteen kysymykseen} other {# kysymykseen}}"
   },
+  "missingNominations": {
+    "noNominations": {
+      "title": "Vaalipiirissäsi ei ole vaalikoneeseen vastanneita ehdokkaita tai puolueita",
+      "content": "Voit halutessasi tutustua kysymyksiin, mutta tuloksia ei voida näyttää."
+    },
+    "someNominations": {
+      "title": "Joidenkin vaalien ehdokkaat tai puolueet eivät ole vastanneet vaalikoneeseen",
+      "content": "Vaalipiirissäsi ei ole ehdokkaiden tai puolueiden vastauksia kaikkien vaalien osalta. Tuloksissa näytetään vain ne vaalit, joihin vastauksia on saatavilla."
+    },
+    "noNominationsForElection": "ei saatavilla"
+  },
   "organization": {
     "numShown": "{numShown, plural, =0 {Ei puolueita} =1 {1 puolue} other {# puoluetta}}"
   },
