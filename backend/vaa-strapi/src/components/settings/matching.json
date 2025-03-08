@@ -15,8 +15,7 @@
       "enum": [
         "none",
         "answersOnly",
-        "mean",
-        "median"
+        "impute"
       ],
       "required": true
     }
