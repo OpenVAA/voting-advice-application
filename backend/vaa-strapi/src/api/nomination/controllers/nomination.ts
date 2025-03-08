@@ -86,17 +86,13 @@ export default factories.createCoreController('api::nomination.nomination', ({ s
           select
             elections.id,
             json_build_object(
-              'id', elections.id,
               'documentId', elections.document_id,
               'electionStartDate', elections.election_start_date,
               'electionDate', elections.election_date,
               'electionType', elections.election_type,
               'name', elections.name,
               'shortName', elections.short_name,
-              'info', elections.info,
-              'createdAt', elections.created_at,
-              'updatedAt', elections.updated_at,
-              'publishedAt', elections.published_at
+              'info', elections.info
             ) data
            from elections
            where (? = false or elections.document_id in (${electionSqlInFilter.values.map(() => '?').join(',')}))
@@ -105,15 +101,11 @@ export default factories.createCoreController('api::nomination.nomination', ({ s
           select
             constituencies.id,
             json_build_object(
-              'id', constituencies.id,
               'documentId', constituencies.document_id,
               'name', constituencies.name,
               'shortName', constituencies.short_name,
               'info', constituencies.info,
-              'keywords', constituencies.keywords,
-              'createdAt', constituencies.created_at,
-              'updatedAt', constituencies.updated_at,
-              'publishedAt', constituencies.published_at
+              'keywords', constituencies.keywords
             ) data
           from constituencies
           where (? = false or constituencies.document_id in (${constituencySqlInFilter.values.map(() => '?').join(',')}))
@@ -123,24 +115,15 @@ export default factories.createCoreController('api::nomination.nomination', ({ s
             files_related_mph.related_id,
             json_build_object(
               'id', files.id,
-              'documentId', files.document_id,
               'name', files.name,
               'alternativeText', files.alternative_text,
               'caption', files.caption,
               'width', files.width,
               'height', files.height,
               'formats', files.formats,
-              'hash', files.hash,
               'ext', files.ext,
-              'mime', files.mime,
               'size', files.size,
-              'url', files.url,
-              'previewUrl', files.preview_url,
-              'provider', files.provider,
-              'provider_metadata', files.provider_metadata,
-              'createdAt', files.created_at,
-              'updatedAt', files.updated_at,
-              'publishedAt', files.published_at
+              'url', files.url
             ) data
           from files_related_mph
           join files on files.id = files_related_mph.file_id
@@ -149,7 +132,6 @@ export default factories.createCoreController('api::nomination.nomination', ({ s
           select
             id,
             json_build_object(
-              'id', parties.id,
               'documentId', parties.document_id,
               'color', parties.color,
               'name', parties.name,
@@ -157,9 +139,6 @@ export default factories.createCoreController('api::nomination.nomination', ({ s
               'info', parties.info,
               'colorDark', parties.color_dark,
               'answers', parties.answers,
-              'createdAt', parties.created_at,
-              'updatedAt', parties.updated_at,
-              'publishedAt', parties.published_at,
               'image', _images.data
             ) data
           from parties
@@ -167,25 +146,17 @@ export default factories.createCoreController('api::nomination.nomination', ({ s
         )
         select
           json_build_object(
-            'id', nominations.id,
             'documentId', nominations.document_id,
             'electionSymbol', nominations.election_symbol,
             'electionRound', nominations.election_round,
             'unconfirmed', nominations.unconfirmed,
-            'createdAt', nominations.created_at,
-            'updatedAt', nominations.updated_at,
-            'publishedAt', nominations.published_at,
             'constituency', _constituencies.data,
             'election', _elections.data,
             'candidate', json_build_object(
-              'id', candidates.id,
               'documentId', candidates.document_id,
               'firstName', candidates.first_name,
               'lastName', candidates.last_name,
               'answers', candidates.answers,
-              'createdAt', candidates.created_at,
-              'updatedAt', candidates.updated_at,
-              'publishedAt', candidates.published_at,
               'image', candidates_images.data,
               'party', candidates_parties.data
             ),
