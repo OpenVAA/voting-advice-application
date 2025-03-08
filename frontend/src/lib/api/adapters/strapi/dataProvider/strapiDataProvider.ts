@@ -138,6 +138,10 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
   protected async _getNominationData(options: GetNominationsOptions = {}): Promise<DPDataType['nominations']> {
     const locale = options.locale ?? null;
     const params = buildFilterParams(options);
+    if (!options.includeUnconfirmed) {
+      params.filters ??= {};
+      params.filters.unconfirmed = { $ne: 'true' };
+    }
     params.populate = {
       constituency: 'true',
       election: 'true',
