@@ -8,7 +8,6 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const model = 'gpt-4o-mini';
 const llmProvider = new OpenAIProvider({ apiKey: OPENAI_API_KEY, model });
 
-
 // !!
 // Note: Logic for question selection and grouping will be refactored
 // !!
@@ -27,14 +26,14 @@ function groupLikertAnswers(answers: any[], likertType: string): LikertGroups {
   // Extract the scale size from likert type (e.g., "Likert-5" -> 5)
   const likertScale = parseInt(likertType.split('-')[1]);
   const midpoint = (likertScale + 1) / 2;
-  
+
   // Initialize groups
   const groups: LikertGroups = {
     presumedPros: [],
-    presumedCons: [],
+    presumedCons: []
   };
 
-  answers.forEach(answer => {
+  answers.forEach((answer) => {
     // Check for valid open answer (will be refactored) or string (which should contain an integer value)
     if (!answer.openAnswer?.fi || typeof answer.value !== 'string') {
       return;
@@ -42,7 +41,7 @@ function groupLikertAnswers(answers: any[], likertType: string): LikertGroups {
 
     // Convert value to a number
     const value = parseInt(answer.value);
-    
+
     // Group based on position relative to the Likert scale's midpoint
     if (value < midpoint - 0.5) {
       groups.presumedCons.push(answer.openAnswer.fi);
@@ -59,7 +58,7 @@ function groupLikertAnswers(answers: any[], likertType: string): LikertGroups {
 function groupCategoricalAnswers(answers: any[]): CategoryGroups {
   const groups: CategoryGroups = {};
 
-  answers.forEach(answer => {
+  answers.forEach((answer) => {
     // Skip if no valid open answer or categorical answer
     if (!answer.openAnswer?.fi || !answer.categoricalAnswer) {
       return;
@@ -85,11 +84,11 @@ export default {
         populate: ['answers', 'questionType']
       });
 
-      const questions = qs.filter(q => q.questionType?.name === 'Likert-5')[0];
+      const questions = qs.filter((q) => q.questionType?.name === 'Likert-5');
       console.log('Question:', questions);
 
       // Process each question based on its type
-      for (const questionToProcess of (Array.isArray(questions) ? questions : [questions])) {
+      for (const questionToProcess of Array.isArray(questions) ? questions : [questions]) {
         console.log('\n=== Processing Question ===');
         console.log('Question ID:', questionToProcess.id);
         console.log('Text (FI):', questionToProcess.text?.fi);
@@ -104,7 +103,7 @@ export default {
         if (questionType?.startsWith('Likert-')) {
           // Handle Likert questions
           const groupedAnswers = groupLikertAnswers(answers, questionType);
-          
+
           console.log(`Found ${groupedAnswers.presumedPros.length} presumed pros`);
           console.log(`Found ${groupedAnswers.presumedCons.length} presumed cons`);
 
@@ -134,16 +133,16 @@ export default {
           }
 
           processedResults = results;
-          
-        // If CATEGORICAL
+
+          // If CATEGORICAL
         } else if (questionType === 'Categorical') {
           // Handle categorical questions
           const groupedAnswers = groupCategoricalAnswers(answers);
-          
+
           console.log('Categories found:', Object.keys(groupedAnswers));
-          
+
           const results = {};
-          
+
           for (const [category, comments] of Object.entries(groupedAnswers)) {
             if (comments.length > 0) {
               results[category] = await processComments(
@@ -152,12 +151,13 @@ export default {
                 comments,
                 `${questionToProcess.text?.fi || 'Unknown Topic'} - ${category}`
               );
-              console.log(`Found ${results[category].length} comments for category ${category} in question ID ${questionToProcess.id}`);
+              console.log(
+                `Found ${results[category].length} comments for category ${category} in question ID ${questionToProcess.id}`
+              );
             }
           }
 
           processedResults = results;
-
         } else {
           console.log(`Skipping question - unsupported type: ${questionType}`);
           continue;
