@@ -810,7 +810,8 @@ async function generateMockLLMSummaries() {
       const existingCustomData = question.customData || {};
       const mergedCustomData = {
         ...existingCustomData,
-        infoSections: [...(existingCustomData.infoSections || []), ...(generatedCustomData.infoSections || [])]
+        infoSections: [...(existingCustomData.infoSections || []), ...(generatedCustomData.infoSections || [])],
+        terms: [...(existingCustomData.termsn || []), ...(generatedCustomData.terms || [])]
       };
 
       await strapi.db.query(API.Question).update({

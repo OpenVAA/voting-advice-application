@@ -12,7 +12,7 @@ const { ValidationError } = errors;
 // Make sure to allow the user access to all publicly available data
 const defaultPermissions: Array<{
   action: UID.Controller;
-  roleType: 'public' | 'authenticated';
+  roleType: 'public' | 'authenticated' | 'admin';
 }> = [
   { action: 'plugin::users-permissions.candidate.check', roleType: 'public' },
   { action: 'plugin::users-permissions.candidate.register', roleType: 'public' },
@@ -39,6 +39,7 @@ const defaultPermissions: Array<{
   { action: 'api::party.party.findOne', roleType: 'authenticated' },
   { action: 'api::question.question.find', roleType: 'authenticated' },
   { action: 'api::question.question.findOne', roleType: 'authenticated' },
+  { action: 'api::question.question.generateInfo', roleType: 'admin' },
   { action: 'api::question-category.question-category.find', roleType: 'authenticated' },
   { action: 'api::question-category.question-category.findOne', roleType: 'authenticated' },
   { action: 'api::question-type.question-type.find', roleType: 'authenticated' },
@@ -62,6 +63,25 @@ module.exports = async (plugin: Core.Plugin) => {
     url.pathname = '/candidate/password-reset';
     advanced.email_reset_password = url;
     await pluginStore.set({ key: 'advanced', value: advanced });
+
+    const adminType = await strapi.query('plugin::users-permissions.role').findOne({where: { type: 'admin' }});
+    console.log(adminType);
+
+    if (!adminType) {
+      // Create admin role for admin-ui functions
+      await strapi.query('plugin::users-permissions.role').create({
+        data: {
+          name: "Admin",
+          description: "Role for admin that can access LLM-admin-ui.",
+          type: 'admin',
+        }
+      });
+
+      // Add default-permissions
+    }
+
+
+    console.log(adminType);
 
     // Setup default permissions
     for (const permission of defaultPermissions) {
