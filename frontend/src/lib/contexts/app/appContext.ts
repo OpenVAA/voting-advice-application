@@ -57,7 +57,13 @@ export function initAppContext(): AppContext {
     const data = await promise;
     // Errors are handled by +layout.svelte
     if (!data || data instanceof Error) return;
-    appSettings.update((current) => mergeAppSettings(current, data));
+    appSettings.update((current) => {
+      const merged = mergeAppSettings(current, data);
+      // Force-overwrite thse because of old Strapi content model
+      merged.matching.organizationMatching = 'impute';
+      merged.questions.interactiveInfo = { enabled: true };
+      return merged;
+    });
   });
 
   const appCustomization = writable<AppCustomization>({});
