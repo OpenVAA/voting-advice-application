@@ -137,6 +137,10 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
   protected async _getNominationData(options: GetNominationsOptions = {}): Promise<DPDataType['nominations']> {
     const locale = options.locale ?? null;
     const params = buildFilterParams(options);
+    if (!options.includeUnconfirmed) {
+      params.filters ??= {};
+      params.filters.unconfirmed = { $ne: 'true' };
+    }
     const data = await this.apiGet({ endpoint: 'nominationsWithRelations', params });
     return parseNominations(data, locale);
   }
@@ -189,6 +193,13 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         }
       }
     };
+    /*
+    
+    select *
+    from question_categories
+    join question_categories_constituencies
+    
+    */
     // If the category has no election defined, it means it applies to all elections
     if (options.electionId)
       params.filters = {
@@ -197,6 +208,10 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
           { elections: { documentId: { $null: 'true' } } }
         ]
       };
+    /*
+      
+      
+    */
     const data = await this.apiGet({ endpoint: 'questionCategories', params });
     const categories = new Array<QuestionCategoryData>();
     const allQuestions = new Map<string, AnyQuestionVariantData>();
