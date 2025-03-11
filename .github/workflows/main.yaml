@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - feat/llm-features-pr
+      - feat/admin-ui-backend
     paths-ignore:
       - '**.md'
       - '**/*/.env.example'
