@@ -2,7 +2,7 @@
 
 # App `main` content layout for single cards
 
-Defines the layout of the `main` content for single cards, such as individual entities.
+Defines the layout of the content of the `main` element (following the possible video player) for single cards, such as individual entities, when are not opened in a `Drawer`.
 
 ### Slots
 
@@ -14,7 +14,7 @@ Defines the layout of the `main` content for single cards, such as individual en
 - `title`: The required page `title`.
 - `noteClass`: Optional class string to add to the `<div>` tag wrapping the `note` slot.
 - `noteRole`: Aria role for the `note` slot. @default 'note'
-- Any valid attributes of a `<main>` element.
+- Any valid attributes of a `<div>` element.
 -->
 
 <script lang="ts">
@@ -35,7 +35,7 @@ Defines the layout of the `main` content for single cards, such as individual en
   <title>{title} – {$t('dynamic.appName')}</title>
 </svelte:head>
 
-<main
+<div
   {...concatClass($$restProps, 'flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg')}>
   <!-- Note -->
   {#if $$slots.note}
@@ -49,4 +49,4 @@ Defines the layout of the `main` content for single cards, such as individual en
     <!-- Main content -->
     <slot />
   </div>
-</main>
+</div>

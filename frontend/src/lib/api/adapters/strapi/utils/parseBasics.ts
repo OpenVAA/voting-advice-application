@@ -1,5 +1,6 @@
 import { formatId } from '$lib/api/utils/formatId';
 import { translate } from '$lib/i18n';
+import { parseCustomData } from './parseCustomData';
 import type { Id } from '@openvaa/core';
 
 /**
@@ -35,7 +36,7 @@ export function parseBasics<TName extends LocalizedString | undefined>(
     shortName: translate(shortName, locale) || undefined,
     info: translate(info, locale) || undefined,
     order,
-    customData
+    customData: parseCustomData(customData, locale)
   } as BasicData<TName extends LocalizedString ? true : false>;
 }
 
