@@ -35,6 +35,7 @@ export type CustomData = {
   };
   QuestionCategory: {
     emoji?: string;
+    video?: CustomVideoProps;
   };
 };
 

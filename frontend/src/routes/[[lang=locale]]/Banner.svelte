@@ -29,13 +29,24 @@ Accesses `AppContext` and optionally `VoterContext`.
 
   const { appType, getRoute, openFeedbackModal, t } = getAppContext();
   const resultsAvailable = $appType === 'voter' ? getVoterContext().resultsAvailable : undefined;
-  const { topBarSettings } = getLayoutContext(onDestroy);
+  const {
+    topBarSettings,
+    video: { mode: videoMode, hasContent: hasVideo, player }
+  } = getLayoutContext(onDestroy);
 </script>
 
 <!-- style:--headerIcon-color={hasVideo && screenWidth < Breakpoints.sm
   ? 'white'
   : 'oklch(var(--p))' -->
 <div class="vaa-basicPage-actions flex gap-0" style:--headerIcon-color="oklch(var(--p))">
+  {#if $hasVideo}
+    <Button
+      on:click={() => $player?.toggleTranscript()}
+      variant="responsive-icon"
+      icon={$videoMode === 'video' ? 'videoOn' : 'videoOff'}
+      text={$videoMode === 'video' ? $t('components.video.showTranscript') : $t('components.video.showVideo')} />
+  {/if}
+
   {#if $topBarSettings.actions.logout == 'show' && $appType === 'candidate' && $page.data.token}
     <LogoutButton variant="icon" />
   {/if}
@@ -56,18 +67,6 @@ Accesses `AppContext` and optionally `VoterContext`.
       icon="results"
       text={$t('results.title.results')} />
   {/if}
-
-  <!--
-  {#if videoProps}
-    <Button
-      on:click={() => toggleTranscript()}
-      variant="responsive-icon"
-      icon={mode === 'video' ? 'videoOn' : 'videoOff'}
-      text={mode === 'video'
-        ? $t('components.video.showTranscript')
-        : $t('components.video.showVideo')} />
-  {/if}
-  -->
 
   {#if $topBarSettings.actions.return === 'show'}
     <Button

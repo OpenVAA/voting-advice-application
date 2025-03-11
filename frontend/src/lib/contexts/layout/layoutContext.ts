@@ -2,10 +2,21 @@ import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
 import { cubicOut } from 'svelte/easing';
 import { tweened } from 'svelte/motion';
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
+import { afterNavigate, beforeNavigate } from '$app/navigation';
 import { type DeepPartial, mergeSettings } from '$lib/utils/merge';
+import { DELAY } from '$lib/utils/timing';
 import { stackedStore } from '../utils/stackedStore';
-import type { LayoutContext, NavigationSettings, PageStyles, TopBarSettings } from './layoutContext.type';
+import type { OptionalVideoProps, VideoContentProps } from '$lib/components/video';
+import type {
+  LayoutContext,
+  Navigation,
+  NavigationSettings,
+  PageStyles,
+  Progress,
+  TopBarSettings,
+  VideoController
+} from './layoutContext.type';
 
 const CONTEXT_KEY = Symbol();
 
@@ -55,7 +66,7 @@ export function initLayoutContext(): LayoutContext {
     (current, value) => [...current, mergeSettings(current[current.length - 1], value)]
   );
 
-  const progress = {
+  const progress: Progress = {
     max: writable(0),
     current: tweened(0, {
       duration: 400,
@@ -63,14 +74,57 @@ export function initLayoutContext(): LayoutContext {
     })
   };
 
-  const navigation = {};
+  const navigation: Navigation = {};
+
+  const video: VideoController = {
+    load,
+    player: writable(),
+    show: writable(false),
+    hasContent: writable(false),
+    mode: writable('video')
+  };
+
+  /**
+   * Used in connection with the timeout delay to allow for the next page to load possible video content before hiding it and setting `video.hasContent` to `false`, which triggers layout changes as well.
+   */
+  let shouldClearContent = false;
+
+  async function load(
+    props: VideoContentProps & OptionalVideoProps,
+    { autoshow = true }: { autoshow?: boolean } = {}
+  ): Promise<boolean> {
+    const player = get(video.player);
+    if (!player) return false;
+    const result = await player.load(props);
+    if (!result) return false;
+    shouldClearContent = false;
+    video.hasContent.set(true);
+    if (autoshow) video.show.set(true);
+    return true;
+  }
+
+  // Setup video player auto-hiding
+  let timeout: NodeJS.Timeout | undefined;
+  beforeNavigate(() => {
+    shouldClearContent = true;
+    get(video.player)?.togglePlay('pause');
+  });
+  afterNavigate(() => {
+    // Give a little timeout for the new page to load possible video content, but if no content is forthcoming, hide the video player. The wait prevents unnecessary minimizing and maximizing of the player between two consequtive pages with video content
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      if (shouldClearContent) video.hasContent.set(false);
+      if (!get(video.hasContent)) video.show.set(false);
+    }, DELAY.sm);
+  });
 
   return setContext<LayoutContext>(CONTEXT_KEY, {
     pageStyles,
     topBarSettings,
     progress,
     navigation,
-    navigationSettings
+    navigationSettings,
+    video
   });
 }
 
