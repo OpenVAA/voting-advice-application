@@ -2,7 +2,9 @@
 
 # App `main` content layout
 
-Defines the layout of the `main` content of all the standard pages in the app.
+Defines the layout of the content of the `main` element (following the possible video player) of all the standard pages in the app.
+
+The layout varies slightly based on the presence of a video player.
 
 ### Slots
 
@@ -21,11 +23,13 @@ Defines the layout of the `main` content of all the standard pages in the app.
 - `primaryActionsLabel`: Optional `aria-label` for the section that contains the primary page actions. @default $t('common.primaryActions')
 - `titleClass`: Optional class string to add to the `<div>` tag wrapping the `title` slot.
 - `contentClass`: Optional class string to add to the `<div>` tag wrapping the `default` slot.
-- Any valid attributes of a `<main>` element.
+- Any valid attributes of a `<div>` element.
 -->
 
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import { getComponentContext } from '$lib/contexts/component';
+  import { getLayoutContext } from '$lib/contexts/layout';
   import { concatClass } from '$lib/utils/components';
   import type { MainContentProps } from './MainContent.type';
 
@@ -39,18 +43,16 @@ Defines the layout of the `main` content of all the standard pages in the app.
   export let contentClass: $$Props['contentClass'] = '';
 
   const { t } = getComponentContext();
-
-  /** We use `videoHeight` and `videoWidth` as proxies to check for the presence of content in the `video` slot. Note that we cannot merely check if the slot is provided, because it might be empty. */
-  // let videoHeight = 0;
-  // let videoWidth = 0;
-  // let hasVideo = videoWidth > 0 && videoHeight > 0;
+  const {
+    video: { hasContent: hasVideo }
+  } = getLayoutContext(onDestroy);
 </script>
 
 <svelte:head>
   <title>{title} – {$t('dynamic.appName')}</title>
 </svelte:head>
 
-<main
+<div
   {...concatClass($$restProps, 'flex flex-grow flex-col items-center gap-y-lg pb-safelgb pl-safelgl pr-safelgr pt-lg')}>
   <!-- Note -->
   {#if $$slots.note}
@@ -60,23 +62,13 @@ Defines the layout of the `main` content of all the standard pages in the app.
   {/if}
 
   <div class="flex w-full flex-grow flex-col items-stretch justify-center sm:items-center">
-    <!-- Video -->
-    <!-- {#if $$slots.video}
-      <div
-        bind:clientHeight={videoHeight}
-        bind:clientWidth={videoWidth}
-        class="-ml-safelgl -mr-safelgr -mt-lg flex w-screen justify-center sm:w-full {hasVideo
-          ? 'grow'
-          : ''} sm:mt-[1.75rem] sm:grow-0">
-        <slot name="video" />
-      </div>
-    {/if} -->
-
     <!-- Hero image -->
-    <slot name="hero" />
+    {#if !$hasVideo}
+      <slot name="hero" />
+    {/if}
 
     <!-- Title block -->
-    <div class="w-full max-w-xl py-lg text-center {titleClass}">
+    <div class="w-full max-w-xl text-center transition-[padding] {titleClass}" class:py-lg={!$hasVideo}>
       <slot name="heading">
         <h1>{title}</h1>
       </slot>
@@ -103,4 +95,4 @@ Defines the layout of the `main` content of all the standard pages in the app.
       <slot name="primaryActions" />
     </section>
   {/if}
-</main>
+</div>

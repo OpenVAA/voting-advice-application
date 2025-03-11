@@ -53,7 +53,7 @@ Display a question for answering.
     startEvent,
     t
   } = getVoterContext();
-  const { progress } = getLayoutContext(onDestroy);
+  const { progress, video } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
   // Get the current question and update related variables
@@ -81,16 +81,9 @@ Display a question for answering.
       goto($getRoute('Questions'));
     } else {
       progress.current.set(questionBlock.index + 1);
-
-      // Stashed video-related code: TODO: Get videoProps from customData
-      // // Track whether the previous question has video content
-      // const previousHadVideo = videoProps != null;
-      // // Check if this question has video content
-      // videoProps = getVideoProps(question);
-      // // We need to call reload if we're reusing the Video component
-      // if (previousHadVideo && videoProps) {
-      //  reload(videoProps);
-      // }
+      // Possibly show video
+      const customData = getCustomData(question);
+      if (customData?.video) video.load(customData.video);
     }
   }
 
@@ -175,38 +168,6 @@ Display a question for answering.
   function handleInfoExpand(): void {
     startEvent('questionInfo_expand');
   }
-
-  ////////////////////////////////////////////////////////////////////
-  // Stashed material related to video content
-  ////////////////////////////////////////////////////////////////////
-
-  // Variables related to possible video content
-  // let atEnd: boolean;
-  // let mode: VideoMode;
-  // let reload: (props: CustomVideoProps) => void;
-  // let toggleTranscript: (show?: boolean) => void;
-  // let videoProps: CustomVideoProps | undefined;
-
-  /**
-   * Get the possible video props for a question.
-   * @param question The question object
-   * @returns The video props or `undefined` if the question has no video content
-   */
-  /* function getVideoProps(question: AnyQuestionVariant): CustomVideoProps | undefined {
-    if (
-      !(
-        question.customData != null &&
-        typeof question.customData === 'object' &&
-        'video' in question.customData
-      )
-    )
-      return undefined;
-    return {
-      title: $t('questions.infoDescription'),
-      transcript: question.info,
-      ...question.customData.video
-    } as CustomVideoProps;
-  } */
 </script>
 
 {#if question && questionBlock}
@@ -214,35 +175,17 @@ Display a question for answering.
   {@const customData = getCustomData(question)}
   {@const questions = $selectedQuestionBlocks.questions}
 
-  <!--
-    class={videoProps ? 'bg-base-300' : undefined}
-    titleClass={videoProps ? '!pb-0' : undefined}
-  -->
-
   <MainContent title={text}>
-    <!--
-      <svelte:fragment slot="video">
-        {#if videoProps}
-          <Video
-            bind:atEnd
-            bind:mode
-            bind:reload
-            bind:toggleTranscript
-            hideControls={['transcript']}
-            {...videoProps} />
-        {/if}
-      </svelte:fragment>
-    -->
-
     <QuestionHeading {question} questionBlocks={$selectedQuestionBlocks} slot="heading" />
 
-    <!-- !videoProps && -->
-    {#if $appSettings.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length)}
-      <div class="flex items-center justify-center">
-        <QuestionExtendedInfoButton {question} />
-      </div>
-    {:else if info}
-      <QuestionBasicInfo {info} onCollapse={handleInfoCollapse} onExpand={handleInfoExpand} />
+    {#if !customData.video}
+      {#if $appSettings.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length)}
+        <div class="flex items-center justify-center">
+          <QuestionExtendedInfoButton {question} />
+        </div>
+      {:else if info}
+        <QuestionBasicInfo {info} onCollapse={handleInfoCollapse} onExpand={handleInfoExpand} />
+      {/if}
     {/if}
 
     <svelte:fragment slot="primaryActions">

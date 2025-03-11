@@ -6,7 +6,7 @@ Defines the outer layout for the application, including the header and menu.
 
 ### Slots
 
-- default: main content of the page, normally a `MainContent` component.
+- default: `main` content of the page, normally a `MainContent` component.
 - `menu`: the navigation menu, normally a `VoterNav` or `CandidateNav` component.
 
 ### Properties
@@ -17,6 +17,7 @@ Defines the outer layout for the application, including the header and menu.
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import { Video } from '$lib/components/video';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import Header from './Header.svelte';
@@ -38,8 +39,13 @@ Defines the outer layout for the application, including the header and menu.
   // Layout and navigation menu management
   ////////////////////////////////////////////////////////////////////
 
-  const { startEvent, t } = getAppContext();
-  const { pageStyles, navigation, navigationSettings } = getLayoutContext(onDestroy);
+  const { startEvent, t, track } = getAppContext();
+  const {
+    pageStyles,
+    navigation,
+    navigationSettings,
+    video: { mode: videoMode, player, show: showVideo }
+  } = getLayoutContext(onDestroy);
   navigation.close = closeDrawer;
 
   let drawerOpenElement: HTMLButtonElement | undefined;
@@ -64,11 +70,6 @@ Defines the outer layout for the application, including the header and menu.
     isDrawerOpen = false;
     drawerOpenElement?.focus();
   }
-
-  /** We use `videoHeight` and `videoWidth` as proxies to check for the presence of content in the `video` slot. Note that we cannot merely check if the slot is provided, because it might be empty. */
-  // let videoHeight = 0;
-  // let videoWidth = 0;
-  // let hasVideo = videoWidth > 0 && videoHeight > 0;
 </script>
 
 <!-- Skip link for screen readers and keyboard users. We use tabindex="1" so that's it's available before any alerts injected by layouts. -->
@@ -92,9 +93,23 @@ Defines the outer layout for the application, including the header and menu.
   <!-- Drawer content -->
   <div class="drawer-content flex flex-col">
     <Header {menuId} {openDrawer} {isDrawerOpen} {drawerOpenElement} />
-    <div id={mainContentId} class="flex flex-grow flex-col items-stretch">
+    <main id={mainContentId} class="flex flex-grow flex-col items-stretch">
+      <!-- Video -->
+      <div
+        class="flex max-h-screen w-screen justify-center overflow-hidden transition-all sm:mt-[1.75rem] sm:w-full sm:grow-0"
+        class:!max-h-[0]={!$showVideo}
+        inert={!$showVideo}>
+        <Video
+          bind:this={$player}
+          bind:mode={$videoMode}
+          onTrack={({ data }) => track('video', data)}
+          hideControls={['transcript']}
+          class="transition-opacity {$showVideo ? '' : 'opacity-0'}" />
+      </div>
+
+      <!-- Default slot -->
       <slot />
-    </div>
+    </main>
   </div>
 
   <!-- Drawer side menu -->
