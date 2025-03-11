@@ -12,6 +12,7 @@ export async function generateQuestionInfo(questionId: number) { //
     const question = await strapi.db.query(API.Question).findOne({
       where: { id: questionId }
     });
+    console.log(question);
     console.log(question.text);
     const res: LLMResponse = await new OpenAIProvider({ apiKey: LLM_OPENAI_API_KEY }).generate({
       messages: [
@@ -34,7 +35,7 @@ export async function generateQuestionInfo(questionId: number) { //
     const mergedCustomData = {
       ...existingCustomData,
       infoSections: generatedCustomData.infoSections || existingCustomData.infoSections || [],
-      // terms here
+      terms: generatedCustomData.terms || existingCustomData.terms || []
     };
 
     await strapi.db.query(API.Question).update({
@@ -45,6 +46,7 @@ export async function generateQuestionInfo(questionId: number) { //
   });
   } catch (error) {
     console.error('Failed to generate LLM summary, ', error);
+    throw error;
   }
 }
 
