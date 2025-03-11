@@ -25,6 +25,9 @@ export default factories.createCoreController('api::nomination.nomination', ({ s
    *       $in?: string[];
    *     };
    *   };
+   *   unconfirmed?: {
+   *     $ne?: 'true' | 'false';
+   *   };
    * };
    * ```
    *
@@ -64,6 +67,9 @@ export default factories.createCoreController('api::nomination.nomination', ({ s
             $in?: Array<string>;
           };
         };
+        unconfirmed?: {
+          $ne?: 'true' | 'false';
+        };
       };
     };
 
@@ -78,6 +84,10 @@ export default factories.createCoreController('api::nomination.nomination', ({ s
 
     const electionSqlInFilter = sqlInFilter(query.filters?.election?.documentId?.$in);
     const constituencySqlInFilter = sqlInFilter(query.filters?.constituency?.documentId?.$in);
+    const unconfirmedSqlNotEqualFilter = {
+      enabled: Boolean(query.filters?.unconfirmed?.$ne),
+      value: query.filters?.unconfirmed?.$ne
+    };
 
     try {
       const { rows: nominations } = await strapi.db.connection.raw<{ rows: Array<{ data: object }> }>(
@@ -179,13 +189,16 @@ export default factories.createCoreController('api::nomination.nomination', ({ s
         -- Nomination's party
         left join nominations_party_lnk on nominations_party_lnk.nomination_id = nominations.id
         left join _parties nominations_parties on nominations_parties.id = nominations_party_lnk.party_id
+        where (? = false or nominations.unconfirmed != ?::boolean)
         order by nominations.id
       `,
         [
           electionSqlInFilter.enabled,
           ...electionSqlInFilter.values,
           constituencySqlInFilter.enabled,
-          ...constituencySqlInFilter.values
+          ...constituencySqlInFilter.values,
+          unconfirmedSqlNotEqualFilter.enabled,
+          unconfirmedSqlNotEqualFilter.value
         ]
       );
 
