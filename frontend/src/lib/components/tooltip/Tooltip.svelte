@@ -28,18 +28,24 @@ Show a tooltip when hovering over text.
 </script>
 
 <button
-  class={'tooltip underline decoration-dotted ' + (open ? 'tooltip-open' : '')}
+  class={'tooltip tooltip-bottom underline decoration-primary decoration-dotted ' + (open ? 'tooltip-open' : '')}
   data-tip={title ? `${title}: ${tip}` : tip}
-  on:click|self={() => (open = !open)}>
+  on:focus={() => (open = true)}
+  on:blur={() => (open = false)}
+  on:keydown={(e) => {
+    if (e.key === 'Escape') {
+      open = false;
+    }
+  }}>
   <slot />
-  {#if open}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <div
-      class="fixed inset-0 z-40"
-      on:click={() => {
-        open = false;
-      }}>
-    </div>
-  {/if}
 </button>
+
+<style>
+  .tooltip::after {
+    @apply border-b-base-200;
+  }
+
+  .tooltip::before {
+    @apply rounded-md bg-base-200 p-10 font-normal text-neutral shadow-md;
+  }
+</style>
