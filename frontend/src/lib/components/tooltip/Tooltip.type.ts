@@ -7,5 +7,5 @@ export type TooltipProps = {
   /**
    * The content of the tooltip
    */
-  tip?: string;
+  tip: string;
 };
