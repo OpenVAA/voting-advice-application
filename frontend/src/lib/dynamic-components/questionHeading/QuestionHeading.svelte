@@ -40,9 +40,9 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   import { getVoterContext } from '$lib/contexts/voter';
   import { concatClass } from '$lib/utils/components';
   import { getElectionsToShow } from '$lib/utils/questions';
+  import { escapeRegExp } from '$lib/utils/regexp';
   import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
   import type { QuestionHeadingProps } from './QuestionHeading.type';
-  import { escapeRegExp } from '$lib/utils/regexp';
 
   type $$Props = QuestionHeadingProps;
   type TitlePart = { text?: string; term?: string; explanation?: string; title?: string };
