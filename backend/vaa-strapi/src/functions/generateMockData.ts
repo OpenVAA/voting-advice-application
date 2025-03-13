@@ -25,7 +25,13 @@ import {
 import { API } from '../util/api';
 import { getDynamicTranslations } from '../util/appCustomization';
 import { dropAllCollections } from '../util/drop';
-import { dynamicSettings, type AnswerValue, type LocalizedAnswer, type LocalizedString, type QuestionTypeSettings } from '@openvaa/app-shared';
+import {
+  dynamicSettings,
+  type AnswerValue,
+  type LocalizedAnswer,
+  type LocalizedString,
+  type QuestionTypeSettings
+} from '@openvaa/app-shared';
 import type { Data } from '@strapi/strapi';
 
 /**
@@ -65,6 +71,16 @@ const locales: Array<Locale> = [
     faker: fakerSV
   }
 ];
+
+interface MockAnswer {
+  questionId: string;
+  questionText: string;
+  value: string;
+  openAnswer: { fi: string };
+  party_id: string;
+  constituency_id: string;
+  answer_id: string;
+}
 
 export async function generateMockData() {
   if (!(generateMockDataOnInitialise || generateMockDataOnRestart)) {
