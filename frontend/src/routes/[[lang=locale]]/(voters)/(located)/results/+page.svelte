@@ -26,7 +26,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
 
 <script lang="ts">
   import { Election, type EntityType } from '@openvaa/data';
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { beforeNavigate, pushState } from '$app/navigation';
   import { page } from '$app/stores';
@@ -34,6 +34,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import { HeroEmoji } from '$lib/components/heroEmoji';
   import { Loading } from '$lib/components/loading';
   import { type Tab, Tabs } from '$lib/components/tabs';
+  import { getLayoutContext } from '$lib/contexts/layout';
   import { getVoterContext } from '$lib/contexts/voter';
   import { EntityDetailsDrawer, type EntityDetailsDrawerProps } from '$lib/dynamic-components/entityDetails';
   import { EntityList, EntityListControls } from '$lib/dynamic-components/entityList';
@@ -42,7 +43,9 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import { sanitizeHtml } from '$lib/utils/sanitize';
   import { ucFirst } from '$lib/utils/text/ucFirst';
   import { DELAY } from '$lib/utils/timing';
+  import resultsVideo from './resultsVideo.json';
   import MainContent from '../../../MainContent.svelte';
+  import type { CustomVideoProps } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
 
   ////////////////////////////////////////////////////////////////////
@@ -56,6 +59,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
     dataRoot,
     entityFilters,
     getRoute,
+    locale,
     matches,
     resultsAvailable,
     selectedConstituencies: constituencies,
@@ -65,6 +69,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
     startSurveyPopupCountdown,
     t
   } = getVoterContext();
+  const { video } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
   // Start countdowns and track events, set initial tab
@@ -182,6 +187,22 @@ The nominations applicable to these elections and constituencies are shown. Thes
   // This will hold the filtered entities returned by EntityListControls
   // TODO: Combine EntityListControls and List components into one
   let filteredEntities = new Array<MaybeWrappedEntityVariant>();
+
+  ////////////////////////////////////////////////////////////////////
+  // Video
+  ////////////////////////////////////////////////////////////////////
+
+  const videoProps = resultsVideo[$locale as keyof LocalizedIntroVideoProps];
+  if (videoProps) video.load(videoProps);
+
+  interface LocalizedIntroVideoProps {
+    fi: IntroVideoProps;
+    sv: IntroVideoProps;
+    en: IntroVideoProps;
+  }
+  interface IntroVideoProps {
+    video: CustomVideoProps;
+  }
 </script>
 
 {#if $page.state.resultsShowEntity}
@@ -195,7 +216,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
     <HeroEmoji emoji={$t('dynamic.results.heroEmoji')} />
   </figure>
 
-  <div class="mb-xl text-center">
+  <div class="mt-md mb-xl text-center">
     {#if $resultsAvailable}
       <p>{$t('dynamic.results.ingress.results')}</p>
     {:else}

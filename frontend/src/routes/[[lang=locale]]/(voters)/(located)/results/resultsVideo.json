@@ -1,0 +1,35 @@
+{
+  "fi": {
+    "aspectRatio": 0.8,
+    "poster": "https://static.openvaa.org/public/videos/Results_combined_FIN.jpg",
+    "sources": [
+      "https://static.openvaa.org/public/videos/Results_combined_FIN.webm",
+      "https://static.openvaa.org/public/videos/Results_combined_FIN.mp4"
+    ],
+    "title": "Tuloksesi",
+    "transcript": "<p>Hienoa, pääsit tänne saakka, alla näet sun mielipiteitä eniten lähellä olevat ehdokkaat molemmista vaaleista, näet ensin kuntavaalien ehdokkaat ja voit sen jälkeen siirtyä tarkastelemaan myös aluevaalien ehdokkaita.</p><p>Ehdokkaille on laskettu prosenttiluku sen mukaan, miten paljon he ovat samaa mieltä sinun kanssa.</p><p>Puolueiden prosenttiluvut ovat laskettu ehdokkaiden mielipiteiden mukaan.</p><p>Jos etsit itsellesi sopivaa ehdokasta Helsingistä, sinulla näkyy vain yksi luettelo, sillä Helsingissä kunnanvaltuusto päättää myös niistä asioista, jotka muualla kuuluvat hyvinvointialueille.</p><p>Klikkaamalla ehdokkaita ja puolueita, sä saat lisätietoa.</p><p>Monilla ehdokkaista on omat nettisivut ja someprofiili, joista sä pääset lukemaan heille tärkeistä teemoista lisää.</p><p>Toivottavasti sä löydät just sulle sopivan ehdokkaan.</p><p>Muista merkitä kalenteriin kunta- ja aluevaalien vaalipäivä 13.4. ja muista äänestää. </p>",
+    "captions": "https://static.openvaa.org/public/videos/Results_combined_FIN.srt"
+  },
+  "sv": {
+    "aspectRatio": 0.8,
+    "poster": "https://static.openvaa.org/public/videos/Results_combined_SWE.jpg",
+    "sources": [
+      "https://static.openvaa.org/public/videos/Results_combined_SWE.webm",
+      "https://static.openvaa.org/public/videos/Results_combined_SWE.mp4"
+    ],
+    "title": "Dina resultat",
+    "transcript": "<p>Fint, du har kommit så här långt, nedan kan du se de kandidater vars åsikter ligger närmast dina i båda valen, du ser kandidaterna för kommunalvalet först och sedan kan du gå vidare till kandidaterna för välfärdsområdesvalet.</p><p>För varje kandidat har ett procenttal räknats ut baserat på hur mycket de håller med dig.</p><p>Partiernas procenttal är beräknade enligt kandidaternas åsikter.</p><p>Om du letar efter en kandidat från Helsingfors kommer du bara att se en lista, eftersom kommunfullmäktige i Helsingfors också beslutar om de frågor som omfattas av välfärdsområdena på annat håll.</p><p>Klicka på kandidater och partier för att få veta mer.</p><p>Många av kandidaterna har egna webbplatser och profiler i sociala medier, där du kan läsa mer om de frågor som är viktiga för dem.</p><p>Vi hoppas att du hittar en kandidat som passar just dig.</p><p>Kom ihåg att skriva upp datum för kommunal- och välfärdsområdesval i din kalender – 13.4. – och kom ihåg att rösta.</p>",
+    "captions": "https://static.openvaa.org/public/videos/Results_combined_SWE.srt"
+  },
+  "en": {
+    "aspectRatio": 0.8,
+    "poster": "https://static.openvaa.org/public/videos/Results_combined_ENG.jpg",
+    "sources": [
+      "https://static.openvaa.org/public/videos/Results_combined_ENG.webm",
+      "https://static.openvaa.org/public/videos/Results_combined_ENG.mp4"
+    ],
+    "title": "Your results",
+    "transcript": "<p>Great, you've made it this far!</p><p>Below you can see the candidates in both elections whose opinions match yours the best.</p><p>Candidates for the municipal elections are first and you can then move on to the candidates for the county elections.</p><p>For each candidate, a percentage has been calculated based on how much they agree with you.</p><p>The percentages for the parties are calculated according to the candidates' opinions.</p><p>If you are looking for a candidate from Helsinki, you will only see one list, as the Helsinki City Council also decides on issues that are handled by the wellbeing services counties elsewhere.</p><p>Click on the candidates and parties to find out more about them.</p><p>Many of the candidates have their own websites and social media where you can read more on the issues that are important to them.</p><p>We hope you find the right candidate.</p><p>Remember to mark your calendar with the election date of the municipal and county elections, April 13th, and remember to vote.</p>",
+    "captions": "https://static.openvaa.org/public/videos/Results_combined_ENG.srt"
+  }
+}
