@@ -49,8 +49,17 @@ Show a tab title bar that can be used to switch between different tabs.
       tabindex="0"
       role="tab"
       on:click={() => activate(index)}
+      on:keydown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          // Prevent scrolling
+          e.preventDefault();
+        }
+      }}
       on:keyup={(e) => {
-        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') activate(index);
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          activate(index);
+        }
       }}>
       <span class="uc-first">{tab.label}</span>
     </li>
