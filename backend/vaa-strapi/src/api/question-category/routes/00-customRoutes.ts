@@ -1,5 +1,5 @@
 /**
- * Contains the definitions for the `api::candidate.answers.overwrite/update` and `api::candidate.properties.update` actions.
+ * Contains the definitions for the `api::question-category.question-category.withRelations` getter.
  * NB. The filename starts with zeros so that it is matched before the core routes.
  */
 
