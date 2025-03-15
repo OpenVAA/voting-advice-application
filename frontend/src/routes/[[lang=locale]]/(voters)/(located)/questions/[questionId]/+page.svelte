@@ -155,19 +155,6 @@ Display a question for answering.
     goto(url, { noScroll });
     disabled = false;
   }
-
-  ////////////////////////////////////////////////////////////////////
-  // Tracking
-  ////////////////////////////////////////////////////////////////////
-
-  // TODO: Re-enable
-  function handleInfoCollapse(): void {
-    startEvent('questionInfo_collapse');
-  }
-
-  function handleInfoExpand(): void {
-    startEvent('questionInfo_expand');
-  }
 </script>
 
 {#if question && questionBlock}
@@ -181,10 +168,17 @@ Display a question for answering.
     {#if !customData.video}
       {#if $appSettings.questions.interactiveInfo?.enabled && (info || customData.infoSections?.length)}
         <div class="flex items-center justify-center">
-          <QuestionExtendedInfoButton {question} />
+          <QuestionExtendedInfoButton
+            {question}
+            onOpen={() => startEvent('questionExtendedInfo_open')}
+            onSectionCollapse={(title) => startEvent('questionExtendedInfo_collapseSection', { title })}
+            onSectionExpand={(title) => startEvent('questionExtendedInfo_expandSection', { title })} />
         </div>
       {:else if info}
-        <QuestionBasicInfo {info} onCollapse={handleInfoCollapse} onExpand={handleInfoExpand} />
+        <QuestionBasicInfo
+          {info}
+          onCollapse={() => startEvent('questionInfo_collapse')}
+          onExpand={() => startEvent('questionInfo_expand')} />
       {/if}
     {/if}
 
