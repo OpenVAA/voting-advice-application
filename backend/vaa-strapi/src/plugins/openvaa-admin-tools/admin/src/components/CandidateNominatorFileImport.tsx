@@ -128,7 +128,7 @@ function parseCSV(content: string): FileValidationResult {
       data.push({
         constituencyExternalId:
           electionType === 'AV'
-            ? `county-${municipalityExternalId}`
+            ? `county-${countyExternalId}`
             : electionType === 'K'
               ? `municipality-${municipalityExternalId}`
               : '-',
@@ -189,7 +189,10 @@ function lookupNominations(
   // Populate the map: { constituencyId -> { firstName -> { lastName -> confirmedNomination } } }
   for (const nomination of confirmedNominations) {
     const { externalId } = nomination.constituency;
-    const firstName = nomination.candidate.firstName.toLowerCase();
+    const firstName = nomination.candidate.firstName
+      .toLowerCase()
+      .replace(/[(["].*?[)\]"]/, '') // Drop nicknames
+      .trim();
     const lastName = nomination.candidate.lastName.toLowerCase();
 
     if (!confirmedMap.has(externalId)) {
