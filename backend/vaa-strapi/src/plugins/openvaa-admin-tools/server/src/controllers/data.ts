@@ -72,5 +72,20 @@ export default function controller({ strapi }: { strapi: Core.Strapi }) {
         return ctx.internalServerError('An error occurred while finding candidates');
       }
     },
+    updateNomination: async (ctx: Context) => {
+      try {
+        /*
+        const nomination = JSON.parse(ctx.request.body ?? '{}');
+
+        TODO
+
+        */
+
+        return ctx.send({});
+      } catch (error) {
+        strapi.log.error('data.findCandidates controller error', error);
+        return ctx.internalServerError('An error occurred while finding candidates');
+      }
+    },
   };
 }
