@@ -5,7 +5,7 @@ import { findData } from '../api/data';
 //import { ApiResult } from 'src/api/utils/apiResult.type';
 
 interface CandidateData {
-  municipalityExternalId: string;
+  constituencyExternalId: string;
   partyExternalId: string;
   candidateFirstName: string;
   candidateLastName: string;
@@ -50,6 +50,8 @@ function parseCSV(content: string): ValidationResult {
         return;
       }
 
+      const electionType = columns[0];
+      const countyExternalId = columns[1];
       const municipalityExternalId = columns[2];
       const partyExternalId = columns[7];
       const candidateFirstName = columns[17];
@@ -60,6 +62,11 @@ function parseCSV(content: string): ValidationResult {
       const candidateHomeMunicipalitySv = columns[24];
 
       const lineErrors: Array<string> = [];
+
+      // Validate municipality number (should be a number or ***)
+      if (isNaN(Number(countyExternalId)) || countyExternalId === '') {
+        lineErrors.push(`Invalid county number: "${countyExternalId}"`);
+      }
 
       // Validate municipality number (should be a number or ***)
       if (
@@ -100,7 +107,12 @@ function parseCSV(content: string): ValidationResult {
       }
 
       data.push({
-        municipalityExternalId,
+        constituencyExternalId:
+          electionType === 'AV'
+            ? `county-${Number(municipalityExternalId)}`
+            : electionType === 'K'
+              ? `municipality-${Number(municipalityExternalId)}`
+              : '-',
         partyExternalId,
         candidateFirstName,
         candidateLastName,
@@ -130,7 +142,7 @@ export function CandidateNominatorFileImport(): ReactElement {
   const [selectedElection, setSelectedElection] = useState<string>('');
 
   const [, setFileContent] = useState<string>('');
-  const [, setValidationResult] = useState<ValidationResult | null>(null);
+  const [validationResult, setValidationResult] = useState<string | null>(null);
   //const [] = useState<ApiResult | null>(null);
 
   useEffect(() => {
@@ -157,7 +169,7 @@ export function CandidateNominatorFileImport(): ReactElement {
           <Flex direction="column" gap={3} alignItems="stretch">
             <p>
               Upload a candidate list from https://tulospalvelu.vaalit.fi/fi/index.html to confirm
-              candidate nominations.
+              candidate nominations (supports AV and K election types).
             </p>
           </Flex>
         </Typography>
@@ -184,7 +196,9 @@ export function CandidateNominatorFileImport(): ReactElement {
               const reader = new FileReader();
               reader.onload = (e) => {
                 setFileContent(e.target?.result as string);
-                setValidationResult(parseCSV(e.target?.result as string));
+                setValidationResult(
+                  JSON.stringify(parseCSV(e.target?.result as string) ?? {}, null, 2)
+                );
               };
               reader.readAsText(file, 'ISO-8859-1');
             }}
@@ -192,7 +206,7 @@ export function CandidateNominatorFileImport(): ReactElement {
         </Field.Root>
         <Field.Root>
           <Field.Label>Preview</Field.Label>
-          <JSONInput value={''} height="20rem" maxWidth="80vw" />
+          <JSONInput value={validationResult ?? ''} height="20rem" maxWidth="80vw" />
         </Field.Root>
         <Field.Root>
           <Field.Label>Result as JSON</Field.Label>
