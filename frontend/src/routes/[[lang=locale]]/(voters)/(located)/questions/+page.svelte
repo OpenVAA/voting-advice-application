@@ -49,9 +49,6 @@ Display a general intro before starting answering the questions and possibly all
   // On mount either redirect or pre-select all questionCategories and clear out the possible firstQuestionId store
   onMount(() => {
     $firstQuestionId = null;
-    if (!$appSettings.questions.questionsIntro.show) {
-      return goto($getRoute({ route: 'Question' }), { replaceState: true });
-    }
     // Check that the selected categories are still available (because they might be specific to the election and constituency)
     $selectedQuestionCategoryIds = $selectedQuestionCategoryIds.filter((id) =>
       $opinionQuestionCategories.find((c) => c.id === id)
@@ -59,6 +56,17 @@ Display a general intro before starting answering the questions and possibly all
     // Preselect all if there's no selection yet
     if ($selectedQuestionCategoryIds.length === 0)
       $selectedQuestionCategoryIds = $opinionQuestionCategories.map((c) => c.id);
+    if (!$appSettings.questions.questionsIntro.show) {
+      const categoryId = $selectedQuestionBlocks.blocks[0]?.[0]?.category.id;
+      return goto(
+        $getRoute(
+          $appSettings.questions.categoryIntros?.show && categoryId
+            ? { route: 'QuestionCategory', categoryId }
+            : { route: 'Question' }
+        ),
+        { replaceState: true }
+      );
+    }
   });
 
   ////////////////////////////////////////////////////////////////////
@@ -125,7 +133,7 @@ Display a general intro before starting answering the questions and possibly all
     <p class="text-center">
       {$t('questions.intro.ingress.withoutCategorySelection', {
         numCategories: $opinionQuestionCategories.length,
-        minQuestions: $appSettings.matching.minimumAnswers
+        numQuestions: $selectedQuestionBlocks.questions.length
       })}
     </p>
     <div class="grid justify-items-center gap-sm">
