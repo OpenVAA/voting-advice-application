@@ -140,7 +140,7 @@ Display a question for answering.
       // Show the next category intro if the next question is the first question in a new category and we're not moving backwards
       // TODO: Handle category showing more centrally, e.g. during onMount of this page, so that sources linking here need to concern themselves with choosing whether to show the category intro. In that case, though, another search param will be necessary that can be used to suppress category intro display.
       if (
-        $appSettings.questions.questionsIntro.show &&
+        $appSettings.questions.categoryIntros?.show &&
         steps > 0 &&
         $selectedQuestionBlocks.getByQuestion(newQuestion)?.indexInBlock === 0
       ) {
