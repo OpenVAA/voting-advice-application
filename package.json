@@ -7,7 +7,7 @@
     "dev:attach": "docker compose -f docker-compose.dev.yml up --force-recreate --build",
     "dev:down": "docker compose -f docker-compose.dev.yml down -v --rmi all --remove-orphans",
     "dev:stop": "docker compose -f docker-compose.dev.yml stop",
-    "docker:delete-all": "docker rm --force --volumes $(docker ps -q) && docker volume rm --force $(docker volume ls -q) && docker image rm --force $(docker images -q) && docker builder prune -f && rm ~/Library/Containers/com.docker.docker/Data/vms/0/data/Docker.raw",
+    "docker:delete-all": "docker rm --force --volumes $(docker ps -q); docker volume rm --force $(docker volume ls -q); docker image rm --force $(docker images -q); docker builder prune -f; rm ~/Library/Containers/com.docker.docker/Data/vms/0/data/Docker.raw; docker system df",
     "prepare": "husky",
     "sync:translations": "rsync -av --include='*/' --include='dynamic.json' --exclude='*' frontend/src/lib/i18n/translations/ backend/vaa-strapi/src/util/translations/",
     "prod": "docker compose -f docker-compose.yml -p vaa-prod up -d --build",
