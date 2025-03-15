@@ -209,18 +209,25 @@ function lookupNominations(
       return null;
     }
 
-    const firstNames = [
-      candidate.firstName,
-      ...candidate.firstName.split(/[\s,-]+/), // E.g. Minna-Mari Johanna => Anna or Kaisa or Johanna
-      ...candidate.firstName.split(' '), // E.g. Minna-Mari Johanna => Anna-Kaisa or Johanna
+    const tests = [
+      ...[
+        candidate.firstName,
+        ...candidate.firstName.split(/[\s,-]+/), // E.g. Minna-Mari Johanna => Anna or Kaisa or Johanna
+        ...candidate.firstName.split(' '), // E.g. Minna-Mari Johanna => Anna-Kaisa or Johanna
+      ].map((firstName) => ({ firstName, lastName: candidate.lastName })),
+      ...[
+        candidate.lastName,
+        ...candidate.lastName.split(/[\s,-]+/),
+        ...candidate.lastName.split(' '),
+      ].map((lastName) => ({ firstName: lastName, lastName: candidate.firstName })), // Change positions.
     ];
 
-    const confirmed = firstNames
-      .map((firstName) =>
+    const confirmed = tests
+      .map((test) =>
         confirmedMap
           .get(constituency.externalId)
-          ?.get(firstName.toLowerCase())
-          ?.get(candidate.lastName.toLowerCase())
+          ?.get(test.firstName.toLowerCase())
+          ?.get(test.lastName.toLowerCase())
       )
       .find((c) => Boolean(c));
 
