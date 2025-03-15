@@ -34,6 +34,7 @@ export const STRAPI_API: Record<keyof StrapiApiReturnType, string> = {
   questions: 'api/questions',
   questionTypes: 'api/question-types',
   questionCategories: 'api/question-categories',
+  questionCategoriesWithRelations: 'api/question-categories/with-relations',
   // FeedbackWriter
   setFeedback: 'api/feedbacks',
   // DataWriter
@@ -71,6 +72,7 @@ export type StrapiApiReturnType = {
   questions: Array<StrapiQuestionData>;
   questionTypes: Array<StrapiQuestionTypeData>;
   questionCategories: Array<StrapiQuestionCategoryData>;
+  questionCategoriesWithRelations: Array<StrapiQuestionCategoryData>;
   // FeedbackWriter
   setFeedback: StrapiFeedbackData;
   // DataWriter

@@ -193,13 +193,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         }
       }
     };
-    /*
-    
-    select *
-    from question_categories
-    join question_categories_constituencies
-    
-    */
+
     // If the category has no election defined, it means it applies to all elections
     if (options.electionId)
       params.filters = {
@@ -212,7 +206,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       
       
     */
-    const data = await this.apiGet({ endpoint: 'questionCategories', params });
+    const data = await this.apiGet({ endpoint: 'questionCategoriesWithRelations', params });
     const categories = new Array<QuestionCategoryData>();
     const allQuestions = new Map<string, AnyQuestionVariantData>();
     for (const category of data) {
