@@ -217,50 +217,5 @@ export default function service({ strapi }: { strapi: Core.Strapi }) {
         data: candidates,
       };
     },
-
-    /**
-     * Updates nomination.
-     * @param nomination
-     * @returns A `FindDataResult` object with the updated nomination.
-     */
-    updateNomination: async (nomination: {
-      documentId: string;
-      electionSymbol: string;
-      candidate: {
-        documentId: string;
-        firstName: string;
-        lastName: string;
-        answers: Record<
-          | 'cuucnobngt536gysyjyxwjux' // Occupation
-          | 'h9ideiy9aijavtzwlyo19ykp', // Municipality
-          {
-            info: {
-              en: string;
-              fi: string;
-              sv: string;
-            };
-            value: null;
-          }
-        >;
-      };
-      party: {
-        externalId: string;
-      };
-    }): Promise<{ type: 'success' | 'failure'; data: object }> => {
-      // TODO
-
-      /*
-
-      const party = await strapi
-        .documents('api::party.party')
-        .findFirst({})
-        .catch((e) => e);
-      */
-
-      return {
-        type: 'success',
-        data: nomination,
-      };
-    },
   };
 }
