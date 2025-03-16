@@ -212,8 +212,8 @@ function lookupNominations(
     const tests = [
       ...[
         candidate.firstName,
-        ...candidate.firstName.split(/[\s,-]+/), // E.g. Minna-Mari Johanna => Anna or Kaisa or Johanna
-        ...candidate.firstName.split(' '), // E.g. Minna-Mari Johanna => Anna-Kaisa or Johanna
+        ...candidate.firstName.split(/[\s,-]+/), // E.g. Anna-Kaisa Johanna => Anna or Kaisa or Johanna
+        ...candidate.firstName.split(' '), // E.g. Anna-Kaisa Johanna => Anna-Kaisa or Johanna
       ].map((firstName) => ({ firstName, lastName: candidate.lastName })),
       ...[
         candidate.lastName,
