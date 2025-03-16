@@ -125,13 +125,15 @@ export function initCandidateContext(): CandidateContext {
   const infoQuestions = questionStore({
     categories: infoQuestionCategories,
     selectedElections,
-    selectedConstituencies
+    selectedConstituencies,
+    appType: 'candidate'
   });
 
   const opinionQuestions = questionStore({
     categories: opinionQuestionCategories,
     selectedElections,
-    selectedConstituencies
+    selectedConstituencies,
+    appType: 'candidate'
   });
 
   const questionBlocks = questionBlockStore({

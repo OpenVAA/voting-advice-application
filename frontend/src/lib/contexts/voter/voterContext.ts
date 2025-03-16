@@ -122,13 +122,15 @@ export function initVoterContext(): VoterContext {
   const infoQuestions = questionStore({
     categories: infoQuestionCategories,
     selectedElections,
-    selectedConstituencies
+    selectedConstituencies,
+    appType: 'voter'
   });
 
   const opinionQuestions = questionStore({
     categories: opinionQuestionCategories,
     selectedElections,
-    selectedConstituencies
+    selectedConstituencies,
+    appType: 'voter'
   });
 
   const selectedQuestionCategoryIds = sessionStorageWritable('voterContext-selectedCategoryIds', new Array<Id>());
