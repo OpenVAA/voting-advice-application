@@ -16,6 +16,10 @@ export type CustomData = {
     disableMultilingual?: boolean;
     fillingInfo?: string;
     filterable?: boolean;
+    /**
+     * If `true`, the question will be hidden in the Voter App but still visible in the Candidate App. Default `false`.
+     */
+    hidden?: boolean;
     infoSections?: Array<QuestionInfoSection>;
     /**
      * If `true`, Candidates cannot edit the question. A locked question is never considered `required`. Has no effect on opinion questions. Default `false`.
