@@ -225,11 +225,11 @@ export default function service({ strapi }: { strapi: Core.Strapi }) {
      */
     updateNomination: async (nomination: {
       documentId: string;
+      electionSymbol: string;
       candidate: {
         documentId: string;
         firstName: string;
         lastName: string;
-        electionSymbol: string;
         answers: Record<
           | 'cuucnobngt536gysyjyxwjux' // Occupation
           | 'h9ideiy9aijavtzwlyo19ykp' // Municipality
