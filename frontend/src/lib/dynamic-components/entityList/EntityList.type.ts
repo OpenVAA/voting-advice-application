@@ -15,6 +15,10 @@ export type EntityListProps = SvelteHTMLElements['div'] & {
    */
   itemsTolerance?: number;
   /**
+   * Whether to scroll loaded items into view. This may results in glitches when the list is contained in a modal. @default true
+   */
+  scrollIntoView?: boolean;
+  /**
    * Bind to this property to use the number of shown items.
    */
   readonly itemsShown?: number;

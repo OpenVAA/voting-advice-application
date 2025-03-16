@@ -58,14 +58,11 @@ Used to show an entity's children in an `EntityDetails` component.
   {#if entities.length}
     <h3 class="m-md">
       {$t(`results.${entityType}.numShown`, { numShown: filteredEntities.length })}
-      {#if filteredEntities.length !== entities.length}
-        <span class="font-normal text-secondary">{$t('results.numTotal', { numTotal: entities.length })}</span>
-      {/if}
     </h3>
     {#if entities.length > 5}
       <EntityListControls {entities} onUpdate={(results) => (filteredEntities = results)} class="mx-10 mb-md" />
     {/if}
-    <EntityList cards={filteredEntities.map(getCardProps)} class="mb-lg" />
+    <EntityList cards={filteredEntities.map(getCardProps)} class="mb-lg" scrollIntoView={false} />
   {:else}
     <h3 class="mx-10 mb-md mt-md text-center">
       {$t(`results.${entityType}.numShown`, { numShown: 0 })}
