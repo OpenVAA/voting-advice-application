@@ -183,8 +183,7 @@ function lookupNominations(
       lastName: string;
       answers: Record<
         | 'cuucnobngt536gysyjyxwjux' // Occupation
-        | 'h9ideiy9aijavtzwlyo19ykp' // Municipality
-        | 'g859ggb3qdecapyb0j251ysr', // Preferred name
+        | 'h9ideiy9aijavtzwlyo19ykp', // Municipality
         {
           info: { en: string; fi: string; sv: string };
           value: null;
@@ -381,14 +380,6 @@ export function CandidateNominatorFileImport(): ReactElement {
                   en: x.candidateHomeMunicipalityFi,
                   fi: x.candidateHomeMunicipalityFi,
                   sv: x.candidateHomeMunicipalitySv,
-                },
-                value: null,
-              },
-              g859ggb3qdecapyb0j251ysr: {
-                info: {
-                  en: x.candidateFirstName,
-                  fi: x.candidateFirstName,
-                  sv: x.candidateFirstName,
                 },
                 value: null,
               },

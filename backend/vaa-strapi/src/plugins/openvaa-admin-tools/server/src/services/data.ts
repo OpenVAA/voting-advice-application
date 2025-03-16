@@ -232,8 +232,7 @@ export default function service({ strapi }: { strapi: Core.Strapi }) {
         lastName: string;
         answers: Record<
           | 'cuucnobngt536gysyjyxwjux' // Occupation
-          | 'h9ideiy9aijavtzwlyo19ykp' // Municipality
-          | 'g859ggb3qdecapyb0j251ysr', // Preferred name
+          | 'h9ideiy9aijavtzwlyo19ykp', // Municipality
           {
             info: {
               en: string;
