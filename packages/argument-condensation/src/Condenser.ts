@@ -11,9 +11,10 @@ import { ArgumentCondensationError, LLMError, ParsingError } from './types/Error
 export class Condenser {
   private llmProvider: LLMProvider;
   private parser: OutputParser;
-  private existingArguments: Argument[] = [];
+  private existingArguments: Argument[][] = [];
   private config: LanguageConfig;
-  private readonly PROMPT_TEMPLATE: string;
+  private readonly MAP_PROMPT_TEMPLATE: string;
+  private readonly RECURSIVE_PROMPT_TEMPLATE: string;
   private readonly MAX_COMMENT_LENGTH: number;
   private readonly MAX_TOPIC_LENGTH: number;
   private readonly MAX_BATCH_SIZE: number;
@@ -36,7 +37,9 @@ export class Condenser {
     this.llmProvider = llmProvider;
     this.config = config;
     this.parser = new OutputParser(this.config);
-    this.PROMPT_TEMPLATE = `
+
+    // Define the prompt for the first level of condensation (map phase)
+    this.MAP_PROMPT_TEMPLATE = `
     ### ${this.config.instructions}
 
     ### ${this.config.existingArgumentsHeader}:
@@ -52,6 +55,18 @@ export class Condenser {
     </ARGUMENTS>
   `;
 
+    // Define the prompt for the recursive level of condensation (reduce phase)
+    this.RECURSIVE_PROMPT_TEMPLATE = `
+    ### ${this.config.recursiveInstructions}
+
+    ### ${this.config.existingArgumentsHeader}:
+    {existingArguments}
+
+    ### ${this.config.outputFormatHeader}:
+    <ARGUMENTS>
+    ${this.config.outputFormat.argumentPrefix} 1: ${this.config.outputFormat.argumentExplanation}
+    </ARGUMENTS>
+  `;
     // Constants for limits
     this.MAX_COMMENT_LENGTH = 2000;
     this.MAX_TOPIC_LENGTH = 200;
@@ -96,15 +111,31 @@ export class Condenser {
         );
       }
 
-      // Process comments in sequential batches
+      // First level of condensation: Process in batches of 5
+      const BATCHES_PER_GROUP = 5;
       const nIterations = Math.ceil(comments.length / batchSize);
+      let currentGroupArgs: Argument[] = [];
+      
       for (let i = 0; i < nIterations; i++) {
+        console.log('--------------------------------');
+        console.log('        Batch', i + 1, 'of', nIterations);
         const batch = comments.slice(i * batchSize, (i + 1) * batchSize);
-        const newArgs = await this._processBatch(batch, this.existingArguments, topic, batchSize, i);
-        this.existingArguments.push(...newArgs);
+        const newArgs = await this._processBatch(batch, currentGroupArgs, topic, batchSize, i);
+        currentGroupArgs.push(...newArgs);
+        for (const arg of currentGroupArgs) {console.log(arg.argument);}
+        console.log('--------------------------------');
+
+        // After every 5 batches, store the group and reset
+        if ((i + 1) % BATCHES_PER_GROUP === 0 || i === nIterations - 1) {
+          if (currentGroupArgs.length > 0) {
+            this.existingArguments.push([...currentGroupArgs]);
+            currentGroupArgs = [];
+          }
+        }
       }
 
-      return this.existingArguments;
+      // Second level: Recursive pairwise condensation
+      return this._recursiveCondensation(this.existingArguments, topic);
     } catch (error) {
       throw error;
     }
@@ -138,7 +169,7 @@ export class Condenser {
         .join('\n');
 
       // Construct the prompt
-      const prompt = this.PROMPT_TEMPLATE.replace('{topic}', topic)
+      const prompt = this.MAP_PROMPT_TEMPLATE.replace('{topic}', topic)
         .replace('{existingArguments}', existingArgs.length ? existingArgsText : '')
         .replace('{comments}', commentsText);
 
@@ -208,5 +239,63 @@ export class Condenser {
       }
       throw new ArgumentCondensationError('Batch processing failed', error);
     }
+  }
+
+  private async _processRecursiveCall(argumentArray: Argument[], topic: string): Promise<Argument[]> {
+    const prompt = this.RECURSIVE_PROMPT_TEMPLATE.replace('{topic}', topic)
+      .replace('{existingArguments}', argumentArray.map(arg => arg.argument).join('\n'));
+
+    console.log('--------------------------------');
+    console.log('Recursive call with arguments:\n');
+    for (const arg of argumentArray) {console.log(arg.argument);}
+    
+
+    const response = await this.llmProvider.generate({
+      messages: [new Message({ role: 'user', content: prompt })],
+      temperature: 1
+    });
+
+    const newArgs = this.parser.parseRecursiveCondensation(response.content, topic)
+    console.log('\n\n');
+    console.log('Output Arguments:\n');
+    for (const arg of newArgs) {console.log(arg.argument);}
+    console.log('--------------------------------');
+    return newArgs;
+  }
+
+  /**
+   * Recursively condenses an array of argument arrays until only one array remains
+   * @param argumentArrays - Array of argument arrays to condense
+   * @param topic - The topic these arguments relate to
+   * @returns Promise<Argument[]> Final condensed arguments
+   * @private
+   */
+  private async _recursiveCondensation(argumentArrays: Argument[][], topic: string): Promise<Argument[]> {
+    if (argumentArrays.length <= 1) {
+      return argumentArrays[0];
+    }
+
+    const nextLevel: Argument[][] = [];
+    
+    // Process pairs of arrays
+    for (let i = 0; i < argumentArrays.length; i += 2) {
+      const array1 = argumentArrays[i];
+      const array2 = i + 1 < argumentArrays.length ? argumentArrays[i + 1] : [];
+      
+      // if odd number of arrays, the last one is added as is
+      if (array2.length === 0) {
+        nextLevel.push(array1);
+        continue;
+      }
+
+      // Combine and condense the two arrays
+      const combinedArgs = [...array1, ...array2];
+      const condensedArgs = await this._processRecursiveCall(combinedArgs, topic);
+
+      nextLevel.push(condensedArgs);
+    }
+
+    // Recursively process the next level
+    return this._recursiveCondensation(nextLevel, topic);
   }
 }

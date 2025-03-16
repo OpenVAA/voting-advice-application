@@ -1,3 +1,4 @@
+import { Argument } from '../types/Argument';
 import { LanguageConfig } from '../types/LanguageConfig';
 
 /**
@@ -130,4 +131,35 @@ export class OutputParser {
 
     return sourceIndicesPerArg;
   }
+  /**
+ * Parses the output from recursive condensation of two argument sets
+   * @param output - The LLM response text
+   * @returns Argument[] - Array of condensed arguments
+   */
+  parseRecursiveCondensation(output: string, topic: string): Argument[] {
+    const lines = output.split('\n');
+    const args: Argument[] = [];
+    
+    const argumentPrefix = this.config.outputFormat.argumentPrefix;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      if (line.startsWith(argumentPrefix)) {
+        const argumentText = line.substring(argumentPrefix.length).trim();
+        
+        // Create a new argument with the condensed text
+        // We don't have direct sources for these condensed arguments,
+        // but we could potentially track which original arguments contributed
+        args.push({
+          argument: argumentText,
+          sourceComments: [], // Could be enhanced to track original sources
+          sourceIndices: [],
+          topic: topic
+        });
+      }
+    }
+    
+    return args;
+  } 
 }

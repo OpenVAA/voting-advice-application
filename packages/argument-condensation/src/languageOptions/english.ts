@@ -15,6 +15,7 @@ Note:
 - Do not modify existing arguments
 - Create a new argument only if it presents a completely new perspective
 - Clearly mark which comments (numbers) relate to each new argument`,
+    recursiveInstructions: 'Go through the following comments on the claim: "{topic}". Condense them into 20 concise arguments, which cover different perspectives on the claim well. The arguments should be short but comprehensive. A good argument focuses on specific reasons why the claim is true or false.',
     existingArgumentsHeader: 'Existing arguments',
     newCommentsHeader: 'New comments',
     outputFormatHeader: 'Output format',

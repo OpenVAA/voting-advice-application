@@ -43,4 +43,7 @@ export interface LanguageConfig {
     
     /** Prefix for existing arguments in the prompt */
     outputArgumentPrefix: string;
+
+    /** Prefix for recursive arguments in the prompt */
+    recursiveInstructions: string;
 }
