@@ -3,7 +3,7 @@ import { Upload } from '@strapi/icons';
 import { ReactElement, useEffect, useState } from 'react';
 import { findData } from '../api/data';
 
-type FileCandidateData = {
+type CsvNomination = {
   constituencyExternalId: string;
   partyExternalId: string;
   candidateFirstName: string;
@@ -17,7 +17,7 @@ type FileCandidateData = {
 type FileValidationResult = {
   isValid: boolean;
   errors: Array<string>;
-  data: Array<FileCandidateData>;
+  data: Array<CsvNomination>;
 };
 
 type Election = {
@@ -47,6 +47,12 @@ type Nomination = {
   };
 };
 
+/**
+ *
+ * Validates the content of a CSV candidate nominator file and picks relevant nomination data
+ * @param content - The content of a CSV candidate nominator file
+ * @returns An object with relevant nomination data `CsvNomination`
+ */
 function parseCSV(content: string): FileValidationResult {
   try {
     const lines = content.split('\n').filter((line) => line.trim() !== '');
@@ -59,7 +65,7 @@ function parseCSV(content: string): FileValidationResult {
       };
     }
 
-    const data: Array<FileCandidateData> = [];
+    const data: Array<CsvNomination> = [];
 
     lines.forEach((line, lineIndex) => {
       const columns = line.split(';').map((column) => column.trim());
@@ -156,6 +162,12 @@ function parseCSV(content: string): FileValidationResult {
   }
 }
 
+/**
+ * Maps unconfirmed nominations to confirmed nominations based on full name and `constituency.externalId`.
+ * @param unconfirmedNominations - Unconfirmed nominations from Strapi
+ * @param confirmedNominations - Confirmed nominations from the CSV file
+ * @returns Unconfirmed nominations mapped to confirmed nominations.
+ */
 function lookupNominations(
   unconfirmedNominations: Array<{
     documentId: string;
@@ -164,11 +176,11 @@ function lookupNominations(
   }>,
   confirmedNominations: Array<{
     constituency: { externalId: string };
+    electionSymbol: string;
     party: { externalId: string };
     candidate: {
       firstName: string;
       lastName: string;
-      electionSymbol: string;
       answers: Record<
         | 'cuucnobngt536gysyjyxwjux' // Occupation
         | 'h9ideiy9aijavtzwlyo19ykp' // Municipality
@@ -219,7 +231,7 @@ function lookupNominations(
         candidate.lastName,
         ...candidate.lastName.split(/[\s,-]+/),
         ...candidate.lastName.split(' '),
-      ].map((lastName) => ({ firstName: lastName, lastName: candidate.firstName })), // Change positions.
+      ].map((lastName) => ({ firstName: lastName, lastName: candidate.firstName })), // Change first and last name order
     ];
 
     const confirmed = tests
@@ -237,20 +249,22 @@ function lookupNominations(
       },
       ...(confirmed
         ? {
+            // Data for updating the nomination and candidate:
+            electionSymbol: confirmed.electionSymbol,
+            unconfirmed: false,
             party: confirmed.party,
             candidate: {
               firstName: candidate.firstName,
               lastName: candidate.lastName,
-              electionSymbol: confirmed.candidate.electionSymbol,
+              // Important! Merge with the existing answers.
               answers: confirmed.candidate.answers,
-              unconfirmed: false,
             },
           }
         : {
+            unconfirmed: true,
             candidate: {
               firstName: candidate.firstName,
               lastName: candidate.lastName,
-              unconfirmed: true,
             },
           }),
     };
@@ -348,10 +362,10 @@ export function CandidateNominatorFileImport(): ReactElement {
         file.data.map((x) => ({
           constituency: { externalId: x.constituencyExternalId },
           party: { externalId: x.partyExternalId },
+          electionSymbol: x.candidateElectionSymbol,
           candidate: {
             firstName: x.candidateFirstName,
             lastName: x.candidateLastName,
-            electionSymbol: x.candidateElectionSymbol,
             answers: {
               // Important! Merge with the existing answers.
               cuucnobngt536gysyjyxwjux: {
