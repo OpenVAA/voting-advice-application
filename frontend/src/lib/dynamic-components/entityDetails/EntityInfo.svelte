@@ -23,6 +23,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 -->
 
 <script lang="ts">
+  import { getCustomData } from '@openvaa/app-shared';
   import {
     type AnyEntityVariant,
     type AnyNominationVariant,
@@ -127,8 +128,9 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
       {#if nonLinkQuestions.length}
         {#each nonLinkQuestions as question}
           {@const answer = nakedEntity.getAnswer(question)}
+          {@const { longText } = getCustomData(question)}
           {#if answer || $appSettings.entityDetails.showMissingAnswers[entityType]}
-            <InfoItem label={question.text} vertical={question.type === 'text'}>
+            <InfoItem label={question.text} vertical={longText}>
               <InfoAnswer {answer} {question} />
             </InfoItem>
           {/if}
