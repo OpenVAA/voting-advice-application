@@ -2,9 +2,10 @@ import { Condenser } from '../src/Condenser';
 import { OpenAIProvider } from '@openvaa/llm';
 import { config } from 'dotenv';
 import path from 'path';
+import { finnishConfig } from '../src/languageOptions/finnish';
 
 // Load .env from project root
-config({ path: path.resolve(__dirname, '../../../../.env') });
+config({ path: path.resolve(__dirname, '../../../.env') });
 
 describe('Condenser', () => {
   let condenser: Condenser;
@@ -16,7 +17,7 @@ describe('Condenser', () => {
       throw new Error('OPENAI_API_KEY environment variable is required');
     }
     const provider = new OpenAIProvider({ apiKey });
-    condenser = new Condenser(provider);
+    condenser = new Condenser(provider, finnishConfig);
   });
 
   it('should process comments', async () => {
