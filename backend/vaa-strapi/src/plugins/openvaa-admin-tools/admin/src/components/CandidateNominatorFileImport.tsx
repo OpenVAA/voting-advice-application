@@ -253,8 +253,12 @@ function lookupNominations(
             unconfirmed: false,
             party: confirmed.party,
             candidate: {
-              firstName: candidate.firstName,
-              lastName: candidate.lastName,
+              // Original Bank ID name:
+              _bankFirstName: candidate.firstName,
+              _bankLastName: candidate.lastName,
+              // CSV name:
+              firstName: confirmed.candidate.firstName,
+              lastName: confirmed.candidate.lastName,
               // Important! Merge with the existing answers.
               answers: confirmed.candidate.answers,
             },
