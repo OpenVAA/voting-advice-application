@@ -1,3 +1,4 @@
+import type { Id } from '@openvaa/core';
 import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type EntityCardProps = SvelteHTMLElements['article'] & {
@@ -17,6 +18,7 @@ export type EntityCardProps = SvelteHTMLElements['article'] & {
    * The maximum number of sub-entities to show. If there are more a button will be shown for displaying the remaining ones. @default 3
    */
   maxSubcards?: number;
+  questionId?: Id;
 };
 
 /**

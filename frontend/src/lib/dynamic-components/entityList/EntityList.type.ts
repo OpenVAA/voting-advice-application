@@ -1,3 +1,4 @@
+import type { Id } from '@openvaa/core';
 import type { SvelteHTMLElements } from 'svelte/elements';
 import type { EntityCardProps } from '$lib/dynamic-components/entityCard';
 
@@ -22,4 +23,5 @@ export type EntityListProps = SvelteHTMLElements['div'] & {
    * Bind to this property to use the number of shown items.
    */
   readonly itemsShown?: number;
+  questionId?: Id;
 };

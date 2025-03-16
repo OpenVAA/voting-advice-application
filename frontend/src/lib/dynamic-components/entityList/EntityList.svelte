@@ -49,6 +49,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
   export let itemsTolerance: NonNullable<$$Props['itemsTolerance']> = 0.2;
   export let itemsShown: $$Props['itemsShown'] = 0;
   export let scrollIntoView: $$Props['scrollIntoView'] = true;
+  export let questionId: $$Props['questionId'] = undefined;
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -132,7 +133,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
           <!-- Show the contents for the current page and those before it -->
           {#each items as item}
             {#key item}
-              <EntityCard {...item} />
+              <EntityCard {questionId}  {...item} />
             {/key}
           {/each}
         {/if}

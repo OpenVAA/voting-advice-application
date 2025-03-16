@@ -68,6 +68,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   export let entity: $$Props['entity'];
   export let variant: $$Props['variant'] = 'list';
   export let maxSubcards: $$Props['maxSubcards'] = undefined;
+  export let questionId: $$Props['questionId'] = undefined;
 
   // We have to set the default value like this, otherwise the value is treated later as possibly undefined
   maxSubcards ??= 3;
@@ -118,11 +119,16 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     if (type === ENTITY_TYPE.Candidate || type === ENTITY_TYPE.Organization) {
       showSubMatches = $appSettings.results.cardContents[type].includes('submatches');
       if (variant !== 'details') {
-        questions = getCardQuestions({
-          type,
-          appSettings: $appSettings,
-          dataRoot: $dataRoot
-        });
+        questions = questionId && type === ENTITY_TYPE.Candidate
+          ? [{ 
+              question: $dataRoot.getQuestion(questionId),
+              hideLabel: false,
+            }]
+          : getCardQuestions({
+            type,
+            appSettings: $appSettings,
+            dataRoot: $dataRoot
+          });
       }
     }
 
@@ -134,7 +140,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       $appSettings.results.cardContents.organization.includes('candidates')
     ) {
       subcards = findCandidateNominations({ matches: matches ? $matches : undefined, nomination }).map((e) => ({
-        entity: e
+        entity: e,
+        questionId
       }));
     }
   }

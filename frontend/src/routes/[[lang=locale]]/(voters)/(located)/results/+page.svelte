@@ -203,6 +203,15 @@ The nominations applicable to these elections and constituencies are shown. Thes
   interface IntroVideoProps {
     video: CustomVideoProps;
   }
+
+
+  // TEMP
+  const questionId: Record<string, string> = {
+    // Counties
+    vzrmfatxpudypabsvacxu7ho: 'hjpwslzkxz864tli4i3uqtdl',
+    // Municipalities
+    fgvyvd6vm2s8762oh0ztsvd7: 'ktypq7ldxwfigqq7o2te99a4',
+  }
 </script>
 
 {#if $page.state.resultsShowEntity}
@@ -281,7 +290,11 @@ The nominations applicable to these elections and constituencies are shown. Thes
                 onUpdate={(results) => (filteredEntities = results)}
                 filterGroup={$entityFilters[activeElectionId][activeEntityType]}
                 class="mx-10 mb-md" />
-              <EntityList cards={filteredEntities.map((e) => ({ entity: e }))} class="mb-lg" />
+              <EntityList 
+                cards={filteredEntities.map((e) => ({ entity: e }))} 
+                class="mb-lg" 
+                questionId={questionId[activeElectionId]} 
+                />
             {/key}
           {:else}
             <Loading />
