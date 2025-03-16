@@ -51,6 +51,9 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     };
     const data = await this.apiGet({ endpoint: 'appSettings', params });
     if (!data) throw new Error('Expected one AppSettings object, but got none.');
+    data.results.cardContents ??= { candidate: [], organization: [] };
+    data.results.cardContents.candidate ??= [];
+    data.results.cardContents.organization ??= [];
     return data;
   }
 
