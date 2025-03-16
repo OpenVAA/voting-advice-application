@@ -9,7 +9,7 @@ export type StrapiContext = RequestContext & {
     query: StrapiQuery | Record<string, Array<string>>;
     url: string;
   };
-  state?: { user: { id: number } };
+  state?: { user: { id: number, role: string } };
 };
 
 /**

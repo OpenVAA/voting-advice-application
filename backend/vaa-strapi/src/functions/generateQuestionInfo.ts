@@ -3,9 +3,9 @@ import { LLMResponse, OpenAIProvider } from "@openvaa/llm";
 import { LLM_OPENAI_API_KEY } from "../constants";
 import { dynamicSettings } from "@openvaa/app-shared";
 
-export async function generateQuestionInfo(questionId: number) { // 
+export async function generateQuestionInfo(questionId: number): Promise<boolean> {
   if (!LLM_OPENAI_API_KEY) {
-    throw new Error('LLM_OPENAI_API_KEY is required for generating mock LLM summaries')  
+    throw new Error('LLM_OPENAI_API_KEY is required for generating LLM summaries')  
   }
 
   try {
@@ -46,8 +46,9 @@ export async function generateQuestionInfo(questionId: number) { //
   });
   } catch (error) {
     console.error('Failed to generate LLM summary, ', error);
-    throw error;
+    return false;
   }
+  return true;
 }
 
 export async function generateQuestionInfoForAllQuestions() {
