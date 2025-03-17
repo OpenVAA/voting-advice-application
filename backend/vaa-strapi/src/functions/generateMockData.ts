@@ -7,6 +7,13 @@
  */
 
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
+import {
+  type AnswerValue,
+  dynamicSettings,
+  type LocalizedAnswer,
+  type LocalizedString,
+  type QuestionTypeSettings
+} from '@openvaa/app-shared';
 import { LLMResponse, OpenAIProvider } from '@openvaa/llm';
 import crypto from 'crypto';
 import { loadDefaultAppSettings } from './loadDefaultAppSettings';
@@ -25,7 +32,6 @@ import {
 import { API } from '../util/api';
 import { getDynamicTranslations } from '../util/appCustomization';
 import { dropAllCollections } from '../util/drop';
-import { dynamicSettings, type AnswerValue, type LocalizedAnswer, type LocalizedString, type QuestionTypeSettings } from '@openvaa/app-shared';
 import type { Data } from '@strapi/strapi';
 
 /**
@@ -139,6 +145,12 @@ export async function generateMockData() {
     });
     console.info('Done!');
     console.info('#######################################');
+    console.info('inserting admin user for frontend');
+    await createAdminUser().catch((e) => {
+      throw e;
+    });
+    console.info('Done!');
+    console.info('#######################################');
     console.info('inserting constituencies and constituency groups');
     await createConstituenciesAndGroups({
       numberPerGroup: N_CONSTITUENCIES_PER_ELECTION,
@@ -248,6 +260,30 @@ async function createStrapiAdmin() {
     };
 
     await strapi.service('admin::user').create(params);
+
+  }
+}
+
+async function createAdminUser() {
+  if (process.env.NODE_ENV === 'development') {
+    // Create admin user for frontend
+    const admin = await strapi.query('plugin::users-permissions.role').findOne({
+      where: {
+        type: 'admin'
+      }
+    });
+
+    await strapi.documents('plugin::users-permissions.user').create({
+      data: {
+        username: process.env.DEV_USERNAME ?? 'admin',
+        password: 'admin1', // Min length of a password is 6
+        email: process.env.DEV_EMAIL ?? 'admin@example.com',
+        provider: 'local',
+        confirmed: true,
+        blocked: false,
+        role: admin.id
+      }
+    });
   }
 }
 
