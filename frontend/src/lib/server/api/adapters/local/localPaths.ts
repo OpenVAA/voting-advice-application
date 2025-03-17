@@ -1,5 +1,16 @@
-import { DP_METHOD, type DPDataType } from '$lib/api/base/dataTypes';
-import type { AnyNominationVariantPublicData } from '@openvaa/data';
+import { DP_METHOD } from '$lib/api/base/dataTypes';
+import type { DynamicSettings } from '@openvaa/app-shared';
+import type {
+  AnyEntityVariantData,
+  AnyNominationVariantPublicData,
+  AnyQuestionVariantData,
+  ConstituencyData,
+  ConstituencyGroupData,
+  ElectionData,
+  LocalizedObject,
+  QuestionCategoryData
+} from '@openvaa/data';
+import type { AppCustomization } from '$lib/contexts/app';
 
 export const READ_PATHS = Object.fromEntries(
   Object.keys(DP_METHOD).map((collection) => [collection, `/data/${collection}.json`])
@@ -18,10 +29,20 @@ export const LOCAL_PATH = { ...READ_PATHS, ...CREATE_PATHS };
 export type LocalPath = keyof typeof LOCAL_PATH;
 
 /**
- * The locally stored data is structured slightly different from `DPDataType`, because `Nomination`s and `Entity`s are stored in separate files.
+ * The locally stored data is structured slightly different from `DPDataType`, because `Nomination`s and `Entity`s are stored in separate files and because the data may be localized.
  */
 export type LocalDataType = {
-  [KCollection in keyof DPDataType]: KCollection extends 'nominations'
-    ? Array<AnyNominationVariantPublicData>
-    : DPDataType[KCollection];
+  appSettings: Partial<DynamicSettings>;
+  appCustomization: LocalizedObject<AppCustomization>;
+  elections: Array<LocalizedObject<ElectionData>>;
+  constituencies: {
+    groups: Array<LocalizedObject<ConstituencyGroupData>>;
+    constituencies: Array<LocalizedObject<ConstituencyData>>;
+  };
+  nominations: Array<LocalizedObject<AnyNominationVariantPublicData>>;
+  entities: Array<LocalizedObject<AnyEntityVariantData>>;
+  questions: {
+    categories: Array<LocalizedObject<QuestionCategoryData>>;
+    questions: Array<LocalizedObject<AnyQuestionVariantData>>;
+  };
 };
