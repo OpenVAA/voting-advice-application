@@ -7,11 +7,11 @@ export const staticSettings: StaticSettings = {
   appVersion: {
     version: 2,
     requireUserDataVersion: 2,
-    source: 'https://github.com/OpenVAA/voting-advice-application/tree/deploy-nuorten-vaalikone-2025'
+    source: 'https://github.com/OpenVAA/voting-advice-application/tree/educational-nuorten-vaalikone-2025'
   },
   dataAdapter: {
-    type: 'strapi',
-    supportsCandidateApp: true
+    type: 'local',
+    supportsCandidateApp: false
   },
   colors: {
     light: {
@@ -58,14 +58,14 @@ export const staticSettings: StaticSettings = {
     }
   ],
   analytics: {
-    trackEvents: true,
+    trackEvents: false,
     platform: {
       name: 'umami',
-      code: 'd3ba4528bcfa4aca4ca576071b212498432a164e', // Staging code
+      code: 'a1a8f71c-0b51-4444-aa1d-3ab7adf95201',
       infoUrl: 'https://umami.is/'
     }
   },
   preRegistration: {
-    enabled: true
+    enabled: false
   }
 };
