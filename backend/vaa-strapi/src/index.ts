@@ -43,6 +43,7 @@ module.exports = {
     }
 
     // 2. Default API permissions
-    setDefaultApiPermissions();
+    setDefaultApiPermissions(2);
+    setDefaultApiPermissions(3);
   }
 };
