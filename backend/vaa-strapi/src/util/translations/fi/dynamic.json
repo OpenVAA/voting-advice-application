@@ -45,8 +45,8 @@
     "heroEmoji": "🙊"
   },
   "frontPage": {
-    "ingress": "Vaalikoneen avulla voit etsiä ehdokkaita ja puolueita sen mukaan, miten paljon he ovat samaa mieltä kanssasi.",
-    "startButton": "Löydä sopivimmat ehdokkaat ja puolueet!"
+    "ingress": "",
+    "startButton": "Aloita!"
   },
   "info": {
     "content": "Tällä sivulla on tietoa vaaleista.",

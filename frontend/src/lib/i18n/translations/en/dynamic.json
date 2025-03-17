@@ -46,7 +46,7 @@
   },
   "frontPage": {
     "ingress": "With this application you can compare candidates and parties based on their opinions, parties and other data.",
-    "startButton": "Find the Best Candidates and Parties!"
+    "startButton": "Start!"
   },
   "info": {
     "content": "Read more about the elections below.",

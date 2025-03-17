@@ -14,7 +14,7 @@
   "intro": {
     "ingress": {
       "withCategorySelection": "The questions are divided into {numCategories} categories. You can answer all of them or the pick the ones you want. {minQuestions, plural, =0 {} =1 {} other {However, select enough categories to get at least # questions in total.}}",
-      "withoutCategorySelection": "Next, answer {numQuestions} questions regarding politics and values. {numCategories, plural, =0 {} =1 {} other {The questions are divided into # categories.}}"
+      "withoutCategorySelection": "Next, answer {numQuestions} questions about politics and values. Try to answer in a way that aligns with the assigned party’s stance on each question. {numCategories, plural, =0 {} =1 {} other {They are divided into # themes.}}"
     },
     "start": "Answer {numQuestions} Questions"
   },
@@ -23,5 +23,5 @@
   "remove": "Delete answer",
   "skip": "Skip",
   "skipToResults": "Skip to Results",
-  "title": "Opinions"
+  "title": "Party Positions"
 }
