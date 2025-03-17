@@ -75,23 +75,24 @@ A template part that outputs the navigation menu for the Voter App for use in `L
         icon="election"
         text={$t('elections.title')} />
     {/if}
+    <NavItem href={$getRoute('GameModeIntro')} icon="play" text={$t('gameMode.shortTitle')} />
     <NavItem
       disabled={!($elections.length && $constituencies.length)}
       href={$getRoute('Questions')}
       icon="opinion"
       text={$t('questions.title')} />
     <NavItem
-      disabled={!($elections.length && $constituencies.length)}
+      disabled={!($elections.length && $constituencies.length && $resultsAvailable)}
       href={$getRoute('Results')}
       icon="results"
-      text={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')} />
+      text={$t('results.title.results')} />
   </NavGroup>
   <NavGroup>
     <NavItem on:click={() => resetVoterData()} icon="close" text={$t('common.resetAnswers')} />
   </NavGroup>
   <NavGroup>
-    <NavItem href={$getRoute('Info')} icon="election" text={$t('info.title')} />
-    <NavItem href={$getRoute('About')} icon="info" text={$t('about.title')} />
+    <!-- <NavItem href={$getRoute('Info')} icon="election" text={$t('info.title')} />
+    <NavItem href={$getRoute('About')} icon="info" text={$t('about.title')} /> -->
     <NavItem href={$getRoute('Privacy')} icon="privacy" text={$t('privacy.title')} />
   </NavGroup>
   {#if $appSettings.survey?.showIn?.includes('navigation') || $openFeedbackModal}

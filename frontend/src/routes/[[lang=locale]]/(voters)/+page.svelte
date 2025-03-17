@@ -12,7 +12,7 @@ The frontpage of the app for voters.
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/button';
-  import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { HeadingGroup } from '$lib/components/headingGroup';
   import { getAppContext } from '$lib/contexts/app';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { Footer } from '$lib/dynamic-components/footer';
@@ -47,21 +47,22 @@ The frontpage of the app for voters.
       <img
         src="/images/nuorten-vaalikone-logo-{$locale ?? 'fi'}-{$darkMode ? 'white' : 'black'}.svg"
         alt={$t('dynamic.appName')}
-        class="w-[26rem] m-auto" />
+        class="m-auto w-[26rem]" />
       <div class="sr-only">{$t('dynamic.appName')}</div>
+      <div class="mt-lg">{$t('gameMode.title')}</div>
     </h1>
   </HeadingGroup>
 
-  <Button variant="main" href={$getRoute('Intro')} text={$t('dynamic.frontPage.startButton')} />
+  <Button variant="main" href={$getRoute('GameModeIntro')} text={$t('dynamic.frontPage.startButton')} />
 
-  <p class="mt-lg text-center">
+  <!-- <p class="mt-lg text-center">
     {$t('dynamic.frontPage.ingress', {
       electionDate: new Date()
     })}
-  </p>
+  </p> -->
 
-  <a href={$getRoute('Info')} class="btn btn-ghost w-full max-w-md">{$t('info.title')}</a>
-  <a href={$getRoute('About')} class="btn btn-ghost w-full max-w-md">{$t('about.title')}</a>
+  <a href="https://nuortenvaalikone.openvaa.org" class="btn btn-ghost mt-lg w-full max-w-md"
+    >{$t('gameMode.exitGameMode')}</a>
 
   {#if $appSettings.survey?.showIn?.includes('frontpage')}
     <SurveyBanner class="mt-lg" />
