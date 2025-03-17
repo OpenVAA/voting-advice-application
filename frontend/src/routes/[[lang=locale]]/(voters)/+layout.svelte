@@ -21,6 +21,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { Notification } from '$lib/components/notification';
+  import { initGameContext } from '$lib/contexts/game';
   import { getLayoutContext } from '$lib/contexts/layout';
   import { initVoterContext } from '$lib/contexts/voter';
   import { DataConsentPopup } from '$lib/dynamic-components/dataConsent/popup';
@@ -30,10 +31,12 @@
   import type { PopupComponent } from '$lib/contexts/app/popup';
 
   ////////////////////////////////////////////////////////////////////
-  // Init Voter Context
+  // Init Voter and Game Contexts
   ////////////////////////////////////////////////////////////////////
 
   const { appSettings, appType, popupQueue, userPreferences, t } = initVoterContext();
+  // TODO: Only init if setting is present and set gameMode flag
+  initGameContext();
   $appType = 'voter';
 
   ////////////////////////////////////////////////////////////////////
