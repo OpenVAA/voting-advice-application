@@ -1,50 +1,47 @@
+/**
+ * # Admin App login server action
+ *
+ * On successful login saves the jwt token into the cookie.
+ */
+
 import { fail, redirect } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
+import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
+import { logDebugError } from '$lib/utils/logger';
 
-export const load: PageServerLoad = async ({ locals }) => {
-  // Redirect to admin home if already logged in
-  if (locals.user?.role === 'admin') {
-    throw redirect(302, '/admin');
-  }
-};
+export const actions = {
+  default: async ({ cookies, request, locals, fetch }: any) => {
+    const dataWriter = await dataWriterPromise;
+    dataWriter.init({ fetch });
 
-export const actions: Actions = {
-  default: async ({ request, cookies }) => {
     const data = await request.formData();
-    const email = data.get('email');
-    const password = data.get('password');
+    const username = data.get('email') as string;
+    const password = data.get('password') as string;
+    const redirectTo = data.get('redirectTo') as string;
 
-    if (!email || !password) {
-      return fail(400, { message: 'Missing email or password' });
+    const loginResponse = await dataWriter.login({ username, password }).catch(() => undefined);
+    if (!loginResponse?.authToken) return fail(400);
+    const { authToken } = loginResponse;
+
+    const userData = await dataWriter.getBasicUserData({ authToken }).catch((e) => {
+      logDebugError(`Error fetching user data: ${e?.message ?? 'No error message'}`);
+      return undefined;
+    });
+    if (!userData) return fail(500);
+
+    // Only set the auth token if we also got the basic user data
+    cookies.set('token', authToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      path: '/'
+    });
+
+    const language = userData.settings?.language;
+    if (language) {
+      locals.currentLocale = language;
     }
 
-    try {
-      // TODO: Replace with actual admin authentication
-      const response = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
-
-      if (!response.ok) {
-        return fail(401, { message: 'Invalid credentials' });
-      }
-
-      const { token } = await response.json();
-      cookies.set('admin_token', token, {
-        path: '/',
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 60 * 60 * 24 // 24 hours
-      });
-
-      return { success: true };
-    } catch (error) {
-      console.error('Login error:', error);
-      return fail(500, { message: 'Internal server error' });
-    }
+    // Redirect to admin dashboard
+    redirect(303, `/${locals.currentLocale}/admin`);
   }
 };
