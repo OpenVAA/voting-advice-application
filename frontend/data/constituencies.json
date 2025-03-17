@@ -1,0 +1,15 @@
+{
+  "groups": [
+    {
+      "id": "constituencyGroup-1",
+      "name": "-",
+      "constituencyIds": ["constituency-1-1"]
+    }
+  ],
+  "constituencies": [
+    {
+      "id": "constituency-1-1",
+      "name": "-"
+    }
+  ]
+}

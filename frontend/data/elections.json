@@ -1,0 +1,22 @@
+[
+  {
+    "id": "election-1",
+    "name": {
+      "__translations__": {
+        "fi": "Kunta- ja aluevaalit 2025",
+        "en": "County and Municipal elections 2025",
+        "sv": "Välfärdsområdes- och kommunalval 2025"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "Kunta- ja aluevaalit",
+        "en": "County and Municipal elections",
+        "sv": "Välfärdsområdes- och kommunalval"
+      }
+    },
+    "electionStartDate": "2025-04-02",
+    "electionDate": "2025-04-13",
+    "constituencyGroupIds": ["constituencyGroup-1"]
+  }
+]

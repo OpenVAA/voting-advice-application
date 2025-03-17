@@ -1,0 +1,1031 @@
+[
+  {
+    "id": "party-0001",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Sosialidemokraatit",
+        "sv": "Socialdemokraterna",
+        "en": "Social Democratic Party"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "SDP",
+        "sv": "SDP",
+        "en": "SDP"
+      }
+    },
+    "color": {
+      "normal": "#f43636"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>SDP:n päämääränä on yhteiskunta, jossa vapaus voittaa alistamisen, humaanisuus suvaitsemattomuuden ja oikeudenmukaisuus itsekkyyden. Yhteiskunnan on taattava jokaiselle jäsenelleen reilut mahdollisuudet oman elämänsä rakentamisessa. Puoleen perusarvoja ovat vapaus, tasa-arvo ja solidaarisuus ja niitä toteutetaan demokratian, hyvinvointiyhteiskunnan ja yhteistyön kautta. Demareille tärkeää ovat työ ja reilu työelämä, toimivat julkiset palvelut ja turvalliset asuinympäristöt, ihmisistä huolehtiminen, ympäristönsuojelu sekä koulutuksen turvaaminen ja vaaliminen. SDP:n toiminta on hyvin kansainvälistä ja sosialidemokraatit ovat merkittävä poliittinen voima lähes kaikissa Euroopan maissa.</p>",
+        "sv": "<p>SDP:s mål är ett samhälle där frihet övervinner underkuvning, mänsklighet intolerans och rättvisa egoism. Samhället måste garantera alla sina medlemmar rättvisa möjligheter att bygga sitt eget liv. Partiets grundläggande värderingar är frihet, jämlikhet och solidaritet, och dessa förverkligas genom demokrati, välfärdssamhälle och samarbete. Viktiga teman för socialdemokraterna är arbete och ett rättvist arbetsliv, fungerande offentliga tjänster och säkra boendemiljöer, omsorg om människor, miljöskydd samt att trygga och värna om utbildningen. SDP:s verksamhet är mycket internationell, och socialdemokraterna är en betydande politisk kraft i nästan alla länder i Europa.</p>",
+        "en": "<p>SDP aims for a society where freedom overcomes subjugation, humanity overcomes intolerance and fairness overcomes selfishness. Society must guarantee each of its members a fair opportunity to build their own lives. The party's fundamental values of freedom, equality and solidarity are implemented through democracy, the welfare society and cooperation. For the Social Democrats, work and a fair working life, well-functioning public services and safe living environments, caring for people, environmental protection and securing and nurturing education are important. SDP’s activities are highly international and Social Democrats are a significant political force in almost all European countries.</p>"
+      }
+    },
+    "answers": {
+      "question-opinion-1": {
+        "value": "4",
+        "info": {
+          "__translations__": {
+            "fi": "Tarvitsemme monipuolisia toimia äänestysaktiivisuuden nostamiseksi. Nuorten yhteiskunnallista aktiivisuutta on tuettava ja osallistumismahdollisuuksia lisättävä. Jokaisella on oltava mahdollisuus tulla kuulluksi sekä vaikuttaa omaa elämää ja asuinympäristöä koskevaan päätöksentekoon. Nuorten tietoisuutta on lisättävä siitä, miten päätöksentekoon voi vaikuttaa esimerkiksi nuorisovaltuuston sekä erilaisten kuulemisten kautta. Äänestäminen on yksi mittari sille, kuinka vahva osallistuva demokratia on. Tällä hetkellä haasteena on, että äänestäminen ja muu yhteiskunnallinen osallistuminen kasaantuvat samoille ihmisille. Samat ryhmät, jotka käyttävät äänioikeuttaan, ovat aktiivisia myös yhdistystoiminnassa, suoran demokratian osallistujina ja erilaisissa kansalaisverkostoissa. Korkeastikoulutetut ja varakkaimmat äänestävät aktiivisemmin kuin vähemmän koulutetut ja vähävaraiset. Iäkkäiden äänestysaktiivisuus on myös nuoria korkeampi.",
+            "sv": "Vi behöver mångsidiga åtgärder för att öka valdeltagandet. Ungas samhälleliga aktivitet måste stödjas och möjligheterna till deltagande utökas. Att rösta är en indikator på hur stark den deltagande demokratin är. För närvarande är en utmaning att röstning och annat samhällsdeltagande är koncentrerat till samma grupper av människor. De grupper som använder sin rösträtt är också ofta aktiva inom föreningsverksamhet, direktdemokratiska initiativ och olika medborgarnätverk. Högutbildade och ekonomiskt välbärgade röstar oftare än lågutbildade och mindre bemedlade. Äldre personers valdeltagande är också högre än ungas. Alla ska ha möjlighet att bli hörda och påverka beslut som rör deras liv och närmiljö. Medvetenheten om hur man kan påverka beslutsfattandet, till exempel genom ungdomsfullmäktige och olika samråd, bör ökas."
+          }
+        }
+      },
+      "question-opinion-4": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Emme kannata lihan tarjoamisen täyskieltoa, mutta julkisissa tarjoiluissa tulee tukea ilmastoystävällisiä vaihtoehtoja ja lisätä kasvisruokaa. Keskeistä on, että julkisissa tarjoiluissa, etenkin kouluissa ja sairaaloissa, ruoka on maistuvaa ja vastaa ravitsemussuosituksia. Sekä ravitsemus- että ilmastotiede painottavat kasviksiin pohjautuvaa ruokavaliota. Terveys- ja ympäristösyistä etenkin punaisen lihan ja kovan rasvan osuutta suomalaisten ruokavaliossa tulisi vähentää. Laadukkaat kasvisproteiinit, viljat sekä kestävästi kalastettu kala ovat hyviä vaihtoehtoja kaikille ja kunnan tulisi huomioida tämä joukkoruokailuissa.",
+            "sv": "Vi motsätter oss inte att kött serveras inom den offentliga måltidsservicen, men det är viktigt att främja klimatvänliga alternativ och öka andelen vegetariska rätter. Det centrala är att maten som serveras i offentliga måltider, särskilt i skolor och sjukhus, är välsmakande och följer näringsrekommendationerna. Både närings- och klimatforskning betonar en växtbaserad kost. Av hälso- och miljöskäl bör andelen rött kött och hårda fetter i finländarnas kost minskas. Högkvalitativa vegetabiliska proteiner, spannmål och hållbart fiskad fisk är goda alternativ för alla, och kommunerna bör ta hänsyn till detta i den offentliga dåltidsservicen."
+          }
+        }
+      },
+      "question-opinion-5": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Ilmastoasiat ja luontokadon torjunta täytyy ottaa huomioon kaikessa toiminnassa. Jokaisessa kunnassa on laadittava ilmastosuunnitelma.  Päästöjen vähentäminen on välttämätöntä, jotta voimme turvata hyvän elämän edellytykset myös tuleville sukupolville. Hiilineutraalit ratkaisut ovat nyt pääosassa, kun luodaan uusia puhtaan teollisuuden tuotteita. Tässä Suomen tulee olla edelläkävijä, ei jarruttelija.",
+            "sv": "Klimatfrågor och bekämpning av förlusten av biologisk mångfald måste beaktas i all verksamhet. Varje kommun ska utarbeta en klimatplan. Att minska utsläppen är nödvändigt för att vi ska kunna trygga goda livsvillkor också för kommande generationer. Koldioxidneutrala lösningar står nu i centrum när nya rena industriprodukter skapas. Finland ska vara en föregångare i detta, inte en bromskloss."
+          }
+        }
+      },
+      "question-opinion-6": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Yhteiskunnan on mahdollistettava kaikille ihmisille yhtäläiset oikeudet ja mahdollisuudet tämän sukupuolen kokemuksesta riippumatta. Tasa-arvo ja yhdenvertaisuus ovat sosialidemokraattisen arvopohjan kivijalkoja, joiden edistämiseen SDP:n ehdokkaat ovat sitoutuneet. Kaikissa palveluissa tulee taata ihmisen oikeus olla oma itsensä. Lainsäädännön on kunnioitettava sukupuoltaan korjaavan ihmisen oikeuksia sekä tunnustettava juridisesti myös muunsukupuoliset. Kasvatuksessa ja opetuksessa tulee tehdä määrätietoista tasa-arvotyötä ja puhua seksuaalisen suuntautumisen ja sukupuolen moninaisuudesta. Julkisissa palveluissa työskenteleviä ihmisiä on koulutettava kohtaamaan erilaisia ihmisiä yhdenvertaisina yksilöinä.\"",
+            "sv": "Samhället måste garantera alla människor lika rättigheter och möjligheter oberoende av deras upplevelse av kön. Jämlikhet och likabehandling är grundstenar i den socialdemokratiska värdegrunden, och SDP:s kandidater har förbundit sig till att främja dessa. Alla tjänster ska säkerställa individens rätt att vara sig själv. Lagen ska respektera rättigheterna för personer som korrigerar sitt kön samt juridiskt erkänna även icke-binära personer. Uppfostran och undervisning ska bedriva målmedvetet jämställdhetsarbete och tala om mångfalden av sexuell läggning och kön. Personer som arbetar inom offentliga tjänster ska utbildas i att bemöta olika människor som jämlika individer."
+          }
+        }
+      },
+      "question-opinion-8": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Tarvitsemme eri toimijoiden yhteistyötä, johon osallistuvat esimerkiksi koulu, sosiaali- ja terveydenhuolto, järjestöt, poliisi, nuorisopalvelut ja lapsen tai nuoren huoltaja, sillä se on tehokkain tapa puuttua nuorten ongelmiin. Näiden toimijoiden riittävistä resursseista on huolehdittava. Peruskoulu ja toinen aste saavuttavat kaikki Suomessa asuvat lapset ja nuoret, siksi ne ovat myös paras paikka edistää lasten ja nuorten hyvinvointia. Nuorten tarvitsemia palveluita, mielenterveyspalveluista harrastuksiin, nuorisotyöhön ja perheiden matalan kynnyksen palveluihin on vietävä kouluihin ja oppilaitoksiin. Oppilaitoksista pitää tehdä kiusaamisvapaita ja väkivallattomia yhteisöjä. Kiusaamisen uhreille on varmistettava riittävä tuki. Koulurauha on jokaisen oppilaan, opiskelijan ja henkilökunnan luovuttamaton oikeus. Vastuu koulurauhasta ja turvallisesta oppimisesta on koko kouluyhteisöllä, mutta kiusaamiseen ja väkivaltaan puuttuminen on kuitenkin ennen kaikkea koulujen, päiväkotien ja oppilaitosten henkilökunnan tehtävä. Henkilökunnalle tulee antaa riittävät työkalut puuttua kiusaamiseen.",
+            "sv": "Vi behöver ett samarbete mellan olika aktörer, där skolan, social- och hälsovården, organisationer, polisen, ungdomstjänster och barnets eller den ungas vårdnadshavare deltar, eftersom detta är det mest effektiva sättet att hantera ungas problem. Det är viktigt att dessa aktörer har tillräckliga resurser. Grundskolan och andra stadiets utbildning når alla barn och unga som bor i Finland, och därför är de de bästa platserna för att främja barns och ungas välmående. De tjänster unga behöver – från mentalvårdstjänster till fritidsaktiviteter, ungdomsarbete och lågtröskeltjänster för familjer – ska föras till skolor och utbildningsinstitutioner. Utbildningsinstitutionerna ska vara mobbningsfria och trygga gemenskaper. De som utsätts för mobbning ska få tillräckligt med stöd. Skolfrid är en grundläggande rättighet för varje elev, student och skolpersonal. Ansvaret för skolfriden och en trygg inlärningsmiljö ligger hos hela skolsamfundet, men att ingripa mot mobbning och våld är framför allt skolornas, daghemmens och utbildningsinstitutionernas personals uppgift. Personalen ska ha tillräckliga verktyg för att kunna ingripa i mobbning."
+          }
+        }
+      },
+      "question-opinion-13": {
+        "value": "4",
+        "info": {
+          "__translations__": {
+            "fi": "Koulutuksesta, palveluista ja etuuksista leikkaamisella on vakavia ja usein jopa haitallisia vaikutuksia. Kyse on arvovalinnoista.  Hyvinvointivaltio rakentuu periaatteelle, jossa yhteisillä verovaroilla turvataan palvelut ja maksutaakkaa jaetaan kantokyvyn mukaan. Vahva julkinen sektori ja jokaiselle kuuluvat palvelut vahvistavat taloudellista kasvua, luovat hyvinvointia ja kantavat ihmisiä myös vaikeissa tilanteissa. Verojen korotusta ei tule kategorisesti sulkea pois keinovalikoimasta, mutta ensin pitää varmistaa, että nykyiset varat käytetään viisaasti. Samalla pitää myös panostaa kunnan omaan kasvu- ja elinkeinopolitiikkaan talouden vahvistamiseksi. Julkista taloutta tulee hoitaa kestävästi ja oikeudenmukaisesti.",
+            "sv": "Nedskärningar i utbildning, tjänster och förmåner har allvarliga och ofta skadliga konsekvenser. Det handlar om värderingar. Välfärdsstaten bygger på principen att gemensamma skatteintäkter finansierar tjänster och att skattebördan fördelas enligt bärkraft. En stark offentlig sektor och universella tjänster stärker den ekonomiska tillväxten, skapar välfärd och ger människor trygghet även i svåra tider. Skattehöjningar bör inte kategoriskt uteslutas, men innan det sker måste vi se till att nuvarande resurser används klokt. Samtidigt bör kommunerna investera i tillväxt och näringslivspolitik för att stärka ekonomin. Den offentliga ekonomin måste skötas hållbart och rättvist."
+          }
+        }
+      },
+      "question-opinion-18": {
+        "value": "1",
+        "info": {
+          "__translations__": {
+            "fi": "Sosiaali- ja terveyspalvelut tulee ensisijaisesti tuottaa hyvinvointialueiden omana toimintana ja kustannustehokkaasti. Yksityinen sektori ja järjestöt voivat täydentää palveluita hyvinvointialueen tarpeiden mukaan. Palveluita kilpailuttaessa on huolehdittava, että myös pienillä yrityksillä on mahdollisuus osallistua kilpailutuksiin. Me haluamme Suomen, jossa ihmiset pääsevät jonoista hoitoon nopeasti, sillä nopea hoitoon pääsy säästää kustannuksia, kun sairaudet eivät pitkity. Hyvinvointialueet päättävät yksityisten palveluiden käytöstä, mutta julkisen ja yksityisen työnjaon on oltava selkeä ja kustannustehokas. Yhteiskunnan ei pidä maksaa tarpeettoman paljon vähemmän vaikuttavasta hoidosta. Myös Kela-korvausten vaikuttavuus on arvioitava tarkemmin. Käytämme mieluummin yhteiset varat julkisen terveydenhuollon vahvistamiseen ja hoitoon pääsyn nopeuttamiseen. ",
+            "sv": "Social- och hälsovårdstjänster bör i första hand produceras av välfärdsområdena själva och kostnadseffektivt. Den privata sektorn och organisationer kan komplettera tjänsterna utifrån välfärdsområdenas behov. Vid upphandling av tjänster måste det säkerställas att även små företag kan delta i konkurrensutsättningar. Vi vill ha ett Finland där människor snabbt får den vård de behöver, eftersom snabb tillgång till vård sparar kostnader genom att förhindra att sjukdomar förvärras. Välfärdsområdena beslutar om användningen av privata tjänster, men arbetsfördelningen mellan den offentliga och privata sektorn måste vara tydlig och kostnadseffektiv. Samhället ska inte betala onödigt mycket för mindre effektiva behandlingar. Även effektiviteten i FPA-ersättningarna måste bedömas noggrannare. Vi använder hellre gemensamma resurser till att stärka den offentliga hälso- och sjukvården och till att förkorta väntetiderna"
+          }
+        }
+      },
+      "question-opinion-21": {
+        "value": "1",
+        "info": {
+          "__translations__": {
+            "fi": "Hyvinvointialueiden verotusoikeuden valmistelu ei ole ajankohtaista. Katse kannattaa kääntää nyt toimiin, joilla hyvinvointialueiden taloudellista tilannetta voidaan helpottaa nopeasti. Tällä hetkellä hyvinvointialueilla on lain mukaan velvollisuus kattaa aiemmilta vuosilta syntyneet alijäämänsä vuoden 2026 loppuun mennessä. Aikataulu on liian tiukka ja pakottaa hyvinvointialueet tekemään merkittäviä säästöjä lyhyellä aikavälillä. Liian tiukan talousremmin vuoksi osa alueista on joutunut pohtimaan jopa perustuslain rikkomista. Rahoitusjärjestelmän kehittämisessä on keskityttävä nyt siihen, että alijäämien kattamisvelvollisuutta pidennetään, jotta hyvinvointialueilla on mahdollisuus kehittää toimintaansa ilman lyhytnäköisiä ja palveluita vaarantavia leikkauksia. Suomen hallituksen vastuulla on varmistaa, että hyvinvointialueilla on riittävästi rahaa laadukkaiden ja toimivien palveluiden tarjoamiseen.",
+            "sv": "Förberedelser för välfärdsområdenas beskattningsrätt är inte aktuella. Fokus bör nu ligga på åtgärder som snabbt kan förbättra välfärdsområdenas ekonomiska situation. För närvarande är välfärdsområdena enligt lag skyldiga att täcka sina underskott från tidigare år före utgången av år 2026. Tidsramen är för snäv och tvingar välfärdsområdena till betydande besparingar på kort sikt. På grund av det hårda ekonomiska trycket har vissa områden till och med övervägt att bryta mot grundlagen. Utvecklingen av finansieringssystemet bör nu fokusera på att förlänga skyldigheten att täcka underskott, så att välfärdsområdena har möjlighet att utveckla sin verksamhet utan kortsiktiga och tjänsteförsämrande nedskärningar. Det är statens ansvar att säkerställa att välfärdsområdena har tillräckliga resurser för att erbjuda högkvalitativa och fungerande tjänster."
+          }
+        }
+      },
+      "question-opinion-25": {
+        "value": "4",
+        "info": {
+          "__translations__": {
+            "fi": "Joka kolmas työntekijä on eläköitymässä hyvinvointialueilla seuraavan hieman vajaan kymmenen vuoden aikana. Henkilöstöpulaan on vastattava monipuolisella keinovalikoimalla, joista yksi on ulkomainen työvoima. Sosiaali- ja terveysalankansainvälisen rekrytoinnin keskeisin vaatimus on läpinäkyvyys ja sitoutuminen valtakunnallisesti määriteltyihin eettisen rekrytoinnin periaatteisiin. On varmistettava, että nämä periaatteet pysyvät ajan tasalla ja että ne tunnetaan. Sosiaali- ja terveydenhuollon ammattilaisilla on oltava heidän hoitamiensa tehtävien edellyttämä riittävä suullinen ja kirjallinen kielitaito. Riittävästä kielitaidosta suhteessa tehtäviin vastaa työnantaja. Tärkeää on, että ulkomailta rekrytoitavaan noudatetaan suomalaista lainsäädäntöä ja työehtosopimuksia, aivan kuten kehen tahansa työntekijään. Kaikenlainen keinottelu työperäisen maahanmuuton avulla on ehdottoman kiellettyä. Samalla on huolehdittava siitä, että sosiaali- ja terveysalalla on työolot kunnossa ja hyvinvointialueet ovat hyviä työnantajia, jotta alalle halutaan tulla töihin ja työtä jaksetaan tehdä.",
+            "sv": "En av tre anställda inom välfärdsområdena kommer att gå i pension inom de närmaste knappt tio åren. Personalbristen måste åtgärdas med en mångsidig uppsättning lösningar, varav en är arbetskraftsinvandring. En central förutsättning för internationell rekrytering inom social- och hälsovården är transparens och ett åtagande att följa de nationellt fastställda principerna för etisk rekrytering. Det är viktigt att dessa principer hålls aktuella och att de är välkända. Yrkesutbildade personer inom social- och hälsovården ska ha tillräckliga muntliga och skriftliga språkkunskaper för sina uppgifter. Arbetsgivaren ansvarar för att språkkunskaperna är tillräckliga i förhållande till arbetsuppgifterna. Det är viktigt att utländsk personal omfattas av samma lagstiftning och kollektivavtal som alla andra anställda. Alla former av oegentligheter i samband med arbetskraftsinvandring är absolut förbjudna. Samtidigt måste det säkerställas att arbetsförhållandena inom social- och hälsovården är goda och att välfärdsområdena är attraktiva arbetsgivare, så att människor vill arbeta inom branschen och orkar göra sitt arbete."
+          }
+        }
+      },
+      "question-opinion-26": {
+        "value": "4",
+        "info": {
+          "__translations__": {
+            "fi": "Terapiatakuu ei yksin riitä. On tärkeää, että lapset ja nuoret saavat nopeasti tarvitsemansa, oikeanlaiset mielenterveyspalvelut. Mielenterveyden ongelmat alkavat monessa tapauksessa jo varhain ja nopea sekä varhainen apu on tehokkain tuki.  SDP:n yksi vaalien kärkiteemoista on nopea hoitoon pääsy. Nopea hoitoon pääsy perusterveydenhuollossa on myös avain vaikuttaviin mielenterveyspalveluihin. Edellytämme, että kaikenikäiset pääsevät perustason terveydenhuollon kiireettömälle vastaanotolle kahdessa viikossa. Hoitotakuu sisältää myös mielenterveyden. Lisäksi nuorille suunnattuja mielenterveyspalveluita on vahvistettava. Kynnyksetöntä apua on tarjottava myös ilman ajanvarausta tai diagnoosia. Nämä pisteet voisivat tarjota välitöntä keskustelutukea, kriisiapua ja ohjausta jatkohoitoon. Toukokuun alussa voimaan astuva ns. terapiatakuu mahdollistaa alle 23-vuotiaille kuukaudessa pääsyn perustason lyhytpsykoterapiaan tai aikarajoitteiseen psykososiaaliseen hoitoon.  Katsomme, että terapiatakuu on parannus heille, jotka hyötyvät juuri näistä hoitomuodoista. Se kuitenkin jättää ulkopuolelle heidät, jotka tarvitsisivat muunlaista apua.",
+            "sv": "Terapigarantin räcker inte ensamt. Det är viktigt att barn och unga snabbt får de mentalvårdstjänster de behöver. Psykiska problem börjar i många fall redan i unga år, och snabb samt tidig hjälp är det mest effektiva stödet. Ett av SDP:s centrala valteman är snabb tillgång till vård. Snabb tillgång till primärvården är också nyckeln till effektiva mentalvårdstjänster. Vi kräver att personer i alla åldrar ska få en icke-brådskande mottagningstid inom primärvården inom två veckor. Vårdgarantin ska även omfatta mentalvården. Dessutom måste mentalvårdstjänsterna för unga förstärkas. Lågtröskeltjänster ska erbjudas även utan tidsbokning eller diagnos. Dessa enheter ska kunna erbjuda omedelbart samtalsstöd, krishjälp och vägledning till fortsatt vård. Från och med maj träder den så kallade terapigarantin i kraft, vilket innebär att personer under 23 år ska få tillgång till korttidsterapi eller tidsbegränsad psykosocial behandling på basnivå inom en månad. Vi anser att terapigarantin är en förbättring för dem som drar nytta av just dessa behandlingsformer. Den lämnar dock utanför dem som skulle behöva annan typ av hjälp."
+          }
+        }
+      },
+      "question-opinion-27": {
+        "value": "3",
+        "info": {
+          "__translations__": {
+            "fi": "Kaikista tärkeintä on palveluiden saavutettavuus. Se tarkoittaa sitä, että palvelupisteitä on riittävästi ja ne ovat helppojen kulkuyhteyksien päässä. Jokaisella hyvinvointialueella tulee arvioida etäisyyksien ja saavutettavuuden vaikutuksia palveluiden käyttöön sekä keskittämisen kautta saatuja hyötyjä. Erikoistason palveluissa keskittämistä kannattaa todennäköisesti tehdä. Keskittämisen ohjenuorana on oltava tasapaino potilaiden tarpeiden, palveluiden saavutettavuuden ja riittävän väestöpohjan välillä. Huonosti toteutettu keskittäminen ja palvelupisteiden sulkeminen voi johtaa muun muassa kohtuuttomiin välimatkoihin ja odotusaikoihin, päivystyspalveluiden ruuhkautumiseen, ammattilaisten osaamisen kaventumiseen ja työn vetovoiman vähenemiseen. Myös liikkuvien palveluiden käyttöä on tarkasteltava alueellisesti ja lisättävä mahdollisuuksien mukaan. Erityisesti sosiaalipalveluissa on jo liikkuvista ja etsivistä palveluista osaamista, joka pitää saada käyttöön laajemminkin sosiaali- ja terveyspalveluissa.",
+            "sv": "Det viktigaste är att tjänsterna är tillgängliga. Det innebär att det ska finnas tillräckligt med servicepunkter och att de är lätta att nå. Varje välfärdsområde ska utvärdera hur avstånd och tillgänglighet påverkar användningen av tjänster samt de fördelar som centralisering kan ge. När det gäller specialiserade tjänster är centralisering sannolikt motiverad. Vägledande vid centralisering ska vara balansen mellan patienternas behov, tillgängligheten till tjänster och en tillräcklig befolkningsbas. Dåligt genomförd centralisering och stängning av servicepunkter kan leda till orimliga avstånd och väntetider, överbelastade jourtjänster, minskad yrkeskompetens och försämrad attraktionskraft för arbetet. Användningen av mobila tjänster ska också utvärderas regionalt och utökas där det är möjligt. Inom socialtjänsten finns redan erfarenhet av mobila och uppsökande tjänster, och denna kompetens bör utnyttjas bredare även inom social- och hälsovården."
+          }
+        }
+      }
+    }
+  },
+  {
+    "id": "party-0002",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Suomen Keskusta",
+        "sv": "Centern i Finland",
+        "en": "Centre Party"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "Kesk.",
+        "sv": "Cent.",
+        "en": "Cent."
+      }
+    },
+    "color": {
+      "normal": "#4caf50"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Keskustalle olennaisia arvoja ovat esimerkiksi vapauden ja vastuullisuuden tasapaino, kestävä luontosuhde ja paikallisuus. Keskusta korostaa politiikassaan usein lasten, nuorten ja perheiden hyvinvointia. Keskustalle on tärkeää, että kaikkia Suomen alueita kehitetään ja kohdellaan tasa-arvoisesti. Puolue korostaa ohjelmissaan ihmisten mahdollisuutta asua, opiskella ja tehdä työtä siellä, missä he tuntevat itsensä onnellisiksi.</p><p>Keskustalle koulutus on politiikan ydinasioita. Puolue haluaa, että kaikilla on mahdollisuus opiskella ja sivistää itseään niin pitkälle kuin motivaatio ja osaaminen riittävät, omasta ja perheen varallisuudesta tai asuinpaikasta riippumatta.</p>",
+        "sv": "<p>Viktiga värden för Centern är till exempel balansen mellan frihet och ansvar, ett hållbart naturförhållande och lokal anknytning. Centern betonar ofta barns, ungdomars och familjers välbefinnande i sin politik. Det är viktigt för Centern att alla områden i Finland utvecklas och behandlas lika. Partiet betonar i sina program människors möjlighet att bo, studera och arbeta där var de känner sig lyckliga.</p><p>För Centern är utbildning en central politisk fråga. Partiet vill att alla ska ha möjlighet att studera och utbilda sig så långt motivationen och kompetensen räcker, oavsett den egna och familjens förmögenhet eller bostadsort.</p>",
+        "en": "<p>Important values for the Centre Party include a balance of freedom and responsibility, a sustainable nature relationship and locality. In its politics, the Centre Party often emphasises the well-being of children, young people and families. It is important for the Centre Party that all areas in Finland are developed and treated equally. In its programmes, the party emphasises the possibility for people to live, study and work where they feel happy.</p><p>For the Centre Party, education is a key political issue. The party wants everyone to have the opportunity to study and educate themselves as far as their motivation and skills take them, regardless of their own and their family’s wealth or place of residence.</p>"
+      }
+    },
+    "answers": {
+      "question-opinion-1": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Keskusta on jo vuodesta 2005 lähtien kannattanut äänestysikärajan laskemista kuntavaaleissa 16 vuoteen. Myöhemmin olemme puoluekokouksemme päätöksillä hyväksyneet kannaksemme äänestysikärajan laskemisen 16 ikävuoteen myös valtiollisissa vaaleissa sekä aluevaaleissa. ",
+            "sv": "Centerpartiet har redan sedan 2005 stött en sänkning av rösträttsåldern till 16 år i kommunalvalen. Senare har vi genom beslut på våra partikongresser godkänt att vi även stöder en sänkning av rösträttsåldern till 16 år i riksdagsval och välfärdsområdesval."
+          }
+        }
+      },
+      "question-opinion-4": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Kasvisten käyttöä ruokavalioissa on hyvä lisätä jo terveydellisistä syistä. Se onnistuu parhaiten tarjoamalla julkisessa ruokailussa vaihtoehtona myös maukasta kasvisruokaa.  Tärkeintä on, että julkisissa ruokailuissa, kuten kouluissa, tarjotaan hyvää ja monipuolista ruokaa, jossa suositaan aina kun mahdollista kotimaisia ja lähellä tuotettuja elintarvikkeita – olivatpa ne sitten kasvis- tai eläinperäisiä.  Suomalaisen ruuantuotannon edellytyksistä huolehtiminen myös julkistan hankintojen kautta on huoltovarmuutemme varmistamista epävakaassa maailmassa. ",
+            "sv": "Det är bra att öka användningen av grönsaker i kosten redan av hälsoskäl. Det lyckas bäst genom att även erbjuda goda vegetariska alternativ inom den offentliga måltidsservicen. Det viktigaste är att det i den offentliga måltidsservicen, såsom i skolor, serveras god och mångsidig mat där man alltid när det är möjligt prioriterar inhemska och närproducerade livsmedel – oavsett om de är vegetabiliska eller animaliska. Att säkerställa förutsättningarna för den finländska livsmedelsproduktionen också genom offentliga upphandlingar är ett sätt att trygga vår försörjningsberedskap i en osäker värld."
+          }
+        }
+      },
+      "question-opinion-5": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Ilmastomuutos on tosiasia ja sen hillitsemiseksi pitää kaikilla tasoilla tehdä enemmän - myös kunnissa ja hyvinvointialuella. Hiilineutraalius- ja muut tavoitteet auttavat  tässä merkittävästi Tärkeintä on päästä irti ulkomaisesta fossiilienergiasta kohti puhdasta uusiutuvaa ja kotimaista energiaa. Alueilla on hyvä pyrkiä energiaomavaraisuuteen. Hajautettu energiantuotanto on myös huoltovarmuuskysymys.",
+            "sv": "Klimatförändringen är ett faktum och det måste göras mer på alla nivåer för att bromsa den – också i kommunerna och välfärdsområdena. Målen om koldioxidneutralitet och andra mål bidrar i hög grad till detta. Det viktigaste är att frigöra oss från utländsk fossil energi och gå mot ren, förnybar och inhemsk energi. Regionerna bör sträva efter energisjälvförsörjning. Decentraliserad energiproduktion är också en fråga om försörjningsberedskap."
+          }
+        }
+      },
+      "question-opinion-6": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Keskustan periaateohjelmassa todetaan: Syrjinnälle, rasismille, vihapuheelle ja kiusaamiselle emme anna mitään sijaa. Erityisen tärkeää tämä on lasten ja nuorten kohdalla. Kaikki toimivat keinot, joilla vähennetään eri vähemmistöihin ja muihinkin ryhmiin kohdistuvaa syrjintää, on syytä ottaa käyttöön myös kunnissa.",
+            "sv": "Centerpartiets principprogram slår fast: Vi ger inget utrymme för diskriminering, rasism, hatprat eller mobbning. Detta är särskilt viktigt när det gäller barn och unga. Alla fungerande metoder för att minska diskriminering av olika minoriteter och andra grupper bör tas i bruk också i kommunerna."
+          }
+        }
+      },
+      "question-opinion-8": {
+        "value": "3",
+        "info": {
+          "__translations__": {
+            "fi": "Kouluväkivalta on aina väärin ja siitä pitää tehdä loppu. Kuten kysymyksen/väitteen taustoituksestakin ilmenee, ei voi olla yhtä viranomaista tai tahoa, jolle vastuu yksiselitteisesti kuuluu. Väkivaltatilanteet ovat erilaisia.  Keskusta peräänkuuluttaa ennaltaehkäisyn sekä varhaisen  ja nopean puuttumisen merkitystä. Se edellyttää moniammatillista yhteistyötä ja sitoutumista sekä selkeitä toimintatapoja. Päävastuu lasten kasvattamisesta on vanhemmilla tai muilla huoltajilla, joten myös heillä on oma tärkeä roolinsa kouluväkivallan ehkäisyssä ja lopettamisessa. Vakavissa kouluväkivaltatilanteissa poliisin rooli korostuu.",
+            "sv": "Våld i skolan är alltid fel och måste få ett slut. Som det framgår av bakgrunden till frågan/påståendet kan ansvaret inte entydigt ligga hos en enskild myndighet eller aktör. Våldssituationer är olika. Centerpartiet betonar vikten av förebyggande arbete samt tidigt och snabbt ingripande. Det kräver multiprofessionellt samarbete och engagemang samt tydliga handlingsmodeller. Huvudansvaret för barnens fostran ligger hos föräldrarna eller andra vårdnadshavare, så även de har en viktig roll i att förebygga och stoppa våld i skolan. Vid allvarliga fall av skolvåld betonas polisens roll."
+          }
+        }
+      },
+      "question-opinion-13": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Kuntien taloudelliset ja muut tilanteet vaihtelevat ja sitä myötä myös pitää löytää sopivimmat keinot kunkin kunnan talouden tervehdyttämiseen. Tämä on nimenomaan paikallisten, nyt huhtikuussa 2025 vaaleissa  valittavien kuntapäättäjien tärkeä tehtävä päätöksenteossa. Lisäksi on muistettava, että kuntien talouden tasapainotuksessa ei ole kyse vain veroista ja leikkauksista. Suomessa pitää ennen kaikkea saada aikaan kestävää talouskasvua: lisää yrittäyyttä ja työpaikkoja. Sitä kautta saadaan myös vero- ja muita tuloja kunnille. ",
+            "sv": "Kommunernas ekonomiska och andra situationer varierar och därför måste också de lämpligaste sätten att sanera kommunens ekonomi hittas för varje enskild kommun. Detta är just en viktig uppgift för de lokala beslutsfattare som väljs i kommunalvalet i april 2025. Dessutom måste man komma ihåg att kommunernas ekonomiska balans inte enbart handlar om skatter och nedskärningar. I Finland måste vi framför allt åstadkomma hållbar ekonomisk tillväxt: mer företagande och fler arbetsplatser. Det ger också skatte- och andra inkomster till kommunerna."
+          }
+        }
+      },
+      "question-opinion-18": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Väitteessä/kysymyksessä puhutaan perusterveydenhuollon järjestämisestä. Se tulee pitää aina julkisella toimijalla eli nykyisin hyvinvointialueilla ja Helsingin kaupungilla. Sen sijaan terveydenhuollon palvelujen tuottamisessa voidaan hyödyntää myös yksityisiä palveluntarjoajia silloin, kun se on hyvinvointialueen ja sen asukkaiden palvelujen kannalta paras ratkaisu.Keskustan tavoitteena on perhelääkärijärjestelmä. Se turvaa mielestämme parhaiten hoidon jatkuvuuden. ",
+            "sv": "Våld i skolan är alltid fel och måste få ett slut. Som det framgår av bakgrunden till frågan/påståendet kan ansvaret inte entydigt ligga hos en enskild myndighet eller aktör. Våldssituationer är olika. Centerpartiet betonar vikten av förebyggande arbete samt tidigt och snabbt ingripande. Det kräver multiprofessionellt samarbete och engagemang samt tydliga handlingsmodeller. Huvudansvaret för barnens fostran ligger hos föräldrarna eller andra vårdnadshavare, så även de har en viktig roll i att förebygga och stoppa våld i skolan. Vid allvarliga fall av skolvåld betonas polisens roll."
+          }
+        }
+      },
+      "question-opinion-21": {
+        "value": "1",
+        "info": {
+          "__translations__": {
+            "fi": "Maakuntavero ei ole ratkaisu ajankohtaiseen hyvinvointialueiden rahoitusvajeeseen seuraavan valtuustokauden aikana. Hyvinvointialueiden verotusoikeutta on selvitetty parlamentaarisessa maakuntaverokomiteassa. Komitea antoi mietintönsä 11.3.2021. Komitea ei puoltanut maakuntaveron käyttöönottoa. Maakuntaveron käyttöönottoa vastaan puhuvista seikoista keskeisimmät ovat sen työn verotukseen aiheuttama kiristymispaine sekä alueiden eroista seuraavat riskit verotuksen alueellisten erojen kasvuun ja palveluiden yhdenvertaisuuden heikkenemiseen.",
+            "sv": "Landskapsskatten är inte en lösning på välfärdsområdenas aktuella finansieringsunderskott under nästa fullmäktigeperiod. Välfärdsområdenas beskattningsrätt har utretts i en parlamentarisk landskapsskattekommitté. Kommittén gav sitt betänkande den 11 mars 2021. Kommittén föreslog inte att landskapsskatten skulle införas. De viktigaste skälen mot införandet av en landskapsskatt är det tryck den skulle skapa på beskattningen av arbete samt riskerna för ökade regionala skillnader i beskattningen och en försämring av jämlikheten i tjänsterna på grund av skillnader mellan områdena."
+          }
+        }
+      },
+      "question-opinion-25": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Hyvinvointialueiden tilanteet vaihtelevat jonkin verran tässäkin kysymyksessä. Ikääntyvä Suomi tarvitsee kuitenkin työperäistä maahanmuuttoa myös sote-alalla. Työvoimapulan ratkaisemiseksi olisi lisättävä Suomen ja sellaisten valtioiden, joissa ei ole työvoimapulaa, välisiä kahdenvälisiä sopimuksia ainakin sote-henkilöstön kouluttamiseksi ja rekrytoimiseksi Suomeen maista, joissa on työvoiman ylitarjontaa.Työluvan saamiseen liittyvää byrokratiaa on sujuvoitettava. Potilas- ja asiakasturvallisuus eivät saa heikentyä henkilöstön puutteellisen kielitaidon vuoksi, vaan ne on kyettävä takaamaan kaikissa tilanteissa.  Työnantajia on tuettava valtion toimesta mahdollistamaan työaikana annettava kielikoulutus.   ",
+            "sv": "Situationen varierar något mellan välfärdsområdena även i denna fråga. Ett åldrande Finland behöver dock arbetskraftsinvandring också inom social- och hälsovården. För att lösa personalbristen bör Finland öka bilaterala avtal med sådana länder som inte har brist på arbetskraft, åtminstone för att utbilda och rekrytera social- och hälsovårdspersonal från länder med överskott på arbetskraft. Byråkratin kring uppehållstillstånd för arbete måste göras smidigare. Patientsäkerheten och klientsäkerheten får inte försämras på grund av bristande språkkunskaper hos personalen, utan de måste kunna garanteras i alla situationer. Arbetsgivarna ska få stöd från staten för att möjliggöra språkutbildning under arbetstid."
+          }
+        }
+      },
+      "question-opinion-26": {
+        "value": "3",
+        "info": {
+          "__translations__": {
+            "fi": "Maailman onnellisimman kansan  - suomalaisten - yleisin kansansairaus on mielenterveyden häiriöt. Sen Inhimilliset vaikutukset sairastuneen elämään ja lähipiiriin ovat mittaamattomat, etenkin lasten ja nuorten osalta. Myös mielenterveyden kansantaloudelliset kustannukset voidaan laskea miljardeissa. Siksi Keskusta haluaa tehdä paremmasta mielenterveydestä Suomen seuraavan suuren yhteisen projektin ja etsiä ratkaisuja siihen. Keskustalla ei ole puolue-elinten päättämää kantaa terapiatakuun ikärajan nostamiseksi 29 vuoteen. Korostamme ennaltaehkäisevää toimintaa, matalan kynnyksen palveluja sekä perusterveydenhuollon resurssien vahvistamista",
+            "sv": "Den lyckligaste nationen i världen – finländarna – har psykisk ohälsa som sin vanligaste folksjukdom. De mänskliga konsekvenserna för den drabbades liv och för närkretsen är omätbara, särskilt för barn och unga. De samhällsekonomiska kostnaderna för psykisk ohälsa kan också räknas i miljarder. Därför vill Centern göra bättre mental hälsa till Finlands nästa stora gemensamma projekt och söka lösningar på detta. Centern har inget av partiorganen fastställt ställningstagande om att höja åldersgränsen för terapigarantin till 29 år. Vi betonar förebyggande åtgärder, lättillgängliga tjänster och stärkta resurser för primärvården."
+          }
+        }
+      },
+      "question-opinion-27": {
+        "value": "1",
+        "info": {
+          "__translations__": {
+            "fi": "Keskustalle on tärkeää, että sosiaali- ja terveyspalvelut ovat mahdollisimman yhdenvertaiset ja saavutettavat koko maassa ihmisten sosiaalisesta/taloudellisesta asemasta ja asuinpaikasta riippumatta. Keskusta haluaa, että jokaisessa kunnassa on vähintään yksi lähipalveluita tarjoava sosiaali- ja terveydenhuollon toimipiste myös jatkossa.  Nämä lähipalvelut tulee järjestää kunkin alueen väestön tarvetta vastaavasti hyvinvointialueiden päätöksillä. Emme hyväksy keskeisten sosiaali- ja terveyspalveluiden valmistelua keskusjohtoisesti niin, että hyvinvointialueilla ei ole mahdollisuutta asiaan vaikuttaa.  Esimerkiksi yöpäivystyksen lakkauttaminen kuormittaa hyvinvointialueen muita palveluita. Tehohoidon keskittäminen kuormittaa ensihoitoa alueilla, joilla tehohoitoa ei ole. Keskustan lähtökohtana on, että jokaiselle hyvinvointialueelle varmistetaan vähintään yksi erikoissairaanhoidon ympärivuorokautinen päivystys. Erikoissairaanhoitoa pitää voida antaa hyvinvointialueen päätöksellä myös muissa sen alueen toimipisteissä.",
+            "sv": "För Centern är det viktigt att social- och hälsovårdstjänsterna är så jämlika och tillgängliga som möjligt i hela landet, oberoende av människors sociala eller ekonomiska ställning och bostadsort. Centern vill att det även i fortsättningen finns minst en enhet som erbjuder närtjänster inom social- och hälsovården i varje kommun. Dessa närtjänster ska ordnas i enlighet med befolkningens behov i varje område enligt välfärdsområdenas beslut. Vi godkänner inte att beredningen av centrala social- och hälsovårdstjänster sker centraliserat på ett sådant sätt att välfärdsområdena inte har möjlighet att påverka. Till exempel avskaffandet av nattjouren belastar andra tjänster i välfärdsområdet. Centralisering av intensivvård belastar akutvården i områden där intensivvård inte finns. Centerns utgångspunkt är att varje välfärdsområde ska ha minst en dygnet runt-jour inom den specialiserade sjukvården. Specialiserad sjukvård ska även kunna ges i andra verksamhetsställen inom välfärdsområdet enligt välfärdsområdets beslut."
+          }
+        }
+      }
+    }
+  },
+  {
+    "id": "party-0004",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Kansallinen Kokoomus",
+        "sv": "Samlingspartiet",
+        "en": "National Coalition Party"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "Kok.",
+        "sv": "Saml.",
+        "en": "NCP"
+      }
+    },
+    "color": {
+      "normal": "#3f51b5"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Kokoomukselle keskeisiä teemoja ovat yksilönvapaus, yrittäjyys, kestävä kehitys, tarkka taloudenpito, kansainvälisyys, perinteet ja sivistys. Kokoomus haluaa myös edistää yhtenäistä ja vahvaa Euroopan unionia eli EU:ta ja pitää Suomen Nato-jäsenyyttä myönteisenä asiana.</p><p>Kokoomus on talouspoliittisesti oikeistolainen puolue, joka painottaa politiikassaan valtion talouden tasapainottamista. Kokoomukselle on tärkeää, että velkaa ei oteta tulevien sukupolvien kustannuksella.</p>",
+        "sv": "<p>Individuell frihet, entreprenörskap, hållbar utveckling, noggrann koll på ekonomin, internationalitet, traditioner och bildning är centrala teman för Samlingspartiet. Samlingspartiet vill också främja en enhetlig och stark Europeisk union, dvs. EU, och ser Finlands Nato-medlemskap som en positiv sak.</p><p>Samlingspartiet är ett ekonomiskt sett högerorienterat parti, som i sin politik lägger vikt vid att balansera statens ekonomi. Det är viktigt för Samlingspartiet att vi inte skuldsätter oss på bekostnad av kommande generationer.</p>",
+        "en": "<p>The National Coalition Party focuses on individual freedom, entrepreneurship, sustainable development, careful economic management, internationality, traditions and civilisation. The National Coalition Party also wants to promote a unified and strong European Union, i.e. the EU, and sees Finland’s membership of NATO as a positive thing.</p><p>The National Coalition Party is economically a right-wing party and, in its policy, it emphasises balancing of the state’s economy. It is important to the National Coalition Party that debt is not raised at the expense of future generations.</p>"
+      }
+    },
+    "answers": {
+      "question-opinion-1": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Kokoomus pitää tärkeänä, että täysi-ikäisyyteen liittyvät oikeudet ja velvollisuudet ovat mahdollisimman johdonmukaisesti yhteydessä toisiinsa. Tämän vuoksi esimerkiksi äänioikeusikärajan on luontevaa olla sama kuin yleinen täysi-ikäisyyden raja. Kokoomus sen sijaan kannattaa kansalaisaloitteen allekirjoittamiseen 16 vuoden ikärajaa.",
+            "sv": "Samlingspartiet anser att det är viktigt att rättigheter och skyldigheter som hör till myndighetsåldern i så hög grad som möjligt hänger ihop. Därför är det naturligt att rösträttsåldern är densamma som den allmänna myndighetsåldern. Samlingspartiet stöder däremot en åldersgräns på 16 år för att underteckna medborgarinitiativ."
+          }
+        }
+      },
+      "question-opinion-4": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Kokoomuksessa arvostetaan ruokakulttuurin monimuotoisuutta, ruoan turvallisuutta sekä tuotantotapojen kestävyyttä ja eettisyyttä. Ihmisillä on vapaus valita lautasensa sisältö, mutta on kohtuullista, että julkisesti tarjoillussa ruoassa liharuoan tarjontaa vähennetään. Kotimainen liha ja maito on kuitenkin yleensä kestävämpi valinta ulkomaiseen nähden.",
+            "sv": "Inom Samlingspartiet värdesätts matkulturens mångfald, matsäkerhet samt hållbara och etiska produktionsmetoder. Människor har frihet att välja vad de äter, men det är rimligt att mängden kötträtter minskas i offentligt serverad mat. Inhemskt kött och mjölk är dock oftast ett mer hållbart val jämfört med utländska alternativ."
+          }
+        }
+      },
+      "question-opinion-5": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Kokoomuslainen kunta ja hyvinvointialue kantaa vastuuta ilmastonmuutoksen torjunnasta. Erityisesti kaupungeilla on vastuu ja keinot toimia edelläkävijöinä päästöjen vähentämisessä. Päästöjen vähentäminen pitää tehdä kustannustehokkaasti. Kokoomus uskoo siihen, että saastuttaja maksaa -periaatteen käyttöönotolla vaalitaan parhaiten ilmastoa ja puhdasta elinympäristöä. Meille tärkeää on vaalia myös luonnon monimuotoisuutta niin täydennysrakentamisessa kuin uusien alueiden rakentamisessakin. Eri näkökulmat vesistöjen suojelusta ja kunnostamisesta luontokadon ehkäisemiseen täytyy yhteensovittaa yhteiskuntarakenteen kehityksen kanssa.",
+            "sv": "En samlingspartistisk kommun och ett samlingspartistiskt välfärdsområde tar ansvar för att bekämpa klimatförändringen. Särskilt städerna har ansvar och möjligheter att vara föregångare i att minska utsläppen. Utsläppsminskningarna ska genomföras kostnadseffektivt. Samlingspartiet tror på att principen om att förorenaren betalar är det bästa sättet att värna om klimatet och en ren livsmiljö. För oss är det också viktigt att värna om naturens mångfald både vid kompletteringsbyggande och vid byggande av nya områden. Olika perspektiv, från skydd och restaurering av vattendrag till att bekämpa förlusten av biologisk mångfald, måste samordnas med utvecklingen av samhällsstrukturen."
+          }
+        }
+      },
+      "question-opinion-6": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Kokoomuksen tavoitteena on politiikalla vapauttaa jokainen yksilö olemaan oma itsensä ja tulemaan sellaisena hyväksytyksi. Ketään ei esimerkiksi saa pakottaa elämään ulkoisten rooliodotusten ehdoilla vastoin identiteettiään.",
+            "sv": "Samlingspartiets mål är att politiken ska frigöra varje individ att vara sig själv och bli accepterad som sådan. Ingen ska till exempel tvingas leva enligt yttre rollförväntningar i strid med sin identitet."
+          }
+        }
+      },
+      "question-opinion-8": {
+        "value": "4",
+        "info": {
+          "__translations__": {
+            "fi": "On tärkeää, että rikos tunnistetaan rikokseksi myös koulussa – että kyse ei ole ”vain” koulukiusaamisesta. Kouluissa tapahtuvaa väkivaltaa ei saa painaa villaisella vain siksi, että se tapahtuu kouluissa. Opettajilla ja koulun henkilökunnalla on velvollisuus ilmoittaa kaikesta väkivallasta viranomaisille. Samalla nuorten ennaltaehkäisevää tukemista on tehostettava. Poliisin, sosiaalitoimen, terveystoimen ja nuorisotoimen moniammatillisten tiimien muodossa tehtävää ankkuritoimintaa pitää vahvistaa.",
+            "sv": "Det är viktigt att ett brott också i skolan identifieras som ett brott – att det inte bara handlar om ”skolmobbning”. Våld som sker i skolor får inte sopas under mattan bara för att det sker i skolan. Lärare och skolpersonal har en skyldighet att anmäla allt våld till myndigheterna. Samtidigt måste det förebyggande stödet till unga stärkas. Den så kallade ankarverksamheten, där polisen, socialtjänsten, hälsovården och ungdomsverksamheten arbetar i multiprofessionella team, måste förstärkas."
+          }
+        }
+      },
+      "question-opinion-13": {
+        "value": "1",
+        "info": {
+          "__translations__": {
+            "fi": "Vastuullisesti hoidettu, vakaa talous on jokaisen kunnan tulevaisuuden tae. Vaikka talous on vain väline hyvinvoinnin rakentamiseen, täytyy menojen ja tulojen olla jotakuinkin tasapainossa, jotta tulevaisuuden rakentaminen on mahdollista. Vastuullisuus tulee ulottaa koskemaan myös kuntalaisen kukkaroa. Verojen ja maksujen korottaminen on lähtökohtaisesti aina viimeinen keino, koska se nakertaa kuntalaisen omasta työstä ansaitun palkan ostovoimaa. Kokoomuksen lähtökohta on selvä: vastustamme kuntaveron, kiinteistöveron ja maksujen korotuksia. Päinvastoin, verotusta on madallettava aina silloin, kun se on taloudellisesti mahdollista.",
+            "sv": "En ansvarsfullt skött och stabil ekonomi är grunden för varje kommuns framtid. Även om ekonomin bara är ett medel för att bygga välfärd måste utgifterna och inkomsterna vara någorlunda i balans för att framtidsbygget ska vara möjligt. Ansvarstagandet ska också gälla invånarnas plånböcker. Att höja skatter och avgifter är i princip alltid den sista utvägen eftersom det urholkar köpkraften av den lön som invånarna har förtjänat genom sitt arbete. Samlingspartiets utgångspunkt är klar: vi motsätter oss höjningar av kommunalskatten, fastighetsskatten och avgifterna. Tvärtom ska beskattningen sänkas alltid när det är ekonomiskt möjligt."
+          }
+        }
+      },
+      "question-opinion-18": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Potilaalle ei ole merkitystä sillä, mikä taho lääkärin palkan maksaa. Sillä sen sijaan on, jos jonossa odottaessa vaiva pahenee. Haluamme, että sosiaali-, terveys- ja pelastuspalveluissa hyödynnetään yrityksiä, yrittäjiä ja järjestöjä aina kun se on järkevää. Palveluiden tarvitsija pääsee valitsemaan ja vaikuttamaan saamiinsa palveluihin enemmän, palveluntuottajat kirittävät toisiaan parempiin lopputuloksiin positiivisella kilvoittelulla ja hyvinvointialuekin oppii uusia ja parempia toimintamalleja.",
+            "sv": "För patienten spelar det ingen roll vem som betalar läkarens lön. Däremot spelar det roll om besväret förvärras medan man väntar i kön. Vi vill att företag, företagare och organisationer utnyttjas inom social-, hälso- och räddningstjänsterna alltid när det är vettigt. Den som behöver tjänster får större möjlighet att välja och påverka de tjänster hen får, serviceproducenterna sporrar varandra till bättre resultat genom positiv tävlan och välfärdsområdet lär sig också nya och bättre verksamhetsmodeller."
+          }
+        }
+      },
+      "question-opinion-21": {
+        "value": "1",
+        "info": {
+          "__translations__": {
+            "fi": "Kokoomus vastustaa maakuntaveron käyttöönottoa. Maakuntaverolla ei hyvinvointialueiden rahoituksen ongelmia ratkaista, mutta se nostaisi veroastetta väistämättä entisestään. Samalla maakuntavero johtaisi verotuksen ja palvelutason eriytymiseen eri puolilla Suomea vielä nykyistä enemmän. Suomen kokoisessa maassa ei tarvita kolmea verotuksen tasoa.",
+            "sv": "Samlingspartiet motsätter sig införandet av en landskapsskatt. En landskapsskatt löser inte välfärdsområdenas finansieringsproblem, men den skulle oundvikligen höja skattenivån ytterligare. Samtidigt skulle landskapsskatten leda till ännu större skillnader i beskattningen och servicenivån mellan olika delar av Finland. Ett land av Finlands storlek behöver inte tre nivåer av beskattning."
+          }
+        }
+      },
+      "question-opinion-25": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Suomen työikäinen väestö vähenee samaan aikaan, kun ikääntyneiden määrä kasvaa. Yhtälö haastaa hyvinvointimme perustaa. Pienenevän työikäisen joukon on kyettävä omalla työllään kannattelemaan kasvavan työelämän taakseen jättäneen joukon hyvinvointia. Jotta hyvinvointiyhteiskunnan palveluista voidaan huolehtia kestävästi ja palkansaajien verotus pitää kohtuullisena, tarvitsemme lisää työikäisiä työntekijöitä Suomeen.",
+            "sv": "Finlands arbetsföra befolkning minskar samtidigt som antalet äldre ökar. Den ekvationen utmanar grunden för vår välfärd. Den krympande arbetsföra befolkningen måste med sitt arbete kunna bära upp välfärden för den växande grupp som har lämnat arbetslivet bakom sig. För att vi ska kunna trygga välfärdssamhällets tjänster på ett hållbart sätt och hålla beskattningen av löntagare rimlig behöver vi fler arbetsföra människor till Finland."
+          }
+        }
+      },
+      "question-opinion-26": {
+        "value": "4",
+        "info": {
+          "__translations__": {
+            "fi": "Mielenterveyspalveluiden saatavuus ja toimet mielenterveysongelmien ehkäisemiseksi on turvattava. Yksilön hädän lisäksi kysymys on valtavasta yhteiskunnallisesta haasteesta: Mielenterveysongelmat ovat jo suurin yksittäinen työkyvyttömyyseläkkeelle jäämisen syy. Nyt toteutettu lasten ja nuorten terapiatakuu on tärkeä askel lasten ja nuorten mielen hyvinvoinnin eteen. On tärkeää, että turvaamme myös yli 23-vuotiaiden mielenterveyspalveluiden hyvän saatavuuden, mutta sen ei välttämättä tarvitse tapahtua juuri terapiatakuun avulla.",
+            "sv": "Tillgången till mentalvårdstjänster och åtgärder för att förebygga psykisk ohälsa måste tryggas. Utöver individens nöd handlar det om en enorm samhällelig utmaning: Psykisk ohälsa är redan den största enskilda orsaken till att människor går i invalidpension. Den terapigaranti för barn och unga som nu genomförts är ett viktigt steg för att främja barns och ungas psykiska välmående. Det är viktigt att vi också tryggar god tillgång till mentalvårdstjänster för personer över 23 år, men det behöver inte nödvändigtvis ske just genom terapigarantin."
+          }
+        }
+      },
+      "question-opinion-27": {
+        "value": "4",
+        "info": {
+          "__translations__": {
+            "fi": "Hyvinvointialueilla tärkeää on varmistaa se, että jokainen saa hyvää hoitoa ja hoivaa silloin, kun sitä tarvitsee. Hyvinvointialueet ovat uudistaneet palveluitaan, jotta tämä voi myös toteutua. Uudet digitaaliset-, liikkuvat- tai kotiin tuotavat palvelut varmistavat sen, että palveluita voi saada tarpeen mukaan myös ilman kiinteää palvelupistettä. Jotta pystymme varmistamaan sosiaali-, terveys- ja pelastuspalveluiden kestävyyden myös tulevaisuudessa, ei rahoja voi käyttää perusteettomasti seiniin, vaan toimiviin palveluihin. Tämä on jokaisen palveluita tarvitsevan etu.",
+            "sv": "Det viktigaste i välfärdsområdena är att säkerställa att alla får god vård och omsorg när de behöver det. Välfärdsområdena har förnyat sina tjänster för att detta ska kunna förverkligas. Nya digitala tjänster, mobila tjänster och tjänster som ges i hemmet säkerställer att man kan få hjälp efter behov också utan en fast servicepunkt. För att vi ska kunna trygga social-, hälso- och räddningstjänsternas hållbarhet också i framtiden kan pengarna inte användas på byggnader utan ska gå till fungerande tjänster. Det är till fördel för alla som behöver tjänster."
+          }
+        }
+      }
+    }
+  },
+  {
+    "id": "party-0005",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Ruotsalainen kansanpuolue",
+        "sv": "Svenska folkpartiet",
+        "en": "Swedish People’s Party"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "RKP",
+        "sv": "SFP",
+        "en": "SPP"
+      }
+    },
+    "color": {
+      "normal": "#ffc107"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Suomen ruotsalaiselle kansanpuolueelle eli RKP:lle tärkeitä asioita ovat ruotsin kielen asema Suomessa, tasa-arvo ja yhdenvertaisuus sekä yrittäjyyden tukeminen. RKP:n politiikassa korostuu tavoite siitä, että Suomessa on kaksi vahvaa kansalliskieltä, ruotsi ja suomi, ja että kaksikieliset palvelut ovat toimivia ja niihin on varattu tarpeeksi rahaa.</p><p>RKP on arvoliberaali puolue, eli se painottaa vahvasti esimerkiksi sukupuolten tasa-arvoon, seksuaali- ja sukupuolivähemmistöjen oikeuksiin ja rasismin vastustamiseen liittyviä asioita.</p>",
+        "sv": "<p>Viktiga frågor för det Svenska folkpartiet i Finland (SFP) är svenskans ställning i Finland, jämlikhet och jämställdhet samt stöd till entreprenörskap. I SFP:s politik betonas målet att Finland ska ha två starka nationella språk, svenska och finska, samt att de tvåspråkiga tjänsterna ska fungera och att tillräckligt med pengar har reserverats för dem.</p><p>SFP är ett värdeliberalt parti som lägger stor vikt vid frågor som till exempel jämställdhet mellan könen, sexuella och könsminoriteters rättigheter samt rasismbekämpning.</p>",
+        "en": "<p>Important issues for the Swedish People’s Party in Finland (SFP) include the Swedish language’s position in Finland, equality and equal opportunities, and support for entrepreneurship. SFP's politics emphasise the objective that Finland has two strong national languages, Swedish and Finnish, and that bilingual services are functional and have sufficient funds.</p><p>The SFP is a value liberal party, i.e. it places a strong emphasis on issues such as gender equality, sexual and gender minority rights and the fight against racism.</p>"
+      }
+    },
+    "answers": {
+      "question-opinion-1": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "RKP kannattaa äänestysikärajan laskemista 16 vuoteen kuntavaaleissa ja aluevaaleissa, jotta nuoret pääsevät vaikuttamaan heitä koskeviin päätöksiin jo aikaisemmin. Nuorten kiinnostus yhteiskunnalliseen vaikuttamiseen on kasvanut, ja äänestysikärajan alentaminen madaltaisi kynnystä osallistua vaaleihin. Se myös mahdollistaisi koulujen roolin äänestämisen tukemisessa.",
+            "sv": "SFP stöder en sänkning av rösträttsåldern till 16 år i kommunal- och välfärdsområdesvalen, så att unga kan påverka beslut som berör dem redan tidigare. Ungas intresse för samhällspåverkan har ökat, och en sänkning av rösträttsåldern skulle sänka tröskeln för att delta i val. Det skulle också möjliggöra en roll för skolorna i att stödja ungas röstning."
+          }
+        }
+      },
+      "question-opinion-4": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Meidän ei tulisi luopua kokonaan lihan tarjoamisesta julkisissa ruokailuissa. Tärkeintä on, että ruoka on maukasta, ravitsevaa ja mahdollisimman pitkälti kotimaista.",
+            "sv": "Vi bör inte helt avstå från att servera kött inom den offentliga måltidsservicen. Det viktigaste är att maten är god, näringsrik och så långt som möjligt inhemsk"
+          }
+        }
+      },
+      "question-opinion-5": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Suomen on oltava ilmastoneutraali vuonna 2035. Ja tämä koskee tietysti myös kuntia. ",
+            "sv": "Finland måste vara klimatneutralt år 2035. Och detta gäller naturligtvis också kommunerna."
+          }
+        }
+      },
+      "question-opinion-6": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Kyllä, kunnissa tulee tehdä enemmän toimia seksuaali- ja sukupuolivähemmistöihin kuuluvien nuorten syrjinnän ehkäisemiseksi. Jokaisella nuorella on oikeus turvalliseen ja hyväksyvään kasvuympäristöön. Tärkeää on koulutuksen, nuorisotyön ja sosiaali- ja terveyspalveluiden kehittäminen niin, että ne tukevat kaikkia nuoria yhdenvertaisesti. Kouluissa on varmistettava, että oppimateriaali ja opetussisällöt edistävät moninaisuuden ymmärtämistä ja syrjimättömyyttä. Lisäksi opettajille ja nuorisotyöntekijöille on tarjottava koulutusta, jotta he osaavat kohdata nuoret sensitiivisesti ja tukea heitä tarvittaessa.",
+            "sv": "Ja, kommunerna måste göra mer för att förebygga diskriminering av unga som tillhör sexuella- och könsminoriteter. Varje ung person har rätt till en trygg och accepterande uppväxtmiljö. Det är viktigt att utveckla utbildningen, ungdomsarbetet samt social- och hälsovårdstjänsterna så att de stöder alla unga på ett jämlikt sätt. I skolorna måste det säkerställas att läromedel och undervisningsinnehåll främjar förståelse för mångfald och icke-diskriminering. Dessutom bör lärare och ungdomsarbetare få utbildning för att kunna bemöta unga på ett sensitivt sätt och stödja dem vid behov."
+          }
+        }
+      },
+      "question-opinion-8": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Poliisin tulisi puuttua vain vakavimpiin tapauksiin. Kouluissa tulee olla riittävästi aikuisia ja tukihenkilöitä, jotta tilanteet voidaan ratkaista ennen niiden kärjistymistä. Koulun on tärkeää tunnistaa kiusaaminen varhaisessa vaiheessa ja puuttua siihen tehokkaasti.",
+            "sv": "Polisen bör ingripa endast i de allvarligaste fallen. Det måste finnas tillräckligt med vuxna och stödpersoner i skolorna så att situationer kan lösas innan de eskalerar. Det är viktigt att skolan identifierar mobbning i ett tidigt skede och ingriper effektivt."
+          }
+        }
+      },
+      "question-opinion-13": {
+        "value": "1",
+        "info": {
+          "__translations__": {
+            "fi": "Meidän tulisi nostaa veroja vain, jos se on täysin välttämätöntä.",
+            "sv": "Vi bör höja skatterna endast om det är helt nödvändigt."
+          }
+        }
+      },
+      "question-opinion-18": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Yksityinen sektori voi toimia palveluntarjoajana, mutta julkinen puoli ei saa ulkoistaa vastuutaan terveyspalveluista. Yksityinen sektori voi täydentää julkisia palveluja ja auttaa lyhentämään jonoja, esimerkiksi palveluseteleiden avulla. Jos yksityinen tuottaja pystyy tarjoamaan palvelun nopeammin, edullisemmin ja laadukkaammin, sen hyödyntämistä ei tulisi torjua pelkästään ideologisista syistä. Tärkeintä on, että kansalaiset saavat tarvitsemansa hoidon tehokkaasti ja yhdenvertaisesti.",
+            "sv": "Den privata sektorn kan fungera som tjänsteleverantör, men den offentliga sektorn får inte outsourca sitt ansvar för hälsovården. Den privata sektorn kan komplettera de offentliga tjänsterna och bidra till att förkorta köerna, till exempel genom servicesedlar. Om en privat aktör kan erbjuda en tjänst snabbare, billigare och med högre kvalitet, bör dess användning inte avfärdas enbart av ideologiska skäl. Det viktigaste är att medborgarna får den vård de behöver på ett effektivt och jämlikt sätt."
+          }
+        }
+      },
+      "question-opinion-21": {
+        "value": "1",
+        "info": {
+          "__translations__": {
+            "fi": "Tätä asiaa selvitimme edellisen hallituksen aikana. Maakuntavero ei ole ajankohtainen. Jos se otettaisiin käyttöön, tarvittaisiin joka tapauksessa laajoja valtion verotasauksia, jotta kaikilla alueilla olisi riittävät resurssit. Tämä malli johtaisi myös siihen, että eri alueille muodostuisi erilaisia verotasoja, mikä lisäisi alueellisia eroja verotuksessa. Emme tarvitse uusia verotasoja.",
+            "sv": "Denna fråga utreddes under den föregående regeringen. Välfärdsområdesskatten är inte aktuell. Om den infördes skulle det ändå krävas omfattande statliga skatteutjämningar för att säkerställa att alla områden har tillräckliga resurser. Denna modell skulle också leda till att olika områden får olika skattenivåer, vilket skulle öka de regionala skillnaderna i beskattningen. Vi behöver inga nya skattenivåer."
+          }
+        }
+      },
+      "question-opinion-25": {
+        "value": "4",
+        "info": {
+          "__translations__": {
+            "fi": "Jotta voimme vastata akuuttiin hoitohenkilökunnan pulaan, ulkomaisten tutkintojen, erityisesti EU-/ETA-alueen ulkopuolelta, tunnustamisprosessia on nopeutettava. Siksi ehdotamme, että byrokraattisia esteitä vähennetään ja että Valviran alaisuuteen luodaan nopeutettu käsittelyprosessi, jotta ulkomailla koulutetut sosiaali- ja terveysalan ammattilaiset voivat aloittaa työnsä mahdollisimman nopeasti. Lisäksi haluamme sujuvammat menettelyt kielitaidon todistamiseen.\n",
+            "sv": "För att vi ska kunna hantera den akuta bristen på vårdpersonal måste processen för erkännande av utländska examina, särskilt från länder utanför EU/EES, påskyndas. Därför föreslår vi att byråkratiska hinder minskas och att en snabbare handläggningsprocess skapas under Valvira, så att utlandsutbildade yrkesverksamma inom social- och hälsovården kan börja arbeta så snabbt som möjligt. Dessutom vill vi ha smidigare förfaranden för att styrka språkkunskaper."
+          }
+        }
+      },
+      "question-opinion-26": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Kyllä, terapiatakuu tulisi laajentaa koskemaan kaikkia alle 29-vuotiaita. Mielenterveysongelmat ovat yleistyneet erityisesti lasten ja nuorten keskuudessa, ja on tärkeää varmistaa, että he saavat apua ajoissa. Nuoren aikuisen elämään liittyy usein muutoksia ja epävarmuutta siksi on perusteltua, että terapiatakuu ulotetaan koskemaan heitä, jotta mielenterveysongelmiin voidaan puuttua varhaisessa vaiheessa ja ennaltaehkäistä vakavampia ongelmia. Orpon hallitus on jo ryhtynyt toimiin mielenterveyspalveluiden parantamiseksi. Yksi keskeinen askel on taata lainsäädännöllä nopea pääsy lyhytaikaiseen psykoterapiaan tai muuhun tehokkaaseen perustason psykososiaaliseen hoitoon sekä terapiatakuu alle 23-vuotiaille. Pitkän aikavälin tavoitteena tulee olla terapiatakuun laajentaminen koskemaan kaikkia alle 29-vuotiaita.",
+            "sv": "Orpos regering har redan vidtagit åtgärder för att förbättra tillgången till mentalvårdstjänster. Ett viktigt steg är att lagstifta om snabb tillgång till korttidsterapi eller annan effektiv grundläggande psykosocial vård samt att införa terapigarantin för alla under 23 år. På lång sikt bör målet vara att utvidga garantin till att omfatta alla under 29 år."
+          }
+        }
+      },
+      "question-opinion-27": {
+        "value": "1",
+        "info": {
+          "__translations__": {
+            "fi": "Lähipalveluiden, erityisesti terveyspalveluiden, turvaaminen on ensiarvoisen tärkeää. Jokaisella tulee olla oikeus saada hoitoa nopeasti ja läheltä, ilman kohtuuttomia matkoja tai pitkiä odotusaikoja. Toimivat perusterveydenhuollon palvelut ennaltaehkäisevät vakavampia terveysongelmia ja vähentävät erikoissairaanhoidon kuormitusta. Siellä, missä lähipalveluita ei ole saatavilla, meidän tulee tarjota liikkuvia palvelumuotoja, kuten terveysbusseja, jotta jokainen saa tarvitsemansa hoidon riippumatta asuinpaikastaan.",
+            "sv": "Att säkerställa närtjänster, särskilt hälsovårdstjänster, är av yttersta vikt. Alla ska ha rätt att få vård snabbt och nära, utan orimliga resor eller långa väntetider. En välfungerande primärvård förebygger allvarligare hälsoproblem och minskar belastningen på den specialiserade sjukvården. Där närtjänster inte finns tillgängliga måste vi erbjuda mobila tjänster, såsom hälsobussar, så att alla får den vård de behöver, oavsett var de bor."
+          }
+        }
+      }
+    }
+  },
+  {
+    "id": "party-0009",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Kristillisdemokraatit",
+        "sv": "Kristdemokraterna",
+        "en": "Christian Democrats"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "KD",
+        "sv": "KD",
+        "en": "CD"
+      }
+    },
+    "color": {
+      "normal": "#673ab7"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Kristillisdemokraatit eli KD haluaa rakentaa yhteiskuntaa, jossa julkinen talous on tasapainossa, työntekoon ja yrittäjyyteen kannustetaan ja heikoimmassa asemassa olevista pidetään huolta. Kristillisdemokraattien politiikassa korostuvat lapsiperheiden asiat, kristillinen arvoperusta sekä yrittäjyyden tukeminen.</p><p>KD on arvokonservatiivinen puolue, eli se korostaa niin kutsuttuja perinteisiä arvoja, kuten isänmaallisuutta sekä perheen ja lähiyhteisöjen merkitystä. Puolue esimerkiksi painottaa, että sen tavoitteena ei ole sukupuolierojen häivyttäminen.</p>",
+        "sv": "<p>Kristdemokraterna, eller KD, vill bygga ett samhälle där den offentliga ekonomin är i balans, där arbete och entreprenörskap uppmuntras och där de mest utsatta tas om hand. I Kristdemokraternas politik betonas barnfamiljers angelägenheter, den kristna värdegrunden och stödet till entreprenörskap.</p><p>KD är ett värdekonservativt parti som betonar så kallade traditionella värderingar som patriotism samt familjens och lokalsamhällenas betydelse. Partiet betonar till exempel att dess mål inte är att minska könsskillnaderna.</p>",
+        "en": "<p>The Christian Democrats want to build a society where the public finances are in balance, where work and entrepreneurship are encouraged and where the most vulnerable are cared for. The Christian Democrats’ politics emphasise the issues of families with children, the Christian foundation of values and the support of entrepreneurship.</p><p>The Christian Democrats is a value-conservative party, which emphasises so-called traditional values such as patriotism and the importance of family and local communities. The party emphasises, for example, that its aim is not to reduce gender disparities.</p>"
+      }
+    },
+    "answers": {
+      "question-opinion-1": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Olemme pitäneet nykyistä 18-vuoden täysi-ikäisyysrajaa hyvänä äänestysikärajana myös kunta- ja aluevaaleissa. Lasten ja nuorten ääni on tärkeää kuulua heitä koskevassa päätöksenteossa. Lapsia ja nuoria on osallistettava osana demokratiakasvatusta. Kuntien ja hyvinvointialueiden lakisääteisiä vaikuttamistoimielimiä ovat mm. nuorisovaltuustot. Niiden tehtävänä on toimia edustamiensa väestöryhmien äänenä, viestiä tarpeista, tehdä ehdotuksia ja antaa palautetta palveluiden toimivuudesta. Ne ovat myös yksi keino vahvistaa asukkaiden osallisuutta. (mm. kuntavaaliohjelma 2025)",
+            "sv": "Vi har ansett att den nuvarande myndighetsåldern på 18 år är en lämplig rösträttsålder också i kommunal- och välfärdsområdesval. Barns och ungas röst är viktig i beslutsfattande som berör dem. Barn och unga ska göras delaktiga som en del av demokratifostran. Kommunernas och välfärdsområdenas lagstadgade påverkansorgan är bland annat ungdomsfullmäktige. Deras uppgift är att fungera som röst för de befolkningsgrupper de representerar, förmedla behov, lägga fram förslag och ge respons på hur tjänsterna fungerar. De är också ett sätt att stärka invånarnas delaktighet. (bl.a. kommunalvalsprogrammet 2025)"
+          }
+        }
+      },
+      "question-opinion-4": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Kannatamme monipuolista ruokaa niin kouluissa kuin sairaaloissa. Ideologisista syistä liharuuasta ei tule luopua. Julkisissa hankinnoissa on kiinnitettävä huomiota kestävyyskriteereihin ja paikallisuuteen hankintalainsäädännön puitteissa, esimerkiksi suosimalla terveellistä luomu- ja lähiruokaa. (mm. kuntavaaliohjelma 2025)",
+            "sv": "Vi stöder mångsidig mat såväl i skolor som på sjukhus. Man ska inte av ideologiska skäl avstå från kött. Vid offentliga upphandlingar ska man fästa uppmärksamhet vid hållbarhetskriterier och lokal produktion inom ramen för upphandlingslagstiftningen, till exempel genom att gynna hälsosam ekologisk och närproducerad mat. (bl.a. kommunalvalsprogrammet 2025)"
+          }
+        }
+      },
+      "question-opinion-5": {
+        "value": "3",
+        "info": {
+          "__translations__": {
+            "fi": "Kunta on keskeinen toimija kestävän maankäytön suunnittelussa sekä energiatehokkuuden, kiertotalouden ja kestävän kehityksen edistämisessä. Kunnan pitää asettaa strategiset tavoitteet luontoalueiden, maaperän, vesistöjen, ilman ja ilmaston suojelemiseksi sekä ympäristöhaittojen, melun ja sisäilmaongelmien vähentämiseksi. Askelia on otettava kohti hiilineutraalisuustavoitteen toteutumiseksi, mutta ratkaisujen tulee olla kestäviä ja pitkällä aikavälillä tuloksellisia.",
+            "sv": "Kommunen är en central aktör i planeringen av hållbar markanvändning samt i främjandet av energieffektivitet, cirkulär ekonomi och hållbar utveckling. Kommunen ska ställa upp strategiska mål för att skydda naturområden, mark, vattendrag, luft och klimat samt för att minska miljöskador, buller och problem med inomhusluften. Steg ska tas för att uppnå målet om koldioxidneutralitet, men lösningarna ska vara hållbara och ge resultat på lång sikt."
+          }
+        }
+      },
+      "question-opinion-6": {
+        "value": "4",
+        "info": {
+          "__translations__": {
+            "fi": "Yleisesti pitää puuttua tehokkaammin erilaiseen syrjintään ja kiusaamiseen. Yksinäisyyden ehkäiseminen on olennainen osa jokaisen koulun toimintakulttuuria. Kiusaamiselle on oltava nollatoleranssi, ja siihen on puututtava tehokkaasti. Kodin ja koulun yhteistyötä on tärkeä entisestään lisätä ja kehittää. Huoltajia tulee kuulla ja olla heidän kanssaan avoimessa ja aktiivisessa vuorovaikutuksessa. Oppimisympäristöjen toimivuuteen, turvallisuuteen ja terveellisyyteen pitää kiinnittää huomiota. (Kuntavaaliohjelma 2025)",
+            "sv": "Generellt måste man ingripa mer effektivt mot olika former av diskriminering och mobbning. Att förebygga ensamhet är en väsentlig del av varje skolas verksamhetskultur. Det ska råda nolltolerans mot mobbning och den ska bemötas effektivt. Samarbetet mellan hem och skola är viktigt att ytterligare utveckla och stärka. Vårdnadshavare ska höras och det ska föras en öppen och aktiv dialog med dem. Man måste fästa uppmärksamhet vid hur fungerande, trygga och hälsosamma lärmiljöerna är. (Kommunalvalsprogrammet 2025)"
+          }
+        }
+      },
+      "question-opinion-8": {
+        "value": "3",
+        "info": {
+          "__translations__": {
+            "fi": "Tarvitaan molempia. Opettajien edellytyksiä keskittyä päätehtäväänsä, laadukkaaseen opetukseen, voitaisiin edistää lisäämällä kouluarkeen esimerkiksi sosiaalialan ammattilaisia. Tärkeää on pystyä ennaltaehkäisemään väkivaltaista käytöstä. Myös poliisien näkyminen kouluympäristössä on tehokas keino puuttua väkivaltaiseen käyttäytymiseen. Varsinkin tilanteissa, joissa väkivaltaista käytöstä on jo ilmennyt, tulee koulun tehdä poliisin kanssa yhteistyötä. (mm. kuntavaaliohjelma)",
+            "sv": "Båda behövs. Lärarnas möjligheter att fokusera på sin huvuduppgift, undervisning av hög kvalitet, kan stärkas genom att till exempel socialarbetare tas in i skolvardagen. Det är viktigt att kunna förebygga våldsamt beteende. Också polisens synlighet i skolmiljön är ett effektivt sätt att ingripa i våldsamt beteende. Särskilt i situationer där våldsamt beteende redan har förekommit ska skolan samarbeta med polisen. (bl.a. kommunalvalsprogrammet)"
+          }
+        }
+      },
+      "question-opinion-13": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Monissa kunnissa on jouduttu tekemään erilaisia sopeutustoimia talouden tasapainottamiseksi. Kuntien velkaantumisen selättämiseen tarvitaan määrätietoista otetta. Esimerkiksi menosopeutukset, veronkorotukset ja yhteistyön lisääminen ovat keinoja talouden tasapainottamiseksi. Suomessa verotuksen taso on jo suhteellisen korkea, joten kokonaisvarotason nostoa tulisi välttää. Riippuu kuitenkin paljon kunnan tilanteesta, minkälaisia toimia tarvitaan. (kuntavaaliohjelma)",
+            "sv": "Många kommuner har varit tvungna att genomföra olika anpassningsåtgärder för att balansera ekonomin. För att bemästra kommunernas skuldsättning krävs ett målmedvetet grepp. Exempelvis anpassning av utgifter, skattehöjningar och ökat samarbete är sätt att balansera ekonomin. Skattenivån i Finland är redan relativt hög, så en höjning av den totala skattenivån bör undvikas. Mycket beror dock på kommunens situation vilka åtgärder som behövs. (kommunalvalsprogrammet)"
+          }
+        }
+      },
+      "question-opinion-18": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Julkinen sosiaali- ja terveydenhuolto ei selviä ilman järkevää ja tasapainoista kumppanuutta yksityisten palveluntuottajien ja kolmannen sektorin kanssa. Palvelustrategiassaan hyvinvointialue linjaa pitkänaikavälin tavoitteet ja sen, miten hyvinvointialueen palvelut parhaiten toteutetaan eri tekijät huomioiden. Kannatamme monituottajamallia, jossa hyödynnetään useita palveluntuottajia. Julkisen ja yksityisen sektorin yhteistyö sote-järjestelmässä voi tuoda merkittäviä etuja, kuten tehokkuuden lisäämistä, palvelujen monipuolistumista ja innovaatioiden tuomista. Hyvinvointialueen palveluja järjestettäessä on tuottajaksi valittava paikallisen arvion mukaan paras, laadukkain ja kustannuksiltaan järkevin toimija. Kela-korvauksia tulee suunnata palveluihin, joita saa heikommin julkiselta terveydenhuollolta. Näitä ovat esimerkiksi silmälääkäreiden, gynekologien, fysioterapeuttien ja hammashoidon palvelut. (Aluevaaliohjelma 2025)",
+            "sv": "Den offentliga social- och hälsovården klarar sig inte utan ett förnuftigt och balanserat partnerskap med privata serviceproducenter och tredje sektorn. I sin service strategi drar välfärdsområdet upp långsiktiga mål och fastställer hur områdets tjänster bäst ordnas med beaktande av olika faktorer. Vi stöder en modell med flera producenter där flera serviceproducenter utnyttjas. Samarbetet mellan den offentliga och privata sektorn i social- och hälsovårdssystemet kan ge betydande fördelar, såsom ökad effektivitet, mångsidigare tjänster och innovationer. När välfärdsområdet ordnar sina tjänster ska den producent som lokalt bedöms vara den bästa, mest kvalitativa och mest kostnadseffektiva väljas. FPA-ersättningarna ska riktas till tjänster som är svåra att få från den offentliga hälso- och sjukvården. Exempel på sådana är tjänster hos ögonläkare, gynekologer, fysioterapeuter och tandvård. (välfärdsområdesvalsprogrammet 2025)"
+          }
+        }
+      },
+      "question-opinion-21": {
+        "value": "1",
+        "info": {
+          "__translations__": {
+            "fi": "Alueiden rakenteellisia ja rahoituksellisia ongelmia ei korjata alueiden verokanto-oikeudella eli ns. maakuntaverolla. Verotusoikeus nostaisi kokonaisveroastetta ja etäännyttäisi kuntia toisistaan. (aluevaaliohjelma 2025) ",
+            "sv": "De strukturella och ekonomiska problemen i regionerna löses inte med beskattningsrätt för regionerna, det vill säga så kallad landskapsskatt. Beskattningsrätten skulle höja den totala skattenivån och öka klyftorna mellan kommunerna. (välfärdsområdesvalsprogrammet 2025)"
+          }
+        }
+      },
+      "question-opinion-25": {
+        "value": "4",
+        "info": {
+          "__translations__": {
+            "fi": "Ennen kaikkea tulee panostaa työllistämiskeinoihin, jotta tällä hetkellä ilman työtä olevat saisivat töitä. Vastaavasti tulee panostaa nykyisten työhyvinvointiin ja jaksamiseen, jotta esimerkiksi nykyinen hoitohenkilökunta viihtyisi paremmin työssään. Myös työperäistä maahanmuuttoa tarvitaan.",
+            "sv": "Framför allt måste vi satsa på sysselsättningsåtgärder så att de som idag står utan arbete får arbete. Samtidigt måste vi satsa på nuvarande arbetstagares välmående och ork så att till exempel vårdpersonalen trivs bättre i sitt arbete. Också arbetskraftsinvandring behövs"
+          }
+        }
+      },
+      "question-opinion-26": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "1.5.2025 voimaan tuleva lasten ja nuorten terapiatakuu turvaa yhdenvertaisen pääsyn lyhytpsykoterapiaan ja muihin vaikuttaviin psykososiaalisiin hoitoihin. Lakiuudistuksella tavoitellaan nuorten kasvavien mielenterveysongelmien varhaisempaa tunnistamista ja nopeampaa hoitoa. Terapiatakuun myötä lasten ja alle 23-vuotiaiden nuorten tulee päästä tiettyihin mielenterveyspalveluihin viimeistään kuukauden kuluessa siitä, kun tarve on todettu. Terapiatakuu on tärkeä edistysaskel lasten ja nuorten mielenterveyspalveluiden parantamisessa. Yleisesti myös aikuisten mielenterveyspalveluihin, erityisesti ennaltaehkäiseviin ja matalankynnyksen palveluihin tulee panostaa. Tavoite on hyvä, mutta mahdollisuuksiin laajentaa terapiatakuuta vaikuttaa taloudelliset resurssit. (mm. kuntavaaliohjelma)",
+            "sv": "Den 1 maj 2025 träder barnens och ungdomarnas terapigaranti i kraft och tryggar jämlik tillgång till korttidsterapi och andra effektiva psykosociala behandlingar. Med lagändringen strävar man efter att tidigare identifiera och snabbare behandla ungdomars ökande psykiska problem. Med terapigarantin ska barn och unga under 23 år få tillgång till vissa mentalvårdstjänster senast inom en månad från det att behovet konstaterats. Terapigarantin är ett viktigt framsteg för att förbättra barnens och ungdomarnas mentalvårdstjänster. Generellt måste man också satsa på mentalvårdstjänster för vuxna, särskilt på förebyggande och lättillgängliga tjänster. Målet är gott, men möjligheterna att utvidga terapigarantin beror på de ekonomiska resurserna. (bl.a. kommunalvalsprogrammet)"
+          }
+        }
+      },
+      "question-opinion-27": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Meille kristillisdemokraateille on tärkeää turvata lähipalvelut mahdollisimman kattavasti. Lähipalveluiden turvaamisessa on entistä tärkeämpää hyödyntää joustavia ratkaisuja, kuten liikkuvia palveluja, digitaalisia palveluja ja uusia innovaatioita. Niitä tarvitaan erityisesti harvaan asutuilla alueilla. Osa palveluista on järkevää toteuttaa liikkuvina, jolloin ne voidaan tuoda suoraan asiakkaiden lähelle sen sijaan, että ylläpidettäisiin kiinteitä palvelupisteitä. Palvelujen on oltava helposti saavutettavissa ja räätälöitävissä yksilön tarpeiden mukaan. (Aluevaaliohjelma 2025)",
+            "sv": "För oss kristdemokrater är det viktigt att trygga närtjänster så heltäckande som möjligt. För att trygga närtjänster är det allt viktigare att utnyttja flexibla lösningar som mobila tjänster, digitala tjänster och nya innovationer. De behövs särskilt i glest befolkade områden. En del tjänster är vettiga att ordna som mobila tjänster, så att de förs nära kunderna i stället för att upprätthålla fasta servicepunkter. Tjänsterna ska vara lättillgängliga och kunna anpassas efter individens behov. (välfärdsområdesvalsprogrammet 2025)"
+          }
+        }
+      }
+    }
+  },
+  {
+    "id": "party-0013",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Vihreä liitto",
+        "sv": "Gröna förbundet",
+        "en": "Green League"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "Vihr.",
+        "sv": "Gröna",
+        "en": "Greens"
+      }
+    },
+    "color": {
+      "normal": "#8bc34a"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Vihreille politiikan tärkeitä asioita ovat erityisesti ilmastonmuutoksen pysäyttäminen sekä luonnonsuojelu ja ympäristökysymykset. Puolue korostaa eriarvoisuuden ja köyhyyden vähentämistä sekä sitä, että myös haavoittuvassa asemassa olevat saavat äänensä kuuluviin.</p><p>Vihreät on myös arvoliberaali puolue, eli se painottaa vahvasti esimerkiksi sukupuolten tasa-arvoon, seksuaali- ja sukupuolivähemmistöjen oikeuksiin ja rasismin vastustamiseen liittyviä asioita.</p>",
+        "sv": "<p>Viktiga politiska frågor för De Gröna är framför allt att stoppa klimatförändringen samt naturskydds- och miljöfrågor. Partiet betonar att man ska minska ojämlikhet och fattigdom samt att även de som befinner sig i en sårbar ställning ska få sin röst hörd. </p><p>De Gröna är också ett värdeliberalt parti som lägger stor vikt vid frågor som till exempel jämställdhet mellan könen, sexuella och könsminoriteters rättigheter samt rasismbekämpning.</p>",
+        "en": "<p>For the Greens, particularly important political issues include stopping climate change and protecting nature and the environment. The party emphasises the reduction of inequality and poverty and the need for vulnerable people to get their voices heard. </p><p>The Greens are also a value liberal party, which puts a strong emphasis on issues such as gender equality, sexual and gender minority rights and the fight against racism.</p>"
+      }
+    },
+    "answers": {
+      "question-opinion-1": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Äänioikeuden ja vaalikelpoisuuden ikäraja tulisi laskea 16 vuoteen kaikissa vaaleissa sekä kansalaisaloitteissa. Nuorten kiinnostusta politiikkaan on välttämätöntä kasvattaa, ja tämä onnistuu muun muassa siten, että ehdolla on nuoria ehdokkaita. 16-vuotias on riittävän kypsä toimimaan vaaleissa ehdokkaana, onhan hän rikosoikeudellisestikin vastuussa. Ks. Vihreiden poliittinen ohjelma  https://www.vihreat.fi/vihreiden-poliittinen-ohjelma-2023-2027/ ",
+            "sv": "Rösträtts- och valbarhetsåldern bör sänkas till 16 år i alla val och medborgarinitiativ. Det är nödvändigt att öka ungas intresse för politik, och detta sker bland annat genom att unga kandidater ställer upp i val. En 16-åring är tillräckligt mogen för att kandidera i val, eftersom hen också bär straffrättsligt ansvar. Se De grönas politiska program https://www.degrona.fi/de-gronas-politiska-program-2023-2027/"
+          }
+        }
+      },
+      "question-opinion-4": {
+        "value": "1",
+        "info": {
+          "__translations__": {
+            "fi": "Niin kansanterveyden kuin ilmastonkin kannalta on perusteltua, että kouluissa lisätään kotimaista kasvisperäistä ruokaa. Vihreät on esittänyt eläinperäisen ruoan osuuden puoittamista kaikissa kuntien ja alueiden hankinnoissa.  On selvää, että lasten ja nuorten ravitsemuksellisista tarpeista tulee huolehtia kaikissa tilanteissa. Lisäksi ruoan maistuvuudesta on pidettävä huolta - kuten liharuoankin kohdalla tehdään. Näin tuetaan lasten ja nuorten monipuolista, vähäpäästöistä ja terveellistä ruokavaliota. Ks. Vihreiden kuntavaaliohjelma https://www.vihreat.fi/wp-content/uploads/2025/02/Kuntavaaliohjelma2025.pdf ",
+            "sv": "Av såväl folkhälso- som klimatskäl är det motiverat att öka mängden inhemsk växtbaserad mat i skolorna. De gröna har föreslagit att andelen animaliska produkter ska halveras i alla kommuners och områdens upphandlingar. Det är självklart att barns och ungas näringsbehov ska tryggas i alla situationer. Dessutom ska man se till att maten är god – precis som med kötträtter. På så sätt stöds barns och ungas mångsidiga, utsläppssnåla och hälsosamma kost. Se De grönas kommunalvalsprogram"
+          }
+        }
+      },
+      "question-opinion-5": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Ilmastokriisin kiireellisyys vaatii kaikilta nopeita toimia, myös kunnilta. Kuntien on toimittava edelläkävijöinä ja näytettävä esimerkkiä, joka vahvistaa Suomen maakuvaa ilmastoratkaisujen kehittäjänä. Varhaisella toiminnalla saadaan kilpailuetua ja säästöjä pitkällä aikavälillä. Ks. Vihreiden kuntavaaliohjelma https://www.vihreat.fi/wp-content/uploads/2025/02/Kuntavaaliohjelma2025.pdf ",
+            "sv": "Klimatkrisens brådska kräver snabba åtgärder av alla, även av kommunerna. Kommunerna ska agera som föregångare och visa exempel som stärker Finlands image som en utvecklare av klimatlösningar. Tidiga åtgärder ger konkurrensfördelar och besparingar på lång sikt. Se De grönas kommunalvalsprogram"
+          }
+        }
+      },
+      "question-opinion-6": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Yhdenvertaisuus ei toteudu itsestään. Tasa-arvoa ja yhdenvertaisuutta tulee edistää niin laissa, hallinnossa kuin kouluissa ja päiväkodeissa. Puolueen tavoitteena on kaikille reilumpi yhteiskunta, jossa ei ole sukupuoleen liittyvää syrjintää tai kapeita sukupuolirooleja. Jokaisella on oltava oikeus määritellä sukupuolensa ja toteuttaa sukupuoli-identiteettiään vapaasti ilman pelkoa syrjinnästä. Ks. Vihreiden tasa-arvo- ja yhdenvertaisuusohjelma https://www.vihreat.fi/ohjelmat/tasa-arvo-ja-yhdenvertaisuusohjelma/ ",
+            "sv": "Jämlikhet förverkligas inte av sig självt. Jämställdhet och jämlikhet ska främjas i lagstiftning, förvaltning samt i skolor och daghem. Partiets mål är ett rättvisare samhälle för alla, där det inte finns diskriminering på grund av kön eller snäva könsroller. Alla ska ha rätt att definiera sitt kön och uttrycka sin könsidentitet fritt utan rädsla för diskriminering. Se De grönas jämställdhets- och jämlikhetsprogram"
+          }
+        }
+      },
+      "question-opinion-8": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Koulun pitää olla terveellinen ja turvallinen paikka kasvaa, oppia ja tehdä työtä. Väkivaltaa ja muita ongelmia ehkäistään parhaiten puuttumalla haasteisiin ja väkivallan juurisyihin mahdollisimman varhaisessa vaiheessa. Vakavissa tapauksissa tarvitaan sekä sosiaalipalveluja että poliisia, ei vain toista. Pelkkä poliisin toiminta tarkoittaa jo syntyneiden ongelmien hoitamista ja luovuttamista ongelmien juurisyiden kanssa, joiden kanssa puolestaan sosiaalipalvelut voivat auttaa. Ks. Vihreiden kuntavaaliohjelma  https://www.vihreat.fi/wp-content/uploads/2025/02/Kuntavaaliohjelma2025.pdf",
+            "sv": "Skolan ska vara en hälsosam och trygg plats att växa, lära sig och arbeta. Våld och andra problem förebyggs bäst genom att ingripa i utmaningar och våldets grundorsaker så tidigt som möjligt. Vid allvarliga fall behövs både socialtjänst och polis, inte bara den ena. Endast polisens insats innebär att man enbart hanterar redan uppkomna problem och ger upp när det gäller grundorsakerna, där socialtjänsten kan hjälpa. Se De grönas kommunalvalsprogram"
+          }
+        }
+      },
+      "question-opinion-13": {
+        "value": "4",
+        "info": {
+          "__translations__": {
+            "fi": "Vaikka verojen korottaminen ei ole kenenkään lempipuuhaa, on se parempi vaihtoehto kuin leikata lyhytnäköisesti keskeisistä hyvinvointipalveluista tai sosiaaliturvasta. Palveluiden karsiminen on viimesijainen keino, jos taloutta ei muutoin saada tasapainoon. Kustannuksia arvioitaessa on tärkeä katsoa pitkää aikaväliä, sillä erityisesti varhaiskasvatuksesta ja opetuksesta leikkaaminen voi aiheuttaa pidemmällä aikavälillä isompia kustannuksia, kun lapset ja nuoret oireilevat esimerkiksi huonossa kouluympäristössä. Tämä ei ole järkevää taloudenpitoa.",
+            "sv": "Även om skattehöjningar inte är någons favoritlösning är det ett bättre alternativ än att kortsiktigt skära ner på centrala välfärdstjänster eller socialskydd. Nedskärningar i tjänster ska vara sista utvägen om ekonomin inte annars kan balanseras. Vid kostnadsbedömningar är det viktigt att se långsiktigt, eftersom nedskärningar särskilt i småbarnspedagogik och undervisning kan leda till större kostnader på sikt när barn och unga far illa till exempel i en dålig skolmiljö. Det är inte klok ekonomisk politik."
+          }
+        }
+      },
+      "question-opinion-18": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Sote-palveluissa päävastuu täytyy olla ja pysyä julkisella sektorilla, mutta palveluita tuottamassa voi olla monta tahoa: järjestöillä ja yrityksillä on tärkeä täydentävä roolinsa. Esimerkiksi silloin, kun julkinen ei pysty tarjoamaan hoitoa tai kykene tarjoamaan sitä riittävän nopeasti, on perusteltua, että ihmiselle turvataan palvelut yksityisestä terveydenhuollosta. On kuitenkin ongelmallista, että yksityinen terveydenhuolto on keskittynyt muutamien isojen terveysjättien varaan - alalle tulon kynnys pienille ja keskisuurille yritykselle on korkea ja hinnat karkaavat käsistä. Kilpailutuksissa tulisikin pitää huolta siitä, että myös pk-yrityksillä on oikeasti mahdollisuus pärjätä niissä. Ks. Vihreiden aluevaaliohjelma: https://www.vihreat.fi/wp-content/uploads/2025/02/Aluevaaliohjelma2025.pdf ",
+            "sv": "Inom social- och hälsovården ska huvudansvaret ligga och förbli hos den offentliga sektorn, men det kan finnas flera aktörer som producerar tjänster: organisationer och företag har en viktig kompletterande roll. Till exempel när den offentliga sektorn inte kan erbjuda vård eller inte kan erbjuda den tillräckligt snabbt är det motiverat att trygga tjänsterna via den privata hälso- och sjukvården. Det är dock problematiskt att den privata hälso- och sjukvården domineras av några stora jättar – tröskeln för små och medelstora företag att komma in på marknaden är hög och priserna skenar. Vid upphandlingar måste man se till att även små och medelstora företag verkligen har en chans att klara sig. Se De grönas välfärdsområdesvalsprogram"
+          }
+        }
+      },
+      "question-opinion-21": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Alueilla ei tällä hetkellä ole aitoa itsemääräämisoikeutta. Alueiden itsensä sijaan päätöksiä johtaa viime kädessä valtiovarainministeriö, joka jakaa rahaa lakiin kirjatun rahoitusjärjestelmän mukaisesti. Alueiden liikkumavara jää pieneksi, eikä jäykkä rahoitusjärjestelmä palvele kaikkia. Verotusoikeuden myötä aluevaltuustot ja -hallitukset joutuisivat punnitsemaan omien verovarojensa käyttöä, mikä kannustaisi kustannustehokkuuteen. Jos kustannukset kasvavat, ei nykymallin tapaan saa lisää rahaa valtiolta. Jos onnistuu kustannusten hillinnässä, voi laskea verotusta. Verotusoikeuteen pitäisi kuntaveron tapaan sisältyä tasausjärjestelmä alueiden erilaisten lähtökohtien huomioimiseksi. Ks. Vihreiden aluevaaliohjelma: https://www.vihreat.fi/wp-content/uploads/2025/02/Aluevaaliohjelma2025.pdf ",
+            "sv": "För närvarande har områdena ingen verklig självbestämmanderätt. I stället för områdena är det i sista hand finansministeriet som fattar besluten, eftersom det fördelar pengarna enligt det lagstadgade finansieringssystemet. Områdenas handlingsutrymme är litet och det stela finansieringssystemet tjänar inte alla. Med beskattningsrätt skulle välfärdsområdesfullmäktige och -styrelser tvingas överväga hur de använder sina egna skatteintäkter, vilket skulle sporra till kostnadseffektivitet. Om kostnaderna ökar får man inte automatiskt mer pengar från staten som i det nuvarande systemet. Om man lyckas hålla kostnaderna nere kan man sänka skatterna. Beskattningsrätten ska, i likhet med kommunalskatten, innehålla ett utjämningssystem som beaktar områdenas olika utgångslägen. Se De grönas välfärdsområdesvalsprogram:"
+          }
+        }
+      },
+      "question-opinion-25": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Seuraavien kymmenen vuoden aikana kolmasosa hyvinvointialueiden nykyisistä työntekijöistä jää eläkkeelle. Pienenevistä ikäluokista ei pystytä korvaamaan valtavaa hoitaja- ja lääkäripulaa, joka koskee erityisesti pienempiä paikkakuntia. Ulkomaisen työvoiman rekrytointi on tärkeä keino vastata työvoimapulaan, mutta se ei yksin riitä - samaan aikaan on parannettava alan työoloja ja houkuttelevuutta kaikille työntekijöille. Riittävää pätevöitymis- ja kielikoulutusta tulee tarjota sekä maassa jo oleville rekrytoinnin kautta saapuville. Ks. Vihreiden sosiaali-, terveys- ja pelastuspoliittinen ohjelma: https://www.vihreat.fi/ohjelmat/vihrea-sosiaali-terveys-ja-pelastustoimiohjelma/ ",
+            "sv": "Under de kommande tio åren kommer en tredjedel av välfärdsområdenas nuvarande personal att gå i pension. De minskande åldersklasserna räcker inte till för att ersätta den enorma bristen på vårdare och läkare, som särskilt drabbar mindre orter. Rekrytering av utländsk arbetskraft är ett viktigt sätt att lösa arbetskraftsbristen, men det räcker inte i sig – samtidigt måste arbetsvillkoren och branschens attraktivitet förbättras för alla arbetstagare. Tillräcklig kompetens- och språkutbildning ska erbjudas både dem som redan finns i landet och dem som rekryteras hit. Se De grönas social-, hälso- och räddningspolitiska program"
+          }
+        }
+      },
+      "question-opinion-26": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Terapiatakuu on ehdottomasti laajennettava kaikille alle 29-vuotiaille, sillä hallituksen esitys takuun ulottamisesta vain alle 23-vuotiaille on riittämätön. Pitkällä aikavälillä koko kansan tulisi olla takuun piirissä. Sillä aikaa on otettava käyttöön asiakasseteleitä lyhytterapiaan ja lisää matalan kynnyksen mielenterveyspisteitä, joissa keskusteluapua saa jonottamatta. Ks. Vihreiden aluevaaliohjelma: https://www.vihreat.fi/wp-content/uploads/2025/02/Aluevaaliohjelma2025.pdf",
+            "sv": "Terapigarantin måste absolut utvidgas till alla under 29 år, eftersom regeringens förslag om att begränsa garantin till enbart under 23-åringar är otillräckligt. På lång sikt bör hela befolkningen omfattas av garantin. Under tiden bör servicesedlar för korttidsterapi införas och fler lättillgängliga mentalvårdspunkter öppnas där man kan få samtalsstöd utan köer. Se De grönas välfärdsområdesvalsprogram:"
+          }
+        }
+      },
+      "question-opinion-27": {
+        "value": "3",
+        "info": {
+          "__translations__": {
+            "fi": "Järkevillä ratkaisuilla saavutetaan tasapaino keskittämisen ja lähellä olevien palvelujen säilyttämisen välillä. Joskus pieni yksikkö kannattaa yhdistää isompaan, mutta ei silloin, kun se johtaa esimerkiksi palveluverkon kohtuuttomaan karsimiseen. Jokainen tilanne on punnittava erikseen. Yksinkertaisia hoitoja, kuten lääkettä flunssaan, voidaan antaa monessa paikassa, mutta esimerkiksi erikoisosaamista vaativat monimutkaiset leikkaukset kannattaa keskittää yhteen tai muutamaan paikkaan. Ks. Vihreiden aluevaaliohjelma: https://www.vihreat.fi/wp-content/uploads/2025/02/Aluevaaliohjelma2025.pdf",
+            "sv": "Med kloka lösningar kan man nå en balans mellan centralisering och att bevara tjänster nära. Ibland lönar det sig att slå samman en liten enhet med en större, men inte om det leder till en orimlig nedskärning av servicenätverket. Varje situation måste bedömas separat. Enkla behandlingar, som att få medicin mot förkylning, kan ges på många ställen, men till exempel komplicerade operationer som kräver specialkompetens bör centraliseras till en eller några få platser. Se De grönas välfärdsområdesvalsprogram"
+          }
+        }
+      }
+    }
+  },
+  {
+    "id": "party-0015",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Vasemmistoliitto",
+        "sv": "Vänsterförbundet",
+        "en": "Left Alliance"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "Vas.",
+        "sv": "Vänst.",
+        "en": "Left"
+      }
+    },
+    "color": {
+      "normal": "#d51a46"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Vasemmistoliiton perusarvoja ovat vapaus, solidaarisuus ja tasa-arvo. Puolue tahtoo rakentaa ekologisesti kestävää ja sosiaalisesti oikeudenmukaista yhteiskuntaa. Tämä tarkoittaa, että ilmastonmuutosta sekä luontokatoa vastustetaan päättäväisin toimin ja että jokaisella ihmisellä on mahdollisuus riittävään toimeentuloon, julkisiin palveluihin sekä laadukkaaseen terveydenhuoltoon ja hoivaan.</p><p>Vasemmistoliitto on talouspoliittisesti vasemmistolainen puolue, eli jos on valittava julkisista palveluista leikkaamisen tai rikkaiden ja suuryritysten verotuksen kiristämisen välillä, vasemmistoliittolainen valitsee jälkimmäisen. Puolue haluaa vähentää köyhyyttä ja eriarvoisuutta sekä varmistaa, ettei taloudellinen asema vaikuta ihmisen mahdollisuuksiin elämässä.</p>",
+        "sv": "<p>Vänsterförbundets grundvärderingar är frihet, solidaritet och jämlikhet. Partiet vill bygga ett ekologiskt hållbart och socialt rättvist samhälle. Detta innebär att klimatförändringen och minskningen av biologisk mångfald bekämpas genom beslutsamma åtgärder och att alla människor har tillgång till tillräcklig utkomst, offentliga tjänster samt hälso- och sjukvård av hög kvalitet.</p><p>Vänsterförbundet är ekonomiskt sett ett vänsterparti, dvs. om man måste välja mellan att skära ner på offentliga tjänster eller strama åt beskattningen av rika och storföretag, väljer vänsterförbundet det senare. Partiet vill minska fattigdom och ojämlikhet och se till att människors ekonomiska ställning inte påverkar deras möjligheter i livet.</p>",
+        "en": "<p>Freedom, solidarity and equality are the fundamental values of the Left Alliance. The party wants to build an environmentally sustainable and socially just society. This means decisive actions against climate change and loss of biodiversity, and that every person has access to adequate livelihoods, public services and quality health care.</p><p>In economic policy, the Left Party is a left-wing party, i.e. if you have to choose between cutting public services or tightening taxes on rich people and large companies, the left-wing party chooses the latter. The party wants to reduce poverty and inequality and to ensure that people’s financial position does not affect their opportunities in life.</p>"
+      }
+    },
+    "answers": {
+      "question-opinion-1": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Äänestysikärajaa on alennettava kunta- ja aluevaaleissa 16 vuoteen. Yhteiskuntaopin opetusta on aikaistettava ja lisättävä, jotta kaikki saavat tarvittavat tiedot ja taidot osallistua päätöksentekoon. Demokraattisiin periaatteisiin kuuluu, että äänioikeus ja oikeus asettua ehdolle kulkevat käsi kädessä. Siksi myös vaalikelpoisuuden ikärajan laskemista on hyvä pohtia. [mm. Vasemmistoliiton tavoiteohjelma 2022-2025]",
+            "sv": "Rösträttsåldern bör sänkas till 16 år i kommunal- och välfärdsområdesvalen. Undervisningen i samhällskunskap bör påbörjas tidigare och utökas så att alla får den kunskap och de färdigheter som behövs för att delta i beslutsfattandet. Demokratiska principer innebär att rösträtt och valbarhet går hand i hand. Därför är det också bra att överväga att sänka åldersgränsen för valbarhet. [bl.a. Vänsterförbundets målprogram 2022–2025]"
+          }
+        }
+      },
+      "question-opinion-4": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Suunta kasvisruoan osuuden kasvattamisessa julkisissa ruokapalveluissa on oikea. Vuosittain ymmeniä miljardeja eläimiä teurastetaan maailmanlaajuisesti. Lihantuotanto kuluttaa valtavia määriä vettä ja maapinta-alaa rehun viljelyssä ja karjan laidunnuksessa verrattuna kasviperäisen proteiinin tuotantoon. Vastaavasti muiden eläinperäisten proteiinilähteiden kuten maitotuotteiden kasvihuonepäästöt ovat moninkertaiset verrattuna ravintoarvoiltaan vastaaviin kasviperäisiin tuotteisiin. Tämä pätee niin kotimaiseen kuin ulkomaiseen eläintuotantoon. Eläinten oikeuksien toteuttamiseksi ja ilmastonmuutoksen torjumiseksi on siirryttävä käyttämään yhä enemmän kasvispohjaisia tuotteista julkisten ruokapalveluiden hankinnassa ja tarjonnassa. Näiden osuutta on nostettava vähintään 50 prosenttiin hankinnoista. [Alue- ja kuntavaaliohjelma 2025, tavoiteohjelma, eläinpoliittinen ohjelma]",
+            "sv": "Riktningen med att öka andelen växtbaserad mat i offentliga måltidstjänster är rätt. Årligen slaktas tiotals miljarder djur globalt. Köttproduktionen förbrukar enorma mängder vatten och mark för odling av foder och betesmark jämfört med produktionen av växtbaserat protein. På motsvarande sätt har andra animaliska proteinkällor, såsom mejeriprodukter, mångdubbelt högre växthusgasutsläpp jämfört med näringsmässigt likvärdiga växtbaserade produkter. Detta gäller både inhemsk och utländsk djurproduktion. För att säkerställa djurens rättigheter och bekämpa klimatförändringen måste offentliga måltidstjänster i allt högre grad använda växtbaserade produkter. Andelen av dessa bör höjas till minst 50 procent av upphandlingarna. [Region- och kommunalvalsprogrammet 2025, målprogrammet, djurpolitiskt program]"
+          }
+        }
+      },
+      "question-opinion-5": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Aikamme tärkein kysymys on se, miten onnistumme hillitsemään ihmisen aiheuttamista kasvihuonepäästöistä johtuvaa katastrofaalista ilmastonmuutosta ja luonnon monimuotoisuuden katoa. On kysyttävä, mihin meillä on ympäristönäkökulmasta varaa sen sijaan, että  mietimme ainoastaan, mihin rahat riittävät. Meidän on laskettava ympäristöllistä kestävyysvajetta ja rakennettava tämän sukupolven aikana kestävän yhteiskunnan malli, sillä seuraavat eivät enää ehdi sitä tehdä. Ilmastoja ympäristöpolitiikan on lävistettävä kaikki päätöksenteko. Kaikkien Suomen kuntien tavoitteena täytyy olla ilmastopäästöjen nollaaminen vuoteen 2035 mennessä ja hiilinegatiivisuus sen jälkeen. Lisäksi kuntien on laadittava paikalliset ilmastonmuutoksen sopeutumisohjelmat, joissa varaudutaan ilmastonmuutoksen tuomiin muutoksiin, kuten sään ääri-ilmiöihin. Kaikessa päätöksenteossa on huomioitava toiminnan ilmastovaikutukset, estettävä ilmastonmuutoksen eteneminen ja turvattava luonnon monimuotoisuuden säilyminen.  [Tavoiteohjelma, alue- ja kuntavaaliohjelma]",
+            "sv": "Vår tids viktigaste fråga är hur vi lyckas bromsa den katastrofala klimatförändringen och förlusten av biologisk mångfald som orsakas av mänskliga växthusgasutsläpp. Vi måste fråga oss vad vi har råd med ur miljösynpunkt istället för att enbart fundera på vad vi har råd med ekonomiskt. Vi måste minska underskottet i miljöhållbarheten och bygga en modell för ett hållbart samhälle inom denna generation, eftersom nästa generation inte längre har tid att göra det. Klimat- och miljöpolitiken måste genomsyra allt beslutsfattande. Alla Finlands kommuner bör ha som mål att eliminera sina klimatutsläpp senast 2035 och bli klimatnegativa därefter. Dessutom måste kommunerna ta fram lokala anpassningsplaner för klimatförändringen för att hantera förändringar som extrema väderförhållanden. I allt beslutsfattande måste man beakta klimatpåverkan, förhindra klimatförändringens framskridande och säkerställa bevarandet av biologisk mångfald. [Målprogrammet, region- och kommunalvalsprogrammet]"
+          }
+        }
+      },
+      "question-opinion-6": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Kuntien ja hyvinvointialueiden palveluissa on huomioitava seksuaalisuuden ja sukupuolen sekä perheiden moninaisuus. Sateenkaari-ihmiset tulee huomioida palveluissa koko elämänkaaren alusta loppuun neuvoloista, päiväkodeista ja kouluista sairaaloihin ja ikääntyneiden palveluihin asti. Erityisesti oppilaanohjauksessa tarvitaan sukupuolisensitiivisyyttä sekä intersektionaalista otetta, jotta oppilaita ei ohjata tiettyyn suuntaan heidän luokkataustansa tai etnisen taustansa takia. Seksuaalikasvatusta pitää vahvistaa kaikilla oppiasteilla. Kasvatuksessa täytyy ehkäisytietouden lisäksi painottaa suostumuksen, itsemääräämisoikeuden ja nautinnon merkitystä. Seksuaalikasvatuksessa tulee huomioida sukupuolen, suhteiden ja seksuaalisuuden moninaisuus. Kasvatuksessa on oltava seksuaali- ja sukupuolivähemmistöihin kohdistuvan syrjinnän ja vihan vastainen ote. [Alue- ja kuntavaaliohjelma]",
+            "sv": "Kommunernas och välfärdsområdenas tjänster måste beakta mångfalden i kön, sexualitet och familjer. Regnbågspersoner ska beaktas i tjänsterna genom hela livscykeln, från rådgivningstjänster, daghem och skolor till sjukhus och äldreomsorg. Särskilt inom elevhandledningen behövs könssensitivitet och ett intersektionellt perspektiv för att säkerställa att elever inte styrs i en viss riktning baserat på deras klassbakgrund eller etniska tillhörighet. Sexualundervisningen måste stärkas på alla utbildningsnivåer. Förutom kunskap om preventivmedel bör undervisningen lyfta fram betydelsen av samtycke, självbestämmanderätt och njutning. Sexualundervisningen måste inkludera mångfalden av kön, relationer och sexualitet. Undervisningen måste också ha ett tydligt antirasistiskt och antidiskriminerande perspektiv gentemot köns- och sexuella minoriteter."
+          }
+        }
+      },
+      "question-opinion-8": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Erityisesti koulujen tulee olla turvallisia ja väkivallattomia paikkoja kaikille lapsille ja nuorille. Tällä hetkellä alle 15-vuotiaista väkivaltarikoksen uhreista suurin osa on kohdannut väkivaltaa nimenomaan kouluympäristössä. Turvallisten aikuisten määrän lisäämisen ja nuorisotyöntekijöiden läsnäolon vahvistamisen lisäksi tarvitsemme panostuksia jalkautuvaan nuorisotyöhön sekä poliisin ennalta estävään toimintaan kaikissa nuorten elinympäristöissä.[Hyvinvoinnilla rikollisuutta vastaan – vasemmistoliiton ratkaisut nuorisorikollisuuteen puuttumiseksi ja sen ehkäisemiseksi.]",
+            "sv": "Särskilt skolor måste vara trygga och fria från våld för alla barn och unga. För närvarande har de flesta brottsoffer under 15 år utsatts för våld just i skolmiljön. Utöver att öka antalet trygga vuxna och stärka närvaron av ungdomsarbetare måste vi satsa på uppsökande ungdomsarbete och förebyggande polisverksamhet i alla miljöer där unga rör sig. [Med välfärd mot brott – Vänsterförbundets lösningar för att förebygga och hantera ungdomsbrottslighet]"
+          }
+        }
+      },
+      "question-opinion-13": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Monissa kunnissa palvelut on mahdollista turvata ilman että kuntaveroa tarvitsee korottaa. Jos taloustilanteesta johtuen on kuitenkin pakko valita, niin maltillinen veronkorotus on parempi ratkaisu kuin kaikille yhteisistä ja kuntalaisten laajasti arvostamista palveluista leikkaaminen tai ihmisten syrjäyttäminen sosiaalietuuksien heikennyksillä. Osa kunnista on velkaantunut ja heikentänyt palveluitaan kilpaillakseen alhaisella kuntaverolla naapurikuntien kanssa. Vasemmistolle hyvät palvelut ovat verokilpailua tärkeämpiä ja kunnallisveron nostaminen voi monesti pitkällä tähtäimellä olla leikkauksia järkevämpi vaihtoehto.",
+            "sv": "I många kommuner är det möjligt att trygga tjänsterna utan att höja kommunalskatten. Om den ekonomiska situationen ändå kräver ett val är en måttlig skattehöjning en bättre lösning än att skära i gemensamma och brett uppskattade tjänster eller försätta människor i utanförskap genom försämringar i socialskyddet. Vissa kommuner har skuldsatt sig och försämrat sina tjänster för att tävla med grannkommunerna om en låg kommunalskatt. För vänstern är goda tjänster viktigare än skattekonkurrens, och att höja kommunalskatten kan ofta vara en mer hållbar lösning än nedskärningar på lång sikt."
+          }
+        }
+      },
+      "question-opinion-18": {
+        "value": "1",
+        "info": {
+          "__translations__": {
+            "fi": "Perusterveydenhuollon toimivuus on terveydenhuollon keskeisimpiä asioita. Kestävin tapa hillitä terveydenhuollon kustannuksien kasvua on julkisen terveydenhuollon ennaltaehkäisevien palveluiden ja perusterveydenhuollon vahvistaminen. Perusterveydenhuollon resursseja on vahvistettava, jotta ihmiset saavat tarvitsemansa hoidon mahdollisimman varhaisessa vaiheessa. Vasemmistoliitto tahtoo toteuttaa seitsemän vuorokauden hoitotakuun koko perusterveydenhuollossa.  Vasemmistoliitto esittää terveyskeskusmaksujen poistamista koko maassa. Julkisen perusterveydenhuollon palveluita tarvitsevat eniten pienituloiset väestöryhmät, kuten eläkeläiset, pitkäaikaissairaat ja työttömät. Samalla asiakasmaksut muodostavat juuri näille ryhmille ison kynnyksen hoitoon pääsylle. Terveyskeskusmaksut poistamalla terveyseroja ja eriarvoisuutta voitaisiin vihdoinkin kaventaa. [Alue- ja kuntavaaliohjelma]",
+            "sv": "En fungerande primärvård är en av de viktigaste delarna av hälso- och sjukvården. Det mest hållbara sättet att bromsa kostnadsökningen inom vården är att stärka de förebyggande tjänsterna och primärvården inom den offentliga hälso- och sjukvården. Resurserna för primärvården måste ökas så att människor får den vård de behöver så tidigt som möjligt. Vänsterförbundet vill införa en sju dagars vårdgaranti inom hela primärvården. Vi föreslår också att hälsocentralsavgifterna slopas i hela landet. De som mest behöver offentliga primärvårdstjänster är låginkomsttagare såsom pensionärer, långtidssjuka och arbetslösa. Samtidigt utgör klientavgifterna en stor tröskel för just dessa grupper att söka vård. Genom att slopa hälsocentralsavgifterna kan hälsoskillnader och ojämlikhet äntligen minskas. [Region- och kommunalvalsprogrammet]"
+          }
+        }
+      },
+      "question-opinion-21": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Hyvinvointialueille on annettava verotusoikeus. Vaaleilla valitut aluevaltuutetut ovat nykyisellään suurten haasteiden edessä, kun yhteensovitettavissa on valtion riittämätön rahoitus ja alueen asukkaiden kasvavat palvelutarpeet. Verotusoikeudella voidaan lisätä alueiden autonomiaa kiristämättä kuitenkaan kokonaisveroastetta, kun valtion tuloveroa lasketaaan vastaavasti. Lähtökohtana tässä hetkessä on oltava kuitenkin se, että valtio turvaa hyvinvointialueiden riittävän rahoituksen. Palveluiden on perustuttava olemassa olevaan tarpeeseen ja niissä on pystyttävä huomioimaan palvelutarpeiden muuttuminen tulevaisuudessa. [Alue- ja kuntavaaliohjelma]",
+            "sv": "Välfärdsområdena bör ges beskattningsrätt. För närvarande står de folkvalda områdesfullmäktige inför stora utmaningar när de ska balansera statens otillräckliga finansiering med de växande servicebehoven hos invånarna. Med beskattningsrätt kan områdenas autonomi stärkas utan att den totala skattenivån höjs, eftersom statens inkomstskatt sänks i motsvarande grad. Utgångspunkten just nu bör dock vara att staten säkerställer tillräcklig finansiering för välfärdsområdena. Tjänsterna måste grunda sig på verkliga behov och kunna anpassas till förändrade servicebehov i framtiden. [Region- och kommunalvalsprogrammet]"
+          }
+        }
+      },
+      "question-opinion-25": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Sosiaali- ja terveyspalveluiden osaajapula ratkaistaan arvostuksella, ei ulkomailta rekrytoimalla. Yhteiskuntamme on täysin riippuvainen sotealan ammattilaisista, jotka päivittäin työskentelevät kaikkien hyvinvoinnin eteen. Jokainen, joka itse on sairastunut tai seurannut läheisensä sairastumista vierestä, ymmärtää ammattitaitoisen hoidon merkityksen.  Kunta- ja sote-alojen ammattilaisten työoloja ja palkkausta on parannettava. Kuntien ja hyvinvointialueiden pitää laatia toimenpideohjelma yhdessä ammattijärjestöjen kanssa, jossa selvitetään rekrytointitarpeet ja linjataan konkreettiset toimet, joilla ammattilaisten työnjakoa selkeytetään, työprosesseja kehitetään sekä työehtoja ja -oloja parannetaan. [Alue- ja kuntavaaliohjelma]",
+            "sv": "Bristen på yrkesverksamma inom social- och hälsovården löses genom uppskattning, inte genom rekrytering från utlandet. Vårt samhälle är helt beroende av yrkespersonerna inom social- och hälsovården, som varje dag arbetar för allas välfärd. Alla som själva har varit sjuka eller sett en närstående bli sjuk förstår vikten av professionell vård. Arbetsvillkoren och lönerna för yrkespersonerna inom kommuner och välfärdsområden måste förbättras. Kommunerna och välfärdsområdena bör tillsammans med fackföreningarna utarbeta en handlingsplan för att kartlägga rekryteringsbehoven och fastställa konkreta åtgärder för att tydliggöra arbetsfördelningen, utveckla arbetsprocesserna och förbättra arbetsvillkoren. [Region- och kommunalvalsprogrammet]"
+          }
+        }
+      },
+      "question-opinion-26": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "Kaikissa sosiaali- ja terveyskeskuksissa pitää olla tarjolla perustason mielenterveyden hoitoon liittyvää osaamista ja palveluita. Hoitotakuuta kiristämällä nopeutetaan myös pääsyä mielenterveyspalveluiden piiriin. Orpon ja Purran hallituksen terapiatakuu ei tule tosiasiallisesti nopeuttamaan palveluihin pääsyä, mikäli pääsy ensimmäiselle hoitokerralle lykkääntyy hoitotakuun pidentämisen myötä. Mielenterveyspalveluissa tarvitaan nykyistä enemmän nopeasti tarjottavia matalan kynnyksen palveluita, joihin pääsee myös ilman lähetettä. Kynnyksetön hoitoon pääsy on potilaalle yksinkertaista ja helpottaa hoitoon hakeutumista jo ennen kuin tilanne muuttuu vakavaksi. Mielenterveyden ammattilaisia pitää jalkauttaa kouluihin ja oppilaitoksiin. Kouluissa on oltava riittävästi psykologin, kuraattorin ja psykiatrisen sairaanhoitajan palveluita, jotta apua saa matalalla kynnyksellä. Koululaisten tilannetta helpottaa ja yhteisöllisyyttä lisää myös kouluihin jalkautuvat koulukoutsit tai nuorisotyöntekijät. [Alue- ja kuntavaaliohjelma, vasemmistoliiton 9 ratkaisua sosiaali- ja terveydenhuollon palveluiden turvaamiseksi]",
+            "sv": "Alla social- och hälsocentraler ska erbjuda grundläggande kompetens och tjänster inom mentalvård. Genom att skärpa vårdgarantin ska tillgången till mentalvårdstjänster snabbas upp. Orpos och Purras regerings terapigaranti kommer i praktiken inte att påskynda tillgången till tjänster om den första vårdkontakten fördröjs till följd av en förlängd vårdgaranti. Inom mentalvårdstjänsterna behövs fler snabba och lättillgängliga tjänster dit man kan komma också utan remiss. Lågtröskelvård är enkelt för patienten och gör det lättare att söka hjälp redan innan situationen blir allvarlig. Mentalvårdsexperter måste arbeta ute i skolor och läroanstalter. Det måste finnas tillräckligt med psykologer, kuratorer och psykiatriska sjukskötare i skolorna så att hjälp fås med låg tröskel. Skolcoacher eller ungdomsarbetare som jobbar i skolorna underlättar också elevernas situation och stärker gemenskapen. [Regionalt och kommunalvalsprogram, Vänsterförbundets 9 lösningar för att trygga social- och hälsovårdstjänsterna]"
+          }
+        }
+      },
+      "question-opinion-27": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Nopea kaupungistuminen on johtanut tilanteeseen, jossa erityisesti maakuntakeskusten ympärillä sijaitsevat harvaan asutut kehyskunnat ovat kärsineet väestömäärän laskusta. Muuttuvasta tilanteesta huolimatta on tärkeää, että sekä valtakunnallinen että paikallinen päätöksenteko tähtää tukemaan myös vähäisemmän väkiluvun alueiden elinvoimaisuutta, palveluiden laatua sekä asukkaiden mahdollisuuksia hyvään elämään. Yhteistyöllä luodaan pohja elinvoimaisille kaupungeille ja maaseudulle alueiden erityispiirteet huomioiden. Lähipalvelujen karsiminen ja keskittäminen tarkoittaa välttämättä matkakustannusten kasvua kaupunkikeskusten ulkopuolella asuville ihmisille, sillä kaikkia palveluita ei voida tuottaa digitaalisesti. Matkustamisen kalleus taas voi tarkoittaa pienituloisille ongelmien hoitamatta jättämistä, tai pakkoa tinkiä muista perustarpeista. Hyvinvointialueiden on siksi huolehdittava, että palveluverkosta päätettäessä arvioidaan ja minimoidaan kielteiset vaikutukset syrjäseutujen asukkaisiin, erityisesti lapsiin ja muihin haavoittuvaisiin ihmisryhmiin. Päivystävien sairaaloiden täytyy olla ihmisten saavutettavissa kohtuudella, eivätkä liian pitkiksi venyvät välimatkat saa muodostaa uhkaa potilasturvallisuudelle. [Alue- ja kuntavaaliohjelma]",
+            "sv": "Den snabba urbaniseringen har lett till att särskilt glesbefolkade kranskommuner kring landskapscentra har drabbats av befolkningsminskning. Trots den förändrade situationen är det viktigt att både nationellt och lokalt beslutsfattande syftar till att stöda även de mindre befolkade områdenas livskraft, kvaliteten på tjänsterna och invånarnas möjligheter till ett gott liv. Genom samarbete skapas en grund för livskraftiga städer och landsbygdsområden med beaktande av regionernas särdrag. Nedskärningar och centralisering av närtjänster innebär oundvikligen ökade resekostnader för människor som bor utanför stadscentrumen, eftersom alla tjänster inte kan erbjudas digitalt. Höga resekostnader kan för låginkomsttagare innebära att problem lämnas obehandlade eller att man tvingas kompromissa med andra grundläggande behov. Därför måste välfärdsområdena se till att de negativa effekterna på invånare i glesbygden, särskilt barn och andra utsatta grupper, bedöms och minimeras vid beslut om serviceutbudet. Jourhavande sjukhus måste vara rimligt tillgängliga och avstånden får inte bli så långa att patientsäkerheten hotas. [Regionalt och kommunalvalsprogram]"
+          }
+        }
+      }
+    }
+  },
+  {
+    "id": "party-0023",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Perussuomalaiset",
+        "sv": "Sannfinländarna",
+        "en": "Finns Party"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "PS",
+        "sv": "SF",
+        "en": "Finns"
+      }
+    },
+    "color": {
+      "normal": "#03a9f4"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Perussuomalaisille eli PS:lle tärkeitä asioita politiikassa ovat isänmaallisuus, maahanmuutto- ja EU-kriittisyys. Ilmastopolitiikassa PS on kriittinen sellaisia ilmastotoimia kohtaan, jotka vaikuttavat kohtuuttomasti suomalaisten työpaikkoihin, elinkeinoon ja talouteen. Perussuomalaiset on arvokonservatiivinen puolue, eli se korostaa niin kutsuttuja perinteisiä arvoja, kuten isänmaallisuutta, ydinperheen merkitystä ja perinteisiä sukupuolirooleja.</p>",
+        "sv": "<p>För Sannfinländarna, eller PS, är patriotism, invandringskritiskhet och EU-kritiskhet viktiga politiska frågor. I klimatpolitiken är PS kritisk till klimatåtgärder som otillbörligt påverkar finländarnas arbetsplatser, näringsliv och ekonomi. Sannfinländarna är ett värdekonservativt parti, det vill säga ett parti som betonar så kallade traditionella värderingar som patriotism, kärnfamiljens betydelse och traditionella könsroller. </p>",
+        "en": "<p>Political issues that are important to the Finns Party, or PS, are patriotism, immigration and EU criticism. In climate politics, the Finns Party is critical of climate actions that have an unreasonable impact on Finns’ jobs, business and economy. The Finns Party is a value-conservative party, which emphasises so-called traditional values such as patriotism, the importance of nuclear families and traditional gender roles. </p>"
+      }
+    },
+    "answers": {
+      "question-opinion-1": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Suhtaudumme kannustavasti nuorten kiinnostukseen politiikkaa kohtaan. Mielestämme äänestysikärajan on hyvä olla sama kuin ehdolle asettumisen ikärajan. Täysi-ikäisyyden velvollisuuksien ja oikeuksien olisi hyvä olla samalla tasolla kautta linjan. ",
+            "sv": "Vi uppmuntrar ungas intresse för politik. Vi anser att rösträttsåldern bör vara densamma som åldersgränsen för att ställa upp som kandidat. Det vore bra om myndighetsålderns rättigheter och skyldigheter låg på samma nivå överlag."
+          }
+        }
+      },
+      "question-opinion-4": {
+        "value": "5",
+        "info": {
+          "__translations__": {
+            "fi": "On hyvä, että ihmisille tarjotaan erilaisia vaihtoehtoja heidän maun, terveydentilan ja elämänkatsomuksen huomioiden. Lihasta luopuminen kokonaan olisi tämän periaatteen vastaista.",
+            "sv": "Det är bra att människor erbjuds olika alternativ med tanke på smak, hälsa och livsåskådning. Att helt avstå från kött skulle strida mot denna princip."
+          }
+        }
+      },
+      "question-opinion-5": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "On kannatettava tavoite, että ympäristön rasittamista pyritään vähentämään kaikilla tasoilla. Ilmastopolitiikkaa tulisi kuitenkin tehdä maan ja maailman tasolla. Koska kunnissa asutaan, lämmitetään ja liikutaan, päästöt keskittyvät väkisinkin kuntiin. Vastaavasti taas keinot päästöjen vähentämiseksi saattavat sijaita aivan muualla. Mikäli kunnilla ja hyvinvointialueilla olisi jokaisella oma nollapäästötavoitteensa, tämä voisi johtaa osa-optimointiin ja pyrkimyksiin ulkoistaa päästöt jonnekin muualle, jolloin kokonaispäästöt voivat jopa nousta. ",
+            "sv": "Det är ett bra mål att försöka minska miljöbelastningen på alla nivåer. Klimatpolitiken bör dock bedrivas på nationell och global nivå. Eftersom människor bor, värmer upp sina hem och rör sig i kommunerna, koncentreras utsläppen oundvikligen dit. Däremot kan åtgärderna för att minska utsläppen finnas någon helt annanstans. Om varje kommun och välfärdsområde hade sitt eget nollutsläppsmål, kunde detta leda till suboptimering och försök att lägga utsläppen på andra, vilket i värsta fall kunde öka de totala utsläppen."
+          }
+        }
+      },
+      "question-opinion-6": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Syrjintä on aina väärin ja sitä pitää pyrkiä vähentämään. Epäselvää on, mitkä ovat ne syrjinnän muodot ja ilmentymät, joita kunnat voisivat ehkäistä, ja miten. Ehkäiseminen on käsitteenä epämääräinen. Vaarana on, että ehkäisemisen nimissä tehdään toimenpiteitä, jotka eivät todellisuudessa vähennä syrjintää. Jos toimenpiteet aiheuttavat kustannuksia ja ne nähdään itsetarkoituksellisina tai jopa etuoikeuksina, ne voivat hyvistä tavoitteista huolimatta jopa lisätä syrjintää.",
+            "sv": "Diskriminering är alltid fel och ska minskas. Oklart är dock vilka former och uttryck för diskriminering som kommunerna kunde förebygga och hur. Förebyggande är som begrepp oklart. Risken är att åtgärder vidtas i förebyggandets namn som inte minskar diskriminering i verkligheten. Om åtgärderna orsakar kostnader och uppfattas som självändamål eller till och med som privilegier, kan de trots goda avsikter till och med öka diskrimineringen."
+          }
+        }
+      },
+      "question-opinion-8": {
+        "value": "4",
+        "info": {
+          "__translations__": {
+            "fi": "Väkivalta on aina väärin ja rikos. Suomessa rikoksia tutkii poliisi, ja oikeuslaitos jakaa tuomiot. On tärkeää lähettää signaali siitä, että väkivaltaa ei hyväksytä, ja että siihen puututaan aina. Vaikka alaikäiset eivät ole rikosoikeudellisessa vastuussa, hekin ovat vahingonkorvausvelvollisia. Tulevat nuorisojengiläiset tai katurikolliset eivät synny tyhjästä, vaan aloittavat aina jostain. Siksi on tärkeää, että heti alussa tehdään selväksi, mikä on pelin henki - on asioita, joita ei pidä tehdä, ja teoilla on seuraamuksensa. ",
+            "sv": "Våld är alltid fel och ett brott. I Finland utreder polisen brott och domstolarna dömer. Det är viktigt att signalera att våld inte accepteras och alltid åtgärdas. Även om minderåriga inte är straffrättsligt ansvariga är de ändå ersättningsskyldiga. Framtida gängmedlemmar eller gatukriminella uppstår inte ur tomma intet, utan börjar alltid någonstans. Därför är det viktigt att redan från början göra klart vad som gäller – det finns saker man inte ska göra och handlingar får konsekvenser."
+          }
+        }
+      },
+      "question-opinion-13": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Suomen kokonaisveroaste on maailman kärkeä ja sen nähdään lamaavan jo valmiiksi heikkoa talouskasvua, mikä pitkällä aikavälillä vaarantaa koko hyvinvointivaltion toimintaedellytykset. On tärkeää, että talouden tasapainottamista tehdään ensisijaisesti menokurilla kuin verorasitetta entisestään korottamalla. Kunnissa on kuitenkin eroja ja viime kädessä kyse on siis kunnan omasta päätöksestä. ",
+            "sv": "Finlands totala skattenivå är bland de högsta i världen och anses hämma den redan svaga ekonomiska tillväxten, vilket på lång sikt hotar hela välfärdsstatens funktionsförutsättningar. Det är viktigt att den ekonomiska balansen i första hand sköts med utgiftskontroll och inte genom att ytterligare höja skattebördan. Det finns dock skillnader mellan kommunerna och i slutändan är det kommunernas eget beslut."
+          }
+        }
+      },
+      "question-opinion-18": {
+        "value": "4",
+        "info": {
+          "__translations__": {}
+        }
+      },
+      "question-opinion-21": {
+        "value": "1",
+        "info": {
+          "__translations__": {
+            "fi": "Niin sanotun maakuntaveron käyttöönotto nostaisi jo valmiiksi korkeaa kokonaisveroastetta. Mikäli se haluttaisiin tehdä veroneutraalisti, se pakottaisi muuttamaan muuta verotusta. Tämän seurauksena myös sosiaaliturvajärjestelmää pitäisi muuttaa merkittävästi.. Ymmärrämme kyllä, että maakuntaveron avulla olisi mahdollista luoda alueille taloudellinen kannustin tuottaa sosiaali- ja terveyspalvelut mahdollisimman tehokkaasti. ",
+            "sv": "Att införa den så kallade landskapsskatten skulle höja den redan höga totala skattenivån. Om man ville göra det skatteneutralt skulle det kräva förändringar i annan beskattning. Som följd skulle även socialförsäkringssystemet behöva ändras avsevärt. Vi förstår visserligen att landskapsskatten kunde ge områdena ett ekonomiskt incitament att producera social- och hälsovårdstjänster så effektivt som möjligt."
+          }
+        }
+      },
+      "question-opinion-25": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Puutteellinen kielitaito on merkittävä työ- ja potilasturvallisuutta vaarantava tekijä. Vaikka työperäinen maahanmuutto sinällään on tervetullutta, tarvitaan henkilöstöpulan kestävällä tavalla ratkaisemiseen muita keinoja, kuten paluumuuttoa, lisää koulutuspaikkoja, uudelleenkoulutusta ja pätevyysvaatimusten ja henkilöstömitoitusten tarkastelua.",
+            "sv": "Bristande språkkunskaper är en betydande faktor som äventyrar arbets- och patientsäkerheten. Även om arbetsrelaterad invandring i sig är välkommen, krävs det andra lösningar för att hållbart lösa personalbristen, såsom återflyttning, fler studieplatser, omskolning samt en översyn av behörighetskrav och personaltäthet."
+          }
+        }
+      },
+      "question-opinion-26": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Perussuomalaisten pitkäaikainen tavoite terapiatakuu on nyt toteutettu nykyisessä hallituksessa alle 23-vuotiaiden osalta. Ikärajan pidentäminen tässä vaiheessa ei ole tarkoituksenmukaista, sillä rahaa tai henkilöstöä ei juuri ole. Takuun ulottaminen tässä vaiheessa vanhempiin ihmisiin ei takaisi, että takuu toteutuisi tosiasiallisesti. Myös alueelliset erot ovat suuria. Hyvinvointialueet voivat itsenäisesti päättää siitä, millaisia hoitotakuita tai mitoituksia ne tarjoavat, ja lain voimalla takuun ulottaminen vanhempiin ikäluokkiin rajoittaisin alueiden mahdollisuutta järjestää palvelut siten, kuten ne itse näkevät tarkoituksenmukaiseksi ja mihin on varaa.",
+            "sv": "Sannfinländarnas långvariga mål, terapigarantin, har nu förverkligats i den nuvarande regeringen för personer under 23 år. Att höja åldersgränsen i detta skede är inte ändamålsenligt eftersom det saknas pengar och personal. Att utvidga garantin till äldre personer skulle inte garantera att garantin faktiskt förverkligas. Det finns också stora regionala skillnader. Välfärdsområdena kan själva besluta om vilka vårdgarantier eller dimensioneringar de erbjuder, och en lagstadgad utvidgning av garantin till äldre åldersgrupper skulle begränsa områdenas möjligheter att ordna tjänster enligt vad de själva anser vara ändamålsenligt och ekonomiskt möjligt."
+          }
+        }
+      },
+      "question-opinion-27": {
+        "value": "2",
+        "info": {
+          "__translations__": {
+            "fi": "Palveluiden keskittämisen hyvät puolet ovat ilmiselvät - kun palveluita tarjotaan keskitetysti, se vähentää kustannuksia ja tyhjäkäyntiä. Pitää kuitenkin tehdä selvä ero lähellä saatavien välttämättömien peruspalveluiden ja harvemmin tarvittavien ja erityisesti keskittämisestä hyötyvien palveluiden välillä. Kysymyksenasettelussa \"tietyt asutuskeskukset\" antavat ymmärtää, että suuri osa palveluista olisi saatavissa vain muutamissa suuremmissa kaupungeissa. Se ei ole kannatettava ajatus.",
+            "sv": "Fördelarna med att centralisera tjänster är uppenbara – när tjänster erbjuds centralt minskar det kostnader och tomgång. Det är dock viktigt att göra en tydlig skillnad mellan nödvändiga grundtjänster som ska finnas nära och mer sällan behövda tjänster som verkligen vinner på centralisering. Frågeställningen ”vissa tätorter” ger intrycket att en stor del av tjänsterna endast skulle vara tillgängliga i några större städer. Det är inte en godtagbar tanke."
+          }
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,426 @@
+[
+  {
+    "id": "party-0001",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Sosialidemokraatit",
+        "sv": "Socialdemokraterna",
+        "en": "Social Democratic Party"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "SDP",
+        "sv": "SDP",
+        "en": "SDP"
+      }
+    },
+    "color": {
+      "normal": "#f43636"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>SDP:n päämääränä on yhteiskunta, jossa vapaus voittaa alistamisen, humaanisuus suvaitsemattomuuden ja oikeudenmukaisuus itsekkyyden. Yhteiskunnan on taattava jokaiselle jäsenelleen reilut mahdollisuudet oman elämänsä rakentamisessa. Puoleen perusarvoja ovat vapaus, tasa-arvo ja solidaarisuus ja niitä toteutetaan demokratian, hyvinvointiyhteiskunnan ja yhteistyön kautta. Demareille tärkeää ovat työ ja reilu työelämä, toimivat julkiset palvelut ja turvalliset asuinympäristöt, ihmisistä huolehtiminen, ympäristönsuojelu sekä koulutuksen turvaaminen ja vaaliminen. SDP:n toiminta on hyvin kansainvälistä ja sosialidemokraatit ovat merkittävä poliittinen voima lähes kaikissa Euroopan maissa.</p>",
+        "sv": "<p>SDP:s mål är ett samhälle där frihet övervinner underkuvning, mänsklighet intolerans och rättvisa egoism. Samhället måste garantera alla sina medlemmar rättvisa möjligheter att bygga sitt eget liv. Partiets grundläggande värderingar är frihet, jämlikhet och solidaritet, och dessa förverkligas genom demokrati, välfärdssamhälle och samarbete. Viktiga teman för socialdemokraterna är arbete och ett rättvist arbetsliv, fungerande offentliga tjänster och säkra boendemiljöer, omsorg om människor, miljöskydd samt att trygga och värna om utbildningen. SDP:s verksamhet är mycket internationell, och socialdemokraterna är en betydande politisk kraft i nästan alla länder i Europa.</p>",
+        "en": "<p>SDP aims for a society where freedom overcomes subjugation, humanity overcomes intolerance and fairness overcomes selfishness. Society must guarantee each of its members a fair opportunity to build their own lives. The party's fundamental values of freedom, equality and solidarity are implemented through democracy, the welfare society and cooperation. For the Social Democrats, work and a fair working life, well-functioning public services and safe living environments, caring for people, environmental protection and securing and nurturing education are important. SDP’s activities are highly international and Social Democrats are a significant political force in almost all European countries.</p>"
+      }
+    }
+  },
+  {
+    "id": "party-0002",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Suomen Keskusta",
+        "sv": "Centern i Finland",
+        "en": "Centre Party"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "Kesk.",
+        "sv": "Cent.",
+        "en": "Cent."
+      }
+    },
+    "color": {
+      "normal": "#4caf50"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Keskustalle olennaisia arvoja ovat esimerkiksi vapauden ja vastuullisuuden tasapaino, kestävä luontosuhde ja paikallisuus. Keskusta korostaa politiikassaan usein lasten, nuorten ja perheiden hyvinvointia. Keskustalle on tärkeää, että kaikkia Suomen alueita kehitetään ja kohdellaan tasa-arvoisesti. Puolue korostaa ohjelmissaan ihmisten mahdollisuutta asua, opiskella ja tehdä työtä siellä, missä he tuntevat itsensä onnellisiksi.</p><p>Keskustalle koulutus on politiikan ydinasioita. Puolue haluaa, että kaikilla on mahdollisuus opiskella ja sivistää itseään niin pitkälle kuin motivaatio ja osaaminen riittävät, omasta ja perheen varallisuudesta tai asuinpaikasta riippumatta.</p>",
+        "sv": "<p>Viktiga värden för Centern är till exempel balansen mellan frihet och ansvar, ett hållbart naturförhållande och lokal anknytning. Centern betonar ofta barns, ungdomars och familjers välbefinnande i sin politik. Det är viktigt för Centern att alla områden i Finland utvecklas och behandlas lika. Partiet betonar i sina program människors möjlighet att bo, studera och arbeta där var de känner sig lyckliga.</p><p>För Centern är utbildning en central politisk fråga. Partiet vill att alla ska ha möjlighet att studera och utbilda sig så långt motivationen och kompetensen räcker, oavsett den egna och familjens förmögenhet eller bostadsort.</p>",
+        "en": "<p>Important values for the Centre Party include a balance of freedom and responsibility, a sustainable nature relationship and locality. In its politics, the Centre Party often emphasises the well-being of children, young people and families. It is important for the Centre Party that all areas in Finland are developed and treated equally. In its programmes, the party emphasises the possibility for people to live, study and work where they feel happy.</p><p>For the Centre Party, education is a key political issue. The party wants everyone to have the opportunity to study and educate themselves as far as their motivation and skills take them, regardless of their own and their family’s wealth or place of residence.</p>"
+      }
+    }
+  },
+  {
+    "id": "party-0004",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Kansallinen Kokoomus",
+        "sv": "Samlingspartiet",
+        "en": "National Coalition Party"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "Kok.",
+        "sv": "Saml.",
+        "en": "NCP"
+      }
+    },
+    "color": {
+      "normal": "#3f51b5"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Kokoomukselle keskeisiä teemoja ovat yksilönvapaus, yrittäjyys, kestävä kehitys, tarkka taloudenpito, kansainvälisyys, perinteet ja sivistys. Kokoomus haluaa myös edistää yhtenäistä ja vahvaa Euroopan unionia eli EU:ta ja pitää Suomen Nato-jäsenyyttä myönteisenä asiana.</p><p>Kokoomus on talouspoliittisesti oikeistolainen puolue, joka painottaa politiikassaan valtion talouden tasapainottamista. Kokoomukselle on tärkeää, että velkaa ei oteta tulevien sukupolvien kustannuksella.</p>",
+        "sv": "<p>Individuell frihet, entreprenörskap, hållbar utveckling, noggrann koll på ekonomin, internationalitet, traditioner och bildning är centrala teman för Samlingspartiet. Samlingspartiet vill också främja en enhetlig och stark Europeisk union, dvs. EU, och ser Finlands Nato-medlemskap som en positiv sak.</p><p>Samlingspartiet är ett ekonomiskt sett högerorienterat parti, som i sin politik lägger vikt vid att balansera statens ekonomi. Det är viktigt för Samlingspartiet att vi inte skuldsätter oss på bekostnad av kommande generationer.</p>",
+        "en": "<p>The National Coalition Party focuses on individual freedom, entrepreneurship, sustainable development, careful economic management, internationality, traditions and civilisation. The National Coalition Party also wants to promote a unified and strong European Union, i.e. the EU, and sees Finland’s membership of NATO as a positive thing.</p><p>The National Coalition Party is economically a right-wing party and, in its policy, it emphasises balancing of the state’s economy. It is important to the National Coalition Party that debt is not raised at the expense of future generations.</p>"
+      }
+    }
+  },
+  {
+    "id": "party-0005",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Ruotsalainen kansanpuolue",
+        "sv": "Svenska folkpartiet",
+        "en": "Swedish People’s Party"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "RKP",
+        "sv": "SFP",
+        "en": "SPP"
+      }
+    },
+    "color": {
+      "normal": "#ffc107"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Suomen ruotsalaiselle kansanpuolueelle eli RKP:lle tärkeitä asioita ovat ruotsin kielen asema Suomessa, tasa-arvo ja yhdenvertaisuus sekä yrittäjyyden tukeminen. RKP:n politiikassa korostuu tavoite siitä, että Suomessa on kaksi vahvaa kansalliskieltä, ruotsi ja suomi, ja että kaksikieliset palvelut ovat toimivia ja niihin on varattu tarpeeksi rahaa.</p><p>RKP on arvoliberaali puolue, eli se painottaa vahvasti esimerkiksi sukupuolten tasa-arvoon, seksuaali- ja sukupuolivähemmistöjen oikeuksiin ja rasismin vastustamiseen liittyviä asioita.</p>",
+        "sv": "<p>Viktiga frågor för det Svenska folkpartiet i Finland (SFP) är svenskans ställning i Finland, jämlikhet och jämställdhet samt stöd till entreprenörskap. I SFP:s politik betonas målet att Finland ska ha två starka nationella språk, svenska och finska, samt att de tvåspråkiga tjänsterna ska fungera och att tillräckligt med pengar har reserverats för dem.</p><p>SFP är ett värdeliberalt parti som lägger stor vikt vid frågor som till exempel jämställdhet mellan könen, sexuella och könsminoriteters rättigheter samt rasismbekämpning.</p>",
+        "en": "<p>Important issues for the Swedish People’s Party in Finland (SFP) include the Swedish language’s position in Finland, equality and equal opportunities, and support for entrepreneurship. SFP's politics emphasise the objective that Finland has two strong national languages, Swedish and Finnish, and that bilingual services are functional and have sufficient funds.</p><p>The SFP is a value liberal party, i.e. it places a strong emphasis on issues such as gender equality, sexual and gender minority rights and the fight against racism.</p>"
+      }
+    }
+  },
+  {
+    "id": "party-0008",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Suomen Kommunistinen Puolue",
+        "sv": "Finlands Kommunistiska Parti",
+        "en": "Communist Party of Finland"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "SKP",
+        "sv": "FKP",
+        "en": "CPF"
+      }
+    },
+    "color": {
+      "normal": "#859195"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Suomen kommunistinen puolue eli SKP on kommunismia kannattava puolue. Puolueelle tärkeää on työväenluokan etujen puolustaminen, kansainvälinen solidaarisuus ja rauha, luokkataistelu sekä ihmiskunnan ja maapallon kestävä tulevaisuus. SKP vastustaa Suomen Nato-jäsenyyttä ja puolustusyhteistyösopimusta Yhdysvaltain kanssa, vaatii eroa EU:sta sekä paluuta sotilaalliseen liittoutumattomuuteen ulko- ja turvallisuuspolitiikassa.</p>",
+        "sv": "<p>Finlands kommunistiska parti, SKP, är ett parti som stödjer kommunismen. Viktiga saker för partiet är försvarande av arbetarklassens intressen, internationell solidaritet och fred, klasskamp och en hållbar framtid för mänskligheten och planeten. SKP motsätter sig Finlands medlemskap i Nato och försvarssamarbetsavtalet med USA, kräver utträde ur EU samt en återgång till militär icke-allians i utrikes- och säkerhetspolitiken.</p>",
+        "en": "<p>The Communist Party of Finland, or CPF, is a party that supports communism. Defending the interests of the working class, international solidarity and peace, class struggle and a sustainable future for humanity and the planet are important to the party. The CPF is opposed to Finland’s membership of NATO and the Defence Cooperation Agreement with the US, demands a withdrawal from the EU and a return to military non-alliance in foreign and security policy.</p>"
+      }
+    }
+  },
+  {
+    "id": "party-0009",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Kristillisdemokraatit",
+        "sv": "Kristdemokraterna",
+        "en": "Christian Democrats"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "KD",
+        "sv": "KD",
+        "en": "CD"
+      }
+    },
+    "color": {
+      "normal": "#673ab7"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Kristillisdemokraatit eli KD haluaa rakentaa yhteiskuntaa, jossa julkinen talous on tasapainossa, työntekoon ja yrittäjyyteen kannustetaan ja heikoimmassa asemassa olevista pidetään huolta. Kristillisdemokraattien politiikassa korostuvat lapsiperheiden asiat, kristillinen arvoperusta sekä yrittäjyyden tukeminen.</p><p>KD on arvokonservatiivinen puolue, eli se korostaa niin kutsuttuja perinteisiä arvoja, kuten isänmaallisuutta sekä perheen ja lähiyhteisöjen merkitystä. Puolue esimerkiksi painottaa, että sen tavoitteena ei ole sukupuolierojen häivyttäminen.</p>",
+        "sv": "<p>Kristdemokraterna, eller KD, vill bygga ett samhälle där den offentliga ekonomin är i balans, där arbete och entreprenörskap uppmuntras och där de mest utsatta tas om hand. I Kristdemokraternas politik betonas barnfamiljers angelägenheter, den kristna värdegrunden och stödet till entreprenörskap.</p><p>KD är ett värdekonservativt parti som betonar så kallade traditionella värderingar som patriotism samt familjens och lokalsamhällenas betydelse. Partiet betonar till exempel att dess mål inte är att minska könsskillnaderna.</p>",
+        "en": "<p>The Christian Democrats want to build a society where the public finances are in balance, where work and entrepreneurship are encouraged and where the most vulnerable are cared for. The Christian Democrats’ politics emphasise the issues of families with children, the Christian foundation of values and the support of entrepreneurship.</p><p>The Christian Democrats is a value-conservative party, which emphasises so-called traditional values such as patriotism and the importance of family and local communities. The party emphasises, for example, that its aim is not to reduce gender disparities.</p>"
+      }
+    }
+  },
+  {
+    "id": "party-0013",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Vihreä liitto",
+        "sv": "Gröna förbundet",
+        "en": "Green League"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "Vihr.",
+        "sv": "Gröna",
+        "en": "Greens"
+      }
+    },
+    "color": {
+      "normal": "#8bc34a"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Vihreille politiikan tärkeitä asioita ovat erityisesti ilmastonmuutoksen pysäyttäminen sekä luonnonsuojelu ja ympäristökysymykset. Puolue korostaa eriarvoisuuden ja köyhyyden vähentämistä sekä sitä, että myös haavoittuvassa asemassa olevat saavat äänensä kuuluviin.</p><p>Vihreät on myös arvoliberaali puolue, eli se painottaa vahvasti esimerkiksi sukupuolten tasa-arvoon, seksuaali- ja sukupuolivähemmistöjen oikeuksiin ja rasismin vastustamiseen liittyviä asioita.</p>",
+        "sv": "<p>Viktiga politiska frågor för De Gröna är framför allt att stoppa klimatförändringen samt naturskydds- och miljöfrågor. Partiet betonar att man ska minska ojämlikhet och fattigdom samt att även de som befinner sig i en sårbar ställning ska få sin röst hörd. </p><p>De Gröna är också ett värdeliberalt parti som lägger stor vikt vid frågor som till exempel jämställdhet mellan könen, sexuella och könsminoriteters rättigheter samt rasismbekämpning.</p>",
+        "en": "<p>For the Greens, particularly important political issues include stopping climate change and protecting nature and the environment. The party emphasises the reduction of inequality and poverty and the need for vulnerable people to get their voices heard. </p><p>The Greens are also a value liberal party, which puts a strong emphasis on issues such as gender equality, sexual and gender minority rights and the fight against racism.</p>"
+      }
+    }
+  },
+  {
+    "id": "party-0015",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Vasemmistoliitto",
+        "sv": "Vänsterförbundet",
+        "en": "Left Alliance"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "Vas.",
+        "sv": "Vänst.",
+        "en": "Left"
+      }
+    },
+    "color": {
+      "normal": "#d51a46"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Vasemmistoliiton perusarvoja ovat vapaus, solidaarisuus ja tasa-arvo. Puolue tahtoo rakentaa ekologisesti kestävää ja sosiaalisesti oikeudenmukaista yhteiskuntaa. Tämä tarkoittaa, että ilmastonmuutosta sekä luontokatoa vastustetaan päättäväisin toimin ja että jokaisella ihmisellä on mahdollisuus riittävään toimeentuloon, julkisiin palveluihin sekä laadukkaaseen terveydenhuoltoon ja hoivaan.</p><p>Vasemmistoliitto on talouspoliittisesti vasemmistolainen puolue, eli jos on valittava julkisista palveluista leikkaamisen tai rikkaiden ja suuryritysten verotuksen kiristämisen välillä, vasemmistoliittolainen valitsee jälkimmäisen. Puolue haluaa vähentää köyhyyttä ja eriarvoisuutta sekä varmistaa, ettei taloudellinen asema vaikuta ihmisen mahdollisuuksiin elämässä.</p>",
+        "sv": "<p>Vänsterförbundets grundvärderingar är frihet, solidaritet och jämlikhet. Partiet vill bygga ett ekologiskt hållbart och socialt rättvist samhälle. Detta innebär att klimatförändringen och minskningen av biologisk mångfald bekämpas genom beslutsamma åtgärder och att alla människor har tillgång till tillräcklig utkomst, offentliga tjänster samt hälso- och sjukvård av hög kvalitet.</p><p>Vänsterförbundet är ekonomiskt sett ett vänsterparti, dvs. om man måste välja mellan att skära ner på offentliga tjänster eller strama åt beskattningen av rika och storföretag, väljer vänsterförbundet det senare. Partiet vill minska fattigdom och ojämlikhet och se till att människors ekonomiska ställning inte påverkar deras möjligheter i livet.</p>",
+        "en": "<p>Freedom, solidarity and equality are the fundamental values of the Left Alliance. The party wants to build an environmentally sustainable and socially just society. This means decisive actions against climate change and loss of biodiversity, and that every person has access to adequate livelihoods, public services and quality health care.</p><p>In economic policy, the Left Party is a left-wing party, i.e. if you have to choose between cutting public services or tightening taxes on rich people and large companies, the left-wing party chooses the latter. The party wants to reduce poverty and inequality and to ensure that people’s financial position does not affect their opportunities in life.</p>"
+      }
+    }
+  },
+  {
+    "id": "party-0023",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Perussuomalaiset",
+        "sv": "Sannfinländarna",
+        "en": "Finns Party"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "PS",
+        "sv": "SF",
+        "en": "Finns"
+      }
+    },
+    "color": {
+      "normal": "#03a9f4"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Perussuomalaisille eli PS:lle tärkeitä asioita politiikassa ovat isänmaallisuus, maahanmuutto- ja EU-kriittisyys. Ilmastopolitiikassa PS on kriittinen sellaisia ilmastotoimia kohtaan, jotka vaikuttavat kohtuuttomasti suomalaisten työpaikkoihin, elinkeinoon ja talouteen. Perussuomalaiset on arvokonservatiivinen puolue, eli se korostaa niin kutsuttuja perinteisiä arvoja, kuten isänmaallisuutta, ydinperheen merkitystä ja perinteisiä sukupuolirooleja.</p>",
+        "sv": "<p>För Sannfinländarna, eller PS, är patriotism, invandringskritiskhet och EU-kritiskhet viktiga politiska frågor. I klimatpolitiken är PS kritisk till klimatåtgärder som otillbörligt påverkar finländarnas arbetsplatser, näringsliv och ekonomi. Sannfinländarna är ett värdekonservativt parti, det vill säga ett parti som betonar så kallade traditionella värderingar som patriotism, kärnfamiljens betydelse och traditionella könsroller. </p>",
+        "en": "<p>Political issues that are important to the Finns Party, or PS, are patriotism, immigration and EU criticism. In climate politics, the Finns Party is critical of climate actions that have an unreasonable impact on Finns’ jobs, business and economy. The Finns Party is a value-conservative party, which emphasises so-called traditional values such as patriotism, the importance of nuclear families and traditional gender roles. </p>"
+      }
+    }
+  },
+  {
+    "id": "party-0033",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Liberaalipuolue",
+        "sv": "Liberalpartiet",
+        "en": "Liberal Party"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "Lib.",
+        "sv": "Lib.",
+        "en": "Lib."
+      }
+    },
+    "color": {
+      "normal": "#ff5722"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Liberaalipuolue on talous- ja arvoliberaali puolue, joka pyrkii edistämään laajaa yksilöiden ja elinkeinojen vapautta. Liberaalipuolueen tavoitteita ovat muun muassa elinkeino- ja yksilönvapauden sääntelyn purkaminen, verotuksen keventäminen, julkisen sektorin supistaminen sekä sosiaaliturvan perustulomalliin siirtyminen.</p>",
+        "sv": "<p>Liberalpartiet är ett ekonomiskt liberalt och värdeliberalt parti som strävar efter att främja omfattande frihet för individer och näringslivet. Liberalpartiets mål är bland annat att upphäva regleringen av näringsfriheten och den individuella friheten, minska beskattningen, minska den offentliga sektorn och övergå till en basinkomstmodell för socialskyddet.</p>",
+        "en": "<p>The Liberal Party is an economic liberal and value liberal party that strives to promote the broad freedom of individuals and the freedom to conduct a business. The Liberal Party’s goals include the deregulation of the freedom to conduct a business and the freedom of individuals, tax cuts, reduction of the public sector and the transition to a universal basic social security income model.</p>"
+      }
+    }
+  },
+  {
+    "id": "party-0034",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Eläinoikeuspuolue",
+        "sv": "Djurrättspartiet",
+        "en": "Animal Justice Party of Finland"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "EOP",
+        "sv": "DRP",
+        "en": "AJP"
+      }
+    }
+  },
+  {
+    "id": "party-0040",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Liike Nyt",
+        "sv": "Rörelse Nu",
+        "en": "Movement Now"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "Liik.",
+        "sv": "Rör.",
+        "en": "Mov."
+      }
+    },
+    "color": {
+      "normal": "#a03173"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Liike Nyt haluaa muuttaa tapaa, jolla politiikka tehdään. Se esimerkiksi järjestää netissä neuvoa-antavia äänestyksiä, joiden tulokset voivat vaikuttaa puolueen kantoihin. Muita puolueelle tärkeitä asioita ovat yrittäjyyden helpottaminen sääntelyä ja verotusta vähentämällä, yksilönvapaus sekä Eurooppa-myönteisyys.</p>",
+        "sv": "<p>Rörelse Nu vill förändra hur politik görs. Partiet anordnar till exempel rådgivande omröstningar på nätet vars resultat kan påverka partiets ståndpunkter. Andra frågor som är viktiga för partiet är att underlätta företagandet genom att minska reglering och beskattning, individuell frihet och Europa-positivitet.</p>",
+        "en": "<p>Liike Nyt Movement wants to change the way politics is done. For example, it organises online advisory voting, the results of which may affect the party’s positions. Other important issues for the party include facilitating entrepreneurship by reducing regulation and taxation, individual freedom and being Europe-positive.</p>"
+      }
+    }
+  },
+  {
+    "id": "party-0041",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Avoin Puolue",
+        "sv": "Öppna Partiet",
+        "en": "The Open Party"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "AP",
+        "sv": "ÖP",
+        "en": "OP"
+      }
+    },
+    "color": {
+      "normal": "#859195"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Avoin puolue on uudistusmielinen arvoliberaali puolue. Esimerkiksi yksilönvapaus, erilaisuuden kunnioitus ja mm. mielenterveyteen liittyvien stigmojen poistaminen ovat sille tärkeitä tavoitteita. Yhteiskunnan tasa-arvoa Avoin puolue pyrkii lisäämään esimerkiksi perustulon avulla. Uudistuksissa puolue pyrkii käytännönläheisyyteen tieteellistä tietoa ja nykyaikaista teknologiaa hyödyntäen.</p><p>Puolueen ehdotukset ovat usein varsin konkreettisia, esimerkiksi ilmastonmuutoksen torjumiseksi puolue kannattaa ydinvoiman lisärakentamista, talouden tasapainottamiseksi ydinjätteiden säilömistä Suomen kallioperään ja kasvavaan työvoimapulaan maahanmuuton helpottamista ja maahanmuuttajien aseman parantamista.",
+        "sv": "<p>Öppna partiet är ett reformvänligt och värdeliberalt parti. Till exempel individuell frihet, respekt för olikheter och bl.a. att eliminera stigmatiseringar kopplade till psykisk hälsa är viktiga mål för partiet. Öppna partiet strävar efter att öka jämställdheten i samhället, till exempel genom basinkomst. I reformerna strävar partiet efter pragmatism med hjälp av vetenskaplig kunskap och modern teknologi.</p><p>Partiets förslag är ofta ganska konkreta, till exempel för att bekämpa klimatförändringen förespråkar partiet ytterligare byggande av kärnkraft, för att balansera ekonomin kärnavfallsförvaring i Finlands berggrund, och för att åtgärda den växande bristen på arbetskraft, underlättande av invandring och förbättring av invandrarnas ställning.</p>",
+        "en": "<p>The Open Party is a reform-minded value-liberal party. For example, individual freedom, respect for diversity and eliminating mental health -related stigmas are important goals for it. The Open Party seeks to increase equality in society, for example through universal basic income. Through the reforms, the party strives for practicality by using scientific knowledge and modern technology.</p><p>The party’s proposals are often quite concrete, e.g. in order to combat climate change, the party advocates additional nuclear power construction, in order to balance the economy, it advocates storing of nuclear waste in the Finnish bedrock, and as a solution to the growing labour shortage, it advocates facilitating immigration and improving the position of immigrants.</p>"
+      }
+    }
+  },
+  {
+    "id": "party-0042",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Kristallipuolue",
+        "sv": "Kristall Parti",
+        "en": "Kristallipuolue"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "KriP",
+        "sv": "KriP",
+        "en": "KriP"
+      }
+    },
+    "color": {
+      "normal": "#859195"
+    }
+  },
+  {
+    "id": "party-0043",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Valta kuuluu kansalle",
+        "sv": "Valta kuuluu kansalle",
+        "en": "Valta kuuluu kansalle"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "VKK",
+        "sv": "VKK",
+        "en": "VKK"
+      }
+    },
+    "color": {
+      "normal": "#859195"
+    }
+  },
+  {
+    "id": "party-0044",
+    "type": "organization",
+    "name": {
+      "__translations__": {
+        "fi": "Vapauden liitto",
+        "sv": "Frihetsallians",
+        "en": "Freedom Alliance"
+      }
+    },
+    "shortName": {
+      "__translations__": {
+        "fi": "VL",
+        "sv": "FA",
+        "en": "FA"
+      }
+    },
+    "color": {
+      "normal": "#859195"
+    },
+    "info": {
+      "__translations__": {
+        "fi": "<p>Vapauden liitto on vapauden puolesta taisteleville ihmisille heitä yhdistävä henkinen koti ja toiminta-alusta sekä poliittinen työkalu, jonka avulla voimme yhdessä ajaa kansakuntamme ja kansalaistemme etuja. Päätavoitteitamme ovat sekä Suomen valtiollisen vapauden että yksilöä koskevien vapauksien puolustaminen ja edistäminen.</p><p>Vapauden liitto on lokalistipuolueena selkeä vastavoima globalisteille; kannatamme itsenäistä kansallisvaltiota ja sen myötä paikallista päätöksentekoa sekä mahdollisimman suurta ja laaja-alaista kansallista omavaraisuutta, jotka yhdessä johtavat työpaikkoihin, hyvinvointiin, vaurauteen ja turvallisuuteen. Puolue pyrkii palauttamaan päätöksenteon oikeuden yksilölle itselleen.</p>",
+        "sv": "<p>Frihetsalliansen är ett intellektuellt hem och en handlingsplattform som förenar människor som kämpar för frihet, och ett politiskt verktyg med vilket vi tillsammans kan driva vår nations och våra medborgares intressen. Våra huvudmål är att försvara och främja både Finlands statliga frihet och friheter som gäller individen.</p><p>Frihetsalliansen är som lokalistparti en tydlig motkraft till globalisterna; vi stödjer en självständig nationalstat och därmed lokalt beslutsfattande samt så stor och omfattande nationell självständighet som möjligt, vilket sammantaget leder till arbetsplatser, välfärd, välstånd och säkerhet. Partiet strävar efter att återställa individens rättighet till beslutsfattande.</p>",
+        "en": "<p>For people fighting for freedom, the Freedom Alliance is a mental home and action platform that unites them and a political tool that enables us to work together to promote the interests of our nation and our citizens. Our main goals are to defend and promote both the Finnish State's freedom and individual freedoms.</p><p>As a localist party, the Freedom Alliance is a clear counterpart to the globalists; we support an independent national state and, thus, local decision-making as well as the greatest and widest possible national independence, which together lead to jobs, well-being, wealth and security. The party strives to restore the right to make decisions to the individual.</p>"
+      }
+    }
+  }
+]

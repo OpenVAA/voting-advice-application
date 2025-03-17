@@ -1,0 +1,58 @@
+[
+  {
+    "entityType": "organization",
+    "entityId": "party-0001",
+    "electionRound": 1,
+    "electionId": "election-1",
+    "constituencyId": "constituency-1-1"
+  },
+  {
+    "entityType": "organization",
+    "entityId": "party-0002",
+    "electionRound": 1,
+    "electionId": "election-1",
+    "constituencyId": "constituency-1-1"
+  },
+  {
+    "entityType": "organization",
+    "entityId": "party-0004",
+    "electionRound": 1,
+    "electionId": "election-1",
+    "constituencyId": "constituency-1-1"
+  },
+  {
+    "entityType": "organization",
+    "entityId": "party-0005",
+    "electionRound": 1,
+    "electionId": "election-1",
+    "constituencyId": "constituency-1-1"
+  },
+  {
+    "entityType": "organization",
+    "entityId": "party-0009",
+    "electionRound": 1,
+    "electionId": "election-1",
+    "constituencyId": "constituency-1-1"
+  },
+  {
+    "entityType": "organization",
+    "entityId": "party-0013",
+    "electionRound": 1,
+    "electionId": "election-1",
+    "constituencyId": "constituency-1-1"
+  },
+  {
+    "entityType": "organization",
+    "entityId": "party-0015",
+    "electionRound": 1,
+    "electionId": "election-1",
+    "constituencyId": "constituency-1-1"
+  },
+  {
+    "entityType": "organization",
+    "entityId": "party-0023",
+    "electionRound": 1,
+    "electionId": "election-1",
+    "constituencyId": "constituency-1-1"
+  }
+]

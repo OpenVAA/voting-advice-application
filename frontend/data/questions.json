@@ -1,0 +1,1261 @@
+{
+  "categories": [
+    {
+      "id": "questionCategory-1",
+      "name": {
+        "__translations__": {
+          "fi": "Kysymykset",
+          "sv": "Frågorna",
+          "en": "Statements"
+        }
+      },
+      "order": 1,
+      "type": "opinion"
+    }
+  ],
+  "questions": [
+    {
+      "id": "question-opinion-1",
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "normalizableValue": "1",
+          "label": {
+            "__translations__": {
+              "en": "Fully disagree",
+              "fi": "Täysin eri mieltä",
+              "sv": "Instämmer inte alls"
+            }
+          }
+        },
+        {
+          "id": "2",
+          "normalizableValue": "2",
+          "label": {
+            "__translations__": {
+              "en": "Disagree",
+              "fi": "Osittain eri mieltä",
+              "sv": "Instämmer inte helt"
+            }
+          }
+        },
+        {
+          "id": "3",
+          "normalizableValue": "3",
+          "label": {
+            "__translations__": {
+              "en": "Neither agree nor disagree",
+              "fi": "Ei samaa eikä eri mieltä",
+              "sv": "Varken instämmer eller instämmer inte"
+            }
+          }
+        },
+        {
+          "id": "4",
+          "normalizableValue": "4",
+          "label": {
+            "__translations__": {
+              "en": "Agree",
+              "fi": "Osittain samaa mieltä",
+              "sv": "Instämmer i viss grad"
+            }
+          }
+        },
+        {
+          "id": "5",
+          "normalizableValue": "5",
+          "label": {
+            "__translations__": {
+              "en": "Fully agree",
+              "fi": "Täysin samaa mieltä",
+              "sv": "Instämmer i hög grad"
+            }
+          }
+        }
+      ],
+      "categoryId": "questionCategory-1",
+      "order": 101,
+      "name": {
+        "__translations__": {
+          "fi": "Äänestysikärajaa tulee laskea 16 ikävuoteen kunta- ja aluevaaleissa.",
+          "en": "The voting age should be lowered to 16 in municipal and county elections.",
+          "sv": "Rösträttsåldern bör sänkas till 16 år i kommunal- och välfärdsområdesvalet."
+        }
+      },
+      "info": {
+        "__translations__": {
+          "fi": "<p>Äänestysikärajan laskeminen 16 ikävuoteen on ollut keskustelun aiheena monissa maissa. Suomessa äänestysikäraja on tällä hetkellä 18 vuotta kaikissa kansallisissa vaaleissa. Evankelis-luterilaisen kirkon vaaleissa äänestysikäraja on 16-vuotta. Äänestysikärajan laskua kannattavien mukaan äänestysikärajan alentaminen voisi lisätä nuorten kiinnostusta politiikkaan ja vahvistaa heidän vaikutusmahdollisuuksiaan yhteiskunnassa. Tämä voisi myös edistää nuorten poliittista osallistumista ja kasvattaa äänestysaktiivisuutta pitkällä aikavälillä. Joissakin Euroopan maissa, kuten Itävallassa ja Virossa, äänestysikäraja on laskettu 16 vuoteen, ja kokemukset ovat olleet pääosin myönteisiä.</p><p>Äänestysikärajan laskua vastustavat ovat esittäneet, että 16-vuotiaat eivät välttämättä ole tarpeeksi kypsiä tekemään perusteltuja päätöksiä vaaleissa. Heidän mielestään äänestysikärajan laskeminen voisi myös vähentää vaalien arvovaltaa.</p>",
+          "en": "<p>Lowering the voting age to 16 has been a topic of discussion in many countries. In Finland, the minimum voting age is currently 18 for all national elections. However, in the elections of the Evangelical Lutheran Church, the minimum voting age is 16. Supporters of lowering the voting age argue that reducing the voting age could increase young people's interest in politics and strengthen their influence in society. This could also promote youth political participation and increase voter turnout in the long run. Some European countries, such as Austria and Estonia, have lowered the voting age to 16, and the experiences have been mostly positive.</p><p>Opponents of lowering the voting age argue that 16-year-olds may not be mature enough to make informed decisions in elections. They also believe that lowering the voting age could reduce the prestige of elections.</p>",
+          "sv": "<p>En sänkning av rösträttsåldern till 16 år har diskuterats i många länder. I Finland är rösträttsåldern för närvarande 18 år i alla nationella val. I val inom den evangelisk-lutherska kyrkan är rösträttsåldern 16 år. Förespråkare för en sänkning av åldersgränsen menar att det skulle kunna öka de ungas intresse för politik och stärka deras möjligheter att påverka i samhället. Det skulle också kunna främja de ungas politiska deltagande och på sikt öka valdeltagandet. I en del europeiska länder, såsom Österrike och Estland, har åldersgränsen sänkts till 16 år, och erfarenheterna har i huvudsak varit positiva.</p><p>De som motsätter sig en sänkning hävdar att 16-åringar inte nödvändigtvis är tillräckligt mogna för att fatta välgrundade beslut i val. De anser att en sänkning av rösträttsåldern dessutom skulle kunna försämra valens trovärdighet.</p>"
+        }
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Nykytilanne",
+                "en": "Current situation",
+                "sv": "Nuvarande situation"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Suomessa äänestysikäraja on tällä hetkellä 18 vuotta kaikissa kansallisissa vaaleissa. Äänestysikärajan laskemisesta on käyty keskustelua erityisesti nuorten osallistumisen lisäämiseksi, mutta konkreettisia päätöksiä äänestysikärajan laskemisesta ei ole tehty. Joissakin maissa, kuten Itävallassa, äänestysikärajan laskeminen on johtanut nuorten äänestysaktiivisuuden kasvuun. Suomessa aihe on kuitenkin yhä poliittisesti kiistanalainen, ja asia vaatisi laajaa yhteiskunnallista ja poliittista keskustelua ennen mahdollisia muutoksia.</p>",
+                "en": "<p>In Finland, the voting age is currently 18 for all national elections. Discussions have taken place regarding lowering the voting age, particularly to enhance youth participation, but no concrete decisions have been made. In some countries, such as Austria, lowering the voting age has led to an increase in youth voter turnout. However, in Finland, the issue remains politically controversial and would require extensive societal and political discussion before any changes are made.</p>",
+                "sv": "<p>I Finland är rösträttsåldern för närvarande 18 år i alla nationella val. Diskussioner har förts om att sänka åldersgränsen för att öka de ungas deltagande, men inga konkreta beslut har fattats. I en del länder, såsom Österrike, har en sänkning av åldersgränsen lett till ett ökat valdeltagande bland unga. I Finland är frågan fortfarande politiskt kontroversiell och skulle kräva en bred samhällelig och politisk diskussion innan eventuella förändringar genomförs.</p>"
+              }
+            }
+          },
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Termit",
+                "en": "Terms",
+                "sv": "Begrepp"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Äänestysikäraja: Ikäraja, joka määrittää, minkä ikäisenä yksilö saa äänestää vaaleissa. Suomessa tämä raja on tällä hetkellä 18 vuotta.</p>",
+                "en": "<p>Voting age: The minimum age required to vote in elections. In Finland, this age is currently 18.</p>",
+                "sv": "<p>Rösträttsålder: Åldersgräns som fastställer vid vilken ålder en person får rösta i val. I Finland är denna gräns för närvarande 18 år.</p>"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "question-opinion-4",
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "normalizableValue": "1",
+          "label": {
+            "__translations__": {
+              "en": "Fully disagree",
+              "fi": "Täysin eri mieltä",
+              "sv": "Instämmer inte alls"
+            }
+          }
+        },
+        {
+          "id": "2",
+          "normalizableValue": "2",
+          "label": {
+            "__translations__": {
+              "en": "Disagree",
+              "fi": "Osittain eri mieltä",
+              "sv": "Instämmer inte helt"
+            }
+          }
+        },
+        {
+          "id": "3",
+          "normalizableValue": "3",
+          "label": {
+            "__translations__": {
+              "en": "Neither agree nor disagree",
+              "fi": "Ei samaa eikä eri mieltä",
+              "sv": "Varken instämmer eller instämmer inte"
+            }
+          }
+        },
+        {
+          "id": "4",
+          "normalizableValue": "4",
+          "label": {
+            "__translations__": {
+              "en": "Agree",
+              "fi": "Osittain samaa mieltä",
+              "sv": "Instämmer i viss grad"
+            }
+          }
+        },
+        {
+          "id": "5",
+          "normalizableValue": "5",
+          "label": {
+            "__translations__": {
+              "en": "Fully agree",
+              "fi": "Täysin samaa mieltä",
+              "sv": "Instämmer i hög grad"
+            }
+          }
+        }
+      ],
+      "categoryId": "questionCategory-1",
+      "order": 104,
+      "name": {
+        "__translations__": {
+          "fi": "Julkisissa tarjoiluissa, kuten kouluruokailussa ja sairaaloissa, ei tule luopua lihan tarjoamisesta.",
+          "en": "Public food services, such as school meals and hospitals, should not eliminate meat from the menu.",
+          "sv": "Vid offentlig servering, såsom skolluncher och sjukhusmåltider, bör servering av kött inte uteslutas."
+        }
+      },
+      "info": {
+        "__translations__": {
+          "fi": "<p>Suomessa julkisissa ruokapalveluissa, kuten kouluissa ja sairaaloissa, tarjotaan edelleen lihaa osana ruokavalikoimaa. Viime vuosina monet kunnat ja organisaatiot ovat kuitenkin lisänneet kasvisruokavaihtoehtoja ja vähentäneet lihan osuutta ruokatarjoiluissaan ympäristösyistä ja terveyssuositusten mukaisesti. Lihantuotannon ympäristövaikutukset, eettiset näkökulmat ja terveydelliset tekijät ovat nostaneet esiin kysymyksiä siitä, tulisiko julkisten ruokapalveluiden vähentää tai kokonaan luopua lihan tarjoamisesta.</p><p>Toisaalta liha on tärkeä proteiinin ja ravintoaineiden lähde, eikä kaikilla yksilöillä ole mahdollisuutta tai halua siirtyä kasvis- tai vegaaniruokavalioon. Lihan tarjoaminen julkisissa ruokapalveluissa varmistaa, että tarjolla on vaihtoehtoja, jotka sopivat erilaisille ruokavalioille. Lihatalous on myös merkittävä maatalouden työllistäjä. Julkisten ruokapalveluiden ohjaaminen kohti kasvispainotteisempaa ruokavaliota voi kuitenkin vähentää kustannuksia ja ympäristökuormitusta, mutta samalla herättää kysymyksiä yksilön vapaudesta valita ruokavalionsa.</p>",
+          "en": "<p>In Finland, public food services, such as those in schools and hospitals, continue to serve meat as part of their meals. However, in recent years, many municipalities and organizations have started to provide more vegetarian options and reduced the proportion of meat in their catering for environmental reasons and in accordance with health recommendations. The environmental impact of meat production, ethical considerations, and health factors have raised questions about whether public food services should reduce or completely eliminate meat from their menus.</p><p>On the other hand, meat is an important source of protein and nutrients, and not everyone has the possibility or the desire to switch to a vegetarian or vegan diet. Serving meat in public food services ensures that there are options suitable for different diets. The meat industry is also a significant employer in agriculture. However, moving towards a more plant-based diet in public food services could help reduce costs and environmental impact, but it also raises concerns about individuals' freedom to choose their diet.</p>",
+          "sv": "<p>I Finland erbjuds kött fortfarande som en del av matutbudet inom offentlig måltidsservice, såsom på skolor och sjukhus. Under de senaste åren har dock många kommuner och organisationer ökat andelen vegetariska alternativ och minskat mängden kött i sin matservering av miljöskäl och i enlighet med hälsorekommendationerna. Köttproduktionens miljöpåverkan, etiska aspekter och hälsorelaterade faktorer har väckt frågor om huruvida man inom offentlig måltidsservice bör minska eller helt avstå från att servera kött.</p><p>Å andra sidan är kött en viktig källa till protein och andra näringsämnen, och alla har inte möjlighet eller vilja att övergå till en vegetarisk eller vegansk kost. Att servera kött inom offentlig måltidsservice säkerställer att det finns alternativ som passar olika kostpreferenser. Köttindustrin är också en viktig arbetsgivare inom jordbrukssektorn. Att styra den offentliga måltidsservicen mot en mer växtbaserad kost kan dock minska kostnaderna och miljöpåverkan, samtidigt som det väcker frågor om individens rätt att välja sin egen kost.</p>"
+        }
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Nykytilanne",
+                "en": "Current situation",
+                "sv": "Nuvarande situation"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Suomessa julkisissa ruokapalveluissa, kuten kouluissa ja sairaaloissa, tarjotaan edelleen lihaa osana ruokavalikoimaa. Viime vuosina monet kunnat ja organisaatiot ovat kuitenkin lisänneet kasvisruokavaihtoehtoja ja vähentäneet lihan osuutta ruokatarjoiluissaan ympäristösyistä ja terveyssuositusten mukaisesti. Esimerkiksi kouluissa on yhä yleisempää tarjota kasvisruokapäiviä. Lihan ja eläinperäisten tuotteiden tarjoamisesta luopuminen ei ole kuitenkaan laajamittaisesti edennyt, ja asiasta käydään aktiivista julkista ja poliittista keskustelua.</p>",
+                "en": "<p>In Finland, public food services, such as those in schools and hospitals, continue to serve meat as part of their meals. However, in recent years, many municipalities and organizations have started to provide more vegetarian options and reduced the proportion of meat in their catering for environmental reasons and in accordance with health recommendations. For example, vegetarian days have become increasingly common in schools. However, eliminating meat and animal-based products entirely from public food services has not progressed on a large scale, and the issue remains a topic of active public and political debate.</p>",
+                "sv": "<p>I Finland erbjuds kött fortfarande som en del av matutbudet inom offentlig måltidsservice, såsom på skolor och sjukhus. Under de senaste åren har dock många kommuner och organisationer ökat andelen vegetariska alternativ och minskat mängden kött i sin matservering av miljöskäl och i enlighet med hälsorekommendationerna. Till exempel har det blivit allt vanligare att skolor inför vegetariska dagar. Beslut om att sluta servera kött och animaliska produkter har dock inte genomförts i någon stor skala, och frågan är föremål för en aktiv offentlig och politisk debatt.</p>"
+              }
+            }
+          },
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Termit",
+                "en": "Terms",
+                "sv": "Begrepp"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Julkiset ruokapalvelut: Yhteiskunnan tarjoamat ruokapalvelut, kuten kouluruokailu, sairaaloiden ja vanhustenhuollon ruokailut.</p><p>Kasvisruokapäivä: Päivä, jolloin julkisen ruokapalvelun tarjoamat ateriat ovat kasvispohjaisia eikä lihaa tarjota.</p><p>Lihantuotannon ympäristövaikutukset: Lihantuotannon aiheuttamat haitat ympäristölle, kuten kasvihuonekaasupäästöt, vedenkulutus ja maankäytön muutokset.</p>",
+                "en": "<p>Public food services: Food services provided by society, such as school meals and catering in hospitals and elderly care.</p><p>Vegetarian day: A day when public food services serve only plant-based meals and do not serve meat.</p><p>Environmental impact of meat production: The negative effects of meat production on the environment, such as greenhouse gas emissions, water consumption, and changes in land use.</p>",
+                "sv": "<p>Offentlig måltidsservice: Måltidsservice som erbjuds av samhället, såsom skolmåltider, sjukhusmåltider och måltider inom äldreomsorgen. Vegetarisk dag: En dag då den offentliga måltidsservicen erbjuder endast vegetariska alternativ och inte serverar kött. Köttproduktionens miljöpåverkan: De skador som köttproduktionen orsakar miljön, såsom växthusgasutsläpp, vattenförbrukning och förändringar i markanvändningen.</p>"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "question-opinion-5",
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "normalizableValue": "1",
+          "label": {
+            "__translations__": {
+              "en": "Fully disagree",
+              "fi": "Täysin eri mieltä",
+              "sv": "Instämmer inte alls"
+            }
+          }
+        },
+        {
+          "id": "2",
+          "normalizableValue": "2",
+          "label": {
+            "__translations__": {
+              "en": "Disagree",
+              "fi": "Osittain eri mieltä",
+              "sv": "Instämmer inte helt"
+            }
+          }
+        },
+        {
+          "id": "3",
+          "normalizableValue": "3",
+          "label": {
+            "__translations__": {
+              "en": "Neither agree nor disagree",
+              "fi": "Ei samaa eikä eri mieltä",
+              "sv": "Varken instämmer eller instämmer inte"
+            }
+          }
+        },
+        {
+          "id": "4",
+          "normalizableValue": "4",
+          "label": {
+            "__translations__": {
+              "en": "Agree",
+              "fi": "Osittain samaa mieltä",
+              "sv": "Instämmer i viss grad"
+            }
+          }
+        },
+        {
+          "id": "5",
+          "normalizableValue": "5",
+          "label": {
+            "__translations__": {
+              "en": "Fully agree",
+              "fi": "Täysin samaa mieltä",
+              "sv": "Instämmer i hög grad"
+            }
+          }
+        }
+      ],
+      "categoryId": "questionCategory-1",
+      "order": 105,
+      "name": {
+        "__translations__": {
+          "fi": "Kunnissa ja hyvinvointialueilla tulee pyrkiä hiilineutraaliuteen.",
+          "en": "Municipalities and wellbeing services counties should strive for carbon neutrality.",
+          "sv": "Kommuner och välfärdsområdena bör sträva efter koldioxidneutralitet."
+        }
+      },
+      "info": {
+        "__translations__": {
+          "fi": "<p>Hiilineutraalius tarkoittaa sitä, että alueen, organisaation tai toimijan tuottamien kasvihuonekaasupäästöjen määrä on tasapainossa poistettujen päästöjen kanssa. Tämä voidaan saavuttaa esimerkiksi vähentämällä fossiilisten polttoaineiden käyttöä, panostamalla uusiutuvaan energiaan, lisäämällä energiatehokkuutta ja hiilinieluja esimerkiksi metsien kautta. Hiilineutraaliuden tavoitteena on torjua ilmastonmuutosta ja täyttää kansallisia ja kansainvälisiä päästövähennystavoitteita, kuten Suomen tavoitetta olla hiilineutraali vuoteen 2035 mennessä.</p><p>Kunnilla ja hyvinvointialueilla on merkittävä rooli hiilineutraaliuden saavuttamisessa, sillä ne voivat vaikuttaa esimerkiksi liikenteen, energiantuotannon, rakentamisen ja jätehuollon käytäntöihin. Useat kunnat Suomessa ovat jo sitoutuneet kunnianhimoisiin ilmastotavoitteisiin, mutta hiilineutraaliuden saavuttaminen edellyttää pitkäjänteistä työtä, rahoitusta ja yhteistyötä eri toimijoiden välillä.</p>",
+          "en": "<p>Carbon neutrality means that the amount of greenhouse gas emissions produced by a region, organization, or entity is balanced with the amount of emissions removed. This can be achieved by reducing the use of fossil fuels, investing in renewable energy, improving energy efficiency, and increasing carbon sinks, such as forests. The goal of carbon neutrality is to combat climate change and meet national and international emission reduction targets, such as Finland’s goal to become carbon neutral by 2035.</p><p>Municipalities and wellbeing services counties play a crucial role in achieving carbon neutrality, as they can influence policies related to transportation, energy production, construction, and waste management, among others. Many municipalities in Finland have already committed to ambitious climate goals, but achieving carbon neutrality requires long-term efforts, funding, and collaboration between different stakeholders.</p>",
+          "sv": "<p>Koldioxidneutralitet innebär att mängden växthusgasutsläpp som genereras av ett område, en organisation eller en aktör är i balans med mängden eliminerade utsläpp. Detta kan uppnås genom att exempelvis minska användningen av fossila bränslen, satsa på förnybar energi samt öka energieffektiviteten och mängden kolsänkor såsom skogar. Målet med koldioxidneutraliteten är att bekämpa klimatförändringen samt uppfylla nationella och internationella mål för utsläppsminskning, till exempel Finlands mål att bli koldioxidneutralt till år 2035.</p><p>Kommunerna och välfärdsområdena har en viktig roll i uppnåendet av koldioxidneutralitet, eftersom de kan påverka praxis inom exempelvis transporter, energiproduktion, byggande och avfallshantering. Flera kommuner i Finland har redan förbundit sig till ambitiösa klimatmål, men att uppnå koldioxidneutralitet kräver långsiktigt arbete, finansiering och samarbete mellan olika aktörer.</p>"
+        }
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Nykytilanne",
+                "en": "Current situation",
+                "sv": "Nuvarande situation"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Monet suomalaiset kunnat ovat sitoutuneet hiilineutraaliustavoitteisiin. Kuntien välillä on kuitenkin paljon vaihtelua siitä, millaiset mahdollisuudet niillä on tehdä ilmastotoimia. Hyvinvointialueiden rooli ilmastotavoitteiden saavuttamisessa on yhä kehittymässä, mutta esimerkiksi sosiaali- ja terveyspalveluiden energia- ja tilaratkaisuilla on suuri merkitys.</p>",
+                "en": "<p>Many Finnish municipalities have committed to carbon neutrality targets. However, there is significant variation in their capacity to implement climate actions. The role of wellbeing services counties in achieving climate goals is still evolving, but factors such as energy and facility solutions in health and social services have a major impact.</p>",
+                "sv": "<p>Många finländska kommuner har förbundit sig till mål för koldioxidneutralitet. Det finns dock stora variationer mellan kommunerna när det gäller vilka möjligheter de har att vidta klimatåtgärder. Välfärdsområdenas roll i att uppnå klimatmålen håller fortfarande på att utvecklas, men till exempel energilösningarna och fastighetsanvändningen inom social- och hälsovården har stor betydelse.</p>"
+              }
+            }
+          },
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Termit",
+                "en": "Terms",
+                "sv": "Begrepp"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Hiilineutraalius: Tavoite, jossa tuotettujen kasvihuonekaasupäästöjen määrä on yhtä suuri kuin poistettujen tai hyvitettyjen päästöjen määrä.</p><p>Hiilinielu: Asia, kuten metsä, joka sitoo ilmakehästä hiilidioksidia.</p>",
+                "en": "<p>Carbon neutrality: A state in which the amount of greenhouse gas emissions produced is equal to the amount removed or offset.</p><p>Carbon sink: A feature, such as a forest, that absorbs carbon dioxide from the atmosphere.</p>",
+                "sv": "<p>Koldioxidneutralitet: Ett mål där mängden genererade växthusgasutsläpp är lika stor som mängden eliminerade eller kompenserade utsläpp. Kolsänka: En funktion eller en process, till exempel en skog, som binder koldioxid från atmosfären.</p>"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "question-opinion-6",
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "normalizableValue": "1",
+          "label": {
+            "__translations__": {
+              "en": "Fully disagree",
+              "fi": "Täysin eri mieltä",
+              "sv": "Instämmer inte alls"
+            }
+          }
+        },
+        {
+          "id": "2",
+          "normalizableValue": "2",
+          "label": {
+            "__translations__": {
+              "en": "Disagree",
+              "fi": "Osittain eri mieltä",
+              "sv": "Instämmer inte helt"
+            }
+          }
+        },
+        {
+          "id": "3",
+          "normalizableValue": "3",
+          "label": {
+            "__translations__": {
+              "en": "Neither agree nor disagree",
+              "fi": "Ei samaa eikä eri mieltä",
+              "sv": "Varken instämmer eller instämmer inte"
+            }
+          }
+        },
+        {
+          "id": "4",
+          "normalizableValue": "4",
+          "label": {
+            "__translations__": {
+              "en": "Agree",
+              "fi": "Osittain samaa mieltä",
+              "sv": "Instämmer i viss grad"
+            }
+          }
+        },
+        {
+          "id": "5",
+          "normalizableValue": "5",
+          "label": {
+            "__translations__": {
+              "en": "Fully agree",
+              "fi": "Täysin samaa mieltä",
+              "sv": "Instämmer i hög grad"
+            }
+          }
+        }
+      ],
+      "categoryId": "questionCategory-1",
+      "order": 106,
+      "name": {
+        "__translations__": {
+          "fi": "Kunnissa tulisi tehdä enemmän toimia seksuaali- ja sukupuolivähemmistöihin kuuluvien nuorten syrjinnän ehkäisemiseksi.",
+          "en": "More actions should be taken in municipalities to prevent discrimination against young people belonging to sexual and gender minorities.",
+          "sv": "I kommunerna bör det vidtas mer åtgärder för att förebygga diskriminering av unga som tillhör sexuella minoriteter och könsminoriteter."
+        }
+      },
+      "info": {
+        "__translations__": {
+          "fi": "<p>Seksuaali- ja sukupuolivähemmistöihin kuuluvat nuoret kohtaavat syrjintää ja ennakkoluuloja monilla elämänalueilla, kuten koulussa, harrastuksissa ja terveyspalveluissa. Syrjintä voi ilmetä esimerkiksi kiusaamisena, ulkopuolisuutena ja rakenteellisena epätasa-arvona. Tämä voi vaikuttaa hyvinvointiin, itsetuntoon ja mielenterveyteen.</p><p>Monet kunnat ovat jo ryhtyneet aktiivisiin toimiin syrjinnän ehkäisemiseksi, mutta käytännön toimet ja resurssit vaihtelevat suuresti eri paikkakunnilla. Kunnat voivat toimia syrjinnän ehkäisemiseksi esimerkiksi kouluttamalla henkilöstöä, luomalla syrjimättömyyteen tähtääviä toimintamalleja ja tukemalla yhteisöjä, jotka tarjoavat apua ja vertaistukea seksuaali- ja sukupuolivähemmistöille. Lisäksi kuntien on tärkeää varmistaa, että kaikilla nuorilla on turvallinen ympäristö kasvaa ja kehittyä.</p>",
+          "en": "<p>Young people belonging to sexual and gender minorities face discrimination and prejudice in various areas of life, such as school, hobbies, and health services. Discrimination can manifest as bullying, social exclusion, and structural inequality. This can negatively impact well-being, self-esteem, and mental health.</p><p>Many municipalities have already taken active measures to prevent discrimination, but the practical measures and resources available vary significantly between localities. Municipalities can help prevent discrimination, for example by training staff, developing anti-discrimination policies, and supporting organizations that provide assistance and peer support for sexual and gender minorities. Additionally, it is crucial for municipalities to ensure that all young people have a safe environment in which to grow and develop.</p>",
+          "sv": "<p>Unga som tillhör sexuella minoriteter och könsminoriteter möter diskriminering och fördomar inom många livsområden, såsom i skolan, inom fritidsaktiviteter och hälsovårdstjänster. Diskriminering kan yttra sig i form av mobbning, utanförskap och strukturell ojämlikhet. Detta kan påverka deras välbefinnande, självkänsla och psykiska hälsa.</p><p>Många kommuner har redan vidtagit aktiva åtgärder för att förebygga diskriminering, men de praktiska åtgärderna och resurserna varierar mycket mellan olika orter. Kommunerna kan arbeta för att förebygga diskriminering genom att till exempel utbilda personalen, skapa verksamhetsmodeller med icke-diskriminering som mål och stödja gemenskaper som erbjuder hjälp och kamratstöd för sexuella minoriteter och könsminoriteter. Dessutom är det viktigt att kommunerna säkerställer att alla unga har en trygg miljö att växa upp och utvecklas i.</p>"
+        }
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Nykytilanne",
+                "en": "Current situation",
+                "sv": "Nuvarande situation"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Monet kunnat ovat ryhtyneet aktiivisiin toimiin syrjinnän ehkäisemiseksi, mutta toimet ja resurssit vaihtelevat suuresti eri paikkakunnilla. Esimerkiksi osassa kouluja on otettu käyttöön vähemmistöjä huomioivia käytäntöjä kuten wc- ja pukuhuonetiloja, mutta toisaalla aihe voi jäädä täysin huomiotta. Kansalliset ja paikalliset järjestöt täydentävät kuntien toimintaa tarjoamalla koulutusta ja vertaistukea, mutta niiden vaikutus voi olla rajallinen.</p>",
+                "en": "<p>Many municipalities have taken active measures to prevent discrimination, but the measures and resources available vary significantly between localities. For example, some schools have implemented inclusive practices, such as toilets and changing rooms, while in other areas, these issues are not considered at all. National and local organizations complement municipal efforts by providing education and peer support, but their impact may be limited.</p>",
+                "sv": "<p>Många kommuner har vidtagit aktiva åtgärder för att förebygga diskriminering, men åtgärderna och resurserna varierar mycket mellan olika orter. Till exempel har en del skolor infört praxis som inkluderar minoriteter, till exempel könsneutrala toaletter och omklädningsrum, medan ämnet i andra fall helt kan förbises. Nationella och lokala organisationer kompletterar kommunernas arbete genom att erbjuda utbildning och kamratstöd, men deras påverkan kan vara begränsad.</p>"
+              }
+            }
+          },
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Termit",
+                "en": "Terms",
+                "sv": "Begrepp"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Seksuaalivähemmistöt: Ihmiset, joiden seksuaalinen suuntautuminen on jotain muuta kuin heterous, kuuluvat seksuaalivähemmistöihin.</p><p>Sukupuolivähemmistöt: Sukupuolivähemmistöt on kattokäsite, jolla viitataan henkilöihin, jotka eivät koe syntymässä määriteltyä sukupuolta omakseen tai joiden sukupuoli, sen ilmaisu ja kokemus eivät kaikin tai jollain tavoin vastaa normatiivisia käsityksiä sukupuolesta ja jotka itse määrittelevät kuuluvansa johonkin sukupuolivähemmistöön, kuten transsukupuoliset, transvestiitit, muunsukupuoliset tai intersukupuoliset.</p>",
+                "en": "<p>Sexual minorities: Individuals whose sexual orientation is something other than heterosexual belong to sexual minorities.</p><p>Gender minorities: An umbrella term referring to individuals who do not identify with the gender assigned to them at birth or whose gender identity, expression, or experience does not fully correspond to normative notions of gender and who themselves identify with a gender minority. This includes transgender individuals, transvestites, non-binary, and intersex individuals.</p>",
+                "sv": "<p>Sexuella minoriteter: Personer vars sexuella läggning är något annat än heterosexualitet tillhör sexuella minoriteter. Könsminoriteter: Ett paraplybegrepp som refererar till personer som inte upplever att de kan relatera till det kön som fastställts för dem vid födseln eller vars könsidentitet, könsuttryck eller könsupplevelse inte helt eller delvis överensstämmer med normativa uppfattningar om kön och som själva identifierar sig som en del av en könsminoritet, såsom transpersoner, transvestiter, icke-binära eller intersexpersoner.</p>"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "question-opinion-8",
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "normalizableValue": "1",
+          "label": {
+            "__translations__": {
+              "en": "Fully disagree",
+              "fi": "Täysin eri mieltä",
+              "sv": "Instämmer inte alls"
+            }
+          }
+        },
+        {
+          "id": "2",
+          "normalizableValue": "2",
+          "label": {
+            "__translations__": {
+              "en": "Disagree",
+              "fi": "Osittain eri mieltä",
+              "sv": "Instämmer inte helt"
+            }
+          }
+        },
+        {
+          "id": "3",
+          "normalizableValue": "3",
+          "label": {
+            "__translations__": {
+              "en": "Neither agree nor disagree",
+              "fi": "Ei samaa eikä eri mieltä",
+              "sv": "Varken instämmer eller instämmer inte"
+            }
+          }
+        },
+        {
+          "id": "4",
+          "normalizableValue": "4",
+          "label": {
+            "__translations__": {
+              "en": "Agree",
+              "fi": "Osittain samaa mieltä",
+              "sv": "Instämmer i viss grad"
+            }
+          }
+        },
+        {
+          "id": "5",
+          "normalizableValue": "5",
+          "label": {
+            "__translations__": {
+              "en": "Fully agree",
+              "fi": "Täysin samaa mieltä",
+              "sv": "Instämmer i hög grad"
+            }
+          }
+        }
+      ],
+      "categoryId": "questionCategory-1",
+      "order": 108,
+      "name": {
+        "__translations__": {
+          "fi": "Kouluväkivaltaan pitäisi puuttua mieluummin poliisin kuin sosiaalipalveluiden toimesta peruskouluissa.",
+          "en": "School violence should be addressed by the police rather than social services in comprehensive schools.",
+          "sv": "Våld i skolan bör snarare hanteras av polisen än av socialservicen i grundskolorna."
+        }
+      },
+      "info": {
+        "__translations__": {
+          "fi": "<p>Kouluväkivallalla tarkoitetaan fyysistä, henkistä tai psyykkistä väkivaltaa, jota tapahtuu kouluympäristössä. Suomessa kouluväkivallan käsittely kuuluu pääasiassa koulun henkilökunnalle, kuten opettajille ja rehtoreille, mutta vakavissa tapauksissa myös sosiaalipalvelut tai poliisi voi olla osallisena. Sosiaalipalvelut pyrkivät keskittymään ennaltaehkäisevään toimintaan ja perheiden tukemiseen, kun taas poliisin tehtävänä on selvittää mahdolliset rikokset. Koulut ja viranomaiset toimivat usein yhteistyössä, mutta resurssien ja toimintatapojen välillä voi olla eroja eri kuntien ja koulujen välillä.</p><p>Keskustelua on käyty siitä, pitäisikö kouluväkivaltaan puuttumisessa painottaa enemmän poliisin roolia vai sosiaalipalveluiden tukitoimia. Poliisin roolin lisäämistä perustellaan tarpeella puuttua nopeasti vakaviin tapauksiin, kun taas sosiaalipalveluiden painottamista tuodaan esille pitkäkestoisten ratkaisujen ja perheiden tukemisen näkökulmasta.</p>",
+          "en": "<p>School violence refers to physical, mental, or psychological violence that occurs in a school environment. In Finland, handling school violence primarily falls under the responsibility of school staff, such as teachers and principals. However, in severe cases, social services or the police may also be involved. Social services focus on preventive measures and family support, while the police are responsible for investigating potential crimes. Schools and authorities often work together, but there can be differences in resources and approaches between different municipalities and schools.</p><p>There has been ongoing debate about whether school violence should be addressed more by the police or through support measures provided by social services. Advocates for increasing police involvement argue that quick intervention is necessary in severe cases, whereas supporters of social services emphasize long-term solutions and family support.</p>",
+          "sv": "<p>Med våld i skolan avses fysiskt, mentalt eller psykiskt våld som förekommer i skolmiljö. I Finland hanteras våld i skolan främst av skolpersonalen, såsom lärare och rektorer, men i allvarliga fall kan även socialservicen eller polisen vara involverade. Socialservicen fokuserar på förebyggande åtgärder och stöd till familjerna, medan polisens uppgift är att utreda eventuella brott. Skolorna och myndigheterna samarbetar ofta, men resurserna och tillvägagångssätten kan variera mellan olika kommuner och skolor.</p><p>Det har diskuterats huruvida polisens roll bör betonas mer i hanteringen av våld i skolan eller om socialservicens stödinsatser bör prioriteras. Förespråkare för att öka polisens roll menar att det är nödvändigt att snabbt ingripa i allvarliga fall, medan de som betonar socialservicens roll lyfter fram behovet av långsiktiga lösningar och stöd till familjer.</p>"
+        }
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Nykytilanne",
+                "en": "Current situation",
+                "sv": "Nuvarande situation"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Tällä hetkellä kouluväkivaltatapauksissa toimitaan tilanteen vakavuuden mukaan. Lievemmissä tapauksissa koulu ja sosiaalipalvelut pyrkivät yhteistyössä ennaltaehkäisemään väkivallan uusiutumista, esimerkiksi tarjoamalla tukea oppilaille ja heidän perheilleen. Vakavissa tapauksissa poliisi kutsutaan mukaan selvittämään mahdolliset rikokset, kuten pahoinpitelyt tai uhkailut. Koulut ja viranomaiset toimivat usein yhteistyössä, mutta resurssien ja toimintatapojen välillä voi olla eroja eri kuntien ja koulujen välillä.</p>",
+                "en": "<p>Currently, school violence cases are handled based on the severity of the situation. In less severe cases, schools and social services work together to prevent further violence, for example by providing support to students and their families. In severe cases, the police are called in to investigate potential crimes such as assault or threats. Schools and authorities often work together, but there can be differences in resources and approaches between different municipalities and schools.</p>",
+                "sv": "<p>För närvarande hanteras fall av våld i skolan beroende på allvarlighetsgraden. Vid lindrigare fall försöker skolan och socialservicen samarbeta för att förebygga att våldet upprepas, exempelvis genom att erbjuda stöd till eleverna och deras familjer. Vid allvarliga fall kallas polisen in för att utreda eventuella brott, såsom misshandel eller hot. Skolorna och myndigheterna samarbetar ofta, men resurserna och tillvägagångssätten kan variera mellan olika kommuner och skolor.</p>"
+              }
+            }
+          },
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Termit",
+                "en": "Terms",
+                "sv": "Begrepp"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Kouluväkivalta: Fyysistä, henkistä tai psyykkistä väkivaltaa, joka tapahtuu kouluympäristössä ja kohdistuu oppilaisiin tai henkilökuntaan.</p><p>Sosiaalipalvelut: Julkiset palvelut, joka tarjoaa tukea ja apua yksilöille ja perheille esimerkiksi lastensuojelun ja perhetyön kautta. Sosiaalipalveluiden järjestäjänä toimii hyvinvointialue.</p>",
+                "en": "<p>School violence: Physical, mental, or psychological violence that occurs in a school environment and is directed at students or staff.</p><p>Social services: Public services that provide support and assistance to individuals and families, such as child welfare and family work. Social services are organized by the wellbeing services counties.</p>",
+                "sv": "<p>Våld i skolan: Fysiskt, mentalt eller psykiskt våld som förekommer i skolmiljö och riktas mot elever eller personal.</p><p>Socialservice: Offentliga tjänster som erbjuder individer och familjer stöd och hjälp, exempelvis genom barnskydd och familjearbete. Socialservicen organiseras av välfärdsområdet.</p>"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "question-opinion-13",
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "normalizableValue": "1",
+          "label": {
+            "__translations__": {
+              "en": "Fully disagree",
+              "fi": "Täysin eri mieltä",
+              "sv": "Instämmer inte alls"
+            }
+          }
+        },
+        {
+          "id": "2",
+          "normalizableValue": "2",
+          "label": {
+            "__translations__": {
+              "en": "Disagree",
+              "fi": "Osittain eri mieltä",
+              "sv": "Instämmer inte helt"
+            }
+          }
+        },
+        {
+          "id": "3",
+          "normalizableValue": "3",
+          "label": {
+            "__translations__": {
+              "en": "Neither agree nor disagree",
+              "fi": "Ei samaa eikä eri mieltä",
+              "sv": "Varken instämmer eller instämmer inte"
+            }
+          }
+        },
+        {
+          "id": "4",
+          "normalizableValue": "4",
+          "label": {
+            "__translations__": {
+              "en": "Agree",
+              "fi": "Osittain samaa mieltä",
+              "sv": "Instämmer i viss grad"
+            }
+          }
+        },
+        {
+          "id": "5",
+          "normalizableValue": "5",
+          "label": {
+            "__translations__": {
+              "en": "Fully agree",
+              "fi": "Täysin samaa mieltä",
+              "sv": "Instämmer i hög grad"
+            }
+          }
+        }
+      ],
+      "categoryId": "questionCategory-1",
+      "order": 113,
+      "name": {
+        "__translations__": {
+          "fi": "Kuntien taloutta tulee tasapainottaa ensisijaisesti kuntaveron korotuksella eikä leikkauksilla.",
+          "en": "Municipal finances should be balanced primarily by increasing the municipal tax rate rather than making budget cuts.",
+          "sv": "Kommunernas ekonomi bör balanseras främst genom en höjning av kommunalskatten och inte genom nedskärningar."
+        }
+      },
+      "info": {
+        "__translations__": {
+          "fi": "<p>Kuntien talous on keskeinen osa julkista taloutta, sillä kunnilla on vastuu monista tärkeistä palveluista, kuten esimerkiksi koulutuksesta ja liikkumisesta. Talouden tasapainottaminen tulee ajankohtaiseksi erityisesti silloin, kun kunnan menot ylittävät tulot. Kunnat voivat tasapainottaa talouttaan joko lisäämällä tuloja tai vähentämällä menoja.</p><p>Yksi tapa lisätä tuloja on nostaa kuntaveroa, joka on kunnille merkittävä tulonlähde. Kuntaveron korotus jakaa kuitenkin mielipiteitä: sen kannattajat näkevät sen keinona rahoittaa julkisia palveluita, kun taas sen vastustajat varoittavat sen vaikutuksista kuntalaisten ostovoimaan. Toisaalta leikkaukset voivat johtaa palveluiden heikentymiseen ja eriarvoisuuden kasvuun.</p>",
+          "en": "<p>Municipal finances are a crucial part of public finance, as municipalities are responsible for many essential services, such as education and transportation. Balancing the budget becomes necessary, especially when a municipality's expenses exceed its revenues. Municipalities can balance their finances by either increasing revenue or reducing expenses.</p><p>One way to increase revenue is by raising the municipal tax rate, which is a significant source of income for municipalities. However, raising the municipal tax rate is a divisive issue: supporters see it as a way to fund public services, while opponents warn about its impact on residents' purchasing power. On the other hand, budget cuts can lead to a decline in service quality and an increase in social inequality.</p>",
+          "sv": "<p>Kommunernas ekonomi är en viktig del av den offentliga ekonomin, eftersom kommunerna ansvarar för många viktiga tjänster, såsom utbildning och transporter. Att balansera ekonomin blir aktuellt i synnerhet när kommunens utgifter överstiger dess inkomster. Kommunerna kan balansera sin ekonomi antingen genom att öka intäkterna eller minska utgifterna.</p><p>Ett sätt att öka intäkterna är att höja kommunalskatten, som är en viktig inkomstkälla för kommunerna. En höjning av kommunalskatten är dock en kontroversiell fråga: Dess förespråkare ser den som ett sätt att finansiera offentliga tjänster, medan motståndarna varnar för dess inverkan på invånarnas köpkraft. Å andra sidan kan nedskärningar leda till försämrade tjänster och ökad ojämlikhet.</p>"
+        }
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Nykytilanne",
+                "en": "Current situation",
+                "sv": "Nuvarande situation"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Monet Suomen kunnat kohtaavat taloudellisia haasteita, kuten ikääntyvän väestön kasvavat palvelutarpeet. Osa kunnista on tehnyt merkittäviä leikkauksia tasapainottaakseen budjettiaan, kun taas toiset ovat korottaneet kuntaveroa. Vuonna 2025 keskimääräinen kuntaveroprosentti on Suomessa 7,54 %, mutta kuntien veroprosentit vaihtelevat suuresti.</p>",
+                "en": "<p>Many municipalities in Finland are facing financial challenges, including the growing service needs of an ageing population. Some municipalities have made significant cuts to balance their budget, while others have opted to raise the municipal tax rate. In 2025, the average municipal tax rate in Finland is 7.54%, but tax rates vary significantly between municipalities.</p>",
+                "sv": "<p> Många kommuner i Finland står inför ekonomiska utmaningar, såsom ett ökat servicebehov på grund av den åldrande befolkningen. En del kommuner har gjort betydande nedskärningar för att balansera sin budget, medan andra har valt att höja kommunalskatten. År 2025 är den genomsnittliga kommunalskattesatsen i Finland 7,54 procent, men skattesatserna varierar mycket mellan kommunerna.</p>"
+              }
+            }
+          },
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Termit",
+                "en": "Terms",
+                "sv": "Begrepp"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Kuntavero: Kuntien itsenäisesti päättämä tulovero, jota peritään asukkailta heidän tuloistaan. Kuntavero on yksi kuntien keskeisistä tulonlähteistä.</p>",
+                "en": "<p>Municipal tax: A tax on income set independently by municipalities and collected from residents based on their earnings. Municipal tax is one of the primary sources of revenue for municipalities.</p>",
+                "sv": "<p>Kommunalskatt: En inkomstskatt som kommunerna självständigt beslutar om och som tas ut på invånarnas inkomster. Kommunalskatten är en av kommunernas viktigaste inkomstkällor.</p>"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "question-opinion-18",
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "normalizableValue": "1",
+          "label": {
+            "__translations__": {
+              "en": "Fully disagree",
+              "fi": "Täysin eri mieltä",
+              "sv": "Instämmer inte alls"
+            }
+          }
+        },
+        {
+          "id": "2",
+          "normalizableValue": "2",
+          "label": {
+            "__translations__": {
+              "en": "Disagree",
+              "fi": "Osittain eri mieltä",
+              "sv": "Instämmer inte helt"
+            }
+          }
+        },
+        {
+          "id": "3",
+          "normalizableValue": "3",
+          "label": {
+            "__translations__": {
+              "en": "Neither agree nor disagree",
+              "fi": "Ei samaa eikä eri mieltä",
+              "sv": "Varken instämmer eller instämmer inte"
+            }
+          }
+        },
+        {
+          "id": "4",
+          "normalizableValue": "4",
+          "label": {
+            "__translations__": {
+              "en": "Agree",
+              "fi": "Osittain samaa mieltä",
+              "sv": "Instämmer i viss grad"
+            }
+          }
+        },
+        {
+          "id": "5",
+          "normalizableValue": "5",
+          "label": {
+            "__translations__": {
+              "en": "Fully agree",
+              "fi": "Täysin samaa mieltä",
+              "sv": "Instämmer i hög grad"
+            }
+          }
+        }
+      ],
+      "categoryId": "questionCategory-1",
+      "order": 118,
+      "name": {
+        "__translations__": {
+          "fi": "Perusterveydenhuollon järjestämisessä tulee hyödyntää nykyistä enemmän yksityisiä palveluntarjoajia.",
+          "en": "Private service providers should be utilized more in the provision of primary healthcare.",
+          "sv": "Privata tjänsteleverantörer bör utnyttjas mer än tidigare i organiseringen av primärvården."
+        }
+      },
+      "info": {
+        "__translations__": {
+          "fi": "<p>Perusterveydenhuolto kattaa keskeiset tavanomaiset terveyspalvelut, kuten terveyskeskuskäynnit, rokotukset ja kiireettömän hoidon. Perusterveydenhuollon järjestämisestä vastaavat hyvinvointialueet ja Helsingin kaupunki, mutta yksityiset palveluntarjoajat täydentävät tätä kokonaisuutta. Yksityisiä palveluntarjoajia ovat esimerkiksi yksityiset lääkäriasemat ja erilaiset terveyspalveluita tarjoavat yritykset. Hyvinvointialueiden haasteina ovat olleet pitkät jonotusajat ja resurssipula, jotka ovat lisänneet tarvetta yksityisten toimijoiden käytölle erityisesti suurimmissa kaupungeissa.</p><p>Yksityisten palveluntarjoajien hyödyntäminen voi lisätä valinnanvapautta ja nopeuttaa hoitoon pääsyä. Samalla se voi vähentää julkisen terveydenhuollon kuormitusta. Toisaalta yksityisten palveluiden lisääminen saattaa kasvattaa kustannuksia, jolloin saatavilla olevat palvelut voivat vaihdella hyvinvointialueiden välillä. Lisäksi yksityisten palveluntuottajien roolista suomalaisessa terveydenhuoltojärjestelmässä voidaan olla eri mieltä poliittisista syistä. Yksityisten toimijoiden rooli perusterveydenhuollossa riippuu pitkälti hyvinvointialueiden päätöksistä.</p>",
+          "en": "<p>Primary healthcare includes essential routine health services such as health centre visits, vaccinations, and non-urgent care. The responsibility for organizing primary healthcare lies with the wellbeing services counties and the City of Helsinki, but private service providers complement the system. These providers include private medical clinics and various companies that provide health services. Challenges in the wellbeing services counties, such as long waiting times and resource shortages, have increased the need for private sector involvement, particularly in larger cities.</p><p>Utilizing private service providers can increase patient choice and reduce waiting times for treatment. It can also ease the burden on public healthcare. However, expanding private healthcare services may lead to higher costs and create disparities in service availability between different wellbeing services counties. Additionally, the role of private service providers in the Finnish healthcare system is a politically debated issue. The extent to which private operators are involved in primary healthcare largely depends on the decisions made by the wellbeing services counties.</p>",
+          "sv": "<p>Primärvården omfattar centrala grundläggande hälsovårdstjänster, såsom besök på hälsovårdscentralen, vaccinationer och icke-brådskande vård. Ansvaret för att organisera primärvården ligger hos välfärdsområdena och Helsingfors stad, men privata tjänsteleverantörer kompletterar helheten. Privata tjänsteleverantörer inkluderar till exempel privata läkarstationer och olika företag som erbjuder hälsovårdstjänster. Välfärdsområdenas utmaningar har varit långa köer och resursbrist, vilket har ökat behovet av att använda privata aktörer, särskilt i de största städerna.</p><p>Att utnyttja privata tjänsteleverantörer kan öka valfriheten och förkorta väntetiderna för vård. Samtidigt kan det minska belastningen på den offentliga hälsovården. Å andra sidan kan en ökad användning av privata tjänster höja kostnaderna, vilket kan leda till variationer i tillgången till tjänster mellan olika välfärdsområden. Dessutom råder det av politiska orsaker oenighet om de privata serviceproducenternas roll i det finska hälsovårdssystemet. I slutändan är det välfärdsområdenas beslut som avgör hur stor roll privata aktörer får inom primärvården.</p>"
+        }
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Nykytilanne",
+                "en": "Current situation",
+                "sv": "Nuvarande situation"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Suomessa yksityisiä palveluntarjoajia käytetään jo täydentämään julkista perusterveydenhuoltoa esimerkiksi ostopalveluiden kautta. Hyvinvointialueet päättävät yksityisten toimijoiden hyödyntämisestä alueellaan. Yksityisten toimijoiden rooli vaihtelee merkittävästi alueittain. Yksityisen palveluiden rooli herättää erimielisyyksiä poliittisessa keskustelussa, ja muutokset yksityisten palveluntarjoajien käytössä riippuvat pitkälti poliittisista päätöksistä ja alueellisista tarpeista.</p>",
+                "en": "<p>In Finland, private service providers already complement public primary healthcare, for example through outsourced services. Each wellbeing services county determines the extent to which private providers are utilized in its area. The role of private healthcare services varies significantly between counties. The use of private service providers remains a controversial political issue, and changes in their involvement depend largely on political decisions and county needs.</p>",
+                "sv": "<p> I Finland används redan privata tjänsteleverantörer som ett komplement till den offentliga primärvården, exempelvis genom köpta tjänster. Välfärdsområdena beslutar i vilken omfattning de använder privata aktörer inom sitt område. Rollen för privata tjänsteleverantörer varierar mycket mellan olika områden. Frågan om de privata aktörernas roll inom hälsovården är omtvistad i den politiska debatten, och förändringar i användningen av dem beror till stor del på politiska beslut och de regionala behoven.</p>"
+              }
+            }
+          },
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Termit",
+                "en": "Terms",
+                "sv": "Begrepp"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Perusterveydenhuolto: Julkisen sektorin tarjoamat tavanomaiset terveyspalvelut, kuten terveyskeskuskäynnit ja hammastarkastukset.</p><p>Yksityiset palveluntarjoajat: Yritykset ja organisaatiot, jotka tarjoavat terveyspalveluita maksua vastaan.</p>",
+                "en": "<p>Primary healthcare: Routine health services provided by the public sector, such as health centre visits and dental check-ups.</p><p>Private service providers: Companies and organizations that offer healthcare services for a fee.</p>",
+                "sv": "<p>Primärvård: Grundläggande hälsovårdstjänster som tillhandahålls av den offentliga sektorn, såsom besök på hälsovårdscentralen och tandundersökningar.</p><p>Privata tjänsteleverantörer: Företag och organisationer som erbjuder hälsovårdstjänster mot betalning.</p>"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "question-opinion-21",
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "normalizableValue": "1",
+          "label": {
+            "__translations__": {
+              "en": "Fully disagree",
+              "fi": "Täysin eri mieltä",
+              "sv": "Instämmer inte alls"
+            }
+          }
+        },
+        {
+          "id": "2",
+          "normalizableValue": "2",
+          "label": {
+            "__translations__": {
+              "en": "Disagree",
+              "fi": "Osittain eri mieltä",
+              "sv": "Instämmer inte helt"
+            }
+          }
+        },
+        {
+          "id": "3",
+          "normalizableValue": "3",
+          "label": {
+            "__translations__": {
+              "en": "Neither agree nor disagree",
+              "fi": "Ei samaa eikä eri mieltä",
+              "sv": "Varken instämmer eller instämmer inte"
+            }
+          }
+        },
+        {
+          "id": "4",
+          "normalizableValue": "4",
+          "label": {
+            "__translations__": {
+              "en": "Agree",
+              "fi": "Osittain samaa mieltä",
+              "sv": "Instämmer i viss grad"
+            }
+          }
+        },
+        {
+          "id": "5",
+          "normalizableValue": "5",
+          "label": {
+            "__translations__": {
+              "en": "Fully agree",
+              "fi": "Täysin samaa mieltä",
+              "sv": "Instämmer i hög grad"
+            }
+          }
+        }
+      ],
+      "categoryId": "questionCategory-1",
+      "order": 121,
+      "name": {
+        "__translations__": {
+          "fi": "Hyvinvointialueilla pitää olla verotusoikeus.",
+          "en": "Wellbeing services counties should have taxation rights.",
+          "sv": "Välfärdsområden bör ha beskattningsrätt."
+        }
+      },
+      "info": {
+        "__translations__": {
+          "fi": "<p>Hyvinvointialueiden rahoitus tulee pääosin valtion budjetista, eikä niillä ole oikeutta kerätä veroja. Verotusoikeus tarkoittaisi sitä, että hyvinvointialueet voisivat itsenäisesti kerätä tuloja omien palveluidensa rahoittamiseen, kuten kunnat tekevät keräämällä kuntaveroa. Hyvinvointialueet eivät voi päättää verotusoikeudesta itsenäisesti.</p><p>Verotusoikeuden kannattajat uskovat, että se lisäisi hyvinvointialueiden taloudellista itsenäisyyttä ja voisi parantaa alueiden rahoitustilannetta. Vastustajien mukaan verotusoikeus voisi kuitenkin johtaa alueellisiin eroihin palveluiden laadussa ja niiden rahoituksessa. Tämä saattaisi lisätä eriarvoisuutta kansalaisten välillä.</p><p>Suomessa on keskusteltu siitä, pitäisikö hyvinvointialueille antaa verotusoikeus vai pitäisikö rahoitus hoitaa jatkossakin valtion kautta. Asiaan liittyy myös kysymyksiä verotuksen määrästä ja siitä, miten verotusoikeuden käyttöönotto vaikuttaisi kuntien ja valtion rahoitukseen.</p>",
+          "en": "<p>The funding for wellbeing services counties primarily comes from the state budget, and they do not have the right to collect taxes. Taxation rights would mean that wellbeing services counties could independently generate revenue to finance their own services, as municipalities do by collecting municipal taxes. However, wellbeing services counties cannot decide on taxation rights independently.</p><p>Supporters of taxation rights argue that they would increase the financial autonomy of wellbeing services counties and improve their funding situation. Opponents, however, believe that taxation rights could lead to regional disparities in the quality and financing of services, potentially increasing inequality among citizens.</p><p>There has been an ongoing debate in Finland about whether wellbeing services counties should be granted taxation rights or if their funding should continue to be managed solely through the state. The discussion also includes questions about the tax rates and how taxation rights would impact municipal and state finances.</p>",
+          "sv": "<p>Välfärdsområdena finansieras huvudsakligen genom statens budget och har inte rätt att ta ut skatter. Beskattningsrätt skulle innebära att välfärdsområdena själva kunde samla in inkomster för att finansiera sina tjänster, på samma sätt som kommunerna gör genom kommunalskatten. Välfärdsområden kan dock inte själva besluta om att införa beskattningsrätt.</p><p>Förespråkare för beskattningsrätt anser att en sådan skulle öka välfärdsområdenas ekonomiska självständighet och förbättra deras finansieringssituation. Motståndare menar däremot att beskattningsrätt kunde leda till regionala skillnader i tjänsternas kvalitet och finansieringen av dem, vilket kunde öka ojämlikheten mellan medborgarna.</p><p>I Finland har det diskuterats huruvida välfärdsområdena borde få beskattningsrätt eller om finansieringen även i framtiden ska ske via staten. Frågan handlar också om nivån på beskattningen och hur en eventuell beskattningsrätt skulle påverka kommunernas och statens ekonomi.</p>"
+        }
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Nykytilanne",
+                "en": "Current situation",
+                "sv": "Nuvarande situation"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Tällä hetkellä hyvinvointialueilla ei ole verotusoikeutta. Niiden rahoitus perustuu valtion myöntämään rahoitukseen, joka määräytyy alueiden tarpeiden ja asukasluvun perusteella. Valtio on sitoutunut seuraamaan hyvinvointialueiden toiminnan toteutumista ja rahoituksen riittävyyttä, mutta verotusoikeuden käyttöönotosta ei ole toistaiseksi tehty konkreettisia päätöksiä. Asia on kuitenkin esillä poliittisessa keskustelussa, ja monet tahot ovat tuoneet esiin sekä verotusoikeuden mahdolliset hyödyt että haitat.</p>",
+                "en": "<p>Currently, wellbeing services counties do not have taxation rights. Their financing is based on funding granted by the state, which is determined by regional needs and population size. The state is committed to monitoring the operations of wellbeing services counties and the adequacy of their funding, but no concrete decisions have so far been made regarding the introduction of taxation rights. The issue remains a topic of political debate, and many parties have highlighted the potential benefits and drawbacks of granting taxation rights.</p>",
+                "sv": "<p>För närvarande har välfärdsområdena ingen beskattningsrätt. Deras finansiering baseras på statliga anslag, som fastställs utifrån områdenas behov och befolkningsmängd. Staten har åtagit sig att övervaka välfärdsområdenas verksamhet och säkerställa tillräcklig finansiering, men det har ännu inte fattats några konkreta beslut om att införa beskattningsrätt. Frågan är dock en del av den politiska debatten, och många aktörer har lyft fram både fördelar och nackdelar med en eventuell beskattningsrätt.</p>"
+              }
+            }
+          },
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Termit",
+                "en": "Terms",
+                "sv": "Begrepp"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Verotusoikeus: Oikeus kerätä veroja omien palveluiden rahoittamiseksi, esimerkiksi kuntavero kunnilla.</p><p>Valtion rahoitus: Hyvinvointialueiden saama rahoitus, joka tulee valtion budjetista ilman alueiden omaa verotusta.</p>",
+                "en": "<p>Taxation rights: The right to collect taxes to finance public services, such as municipal taxes collected by municipalities.</p><p>State funding: The funding received by wellbeing services counties from the state budget, without the ability to levy their own taxes.</p>",
+                "sv": "<p>Beskattningsrätt: Rätt att ta ut skatter för att finansiera egna tjänster, exempelvis kommunernas kommunalskatt.</p><p>Statlig finansiering: Finansiering som välfärdsområdena får ur statens budget utan egen beskattning.</p>"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "question-opinion-25",
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "normalizableValue": "1",
+          "label": {
+            "__translations__": {
+              "en": "Fully disagree",
+              "fi": "Täysin eri mieltä",
+              "sv": "Instämmer inte alls"
+            }
+          }
+        },
+        {
+          "id": "2",
+          "normalizableValue": "2",
+          "label": {
+            "__translations__": {
+              "en": "Disagree",
+              "fi": "Osittain eri mieltä",
+              "sv": "Instämmer inte helt"
+            }
+          }
+        },
+        {
+          "id": "3",
+          "normalizableValue": "3",
+          "label": {
+            "__translations__": {
+              "en": "Neither agree nor disagree",
+              "fi": "Ei samaa eikä eri mieltä",
+              "sv": "Varken instämmer eller instämmer inte"
+            }
+          }
+        },
+        {
+          "id": "4",
+          "normalizableValue": "4",
+          "label": {
+            "__translations__": {
+              "en": "Agree",
+              "fi": "Osittain samaa mieltä",
+              "sv": "Instämmer i viss grad"
+            }
+          }
+        },
+        {
+          "id": "5",
+          "normalizableValue": "5",
+          "label": {
+            "__translations__": {
+              "en": "Fully agree",
+              "fi": "Täysin samaa mieltä",
+              "sv": "Instämmer i hög grad"
+            }
+          }
+        }
+      ],
+      "categoryId": "questionCategory-1",
+      "order": 125,
+      "name": {
+        "__translations__": {
+          "fi": "Hyvinvointialueille tulee palkata ulkomailta lisää henkilöstöä, esimerkiksi sairaanhoitajia.",
+          "en": "Wellbeing services counties should hire more staff from abroad, such as nurses.",
+          "sv": "Välfärdsområden bör anställa mer personal från utlandet, till exempel sjukskötare."
+        }
+      },
+      "info": {
+        "__translations__": {
+          "fi": "<p>Suomessa sosiaali- ja terveydenhuollon alalla on vaihtelevaa työvoimapulaa, joka vaikuttaa palveluiden saatavuuteen ja henkilöstön hyvinvointiin. Väestön ikääntyminen lisää erityisesti hoitajien ja lääkäreiden tarvetta, mutta samalla alalta poistuu paljon työntekijöitä eläkkeelle. Työntekijöiden palkkaaminen ulkomailta on yksi keino vastata työvoimapulaan, ja monilla hyvinvointialueilla on jo käynnistetty kansainvälisiä rekrytointiohjelmia. Tällaiset ohjelmat edellyttävät esimerkiksi työntekijöiden perehdyttämistä ja kielikoulutusta.</p><p>Ulkomailta rekrytointi voi auttaa paikkaamaan työvoimavajetta nopeasti, mutta se voi myös aiheuttaa haasteita. Näitä ovat esimerkiksi kieli- ja kulttuurierot, työntekijöiden sopeutuminen suomalaiseen työpaikkaan sekä kansainvälisen rekrytoinnin eettiset näkökulmat, kuten työvoiman palkkaaminen Suomea köyhemmistä maista, joissa on jo valmiiksi pulaa hoitohenkilökunnasta.</p><p>Hyvinvointialueilla on mahdollisuus päättää, miten työvoimatarpeeseen vastataan, mutta ulkomailta palkkaaminen edellyttää usein poliittista ja taloudellista tukea ja selkeitä kansallisia linjauksia.</p>",
+          "en": "<p>Finland’s healthcare and social welfare sector is experiencing varying degrees of labour shortages, affecting service availability and staff well-being. An ageing population is increasing the demand for nurses and doctors, while at the same time, many employees are retiring from the field. Recruiting workers from abroad is one way to address the labour shortage, and many wellbeing services counties have already launched international recruitment programmes. These programmes typically require onboarding processes and language training for foreign employees.</p><p>Hiring staff from abroad can help fill labour gaps quickly, but it can also present challenges. These include language and cultural differences, employee integration into Finnish workplaces, and ethical concerns related to international recruitment, such as recruiting from poorer countries where there is already a shortage of healthcare workers. Wellbeing services counties have the authority to decide how they respond to labour needs but hiring from abroad often requires political and financial support as well as clear national policies.</p>",
+          "sv": "<p>I Finland råder det varierande brist på arbetskraft inom social- och hälsovårdssektorn, vilket påverkar tillgången till tjänster och personalens välbefinnande. Den åldrande befolkningen ökar särskilt behovet av vårdare och läkare, samtidigt som många anställda inom sektorn går i pension. Att rekrytera personal från utlandet är ett sätt att hantera bristen på arbetskraft, och många välfärdsområden har redan inlett internationella rekryteringsprogram. Dessa program kräver dock exempelvis att arbetstagarna får introduktion och språkutbildning.</p><p>Att rekrytera från utlandet kan snabbt bidra till att minska bristen på arbetskraft, men det kan också innebära utmaningar. Sådana utmaningar är till exempel språkliga och kulturella skillnader, anpassning till en finländsk arbetsplats samt etiska frågor kring internationell rekrytering, såsom att anställa arbetskraft från länder fattigare än Finland där det redan råder brist på vårdpersonal. Välfärdsområdena kan besluta hur de ska lösa sitt behov av arbetskraft, men rekrytering från utlandet kräver ofta politiskt och ekonomiskt stöd samt tydliga nationella riktlinjer.</p>"
+        }
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Nykytilanne",
+                "en": "Current situation",
+                "sv": "Nuvarande situation"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Monilla hyvinvointialueilla on jo aloitettu ulkomaalaisten työntekijöiden rekrytointiohjelmia, ja esimerkiksi Filippiineiltä ja muista Aasian maista on saapunut sairaanhoitajia Suomeen. Työvoimapula on kuitenkin edelleen ongelma, ja ulkomailta rekrytoitujen työntekijöiden määrä ei ole toistaiseksi riittänyt ratkaisemaan sitä. Lisäksi kielikoulutus ja pätevyyksien varmistaminen ovat osoittautuneet ajoittain hitaiksi prosesseiksi.</p>",
+                "en": "<p>Many wellbeing services counties have already initiated international recruitment programmes, bringing in nurses from countries such as the Philippines and other parts of Asia to Finland. However, labour shortages remain a significant issue, and the number of foreign recruits has not yet been sufficient to resolve the problem. Additionally, language training and qualification recognition have sometimes proved to be slow processes.</p>",
+                "sv": "<p>Många välfärdsområden har redan inlett rekryteringsprogram för utländska arbetstagare, och exempelvis från Filippinerna och andra asiatiska länder har sjukskötare anlänt till Finland. Arbetskraftsbristen är dock fortfarande ett problem, och antalet rekryterade arbetstagare från utlandet har ännu inte varit tillräckligt för att lösa det. Dessutom har språkutbildning och validering av kvalifikationer ibland visat sig vara långsamma processer.</p>"
+              }
+            }
+          },
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Termit",
+                "en": "Terms",
+                "sv": "Begrepp"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Kansainvälinen rekrytointi: Prosessi, jossa ulkomailta palkataan työntekijöitä täyttämään työvoimatarpeita. Tämä usein sisältää työntekijöiden perehdyttämisen ja kielikoulutuksen.</p>",
+                "en": "<p>International recruitment: The process of hiring employees from abroad to meet labour needs. This often includes onboarding and language training.</p>",
+                "sv": "<p>Internationell rekrytering: En process där arbetskraft anställs från utlandet för att täcka behovet av arbetskraft. Detta inkluderar ofta introduktion och språkutbildning för de nyanställda.</p>"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "question-opinion-26",
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "normalizableValue": "1",
+          "label": {
+            "__translations__": {
+              "en": "Fully disagree",
+              "fi": "Täysin eri mieltä",
+              "sv": "Instämmer inte alls"
+            }
+          }
+        },
+        {
+          "id": "2",
+          "normalizableValue": "2",
+          "label": {
+            "__translations__": {
+              "en": "Disagree",
+              "fi": "Osittain eri mieltä",
+              "sv": "Instämmer inte helt"
+            }
+          }
+        },
+        {
+          "id": "3",
+          "normalizableValue": "3",
+          "label": {
+            "__translations__": {
+              "en": "Neither agree nor disagree",
+              "fi": "Ei samaa eikä eri mieltä",
+              "sv": "Varken instämmer eller instämmer inte"
+            }
+          }
+        },
+        {
+          "id": "4",
+          "normalizableValue": "4",
+          "label": {
+            "__translations__": {
+              "en": "Agree",
+              "fi": "Osittain samaa mieltä",
+              "sv": "Instämmer i viss grad"
+            }
+          }
+        },
+        {
+          "id": "5",
+          "normalizableValue": "5",
+          "label": {
+            "__translations__": {
+              "en": "Fully agree",
+              "fi": "Täysin samaa mieltä",
+              "sv": "Instämmer i hög grad"
+            }
+          }
+        }
+      ],
+      "categoryId": "questionCategory-1",
+      "order": 126,
+      "name": {
+        "__translations__": {
+          "fi": "Terapiatakuu tulee laajentaa koskemaan kaikkia alle 29-vuotiaita.",
+          "en": "The therapy guarantee should be expanded to cover all individuals under 29.",
+          "sv": "Terapigarantin bör utvidgas till alla under 29 år."
+        }
+      },
+      "info": {
+        "__translations__": {
+          "fi": "<p>Terapiatakuu tarkoittaa sitä, että henkilö saa tiettyjä mielenterveyspalveluita nopeasti ja matalalla kynnyksellä. Terapiatakuuta on ehdotettu ratkaisuksi mielenterveyspalveluiden ruuhkien purkamiseen ja ongelmien pitkittymiseen.</p><p>Eduskunta on hyväksynyt hallituksen esityksen lasten ja nuorten terapiatakuusta, jonka myötä alle 23-vuotiaat pääsevät 1.5.2025 alkaen terapiatakuun piiriin. Tavoitteena on, että mielenterveyspalveluita saisi viimeistään noin kuukauden sisällä.</p><p>Mielenterveysongelmat ovat yleisiä nuorilla ja nuorilla aikuisilla, ja ne voivat johtaa muun muassa opiskelu- tai työkyvyn heikkenemiseen. Terapiatakuun laajentamista alle 23-vuotiaista kaikkiin alle 29-vuotiaisiin on ehdotettu, jotta apua saataisiin ajoissa ja elämän kriisitilanteet eivät johtaisi pitkittyneisiin ongelmiin. Kaikki alle 29-vuotiaat ovat myös nuorisolain mukaisesti nuoria, joten jako alle ja yli 23-vuotiaisiin voidaan nähdä tarpeettomana.</p><p>Kustannuskysymykset ja ammattilaisten saatavuus ovat keskeisiä haasteita terapiatakuun laajentamisessa. Mielenterveyspalveluiden saatavuudessa on suuria alueellisia eroja. Toisaalta mielenterveysongelmien ennaltaehkäisy ja nopea hoito voivat vähentää myöhempiä kustannuksia esimerkiksi erikoissairaanhoidossa.</p>",
+          "en": "<p>The therapy guarantee ensures that individuals can access certain low-threshold mental health services quickly. It has been proposed as a solution to reduce backlogs in mental health services and prevent long-term mental health issues.</p><p>The Finnish Parliament has approved the government’s proposal for a therapy guarantee for children and young people, which will make individuals under 23 years of age eligible for the therapy guarantee from 1 May 2025. The aim is to guarantee access to mental health services within approximately one month.</p><p>Mental health issues are common among young people and young adults, often reducing their ability to study or work. Expanding the therapy guarantee from those under 23 years old to all individuals under 29 has been proposed to ensure timely support and prevent life crises from leading to prolonged problems. Additionally, according to the Finnish Youth Act, all individuals under 29 are considered young people, making the division at age 23 seem unnecessary.</p><p>Cost concerns and the availability of mental health professionals are key challenges in expanding the therapy guarantee. There are significant regional differences in mental health service availability. However, the prevention and early treatment of mental health issues can reduce future costs, such as those related to specialized health care.</p>",
+          "sv": "<p>Terapigarantin innebär att en person snabbt och med låg tröskel får tillgång till vissa mentalvårdstjänster. Terapigarantin har föreslagits som en lösning för att minska köerna inom mentalvården och förhindra att problemen förvärras över tid.</p><p>Riksdagen har godkänt regeringens förslag om en terapigaranti för barn och unga, vilket innebär att personer under 23 år från och med den 1 maj 2025 kommer att omfattas av garantin. Målet är att en person ska få tillgång till mentalvårdstjänster senast inom ungefär en månad.</p><p>Psykisk ohälsa är vanlig bland unga och unga vuxna och kan leda till försämrad studie- eller arbetsförmåga. Det har föreslagits att terapigarantin utvidgas från 23 år till alla under 29 år för att säkerställa att hjälp ges i tid och förhindra att livskriser leder till långvariga problem. Enligt ungdomslagen betraktas alla under 29 år som unga, vilket gör uppdelningen vid 23 års ålder onödig.</p><p>Kostnaderna och tillgången på yrkesutbildad personal är centrala utmaningar vid en utvidgning av terapigarantin. Tillgången till mentalvårdstjänster varierar kraftigt mellan olika regioner. Samtidigt kan förebyggande och tidig vård av psykiska problem minska senare kostnader, exempelvis inom den specialiserade sjukvården.</p>"
+        }
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Nykytilanne",
+                "en": "Current situation",
+                "sv": "Nuvarande situation"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Lasten ja nuorten terapiatakuu alle 23-vuotiaille tulee voimaan 1.5.2025 alkaen. Yli 23-vuotiaat nuoret ovat siitä eteenpäin eri asemassa alle 23-vuotiaiden nuorten kanssa. Useilla alueilla nuorten mielenterveyspalvelut ovat ruuhkautuneet, ja hoitoon pääsy voi kestää kuukausia. Joillain hyvinvointialueilla on aloitettu pilotointihankkeita terapiatakuun toteuttamisesta. Palveluiden saatavuus ja laatu vaihtelevat merkittävästi alueittain.</p>",
+                "en": "<p>The therapy guarantee for children and young people under 23 will take effect on 1 May 2025. From then on, young people over 23 will be treated differently from those under 23. In many areas, youth mental health services are backlogged, and it can take months to get access to treatment. Some wellbeing services counties have launched pilot initiatives to implement the therapy guarantee. Service availability and quality vary significantly across counties.</p>",
+                "sv": "<p>Terapigarantin för barn och unga under 23 år träder i kraft den 1 maj 2025. Efter detta kommer unga över 23 år att befinna sig i en annan situation än unga under 23 år. I många områden är mentalvårdstjänsterna för unga redan överbelastade, och det kan ta månader att få vård. I en del välfärdsområden har pilotprojekt för att genomföra terapigarantin inletts. Tillgången till och kvaliteten på tjänsterna varierar avsevärt mellan olika områden.</p>"
+              }
+            }
+          },
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Termit",
+                "en": "Terms",
+                "sv": "Begrepp"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Terapiatakuu: Järjestelmä, jonka avulla mielenterveyspalveluita tarvitseva saa hoitoa nopeasti, yleensä noin kuukauden sisällä.</p><p>Matalan kynnyksen palvelut: Palveluita, joihin on helppo hakeutua ilman monimutkaisia lähetteitä tai pitkiä odotusaikoja.</p>",
+                "en": "<p>Therapy guarantee: A system that allows an individual in need of mental health services to receive treatment quickly, usually within about one month.</p><p>Low-threshold services: Services that are easy to access without complex referrals or long waiting times.</p>",
+                "sv": "<p>Terapigaranti: Ett system som säkerställer att personer med psykisk ohälsa får vård snabbt, vanligtvis inom cirka en månad.</p><p>Lågtröskeltjänster: Tjänster som är lättillgängliga utan komplicerade remisser eller långa väntetider.</p>"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "question-opinion-27",
+      "type": "singleChoiceOrdinal",
+      "choices": [
+        {
+          "id": "1",
+          "normalizableValue": "1",
+          "label": {
+            "__translations__": {
+              "en": "Fully disagree",
+              "fi": "Täysin eri mieltä",
+              "sv": "Instämmer inte alls"
+            }
+          }
+        },
+        {
+          "id": "2",
+          "normalizableValue": "2",
+          "label": {
+            "__translations__": {
+              "en": "Disagree",
+              "fi": "Osittain eri mieltä",
+              "sv": "Instämmer inte helt"
+            }
+          }
+        },
+        {
+          "id": "3",
+          "normalizableValue": "3",
+          "label": {
+            "__translations__": {
+              "en": "Neither agree nor disagree",
+              "fi": "Ei samaa eikä eri mieltä",
+              "sv": "Varken instämmer eller instämmer inte"
+            }
+          }
+        },
+        {
+          "id": "4",
+          "normalizableValue": "4",
+          "label": {
+            "__translations__": {
+              "en": "Agree",
+              "fi": "Osittain samaa mieltä",
+              "sv": "Instämmer i viss grad"
+            }
+          }
+        },
+        {
+          "id": "5",
+          "normalizableValue": "5",
+          "label": {
+            "__translations__": {
+              "en": "Fully agree",
+              "fi": "Täysin samaa mieltä",
+              "sv": "Instämmer i hög grad"
+            }
+          }
+        }
+      ],
+      "categoryId": "questionCategory-1",
+      "order": 127,
+      "name": {
+        "__translations__": {
+          "fi": "Hyvinvointialueiden palveluita tulee keskittää tiettyihin asutuskeskuksiin.",
+          "en": "The services in wellbeing services counties should be centralized in specific population centres.",
+          "sv": "Tjänsterna inom välfärdsområden bör koncentreras till vissa tätorter."
+        }
+      },
+      "info": {
+        "__translations__": {
+          "fi": "<p>Palveluiden keskittäminen tarkoittaa palveluiden tarjoamisen keskittymistä suurempiin asutuskeskuksiin, mikä voi tehostaa toimintaa ja vähentää kustannuksia. Keskittäminen voi myös tarkoittaa sitä, että esimerkiksi erikoissairaanhoidon tai muiden vaativien palveluiden laatu paranee, kun niitä tarjotaan harvemmassa mutta paremmin varustetussa yksikössä.</p><p>Toisaalta keskittäminen voi heikentää palveluiden saatavuutta ja saavutettavuutta harvemmin asuttujen alueiden asukkaille. Matkat palveluiden luo pidentyvät. Tämä voi erityisesti vaikeuttaa vanhusten, liikuntarajoitteisten ja vähävaraisten ihmisten mahdollisuuksia käyttää niitä. Palveluiden keskittäminen voi myös osoittautua kalliiksi, koska palveluiden käyttäjille täytyy tarjota mahdollisuus päästä palveluiden luo. Keskustelu keskittämisestä on usein tasapainottelua tehokkuuden ja yhdenvertaisuuden välillä. Päätökset keskittämisestä tehdään jokaisen hyvinvointialueen sisällä.</p>",
+          "en": "<p>Centralizing services means concentrating service provision in larger population centres, which can improve efficiency and reduce costs. It can also improve the quality of specialized healthcare and other demanding services by offering them in fewer but better-equipped facilities.</p><p>On the other hand, centralization may reduce service availability and accessibility for residents in sparsely populated areas, increasing distances to services. This can make it particularly difficult for the elderly, people with mobility limitations, and low-income individuals to access them. Additionally, centralization can become costly if transportation solutions must be provided for service users who need access to services. The debate over centralization often revolves around balancing efficiency and equal access to services. Decisions regarding service centralization are made by each wellbeing services county.</p>",
+          "sv": "<p>Att koncentrera tjänster innebär att tjänster i större utsträckning erbjuds i större tätorter, vilket kan effektivisera verksamheten och minska kostnaderna. Koncentration av tjänster kan också innebära att kvaliteten på exempelvis specialiserad sjukvård eller andra krävande tjänster förbättras när de tillhandahålls vid färre men bättre utrustade enheter.</p><p>Å andra sidan kan koncentration försämra tillgången till och tillgängligheten av tjänster för invånare i glesbefolkade områden. Avstånden till tjänsterna ökar, vilket kan göra det svårare för äldre, personer med rörelsehinder och låginkomsttagare att få tillgång till dem. Att koncentrera tjänster kan också bli kostsamt, eftersom man måste säkerställa att användarna har möjlighet att ta sig till dem. Diskussionen om koncentration handlar ofta om att balansera effektivitet med jämlikhet. Beslut om koncentration fattas inom varje välfärdsområde.</p>"
+        }
+      },
+      "customData": {
+        "infoSections": [
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Nykytilanne",
+                "en": "Current situation",
+                "sv": "Nuvarande situation"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Hyvinvointialueilla on tällä hetkellä vapaus päättää palveluiden keskittämisestä oman alueensa tarpeiden mukaisesti. Monilla alueilla on jo tehty päätöksiä siitä, että esimerkiksi terveyskeskuksia suljetaan ja palvelut keskitetään suurempiin asutuskeskuksiin. Tämä on aiheuttanut huolta niillä paikkakunnilla, missä matka palveluihin on kasvanut. Keskustelu keskittämisen eduista ja haitoista jatkuu, ja päätöksissä pyritään tasapainottamaan tehokkuus ja palveluiden saavutettavuus.</p>",
+                "en": "<p>Wellbeing services counties currently have the autonomy to decide on service centralization according to their region’s needs. Many counties have already decided to close health centres and relocate services to larger population centres, raising concerns in localities where distances to services have increased. The debate over the benefits and drawbacks of centralization continues, with decisions seeking to balance efficiency and service accessibility.</p>",
+                "sv": "<p> Välfärdsområdena har för närvarande frihet att fatta beslut om att koncentrera tjänster utifrån sina egna behov. I många områden har beslut redan fattats om att exempelvis stänga hälsovårdscentraler och koncentrera tjänsterna till större tätorter. Detta har orsakat oro på orter där avstånden till tjänsterna har blivit längre. Diskussionen om fördelarna och nackdelarna med koncentration pågår, och besluten syftar till att balansera effektivitet med tillgången till vård.</p>"
+              }
+            }
+          },
+          {
+            "title": {
+              "__translations__": {
+                "fi": "Termit",
+                "en": "Terms",
+                "sv": "Begrepp"
+              }
+            },
+            "content": {
+              "__translations__": {
+                "fi": "<p>Keskittäminen: Palveluiden, resurssien tai toiminnan siirtämistä harvempiin mutta suurempiin yksiköihin tai sijainteihin.</p>",
+                "en": "<p>Centralization: The process of relocating services, resources, or operations to fewer but larger units or locations.</p>",
+                "sv": "<p>Koncentration: Att flytta tjänster, resurser eller verksamhet till färre men större enheter eller platser.</p>"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
