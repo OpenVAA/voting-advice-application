@@ -3,6 +3,7 @@ import { Flex } from '@strapi/design-system';
 import { Main, Typography } from '@strapi/design-system';
 import { Accordion } from '@strapi/design-system';
 import { Box } from '@strapi/design-system';
+import { CandidateNominatorFileImport } from '../components/CandidateNominatorFileImport';
 import { DeleteData } from '../components/DeleteData';
 import { FindData } from '../components/FindData';
 import { ImportData } from '../components/ImportData';
@@ -62,6 +63,18 @@ export function HomePage() {
               <Accordion.Content>
                 <Box padding={5}>
                   <SendEmail />
+                </Box>
+              </Accordion.Content>
+            </Accordion.Item>
+            <Accordion.Item value="candidateNominatorFileImport">
+              <Accordion.Header>
+                <Accordion.Trigger>
+                  <h2>Confirm Candidate Nominations</h2>
+                </Accordion.Trigger>
+              </Accordion.Header>
+              <Accordion.Content>
+                <Box padding={5}>
+                  <CandidateNominatorFileImport />
                 </Box>
               </Accordion.Content>
             </Accordion.Item>

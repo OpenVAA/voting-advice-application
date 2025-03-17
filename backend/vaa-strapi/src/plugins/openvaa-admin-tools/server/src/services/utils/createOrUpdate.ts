@@ -4,6 +4,7 @@ import type { ImportableCollection, ImportDatum } from '../data.type';
 
 /**
  * Create or update existing data based on `externalId` or `documentId` if provided.
+ * NB. The `answers` property of `Entities` is always merged by first-level keys and not replaced.
  * @param collection - The importable collection.
  * @param datum - The data item.
  * @returns Either 'created' or 'updated'
@@ -31,7 +32,12 @@ export async function createOrUpdate<TCollection extends ImportableCollection>({
     throw new Error(
       `Both documentId ${documentId} and externalId ${externalId} provided for ${collection}`
     );
-  let existing: (object & { documentId: string }) | undefined;
+  let existing:
+    | (object & {
+        documentId: string;
+        answers?: object | null;
+      })
+    | undefined;
   if (singleType) {
     existing = await strapi.documents(api).findFirst();
   } else if (documentId) {
@@ -41,10 +47,24 @@ export async function createOrUpdate<TCollection extends ImportableCollection>({
     existing = await findOneByExternalId({ api, externalId, strapi });
   }
   if (existing) {
-    const { documentId, ...rest } = existing;
+    const { documentId, answers: currentAnswers, ...rest } = existing;
+    const { answers: newAnswers, ...newRest } = parsed;
+    let answers: object | unknown | undefined;
+    if (newAnswers && typeof newAnswers === 'object') {
+      answers =
+        currentAnswers && typeof currentAnswers === 'object'
+          ? { ...currentAnswers, ...newAnswers }
+          : newAnswers;
+    } else {
+      answers = newAnswers ?? currentAnswers;
+    }
     await strapi.documents(api).update({
       documentId,
-      data: { ...rest, ...parsed },
+      data: {
+        ...rest,
+        ...newRest,
+        answers,
+      },
     });
     return 'updated';
   }
