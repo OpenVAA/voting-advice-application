@@ -62,6 +62,8 @@ export function initAppContext(): AppContext {
       // Force-overwrite thse because of old Strapi content model
       merged.matching.organizationMatching = 'impute';
       merged.questions.interactiveInfo = { enabled: true };
+      // Force-overwrite because if inconsistency in pregistration
+      merged.elections.disallowSelection = true;
       return merged;
     });
   });

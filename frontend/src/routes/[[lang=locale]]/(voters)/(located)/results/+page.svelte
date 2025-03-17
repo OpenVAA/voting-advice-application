@@ -25,7 +25,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
 -->
 
 <script lang="ts">
-  import { Election, type EntityType } from '@openvaa/data';
+  import { Election, ENTITY_TYPE, type EntityType } from '@openvaa/data';
   import { onDestroy, onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { beforeNavigate, pushState } from '$app/navigation';
@@ -115,7 +115,9 @@ The nominations applicable to these elections and constituencies are shown. Thes
     entityTabs = Object.keys($matches[activeElectionId]).map((type) => ({
       type: type as EntityType,
       label: ucFirst($t(`common.${type as EntityType}.plural`))
-    }));
+    }))
+      // TEMP: Fixed override
+      .sort((a) => a.type === ENTITY_TYPE.Organization ? -1 : 0);
     // Preserve current activeEntityType if it exists in the new tabs, otherwise use the first one available
     if (!activeEntityType || !(activeEntityType in $matches[activeElectionId])) activeEntityType = entityTabs[0]?.type;
     activeElection = $elections.find((e) => e.id === activeElectionId)!;

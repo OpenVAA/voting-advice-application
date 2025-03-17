@@ -8,7 +8,6 @@ import { page } from '$app/stores';
 import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 import { logDebugError } from '$lib/utils/logger';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
-import { getImpliedElectionIds } from '$lib/utils/route';
 import { prepareDataWriter } from './prepareDataWriter';
 import { userDataStore } from './userDataStore';
 import { getAppContext } from '../app';
@@ -73,9 +72,9 @@ export function initCandidateContext(): CandidateContext {
   }>('candidateContext-preselectedConstituencyIds', {});
 
   const preregistrationElections = derived(
-    [appSettings, dataRoot, preregistrationElectionIds],
-    ([appSettings, dataRoot, preregistrationElectionIds]) => {
-      const ids = getImpliedElectionIds({ appSettings, dataRoot }) ?? preregistrationElectionIds;
+    [dataRoot, preregistrationElectionIds],
+    ([dataRoot, preregistrationElectionIds]) => {
+      const ids = preregistrationElectionIds;
       return ids.map((id) => dataRoot.getElection(id));
     }
   );

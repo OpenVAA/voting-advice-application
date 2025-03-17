@@ -172,13 +172,20 @@ export function initVoterContext(): VoterContext {
     (appSettings) => appSettings.matching?.organizationMatching || 'none'
   );
 
+  /** The entity types to hide if missing opinion answers */
+  const hideIfMissingAnswers = parsimoniusDerived(
+    appSettings,
+    (appSettings) => appSettings.entities?.hideIfMissingAnswers || {}
+  );
+
   // Matching and filtering depend on the available nominations and questions, for which we use a utility store
   const nominationsAndQuestions = nominationAndQuestionStore({
     constituencies: selectedConstituencies,
     dataRoot,
     elections: selectedElections,
     entityTypes,
-    parentMatchingMethod
+    parentMatchingMethod,
+    hideIfMissingAnswers
   });
 
   const nominationsAvailable = parsimoniusDerived(nominationsAndQuestions, (nominationsAndQuestions) =>

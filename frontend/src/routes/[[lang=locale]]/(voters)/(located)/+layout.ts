@@ -27,6 +27,7 @@ export async function load({ fetch, parent, params: { lang }, untrack, url }) {
   if (!electionId || !constituencyId) {
     const { appSettingsData, constituencyData, electionData } = await parent();
     const appSettings = mergeAppSettings(staticSettings, await appSettingsData);
+    appSettings.elections.disallowSelection = true;
 
     // Create a temporary data root we use for implication
     const dataRoot = new DataRoot();
