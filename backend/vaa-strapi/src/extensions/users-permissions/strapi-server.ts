@@ -64,24 +64,20 @@ module.exports = async (plugin: Core.Plugin) => {
     advanced.email_reset_password = url;
     await pluginStore.set({ key: 'advanced', value: advanced });
 
-    const adminType = await strapi.query('plugin::users-permissions.role').findOne({where: { type: 'admin' }});
-    console.log(adminType);
+    const adminType = await strapi.query('plugin::users-permissions.role').findOne({ where: { type: 'admin' } });
 
     if (!adminType) {
       // Create admin role for admin-ui functions
       await strapi.query('plugin::users-permissions.role').create({
         data: {
-          name: "Admin",
-          description: "Role for admin that can access LLM-admin-ui.",
-          type: 'admin',
+          name: 'Admin',
+          description: 'Role for admin that can access LLM-admin-ui.',
+          type: 'admin'
         }
       });
 
       // Add default-permissions
     }
-
-
-    console.log(adminType);
 
     // Setup default permissions
     for (const permission of defaultPermissions) {
