@@ -148,11 +148,9 @@ export default factories.createCoreController('api::nomination.nomination', ({ s
               'shortName', parties.short_name,
               'info', parties.info,
               'colorDark', parties.color_dark,
-              'answers', parties.answers,
-              'image', _images.data
+              'answers', parties.answers
             ) data
           from parties
-          left join _images on _images.related_id = parties.id
         )
         select
           json_build_object(
