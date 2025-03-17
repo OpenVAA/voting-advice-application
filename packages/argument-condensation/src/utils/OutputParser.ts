@@ -146,7 +146,8 @@ export class OutputParser {
       const line = lines[i].trim();
       
       if (line.startsWith(argumentPrefix)) {
-        const argumentText = line.substring(argumentPrefix.length).trim();
+        // Remove any existing indices like "1:", "2:" at the beginning of arguments
+        const argumentText = line.substring(argumentPrefix.length).trim().replace(/^\s*\d+\s*:\s*/, ''); 
         
         // Create a new argument with the condensed text
         // We don't have direct sources for these condensed arguments,

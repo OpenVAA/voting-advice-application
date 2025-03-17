@@ -4,6 +4,7 @@ import { processComments, finnishConfig } from '../src';
 import { OpenAIProvider } from '@openvaa/llm';
 import { config } from 'dotenv';
 import path from 'path';
+import { CondensationType } from '../src/types/CondensationType';
 
 // Load environment variables
 const envPath = path.join(__dirname, '../../../.env');
@@ -12,7 +13,7 @@ config({ path: envPath });
 // Initialize OpenAI provider with API key from environment
 const llmProvider = new OpenAIProvider({
   apiKey: process.env.OPENAI_API_KEY || '',
-  model: 'gpt-4o'
+  model: 'gpt-4o-mini'
 });
 
 /**
@@ -28,8 +29,9 @@ async function condenseExplanations(explanations: string[]): Promise<string> {
     llmProvider,
     finnishConfig,
     explanations,
-    "Kuntani pitää järjestää huumeidenkäyttäjille mahdollisuus vaihtaa käytetyt neulansa puhtaisiin.",
-    50 // batch size
+    "Kaikille vanhuksille on taattava oikeus palvelukotipaikkaan.",
+    30, // batch size
+    CondensationType.SUPPORTING // condensation type
   );
 
   // Return the condensed argument(s)
@@ -57,7 +59,7 @@ async function condenseQuestionsByIndices(questionIndices: number[]) {
     }
     
     // Condense the explanations
-    const testSet = questionExplanations.slice(0, 2000);
+    const testSet = questionExplanations.slice(0, 300);
     const condensed = await condenseExplanations(testSet);
     console.log(`\nCondensed result: ${condensed}`);
     console.log('-'.repeat(80));
@@ -94,4 +96,4 @@ async function extractAllExplanations(): Promise<string[][]> {
 }
 
 // Run the condensation function for questions 1, 5, and 10
-condenseQuestionsByIndices([7]).catch(console.error);
+condenseQuestionsByIndices([8]).catch(console.error);

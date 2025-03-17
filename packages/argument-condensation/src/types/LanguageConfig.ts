@@ -9,18 +9,35 @@ export type SupportedLanguage = 'fi' | 'en';
  * Configuration for language-specific prompts and formatting
  * @interface LanguageConfig
  */
-
 export interface LanguageConfig {
-    /** Main instructions for the LLM */
-    instructions: string;
+    /** LLM instructions for the general condensation */
+    instructionsGeneral: string;
+
+    /** LLM instructions for the recursive part of general condensation */
+    recursiveInstructionsGeneral: string;
+
+    /** LLM instructions for the supporting condensation */
+    instructionsSupportive: string;
+
+    /** LLM instructions for the recursive part of supporting condensation */
+    recursiveInstructionsSupporting: string;
+
+    /** LLM instructions for the opposing condensation */
+    instructionsOpposing: string;
+
+    /** LLM instructions for the recursive part of opposing condensation */
+    recursiveInstructionsOpposing: string;
+
+    /** Reminder at the end of the LLM prompt for opposing condensation */
+    opposingReminder: string;
     
-    /** Header for displaying existing arguments section */
+    /** Header for displaying existing arguments section in the LLM prompt */
     existingArgumentsHeader: string;
     
-    /** Header for displaying new comments section */
+    /** Header for displaying new comments section in the LLM prompt */
     newCommentsHeader: string;
     
-    /** Header for output format section */
+    /** Header for output format section in the LLM prompt */
     outputFormatHeader: string;
     
     /** Configuration for output formatting */
@@ -43,7 +60,4 @@ export interface LanguageConfig {
     
     /** Prefix for existing arguments in the prompt */
     outputArgumentPrefix: string;
-
-    /** Prefix for recursive arguments in the prompt */
-    recursiveInstructions: string;
 }

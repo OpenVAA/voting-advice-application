@@ -6,6 +6,7 @@ import { Argument } from './types/Argument';
 import { LLMProvider } from '@openvaa/llm';
 import fs from 'fs';
 import { LanguageConfig } from './types/LanguageConfig';
+import { CondensationType } from './types/CondensationType';
 
 // Load .env from project root
 config();
@@ -71,10 +72,11 @@ async function processComments(
   languageConfig: LanguageConfig,
   comments: string[], 
   topic: string,
-  batchSize: number = 30
+  batchSize: number = 30,
+  condensationType: CondensationType = CondensationType.GENERAL
 ): Promise<Argument[]> {
   const condenser = new Condenser(llmProvider, languageConfig);
-  return await condenser.processComments(comments, topic, batchSize);
+  return await condenser.processComments(comments, topic, batchSize, condensationType);
 }
 
 // Export main functionality
