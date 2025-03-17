@@ -788,6 +788,9 @@ function generateAnswers(
     const settings = question.questionType.settings as QuestionTypeSettings;
     let value: AnswerValue[keyof AnswerValue];
     switch (settings.type) {
+      case 'link':
+        value = faker.internet.url();
+        break;
       case 'text':
         value = settings.notLocalizable ? faker.lorem.sentence() : fakeLocalized((faker) => faker.lorem.sentence());
         break;
