@@ -1,0 +1,42 @@
+{
+  "title": "Puolueiden erot ja arvot tutuiksi vaalikoneen avulla",
+  "shortTitle": "Puolueiden erot ja arvot",
+  "intro": {
+    "heroEmoji": "🤖",
+    "title": "Tervetuloa tutustumaan puolueiden eroihin ja arvoihin Nuorten vaalikoneen avulla",
+    "ingress": "Vastaa vaalikoneen kysymyksiin siten, että saat alla olevan sinulle arvotun puolueen ensimmäiseksi tuloksissa.",
+    "content": "<p>Käytä vastaamisen apuna sinulle arvotun puolueen nettisivuja. Tutki huolella etenkin kunta- ja aluevaalien vaaliohjelmaan.</p>",
+    "rerandomize": "Arvo puolue uudelleen"
+  },
+  "results": {
+    "perfect": {
+      "heroEmoji": "🏆",
+      "title": "Onneksi olkoon!",
+      "ingress": "<p>Sait puolueen <strong>{targetName}</strong> {targetRankMembers, plural, =1 {} other {jaetulle}} ensimmäiselle sijalle!</p>"
+    },
+    "good": {
+      "heroEmoji": "🥈",
+      "title": "Melkein täydellistä!",
+      "ingress": "<p>Sait puolueen <strong>{targetName}</strong>  {targetRankMembers, plural, =1 {} other {jaetulle}} {targetRank}. sijalle!</p>"
+    },
+    "fair": {
+      "heroEmoji": "🥉",
+      "title": "Hyvä yritys!",
+      "ingress": "<p>Sait puolueen <strong>{targetName}</strong>  {targetRankMembers, plural, =1 {} other {jaetulle}} {targetRank}. sijalle!</p>"
+    },
+    "notAvailable": {
+      "heroEmoji": "🙊",
+      "title": "Ei tulosta…",
+      "ingress": "Pelin tulosta ei voitu laskea. Oletko varmasti vastannut kaikkiin kysymyksiin?"
+    },
+    "common": {
+      "editAnswers": "Muokkaa vastauksiasi",
+      "editAnswersTip": "Koeta muokata vastauksiasi, jotta saisit sinulle arvotun puolueen ensimmäiselle sijalle. Näet puolueen kannat kysymyksiin klikkaamalla puolueen nimeä.",
+      "resultsTip": "Pääset takaisin tuloksiin näpäyttämällä tätä ikonia yläpalkissa."
+    }
+  },
+  "error": {
+    "noTargetFound": "Yhtään puoluetta ei löytynyt!"
+  },
+  "exitGameMode": "Tavalliseen Nuorten Vaalikoneeseen"
+}

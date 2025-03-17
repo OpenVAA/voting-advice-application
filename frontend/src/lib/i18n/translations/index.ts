@@ -35,6 +35,7 @@ export const keys = [
   'entityList',
   'error',
   'feedback',
+  'gameMode',
   'help',
   'info',
   'maintenance',

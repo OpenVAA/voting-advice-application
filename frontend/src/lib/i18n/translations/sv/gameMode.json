@@ -1,0 +1,42 @@
+{
+  "title": "Lär känna partiernas skillnader och värderingar genom valkompassen",
+  "shortTitle": "Partiers skillnader och värderingar",
+  "intro": {
+    "heroEmoji": "🤖",
+    "title": "Välkommen till att lära sig partiers skillnader och värderingar med Valkompass för unga",
+    "ingress": "Besvara valkompassens frågor på ett sätt som placerar det tilldelade partiet nedan på första plats i ditt resultat.",
+    "content": "<p>Använd det tilldelade partiets webbplats som referens när du svarar. Fokusera särskilt på deras kommun- och välfärdsområdesvalsprogram.</p>",
+    "rerandomize": "Tilldela ett nytt parti"
+  },
+  "results": {
+    "perfect": {
+      "heroEmoji": "🏆",
+      "title": "Grattis!",
+      "ingress": "<p>Du fick partiet <strong>{targetName}</strong> {targetRankMembers, plural, =1 {} other {delad}} på första plats!</p>"
+    },
+    "good": {
+      "heroEmoji": "🥈",
+      "title": "Nästan perfekt!",
+      "ingress": "<p>Du fick partiet <strong>{targetName}</strong> {targetRankMembers, plural, =1 {} other {delad}} på plats {targetRank}!</p>"
+    },
+    "fair": {
+      "heroEmoji": "🥉",
+      "title": "Bra försök!",
+      "ingress": "<p>Du fick partiet <strong>{targetName}</strong> {targetRankMembers, plural, =1 {} other {delad}} på plats {targetRank}!</p>"
+    },
+    "notAvailable": {
+      "heroEmoji": "🙊",
+      "title": "Inget resultat…",
+      "ingress": "Valkompassens resultat kunde inte beräknas. Har du besvarat alla frågor?"
+    },
+    "common": {
+      "editAnswers": "Redigera dina svar",
+      "editAnswersTip": "Försök att justera dina svar så att det tilldelade partiet hamnar på första plats. Du kan se partiets åsikter genom att klicka på partiets namn.",
+      "resultsTip": "Du kan återgå till resultaten genom att trycka på denna ikon i toppmenyn."
+    }
+  },
+  "error": {
+    "noTargetFound": "Inget parti hittades!"
+  },
+  "exitGameMode": "Tillbaka till den vanliga Valkompass för unga"
+}

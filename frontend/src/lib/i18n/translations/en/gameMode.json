@@ -1,0 +1,42 @@
+{
+  "title": "Explore Party Differences and Values with the Election Compass",
+  "shortTitle": "Party Differences and Values",
+  "intro": {
+    "heroEmoji": "🤖",
+    "title": "Welcome to Exploring Party Differences and Values with the Election Compass for Young People",
+    "ingress": "Answer the Election Compass questions in a way that ranks the assigned party below as your top result.",
+    "content": "<p>Use the assigned party’s website as a reference while answering. Pay close attention to their municipal and county election programs.</p>",
+    "rerandomize": "Reassign a party"
+  },
+  "results": {
+    "perfect": {
+      "heroEmoji": "🏆",
+      "title": "Congratulations!",
+      "ingress": "<p>You ranked the party <strong>{targetName}</strong> {targetRankMembers, plural, =1 {} other {in a tie for}} first place!</p>"
+    },
+    "good": {
+      "heroEmoji": "🥈",
+      "title": "Almost perfect!",
+      "ingress": "<p>You ranked the party <strong>{targetName}</strong> {targetRankMembers, plural, =1 {} other {in a tie for}} place {targetRank}!</p>"
+    },
+    "fair": {
+      "heroEmoji": "🥉",
+      "title": "Good effort!",
+      "ingress": "<p>You ranked the party <strong>{targetName}</strong> {targetRankMembers, plural, =1 {} other {in a tie for}} place {targetRank}!</p>"
+    },
+    "notAvailable": {
+      "heroEmoji": "🙊",
+      "title": "No result…",
+      "ingress": "The game result could not be calculated. Have you answered all the questions?"
+    },
+    "common": {
+      "editAnswers": "Edit your answers",
+      "editAnswersTip": "Try modifying your answers to get the assigned party to the first place. You can see the party’s stances by clicking on the party name.",
+      "resultsTip": "You can return to the results by tapping this icon in the top bar."
+    }
+  },
+  "error": {
+    "noTargetFound": "No party was found!"
+  },
+  "exitGameMode": "Back to the Regular Election Compass for Young People"
+}

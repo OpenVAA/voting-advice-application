@@ -38,6 +38,9 @@ export type TranslationsPayload = Partial<{
   score: string | number;
   seconds: number;
   sourceUrl: string;
+  targetName: string;
+  targetRank: number;
+  targetRankMembers: number;
   timeLeft: number;
   username: string;
   [key: string]: unknown;
