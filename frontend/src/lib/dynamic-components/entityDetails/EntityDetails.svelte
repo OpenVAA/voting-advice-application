@@ -96,7 +96,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     if (tabs.includes('info') || tabs.includes('opinions')) {
       // If we're showing a nominated entity, we show the questions applicable to the election and constituency, otherwise default to all questions the entity has answered
       let questions = nomination ? nomination.applicableQuestions : nakedEntity.answeredQuestions;
-      questions.filter((q) => !(q.customData as CustomData['Question'])?.hidden);
+      questions = questions.filter((q) => !(q.customData as CustomData['Question'])?.hidden);
       infoQuestions = sortQuestions(questions.filter((q) => q.category.type !== 'opinion'));
       opinionQuestions = sortQuestions(questions.filter((q) => q.category.type === 'opinion'));
     } else {
