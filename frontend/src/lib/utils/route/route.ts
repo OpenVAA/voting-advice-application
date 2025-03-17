@@ -11,6 +11,7 @@ export const ROUTE = {
   About: `${VOTER}/about`,
   Elections: `${VOTER}/elections`,
   Constituencies: `${VOTER}/constituencies`,
+  GameModeIntro: `${VOTER_LOCATED}/game`,
   /** The Help route is currently redirected to About */
   Help: `${VOTER}/about`,
   Home: VOTER,
