@@ -1,10 +1,11 @@
 import { getCustomData } from '@openvaa/app-shared';
 import { ENTITY_TYPE } from '@openvaa/data';
 import { Filter, FilterGroup } from '@openvaa/filters';
-import { derived, type Readable } from 'svelte/store';
+import { parsimoniusDerived } from '$lib/contexts/utils/parsimoniusDerived';
 import { ucFirst } from '$lib/utils/text/ucFirst';
 import { buildParentFilters } from './buildParentFilters';
 import { buildQuestionFilter } from './buildQuestionFilter';
+import type { Readable } from 'svelte/store';
 import type { TranslationKey } from '$types';
 import type { NominationAndQuestionTree } from '../nominationAndQuestionStore';
 import type { SelectionTree } from '../selectionTree.type';
@@ -26,11 +27,11 @@ export function filterStore({
   locale: Readable<string>;
   t: Readable<(key: TranslationKey) => string>;
 }): Readable<FilterTree> {
-  return derived(
+  return parsimoniusDerived(
     [nominationsAndQuestions, locale, t],
     ([nominationsAndQuestions, locale, t]) => {
+      if (!nominationsAndQuestions || !locale || !t) return {};
       const tree: Partial<FilterTree> = {};
-
       for (const [electionId, electionContent] of Object.entries(nominationsAndQuestions)) {
         tree[electionId] = Object.fromEntries(
           Object.entries(electionContent).map(([entityType, { nominations, infoQuestions }]) => {

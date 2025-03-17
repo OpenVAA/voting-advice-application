@@ -40,14 +40,14 @@ export default function controller({ strapi }: { strapi: Core.Strapi }) {
     },
     find: async (ctx: Context) => {
       try {
-        const { collection, filters } = JSON.parse(ctx.request.body ?? '{}');
+        const { collection, filters, populate } = JSON.parse(ctx.request.body ?? '{}');
 
         if (!collection || !filters) return ctx.badRequest('Invalid request: Missing data');
 
         const result: FindDataResult = await strapi
           .plugin('openvaa-admin-tools')
           .service('data')
-          .find({ collection, filters });
+          .find({ collection, filters, populate });
 
         return ctx.send(result);
       } catch (error) {

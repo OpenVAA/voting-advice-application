@@ -6,6 +6,7 @@ Used to display an `Entity` as small tag including an icon.
 
 - `entity`: A possibly wrapped entity, e.g. candidate or a party.
 - `variant`: Whether to use an abbreviation or the full name. @default `'default'`
+- `hideParent`: Whether to hide the possible parent nomination. @default false
 - Any valid attributes of a `<div>` element.
 
 ### Usage
@@ -27,9 +28,10 @@ Used to display an `Entity` as small tag including an icon.
 
   export let entity: $$Props['entity'];
   export let variant: $$Props['variant'] = 'default';
+  export let hideParent: $$Props['hideParent'] = undefined;
 
   let nakedEntity: AnyEntityVariant;
-  $: ({ entity: nakedEntity } = unwrapEntity(entity));
+  $: ({ entity: nakedEntity, nomination } = unwrapEntity(entity));
 
   const ICONS: Record<EntityType, IconName> = {
     alliance: 'alliance',
@@ -53,4 +55,7 @@ Used to display an `Entity` as small tag including an icon.
       {nakedEntity.name}
     {/if}
   </span>
+  {#if !hideParent && nomination?.parentNomination}
+    <svelte:self entity={nomination?.parentNomination} variant="short" />
+  {/if}
 </div>

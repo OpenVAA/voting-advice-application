@@ -5,7 +5,13 @@ import { logDebugError } from '../logger';
 /**
  * Parse params from params and the URL.
  */
-export function parseParams({ params, url }: { params?: Record<string, string>; url?: URL }): Partial<Params> {
+export function parseParams({
+  params,
+  url
+}: {
+  params?: Record<string, string> | null;
+  url?: URL | null;
+}): Partial<Params> {
   const parsed: Partial<Params> = {};
   if (url) {
     for (const [key, value] of Object.entries(qs.parse(url.search.replace(/^\?/g, '')))) {

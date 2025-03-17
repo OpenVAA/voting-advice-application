@@ -4,7 +4,7 @@
     "title": "Feedback"
   },
   "organizationMatching": {
-    "content": "{partyMatchingMethod, select, answersOnly {<p>The party scores are calculated based on the answers given by the parties.</p>} mean {<p>The party scores are calculated based on the answers given by them or – if these are missing – from the average of their candidates’ answers.</p>} median {<p>The party scores are calculated based on the answers given by them or – if these are missing – from the median of their candidates’ answers.</p>} other {<p>The party scores are calculated based on the answers given by them or – if these are missing – from their candidates’ answers.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Note that candidates may disagree on some questions with their party, and the estimated party answers may therefore differ from the parties’ official stances.</p>}}",
+    "content": "{partyMatchingMethod, select, answersOnly {<p>The party results have been calculated based on the answers provided by the parties.</p>} imputed {<p>The party results have been calculated based on their provided answers or, if a party has not answered the questions, from the mode or median of its candidates' responses in the constituency.</p>} other {<p>The party results have been calculated based on their provided answers or, if a party has not answered the questions, based on the responses of its candidates in the constituency.</p>}} {partyMatchingMethod, select, answersOnly {} other {<p>Note that a party's candidates may disagree with their party on certain issues, so this calculated stance may not fully represent the party's official position.</p>}}",
     "title": "Party Matching"
   },
   "returnButton": "Return Home",

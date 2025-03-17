@@ -36,11 +36,18 @@ TODO[Svelte 5]: Maybe convert into `$snippet`.
 {#if action == null || action === false || action === ''}
   <slot />
 {:else if typeof action === 'function'}
-  <button on:click={action} class:hover-shaded={shadeOnHover} {...concatClass($$restProps, '!text-neutral')}>
+  <button
+    on:click={action}
+    class:hover-shaded={shadeOnHover}
+    {...concatClass($$restProps, 'transition-all !text-neutral')}>
     <slot />
   </button>
 {:else if typeof action === 'string'}
-  <a href={action} class:hover-shaded={shadeOnHover} {...concatClass($$restProps, '!text-neutral')}>
+  <a
+    href={action}
+    data-sveltekit-noscroll
+    class:hover-shaded={shadeOnHover}
+    {...concatClass($$restProps, 'transition-all !text-neutral')}>
     <slot />
   </a>
 {:else}
@@ -50,6 +57,6 @@ TODO[Svelte 5]: Maybe convert into `$snippet`.
 <style lang="postcss">
   .hover-shaded {
     /* hover: is a valid prefix */
-    @apply rounded-md transition-all hover:bg-base-content/20 hover:ring-4 hover:ring-base-content/20;
+    @apply rounded-md hover:bg-base-content/20 hover:ring-4 hover:ring-base-content/20;
   }
 </style>

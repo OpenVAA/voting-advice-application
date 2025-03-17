@@ -26,14 +26,12 @@
 
   const {
     constituenciesSelectable,
-    dataRoot,
     electionsSelectable,
     getRoute,
     idTokenClaims,
     isPreregistered,
     locale,
     popupQueue,
-    preregistrationElectionIds,
     t
   } = getCandidateContext();
   const { navigationSettings } = getLayoutContext(onDestroy);
@@ -53,8 +51,6 @@
   ////////////////////////////////////////////////////////////////////
   // Build steps, init elections and handle redirection
   ////////////////////////////////////////////////////////////////////
-
-  $preregistrationElectionIds = $dataRoot.elections.map(({ id }) => id);
 
   const steps = [
     $t('candidateApp.preregister.identification.start.step.identification'),

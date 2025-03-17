@@ -64,7 +64,7 @@ Display either an image or a initials-based avatar for an entity. The color of t
       classes += ' rounded-full';
 
       // Set custom color (if we have an image, these are not needed)
-      if (color) {
+      if (color?.normal) {
         styles += ` --bg-color: ${color.normal};`;
         classes += ' bg-[var(--bg-color)] text-primary-content';
         if (color.dark) {
@@ -90,10 +90,10 @@ Display either an image or a initials-based avatar for an entity. The color of t
           break;
         case 5:
         case 6:
-          initialsClasses += ' text-lg';
+          initialsClasses += ' text-md';
           break;
         default:
-          initialsClasses += ' text-md';
+          initialsClasses += ' text-sm';
       }
     }
   }

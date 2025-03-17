@@ -106,8 +106,11 @@ export class LocalServerDataProvider extends LocalServerAdapter implements DataP
 
 /**
  * Temporary utility for warning when unsupported options are used.
- * TODO: Remove when locale is supported.
+ * TODO: Remove when locale and includeUnconfirmed are supported.
  */
 function warnIfUnsupported(options?: GetDataOptionsBase): void {
+  if (!options) return;
   if (options?.locale) logDebugError('[LocalServerDataProvider] Locale is not yet supported. Ignoring it.');
+  if ('includeUnconfirmed' in options)
+    logDebugError('[LocalServerDataProvider] includeUnconfirmed is not yet supported. Ignoring it.');
 }

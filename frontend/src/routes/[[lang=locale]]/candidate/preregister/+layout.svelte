@@ -11,7 +11,7 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { getRoute, t, userData, idTokenClaims, clearIdToken } = getCandidateContext();
+  const { answersLocked, getRoute, t, userData, idTokenClaims, clearIdToken } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   ///////////////////////////////////////////////////////////////////
@@ -38,6 +38,13 @@
     </div>
     <Button
       text={$t('common.continue')}
+      variant="main"
+      on:click={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
+  </MainContent>
+{:else if $answersLocked}
+  <MainContent title={$t('candidateApp.error.registrationLocked')}>
+    <Button
+      text={$t('common.return')}
       variant="main"
       on:click={() => goto($getRoute('CandAppHome'), { invalidateAll: true })} />
   </MainContent>

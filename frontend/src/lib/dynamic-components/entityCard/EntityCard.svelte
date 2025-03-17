@@ -164,14 +164,19 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
 </script>
 
 <!-- If there are no subcards, we make the whole card clickable... -->
-<EntityCardAction action={subcards?.length ? false : action} shadeOnHover={variant === 'subcard'}>
+<EntityCardAction
+  action={variant === 'details' || subcards?.length ? false : action}
+  shadeOnHover={variant === 'subcard'}>
   <article
     aria-labelledby="{baseId}_title {match ? `${baseId}_callout` : ''}"
     aria-describedby="{baseId}_subtitle"
     {...concatClass($$restProps, classes)}>
     <!-- Card header -->
     <!-- ...but if subcards are present, only the card header is clickable -->
-    <EntityCardAction action={subcards?.length ? action : false} shadeOnHover class={gridClasses}>
+    <EntityCardAction
+      action={variant !== 'details' && subcards?.length ? action : false}
+      shadeOnHover
+      class={gridClasses}>
       <header
         class="grid items-center justify-items-start gap-x-md gap-y-xs"
         style="

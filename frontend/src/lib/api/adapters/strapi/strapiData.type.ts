@@ -131,7 +131,6 @@ export type StrapiQuestionCategoryData = StrapiObject<{
   color: string;
   colorDark: string;
   customData?: object | null;
-  emoji: string;
   info: LocalizedString;
   name: LocalizedString;
   order: number | null;

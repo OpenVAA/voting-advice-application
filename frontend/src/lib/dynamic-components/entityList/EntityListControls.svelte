@@ -30,14 +30,15 @@ TODO: Consider moving the tracking events away from the component and just addin
 <script lang="ts">
   import { TextPropertyFilter } from '@openvaa/filters';
   import { onDestroy } from 'svelte';
+  import { slide } from 'svelte/transition';
   import { Button } from '$lib/components/button';
   import { EntityFilters } from '$lib/components/entityFilters';
   import { TextEntityFilter } from '$lib/components/entityFilters/text';
-  import { Icon } from '$lib/components/icon';
   import { InfoBadge } from '$lib/components/infoBadge';
   import { Modal } from '$lib/components/modal';
   import { getAppContext } from '$lib/contexts/app';
   import { concatClass } from '$lib/utils/components';
+  import { DELAY } from '$lib/utils/timing';
   import type { EntityListControlsProps } from './EntityListControls.type';
 
   type $$Props = EntityListControlsProps;
@@ -178,16 +179,20 @@ TODO: Consider moving the tracking events away from the component and just addin
       {/if}
     {/if}
   </div>
-  {#if entities.length > 0 && output.length === 0}
-    {#if filterGroup?.filters.length}
-      <button class="my-lg flex flex-col items-center text-center text-secondary" on:click={openFilters}>
-        <Icon name="info" />
-        {$t('entityList.controls.noFilterResults')}
-      </button>
-    {:else}
-      <div class="my-lg flex flex-col items-center text-center text-secondary">
-        <Icon name="info" />
-        {$t('entityList.controls.noSearchResults')}
+  {#if entities.length > 0}
+    {#if output.length === 0}
+      <div
+        class="my-lg flex flex-col items-center text-center text-secondary"
+        transition:slide={{ duration: DELAY.md }}>
+        {filterGroup?.filters.length
+          ? $t('entityList.controls.noFilterResults')
+          : $t('entityList.controls.noSearchResults')}
+      </div>
+    {:else if output.length !== entities.length}
+      <div
+        class="my-lg flex flex-col items-center text-center text-secondary"
+        transition:slide={{ duration: DELAY.md }}>
+        {$t('entityList.controls.showingNumResults', { numShown: output.length })}
       </div>
     {/if}
   {/if}
@@ -197,7 +202,7 @@ TODO: Consider moving the tracking events away from the component and just addin
   <Modal
     title={$t('entityFilters.filters')}
     boxClass="sm:max-w-[calc(36rem_+_2_*_24px)]"
-    on:close={trackActiveFilters}
+    onClose={trackActiveFilters}
     bind:openModal={openFiltersModal}
     bind:closeModal={closeFiltersModal}>
     <EntityFilters {filterGroup} targets={entities} />

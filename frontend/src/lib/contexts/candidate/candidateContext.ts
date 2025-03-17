@@ -75,7 +75,7 @@ export function initCandidateContext(): CandidateContext {
   const preregistrationElections = derived(
     [appSettings, dataRoot, preregistrationElectionIds],
     ([appSettings, dataRoot, preregistrationElectionIds]) => {
-      const ids = getImpliedElectionIds({ appSettings, elections: dataRoot.elections }) ?? preregistrationElectionIds;
+      const ids = getImpliedElectionIds({ appSettings, dataRoot }) ?? preregistrationElectionIds;
       return ids.map((id) => dataRoot.getElection(id));
     }
   );
@@ -125,13 +125,15 @@ export function initCandidateContext(): CandidateContext {
   const infoQuestions = questionStore({
     categories: infoQuestionCategories,
     selectedElections,
-    selectedConstituencies
+    selectedConstituencies,
+    appType: 'candidate'
   });
 
   const opinionQuestions = questionStore({
     categories: opinionQuestionCategories,
     selectedElections,
-    selectedConstituencies
+    selectedConstituencies,
+    appType: 'candidate'
   });
 
   const questionBlocks = questionBlockStore({

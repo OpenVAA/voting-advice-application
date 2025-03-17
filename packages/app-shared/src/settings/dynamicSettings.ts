@@ -38,12 +38,15 @@ export const dynamicSettings: DynamicSettings = {
   },
   matching: {
     minimumAnswers: 5,
-    organizationMatching: 'median'
+    organizationMatching: 'impute'
   },
   questions: {
     categoryIntros: {
       allowSkip: true,
       show: true
+    },
+    interactiveInfo: {
+      enabled: false
     },
     questionsIntro: {
       allowCategorySelection: true,

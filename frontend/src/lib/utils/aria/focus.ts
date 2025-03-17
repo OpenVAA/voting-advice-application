@@ -34,7 +34,7 @@ export function attemptFocus(el: Element): boolean {
  * @returns true if the element is focusable
  */
 export function isFocusable(el: Element): el is Element & { focus: () => void } {
-  if ('tabindex' in el && (el.tabindex as number) < 0) return false;
+  if ('tabIndex' in el) return (el.tabIndex as number) >= 0;
   if ('ariaHidden' in el && el.ariaHidden) return false;
   if ('disabled' in el && el.disabled) return false;
   switch (el.nodeName) {

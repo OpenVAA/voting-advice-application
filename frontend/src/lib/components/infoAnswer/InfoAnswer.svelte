@@ -23,7 +23,6 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
   import { concatClass } from '$lib/utils/components';
   import { checkUrl, getLinkText } from '$lib/utils/links';
   import { sanitizeHtml } from '$lib/utils/sanitize';
-  import { ucFirst } from '$lib/utils/text/ucFirst';
   import type { InfoAnswerProps } from './InfoAnswer.type';
 
   type $$Props = InfoAnswerProps;
@@ -119,7 +118,7 @@ Used to display a possibly wrapped entity's answer to an info question. Dependin
     {@html sanitizeHtml(question.formatAnswer({ answer }))}
   </figure>
 {:else}
-  <span class:vaa-tag={asTag} {...$$restProps}>
-    {ucFirst(question.formatAnswer({ answer }))}
+  <span class:vaa-tag={asTag} {...concatClass($$restProps, 'uc-first')}>
+    {question.formatAnswer({ answer })}
   </span>
 {/if}

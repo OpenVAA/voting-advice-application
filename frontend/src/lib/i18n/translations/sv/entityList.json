@@ -2,7 +2,8 @@
   "controls": {
     "noFilterResults": "Filtren gav inga träffar. Du kan försöka ändra dem.",
     "noSearchResults": "Sökningen gav inga träffar. Du kan försöka ändra det.",
-    "searchPlaceholder": "Sök efter namn"
+    "searchPlaceholder": "Sök efter namn",
+    "showingNumResults": "Visar {numShown, plural, =1 {1 resultat} other {# resultat}}"
   },
   "showMore": "Visa mer"
 }

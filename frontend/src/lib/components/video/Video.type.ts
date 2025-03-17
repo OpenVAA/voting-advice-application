@@ -1,7 +1,15 @@
 import type { SvelteHTMLElements } from 'svelte/elements';
 import type { TrackingEvent } from '$lib/contexts/app/tracking';
 
-export type VideoProps = SvelteHTMLElements['div'] & {
+export type VideoProps = SvelteHTMLElements['div'] &
+  Partial<VideoContentProps> &
+  OptionalVideoProps &
+  BindableVideoProps;
+
+/**
+ * If not provided, the `video` element will be hidden until these properties are provided.
+ */
+export type VideoContentProps = {
   /**
    * The title of the video for labelling.
    */
@@ -23,15 +31,21 @@ export type VideoProps = SvelteHTMLElements['div'] & {
    */
   aspectRatio: number;
   /**
-   * The transcript text for the video as a HTML string. If empty, `captions` will be used instead.
+   * Optional transcript text for the video as a HTML string. If empty, `captions` will be used instead.
    */
   transcript?: string;
+};
+
+/**
+ * Optional video properties.
+ */
+export type OptionalVideoProps = {
   /**
    * The controls to hide. All are shown if the list is not defined. @default undefined
    */
   hideControls?: Array<VideoControl>;
   /**
-   * Whether to autoplay the video. @default true
+   * Whether to autoplay the video (when content is provided). @default true
    */
   autoPlay?: boolean;
   /**
@@ -55,14 +69,6 @@ export type VideoProps = SvelteHTMLElements['div'] & {
    */
   skipAmount?: number;
   /**
-   * Bindable: Whether the video is at the end (with a small margin)
-   */
-  atEnd?: boolean;
-  /**
-   * Bindable: Whether the video or the transcript is visible.
-   */
-  mode?: VideoMode;
-  /**
    * A callback triggered when the `video` element’s `ended` event is triggered.
    */
   onEnded?: () => void;
@@ -70,6 +76,20 @@ export type VideoProps = SvelteHTMLElements['div'] & {
    * A callback triggered when the video tracking event should be sent. Send to `TrackingService.startEvent` or `track` to track.
    */
   onTrack?: (event: TrackingEvent<VideoTrackingEventData>) => void;
+};
+
+/**
+ * Bindable video properties.
+ */
+export type BindableVideoProps = {
+  /**
+   * Bindable: Whether the video is at the end (with a small margin)
+   */
+  readonly atEnd?: boolean;
+  /**
+   * Bindable: Whether the video or the transcript is visible.
+   */
+  readonly mode?: VideoMode;
 };
 
 /**

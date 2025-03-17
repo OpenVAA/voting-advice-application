@@ -3,5 +3,6 @@
   "loginFailed": "Kirjautuminen epäonnistui. Tarkista käyttäjätunnus ja salasana.",
   "nominationNoElection": "Ehdokkaalta puuttuu vaali. Ota yhteyttä tukeen.",
   "saveFailed": "Anteeksi! Vastaustesi tallentaminen ei onnistunut. Yritä uudelleen ja jos ongelma jatkuu, ota yhteyttä tukeen.",
-  "userNoCandidate": "Sisäänkirjautuneeseen käyttäjään ei ole yhdistetty ehdokastietoja. Ota yhteyttä tukeen."
+  "userNoCandidate": "Sisäänkirjautuneeseen käyttäjään ei ole yhdistetty ehdokastietoja. Ota yhteyttä tukeen.",
+  "registrationLocked": "Valitettavasti rekisteröityminen ei enää ole mahdollista."
 }

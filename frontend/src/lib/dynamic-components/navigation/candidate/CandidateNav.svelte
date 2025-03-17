@@ -25,6 +25,7 @@ A template part that outputs the navigation menu for the Candidate App for use i
 
   const { navigation } = getLayoutContext(onDestroy);
   const {
+    answersLocked,
     appSettings,
     authToken,
     getRoute,
@@ -68,18 +69,20 @@ A template part that outputs the navigation menu for the Candidate App for use i
   {:else}
     <NavGroup>
       <NavItem href={$getRoute('CandAppLogin')} icon="login" text={$t('common.login')} />
-      {#if $appSettings.preRegistration?.enabled}
+      {#if !$answersLocked}
+        {#if $appSettings.preRegistration?.enabled}
+          <NavItem
+            href={$getRoute('CandAppPreregister')}
+            icon="create"
+            text={$t('candidateApp.preregister.identification.start.title')} />
+        {/if}
         <NavItem
-          href={$getRoute('CandAppPreregister')}
-          icon="create"
-          text={$t('candidateApp.preregister.identification.start.title')} />
+          href={$getRoute('CandAppRegister')}
+          icon="check"
+          text={$appSettings.preRegistration?.enabled
+            ? $t('candidateApp.register.titleWithPreregistration')
+            : $t('candidateApp.register.title')} />
       {/if}
-      <NavItem
-        href={$getRoute('CandAppRegister')}
-        icon="check"
-        text={$appSettings.preRegistration?.enabled
-          ? $t('candidateApp.register.titleWithPreregistration')
-          : $t('candidateApp.register.title')} />
     </NavGroup>
     <NavGroup>
       <NavItem href={$getRoute('CandAppForgotPassword')} icon="help" text={$t('candidateApp.login.forgotPassword')} />

@@ -11,6 +11,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
 - `cards`: The properties for the `EntityCard`s to show.
 - `itemsPerPage`: The number of entities to display on each page of the list. @default `50`
 - `itemsTolerance`: The fraction of `itemsPerPage` that can be exceeded on the last page to prevent showing a short last page. @default `0.2`
+- `scrollIntoView`: Whether to scroll loaded items into view. This may results in glitches when the list is contained in a modal. @default `true`
 - Any valid attributes of a `<div>` element.
 
 ### Bindable properties
@@ -47,6 +48,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
   export let itemsPerPage: NonNullable<$$Props['itemsPerPage']> = 50;
   export let itemsTolerance: NonNullable<$$Props['itemsTolerance']> = 0.2;
   export let itemsShown: $$Props['itemsShown'] = 0;
+  export let scrollIntoView: $$Props['scrollIntoView'] = true;
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -103,7 +105,7 @@ This is a dynamic component, because it renders the dynamic `EntityCard` compone
    */
   function showPage(index: number) {
     currentPage = index;
-    scrollToCard(index);
+    if (scrollIntoView) scrollToCard(index);
   }
 
   /**

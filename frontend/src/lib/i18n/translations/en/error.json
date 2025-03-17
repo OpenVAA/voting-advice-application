@@ -4,7 +4,7 @@
   "content": "<p>We're very sorry for the inconvenience. You can try to go back and reload the page and see if the problem persists.</p><p>If you still experience the problem, please send an email to {adminEmailLink} and describe the problem. Thank you!</p>",
   "default": "Something went wrong, sorry!",
   "general": "Something went wrong",
-  "noNominations": "There are no candidates or parties yet",
-  "noQuestions": "There are no questions yet",
+  "noNominations": "There are no candidates or parties in your constituency who have responded to the Election Compass.",
+  "noQuestions": "There are no questions related to your constituency in the Election Compass yet.",
   "unsupportedQuestion": "This question cannot be shown, sorry!"
 }

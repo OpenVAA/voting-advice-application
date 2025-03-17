@@ -1,7 +1,8 @@
-import { derived, type Readable } from 'svelte/store';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
+import { parsimoniusDerived } from './parsimoniusDerived';
 import type { Id } from '@openvaa/core';
 import type { DataObject, DataRoot } from '@openvaa/data';
+import type { Readable } from 'svelte/store';
 
 /**
  * Creates a derived store that holds an array of `DataObject`s whose `Id`s are returned by `idStore`.
@@ -22,7 +23,7 @@ export function dataCollectionStore<TObject extends DataObject>({
   getter: (id: Id, dataRoot: DataRoot) => TObject | undefined;
   noDuplicates?: boolean;
 }): Readable<Array<TObject>> {
-  return derived([dataRoot, idStore], ([dataRoot, idStore]) => {
+  return parsimoniusDerived([dataRoot, idStore], ([dataRoot, idStore]) => {
     if (!idStore) return [];
     const objects = idStore.map((id) => getter(id, dataRoot)).filter((o) => o != null);
     return noDuplicates ? removeDuplicates(objects) : objects;

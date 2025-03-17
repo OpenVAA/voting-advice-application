@@ -2,7 +2,8 @@
   "controls": {
     "noFilterResults": "The filters yielded no matches. You can try changing them.",
     "noSearchResults": "The search yielded no matches. You can try changing it.",
-    "searchPlaceholder": "Search by name"
+    "searchPlaceholder": "Search by name",
+    "showingNumResults": "Showing {numShown, plural, =1 {1 result} other {# results}}"
   },
   "showMore": "Show more"
 }

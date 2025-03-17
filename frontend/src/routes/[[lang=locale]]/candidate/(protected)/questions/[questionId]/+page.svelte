@@ -25,7 +25,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
   import { Input } from '$lib/components/input';
   import { Loading } from '$lib/components/loading';
   import { PreventNavigation } from '$lib/components/preventNavigation';
-  import { OpinionQuestionInput, QuestionInfo } from '$lib/components/questions';
+  import { OpinionQuestionInput, QuestionBasicInfo } from '$lib/components/questions';
   import { Warning } from '$lib/components/warning';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getLayoutContext } from '$lib/contexts/layout';
@@ -239,7 +239,7 @@ Display a question for answering or for dispalay if `$answersLocked` is `true`.
       <QuestionHeading slot="heading" {question} questionBlocks={$questionBlocks} onShadedBg />
 
       {#if info && info !== ''}
-        <QuestionInfo {info} />
+        <QuestionBasicInfo {info} />
       {/if}
 
       <div slot="primaryActions" class="grid w-full justify-items-center gap-lg">

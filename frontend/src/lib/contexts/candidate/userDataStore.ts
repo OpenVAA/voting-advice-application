@@ -25,7 +25,7 @@ export function userDataStore({
   locale
 }: {
   answersLocked: Readable<boolean>;
-  authToken: Readable<string>;
+  authToken: Readable<string | undefined>;
   dataWriterPromise: Promise<UniversalDataWriter>;
   locale: Readable<string>;
 }): UserDataStore {
@@ -145,9 +145,12 @@ export function userDataStore({
   }
 
   async function reloadCandidateData(): Promise<LocalizedCandidateData> {
+    const token = get(authToken);
+    if (!token) throw new Error('No authentication token provided');
+
     const dataWriter = await prepareDataWriter(dataWriterPromise);
     const userData = await dataWriter.getCandidateUserData({
-      authToken: get(authToken),
+      authToken: token,
       loadNominations: false,
       locale: get(locale)
     });

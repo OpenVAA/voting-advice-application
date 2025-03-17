@@ -171,7 +171,8 @@ export default {
       safelgr: `calc(env(safe-area-inset-right,  0px) + ${20 / 16}rem)`,
       safelgt: `calc(env(safe-area-inset-top,    0px) + ${20 / 16}rem)`,
       safelgb: `calc(env(safe-area-inset-bottom, 0px) + ${20 / 16}rem)`,
-      safenavt: `calc(env(safe-area-inset-top,   0px) + ${16 / 16}rem)` // For the top nav
+      safenavt: `calc(env(safe-area-inset-top,   0px) + ${16 / 16}rem)`, // For the top nav
+      touch: touchTargetSize
     },
     transitionDuration: {
       none: '0s',

@@ -34,6 +34,10 @@ const N_CONSTITUENCIES_PER_ELECTION = Array.from({ length: N_ELECTIONS }, (_, i)
  */
 const DO_LINK_CONSTITUENCIES = true;
 const N_CONSTITUENCIES = N_CONSTITUENCIES_PER_ELECTION.reduce((a, b) => a + b, 0);
+/**
+ * An array of alliances to create per constituency, where the number is that of parties in the alliance
+ */
+const N_ALLIED_PARTIES_PER_CONSTITUENCY = [2, 3];
 const N_CANDIDATES_PER_CONSTITUENCY = 10;
 const N_PARTIES = 10;
 const N_PARTIES_WITH_CLOSED_LISTS = 2;
@@ -142,7 +146,7 @@ export async function generateMockData() {
     });
     console.info('Done!');
     console.info('#######################################');
-    console.info('inserting one election');
+    console.info('inserting elections');
     await createElections(N_ELECTIONS).catch((e) => {
       throw e;
     });
@@ -198,6 +202,12 @@ export async function generateMockData() {
     console.info('#######################################');
     console.info('inserting party nominations');
     await createPartyNominations(N_PARTIES_WITH_CLOSED_LISTS).catch((e) => {
+      throw e;
+    });
+    console.info('Done!');
+    console.info('#######################################');
+    console.info('inserting alliances');
+    await createAlliances(N_ALLIED_PARTIES_PER_CONSTITUENCY).catch((e) => {
       throw e;
     });
     console.info('Done!');
@@ -544,6 +554,60 @@ async function createPartyNominations(length: number) {
   }
 }
 
+async function createAlliances(numParties: Array<number>) {
+  if (!numParties.length) return;
+  if (numParties.some((n) => n === 0)) throw new Error('numParties must contain non-zero values');
+
+  console.warn('Alliance creation not yet implemented!');
+
+  // Find all nominations with a party
+  const nominations = await strapi.documents('api::nomination.nomination').findMany({
+    filter: {
+      party: {
+        id: {
+          $notNull: true
+        }
+      }
+    },
+    populate: ['election', 'constituency', 'party']
+  });
+
+  // Build a set of parties that may be allied
+  const possibleAllies: {
+    [electionId: string]: {
+      [constituencyId: string]: Set<string>;
+    };
+  } = {};
+  for (const { election, constituency, party } of nominations) {
+    possibleAllies[election.documentId] ??= {};
+    possibleAllies[election.documentId][constituency.documentId] ??= new Set();
+    possibleAllies[election.documentId][constituency.documentId].add(party.documentId);
+  }
+
+  // Create alliances
+  for (const electionId in possibleAllies) {
+    console.error(electionId);
+    for (const constituencyId in possibleAllies[electionId]) {
+      console.error(constituencyId);
+      const parties = Array.from(possibleAllies[electionId][constituencyId]);
+      for (const n of numParties) {
+        console.error('Create', n);
+        if (n > parties.length) continue;
+        const allies = spliceRandom(parties, n);
+        console.error({ electionId, constituencyId, allies });
+        await strapi.documents('api::alliance.alliance').create({
+          data: {
+            election: electionId,
+            constituencies: [constituencyId],
+            parties: allies,
+            ...addMockId()
+          }
+        });
+      }
+    }
+  }
+}
+
 /**
  * Create questions
  * @param options.electionPctg The fraction of opinion questions categories that will have their `election` relation set to a random election.
@@ -832,6 +896,16 @@ function abbreviate(values: LocalizedString, options: AbbreviationOptions = { ty
 function addMockId(): { externalId: string } {
   const externalId = `${MOCK_EXTERNAL_ID_PREFIX}${crypto.randomUUID()}`;
   return { externalId };
+}
+
+/**
+ * Splice `n` random elements from the array.
+ */
+function spliceRandom<TItem>(array: Array<TItem>, n: number): Array<TItem> {
+  if (n > array.length) return array.splice(0);
+  const sample = faker.helpers.arrayElements(array, n);
+  sample.forEach((o) => array.splice(array.indexOf(o), 1));
+  return sample;
 }
 
 interface AbbreviationOptions {

@@ -40,7 +40,7 @@
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appCustomization, appSettings, darkMode, getRoute, newUserEmail, t } = getCandidateContext();
+  const { answersLocked, appCustomization, appSettings, darkMode, getRoute, newUserEmail, t } = getCandidateContext();
   const { pageStyles, topBarSettings } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -82,8 +82,14 @@
   /** The `showLogin` flag is set by the button to show the login */
   let showLogin = false;
 
-  // If preregistration is enabled, login details will be collapsed by default. They will be shown, however, if the email is defined, the show login button has been clicked or there was a login error
-  $: isLoginShown = !!(email || showLogin || !$appSettings.preRegistration?.enabled || status === 'error');
+  // If preregistration is possible, login details will be collapsed by default. They will be shown, however, if the email is defined, the show login button has been clicked or there was a login error
+  $: isLoginShown = !!(
+    email ||
+    showLogin ||
+    $answersLocked ||
+    !$appSettings.preRegistration?.enabled ||
+    status === 'error'
+  );
 
   onMount(() => {
     if (email) focusPassword();
@@ -138,7 +144,9 @@
       <div transition:slide={{ duration: DELAY.sm }} class="flex w-full flex-col items-center">
         {#if !showPasswordSetMessage}
           <p class="max-w-md text-center">
-            {$t('candidateApp.login.enterEmailAndPassword')}
+            {$answersLocked
+              ? $t('candidateApp.login.answersLockedInfo')
+              : $t('candidateApp.login.enterEmailAndPassword')}
           </p>
         {/if}
         <label for="email" class="hidden">{$t('candidateApp.common.email')}</label>
@@ -172,7 +180,7 @@
       </div>
     {/if}
 
-    {#if $appSettings.preRegistration?.enabled}
+    {#if !$answersLocked && $appSettings.preRegistration?.enabled}
       <div class="divider">{$t('common.or')}</div>
       <Button
         href={$getRoute('CandAppPreregister')}

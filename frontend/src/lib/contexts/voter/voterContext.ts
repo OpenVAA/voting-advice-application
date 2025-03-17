@@ -1,7 +1,7 @@
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openvaa/matching';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { derived, get } from 'svelte/store';
+import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { logDebugError } from '$lib/utils/logger';
 import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/utils/route';
@@ -11,8 +11,8 @@ import { filterStore } from './filters/filterStore';
 import { matchStore } from './matchStore';
 import { nominationAndQuestionStore } from './nominationAndQuestionStore';
 import { getAppContext } from '../../contexts/app';
-import { dataCollectionStore } from '../utils/dataCollectionStore';
 import { paramStore } from '../utils/paramStore';
+import { parsimoniusDerived } from '../utils/parsimoniusDerived';
 import { questionBlockStore } from '../utils/questionBlockStore';
 import { extractInfoCategories, extractOpinionCategories, questionCategoryStore } from '../utils/questionCategoryStore';
 import { questionStore } from '../utils/questionStore';
@@ -48,64 +48,63 @@ export function initVoterContext(): VoterContext {
 
   // Stores related to selection pages
 
-  const electionsSelectable = derived(
+  const electionsSelectable = parsimoniusDerived(
     [appSettings, dataRoot],
     ([appSettings, dataRoot]) => !appSettings.elections?.disallowSelection && dataRoot.elections?.length !== 1
   );
 
-  const constituenciesSelectable = derived(dataRoot, (dataRoot) =>
+  const constituenciesSelectable = parsimoniusDerived(dataRoot, (dataRoot) =>
     dataRoot.elections?.some((e) => !e.singleConstituency)
   );
 
   // Param-based collection stores
 
-  /**
-   * A paramStore with implied defaults.
-   */
-  const electionId = derived([paramStore('electionId'), appSettings, dataRoot], ([param, appSettings, dataRoot]) => {
-    if (param) return param;
-    if (dataRoot.elections.length === 0) return undefined;
-    return getImpliedElectionIds({
-      appSettings,
-      elections: dataRoot.elections
-    });
-  });
+  const electionId = paramStore('electionId');
 
-  const selectedElections = dataCollectionStore({
-    dataRoot,
-    idStore: electionId,
-    getter: (id, dr) => {
+  const constituencyId = paramStore('constituencyId');
+
+  const selectedElections = parsimoniusDerived(
+    [dataRoot, appSettings, electionId, constituencyId],
+    ([dataRoot, appSettings, electionId, constituencyId]) => {
+      if (!dataRoot.elections.length) return [];
+      const ids = electionId?.length
+        ? electionId
+        : getImpliedElectionIds({
+            appSettings,
+            dataRoot,
+            selectedConstituencyIds: constituencyId
+          });
+      if (!ids?.length) return [];
       try {
-        return dr.getElection(id);
+        return ids.map((id) => dataRoot.getElection(id));
       } catch (e) {
         logDebugError(`[selectedElections] Error fetching election: ${e}`);
         goto(get(getRoute)({ route: 'Elections', electionId: undefined, constituencyId: undefined }));
-        return undefined;
+        return [];
       }
     }
-  });
+  );
 
-  /**
-   * A paramStore with implied defaults.
-   */
-  const constituencyId = derived([paramStore('constituencyId'), selectedElections], ([param, elections]) => {
-    if (param) return param;
-    return getImpliedConstituencyIds({ elections });
-  });
-
-  const selectedConstituencies = dataCollectionStore({
-    dataRoot,
-    idStore: constituencyId,
-    getter: (id, dr) => {
+  const selectedConstituencies = parsimoniusDerived(
+    [dataRoot, constituencyId, electionId],
+    ([dataRoot, constituencyId, electionId]) => {
+      if (!dataRoot.constituencies.length) return [];
+      const ids = constituencyId?.length
+        ? constituencyId
+        : getImpliedConstituencyIds({
+            dataRoot,
+            selectedElectionIds: electionId
+          });
+      if (!ids?.length) return [];
       try {
-        return dr.getConstituency(id);
+        return ids.map((id) => dataRoot.getConstituency(id));
       } catch (e) {
         logDebugError(`[selectedConstituencies] Error fetching constituency: ${e}`);
         goto(get(getRoute)({ route: 'Constituencies', constituencyId: undefined }));
-        return undefined;
+        return [];
       }
     }
-  });
+  );
 
   ////////////////////////////////////////////////////////////
   // Questions and QuestionCategories
@@ -123,13 +122,15 @@ export function initVoterContext(): VoterContext {
   const infoQuestions = questionStore({
     categories: infoQuestionCategories,
     selectedElections,
-    selectedConstituencies
+    selectedConstituencies,
+    appType: 'voter'
   });
 
   const opinionQuestions = questionStore({
     categories: opinionQuestionCategories,
     selectedElections,
-    selectedConstituencies
+    selectedConstituencies,
+    appType: 'voter'
   });
 
   const selectedQuestionCategoryIds = sessionStorageWritable('voterContext-selectedCategoryIds', new Array<Id>());
@@ -150,7 +151,7 @@ export function initVoterContext(): VoterContext {
 
   const answers = answerStore({ startEvent });
 
-  const resultsAvailable = derived(
+  const resultsAvailable = parsimoniusDerived(
     [appSettings, opinionQuestions, answers, selectedElections],
     ([appSettings, questions, answers, selectedElections]) => {
       // For results to be available, we need at least the specified number of answers for each election
@@ -163,15 +164,31 @@ export function initVoterContext(): VoterContext {
   );
 
   /** The types of entities we show in results */
-  const entityTypes = derived(appSettings, (appSettings) => appSettings.results?.sections ?? []);
+  const entityTypes = parsimoniusDerived(appSettings, (appSettings) => appSettings.results?.sections ?? []);
+
+  /** The parent entity matching method */
+  const parentMatchingMethod = parsimoniusDerived(
+    appSettings,
+    (appSettings) => appSettings.matching?.organizationMatching || 'none'
+  );
 
   // Matching and filtering depend on the available nominations and questions, for which we use a utility store
   const nominationsAndQuestions = nominationAndQuestionStore({
     constituencies: selectedConstituencies,
     dataRoot,
     elections: selectedElections,
-    entityTypes
+    entityTypes,
+    parentMatchingMethod
   });
+
+  const nominationsAvailable = parsimoniusDerived(nominationsAndQuestions, (nominationsAndQuestions) =>
+    Object.fromEntries(
+      Object.entries(nominationsAndQuestions).map(([id, contents]) => [
+        id,
+        Object.values(contents).some(({ nominations }) => nominations.length > 0)
+      ])
+    )
+  );
 
   const algorithm = new MatchingAlgorithm({
     distanceMetric: DISTANCE_METRIC.Manhattan,
@@ -180,10 +197,10 @@ export function initVoterContext(): VoterContext {
     }
   });
 
-  const minAnswers = derived(appSettings, (appSettings) => appSettings.matching.minimumAnswers);
+  const minAnswers = parsimoniusDerived(appSettings, (appSettings) => appSettings.matching.minimumAnswers);
 
   /** Get the entityTypes whose cardContents include `submatches` */
-  const calcSubmatches = derived(appSettings, (appSettings) =>
+  const calcSubmatches = parsimoniusDerived(appSettings, (appSettings) =>
     Object.entries(appSettings.results.cardContents)
       .filter(([, value]) => value.includes('submatches'))
       .map(([type]) => type as EntityType)
@@ -228,6 +245,7 @@ export function initVoterContext(): VoterContext {
     infoQuestionCategories,
     infoQuestions,
     matches,
+    nominationsAvailable,
     opinionQuestionCategories,
     opinionQuestions,
     resetVoterData,

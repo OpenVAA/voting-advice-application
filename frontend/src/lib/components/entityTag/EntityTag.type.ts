@@ -8,4 +8,8 @@ export type EntityTagProps = SvelteHTMLElements['div'] & {
    * Whether to use an abbreviation or the full name. @default 'default'
    */
   variant?: 'default' | 'short' | 'full';
+  /**
+   * Whether to hide the possible parent nomination. @default false
+   */
+  hideParent?: boolean;
 };

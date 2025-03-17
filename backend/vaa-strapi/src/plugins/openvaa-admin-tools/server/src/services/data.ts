@@ -112,27 +112,29 @@ export default function service({ strapi }: { strapi: Core.Strapi }) {
      * Arbitraritly find data and receive the the results.
      * @param collection - The collection name.
      * @param filters - The filters to apply to the find operation.
+     * @param populate - The optional populate options to apply to the find operation.
      * @returns A `FindDataResult` object with the found data.
      * @fails If the collection is invalid.
      */
     find: async ({
       collection,
       filters,
+      populate,
     }: {
       collection: ImportableCollection;
       filters: object;
+      populate?: object;
     }): Promise<FindDataResult> => {
       if (!(collection in IMPORTABLE_COLLECTIONS))
         return {
           type: 'failure',
           cause: `Invalid collection ${collection}`,
         };
-      const data = await strapi
-        .documents(IMPORTABLE_COLLECTIONS[collection].api)
-        .findMany({
-          filters,
-        })
-        .catch((e) => e);
+      const func = strapi.documents(IMPORTABLE_COLLECTIONS[collection].api).findMany;
+      const data = await func({
+        filters,
+        populate,
+      } as unknown as Parameters<typeof func>[0]).catch((e) => e);
       if (data instanceof Error) {
         return {
           type: 'failure',

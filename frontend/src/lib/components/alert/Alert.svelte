@@ -36,7 +36,7 @@ Show a non-model alert or dialog that appears at the bottom of the screen.
   bind:closeAlert
   title="Can we help you?"
   icon="warning"
-  on:close={() => console.info('Alert closed')}>
+  onClose={() => console.info('Alert closed')}>
   Please tell us whether we can help you?
   <div slot="actions" class="flex flex-col w-full max-w-md mx-auto">
     <Button on:click={() => {console.info('Yes'); closeAlert();}} text="Yes" variant="main"/>

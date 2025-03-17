@@ -1,5 +1,6 @@
 import type { Tweened } from 'svelte/motion';
 import type { Writable } from 'svelte/store';
+import type { OptionalVideoProps, Video, VideoContentProps, VideoMode } from '$lib/components/video';
 import type { DeepPartial } from '$lib/utils/merge';
 import type { StackedStore } from '../utils/stackedStore';
 
@@ -26,6 +27,10 @@ export type LayoutContext = {
    * NB. This is not contained under `navigation` for easier store access.
    */
   navigationSettings: StackedStore<NavigationSettings, DeepPartial<NavigationSettings>>;
+  /**
+   * Settings related to the video player.
+   */
+  video: VideoController;
 };
 
 export interface PageStyles {
@@ -34,9 +39,9 @@ export interface PageStyles {
   };
 }
 
-type TopBarAction = 'cancel' | 'feedback' | 'help' | 'logout' | 'results' | 'return';
+export type TopBarAction = 'cancel' | 'feedback' | 'help' | 'logout' | 'results' | 'return';
 
-type TopBarActionsSettings = {
+export type TopBarActionsSettings = {
   [action in TopBarAction]: 'hide' | 'show';
 } & {
   cancelButtonLabel: string;
@@ -51,12 +56,12 @@ export interface TopBarSettings {
   actions: TopBarActionsSettings;
 }
 
-interface Progress {
+export interface Progress {
   current: Tweened<number>;
   max: Writable<number>;
 }
 
-interface Navigation {
+export interface Navigation {
   /**
    * A function that closes the navigation drawer.
    */
@@ -71,4 +76,35 @@ export interface NavigationSettings {
    * Whether to hide the nav menu and the button opening it. Default is `false`.
    */
   hide?: boolean;
+}
+
+/**
+ * An object for controlling the video player.
+ */
+export interface VideoController {
+  /**
+   * Change the video contents, i.e. sources, captions, poster and transcript.
+   * @param props - The new video content and other properties.
+   * @param options.autoshow - If `true`, the video will be shown automatically. @default true
+   * @returns A `Promise` that resolves to `true` if the `video` element was present.
+   */
+  load: (props: VideoContentProps & OptionalVideoProps, options?: { autoshow?: boolean }) => Promise<boolean>;
+  /**
+   * Whether to show the video player. @default false
+   * Will be automatically set to `true` when `load` is called.
+   */
+  show: Writable<boolean>;
+  /**
+   * Whether the video player has content. @default false
+   * NB. You do not usually need to set this manually. It will instead be automatically set to `true` when `load` is called and `false` on `afterNavigate`.
+   */
+  hasContent: Writable<boolean>;
+  /**
+   * Whether the player is in `text` or `video` mode. This will be set internally, so it should only be read under normal circumstances. @default 'video'
+   */
+  mode: Writable<VideoMode>;
+  /**
+   * A reference to the `Video` component. This is mainly used internally, but can be accessed for fine-grained control.
+   */
+  player: Writable<Video | undefined>;
 }

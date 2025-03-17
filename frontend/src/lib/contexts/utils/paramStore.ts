@@ -1,6 +1,7 @@
-import { derived, type Readable } from 'svelte/store';
 import { page } from '$app/stores';
 import { type ArrayParam, type Param, parseParams } from '$lib/utils/route';
+import { parsimoniusDerived } from './parsimoniusDerived';
+import type { Readable } from 'svelte/store';
 
 /**
  * Create a derived store that holds the value of a route or search parameter.
@@ -10,12 +11,9 @@ import { type ArrayParam, type Param, parseParams } from '$lib/utils/route';
 export function paramStore<TParam extends Param>(
   param: TParam
 ): Readable<TParam extends ArrayParam ? Array<string> : string | undefined> {
-  return derived(
+  return parsimoniusDerived(
     page,
-    (page) => {
-      const params = parseParams(page);
-      return params[param];
-    },
-    undefined
-  ) as Readable<TParam extends ArrayParam ? Array<string> : string | undefined>;
+    (page) => parseParams(page)[param] as TParam extends ArrayParam ? Array<string> : string | undefined,
+    { differenceChecker: JSON.stringify }
+  );
 }

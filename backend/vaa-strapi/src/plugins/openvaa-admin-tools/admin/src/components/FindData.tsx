@@ -21,13 +21,16 @@ export function FindData(): ReactElement {
   const intro = (
     <Flex direction="column" gap={3} alignItems="stretch">
       <p>
-        Find any data. Provide both the collection and the filters to apply, e.g.:
+        Find and export any data. Provide both the collection and the filters to apply as well as
+        optional populate terms, e.g.:
         <code>
           {'{'}
           "collection": "candidates", "filters": {'{'}
           "email": {'{'}
           "$contains": "example.com"
           {'}'}
+          {'}'}, "populate": {'{'}
+          "nominations": true
           {'}'}
           {'}'}
         </code>

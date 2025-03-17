@@ -3,5 +3,6 @@
   "forgotPassword": "Forgot Password?",
   "title": "Sign in",
   "unknownError": "There was an error with your user data. Please contact support if the issue persists.",
-  "wrongEmailOrPassword": "Wrong email or password"
+  "wrongEmailOrPassword": "Wrong email or password",
+  "answersLockedInfo": "Registration or editing answers is no longer possible, but you can still log in to view your information."
 }

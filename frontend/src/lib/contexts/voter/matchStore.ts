@@ -1,9 +1,10 @@
-import { derived, type Readable } from 'svelte/store';
 import { removeDuplicates } from '$lib/utils/removeDuplicates';
 import { countAnswers } from './countAnswers';
 import { Voter } from './voter';
+import { parsimoniusDerived } from '../utils/parsimoniusDerived';
 import type { EntityType } from '@openvaa/data';
 import type { MatchingAlgorithm } from '@openvaa/matching';
+import type { Readable } from 'svelte/store';
 import type { AnswerStore } from './answerStore.type';
 import type { NominationAndQuestionTree } from './nominationAndQuestionStore';
 import type { SelectionTree } from './selectionTree.type';
@@ -31,7 +32,7 @@ export function matchStore({
   minAnswers: Readable<number>;
   calcSubmatches: Readable<Array<EntityType>>;
 }): Readable<MatchTree> {
-  return derived(
+  return parsimoniusDerived(
     [answers, nominationsAndQuestions, minAnswers, calcSubmatches],
     ([answers, nominationsAndQuestions, minAnswers, calcSubmatches]) => {
       minAnswers ??= 1;

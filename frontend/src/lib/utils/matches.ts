@@ -7,6 +7,7 @@ import {
   QuestionCategory
 } from '@openvaa/data';
 import { unwrapEntity } from './entities';
+import { compareMaybeWrappedEntities } from './sorting';
 import type { Id } from '@openvaa/core';
 import type { Match } from '@openvaa/matching';
 import type { MatchTree } from '$lib/contexts/voter/matchStore';
@@ -61,7 +62,8 @@ export function findCandidateNominations({
         nominationId: id
       })
     )
-    .filter((n) => n != null);
+    .filter((n) => n != null)
+    .sort(compareMaybeWrappedEntities);
 
   // Use the matches only if these are found for all nominations
   if (candidateMatches.length === candidateNominations.length)

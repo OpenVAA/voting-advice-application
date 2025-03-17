@@ -28,7 +28,15 @@ export type GetConstituenciesOptions = GetDataOptionsBase & FilterById;
 /**
  * The options for the `getNominationData` method.
  */
-export type GetNominationsOptions = GetDataOptionsBase & FilterByElection & FilterByConstituency;
+export type GetNominationsOptions = GetDataOptionsBase &
+  FilterByElection &
+  FilterByConstituency & {
+    /**
+     * If `true`, include unconfirmed or draft nominations will also be included. They're excluded by default.
+     * This may be useful for preview purposes, but this option should not be used in voter-facing instances.
+     */
+    includeUnconfirmed?: boolean;
+  };
 
 /**
  * The options for the `getEntityData` method. NB. If the `id` filter is defined, the `entityType` filter must also be defined.

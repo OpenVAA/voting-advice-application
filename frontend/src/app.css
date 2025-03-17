@@ -182,6 +182,11 @@
     background-color: transparent;
   }
 
+  /* Add background color to checkboxes */
+  .checkbox {
+    @apply bg-base-100;
+  }
+
   /* Drawer 
    * Fix screen height on iOS Safari */
   .drawer {

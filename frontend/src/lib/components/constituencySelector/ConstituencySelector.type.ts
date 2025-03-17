@@ -1,5 +1,5 @@
 import type { Id } from '@openvaa/core';
-import type { Election } from '@openvaa/data';
+import type { ConstituencyGroup, Election } from '@openvaa/data';
 import type { SvelteHTMLElements } from 'svelte/elements';
 
 export type ConstituencySelectorProps = SvelteHTMLElements['div'] & {
@@ -20,7 +20,11 @@ export type ConstituencySelectorProps = SvelteHTMLElements['div'] & {
    */
   selected?: { [electionId: Id]: Id | '' };
   /**
-   * A utility bindable value which is `true` when a selection has been made for each `Election`.
+   * If specified, the only this group is offered for selection and the `Constituency`s for the `Election`s are implied from this one. Only meaningful when there are multiple `Election`s whose `ConstituencyGroup` hierarchies overlap only partially. To be used when the `elections.startFromConstituencyGroup` setting is set.
+   */
+  useSingleGroup?: ConstituencyGroup;
+  /**
+   * A utility bindable value which is `true` when a selection has been made for each `Election` or for the single group if `useSingleGroup` is set.
    */
   readonly selectionComplete?: boolean;
   /**

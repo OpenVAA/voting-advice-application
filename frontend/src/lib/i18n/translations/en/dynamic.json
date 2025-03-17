@@ -36,7 +36,10 @@
   },
   "elections": {
     "heroEmoji": "🗳️",
-    "ingress": "Select the elections for which you want to find candidates or parties."
+    "ingress": {
+      "multipleElections": "Select the elections for which you want to find candidates or parties.",
+      "singleElection": "Only one election is held in your selected constituency."
+    }
   },
   "error": {
     "heroEmoji": "🙊"

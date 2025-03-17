@@ -31,28 +31,25 @@ See `+page.ts` for possible redirects.
   // Initialize elections and possible implied constituencies
   ////////////////////////////////////////////////////////////////////
 
-  let elections: Array<Election>;
-  /** Used to extend `constituencyId` param when continuing */
-  let impliedConstituencies: { [electionId: Id]: Id } = {};
-  let selected = ($selectedElections.length ? $selectedElections : $dataRoot.elections).map((e) => e.id);
+  let elections: Array<Election> = [];
+  let selected: Array<Id>;
 
   $: {
+    // TODO[Svelte 5]: See if we need this reactivity anymore
     elections = $dataRoot.elections;
-    if ($appSettings.elections?.startFromConstituencyGroup && $selectedConstituencies.length) {
-      const constituency = $selectedConstituencies[0];
-      // Only show election for which a Constituency can be implied and save these for later
-      elections = elections.filter((e) => {
-        let constituencyId: Id | undefined;
-        for (const group of e.constituencyGroups) {
-          constituencyId = group.getImpliedConstituency(constituency)?.id;
-          if (constituencyId) {
-            impliedConstituencies[e.id] = constituencyId;
-            return true;
-          }
-        }
-        return false;
-      });
+    if ($appSettings.elections?.startFromConstituencyGroup) {
+      // Only show elections for which a Constituency is available
+      elections = elections.filter((e) => e.getApplicableConstituency($selectedConstituencies));
     }
+    setSelected();
+  }
+
+  /**
+   * Separate to prevent excessive reactivity.
+   * TODO[Svelte 5]: Probably unnecessary
+   */
+  function setSelected(): void {
+    selected = ($selectedElections.length ? $selectedElections : elections).map((e) => e.id);
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -65,20 +62,13 @@ See `+page.ts` for possible redirects.
 
   function handleSubmit(): void {
     if (!canSubmit) return;
-    let route: string;
-    // If we're using implied constituencies, we update the constituencyId param to include the implied constituencies for each selected election. We also need to filter elections because the initial selection may inlude elections later filtered out
-    if ($appSettings.elections?.startFromConstituencyGroup) {
-      route = $getRoute({
-        route: 'Questions',
-        electionId: selected.filter((id) => elections.map((e) => e.id).includes(id)),
-        constituencyId: Object.entries(impliedConstituencies)
-          .filter(([k]) => selected.includes(k))
-          .map(([, v]) => v)
-      });
-    } else {
-      route = $getRoute({ route: 'Constituencies', electionId: selected });
-    }
-    goto(route);
+    const electionId = Object.values(selected);
+    goto(
+      $appSettings.elections?.startFromConstituencyGroup
+        ? $getRoute({ route: 'Questions', electionId })
+        : // Reset any lingering electionIds which may have been left in the search param if a different constituency was seleced before
+          $getRoute({ route: 'Constituencies', electionId, constituencyId: undefined })
+    );
   }
 </script>
 
@@ -87,11 +77,15 @@ See `+page.ts` for possible redirects.
     <HeroEmoji emoji={$t('dynamic.elections.heroEmoji')} />
   </figure>
 
-  <p class="text-center">
-    {$t('dynamic.elections.ingress')}
-  </p>
+  {#if elections.length}
+    <p class="text-center">
+      {elections.length === 1
+        ? $t('dynamic.elections.ingress.singleElection')
+        : $t('dynamic.elections.ingress.multipleElections')}
+    </p>
 
-  <ElectionSelector {elections} bind:selected />
+    <ElectionSelector {elections} bind:selected />
+  {/if}
 
   <Button
     slot="primaryActions"

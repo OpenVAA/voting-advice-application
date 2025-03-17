@@ -114,6 +114,7 @@ module.exports = async (plugin: Core.Plugin) => {
     handler: 'candidate.check',
     config: {
       middlewares: ['plugin::users-permissions.rateLimit'],
+      policies: ['global::not-answers-locked'],
       prefix: ''
     }
   });
@@ -123,6 +124,7 @@ module.exports = async (plugin: Core.Plugin) => {
     handler: 'candidate.register',
     config: {
       middlewares: ['plugin::users-permissions.rateLimit'],
+      policies: ['global::not-answers-locked'],
       prefix: ''
     }
   });
@@ -132,6 +134,7 @@ module.exports = async (plugin: Core.Plugin) => {
     handler: 'candidate.preregister',
     config: {
       middlewares: ['plugin::users-permissions.rateLimit'],
+      policies: ['global::not-answers-locked'],
       prefix: ''
     }
   });

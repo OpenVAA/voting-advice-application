@@ -36,7 +36,10 @@
   },
   "elections": {
     "heroEmoji": "🗳️",
-    "ingress": "Välj de val som du vill hitta kandidater eller partier till."
+    "ingress": {
+      "multipleElections": "Välj de val som du vill hitta kandidater eller partier till.",
+      "singleElection": "Endast ett val hålls i din valda valkretsen."
+    }
   },
   "error": {
     "heroEmoji": "🙊"

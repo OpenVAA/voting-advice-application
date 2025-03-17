@@ -9,7 +9,7 @@
     "lowercase": "Pieni kirjain",
     "number": "Numero",
     "repetition": "Sisältää merkkien toistoa",
-    "symbol": "Symboli",
+    "symbol": "Erikoismerkki (kuten !?%#€)",
     "uppercase": "Iso kirjain",
     "username": "Vältä nimesi käyttämistä salasanassa"
   },

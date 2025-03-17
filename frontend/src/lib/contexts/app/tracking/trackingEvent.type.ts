@@ -30,6 +30,9 @@ type TrackingEventName =
   | 'question_startFrom'
   | 'questionInfo_collapse'
   | 'questionInfo_expand'
+  | 'questionExtendedInfo_collapseSection'
+  | 'questionExtendedInfo_expandSection'
+  | 'questionExtendedInfo_open'
   | `results_browse_${EntityType}`
   | 'results_browse'
   | 'results_changeElection'

@@ -38,6 +38,10 @@ export type VoterContext = AppContext & {
    */
   resultsAvailable: Readable<boolean>;
   /**
+   * A utility store detailing whether any nominations are available for the selected `Election`s.
+   */
+  nominationsAvailable: Readable<{ [selectedElectionId: Id]: boolean }>;
+  /**
    * The matched `Nomination`s for each `Election` and `EntityType`.
    */
   matches: Readable<MatchTree>;

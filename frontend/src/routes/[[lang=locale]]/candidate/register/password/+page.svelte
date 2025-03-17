@@ -13,7 +13,6 @@
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { PasswordSetter } from '$lib/candidate/components/passwordSetter';
@@ -21,7 +20,6 @@
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup } from '$lib/components/headingGroup';
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import { getLayoutContext } from '$lib/contexts/layout';
   import { logDebugError } from '$lib/utils/logger';
   import MainContent from '../../../MainContent.svelte';
 
@@ -30,7 +28,6 @@
   ////////////////////////////////////////////////////////////////////
 
   const { getRoute, newUserEmail, register, t, userData } = getCandidateContext();
-  const { pageStyles } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
   // Check that user is not logged and all params are provided
@@ -83,12 +80,6 @@
     status = 'success';
     await goto($getRoute('CandAppLogin'));
   }
-
-  ///////////////////////////////////////////////////////////////////
-  // Top bar and styling
-  ////////////////////////////////////////////////////////////////////
-
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
 </script>
 
 <MainContent title={$t('candidateApp.register.title')}>

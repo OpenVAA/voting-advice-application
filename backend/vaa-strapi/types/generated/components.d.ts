@@ -195,8 +195,7 @@ export interface SettingsMatching extends Struct.ComponentSchema {
   };
   attributes: {
     minimumAnswers: Schema.Attribute.Integer & Schema.Attribute.Required;
-    organizationMatching: Schema.Attribute.Enumeration<['none', 'answersOnly', 'mean', 'median']> &
-      Schema.Attribute.Required;
+    organizationMatching: Schema.Attribute.Enumeration<['none', 'answersOnly', 'impute']> & Schema.Attribute.Required;
   };
 }
 

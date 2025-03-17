@@ -21,7 +21,6 @@ import {
   parseSingleRelationId
 } from '../utils';
 import { parseEntityType } from '../utils/parseEntityType';
-import type { CustomData } from '@openvaa/app-shared';
 import type { DPDataType } from '$lib/api/base/dataTypes';
 import type {
   GetAppCustomizationOptions,
@@ -137,6 +136,10 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
   protected async _getNominationData(options: GetNominationsOptions = {}): Promise<DPDataType['nominations']> {
     const locale = options.locale ?? null;
     const params = buildFilterParams(options);
+    if (!options.includeUnconfirmed) {
+      params.filters ??= {};
+      params.filters.unconfirmed = { $ne: 'true' };
+    }
     params.populate = {
       constituency: 'true',
       election: 'true',
@@ -212,14 +215,12 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     const categories = new Array<QuestionCategoryData>();
     const allQuestions = new Map<string, AnyQuestionVariantData>();
     for (const category of data) {
-      const { color, colorDark, constituencies, elections, emoji, questions, type } = category;
-      const customData: CustomData['QuestionCategory'] = { emoji };
+      const { color, colorDark, constituencies, elections, questions, type } = category;
       categories.push({
         ...parseBasics(category, locale),
         color: { normal: color, dark: colorDark },
         constituencyIds: parseRelationIds(constituencies),
         electionIds: parseRelationIds(elections),
-        customData,
         type
       });
       if (!questions) continue;
@@ -239,8 +240,8 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         if (!questionType) throw new Error(`Question ${documentId} has no questionType.`);
         // Parsing the question type may yield props that belong to the question’s customData
         const { customData: typeCustom, ...typeProps } = parseQuestionType(questionType, locale);
-        const combinedCustomData: CustomData['Question'] = {
-          ...customData,
+        // We'll add these to the question’s own customData, which will be parsed by parseBasics
+        const additionalCustomData = {
           ...typeCustom,
           allowOpen: !!allowOpen,
           fillingInfo: translate(fillingInfo, locale),
@@ -248,12 +249,11 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
           required: !!required
         };
         allQuestions.set(documentId, {
-          ...parseBasics(question, locale),
+          ...parseBasics({ ...question, customData: { ...customData, ...additionalCustomData } }, locale),
           ...typeProps,
           categoryId: category.documentId,
           constituencyIds: parseRelationIds(constituencies),
-          entityType: parseEntityType(entityType),
-          customData: combinedCustomData
+          entityType: parseEntityType(entityType)
         } as AnyQuestionVariantData);
       }
     }

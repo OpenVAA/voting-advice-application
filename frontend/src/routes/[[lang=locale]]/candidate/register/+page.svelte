@@ -11,7 +11,6 @@
 -->
 
 <script lang="ts">
-  import { onDestroy } from 'svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { LogoutButton } from '$lib/candidate/components/logoutButton';
@@ -19,7 +18,6 @@
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
   import { getCandidateContext } from '$lib/contexts/candidate';
-  import { getLayoutContext } from '$lib/contexts/layout';
   import { logDebugError } from '$lib/utils/logger';
   import MainContent from '../../MainContent.svelte';
 
@@ -28,7 +26,6 @@
   ////////////////////////////////////////////////////////////////////
 
   const { appSettings, checkRegistrationKey, getRoute, t, userData } = getCandidateContext();
-  const { pageStyles } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
   // Handle checking registration key
@@ -71,12 +68,6 @@
   function handleSubmit() {
     if (registrationKey) checkKeyAndContinue(registrationKey);
   }
-
-  ///////////////////////////////////////////////////////////////////
-  // Top bar and styling
-  ////////////////////////////////////////////////////////////////////
-
-  pageStyles.push({ drawer: { background: 'bg-base-300' } });
 </script>
 
 <MainContent

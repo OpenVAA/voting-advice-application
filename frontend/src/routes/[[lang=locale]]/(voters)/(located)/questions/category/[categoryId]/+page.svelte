@@ -38,7 +38,7 @@ Display the intro to a question category and possibly a button with which to ski
   ////////////////////////////////////////////////////////////////////
 
   const { appSettings, getRoute, dataRoot, selectedQuestionBlocks, t } = getVoterContext();
-  const { pageStyles } = getLayoutContext(onDestroy);
+  const { pageStyles, video } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
   // Get the current category and first question id
@@ -64,6 +64,8 @@ Display the intro to a question category and possibly a button with which to ski
     } else {
       nextCategoryId = undefined;
     }
+    // Possibly show video
+    if (customData?.video) video.load(customData.video);
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -103,7 +105,7 @@ Display the intro to a question category and possibly a button with which to ski
       </HeadingGroup>
     </svelte:fragment>
 
-    {#if category.info}
+    {#if !customData?.video && category.info}
       <p class="text-center">{category.info}</p>
     {/if}
 

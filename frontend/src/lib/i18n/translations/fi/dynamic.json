@@ -36,7 +36,10 @@
   },
   "elections": {
     "heroEmoji": "🗳️",
-    "ingress": "Valitse ne vaalit, joiden ehdokkaita tai puolueita haluat löytää."
+    "ingress": {
+      "multipleElections": "Valitse ne vaalit, joiden ehdokkaita tai puolueita haluat löytää.",
+      "singleElection": "Valitsemassasi vaalipiirissä järjestetään vain yhdet vaalit."
+    }
   },
   "error": {
     "heroEmoji": "🙊"

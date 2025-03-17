@@ -1,4 +1,5 @@
 import { order } from '@openvaa/data';
+import { unwrapEntity } from './entities';
 import type { AnyNominationVariant, AnyQuestionVariant } from '@openvaa/data';
 
 /**
@@ -44,4 +45,17 @@ export function sortQuestions(questions: Array<AnyQuestionVariant>): Array<AnyQu
     if (categoryOrder !== 0) return categoryOrder;
     return order(a, b);
   });
+}
+
+/**
+ * Compare `MaybeWrappedEntity`s by either `Match` value (desc) or `electionSymbol` (asc) or `name` (asc) in that order.
+ */
+export function compareMaybeWrappedEntities<TEntity extends MaybeWrappedEntityVariant>(a: TEntity, b: TEntity): number {
+  const { match: matchA, nomination: nominationA, entity: entityA } = unwrapEntity(a);
+  const { match: matchB, nomination: nominationB, entity: entityB } = unwrapEntity(b);
+  let order = 0;
+  if (matchA && matchB) order = matchB.score - matchA.score;
+  if (order === 0 && nominationA && nominationB) order = compareElectionSymbols(nominationA, nominationB);
+  if (order === 0) order = entityA.name.localeCompare(entityB.name);
+  return order;
 }

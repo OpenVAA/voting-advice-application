@@ -9,7 +9,7 @@ export function parseOrganization(data: StrapiPartyData, locale: string | null):
   return {
     type: ENTITY_TYPE.Organization,
     ...parseBasics(data, locale),
-    color: { normal: color, dark: colorDark },
+    color: color ? { normal: color, dark: colorDark || undefined } : undefined,
     image: parseImage(image),
     answers: parseAnswers(answers, locale)
   };

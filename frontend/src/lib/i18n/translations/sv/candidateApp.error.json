@@ -3,5 +3,6 @@
   "loginFailed": "Inloggningen misslyckades. Kontrollera ditt användarnamn och lösenord.",
   "nominationNoElection": "Nomineringen som är kopplad till kandidaten har inget val. Kontakta supporten.",
   "saveFailed": "Vi beklagar, det uppstod ett problem med att spara dina svar. Försök igen och om problemet kvarstår, kontakta supporten.",
-  "userNoCandidate": "Den inloggade användaren har ingen kandidatinformation kopplad till sig. Kontakta supporten."
+  "userNoCandidate": "Den inloggade användaren har ingen kandidatinformation kopplad till sig. Kontakta supporten.",
+  "registrationLocked": "Tyvärr är det inte längre möjligt att registrera sig."
 }
