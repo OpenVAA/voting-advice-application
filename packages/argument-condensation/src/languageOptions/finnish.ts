@@ -1,4 +1,4 @@
-import { LanguageConfig } from '../types/LanguageConfig';
+import { LanguageConfig } from './LanguageConfig';
 
 /**
  * Finnish language configuration for argument condensation
@@ -10,11 +10,9 @@ export const finnishConfig: LanguageConfig = {
     - Luo uusi argumentti jokaiselle uudelle mielipiteelle tai perustelulle
     - Varmista, että uusi argumentti on selkeästi erilainen kuin olemassa olevat
     - Kirjoita argumentti yhdellä hyvin lyhyellä virkkeellä
-    - Käytä kahta parhaiten sopivaa kommenttia uuden argumentin lähteenä
     Huomioi:
     - Älä muokkaa olemassa olevia argumentteja
     - Luo uusi argumentti vain, jos se tuo esiin täysin uuden mielipiteen tai perustelun
-    - Merkitse selkeästi, mitkä kommentit (numerot) liittyvät kuhunkin uuteen argumenttiin
     - Argumenttien tulee olla lyhyitä mutta kattavia
     `,
     instructionsSupportive: `Käy läpi seuraavat kommentit, jotka pyrkivät perustelemaan seuraavan väitteen: "{topic}". Sinun tehtäväsi on tiivistää väitettä tukevat mielipiteet ja perustelut argumenteiksi. 
@@ -57,7 +55,7 @@ export const finnishConfig: LanguageConfig = {
     - ET saa perustella väitettä argumenteilla. SE ON TÄYSIN KIELLETTYÄ.
     - Ainoa tehtäväsi on KUMOTA väite annetuilla argumenteilla."
     `,
-    recursiveInstructionsSupporting: `Käy läpi seuraavat argumentit, jotka pyrkivät perustelemaan seuraavan väitteen: "{topic}". Tiivistä väitteen puolella olevat argumentit noin 20 uudeksi argumentiksi, jotka kattavat perustelut väitteelle. 
+    reduceInstructionsSupporting: `Käy läpi seuraavat argumentit, jotka pyrkivät perustelemaan seuraavan väitteen: "{topic}". Tiivistä väitteen puolella olevat argumentit noin 20 uudeksi argumentiksi, jotka kattavat perustelut väitteelle. 
     Argumenttien tulee olla lyhyitä mutta kattavia. Hyvä argumentti keskittyy nimenomaisesti vahvoihin perusteluihin, miksi väite on looginen. 
     
     ### HUOMIOI:
@@ -73,7 +71,7 @@ export const finnishConfig: LanguageConfig = {
     - Ainoa tehtäväsi on tukea väitettä yhdistämällä argumentteja, jotka ovat väitteen "{topic}" puolesta.
     - Luo vastaukseesi noin 20 argumenttia.
     `,
-    recursiveInstructionsOpposing: `Käy läpi seuraavat argumentit, jotka pyrkivät kumoamaan seuraavan väitteen: "{topic}". Tiivistä väitettä vastaan olevat argumentit noin 20 uudeksi argumentiksi, jotka kattavat väitteen kumoavat argumentit. 
+    reduceInstructionsOpposing: `Käy läpi seuraavat argumentit, jotka pyrkivät kumoamaan seuraavan väitteen: "{topic}". Tiivistä väitettä vastaan olevat argumentit noin 20 uudeksi argumentiksi, jotka kattavat väitteen kumoavat argumentit. 
     Argumenttien tulee olla lyhyitä mutta kattavia. Hyvä argumentti keskittyy nimenomaisesti vahvoihin perusteluihin, miksi väite on epälooginen. 
     
     ### HUOMIOI:
@@ -89,7 +87,7 @@ export const finnishConfig: LanguageConfig = {
     - Ainoa tehtäväsi on KUMOTA väite yhdistämällä argumentteja, jotka ovat väitettä vastaan.
     - Luo vastaukseesi noin 20 argumenttia.
     `,
-    recursiveInstructionsGeneral: `Käy läpi seuraavat argumentit, jotka esittävät näkökantoja seuraavaan väitteeseen liittyen: "{topic}". Tiivistä vanhat argumentit noin 20 kattavaksi argumentiksi, jotka kattavat väitteeseen liittyvät mielipiteisiin, uskomuksiin, argumentteihin ja perusteluihin. 
+    reduceInstructionsGeneral: `Käy läpi seuraavat argumentit, jotka esittävät näkökantoja seuraavaan väitteeseen liittyen: "{topic}". Tiivistä vanhat argumentit noin 20 kattavaksi argumentiksi, jotka kattavat väitteeseen liittyvät mielipiteisiin, uskomuksiin, argumentteihin ja perusteluihin. 
     Argumenttien tulee olla lyhyitä mutta kattavia. Hyvä argumentti tarjoaa selkeän näkökulman väitteeseen liittyen. Luo noin 20 argumenttia.
     `,
     opposingReminder: `### MUISTA:
@@ -102,10 +100,8 @@ export const finnishConfig: LanguageConfig = {
     outputFormatHeader: 'Tulostusmuoto',
     outputFormat: {
       argumentPrefix: 'ARGUMENTTI',
-      argumentExplanation: '[Uusi argumentti]',
-      sourcesPrefix: 'Lähteet',
-      sourcesExplanation: '[Kommenttien numerot]'
+      argumentPlaceholder: '[Uusi argumentti]',
     },
     inputCommentPrefix: 'Kommentti',
-    outputArgumentPrefix: 'Argumentti',
+    existingArgumentPrefix: 'Argumentti',
 }; 

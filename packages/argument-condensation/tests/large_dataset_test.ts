@@ -17,11 +17,11 @@ const llmProvider = new OpenAIProvider({
 });
 
 /**
- * Uses the argument condensation logic to condense multiple explanations into a summary
+ * Uses the argument condensation logic to condense multiple explanations into an array of condensed arguments
  */
-async function condenseExplanations(explanations: string[]): Promise<string> {
+async function condenseExplanations(explanations: string[]): Promise<string[]> {
   if (explanations.length === 0) {
-    return "No explanations available to condense.";
+    return ['No explanations available to condense.'];
   }
 
   // Process the explanations using the condensation logic
@@ -30,12 +30,12 @@ async function condenseExplanations(explanations: string[]): Promise<string> {
     finnishConfig,
     explanations,
     "Kaikille vanhuksille on taattava oikeus palvelukotipaikkaan.",
-    30, // batch size
+    65, // batch size
     CondensationType.SUPPORTING // condensation type
   );
 
   // Return the condensed argument(s)
-  return condensedArguments.map(arg => arg.argument).join("\n\n");
+  return condensedArguments.map(arg => arg.argument);
 }
 
 /**
@@ -59,7 +59,7 @@ async function condenseQuestionsByIndices(questionIndices: number[]) {
     }
     
     // Condense the explanations
-    const testSet = questionExplanations.slice(0, 300);
+    const testSet = questionExplanations.slice(0, 500);
     const condensed = await condenseExplanations(testSet);
     console.log(`\nCondensed result: ${condensed}`);
     console.log('-'.repeat(80));
@@ -95,5 +95,5 @@ async function extractAllExplanations(): Promise<string[][]> {
   });
 }
 
-// Run the condensation function for questions 1, 5, and 10
+// Run the condensation function
 condenseQuestionsByIndices([8]).catch(console.error);
