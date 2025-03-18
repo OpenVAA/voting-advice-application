@@ -36,7 +36,7 @@ COPY --from=shared /opt/frontend frontend
 
 FROM frontend AS development
 
-WORKDIR /opt
+WORKDIR /opt/frontend
 
 EXPOSE 5173
 CMD yarn workspace @openvaa/frontend dev --host
@@ -46,9 +46,9 @@ FROM frontend AS production
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
-WORKDIR /opt
+WORKDIR /opt/frontend
 
 RUN yarn workspace @openvaa/frontend build
 
 EXPOSE 3000
-CMD node ./frontend/build/index.js
+CMD node ./build/index.js
