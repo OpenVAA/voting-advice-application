@@ -75,8 +75,6 @@ module.exports = async (plugin: Core.Plugin) => {
           type: 'admin'
         }
       });
-
-      // Add default-permissions
     }
 
     // Setup default permissions

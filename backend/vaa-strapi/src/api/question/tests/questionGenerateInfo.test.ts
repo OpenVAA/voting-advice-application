@@ -4,8 +4,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 // Configuration, expects a user with these credentials to be created
 const STRAPI_URL = 'http://localhost:1337';
 const ADMIN_CREDENTIALS = {
-  identifier: 'admin@example.com',
-  password: 'bbbbbb'
+  identifier: process.env.DEV_EMAIL ?? 'admin@example.com',
+  password: process.env.DEV_PASSWORD ?? 'admin1'
 };
 
 describe('Strapi Admin Role API Tests', () => {

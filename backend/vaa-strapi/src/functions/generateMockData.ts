@@ -254,6 +254,25 @@ async function createStrapiAdmin() {
     };
 
     await strapi.service('admin::user').create(params);
+
+    // Create admin user for frontend
+    const admin = await strapi.query('plugin::users-permissions.role').findOne({
+      where: {
+        type: 'admin'
+      }
+    });
+
+    await strapi.documents('plugin::users-permissions.user').create({
+      data: {
+        username: process.env.DEV_USERNAME ?? 'admin',
+        password: process.env.DEV_PASSWORD ?? 'admin1',
+        email: process.env.DEV_EMAIL ?? 'admin@example.com',
+        provider: 'local',
+        confirmed: true,
+        blocked: false,
+        role: admin.id
+      }
+    });
   }
 }
 
