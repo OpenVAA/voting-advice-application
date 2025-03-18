@@ -1,7 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { json } from '@sveltejs/kit';
-import { read } from '$app/server';
 import { CREATE_PATHS, type CreatePath, READ_PATHS, type ReadPath } from './localPaths';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 
@@ -26,17 +25,17 @@ export abstract class LocalServerAdapter {
   }
 
   /**
-   * Read a local file.
+   * Read a local file as string.
    * @param endpoint - The name of the prespecified local path.
-   * @returns A `Response` containing the string content of the file.
+   * @returns A `Promise` containing the string content of the file.
    * @throws Error on failure.
    */
-  read(endpoint: ReadPath): Response {
-    const response = read(READ_PATHS[endpoint]);
-    if (!response?.ok)
-      throw new Error(`Error with readData ${endpoint}: Response: ${response.status} / ${response.statusText}`);
-    if (!response.body) throw new Error(`Error with readData ${endpoint}: Response body is empty.`);
-    return response;
+  async read(endpoint: ReadPath): Promise<string> {
+    const fp = path.join(process.cwd(), READ_PATHS[endpoint]);
+    const data = await fs.readFile(fp).catch((e) => {
+      throw new Error(`Error with readData ${endpoint}: : ${e instanceof Error ? e.message : e}`);
+    });
+    return data.toString();
   }
 
   /**
