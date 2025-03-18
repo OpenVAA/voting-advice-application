@@ -1,6 +1,5 @@
-import { processComments } from '@openvaa/argument-condensation';
+import { processComments, finnishConfig, CondensationType } from '@openvaa/argument-condensation';
 import { generateAnswersJSON } from '../utils/debug-data-generator';
-import { finnishConfig } from '@openvaa/argument-condensation';
 import { OpenAIProvider } from '@openvaa/llm';
 import questionService from '../services/question-service';
 
@@ -212,7 +211,9 @@ export default {
                       llmProvider,
                       finnishConfig,
                       groupedAnswers.presumedPros,
-                      questionToProcess.text?.fi || 'Unknown Topic'
+                      questionToProcess.text?.fi || 'Unknown Topic',
+                      30,
+                      CondensationType.SUPPORTING
                     );
                     console.log(`Generated ${results.pros.length} pro arguments`);
                   }
@@ -224,7 +225,9 @@ export default {
                       llmProvider,
                       finnishConfig,
                       groupedAnswers.presumedCons,
-                      questionToProcess.text?.fi || 'Unknown Topic'
+                      questionToProcess.text?.fi || 'Unknown Topic',
+                      30,
+                      CondensationType.OPPOSING
                     );
                     console.log(`Generated ${results.cons.length} con arguments`);
                   }
@@ -249,7 +252,9 @@ export default {
                         llmProvider,
                         finnishConfig,
                         comments,
-                        `${questionToProcess.text?.fi || 'Unknown Topic'} - ${category}`
+                        `${questionToProcess.text?.fi || 'Unknown Topic'} - ${category}`,
+                        30,
+                        CondensationType.GENERAL
                       );
                       console.log(`Generated ${results[category].length} arguments for category ${category}`);
                     }

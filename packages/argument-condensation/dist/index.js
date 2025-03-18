@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ParsingError = exports.LLMError = exports.ArgumentCondensationError = exports.englishConfig = exports.finnishConfig = exports.Condenser = void 0;
+exports.CondensationType = exports.ParsingError = exports.LLMError = exports.ArgumentCondensationError = exports.englishConfig = exports.finnishConfig = exports.Condenser = void 0;
 exports.processComments = processComments;
 exports.exportResults = exportResults;
 const dotenv_1 = require("dotenv");
@@ -11,12 +11,12 @@ const path_1 = __importDefault(require("path"));
 const Condenser_1 = require("./Condenser");
 const promises_1 = require("fs/promises");
 const fs_1 = __importDefault(require("fs"));
+const CondensationType_1 = require("./types/CondensationType");
 // Load .env from project root
 (0, dotenv_1.config)();
-// EXPORT FOR TESTING
 /**
- * Exports condensed arguments to multiple file formats
- * @param condensedArguments - Array of condensed arguments to export
+ * Exports condensed Arguments to multiple file formats
+ * @param condensedArguments - Array of condensed Arguments to export
  * @param basePath - Base path for output files (without extension)
  * @param formats - Array of output formats ('txt', 'json', 'csv')
  */
@@ -34,36 +34,35 @@ async function exportResults(condensedArguments, basePath, formats = ['txt', 'js
             await (0, promises_1.writeFile)(filePath, content, 'utf-8');
         }
         else if (fmt === 'json') {
-            // Structured JSON format with all argument details
+            // Structured JSON format with all Argument details
             const jsonData = condensedArguments.map((arg, i) => ({
                 argument_id: i + 1,
                 topic: arg.topic,
-                main_argument: arg.argument,
-                sources: arg.sourceComments,
-                source_indices: arg.sourceIndices
+                main_argument: arg.argument
             }));
             await (0, promises_1.writeFile)(filePath, JSON.stringify(jsonData, null, 2), 'utf-8');
         }
         else if (fmt === 'csv') {
             // CSV format for spreadsheet compatibility
-            const header = 'argument_id,topic,main_argument,sources,source_indices\n';
-            const rows = condensedArguments.map((arg, i) => [i + 1, arg.topic, arg.argument, arg.sourceComments.join('|'), arg.sourceIndices.join(',')].join(','));
+            const header = 'argument_id,topic,main_argument\n';
+            const rows = condensedArguments.map((arg, i) => [i + 1, arg.topic, arg.argument].join(','));
             await (0, promises_1.writeFile)(filePath, header + rows.join('\n'), 'utf-8');
         }
     }
 }
 /**
- * Process comments to extract distinct arguments
+ * Process comments to extract distinct Arguments
  * @param llmProvider - Provider for language model interactions
  * @param languageConfig - Language-specific configuration
  * @param comments - Array of text comments to process
  * @param topic - The topic these comments relate to
  * @param batchSize - Number of comments to process in each batch
- * @returns Promise<Argument[]> Array of condensed arguments
+ * @returns Promise<Argument[]> Array of condensed Arguments
  */
-async function processComments(llmProvider, languageConfig, comments, topic, batchSize = 30) {
+async function processComments(llmProvider, languageConfig, comments, topic, batchSize = 30, condensationType = CondensationType_1.CondensationType.GENERAL) {
+    // Process comments with a Condenser instance
     const condenser = new Condenser_1.Condenser(llmProvider, languageConfig);
-    return await condenser.processComments(comments, topic, batchSize);
+    return await condenser.processComments(comments, topic, batchSize, condensationType);
 }
 var Condenser_2 = require("./Condenser");
 Object.defineProperty(exports, "Condenser", { enumerable: true, get: function () { return Condenser_2.Condenser; } });
@@ -77,3 +76,6 @@ var Errors_1 = require("./types/Errors");
 Object.defineProperty(exports, "ArgumentCondensationError", { enumerable: true, get: function () { return Errors_1.ArgumentCondensationError; } });
 Object.defineProperty(exports, "LLMError", { enumerable: true, get: function () { return Errors_1.LLMError; } });
 Object.defineProperty(exports, "ParsingError", { enumerable: true, get: function () { return Errors_1.ParsingError; } });
+// Add or update exports in the index.ts file
+var CondensationType_2 = require("./types/CondensationType");
+Object.defineProperty(exports, "CondensationType", { enumerable: true, get: function () { return CondensationType_2.CondensationType; } });

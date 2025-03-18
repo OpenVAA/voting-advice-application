@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ParsingError = exports.LLMError = exports.ArgumentCondensationError = void 0;
 /**
  * Base error class for argument condensation errors.
- * Provides detailed messages and optional cause tracking.
  */
 class ArgumentCondensationError extends Error {
     /**

@@ -40,15 +40,13 @@ async function exportResults(
       const jsonData = condensedArguments.map((arg, i) => ({
         argument_id: i + 1,
         topic: arg.topic,
-        main_argument: arg.argument,
+        main_argument: arg.argument
       }));
       await writeFile(filePath, JSON.stringify(jsonData, null, 2), 'utf-8');
     } else if (fmt === 'csv') {
       // CSV format for spreadsheet compatibility
       const header = 'argument_id,topic,main_argument\n';
-      const rows = condensedArguments.map((arg, i) =>
-        [i + 1, arg.topic, arg.argument].join(',')
-      );
+      const rows = condensedArguments.map((arg, i) => [i + 1, arg.topic, arg.argument].join(','));
       await writeFile(filePath, header + rows.join('\n'), 'utf-8');
     }
   }
@@ -66,7 +64,7 @@ async function exportResults(
 async function processComments(
   llmProvider: LLMProvider,
   languageConfig: LanguageConfig,
-  comments: string[], 
+  comments: string[],
   topic: string,
   batchSize: number = 30,
   condensationType: CondensationType = CondensationType.GENERAL
@@ -89,8 +87,7 @@ export { finnishConfig } from './languageOptions/finnish';
 export { englishConfig } from './languageOptions/english';
 
 // Export errors
-export {
-  ArgumentCondensationError,
-  LLMError,
-  ParsingError
-} from './types/Errors';
+export { ArgumentCondensationError, LLMError, ParsingError } from './types/Errors';
+
+// Add or update exports in the index.ts file
+export { CondensationType } from './types/CondensationType';

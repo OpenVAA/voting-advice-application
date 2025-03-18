@@ -2,123 +2,105 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OutputParser = void 0;
 /**
- * Parser for extracting structured arguments and their source indices from LLM responses.
- * Handles the parsing of formatted text blocks containing arguments and their associated source references.
+ * Parser for extracting structured Arguments from LLM responses.
+ * Handles the parsing of formatted text blocks containing Arguments.
  */
 class OutputParser {
     /**
      * Creates a new OutputParser instance
-     * @param config - Language-specific configuration for parsing
+     * @param languageConfig - Language-specific configuration for parsing
      */
-    constructor(config) {
-        this.config = config;
+    constructor(languageConfig) {
+        this.languageConfig = languageConfig;
     }
     /**
-     * Extracts argument strings from the LLM response text
+     * Extracts Argument strings from the LLM response text
      * @param text - Raw response text from the language model
-     * @returns Array of argument strings
+     * @param topic - The topic of the Arguments
+     * @returns Array of Arguments
      *
      * @example
      * Input text format:
      * <ARGUMENTS>
-     * ARGUMENT 1: This is the first argument
-     * Sources: [1, 2]
-     * ARGUMENT 2: This is the second argument
-     * Sources: [3, 4]
+     * ARGUMENT 1: This is the first Argument
+     * ARGUMENT 2: This is the second Argument
      * </ARGUMENTS>
      */
-    parseArguments(text) {
-        const parsedArgs = [];
+    parseArguments(text, topic) {
+        // Initialization of basic variables
+        const parsedArgs = []; // Array to be populated by Arguments
+        let currentArg = ''; // Used to build the current Argument's string if it's multi-lined in the text
+        let stillProcessing = false; // Tracks if we're inside the <ARGUMENTS> block
+        // Split the LLM response into lines
         const lines = text.split('\n');
-        let currentArg = [];
-        let processing = false; // Tracks if we're inside the <ARGUMENTS> block
+        // Iterate over lines of the response
         for (const line of lines) {
             const trimmedLine = line.trim();
-            // Handle argument block boundaries
+            // Check if we're inside the <ARGUMENTS> block
             if (trimmedLine.includes('<ARGUMENTS>')) {
-                processing = true;
+                stillProcessing = true;
                 continue;
             }
             else if (trimmedLine.includes('</ARGUMENTS>')) {
                 break;
             }
-            // Process lines within the argument block
-            if (processing) {
-                if (trimmedLine.startsWith(this.config.outputFormat.argumentPrefix)) {
-                    // Start of new argument - save previous if exists
+            // Process lines within the Arguments block
+            if (stillProcessing) {
+                // Check if the line starts with the correct Argument prefix 
+                if (trimmedLine.startsWith(this.languageConfig.outputFormat.argumentPrefix)) {
+                    // Start of new Argument
                     if (currentArg.length) {
-                        parsedArgs.push(currentArg.join(' '));
-                        currentArg = [];
+                        parsedArgs.push({
+                            argument: currentArg,
+                            topic: topic
+                        });
+                        currentArg = '';
                     }
                     // Extract argument text after the prefix and colon
-                    currentArg = [trimmedLine.split(':', 2)[1].trim()];
+                    currentArg = trimmedLine.split(':', 2)[1].trim();
                 }
-                else if (!trimmedLine.startsWith(this.config.outputFormat.sourcesPrefix) && trimmedLine) {
-                    // Continuation of current argument (multi-line)
-                    currentArg.push(trimmedLine);
+                else if (trimmedLine) {
+                    // Continuation of the current Argument's string (only occurs if it's multi-lined)
+                    currentArg += trimmedLine;
                 }
             }
         }
-        // Add final argument if it exists
+        // Add the final Argument if it exists
         if (currentArg.length) {
-            parsedArgs.push(currentArg.join(' '));
+            parsedArgs.push({
+                argument: currentArg,
+                topic: topic
+            });
         }
         return parsedArgs;
     }
     /**
-     * Extracts source indices for each argument from the LLM response text
-     * @param text - Raw response text from the language model
-     * @returns Array of number arrays, where each inner array contains source indices for one argument
-     *
-     * @example
-     * Input text format:
-     * <ARGUMENTS>
-     * ARGUMENT 1: First argument text
-     * Sources: [1, 2]
-     * ARGUMENT 2: Second argument text
-     * Sources: [3, 4]
-     * </ARGUMENTS>
-     *
-     * Returns: [[1, 2], [3, 4]]
+     * Parses the output from condensing two Argument sets
+     * @param output - The LLM response text
+     * @returns Argument[] - Array of condensed Arguments
      */
-    parseSourceIndices(text) {
-        const sourceIndicesPerArg = [];
-        const lines = text.split('\n');
-        let processing = false;
-        for (const line of lines) {
-            const trimmedLine = line.trim();
-            // Handle argument block boundaries
-            if (trimmedLine.includes('<ARGUMENTS>')) {
-                processing = true;
-                continue;
-            }
-            else if (trimmedLine.includes('</ARGUMENTS>')) {
-                break;
-            }
-            // Process source index lines
-            if (processing && trimmedLine.startsWith(this.config.outputFormat.sourcesPrefix)) {
-                // Extract numbers from the sources line
-                const numbersStr = trimmedLine
-                    .split(':', 2)[1]
-                    .trim()
-                    .replace(/[\[\]]/g, '');
-                if (numbersStr) {
-                    // Parse and validate numbers
-                    const numbers = numbersStr
-                        .split(',')
-                        .map((numStr) => {
-                        const matches = numStr.trim().match(/\d+/);
-                        return matches ? parseInt(matches[0]) : null;
-                    })
-                        .filter((num) => num !== null);
-                    sourceIndicesPerArg.push(numbers);
-                }
-                else {
-                    sourceIndicesPerArg.push([]);
-                }
+    parseArgumentCondensation(output, topic) {
+        // Intialize empty Argument array
+        const args = [];
+        // Get the correctArgument prefix from the language config
+        const argumentPrefix = this.languageConfig.outputFormat.argumentPrefix;
+        // Split the LLM response into lines
+        const lines = output.split('\n');
+        // Iterate over lines of the response
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            // Check if the line starts with the correct Argument prefix 
+            if (line.startsWith(argumentPrefix)) {
+                // Remove any existing indices like "1:" at the beginning of Arguments
+                const argumentText = line.substring(argumentPrefix.length).trim().replace(/^\s*\d+\s*:\s*/, '');
+                // Create a new Argument with the condensed text
+                args.push({
+                    argument: argumentText,
+                    topic: topic
+                });
             }
         }
-        return sourceIndicesPerArg;
+        return args;
     }
 }
 exports.OutputParser = OutputParser;

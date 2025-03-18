@@ -1,45 +1,34 @@
-import { LanguageConfig } from '../types/LanguageConfig';
+import { Argument } from '../types/Argument';
+import { LanguageConfig } from '../languageOptions/LanguageConfig';
 /**
- * Parser for extracting structured arguments and their source indices from LLM responses.
- * Handles the parsing of formatted text blocks containing arguments and their associated source references.
+ * Parser for extracting structured Arguments from LLM responses.
+ * Handles the parsing of formatted text blocks containing Arguments.
  */
 export declare class OutputParser {
-    private config;
+    private languageConfig;
     /**
      * Creates a new OutputParser instance
-     * @param config - Language-specific configuration for parsing
+     * @param languageConfig - Language-specific configuration for parsing
      */
-    constructor(config: LanguageConfig);
+    constructor(languageConfig: LanguageConfig);
     /**
-     * Extracts argument strings from the LLM response text
+     * Extracts Argument strings from the LLM response text
      * @param text - Raw response text from the language model
-     * @returns Array of argument strings
+     * @param topic - The topic of the Arguments
+     * @returns Array of Arguments
      *
      * @example
      * Input text format:
      * <ARGUMENTS>
-     * ARGUMENT 1: This is the first argument
-     * Sources: [1, 2]
-     * ARGUMENT 2: This is the second argument
-     * Sources: [3, 4]
+     * ARGUMENT 1: This is the first Argument
+     * ARGUMENT 2: This is the second Argument
      * </ARGUMENTS>
      */
-    parseArguments(text: string): string[];
+    parseArguments(text: string, topic: string): Argument[];
     /**
-     * Extracts source indices for each argument from the LLM response text
-     * @param text - Raw response text from the language model
-     * @returns Array of number arrays, where each inner array contains source indices for one argument
-     *
-     * @example
-     * Input text format:
-     * <ARGUMENTS>
-     * ARGUMENT 1: First argument text
-     * Sources: [1, 2]
-     * ARGUMENT 2: Second argument text
-     * Sources: [3, 4]
-     * </ARGUMENTS>
-     *
-     * Returns: [[1, 2], [3, 4]]
+     * Parses the output from condensing two Argument sets
+     * @param output - The LLM response text
+     * @returns Argument[] - Array of condensed Arguments
      */
-    parseSourceIndices(text: string): number[][];
+    parseArgumentCondensation(output: string, topic: string): Argument[];
 }

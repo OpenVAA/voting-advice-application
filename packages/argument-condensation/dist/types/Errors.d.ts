@@ -1,6 +1,5 @@
 /**
  * Base error class for argument condensation errors.
- * Provides detailed messages and optional cause tracking.
  */
 export declare class ArgumentCondensationError extends Error {
     readonly cause?: unknown | undefined;
