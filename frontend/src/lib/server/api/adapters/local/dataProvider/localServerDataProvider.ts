@@ -78,7 +78,9 @@ export class LocalServerDataProvider extends LocalServerAdapter implements DataP
     warnIfUnsupported(options);
     const { constituencyId, electionId, locale = this.defaulLocale } = options;
     // Because nominations and entities are stored in separate files, we cannot use this.readAndFilter
-    let [nominations, entities] = await Promise.all([this.read('nominations').json(), this.read('entities').json()]);
+    let [nominations, entities] = await Promise.all([this.read('nominations'), this.read('entities')]).then((data) =>
+      data.map((d) => JSON.parse(d))
+    );
     nominations = translate({ value: nominations, locale });
     entities = translate({ value: entities, locale });
     if (constituencyId || electionId)
@@ -138,10 +140,9 @@ export class LocalServerDataProvider extends LocalServerAdapter implements DataP
       locale?: string | null;
     } = {}
   ): Promise<Response> {
-    const response = this.read(endpoint);
-    if (!filter && locale === null) return Promise.resolve(response);
+    const data = await this.read(endpoint);
     // Parse the JSON data, filter it and serialize it back to a JSON response.
-    let value = await response.json();
+    let value = JSON.parse(data);
     if (locale) value = translate({ value, locale });
     return json(filter ? filter(value) : value);
   }
