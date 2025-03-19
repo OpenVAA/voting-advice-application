@@ -31,9 +31,12 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import { beforeNavigate, pushState } from '$app/navigation';
   import { page } from '$app/stores';
   import AccordionSelect from '$lib/components/accordionSelect/AccordionSelect.svelte';
+  import { Button } from '$lib/components/button';
   import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { Icon } from '$lib/components/icon';
   import { Loading } from '$lib/components/loading';
   import { type Tab, Tabs } from '$lib/components/tabs';
+  import { getGameContext } from '$lib/contexts/game';
   import { getVoterContext } from '$lib/contexts/voter';
   import { EntityDetailsDrawer, type EntityDetailsDrawerProps } from '$lib/dynamic-components/entityDetails';
   import { EntityList, EntityListControls } from '$lib/dynamic-components/entityList';
@@ -65,6 +68,9 @@ The nominations applicable to these elections and constituencies are shown. Thes
     startSurveyPopupCountdown,
     t
   } = getVoterContext();
+  const {
+    matchTarget: { targetNomination, reset, result }
+  } = getGameContext();
 
   ////////////////////////////////////////////////////////////////////
   // Start countdowns and track events, set initial tab
@@ -182,6 +188,29 @@ The nominations applicable to these elections and constituencies are shown. Thes
   // This will hold the filtered entities returned by EntityListControls
   // TODO: Combine EntityListControls and List components into one
   let filteredEntities = new Array<MaybeWrappedEntityVariant>();
+
+  ////////////////////////////////////////////////////////////////////
+  // Game mode
+  ////////////////////////////////////////////////////////////////////
+
+  let emoji: string;
+  let ingress: string;
+  let showQuestionsLink: boolean;
+  let title: string;
+
+  if (!$targetNomination) reset();
+
+  $: {
+    const grade = $result?.grade || 'notAvailable';
+    const targetName = $targetNomination?.name;
+    const targetRank = $result?.rank;
+    const targetRankMembers = $result?.rankMembers.length || 1;
+
+    emoji = $t(`gameMode.results.${grade}.heroEmoji`);
+    ingress = $t(`gameMode.results.${grade}.ingress`, { targetName, targetRank, targetRankMembers });
+    title = $t(`gameMode.results.${grade}.title`);
+    showQuestionsLink = grade !== 'perfect';
+  }
 </script>
 
 {#if $page.state.resultsShowEntity}
@@ -190,24 +219,29 @@ The nominations applicable to these elections and constituencies are shown. Thes
   {/key}
 {/if}
 
-<MainContent title={$resultsAvailable ? $t('results.title.results') : $t('results.title.browse')}>
+<MainContent {title}>
   <figure role="presentation" slot="hero">
-    <HeroEmoji emoji={$t('dynamic.results.heroEmoji')} />
+    <HeroEmoji {emoji} />
   </figure>
 
-  <div class="mb-xl text-center">
-    {#if $resultsAvailable}
-      <p>{$t('dynamic.results.ingress.results')}</p>
-    {:else}
-      <p>
-        {@html sanitizeHtml(
-          $t('dynamic.results.ingress.browse', {
-            questionsLink: `<a href="${$getRoute('Questions')}">${$t('results.ingress.questionsLinkText', {
-              numQuestions: $appSettings.matching.minimumAnswers
-            })}</a>`
-          })
-        )}
-      </p>
+  <div class="mb-xl grid place-items-center gap-lg text-center">
+    <div>
+      {@html sanitizeHtml(ingress)}
+    </div>
+    {#if showQuestionsLink}
+      <div>
+        {@html sanitizeHtml($t('gameMode.results.common.editAnswersTip'))}
+      </div>
+      <Button
+        variant="main"
+        icon="create"
+        iconPos="left"
+        href={$getRoute('Questions')}
+        text={$t('gameMode.results.common.editAnswers')} />
+      <div class="small-info">
+        <Icon name="results" size="sm" />
+        {@html sanitizeHtml($t('gameMode.results.common.resultsTip'))}
+      </div>
     {/if}
     {#if $elections.length > 1}
       <p>{$t('dynamic.results.multipleElections')}</p>
