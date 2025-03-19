@@ -10,7 +10,7 @@ interface CandidateAnswer {
 }
 
 /**
- * Fetches processable Likert questions, filtered by documentIds if provided
+ * Fetches processable Likert questions (single choice ordinal type), filtered by documentIds if provided
  * @param documentIds Optional array of document IDs to filter by
  * @returns All Likert questions if no IDs provided, otherwise only matching questions
  */
@@ -20,13 +20,13 @@ async function fetchProcessableQuestions(documentIds?: string[]) {
     populate: ['questionType']
   });
 
-  const likertQuestions = questions.filter((q) => q.questionType?.name?.startsWith('Likert-'));
+  const processableQuestions = questions.filter((q) => q.questionType?.settings?.type === 'singleChoiceOrdinal');
 
   if (!documentIds?.length) {
-    return likertQuestions; // Return all Likert questions if no IDs specified
+    return processableQuestions;
   }
 
-  return likertQuestions.filter((q) => documentIds.includes(q.documentId)); // Return only matching questions
+  return processableQuestions.filter((q) => documentIds.includes(q.documentId));
 }
 
 /**
@@ -70,7 +70,7 @@ function logQuestionDetails(questions) {
     console.log('\nALL QUESTIONS:');
     questions.forEach((q, index) => {
       console.log(
-        `[${index}] id: ${q.id}, documentId: ${q.documentId}, type: ${q.questionType?.name || 'unknown'}, text: ${JSON.stringify(q.text).substring(0, 50)}...`
+        `[${index}] id: ${q.id}, documentId: ${q.documentId}, type: ${q.questionType?.settings?.type || 'unknown'}, text: ${JSON.stringify(q.text).substring(0, 50)}...`
       );
     });
   }

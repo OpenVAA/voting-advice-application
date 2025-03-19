@@ -77,7 +77,7 @@ export default {
   /**
    * Lists questions available for condensation
    */
-  async list(ctx) {
+  async listQuestions(ctx) {
     try {
       const questions = await questionService.fetchProcessableQuestions();
       questionService.logQuestionDetails(questions);
@@ -116,11 +116,6 @@ export default {
         if (questionsToProcess.length === 0) {
           return ctx.badRequest('No eligible questions found');
         }
-
-        // Get documentIds for fetching answers
-        console.log('Preparing to fetch answers...');
-        const documentIdsToProcess = questionsToProcess.map((q) => q.documentId);
-        console.log('Document IDs to process:', documentIdsToProcess);
 
         try {
           const answersMap = await questionService.fetchAnswersForQuestions(

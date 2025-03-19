@@ -11,8 +11,8 @@ export default {
     },
     {
       method: 'POST',
-      path: '/argument-condensation/test',
-      handler: 'argument-condensation.test',
+      path: '/argument-condensation/list-questions',
+      handler: 'argument-condensation.listQuestions',
       config: {
         policies: [],
         middlewares: [],
