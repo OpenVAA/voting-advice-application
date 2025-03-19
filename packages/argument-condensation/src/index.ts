@@ -59,6 +59,7 @@ async function exportResults(
  * @param comments - Array of text comments to process
  * @param topic - The topic these comments relate to
  * @param batchSize - Number of comments to process in each batch
+ * @param condensationType - The point of view of the output Arguments
  * @returns Promise<Argument[]> Array of condensed Arguments
  */
 async function processComments(
@@ -81,6 +82,7 @@ export { Condenser } from './Condenser';
 // Export types
 export type { Argument } from './types/Argument';
 export type { LanguageConfig, SupportedLanguage } from './languageOptions/LanguageConfig';
+export type { CondensationType } from './types/CondensationType';
 
 // Export language configs
 export { finnishConfig } from './languageOptions/finnish';
@@ -88,6 +90,3 @@ export { englishConfig } from './languageOptions/english';
 
 // Export errors
 export { ArgumentCondensationError, LLMError, ParsingError } from './types/Errors';
-
-// Add or update exports in the index.ts file
-export { CondensationType } from './types/CondensationType';
