@@ -78,6 +78,140 @@ function groupCategoricalAnswers(answers: any[]): CategoryGroups {
 
 export default {
   /**
+   * Condenses arguments for specified questions
+   */
+  async condense(ctx) {
+    try {
+      console.log('\n=== Starting Argument Condensation ===');
+
+      const { questionDocumentIds } = ctx.request.body || {};
+
+      // Validate questionDocumentIds if provided
+      if (questionDocumentIds && (!Array.isArray(questionDocumentIds) || questionDocumentIds.length === 0)) {
+        return ctx.badRequest('Question document IDs must be a non-empty array');
+      }
+
+      const questionsToProcess = await questionService.fetchProcessableQuestions(questionDocumentIds);
+      if (questionsToProcess.length === 0) {
+        return ctx.badRequest('No eligible questions found');
+      }
+
+      const answersMap = await questionService.fetchAnswersForQuestions(questionsToProcess.map((q) => q.documentId));
+      console.log('Successfully fetched answers map');
+
+      // Process each question based on its type
+      for (const question of questionsToProcess) {
+        console.log('\n=== Processing Question ===');
+        console.log('Question ID:', question.id);
+        console.log('Document ID:', question.documentId);
+        console.log('Text:', question.text ? JSON.stringify(question.text).substring(0, 100) : 'No text');
+        console.log('Type:', question.questionType?.settings?.type || 'Unknown type');
+        console.log('Name:', question.questionType?.name || 'Unknown name');
+
+        try {
+          // Get answers for this specific question using documentId
+          const answers = answersMap[question.documentId] || [];
+          console.log(`Found ${answers.length} answers for this question`);
+
+          if (answers.length === 0) {
+            console.log('Skipping question - no answers found');
+            continue;
+          }
+
+          const questionType = question.questionType?.settings?.type;
+          let processedResults = null;
+
+          // Get the number of choices in the question scale
+          const questionScale = question?.questionType?.settings?.choices?.length || 0;
+
+          if (questionType === 'singleChoiceOrdinal') {
+            const groupedAnswers = groupLikertAnswers(answers, questionScale);
+            processedResults = {
+              pros:
+                groupedAnswers.presumedPros.length > 0
+                  ? await processComments(
+                      llmProvider,
+                      finnishConfig,
+                      groupedAnswers.presumedPros,
+                      question.text?.fi || 'Unknown Topic',
+                      30,
+                      CondensationType.SUPPORTING
+                    )
+                  : [],
+              cons:
+                groupedAnswers.presumedCons.length > 0
+                  ? await processComments(
+                      llmProvider,
+                      finnishConfig,
+                      groupedAnswers.presumedCons,
+                      question.text?.fi || 'Unknown Topic',
+                      30,
+                      CondensationType.OPPOSING
+                    )
+                  : []
+            };
+          } else if (questionType === 'Categorical') {
+            const groupedAnswers = groupCategoricalAnswers(answers);
+            processedResults = await Object.entries(groupedAnswers).reduce(async (acc, [category, comments]) => {
+              if (comments.length > 0) {
+                return {
+                  ...(await acc),
+                  [category]: await processComments(
+                    llmProvider,
+                    finnishConfig,
+                    comments,
+                    `${question.text?.fi || 'Unknown Topic'} - ${category}`,
+                    30,
+                    CondensationType.GENERAL
+                  )
+                };
+              }
+              return acc;
+            }, Promise.resolve({}));
+          } else {
+            console.log(`Skipping question - unsupported type: ${questionType}`);
+            continue;
+          }
+
+          // Update question with processed results
+          try {
+            console.log('Updating question with results...');
+            await strapi.db.query('api::question.question').update({
+              where: { id: question.id },
+              data: {
+                customData: {
+                  ...(question.customData || {}),
+                  argumentSummary: processedResults
+                }
+              }
+            });
+            console.log(`Updated question ${question.id} with the results`);
+          } catch (updateError) {
+            console.error('Error updating question:', updateError);
+            console.error('Failed to update question ID:', question.id);
+          }
+        } catch (questionError) {
+          console.error('Error processing question:', questionError);
+          console.error('Problematic question:', JSON.stringify(question, null, 2));
+        }
+      }
+
+      console.log('\n=== Process Complete ===');
+      ctx.body = {
+        data: {
+          message: 'Successfully processed selected questions',
+          processedQuestions: questionsToProcess.length,
+          processedQuestionIds: questionsToProcess.map((q) => q.documentId)
+        }
+      };
+    } catch (error) {
+      console.error('\n=== Error in Argument Condensation ===');
+      console.error('Error details:', error);
+      ctx.throw(500, 'Failed to process and update arguments');
+    }
+  },
+
+  /**
    * Lists questions available for condensation
    */
   async listQuestions(ctx) {
@@ -97,152 +231,6 @@ export default {
       console.error('\n=== Error listing questions ===');
       console.error('Detailed error:', error);
       ctx.throw(500, error.message || 'Failed to list questions');
-    }
-  },
-
-  /**
-   * Condenses arguments for specified questions
-   */
-  async condense(ctx) {
-    try {
-      console.log('\n=== Starting Argument Condensation ===');
-
-      try {
-        const { questionDocumentIds } = ctx.request.body || {};
-
-        // Validate questionDocumentIds if provided
-        if (questionDocumentIds && (!Array.isArray(questionDocumentIds) || questionDocumentIds.length === 0)) {
-          return ctx.badRequest('Question document IDs must be a non-empty array');
-        }
-
-        const questionsToProcess = await questionService.fetchProcessableQuestions(questionDocumentIds);
-        if (questionsToProcess.length === 0) {
-          return ctx.badRequest('No eligible questions found');
-        }
-
-        try {
-          const answersMap = await questionService.fetchAnswersForQuestions(
-            questionsToProcess.map((q) => q.documentId)
-          );
-          console.log('Successfully fetched answers map');
-
-          // Process each question based on its type
-          for (const question of questionsToProcess) {
-            console.log('\n=== Processing Question ===');
-            console.log('Question ID:', question.id);
-            console.log('Document ID:', question.documentId);
-            console.log('Text:', question.text ? JSON.stringify(question.text).substring(0, 100) : 'No text');
-            console.log('Type:', question.questionType?.settings?.type || 'Unknown type');
-            console.log('Name:', question.questionType?.name || 'Unknown name');
-
-            try {
-              // Get answers for this specific question using documentId
-              const answers = answersMap[question.documentId] || [];
-              console.log(`Found ${answers.length} answers for this question`);
-
-              if (answers.length === 0) {
-                console.log('Skipping question - no answers found');
-                continue;
-              }
-
-              const questionType = question.questionType?.settings?.type;
-              let processedResults = null;
-
-              // Get the number of choices in the question scale
-              const questionScale = question?.questionType?.settings?.choices?.length || 0;
-
-              if (questionType === 'singleChoiceOrdinal') {
-                const groupedAnswers = groupLikertAnswers(answers, questionScale);
-                processedResults = {
-                  pros:
-                    groupedAnswers.presumedPros.length > 0
-                      ? await processComments(
-                          llmProvider,
-                          finnishConfig,
-                          groupedAnswers.presumedPros,
-                          question.text?.fi || 'Unknown Topic',
-                          30,
-                          CondensationType.SUPPORTING
-                        )
-                      : [],
-                  cons:
-                    groupedAnswers.presumedCons.length > 0
-                      ? await processComments(
-                          llmProvider,
-                          finnishConfig,
-                          groupedAnswers.presumedCons,
-                          question.text?.fi || 'Unknown Topic',
-                          30,
-                          CondensationType.OPPOSING
-                        )
-                      : []
-                };
-              } else if (questionType === 'Categorical') {
-                const groupedAnswers = groupCategoricalAnswers(answers);
-                processedResults = await Object.entries(groupedAnswers).reduce(async (acc, [category, comments]) => {
-                  if (comments.length > 0) {
-                    return {
-                      ...(await acc),
-                      [category]: await processComments(
-                        llmProvider,
-                        finnishConfig,
-                        comments,
-                        `${question.text?.fi || 'Unknown Topic'} - ${category}`,
-                        30,
-                        CondensationType.GENERAL
-                      )
-                    };
-                  }
-                  return acc;
-                }, Promise.resolve({}));
-              } else {
-                console.log(`Skipping question - unsupported type: ${questionType}`);
-                continue;
-              }
-
-              // Update question with processed results
-              try {
-                console.log('Updating question with results...');
-                await strapi.db.query('api::question.question').update({
-                  where: { id: question.id },
-                  data: {
-                    customData: {
-                      ...(question.customData || {}),
-                      argumentSummary: processedResults
-                    }
-                  }
-                });
-                console.log(`Updated question ${question.id} with the results`);
-              } catch (updateError) {
-                console.error('Error updating question:', updateError);
-                console.error('Failed to update question ID:', question.id);
-              }
-            } catch (questionError) {
-              console.error('Error processing question:', questionError);
-              console.error('Problematic question:', JSON.stringify(question, null, 2));
-            }
-          }
-
-          console.log('\n=== Process Complete ===');
-          ctx.body = {
-            data: {
-              message: 'Successfully processed selected questions',
-              processedQuestions: questionsToProcess.length,
-              processedQuestionIds: questionsToProcess.map((q) => q.documentId)
-            }
-          };
-        } catch (answersError) {
-          console.error('Error fetching answers:', answersError);
-          throw answersError;
-        }
-      } catch (eligibleQuestionsError) {
-        console.error('Error getting eligible questions:', eligibleQuestionsError);
-        throw eligibleQuestionsError;
-      }
-    } catch (error) {
-      console.error('\n=== Error in Argument Condensation ===');
-      console.error('Error details:', error);
-      ctx.throw(500, 'Failed to process and update arguments');
     }
   },
 
