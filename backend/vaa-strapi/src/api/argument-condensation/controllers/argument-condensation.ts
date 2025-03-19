@@ -21,34 +21,37 @@ interface CategoryGroups {
   [key: string]: Array<string>;
 }
 
-function groupLikertAnswers(answers: any[], likertType: string): LikertGroups {
-  // Extract the scale size from likert type (e.g., "Likert-5" -> 5)
-  const likertScale = parseInt(likertType.split('-')[1]);
-  const midpoint = (likertScale + 1) / 2;
+function groupLikertAnswers(answers: any[], questionScale: number): LikertGroups {
+  const isEven = questionScale % 2 === 0;
+  const middleValue = Math.ceil(questionScale / 2);
 
-  // Initialize groups
   const groups: LikertGroups = {
     presumedPros: [],
     presumedCons: []
   };
 
   answers.forEach((answer) => {
-    // Check for valid open answer (will be refactored) or string (which should contain an integer value)
     if (!answer.openAnswer?.fi || typeof answer.value !== 'string') {
       return;
     }
 
-    // Convert value to a number
     const value = parseInt(answer.value);
 
-    // Group based on position relative to the Likert scale's midpoint
-    if (value < midpoint - 0.5) {
-      groups.presumedCons.push(answer.openAnswer.fi);
-    } else if (value > midpoint + 0.5) {
-      groups.presumedPros.push(answer.openAnswer.fi);
+    if (isEven) {
+      // For 4-point scale: 1,2 -> cons, 3,4 -> pros
+      value <= questionScale / 2
+        ? groups.presumedCons.push(answer.openAnswer.fi)
+        : groups.presumedPros.push(answer.openAnswer.fi);
+    } else {
+      // For 5-point scale: 1,2 -> cons, 3 -> ignored, 4,5 -> pros
+      if (value < middleValue) {
+        groups.presumedCons.push(answer.openAnswer.fi);
+      } else if (value > middleValue) {
+        groups.presumedPros.push(answer.openAnswer.fi);
+      }
+      // Middle value is ignored
     }
   });
-  console.log('Likert Groups:', groups);
 
   return groups;
 }
@@ -129,7 +132,8 @@ export default {
             console.log('Question ID:', question.id);
             console.log('Document ID:', question.documentId);
             console.log('Text:', question.text ? JSON.stringify(question.text).substring(0, 100) : 'No text');
-            console.log('Type:', question.questionType?.name || 'Unknown type');
+            console.log('Type:', question.questionType?.settings?.type || 'Unknown type');
+            console.log('Name:', question.questionType?.name || 'Unknown name');
 
             try {
               // Get answers for this specific question using documentId
@@ -141,11 +145,14 @@ export default {
                 continue;
               }
 
-              const questionType = question.questionType?.name;
+              const questionType = question.questionType?.settings?.type;
               let processedResults = null;
 
-              if (questionType?.startsWith('Likert-')) {
-                const groupedAnswers = groupLikertAnswers(answers, questionType);
+              // Get the number of choices in the question scale
+              const questionScale = question?.questionType?.settings?.choices?.length || 0;
+
+              if (questionType === 'singleChoiceOrdinal') {
+                const groupedAnswers = groupLikertAnswers(answers, questionScale);
                 processedResults = {
                   pros:
                     groupedAnswers.presumedPros.length > 0

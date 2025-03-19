@@ -17,7 +17,11 @@ interface CandidateAnswer {
 async function fetchProcessableQuestions(documentIds?: string[]) {
   const questions = await strapi.db.query('api::question.question').findMany({
     select: ['id', 'documentId', 'text'],
-    populate: ['questionType']
+    populate: {
+      questionType: {
+        select: ['id', 'name', 'settings']
+      }
+    }
   });
 
   const processableQuestions = questions.filter((q) => q.questionType?.settings?.type === 'singleChoiceOrdinal');
