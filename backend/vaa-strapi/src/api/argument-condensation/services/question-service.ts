@@ -13,17 +13,12 @@ interface CandidateAnswer {
  * Fetches all questions that can be processed for argument condensation
  */
 async function fetchProcessableQuestions() {
-  console.log('Fetching processable questions...');
   const qs = await strapi.db.query('api::question.question').findMany({
-    // Include documentId in the selection
     select: ['id', 'documentId', 'text'],
-    populate: ['questionType'] // Still need questionType for filtering
+    populate: ['questionType']
   });
 
-  const questions = qs.filter((q) => q.questionType?.name === 'Likert-5');
-  console.log(`Found ${questions.length} Likert-5 questions that can be processed`);
-
-  return questions;
+  return qs.filter((q) => q.questionType?.name?.startsWith('Likert-'));
 }
 
 /**
