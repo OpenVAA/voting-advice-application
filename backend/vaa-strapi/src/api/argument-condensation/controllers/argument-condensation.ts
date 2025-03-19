@@ -1,5 +1,4 @@
 import { processComments, finnishConfig, CondensationType } from '@openvaa/argument-condensation';
-import { generateAnswersJSON } from '../utils/debug-data-generator';
 import { OpenAIProvider } from '@openvaa/llm';
 import questionService from '../services/question-service';
 

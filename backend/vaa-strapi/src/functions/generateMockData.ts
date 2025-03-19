@@ -72,16 +72,6 @@ const locales: Array<Locale> = [
   }
 ];
 
-interface MockAnswer {
-  questionId: string;
-  questionText: string;
-  value: string;
-  openAnswer: { fi: string };
-  party_id: string;
-  constituency_id: string;
-  answer_id: string;
-}
-
 export async function generateMockData() {
   if (!(generateMockDataOnInitialise || generateMockDataOnRestart)) {
     return;

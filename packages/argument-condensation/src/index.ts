@@ -82,7 +82,7 @@ export { Condenser } from './Condenser';
 // Export types
 export type { Argument } from './types/Argument';
 export type { LanguageConfig, SupportedLanguage } from './languageOptions/LanguageConfig';
-export type { CondensationType } from './types/CondensationType';
+export { CondensationType } from './types/CondensationType';
 
 // Export language configs
 export { finnishConfig } from './languageOptions/finnish';
