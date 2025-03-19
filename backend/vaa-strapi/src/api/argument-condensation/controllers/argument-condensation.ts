@@ -73,26 +73,12 @@ function groupCategoricalAnswers(answers: any[]): CategoryGroups {
   return groups;
 }
 
-function validateEnvironment() {
-  const requiredVars = ['OPENAI_API_KEY'];
-  const missing = requiredVars.filter((key) => !process.env[key]);
-
-  if (missing.length > 0) {
-    throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
-  }
-
-  if (!llmProvider) {
-    throw new Error('LLM Provider initialization failed');
-  }
-}
-
 export default {
   /**
    * Lists questions available for condensation
    */
   async list(ctx) {
     try {
-      console.log('\n=== Listing Questions for Argument Condensation ===');
       const questions = await questionService.fetchProcessableQuestions();
       questionService.logQuestionDetails(questions);
 
@@ -118,42 +104,17 @@ export default {
     try {
       console.log('\n=== Starting Argument Condensation ===');
 
-      // Validate environment first
-      validateEnvironment();
-
       try {
-        // Get all processable questions first
-        console.log('Fetching all eligible questions...');
-        const allEligibleQuestions = await questionService.fetchProcessableQuestions();
-        console.log(`Fetched ${allEligibleQuestions.length} eligible questions`);
+        const { questionDocumentIds } = ctx.request.body || {};
 
-        if (allEligibleQuestions.length === 0) {
-          return ctx.badRequest('No eligible questions (Likert-5) found in the system');
+        // Validate questionDocumentIds if provided
+        if (questionDocumentIds && (!Array.isArray(questionDocumentIds) || questionDocumentIds.length === 0)) {
+          return ctx.badRequest('Question document IDs must be a non-empty array');
         }
 
-        // Get question document IDs from request body (optional)
-        const { questionDocumentIds } = ctx.request.body || {};
-        console.log('Request body:', ctx.request.body);
-        console.log('Extracted question document IDs:', questionDocumentIds);
-
-        let questionsToProcess = allEligibleQuestions;
-
-        // If specific question IDs were provided, filter to just those questions
-        if (questionDocumentIds && Array.isArray(questionDocumentIds) && questionDocumentIds.length > 0) {
-          console.log(
-            `Filtering to ${questionDocumentIds.length} specified questions: ${questionDocumentIds.join(', ')}`
-          );
-          questionsToProcess = allEligibleQuestions.filter((q) => questionDocumentIds.includes(q.documentId));
-
-          if (questionsToProcess.length === 0) {
-            return ctx.badRequest('None of the provided question document IDs match eligible questions');
-          }
-
-          console.log(`Found ${questionsToProcess.length} matching questions to process`);
-        } else {
-          console.log(
-            `No specific questions requested. Processing all ${allEligibleQuestions.length} eligible questions`
-          );
+        const questionsToProcess = await questionService.fetchProcessableQuestions(questionDocumentIds);
+        if (questionsToProcess.length === 0) {
+          return ctx.badRequest('No eligible questions found');
         }
 
         // Get documentIds for fetching answers
@@ -162,23 +123,22 @@ export default {
         console.log('Document IDs to process:', documentIdsToProcess);
 
         try {
-          const answersMap = await questionService.fetchAnswersForQuestions(documentIdsToProcess);
+          const answersMap = await questionService.fetchAnswersForQuestions(
+            questionsToProcess.map((q) => q.documentId)
+          );
           console.log('Successfully fetched answers map');
 
           // Process each question based on its type
-          for (const questionToProcess of questionsToProcess) {
+          for (const question of questionsToProcess) {
             console.log('\n=== Processing Question ===');
-            console.log('Question ID:', questionToProcess.id);
-            console.log('Document ID:', questionToProcess.documentId);
-            console.log(
-              'Text:',
-              questionToProcess.text ? JSON.stringify(questionToProcess.text).substring(0, 100) : 'No text'
-            );
-            console.log('Type:', questionToProcess.questionType?.name || 'Unknown type');
+            console.log('Question ID:', question.id);
+            console.log('Document ID:', question.documentId);
+            console.log('Text:', question.text ? JSON.stringify(question.text).substring(0, 100) : 'No text');
+            console.log('Type:', question.questionType?.name || 'Unknown type');
 
             try {
               // Get answers for this specific question using documentId
-              const answers = answersMap[questionToProcess.documentId] || [];
+              const answers = answersMap[question.documentId] || [];
               console.log(`Found ${answers.length} answers for this question`);
 
               if (answers.length === 0) {
@@ -186,84 +146,53 @@ export default {
                 continue;
               }
 
-              const questionType = questionToProcess.questionType?.name;
-              let processedResults = null; // Results for the question
+              const questionType = question.questionType?.name;
+              let processedResults = null;
 
-              // If LIKERT
               if (questionType?.startsWith('Likert-')) {
-                try {
-                  // Handle Likert questions
-                  const groupedAnswers = groupLikertAnswers(answers, questionType);
-
-                  console.log(`Found ${groupedAnswers.presumedPros.length} presumed pros`);
-                  console.log(`Found ${groupedAnswers.presumedCons.length} presumed cons`);
-
-                  const results = {
-                    pros: [],
-                    cons: []
-                  };
-
-                  // Process pro comments if any exist
-                  if (groupedAnswers.presumedPros.length > 0) {
-                    console.log('Processing pro comments...');
-                    results.pros = await processComments(
-                      llmProvider,
-                      finnishConfig,
-                      groupedAnswers.presumedPros,
-                      questionToProcess.text?.fi || 'Unknown Topic',
-                      30,
-                      CondensationType.SUPPORTING
-                    );
-                    console.log(`Generated ${results.pros.length} pro arguments`);
-                  }
-
-                  // Process con comments if any exist
-                  if (groupedAnswers.presumedCons.length > 0) {
-                    console.log('Processing con comments...');
-                    results.cons = await processComments(
-                      llmProvider,
-                      finnishConfig,
-                      groupedAnswers.presumedCons,
-                      questionToProcess.text?.fi || 'Unknown Topic',
-                      30,
-                      CondensationType.OPPOSING
-                    );
-                    console.log(`Generated ${results.cons.length} con arguments`);
-                  }
-
-                  processedResults = results;
-                } catch (likertError) {
-                  console.error('Error processing Likert question:', likertError);
-                  continue; // Skip this question on error
-                }
+                const groupedAnswers = groupLikertAnswers(answers, questionType);
+                processedResults = {
+                  pros:
+                    groupedAnswers.presumedPros.length > 0
+                      ? await processComments(
+                          llmProvider,
+                          finnishConfig,
+                          groupedAnswers.presumedPros,
+                          question.text?.fi || 'Unknown Topic',
+                          30,
+                          CondensationType.SUPPORTING
+                        )
+                      : [],
+                  cons:
+                    groupedAnswers.presumedCons.length > 0
+                      ? await processComments(
+                          llmProvider,
+                          finnishConfig,
+                          groupedAnswers.presumedCons,
+                          question.text?.fi || 'Unknown Topic',
+                          30,
+                          CondensationType.OPPOSING
+                        )
+                      : []
+                };
               } else if (questionType === 'Categorical') {
-                try {
-                  // Handle categorical questions
-                  const groupedAnswers = groupCategoricalAnswers(answers);
-                  console.log('Categories found:', Object.keys(groupedAnswers));
-
-                  const results = {};
-
-                  for (const [category, comments] of Object.entries(groupedAnswers)) {
-                    if (comments.length > 0) {
-                      console.log(`Processing category "${category}" with ${comments.length} comments...`);
-                      results[category] = await processComments(
+                const groupedAnswers = groupCategoricalAnswers(answers);
+                processedResults = await Object.entries(groupedAnswers).reduce(async (acc, [category, comments]) => {
+                  if (comments.length > 0) {
+                    return {
+                      ...(await acc),
+                      [category]: await processComments(
                         llmProvider,
                         finnishConfig,
                         comments,
-                        `${questionToProcess.text?.fi || 'Unknown Topic'} - ${category}`,
+                        `${question.text?.fi || 'Unknown Topic'} - ${category}`,
                         30,
                         CondensationType.GENERAL
-                      );
-                      console.log(`Generated ${results[category].length} arguments for category ${category}`);
-                    }
+                      )
+                    };
                   }
-
-                  processedResults = results;
-                } catch (categoricalError) {
-                  console.error('Error processing Categorical question:', categoricalError);
-                  continue; // Skip this question on error
-                }
+                  return acc;
+                }, Promise.resolve({}));
               } else {
                 console.log(`Skipping question - unsupported type: ${questionType}`);
                 continue;
@@ -273,22 +202,22 @@ export default {
               try {
                 console.log('Updating question with results...');
                 await strapi.db.query('api::question.question').update({
-                  where: { id: questionToProcess.id },
+                  where: { id: question.id },
                   data: {
                     customData: {
-                      ...(questionToProcess.customData || {}),
+                      ...(question.customData || {}),
                       argumentSummary: processedResults
                     }
                   }
                 });
-                console.log(`Updated question ${questionToProcess.id} with the results`);
+                console.log(`Updated question ${question.id} with the results`);
               } catch (updateError) {
                 console.error('Error updating question:', updateError);
-                console.error('Failed to update question ID:', questionToProcess.id);
+                console.error('Failed to update question ID:', question.id);
               }
             } catch (questionError) {
               console.error('Error processing question:', questionError);
-              console.error('Problematic question:', JSON.stringify(questionToProcess, null, 2));
+              console.error('Problematic question:', JSON.stringify(question, null, 2));
             }
           }
 
