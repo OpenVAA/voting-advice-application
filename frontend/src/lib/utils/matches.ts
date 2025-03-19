@@ -1,5 +1,4 @@
 import {
-  type AnyNominationVariant,
   CandidateNomination,
   ENTITY_TYPE,
   type EntityType,
@@ -17,7 +16,7 @@ import type { MatchTree } from '$lib/contexts/voter/matchStore';
  * @param matches - The `MatchTree`
  * @param entityType - The type of the nominated entity.
  * @param nominationId - The id of the `Nomination` to find.
- * @returns The `Match` for the `Nomination` or `undefined` if not found.
+ * @returns The `MaybeWrappedEntityVariant` for the `Nomination`, its peers and the `Id` of the `Election`, or `undefined` if not found.
  */
 export function findNomination({
   entityType,
@@ -27,12 +26,24 @@ export function findNomination({
   entityType: EntityType;
   matches: MatchTree;
   nominationId: Id;
-}): Match<AnyNominationVariant> | undefined {
-  for (const election of Object.values(matches)) {
+}):
+  | {
+      match: MaybeWrappedEntityVariant;
+      peers: Array<MaybeWrappedEntityVariant>;
+      electionId: Id;
+    }
+  | undefined {
+  for (const [electionId, election] of Object.entries(matches)) {
     if (!election[entityType]) continue;
     for (const match of election[entityType]) {
       const { nomination } = unwrapEntity(match);
-      if (nomination && nomination.id === nominationId) return match as Match<AnyNominationVariant>;
+      if (nomination && nomination.id === nominationId) {
+        return {
+          match: match,
+          peers: election[entityType],
+          electionId
+        };
+      }
     }
   }
   return undefined;
@@ -55,12 +66,13 @@ export function findCandidateNominations({
 
   // Try to find matches for all of the candidateNominations
   const candidateMatches = candidateNominations
-    .map(({ id }) =>
-      findNomination({
-        matches,
-        entityType: ENTITY_TYPE.Candidate,
-        nominationId: id
-      })
+    .map(
+      ({ id }) =>
+        findNomination({
+          matches,
+          entityType: ENTITY_TYPE.Candidate,
+          nominationId: id
+        })?.match
     )
     .filter((n) => n != null)
     .sort(compareMaybeWrappedEntities);
