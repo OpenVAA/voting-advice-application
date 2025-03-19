@@ -11,5 +11,9 @@ module.exports = ({ env }) => ({
       ssl: env.bool('DATABASE_SSL_SELF', false)
     },
     useNullAsDefault: true
+  },
+  pool: {
+    min: 2,
+    max: 100
   }
 });
