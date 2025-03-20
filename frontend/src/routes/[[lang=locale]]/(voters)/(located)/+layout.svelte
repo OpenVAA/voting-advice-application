@@ -25,6 +25,7 @@ Displays a warning if the selected constituency does not have nominations in all
   import { getVoterContext } from '$lib/contexts/voter';
   import { sanitizeHtml } from '$lib/utils/sanitize.js';
   import type { DPDataType } from '$lib/api/base/dataTypes';
+  import { logDebugError } from '$lib/utils/logger.js';
 
   export let data;
 
@@ -35,7 +36,14 @@ Displays a warning if the selected constituency does not have nominations in all
   let openModal: () => void;
   let ready: boolean;
   let hasNominations: 'all' | 'none' | 'some';
+
+  $: logDebugError(`error ${error}`);
+  $: logDebugError(`ready ${ready}`);
+  $: logDebugError(`hasNominations ${hasNominations}`);
+  $: logDebugError(`data ${data}`);
+
   $: {
+    logDebugError('UPDATE REACTIVE BLOCK');
     // If data is updated, we want to prevent loading the slot until the promises resolve
     error = undefined;
     ready = false;
@@ -52,13 +60,16 @@ Displays a warning if the selected constituency does not have nominations in all
     DPDataType['questions'] | Error,
     DPDataType['nominations'] | Error
   ]): Error | undefined {
+    logDebugError('UPDATE START');
     if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
     if (!isValidResult(nominationData, { allowEmpty: true })) return new Error('Error loading nomination data');
+    logDebugError(`UPDATE DATA questions ${questionData?.questions?.length}, nominations ${nominationData?.nominations?.length}`);
     $dataRoot.update(() => {
       $dataRoot.provideQuestionData(questionData);
       $dataRoot.provideEntityData(nominationData.entities);
       $dataRoot.provideNominationData(nominationData.nominations);
     });
+    logDebugError('UPDATED');
     ready = true;
     if (Object.values($nominationsAvailable).every(Boolean)) hasNominations = 'all';
     else if (Object.values($nominationsAvailable).some(Boolean)) hasNominations = 'some';
