@@ -44,6 +44,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import { DELAY } from '$lib/utils/timing';
   import MainContent from '../../../MainContent.svelte';
   import type { Id } from '@openvaa/core';
+  import { logDebugError } from '$lib/utils/logger';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -165,14 +166,20 @@ The nominations applicable to these elections and constituencies are shown. Thes
     cancel();
   });
 
-  function getDrawerProps(opts: { entityType: EntityType; entityId: Id; nominationId?: Id }): EntityDetailsDrawerProps {
-    return {
-      entity: getEntityAndTitle({
-        dataRoot: $dataRoot,
-        matches: $matches,
-        ...opts
-      }).entity
-    };
+  function getDrawerProps(opts: { entityType: EntityType; entityId: Id; nominationId?: Id }): EntityDetailsDrawerProps | undefined {
+    try {
+      return {
+        entity: getEntityAndTitle({
+          dataRoot: $dataRoot,
+          matches: $matches,
+          ...opts
+        }).entity
+      };
+    } catch (e) {
+      // TODO: Show a notification to the user
+      logDebugError(`Could not get entity details for ${opts.entityType} ${opts.entityId} with nomination ${opts.nominationId ?? '-'}. Error: ${e instanceof Error ? e.message : '-'}`);
+      return undefined;
+    }    
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -185,8 +192,11 @@ The nominations applicable to these elections and constituencies are shown. Thes
 </script>
 
 {#if $page.state.resultsShowEntity}
-  {#key $page.state.resultsShowEntity}
-    <EntityDetailsDrawer {...getDrawerProps($page.state.resultsShowEntity)} />
+  {@const props = getDrawerProps($page.state.resultsShowEntity)}
+  {#key props}
+    {#if props}
+      <EntityDetailsDrawer {...props} />
+    {/if}
   {/key}
 {/if}
 
