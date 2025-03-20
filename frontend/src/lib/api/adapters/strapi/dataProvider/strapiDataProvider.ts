@@ -91,7 +91,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     params.populate = {
       constituencyGroups: 'true'
     };
-    const data = await this.apiGet({ endpoint: 'elections', params });
+    const data = await this.apiGet({ endpoint: 'elections', params, useCacheProxy: true });
     return data.map((election) => ({
       ...parseBasics(election, locale),
       date: election.electionDate,
@@ -110,7 +110,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     params.populate = {
       constituencies: { populate: { parent: 'true' } }
     };
-    const data = await this.apiGet({ endpoint: 'constituencyGroups', params });
+    const data = await this.apiGet({ endpoint: 'constituencyGroups', params, useCacheProxy: true });
     const groups = new Array<ConstituencyGroupData>();
     const constituencies = new Map<string, ConstituencyData>();
     for (const group of data) {
@@ -143,7 +143,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       params.filters ??= {};
       params.filters.unconfirmed = { $ne: 'true' };
     }
-    const data = await this.apiGet({ endpoint: 'nominationsWithRelations', params });
+    const data = await this.apiGet({ endpoint: 'nominationsWithRelations', params, useCacheProxy: true });
     return parseNominations(data, locale);
   }
 
@@ -163,7 +163,8 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       };
       const candidates = this.apiGet({
         endpoint: 'candidates',
-        params: candParams
+        params: candParams,
+        useCacheProxy: true
       }).then((data) => data.map((d) => parseCandidate(d, locale)));
       promises.push(candidates);
     }
@@ -173,7 +174,8 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       };
       const organizations = this.apiGet({
         endpoint: 'parties',
-        params
+        params,
+        useCacheProxy: true
       }).then((data) => data.map((d) => parseOrganization(d, locale)));
       promises.push(organizations);
     }
@@ -195,13 +197,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         }
       }
     };
-    /*
-    
-    select *
-    from question_categories
-    join question_categories_constituencies
-    
-    */
+
     // If the category has no election defined, it means it applies to all elections
     if (options.electionId)
       params.filters = {
@@ -210,11 +206,8 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
           { elections: { documentId: { $null: 'true' } } }
         ]
       };
-    /*
-      
-      
-    */
-    const data = await this.apiGet({ endpoint: 'questionCategories', params });
+
+    const data = await this.apiGet({ endpoint: 'questionCategories', params, useCacheProxy: true });
     const categories = new Array<QuestionCategoryData>();
     const allQuestions = new Map<string, AnyQuestionVariantData>();
     for (const category of data) {
