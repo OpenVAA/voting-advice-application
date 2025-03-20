@@ -4,9 +4,11 @@ export default {
   routes: [
     {
       method: 'POST',
-      path: '/questions/:id/generateInfo',
+      path: '/questions/generateInfo',
       handler: 'question.generateInfo',
-      policies: ['global::user-is-admin']
+      config: {
+        policies: ['global::user-is-admin']
+      }
     } as Core.RouteConfig
   ]
 };
