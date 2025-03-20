@@ -117,7 +117,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     // The questions and possible submatches to display in the card
     // TODO: Add support for all entity types by expanding the setting type to cover all of them
     if (type === ENTITY_TYPE.Candidate || type === ENTITY_TYPE.Organization) {
-      showSubMatches = $appSettings.results.cardContents[type].includes('submatches');
+      showSubMatches = false;
       if (variant !== 'details') {
         questions = questionId && type === ENTITY_TYPE.Candidate
           ? [{ 
