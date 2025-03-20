@@ -10,6 +10,12 @@ The Data API is composed of three services:
 
 > See also an [example of the data loading cascade](./data-and-state-management.md#example).
 
+## Cache
+
+A simple [disk cache](https://github.com/jaredwray/cacheable#readme) may also be opted in by setting the `PUBLIC_CACHE_ENABLED` env variable to `true` (and configuring the other `CACHE_` variables). If enabled, non-authenticated `GET` requests are cached by default. Caching is handled by the [UniversalAdapter.fetch](/frontend/src/lib/api/base/universalAdapter.ts) method, using the [/api/cache/+server] route.
+
+Note that the cache can be enabled also when the `local` data adapter is used. This may, however, not improve performance by much, as the only overhead saved is the application of query filters to the locally stored json data.
+
 ## Folder structure
 
 - [frontend/](../../frontend)
@@ -29,6 +35,7 @@ The Data API is composed of three services:
       - [feedbackWriter.ts](../../frontend/src/lib/server/api/feedbackWriter.ts) — The main entry point for the `POST` function of the `/api/feedback/+server.ts` API route.
     - `routes/[lang=locale]/`
       - `api/` – Contains the API routes.
+        - `cache/+server.ts` – Implements simple disk caching using [`flat-cache`](https://github.com/jaredwray/cacheable#readme)
         - `candidate/logout/+server.ts` – Clear the strict cookie containing the authentication token (does not actually access`DataWriter`).
         - `candidate/preregister/+server.ts` – Access to `DataWriter.preregisterWithApiToken`.
         - `data/[collection]/+server.ts` – Access to the server-run `ServerDataProvider` implementations.
@@ -87,8 +94,10 @@ namespace Universal {
 
   class UniversalAdapter:::abstract {
     <<Abstract>>
-    Implements common initialization for Data API services
+    Implements common fetch for Data API services that handles possible disk caching,
+    must be initialized by providing the fetch function before use.
     +init(fetch) void
+    +fetch(opts) Promise~Response~
   }
 
   class UniversalDataProvider:::abstract {

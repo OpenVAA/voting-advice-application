@@ -96,7 +96,7 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
   }
 
   protected async _getBasicUserData({ authToken }: WithAuth): DWReturnType<BasicUserData> {
-    const data = await this.apiGet({ endpoint: 'basicUserData', authToken });
+    const data = await this.apiGet({ endpoint: 'basicUserData', authToken, disableCache: true });
     if (!data) throw new Error('Expected one BasicUserData object, but got none.');
     return parseUser(data);
   }
@@ -162,7 +162,8 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
     const data = await this.apiGet({
       endpoint: 'candidateUserData',
       params,
-      authToken
+      authToken,
+      disableCache: true
     });
     if (!data?.candidate) throw new Error('Expected a CandidateUserData object with a candidate, but got none.');
     // A localized version of the candidate data with answers untranslated
@@ -200,18 +201,6 @@ export class StrapiDataWriter extends strapiAdapterMixin(UniversalDataWriter) {
     if (!data) throw new Error('Expected a CandidateData object, but got none.');
     return parseCandidate(data, null, { dontTranslateAnswers: true });
   }
-
-  // return await request(getUrl(`api/candidates/${candidate.documentId}`), {
-  //   method: 'PUT',
-  //   body: JSON.stringify({
-  //     data: {
-  //       image: image?.id
-  //     }
-  //   }),
-  //   headers: {
-  //     'Content-Type': 'application/json'
-  //   }
-  // });
 
   protected async _updateEntityProperties({
     authToken,

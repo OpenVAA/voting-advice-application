@@ -13,6 +13,7 @@ export interface StrapiAdapter {
    * @param request - Optional `RequestInit` for the request.
    * @param authToken - Optional `jwt` token for the request.
    * @param endpointParams - Optional params to match params of type `:foo` in the endpoint path.
+   * @param disableCache - Optional `boolean` indicating whether to disable cache for the request.
    * @returns The succesful `Response` from the Strapi API.
    * @throws An error if the request fails or if `Response.ok` is not `true`.
    * @throws If any `endpointParams` are missing that are required by the `endpoint`.
@@ -25,6 +26,7 @@ export interface StrapiAdapter {
    * @param params - Optional `object` containing the query parameters for the request. It will be converted to a `URLSearchParams` object with `qs.stringify`.
    * @param authToken - Optional `jwt` token for the request.
    * @param endpointParams - Optional params to match params of type `:foo` in the endpoint path.
+   * @param disableCache - Optional `boolean` indicating whether to disable cache for the request.
    * @returns The Strapi data associated with the API endpoint.
    */
   apiGet: <TApi extends StrapiApi>(opts: GetOptions<TApi>) => Promise<StrapiApiReturnType[TApi]>;
@@ -62,9 +64,10 @@ export type FetchOptions<TApi extends StrapiApi> = {
   request?: RequestInit;
   authToken?: string;
   endpointParams?: Record<string, string>;
+  disableCache?: boolean;
 };
 export type GetOptions<TApi extends StrapiApi> = Omit<FetchOptions<TApi>, 'request'>;
-export type PostOptions<TApi extends StrapiApi> = Omit<FetchOptions<TApi>, 'request' | 'params'> & {
+export type PostOptions<TApi extends StrapiApi> = Omit<FetchOptions<TApi>, 'request' | 'params' | 'disableCache'> & {
   body?: Serializable;
   put?: boolean;
 };

@@ -25,28 +25,20 @@ export function strapiAdapterMixin<TBase extends Constructor>(base: TBase): Cons
       super(...args);
     }
 
-    async apiFetch<TApi extends StrapiApi>({
+    apiFetch<TApi extends StrapiApi>({
       endpoint,
       params,
       request,
       endpointParams,
-      authToken
+      authToken,
+      disableCache
     }: FetchOptions<TApi>): Promise<Response> {
-      if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
       const path = insertApiParams(STRAPI_API[endpoint], endpointParams);
-      const url = new URL(
-        `${browser ? constants.PUBLIC_BROWSER_BACKEND_URL : constants.PUBLIC_SERVER_BACKEND_URL}/${path}`
-      );
+      const baseUrl = browser ? constants.PUBLIC_BROWSER_BACKEND_URL : constants.PUBLIC_SERVER_BACKEND_URL;
+      const url = new URL(`${baseUrl}/${path}`);
       if (params) url.search = qs.stringify(params, { encodeValuesOnly: true });
       if (authToken) request = addHeader(request, 'Authorization', `Bearer ${authToken}`);
-      const response = await this.fetch(url, request);
-      if (!response.ok) {
-        const { error } = await response.json();
-        throw new Error(`Error with apiFetch: ${response.status} (${response.statusText ?? '-'}) • ${url}`, {
-          cause: error?.message
-        });
-      }
-      return response;
+      return this.fetch(url, request, { disableCache });
     }
 
     async apiGet<TApi extends StrapiApi>({ params, ...rest }: GetOptions<TApi>): Promise<StrapiApiReturnType[TApi]> {
