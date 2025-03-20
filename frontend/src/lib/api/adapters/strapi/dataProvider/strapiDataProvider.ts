@@ -214,7 +214,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       
       
     */
-    const data = await this.apiGet({ endpoint: 'questionCategories', params });
+    const data = await this.apiGet({ endpoint: 'questionCategories', params, useCacheProxy: true });
     const categories = new Array<QuestionCategoryData>();
     const allQuestions = new Map<string, AnyQuestionVariantData>();
     for (const category of data) {

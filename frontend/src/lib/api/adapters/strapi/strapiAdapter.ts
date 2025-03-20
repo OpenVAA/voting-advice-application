@@ -1,6 +1,7 @@
 import { ENTITY_TYPE } from '@openvaa/data';
 import qs from 'qs';
 import { browser } from '$app/environment';
+import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
 import { addHeader } from '$lib/api/utils/addHeader';
 import { constants } from '$lib/utils/constants';
 import { STRAPI_API, STRAPI_AUTH_APIS, type StrapiApi, type StrapiApiReturnType } from './strapiApi';
@@ -30,7 +31,8 @@ export function strapiAdapterMixin<TBase extends Constructor>(base: TBase): Cons
       params,
       request,
       endpointParams,
-      authToken
+      authToken,
+      useCacheProxy
     }: FetchOptions<TApi>): Promise<Response> {
       if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
       const path = insertApiParams(STRAPI_API[endpoint], endpointParams);
@@ -39,7 +41,10 @@ export function strapiAdapterMixin<TBase extends Constructor>(base: TBase): Cons
       );
       if (params) url.search = qs.stringify(params, { encodeValuesOnly: true });
       if (authToken) request = addHeader(request, 'Authorization', `Bearer ${authToken}`);
-      const response = await this.fetch(url, request);
+      const response = await this.fetch(
+        useCacheProxy ? `${UNIVERSAL_API_ROUTES.cacheProxy}?resource=${encodeURIComponent(url.toString())}` : url,
+        request
+      );
       if (!response.ok) {
         const { error } = await response.json();
         throw new Error(`Error with apiFetch: ${response.status} (${response.statusText ?? '-'}) • ${url}`, {

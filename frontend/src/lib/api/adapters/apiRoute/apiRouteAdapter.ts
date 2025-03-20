@@ -1,4 +1,5 @@
 import qs from 'qs';
+import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
 import { addHeader } from '$lib/api/utils/addHeader';
 import { API_ROUTES, type ApiGetRoute, type ApiPostRoute, type ApiRoute, type ApiRouteReturnType } from './apiRoutes';
 import type { UniversalAdapter } from '$lib/api/base/universalAdapter';
@@ -15,11 +16,19 @@ export function apiRouteAdapterMixin<TBase extends Constructor>(base: TBase): Co
       super(...args);
     }
 
-    async apiFetch<TApi extends ApiRoute>({ endpoint, params, request }: FetchOptions<TApi>): Promise<Response> {
+    async apiFetch<TApi extends ApiRoute>({
+      endpoint,
+      params,
+      request,
+      useCacheProxy
+    }: FetchOptions<TApi>): Promise<Response> {
       if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
       let url = API_ROUTES[endpoint];
       if (params) url += `?${qs.stringify(params, { encodeValuesOnly: true })}`;
-      const response = await this.fetch(url, request).catch((error) => {
+      const response = await this.fetch(
+        useCacheProxy ? `${UNIVERSAL_API_ROUTES.cacheProxy}?resource=${encodeURIComponent(url)}` : url,
+        request
+      ).catch((error) => {
         throw new Error(`Error with apiFetch when fetching: ${error} • ${url}`);
       });
       if (!response.ok) {
@@ -31,8 +40,12 @@ export function apiRouteAdapterMixin<TBase extends Constructor>(base: TBase): Co
       return response;
     }
 
-    async apiGet<TApi extends ApiGetRoute>({ endpoint, params }: GetOptions<TApi>): Promise<ApiRouteReturnType<TApi>> {
-      const response = await this.apiFetch({ endpoint, params });
+    async apiGet<TApi extends ApiGetRoute>({
+      endpoint,
+      params,
+      useCacheProxy
+    }: GetOptions<TApi>): Promise<ApiRouteReturnType<TApi>> {
+      const response = await this.apiFetch({ endpoint, params, useCacheProxy });
       return response.json();
     }
 

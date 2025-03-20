@@ -19,6 +19,11 @@ services:
       IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY: ${IDENTITY_PROVIDER_ENCRYPTION_PRIVATE_KEY}
       BACKEND_API_TOKEN: ${BACKEND_API_TOKEN}
       PUBLIC_DEBUG: ${PUBLIC_DEBUG}
+      CACHE_DIR: ${CACHE_DIR}
+      CACHE_TTL: ${CACHE_TTL}
+      CACHE_LRU_SIZE: ${CACHE_LRU_SIZE}
+      CACHE_EXPIRATION_INTERVAL: ${CACHE_EXPIRATION_INTERVAL}
+      CACHE_PERSIST_INTERVAL: ${CACHE_PERSIST_INTERVAL}    
   awslocal:
     extends:
       file: ./backend/vaa-strapi/docker-compose.dev.yml
@@ -85,3 +90,5 @@ volumes:
   postgres:
   strapi-uploads:
   awslocal:
+  cache:
+    driver: local

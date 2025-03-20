@@ -37,6 +37,7 @@ export type FetchOptions<TApi extends ApiRoute> = {
   endpoint: TApi;
   params?: GetDataOptionsBase;
   request?: RequestInit;
+  useCacheProxy?: boolean;
 };
 export type GetOptions<TApi extends ApiGetRoute> = Omit<FetchOptions<TApi>, 'request'>;
 export type PostOptions<TApi extends ApiPostRoute> = Omit<FetchOptions<TApi>, 'request' | 'params'> & {
