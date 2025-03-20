@@ -54,8 +54,15 @@ export function compareMaybeWrappedEntities<TEntity extends MaybeWrappedEntityVa
   const { match: matchA, nomination: nominationA, entity: entityA } = unwrapEntity(a);
   const { match: matchB, nomination: nominationB, entity: entityB } = unwrapEntity(b);
   let order = 0;
-  if (matchA && matchB) order = matchB.score - matchA.score;
-  if (order === 0 && nominationA && nominationB) order = compareElectionSymbols(nominationA, nominationB);
+  // Compare matches
+  if (matchA || matchB) {
+    order = (matchB?.score ?? -Infinity) - (matchA?.score ?? -Infinity);
+  }
+  // Compare election symbols
+  if (order === 0 && (nominationA || nominationB)) {
+    if (nominationA && nominationB) order = compareElectionSymbols(nominationA, nominationB);
+    else order = nominationA ? -1 : 1;
+  }
   if (order === 0) order = entityA.name.localeCompare(entityB.name);
   return order;
 }
