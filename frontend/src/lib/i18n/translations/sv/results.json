@@ -15,8 +15,8 @@
   },
   "missingNominations": {
     "noNominations": {
-      "title": "Det finns inga kandidater eller partier i din valkrets som har svarat på valkompassen",
-      "content": "Du kan granska frågorna om du vill, men inga resultat kan visas."
+      "title": "Det verkar som att det inte finns några kandidater eller partier i din valkrets som har svarat på valkompassen",
+      "content": "Detta kan bero på ett tekniskt fel, så vänligen försök att ladda om sidan. Du kan också granska frågorna om du vill, men inga resultat kan visas."
     },
     "someNominations": {
       "title": "Vissa kandidater eller partier har inte svarat på valkompassen",

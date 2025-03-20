@@ -15,8 +15,8 @@
   },
   "missingNominations": {
     "noNominations": {
-      "title": "There are no candidates or parties in your constituency who have responded to the Election Compass",
-      "content": "You can review the questions if you wish, but results cannot be displayed."
+      "title": "It seems that there are no candidates or parties in your constituency who have responded to the Election Compass",
+      "content": "This may be due to a technical issue, so please try reloading the page again right away. You can also review the questions if you wish, but results cannot be displayed."
     },
     "someNominations": {
       "title": "Some election candidates or parties have not responded to the Election Compass",

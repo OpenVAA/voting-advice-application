@@ -15,8 +15,8 @@
   },
   "missingNominations": {
     "noNominations": {
-      "title": "Vaalipiirissäsi ei ole vaalikoneeseen vastanneita ehdokkaita tai puolueita",
-      "content": "Voit halutessasi tutustua kysymyksiin, mutta tuloksia ei voida näyttää."
+      "title": "Näyttäisi siltä, että vaalipiirissäsi ei ole vaalikoneeseen vastanneita ehdokkaita tai puolueita",
+      "content": "Tämä voi johtua teknisestä viasta, joten voit kokeilla ladata sivun uudelleen. Voit myös halutessasi tutustua kysymyksiin, mutta tuloksia ei voida näyttää."
     },
     "someNominations": {
       "title": "Joidenkin vaalien ehdokkaat tai puolueet eivät ole vastanneet vaalikoneeseen",
