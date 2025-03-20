@@ -37,7 +37,7 @@ export function strapiAdapterMixin<TBase extends Constructor>(base: TBase): Cons
       if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
       const path = insertApiParams(STRAPI_API[endpoint], endpointParams);
       const url = new URL(
-        `${browser ? constants.PUBLIC_BROWSER_BACKEND_URL : constants.PUBLIC_SERVER_BACKEND_URL}/${path}`
+        `${browser && !useCacheProxy ? constants.PUBLIC_BROWSER_BACKEND_URL : constants.PUBLIC_SERVER_BACKEND_URL}/${path}`
       );
       if (params) url.search = qs.stringify(params, { encodeValuesOnly: true });
       if (authToken) request = addHeader(request, 'Authorization', `Bearer ${authToken}`);

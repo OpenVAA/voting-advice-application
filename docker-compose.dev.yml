@@ -23,7 +23,6 @@ services:
       CACHE_TTL: ${CACHE_TTL}
       CACHE_LRU_SIZE: ${CACHE_LRU_SIZE}
       CACHE_EXPIRATION_INTERVAL: ${CACHE_EXPIRATION_INTERVAL}
-      CACHE_PERSIST_INTERVAL: ${CACHE_PERSIST_INTERVAL}    
   awslocal:
     extends:
       file: ./backend/vaa-strapi/docker-compose.dev.yml

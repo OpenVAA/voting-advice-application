@@ -7,17 +7,15 @@ import type { RequestEvent } from '@sveltejs/kit';
 const cacheTtl = Number(constants.CACHE_TTL);
 const cacheLruSize = Number(constants.CACHE_LRU_SIZE);
 const cacheExpirationInterval = Number(constants.CACHE_EXPIRATION_INTERVAL);
-const cachePersistInterval = Number(constants.CACHE_EXPIRATION_INTERVAL);
 
 const cache = new FlatCache({
   cacheDir: constants.CACHE_DIR || '/var/data/cache',
   ttl: !Number.isNaN(cacheTtl) ? cacheTtl : undefined,
   lruSize: !Number.isNaN(cacheLruSize) ? cacheLruSize : undefined,
-  expirationInterval: !Number.isNaN(cacheExpirationInterval) ? cacheExpirationInterval : undefined,
-  persistInterval: !Number.isNaN(cachePersistInterval) ? cachePersistInterval : undefined
+  expirationInterval: !Number.isNaN(cacheExpirationInterval) ? cacheExpirationInterval : undefined
 });
 
-export async function GET({ url }: RequestEvent): Promise<Response> {
+export async function GET({ fetch, url }: RequestEvent): Promise<Response> {
   const resource = url.searchParams.get('resource');
 
   if (!resource) {
@@ -33,12 +31,12 @@ export async function GET({ url }: RequestEvent): Promise<Response> {
   const cacheKey = crypto.createHash('sha256').update(resource).digest('hex');
   const cacheValue = cache.getKey<{ data: object }>(cacheKey);
 
-  if (cacheValue.data) {
+  if (cacheValue?.data) {
     return json(cacheValue.data);
   }
 
   try {
-    const response = await fetch(resource, { method: 'GET' }); // THIS FAILS, policies?
+    const response = await fetch(new URL(resource));
 
     if (!response.ok) {
       return error(response.status, { message: `Failed to fetch data from ${resource}` });
