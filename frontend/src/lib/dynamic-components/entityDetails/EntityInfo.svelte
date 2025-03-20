@@ -13,6 +13,7 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
 
 ### Settings
 
+- `results.sections: 'organization'`: Whether to show a link to the nominating organization.
 - `survey.showIn: 'entityDetails'`: Whether to show the survey banner.
 
 ### Usage
@@ -90,8 +91,9 @@ This is a dynamic component, because it accesses `appSettings` and `dataRoot` fr
       {#if parentNomination}
         <InfoItem
           label={entityType === ENTITY_TYPE.Organization ? $t('common.alliance.singular') : $t('common.electionList')}>
-          <!-- Add a link to the entity page for parties -->
-          {#if parentNomination.entityType === ENTITY_TYPE.Organization}
+          <!-- Add a link to the nomination page for parties -->
+          {#if $appSettings.results.sections?.includes(ENTITY_TYPE.Organization) 
+            && parentNomination.entityType === ENTITY_TYPE.Organization }
             <a
               href={$getRoute({
                 route: 'ResultEntity',
