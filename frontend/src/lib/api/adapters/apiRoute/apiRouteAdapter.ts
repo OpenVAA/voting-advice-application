@@ -1,5 +1,7 @@
 import qs from 'qs';
+import { browser } from '$app/environment';
 import { addHeader } from '$lib/api/utils/addHeader';
+import { constants } from '$lib/utils/constants';
 import { API_ROUTES, type ApiGetRoute, type ApiPostRoute, type ApiRoute, type ApiRouteReturnType } from './apiRoutes';
 import type { UniversalAdapter } from '$lib/api/base/universalAdapter';
 import type { ApiRouteAdapter, FetchOptions, GetOptions, PostOptions } from './apiRouteAdapter.type';
@@ -15,24 +17,24 @@ export function apiRouteAdapterMixin<TBase extends Constructor>(base: TBase): Co
       super(...args);
     }
 
-    async apiFetch<TApi extends ApiRoute>({ endpoint, params, request }: FetchOptions<TApi>): Promise<Response> {
-      if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
-      let url = API_ROUTES[endpoint];
+    apiFetch<TApi extends ApiRoute>({
+      endpoint,
+      params,
+      request,
+      disableCache
+    }: FetchOptions<TApi>): Promise<Response> {
+      const baseUrl = browser ? constants.PUBLIC_BROWSER_FRONTEND_URL : constants.PUBLIC_SERVER_FRONTEND_URL;
+      let url = `${baseUrl}/${API_ROUTES[endpoint]}`;
       if (params) url += `?${qs.stringify(params, { encodeValuesOnly: true })}`;
-      const response = await this.fetch(url, request).catch((error) => {
-        throw new Error(`Error with apiFetch when fetching: ${error} • ${url}`);
-      });
-      if (!response.ok) {
-        const body = (await response.json().catch()) ?? {};
-        const message =
-          typeof body === 'object' && body?.message ? body.message : '(Could not parse error message from Response.)';
-        throw new Error(`Error with apiFetch when parsing response: ${response.status} • ${message} • ${url}`);
-      }
-      return response;
+      return this.fetch(url, request, { disableCache });
     }
 
-    async apiGet<TApi extends ApiGetRoute>({ endpoint, params }: GetOptions<TApi>): Promise<ApiRouteReturnType<TApi>> {
-      const response = await this.apiFetch({ endpoint, params });
+    async apiGet<TApi extends ApiGetRoute>({
+      endpoint,
+      params,
+      disableCache
+    }: GetOptions<TApi>): Promise<ApiRouteReturnType<TApi>> {
+      const response = await this.apiFetch({ endpoint, params, disableCache });
       return response.json();
     }
 
