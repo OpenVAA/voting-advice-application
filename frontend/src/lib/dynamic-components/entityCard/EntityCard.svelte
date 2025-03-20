@@ -137,9 +137,10 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
       variant === 'list' &&
       nomination &&
       nomination instanceof OrganizationNomination &&
-      $appSettings.results.cardContents.organization.includes('candidates')
+      $appSettings.results.cardContents.organization.includes('candidates') &&
+      matches != null
     ) {
-      subcards = findCandidateNominations({ matches: matches ? $matches : undefined, nomination }).map((e) => ({
+      subcards = findCandidateNominations({ matches: $matches, nomination }).map((e) => ({
         entity: e,
         questionId
       }));
