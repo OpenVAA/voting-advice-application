@@ -25,6 +25,7 @@ The basic paradigm is (from top to bottom):
 - The specific `DataProvider` implementations may either
   - directly access the database, or
   - if they can only run on the server circulate the calls via the generic `ApiRouteDataProvider`—`/routes/api/data/[collection]/+server.ts`—`$lib/server/_api/serverDataProvider` chain, the last part of which exports the correct `ServerDataProvider` implementation.
+- If the `PUBLIC_CACHE_ENABLED` env variable is set, the either adapters `fetch` requests are rerouted via the cache route (`/routes/api/cache/server.ts`). This is handled by the [`UniversalAdapter.fetch`](/frontend/src/lib/api/base/universalAdapter.ts), which the providers use internally.
 
 The process is described in the flowchart below.
 
@@ -83,6 +84,31 @@ DP["DataProvider
 $lib/api/dataProvider.ts
 Imports the correct DataProvider implementation"]
 
+DP_STRAPI["$lib/api/adapters/strapi/provider/strapiDataProvider.ts
+A specific implementation to connect to a Strapi backend"]
+
+DP_API["$lib/api/adapters/apiRoute/provider/apiRouteDataProvider.ts
+A generic wrapper for all DataProvider implementations
+that rely on the server and are, thus, accessible via the API routes"]
+
+UDA_STRAPI["UniversalDataProvider.fetch()
+$lib/api/base/universalDataAdapter.ts
+Wraps the fetch method used for requests,
+possibly redirecting requests to the cache."]
+
+CACHE_STRAPI["/routes/api/cache/+server.ts"]:::ssr
+
+UDA_API["UniversalDataProvider.fetch()
+$lib/api/base/universalDataAdapter.ts
+Wraps the fetch method used for requests,
+possibly redirecting requests to the cache."]
+
+CACHE_API["/routes/api/cache/+server.ts"]:::ssr
+
+DATA_API_ROUTE["/routes/api/data/[collection]/+server.ts
+A generic API route (GET) request handler,
+which loads the data using DataProvider<'server'>"]:::ssr
+
 %% Connections
 
 PAGE---|"getVoterContext"|CTX_VOTER
@@ -123,23 +149,31 @@ getConstituencyData"| DP
 
 subgraph DataProviders
 DP
----|"import depending on appSettings"|DP_STRAPI["$lib/api/adapters/strapi/provider/strapiDataProvider.ts
-A specific implementation to connect to a Strapi backend"]
----|"_getElectionData etc. → fetch()"|STRAPI["Strapi backend"]:::ssr;
+---|"import depending on appSettings"|DP_STRAPI
+---|"_getElectionData"|UDA_STRAPI
+---|"fetch()"|STRAPI["Strapi backend"]:::ssr;
+
+UDA_STRAPI
+---|"if cache is enabled"|CACHE_STRAPI
+---|"fetch() and cache"|STRAPI["Strapi backend"]:::ssr;
 
 DP
----|"import depending on appSettings"|DP_API["$lib/api/adapters/apiRoute/provider/apiRouteDataProvider.ts
-A generic wrapper for all DataProvider implementations
-that rely on the server and are, thus, accessible via the API routes"]
----|"_getElectionData etc. → fetch()"|API["/routes/api/data/[collection]/+server.ts
-A generic API route (GET) request handler,
-which loads the data using DataProvider<'server'>"]:::ssr
+---|"import depending on appSettings"|DP_API
+---|"_getElectionData"|UDA_API
+---|"fetch()"|DATA_API_ROUTE
 ---|"getElectionData etc."|DP_SERVER["$lib/server/api/dataProvider.ts
 Imports the correct DataProvider<'server'> implementation"]:::ssr
 ---|"import depending on appSettings"|DP_SERVER_LOCAL["$lib/server/api/adapters/local/provider/localServerDataProvider.ts
 A specific implementation to read locally saved json files."]:::ssr
----|"_getCandidatesData etc. → read()"|JSON["/data/candidates.json"]:::ssr;
+---|"_getCandidatesData etc. → read()"|JSON["${LOCAL_DATA_DIR}/candidates.json"]:::ssr;
+
+UDA_API
+---|"if cache is enabled"|CACHE_API
+---|"fetch() and cache"|DATA_API_ROUTE
+
+
 end
+
 
 subgraph Legend
 L1["Svelte component"]:::svelte
