@@ -145,6 +145,12 @@ export async function generateMockData() {
     });
     console.info('Done!');
     console.info('#######################################');
+    console.info('inserting admin user for frontend');
+    await createAdminUser().catch((e) => {
+      throw e;
+    });
+    console.info('Done!');
+    console.info('#######################################');
     console.info('inserting constituencies and constituency groups');
     await createConstituenciesAndGroups({
       numberPerGroup: N_CONSTITUENCIES_PER_ELECTION,
@@ -255,6 +261,11 @@ async function createStrapiAdmin() {
 
     await strapi.service('admin::user').create(params);
 
+  }
+}
+
+async function createAdminUser() {
+  if (process.env.NODE_ENV === 'development') {
     // Create admin user for frontend
     const admin = await strapi.query('plugin::users-permissions.role').findOne({
       where: {
@@ -265,7 +276,7 @@ async function createStrapiAdmin() {
     await strapi.documents('plugin::users-permissions.user').create({
       data: {
         username: process.env.DEV_USERNAME ?? 'admin',
-        password: process.env.DEV_PASSWORD ?? 'admin1',
+        password: 'admin1', // Min length of a password is 6
         email: process.env.DEV_EMAIL ?? 'admin@example.com',
         provider: 'local',
         confirmed: true,
