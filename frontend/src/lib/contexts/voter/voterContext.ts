@@ -166,12 +166,6 @@ export function initVoterContext(): VoterContext {
   /** The types of entities we show in results */
   const entityTypes = parsimoniusDerived(appSettings, (appSettings) => appSettings.results?.sections ?? []);
 
-  /** The parent entity matching method */
-  const parentMatchingMethod = parsimoniusDerived(
-    appSettings,
-    (appSettings) => appSettings.matching?.organizationMatching || 'none'
-  );
-
   /** The entity types to hide if missing opinion answers */
   const hideIfMissingAnswers = parsimoniusDerived(
     appSettings,
@@ -184,7 +178,6 @@ export function initVoterContext(): VoterContext {
     dataRoot,
     elections: selectedElections,
     entityTypes,
-    parentMatchingMethod,
     hideIfMissingAnswers
   });
 
@@ -213,12 +206,19 @@ export function initVoterContext(): VoterContext {
       .map(([type]) => type as EntityType)
   );
 
+  /** The parent entity matching method */
+  const parentMatchingMethod = parsimoniusDerived(
+    appSettings,
+    (appSettings) => appSettings.matching?.organizationMatching || 'none'
+  );
+
   const matches = matchStore({
     algorithm,
     answers,
     nominationsAndQuestions,
     minAnswers,
-    calcSubmatches
+    calcSubmatches,
+    parentMatchingMethod
   });
 
   const entityFilters = filterStore({

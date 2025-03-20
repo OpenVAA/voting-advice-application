@@ -6,12 +6,10 @@ import {
   type Election,
   ENTITY_TYPE,
   type EntityType,
-  FactionNomination,
   OrganizationNomination,
   QUESTION_CATEGORY_TYPE
 } from '@openvaa/data';
 import { type Readable } from 'svelte/store';
-import { imputeParentAnswers } from '$lib/utils/matching';
 import { parsimoniusDerived } from '../utils/parsimoniusDerived';
 import type { Id } from '@openvaa/core';
 import type { SelectionTree } from './selectionTree.type';
@@ -26,7 +24,6 @@ import type { SelectionTree } from './selectionTree.type';
  * @param constituencies - The store containing the selected constituencies
  * @param elections - The store containing the selected elections
  * @param entityTypes - A store containing the entity types to include in the matches defaulting to all entity types
- * @param parentMatchingMethod - A store containing the parent matching method. This is used to preimpute answers for `Entity`s with children.
  * @param hideIfMissingAnswers - A store defining which the `EntityType`s to hide if any of their opininion question answers are missing.
  * @returns An array of `Nomination`s for each `Election` and each `EntityType`.
  */
@@ -35,19 +32,17 @@ export function nominationAndQuestionStore({
   constituencies,
   elections,
   entityTypes,
-  parentMatchingMethod,
   hideIfMissingAnswers
 }: {
   dataRoot: Readable<DataRoot>;
   constituencies: Readable<Array<Constituency> | undefined>;
   elections: Readable<Array<Election> | undefined>;
   entityTypes: Readable<Array<EntityType>>;
-  parentMatchingMethod: Readable<AppSettings['matching']['organizationMatching']>;
   hideIfMissingAnswers: Readable<AppSettings['entities']['hideIfMissingAnswers']>;
 }): Readable<NominationAndQuestionTree> {
   return parsimoniusDerived(
-    [dataRoot, constituencies, elections, entityTypes, parentMatchingMethod, hideIfMissingAnswers],
-    ([dataRoot, constituencies, elections, entityTypes, parentMatchingMethod, hideIfMissingAnswers]) => {
+    [dataRoot, constituencies, elections, entityTypes, hideIfMissingAnswers],
+    ([dataRoot, constituencies, elections, entityTypes, hideIfMissingAnswers]) => {
       if (!dataRoot || !elections || !constituencies) return {};
       if (!entityTypes?.length) entityTypes = Object.values(ENTITY_TYPE);
       const tree: Partial<NominationAndQuestionTree> = {};
@@ -97,22 +92,6 @@ export function nominationAndQuestionStore({
                   nominations = nominations.filter(
                     (n) => (n as OrganizationNomination).data.candidateNominationIds?.length
                   );
-                }
-
-                // TODO: Replace this temporary solution with a more robust solution
-                // Possibly impute parent entity answers
-                switch (parentMatchingMethod) {
-                  case 'impute':
-                    imputeParentAnswers({
-                      nominations: nominations as Array<OrganizationNomination | FactionNomination>,
-                      questions: opinionQuestions
-                    });
-                    break;
-                  case 'answersOnly':
-                  case 'none':
-                    break;
-                  default:
-                    throw new Error(`Unsupported parent matching method: ${parentMatchingMethod}`);
                 }
               }
               return [entityType, { nominations, infoQuestions, opinionQuestions }];
