@@ -21,6 +21,11 @@ services:
       IDENTITY_PROVIDER_DECRYPTION_JWKS: ${IDENTITY_PROVIDER_DECRYPTION_JWKS}
       BACKEND_API_TOKEN: ${BACKEND_API_TOKEN}
       PUBLIC_DEBUG: ${PUBLIC_DEBUG}
+      PUBLIC_CACHE_ENABLED: ${PUBLIC_CACHE_ENABLED}
+      CACHE_DIR: ${CACHE_DIR}
+      CACHE_TTL: ${CACHE_TTL}
+      CACHE_LRU_SIZE: ${CACHE_LRU_SIZE}
+      CACHE_EXPIRATION_INTERVAL: ${CACHE_EXPIRATION_INTERVAL}
   awslocal:
     extends:
       file: ./backend/vaa-strapi/docker-compose.dev.yml
@@ -87,3 +92,5 @@ volumes:
   postgres:
   strapi-uploads:
   awslocal:
+  cache:
+    driver: local

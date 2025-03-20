@@ -7,6 +7,8 @@ services:
     volumes:
       # Creating this volume will make Docker update changes from local automatically
       - ./:/opt/frontend
+      # Cache volume
+      - cache:/var/data/cache
       # Mark these as volumes so they get ignored
       - /opt/frontend/node_modules
       - /opt/frontend/.svelte-kit
