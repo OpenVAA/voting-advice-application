@@ -1,5 +1,6 @@
 import {
   type Answer,
+  type AnyNominationVariant,
   type AnyQuestionVariant,
   type FactionNomination,
   NumberQuestion,
@@ -7,27 +8,41 @@ import {
   SingleChoiceCategoricalQuestion,
   SingleChoiceOrdinalQuestion
 } from '@openvaa/data';
+import { Match } from '@openvaa/matching';
 import { logDebugError } from '$lib/utils/logger';
+import { MatchingProxy } from './imputeParentAnswers.type';
 import { median } from './median';
 import { mode } from './mode';
-import type { Id } from '@openvaa/core';
+import type { AnswerDict, Id } from '@openvaa/core';
 
 /**
- * Impute the answers **in place** for the provided `Nomination`s from their child `Nomination`s.
+ * Impute the answers for the provided `Nomination`s from their child `Nomination`s.
  * @param nominations - The array of `Nomination`s to impute answers for. Note they will be edited in place!
  * @param questions - The array of `Question`s to impute answers to
+ * @returns an array of `MatchingProxy`es for each `Nomination` with the imputed answers
  */
-export function imputeParentAnswers({
+export function imputeParentAnswers<TNomination extends OrganizationNomination | FactionNomination>({
   nominations,
   questions
 }: {
-  nominations: Array<OrganizationNomination | FactionNomination>;
+  nominations: Array<TNomination>;
   questions: Array<AnyQuestionVariant>;
-}): void {
-  const matchableQuestions = questions.filter((q) => q.isMatchable);
-  if (matchableQuestions.length === 0) return;
+}): Array<MatchingProxy<TNomination>> {
+  // The base for proxy answers
+  const proxyAnswers: Array<AnswerDict> = nominations.map((n) => structuredClone(n.answers ?? {}));
 
-  for (const parent of nominations) {
+  // Build the output
+  function buildProxies(): Array<MatchingProxy<TNomination>> {
+    const proxies: Array<MatchingProxy<TNomination>> = [];
+    for (let i = 0; i < nominations.length; i++) proxies.push(new MatchingProxy(nominations[i], proxyAnswers[i]));
+    return proxies;
+  }
+
+  const matchableQuestions = questions.filter((q) => q.isMatchable);
+  if (matchableQuestions.length === 0) return buildProxies();
+
+  for (let i = 0; i < nominations.length; i++) {
+    const parent = nominations[i];
     const children =
       parent instanceof OrganizationNomination && parent.hasFactions
         ? parent.factionNominations
@@ -38,9 +53,6 @@ export function imputeParentAnswers({
     // NB. If we enable different imputation methods, we should overwrite answers imputed with a different method
     const unansweredQuestions = matchableQuestions.filter((q) => parent.entity.getAnswer(q) == null);
     if (unansweredQuestions.length === 0) continue;
-
-    // NB. We need to directly edit the object data
-    parent.entity.data.answers ??= {};
 
     for (const question of unansweredQuestions) {
       const answers = children.map((c) => c.entity.getAnswer(question)?.value).filter((v) => v != null);
@@ -74,13 +86,25 @@ export function imputeParentAnswers({
         continue;
       }
 
-      // Store the imputed answer and the imputation method
-      // NB. We need to directly edit the object data!
-      if (value != null)
-        parent.entity.data.answers[question.id] = {
-          imputed: 'impute',
+      // Store the imputed answer
+      if (value != null) {
+        proxyAnswers[i][question.id] = {
           value: value
         } as Answer<typeof value>;
+      }
     }
   }
+
+  return buildProxies();
+}
+
+/**
+ * Unwrap a proxied `Match`.
+ */
+export function unwrapProxiedMatch<TNomination extends AnyNominationVariant>({
+  distance,
+  subMatches,
+  target: proxy
+}: Match<MatchingProxy<TNomination>>): Match<TNomination> {
+  return new Match({ distance, target: proxy.target, subMatches });
 }
