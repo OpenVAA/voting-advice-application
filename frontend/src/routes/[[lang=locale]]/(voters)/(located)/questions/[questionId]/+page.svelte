@@ -100,13 +100,13 @@ Display a question for answering.
     console.log('Interactive Info setting:', $appSettings.questions.interactiveInfo?.enabled);
     console.log('Questions settings structure:', JSON.parse(JSON.stringify($appSettings.questions)));
     
-    /* Manually activate question extended info
+    //Manually activate question extended info
     // If interactiveInfo is undefined, set it manually for this session
     if (!$appSettings.questions.interactiveInfo) {
       $appSettings.questions.interactiveInfo = { enabled: true };
       console.log('Manually set interactiveInfo to:', $appSettings.questions.interactiveInfo);
     }
-    */
+    
     
     if ($page.url.searchParams.get('start')) {
       // Clear any possible selected categories, although there should under normal circumstances be none

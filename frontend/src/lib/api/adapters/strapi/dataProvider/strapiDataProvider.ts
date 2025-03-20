@@ -22,6 +22,7 @@ import {
   parseSingleRelationId
 } from '../utils';
 import { parseEntityType } from '../utils/parseEntityType';
+import { parseQuestionTerms } from '../utils/parseQuestionTerms';
 import type { CustomData } from '@openvaa/app-shared';
 import type { DPDataType } from '$lib/api/base/dataTypes';
 import type {
