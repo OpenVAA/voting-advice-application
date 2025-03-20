@@ -51,7 +51,7 @@ export function findCandidateNominations({
   matches?: MatchTree;
   nomination: OrganizationNomination;
 }): Array<CandidateNomination | Match<CandidateNomination, QuestionCategory>> {
-  if (!matches) return candidateNominations;
+  if (!matches) return candidateNominations.sort(compareMaybeWrappedEntities);
 
   // Try to find matches for all of the candidateNominations
   const candidateMatches = candidateNominations
@@ -65,8 +65,10 @@ export function findCandidateNominations({
     .filter((n) => n != null)
     .sort(compareMaybeWrappedEntities);
 
-  // Use the matches only if these are found for all nominations
-  if (candidateMatches.length === candidateNominations.length)
-    return candidateMatches as Array<Match<CandidateNomination, QuestionCategory>>;
-  return candidateNominations;
+  return candidateMatches as Array<Match<CandidateNomination, QuestionCategory>>;
+
+  // // Use the matches only if these are found for all nominations
+  // if (candidateMatches.length === candidateNominations.length)
+  //   return candidateMatches as Array<Match<CandidateNomination, QuestionCategory>>;
+  // return candidateNominations.sort(compareMaybeWrappedEntities);
 }
