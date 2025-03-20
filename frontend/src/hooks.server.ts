@@ -9,6 +9,9 @@ import type { Handle, HandleServerError } from '@sveltejs/kit';
 /** Set to `true` to show debug log in console */
 const DEBUG = false;
 
+/** Normalize starting slashes */
+const NORMALIZED_API_ROOT = API_ROOT.replace(/^\/*/, '/');
+
 export const handle: Handle = (async ({ event, resolve }) => {
   const { params, route, url, request, isDataRequest } = event;
   const { pathname, search } = url;
@@ -26,7 +29,7 @@ export const handle: Handle = (async ({ event, resolve }) => {
 
   // If this request is not a route request, resolve normally
   // NB. If defining API routes that should return json, test cleanPath here and resolve
-  if (route?.id == null || pathname == null || pathname.startsWith(API_ROOT)) {
+  if (route?.id == null || pathname == null || pathname.startsWith(NORMALIZED_API_ROOT)) {
     debug('Route: RESOLVE non-route request');
     return resolve(event);
   }

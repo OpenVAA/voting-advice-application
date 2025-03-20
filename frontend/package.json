@@ -68,6 +68,7 @@
     "@openvaa/filters": "workspace:^",
     "@openvaa/matching": "workspace:^",
     "@sveltekit-i18n/parser-icu": "^1.0.8",
+    "flat-cache": "^6.1.7",
     "intl-messageformat": "^10.7.11",
     "isomorphic-dompurify": "^2.19.0",
     "jose": "^5.9.6",
