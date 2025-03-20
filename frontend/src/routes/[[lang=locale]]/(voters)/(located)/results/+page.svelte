@@ -47,6 +47,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
   import MainContent from '../../../MainContent.svelte';
   import type { CustomVideoProps } from '@openvaa/app-shared';
   import type { Id } from '@openvaa/core';
+  import { logDebugError } from '$lib/utils/logger';
 
   ////////////////////////////////////////////////////////////////////
   // Get contexts
@@ -115,9 +116,7 @@ The nominations applicable to these elections and constituencies are shown. Thes
     entityTabs = Object.keys($matches[activeElectionId]).map((type) => ({
       type: type as EntityType,
       label: ucFirst($t(`common.${type as EntityType}.plural`))
-    }))
-      // TEMP: Fixed override
-      .sort((a) => a.type === ENTITY_TYPE.Organization ? -1 : 0);
+    }));
     // Preserve current activeEntityType if it exists in the new tabs, otherwise use the first one available
     if (!activeEntityType || !(activeEntityType in $matches[activeElectionId])) activeEntityType = entityTabs[0]?.type;
     activeElection = $elections.find((e) => e.id === activeElectionId)!;
@@ -172,14 +171,20 @@ The nominations applicable to these elections and constituencies are shown. Thes
     cancel();
   });
 
-  function getDrawerProps(opts: { entityType: EntityType; entityId: Id; nominationId?: Id }): EntityDetailsDrawerProps {
-    return {
-      entity: getEntityAndTitle({
-        dataRoot: $dataRoot,
-        matches: $matches,
-        ...opts
-      }).entity
-    };
+  function getDrawerProps(opts: { entityType: EntityType; entityId: Id; nominationId?: Id }): EntityDetailsDrawerProps | undefined {
+    try {
+      return {
+        entity: getEntityAndTitle({
+          dataRoot: $dataRoot,
+          matches: $matches,
+          ...opts
+        }).entity
+      };
+    } catch (e) {
+      // TODO: Show a notification to the user
+      logDebugError(`Could not get entity details for ${opts.entityType} ${opts.entityId} with nomination ${opts.nominationId ?? '-'}. Error: ${e instanceof Error ? e.message : '-'}`);
+      return undefined;
+    }    
   }
 
   ////////////////////////////////////////////////////////////////////
@@ -206,7 +211,6 @@ The nominations applicable to these elections and constituencies are shown. Thes
     video: CustomVideoProps;
   }
 
-
   // TEMP
   const questionId: Record<string, string> = {
     // Counties
@@ -217,8 +221,11 @@ The nominations applicable to these elections and constituencies are shown. Thes
 </script>
 
 {#if $page.state.resultsShowEntity}
-  {#key $page.state.resultsShowEntity}
-    <EntityDetailsDrawer {...getDrawerProps($page.state.resultsShowEntity)} />
+  {@const props = getDrawerProps($page.state.resultsShowEntity)}
+  {#key props}
+    {#if props}
+      <EntityDetailsDrawer {...props} />
+    {/if}
   {/key}
 {/if}
 
