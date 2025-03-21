@@ -97,7 +97,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
         format?: InfoAnswerProps['format'];
       }>
     | undefined;
-  let showSubMatches: boolean;
+  // TEMP: Force hide
+  let showSubMatches = false;
   let subcards: Array<$$Props> | undefined;
 
   $: {
@@ -117,7 +118,8 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
     // The questions and possible submatches to display in the card
     // TODO: Add support for all entity types by expanding the setting type to cover all of them
     if (type === ENTITY_TYPE.Candidate || type === ENTITY_TYPE.Organization) {
-      showSubMatches = $appSettings.results.cardContents[type].includes('submatches');
+      // TEMP: Force hide
+      // showSubMatches = $appSettings.results.cardContents[type].includes('submatches');
       if (variant !== 'details') {
         questions = questionId && type === ENTITY_TYPE.Candidate
           ? [{ 

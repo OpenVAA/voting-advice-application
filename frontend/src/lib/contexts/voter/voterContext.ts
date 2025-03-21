@@ -1,7 +1,7 @@
 import { DISTANCE_METRIC, MatchingAlgorithm, MISSING_VALUE_METHOD } from '@openvaa/matching';
 import { error } from '@sveltejs/kit';
 import { getContext, hasContext, setContext } from 'svelte';
-import { get } from 'svelte/store';
+import { get, readable } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { logDebugError } from '$lib/utils/logger';
 import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/utils/route';
@@ -200,11 +200,13 @@ export function initVoterContext(): VoterContext {
   const minAnswers = parsimoniusDerived(appSettings, (appSettings) => appSettings.matching.minimumAnswers);
 
   /** Get the entityTypes whose cardContents include `submatches` */
-  const calcSubmatches = parsimoniusDerived(appSettings, (appSettings) =>
-    Object.entries(appSettings.results.cardContents)
-      .filter(([, value]) => value.includes('submatches'))
-      .map(([type]) => type as EntityType)
-  );
+  // TEMP: Force hide
+  const calcSubmatches = readable([] as Array<EntityType>);
+  // parsimoniusDerived(appSettings, (appSettings) =>
+  //   Object.entries(appSettings.results.cardContents)
+  //     .filter(([, value]) => value.includes('submatches'))
+  //     .map(([type]) => type as EntityType)
+  // );
 
   /** The parent entity matching method */
   const parentMatchingMethod = parsimoniusDerived(
