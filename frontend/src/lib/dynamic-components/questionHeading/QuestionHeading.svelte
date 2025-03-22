@@ -34,7 +34,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   import { CategoryTag } from '$lib/components/categoryTag';
   import { ElectionTag } from '$lib/components/electionTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
-  import { Tooltip } from '$lib/components/tooltip';
+  import { Term } from '$lib/components/term';
   import { getAppContext } from '$lib/contexts/app';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getVoterContext } from '$lib/contexts/voter';
@@ -134,9 +134,9 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
       {#if text}
         {text}
       {:else if term && explanation}
-        <Tooltip tip={explanation} {title}>
+        <Term definition="{title}: {explanation}">
           {term}
-        </Tooltip>
+        </Term>
       {/if}
     {/each}
   </h1>
