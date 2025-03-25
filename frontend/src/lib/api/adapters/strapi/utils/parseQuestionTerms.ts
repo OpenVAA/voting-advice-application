@@ -12,20 +12,19 @@ export function parseQuestionTerms(
     for (const term of data.terms) {
       if (!term || typeof term !== 'object') continue;
 
-      const { triggers, title, content } = term as {
-        triggers?: {
-          [locale: string]: Array<string>;
-        };
-        title?: LocalizedString;
-        content?: LocalizedString;
-      };
+      const { triggers, title, content } = term;
 
       if (triggers && typeof triggers === 'object' && content) {
-        out.push({
-          title: translate(title, locale),
-          content: translate(content, locale),
-          triggers: translateObject(triggers, locale)
-        });
+        const translatedContent = translate(content, locale);
+        const translatedTriggers = translateObject(triggers, locale);
+
+        if (translatedTriggers && Array.isArray(translatedTriggers) && translatedContent) {
+          out.push({
+            title: translate(title, locale),
+            content: translatedContent,
+            triggers: translatedTriggers
+          });
+        }
       }
     }
   }
