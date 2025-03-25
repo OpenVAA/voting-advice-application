@@ -43,9 +43,9 @@ export type CustomData = {
  * The properties for defining generated question info in customData
  */
 export type QuestionInfoSection = {
-  title?: string;
-  content?: string;
-  visible?: boolean;
+  title: string;
+  content: string;
+  visible: boolean;
 };
 
 /**
@@ -53,13 +53,13 @@ export type QuestionInfoSection = {
  */
 export type TermDefinition = {
   /** The strings that trigger the popup. There may in theory be many different forms in the same question. */
-  triggers?: Array<string>;
+  triggers: Array<string>;
 
   /** Title of the term explanation (the term) */
   title?: string;
 
   /** Term explanation */
-  content?: string;
+  content: string;
 };
 
 /**
