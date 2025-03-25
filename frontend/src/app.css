@@ -107,6 +107,12 @@
   /**
    * Use for longer text blocks
    */
+  .prose {
+    @apply leading-lg;
+  }
+  .prose p {
+    @apply mb-lg;
+  }
   .prose h2 {
     @apply mb-md mt-xl;
   }
