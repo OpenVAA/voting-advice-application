@@ -40,11 +40,11 @@ Display the question's expandable information content.
 
 <div {...concatClass($$restProps, 'flex flex-col gap-lg justify-stretch')}>
   <h2 class="text-center">{title}</h2>
-  <div>
+  <div class="prose">
     {@html sanitizeHtml(info)}
   </div>
   {#if infoSections?.length}
-    <div>
+    <div class="prose">
       {#each infoSections as { title, content }}
         {#if title}
           <Expander
