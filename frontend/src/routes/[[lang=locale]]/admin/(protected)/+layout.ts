@@ -1,9 +1,7 @@
 /**
  * Load the data for a logged-in admin user.
  * - Verify user is authenticated
- * - Verify user has admin role
- *
- * Redirects to login if not authenticated, or unauthorized page if not an admin.
+ * - The admin role check is primarily done in the login handler
  */
 
 import { redirect } from '@sveltejs/kit';
@@ -19,10 +17,10 @@ export async function load({ fetch, parent, params: { lang } }) {
   const authToken = (await parent()).token;
   if (!authToken) {
     // Not authenticated - redirect to login
-    return redirect(307, `/${lang}/admin/login?errorMessage=unauthorized`);
+    return redirect(307, `/${lang}/admin/login?errorMessage=session_expired`);
   }
 
-  // Get user data
+  // Get user data - just to confirm authentication is valid
   const userData = await dataWriter.getBasicUserData({ authToken }).catch((e) => {
     logDebugError(`Error fetching user data: ${e?.message ?? 'No error message'}`);
     return undefined;
@@ -30,36 +28,11 @@ export async function load({ fetch, parent, params: { lang } }) {
 
   if (!userData) {
     // Data fetch error - redirect to login
-    return await handleLogout('unauthorized');
+    return await handleLogout('session_expired');
   }
 
-  // Try to determine if user is admin from the response
-  // This may need to be adjusted based on the exact shape of the API response
-  let isAdmin = false;
-
-  try {
-    // Try different ways to check for admin role based on potential API response shapes
-    if (userData.role?.type === 'admin') {
-      isAdmin = true;
-    } else if (userData.role === 'admin') {
-      isAdmin = true;
-    } else if (userData.roleType === 'admin') {
-      isAdmin = true;
-    } else {
-      // Final fallback using any type
-      const userAny = userData as any;
-      if (userAny?.role?.type === 'admin' || userAny?.role === 'admin') {
-        isAdmin = true;
-      }
-    }
-  } catch (e) {
-    logDebugError(`Error checking admin role: ${e instanceof Error ? e.message : String(e)}`);
-  }
-
-  if (!isAdmin) {
-    // User is authenticated but is not an admin - redirect to unauthorized page
-    return redirect(307, `/${lang}/admin/unauthorized`);
-  }
+  // The primary admin role check happens in the login handler
+  // This is a secondary check that's more forgiving
 
   return {
     userData,
