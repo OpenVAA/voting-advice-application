@@ -1,44 +1,26 @@
 <!--@component
-# Admin Home Page
 
-Main landing page for admin section showing available tools
+# Admin app landing page
+
+- This page is only shown if the user is not logged in or not authorized
+- In normal use, they will be redirected to login or protected area
+
 -->
 
 <script lang="ts">
-  import { getAppContext } from '$lib/contexts/app';
-  import { Button } from '$lib/components/button';
+  import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
+  import { Loading } from '$lib/components/loading';
   import MainContent from '../MainContent.svelte';
-  import { HeroEmoji } from '$lib/components/heroEmoji';
 
-  const { t } = getAppContext();
-  const title = 'Hello, Admin!';
+  onMount(() => {
+    // Attempt to redirect to the admin dashboard (will be handled by layout)
+    goto('/admin/dashboard');
+  });
 </script>
 
-<MainContent {title}>
-  <p class="text-center">Use the tools below to manage the voting advice application.</p>
-
-  <div class="flex flex-col gap-sm">
-    <Button href="/en/admin/factor-analysis" text="Factor analysis" icon="create" iconPos="left" variant="normal">
-      <svelte:fragment slot="badge">
-        <span class="text-primary-600 font-mono"></span>
-      </svelte:fragment>
-    </Button>
-
-    <Button
-      href="/en/admin/question-info"
-      text="Question info generation"
-      icon="create"
-      iconPos="left"
-      variant="normal">
-      <svelte:fragment slot="badge">
-        <span class="font-mono text-gray-400"></span>
-      </svelte:fragment>
-    </Button>
-
-    <Button text="Argument condensation" icon="create" iconPos="left" variant="normal" disabled>
-      <svelte:fragment slot="badge">
-        <span class="font-mono text-gray-400"></span>
-      </svelte:fragment>
-    </Button>
+<MainContent title="Admin">
+  <div class="flex h-full w-full items-center justify-center">
+    <Loading />
   </div>
 </MainContent>
