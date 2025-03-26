@@ -12,20 +12,24 @@
   import MainContent from '../../MainContent.svelte';
 </script>
 
-<MainContent title="Unauthorized Access">
+<MainContent title="Admin Access Required">
   <figure role="presentation" slot="hero">
     <HeroEmoji emoji="🔒" />
   </figure>
 
   <div class="flex flex-col items-center gap-8 py-8 text-center">
-    <h2 class="font-semibold text-xl">You don't have permission to access the Admin area</h2>
-    <p>
-      Your account does not have the required admin privileges. If you believe this is an error, please contact the
-      system administrator.
-    </p>
+    <h2 class="font-semibold text-xl">You need admin privileges to access this area</h2>
+    <div class="max-w-md space-y-4">
+      <p>Your account has been authenticated, but you don't have the required admin privileges.</p>
+      <p>
+        This section is reserved for system administrators only. If you believe you should have access, please contact
+        the system administrator.
+      </p>
+    </div>
 
-    <div class="mt-8">
+    <div class="mt-8 flex flex-col gap-4">
       <Button href="/" text="Return to Home" variant="main" />
+      <Button href="/admin/login" text="Try Another Account" variant="normal" />
     </div>
   </div>
 </MainContent>

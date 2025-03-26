@@ -47,7 +47,14 @@
   let status: ActionStatus = 'idle';
 
   if (errorParam) {
-    errorMessage = errorParam === 'invalid' ? 'Invalid email or password' : 'An unknown error occurred';
+    // Map error codes to user-friendly messages
+    const errorMessages = {
+      invalid: 'Invalid email or password',
+      unauthorized: 'You need admin privileges to access this area',
+      session_expired: 'Your session has expired, please log in again'
+    };
+
+    errorMessage = errorMessages[errorParam as keyof typeof errorMessages] || 'An unknown error occurred';
   }
   if (errorMessage) status = 'error';
 
@@ -78,7 +85,10 @@
           await update();
           if (result.type === 'failure') {
             status = 'error';
-            errorMessage = result.status === 400 ? 'Invalid email or password' : 'An unknown error occurred';
+            errorMessage =
+              result.status === 400
+                ? 'Invalid email or password'
+                : 'An error occurred while trying to log in. Please try again.';
             return;
           }
           await applyAction(result);
