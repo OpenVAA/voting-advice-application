@@ -9,9 +9,9 @@ Page for generating and managing question information
   import { getAppContext } from '$lib/contexts/app';
   import { Button } from '$lib/components/button';
   import { QuestionChoices } from '$lib/components/questions';
-  import MainContent from '../../MainContent.svelte';
   import { SingleChoiceCategoricalQuestion, DataRoot } from '@openvaa/data';
   import { onMount } from 'svelte';
+  import MainContent from '../../../MainContent.svelte';
 
   const { t, locale } = getAppContext();
 

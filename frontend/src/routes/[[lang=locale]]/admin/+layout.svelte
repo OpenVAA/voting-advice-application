@@ -58,7 +58,7 @@
 
 {#if !ready}
   <Loading />
-{:else if $appSettings.dataAdapter.supportsAdminApp}
+{:else if !$appSettings.dataAdapter.supportsAdminApp}
   <MaintenancePage
     title={$t('info.adminApp.notSupported.title')}
     content={$t('info.adminApp.notSupported.content')}

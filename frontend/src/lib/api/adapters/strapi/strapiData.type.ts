@@ -213,11 +213,18 @@ export type StrapiFeedbackData = StrapiObject<{
 
 export type StrapiAuthResponse<TData> = TData;
 
+export type StrapiRoleData = StrapiObject<{
+  name: string;
+  description: string;
+  type: string;
+}>;
+
 export type StrapiUserProperties = {
   username: string;
   email: string;
   confirmed: boolean;
   blocked: boolean;
+  role?: StrapiSingleRelation<StrapiRoleData>;
 };
 
 export type StrapiBasicUserData = StrapiObject<StrapiUserProperties>;
