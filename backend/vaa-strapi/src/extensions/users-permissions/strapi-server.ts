@@ -12,38 +12,40 @@ const { ValidationError } = errors;
 // Make sure to allow the user access to all publicly available data
 const defaultPermissions: Array<{
   action: UID.Controller;
-  roleType: 'public' | 'authenticated' | 'admin';
+  roleTypes: ('public' | 'authenticated' | 'admin')[];
 }> = [
-  { action: 'plugin::users-permissions.candidate.check', roleType: 'public' },
-  { action: 'plugin::users-permissions.candidate.register', roleType: 'public' },
-  { action: 'plugin::users-permissions.user.me', roleType: 'authenticated' },
-  { action: 'plugin::upload.content-api.upload', roleType: 'authenticated' },
-  { action: 'plugin::upload.content-api.destroy', roleType: 'authenticated' },
-  { action: 'api::candidate.candidate.find', roleType: 'authenticated' },
-  { action: 'api::candidate.answers.overwrite', roleType: 'authenticated' },
-  { action: 'api::candidate.answers.update', roleType: 'authenticated' },
-  { action: 'api::candidate.candidate.findOne', roleType: 'authenticated' },
-  { action: 'api::candidate.candidate.update', roleType: 'authenticated' },
-  { action: 'api::candidate.properties.update', roleType: 'authenticated' },
-  { action: 'api::alliance.alliance.find', roleType: 'authenticated' },
-  { action: 'api::alliance.alliance.findOne', roleType: 'authenticated' },
-  { action: 'api::constituency.constituency.find', roleType: 'authenticated' },
-  { action: 'api::constituency.constituency.findOne', roleType: 'authenticated' },
-  { action: 'api::constituency-group.constituency-group.find', roleType: 'authenticated' },
-  { action: 'api::constituency-group.constituency-group.findOne', roleType: 'authenticated' },
-  { action: 'api::election.election.find', roleType: 'authenticated' },
-  { action: 'api::election.election.findOne', roleType: 'authenticated' },
-  { action: 'api::nomination.nomination.find', roleType: 'authenticated' },
-  { action: 'api::nomination.nomination.findOne', roleType: 'authenticated' },
-  { action: 'api::party.party.find', roleType: 'authenticated' },
-  { action: 'api::party.party.findOne', roleType: 'authenticated' },
-  { action: 'api::question.question.find', roleType: 'authenticated' },
-  { action: 'api::question.question.findOne', roleType: 'authenticated' },
-  { action: 'api::question.question.generateInfo', roleType: 'admin' },
-  { action: 'api::question-category.question-category.find', roleType: 'authenticated' },
-  { action: 'api::question-category.question-category.findOne', roleType: 'authenticated' },
-  { action: 'api::question-type.question-type.find', roleType: 'authenticated' },
-  { action: 'api::question-type.question-type.findOne', roleType: 'authenticated' }
+  { action: 'plugin::users-permissions.candidate.check', roleTypes: ['public'] },
+  { action: 'plugin::users-permissions.candidate.register', roleTypes: ['public'] },
+  { action: 'plugin::users-permissions.user.me', roleTypes: ['authenticated', 'admin'] },
+  { action: 'plugin::users-permissions.role.find', roleTypes: ['authenticated', 'admin'] },
+  { action: 'plugin::users-permissions.role.findOne', roleTypes: ['authenticated', 'admin'] },
+  { action: 'plugin::upload.content-api.upload', roleTypes: ['authenticated'] },
+  { action: 'plugin::upload.content-api.destroy', roleTypes: ['authenticated'] },
+  { action: 'api::candidate.candidate.find', roleTypes: ['authenticated'] },
+  { action: 'api::candidate.answers.overwrite', roleTypes: ['authenticated'] },
+  { action: 'api::candidate.answers.update', roleTypes: ['authenticated'] },
+  { action: 'api::candidate.candidate.findOne', roleTypes: ['authenticated'] },
+  { action: 'api::candidate.candidate.update', roleTypes: ['authenticated'] },
+  { action: 'api::candidate.properties.update', roleTypes: ['authenticated'] },
+  { action: 'api::alliance.alliance.find', roleTypes: ['authenticated'] },
+  { action: 'api::alliance.alliance.findOne', roleTypes: ['authenticated'] },
+  { action: 'api::constituency.constituency.find', roleTypes: ['authenticated'] },
+  { action: 'api::constituency.constituency.findOne', roleTypes: ['authenticated'] },
+  { action: 'api::constituency-group.constituency-group.find', roleTypes: ['authenticated'] },
+  { action: 'api::constituency-group.constituency-group.findOne', roleTypes: ['authenticated'] },
+  { action: 'api::election.election.find', roleTypes: ['authenticated'] },
+  { action: 'api::election.election.findOne', roleTypes: ['authenticated'] },
+  { action: 'api::nomination.nomination.find', roleTypes: ['authenticated'] },
+  { action: 'api::nomination.nomination.findOne', roleTypes: ['authenticated'] },
+  { action: 'api::party.party.find', roleTypes: ['authenticated'] },
+  { action: 'api::party.party.findOne', roleTypes: ['authenticated'] },
+  { action: 'api::question.question.find', roleTypes: ['authenticated'] },
+  { action: 'api::question.question.findOne', roleTypes: ['authenticated'] },
+  { action: 'api::question.question.generateInfo', roleTypes: ['admin'] },
+  { action: 'api::question-category.question-category.find', roleTypes: ['authenticated'] },
+  { action: 'api::question-category.question-category.findOne', roleTypes: ['authenticated'] },
+  { action: 'api::question-type.question-type.find', roleTypes: ['authenticated'] },
+  { action: 'api::question-type.question-type.findOne', roleTypes: ['authenticated'] }
 ];
 
 module.exports = async (plugin: Core.Plugin) => {
@@ -79,30 +81,32 @@ module.exports = async (plugin: Core.Plugin) => {
 
     // Setup default permissions
     for (const permission of defaultPermissions) {
-      const role = await strapi.query('plugin::users-permissions.role').findOne({
-        where: {
-          type: permission.roleType
+      for (const roleType of permission.roleTypes) {
+        const role = await strapi.query('plugin::users-permissions.role').findOne({
+          where: {
+            type: roleType
+          }
+        });
+        if (!role) {
+          console.error(`Failed to initialize default permissions due to missing role type: ${roleType}`);
+          continue;
         }
-      });
-      if (!role) {
-        console.error(`Failed to initialize default permissions due to missing role type: ${permission.roleType}`);
-        continue;
+
+        const count = await strapi.query('plugin::users-permissions.permission').count({
+          where: {
+            action: permission.action,
+            role: role.id
+          }
+        });
+        if (count !== 0) continue;
+
+        await strapi.query('plugin::users-permissions.permission').create({
+          data: {
+            action: permission.action,
+            role: role.id
+          }
+        });
       }
-
-      const count = await strapi.query('plugin::users-permissions.permission').count({
-        where: {
-          action: permission.action,
-          role: role.id
-        }
-      });
-      if (count !== 0) continue;
-
-      await strapi.query('plugin::users-permissions.permission').create({
-        data: {
-          action: permission.action,
-          role: role.id
-        }
-      });
     }
 
     // Setup email template (the default template also does not make the URL clickable)
