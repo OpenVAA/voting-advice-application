@@ -43,7 +43,7 @@
   // Process pro arguments if they exist
   if (customData?.argumentSummary?.pros?.length) {
     const prosContent = customData.argumentSummary.pros.map((arg: Argument) => 
-      `<p><strong>${arg.topic}</strong></p><p>${arg.argument}</p>`
+      `<li>${arg.argument}</li>`
     ).join('<br>');
     
     combinedInfoSections.push({
@@ -55,7 +55,7 @@
   // Process con arguments if they exist
   if (customData?.argumentSummary?.cons?.length) {
     const consContent = customData.argumentSummary.cons.map((arg: Argument) => 
-      `<p><strong>${arg.topic}</strong></p><p>${arg.argument}</p>`
+      `<li>${arg.argument}</li>`
     ).join('<br>');
     
     combinedInfoSections.push({
