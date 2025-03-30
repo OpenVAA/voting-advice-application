@@ -44,6 +44,9 @@
   "preventNavigation": {
     "unsavedChanges": "Du har osparade ändringar. Är du säker på att du vill lämna denna sida?"
   },
+  "select": {
+    "noMatchingOptions": "Inga alternativ matchade din sökning"
+  },
   "video": {
     "captions": "Bildtexter",
     "error": "Tyvärr, det verkar vara några problem med videon. Du kan försöka ladda om sidan eller använda knappen nedan för att växla till en textvy.",

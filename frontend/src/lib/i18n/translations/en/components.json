@@ -44,6 +44,9 @@
   "preventNavigation": {
     "unsavedChanges": "You have unsaved changes. Are you sure you want to leave this page?"
   },
+  "select": {
+    "noMatchingOptions": "No matching options found"
+  },
   "video": {
     "captions": "Captions",
     "error": "Sorry, there seems to be some trouble with the video. You can try to reload the page or use the button below to switch to a text view.",
