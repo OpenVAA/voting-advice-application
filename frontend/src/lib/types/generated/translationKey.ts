@@ -270,6 +270,7 @@ export type TranslationKey =
   | 'components.preHeading.roleDescription'
   | 'components.preventNavigation.unsavedChanges'
   | 'components.questionExtendedInfo.title'
+  | 'components.select.noMatchingOptions'
   | 'components.video.captions'
   | 'components.video.error'
   | 'components.video.hideCaptions'

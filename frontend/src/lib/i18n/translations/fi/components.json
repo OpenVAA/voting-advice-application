@@ -44,6 +44,9 @@
   "preventNavigation": {
     "unsavedChanges": "Sinulla on tallentamattomia muutoksia. Haluatko varmasti jatkaa?"
   },
+  "select": {
+    "noMatchingOptions": "Ei hakuasi vastaavia vaihtoehtoja"
+  },
   "video": {
     "captions": "Kuvailevat tekstitykset",
     "error": "Anteeksi, videon lataamisessa näyttää olevan hankaluuksia. Voit kokeilla ladata sivun uudelleen tai vaihtaa alta tekstinäkymään videon sijaan.",
