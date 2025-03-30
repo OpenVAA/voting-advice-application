@@ -137,18 +137,11 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
   protected async _getNominationData(options: GetNominationsOptions = {}): Promise<DPDataType['nominations']> {
     const locale = options.locale ?? null;
     const params = buildFilterParams(options);
-    params.populate = {
-      constituency: 'true',
-      election: 'true',
-      candidate: {
-        populate: {
-          image: 'true',
-          party: 'true'
-        }
-      },
-      party: { populate: { image: 'true' } }
-    };
-    const data = await this.apiGet({ endpoint: 'nominations', params });
+    if (!options.includeUnconfirmed) {
+      params.filters ??= {};
+      params.filters.unconfirmed = { $ne: 'true' };
+    }
+    const data = await this.apiGet({ endpoint: 'nominationsWithRelations', params });
     return parseNominations(data, locale);
   }
 
@@ -208,7 +201,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
           { elections: { documentId: { $null: 'true' } } }
         ]
       };
-    const data = await this.apiGet({ endpoint: 'questionCategories', params });
+    const data = await this.apiGet({ endpoint: 'questionCategoriesWithRelations', params });
     const categories = new Array<QuestionCategoryData>();
     const allQuestions = new Map<string, AnyQuestionVariantData>();
     for (const category of data) {
