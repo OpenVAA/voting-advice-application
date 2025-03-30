@@ -27,7 +27,7 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
 <script lang="ts">
   import { type Constituency } from '@openvaa/data';
   import { getComponentContext } from '$lib/contexts/component';
-  import { concatClass } from '$lib/utils/components';
+  import Select from '../select/Select.svelte';
   import type { SingleGroupConstituencySelectorProps } from './SingleGroupConstituencySelector.type';
 
   type $$Props = SingleGroupConstituencySelectorProps;
@@ -51,27 +51,6 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
 
   $: label ??= $t('components.constituencySelector.selectPrompt', { constituencyGroup: group.name });
 
-  // If there's only one item, show that as preselected
-  $: if (group.singleConstituency && !selected) {
-    selected = group.singleConstituency.id;
-    handleChange();
-  }
-
-  ////////////////////////////////////////////////////////////////////
-  // Handle changes
-  ////////////////////////////////////////////////////////////////////
-
-  function handleChange(): void {
-    onChange?.(selected);
-  }
-
-  /**
-   * Make sure we can trigger an event if a single constituency is selected
-   */
-  function handleClick(): void {
-    if (group.singleConstituency) handleChange();
-  }
-
   ////////////////////////////////////////////////////////////////////
   // Sort items
   ////////////////////////////////////////////////////////////////////
@@ -79,32 +58,12 @@ Display constituency selection input for just one `ConstituencyGroup` which is n
   function sort(constituencies: Array<Constituency>): Array<Constituency> {
     return disableSorting ? constituencies : constituencies.sort((a, b) => a.name.localeCompare(b.name, $locale));
   }
-
-  ////////////////////////////////////////////////////////////////////
-  // Styling
-  ////////////////////////////////////////////////////////////////////
-
-  let classes: string;
-  $: classes = `select w-full max-w-md place-self-center ${onShadedBg ? 'bg-base-100' : 'bg-base-300'}`;
 </script>
 
-<select
-  aria-label={label}
-  {...concatClass($$restProps, classes)}
-  class:text-secondary={selected === ''}
-  bind:value={selected}
-  on:click={handleClick}
-  on:change={handleChange}>
-  {#if !group.singleConstituency}
-    <option disabled selected value="">
-      {label}
-    </option>
-    {#each sort(group.constituencies) as { id, name }}
-      <option value={id}>{name}</option>
-    {/each}
-  {:else}
-    {@const { id, name } = group.singleConstituency}
-    <!-- If there's only one item, show that as preselected -->
-    <option selected value={id}>{name}</option>
-  {/if}
-</select>
+<Select
+  {label}
+  options={sort(group.constituencies).map((c) => ({ id: c.id, label: c.name }))}
+  bind:selected
+  {onChange}
+  {onShadedBg}
+  autocomplete={group.singleConstituency ? 'off' : 'on'} />
