@@ -3,7 +3,7 @@ import { Argument } from './types/Argument';
 import { OutputParser } from './utils/OutputParser';
 import { LanguageConfig } from './languageOptions/LanguageConfig';
 import { ArgumentCondensationError, LLMError } from './types/Errors';
-import { CondensationType } from './types/CondensationType';
+import { CONDENSATION_TYPE, CondensationType } from './types/CondensationType';
 
 /**
  * Core class for condensing multiple comments into distinct arguments.
@@ -80,7 +80,7 @@ export class Condenser {
    * @throws {ArgumentCondensationError} If input validation fails
    * @throws {LLMError} If language model processing fails
    */
-  async processComments(comments: string[], topic: string, batchSize: number = 30, condensationType: CondensationType = CondensationType.GENERAL, batchesPerArray: number = 3): Promise<Argument[]> {
+  async processComments(comments: string[], topic: string, batchSize: number = 30, condensationType: CondensationType = CONDENSATION_TYPE.GENERAL, batchesPerArray: number = 3): Promise<Argument[]> {
     try {
       // Check that the comment array is non-empty
       if (comments.length === 0) {
@@ -174,9 +174,9 @@ export class Condenser {
     try {
       // Get specific instructions for the current condensation type
       let instructions = this.languageConfig.instructionsGeneral;
-      if (condensationType === CondensationType.SUPPORTING) {
+      if (condensationType === CONDENSATION_TYPE.SUPPORTING) {
         instructions = this.languageConfig.instructionsSupportive;
-      } else if (condensationType === CondensationType.OPPOSING) {
+      } else if (condensationType === CONDENSATION_TYPE.OPPOSING) {
         instructions = this.languageConfig.instructionsOpposing;
       }
 
@@ -197,7 +197,7 @@ export class Condenser {
         .replace('{comments}', commentsText)
 
       // Add prompt instructions at the end (now only for opposing condensation, because it's the hardest one for LLMs)
-      if (condensationType === CondensationType.OPPOSING) {
+      if (condensationType === CONDENSATION_TYPE.OPPOSING) {
         prompt += this.languageConfig.opposingReminder;
       }
 
@@ -214,7 +214,7 @@ export class Condenser {
 
       // Set up for starting LLM calls
       const maxRetries = 3;
-      let lastError: Error | null = null; // Throw this if k (maxRetries) LLM calls fail
+      let lastError: Error | undefined = undefined; // Throw this if k (maxRetries) LLM calls fail
 
       // Try to generate a response from the LLM
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -222,7 +222,7 @@ export class Condenser {
           // Generate response from the LLM
           const response = await this.llmProvider.generate({
             messages: [new Message({ role: 'user', content: prompt })],
-            temperature: 1
+            temperature: 0 // 0 is most deterministic, best for factual output
           });
 
           // Parse Arguments from response
@@ -260,15 +260,15 @@ export class Condenser {
   private async condenseArgumentArray(argumentArray: Argument[], topic: string, condensationType: CondensationType): Promise<Argument[]> {
     // Get instructions for the current condensation type
     let instructions = this.languageConfig.instructionsGeneral;
-    if (condensationType === CondensationType.SUPPORTING) {
+    if (condensationType === CONDENSATION_TYPE.SUPPORTING) {
       instructions = this.languageConfig.reduceInstructionsSupporting;
-    } else if (condensationType === CondensationType.OPPOSING) {
+    } else if (condensationType === CONDENSATION_TYPE.OPPOSING) {
       instructions = this.languageConfig.reduceInstructionsOpposing;
     }
 
-    // Format Arguments without indices
+    // Remove "1:", "2:", etc. index prefixes from the output
     const formattedArgs = argumentArray.map(arg => {
-      return arg.argument.replace(/^\s*\d+\s*:\s*/, ''); // Also removes prefix indices like "1:"
+      return arg.argument.replace(/^\s*\d+\s*:\s*/, '');
     }).join('\n');
 
     // Construct the prompt
@@ -277,7 +277,7 @@ export class Condenser {
       .replace('{existingArguments}', formattedArgs);
 
     // Add prompt instructions for opposing condensation, because it's the hardest one for LLMs
-    if (condensationType === CondensationType.OPPOSING) {
+    if (condensationType === CONDENSATION_TYPE.OPPOSING) {
       prompt += this.languageConfig.opposingReminder;
     }
 
