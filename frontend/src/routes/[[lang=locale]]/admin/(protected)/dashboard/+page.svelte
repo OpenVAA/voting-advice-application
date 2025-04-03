@@ -5,10 +5,9 @@ Main landing page for admin section showing available tools
 -->
 
 <script lang="ts">
-  import { getAppContext } from '$lib/contexts/app';
   import { Button } from '$lib/components/button';
-  import MainContent from '../MainContent.svelte';
-  import { HeroEmoji } from '$lib/components/heroEmoji';
+  import { getAppContext } from '$lib/contexts/app';
+  import MainContent from '../../../MainContent.svelte';
 
   const { t } = getAppContext();
   const title = 'Hello, Admin!';
