@@ -1,6 +1,6 @@
 import { LLMProvider, Message } from '@openvaa/llm';
 import { Argument } from './types/Argument';
-import { OutputParser } from './utils/OutputParser';
+import { OutputParser } from './utils/outputParser';
 import { LanguageConfig } from './languageOptions/languageConfig.type';
 import { ArgumentCondensationError, LLMError } from './types/Errors';
 import { CONDENSATION_TYPE, CondensationType } from './types/CondensationType';
@@ -121,10 +121,10 @@ export class Condenser {
     ): Promise<Argument[][]> {
       const nIterations = Math.ceil(comments.length / batchSize); // nIterations = number of batches to process
 
-      // Initialize the array to be populated by Argument arrays
+      /** Array to populate with Argument arrays */
       const argumentArrays: Argument[][] = [];                    
       
-      // Initialize an array of Arguments for the current batch
+      /** Array of Arguments for the current batch */
       let currentGroupArgs: Argument[] = []; 
       
       // For k (batchesPerArray) batches, create an Argument array
@@ -172,7 +172,7 @@ export class Condenser {
     condensationType: CondensationType
   ): Promise<Argument[]> {
     try {
-      // Get specific instructions for the current condensation type
+      /** Instructions for the current condensation type (supporting, opposing, etc.) */
       let instructions = this.languageConfig.instructionsGeneral;
       if (condensationType === CONDENSATION_TYPE.SUPPORTING) {
         instructions = this.languageConfig.instructionsSupportive;
@@ -180,17 +180,17 @@ export class Condenser {
         instructions = this.languageConfig.instructionsOpposing;
       }
 
-      // Format comments and existing Arguments for the prompt
+      /** Comments formatted for the prompt */
       const commentsText = commentBatch
         .map((comment, i) => `${this.languageConfig.inputCommentPrefix} ${i + 1}: ${comment}`)
         .join('\n');
 
-      // Format existing Arguments for the prompt
+      /** Existing Arguments formatted for the prompt */
       const existingArgsText = existingArgs
         .map((arg, i) => `${this.languageConfig.existingArgumentPrefix} ${i + 1}: ${arg.argument}`)
         .join('\n');
 
-      // Construct the prompt
+      /** Prompt for the current batch */
       let prompt = this.MAP_PROMPT_TEMPLATE
         .replace('{instructions}', instructions)
         .replace('{existingArguments}', existingArgs.length ? existingArgsText : '')
@@ -212,9 +212,10 @@ export class Condenser {
         );
       }
 
-      // Set up for starting LLM calls
+      /** Maximum number of retries for LLM calls */
       const maxRetries = 3;
-      let lastError: Error | undefined = undefined; // Throw this if k (maxRetries) LLM calls fail
+      /** Last error to be thrown if k (maxRetries) LLM calls fail */
+      let lastError: Error | undefined = undefined; 
 
       // Try to generate a response from the LLM
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -225,7 +226,7 @@ export class Condenser {
             temperature: 0 // 0 is most deterministic, best for factual output
           });
 
-          // Parse Arguments from response
+          /** Parsed Arguments from LLM response */
           const newArgStrings = this.parser.parseArguments(response.content, topic);
 
           // Return the new Argument objects
@@ -258,7 +259,7 @@ export class Condenser {
    * @private
    */
   private async condenseArgumentArray(argumentArray: Argument[], topic: string, condensationType: CondensationType): Promise<Argument[]> {
-    // Get instructions for the current condensation type
+    /** Instructions for the current condensation type */
     let instructions = this.languageConfig.instructionsGeneral;
     if (condensationType === CONDENSATION_TYPE.SUPPORTING) {
       instructions = this.languageConfig.reduceInstructionsSupporting;
@@ -266,12 +267,12 @@ export class Condenser {
       instructions = this.languageConfig.reduceInstructionsOpposing;
     }
 
-    // Remove "1:", "2:", etc. index prefixes from the output
+    /** Formatted Arguments without "1:", "2:", etc. index prefixes */
     const formattedArgs = argumentArray.map(arg => {
       return arg.argument.replace(/^\s*\d+\s*:\s*/, '');
     }).join('\n');
 
-    // Construct the prompt
+    /** Prompt for the current batch */
     let prompt = this.RECURSIVE_PROMPT_TEMPLATE
       .replace('{instructions}', instructions)
       .replace('{existingArguments}', formattedArgs);
@@ -284,13 +285,13 @@ export class Condenser {
     // Set the topic in the prompt last, because it may have references in different places in the prompt
     prompt = prompt.replace(/{topic}/g, topic);
 
-    // Get the response from the LLM
+    /** Response from the LLM */
     const response = await this.llmProvider.generate({
       messages: [new Message({ role: 'user', content: prompt })],
       temperature: 1
     });
 
-    // Parse the LLM response to get a new array of Arguments
+    /** Array of parsed Arguments from LLM response */
     const newArgs = this.parser.parseArgumentCondensation(response.content, topic)
 
     // Logging (for debugging)
@@ -320,7 +321,7 @@ export class Condenser {
     console.log(`    Processing ${argumentArrays.length} Argument groups (will continue pair-wise until one array remains, e.g. 4 --> 2 --> 1)`);
     console.log('--------------------------------');
 
-    // Initialize the array to be populated by Argument arrays
+    /** Array to populate with Argument arrays */
     const reducedArrays: Argument[][] = [];
     
     // Process pairs of Argument arrays to create a single, more concise array
@@ -334,8 +335,10 @@ export class Condenser {
         continue;
       }
 
-      // Combine and condense two arrays
+      /** Two Argument arrays coalesced into one */
       const combinedArgs = [...array1, ...array2];
+
+      /** Condensed Argument array from the two coalesced arrays */
       const condensedArgs = await this.condenseArgumentArray(combinedArgs, topic, condensationType);
 
       // Add the condensed array to the arrays of arrays
