@@ -1,10 +1,10 @@
-import { LanguageConfig } from './LanguageConfig';
+import { LanguageConfig } from './languageConfig.type';
 
 /**
  * Finnish language configuration for argument condensation
  * Provides instructions and formatting for Finnish language processing
  */
-export const finnishConfig: LanguageConfig = {
+export const FINNISH_CONFIG: LanguageConfig = {
   instructionsGeneral: `Käy läpi seuraavat kommentit, jotka koskevat seuraavaa väitettä: "{topic}". Sinun tehtäväsi on tiivistää mielipiteitä, perusteluja ja näkökulmia, joita kommenteissa esitetään väitteen käsittelemään aiheeseen liittyen. 
     Jos kommenteissa on näkökulmia, joita ei vielä ole olemassa olevissa argumenteissa:
     - Luo uusi argumentti jokaiselle uudelle mielipiteelle tai perustelulle

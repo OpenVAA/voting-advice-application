@@ -7,12 +7,10 @@ export { exportResults } from './utils/fileOperations';
 
 // Export types
 export type { Argument } from './types/Argument';
-export type { LanguageConfig, SupportedLanguage } from './languageOptions/LanguageConfig';
-export { CondensationType } from './types/CondensationType';
+export type { CondensationType } from './types/CondensationType';
 
-// Export language configs
-export { finnishConfig } from './languageOptions/finnish';
-export { englishConfig } from './languageOptions/english';
+// Export language namespace
+export { LanguageConfigs } from './languageOptions/configs';
 
 // Export errors
 export { ArgumentCondensationError, LLMError, ParsingError } from './types/Errors';

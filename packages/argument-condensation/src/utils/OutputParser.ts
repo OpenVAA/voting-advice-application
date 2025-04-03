@@ -1,5 +1,5 @@
 import { Argument } from '../types/Argument';
-import { LanguageConfig } from '../languageOptions/LanguageConfig';
+import { LanguageConfig } from '../languageOptions/languageConfig.type';
 
 /**
  * Parser for extracting structured Arguments from LLM responses.
