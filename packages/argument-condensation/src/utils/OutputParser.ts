@@ -30,19 +30,23 @@ export class OutputParser {
    * </ARGUMENTS>
    */
   parseArguments(text: string, topic: string): Argument[] {
-    // Initialization of basic variables
-    const parsedArgs: Argument[] = [];    // Array to be populated by Arguments
-    let currentArg: string = '';          // Used to build the current Argument's string if it's multi-lined in the text
-    let stillProcessing: boolean = false; // Tracks if we're inside the <ARGUMENTS> block
+    /** Array to be populated by Arguments */
+    const parsedArgs = new Array<Argument>();   
 
-    // Split the LLM response into lines
-    const lines: string[] = text.split('\n');
+    /** Used to build the current Argument's string if it's multi-lined in the text */
+    let currentArg = '';
 
-    // Iterate over lines of the response
+    /** Tracks if we're inside the <ARGUMENTS> block */
+    let stillProcessing = false;
+
+    /** Split the LLM response into lines */
+    const lines = text.split('\n');
+
+    // Iterate over lines of the response 
     for (const line of lines) {
       const trimmedLine = line.trim();
       
-      // Check if we're inside the <ARGUMENTS> block
+      /** Check if we're inside the <ARGUMENTS> block */
       if (trimmedLine.includes('<ARGUMENTS>')) {
         stillProcessing = true;
         continue;
@@ -50,9 +54,9 @@ export class OutputParser {
         break;
       }
       
-      // Process lines within the Arguments block
+      /** Process lines within the Arguments block */
       if (stillProcessing) {
-        // Check if the line starts with the correct Argument prefix 
+        /** Check if the line starts with the correct Argument prefix  */
         if (trimmedLine.startsWith(this.languageConfig.outputFormat.argumentPrefix)) {
           // Start of new Argument
           if (currentArg.length) {
@@ -88,13 +92,13 @@ export class OutputParser {
    * @returns Argument[] - Array of condensed Arguments
    */
   parseArgumentCondensation(output: string, topic: string): Argument[] {
-    // Intialize empty Argument array
-    const args: Argument[] = [];
+    /** Array to populate with condensed Arguments */
+    const args = new Array<Argument>();
 
-    // Get the correctArgument prefix from the language config
+    /** Argument prefix from the language config */
     const argumentPrefix = this.languageConfig.outputFormat.argumentPrefix;
 
-    // Split the LLM response into lines
+    /** LLM response as lines */
     const lines = output.split('\n');
 
     // Iterate over lines of the response
@@ -103,7 +107,7 @@ export class OutputParser {
       
       // Check if the line starts with the correct Argument prefix 
       if (line.startsWith(argumentPrefix)) {
-        // Remove any existing indices like "1:" at the beginning of Arguments
+        /** Pure argument string with prefixes like "1:" removed */
         const argumentText = line.substring(argumentPrefix.length).trim().replace(/^\s*\d+\s*:\s*/, ''); 
         
         // Create a new Argument with the condensed text
