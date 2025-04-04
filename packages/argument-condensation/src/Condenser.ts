@@ -5,6 +5,12 @@ import { LanguageConfig } from './languageOptions/languageConfig.type';
 import { ArgumentCondensationError, LLMError } from './types/Errors';
 import { CONDENSATION_TYPE, CondensationType } from './types/CondensationType';
 
+/** Maximum cumulative length of comments in a single batch */
+const MAX_BATCH_CHARS = 30000;
+
+/** Maximum length for a single comment */
+const MAX_COMMENT_LENGTH = 2000;
+
 /**
  * Core class for condensing multiple comments into distinct arguments.
  * Processes comments in batches and maintains context between batches.
@@ -14,9 +20,8 @@ export class Condenser {
   private parser: OutputParser;
   private existingArguments: Argument[][] = [];
   private languageConfig: LanguageConfig;
-  private readonly MAP_PROMPT_TEMPLATE: string;       // Comments --> Arguments
-  private readonly RECURSIVE_PROMPT_TEMPLATE: string; // Arguments --> Less Arguments
-  private readonly MAX_PROMPT_LENGTH: number;         // Maximum length of the prompt
+  private readonly mapPromptTemplate: string;       // Comments --> Arguments
+  private readonly recursivePromptTemplate: string; // Arguments --> Less Arguments
 
   /**
    * Creates a new Condenser instance
@@ -38,11 +43,8 @@ export class Condenser {
     this.llmProvider = llmProvider;
     this.parser = new OutputParser(this.languageConfig);
 
-    // Constants for limits
-    this.MAX_PROMPT_LENGTH = 30000; 
-
     // Define the prompt for the first level of condensation (map phase)
-    this.MAP_PROMPT_TEMPLATE = `
+    this.mapPromptTemplate = `
     ### {instructions}
 
     ### ${this.languageConfig.existingArgumentsHeader}:
@@ -58,7 +60,7 @@ export class Condenser {
   `;
 
     // Define the prompt for the recursive level of condensation (reduce phase)
-    this.RECURSIVE_PROMPT_TEMPLATE = `
+    this.recursivePromptTemplate = `
     ### {instructions}
 
     ### ${this.languageConfig.existingArgumentsHeader}:
@@ -82,8 +84,19 @@ export class Condenser {
    */
   async processComments(comments: string[], topic: string, batchSize: number = 30, condensationType: CondensationType = CONDENSATION_TYPE.GENERAL, batchesPerArray: number = 3): Promise<Argument[]> {
     try {
+      // Validate non-empty comments and truncate those exceeding MAX_COMMENT_LENGTH
+      const validatedComments = comments
+        .filter(comment => comment.trim().length > 0)
+        .map(comment => 
+          comment.length > MAX_COMMENT_LENGTH 
+            ? comment.substring(0, MAX_COMMENT_LENGTH) + '...'
+            : comment
+        );
+
+      console.log(validatedComments);
+
       // Check that the comment array is non-empty
-      if (comments.length === 0) {
+      if (validatedComments.length === 0) {
         throw new ArgumentCondensationError('Comments array cannot be empty');
       }
       // Check that the topic is non-empty
@@ -92,7 +105,7 @@ export class Condenser {
       }
 
       // First level of condensation: turn some k (batchesPerArray) comment batches into Argument arrays
-      this.existingArguments = await this.createArgumentArrays(comments, topic, batchSize, condensationType, batchesPerArray);
+      this.existingArguments = await this.createArgumentArrays(validatedComments, topic, batchSize, condensationType, batchesPerArray);
 
       // Second level: Recursively (and pairwise) coalesce the Argument arrays into a single array. 
       // Does not flatten k arrays to 1 array directly, but k --> k/2 --> ... --> 1
@@ -180,6 +193,20 @@ export class Condenser {
         instructions = this.languageConfig.instructionsOpposing;
       }
 
+      // Remove the longest comments if the batch's cumulative length > MAX_BATCH_CHARS
+      let commentsCharSum = commentBatch.reduce((sum, comment) => sum + comment.length, 0);
+      while (commentsCharSum > MAX_BATCH_CHARS) {
+        const longestCommentIndex = commentBatch.reduce((maxIndex, comment, currentIndex, arr) => 
+          comment.length > arr[maxIndex].length ? currentIndex : maxIndex
+        , 0);
+        
+        // Remove the longest comment
+        commentBatch.splice(longestCommentIndex, 1);
+        
+        // Recalculate sum
+        commentsCharSum = commentBatch.reduce((sum, comment) => sum + comment.length, 0);
+      }
+
       /** Comments formatted for the prompt */
       const commentsText = commentBatch
         .map((comment, i) => `${this.languageConfig.inputCommentPrefix} ${i + 1}: ${comment}`)
@@ -191,10 +218,10 @@ export class Condenser {
         .join('\n');
 
       /** Prompt for the current batch */
-      let prompt = this.MAP_PROMPT_TEMPLATE
+      let prompt = this.mapPromptTemplate
         .replace('{instructions}', instructions)
         .replace('{existingArguments}', existingArgs.length ? existingArgsText : '')
-        .replace('{comments}', commentsText)
+        .replace('{comments}', commentsText);
 
       // Add prompt instructions at the end (now only for opposing condensation, because it's the hardest one for LLMs)
       if (condensationType === CONDENSATION_TYPE.OPPOSING) {
@@ -203,14 +230,6 @@ export class Condenser {
 
       // Set the topic last, because it may have references in different sub-sections of the prompt
       prompt = prompt.replace(/{topic}/g, topic);
-
-      // Validate prompt length
-      const promptLength = prompt.length;
-      if (promptLength > this.MAX_PROMPT_LENGTH) {
-        throw new ArgumentCondensationError(
-          `Total prompt length (${promptLength}) exceeds maximum of ${this.MAX_PROMPT_LENGTH} characters. Please reduce the number and/or the length of the comments.`
-        );
-      }
 
       /** Maximum number of retries for LLM calls */
       const maxRetries = 3;
@@ -273,7 +292,7 @@ export class Condenser {
     }).join('\n');
 
     /** Prompt for the current batch */
-    let prompt = this.RECURSIVE_PROMPT_TEMPLATE
+    let prompt = this.recursivePromptTemplate
       .replace('{instructions}', instructions)
       .replace('{existingArguments}', formattedArgs);
 
