@@ -26,5 +26,11 @@
   "skipToResults": "Hyppää tuloksiin",
   "title": "Mielipiteesi",
   "pickNext": "Valitse seuraava kysymys",
-  "chooseForMe": "Valitse puolestani"
+  "chooseForMe": "Valitse puolestani",
+  "reliability": {
+    "thresholdMet": "Hienoa! Olet vastannut tarpeeksi moneen kysymykseen saadaksesi luotettavia tuloksia. Voit silti jatkaa vastaamista, jos haluat entistä tarkempia tuloksia.",
+    "thresholdNotMet": "Jatka kysymyksiin vastaamista saavuttaaksesi vähintään {threshold}% tarkkuuden. Tämän jälkeen voit siirtyä suoraan tuloksiin.",
+    "accuracy": "Tarkkuus",
+    "showResults": "Näytä tulokset"
+  }
 }

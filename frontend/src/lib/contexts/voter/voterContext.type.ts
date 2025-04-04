@@ -93,4 +93,8 @@ export type VoterContext = AppContext & {
    * Question ordering service - recalculated only when factorLoadings change
    */
   questionOrderer: Readable<QuestionOrderer>;
+  /**
+   * The current confidence in recommendations as a score between 0–100
+   */
+  confidenceScore: Readable<number>;
 };
