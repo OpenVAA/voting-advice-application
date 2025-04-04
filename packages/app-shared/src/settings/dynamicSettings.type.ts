@@ -169,6 +169,10 @@ export type DynamicSettings = {
              * The number of suggestions for the next questions to display to the user. If `1`, the next question will be automatically displayed. Default `1`.
              */
             numSuggestions?: number;
+            /**
+             * The minimum confidence score (percentage) required before allowing the user to see results. Default: 75
+             */
+            reliabilityThreshold?: number;
           }
         | {
             /**

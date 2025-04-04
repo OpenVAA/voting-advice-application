@@ -28,6 +28,9 @@ Uses the `term` and `definition` roles.
   type $$Props = TermProps;
 
   export let definition: $$Props['definition'];
+  export let position: $$Props['position'] = 'bottom';
+  export let showUnderline: $$Props['showUnderline'] = true;
+  export let forceShow: $$Props['forceShow'] = false;
 
   const VERTICAL_PADDING = 20;
   const definitionId = getUUID();
@@ -65,15 +68,21 @@ Uses the `term` and `definition` roles.
   role="term"
   {...concatClass(
     $$restProps,
-    'group relative underline underline-offset-[0.2em] decoration-primary decoration-dotted'
+    showUnderline
+      ? 'group relative underline underline-offset-[0.2em] decoration-primary decoration-dotted'
+      : 'group relative'
   )}
   aria-details={definitionId}>
   <slot />
   <div
     bind:this={definitionDiv}
     id={definitionId}
-    class="duration-200 pointer-events-none absolute bottom-auto left-1/2 right-auto z-10 w-max rounded-md bg-base-200 p-10 text-md font-normal text-neutral opacity-0 shadow-md transition-opacity ease-in-out group-hover:opacity-100"
-    style={`transform: translateX(calc(-50% ${leftPadding ? `+ ${leftPadding.toFixed()}px` : `- ${rightPadding.toFixed()}px`})); max-width: min(20rem, calc(100vw - 2rem)); top: calc(100% + 1px + 0.625rem);`}
+    class="duration-200 pointer-events-none absolute bottom-auto left-1/2 right-auto z-10 w-max rounded-md bg-base-200 p-10 text-md font-normal text-neutral opacity-0 shadow-md transition-opacity ease-in-out {forceShow
+      ? 'opacity-100'
+      : 'opacity-0 group-hover:opacity-100'}"
+    style={`transform: translateX(calc(-50% ${leftPadding ? `+ ${leftPadding.toFixed()}px` : `- ${rightPadding.toFixed()}px`})); max-width: min(20rem, calc(100vw - 2rem)); ${
+      position === 'top' ? 'bottom: calc(100% + 0.625rem);' : 'top: calc(100% + 0.625rem);'
+    }`}
     role="definition">
     {definition}
   </div>

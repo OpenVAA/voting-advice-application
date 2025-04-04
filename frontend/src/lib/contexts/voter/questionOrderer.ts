@@ -1,3 +1,4 @@
+import type { Id } from '@openvaa/core';
 import type { AnyQuestionVariant } from '@openvaa/data';
 import type { FactorLoading } from './factorLoadings/factorLoading';
 
@@ -7,7 +8,15 @@ import type { FactorLoading } from './factorLoadings/factorLoading';
 export class QuestionOrderer {
   private questions: Array<AnyQuestionVariant>;
   private factorLoadingsPerElection: Array<Array<Array<number>>>;
-  private questionMap: Map<string, number>;
+  private questionMap: Map<Id, number>;
+  
+  /**
+   * Exponent used in the diminishing returns function for confidence calculation.
+   * - Higher values (>3): Give more weight to initial question answers, reaching high confidence quickly
+   * - Lower values (<3): Create a more linear relationship requiring more diverse answers
+   * - Default (3): Balanced approach suitable for most applications
+   */
+  private diminishingReturnsExponent: number = 3;
 
   /**
    * Create a QuestionOrderer
@@ -16,7 +25,8 @@ export class QuestionOrderer {
    */
   constructor(
     questions: Array<AnyQuestionVariant>,
-    factorLoadingDataArray: Array<FactorLoading>
+    factorLoadingDataArray: Array<FactorLoading>,
+    options?: { diminishingReturnsExponent?: number }
   ) {
     this.questions = questions;
 
@@ -25,6 +35,10 @@ export class QuestionOrderer {
     questions.forEach((q, index) => {
       this.questionMap.set(q.id, index);
     });
+
+    if (options?.diminishingReturnsExponent !== undefined) {
+      this.diminishingReturnsExponent = options.diminishingReturnsExponent;
+    }
 
     // Convert the backend format to our internal 3D array format
     // First dimension: elections
@@ -64,7 +78,7 @@ export class QuestionOrderer {
    * @returns Array of questions with highest information gain
    */
   public getNextQuestions(
-    answeredIds: Array<string>,
+    answeredIds: Array<Id>,
     count: number
   ): Array<AnyQuestionVariant> {
     // Filter questions that haven't been answered yet
@@ -93,10 +107,7 @@ export class QuestionOrderer {
    * @param answeredIds - IDs of questions already answered
    * @returns Information gain value (summed across all elections)
    */
-  calculateInformationGain(
-    questionId: string,
-    answeredIds: Array<string>
-  ): number {
+  calculateInformationGain(questionId: Id, answeredIds: Array<Id>): number {
     // Calculate information gain for each election and sum them
     // You could use Math.max(...gains) instead of reduce((sum, gain) => sum + gain, 0) for maximum instead of sum
     return this.factorLoadingsPerElection
@@ -118,8 +129,8 @@ export class QuestionOrderer {
    * @returns Information gain value for the specific election
    */
   calculateInformationGainForElection(
-    questionId: string,
-    answeredIds: Array<string>,
+    questionId: Id,
+    answeredIds: Array<Id>,
     electionIndex: number
   ): number {
     const questionIdx = this.questionMap.get(questionId);
@@ -208,8 +219,8 @@ export class QuestionOrderer {
    * @returns Entropy value
    */
   calculateResidualEntropyForElection(
-    questionId: string,
-    answeredIds: Array<string>,
+    questionId: Id,
+    answeredIds: Array<Id>,
     electionIndex: number
   ): number {
     // Early return if no questions have been answered
@@ -281,5 +292,98 @@ export class QuestionOrderer {
       0,
       continuousEntropy - discretizationLoss + ordinalCorrection
     );
+  }
+
+  /**
+   * Calculate confidence score based on answered questions
+   * @param answeredIds - IDs of questions already answered
+   * @returns A score between 0-100 representing confidence in recommendations
+   */
+  public calculateConfidenceScore(answeredIds: Array<Id>): number {
+    // Early return for no answers
+    if (answeredIds.length === 0) return 0;
+
+    // Calculate factor coverage across all elections
+    const factorConfidence = this.calculateFactorCoverage(answeredIds);
+
+    // Apply non-linear transformation to create a user-friendly 0-100 scale
+    return Math.round(this.transformToFriendlyScale(factorConfidence) * 100);
+  }
+
+  /**
+   * Calculate how well the answered questions cover the factor space
+   * @param answeredIds - IDs of questions already answered
+   * @returns A value between 0-1 representing factor coverage
+   */
+  private calculateFactorCoverage(answeredIds: Array<Id>): number {
+    let totalCoverage = 0;
+    let totalPossible = 0;
+
+    // Calculate coverage for each election and sum them
+    for (const factorLoadings of this.factorLoadingsPerElection) {
+      if (!factorLoadings.length) continue;
+
+      const numFactors = factorLoadings[0]?.length;
+      if (!numFactors) continue;
+
+      // Process each factor
+      for (let factorIdx = 0; factorIdx < numFactors; factorIdx++) {
+        // Calculate factor importance (sum of squared loadings)
+        // This represents how much variance this factor explains
+        let factorImportance = 0;
+        for (const loadings of factorLoadings) {
+          if (!loadings) continue;
+          const loading = loadings[factorIdx] ?? 0;
+          factorImportance += loading * loading;
+        }
+
+        // Skip factors with negligible importance
+        if (factorImportance < 0.01) continue;
+
+        // Calculate coverage from answered questions
+        // This measures how much of this factor is represented by answered questions
+        let factorCoverage = 0;
+        for (const answeredId of answeredIds) {
+          const questionIdx = this.questionMap.get(answeredId);
+          if (questionIdx === undefined) continue;
+
+          const loadings = factorLoadings[questionIdx];
+          if (!loadings) continue;
+
+          const loading = loadings[factorIdx] ?? 0;
+          factorCoverage += loading * loading;
+        }
+
+        // Apply diminishing returns function to model information gain
+        // This reflects the principle that additional similar questions provide
+        // less new information than diverse questions. The formula 1-exp(-k*x)
+        // creates a curve that rises quickly at first and then levels off.
+        const coverageRatio = Math.min(1.0, factorCoverage / factorImportance);
+        const effectiveCoverage =
+          (1.0 - Math.exp(-this.diminishingReturnsExponent * coverageRatio)) *
+          factorImportance;
+
+        // Add to totals
+        totalCoverage += effectiveCoverage;
+        totalPossible += factorImportance;
+      }
+    }
+
+    return totalPossible > 0 ? totalCoverage / totalPossible : 0;
+  }
+
+  /**
+   * Transform linear confidence score to user-friendly scale with
+   * better discrimination in middle ranges.
+   *
+   * Uses a sigmoid function that:
+   * - Stretches the middle range (around 0.5) for better differentiation
+   * - Compresses extremes (near 0 or 1) for more intuitive scaling
+   * - Centers the transition at 0.5 (50% raw coverage)
+   * - Uses steepness parameter 8 for appropriate curve shape
+   */
+  private transformToFriendlyScale(value: number): number {
+    // Simple sigmoid function to create better separation in middle range
+    return 1 / (1 + Math.exp(-8 * (value - 0.5)));
   }
 }

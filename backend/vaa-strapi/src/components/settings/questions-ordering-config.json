@@ -19,6 +19,11 @@
       "min": 1,
       "max": 5
     },
+    "reliabilityThreshold": {
+      "type": "integer",
+      "min": 0,
+      "max": 100
+    },
     "eliminationType": {
       "type": "enumeration",
       "enum": [
