@@ -10,14 +10,19 @@ export default factories.createCoreController('api::question.question', () => ({
   async generateInfo({ response, params }: StrapiContext) {
     try {
       await generateQuestionInfo(params.id);
+
+      response.status = 200;
+      response.body = {
+        type: 'success'
+      };
     } catch (error) {
+      console.error('Error generating question info:', error);
+
       response.status = 400;
-      response.message = error;
-      return error;
+      response.body = {
+        type: 'failure',
+        error: error.message
+      };
     }
-    response.status = 200;
-    response.body = {
-      success: true
-    };
   }
 }));

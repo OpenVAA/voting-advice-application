@@ -1,3 +1,4 @@
+import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type {
   StrapiAppCustomizationData,
   StrapiAppSettingsData,
@@ -48,7 +49,9 @@ export const STRAPI_API: Record<keyof StrapiApiReturnType, string> = {
   setProperties: 'api/candidate/:id/update-properties',
   setPassword: 'api/auth/change-password',
   upload: 'api/upload',
-  updateAnswers: 'api/candidate/:id/update-answers'
+  updateAnswers: 'api/candidate/:id/update-answers',
+  // AdminWriter
+  generateQuestionInfo: 'api/questions/generateInfo'
 } as const;
 
 export type StrapiApi = keyof StrapiApiReturnType;
@@ -85,6 +88,8 @@ export type StrapiApiReturnType = {
   setPassword: unknown;
   upload: Array<StrapiImageData>;
   updateAnswers: StrapiUpdateCandidateReturnData;
+  // AdminWriter
+  generateQuestionInfo: DataApiActionResult;
 };
 
 /**
