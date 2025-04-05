@@ -22,7 +22,7 @@ Provides the data used by the located – i.e. those requiring the elections and
 
   export let data;
 
-  const { dataRoot } = getVoterContext();
+  const { dataRoot, setFactorLoadingData } = getVoterContext();
 
   let error: Error | undefined;
   let ready: boolean;
@@ -30,7 +30,7 @@ Provides the data used by the located – i.e. those requiring the elections and
     // If data is updated, we want to prevent loading the slot until the promises resolve
     error = undefined;
     ready = false;
-    Promise.all([data.questionData, data.nominationData]).then((data) => {
+    Promise.all([data.questionData, data.nominationData, data.factorLoadingData]).then((data) => {
       error = update(data);
     });
   }
@@ -40,15 +40,24 @@ Provides the data used by the located – i.e. those requiring the elections and
    * Handle the update inside a function so that we don't track $dataRoot, which would result in an infinite loop.
    * @returns `Error` if the data is invalid, `undefined` otherwise.
    */
-  function update([questionData, nominationData]: [
+  function update([questionData, nominationData, factorLoadingData]: [
     DPDataType['questions'] | Error,
-    DPDataType['nominations'] | Error
+    DPDataType['nominations'] | Error,
+    DPDataType['factorLoadings'] | Error
   ]): Error | undefined {
-    if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
-    if (!isValidResult(nominationData, { allowEmpty: true })) return new Error('Error loading nomination data');
+    if (!isValidResult(questionData, { allowEmpty: true }))
+      return new Error('Error loading question data');
+    if (!isValidResult(nominationData, { allowEmpty: true }))
+      return new Error('Error loading nomination data');
+    if (!isValidResult(factorLoadingData, { allowEmpty: true }))
+      return new Error('Error loading factor loading data');
+
     $dataRoot.provideQuestionData(questionData);
     $dataRoot.provideEntityData(nominationData.entities);
     $dataRoot.provideNominationData(nominationData.nominations);
+    
+    setFactorLoadingData(factorLoadingData || []);
+
     ready = true;
   }
 </script>

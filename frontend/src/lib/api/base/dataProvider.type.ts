@@ -6,6 +6,7 @@ import type {
   GetDataOptionsBase,
   GetElectionsOptions,
   GetEntitiesOptions,
+  GetFactorLoadingsOptions,
   GetNominationsOptions,
   GetQuestionsOptions
 } from './getDataOptions.type';
@@ -68,6 +69,14 @@ export interface DataProvider<TType extends AdapterType = 'universal'> {
    * @throws Error on failure.
    */
   getQuestionData: (options?: GetQuestionsOptions) => DPReturnType<'questions', TType>;
+
+  /**
+   * Get factor analysis results for an election
+   * @param options - Options containing the election ID
+   * @returns A `Promise` resolving to the factor analysis data
+   * @throws Error on failure
+   */
+  getFactorLoadingData: (options: GetFactorLoadingsOptions) => DPReturnType<'factorLoadings', TType>;
 }
 
 /**
