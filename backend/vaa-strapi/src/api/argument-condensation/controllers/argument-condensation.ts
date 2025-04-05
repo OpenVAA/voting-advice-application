@@ -1,4 +1,4 @@
-import { processComments, finnishConfig, CondensationType } from '@openvaa/argument-condensation';
+import { processComments, LanguageConfigs, CONDENSATION_TYPE } from '@openvaa/argument-condensation';
 import { OpenAIProvider } from '@openvaa/llm';
 import questionService from '../services/question-service';
 
@@ -131,22 +131,22 @@ export default {
                 groupedAnswers.presumedPros.length > 0
                   ? await processComments(
                       llmProvider,
-                      finnishConfig,
+                      LanguageConfigs.Finnish,
                       groupedAnswers.presumedPros,
                       question.text?.fi || 'Unknown Topic',
                       30,
-                      CondensationType.SUPPORTING
+                      CONDENSATION_TYPE.SUPPORTING
                     )
                   : [],
               cons:
                 groupedAnswers.presumedCons.length > 0
                   ? await processComments(
                       llmProvider,
-                      finnishConfig,
+                      LanguageConfigs.Finnish,
                       groupedAnswers.presumedCons,
                       question.text?.fi || 'Unknown Topic',
                       30,
-                      CondensationType.OPPOSING
+                      CONDENSATION_TYPE.OPPOSING
                     )
                   : []
             };
@@ -158,11 +158,11 @@ export default {
                   ...(await acc),
                   [category]: await processComments(
                     llmProvider,
-                    finnishConfig,
+                    LanguageConfigs.Finnish,
                     comments,
                     `${question.text?.fi || 'Unknown Topic'} - ${category}`,
                     30,
-                    CondensationType.GENERAL
+                    CONDENSATION_TYPE.GENERAL
                   )
                 };
               }

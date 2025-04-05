@@ -7,7 +7,7 @@ export { exportResults } from './utils/fileOperations';
 
 // Export types
 export type { Argument } from './types/Argument';
-export { CondensationType } from './types/CondensationType';
+export { CONDENSATION_TYPE } from './types/CondensationType';
 
 // Export language namespace
 export { LanguageConfigs } from './languageOptions/configs';
