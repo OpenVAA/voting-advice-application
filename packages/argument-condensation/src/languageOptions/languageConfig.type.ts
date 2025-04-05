@@ -1,9 +1,4 @@
 /**
- * Supported languages for argument condensation
- */
-export type SupportedLanguage = 'fi' | 'en';
-
-/**
  * Configuration for language-specific prompting
  * @interface LanguageConfig
  */

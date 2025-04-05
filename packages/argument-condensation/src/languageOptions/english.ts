@@ -1,4 +1,4 @@
-import { LanguageConfig } from './LanguageConfig';
+import { LanguageConfig } from './languageConfig.type';
 
 /**
  * English language configuration for argument condensation
@@ -6,7 +6,7 @@ import { LanguageConfig } from './LanguageConfig';
  */
 
 // TO DO: Optimize the instructions for English
-export const englishConfig: LanguageConfig = {
+export const ENGLISH_CONFIG: LanguageConfig = {
     instructionsGeneral: `Go through the following comments on the topic "{topic}".
     If the comments contain perspectives that are not already present in the existing arguments:
     - Create a new argument for each new perspective

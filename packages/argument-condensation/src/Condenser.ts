@@ -1,9 +1,15 @@
 import { LLMProvider, Message } from '@openvaa/llm';
 import { Argument } from './types/Argument';
-import { OutputParser } from './utils/OutputParser';
-import { LanguageConfig } from './languageOptions/LanguageConfig';
+import { OutputParser } from './utils/outputParser';
+import { LanguageConfig } from './languageOptions/languageConfig.type';
 import { ArgumentCondensationError, LLMError } from './types/Errors';
-import { CondensationType } from './types/CondensationType';
+import { CONDENSATION_TYPE, CondensationType } from './types/CondensationType';
+
+/** Maximum cumulative length of comments in a single batch */
+const MAX_BATCH_CHARS = 30000;
+
+/** Maximum length for a single comment */
+const MAX_COMMENT_LENGTH = 2000;
 
 /**
  * Core class for condensing multiple comments into distinct arguments.
@@ -14,9 +20,8 @@ export class Condenser {
   private parser: OutputParser;
   private existingArguments: Argument[][] = [];
   private languageConfig: LanguageConfig;
-  private readonly MAP_PROMPT_TEMPLATE: string;       // Comments --> Arguments
-  private readonly RECURSIVE_PROMPT_TEMPLATE: string; // Arguments --> Less Arguments
-  private readonly MAX_PROMPT_LENGTH: number;         // Maximum length of the prompt
+  private readonly mapPromptTemplate: string;       // Comments --> Arguments
+  private readonly recursivePromptTemplate: string; // Arguments --> Less Arguments
 
   /**
    * Creates a new Condenser instance
@@ -38,11 +43,8 @@ export class Condenser {
     this.llmProvider = llmProvider;
     this.parser = new OutputParser(this.languageConfig);
 
-    // Constants for limits
-    this.MAX_PROMPT_LENGTH = 30000; 
-
     // Define the prompt for the first level of condensation (map phase)
-    this.MAP_PROMPT_TEMPLATE = `
+    this.mapPromptTemplate = `
     ### {instructions}
 
     ### ${this.languageConfig.existingArgumentsHeader}:
@@ -58,7 +60,7 @@ export class Condenser {
   `;
 
     // Define the prompt for the recursive level of condensation (reduce phase)
-    this.RECURSIVE_PROMPT_TEMPLATE = `
+    this.recursivePromptTemplate = `
     ### {instructions}
 
     ### ${this.languageConfig.existingArgumentsHeader}:
@@ -80,10 +82,21 @@ export class Condenser {
    * @throws {ArgumentCondensationError} If input validation fails
    * @throws {LLMError} If language model processing fails
    */
-  async processComments(comments: string[], topic: string, batchSize: number = 30, condensationType: CondensationType = CondensationType.GENERAL, batchesPerArray: number = 3): Promise<Argument[]> {
+  async processComments(comments: string[], topic: string, batchSize: number = 30, condensationType: CondensationType = CONDENSATION_TYPE.GENERAL, batchesPerArray: number = 3): Promise<Argument[]> {
     try {
+      // Validate non-empty comments and truncate those exceeding MAX_COMMENT_LENGTH
+      const validatedComments = comments
+        .filter(comment => comment.trim().length > 0)
+        .map(comment => 
+          comment.length > MAX_COMMENT_LENGTH 
+            ? comment.substring(0, MAX_COMMENT_LENGTH) + '...'
+            : comment
+        );
+
+      console.log(validatedComments);
+
       // Check that the comment array is non-empty
-      if (comments.length === 0) {
+      if (validatedComments.length === 0) {
         throw new ArgumentCondensationError('Comments array cannot be empty');
       }
       // Check that the topic is non-empty
@@ -92,7 +105,7 @@ export class Condenser {
       }
 
       // First level of condensation: turn some k (batchesPerArray) comment batches into Argument arrays
-      this.existingArguments = await this.createArgumentArrays(comments, topic, batchSize, condensationType, batchesPerArray);
+      this.existingArguments = await this.createArgumentArrays(validatedComments, topic, batchSize, condensationType, batchesPerArray);
 
       // Second level: Recursively (and pairwise) coalesce the Argument arrays into a single array. 
       // Does not flatten k arrays to 1 array directly, but k --> k/2 --> ... --> 1
@@ -121,10 +134,10 @@ export class Condenser {
     ): Promise<Argument[][]> {
       const nIterations = Math.ceil(comments.length / batchSize); // nIterations = number of batches to process
 
-      // Initialize the array to be populated by Argument arrays
+      /** Array to populate with Argument arrays */
       const argumentArrays: Argument[][] = [];                    
       
-      // Initialize an array of Arguments for the current batch
+      /** Array of Arguments for the current batch */
       let currentGroupArgs: Argument[] = []; 
       
       // For k (batchesPerArray) batches, create an Argument array
@@ -172,49 +185,56 @@ export class Condenser {
     condensationType: CondensationType
   ): Promise<Argument[]> {
     try {
-      // Get specific instructions for the current condensation type
+      /** Instructions for the current condensation type (supporting, opposing, etc.) */
       let instructions = this.languageConfig.instructionsGeneral;
-      if (condensationType === CondensationType.SUPPORTING) {
+      if (condensationType === CONDENSATION_TYPE.SUPPORTING) {
         instructions = this.languageConfig.instructionsSupportive;
-      } else if (condensationType === CondensationType.OPPOSING) {
+      } else if (condensationType === CONDENSATION_TYPE.OPPOSING) {
         instructions = this.languageConfig.instructionsOpposing;
       }
 
-      // Format comments and existing Arguments for the prompt
+      // Remove the longest comments if the batch's cumulative length > MAX_BATCH_CHARS
+      let commentsCharSum = commentBatch.reduce((sum, comment) => sum + comment.length, 0);
+      while (commentsCharSum > MAX_BATCH_CHARS) {
+        const longestCommentIndex = commentBatch.reduce((maxIndex, comment, currentIndex, arr) => 
+          comment.length > arr[maxIndex].length ? currentIndex : maxIndex
+        , 0);
+        
+        // Remove the longest comment
+        commentBatch.splice(longestCommentIndex, 1);
+        
+        // Recalculate sum
+        commentsCharSum = commentBatch.reduce((sum, comment) => sum + comment.length, 0);
+      }
+
+      /** Comments formatted for the prompt */
       const commentsText = commentBatch
         .map((comment, i) => `${this.languageConfig.inputCommentPrefix} ${i + 1}: ${comment}`)
         .join('\n');
 
-      // Format existing Arguments for the prompt
+      /** Existing Arguments formatted for the prompt */
       const existingArgsText = existingArgs
         .map((arg, i) => `${this.languageConfig.existingArgumentPrefix} ${i + 1}: ${arg.argument}`)
         .join('\n');
 
-      // Construct the prompt
-      let prompt = this.MAP_PROMPT_TEMPLATE
+      /** Prompt for the current batch */
+      let prompt = this.mapPromptTemplate
         .replace('{instructions}', instructions)
         .replace('{existingArguments}', existingArgs.length ? existingArgsText : '')
-        .replace('{comments}', commentsText)
+        .replace('{comments}', commentsText);
 
       // Add prompt instructions at the end (now only for opposing condensation, because it's the hardest one for LLMs)
-      if (condensationType === CondensationType.OPPOSING) {
+      if (condensationType === CONDENSATION_TYPE.OPPOSING) {
         prompt += this.languageConfig.opposingReminder;
       }
 
       // Set the topic last, because it may have references in different sub-sections of the prompt
       prompt = prompt.replace(/{topic}/g, topic);
 
-      // Validate prompt length
-      const promptLength = prompt.length;
-      if (promptLength > this.MAX_PROMPT_LENGTH) {
-        throw new ArgumentCondensationError(
-          `Total prompt length (${promptLength}) exceeds maximum of ${this.MAX_PROMPT_LENGTH} characters. Please reduce the number and/or the length of the comments.`
-        );
-      }
-
-      // Set up for starting LLM calls
+      /** Maximum number of retries for LLM calls */
       const maxRetries = 3;
-      let lastError: Error | null = null; // Throw this if k (maxRetries) LLM calls fail
+      /** Last error to be thrown if k (maxRetries) LLM calls fail */
+      let lastError: Error | undefined = undefined; 
 
       // Try to generate a response from the LLM
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -222,10 +242,10 @@ export class Condenser {
           // Generate response from the LLM
           const response = await this.llmProvider.generate({
             messages: [new Message({ role: 'user', content: prompt })],
-            temperature: 1
+            temperature: 0 // 0 is most deterministic, best for factual output
           });
 
-          // Parse Arguments from response
+          /** Parsed Arguments from LLM response */
           const newArgStrings = this.parser.parseArguments(response.content, topic);
 
           // Return the new Argument objects
@@ -258,39 +278,39 @@ export class Condenser {
    * @private
    */
   private async condenseArgumentArray(argumentArray: Argument[], topic: string, condensationType: CondensationType): Promise<Argument[]> {
-    // Get instructions for the current condensation type
+    /** Instructions for the current condensation type */
     let instructions = this.languageConfig.instructionsGeneral;
-    if (condensationType === CondensationType.SUPPORTING) {
+    if (condensationType === CONDENSATION_TYPE.SUPPORTING) {
       instructions = this.languageConfig.reduceInstructionsSupporting;
-    } else if (condensationType === CondensationType.OPPOSING) {
+    } else if (condensationType === CONDENSATION_TYPE.OPPOSING) {
       instructions = this.languageConfig.reduceInstructionsOpposing;
     }
 
-    // Format Arguments without indices
+    /** Formatted Arguments without "1:", "2:", etc. index prefixes */
     const formattedArgs = argumentArray.map(arg => {
-      return arg.argument.replace(/^\s*\d+\s*:\s*/, ''); // Also removes prefix indices like "1:"
+      return arg.argument.replace(/^\s*\d+\s*:\s*/, '');
     }).join('\n');
 
-    // Construct the prompt
-    let prompt = this.RECURSIVE_PROMPT_TEMPLATE
+    /** Prompt for the current batch */
+    let prompt = this.recursivePromptTemplate
       .replace('{instructions}', instructions)
       .replace('{existingArguments}', formattedArgs);
 
     // Add prompt instructions for opposing condensation, because it's the hardest one for LLMs
-    if (condensationType === CondensationType.OPPOSING) {
+    if (condensationType === CONDENSATION_TYPE.OPPOSING) {
       prompt += this.languageConfig.opposingReminder;
     }
 
     // Set the topic in the prompt last, because it may have references in different places in the prompt
     prompt = prompt.replace(/{topic}/g, topic);
 
-    // Get the response from the LLM
+    /** Response from the LLM */
     const response = await this.llmProvider.generate({
       messages: [new Message({ role: 'user', content: prompt })],
       temperature: 1
     });
 
-    // Parse the LLM response to get a new array of Arguments
+    /** Array of parsed Arguments from LLM response */
     const newArgs = this.parser.parseArgumentCondensation(response.content, topic)
 
     // Logging (for debugging)
@@ -320,7 +340,7 @@ export class Condenser {
     console.log(`    Processing ${argumentArrays.length} Argument groups (will continue pair-wise until one array remains, e.g. 4 --> 2 --> 1)`);
     console.log('--------------------------------');
 
-    // Initialize the array to be populated by Argument arrays
+    /** Array to populate with Argument arrays */
     const reducedArrays: Argument[][] = [];
     
     // Process pairs of Argument arrays to create a single, more concise array
@@ -334,8 +354,10 @@ export class Condenser {
         continue;
       }
 
-      // Combine and condense two arrays
+      /** Two Argument arrays coalesced into one */
       const combinedArgs = [...array1, ...array2];
+
+      /** Condensed Argument array from the two coalesced arrays */
       const condensedArgs = await this.condenseArgumentArray(combinedArgs, topic, condensationType);
 
       // Add the condensed array to the arrays of arrays
