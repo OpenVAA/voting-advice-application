@@ -1,27 +1,29 @@
 {
-  "name": "@openvaa/argument-condensation",
-  "version": "0.0.1",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "private": true,
+  "name": "@openvaa/argument-condensation",
+  "version": "0.1.0",
   "scripts": {
-    "build": "tsc",
-    "test": "jest",
-    "lint": "eslint src/**/*.ts",
-    "dev": "ts-node -r tsconfig-paths/register src/index.ts"
+    "package:cjs": "mkdir -p ./build/cjs/ && echo '{ \"type\": \"commonjs\" }' > ./build/cjs/package.json",
+    "package:esm": "mkdir -p ./build/esm/ && echo '{ \"type\": \"module\" }' > ./build/esm/package.json",
+    "build:cjs": "yarn package:cjs && yarn tsc --build tsconfig.cjs.json",
+    "build:esm": "yarn package:esm && yarn tsc --build tsconfig.esm.json",
+    "build": "yarn build:cjs && yarn build:esm",
+    "test": "vitest run",
+    "test:watch": "vitest watch"
   },
-  "dependencies": {
-    "@openvaa/llm": "workspace:^"
+  "main": "./build/cjs/index.js",
+  "module": "./build/esm/index.js",
+  "exports": {
+    "import": "./build/esm/index.js",
+    "require": "./build/cjs/index.js"
   },
   "devDependencies": {
     "@openvaa/shared-config": "workspace:^",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.24",
-    "dotenv": "^16.0.3",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.1.2",
-    "ts-node": "^10.9.1",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.3.3"
+    "tsc-esm-fix": "^3.1.2",
+    "typescript": "^5.3.3",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@openvaa/llm": "workspace:^"
   }
 }
