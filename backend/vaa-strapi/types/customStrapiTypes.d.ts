@@ -37,5 +37,4 @@ export type StrapiRole = {
   type: string;
 };
 
-
 type RequestContext = ReturnType<typeof strapi.requestContext.get>;

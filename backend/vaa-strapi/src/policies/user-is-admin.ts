@@ -1,4 +1,4 @@
-import { StrapiContext } from '../../types/customStrapiTypes'
+import { StrapiContext } from '../../types/customStrapiTypes';
 import { warn } from '../util/logger';
 
 /**

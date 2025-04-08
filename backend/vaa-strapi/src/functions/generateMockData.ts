@@ -260,7 +260,6 @@ async function createStrapiAdmin() {
     };
 
     await strapi.service('admin::user').create(params);
-
   }
 }
 

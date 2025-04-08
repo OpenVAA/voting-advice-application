@@ -7,22 +7,30 @@ import { StrapiContext } from '../../../../types/customStrapiTypes';
 import { generateQuestionInfo } from '../../../functions/generateQuestionInfo';
 
 export default factories.createCoreController('api::question.question', () => ({
-  async generateInfo({ response, params }: StrapiContext) {
+  async generateInfo(ctx: StrapiContext) {
     try {
-      await generateQuestionInfo(params.id);
-
-      response.status = 200;
-      response.body = {
-        type: 'success'
-      };
+      await handleGenerateInfo(ctx);
     } catch (error) {
       console.error('Error generating question info:', error);
-
-      response.status = 400;
-      response.body = {
+      ctx.response.status = 400;
+      ctx.response.body = {
         type: 'failure',
         error: error.message
       };
+      return;
     }
+    ctx.response.status = 200;
+    ctx.response.body = {
+      type: 'success'
+    };
   }
 }));
+
+async function handleGenerateInfo(ctx: StrapiContext) {
+  // Get array of Id:s from request body
+  const data = ctx.request?.body.data;
+  const generatedInfo = await generateQuestionInfo(data.ids);
+  if (generatedInfo.type !== 'success') {
+    throw new Error('Failed to generate question info');
+  }
+}
