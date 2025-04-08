@@ -9,6 +9,7 @@ import type {
   StrapiConstituencyData,
   StrapiConstituencyGroupData,
   StrapiElectionData,
+  StrapiFactorLoadingData,
   StrapiFeedbackData,
   StrapiImageData,
   StrapiLoginData,
@@ -51,7 +52,8 @@ export const STRAPI_API: Record<keyof StrapiApiReturnType, string> = {
   upload: 'api/upload',
   updateAnswers: 'api/candidate/:id/update-answers',
   // AdminWriter
-  generateQuestionInfo: 'api/questions/generateInfo'
+  generateQuestionInfo: 'api/questions/generateInfo',
+  factorLoadings: 'api/factor-loadings'
 } as const;
 
 export type StrapiApi = keyof StrapiApiReturnType;
@@ -90,6 +92,7 @@ export type StrapiApiReturnType = {
   updateAnswers: StrapiUpdateCandidateReturnData;
   // AdminWriter
   generateQuestionInfo: DataApiActionResult;
+  factorLoadings: Array<StrapiFactorLoadingData>;
 };
 
 /**

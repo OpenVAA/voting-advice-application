@@ -11,11 +11,8 @@ export function parseQuestionInfoSections(
   if (data && typeof data === 'object' && 'infoSections' in data && Array.isArray(data.infoSections)) {
     for (const value of data.infoSections) {
       if (!value || typeof value !== 'object') continue;
-      const { title, content, visible } = value as {
-        content?: LocalizedString;
-        title?: LocalizedString;
-        visible?: boolean;
-      };
+      const { title, content, visible } = value;
+
       if (title && content) {
         out.push({
           title: translate(title, locale),

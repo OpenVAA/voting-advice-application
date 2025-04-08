@@ -28,20 +28,24 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
 -->
 
 <script lang="ts">
+  import { getCustomData, type TermDefinition } from '@openvaa/app-shared';
   import { Election } from '@openvaa/data';
   import { type Readable, readable } from 'svelte/store';
   import { CategoryTag } from '$lib/components/categoryTag';
   import { ElectionTag } from '$lib/components/electionTag';
   import { HeadingGroup, PreHeading } from '$lib/components/headingGroup';
+  import { Term } from '$lib/components/term';
   import { getAppContext } from '$lib/contexts/app';
   import { getCandidateContext } from '$lib/contexts/candidate';
   import { getVoterContext } from '$lib/contexts/voter';
   import { concatClass } from '$lib/utils/components';
   import { getElectionsToShow } from '$lib/utils/questions';
+  import { escapeRegExp } from '$lib/utils/regexp';
   import type { QuestionBlock } from '$lib/contexts/utils/questionBlockStore.type';
   import type { QuestionHeadingProps } from './QuestionHeading.type';
 
   type $$Props = QuestionHeadingProps;
+  type TitlePart = { text?: string; term?: string; explanation?: string; title?: string };
 
   export let question: $$Props['question'];
   export let questionBlocks: $$Props['questionBlocks'] = undefined;
@@ -68,8 +72,42 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
   let blockWithStats: { block: QuestionBlock; index: number; indexInBlock: number; indexOfBlock: number } | undefined;
   let numQuestions: number | undefined;
 
+  $: customData = getCustomData(question);
+  $: titleParts = addTermsToTitle(customData.terms);
   $: blockWithStats = questionBlocks?.getByQuestion(question);
   $: numQuestions = questionBlocks?.questions.length;
+
+  ////////////////////////////////////////////////////////////////////
+  // Functions
+  ////////////////////////////////////////////////////////////////////
+
+  function addTermsToTitle(terms?: Array<TermDefinition>) {
+    const out: Array<TitlePart> = [];
+
+    // Sort from longest to shortest, so we cover cases where one terms is a substring of another, and escape regex characters
+    // NB. It'd be tempting to add \b word boundaries but, alas, that'd result in errors in, e.g., Japanese
+    const triggers = terms
+      ?.flatMap((t) => t.triggers ?? [])
+      ?.sort((a, b) => b.length - a.length)
+      .map(escapeRegExp);
+
+    if (!triggers) return out;
+
+    const re = new RegExp(`(${triggers.join('|')})`);
+    const parts = question.text.split(re); // Splitting with a regexp that has a match group includes the match group in the results
+
+    parts.forEach((part) => {
+      const term = terms?.find((t) => t.triggers?.includes(part));
+
+      if (term) {
+        out.push({ term: part, explanation: term.content, title: term.title });
+      } else {
+        out.push({ text: part });
+      }
+    });
+
+    return out;
+  }
 </script>
 
 <HeadingGroup {...concatClass($$restProps, 'relative')}>
@@ -90,7 +128,16 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
       <span class="text-secondary">{blockWithStats.index + 1}/{numQuestions}</span>
     {/if}
   </PreHeading>
-
   <!-- class={videoProps ? 'my-0 text-lg sm:my-md sm:text-xl' : ''} -->
-  <h1>{question.text}</h1>
+  <h1>
+    {#each titleParts as { text, term, explanation, title }}
+      {#if text}
+        {text}
+      {:else if term && explanation}
+        <Term definition="{title}: {explanation}">
+          {term}
+        </Term>
+      {/if}
+    {/each}
+  </h1>
 </HeadingGroup>

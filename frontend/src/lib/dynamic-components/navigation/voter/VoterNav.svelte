@@ -44,6 +44,7 @@ A template part that outputs the navigation menu for the Voter App for use in `L
     selectedElections: elections,
     selectedConstituencies: constituencies,
     surveyLink,
+    selectedQuestionBlocks,
     t
   } = getVoterContext();
 </script>
@@ -88,6 +89,13 @@ A template part that outputs the navigation menu for the Voter App for use in `L
   </NavGroup>
   <NavGroup>
     <NavItem on:click={() => resetVoterData()} icon="close" text={$t('common.resetAnswers')} />
+    {#if $appSettings.questions.dynamicOrdering?.enabled}
+      <NavItem
+        disabled={$selectedQuestionBlocks.shownQuestionIds.length === 0}
+        on:click={() => $selectedQuestionBlocks.resetShownQuestionIds()}
+        icon="close"
+        text={$t('common.resetShownQuestions')} />
+    {/if}
   </NavGroup>
   <NavGroup>
     <NavItem href={$getRoute('Info')} icon="election" text={$t('info.title')} />

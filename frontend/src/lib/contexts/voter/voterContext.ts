@@ -7,9 +7,11 @@ import { logDebugError } from '$lib/utils/logger';
 import { getImpliedConstituencyIds, getImpliedElectionIds } from '$lib/utils/route';
 import { answerStore } from './answerStore';
 import { countAnswers } from './countAnswers';
+import { createFactorLoadingStore } from './factorLoadings/factorLoadingStore';
 import { filterStore } from './filters/filterStore';
 import { matchStore } from './matchStore';
 import { nominationAndQuestionStore } from './nominationAndQuestionStore';
+import { QuestionOrderer } from './questionOrderer';
 import { getAppContext } from '../../contexts/app';
 import { dataCollectionStore } from '../utils/dataCollectionStore';
 import { paramStore } from '../utils/paramStore';
@@ -41,6 +43,7 @@ export function initVoterContext(): VoterContext {
 
   const appContext = getAppContext();
   const { appSettings, dataRoot, getRoute, locale, startEvent, t } = appContext;
+  const { setFactorLoadingData, factorLoadingStore } = createFactorLoadingStore();
 
   ////////////////////////////////////////////////////////////
   // Elections and Constituencies
@@ -108,6 +111,15 @@ export function initVoterContext(): VoterContext {
   });
 
   ////////////////////////////////////////////////////////////
+  // FactorLoadings
+  ////////////////////////////////////////////////////////////
+
+  const factorLoadings = factorLoadingStore({
+    dataRoot,
+    selectedElections
+  });
+
+  ////////////////////////////////////////////////////////////
   // Questions and QuestionCategories
   ////////////////////////////////////////////////////////////
 
@@ -135,13 +147,21 @@ export function initVoterContext(): VoterContext {
   const selectedQuestionCategoryIds = sessionStorageWritable('voterContext-selectedCategoryIds', new Array<Id>());
 
   const firstQuestionId = sessionStorageWritable('voterContext-firstQuestionId', null as Id | null);
-
+ 
+  const questionOrderer = derived(
+    [factorLoadings, opinionQuestions],
+    ([factorLoadings, opinionQuestions]) => {
+      return new QuestionOrderer(opinionQuestions, factorLoadings);
+    }
+  );
+  
   const selectedQuestionBlocks = questionBlockStore({
     firstQuestionId,
     opinionQuestionCategories,
     selectedQuestionCategoryIds,
     selectedElections,
-    selectedConstituencies
+    selectedConstituencies,
+    questionOrderer
   });
 
   ////////////////////////////////////////////////////////////
@@ -224,6 +244,9 @@ export function initVoterContext(): VoterContext {
     constituenciesSelectable,
     electionsSelectable,
     entityFilters,
+    factorLoadings,
+    setFactorLoadingData,
+    questionOrderer,
     firstQuestionId,
     infoQuestionCategories,
     infoQuestions,
