@@ -14,7 +14,7 @@ import {
   type LocalizedString,
   type QuestionTypeSettings
 } from '@openvaa/app-shared';
-import { LLMResponse, OpenAIProvider } from '@openvaa/llm';
+import { OpenAIProvider } from '@openvaa/llm';
 import crypto from 'crypto';
 import { loadDefaultAppSettings } from './loadDefaultAppSettings';
 import mockCandidateForTesting from './mockData/mockCandidateForTesting.json';
@@ -32,6 +32,7 @@ import {
 import { API } from '../util/api';
 import { getDynamicTranslations } from '../util/appCustomization';
 import { dropAllCollections } from '../util/drop';
+import type { LLMResponse } from '@openvaa/llm';
 import type { Data } from '@strapi/strapi';
 
 /**
@@ -260,7 +261,6 @@ async function createStrapiAdmin() {
     };
 
     await strapi.service('admin::user').create(params);
-
   }
 }
 

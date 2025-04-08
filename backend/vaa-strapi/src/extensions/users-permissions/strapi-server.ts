@@ -3,16 +3,17 @@ import { errors } from '@strapi/utils';
 import fs from 'fs';
 import * as candidate from './controllers/candidate';
 import type { Core, UID } from '@strapi/strapi';
-import { StrapiContext } from '../../../types/customStrapiTypes';
+import { StrapiContext, StrapiRole } from '../../../types/customStrapiTypes';
 import { frontendUrl } from '../../constants';
 
 const { ValidationError } = errors;
 
 // NB! Before adding permissions here, please make sure you've implemented the appropriate access control for the resource
 // Make sure to allow the user access to all publicly available data
+type RoleType = StrapiRole['type'];
 const defaultPermissions: Array<{
   action: UID.Controller;
-  roleTypes: ('public' | 'authenticated' | 'admin')[];
+  roleTypes: RoleType[];
 }> = [
   { action: 'plugin::users-permissions.candidate.check', roleTypes: ['public'] },
   { action: 'plugin::users-permissions.candidate.register', roleTypes: ['public'] },
@@ -73,7 +74,7 @@ module.exports = async (plugin: Core.Plugin) => {
       await strapi.query('plugin::users-permissions.role').create({
         data: {
           name: 'Admin',
-          description: 'Role for admin that can access LLM-admin-ui.',
+          description: 'Role for admins who can access the frontend Admin App.',
           type: 'admin'
         }
       });

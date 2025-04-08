@@ -11,7 +11,7 @@ const ADMIN_CREDENTIALS = {
 describe('Strapi Admin Role API Tests', async () => {
   // Store the JWT token for use in all tests
   let jwt = '';
-  let testIds: Array<number>;
+  let testIds: Array<string>;
 
   // Authenticate before running tests
   beforeAll(async () => {
@@ -42,8 +42,8 @@ describe('Strapi Admin Role API Tests', async () => {
           Authorization: `Bearer ${jwt}`
         }
       });
-      const questions = (questionsResponse.data.data || []) as Array<{ id: number }>;
-      testIds = questions.map((question) => question.id).slice(0, 2);
+      const questions = (questionsResponse.data.data || []) as Array<{ documentId: string }>;
+      testIds = questions.map((question) => question.documentId).slice(0, 2);
     } catch (error) {
       console.error('Authentication failed:', error.response?.data || error.message);
       throw new Error('Failed to authenticate: ' + (error.response?.data?.error?.message || error.message));
@@ -104,6 +104,56 @@ describe('Strapi Admin Role API Tests', async () => {
     } catch (error) {
       console.error('API call failed:', error.response?.data || error.message);
       throw error;
+    }
+  }, 0);
+
+  it('should fail when given a request in a incompatible type', async () => {
+    try {
+      await axios.post(
+        `${STRAPI_URL}/api/questions/generateInfo`,
+        {
+          data: {
+            ids: 1234556
+          }
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${jwt}`
+          }
+        }
+      );
+
+      // Request should fail so if we get here the test shoud fail
+      expect(true).toBe(false);
+    } catch (error) {
+      expect(error.response.status).toBe(400);
+      expect(error.response.data).toHaveProperty('type', 'failure');
+    }
+  }, 0);
+
+  it('should fail when given a request for a question id that does not exist', async () => {
+    try {
+      await axios.post(
+        `${STRAPI_URL}/api/questions/generateInfo`,
+        {
+          data: {
+            ids: ['abcdefghijklmn']
+          }
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${jwt}`
+          }
+        }
+      );
+
+      // Request should fail so if we get here the test shoud fail
+      expect(true).toBe(false);
+    } catch (error) {
+      expect(error.response.status).toBe(400);
+      expect(error.response.data).toHaveProperty('type', 'failure');
     }
   }, 0);
 

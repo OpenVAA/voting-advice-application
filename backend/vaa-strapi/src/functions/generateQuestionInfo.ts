@@ -3,60 +3,38 @@ import { LLMResponse, OpenAIProvider } from '@openvaa/llm';
 import { LLM_OPENAI_API_KEY } from '../constants';
 import { API } from '../util/api';
 
-export async function generateQuestionInfo(questionId: number) {
+/*
+ *
+ * Generate info for questions using OpenAI API. Generates questions for all whose ids are in the questionIds
+ * array. An empty array generates info for all questions. The information is generated according to the prompt template in
+ * /packages/shared/src/settings/dynamicSettings.ts.
+ *
+ */
+
+export async function generateQuestionInfo(questionIds: Array<string>): Promise<{ type: 'success' | 'failure' }> {
   if (!LLM_OPENAI_API_KEY) {
     throw new Error('LLM_OPENAI_API_KEY is required for generating LLM summaries');
   }
-
   try {
-    const question = await strapi.db.query(API.Question).findOne({
-      where: { id: questionId }
-    });
-    // Fail if there is no question with given id
-    if (!question) throw new Error(`No question with given id ${questionId} exists`);
-    const res: LLMResponse = await new OpenAIProvider({ apiKey: LLM_OPENAI_API_KEY }).generate({
-      messages: [
-        {
-          role: 'system',
-          content: 'message.content'
-        },
-        {
-          role: 'user',
-          content: dynamicSettings.llm.prompt + JSON.stringify(question?.text) + dynamicSettings.llm.answerFormat
+    let questions = [];
+    if (questionIds.length == 0) {
+      questions = await strapi.documents(API.Question).findMany({
+        limit: 9999 // Arbitrary to get all questions
+      });
+    } else {
+      questions = await strapi.documents(API.Question).findMany({
+        filters: {
+          documentId: {
+            $in: questionIds
+          }
         }
-      ]
-    });
-
-    const generatedCustomData = JSON.parse(res.content);
-
-    // Replace existing data with new generated data
-    const existingCustomData = question.customData || {};
-    const mergedCustomData = {
-      ...existingCustomData,
-      infoSections: generatedCustomData.infoSections || existingCustomData.infoSections || [],
-      terms: generatedCustomData.terms || existingCustomData.terms || []
-    };
-
-    await strapi.db.query(API.Question).update({
-      where: { id: question.id },
-      data: {
-        customData: mergedCustomData
+      });
+      if (questions.length !== questionIds.length) {
+        throw new Error('Number of questions found is different from number of questions given');
       }
-    });
-  } catch (error) {
-    console.error('Failed to generate LLM summary, ', error);
-    throw new Error(error);
-  }
-}
-
-export async function generateQuestionInfoForAllQuestions() {
-  const questions = await strapi.db.query(API.Question).findMany({});
-  for (const question of questions) {
-    if (!LLM_OPENAI_API_KEY) {
-      throw new Error('LLM_OPENAI_API_KEY is required for generating mock LLM summaries');
     }
 
-    try {
+    for (const question of questions) {
       const res: LLMResponse = await new OpenAIProvider({ apiKey: LLM_OPENAI_API_KEY }).generate({
         messages: [
           {
@@ -73,21 +51,23 @@ export async function generateQuestionInfoForAllQuestions() {
       const generatedCustomData = JSON.parse(res.content);
 
       // Replace existing data with new generated data
-      const existingCustomData = question.customData || {};
+      const existingCustomData = question.customData ?? {};
       const mergedCustomData = {
         ...existingCustomData,
-        infoSections: generatedCustomData.infoSections || existingCustomData.infoSections || []
-        // terms here
+        infoSections: generatedCustomData.infoSections ?? existingCustomData.infoSections ?? [],
+        terms: generatedCustomData.terms ?? existingCustomData.terms ?? []
       };
 
-      await strapi.db.query(API.Question).update({
-        where: { id: question.id },
+      await strapi.documents('api::question.question').update({
+        documentId: question.documentId,
         data: {
           customData: mergedCustomData
         }
       });
-    } catch (error) {
-      console.error('Failed to generate LLM summary, ', error);
     }
+    return { type: 'success' };
+  } catch (error) {
+    console.error('Failed to generate LLM summary, ', error);
+    return { type: 'failure' };
   }
 }

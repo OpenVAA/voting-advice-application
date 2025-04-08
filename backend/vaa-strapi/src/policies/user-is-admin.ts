@@ -1,4 +1,4 @@
-import { StrapiContext } from '../../types/customStrapiTypes'
+import { StrapiContext } from '../../types/customStrapiTypes';
 import { warn } from '../util/logger';
 
 /**
@@ -6,8 +6,8 @@ import { warn } from '../util/logger';
  * NB! Admin role is different from Strapi admin role
  */
 export default function isAdmin(ctx: StrapiContext): boolean {
-  const userIsAuthenticated = ctx.state.isAuthenticated;
-  const role = ctx.state.user.role.type;
+  const userIsAuthenticated = ctx.state?.isAuthenticated;
+  const role = ctx.state?.user?.role?.type;
   if (role === 'admin' && userIsAuthenticated) {
     return true;
   }
