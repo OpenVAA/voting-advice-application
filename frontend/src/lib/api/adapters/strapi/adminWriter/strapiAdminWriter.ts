@@ -16,9 +16,23 @@ export class StrapiAdminWriter extends strapiAdapterMixin(UniversalAdminWriter) 
       },
       authToken
     });
+    return { type };
+  }
 
-    return {
-      type
-    };
+  protected async _computeFactorLoadings(): DWReturnType<DataApiActionResult> {
+    try {
+      const response = await this.apiPost({
+        endpoint: 'computeFactorLoadings'
+      });
+
+      return {
+        type: response?.type || 'success'
+      };
+    } catch (error) {
+      console.error('Error computing factor loadings:', error);
+      return {
+        type: 'failure'
+      };
+    }
   }
 }

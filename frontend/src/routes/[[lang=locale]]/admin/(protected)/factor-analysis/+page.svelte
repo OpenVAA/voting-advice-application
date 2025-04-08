@@ -23,14 +23,21 @@ Page for computing and managing factor analysis for elections
   let error: string | null = null;
 
   const handleSubmit = () => {
+    console.log('Form submission started');
     isComputing = true;
     error = null;
 
-    return async ({ result }: { result: { type: string } }) => {
+    return async ({ result, update }: { result: { type: string }; update: () => void }) => {
+      console.log('Form submission completed, result:', result);
       isComputing = false;
+
       if (result.type === 'error') {
         error = 'Failed to compute factors';
+      } else {
+        console.log('Factors computed successfully');
       }
+
+      await update();
     };
   };
 </script>
@@ -99,14 +106,7 @@ Page for computing and managing factor analysis for elections
           text={isComputing ? 'Computing factors...' : 'Compute factors'}
           type="submit"
           variant="main"
-          disabled={isComputing || !Object.values(selectedElections).some(Boolean)}
-          on:click={(e) => {
-            e.preventDefault();
-            isComputing = true;
-            setTimeout(() => {
-              isComputing = false;
-            }, 3000);
-          }} />
+          disabled={isComputing || !Object.values(selectedElections).some(Boolean)} />
 
         {#if isComputing}
           <p class="text-sm text-neutral">This may take some time.</p>

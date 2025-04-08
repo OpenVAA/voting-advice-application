@@ -13,5 +13,11 @@ export abstract class UniversalAdminWriter extends UniversalAdapter implements A
     return this._generateQuestionInfo(data);
   }
 
+  computeFactorLoadings(): DWReturnType<DataApiActionResult> {
+    return this._computeFactorLoadings();
+  }
+
   protected abstract _generateQuestionInfo(data: GenerateQuestionInfoOptionsData): DWReturnType<DataApiActionResult>;
+
+  protected abstract _computeFactorLoadings(): DWReturnType<DataApiActionResult>;
 }
