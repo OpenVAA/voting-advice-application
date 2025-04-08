@@ -53,7 +53,8 @@ export const STRAPI_API: Record<keyof StrapiApiReturnType, string> = {
   updateAnswers: 'api/candidate/:id/update-answers',
   // AdminWriter
   generateQuestionInfo: 'api/questions/generateInfo',
-  factorLoadings: 'api/factor-loadings'
+  factorLoadings: 'api/factor-loadings',
+  computeFactorLoadings: 'api/factor-loadings/compute'
 } as const;
 
 export type StrapiApi = keyof StrapiApiReturnType;
@@ -93,6 +94,7 @@ export type StrapiApiReturnType = {
   // AdminWriter
   generateQuestionInfo: DataApiActionResult;
   factorLoadings: Array<StrapiFactorLoadingData>;
+  computeFactorLoadings: DataApiActionResult;
 };
 
 /**

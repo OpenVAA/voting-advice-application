@@ -1,5 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
+import { adminWriter as adminWriterPromise } from '$lib/api/adminWriter';
 
 export const load: PageServerLoad = async ({ locals }) => {
   // Check if user is admin
@@ -9,36 +10,19 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-  default: async ({ request }) => {
-    const data = await request.formData();
-    const elections = {
-      parliamentary: data.get('parliamentary') === 'on',
-      municipal: data.get('municipal') === 'on',
-      mayoral: data.get('mayoral') === 'on'
-    };
-
-    if (!Object.values(elections).some(Boolean)) {
-      return fail(400, { message: 'No elections selected' });
-    }
-
+  default: async () => {
     try {
-      // TODO: Replace with actual factor analysis computation
-      const response = await fetch('/api/admin/factor-analysis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ elections })
-      });
+      // Get the admin writer and initialize it
+      const adminWriter = await adminWriterPromise;
+      adminWriter.init({ fetch });
 
-      if (!response.ok) {
-        return fail(500, { message: 'Failed to compute factors' });
-      }
+      // Call the compute factor loadings function
+      const result = await adminWriter.computeFactorLoadings();
 
-      return { success: true };
+      return result;
     } catch (error) {
       console.error('Factor analysis error:', error);
-      return fail(500, { message: 'Internal server error' });
+      return fail(500, { type: 'error', message: 'Internal server error' });
     }
   }
 };

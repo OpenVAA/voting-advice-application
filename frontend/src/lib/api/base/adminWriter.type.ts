@@ -13,6 +13,13 @@ export interface AdminWriter<TType extends AdapterType = 'universal'> {
    * @throws Error on failure.
    */
   generateQuestionInfo: (data: GenerateQuestionInfoOptionsData) => DWReturnType<DataApiActionResult, TType>;
+
+  /**
+   * Compute factor loadings for candidate and party answers.
+   * @returns A `Promise` resolving to a `Response`.
+   * @throws Error on failure.
+   */
+  computeFactorLoadings: () => DWReturnType<DataApiActionResult, TType>;
 }
 
 /**
