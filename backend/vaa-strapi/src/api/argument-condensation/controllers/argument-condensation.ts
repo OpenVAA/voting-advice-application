@@ -129,25 +129,25 @@ export default {
             processedResults = {
               pros:
                 groupedAnswers.presumedPros.length > 0
-                  ? await processComments(
+                  ? await processComments({
                       llmProvider,
-                      LanguageConfigs.Finnish,
-                      groupedAnswers.presumedPros,
-                      question.text?.fi || 'Unknown Topic',
-                      30,
-                      CONDENSATION_TYPE.SUPPORTING
-                    )
+                      languageConfig: LanguageConfigs.Finnish,
+                      comments: groupedAnswers.presumedPros,
+                      topic: question.text?.fi || '',
+                      batchSize: 30,
+                      condensationType: CONDENSATION_TYPE.SUPPORTING
+                    })
                   : [],
               cons:
                 groupedAnswers.presumedCons.length > 0
-                  ? await processComments(
+                  ? await processComments({
                       llmProvider,
-                      LanguageConfigs.Finnish,
-                      groupedAnswers.presumedCons,
-                      question.text?.fi || 'Unknown Topic',
-                      30,
-                      CONDENSATION_TYPE.OPPOSING
-                    )
+                      languageConfig: LanguageConfigs.Finnish,
+                      comments: groupedAnswers.presumedCons,
+                      topic: question.text?.fi || '',
+                      batchSize: 30,
+                      condensationType: CONDENSATION_TYPE.OPPOSING
+                    })
                   : []
             };
           } else if (questionType === 'Categorical') {
@@ -156,14 +156,14 @@ export default {
               if (comments.length > 0) {
                 return {
                   ...(await acc),
-                  [category]: await processComments(
+                  [category]: await processComments({
                     llmProvider,
-                    LanguageConfigs.Finnish,
+                    languageConfig: LanguageConfigs.Finnish,
                     comments,
-                    `${question.text?.fi || 'Unknown Topic'} - ${category}`,
-                    30,
-                    CONDENSATION_TYPE.GENERAL
-                  )
+                    topic: `${question.text?.fi || ''} - ${category}`,
+                    batchSize: 30,
+                    condensationType: CONDENSATION_TYPE.GENERAL
+                  })
                 };
               }
               return acc;

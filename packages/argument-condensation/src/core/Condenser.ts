@@ -29,7 +29,7 @@ export class Condenser {
    * @param languageConfig - Language-specific configuration for prompts
    * @throws {ArgumentCondensationError} If required parameters are missing
    */
-  constructor(llmProvider: LLMProvider, languageConfig: LanguageConfig) {
+  constructor({ llmProvider, languageConfig }: { llmProvider: LLMProvider, languageConfig: LanguageConfig }) {
     if (!llmProvider) {
       throw new ArgumentCondensationError('LLM provider is required');
     }
@@ -82,11 +82,23 @@ export class Condenser {
    * @throws {ArgumentCondensationError} If input validation fails
    * @throws {LLMError} If language model processing fails
    */
-  async processComments(comments: string[], topic: string, batchSize: number = 30, condensationType: CondensationType = CONDENSATION_TYPE.GENERAL, batchesPerArray: number = 3): Promise<Argument[]> {
+  async processComments({
+    comments,
+    topic,
+    batchSize = 30,
+    condensationType = CONDENSATION_TYPE.GENERAL,
+    batchesPerArray = 3
+  }: {
+    comments: string[],
+    topic: string,
+    batchSize?: number,
+    condensationType?: CondensationType,
+    batchesPerArray?: number
+  }): Promise<Argument[]> {
     try {
       // Validate non-empty comments and truncate those exceeding MAX_COMMENT_LENGTH
       const validatedComments = comments
-        .filter(comment => comment.trim().length > 0)
+        .filter(comment => comment.trim() !== '')
         .map(comment => 
           comment.length > MAX_COMMENT_LENGTH 
             ? comment.substring(0, MAX_COMMENT_LENGTH) + '...'

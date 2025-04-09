@@ -1,5 +1,5 @@
 import { afterAll, describe, expect, test, beforeEach } from 'vitest';
-import { Condenser } from '../src/core/Condenser';
+import { Condenser } from '../src/core/condenser';
 import { LanguageConfigs } from '../src/languageOptions/configs';
 import { OpenAIProvider } from '@openvaa/llm';
 import { CONDENSATION_TYPE } from '../src/core/types/condensationType';
@@ -20,7 +20,7 @@ describe('Condenser', () => {
   let condenser: Condenser;
 
   beforeEach(() => {
-    condenser = new Condenser(llmProvider, LanguageConfigs.English);
+    condenser = new Condenser({llmProvider, languageConfig: LanguageConfigs.English});
   });
 
   test('should create a new Condenser instance', () => {
@@ -32,7 +32,7 @@ describe('Condenser', () => {
       'Increasing the minimum wage would help reduce poverty and inequality',
       'Higher minimum wages could force small businesses to lay off workers',
     ];
-    const result = await condenser.processComments(comments, 'Should the minimum wage be increased?');
+    const result = await condenser.processComments({comments, topic: 'Should the minimum wage be increased?'});
     expect(result).toBeDefined();
     expect(result.length).toBeGreaterThan(0);
   });
@@ -44,12 +44,7 @@ describe('Condenser', () => {
     const longComments = Array(100).fill(longComment);
     const topic = "Universal basic income";
 
-    const result = await condenser.processComments(
-      longComments,
-      topic,
-      100,
-      CONDENSATION_TYPE.GENERAL
-    );
+    const result = await condenser.processComments({comments: longComments, topic, batchSize: 100, condensationType: CONDENSATION_TYPE.GENERAL});
 
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
@@ -70,15 +65,15 @@ describe('Condenser Edge Cases', () => {
   let condenser: Condenser;
 
   beforeEach(() => {
-    condenser = new Condenser(llmProvider, LanguageConfigs.English);
+    condenser = new Condenser({llmProvider, languageConfig: LanguageConfigs.English});
   });
 
   test('should throw an error for empty comments array', async () => {
-    await expect(condenser.processComments([], 'test topic')).rejects.toThrow('Comments array cannot be empty');
+    await expect(condenser.processComments({comments: [], topic: 'test topic'})).rejects.toThrow('Comments array cannot be empty');
   });
 
   test('should throw error for empty topic', async () => {
-    await expect(condenser.processComments(['Example comment'], '')).rejects.toThrow('Topic cannot be empty');
+    await expect(condenser.processComments({comments: ['Example comment'], topic: ''})).rejects.toThrow('Topic cannot be empty');
   });
 
   test('should truncate comments exceeding maximum length', async () => {
@@ -86,7 +81,7 @@ describe('Condenser Edge Cases', () => {
     const longText = 'The benefits may be worth the risks in the realm of nuclear power.'.repeat(100);
     const comments = [longText];
     
-    const result = await condenser.processComments(comments, 'Nuclear power');
+    const result = await condenser.processComments({comments, topic: 'Nuclear power'});
     
     expect(result).toBeDefined();
     expect(result.length).toBeGreaterThan(0);
@@ -98,11 +93,7 @@ describe('Condenser Edge Cases', () => {
       'The risks of nuclear accidents are too high'
     ];
     
-    const result = await condenser.processComments(
-      comments,
-      'Nuclear power',
-      1 // batch size of 1
-    );
+    const result = await condenser.processComments({comments, topic: 'Nuclear power', batchSize: 1});
 
     expect(result).toBeDefined();
     expect(result.length).toBeGreaterThan(0);
@@ -115,7 +106,7 @@ describe('Condenser Edge Cases', () => {
     ];
 
     // Batch size larger than comments array
-    const result = await condenser.processComments(comments, 'Public transportation', 10);
+    const result = await condenser.processComments({comments, topic: 'Public transportation', batchSize: 10});
 
     expect(result).toBeDefined();
     expect(result.length).toBeGreaterThan(0);
@@ -123,7 +114,7 @@ describe('Condenser Edge Cases', () => {
 
   test('should handle whitespace-only comments', async () => {
     const comments = ['   ', '\n\t', 'Term limits would bring fresh perspectives to Congress', '  \n  '];
-    const result = await condenser.processComments(comments, 'Congressional term limits');
+    const result = await condenser.processComments({comments, topic: 'Congressional term limits'});
 
     expect(result).toBeDefined();
     expect(result.length).toBeGreaterThan(0);
