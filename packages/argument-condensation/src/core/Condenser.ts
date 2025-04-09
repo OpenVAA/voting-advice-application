@@ -1,7 +1,7 @@
 import { LLMProvider, Message } from '@openvaa/llm';
 import { Argument } from './types/argument';
-import { OutputParser } from './utils/outputParser';
-import { LanguageConfig } from './languageOptions/languageConfig.type';
+import { OutputParser } from '../utils/outputParser';
+import { LanguageConfig } from '../languageOptions/languageConfig.type';
 import { ArgumentCondensationError, LLMError } from './types/errors';
 import { CONDENSATION_TYPE, CondensationType } from './types/condensationType';
 

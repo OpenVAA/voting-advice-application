@@ -1,4 +1,4 @@
-import { Argument } from '../types/argument';
+import { Argument } from '../core/types/argument';
 import { LanguageConfig } from '../languageOptions/languageConfig.type';
 
 /**

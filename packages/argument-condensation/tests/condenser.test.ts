@@ -1,8 +1,8 @@
 import { afterAll, describe, expect, test, beforeEach } from 'vitest';
-import { Condenser } from '../src/Condenser';
+import { Condenser } from '../src/core/Condenser';
 import { LanguageConfigs } from '../src/languageOptions/configs';
 import { OpenAIProvider } from '@openvaa/llm';
-import { CONDENSATION_TYPE } from '../src/types/condensationType';
+import { CONDENSATION_TYPE } from '../src/core/types/condensationType';
 import path from 'path';
 import { config } from 'dotenv';
 
