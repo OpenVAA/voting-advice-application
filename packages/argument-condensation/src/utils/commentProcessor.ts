@@ -1,8 +1,8 @@
 import { Condenser } from '../Condenser';
-import { Argument } from '../types/Argument';
+import { Argument } from '../types/argument';
 import { LLMProvider } from '@openvaa/llm';
 import { LanguageConfig } from '../languageOptions/languageConfig.type';
-import { CONDENSATION_TYPE, CondensationType } from '../types/CondensationType';
+import { CONDENSATION_TYPE, CondensationType } from '../types/condensationType';
 
 /**
  * Process comments to extract Arguments

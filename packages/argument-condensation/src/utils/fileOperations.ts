@@ -1,4 +1,4 @@
-import { Argument } from '../types/Argument';
+import { Argument } from '../types/argument';
 
 /**
  * Exports condensed Arguments to multiple file formats

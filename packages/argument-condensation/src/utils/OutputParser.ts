@@ -1,4 +1,4 @@
-import { Argument } from '../types/Argument';
+import { Argument } from '../types/argument';
 import { LanguageConfig } from '../languageOptions/languageConfig.type';
 
 /**
@@ -102,9 +102,7 @@ export class OutputParser {
     const lines = output.split('\n');
 
     // Iterate over lines of the response
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      
+    for (const line of lines) {   
       // Check if the line starts with the correct Argument prefix 
       if (line.startsWith(argumentPrefix)) {
         /** Pure argument string with prefixes like "1:" removed */

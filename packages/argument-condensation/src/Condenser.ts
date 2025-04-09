@@ -1,9 +1,9 @@
 import { LLMProvider, Message } from '@openvaa/llm';
-import { Argument } from './types/Argument';
+import { Argument } from './types/argument';
 import { OutputParser } from './utils/outputParser';
 import { LanguageConfig } from './languageOptions/languageConfig.type';
-import { ArgumentCondensationError, LLMError } from './types/Errors';
-import { CONDENSATION_TYPE, CondensationType } from './types/CondensationType';
+import { ArgumentCondensationError, LLMError } from './types/errors';
+import { CONDENSATION_TYPE, CondensationType } from './types/condensationType';
 
 /** Maximum cumulative length of comments in a single batch */
 const MAX_BATCH_CHARS = 30000;

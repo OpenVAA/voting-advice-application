@@ -104,4 +104,4 @@ export const FINNISH_CONFIG: LanguageConfig = {
     },
     inputCommentPrefix: 'Kommentti',
     existingArgumentPrefix: 'Argumentti',
-}; 
+} as const;

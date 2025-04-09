@@ -31,4 +31,4 @@ export const ENGLISH_CONFIG: LanguageConfig = {
     },
     inputCommentPrefix: 'Comment',
     existingArgumentPrefix: 'Argument'
-};
+} as const;
