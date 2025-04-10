@@ -107,6 +107,56 @@ describe('Strapi Admin Role API Tests', async () => {
     }
   }, 0);
 
+  it('should fail when given a request in a incompatible type', async () => {
+    try {
+      await axios.post(
+        `${STRAPI_URL}/api/questions/generateInfo`,
+        {
+          data: {
+            ids: 'hugugugu'
+          }
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${jwt}`
+          }
+        }
+      );
+
+      // Request should fail so if we get here the test shoud fail
+      expect(true).toBe(false);
+    } catch (error) {
+      expect(error.response.status).toBe(400);
+      expect(error.response.data).toHaveProperty('type', 'failure');
+    }
+  }, 0);
+
+  it('should fail when given a request for a question id that does not exist', async () => {
+    try {
+      await axios.post(
+        `${STRAPI_URL}/api/questions/generateInfo`,
+        {
+          data: {
+            ids: [100000000000000]
+          }
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${jwt}`
+          }
+        }
+      );
+
+      // Request should fail so if we get here the test shoud fail
+      expect(true).toBe(false);
+    } catch (error) {
+      expect(error.response.status).toBe(400);
+      expect(error.response.data).toHaveProperty('type', 'failure');
+    }
+  }, 0);
+
   /**
     * This test takes a long time to run and generates info for all existing questions so only
     *run it when needed.

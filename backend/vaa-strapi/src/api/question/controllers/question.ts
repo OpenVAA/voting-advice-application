@@ -29,7 +29,10 @@ export default factories.createCoreController('api::question.question', () => ({
 async function handleGenerateInfo(ctx: StrapiContext) {
   // Get array of Id:s from request body
   const data = ctx.request?.body.data;
-  const generatedInfo = await generateQuestionInfo(data.ids);
+  // What we get is unknown
+  // It needs to be either an empty array or number[]
+  const array: Array<number> = data.ids;
+  const generatedInfo = await generateQuestionInfo(array);
   if (generatedInfo.type !== 'success') {
     throw new Error('Failed to generate question info');
   }

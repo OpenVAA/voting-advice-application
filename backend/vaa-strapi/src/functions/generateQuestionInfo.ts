@@ -21,6 +21,9 @@ export async function generateQuestionInfo(questionIds?: Array<number>): Promise
           }
         }
       });
+      if (questions.length != questionIds.length) {
+        throw new Error('Number of questions found is different from number of questions given');
+      }
     }
 
     for (const question of questions) {
