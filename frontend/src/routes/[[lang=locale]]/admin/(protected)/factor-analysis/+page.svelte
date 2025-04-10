@@ -20,8 +20,12 @@ Page for computing and managing factor analysis for elections
   // Track selected elections
   let selectedElections: Record<number, boolean> = {};
 
+  // Reactive variable to track if any election is selected
+  $: anyElectionSelected = Object.values(selectedElections).some(Boolean);
+
   // Initialize all elections as selected if we have elections
-  $: if (elections && elections.length > 0) {
+  // Only initialize once when the component loads
+  $: if (elections && elections.length > 0 && Object.keys(selectedElections).length === 0) {
     elections.forEach((election: any) => {
       selectedElections[election.id] = true;
     });
@@ -48,9 +52,6 @@ Page for computing and managing factor analysis for elections
       await update();
     };
   };
-
-  // Helper to check if any election is selected
-  const isAnyElectionSelected = () => Object.values(selectedElections).some(Boolean);
 </script>
 
 <MainContent title="Factor analysis">
@@ -105,7 +106,7 @@ Page for computing and managing factor analysis for elections
           text={isComputing ? 'Computing factors...' : 'Compute factors'}
           type="submit"
           variant="main"
-          disabled={isComputing || !isAnyElectionSelected()} />
+          disabled={isComputing || !anyElectionSelected} />
 
         {#if isComputing}
           <p class="text-sm text-neutral">This may take some time.</p>
