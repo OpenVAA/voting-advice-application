@@ -11,13 +11,21 @@ Page for computing and managing factor analysis for elections
   import { Checkbox } from '$lib/components/checkbox';
   import MainContent from '../../../MainContent.svelte';
 
+  // Get the data from the server
+  export let data;
+  const { elections } = data;
+
   const { t } = getAppContext();
 
-  let selectedElections = {
-    parliamentary: true,
-    municipal: true,
-    mayoral: true
-  };
+  // Track selected elections
+  let selectedElections: Record<number, boolean> = {};
+
+  // Initialize all elections as selected if we have elections
+  $: if (elections && elections.length > 0) {
+    elections.forEach((election: any) => {
+      selectedElections[election.id] = true;
+    });
+  }
 
   let isComputing = false;
   let error: string | null = null;
@@ -31,7 +39,7 @@ Page for computing and managing factor analysis for elections
       console.log('Form submission completed, result:', result);
       isComputing = false;
 
-      if (result.type === 'error') {
+      if (result.type === 'failure') {
         error = 'Failed to compute factors';
       } else {
         console.log('Factors computed successfully');
@@ -40,6 +48,9 @@ Page for computing and managing factor analysis for elections
       await update();
     };
   };
+
+  // Helper to check if any election is selected
+  const isAnyElectionSelected = () => Object.values(selectedElections).some(Boolean);
 </script>
 
 <MainContent title="Factor analysis">
@@ -53,49 +64,37 @@ Page for computing and managing factor analysis for elections
 
       <p class="mb-lg max-w-xl">Select the elections for which to compute the factors.</p>
 
-      <div class="grid gap-md">
-        <label class="flex items-start">
-          <input
-            type="checkbox"
-            name="parliamentary"
-            bind:checked={selectedElections.parliamentary}
-            class="checkbox-primary checkbox checkbox-lg" />
-          <div class="ml-4">
-            <span class="font-medium">Parliamentary Elections</span>
-            <div class="mt-1">
-              <span class="text-sm text-neutral">250 candidates and 0 parties have answered</span>
-            </div>
-          </div>
-        </label>
-
-        <label class="flex items-start">
-          <input
-            type="checkbox"
-            name="municipal"
-            bind:checked={selectedElections.municipal}
-            class="checkbox-primary checkbox checkbox-lg" />
-          <div class="ml-4">
-            <span class="font-medium">Municipal Elections</span>
-            <div class="mt-1">
-              <span class="text-sm text-neutral">1,050 candidates and 13 parties have answered</span>
-            </div>
-          </div>
-        </label>
-
-        <label class="flex items-start">
-          <input
-            type="checkbox"
-            name="mayoral"
-            bind:checked={selectedElections.mayoral}
-            class="checkbox-primary checkbox checkbox-lg" />
-          <div class="ml-4">
-            <span class="font-medium">Mayoral Elections</span>
-            <div class="mt-1">
-              <span class="text-sm text-neutral">16 candidates and no parties have answered</span>
-            </div>
-          </div>
-        </label>
-      </div>
+      {#if elections && elections.length > 0}
+        <div class="grid gap-md">
+          {#each elections as election}
+            <label class="flex items-start">
+              <input
+                type="checkbox"
+                name={election.id}
+                bind:checked={selectedElections[election.id]}
+                class="checkbox-primary checkbox checkbox-lg" />
+              <div class="ml-4">
+                <span class="font-medium">{election.name}</span>
+                {#if election.candidateCount !== undefined || election.partyCount !== undefined}
+                  <div class="mt-1">
+                    <span class="text-sm text-neutral">
+                      {election.candidateCount || 0} candidates
+                      {#if election.partyCount && election.partyCount > 0}
+                        and {election.partyCount} parties
+                      {:else}
+                        and no parties
+                      {/if}
+                      have answered
+                    </span>
+                  </div>
+                {/if}
+              </div>
+            </label>
+          {/each}
+        </div>
+      {:else}
+        <p class="text-neutral">No elections available</p>
+      {/if}
 
       {#if error}
         <p class="text-sm text-error">{error}</p>
@@ -106,7 +105,7 @@ Page for computing and managing factor analysis for elections
           text={isComputing ? 'Computing factors...' : 'Compute factors'}
           type="submit"
           variant="main"
-          disabled={isComputing || !Object.values(selectedElections).some(Boolean)} />
+          disabled={isComputing || !isAnyElectionSelected()} />
 
         {#if isComputing}
           <p class="text-sm text-neutral">This may take some time.</p>

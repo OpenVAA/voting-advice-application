@@ -1,6 +1,6 @@
 import { UniversalAdapter } from './universalAdapter';
 import type { DataApiActionResult } from './actionResult.type';
-import type { AdminWriter, GenerateQuestionInfoOptionsData } from './adminWriter.type';
+import type { AdminWriter, ComputeFactorLoadingsOptions, GenerateQuestionInfoOptionsData } from './adminWriter.type';
 import type { DWReturnType } from './dataWriter.type';
 
 /**
@@ -13,11 +13,11 @@ export abstract class UniversalAdminWriter extends UniversalAdapter implements A
     return this._generateQuestionInfo(data);
   }
 
-  computeFactorLoadings(): DWReturnType<DataApiActionResult> {
-    return this._computeFactorLoadings();
+  computeFactorLoadings(options?: ComputeFactorLoadingsOptions): DWReturnType<DataApiActionResult> {
+    return this._computeFactorLoadings(options);
   }
 
   protected abstract _generateQuestionInfo(data: GenerateQuestionInfoOptionsData): DWReturnType<DataApiActionResult>;
 
-  protected abstract _computeFactorLoadings(): DWReturnType<DataApiActionResult>;
+  protected abstract _computeFactorLoadings(options?: ComputeFactorLoadingsOptions): DWReturnType<DataApiActionResult>;
 }
