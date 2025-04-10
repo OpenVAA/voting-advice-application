@@ -1,0 +1,22 @@
+import { Condenser } from '../core/Condenser';
+import { CONDENSATION_TYPE } from '../core/types/condensationType';
+/**
+ * Process comments to extract Arguments
+ * @param params - Object containing all parameters
+ * @param params.llmProvider - Provider for LLM interactions
+ * @param params.languageConfig - Language-specific configuration
+ * @param params.comments - Array of comments to process (strings)
+ * @param params.topic - The topic these comments relate to
+ * @param params.batchSize - Number of comments to process per LLM call
+ * @param params.condensationType - The point of view of the output Arguments
+ * @returns Promise<Argument[]> Array of condensed Arguments
+ */
+export async function processComments({ llmProvider, languageConfig, comments, topic, batchSize = 30, condensationType = CONDENSATION_TYPE.GENERAL }) {
+    // Process comments with a Condenser instance
+    console.log('we got to the processComments', languageConfig);
+    console.log('we got to the processComments', comments);
+    console.log('we got to the processComments', topic);
+    console.log('we got to the processComments', condensationType);
+    const condenser = new Condenser({ llmProvider, languageConfig });
+    return await condenser.processComments({ comments, topic, batchSize, condensationType });
+}
