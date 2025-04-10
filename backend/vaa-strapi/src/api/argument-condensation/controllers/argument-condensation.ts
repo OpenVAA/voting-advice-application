@@ -31,7 +31,7 @@ function groupLikertAnswers(answers: any[], questionScale: number): LikertGroups
   };
 
   answers.forEach((answer) => {
-    if (!answer.openAnswer?.fi || typeof answer.value !== 'string') {
+    if (!answer.openAnswer?.fi || (typeof answer.value !== 'string' && typeof answer.value !== 'number')) {
       return;
     }
 

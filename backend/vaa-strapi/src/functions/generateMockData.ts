@@ -7,8 +7,11 @@
  */
 
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
+import { type AnswerValue, dynamicSettings, type LocalizedAnswer, type LocalizedString, type QuestionTypeSettings } from '@openvaa/app-shared';
 import { LLMResponse, OpenAIProvider } from '@openvaa/llm';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 import { loadDefaultAppSettings } from './loadDefaultAppSettings';
 import mockCandidateForTesting from './mockData/mockCandidateForTesting.json';
 import mockCategories from './mockData/mockCategories.json';
@@ -25,13 +28,6 @@ import {
 import { API } from '../util/api';
 import { getDynamicTranslations } from '../util/appCustomization';
 import { dropAllCollections } from '../util/drop';
-import {
-  dynamicSettings,
-  type AnswerValue,
-  type LocalizedAnswer,
-  type LocalizedString,
-  type QuestionTypeSettings
-} from '@openvaa/app-shared';
 import type { Data } from '@strapi/strapi';
 
 /**
@@ -50,6 +46,7 @@ const N_CANDIDATES_PER_CONSTITUENCY = 10;
 const N_PARTIES = 10;
 const N_PARTIES_WITH_CLOSED_LISTS = 2;
 const F_DUPLICATE_NOMINATIONS = 0.2;
+
 
 const locales: Array<Locale> = [
   {
@@ -72,10 +69,147 @@ const locales: Array<Locale> = [
   }
 ];
 
+/**
+ * Simple CSV reader with no additional dependencies
+ */
+function readCsv(): Array<Record<string, string>> {
+  try {
+    // Try multiple paths like in createCandidates
+    let csvPath = './data.csv';  // relative path
+    if (!fs.existsSync(csvPath)) {
+      csvPath = path.resolve(__dirname, './data.csv');  // try with __dirname
+    }
+    if (!fs.existsSync(csvPath)) {
+      csvPath = '/Users/daniel/sp-dev/voting-advice-application/backend/vaa-strapi/src/functions/data.csv';  // absolute path as fallback
+    }
+    
+    console.info(`Looking for CSV file at ${csvPath}`);
+
+    // Check if file exists
+    if (!fs.existsSync(csvPath)) {
+      console.warn(`CSV file not found at ${csvPath}`);
+      return [];
+    }
+
+    const data = fs.readFileSync(csvPath, 'utf-8');
+    console.info(`CSV file loaded, size: ${data.length} bytes`);
+
+    // Special handling for quoted CSV - use a proper parser
+    const rows = parseCSV(data);
+
+    if (rows.length === 0) {
+      console.warn('CSV has no rows');
+      return [];
+    }
+
+    console.info(`CSV parsed: ${rows.length} rows`);
+
+    // The first row contains headers
+    const headers = rows[0];
+
+    // Create records from the data rows
+    const records = [];
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i];
+      const record: Record<string, string> = {};
+
+      // Only process rows that have enough columns
+      if (row.length >= 3) {
+        for (let j = 0; j < headers.length; j++) {
+          record[headers[j]] = j < row.length ? row[j] : '';
+        }
+        records.push(record);
+      }
+    }
+
+    console.info(`Created ${records.length} data records from CSV`);
+
+    // Print a sample record for debugging
+    if (records.length > 0) {
+      console.info('Sample record (first 5 fields):');
+      const sample = records[0];
+      const sampleKeys = Object.keys(sample).slice(0, 5);
+      for (const key of sampleKeys) {
+        console.info(`  ${key}: "${sample[key]}"`);
+      }
+    }
+
+    return records;
+  } catch (error) {
+    console.error('CSV import failed:', error);
+    return [];
+  }
+}
+
+/**
+* Parse CSV text into a 2D array, properly handling quoted values
+*/
+function parseCSV(text: string): Array<Array<string>> {
+  // Remove BOM if present
+  if (text.charCodeAt(0) === 0xFEFF) {
+    text = text.slice(1);
+  }
+
+  const result: Array<Array<string>> = [];
+  const rows = text.split(/\r?\n/);
+
+  for (const row of rows) {
+    if (!row.trim()) continue; // Skip empty rows
+
+    const fields: Array<string> = [];
+    let fieldValue = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < row.length; i++) {
+      const char = row[i];
+      const nextChar = i < row.length - 1 ? row[i + 1] : null;
+
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          // Double quote inside quotes - add a single quote
+          fieldValue += '"';
+          i++; // Skip the next quote
+        } else {
+          // Toggle quote mode
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        // End of field
+        fields.push(fieldValue);
+        fieldValue = '';
+      } else {
+        // Normal character - add to field
+        fieldValue += char;
+      }
+    }
+
+    // Add the last field
+    fields.push(fieldValue);
+    result.push(fields);
+  }
+
+  return result;
+}
+
 export async function generateMockData() {
   if (!(generateMockDataOnInitialise || generateMockDataOnRestart)) {
     return;
   }
+
+  // Add logging to diagnose CSV structure
+  try {
+    const csvData = readCsv();
+    if (csvData.length > 0) {
+      console.info('=== CSV DIAGNOSTIC INFO ===');
+      console.info(`CSV has ${csvData.length} rows`);
+      console.info(`Headers: ${Object.keys(csvData[0]).join(', ')}`);
+      console.info(`First row values: ${Object.values(csvData[0]).join(', ')}`);
+      console.info('========================');
+    }
+  } catch (error) {
+    console.warn('CSV diagnosis failed:', error);
+  }
+
   try {
     if (generateMockDataOnInitialise && !generateMockDataOnRestart) {
       for (const collection of Object.values(API)) {
@@ -315,7 +449,7 @@ async function createConstituenciesAndGroups({
   linkConstituencies: boolean;
 }) {
   /**
-   * Save the previous group’s constituency IDs to be used as parent IDs for the next group.
+   * Save the previous group's constituency IDs to be used as parent IDs for the next group.
    */
   let previousConstituencies = new Array<string>();
   for (let i = 0; i < numberPerGroup.length; i++) {
@@ -427,26 +561,469 @@ async function createParties(length: number) {
   }
 }
 
-async function createCandidates(length: number) {
-  const parties = await strapi.documents('api::party.party').findMany({});
-  const questions = await strapi.documents('api::question.question').findMany({
-    populate: ['questionType']
-  });
-  for (let i = 0; i <= length; i++) {
-    const firstName = faker.person.firstName();
-    const lastName = faker.person.lastName();
-    const party = faker.helpers.arrayElement(parties);
-    const email = `${firstName}.${lastName}@example.com`;
-    await strapi.documents('api::candidate.candidate').create({
-      data: {
-        firstName,
-        lastName,
-        email,
-        party: party.documentId,
-        answers: generateAnswers(questions, 'candidate'),
-        ...addMockId()
+/**
+ * Extract candidate data from CSV lines
+ */
+function extractCandidateData(lines: Array<string>): Array<{ district: string; party: string; answers: Array<{ numericalAnswer: string; openEndedAnswer: string; }>; }> {
+  try {
+    console.info('Starting extractCandidateData');
+    const results: Array<{
+      district: string;
+      party: string;
+      answers: Array<{ numericalAnswer: string; openEndedAnswer: string; }>;
+    }> = [];
+
+    // Constants based on the CSV structure
+    const DISTRICT_INDEX = 0;
+    const PARTY_INDEX = 1;
+    const NUMERIC_START = 3;  // Usually starts at column 3
+    const NUMERIC_END = 31;   // Numerical answers end around column 31
+    const EXPLANATION_START = 32; // Explanations start after numerical answers
+
+    // Get header row to help with debugging
+    const headerLine = lines[0];
+    const headers = parseCSVLine(headerLine);
+    console.info(`Header has ${headers.length} columns`);
+
+    // Skip header row
+    for (let lineIndex = 1; lineIndex < lines.length; lineIndex++) {
+      try {
+        const line = lines[lineIndex].trim();
+        if (!line) continue;
+
+        // Parse the row
+        const values = parseCSVLine(line);
+
+        // Check if this is a candidate row
+        // Typically a candidate row starts with district name
+        if (values[DISTRICT_INDEX] &&
+            (values[DISTRICT_INDEX].toLowerCase().includes('vaalipiiri') ||
+             values[DISTRICT_INDEX].includes('piiri'))) {
+
+          console.info(`Found candidate row at line ${lineIndex}: ${values[DISTRICT_INDEX]} / ${values[PARTY_INDEX]}`);
+
+          const district = values[DISTRICT_INDEX];
+          const party = values[PARTY_INDEX] || '';
+
+          // Extract numerical answers
+          const numericalAnswers: Array<string> = [];
+          for (let i = NUMERIC_START; i <= Math.min(NUMERIC_END, values.length - 1); i++) {
+            numericalAnswers.push(values[i] || '');
+          }
+
+          console.info(`Extracted ${numericalAnswers.length} numerical answers`);
+
+          // Look for explanation answers - they should follow numerical ones
+          const explanationAnswers: Array<string> = [];
+          const explanationStartIndex = Math.min(EXPLANATION_START, values.length);
+
+          if (explanationStartIndex < values.length) {
+            console.info(`Looking for explanations starting at index ${explanationStartIndex}`);
+            for (let i = explanationStartIndex; i < values.length; i++) {
+              if (values[i] && values[i].trim() !== '-') {
+                explanationAnswers.push(values[i]);
+              } else {
+                explanationAnswers.push('');
+              }
+            }
+          } else {
+            console.info(`No room for explanations in this row (length: ${values.length})`);
+          }
+
+          // Ensure both arrays have same length
+          while (explanationAnswers.length < numericalAnswers.length) {
+            explanationAnswers.push('');
+          }
+
+          console.info(`Extracted ${explanationAnswers.filter(a => a.trim().length > 0).length} explanations`);
+
+          // Pair answers with explanations
+          const pairedAnswers = numericalAnswers.map((num, idx) => ({
+            numericalAnswer: num,
+            openEndedAnswer: idx < explanationAnswers.length ? explanationAnswers[idx] : ''
+          }));
+
+          // Check next lines for additional explanations
+          let nextLine = lineIndex + 1;
+          let foundMoreExplanations = false;
+
+          // Try to find more explanations in next lines
+          console.info(`Looking for additional explanations in following lines`);
+          while (nextLine < lines.length) {
+            const nextLineText = lines[nextLine].trim();
+            if (!nextLineText) {
+              nextLine++;
+              continue;
+            }
+
+            const nextValues = parseCSVLine(nextLineText);
+
+            // If this looks like a start of another candidate, stop
+            if (nextValues[DISTRICT_INDEX] &&
+                (nextValues[DISTRICT_INDEX].toLowerCase().includes('vaalipiiri') ||
+                 nextValues[DISTRICT_INDEX].includes('piiri'))) {
+              console.info(`Found next candidate at line ${nextLine}, stopping explanation search`);
+              break;
+            }
+
+            // Look for explanations in this line
+            let hasExplanationText = false;
+            for (let i = 0; i < nextValues.length; i++) {
+              if (nextValues[i] && nextValues[i].trim().length > 10) {
+                // This looks like explanation text - find index to place it
+                const explanationIdx = i % pairedAnswers.length;
+
+                if (explanationIdx < pairedAnswers.length && !pairedAnswers[explanationIdx].openEndedAnswer) {
+                  pairedAnswers[explanationIdx].openEndedAnswer = nextValues[i];
+                  hasExplanationText = true;
+                  console.info(`Found explanation at line ${nextLine}, col ${i} for question ${explanationIdx}`);
+                }
+              }
+            }
+
+            if (hasExplanationText) {
+              foundMoreExplanations = true;
+            }
+
+            nextLine++;
+          }
+
+          if (foundMoreExplanations) {
+            console.info(`Found additional explanations for candidate at line ${lineIndex}`);
+          }
+
+          results.push({
+            district,
+            party,
+            answers: pairedAnswers
+          });
+
+          // Skip processed lines
+          if (foundMoreExplanations) {
+            lineIndex = nextLine - 1;
+          }
+        }
+      } catch (lineError) {
+        console.error(`Error processing line ${lineIndex}:`, lineError);
+        // Continue with next line instead of stopping the whole process
       }
+    }
+
+    // Log some stats
+    const answersWithExplanations = results.reduce((count, candidate) => {
+      return count + candidate.answers.filter(a => a.openEndedAnswer && a.openEndedAnswer.length > 5).length;
+    }, 0);
+
+    console.info(`Successfully extracted ${results.length} candidates with ${answersWithExplanations} total explanations`);
+
+    return results;
+  } catch (error) {
+    console.error('ERROR in extractCandidateData:', error);
+    // Return empty array instead of crashing
+    return [];
+  }
+}
+
+// Helper function to parse a single CSV line properly with more error handling
+function parseCSVLine(line: string): Array<string> {
+  try {
+    const result: Array<string> = [];
+    let inQuotes = false;
+    let currentValue = '';
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const nextChar = i < line.length - 1 ? line[i + 1] : null;
+
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          // Double quote inside quotes - add a single quote
+          currentValue += '"';
+          i++; // Skip next quote
+        } else {
+          // Toggle quote mode
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        // End of field
+        result.push(currentValue);
+        currentValue = '';
+      } else {
+        // Regular character
+        currentValue += char;
+      }
+    }
+
+    // Don't forget the last field
+    result.push(currentValue);
+
+    return result;
+  } catch (error) {
+    console.error('Error parsing CSV line:', error);
+    console.error('Problematic line:', line.substring(0, 100) + '...');
+    // Return empty array in case of error
+    return [];
+  }
+}
+
+/**
+ * Helper function to safely extract text from a localized text object
+ */
+function getLocalizedText(textObj: any): string {
+  if (!textObj) return '';
+
+  if (typeof textObj === 'string') return textObj;
+
+  // Try to access common locale properties
+  if (textObj.fi) return textObj.fi;
+  if (textObj.en) return textObj.en;
+  if (textObj.sv) return textObj.sv;
+
+  // If it's an object, try the first value
+  if (typeof textObj === 'object') {
+    const values = Object.values(textObj);
+    if (values.length > 0 && typeof values[0] === 'string') {
+      return values[0];
+    }
+  }
+
+  // Fallback
+  return String(textObj);
+}
+
+async function createCandidates(length: number) {
+  console.info('=== STARTING CANDIDATE CREATION ===');
+
+  try {
+    // Step 1: Load and verify the CSV file
+    console.info('STEP 1: Loading CSV file');
+    
+    // Try both absolute and relative paths
+    let csvPath = './data.csv';  // relative path
+    if (!fs.existsSync(csvPath)) {
+      csvPath = path.resolve(__dirname, './data.csv');  // try with __dirname
+    }
+    if (!fs.existsSync(csvPath)) {
+      csvPath = '/Users/daniel/sp-dev/voting-advice-application/backend/vaa-strapi/src/functions/data.csv';  // absolute path as fallback
+    }
+    
+    if (!fs.existsSync(csvPath)) {
+      console.error('CSV file not found at any of the attempted paths!');
+      throw new Error('CSV file not found');
+    }
+
+    console.info(`Found CSV file at: ${csvPath}`);
+    const rawContent = fs.readFileSync(csvPath, 'utf-8');
+    console.info(`CSV file loaded successfully, size: ${rawContent.length} bytes`);
+
+    // Step 2: Parse the CSV rows
+    console.info('STEP 2: Parsing CSV rows');
+    const lines = rawContent.split('\n');
+    console.info(`CSV split into ${lines.length} raw lines`);
+
+    // Step 3: Extract candidate data
+    console.info('STEP 3: Extracting candidate data');
+    const candidatesData = extractCandidateData(lines);
+    console.info(`Successfully extracted data for ${candidatesData.length} candidates`);
+
+    // Step 4: Load questions from database
+    console.info('STEP 4: Loading questions from database');
+    const questions = await strapi.documents('api::question.question').findMany({
+      populate: ['questionType']
     });
+    console.info(`Loaded ${questions.length} questions from database`);
+
+    // Step 5: Filter for Likert questions
+    console.info('STEP 5: Filtering for Likert questions');
+    const likertQuestions = questions.filter(q =>
+      (q.questionType?.settings as QuestionTypeSettings)?.type === 'singleChoiceOrdinal'
+    );
+    console.info(`Found ${likertQuestions.length} Likert questions`);
+
+    // Step 6: Handle case with no candidates
+    if (candidatesData.length === 0) {
+      console.warn('No candidate data extracted from CSV - creating random candidates');
+      await createRandomCandidates(length, questions);
+      return;
+    }
+
+    // Step 7: Load parties from database
+    console.info('STEP 7: Loading parties from database');
+    const parties = await strapi.documents('api::party.party').findMany({});
+    console.info(`Loaded ${parties.length} parties from database`);
+
+    // Step 8: Process and create candidates
+    console.info('STEP 8: Processing and creating candidates');
+    const candidateCount = Math.min(candidatesData.length, length, 100);
+    console.info(`Will create ${candidateCount} candidates in database`);
+
+    let totalWithAnswers = 0;
+    let totalWithExplanations = 0;
+    let totalAnswers = 0;
+    let totalExplanations = 0;
+
+    // Process candidates in batches to avoid potential memory issues
+    const BATCH_SIZE = 10;
+    for (let batchStart = 0; batchStart < candidateCount; batchStart += BATCH_SIZE) {
+      const batchEnd = Math.min(batchStart + BATCH_SIZE, candidateCount);
+      console.info(`Processing batch of candidates ${batchStart+1} to ${batchEnd}`);
+
+      for (let i = batchStart; i < batchEnd; i++) {
+        console.info(`Processing candidate ${i+1}/${candidateCount}`);
+
+        try {
+          const candidateData = candidatesData[i];
+
+          // Find matching party
+          console.info(`Finding matching party for: ${candidateData.party}`);
+          const party = parties.find(p => {
+            const pName = getLocalizedText(p.name).toLowerCase();
+            return pName.includes(candidateData.party.toLowerCase()) ||
+                   candidateData.party.toLowerCase().includes(pName);
+          }) || parties[0];
+          console.info(`Matched with party: ${getLocalizedText(party.name)}`);
+
+          // Build answers object
+          console.info(`Building answers object for candidate ${i+1}`);
+          const formattedAnswers: Record<string, LocalizedAnswer> = {};
+          let answersFound = 0;
+          let explanationsFound = 0;
+
+          // Match answers to questions
+          for (let j = 0; j < Math.min(candidateData.answers.length, likertQuestions.length); j++) {
+            const questionId = likertQuestions[j].documentId;
+            const answerData = candidateData.answers[j];
+
+            // Only process valid numerical answers (1-5)
+            if (answerData.numericalAnswer && /^[1-5]$/.test(answerData.numericalAnswer.trim())) {
+              const value = parseInt(answerData.numericalAnswer.trim(), 10);
+              answersFound++;
+
+              // Add explanation if available
+              let info = null;
+              if (answerData.openEndedAnswer &&
+                  answerData.openEndedAnswer.trim() !== '-' &&
+                  answerData.openEndedAnswer.trim().length > 5) {
+                info = {
+                  fi: answerData.openEndedAnswer.trim(),
+                  en: answerData.openEndedAnswer.trim(),
+                  sv: answerData.openEndedAnswer.trim()
+                };
+                explanationsFound++;
+              }
+
+              formattedAnswers[questionId] = { value, info };
+            }
+          }
+
+          // Update statistics
+          if (answersFound > 0) {
+            totalWithAnswers++;
+            totalAnswers += answersFound;
+
+            if (explanationsFound > 0) {
+              totalWithExplanations++;
+              totalExplanations += explanationsFound;
+            }
+          }
+
+          // Debug the first candidate's answers
+          if (i === 0) {
+            console.info('=== FIRST CANDIDATE ANSWERS DETAILS ===');
+            console.info(`Found ${answersFound} answers with ${explanationsFound} explanations`);
+
+            // Sample some answers
+            const answerKeys = Object.keys(formattedAnswers);
+            for (let j = 0; j < Math.min(5, answerKeys.length); j++) {
+              if (j >= answerKeys.length) break;
+
+              const key = answerKeys[j];
+              const ans = formattedAnswers[key];
+              console.info(`Answer ${j+1} (question ID: ${key}):`);
+              console.info(`  Value: ${ans.value}`);
+              console.info(`  Has explanation: ${ans.info !== null}`);
+              if (ans.info) {
+                console.info(`  Explanation: ${ans.info.fi.substring(0, 50)}...`);
+              }
+            }
+          }
+
+          // Use the answers we found or set empty answers if none were found
+          console.info(`Finalizing answers for candidate ${i+1} (found: ${answersFound})`);
+          const finalAnswers = answersFound > 0 ?
+            (formattedAnswers as unknown as JSONValue) :
+            {}; // Empty object instead of generating random answers
+
+          // Create the candidate
+          console.info(`Creating candidate ${i+1} in database`);
+          await strapi.documents('api::candidate.candidate').create({
+            data: {
+              firstName: 'Candidate',
+              lastName: `${i + 1}`,
+              email: `candidate${i+1}@example.com`,
+              party: party.documentId,
+              answers: finalAnswers,
+              ...addMockId()
+            }
+          });
+
+          console.info(`Successfully created candidate ${i+1} with ${answersFound} answers and ${explanationsFound} explanations`);
+        } catch (error) {
+          console.error(`Error processing candidate ${i+1}:`, error);
+          // Continue with next candidate instead of stopping the whole process
+        }
+      }
+
+      console.info(`Completed batch ${batchStart+1} to ${batchEnd}`);
+    }
+
+    // Final statistics
+    console.info('=== CANDIDATE CREATION STATISTICS ===');
+    console.info(`Total candidates created: ${totalWithAnswers}`);
+    console.info(`Candidates with CSV answers: ${totalWithAnswers} (${Math.round(totalWithAnswers/candidateCount*100)}%)`);
+    console.info(`Candidates with explanations: ${totalWithExplanations} (${Math.round(totalWithExplanations/candidateCount*100)}%)`);
+    console.info(`Total answers populated: ${totalAnswers} (avg ${totalWithAnswers > 0 ? Math.round(totalAnswers/totalWithAnswers) : 0} per candidate)`);
+    console.info(`Total explanations populated: ${totalExplanations} (avg ${totalWithExplanations > 0 ? Math.round(totalExplanations/totalWithExplanations) : 0} per candidate)`);
+    console.info('=== CANDIDATE CREATION COMPLETED ===');
+  } catch (error) {
+    console.error('ERROR in createCandidates:', error);
+    // Re-throw to ensure the error is properly reported
+    throw error;
+  }
+}
+
+async function createRandomCandidates(length: number, questions: Array<any>) {
+  try {
+    console.info(`Starting to create ${length} random candidates`);
+    const parties = await strapi.documents('api::party.party').findMany({});
+    console.info(`Loaded ${parties.length} parties for random candidates`);
+
+    for (let i = 0; i < length; i++) {
+      const firstName = faker.person.firstName();
+      const lastName = faker.person.lastName();
+      const email = faker.internet.email({ firstName, lastName });
+      const party = faker.helpers.arrayElement(parties);
+
+      await strapi.documents('api::candidate.candidate').create({
+        data: {
+          firstName,
+          lastName,
+          email,
+          party: party.documentId,
+          answers: generateAnswers(questions, 'candidate'),
+          ...addMockId()
+        }
+      });
+
+      if (i % 10 === 0) {
+        console.info(`Created random candidate ${i+1}/${length}`);
+      }
+    }
+
+    console.info(`Successfully created ${length} random candidates`);
+  } catch (error) {
+    console.error('ERROR in createRandomCandidates:', error);
+    throw error;
   }
 }
 
@@ -621,62 +1198,168 @@ async function createQuestionTypes() {
 }
 
 /**
- * Create questions
- * @param options.constituencyPctg The fraction of Likert questions that will
- *   have their `constituency` relation set to a random constituency.
- */
-async function createQuestions({ constituencyPctg = 0.1 }: { constituencyPctg?: number } = {}) {
-  const questionTypes = await strapi.documents('api::question-type.question-type').findMany({});
-  const likertTypes = questionTypes.filter(
-    (questionType) => (questionType.settings as QuestionTypeSettings).type === 'singleChoiceOrdinal'
-  );
-
-  const questionCategories = await strapi.documents('api::question-category.question-category').findMany({});
-
-  const opinionCategories = questionCategories.filter((cat) => cat.type === 'opinion');
-  const constituencies = await strapi.documents('api::constituency.constituency').findMany({});
-
-  // Create Opinion questions
-  mockQuestions.forEach(async (question, index) => {
-    const text = fakeLocalized((faker) => faker.lorem.sentence(), question);
-    const questionType = faker.helpers.arrayElement(likertTypes);
-    const info = fakeLocalized((faker) => faker.lorem.sentences(3));
-    const category = opinionCategories[index % opinionCategories.length];
-    // const category = faker.helpers.arrayElement(opinionCategories);
-    const constituency = Math.random() < constituencyPctg ? faker.helpers.arrayElement(constituencies) : null;
-    await strapi.documents('api::question.question').create({
-      data: {
-        text,
-        info,
-        order: index,
-        allowOpen: true,
-        questionType: questionType.documentId,
-        category: category.documentId,
-        constituencies: constituency ? [constituency.documentId] : [],
-        ...addMockId()
+- * Create questions
+- * @param options.constituencyPctg The fraction of Likert questions that will
+- *   have their `constituency` relation set to a random constituency.
+- */
+  async function createQuestions({ constituencyPctg = 0.1 } = {}) {
+    const csvData = readCsv();
+    // If we have CSV data, use it to create questions
+    if (csvData.length > 0) {
+      const questionTypes = await strapi.documents('api::question-type.question-type').findMany({});
+  
+      // Find the Likert scale question type
+      const likertType = questionTypes.find(qt =>
+        (qt.settings as QuestionTypeSettings).type === 'singleChoiceOrdinal'
+      );
+  
+      // Check if we found the Likert type and log its settings
+      if (likertType) {
+        console.info(`Found Likert question type with ID: ${likertType.documentId}`);
+        console.info(`Likert type settings: ${JSON.stringify(likertType.settings)}`);
+      } else {
+        console.warn(`Could not find singleChoiceOrdinal question type!`);
       }
-    });
-  });
-  // Create other questions:
-  // Languages, gender, election manifesto, unaffiliated
-  const infoCategoryId = questionCategories.filter((cat) => cat.type === 'info')[0]?.documentId;
-  for (const { text, info, type, order, required, entityType } of mockInfoQuestions) {
-    const typeId = questionTypes.filter((qt) => qt.name === type)[0]?.documentId;
-    await strapi.documents('api::question.question').create({
-      data: {
-        text,
-        info,
-        allowOpen: false,
-        questionType: typeId,
-        category: infoCategoryId,
-        order,
-        required,
-        entityType: entityType as EntityType,
-        ...addMockId()
+  
+      const categories = await strapi.documents('api::question-category.question-category').findMany({});
+      const opinionCategory = categories.find(c => c.type === 'opinion');
+  
+      const elections = await strapi.documents('api::election.election').findMany({});
+      const electionIds = elections.map(e => e.documentId);
+  
+      // Extract first record to analyze headers
+      const firstRecord = csvData[0];
+  
+      // Process headers to find questions
+      const headers = Object.keys(firstRecord);
+  
+      // Find metadata columns
+      const metadataColumns = ['vaalipiiri', 'puolue', 'valintatieto'];
+      const metadataIndices: Array<number> = [];
+  
+      headers.forEach((header, index) => {
+        for (const col of metadataColumns) {
+          if (header.toLowerCase().includes(col.toLowerCase())) {
+            metadataIndices.push(index);
+            break;
+          }
+         }
+       });
+  
+  
+      console.info(`Found ${metadataIndices.length} metadata columns`);
+  
+      // Find the position where questions start
+      const startIndex = Math.max(...metadataIndices, 0) + 1;
+  
+      // Find complete questions with pattern recognition
+      let currentQuestion = '';
+      const rawQuestions: Array<string> = [];
+  
+      for (let i = startIndex; i < headers.length; i++) {
+        const header = headers[i];
+  
+        // Skip headers that are clearly not part of questions
+        if (header.trim() === '' ||
+            header.includes('vaalilupaus') ||
+            header.includes('ikä') ||
+            header.toLowerCase().includes('sukupuoli')) {
+          if (currentQuestion) {
+            rawQuestions.push(currentQuestion);
+            currentQuestion = '';
+          }
+          continue;
+        }
+  
+        // Add this part to the current question
+        if (currentQuestion) currentQuestion += ' ';
+        currentQuestion += header;
+  
+        // If this header ends with period or question mark, it's likely the end of a question
+        if (header.trim().endsWith('.') || header.trim().endsWith('?')) {
+          rawQuestions.push(currentQuestion);
+          currentQuestion = '';
+        }
       }
-    });
-  }
-}
+  
+      // Add any remaining question
+      if (currentQuestion) {
+        rawQuestions.push(currentQuestion);
+      }
+  
+      // Clean up questions
+      const cleanQuestions = rawQuestions
+        .filter(q =>
+          q.length > 10 && // Minimum length for a question
+          !q.toLowerCase().includes('vaalilupaus') &&
+          !q.toLowerCase().includes('koulutus') &&
+          !q.toLowerCase().includes('ammatti') &&
+          !q.toLowerCase().includes('kielitaito')
+        )
+        .map(q => q.trim())
+        .slice(0, 30); // Take max 30 questions
+  
+      console.info(`Identified ${cleanQuestions.length} complete questions`);
+      console.info('Sample questions:');
+      cleanQuestions.slice(0, 5).forEach(q => console.info(`- ${q}`));
+  
+      // Create custom settings to ensure Likert-5 scale
+      const likertSettings = likertType?.settings
+        ? { ...(likertType.settings as Record<string, any>) }
+        : {
+            type: 'singleChoiceOrdinal',
+            notLocalizable: false,
+            choices: [
+              { id: 1, label: { fi: 'Täysin eri mieltä', en: 'Strongly disagree', sv: 'Helt av annan åsikt' } },
+              { id: 2, label: { fi: 'Jokseenkin eri mieltä', en: 'Somewhat disagree', sv: 'Delvis av annan åsikt' } },
+              { id: 3, label: { fi: 'Ei samaa eikä eri mieltä', en: 'Neither agree nor disagree', sv: 'Varken av samma eller annan åsikt' } },
+              { id: 4, label: { fi: 'Jokseenkin samaa mieltä', en: 'Somewhat agree', sv: 'Delvis av samma åsikt' } },
+              { id: 5, label: { fi: 'Täysin samaa mieltä', en: 'Strongly agree', sv: 'Helt av samma åsikt' } }
+            ],
+            min: 1,
+            max: 5
+          };
+  
+      console.info(`Using Likert settings: ${JSON.stringify(likertSettings)}`);
+  
+      // Create questions
+      for (let i = 0; i < cleanQuestions.length; i++) {
+        try {
+          console.info(`Creating question ${i+1}/${cleanQuestions.length}: "${cleanQuestions[i].substring(0, 50)}..."`);
+  
+          await strapi.documents('api::question.question').create({
+            data: {
+              text: fakeLocalized(() => cleanQuestions[i]),
+              info: fakeLocalized((faker) => faker.lorem.sentence()),
+              order: i,
+              allowOpen: true,
+              questionType: likertType?.documentId,
+              category: opinionCategory?.documentId,
+              elections: electionIds,
+              customSettings: {
+                likertScale: {
+                  min: 1,
+                  max: 5
+                }
+              },
+              ...addMockId()
+            }
+          });
+  
+          console.info(`Successfully created question ${i+1}`);
+        } catch (error) {
+          console.error(`Error creating question ${i+1}:`, error);
+        }
+      }
+  
+      console.info('All questions created successfully');
+  
+      // Reload questions to get their IDs
+      return await strapi.documents('api::question.question').findMany({
+        populate: ['questionType']
+       });
+     }
+   }
 
 async function createCandidateUsers() {
   if (process.env.NODE_ENV === 'production') {

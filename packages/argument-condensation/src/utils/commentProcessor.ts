@@ -1,4 +1,4 @@
-import { Condenser } from '../core/condenser';
+import { Condenser } from '../core/Condenser';
 import { Argument } from '../core/types/argument';
 import { LLMProvider } from '@openvaa/llm';
 import { LanguageConfig } from '../languageOptions/languageConfig.type';
