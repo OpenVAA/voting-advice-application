@@ -36,7 +36,6 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   import { getAppContext } from '$lib/contexts/app';
   import { getVoterContext } from '$lib/contexts/voter';
   import { EntityCard } from '$lib/dynamic-components/entityCard';
-  import { assertTranslationKey } from '$lib/i18n/utils/assertTranslationKey';
   import { concatClass } from '$lib/utils/components';
   import { unwrapEntity } from '$lib/utils/entities';
   import { findCandidateNominations } from '$lib/utils/matches';
@@ -56,7 +55,7 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   // Get contexts
   ////////////////////////////////////////////////////////////////////
 
-  const { appType, startEvent, t } = getAppContext();
+  const { appSettings, appType, startEvent, t } = getAppContext();
   let answers: AnswerStore | undefined;
   let matches: Readable<MatchTree> | undefined;
   if ($appType === 'voter') {
@@ -84,12 +83,15 @@ This is a dynamic component, because it accesses the `dataRoot` and other proper
   $: {
     const { entity: nakedEntity, nomination } = unwrapEntity(entity);
 
-    // Possibly use defaults based on entity type
-    const tabs: Array<EntityDetailsContent | OrganizationDetailsContent> =
-      nakedEntity.type === 'organization' ? ['info', 'opinions', 'candidates'] : ['info', 'opinions'];
+    let tabs: Array<EntityDetailsContent | OrganizationDetailsContent> =
+      $appSettings.entityDetails.contents[nakedEntity.type as keyof AppSettings['entityDetails']['contents']];
+    // Use defaults based on entity type if a non-empty array is not found in settings
+    if (!tabs?.length)
+      tabs = nakedEntity.type === 'organization' ? ['info', 'opinions', 'candidates'] : ['info', 'opinions'];
+
     contentTabs = tabs.map((tab) => ({
       content: tab,
-      label: $t(assertTranslationKey(`entityDetails.tabs.${tab}`))
+      label: $t(`entityDetails.tabs.${tab}`)
     }));
 
     // Collect questions
