@@ -2,6 +2,10 @@
 
 # Select component with list autocomplete support
 
+Displays a select input with optional autocomplete support.
+
+If there’s only one option available, the selected value will be set automatically and a non-interactive 'input' will be displayed.
+
 ### Properties
 
 - `label`: The `aria-label` and `placeholder` text for the select input.
@@ -230,14 +234,24 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
   // Styling
   ////////////////////////////////////////////////////////////////////
 
-  let selectInputClass: string;
-  $: selectInputClass = `select w-full max-w-md place-self-center ${onShadedBg ? 'bg-base-100' : 'bg-base-300'}`;
+  let inputClass: string;
+  $: inputClass = `w-full max-w-md place-self-center ${onShadedBg ? 'bg-base-100' : 'bg-base-300'}`;
 </script>
 
-{#if autocomplete === 'on'}
+{#if options.length === 1}
+  <div
+    aria-label={label}
+    {...concatClass(
+      $$restProps,
+      'flex items-center h-[3rem] rounded-lg px-[1rem] w-full max-w-md place-self-center text-secondary'
+    )}>
+    {selectedPrefix}
+    {options[0].label}
+  </div>
+{:else if autocomplete === 'on'}
   <div class="relative w-full max-w-md place-self-center" on:focusout={handleFocusOut}>
     <input
-      {...concatClass($$restProps, selectInputClass)}
+      {...concatClass($$restProps, `select ${inputClass}`)}
       class:text-secondary={selected === ''}
       placeholder={label}
       bind:this={autocompleteInput}
@@ -285,24 +299,19 @@ The component follows the [WGAI Combobox pattern](https://www.w3.org/WAI/ARIA/ap
 {:else}
   <select
     aria-label={label}
-    {...concatClass($$restProps, selectInputClass)}
+    {...concatClass($$restProps, `select ${inputClass}`)}
     class:text-secondary={selected === ''}
     bind:value={selected}
     on:click={handleClick}
     on:change={handleChange}>
-    {#if options.length !== 1}
-      <option disabled selected value="">
+    <option disabled selected value="">
+      {label}
+    </option>
+    {#each options as { id, label }}
+      <option value={id}>
+        {#if selected === id}{selectedPrefix}{/if}
         {label}
       </option>
-      {#each options as { id, label }}
-        <option value={id}>
-          {#if selected === id}{selectedPrefix}{/if}
-          {label}
-        </option>
-      {/each}
-    {:else}
-      {@const { id, label } = options[0]}
-      <option selected value={id}>{selectedPrefix}{label}</option>
-    {/if}
+    {/each}
   </select>
 {/if}
