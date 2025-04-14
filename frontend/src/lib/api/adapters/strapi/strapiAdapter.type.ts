@@ -62,10 +62,10 @@ export type FetchOptions<TApi extends StrapiApi> = {
   request?: RequestInit;
   authToken?: string;
   endpointParams?: Record<string, string>;
-  useCacheProxy?: boolean;
+  cacheEnabled?: boolean;
 };
 export type GetOptions<TApi extends StrapiApi> = Omit<FetchOptions<TApi>, 'request'>;
-export type PostOptions<TApi extends StrapiApi> = Omit<FetchOptions<TApi>, 'request' | 'params'> & {
+export type PostOptions<TApi extends StrapiApi> = Omit<FetchOptions<TApi>, 'request' | 'params' | 'cacheEnabled'> & {
   body?: Serializable;
   put?: boolean;
 };

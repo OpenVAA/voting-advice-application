@@ -49,7 +49,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         survey: 'true'
       }
     };
-    const data = await this.apiGet({ endpoint: 'appSettings', params });
+    const data = await this.apiGet({ endpoint: 'appSettings', params, cacheEnabled: false });
     if (!data) throw new Error('Expected one AppSettings object, but got none.');
     data.results.cardContents ??= { candidate: [], organization: [] };
     data.results.cardContents.candidate ??= [];
@@ -73,7 +73,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         candPosterDark: 'true'
       }
     };
-    const data = await this.apiGet({ endpoint: 'appCustomization', params });
+    const data = await this.apiGet({ endpoint: 'appCustomization', params, cacheEnabled: false });
     if (!data) throw new Error('Expected one AppCustomization object, but got none.');
     return {
       translationOverrides: translateObject(data.translationOverrides, locale),
@@ -154,7 +154,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
       params.filters ??= {};
       params.filters.unconfirmed = { $ne: 'true' };
     }
-    const data = await this.apiGet({ endpoint: 'nominations', params, useCacheProxy: true });
+    const data = await this.apiGet({ endpoint: 'nominations', params });
     return parseNominations(data, locale);
   }
 
@@ -216,7 +216,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
         ]
       };
 
-    const data = await this.apiGet({ endpoint: 'questionCategories', params, useCacheProxy: true });
+    const data = await this.apiGet({ endpoint: 'questionCategories', params });
     const categories = new Array<QuestionCategoryData>();
     const allQuestions = new Map<string, AnyQuestionVariantData>();
     for (const category of data) {

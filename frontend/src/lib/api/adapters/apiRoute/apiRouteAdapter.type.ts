@@ -37,8 +37,9 @@ export type FetchOptions<TApi extends ApiRoute> = {
   endpoint: TApi;
   params?: GetDataOptionsBase;
   request?: RequestInit;
+  cacheEnabled?: boolean;
 };
 export type GetOptions<TApi extends ApiGetRoute> = Omit<FetchOptions<TApi>, 'request'>;
-export type PostOptions<TApi extends ApiPostRoute> = Omit<FetchOptions<TApi>, 'request' | 'params'> & {
+export type PostOptions<TApi extends ApiPostRoute> = Omit<FetchOptions<TApi>, 'request' | 'params' | 'cacheEnabled'> & {
   body?: Serializable;
 };

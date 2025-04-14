@@ -1,8 +1,8 @@
 import { ENTITY_TYPE } from '@openvaa/data';
 import qs from 'qs';
 import { browser } from '$app/environment';
-import { UNIVERSAL_API_ROUTES } from '$lib/api/base/universalApiRoutes';
 import { addHeader } from '$lib/api/utils/addHeader';
+import { cachifyUrl } from '$lib/api/utils/cachifyUrl';
 import { constants } from '$lib/utils/constants';
 import { STRAPI_API, STRAPI_AUTH_APIS, type StrapiApi, type StrapiApiReturnType } from './strapiApi';
 import type { WithAuth, WithTargetEntity } from '$lib/api/base/dataWriter.type';
@@ -32,19 +32,16 @@ export function strapiAdapterMixin<TBase extends Constructor>(base: TBase): Cons
       request,
       endpointParams,
       authToken,
-      useCacheProxy
+      cacheEnabled
     }: FetchOptions<TApi>): Promise<Response> {
       if (!this.fetch) throw new Error('Adapter fetch is not defined. Did you call init({ fetch }) first?');
       const path = insertApiParams(STRAPI_API[endpoint], endpointParams);
-      const url = new URL(
-        `${browser && !useCacheProxy ? constants.PUBLIC_BROWSER_BACKEND_URL : constants.PUBLIC_SERVER_BACKEND_URL}/${path}`
-      );
+      const baseUrl =
+        browser && !cacheEnabled ? constants.PUBLIC_BROWSER_BACKEND_URL : constants.PUBLIC_SERVER_BACKEND_URL;
+      const url = new URL(`${baseUrl}/${path}`);
       if (params) url.search = qs.stringify(params, { encodeValuesOnly: true });
       if (authToken) request = addHeader(request, 'Authorization', `Bearer ${authToken}`);
-      const response = await this.fetch(
-        useCacheProxy ? `${UNIVERSAL_API_ROUTES.cacheProxy}?resource=${encodeURIComponent(url.toString())}` : url,
-        request
-      );
+      const response = await this.fetch(cacheEnabled ? cachifyUrl(url) : url, request);
       if (!response.ok) {
         const { error } = await response.json();
         throw new Error(`Error with apiFetch: ${response.status} (${response.statusText ?? '-'}) • ${url}`, {
@@ -54,13 +51,17 @@ export function strapiAdapterMixin<TBase extends Constructor>(base: TBase): Cons
       return response;
     }
 
-    async apiGet<TApi extends StrapiApi>({ params, ...rest }: GetOptions<TApi>): Promise<StrapiApiReturnType[TApi]> {
+    async apiGet<TApi extends StrapiApi>({
+      params,
+      cacheEnabled = true,
+      ...rest
+    }: GetOptions<TApi>): Promise<StrapiApiReturnType[TApi]> {
       if (!params?.pagination?.pageSize) {
         params ??= {};
         params.pagination ??= {};
         params.pagination.pageSize = ITEM_LIMIT; // Default to the maximum limit if no pagination is set.
       }
-      const response = await this.apiFetch({ params, ...rest });
+      const response = await this.apiFetch({ params, cacheEnabled, ...rest });
       return parseResponse(response, { ...rest });
     }
 
