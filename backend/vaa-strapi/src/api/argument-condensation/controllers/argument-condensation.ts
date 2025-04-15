@@ -1,9 +1,20 @@
 import { LocalizedAnswer } from '@openvaa/app-shared';
-import { CONDENSATION_TYPE, LanguageConfigs, processComments } from '@openvaa/argument-condensation';
+import { CONDENSATION_TYPE, getLanguageConfig, processComments} from '@openvaa/argument-condensation';
 import { OpenAIProvider } from '@openvaa/llm';
 import { OPENAI_API_KEY } from '../../../constants';
 import questionService from '../services/question-service';
-import { QUESTION_TYPE } from '@openvaa/data';
+import { CandidateAnswer } from '../services/question-service';
+
+/**
+ * Options for controller methods
+ */
+interface ControllerOptions {
+  /**
+   * The locale code to use for text content
+   * @default "fi"
+   */
+  locale?: string;
+}
 
 const model = 'gpt-4o-mini';
 const llmProvider = new OpenAIProvider({ apiKey: OPENAI_API_KEY, model });
@@ -22,34 +33,45 @@ interface CategoryGroups {
   [key: string]: Array<string>;
 }
 
-function groupLikertAnswers(answers: Array<LocalizedAnswer>, questionScale: number, locale: string = 'fi'): LikertGroups {
+function groupLikertAnswers(
+  answers: Array<CandidateAnswer>, 
+  questionScale: number, 
+  localeCode: string = 'fi',
+  higherIsPros: boolean = true
+): LikertGroups {
   const isEven = questionScale % 2 === 0;
   const groups: LikertGroups = {
     presumedPros: [],
     presumedCons: []
   };
-
+  
   answers.forEach((answer) => {
-    if (!answer.info?.[locale] || (typeof answer.value !== 'string' && typeof answer.value !== 'number')) {
+    if (!answer.openAnswer?.[localeCode] || (typeof answer.value !== 'string' && typeof answer.value !== 'number')) {
       return;
     }
 
     const value = parseInt(answer.value.toString());
 
     if (isEven) {
-      // For 4-point scale: 1,2 -> cons, 3,4 -> pros
-      if (value <= questionScale / 2) {
-        groups.presumedCons.push(answer.info[locale]);
+      // For 4-point scale: split at the middle
+      const isHigherValue = value > questionScale / 2;
+      
+      // Determine which group to add to based on higherIsPros parameter
+      if (higherIsPros ? isHigherValue : !isHigherValue) {
+        groups.presumedPros.push(answer.openAnswer[localeCode]);
       } else {
-        groups.presumedPros.push(answer.info[locale]);
+        groups.presumedCons.push(answer.openAnswer[localeCode]);
       }
     } else {
       const middleValue = Math.ceil(questionScale / 2);
-      // For 5-point scale: 1,2 -> cons, 3 -> ignored, 4,5 -> pros
-      if (value < middleValue) {
-        groups.presumedCons.push(answer.info[locale]);
-      } else if (value > middleValue) {
-        groups.presumedPros.push(answer.info[locale]);
+      const isHigherValue = value > middleValue;
+      const isLowerValue = value < middleValue;
+      
+      // Middle value is still ignored
+      if (isHigherValue) {
+        higherIsPros ? groups.presumedPros.push(answer.openAnswer[localeCode]) : groups.presumedCons.push(answer.openAnswer[localeCode]);
+      } else if (isLowerValue) {
+        higherIsPros ? groups.presumedCons.push(answer.openAnswer[localeCode]) : groups.presumedPros.push(answer.openAnswer[localeCode]);
       }
       // Middle value is ignored
     }
@@ -59,20 +81,36 @@ function groupLikertAnswers(answers: Array<LocalizedAnswer>, questionScale: numb
 }
 
 // Note: NOT IN USE, as our test data does not yet contain categorical answers
-function groupCategoricalAnswers(answers: Array<LocalizedAnswer>, locale: string = 'fi'): CategoryGroups {
+function groupCategoricalAnswers(answers: Array<CandidateAnswer>, localeCode: string = 'fi'): CategoryGroups {
   const groups: CategoryGroups = {};
 
   return groups;
+}
+
+function getQuestionText(question, localeCode): string {  
+  // Try direct property access first
+  if (localeCode == 'fi' && question.text && question.text.fi) {
+    return question.text.fi;
+  }
+  if (localeCode == 'en' && question.text && question.text.en) {
+    return question.text.en;
+  }
+
+  // Default fallback
+  return 'No question text available';
 }
 
 export default {
   /**
    * Condenses arguments for specified questions
    */
-  async condense(ctx, locale: string = 'fi') {
+  async condense(ctx, options: ControllerOptions = {}) {
     try {
       console.info('\n=== Starting Argument Condensation ===');
-
+      
+      // Extract locale from options or use default
+      const localeCode = options.locale || 'fi';
+      
       const { questionDocumentIds } = ctx.request.body || {};
 
       // Validate questionDocumentIds if provided
@@ -88,14 +126,18 @@ export default {
       const answersMap = await questionService.fetchAnswersForQuestions(questionsToProcess.map((q) => q.documentId));
       console.info('Successfully fetched answers map');
 
+      const languageConfig = getLanguageConfig(localeCode);
+
       // Process each question based on its type
       for (const question of questionsToProcess) {
         console.info('\n=== Processing Question ===');
         console.info('Question ID:', question.id);
         console.info('Document ID:', question.documentId);
-        console.info('Text:', question.text ? JSON.stringify(question.text).substring(0, 100) : 'No text');
         console.info('Type:', question.questionType?.settings?.type || 'Unknown type');
         console.info('Name:', question.questionType?.name || 'Unknown name');
+
+        console.log("QUESTION OBJECT")
+        console.log(JSON.stringify(question.questionType.settings, null, 2));
 
         try {
           // Get answers for this specific question using documentId
@@ -113,19 +155,21 @@ export default {
           if (questionType === 'singleChoiceOrdinal') {
             // Get the number of choices in the question scale
             const questionScale = question?.questionType?.settings?.choices?.length || 0;
+
             if (questionScale < 2) {
               console.info('Question has less than 2 choices, skipping');
               continue;
             }
-            const groupedAnswers = groupLikertAnswers(answers, questionScale);
+            const groupedAnswers = groupLikertAnswers(answers, questionScale, localeCode);
+
             processedResults = {
               pros:
                 groupedAnswers.presumedPros.length > 0
                   ? await processComments({
                       llmProvider,
-                      languageConfig: LanguageConfigs[locale],
+                      languageConfig: languageConfig,
                       comments: groupedAnswers.presumedPros,
-                      topic: question.text?.[locale],
+                      topic: getQuestionText(question, localeCode),
                       batchSize: 30,
                       condensationType: CONDENSATION_TYPE.SUPPORTING
                     })
@@ -134,16 +178,16 @@ export default {
                 groupedAnswers.presumedCons.length > 0
                   ? await processComments({
                       llmProvider,
-                      languageConfig: LanguageConfigs[locale],
+                      languageConfig: languageConfig,
                       comments: groupedAnswers.presumedCons,
-                      topic: question.text?.[locale],
+                      topic: getQuestionText(question, localeCode),
                       batchSize: 30,
                       condensationType: CONDENSATION_TYPE.OPPOSING
                     })
                   : []
             };
           } else if (questionType === 'singleChoiceCategorical') {
-            const groupedAnswers = groupCategoricalAnswers(answers);
+            const groupedAnswers = groupCategoricalAnswers(answers, localeCode);
             processedResults = {};
             
             for (const [category, comments] of Object.entries(groupedAnswers)) {
@@ -153,9 +197,9 @@ export default {
               
               processedResults[category] = await processComments({
                 llmProvider,
-                languageConfig: LanguageConfigs[locale],
+                languageConfig: languageConfig,
                 comments,
-                topic: `${question.text?.[locale]} - ${category}`,
+                topic: getQuestionText(question, localeCode),
                 batchSize: 30,
                 condensationType: CONDENSATION_TYPE.GENERAL
               });
@@ -168,11 +212,21 @@ export default {
           // Update question with processed results
           try {
             console.info('Updating question with results...');
-            await strapi.db.query('api::question.question').update({
-              where: { id: question.id },
+            
+            // First, get the current customData from the database
+            const currentQuestion = await strapi.documents('api::question.question').findOne({
+              documentId: question.documentId,
+              fields: ['customData']
+            });
+
+            const baseCustomData = typeof currentQuestion.customData === 'object' && currentQuestion.customData !== null && !Array.isArray(currentQuestion.customData)? currentQuestion.customData: {};
+            
+            // Then update with the merged data
+            await strapi.documents('api::question.question').update({
+              documentId: question.documentId,
               data: {
                 customData: {
-                  ...(question.customData || {}),
+                  ...baseCustomData,
                   argumentSummary: processedResults
                 }
               }
@@ -206,8 +260,11 @@ export default {
   /**
    * Lists questions available for condensation
    */
-  async listQuestions(ctx, locale: string = 'fi') {
+  async listQuestions(ctx, options: ControllerOptions = {}) {
     try {
+      // Extract locale from options or use default
+      const localeCode = options.locale || 'fi';
+      
       const questions = await questionService.fetchProcessableQuestions();
       questionService.logQuestionDetails(questions);
 
@@ -215,7 +272,7 @@ export default {
         data: questions.map((q) => ({
           id: q.id,
           documentId: q.documentId,
-          text: q.text?.[locale],
+          text: q.text?.[localeCode],
           type: q.questionType?.name
         }))
       };
@@ -223,29 +280,6 @@ export default {
       console.error('\n=== Error listing questions ===');
       console.error('Detailed error:', error);
       ctx.throw(500, error.message || 'Failed to list questions');
-    }
-  },
-
-  /**
-   * Test endpoint to verify question retrieval
-   */
-  async test(ctx) {
-    try {
-      const questions = await questionService.testQuestionRetrieval();
-
-      ctx.body = {
-        success: true,
-        message: 'Question retrieval test completed successfully',
-        questionCount: questions.length,
-        questions: questions.map((q) => ({
-          id: q.id,
-          documentId: q.documentId,
-          type: q.questionType?.name,
-          text: q.text
-        }))
-      };
-    } catch (error) {
-      ctx.throw(500, error.message || 'Failed to test question retrieval');
     }
   },
 

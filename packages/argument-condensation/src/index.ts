@@ -11,6 +11,7 @@ export { CONDENSATION_TYPE } from './core/types/condensationType';
 
 // Export language namespace
 export { LanguageConfigs } from './languageOptions/configs';
+export { getLanguageConfig } from './languageOptions/configs';
 
 // Export errors
 export { ArgumentCondensationError, LLMError, ParsingError } from './core/types/errors';

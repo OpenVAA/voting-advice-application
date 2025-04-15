@@ -98,7 +98,7 @@ export class Condenser {
     try {
       // Validate non-empty comments and truncate those exceeding MAX_COMMENT_LENGTH
       const validatedComments = comments
-        .filter((comment) => comment.trim() !== '')
+        .filter((comment) => comment?.trim() !== '')
         .map((comment) =>
           comment.length > MAX_COMMENT_LENGTH ? comment.substring(0, MAX_COMMENT_LENGTH) + '...' : comment
         );

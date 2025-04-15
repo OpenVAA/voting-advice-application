@@ -4,9 +4,31 @@
 
 // Add an interface at the top of the file
 export interface CandidateAnswer {
-  candidateId: string;
+  candidateId: string | number;
   value: string | number;
   openAnswer: Record<string, string> | null;
+}
+
+export interface QuestionTypeSettings {
+  type: string;
+  choices?: Array<{
+    id: string;
+    label: Record<string, string>;
+    normalizableValue: string;
+  }>;
+  // Add other possible properties here
+}
+
+// Add an interface at the top of the file
+export interface ArgumentCondensationQuestion {
+  id: string | number;
+  documentId: string;
+  text?: Record<string, string> | any;  // Make text optional with ?
+  questionType: {
+    id: string | number;  // Allow both string and number types
+    name?: string;  // Make name optional
+    settings: QuestionTypeSettings;
+  };
 }
 
 /**
@@ -14,24 +36,43 @@ export interface CandidateAnswer {
  * @param documentIds Optional array of document IDs to filter by
  * @returns All Likert questions if no IDs provided, otherwise only matching questions
  */
-async function fetchProcessableQuestions(documentIds?: Array<string>) {
-  const questions = await strapi.db.query('api::question.question').findMany({
-    select: ['id', 'documentId', 'text'],
+async function fetchProcessableQuestions(documentIds?: Array<string>): Promise<Array<ArgumentCondensationQuestion>> {
+  const questions = await strapi.documents('api::question.question').findMany({
+    fields: ['id', 'documentId', 'text'] as any, // replaces `select: ['id','documentId','text']`
     populate: {
       questionType: {
-        select: ['id', 'name', 'settings']
+        fields: ['id', 'name', 'settings']
       }
     }
   });
 
+  // Helper function to validate if the object is a valid QuestionTypeSettings
+  const isValidQuestionTypeSettings = (settings: any): settings is QuestionTypeSettings => {
+    return settings && typeof settings === 'object' && typeof settings.type === 'string';
+  };
+
   // TODO: Needs to be changed when we have more question types
-  const processableQuestions = questions.filter((q) => q.questionType?.settings?.type === 'singleChoiceOrdinal');
+  const processableQuestions = questions
+    .filter(q => {
+      const settings = q.questionType?.settings;
+      return isValidQuestionTypeSettings(settings) && settings.type === 'singleChoiceOrdinal';
+    })
+    .map(q => {
+      // First cast to unknown to satisfy TypeScript
+      const settings = q.questionType.settings as unknown;
+      
+      return {
+        ...q,
+        questionType: {
+          ...q.questionType,
+          settings: settings as QuestionTypeSettings
+        }
+      } as ArgumentCondensationQuestion;
+    });
 
-  if (!documentIds?.length) {
-    return processableQuestions;
-  }
+  console.log("processableQuestions:", processableQuestions);
 
-  return processableQuestions.filter((q) => documentIds.includes(q.documentId));
+  return documentIds?.length ? processableQuestions.filter((q) => documentIds.includes(q.documentId)) : processableQuestions;
 }
 
 /**
@@ -43,8 +84,8 @@ async function fetchAnswersForQuestions(
   questionDocumentIds: Array<string>,
   locale: string = 'fi'
 ): Promise<Record<string, Array<CandidateAnswer>>> {
-  const candidates = await strapi.db.query('api::candidate.candidate').findMany({
-    select: ['id', 'answers'],
+  const candidates = await strapi.documents('api::candidate.candidate').findMany({
+    fields: ['id', 'answers'],
     where: {
       answers: {
         $notNull: true
@@ -63,11 +104,17 @@ async function fetchAnswersForQuestions(
         const answer = candidate.answers[qId];
         if (answer) {
           const openAnswerText = answer.info?.[locale];
-          answersMap[qId].push({
-            candidateId: candidate.id,
-            value: answer.value,
-            openAnswer: openAnswerText ? { [locale]: openAnswerText } : null
-          });
+          // Create the openAnswer object or null
+          const openAnswer = openAnswerText ? { [locale]: openAnswerText } : null;
+          
+          // Only add answers where openAnswer is not null
+          if (openAnswer !== null) {
+            answersMap[qId].push({
+              candidateId: candidate.id,
+              value: answer.value,
+              openAnswer
+            });
+          }
         }
       });
     });
