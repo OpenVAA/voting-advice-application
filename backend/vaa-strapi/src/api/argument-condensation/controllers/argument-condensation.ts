@@ -60,7 +60,7 @@ function groupLikertAnswers(answers: Array<LocalizedAnswer>, questionScale: numb
 // Note: NOT IN USE, as our test data does not yet contain categorical answers
 function groupCategoricalAnswers(answers: Array<LocalizedAnswer>): CategoryGroups {
   const groups: CategoryGroups = {};
-  
+
   return groups;
 }
 
@@ -144,20 +144,20 @@ export default {
           } else if (questionType === 'singleChoiceCategorical') {
             const groupedAnswers = groupCategoricalAnswers(answers);
             processedResults = await Object.entries(groupedAnswers).reduce(async (acc, [category, comments]) => {
-              if (comments.length > 0) {
-                return {
-                  ...(await acc),
-                  [category]: await processComments({
-                    llmProvider,
-                    languageConfig: LanguageConfigs.Finnish,
-                    comments,
-                    topic: `${question.text?.fi} - ${category}`,
-                    batchSize: 30,
-                    condensationType: CONDENSATION_TYPE.GENERAL
-                  })
-                };
+              if (!comments?.length) {
+                return acc;
               }
-              return acc;
+              return {
+                ...(await acc),
+                [category]: await processComments({
+                  llmProvider,
+                  languageConfig: LanguageConfigs.Finnish,
+                  comments,
+                  topic: `${question.text?.fi} - ${category}`,
+                  batchSize: 30,
+                  condensationType: CONDENSATION_TYPE.GENERAL
+                })
+              };
             }, Promise.resolve({}));
           } else {
             console.info(`Skipping question - unsupported type: ${questionType}`);
