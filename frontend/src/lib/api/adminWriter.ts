@@ -1,5 +1,5 @@
 import { staticSettings } from '@openvaa/app-shared';
-import type { UniversalAdminWriter } from './base/universalAdminFeedbackWriter';
+import type { UniversalAdminWriter } from './base/universalAdminWriter';
 
 let module: Promise<{ adminWriter: UniversalAdminWriter }>;
 

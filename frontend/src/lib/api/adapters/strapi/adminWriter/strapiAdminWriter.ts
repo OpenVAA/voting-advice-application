@@ -1,14 +1,17 @@
-import { UniversalAdminWriter } from '$lib/api/base/universalAdminFeedbackWriter';
+import { UniversalAdminWriter } from '$lib/api/base/universalAdminWriter';
 import { strapiAdapterMixin } from '../strapiAdapter';
 import type { DataApiActionResult } from '$lib/api/base/actionResult.type';
 import type { ComputeFactorLoadingsOptions, GenerateQuestionInfoOptionsData } from '$lib/api/base/adminWriter.type';
 import type { DWReturnType } from '$lib/api/base/dataWriter.type';
 
 export class StrapiAdminWriter extends strapiAdapterMixin(UniversalAdminWriter) {
-  protected async _generateQuestionInfo(data: GenerateQuestionInfoOptionsData): DWReturnType<DataApiActionResult> {
+  protected async _generateQuestionInfo(options: GenerateQuestionInfoOptionsData): DWReturnType<DataApiActionResult> {
     const response = await this.apiPost({
       endpoint: 'generateQuestionInfo',
-      body: data
+      body: {
+        questionIds: options.questionIds
+      },
+      authToken: options.authToken
     });
 
     return {

@@ -12,9 +12,9 @@ import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 //   };
 // };
 
-export const actions: Actions = {
+export const actions = {
   // Create action for handling form submissions
-  default: async ({ request, locals }) => {
+  default: async ({ request, locals, cookies }) => {
     try {
       const dw = await dataProviderPromise;
       const questionData = await dw.getQuestionData();
@@ -26,10 +26,11 @@ export const actions: Actions = {
       // Log the form data for debugging purposes
       console.info('Form data received:', Object.fromEntries(formData));
 
+      const authToken = cookies.get('token');
       const adminWriter = await adminWriterPromise;
       adminWriter.init({ fetch });
 
-      const { type } = await adminWriter.generateQuestionInfo({});
+      const { type } = await adminWriter.generateQuestionInfo({ authToken });
 
       console.info('got type', type);
 
@@ -79,4 +80,4 @@ export const actions: Actions = {
   //       return fail(500, { error: 'Failed to delete question' });
   //     }
   //   }
-};
+} satisfies Actions;

@@ -4,7 +4,9 @@
  * Gets the jwt auth token from the cookie and adds it to page data from which it will be picked up by the `AdminContext`.
  */
 
-export async function load({ cookies }) {
+import type { LayoutServerLoad } from './$types';
+
+export async function load({ cookies }): Promise<LayoutServerLoad> {
   const token = cookies.get('token');
   return { token };
 }

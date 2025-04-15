@@ -31,6 +31,11 @@ export type GenerateQuestionInfoOptionsData = {
    *  The question IDs to be generated. If not provided, all questions are generated.
    */
   questionIds?: Array<string>;
+
+  /**
+   * The authentication token for the request.
+   */
+  authToken?: string;
 };
 
 /**
