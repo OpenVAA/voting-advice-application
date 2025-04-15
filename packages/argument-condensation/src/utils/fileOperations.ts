@@ -5,10 +5,13 @@ import { Argument } from '../core/types/argument';
  * @param condensedArguments - Array of condensed Arguments to export
  * @param formats - Array of output formats ('txt', 'json', 'csv')
  */
-export async function exportResults(
-  condensedArguments: Array<Argument>,
-  formats: Array<string> = ['txt', 'json', 'csv']
-): Promise<Record<string, string>> {
+export async function exportResults({
+  condensedArguments,
+  formats = ['txt', 'json', 'csv']
+}: {
+  condensedArguments: Array<Argument>;
+  formats?: Array<string>;
+}): Promise<Record<string, string>> {
   const output: Record<string, string> = {};
 
   for (const fmt of formats) {
