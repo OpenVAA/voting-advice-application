@@ -29,7 +29,7 @@ export class OutputParser {
    * ARGUMENT 2: This is the second Argument
    * </ARGUMENTS>
    */
-  parseArguments(text: string, topic: string): Array<Argument> {
+  parseArguments({ text, topic }: { text: string; topic: string }): Array<Argument> {
     /** Array to be populated by Arguments */
     const parsedArgs = new Array<Argument>();
 
@@ -91,7 +91,7 @@ export class OutputParser {
    * @param output - The LLM response text
    * @returns Argument[] - Array of condensed Arguments
    */
-  parseArgumentCondensation(output: string, topic: string): Array<Argument> {
+  parseArgumentCondensation({ output, topic }: { output: string; topic: string }): Array<Argument> {
     /** Array to populate with condensed Arguments */
     const args = new Array<Argument>();
 

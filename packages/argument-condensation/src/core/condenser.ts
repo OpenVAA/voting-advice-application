@@ -125,7 +125,11 @@ export class Condenser {
 
       // Second level: Recursively (and pairwise) coalesce the Argument arrays into a single array.
       // Does not flatten k arrays to 1 array directly, but k --> k/2 --> ... --> 1
-      return this.reduceArgumentArrays(this.existingArguments, topic, condensationType);
+      return this.reduceArgumentArrays({
+        argumentArrays: this.existingArguments,
+        topic,
+        condensationType
+      });
     } catch (error) {
       throw error;
     }
@@ -160,7 +164,12 @@ export class Condenser {
     for (let i = 0; i < nIterations; i++) {
       // Process the current batch
       const commentBatch = comments.slice(i * batchSize, (i + 1) * batchSize);
-      const newArgs = await this.processCommentBatch(commentBatch, currentGroupArgs, topic, condensationType);
+      const newArgs = await this.processCommentBatch({
+        commentBatch,
+        existingArgs: currentGroupArgs,
+        topic,
+        condensationType
+      });
       currentGroupArgs.push(...newArgs);
 
       // Logging (for debugging)
@@ -194,12 +203,17 @@ export class Condenser {
    * @returns Promise<Argument[]> New Arguments extracted from this batch
    * @private
    */
-  private async processCommentBatch(
-    commentBatch: Array<string>,
-    existingArgs: Array<Argument>,
-    topic: string,
-    condensationType: CondensationType
-  ): Promise<Array<Argument>> {
+  private async processCommentBatch({
+    commentBatch,
+    existingArgs,
+    topic,
+    condensationType
+  }: {
+    commentBatch: Array<string>;
+    existingArgs: Array<Argument>;
+    topic: string;
+    condensationType: CondensationType;
+  }): Promise<Array<Argument>> {
     try {
       /** Instructions for the current condensation type (supporting, opposing, etc.) */
       let instructions = this.languageConfig.instructionsGeneral;
@@ -263,7 +277,7 @@ export class Condenser {
           });
 
           /** Parsed Arguments from LLM response */
-          const newArgStrings = this.parser.parseArguments(response.content, topic);
+          const newArgStrings = this.parser.parseArguments({ text: response.content, topic });
 
           // Return the new Argument objects
           return newArgStrings;
@@ -294,11 +308,15 @@ export class Condenser {
    * @returns Promise<Argument[]> Final condensed Argument
    * @private
    */
-  private async condenseArgumentArray(
-    argumentArray: Array<Argument>,
-    topic: string,
-    condensationType: CondensationType
-  ): Promise<Array<Argument>> {
+  private async condenseArgumentArray({
+    argumentArray,
+    topic,
+    condensationType
+  }: {
+    argumentArray: Array<Argument>;
+    topic: string;
+    condensationType: CondensationType;
+  }): Promise<Array<Argument>> {
     /** Instructions for the current condensation type */
     let instructions = this.languageConfig.instructionsGeneral;
     if (condensationType === CONDENSATION_TYPE.SUPPORTING) {
@@ -334,7 +352,7 @@ export class Condenser {
     });
 
     /** Array of parsed Arguments from LLM response */
-    const newArgs = this.parser.parseArgumentCondensation(response.content, topic);
+    const newArgs = this.parser.parseArgumentCondensation({ output: response.content, topic });
 
     // Logging (for debugging)
     console.log('\nOutput Arguments:\n');
@@ -353,11 +371,15 @@ export class Condenser {
    * @returns Promise<Argument[]> Final condensed Arguments
    * @private
    */
-  private async reduceArgumentArrays(
-    argumentArrays: Array<Array<Argument>>,
-    topic: string,
-    condensationType: CondensationType
-  ): Promise<Array<Argument>> {
+  private async reduceArgumentArrays({
+    argumentArrays,
+    topic,
+    condensationType
+  }: {
+    argumentArrays: Array<Array<Argument>>;
+    topic: string;
+    condensationType: CondensationType;
+  }): Promise<Array<Argument>> {
     if (argumentArrays.length <= 1) {
       return argumentArrays[0];
     }
@@ -387,13 +409,21 @@ export class Condenser {
       const combinedArgs = [...array1, ...array2];
 
       /** Condensed Argument array from the two coalesced arrays */
-      const condensedArgs = await this.condenseArgumentArray(combinedArgs, topic, condensationType);
+      const condensedArgs = await this.condenseArgumentArray({
+        argumentArray: combinedArgs,
+        topic,
+        condensationType
+      });
 
       // Add the condensed array to the arrays of arrays
       reducedArrays.push(condensedArgs);
     }
 
     // Recursively process the next level: k arrays--> k/2 --> k/4 --> ... --> 1 array
-    return this.reduceArgumentArrays(reducedArrays, topic, condensationType);
+    return this.reduceArgumentArrays({
+      argumentArrays: reducedArrays,
+      topic,
+      condensationType
+    });
   }
 }
