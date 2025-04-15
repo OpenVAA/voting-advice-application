@@ -1,9 +1,8 @@
 import { processComments, LanguageConfigs, CONDENSATION_TYPE } from '@openvaa/argument-condensation';
 import { OpenAIProvider } from '@openvaa/llm';
 import questionService from '../services/question-service';
+import { OPENAI_API_KEY } from '../../../constants';
 
-// Initialize the OpenAI provider
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const model = 'gpt-4o-mini';
 const llmProvider = new OpenAIProvider({ apiKey: OPENAI_API_KEY, model });
 
