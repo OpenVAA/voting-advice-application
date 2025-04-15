@@ -5,7 +5,7 @@
 export interface Argument {
   /** The condensed argument */
   argument: string;
-  
+
   /** The topic this argument relates to */
   topic: string;
 }

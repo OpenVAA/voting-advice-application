@@ -1,9 +1,9 @@
 import { LLMProvider, Message } from '@openvaa/llm';
 import { Argument } from './types/argument';
-import { OutputParser } from '../utils/OutputParser';
-import { LanguageConfig } from '../languageOptions/languageConfig.type';
-import { ArgumentCondensationError, LLMError } from './types/errors';
 import { CONDENSATION_TYPE, CondensationType } from './types/condensationType';
+import { ArgumentCondensationError, LLMError } from './types/errors';
+import { LanguageConfig } from '../languageOptions/languageConfig.type';
+import { OutputParser } from '../utils/OutputParser';
 
 /** Maximum cumulative length of comments in a single batch */
 const MAX_BATCH_CHARS = 30000;
@@ -18,9 +18,9 @@ const MAX_COMMENT_LENGTH = 2000;
 export class Condenser {
   private llmProvider: LLMProvider;
   private parser: OutputParser;
-  private existingArguments: Argument[][] = [];
+  private existingArguments: Array<Array<Argument>> = [];
   private languageConfig: LanguageConfig;
-  private readonly mapPromptTemplate: string;       // Comments --> Arguments
+  private readonly mapPromptTemplate: string; // Comments --> Arguments
   private readonly recursivePromptTemplate: string; // Arguments --> Less Arguments
 
   /**
@@ -29,7 +29,7 @@ export class Condenser {
    * @param languageConfig - Language-specific configuration for prompts
    * @throws {ArgumentCondensationError} If required parameters are missing
    */
-  constructor({ llmProvider, languageConfig }: { llmProvider: LLMProvider, languageConfig: LanguageConfig }) {
+  constructor({ llmProvider, languageConfig }: { llmProvider: LLMProvider; languageConfig: LanguageConfig }) {
     if (!llmProvider) {
       throw new ArgumentCondensationError('LLM provider is required');
     }
@@ -89,20 +89,18 @@ export class Condenser {
     condensationType = CONDENSATION_TYPE.GENERAL,
     batchesPerArray = 3
   }: {
-    comments: string[],
-    topic: string,
-    batchSize?: number,
-    condensationType?: CondensationType,
-    batchesPerArray?: number
-  }): Promise<Argument[]> {
+    comments: Array<string>;
+    topic: string;
+    batchSize?: number;
+    condensationType?: CondensationType;
+    batchesPerArray?: number;
+  }): Promise<Array<Argument>> {
     try {
       // Validate non-empty comments and truncate those exceeding MAX_COMMENT_LENGTH
       const validatedComments = comments
-        .filter(comment => comment.trim() !== '')
-        .map(comment => 
-          comment.length > MAX_COMMENT_LENGTH 
-            ? comment.substring(0, MAX_COMMENT_LENGTH) + '...'
-            : comment
+        .filter((comment) => comment.trim() !== '')
+        .map((comment) =>
+          comment.length > MAX_COMMENT_LENGTH ? comment.substring(0, MAX_COMMENT_LENGTH) + '...' : comment
         );
 
       console.log(validatedComments);
@@ -117,9 +115,15 @@ export class Condenser {
       }
 
       // First level of condensation: turn some k (batchesPerArray) comment batches into Argument arrays
-      this.existingArguments = await this.createArgumentArrays(validatedComments, topic, batchSize, condensationType, batchesPerArray);
+      this.existingArguments = await this.createArgumentArrays(
+        validatedComments,
+        topic,
+        batchSize,
+        condensationType,
+        batchesPerArray
+      );
 
-      // Second level: Recursively (and pairwise) coalesce the Argument arrays into a single array. 
+      // Second level: Recursively (and pairwise) coalesce the Argument arrays into a single array.
       // Does not flatten k arrays to 1 array directly, but k --> k/2 --> ... --> 1
       return this.reduceArgumentArrays(this.existingArguments, topic, condensationType);
     } catch (error) {
@@ -137,48 +141,48 @@ export class Condenser {
    * @returns Promise<Argument[][]> - Array of Argument arrays
    * @private
    */
-    private async createArgumentArrays(
-      comments: string[],
-      topic: string,
-      batchSize: number,
-      condensationType: CondensationType,
-      batchesPerArray: number
-    ): Promise<Argument[][]> {
-      const nIterations = Math.ceil(comments.length / batchSize); // nIterations = number of batches to process
+  private async createArgumentArrays(
+    comments: Array<string>,
+    topic: string,
+    batchSize: number,
+    condensationType: CondensationType,
+    batchesPerArray: number
+  ): Promise<Array<Array<Argument>>> {
+    const nIterations = Math.ceil(comments.length / batchSize); // nIterations = number of batches to process
 
-      /** Array to populate with Argument arrays */
-      const argumentArrays: Argument[][] = [];                    
-      
-      /** Array of Arguments for the current batch */
-      let currentGroupArgs: Argument[] = []; 
-      
-      // For k (batchesPerArray) batches, create an Argument array
-      for (let i = 0; i < nIterations; i++) {
-        // Process the current batch
-        const commentBatch = comments.slice(i * batchSize, (i + 1) * batchSize);
-        const newArgs = await this.processCommentBatch(commentBatch, currentGroupArgs, topic, condensationType);
-        currentGroupArgs.push(...newArgs);
+    /** Array to populate with Argument arrays */
+    const argumentArrays: Array<Array<Argument>> = [];
 
-        // Logging (for debugging)
-        console.log('--------------------------------');
-        console.log('        Batch', i + 1, 'of', nIterations);
-        for (const arg of currentGroupArgs) {
-          console.log(arg.argument);
-        }
-        console.log('--------------------------------');
-  
-        // After every batchesPerArray batches, store the Argument array and start a new one
-        if ((i + 1) % batchesPerArray === 0 || i === nIterations - 1) {
-          if (currentGroupArgs.length > 0) {
-            argumentArrays.push([...currentGroupArgs]);
-            currentGroupArgs = [];
-          }
+    /** Array of Arguments for the current batch */
+    let currentGroupArgs: Array<Argument> = [];
+
+    // For k (batchesPerArray) batches, create an Argument array
+    for (let i = 0; i < nIterations; i++) {
+      // Process the current batch
+      const commentBatch = comments.slice(i * batchSize, (i + 1) * batchSize);
+      const newArgs = await this.processCommentBatch(commentBatch, currentGroupArgs, topic, condensationType);
+      currentGroupArgs.push(...newArgs);
+
+      // Logging (for debugging)
+      console.log('--------------------------------');
+      console.log('        Batch', i + 1, 'of', nIterations);
+      for (const arg of currentGroupArgs) {
+        console.log(arg.argument);
+      }
+      console.log('--------------------------------');
+
+      // After every batchesPerArray batches, store the Argument array and start a new one
+      if ((i + 1) % batchesPerArray === 0 || i === nIterations - 1) {
+        if (currentGroupArgs.length > 0) {
+          argumentArrays.push([...currentGroupArgs]);
+          currentGroupArgs = [];
         }
       }
-
-      // Return the array of Argument arrays
-      return argumentArrays;
     }
+
+    // Return the array of Argument arrays
+    return argumentArrays;
+  }
 
   /**
    * Processes a single batch of comments using previous Arguments as context
@@ -191,11 +195,11 @@ export class Condenser {
    * @private
    */
   private async processCommentBatch(
-    commentBatch: string[],
-    existingArgs: Argument[],
+    commentBatch: Array<string>,
+    existingArgs: Array<Argument>,
     topic: string,
     condensationType: CondensationType
-  ): Promise<Argument[]> {
+  ): Promise<Array<Argument>> {
     try {
       /** Instructions for the current condensation type (supporting, opposing, etc.) */
       let instructions = this.languageConfig.instructionsGeneral;
@@ -208,13 +212,14 @@ export class Condenser {
       // Remove the longest comments if the batch's cumulative length > MAX_BATCH_CHARS
       let commentsCharSum = commentBatch.reduce((sum, comment) => sum + comment.length, 0);
       while (commentsCharSum > MAX_BATCH_CHARS) {
-        const longestCommentIndex = commentBatch.reduce((maxIndex, comment, currentIndex, arr) => 
-          comment.length > arr[maxIndex].length ? currentIndex : maxIndex
-        , 0);
-        
+        const longestCommentIndex = commentBatch.reduce(
+          (maxIndex, comment, currentIndex, arr) => (comment.length > arr[maxIndex].length ? currentIndex : maxIndex),
+          0
+        );
+
         // Remove the longest comment
         commentBatch.splice(longestCommentIndex, 1);
-        
+
         // Recalculate sum
         commentsCharSum = commentBatch.reduce((sum, comment) => sum + comment.length, 0);
       }
@@ -246,7 +251,7 @@ export class Condenser {
       /** Maximum number of retries for LLM calls */
       const maxRetries = 3;
       /** Last error to be thrown if k (maxRetries) LLM calls fail */
-      let lastError: Error | undefined = undefined; 
+      let lastError: Error | undefined = undefined;
 
       // Try to generate a response from the LLM
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -289,7 +294,11 @@ export class Condenser {
    * @returns Promise<Argument[]> Final condensed Argument
    * @private
    */
-  private async condenseArgumentArray(argumentArray: Argument[], topic: string, condensationType: CondensationType): Promise<Argument[]> {
+  private async condenseArgumentArray(
+    argumentArray: Array<Argument>,
+    topic: string,
+    condensationType: CondensationType
+  ): Promise<Array<Argument>> {
     /** Instructions for the current condensation type */
     let instructions = this.languageConfig.instructionsGeneral;
     if (condensationType === CONDENSATION_TYPE.SUPPORTING) {
@@ -299,9 +308,11 @@ export class Condenser {
     }
 
     /** Formatted Arguments without "1:", "2:", etc. index prefixes */
-    const formattedArgs = argumentArray.map(arg => {
-      return arg.argument.replace(/^\s*\d+\s*:\s*/, '');
-    }).join('\n');
+    const formattedArgs = argumentArray
+      .map((arg) => {
+        return arg.argument.replace(/^\s*\d+\s*:\s*/, '');
+      })
+      .join('\n');
 
     /** Prompt for the current batch */
     let prompt = this.recursivePromptTemplate
@@ -323,12 +334,12 @@ export class Condenser {
     });
 
     /** Array of parsed Arguments from LLM response */
-    const newArgs = this.parser.parseArgumentCondensation(response.content, topic)
+    const newArgs = this.parser.parseArgumentCondensation(response.content, topic);
 
     // Logging (for debugging)
     console.log('\nOutput Arguments:\n');
     for (const arg of newArgs) {
-        console.log(arg.argument);
+      console.log(arg.argument);
     }
     console.log('--------------------------------');
 
@@ -342,24 +353,30 @@ export class Condenser {
    * @returns Promise<Argument[]> Final condensed Arguments
    * @private
    */
-  private async reduceArgumentArrays(argumentArrays: Argument[][], topic: string, condensationType: CondensationType): Promise<Argument[]> {
+  private async reduceArgumentArrays(
+    argumentArrays: Array<Array<Argument>>,
+    topic: string,
+    condensationType: CondensationType
+  ): Promise<Array<Argument>> {
     if (argumentArrays.length <= 1) {
       return argumentArrays[0];
     }
 
     // Logging (for debugging)
     console.log('--------------------------------');
-    console.log(`    Processing ${argumentArrays.length} Argument groups (will continue pair-wise until one array remains, e.g. 4 --> 2 --> 1)`);
+    console.log(
+      `    Processing ${argumentArrays.length} Argument groups (will continue pair-wise until one array remains, e.g. 4 --> 2 --> 1)`
+    );
     console.log('--------------------------------');
 
     /** Array to populate with Argument arrays */
-    const reducedArrays: Argument[][] = [];
-    
+    const reducedArrays: Array<Array<Argument>> = [];
+
     // Process pairs of Argument arrays to create a single, more concise array
     for (let i = 0; i < argumentArrays.length; i += 2) {
       const array1 = argumentArrays[i];
       const array2 = i + 1 < argumentArrays.length ? argumentArrays[i + 1] : [];
-      
+
       // If there is an odd number of Argumentarrays, leave the last one as is
       if (array2.length === 0) {
         reducedArrays.push(array1);

@@ -1,8 +1,8 @@
+import { LLMProvider } from '@openvaa/llm';
 import { Condenser } from '../core/Condenser';
 import { Argument } from '../core/types/argument';
-import { LLMProvider } from '@openvaa/llm';
-import { LanguageConfig } from '../languageOptions/languageConfig.type';
 import { CONDENSATION_TYPE, CondensationType } from '../core/types/condensationType';
+import { LanguageConfig } from '../languageOptions/languageConfig.type';
 
 /**
  * Process comments to extract Arguments
@@ -23,14 +23,14 @@ export async function processComments({
   batchSize = 30,
   condensationType = CONDENSATION_TYPE.GENERAL
 }: {
-  llmProvider: LLMProvider,
-  languageConfig: LanguageConfig,
-  comments: string[],
-  topic: string,
-  batchSize?: number,
-  condensationType?: CondensationType
-}): Promise<Argument[]> {
+  llmProvider: LLMProvider;
+  languageConfig: LanguageConfig;
+  comments: Array<string>;
+  topic: string;
+  batchSize?: number;
+  condensationType?: CondensationType;
+}): Promise<Array<Argument>> {
   // Process comments with a Condenser instance
-  const condenser = new Condenser({llmProvider, languageConfig});
-  return await condenser.processComments({comments, topic, batchSize, condensationType});
-} 
+  const condenser = new Condenser({ llmProvider, languageConfig });
+  return await condenser.processComments({ comments, topic, batchSize, condensationType });
+}

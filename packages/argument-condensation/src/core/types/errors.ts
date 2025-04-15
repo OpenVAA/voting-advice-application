@@ -6,7 +6,10 @@ export class ArgumentCondensationError extends Error {
    * @param message - Error description
    * @param cause - Optional underlying error that caused this error
    */
-  constructor(message: string, public readonly cause?: unknown) {
+  constructor(
+    message: string,
+    public readonly cause?: unknown
+  ) {
     super(message);
     this.name = 'ArgumentCondensationError';
   }
@@ -38,4 +41,4 @@ export class ParsingError extends ArgumentCondensationError {
     super(`Failed to parse LLM response: ${message}`, cause);
     this.name = 'ParsingError';
   }
-} 
+}

@@ -7,7 +7,13 @@
  */
 
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
-import { type AnswerValue, dynamicSettings, type LocalizedAnswer, type LocalizedString, type QuestionTypeSettings } from '@openvaa/app-shared';
+import {
+  type AnswerValue,
+  dynamicSettings,
+  type LocalizedAnswer,
+  type LocalizedString,
+  type QuestionTypeSettings
+} from '@openvaa/app-shared';
 import { LLMResponse, OpenAIProvider } from '@openvaa/llm';
 import crypto from 'crypto';
 import fs from 'fs';
@@ -47,7 +53,6 @@ const N_PARTIES = 10;
 const N_PARTIES_WITH_CLOSED_LISTS = 2;
 const F_DUPLICATE_NOMINATIONS = 0.2;
 
-
 const locales: Array<Locale> = [
   {
     code: 'en',
@@ -75,14 +80,14 @@ const locales: Array<Locale> = [
 function readCsv(): Array<Record<string, string>> {
   try {
     // Try multiple paths like in createCandidates
-    let csvPath = './data.csv';  // relative path
+    let csvPath = './data.csv'; // relative path
     if (!fs.existsSync(csvPath)) {
-      csvPath = path.resolve(__dirname, './data.csv');  // try with __dirname
+      csvPath = path.resolve(__dirname, './data.csv'); // try with __dirname
     }
     if (!fs.existsSync(csvPath)) {
-      csvPath = '/Users/daniel/sp-dev/voting-advice-application/backend/vaa-strapi/src/functions/data.csv';  // absolute path as fallback
+      csvPath = '/Users/daniel/sp-dev/voting-advice-application/backend/vaa-strapi/src/functions/data.csv'; // absolute path as fallback
     }
-    
+
     console.info(`Looking for CSV file at ${csvPath}`);
 
     // Check if file exists
@@ -142,11 +147,11 @@ function readCsv(): Array<Record<string, string>> {
 }
 
 /**
-* Parse CSV text into a 2D array, properly handling quoted values
-*/
+ * Parse CSV text into a 2D array, properly handling quoted values
+ */
 function parseCSV(text: string): Array<Array<string>> {
   // Remove BOM if present
-  if (text.charCodeAt(0) === 0xFEFF) {
+  if (text.charCodeAt(0) === 0xfeff) {
     text = text.slice(1);
   }
 
@@ -564,20 +569,22 @@ async function createParties(length: number) {
 /**
  * Extract candidate data from CSV lines
  */
-function extractCandidateData(lines: Array<string>): Array<{ district: string; party: string; answers: Array<{ numericalAnswer: string; openEndedAnswer: string; }>; }> {
+function extractCandidateData(
+  lines: Array<string>
+): Array<{ district: string; party: string; answers: Array<{ numericalAnswer: string; openEndedAnswer: string }> }> {
   try {
     console.info('Starting extractCandidateData');
     const results: Array<{
       district: string;
       party: string;
-      answers: Array<{ numericalAnswer: string; openEndedAnswer: string; }>;
+      answers: Array<{ numericalAnswer: string; openEndedAnswer: string }>;
     }> = [];
 
     // Constants based on the CSV structure
     const DISTRICT_INDEX = 0;
     const PARTY_INDEX = 1;
-    const NUMERIC_START = 3;  // Usually starts at column 3
-    const NUMERIC_END = 31;   // Numerical answers end around column 31
+    const NUMERIC_START = 3; // Usually starts at column 3
+    const NUMERIC_END = 31; // Numerical answers end around column 31
     const EXPLANATION_START = 32; // Explanations start after numerical answers
 
     // Get header row to help with debugging
@@ -596,10 +603,10 @@ function extractCandidateData(lines: Array<string>): Array<{ district: string; p
 
         // Check if this is a candidate row
         // Typically a candidate row starts with district name
-        if (values[DISTRICT_INDEX] &&
-            (values[DISTRICT_INDEX].toLowerCase().includes('vaalipiiri') ||
-             values[DISTRICT_INDEX].includes('piiri'))) {
-
+        if (
+          values[DISTRICT_INDEX] &&
+          (values[DISTRICT_INDEX].toLowerCase().includes('vaalipiiri') || values[DISTRICT_INDEX].includes('piiri'))
+        ) {
           console.info(`Found candidate row at line ${lineIndex}: ${values[DISTRICT_INDEX]} / ${values[PARTY_INDEX]}`);
 
           const district = values[DISTRICT_INDEX];
@@ -635,7 +642,7 @@ function extractCandidateData(lines: Array<string>): Array<{ district: string; p
             explanationAnswers.push('');
           }
 
-          console.info(`Extracted ${explanationAnswers.filter(a => a.trim().length > 0).length} explanations`);
+          console.info(`Extracted ${explanationAnswers.filter((a) => a.trim().length > 0).length} explanations`);
 
           // Pair answers with explanations
           const pairedAnswers = numericalAnswers.map((num, idx) => ({
@@ -648,7 +655,7 @@ function extractCandidateData(lines: Array<string>): Array<{ district: string; p
           let foundMoreExplanations = false;
 
           // Try to find more explanations in next lines
-          console.info(`Looking for additional explanations in following lines`);
+          console.info('Looking for additional explanations in following lines');
           while (nextLine < lines.length) {
             const nextLineText = lines[nextLine].trim();
             if (!nextLineText) {
@@ -659,9 +666,11 @@ function extractCandidateData(lines: Array<string>): Array<{ district: string; p
             const nextValues = parseCSVLine(nextLineText);
 
             // If this looks like a start of another candidate, stop
-            if (nextValues[DISTRICT_INDEX] &&
-                (nextValues[DISTRICT_INDEX].toLowerCase().includes('vaalipiiri') ||
-                 nextValues[DISTRICT_INDEX].includes('piiri'))) {
+            if (
+              nextValues[DISTRICT_INDEX] &&
+              (nextValues[DISTRICT_INDEX].toLowerCase().includes('vaalipiiri') ||
+                nextValues[DISTRICT_INDEX].includes('piiri'))
+            ) {
               console.info(`Found next candidate at line ${nextLine}, stopping explanation search`);
               break;
             }
@@ -711,10 +720,12 @@ function extractCandidateData(lines: Array<string>): Array<{ district: string; p
 
     // Log some stats
     const answersWithExplanations = results.reduce((count, candidate) => {
-      return count + candidate.answers.filter(a => a.openEndedAnswer && a.openEndedAnswer.length > 5).length;
+      return count + candidate.answers.filter((a) => a.openEndedAnswer && a.openEndedAnswer.length > 5).length;
     }, 0);
 
-    console.info(`Successfully extracted ${results.length} candidates with ${answersWithExplanations} total explanations`);
+    console.info(
+      `Successfully extracted ${results.length} candidates with ${answersWithExplanations} total explanations`
+    );
 
     return results;
   } catch (error) {
@@ -797,16 +808,16 @@ async function createCandidates(length: number) {
   try {
     // Step 1: Load and verify the CSV file
     console.info('STEP 1: Loading CSV file');
-    
+
     // Try both absolute and relative paths
-    let csvPath = './data.csv';  // relative path
+    let csvPath = './data.csv'; // relative path
     if (!fs.existsSync(csvPath)) {
-      csvPath = path.resolve(__dirname, './data.csv');  // try with __dirname
+      csvPath = path.resolve(__dirname, './data.csv'); // try with __dirname
     }
     if (!fs.existsSync(csvPath)) {
-      csvPath = '/Users/daniel/sp-dev/voting-advice-application/backend/vaa-strapi/src/functions/data.csv';  // absolute path as fallback
+      csvPath = '/Users/daniel/sp-dev/voting-advice-application/backend/vaa-strapi/src/functions/data.csv'; // absolute path as fallback
     }
-    
+
     if (!fs.existsSync(csvPath)) {
       console.error('CSV file not found at any of the attempted paths!');
       throw new Error('CSV file not found');
@@ -835,8 +846,8 @@ async function createCandidates(length: number) {
 
     // Step 5: Filter for Likert questions
     console.info('STEP 5: Filtering for Likert questions');
-    const likertQuestions = questions.filter(q =>
-      (q.questionType?.settings as QuestionTypeSettings)?.type === 'singleChoiceOrdinal'
+    const likertQuestions = questions.filter(
+      (q) => (q.questionType?.settings as QuestionTypeSettings)?.type === 'singleChoiceOrdinal'
     );
     console.info(`Found ${likertQuestions.length} Likert questions`);
 
@@ -866,25 +877,27 @@ async function createCandidates(length: number) {
     const BATCH_SIZE = 10;
     for (let batchStart = 0; batchStart < candidateCount; batchStart += BATCH_SIZE) {
       const batchEnd = Math.min(batchStart + BATCH_SIZE, candidateCount);
-      console.info(`Processing batch of candidates ${batchStart+1} to ${batchEnd}`);
+      console.info(`Processing batch of candidates ${batchStart + 1} to ${batchEnd}`);
 
       for (let i = batchStart; i < batchEnd; i++) {
-        console.info(`Processing candidate ${i+1}/${candidateCount}`);
+        console.info(`Processing candidate ${i + 1}/${candidateCount}`);
 
         try {
           const candidateData = candidatesData[i];
 
           // Find matching party
           console.info(`Finding matching party for: ${candidateData.party}`);
-          const party = parties.find(p => {
-            const pName = getLocalizedText(p.name).toLowerCase();
-            return pName.includes(candidateData.party.toLowerCase()) ||
-                   candidateData.party.toLowerCase().includes(pName);
-          }) || parties[0];
+          const party =
+            parties.find((p) => {
+              const pName = getLocalizedText(p.name).toLowerCase();
+              return (
+                pName.includes(candidateData.party.toLowerCase()) || candidateData.party.toLowerCase().includes(pName)
+              );
+            }) || parties[0];
           console.info(`Matched with party: ${getLocalizedText(party.name)}`);
 
           // Build answers object
-          console.info(`Building answers object for candidate ${i+1}`);
+          console.info(`Building answers object for candidate ${i + 1}`);
           const formattedAnswers: Record<string, LocalizedAnswer> = {};
           let answersFound = 0;
           let explanationsFound = 0;
@@ -901,9 +914,11 @@ async function createCandidates(length: number) {
 
               // Add explanation if available
               let info = null;
-              if (answerData.openEndedAnswer &&
-                  answerData.openEndedAnswer.trim() !== '-' &&
-                  answerData.openEndedAnswer.trim().length > 5) {
+              if (
+                answerData.openEndedAnswer &&
+                answerData.openEndedAnswer.trim() !== '-' &&
+                answerData.openEndedAnswer.trim().length > 5
+              ) {
                 info = {
                   fi: answerData.openEndedAnswer.trim(),
                   en: answerData.openEndedAnswer.trim(),
@@ -939,7 +954,7 @@ async function createCandidates(length: number) {
 
               const key = answerKeys[j];
               const ans = formattedAnswers[key];
-              console.info(`Answer ${j+1} (question ID: ${key}):`);
+              console.info(`Answer ${j + 1} (question ID: ${key}):`);
               console.info(`  Value: ${ans.value}`);
               console.info(`  Has explanation: ${ans.info !== null}`);
               if (ans.info) {
@@ -949,41 +964,49 @@ async function createCandidates(length: number) {
           }
 
           // Use the answers we found or set empty answers if none were found
-          console.info(`Finalizing answers for candidate ${i+1} (found: ${answersFound})`);
-          const finalAnswers = answersFound > 0 ?
-            (formattedAnswers as unknown as JSONValue) :
-            {}; // Empty object instead of generating random answers
+          console.info(`Finalizing answers for candidate ${i + 1} (found: ${answersFound})`);
+          const finalAnswers = answersFound > 0 ? (formattedAnswers as unknown as JSONValue) : {}; // Empty object instead of generating random answers
 
           // Create the candidate
-          console.info(`Creating candidate ${i+1} in database`);
+          console.info(`Creating candidate ${i + 1} in database`);
           await strapi.documents('api::candidate.candidate').create({
             data: {
               firstName: 'Candidate',
               lastName: `${i + 1}`,
-              email: `candidate${i+1}@example.com`,
+              email: `candidate${i + 1}@example.com`,
               party: party.documentId,
               answers: finalAnswers,
               ...addMockId()
             }
           });
 
-          console.info(`Successfully created candidate ${i+1} with ${answersFound} answers and ${explanationsFound} explanations`);
+          console.info(
+            `Successfully created candidate ${i + 1} with ${answersFound} answers and ${explanationsFound} explanations`
+          );
         } catch (error) {
-          console.error(`Error processing candidate ${i+1}:`, error);
+          console.error(`Error processing candidate ${i + 1}:`, error);
           // Continue with next candidate instead of stopping the whole process
         }
       }
 
-      console.info(`Completed batch ${batchStart+1} to ${batchEnd}`);
+      console.info(`Completed batch ${batchStart + 1} to ${batchEnd}`);
     }
 
     // Final statistics
     console.info('=== CANDIDATE CREATION STATISTICS ===');
     console.info(`Total candidates created: ${totalWithAnswers}`);
-    console.info(`Candidates with CSV answers: ${totalWithAnswers} (${Math.round(totalWithAnswers/candidateCount*100)}%)`);
-    console.info(`Candidates with explanations: ${totalWithExplanations} (${Math.round(totalWithExplanations/candidateCount*100)}%)`);
-    console.info(`Total answers populated: ${totalAnswers} (avg ${totalWithAnswers > 0 ? Math.round(totalAnswers/totalWithAnswers) : 0} per candidate)`);
-    console.info(`Total explanations populated: ${totalExplanations} (avg ${totalWithExplanations > 0 ? Math.round(totalExplanations/totalWithExplanations) : 0} per candidate)`);
+    console.info(
+      `Candidates with CSV answers: ${totalWithAnswers} (${Math.round((totalWithAnswers / candidateCount) * 100)}%)`
+    );
+    console.info(
+      `Candidates with explanations: ${totalWithExplanations} (${Math.round((totalWithExplanations / candidateCount) * 100)}%)`
+    );
+    console.info(
+      `Total answers populated: ${totalAnswers} (avg ${totalWithAnswers > 0 ? Math.round(totalAnswers / totalWithAnswers) : 0} per candidate)`
+    );
+    console.info(
+      `Total explanations populated: ${totalExplanations} (avg ${totalWithExplanations > 0 ? Math.round(totalExplanations / totalWithExplanations) : 0} per candidate)`
+    );
     console.info('=== CANDIDATE CREATION COMPLETED ===');
   } catch (error) {
     console.error('ERROR in createCandidates:', error);
@@ -1016,7 +1039,7 @@ async function createRandomCandidates(length: number, questions: Array<any>) {
       });
 
       if (i % 10 === 0) {
-        console.info(`Created random candidate ${i+1}/${length}`);
+        console.info(`Created random candidate ${i + 1}/${length}`);
       }
     }
 
@@ -1202,164 +1225,171 @@ async function createQuestionTypes() {
 - * @param options.constituencyPctg The fraction of Likert questions that will
 - *   have their `constituency` relation set to a random constituency.
 - */
-  async function createQuestions({ constituencyPctg = 0.1 } = {}) {
-    const csvData = readCsv();
-    // If we have CSV data, use it to create questions
-    if (csvData.length > 0) {
-      const questionTypes = await strapi.documents('api::question-type.question-type').findMany({});
-  
-      // Find the Likert scale question type
-      const likertType = questionTypes.find(qt =>
-        (qt.settings as QuestionTypeSettings).type === 'singleChoiceOrdinal'
-      );
-  
-      // Check if we found the Likert type and log its settings
-      if (likertType) {
-        console.info(`Found Likert question type with ID: ${likertType.documentId}`);
-        console.info(`Likert type settings: ${JSON.stringify(likertType.settings)}`);
-      } else {
-        console.warn(`Could not find singleChoiceOrdinal question type!`);
-      }
-  
-      const categories = await strapi.documents('api::question-category.question-category').findMany({});
-      const opinionCategory = categories.find(c => c.type === 'opinion');
-  
-      const elections = await strapi.documents('api::election.election').findMany({});
-      const electionIds = elections.map(e => e.documentId);
-  
-      // Extract first record to analyze headers
-      const firstRecord = csvData[0];
-  
-      // Process headers to find questions
-      const headers = Object.keys(firstRecord);
-  
-      // Find metadata columns
-      const metadataColumns = ['vaalipiiri', 'puolue', 'valintatieto'];
-      const metadataIndices: Array<number> = [];
-  
-      headers.forEach((header, index) => {
-        for (const col of metadataColumns) {
-          if (header.toLowerCase().includes(col.toLowerCase())) {
-            metadataIndices.push(index);
-            break;
-          }
-         }
-       });
-  
-  
-      console.info(`Found ${metadataIndices.length} metadata columns`);
-  
-      // Find the position where questions start
-      const startIndex = Math.max(...metadataIndices, 0) + 1;
-  
-      // Find complete questions with pattern recognition
-      let currentQuestion = '';
-      const rawQuestions: Array<string> = [];
-  
-      for (let i = startIndex; i < headers.length; i++) {
-        const header = headers[i];
-  
-        // Skip headers that are clearly not part of questions
-        if (header.trim() === '' ||
-            header.includes('vaalilupaus') ||
-            header.includes('ikä') ||
-            header.toLowerCase().includes('sukupuoli')) {
-          if (currentQuestion) {
-            rawQuestions.push(currentQuestion);
-            currentQuestion = '';
-          }
-          continue;
+async function createQuestions({ constituencyPctg = 0.1 } = {}) {
+  const csvData = readCsv();
+  // If we have CSV data, use it to create questions
+  if (csvData.length > 0) {
+    const questionTypes = await strapi.documents('api::question-type.question-type').findMany({});
+
+    // Find the Likert scale question type
+    const likertType = questionTypes.find((qt) => (qt.settings as QuestionTypeSettings).type === 'singleChoiceOrdinal');
+
+    // Check if we found the Likert type and log its settings
+    if (likertType) {
+      console.info(`Found Likert question type with ID: ${likertType.documentId}`);
+      console.info(`Likert type settings: ${JSON.stringify(likertType.settings)}`);
+    } else {
+      console.warn('Could not find singleChoiceOrdinal question type!');
+    }
+
+    const categories = await strapi.documents('api::question-category.question-category').findMany({});
+    const opinionCategory = categories.find((c) => c.type === 'opinion');
+
+    const elections = await strapi.documents('api::election.election').findMany({});
+    const electionIds = elections.map((e) => e.documentId);
+
+    // Extract first record to analyze headers
+    const firstRecord = csvData[0];
+
+    // Process headers to find questions
+    const headers = Object.keys(firstRecord);
+
+    // Find metadata columns
+    const metadataColumns = ['vaalipiiri', 'puolue', 'valintatieto'];
+    const metadataIndices: Array<number> = [];
+
+    headers.forEach((header, index) => {
+      for (const col of metadataColumns) {
+        if (header.toLowerCase().includes(col.toLowerCase())) {
+          metadataIndices.push(index);
+          break;
         }
-  
-        // Add this part to the current question
-        if (currentQuestion) currentQuestion += ' ';
-        currentQuestion += header;
-  
-        // If this header ends with period or question mark, it's likely the end of a question
-        if (header.trim().endsWith('.') || header.trim().endsWith('?')) {
+      }
+    });
+
+    console.info(`Found ${metadataIndices.length} metadata columns`);
+
+    // Find the position where questions start
+    const startIndex = Math.max(...metadataIndices, 0) + 1;
+
+    // Find complete questions with pattern recognition
+    let currentQuestion = '';
+    const rawQuestions: Array<string> = [];
+
+    for (let i = startIndex; i < headers.length; i++) {
+      const header = headers[i];
+
+      // Skip headers that are clearly not part of questions
+      if (
+        header.trim() === '' ||
+        header.includes('vaalilupaus') ||
+        header.includes('ikä') ||
+        header.toLowerCase().includes('sukupuoli')
+      ) {
+        if (currentQuestion) {
           rawQuestions.push(currentQuestion);
           currentQuestion = '';
         }
+        continue;
       }
-  
-      // Add any remaining question
-      if (currentQuestion) {
+
+      // Add this part to the current question
+      if (currentQuestion) currentQuestion += ' ';
+      currentQuestion += header;
+
+      // If this header ends with period or question mark, it's likely the end of a question
+      if (header.trim().endsWith('.') || header.trim().endsWith('?')) {
         rawQuestions.push(currentQuestion);
+        currentQuestion = '';
       }
-  
-      // Clean up questions
-      const cleanQuestions = rawQuestions
-        .filter(q =>
+    }
+
+    // Add any remaining question
+    if (currentQuestion) {
+      rawQuestions.push(currentQuestion);
+    }
+
+    // Clean up questions
+    const cleanQuestions = rawQuestions
+      .filter(
+        (q) =>
           q.length > 10 && // Minimum length for a question
           !q.toLowerCase().includes('vaalilupaus') &&
           !q.toLowerCase().includes('koulutus') &&
           !q.toLowerCase().includes('ammatti') &&
           !q.toLowerCase().includes('kielitaito')
-        )
-        .map(q => q.trim())
-        .slice(0, 30); // Take max 30 questions
-  
-      console.info(`Identified ${cleanQuestions.length} complete questions`);
-      console.info('Sample questions:');
-      cleanQuestions.slice(0, 5).forEach(q => console.info(`- ${q}`));
-  
-      // Create custom settings to ensure Likert-5 scale
-      const likertSettings = likertType?.settings
-        ? { ...(likertType.settings as Record<string, any>) }
-        : {
-            type: 'singleChoiceOrdinal',
-            notLocalizable: false,
-            choices: [
-              { id: 1, label: { fi: 'Täysin eri mieltä', en: 'Strongly disagree', sv: 'Helt av annan åsikt' } },
-              { id: 2, label: { fi: 'Jokseenkin eri mieltä', en: 'Somewhat disagree', sv: 'Delvis av annan åsikt' } },
-              { id: 3, label: { fi: 'Ei samaa eikä eri mieltä', en: 'Neither agree nor disagree', sv: 'Varken av samma eller annan åsikt' } },
-              { id: 4, label: { fi: 'Jokseenkin samaa mieltä', en: 'Somewhat agree', sv: 'Delvis av samma åsikt' } },
-              { id: 5, label: { fi: 'Täysin samaa mieltä', en: 'Strongly agree', sv: 'Helt av samma åsikt' } }
-            ],
-            min: 1,
-            max: 5
-          };
-  
-      console.info(`Using Likert settings: ${JSON.stringify(likertSettings)}`);
-  
-      // Create questions
-      for (let i = 0; i < cleanQuestions.length; i++) {
-        try {
-          console.info(`Creating question ${i+1}/${cleanQuestions.length}: "${cleanQuestions[i].substring(0, 50)}..."`);
-  
-          await strapi.documents('api::question.question').create({
-            data: {
-              text: fakeLocalized(() => cleanQuestions[i]),
-              info: fakeLocalized((faker) => faker.lorem.sentence()),
-              order: i,
-              allowOpen: true,
-              questionType: likertType?.documentId,
-              category: opinionCategory?.documentId,
-              elections: electionIds,
-              customSettings: {
-                likertScale: {
-                  min: 1,
-                  max: 5
-                }
-              },
-              ...addMockId()
-            }
-          });
-  
-          console.info(`Successfully created question ${i+1}`);
-        } catch (error) {
-          console.error(`Error creating question ${i+1}:`, error);
-        }
+      )
+      .map((q) => q.trim())
+      .slice(0, 30); // Take max 30 questions
+
+    console.info(`Identified ${cleanQuestions.length} complete questions`);
+    console.info('Sample questions:');
+    cleanQuestions.slice(0, 5).forEach((q) => console.info(`- ${q}`));
+
+    // Create custom settings to ensure Likert-5 scale
+    const likertSettings = likertType?.settings
+      ? { ...(likertType.settings as Record<string, any>) }
+      : {
+          type: 'singleChoiceOrdinal',
+          notLocalizable: false,
+          choices: [
+            { id: 1, label: { fi: 'Täysin eri mieltä', en: 'Strongly disagree', sv: 'Helt av annan åsikt' } },
+            { id: 2, label: { fi: 'Jokseenkin eri mieltä', en: 'Somewhat disagree', sv: 'Delvis av annan åsikt' } },
+            {
+              id: 3,
+              label: {
+                fi: 'Ei samaa eikä eri mieltä',
+                en: 'Neither agree nor disagree',
+                sv: 'Varken av samma eller annan åsikt'
+              }
+            },
+            { id: 4, label: { fi: 'Jokseenkin samaa mieltä', en: 'Somewhat agree', sv: 'Delvis av samma åsikt' } },
+            { id: 5, label: { fi: 'Täysin samaa mieltä', en: 'Strongly agree', sv: 'Helt av samma åsikt' } }
+          ],
+          min: 1,
+          max: 5
+        };
+
+    console.info(`Using Likert settings: ${JSON.stringify(likertSettings)}`);
+
+    // Create questions
+    for (let i = 0; i < cleanQuestions.length; i++) {
+      try {
+        console.info(`Creating question ${i + 1}/${cleanQuestions.length}: "${cleanQuestions[i].substring(0, 50)}..."`);
+
+        await strapi.documents('api::question.question').create({
+          data: {
+            text: fakeLocalized(() => cleanQuestions[i]),
+            info: fakeLocalized((faker) => faker.lorem.sentence()),
+            order: i,
+            allowOpen: true,
+            questionType: likertType?.documentId,
+            category: opinionCategory?.documentId,
+            elections: electionIds,
+            customSettings: {
+              likertScale: {
+                min: 1,
+                max: 5
+              }
+            },
+            ...addMockId()
+          }
+        });
+
+        console.info(`Successfully created question ${i + 1}`);
+      } catch (error) {
+        console.error(`Error creating question ${i + 1}:`, error);
       }
-  
-      console.info('All questions created successfully');
-  
-      // Reload questions to get their IDs
-      return await strapi.documents('api::question.question').findMany({
-        populate: ['questionType']
-       });
-     }
-   }
+    }
+
+    console.info('All questions created successfully');
+
+    // Reload questions to get their IDs
+    return await strapi.documents('api::question.question').findMany({
+      populate: ['questionType']
+    });
+  }
+}
 
 async function createCandidateUsers() {
   if (process.env.NODE_ENV === 'production') {

@@ -14,7 +14,7 @@ interface CandidateAnswer {
  * @param documentIds Optional array of document IDs to filter by
  * @returns All Likert questions if no IDs provided, otherwise only matching questions
  */
-async function fetchProcessableQuestions(documentIds?: string[]) {
+async function fetchProcessableQuestions(documentIds?: Array<string>) {
   const questions = await strapi.db.query('api::question.question').findMany({
     select: ['id', 'documentId', 'text'],
     populate: {
@@ -36,12 +36,16 @@ async function fetchProcessableQuestions(documentIds?: string[]) {
 /**
  * Fetches all answers for the specified question IDs from all candidates
  */
-async function fetchAnswersForQuestions(questionDocumentIds: string[]): Promise<Record<string, CandidateAnswer[]>> {
+async function fetchAnswersForQuestions(
+  questionDocumentIds: Array<string>
+): Promise<Record<string, Array<CandidateAnswer>>> {
   const candidates = await strapi.db.query('api::candidate.candidate').findMany({
     select: ['id', 'answers']
   });
 
-  const answersMap: Record<string, CandidateAnswer[]> = Object.fromEntries(questionDocumentIds.map((qId) => [qId, []]));
+  const answersMap: Record<string, Array<CandidateAnswer>> = Object.fromEntries(
+    questionDocumentIds.map((qId) => [qId, []])
+  );
 
   candidates
     .filter((candidate) => candidate.answers)
@@ -67,13 +71,13 @@ async function fetchAnswersForQuestions(questionDocumentIds: string[]): Promise<
 function logQuestionDetails(questions) {
   // Log full details of the first question to inspect structure
   if (questions.length > 0) {
-    console.log('FIRST QUESTION DETAILS:');
-    console.log(JSON.stringify(questions[0], null, 2));
+    console.info('FIRST QUESTION DETAILS:');
+    console.info(JSON.stringify(questions[0], null, 2));
 
     // Log all questions with key properties
-    console.log('\nALL QUESTIONS:');
+    console.info('\nALL QUESTIONS:');
     questions.forEach((q, index) => {
-      console.log(
+      console.info(
         `[${index}] id: ${q.id}, documentId: ${q.documentId}, type: ${q.questionType?.settings?.type || 'unknown'}, text: ${JSON.stringify(q.text).substring(0, 50)}...`
       );
     });
@@ -85,10 +89,10 @@ function logQuestionDetails(questions) {
  */
 async function testQuestionRetrieval() {
   try {
-    console.log('\n============ TESTING QUESTION RETRIEVAL ============');
+    console.info('\n============ TESTING QUESTION RETRIEVAL ============');
     const questions = await fetchProcessableQuestions();
     logQuestionDetails(questions);
-    console.log('============ TEST COMPLETE ============\n');
+    console.info('============ TEST COMPLETE ============\n');
     return questions;
   } catch (error) {
     console.error('Error testing question retrieval:', error);

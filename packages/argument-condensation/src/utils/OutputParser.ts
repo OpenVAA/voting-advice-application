@@ -20,8 +20,8 @@ export class OutputParser {
    * Extracts Argument strings from the LLM response text
    * @param text - Raw response text from the language model
    * @param topic - The topic of the Arguments
-   * @returns Array of Arguments 
-   * 
+   * @returns Array of Arguments
+   *
    * @example
    * Input text format:
    * <ARGUMENTS>
@@ -29,9 +29,9 @@ export class OutputParser {
    * ARGUMENT 2: This is the second Argument
    * </ARGUMENTS>
    */
-  parseArguments(text: string, topic: string): Argument[] {
+  parseArguments(text: string, topic: string): Array<Argument> {
     /** Array to be populated by Arguments */
-    const parsedArgs = new Array<Argument>();   
+    const parsedArgs = new Array<Argument>();
 
     /** Used to build the current Argument's string if it's multi-lined in the text */
     let currentArg = '';
@@ -42,10 +42,10 @@ export class OutputParser {
     /** Split the LLM response into lines */
     const lines = text.split('\n');
 
-    // Iterate over lines of the response 
+    // Iterate over lines of the response
     for (const line of lines) {
       const trimmedLine = line.trim();
-      
+
       /** Check if we're inside the <ARGUMENTS> block */
       if (trimmedLine.includes('<ARGUMENTS>')) {
         stillProcessing = true;
@@ -53,7 +53,7 @@ export class OutputParser {
       } else if (trimmedLine.includes('</ARGUMENTS>')) {
         break;
       }
-      
+
       /** Process lines within the Arguments block */
       if (stillProcessing) {
         /** Check if the line starts with the correct Argument prefix  */
@@ -91,7 +91,7 @@ export class OutputParser {
    * @param output - The LLM response text
    * @returns Argument[] - Array of condensed Arguments
    */
-  parseArgumentCondensation(output: string, topic: string): Argument[] {
+  parseArgumentCondensation(output: string, topic: string): Array<Argument> {
     /** Array to populate with condensed Arguments */
     const args = new Array<Argument>();
 
@@ -102,12 +102,15 @@ export class OutputParser {
     const lines = output.split('\n');
 
     // Iterate over lines of the response
-    for (const line of lines) {   
-      // Check if the line starts with the correct Argument prefix 
+    for (const line of lines) {
+      // Check if the line starts with the correct Argument prefix
       if (line.startsWith(argumentPrefix)) {
         /** Pure argument string with prefixes like "1:" removed */
-        const argumentText = line.substring(argumentPrefix.length).trim().replace(/^\s*\d+\s*:\s*/, ''); 
-        
+        const argumentText = line
+          .substring(argumentPrefix.length)
+          .trim()
+          .replace(/^\s*\d+\s*:\s*/, '');
+
         // Create a new Argument with the condensed text
         args.push({
           argument: argumentText,
@@ -115,7 +118,7 @@ export class OutputParser {
         });
       }
     }
-    
+
     return args;
-  } 
+  }
 }

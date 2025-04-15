@@ -1,7 +1,7 @@
-import { processComments, LanguageConfigs, CONDENSATION_TYPE } from '@openvaa/argument-condensation';
+import { CONDENSATION_TYPE, LanguageConfigs, processComments } from '@openvaa/argument-condensation';
 import { OpenAIProvider } from '@openvaa/llm';
-import questionService from '../services/question-service';
 import { OPENAI_API_KEY } from '../../../constants';
+import questionService from '../services/question-service';
 
 const model = 'gpt-4o-mini';
 const llmProvider = new OpenAIProvider({ apiKey: OPENAI_API_KEY, model });
@@ -20,7 +20,7 @@ interface CategoryGroups {
   [key: string]: Array<string>;
 }
 
-function groupLikertAnswers(answers: any[], questionScale: number): LikertGroups {
+function groupLikertAnswers(answers: Array<any>, questionScale: number): LikertGroups {
   const isEven = questionScale % 2 === 0;
   const groups: LikertGroups = {
     presumedPros: [],
@@ -55,7 +55,7 @@ function groupLikertAnswers(answers: any[], questionScale: number): LikertGroups
 }
 
 // Note: NOT IN USE, as our test data does not yet contain categorical answers
-function groupCategoricalAnswers(answers: any[]): CategoryGroups {
+function groupCategoricalAnswers(answers: Array<any>): CategoryGroups {
   const groups: CategoryGroups = {};
 
   answers.forEach((answer) => {
@@ -80,7 +80,7 @@ export default {
    */
   async condense(ctx) {
     try {
-      console.log('\n=== Starting Argument Condensation ===');
+      console.info('\n=== Starting Argument Condensation ===');
 
       const { questionDocumentIds } = ctx.request.body || {};
 
@@ -95,24 +95,24 @@ export default {
       }
 
       const answersMap = await questionService.fetchAnswersForQuestions(questionsToProcess.map((q) => q.documentId));
-      console.log('Successfully fetched answers map');
+      console.info('Successfully fetched answers map');
 
       // Process each question based on its type
       for (const question of questionsToProcess) {
-        console.log('\n=== Processing Question ===');
-        console.log('Question ID:', question.id);
-        console.log('Document ID:', question.documentId);
-        console.log('Text:', question.text ? JSON.stringify(question.text).substring(0, 100) : 'No text');
-        console.log('Type:', question.questionType?.settings?.type || 'Unknown type');
-        console.log('Name:', question.questionType?.name || 'Unknown name');
+        console.info('\n=== Processing Question ===');
+        console.info('Question ID:', question.id);
+        console.info('Document ID:', question.documentId);
+        console.info('Text:', question.text ? JSON.stringify(question.text).substring(0, 100) : 'No text');
+        console.info('Type:', question.questionType?.settings?.type || 'Unknown type');
+        console.info('Name:', question.questionType?.name || 'Unknown name');
 
         try {
           // Get answers for this specific question using documentId
           const answers = answersMap[question.documentId] || [];
-          console.log(`Found ${answers.length} answers for this question`);
+          console.info(`Found ${answers.length} answers for this question`);
 
           if (answers.length === 0) {
-            console.log('Skipping question - no answers found');
+            console.info('Skipping question - no answers found');
             continue;
           }
 
@@ -167,13 +167,13 @@ export default {
               return acc;
             }, Promise.resolve({}));
           } else {
-            console.log(`Skipping question - unsupported type: ${questionType}`);
+            console.info(`Skipping question - unsupported type: ${questionType}`);
             continue;
           }
 
           // Update question with processed results
           try {
-            console.log('Updating question with results...');
+            console.info('Updating question with results...');
             await strapi.db.query('api::question.question').update({
               where: { id: question.id },
               data: {
@@ -183,7 +183,7 @@ export default {
                 }
               }
             });
-            console.log(`Updated question ${question.id} with the results`);
+            console.info(`Updated question ${question.id} with the results`);
           } catch (updateError) {
             console.error('Error updating question:', updateError);
             console.error('Failed to update question ID:', question.id);
@@ -194,7 +194,7 @@ export default {
         }
       }
 
-      console.log('\n=== Process Complete ===');
+      console.info('\n=== Process Complete ===');
       ctx.body = {
         data: {
           message: 'Successfully processed selected questions',
@@ -260,7 +260,7 @@ export default {
    */
   async testAnswers(ctx) {
     try {
-      console.log('\n=== Testing Answer Retrieval ===');
+      console.info('\n=== Testing Answer Retrieval ===');
       const results = await questionService.testAnswerRetrieval();
 
       ctx.body = results;
