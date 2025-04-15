@@ -22,7 +22,7 @@ interface CategoryGroups {
   [key: string]: Array<string>;
 }
 
-function groupLikertAnswers(answers: Array<LocalizedAnswer>, questionScale: number): LikertGroups {
+function groupLikertAnswers(answers: Array<LocalizedAnswer>, questionScale: number, locale: string = 'fi'): LikertGroups {
   const isEven = questionScale % 2 === 0;
   const groups: LikertGroups = {
     presumedPros: [],
@@ -30,7 +30,7 @@ function groupLikertAnswers(answers: Array<LocalizedAnswer>, questionScale: numb
   };
 
   answers.forEach((answer) => {
-    if (!answer.info?.fi || (typeof answer.value !== 'string' && typeof answer.value !== 'number')) {
+    if (!answer.info?.[locale] || (typeof answer.value !== 'string' && typeof answer.value !== 'number')) {
       return;
     }
 
@@ -39,17 +39,17 @@ function groupLikertAnswers(answers: Array<LocalizedAnswer>, questionScale: numb
     if (isEven) {
       // For 4-point scale: 1,2 -> cons, 3,4 -> pros
       if (value <= questionScale / 2) {
-        groups.presumedCons.push(answer.info.fi);
+        groups.presumedCons.push(answer.info[locale]);
       } else {
-        groups.presumedPros.push(answer.info.fi);
+        groups.presumedPros.push(answer.info[locale]);
       }
     } else {
       const middleValue = Math.ceil(questionScale / 2);
       // For 5-point scale: 1,2 -> cons, 3 -> ignored, 4,5 -> pros
       if (value < middleValue) {
-        groups.presumedCons.push(answer.info.fi);
+        groups.presumedCons.push(answer.info[locale]);
       } else if (value > middleValue) {
-        groups.presumedPros.push(answer.info.fi);
+        groups.presumedPros.push(answer.info[locale]);
       }
       // Middle value is ignored
     }
@@ -59,7 +59,7 @@ function groupLikertAnswers(answers: Array<LocalizedAnswer>, questionScale: numb
 }
 
 // Note: NOT IN USE, as our test data does not yet contain categorical answers
-function groupCategoricalAnswers(answers: Array<LocalizedAnswer>): CategoryGroups {
+function groupCategoricalAnswers(answers: Array<LocalizedAnswer>, locale: string = 'fi'): CategoryGroups {
   const groups: CategoryGroups = {};
 
   return groups;
@@ -69,7 +69,7 @@ export default {
   /**
    * Condenses arguments for specified questions
    */
-  async condense(ctx) {
+  async condense(ctx, locale: string = 'fi') {
     try {
       console.info('\n=== Starting Argument Condensation ===');
 
@@ -123,9 +123,9 @@ export default {
                 groupedAnswers.presumedPros.length > 0
                   ? await processComments({
                       llmProvider,
-                      languageConfig: LanguageConfigs.Finnish,
+                      languageConfig: LanguageConfigs[locale],
                       comments: groupedAnswers.presumedPros,
-                      topic: question.text?.fi,
+                      topic: question.text?.[locale],
                       batchSize: 30,
                       condensationType: CONDENSATION_TYPE.SUPPORTING
                     })
@@ -134,9 +134,9 @@ export default {
                 groupedAnswers.presumedCons.length > 0
                   ? await processComments({
                       llmProvider,
-                      languageConfig: LanguageConfigs.Finnish,
+                      languageConfig: LanguageConfigs[locale],
                       comments: groupedAnswers.presumedCons,
-                      topic: question.text?.fi,
+                      topic: question.text?.[locale],
                       batchSize: 30,
                       condensationType: CONDENSATION_TYPE.OPPOSING
                     })
@@ -153,9 +153,9 @@ export default {
               
               processedResults[category] = await processComments({
                 llmProvider,
-                languageConfig: LanguageConfigs.Finnish,
+                languageConfig: LanguageConfigs[locale],
                 comments,
-                topic: `${question.text?.fi} - ${category}`,
+                topic: `${question.text?.[locale]} - ${category}`,
                 batchSize: 30,
                 condensationType: CONDENSATION_TYPE.GENERAL
               });
@@ -206,7 +206,7 @@ export default {
   /**
    * Lists questions available for condensation
    */
-  async listQuestions(ctx) {
+  async listQuestions(ctx, locale: string = 'fi') {
     try {
       const questions = await questionService.fetchProcessableQuestions();
       questionService.logQuestionDetails(questions);
@@ -215,7 +215,7 @@ export default {
         data: questions.map((q) => ({
           id: q.id,
           documentId: q.documentId,
-          text: q.text?.fi,
+          text: q.text?.[locale],
           type: q.questionType?.name
         }))
       };

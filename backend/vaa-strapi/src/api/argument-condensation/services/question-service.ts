@@ -5,8 +5,8 @@
 // Add an interface at the top of the file
 export interface CandidateAnswer {
   candidateId: string;
-  value: string | number; // Using 'any' since values could be strings, numbers, booleans, etc.
-  openAnswer: { fi: string } | null;
+  value: string | number;
+  openAnswer: Record<string, string> | null;
 }
 
 /**
@@ -36,9 +36,12 @@ async function fetchProcessableQuestions(documentIds?: Array<string>) {
 
 /**
  * Fetches all answers for the specified question IDs from all candidates
+ * @param questionDocumentIds Array of question document IDs
+ * @param locale Language code to use for open answers (defaults to 'fi')
  */
 async function fetchAnswersForQuestions(
-  questionDocumentIds: Array<string>
+  questionDocumentIds: Array<string>,
+  locale: string = 'fi'
 ): Promise<Record<string, Array<CandidateAnswer>>> {
   const candidates = await strapi.db.query('api::candidate.candidate').findMany({
     select: ['id', 'answers'],
@@ -59,10 +62,11 @@ async function fetchAnswersForQuestions(
       questionDocumentIds.forEach((qId) => {
         const answer = candidate.answers[qId];
         if (answer) {
+          const openAnswerText = answer.info?.[locale];
           answersMap[qId].push({
             candidateId: candidate.id,
             value: answer.value,
-            openAnswer: answer.info?.fi ? { fi: answer.info.fi } : null
+            openAnswer: openAnswerText ? { [locale]: openAnswerText } : null
           });
         }
       });

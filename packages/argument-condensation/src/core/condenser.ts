@@ -3,7 +3,7 @@ import { Argument } from './types/argument';
 import { CONDENSATION_TYPE, CondensationType } from './types/condensationType';
 import { ArgumentCondensationError, LLMError } from './types/errors';
 import { LanguageConfig } from '../languageOptions/languageConfig.type';
-import { OutputParser } from '../utils/outputParser';
+import { OutputParser } from '../utils/OutputParser';
 
 /** Maximum cumulative length of comments in a single batch */
 const MAX_BATCH_CHARS = 30000;

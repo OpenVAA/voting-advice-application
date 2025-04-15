@@ -5,8 +5,8 @@ import { LanguageConfig } from './languageConfig.type';
  * Provides language-specific configuration for argument condensation
  */
 export const LanguageConfigs: Record<string, LanguageConfig> = {
-  Finnish: FINNISH_CONFIG,
-  English: ENGLISH_CONFIG
+  fi: FINNISH_CONFIG,
+  en: ENGLISH_CONFIG
 } as const;
 
 /**
