@@ -1,5 +1,5 @@
+import { Condenser } from '../core/condenser';
 import { LLMProvider } from '@openvaa/llm';
-import { Condenser } from '../core/Condenser';
 import { Argument } from '../core/types/argument';
 import { CONDENSATION_TYPE, CondensationType } from '../core/types/condensationType';
 import { LanguageConfig } from '../languageOptions/languageConfig.type';

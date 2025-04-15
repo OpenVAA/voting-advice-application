@@ -35,11 +35,11 @@ export interface LanguageConfig {
 
   /** Configuration for output formatting */
   outputFormat: {
-    /** Prefix for new arguments in the output */
-    argumentPrefix: string;
-
-    /** Output placeholder for the condensed argument */
-    argumentPlaceholder: string;
+      /** Prefix for new arguments in the output */
+      argumentPrefix: string;
+      
+      /** Output placeholder for the condensed argument */
+      argumentPlaceholder: string;
   };
 
   /** Prefix for comments in the input prompt */

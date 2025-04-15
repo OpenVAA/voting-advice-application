@@ -2,7 +2,7 @@ import { processComments } from './utils/commentProcessor';
 
 // Export main functionality
 export { processComments };
-export { Condenser } from './core/Condenser';
+export { Condenser } from './core/condenser';
 export { exportResults } from './utils/fileOperations';
 
 // Export types
