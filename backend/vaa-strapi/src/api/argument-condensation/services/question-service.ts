@@ -24,6 +24,7 @@ async function fetchProcessableQuestions(documentIds?: Array<string>) {
     }
   });
 
+  // TODO: Needs to be changed when we have more question types
   const processableQuestions = questions.filter((q) => q.questionType?.settings?.type === 'singleChoiceOrdinal');
 
   if (!documentIds?.length) {
