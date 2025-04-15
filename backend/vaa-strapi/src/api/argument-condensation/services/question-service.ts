@@ -40,7 +40,12 @@ async function fetchAnswersForQuestions(
   questionDocumentIds: Array<string>
 ): Promise<Record<string, Array<CandidateAnswer>>> {
   const candidates = await strapi.db.query('api::candidate.candidate').findMany({
-    select: ['id', 'answers']
+    select: ['id', 'answers'],
+    where: {
+      answers: {
+        $notNull: true
+      }
+    }
   });
 
   const answersMap: Record<string, Array<CandidateAnswer>> = Object.fromEntries(
@@ -48,7 +53,7 @@ async function fetchAnswersForQuestions(
   );
 
   candidates
-    .filter((candidate) => candidate.answers)
+    .filter((candidate) => typeof candidate.answers === 'object')
     .forEach((candidate) => {
       questionDocumentIds.forEach((qId) => {
         const answer = candidate.answers[qId];

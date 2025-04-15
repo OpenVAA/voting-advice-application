@@ -1,6 +1,5 @@
 import { LocalizedAnswer } from '@openvaa/app-shared';
 import { CONDENSATION_TYPE, LanguageConfigs, processComments } from '@openvaa/argument-condensation';
-import { QUESTION_TYPE } from '@openvaa/data';
 import { OpenAIProvider } from '@openvaa/llm';
 import { OPENAI_API_KEY } from '../../../constants';
 import questionService from '../services/question-service';
@@ -61,20 +60,7 @@ function groupLikertAnswers(answers: Array<LocalizedAnswer>, questionScale: numb
 // Note: NOT IN USE, as our test data does not yet contain categorical answers
 function groupCategoricalAnswers(answers: Array<LocalizedAnswer>): CategoryGroups {
   const groups: CategoryGroups = {};
-
-  answers.forEach((answer) => {
-    // Skip if no valid open answer or categorical answer
-    if (!answer.info?.fi || !answer.value) {
-      return;
-    }
-
-    const category = answer.value[QUESTION_TYPE.SingleChoiceCategorical];
-    if (!groups[category]) {
-      groups[category] = [];
-    }
-    groups[category].push(answer.info.fi);
-  });
-
+  
   return groups;
 }
 
