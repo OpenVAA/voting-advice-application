@@ -144,22 +144,22 @@ export default {
             };
           } else if (questionType === 'singleChoiceCategorical') {
             const groupedAnswers = groupCategoricalAnswers(answers);
-            processedResults = await Object.entries(groupedAnswers).reduce(async (acc, [category, comments]) => {
+            processedResults = {};
+            
+            for (const [category, comments] of Object.entries(groupedAnswers)) {
               if (!comments?.length) {
-                return acc;
+                continue;
               }
-              return {
-                ...(await acc),
-                [category]: await processComments({
-                  llmProvider,
-                  languageConfig: LanguageConfigs.Finnish,
-                  comments,
-                  topic: `${question.text?.fi} - ${category}`,
-                  batchSize: 30,
-                  condensationType: CONDENSATION_TYPE.GENERAL
-                })
-              };
-            }, Promise.resolve({}));
+              
+              processedResults[category] = await processComments({
+                llmProvider,
+                languageConfig: LanguageConfigs.Finnish,
+                comments,
+                topic: `${question.text?.fi} - ${category}`,
+                batchSize: 30,
+                condensationType: CONDENSATION_TYPE.GENERAL
+              });
+            }
           } else {
             console.info(`Skipping question - unsupported type: ${questionType}`);
             continue;
