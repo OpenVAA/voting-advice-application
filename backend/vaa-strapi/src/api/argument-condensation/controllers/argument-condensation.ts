@@ -1,4 +1,6 @@
+import { LocalizedAnswer } from '@openvaa/app-shared';
 import { CONDENSATION_TYPE, LanguageConfigs, processComments } from '@openvaa/argument-condensation';
+import { QUESTION_TYPE } from '@openvaa/data';
 import { OpenAIProvider } from '@openvaa/llm';
 import { OPENAI_API_KEY } from '../../../constants';
 import questionService from '../services/question-service';
@@ -20,7 +22,7 @@ interface CategoryGroups {
   [key: string]: Array<string>;
 }
 
-function groupLikertAnswers(answers: Array<any>, questionScale: number): LikertGroups {
+function groupLikertAnswers(answers: Array<LocalizedAnswer>, questionScale: number): LikertGroups {
   const isEven = questionScale % 2 === 0;
   const groups: LikertGroups = {
     presumedPros: [],
@@ -28,24 +30,26 @@ function groupLikertAnswers(answers: Array<any>, questionScale: number): LikertG
   };
 
   answers.forEach((answer) => {
-    if (!answer.openAnswer?.fi || (typeof answer.value !== 'string' && typeof answer.value !== 'number')) {
+    if (!answer.info?.fi || (typeof answer.value !== 'string' && typeof answer.value !== 'number')) {
       return;
     }
 
-    const value = parseInt(answer.value);
+    const value = parseInt(answer.value.toString());
 
     if (isEven) {
       // For 4-point scale: 1,2 -> cons, 3,4 -> pros
-      value <= questionScale / 2
-        ? groups.presumedCons.push(answer.openAnswer.fi)
-        : groups.presumedPros.push(answer.openAnswer.fi);
+      if (value <= questionScale / 2) {
+        groups.presumedCons.push(answer.info.fi);
+      } else {
+        groups.presumedPros.push(answer.info.fi);
+      }
     } else {
       const middleValue = Math.ceil(questionScale / 2);
       // For 5-point scale: 1,2 -> cons, 3 -> ignored, 4,5 -> pros
       if (value < middleValue) {
-        groups.presumedCons.push(answer.openAnswer.fi);
+        groups.presumedCons.push(answer.info.fi);
       } else if (value > middleValue) {
-        groups.presumedPros.push(answer.openAnswer.fi);
+        groups.presumedPros.push(answer.info.fi);
       }
       // Middle value is ignored
     }
@@ -55,20 +59,20 @@ function groupLikertAnswers(answers: Array<any>, questionScale: number): LikertG
 }
 
 // Note: NOT IN USE, as our test data does not yet contain categorical answers
-function groupCategoricalAnswers(answers: Array<any>): CategoryGroups {
+function groupCategoricalAnswers(answers: Array<LocalizedAnswer>): CategoryGroups {
   const groups: CategoryGroups = {};
 
   answers.forEach((answer) => {
     // Skip if no valid open answer or categorical answer
-    if (!answer.openAnswer?.fi || !answer.categoricalAnswer) {
+    if (!answer.info?.fi || !answer.value) {
       return;
     }
 
-    const category = answer.categoricalAnswer;
+    const category = answer.value[QUESTION_TYPE.SingleChoiceCategorical];
     if (!groups[category]) {
       groups[category] = [];
     }
-    groups[category].push(answer.openAnswer.fi);
+    groups[category].push(answer.info.fi);
   });
 
   return groups;
@@ -119,10 +123,13 @@ export default {
           const questionType = question.questionType?.settings?.type;
           let processedResults = null;
 
-          // Get the number of choices in the question scale
-          const questionScale = question?.questionType?.settings?.choices?.length || 0;
-
           if (questionType === 'singleChoiceOrdinal') {
+            // Get the number of choices in the question scale
+            const questionScale = question?.questionType?.settings?.choices?.length || 0;
+            if (questionScale < 2) {
+              console.info('Question has less than 2 choices, skipping');
+              continue;
+            }
             const groupedAnswers = groupLikertAnswers(answers, questionScale);
             processedResults = {
               pros:
@@ -131,7 +138,7 @@ export default {
                       llmProvider,
                       languageConfig: LanguageConfigs.Finnish,
                       comments: groupedAnswers.presumedPros,
-                      topic: question.text?.fi || '',
+                      topic: question.text?.fi,
                       batchSize: 30,
                       condensationType: CONDENSATION_TYPE.SUPPORTING
                     })
@@ -142,13 +149,13 @@ export default {
                       llmProvider,
                       languageConfig: LanguageConfigs.Finnish,
                       comments: groupedAnswers.presumedCons,
-                      topic: question.text?.fi || '',
+                      topic: question.text?.fi,
                       batchSize: 30,
                       condensationType: CONDENSATION_TYPE.OPPOSING
                     })
                   : []
             };
-          } else if (questionType === 'Categorical') {
+          } else if (questionType === 'singleChoiceCategorical') {
             const groupedAnswers = groupCategoricalAnswers(answers);
             processedResults = await Object.entries(groupedAnswers).reduce(async (acc, [category, comments]) => {
               if (comments.length > 0) {
@@ -158,7 +165,7 @@ export default {
                     llmProvider,
                     languageConfig: LanguageConfigs.Finnish,
                     comments,
-                    topic: `${question.text?.fi || ''} - ${category}`,
+                    topic: `${question.text?.fi} - ${category}`,
                     batchSize: 30,
                     condensationType: CONDENSATION_TYPE.GENERAL
                   })

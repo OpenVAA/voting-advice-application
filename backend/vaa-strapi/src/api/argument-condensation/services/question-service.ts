@@ -3,9 +3,9 @@
  */
 
 // Add an interface at the top of the file
-interface CandidateAnswer {
+export interface CandidateAnswer {
   candidateId: string;
-  value: any; // Using 'any' since values could be strings, numbers, booleans, etc.
+  value: string | number; // Using 'any' since values could be strings, numbers, booleans, etc.
   openAnswer: { fi: string } | null;
 }
 
