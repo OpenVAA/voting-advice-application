@@ -3,6 +3,7 @@ import { CONDENSATION_TYPE, LanguageConfigs, processComments } from '@openvaa/ar
 import { OpenAIProvider } from '@openvaa/llm';
 import { OPENAI_API_KEY } from '../../../constants';
 import questionService from '../services/question-service';
+import { QUESTION_TYPE } from '@openvaa/data';
 
 const model = 'gpt-4o-mini';
 const llmProvider = new OpenAIProvider({ apiKey: OPENAI_API_KEY, model });
@@ -106,7 +107,7 @@ export default {
             continue;
           }
 
-          const questionType = question.questionType?.settings?.type;
+          const questionType = question.questionType?.settings?.type as string | undefined;
           let processedResults = null;
 
           if (questionType === 'singleChoiceOrdinal') {
