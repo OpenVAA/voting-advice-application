@@ -22,8 +22,6 @@ interface CategoryGroups {
 
 function groupLikertAnswers(answers: any[], questionScale: number): LikertGroups {
   const isEven = questionScale % 2 === 0;
-  const middleValue = Math.ceil(questionScale / 2);
-
   const groups: LikertGroups = {
     presumedPros: [],
     presumedCons: []
@@ -42,6 +40,7 @@ function groupLikertAnswers(answers: any[], questionScale: number): LikertGroups
         ? groups.presumedCons.push(answer.openAnswer.fi)
         : groups.presumedPros.push(answer.openAnswer.fi);
     } else {
+      const middleValue = Math.ceil(questionScale / 2);
       // For 5-point scale: 1,2 -> cons, 3 -> ignored, 4,5 -> pros
       if (value < middleValue) {
         groups.presumedCons.push(answer.openAnswer.fi);
