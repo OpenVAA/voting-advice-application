@@ -64,15 +64,7 @@ export function normalizeData(x: Array<number>): Array<number> {
  * - Stable for inputs up to ±8.5 standard deviations
  * - Adaptive series length based on input magnitude
  */
-export function bivariateNormalCDF({
-  x,
-  y,
-  rho
-}: {
-  x: number;
-  y: number;
-  rho: number;
-}): number {
+export function bivariateNormalCDF({ x, y, rho }: { x: number; y: number; rho: number }): number {
   // Improved handling of infinite cases
   if (!isFinite(x) || !isFinite(y)) {
     if (!isFinite(x) && !isFinite(y)) {
@@ -82,13 +74,7 @@ export function bivariateNormalCDF({
           : Math.max(0, standardNormalCDF(x) + standardNormalCDF(y) - 1);
       return 0;
     }
-    return !isFinite(x)
-      ? x < 0
-        ? 0
-        : standardNormalCDF(y)
-      : y < 0
-        ? 0
-        : standardNormalCDF(x);
+    return !isFinite(x) ? (x < 0 ? 0 : standardNormalCDF(y)) : y < 0 ? 0 : standardNormalCDF(x);
   }
 
   // Handle perfect correlations more robustly

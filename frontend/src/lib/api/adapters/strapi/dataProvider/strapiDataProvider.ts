@@ -33,7 +33,8 @@ import type {
   GetEntitiesOptions,
   GetFactorLoadingsOptions,
   GetNominationsOptions,
-  GetQuestionsOptions} from '$lib/api/base/getDataOptions.type';
+  GetQuestionsOptions
+} from '$lib/api/base/getDataOptions.type';
 import type { Params } from '../strapiAdapter.type';
 
 export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider) {
@@ -276,9 +277,7 @@ export class StrapiDataProvider extends strapiAdapterMixin(UniversalDataProvider
     };
   }
 
-  protected async _getFactorLoadingData(
-    options: GetFactorLoadingsOptions
-  ): Promise<DPDataType['factorLoadings']> {
+  protected async _getFactorLoadingData(options: GetFactorLoadingsOptions): Promise<DPDataType['factorLoadings']> {
     try {
       const params = buildFilterParams({ electionId: options.electionId });
       params.populate = {

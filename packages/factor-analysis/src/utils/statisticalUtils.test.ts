@@ -1,10 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import {
-  bivariateNormalCDF,
-  bivariateNormalProbability,
-  detectCategories,
-  normalizeData
-} from './statisticalUtils';
+import { bivariateNormalCDF, bivariateNormalProbability, detectCategories, normalizeData } from './statisticalUtils';
 
 describe('Statistical Utilities', () => {
   describe('Category Detection', () => {
@@ -28,9 +23,7 @@ describe('Statistical Utilities', () => {
     });
 
     test('rejects single category', () => {
-      expect(() => detectCategories([1, 1, 1])).toThrow(
-        'Variable has only one category'
-      );
+      expect(() => detectCategories([1, 1, 1])).toThrow('Variable has only one category');
     });
   });
 
@@ -48,9 +41,7 @@ describe('Statistical Utilities', () => {
       // Check if order is preserved
       for (let i = 0; i < x.length; i++) {
         for (let j = 0; j < x.length; j++) {
-          expect(Math.sign(x[i] - x[j])).toBe(
-            Math.sign(normalized[i] - normalized[j])
-          );
+          expect(Math.sign(x[i] - x[j])).toBe(Math.sign(normalized[i] - normalized[j]));
         }
       }
     });
@@ -67,16 +58,9 @@ describe('Statistical Utilities', () => {
       test('handles standard cases', () => {
         // For standard bivariate normal with rho=0 at (0,0),
         // the probability should be 0.25 + φ(0)φ(0)/(2π) ≈ 0.409
-        expect(bivariateNormalCDF({ x: 0, y: 0, rho: 0 })).toBeCloseTo(
-          0.409,
-          2
-        );
-        expect(bivariateNormalCDF({ x: Infinity, y: Infinity, rho: 0 })).toBe(
-          1
-        );
-        expect(bivariateNormalCDF({ x: -Infinity, y: -Infinity, rho: 0 })).toBe(
-          0
-        );
+        expect(bivariateNormalCDF({ x: 0, y: 0, rho: 0 })).toBeCloseTo(0.409, 2);
+        expect(bivariateNormalCDF({ x: Infinity, y: Infinity, rho: 0 })).toBe(1);
+        expect(bivariateNormalCDF({ x: -Infinity, y: -Infinity, rho: 0 })).toBe(0);
       });
 
       test('respects correlation parameter', () => {

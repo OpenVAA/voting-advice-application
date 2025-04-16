@@ -1,5 +1,4 @@
-import { LocalizedAnswer } from '@openvaa/app-shared';
-import { CONDENSATION_TYPE, getLanguageConfig, processComments} from '@openvaa/argument-condensation';
+import { CONDENSATION_TYPE, getLanguageConfig, processComments } from '@openvaa/argument-condensation';
 import { OpenAIProvider } from '@openvaa/llm';
 import { OPENAI_API_KEY } from '../../../constants';
 import questionService from '../services/question-service';
@@ -34,8 +33,8 @@ interface CategoryGroups {
 }
 
 function groupLikertAnswers(
-  answers: Array<CandidateAnswer>, 
-  questionScale: number, 
+  answers: Array<CandidateAnswer>,
+  questionScale: number,
   localeCode: string = 'fi',
   higherIsPros: boolean = true
 ): LikertGroups {
@@ -44,7 +43,7 @@ function groupLikertAnswers(
     presumedPros: [],
     presumedCons: []
   };
-  
+
   answers.forEach((answer) => {
     if (!answer.openAnswer?.[localeCode] || (typeof answer.value !== 'string' && typeof answer.value !== 'number')) {
       return;
@@ -55,7 +54,7 @@ function groupLikertAnswers(
     if (isEven) {
       // For 4-point scale: split at the middle
       const isHigherValue = value > questionScale / 2;
-      
+
       // Determine which group to add to based on higherIsPros parameter
       if (higherIsPros ? isHigherValue : !isHigherValue) {
         groups.presumedPros.push(answer.openAnswer[localeCode]);
@@ -66,12 +65,16 @@ function groupLikertAnswers(
       const middleValue = Math.ceil(questionScale / 2);
       const isHigherValue = value > middleValue;
       const isLowerValue = value < middleValue;
-      
+
       // Middle value is still ignored
       if (isHigherValue) {
-        higherIsPros ? groups.presumedPros.push(answer.openAnswer[localeCode]) : groups.presumedCons.push(answer.openAnswer[localeCode]);
+        higherIsPros
+          ? groups.presumedPros.push(answer.openAnswer[localeCode])
+          : groups.presumedCons.push(answer.openAnswer[localeCode]);
       } else if (isLowerValue) {
-        higherIsPros ? groups.presumedCons.push(answer.openAnswer[localeCode]) : groups.presumedPros.push(answer.openAnswer[localeCode]);
+        higherIsPros
+          ? groups.presumedCons.push(answer.openAnswer[localeCode])
+          : groups.presumedPros.push(answer.openAnswer[localeCode]);
       }
       // Middle value is ignored
     }
@@ -87,7 +90,7 @@ function groupCategoricalAnswers(answers: Array<CandidateAnswer>, localeCode: st
   return groups;
 }
 
-function getQuestionText(question, localeCode): string {  
+function getQuestionText(question, localeCode): string {
   // Try direct property access first
   if (localeCode == 'fi' && question.text && question.text.fi) {
     return question.text.fi;
@@ -107,10 +110,10 @@ export default {
   async condense(ctx, options: ControllerOptions = {}) {
     try {
       console.info('\n=== Starting Argument Condensation ===');
-      
+
       // Extract locale from options or use default
       const localeCode = options.locale || 'fi';
-      
+
       const { questionDocumentIds } = ctx.request.body || {};
 
       // Validate questionDocumentIds if provided
@@ -135,9 +138,6 @@ export default {
         console.info('Document ID:', question.documentId);
         console.info('Type:', question.questionType?.settings?.type || 'Unknown type');
         console.info('Name:', question.questionType?.name || 'Unknown name');
-
-        console.log("QUESTION OBJECT")
-        console.log(JSON.stringify(question.questionType.settings, null, 2));
 
         try {
           // Get answers for this specific question using documentId
@@ -189,12 +189,12 @@ export default {
           } else if (questionType === 'singleChoiceCategorical') {
             const groupedAnswers = groupCategoricalAnswers(answers, localeCode);
             processedResults = {};
-            
+
             for (const [category, comments] of Object.entries(groupedAnswers)) {
               if (!comments?.length) {
                 continue;
               }
-              
+
               processedResults[category] = await processComments({
                 llmProvider,
                 languageConfig: languageConfig,
@@ -212,15 +212,20 @@ export default {
           // Update question with processed results
           try {
             console.info('Updating question with results...');
-            
+
             // First, get the current customData from the database
             const currentQuestion = await strapi.documents('api::question.question').findOne({
               documentId: question.documentId,
               fields: ['customData']
             });
 
-            const baseCustomData = typeof currentQuestion.customData === 'object' && currentQuestion.customData !== null && !Array.isArray(currentQuestion.customData)? currentQuestion.customData: {};
-            
+            const baseCustomData =
+              typeof currentQuestion.customData === 'object' &&
+              currentQuestion.customData !== null &&
+              !Array.isArray(currentQuestion.customData)
+                ? currentQuestion.customData
+                : {};
+
             // Then update with the merged data
             await strapi.documents('api::question.question').update({
               documentId: question.documentId,
@@ -264,7 +269,7 @@ export default {
     try {
       // Extract locale from options or use default
       const localeCode = options.locale || 'fi';
-      
+
       const questions = await questionService.fetchProcessableQuestions();
       questionService.logQuestionDetails(questions);
 

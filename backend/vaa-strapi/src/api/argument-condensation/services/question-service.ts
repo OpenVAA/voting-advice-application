@@ -23,10 +23,10 @@ export interface QuestionTypeSettings {
 export interface ArgumentCondensationQuestion {
   id: string | number;
   documentId: string;
-  text?: Record<string, string> | any;  // Make text optional with ?
+  text?: Record<string, string> | any;
   questionType: {
-    id: string | number;  // Allow both string and number types
-    name?: string;  // Make name optional
+    id: string | number; // Allow both string and number types
+    name?: string; // Make name optional
     settings: QuestionTypeSettings;
   };
 }
@@ -53,14 +53,14 @@ async function fetchProcessableQuestions(documentIds?: Array<string>): Promise<A
 
   // TODO: Needs to be changed when we have more question types
   const processableQuestions = questions
-    .filter(q => {
+    .filter((q) => {
       const settings = q.questionType?.settings;
       return isValidQuestionTypeSettings(settings) && settings.type === 'singleChoiceOrdinal';
     })
-    .map(q => {
+    .map((q) => {
       // First cast to unknown to satisfy TypeScript
       const settings = q.questionType.settings as unknown;
-      
+
       return {
         ...q,
         questionType: {
@@ -70,9 +70,11 @@ async function fetchProcessableQuestions(documentIds?: Array<string>): Promise<A
       } as ArgumentCondensationQuestion;
     });
 
-  console.log("processableQuestions:", processableQuestions);
+  console.info('processableQuestions:', processableQuestions);
 
-  return documentIds?.length ? processableQuestions.filter((q) => documentIds.includes(q.documentId)) : processableQuestions;
+  return documentIds?.length
+    ? processableQuestions.filter((q) => documentIds.includes(q.documentId))
+    : processableQuestions;
 }
 
 /**
@@ -106,7 +108,7 @@ async function fetchAnswersForQuestions(
           const openAnswerText = answer.info?.[locale];
           // Create the openAnswer object or null
           const openAnswer = openAnswerText ? { [locale]: openAnswerText } : null;
-          
+
           // Only add answers where openAnswer is not null
           if (openAnswer !== null) {
             answersMap[qId].push({

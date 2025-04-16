@@ -1,9 +1,7 @@
 import type { FactorLoadingData } from '$lib/contexts/voter/factorLoadings/factorLoading.type';
 import type { StrapiFactorLoadingData } from '../strapiData.type';
 
-export function parseFactorLoadings(
-  data: StrapiFactorLoadingData
-): FactorLoadingData {
+export function parseFactorLoadings(data: StrapiFactorLoadingData): FactorLoadingData {
   // Create single factor loading object
   const factorLoading: FactorLoadingData = {
     id: data.documentId, // Use documentId from Strapi

@@ -109,8 +109,7 @@ Display a question for answering.
   }
 
   $: shouldShowQuestionSelection =
-    useQuestionOrdering &&
-    $page.url.searchParams.get('showQuestionSelection') === 'true';
+    useQuestionOrdering && $page.url.searchParams.get('showQuestionSelection') === 'true';
 
   $: {
     if (shouldShowQuestionSelection && nextQuestionChoices.length === 0) {
@@ -213,7 +212,7 @@ Display a question for answering.
           });
         }
       }
-    // Default navigation
+      // Default navigation
     } else {
       const newIndex = questionBlock.index + steps;
       if (newIndex < 0) {
@@ -221,7 +220,7 @@ Display a question for answering.
         // Go to results if moving forward from the last question
       } else if (newIndex >= $selectedQuestionBlocks.questions.length) {
         url = $getRoute('Results');
-      // Show category intro if moving forward from the first question in a category
+        // Show category intro if moving forward from the first question in a category
       } else {
         const newQuestion = $selectedQuestionBlocks.questions[newIndex];
         // Show the next category intro if the next question is the first question in a new category and we're not moving backwards
@@ -407,10 +406,7 @@ Display a question for answering.
 
     <svelte:fragment slot="primaryActions">
       {#if !shouldShowQuestionSelection}
-        <OpinionQuestionInput
-          {question}
-          answer={$answers[question.id]}
-          onChange={handleAnswer} />
+        <OpinionQuestionInput {question} answer={$answers[question.id]} onChange={handleAnswer} />
 
         <QuestionActions
           answered={$answers[question.id]?.value != null}

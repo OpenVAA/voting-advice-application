@@ -1,8 +1,5 @@
 import type { AnyQuestionVariant, Id } from '@openvaa/data';
-import type {
-  FactorLoadingData,
-  QuestionFactorLoading
-} from './factorLoading.type';
+import type { FactorLoadingData, QuestionFactorLoading } from './factorLoading.type';
 
 export class FactorLoading {
   readonly data: FactorLoadingData;
@@ -10,10 +7,7 @@ export class FactorLoading {
   // This will be set when we create the class
   private getQuestionFunc: (id: Id) => AnyQuestionVariant;
 
-  constructor(
-    data: FactorLoadingData,
-    getQuestion: (id: Id) => AnyQuestionVariant
-  ) {
+  constructor(data: FactorLoadingData, getQuestion: (id: Id) => AnyQuestionVariant) {
     this.data = data;
     this.getQuestionFunc = getQuestion;
   }
@@ -66,9 +60,8 @@ export class FactorLoading {
    * Get factor loadings for a specific question
    */
   getFactorsForQuestion(questionId: Id): Array<number> | undefined {
-    return this.data.questionFactorLoadings.find(
-      (loading: QuestionFactorLoading) => loading.questionId === questionId
-    )?.factors;
+    return this.data.questionFactorLoadings.find((loading: QuestionFactorLoading) => loading.questionId === questionId)
+      ?.factors;
   }
 
   /**
@@ -77,22 +70,14 @@ export class FactorLoading {
   getQuestionsOrderedByFactor(factorIndex: number): Array<AnyQuestionVariant> {
     return this.data.questionFactorLoadings
       .slice()
-      .sort(
-        (a, b) =>
-          Math.abs(b.factors[factorIndex]) - Math.abs(a.factors[factorIndex])
-      )
-      .map((loading: QuestionFactorLoading) =>
-        this.getQuestionFunc(loading.questionId)
-      );
+      .sort((a, b) => Math.abs(b.factors[factorIndex]) - Math.abs(a.factors[factorIndex]))
+      .map((loading: QuestionFactorLoading) => this.getQuestionFunc(loading.questionId));
   }
 
   /**
    * Get the highest loading questions for a factor
    */
-  getTopQuestionsForFactor(
-    factorIndex: number,
-    count: number = 5
-  ): Array<AnyQuestionVariant> {
+  getTopQuestionsForFactor(factorIndex: number, count: number = 5): Array<AnyQuestionVariant> {
     return this.getQuestionsOrderedByFactor(factorIndex).slice(0, count);
   }
 }

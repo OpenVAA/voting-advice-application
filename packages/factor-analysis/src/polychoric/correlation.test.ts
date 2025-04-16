@@ -153,12 +153,8 @@ describe('Polychoric Correlation', () => {
     });
 
     test('handles error cases', () => {
-      expect(() => polychoricCorrelation({ x: [1, 2], y: [1, 2, 3] })).toThrow(
-        'Input vectors must have same length'
-      );
-      expect(() =>
-        polychoricCorrelation({ x: [1, 1, 1], y: [1, 2, 3] })
-      ).toThrow('Variable has only one category');
+      expect(() => polychoricCorrelation({ x: [1, 2], y: [1, 2, 3] })).toThrow('Input vectors must have same length');
+      expect(() => polychoricCorrelation({ x: [1, 1, 1], y: [1, 2, 3] })).toThrow('Variable has only one category');
       expect(() => polychoricCorrelation({ x: [1], y: [1] })).toThrow(
         'Input vectors must have at least 2 observations'
       );
@@ -214,9 +210,7 @@ describe('Polychoric Correlation', () => {
           returnDetails: true
         }
       });
-      expect(result2.iterations ?? 0).toBeLessThanOrEqual(
-        result1.iterations ?? 0
-      );
+      expect(result2.iterations ?? 0).toBeLessThanOrEqual(result1.iterations ?? 0);
     });
   });
 
@@ -224,10 +218,7 @@ describe('Polychoric Correlation', () => {
     test('handles large datasets efficiently', () => {
       const size = 1000;
       const x = Array.from({ length: size }, (_, i) => Math.floor(i / 200) + 1);
-      const y = Array.from(
-        { length: size },
-        (_, i) => Math.floor((i + Math.random() * 300) / 200) + 1
-      );
+      const y = Array.from({ length: size }, (_, i) => Math.floor((i + Math.random() * 300) / 200) + 1);
 
       const result = polychoricCorrelation({
         x,
@@ -247,23 +238,14 @@ describe('Polychoric Correlation', () => {
       const y = x.map((v, i) => {
         if (i < 33) {
           // First third: Strong positive correlation with noise
-          return Math.max(
-            1,
-            Math.min(5, Math.round(v + (Math.random() - 0.5)))
-          );
+          return Math.max(1, Math.min(5, Math.round(v + (Math.random() - 0.5))));
         } else if (i < 66) {
           // Middle third: Strong negative correlation with noise
-          return Math.max(
-            1,
-            Math.min(5, Math.round(6 - v + (Math.random() - 0.5)))
-          );
+          return Math.max(1, Math.min(5, Math.round(6 - v + (Math.random() - 0.5))));
         } else {
           // Last third: Random values with some correlation
           const randomComponent = Math.floor(Math.random() * 5) + 1;
-          return Math.max(
-            1,
-            Math.min(5, Math.round((randomComponent + v) / 2))
-          );
+          return Math.max(1, Math.min(5, Math.round((randomComponent + v) / 2)));
         }
       });
 
