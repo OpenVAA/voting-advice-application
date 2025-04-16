@@ -37,8 +37,7 @@
     try {
       // Update admin context with user data
       if (data.userData) {
-        adminContext.isAuthenticated = true;
-        // Store any other admin data in the context as needed
+        adminContext.userData.set(data.userData);
         ready = true;
       } else {
         error = new Error('No user data available');
