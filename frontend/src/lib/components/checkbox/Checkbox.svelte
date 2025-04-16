@@ -2,13 +2,18 @@
 Checkbox component with label and description slot
 -->
 <script lang="ts">
+  import { concatClass } from '$lib/utils/components';
+  import type { CheckboxProps } from './Checkbox.type';
+
+  type $$Props = CheckboxProps;
+
   export let checked = false;
   export let name: string;
   export let label: string;
   export let disabled = false;
 </script>
 
-<label class="flex items-start">
+<label {...concatClass($$restProps, 'flex items-start')}>
   <div class="h-5 flex items-center">
     <input
       type="checkbox"
