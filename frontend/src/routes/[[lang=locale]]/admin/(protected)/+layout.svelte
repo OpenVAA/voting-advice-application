@@ -56,7 +56,7 @@
 </script>
 
 {#if error}
-  <ErrorMessage message={$t('adminApp.errors.unauthorized')} />
+  <ErrorMessage message={$t('adminApp.error.unauthorized')} />
 {:else if !ready}
   <Loading />
 {:else}
