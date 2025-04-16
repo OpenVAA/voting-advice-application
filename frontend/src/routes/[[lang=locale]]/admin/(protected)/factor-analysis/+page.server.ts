@@ -56,12 +56,17 @@ export const actions: Actions = {
         }
       }
 
+      // Check if any elections are selected
+      if (selectedElectionIds.length === 0) {
+        return fail(400, { type: 'error', message: 'Please select at least one election' });
+      }
+
       // Get the admin writer and initialize it
       const adminWriter = await adminWriterPromise;
       adminWriter.init({ fetch });
 
-      // If elections are selected, compute for those elections, otherwise compute for all
-      const computeOptions = selectedElectionIds.length > 0 ? { electionIds: selectedElectionIds } : undefined;
+      // Use the selected election IDs
+      const computeOptions = { electionIds: selectedElectionIds };
 
       // Call the compute factor loadings function with the selected elections
       const result = await adminWriter.computeFactorLoadings(computeOptions);

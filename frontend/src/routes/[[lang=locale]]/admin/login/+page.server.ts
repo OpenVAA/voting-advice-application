@@ -67,6 +67,6 @@ export const actions = {
     }
 
     // If admin, redirect to dashboard
-    redirect(303, redirectTo ? `/${locals.currentLocale}/${redirectTo}` : `/${locals.currentLocale}/admin/dashboard`);
+    redirect(303, redirectTo ? `/${locals.currentLocale}/${redirectTo}` : `/${locals.currentLocale}/admin`);
   }
 };
