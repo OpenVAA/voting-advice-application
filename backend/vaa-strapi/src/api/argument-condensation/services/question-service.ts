@@ -3,10 +3,32 @@
  */
 
 // Add an interface at the top of the file
-interface CandidateAnswer {
-  candidateId: string;
-  value: any; // Using 'any' since values could be strings, numbers, booleans, etc.
-  openAnswer: { fi: string } | null;
+export interface CandidateAnswer {
+  candidateId: string | number;
+  value: string | number;
+  openAnswer: Record<string, string> | null;
+}
+
+export interface QuestionTypeSettings {
+  type: string;
+  choices?: Array<{
+    id: string;
+    label: Record<string, string>;
+    normalizableValue: string;
+  }>;
+  // Add other possible properties here
+}
+
+// Add an interface at the top of the file
+export interface ArgumentCondensationQuestion {
+  id: string | number;
+  documentId: string;
+  text?: Record<string, string> | any;  // Make text optional with ?
+  questionType: {
+    id: string | number;  // Allow both string and number types
+    name?: string;  // Make name optional
+    settings: QuestionTypeSettings;
+  };
 }
 
 /**
@@ -14,46 +36,85 @@ interface CandidateAnswer {
  * @param documentIds Optional array of document IDs to filter by
  * @returns All Likert questions if no IDs provided, otherwise only matching questions
  */
-async function fetchProcessableQuestions(documentIds?: string[]) {
-  const questions = await strapi.db.query('api::question.question').findMany({
-    select: ['id', 'documentId', 'text'],
+async function fetchProcessableQuestions(documentIds?: Array<string>): Promise<Array<ArgumentCondensationQuestion>> {
+  const questions = await strapi.documents('api::question.question').findMany({
+    fields: ['id', 'documentId', 'text'] as any, // replaces `select: ['id','documentId','text']`
     populate: {
       questionType: {
-        select: ['id', 'name', 'settings']
+        fields: ['id', 'name', 'settings']
       }
     }
   });
 
-  const processableQuestions = questions.filter((q) => q.questionType?.settings?.type === 'singleChoiceOrdinal');
+  // Helper function to validate if the object is a valid QuestionTypeSettings
+  const isValidQuestionTypeSettings = (settings: any): settings is QuestionTypeSettings => {
+    return settings && typeof settings === 'object' && typeof settings.type === 'string';
+  };
 
-  if (!documentIds?.length) {
-    return processableQuestions;
-  }
+  // TODO: Needs to be changed when we have more question types
+  const processableQuestions = questions
+    .filter(q => {
+      const settings = q.questionType?.settings;
+      return isValidQuestionTypeSettings(settings) && settings.type === 'singleChoiceOrdinal';
+    })
+    .map(q => {
+      // First cast to unknown to satisfy TypeScript
+      const settings = q.questionType.settings as unknown;
+      
+      return {
+        ...q,
+        questionType: {
+          ...q.questionType,
+          settings: settings as QuestionTypeSettings
+        }
+      } as ArgumentCondensationQuestion;
+    });
 
-  return processableQuestions.filter((q) => documentIds.includes(q.documentId));
+  console.log("processableQuestions:", processableQuestions);
+
+  return documentIds?.length ? processableQuestions.filter((q) => documentIds.includes(q.documentId)) : processableQuestions;
 }
 
 /**
  * Fetches all answers for the specified question IDs from all candidates
+ * @param questionDocumentIds Array of question document IDs
+ * @param locale Language code to use for open answers (defaults to 'fi')
  */
-async function fetchAnswersForQuestions(questionDocumentIds: string[]): Promise<Record<string, CandidateAnswer[]>> {
-  const candidates = await strapi.db.query('api::candidate.candidate').findMany({
-    select: ['id', 'answers']
+async function fetchAnswersForQuestions(
+  questionDocumentIds: Array<string>,
+  locale: string = 'fi'
+): Promise<Record<string, Array<CandidateAnswer>>> {
+  const candidates = await strapi.documents('api::candidate.candidate').findMany({
+    fields: ['id', 'answers'],
+    where: {
+      answers: {
+        $notNull: true
+      }
+    }
   });
 
-  const answersMap: Record<string, CandidateAnswer[]> = Object.fromEntries(questionDocumentIds.map((qId) => [qId, []]));
+  const answersMap: Record<string, Array<CandidateAnswer>> = Object.fromEntries(
+    questionDocumentIds.map((qId) => [qId, []])
+  );
 
   candidates
-    .filter((candidate) => candidate.answers)
+    .filter((candidate) => typeof candidate.answers === 'object')
     .forEach((candidate) => {
       questionDocumentIds.forEach((qId) => {
         const answer = candidate.answers[qId];
         if (answer) {
-          answersMap[qId].push({
-            candidateId: candidate.id,
-            value: answer.value,
-            openAnswer: answer.info?.fi ? { fi: answer.info.fi } : null
-          });
+          const openAnswerText = answer.info?.[locale];
+          // Create the openAnswer object or null
+          const openAnswer = openAnswerText ? { [locale]: openAnswerText } : null;
+          
+          // Only add answers where openAnswer is not null
+          if (openAnswer !== null) {
+            answersMap[qId].push({
+              candidateId: candidate.id,
+              value: answer.value,
+              openAnswer
+            });
+          }
         }
       });
     });
@@ -67,13 +128,13 @@ async function fetchAnswersForQuestions(questionDocumentIds: string[]): Promise<
 function logQuestionDetails(questions) {
   // Log full details of the first question to inspect structure
   if (questions.length > 0) {
-    console.log('FIRST QUESTION DETAILS:');
-    console.log(JSON.stringify(questions[0], null, 2));
+    console.info('FIRST QUESTION DETAILS:');
+    console.info(JSON.stringify(questions[0], null, 2));
 
     // Log all questions with key properties
-    console.log('\nALL QUESTIONS:');
+    console.info('\nALL QUESTIONS:');
     questions.forEach((q, index) => {
-      console.log(
+      console.info(
         `[${index}] id: ${q.id}, documentId: ${q.documentId}, type: ${q.questionType?.settings?.type || 'unknown'}, text: ${JSON.stringify(q.text).substring(0, 50)}...`
       );
     });
@@ -85,10 +146,10 @@ function logQuestionDetails(questions) {
  */
 async function testQuestionRetrieval() {
   try {
-    console.log('\n============ TESTING QUESTION RETRIEVAL ============');
+    console.info('\n============ TESTING QUESTION RETRIEVAL ============');
     const questions = await fetchProcessableQuestions();
     logQuestionDetails(questions);
-    console.log('============ TEST COMPLETE ============\n');
+    console.info('============ TEST COMPLETE ============\n');
     return questions;
   } catch (error) {
     console.error('Error testing question retrieval:', error);

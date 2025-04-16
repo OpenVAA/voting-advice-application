@@ -2,6 +2,7 @@ export * from './buildFilterParams';
 export * from './parseBasics';
 export * from './parseCandidate';
 export * from './parseEntityType';
+export * from './parseFactorLoadings';
 export * from './parseImage';
 export * from './parseNominations';
 export * from './parseOrganization';

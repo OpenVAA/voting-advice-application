@@ -1,5 +1,5 @@
-import { Argument } from '../types/Argument';
-import { LanguageConfig } from '../languageOptions/LanguageConfig';
+import { Argument } from '../core/types/argument';
+import { LanguageConfig } from '../languageOptions/languageConfig.type';
 
 /**
  * Parser for extracting structured Arguments from LLM responses.
@@ -20,8 +20,8 @@ export class OutputParser {
    * Extracts Argument strings from the LLM response text
    * @param text - Raw response text from the language model
    * @param topic - The topic of the Arguments
-   * @returns Array of Arguments 
-   * 
+   * @returns Array of Arguments
+   *
    * @example
    * Input text format:
    * <ARGUMENTS>
@@ -29,30 +29,34 @@ export class OutputParser {
    * ARGUMENT 2: This is the second Argument
    * </ARGUMENTS>
    */
-  parseArguments(text: string, topic: string): Argument[] {
-    // Initialization of basic variables
-    const parsedArgs: Argument[] = [];    // Array to be populated by Arguments
-    let currentArg: string = '';          // Used to build the current Argument's string if it's multi-lined in the text
-    let stillProcessing: boolean = false; // Tracks if we're inside the <ARGUMENTS> block
+  parseArguments({ text, topic }: { text: string; topic: string }): Array<Argument> {
+    /** Array to be populated by Arguments */
+    const parsedArgs = new Array<Argument>();
 
-    // Split the LLM response into lines
-    const lines: string[] = text.split('\n');
+    /** Used to build the current Argument's string if it's multi-lined in the text */
+    let currentArg = '';
+
+    /** Tracks if we're inside the <ARGUMENTS> block */
+    let stillProcessing = false;
+
+    /** Split the LLM response into lines */
+    const lines = text.split('\n');
 
     // Iterate over lines of the response
     for (const line of lines) {
       const trimmedLine = line.trim();
-      
-      // Check if we're inside the <ARGUMENTS> block
+
+      /** Check if we're inside the <ARGUMENTS> block */
       if (trimmedLine.includes('<ARGUMENTS>')) {
         stillProcessing = true;
         continue;
       } else if (trimmedLine.includes('</ARGUMENTS>')) {
         break;
       }
-      
-      // Process lines within the Arguments block
+
+      /** Process lines within the Arguments block */
       if (stillProcessing) {
-        // Check if the line starts with the correct Argument prefix 
+        /** Check if the line starts with the correct Argument prefix  */
         if (trimmedLine.startsWith(this.languageConfig.outputFormat.argumentPrefix)) {
           // Start of new Argument
           if (currentArg.length) {
@@ -87,25 +91,26 @@ export class OutputParser {
    * @param output - The LLM response text
    * @returns Argument[] - Array of condensed Arguments
    */
-  parseArgumentCondensation(output: string, topic: string): Argument[] {
-    // Intialize empty Argument array
-    const args: Argument[] = [];
+  parseArgumentCondensation({ output, topic }: { output: string; topic: string }): Array<Argument> {
+    /** Array to populate with condensed Arguments */
+    const args = new Array<Argument>();
 
-    // Get the correctArgument prefix from the language config
+    /** Argument prefix from the language config */
     const argumentPrefix = this.languageConfig.outputFormat.argumentPrefix;
 
-    // Split the LLM response into lines
+    /** LLM response as lines */
     const lines = output.split('\n');
 
     // Iterate over lines of the response
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      
-      // Check if the line starts with the correct Argument prefix 
+    for (const line of lines) {
+      // Check if the line starts with the correct Argument prefix
       if (line.startsWith(argumentPrefix)) {
-        // Remove any existing indices like "1:" at the beginning of Arguments
-        const argumentText = line.substring(argumentPrefix.length).trim().replace(/^\s*\d+\s*:\s*/, ''); 
-        
+        /** Pure argument string with prefixes like "1:" removed */
+        const argumentText = line
+          .substring(argumentPrefix.length)
+          .trim()
+          .replace(/^\s*\d+\s*:\s*/, '');
+
         // Create a new Argument with the condensed text
         args.push({
           argument: argumentText,
@@ -113,7 +118,7 @@ export class OutputParser {
         });
       }
     }
-    
+
     return args;
-  } 
+  }
 }

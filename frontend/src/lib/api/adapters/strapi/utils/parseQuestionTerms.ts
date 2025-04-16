@@ -1,4 +1,4 @@
-import { translate } from '$lib/i18n';
+import { translate, translateObject } from '$lib/i18n';
 import type { TermDefinition } from '@openvaa/app-shared';
 import type { StrapiQuestionData } from '../strapiData.type';
 
@@ -12,18 +12,19 @@ export function parseQuestionTerms(
     for (const term of data.terms) {
       if (!term || typeof term !== 'object') continue;
 
-      const { triggers, title, content } = term as {
-        triggers?: Array<string>;
-        title?: LocalizedString;
-        content?: LocalizedString;
-      };
+      const { triggers, title, content } = term;
 
-      if (triggers && Array.isArray(triggers) && triggers.length && content) {
-        out.push({
-          title: translate(title, locale),
-          content: translate(content, locale),
-          triggers
-        });
+      if (triggers && typeof triggers === 'object' && content) {
+        const translatedContent = translate(content, locale);
+        const translatedTriggers = translateObject(triggers, locale);
+
+        if (translatedTriggers && Array.isArray(translatedTriggers) && translatedContent) {
+          out.push({
+            title: translate(title, locale),
+            content: translatedContent,
+            triggers: translatedTriggers
+          });
+        }
       }
     }
   }

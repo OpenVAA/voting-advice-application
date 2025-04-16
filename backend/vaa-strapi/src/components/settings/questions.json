@@ -25,6 +25,10 @@
     },
     "showResultsLink": {
       "type": "boolean"
+    },
+    "dynamicOrdering": {
+      "type": "component",
+      "component": "settings.questions-ordering"
     }
   }
 }

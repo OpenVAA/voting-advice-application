@@ -29,6 +29,8 @@ export interface AdminApiToken extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
     description: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         minLength: 1;
@@ -665,6 +667,10 @@ export interface ApiElectionElection extends Struct.CollectionTypeSchema {
       ['local', 'presidential', 'congress']
     >;
     externalId: Schema.Attribute.String & Schema.Attribute.Private;
+    factorLoading: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::factor-loading.factor-loading'
+    >;
     info: Schema.Attribute.JSON;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -1494,6 +1500,7 @@ declare module '@strapi/strapi' {
       'api::constituency-group.constituency-group': ApiConstituencyGroupConstituencyGroup;
       'api::constituency.constituency': ApiConstituencyConstituency;
       'api::election.election': ApiElectionElection;
+      'api::factor-loading.factor-loading': ApiFactorLoadingFactorLoading;
       'api::feedback.feedback': ApiFeedbackFeedback;
       'api::language.language': ApiLanguageLanguage;
       'api::nomination.nomination': ApiNominationNomination;

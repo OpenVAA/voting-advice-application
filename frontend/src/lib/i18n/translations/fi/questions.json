@@ -14,7 +14,8 @@
   "intro": {
     "ingress": {
       "withCategorySelection": "Kysymykset on jaettu {numCategories} teemaan. Voit vastata kaikkiin tai vain osaan niistä. {minQuestions, plural, =0 {} =1 {} other {Valitse kuitenkin teemat siten, että niissä on ainakin # kysymystä.}}",
-      "withoutCategorySelection": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. {numCategories, plural, =0 {} =1 {} other {Ne on jaettu # teemaan.}}"
+      "withoutCategorySelection": "Vastaa seuraavaksi {numQuestions} kysymykseen politiikasta ja arvoista. {numCategories, plural, =0 {} =1 {} other {Ne on jaettu # teemaan.}}",
+      "withDynamicOrdering": "Vastaa seuraavaksi {numQuestions} kysymykseen. Voit valita useasta kysymyksestä joka vaiheessa."
     },
     "start": "Vastaa {numQuestions} kysymykseen"
   },
@@ -23,5 +24,7 @@
   "remove": "Poista vastaus",
   "skip": "Ohita",
   "skipToResults": "Hyppää tuloksiin",
-  "title": "Mielipiteesi"
+  "title": "Mielipiteesi",
+  "pickNext": "Valitse seuraava kysymys",
+  "chooseForMe": "Valitse puolestani"
 }

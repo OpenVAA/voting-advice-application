@@ -34,3 +34,5 @@ export const generateAiMockData =
  * If available, data will be loaded from this folder on initialise, if the database contains no Election objects. This will override mock data generation
  */
 export const loadDataFolder = process.env.LOAD_DATA_ON_INITIALISE_FOLDER ?? '';
+
+export const OPENAI_API_KEY = process.env.OPENAI_API_KEY;

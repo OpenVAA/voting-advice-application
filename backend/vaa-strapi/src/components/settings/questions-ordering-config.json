@@ -1,0 +1,30 @@
+{
+  "collectionName": "components_settings_questions_ordering_config",
+  "info": {
+    "displayName": "Questions - Ordering Config",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "factor-based",
+        "eliminate-choices"
+      ],
+      "required": true
+    },
+    "numSuggestions": {
+      "type": "integer",
+      "min": 1,
+      "max": 5
+    },
+    "eliminationType": {
+      "type": "enumeration",
+      "enum": [
+        "strict",
+        "relaxed"
+      ]
+    }
+  }
+}

@@ -26,6 +26,10 @@ export interface CustomizationTranslationOverride
       'customization.translation-override-translation',
       true
     >;
+    translations: Schema.Attribute.Component<
+      'customization.translation-override-translation',
+      true
+    >;
   };
 }
 
@@ -307,6 +311,44 @@ export interface SettingsQuestionsIntro extends Struct.ComponentSchema {
   };
 }
 
+export interface SettingsQuestionsOrdering extends Struct.ComponentSchema {
+  collectionName: 'components_settings_questions_ordering';
+  info: {
+    description: '';
+    displayName: 'Questions - Ordering';
+  };
+  attributes: {
+    config: Schema.Attribute.Component<
+      'settings.questions-ordering-config',
+      false
+    > &
+      Schema.Attribute.Required;
+    enabled: Schema.Attribute.Boolean;
+  };
+}
+
+export interface SettingsQuestionsOrderingConfig
+  extends Struct.ComponentSchema {
+  collectionName: 'components_settings_questions_ordering_config';
+  info: {
+    description: '';
+    displayName: 'Questions - Ordering Config';
+  };
+  attributes: {
+    eliminationType: Schema.Attribute.Enumeration<['strict', 'relaxed']>;
+    numSuggestions: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          max: 5;
+          min: 1;
+        },
+        number
+      >;
+    type: Schema.Attribute.Enumeration<['factor-based', 'eliminate-choices']> &
+      Schema.Attribute.Required;
+  };
+}
+
 export interface SettingsResults extends Struct.ComponentSchema {
   collectionName: 'components_settings_results';
   info: {
@@ -408,6 +450,8 @@ declare module '@strapi/strapi' {
       'settings.questions': SettingsQuestions;
       'settings.questions-category-intros': SettingsQuestionsCategoryIntros;
       'settings.questions-intro': SettingsQuestionsIntro;
+      'settings.questions-ordering': SettingsQuestionsOrdering;
+      'settings.questions-ordering-config': SettingsQuestionsOrderingConfig;
       'settings.results': SettingsResults;
       'settings.results-candidate-card-contents': SettingsResultsCandidateCardContents;
       'settings.results-party-card-contents': SettingsResultsPartyCardContents;

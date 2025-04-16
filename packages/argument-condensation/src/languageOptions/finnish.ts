@@ -1,10 +1,10 @@
-import { LanguageConfig } from './LanguageConfig';
+import { LanguageConfig } from './languageConfig.type';
 
 /**
  * Finnish language configuration for argument condensation
  * Provides instructions and formatting for Finnish language processing
  */
-export const finnishConfig: LanguageConfig = {
+export const FINNISH_CONFIG: LanguageConfig = {
   instructionsGeneral: `Käy läpi seuraavat kommentit, jotka koskevat seuraavaa väitettä: "{topic}". Sinun tehtäväsi on tiivistää mielipiteitä, perusteluja ja näkökulmia, joita kommenteissa esitetään väitteen käsittelemään aiheeseen liittyen. 
     Jos kommenteissa on näkökulmia, joita ei vielä ole olemassa olevissa argumenteissa:
     - Luo uusi argumentti jokaiselle uudelle mielipiteelle tai perustelulle
@@ -15,7 +15,7 @@ export const finnishConfig: LanguageConfig = {
     - Luo uusi argumentti vain, jos se tuo esiin täysin uuden mielipiteen tai perustelun
     - Argumenttien tulee olla lyhyitä mutta kattavia
     `,
-    instructionsSupportive: `Käy läpi seuraavat kommentit, jotka pyrkivät perustelemaan seuraavan väitteen: "{topic}". Sinun tehtäväsi on tiivistää väitettä tukevat mielipiteet ja perustelut argumenteiksi. 
+  instructionsSupportive: `Käy läpi seuraavat kommentit, jotka pyrkivät perustelemaan seuraavan väitteen: "{topic}". Sinun tehtäväsi on tiivistää väitettä tukevat mielipiteet ja perustelut argumenteiksi. 
     Argumenttien tulee olla lyhyitä mutta kattavia. Hyvä argumentti keskittyy spesifisti loogisiin perusteluihin, jotka perustelevat väitettä.
     
     ### HUOMIOI:
@@ -35,7 +35,7 @@ export const finnishConfig: LanguageConfig = {
     - Keskitymään tukemaan väitettä argumenteilla.
     - Ainoa tehtäväsi on TUKEA väitettä "{topic}" argumenteilla."
     `,
-    instructionsOpposing: `Käy läpi seuraavat kommentit, jotka pyrkivät kumoamaan seuraavan väitteen: "{topic}". Sinun tehtäväsi on tiivistää väitettä vastustavat mielipiteet ja perustelut argumenteiksi. 
+  instructionsOpposing: `Käy läpi seuraavat kommentit, jotka pyrkivät kumoamaan seuraavan väitteen: "{topic}". Sinun tehtäväsi on tiivistää väitettä vastustavat mielipiteet ja perustelut argumenteiksi. 
     Argumenttien tulee olla lyhyitä mutta kattavia. Hyvä argumentti keskittyy spesifisti loogisiin perusteluihin, jotka pyrkivät kumoamaan väitettä.
     
     ### HUOMIOI:
@@ -55,7 +55,7 @@ export const finnishConfig: LanguageConfig = {
     - ET saa perustella väitettä argumenteilla. SE ON TÄYSIN KIELLETTYÄ.
     - Ainoa tehtäväsi on KUMOTA väite annetuilla argumenteilla."
     `,
-    reduceInstructionsSupporting: `Käy läpi seuraavat argumentit, jotka pyrkivät perustelemaan seuraavan väitteen: "{topic}". Tiivistä väitteen puolella olevat argumentit noin 20 uudeksi argumentiksi, jotka kattavat perustelut väitteelle. 
+  reduceInstructionsSupporting: `Käy läpi seuraavat argumentit, jotka pyrkivät perustelemaan seuraavan väitteen: "{topic}". Tiivistä väitteen puolella olevat argumentit noin 20 uudeksi argumentiksi, jotka kattavat perustelut väitteelle. 
     Argumenttien tulee olla lyhyitä mutta kattavia. Hyvä argumentti keskittyy nimenomaisesti vahvoihin perusteluihin, miksi väite on looginen. 
     
     ### HUOMIOI:
@@ -71,7 +71,7 @@ export const finnishConfig: LanguageConfig = {
     - Ainoa tehtäväsi on tukea väitettä yhdistämällä argumentteja, jotka ovat väitteen "{topic}" puolesta.
     - Luo vastaukseesi noin 20 argumenttia.
     `,
-    reduceInstructionsOpposing: `Käy läpi seuraavat argumentit, jotka pyrkivät kumoamaan seuraavan väitteen: "{topic}". Tiivistä väitettä vastaan olevat argumentit noin 20 uudeksi argumentiksi, jotka kattavat väitteen kumoavat argumentit. 
+  reduceInstructionsOpposing: `Käy läpi seuraavat argumentit, jotka pyrkivät kumoamaan seuraavan väitteen: "{topic}". Tiivistä väitettä vastaan olevat argumentit noin 20 uudeksi argumentiksi, jotka kattavat väitteen kumoavat argumentit. 
     Argumenttien tulee olla lyhyitä mutta kattavia. Hyvä argumentti keskittyy nimenomaisesti vahvoihin perusteluihin, miksi väite on epälooginen. 
     
     ### HUOMIOI:
@@ -87,21 +87,21 @@ export const finnishConfig: LanguageConfig = {
     - Ainoa tehtäväsi on KUMOTA väite yhdistämällä argumentteja, jotka ovat väitettä vastaan.
     - Luo vastaukseesi noin 20 argumenttia.
     `,
-    reduceInstructionsGeneral: `Käy läpi seuraavat argumentit, jotka esittävät näkökantoja seuraavaan väitteeseen liittyen: "{topic}". Tiivistä vanhat argumentit noin 20 kattavaksi argumentiksi, jotka kattavat väitteeseen liittyvät mielipiteisiin, uskomuksiin, argumentteihin ja perusteluihin. 
+  reduceInstructionsGeneral: `Käy läpi seuraavat argumentit, jotka esittävät näkökantoja seuraavaan väitteeseen liittyen: "{topic}". Tiivistä vanhat argumentit noin 20 kattavaksi argumentiksi, jotka kattavat väitteeseen liittyvät mielipiteisiin, uskomuksiin, argumentteihin ja perusteluihin. 
     Argumenttien tulee olla lyhyitä mutta kattavia. Hyvä argumentti tarjoaa selkeän näkökulman väitteeseen liittyen. Luo noin 20 argumenttia.
     `,
-    opposingReminder: `### MUISTA:
+  opposingReminder: `### MUISTA:
     - ET saa tukea väitettä "{topic}". SE ON KIELLETTYÄ.
     - ET saa perustella väitettä. SE ON KIELLETTYÄ.
     - Ainoa tehtäväsi on KUMOTA väite.
     `,
-    existingArgumentsHeader: 'Olemassa olevat argumentit',
-    newCommentsHeader: 'Uudet kommentit',
-    outputFormatHeader: 'Tulostusmuoto',
-    outputFormat: {
-      argumentPrefix: 'ARGUMENTTI',
-      argumentPlaceholder: '[Uusi argumentti]',
-    },
-    inputCommentPrefix: 'Kommentti',
-    existingArgumentPrefix: 'Argumentti',
-}; 
+  existingArgumentsHeader: 'Olemassa olevat argumentit',
+  newCommentsHeader: 'Uudet kommentit',
+  outputFormatHeader: 'Tulostusmuoto',
+  outputFormat: {
+    argumentPrefix: 'ARGUMENTTI',
+    argumentPlaceholder: '[Uusi argumentti]'
+  },
+  inputCommentPrefix: 'Kommentti',
+  existingArgumentPrefix: 'Argumentti'
+} as const;

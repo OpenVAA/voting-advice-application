@@ -2,7 +2,7 @@
 
 // Stub of a README.md
 
-Tis but a TypeScript package for condensing multiple comments into distinct arguments using LLMs. Can be used in VAAs for extracting information from a large amount people. Expects an array of strings.  
+Tis but a TypeScript package for condensing multiple comments into distinct arguments using LLMs. Can be used in VAAs for extracting information from a large amount people. Expects an array of strings.
 
 ## Features
 
