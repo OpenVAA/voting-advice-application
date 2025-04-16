@@ -1,4 +1,4 @@
-import { Condenser } from '../core/Condenser';
+import { Condenser } from '../core/condenser';
 import { CONDENSATION_TYPE } from '../core/types/condensationType';
 /**
  * Process comments to extract Arguments
@@ -13,10 +13,6 @@ import { CONDENSATION_TYPE } from '../core/types/condensationType';
  */
 export async function processComments({ llmProvider, languageConfig, comments, topic, batchSize = 30, condensationType = CONDENSATION_TYPE.GENERAL }) {
     // Process comments with a Condenser instance
-    console.log('we got to the processComments', languageConfig);
-    console.log('we got to the processComments', comments);
-    console.log('we got to the processComments', topic);
-    console.log('we got to the processComments', condensationType);
     const condenser = new Condenser({ llmProvider, languageConfig });
     return await condenser.processComments({ comments, topic, batchSize, condensationType });
 }

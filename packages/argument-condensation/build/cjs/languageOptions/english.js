@@ -27,7 +27,7 @@ exports.ENGLISH_CONFIG = {
     outputFormatHeader: 'Output format',
     outputFormat: {
         argumentPrefix: 'ARGUMENT',
-        argumentPlaceholder: '[New argument]',
+        argumentPlaceholder: '[New argument]'
     },
     inputCommentPrefix: 'Comment',
     existingArgumentPrefix: 'Argument'

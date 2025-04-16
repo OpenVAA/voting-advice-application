@@ -1,7 +1,7 @@
 import { LLMProvider } from '@openvaa/llm';
 import { Argument } from './types/argument';
-import { LanguageConfig } from '../languageOptions/languageConfig.type';
 import { CondensationType } from './types/condensationType';
+import { LanguageConfig } from '../languageOptions/languageConfig.type';
 /**
  * Core class for condensing multiple comments into distinct arguments.
  * Processes comments in batches and maintains context between batches.
@@ -33,12 +33,12 @@ export declare class Condenser {
      * @throws {LLMError} If language model processing fails
      */
     processComments({ comments, topic, batchSize, condensationType, batchesPerArray }: {
-        comments: string[];
+        comments: Array<string>;
         topic: string;
         batchSize?: number;
         condensationType?: CondensationType;
         batchesPerArray?: number;
-    }): Promise<Argument[]>;
+    }): Promise<Array<Argument>>;
     /**
      * Performs the first level of condensation by creating Argument arrays from comments
      * @param comments - Array of comments to process

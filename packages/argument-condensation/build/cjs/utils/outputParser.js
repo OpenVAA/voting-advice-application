@@ -26,7 +26,7 @@ class OutputParser {
      * ARGUMENT 2: This is the second Argument
      * </ARGUMENTS>
      */
-    parseArguments(text, topic) {
+    parseArguments({ text, topic }) {
         /** Array to be populated by Arguments */
         const parsedArgs = new Array();
         /** Used to build the current Argument's string if it's multi-lined in the text */
@@ -35,7 +35,7 @@ class OutputParser {
         let stillProcessing = false;
         /** Split the LLM response into lines */
         const lines = text.split('\n');
-        // Iterate over lines of the response 
+        // Iterate over lines of the response
         for (const line of lines) {
             const trimmedLine = line.trim();
             /** Check if we're inside the <ARGUMENTS> block */
@@ -81,7 +81,7 @@ class OutputParser {
      * @param output - The LLM response text
      * @returns Argument[] - Array of condensed Arguments
      */
-    parseArgumentCondensation(output, topic) {
+    parseArgumentCondensation({ output, topic }) {
         /** Array to populate with condensed Arguments */
         const args = new Array();
         /** Argument prefix from the language config */
@@ -90,10 +90,13 @@ class OutputParser {
         const lines = output.split('\n');
         // Iterate over lines of the response
         for (const line of lines) {
-            // Check if the line starts with the correct Argument prefix 
+            // Check if the line starts with the correct Argument prefix
             if (line.startsWith(argumentPrefix)) {
                 /** Pure argument string with prefixes like "1:" removed */
-                const argumentText = line.substring(argumentPrefix.length).trim().replace(/^\s*\d+\s*:\s*/, '');
+                const argumentText = line
+                    .substring(argumentPrefix.length)
+                    .trim()
+                    .replace(/^\s*\d+\s*:\s*/, '');
                 // Create a new Argument with the condensed text
                 args.push({
                     argument: argumentText,

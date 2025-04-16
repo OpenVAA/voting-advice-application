@@ -98,8 +98,8 @@ export const FINNISH_CONFIG = {
     outputFormatHeader: 'Tulostusmuoto',
     outputFormat: {
         argumentPrefix: 'ARGUMENTTI',
-        argumentPlaceholder: '[Uusi argumentti]',
+        argumentPlaceholder: '[Uusi argumentti]'
     },
     inputCommentPrefix: 'Kommentti',
-    existingArgumentPrefix: 'Argumentti',
+    existingArgumentPrefix: 'Argumentti'
 };

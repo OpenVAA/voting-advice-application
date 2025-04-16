@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ParsingError = exports.LLMError = exports.ArgumentCondensationError = exports.LanguageConfigs = exports.CONDENSATION_TYPE = exports.exportResults = exports.Condenser = exports.processComments = void 0;
+exports.ParsingError = exports.LLMError = exports.ArgumentCondensationError = exports.getLanguageConfig = exports.LanguageConfigs = exports.CONDENSATION_TYPE = exports.exportResults = exports.Condenser = exports.processComments = void 0;
 const commentProcessor_1 = require("./utils/commentProcessor");
 Object.defineProperty(exports, "processComments", { enumerable: true, get: function () { return commentProcessor_1.processComments; } });
-var Condenser_1 = require("./core/Condenser");
-Object.defineProperty(exports, "Condenser", { enumerable: true, get: function () { return Condenser_1.Condenser; } });
+var condenser_1 = require("./core/condenser");
+Object.defineProperty(exports, "Condenser", { enumerable: true, get: function () { return condenser_1.Condenser; } });
 var fileOperations_1 = require("./utils/fileOperations");
 Object.defineProperty(exports, "exportResults", { enumerable: true, get: function () { return fileOperations_1.exportResults; } });
 var condensationType_1 = require("./core/types/condensationType");
@@ -12,6 +12,8 @@ Object.defineProperty(exports, "CONDENSATION_TYPE", { enumerable: true, get: fun
 // Export language namespace
 var configs_1 = require("./languageOptions/configs");
 Object.defineProperty(exports, "LanguageConfigs", { enumerable: true, get: function () { return configs_1.LanguageConfigs; } });
+var configs_2 = require("./languageOptions/configs");
+Object.defineProperty(exports, "getLanguageConfig", { enumerable: true, get: function () { return configs_2.getLanguageConfig; } });
 // Export errors
 var errors_1 = require("./core/types/errors");
 Object.defineProperty(exports, "ArgumentCondensationError", { enumerable: true, get: function () { return errors_1.ArgumentCondensationError; } });

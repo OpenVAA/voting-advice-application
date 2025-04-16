@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.processComments = processComments;
-const Condenser_1 = require("../core/Condenser");
+const condenser_1 = require("../core/condenser");
 const condensationType_1 = require("../core/types/condensationType");
 /**
  * Process comments to extract Arguments
@@ -16,10 +16,6 @@ const condensationType_1 = require("../core/types/condensationType");
  */
 async function processComments({ llmProvider, languageConfig, comments, topic, batchSize = 30, condensationType = condensationType_1.CONDENSATION_TYPE.GENERAL }) {
     // Process comments with a Condenser instance
-    console.log('we got to the processComments', languageConfig);
-    console.log('we got to the processComments', comments);
-    console.log('we got to the processComments', topic);
-    console.log('we got to the processComments', condensationType);
-    const condenser = new Condenser_1.Condenser({ llmProvider, languageConfig });
+    const condenser = new condenser_1.Condenser({ llmProvider, languageConfig });
     return await condenser.processComments({ comments, topic, batchSize, condensationType });
 }

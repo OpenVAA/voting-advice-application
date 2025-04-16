@@ -24,12 +24,18 @@ export declare class OutputParser {
      * ARGUMENT 2: This is the second Argument
      * </ARGUMENTS>
      */
-    parseArguments(text: string, topic: string): Argument[];
+    parseArguments({ text, topic }: {
+        text: string;
+        topic: string;
+    }): Array<Argument>;
     /**
      * Parses the output from condensing two Argument sets
      * @param output - The LLM response text
      * @returns Argument[] - Array of condensed Arguments
      */
-    parseArgumentCondensation(output: string, topic: string): Argument[];
+    parseArgumentCondensation({ output, topic }: {
+        output: string;
+        topic: string;
+    }): Array<Argument>;
 }
 //# sourceMappingURL=OutputParser.d.ts.map

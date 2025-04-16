@@ -6,7 +6,7 @@ exports.exportResults = exportResults;
  * @param condensedArguments - Array of condensed Arguments to export
  * @param formats - Array of output formats ('txt', 'json', 'csv')
  */
-async function exportResults(condensedArguments, formats = ['txt', 'json', 'csv']) {
+async function exportResults({ condensedArguments, formats = ['txt', 'json', 'csv'] }) {
     const output = {};
     for (const fmt of formats) {
         if (fmt === 'txt') {

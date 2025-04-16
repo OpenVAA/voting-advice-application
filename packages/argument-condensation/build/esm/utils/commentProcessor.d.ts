@@ -1,7 +1,7 @@
-import { Argument } from '../core/types/argument';
 import { LLMProvider } from '@openvaa/llm';
-import { LanguageConfig } from '../languageOptions/languageConfig.type';
+import { Argument } from '../core/types/argument';
 import { CondensationType } from '../core/types/condensationType';
+import { LanguageConfig } from '../languageOptions/languageConfig.type';
 /**
  * Process comments to extract Arguments
  * @param params - Object containing all parameters
@@ -16,9 +16,9 @@ import { CondensationType } from '../core/types/condensationType';
 export declare function processComments({ llmProvider, languageConfig, comments, topic, batchSize, condensationType }: {
     llmProvider: LLMProvider;
     languageConfig: LanguageConfig;
-    comments: string[];
+    comments: Array<string>;
     topic: string;
     batchSize?: number;
     condensationType?: CondensationType;
-}): Promise<Argument[]>;
+}): Promise<Array<Argument>>;
 //# sourceMappingURL=commentProcessor.d.ts.map
