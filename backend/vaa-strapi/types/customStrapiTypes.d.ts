@@ -34,7 +34,7 @@ export type StrapiRole = {
   id: number;
   documentId: string;
   description: string;
-  type: string;
+  type: 'authenticated' | 'public' | 'admin';
 };
 
 type RequestContext = ReturnType<typeof strapi.requestContext.get>;

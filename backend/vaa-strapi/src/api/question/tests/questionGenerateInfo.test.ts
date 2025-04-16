@@ -11,7 +11,7 @@ const ADMIN_CREDENTIALS = {
 describe('Strapi Admin Role API Tests', async () => {
   // Store the JWT token for use in all tests
   let jwt = '';
-  let testIds: Array<number>;
+  let testIds: Array<string>;
 
   // Authenticate before running tests
   beforeAll(async () => {
@@ -42,8 +42,8 @@ describe('Strapi Admin Role API Tests', async () => {
           Authorization: `Bearer ${jwt}`
         }
       });
-      const questions = (questionsResponse.data.data || []) as Array<{ id: number }>;
-      testIds = questions.map((question) => question.id).slice(0, 2);
+      const questions = (questionsResponse.data.data || []) as Array<{ documentId: string }>;
+      testIds = questions.map((question) => question.documentId).slice(0, 2);
     } catch (error) {
       console.error('Authentication failed:', error.response?.data || error.message);
       throw new Error('Failed to authenticate: ' + (error.response?.data?.error?.message || error.message));
@@ -113,7 +113,7 @@ describe('Strapi Admin Role API Tests', async () => {
         `${STRAPI_URL}/api/questions/generateInfo`,
         {
           data: {
-            ids: 'hugugugu'
+            ids: 1234556
           }
         },
         {
@@ -138,7 +138,7 @@ describe('Strapi Admin Role API Tests', async () => {
         `${STRAPI_URL}/api/questions/generateInfo`,
         {
           data: {
-            ids: [100000000000000]
+            ids: ['abcdefghijklmn']
           }
         },
         {

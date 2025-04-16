@@ -1,7 +1,23 @@
 import { PUBLIC_API } from '../util/api';
 
-export async function setDefaultApiPermissions(roleId: number) {
+export async function setDefaultApiPermissions(role: { type: 'public' | 'authenticated' | 'admin' }) {
   console.info('[setDefaultApiPermissions] Setting default API permissions');
+
+  let roleId: number;
+  switch (role.type) {
+    case 'authenticated': {
+      roleId = 1;
+      break;
+    }
+    case 'public': {
+      roleId = 2;
+      break;
+    }
+    case 'admin': {
+      roleId = 3;
+      break;
+    }
+  }
 
   // Voter App
   for (const contentType of Object.values(PUBLIC_API)) {

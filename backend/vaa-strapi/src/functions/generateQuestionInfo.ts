@@ -3,25 +3,33 @@ import { LLMResponse, OpenAIProvider } from '@openvaa/llm';
 import { LLM_OPENAI_API_KEY } from '../constants';
 import { API } from '../util/api';
 
-export async function generateQuestionInfo(questionIds?: Array<number>): Promise<{ type: 'success' | 'failure' }> {
+/*
+ *
+ * Generate info for questions using OpenAI API. Generates questions for all whose ids are in the questionIds
+ * array. An empty array generates info for all questions. The information is generated according to the prompt template in
+ * /packages/shared/src/settings/dynamicSettings.ts.
+ *
+ */
+
+export async function generateQuestionInfo(questionIds: Array<string>): Promise<{ type: 'success' | 'failure' }> {
   if (!LLM_OPENAI_API_KEY) {
     throw new Error('LLM_OPENAI_API_KEY is required for generating LLM summaries');
   }
   try {
     let questions = [];
-    if (!questionIds || questionIds.length == 0) {
-      questions = await strapi.db.query(API.Question).findMany({
+    if (questionIds.length == 0) {
+      questions = await strapi.documents(API.Question).findMany({
         limit: 9999 // Arbitrary to get all questions
       });
     } else {
-      questions = await strapi.db.query(API.Question).findMany({
-        where: {
-          id: {
+      questions = await strapi.documents(API.Question).findMany({
+        filters: {
+          documentId: {
             $in: questionIds
           }
         }
       });
-      if (questions.length != questionIds.length) {
+      if (questions.length !== questionIds.length) {
         throw new Error('Number of questions found is different from number of questions given');
       }
     }
@@ -43,15 +51,15 @@ export async function generateQuestionInfo(questionIds?: Array<number>): Promise
       const generatedCustomData = JSON.parse(res.content);
 
       // Replace existing data with new generated data
-      const existingCustomData = question.customData || {};
+      const existingCustomData = question.customData ?? {};
       const mergedCustomData = {
         ...existingCustomData,
-        infoSections: generatedCustomData.infoSections || existingCustomData.infoSections || [],
-        terms: generatedCustomData.terms || existingCustomData.terms || []
+        infoSections: generatedCustomData.infoSections ?? existingCustomData.infoSections ?? [],
+        terms: generatedCustomData.terms ?? existingCustomData.terms ?? []
       };
 
-      await strapi.db.query(API.Question).update({
-        where: { id: question.id },
+      await strapi.documents('api::question.question').update({
+        documentId: question.documentId,
         data: {
           customData: mergedCustomData
         }
