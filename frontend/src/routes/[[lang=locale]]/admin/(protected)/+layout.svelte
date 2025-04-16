@@ -56,7 +56,7 @@
 </script>
 
 {#if error}
-  <ErrorMessage message="You are not authorized to access this area" />
+  <ErrorMessage message={$t('adminApp.errors.unauthorized')} />
 {:else if !ready}
   <Loading />
 {:else}

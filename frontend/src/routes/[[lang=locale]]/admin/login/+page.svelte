@@ -48,13 +48,13 @@
 
   if (errorParam) {
     // Map error codes to user-friendly messages
-    const errorMessages = {
-      invalid: 'Invalid email or password',
-      unauthorized: 'You need admin privileges to access this area',
-      session_expired: 'Your session has expired, please log in again'
+    const errorMessages: Record<string, string> = {
+      invalid: $t('adminApp.login.errors.invalidCredentials'),
+      unauthorized: $t('adminApp.login.errors.unauthorized'),
+      session_expired: $t('adminApp.login.errors.sessionExpired')
     };
 
-    errorMessage = errorMessages[errorParam as keyof typeof errorMessages] || 'An unknown error occurred';
+    errorMessage = errorMessages[errorParam] || $t('adminApp.login.errors.unknown');
   }
   if (errorMessage) status = 'error';
 
@@ -67,12 +67,12 @@
   pageStyles.push({ drawer: { background: 'bg-base-300' } });
 </script>
 
-<MainContent title="Admin Login">
+<MainContent title={$t('adminApp.login.title')}>
   <div class="flex w-full flex-col items-center">
     <div class="mb-lg text-center">
-      <h1 class="text-primary">Election Compass</h1>
-      <h2 class="text-base-content">Administration</h2>
-      <p class="mt-md">Enter your login details.</p>
+      <h1 class="text-primary">{$t('adminApp.login.appTitle')}</h1>
+      <h2 class="text-base-content">{$t('adminApp.login.appSubtitle')}</h2>
+      <p class="mt-md">{$t('adminApp.login.instructions')}</p>
     </div>
 
     <form
@@ -87,8 +87,8 @@
             status = 'error';
             errorMessage =
               result.status === 400
-                ? 'Invalid email or password'
-                : 'An error occurred while trying to log in. Please try again.';
+                ? $t('adminApp.login.errors.invalidCredentials')
+                : $t('adminApp.login.errors.genericError');
             return;
           }
           await applyAction(result);
@@ -96,7 +96,7 @@
         };
       }}>
       <div class="flex w-full flex-col items-center">
-        <label for="email" class="hidden">Email</label>
+        <label for="email" class="hidden">{$t('adminApp.login.email')}</label>
         <input hidden name="redirectTo" value={redirectTo} />
         <input
           type="email"
@@ -104,7 +104,7 @@
           id="email"
           bind:value={email}
           class="input mb-md w-full max-w-md"
-          placeholder="Email"
+          placeholder={$t('adminApp.login.email')}
           autocomplete="email"
           required />
         <div class="mb-md w-full max-w-md">
@@ -117,13 +117,13 @@
           type="submit"
           disabled={!canSubmit}
           loading={status === 'loading'}
-          text="Login"
+          text={$t('adminApp.login.button')}
           variant="main"
           class="w-full max-w-md" />
       </div>
 
       <div class="mt-lg">
-        <Button href="/admin/forgot-password" text="Forgot Password?" variant="normal" />
+        <Button href="/admin/forgot-password" text={$t('adminApp.login.forgotPassword')} variant="normal" />
       </div>
     </form>
 

@@ -44,7 +44,7 @@ Page for computing and managing factor analysis for elections
       isComputing = false;
 
       if (result.type === 'failure') {
-        error = 'Failed to compute factors';
+        error = $t('adminApp.factorAnalysis.compute.error');
       } else {
         console.log('Factors computed successfully');
       }
@@ -54,16 +54,16 @@ Page for computing and managing factor analysis for elections
   };
 </script>
 
-<MainContent title="Factor analysis">
+<MainContent title={$t('adminApp.factorAnalysis.title')}>
   <div class="flex flex-col items-center">
     <p class="mb-lg max-w-xl text-center">
-      Compute the latent factors from the answers given by candidates and parties.
+      {$t('adminApp.factorAnalysis.compute.description')}
     </p>
 
     <form method="POST" class="grid w-full max-w-xl gap-lg" use:enhance={handleSubmit}>
-      <h2 class="font-medium">Compute factors</h2>
+      <h2 class="font-medium">{$t('adminApp.factorAnalysis.compute.title')}</h2>
 
-      <p class="mb-lg max-w-xl">Select the elections for which to compute the factors.</p>
+      <p class="mb-lg max-w-xl">{$t('adminApp.factorAnalysis.compute.selectElections')}</p>
 
       {#if elections && elections.length > 0}
         <div class="grid gap-md">
@@ -79,13 +79,16 @@ Page for computing and managing factor analysis for elections
                 {#if election.candidateCount !== undefined || election.partyCount !== undefined}
                   <div class="mt-1">
                     <span class="text-sm text-neutral">
-                      {election.candidateCount || 0} candidates
+                      {election.candidateCount || 0}
+                      {$t('adminApp.factorAnalysis.compute.candidates')}
                       {#if election.partyCount && election.partyCount > 0}
-                        and {election.partyCount} parties
+                        {$t('adminApp.factorAnalysis.compute.parties.some', {
+                          count: election.partyCount
+                        })}
                       {:else}
-                        and no parties
+                        {$t('adminApp.factorAnalysis.compute.parties.none')}
                       {/if}
-                      have answered
+                      {$t('adminApp.factorAnalysis.compute.haveAnswered')}
                     </span>
                   </div>
                 {/if}
@@ -94,7 +97,7 @@ Page for computing and managing factor analysis for elections
           {/each}
         </div>
       {:else}
-        <p class="text-neutral">No elections available</p>
+        <p class="text-neutral">{$t('adminApp.factorAnalysis.compute.noElections')}</p>
       {/if}
 
       {#if error}
@@ -103,13 +106,15 @@ Page for computing and managing factor analysis for elections
 
       <div class="flex flex-col items-center gap-sm">
         <Button
-          text={isComputing ? 'Computing factors...' : 'Compute factors'}
+          text={isComputing
+            ? $t('adminApp.factorAnalysis.compute.buttonLoading')
+            : $t('adminApp.factorAnalysis.compute.button')}
           type="submit"
           variant="main"
           disabled={isComputing || !anyElectionSelected} />
 
         {#if isComputing}
-          <p class="text-sm text-neutral">This may take some time.</p>
+          <p class="text-sm text-neutral">{$t('adminApp.factorAnalysis.compute.mayTakeTime')}</p>
         {/if}
       </div>
     </form>
