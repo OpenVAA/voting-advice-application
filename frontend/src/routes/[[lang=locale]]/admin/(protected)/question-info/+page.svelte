@@ -25,12 +25,18 @@ Page for generating and managing question information
   const question = new SingleChoiceCategoricalQuestion({
     data: {
       id: 'question-type',
-      name: 'Select questions to generate info for',
+      name: $t('adminApp.questionInfo.generate.questionType'),
       type: 'singleChoiceCategorical',
       categoryId: 'question-info',
       choices: [
-        { id: 'all', label: 'All questions' },
-        { id: 'selected', label: 'Selected questions' }
+        {
+          id: 'all',
+          label: $t('adminApp.questionInfo.generate.allQuestions')
+        },
+        {
+          id: 'selected',
+          label: $t('adminApp.questionInfo.generate.selectedQuestions')
+        }
       ]
     },
     root: dataRoot
@@ -50,7 +56,7 @@ Page for generating and managing question information
     return async ({ result }: { result: { type: string } }) => {
       isGenerating = false;
       if (result.type === 'error') {
-        error = 'Failed to generate info';
+        error = $t('adminApp.questionInfo.generate.error');
       }
     };
   };
@@ -61,14 +67,14 @@ Page for generating and managing question information
     <div class="loading loading-spinner loading-lg"></div>
   </div>
 {:else}
-  <MainContent title="Question info generation">
+  <MainContent title={$t('adminApp.questionInfo.title')}>
     <div class="flex flex-col items-center">
-      <p class="mb-lg max-w-xl text-center">Generate or edit the background information for questions.</p>
+      <p class="mb-lg max-w-xl text-center">{$t('adminApp.questionInfo.pageDescription')}</p>
 
       <form method="POST" class="grid w-full max-w-xl gap-lg" use:enhance={handleSubmit}>
-        <h2 class="font-medium">Generate info</h2>
+        <h2 class="font-medium">{$t('adminApp.questionInfo.generate.title')}</h2>
 
-        <p class="mb-lg max-w-xl">Generate the information overwriting any infos generated earlier.</p>
+        <p class="mb-lg max-w-xl">{$t('adminApp.questionInfo.generate.description')}</p>
 
         <div class="flex flex-col items-center gap-md">
           <QuestionChoices
@@ -79,7 +85,7 @@ Page for generating and managing question information
             variant="vertical" />
 
           {#if selectedOption === 'selected'}
-            <Button text="Select..." variant="normal" disabled={isGenerating} />
+            <Button text={$t('adminApp.questionInfo.generate.selectButton')} variant="normal" disabled={isGenerating} />
           {/if}
         </div>
 
@@ -89,28 +95,33 @@ Page for generating and managing question information
 
         <div class="flex flex-col items-center gap-sm">
           <Button
-            text={isGenerating ? 'Generating infos...' : 'Generate infos'}
+            text={isGenerating
+              ? $t('adminApp.questionInfo.generate.buttonLoading')
+              : $t('adminApp.questionInfo.generate.button')}
             type="submit"
             variant="main"
             disabled={isGenerating} />
 
           {#if isGenerating}
-            <p class="text-sm text-neutral">This may take some time.</p>
+            <p class="text-sm text-neutral">{$t('adminApp.questionInfo.generate.mayTakeTime')}</p>
           {/if}
         </div>
       </form>
 
       <div class="mt-xl w-full max-w-xl">
-        <h2 class="font-medium mb-lg">Edit infos</h2>
+        <h2 class="font-medium mb-lg">{$t('adminApp.questionInfo.edit.title')}</h2>
         <p class="mb-lg">
-          Edit the existing information. You can either edit it directly using a JSON editor or download it as CSV and
-          then upload the edited information.
+          {$t('adminApp.questionInfo.edit.description')}
         </p>
 
         <div class="flex flex-col gap-md">
-          <Button text="Edit the information" variant="normal" icon="create" iconPos="left" />
-          <Button text="Download the information as CSV" variant="normal" icon="download" iconPos="left" />
-          <Button text="Upload the information you have edited as CSV" variant="normal" icon="text" iconPos="left" />
+          <Button text={$t('adminApp.questionInfo.edit.editButton')} variant="normal" icon="create" iconPos="left" />
+          <Button
+            text={$t('adminApp.questionInfo.edit.downloadButton')}
+            variant="normal"
+            icon="download"
+            iconPos="left" />
+          <Button text={$t('adminApp.questionInfo.edit.uploadButton')} variant="normal" icon="text" iconPos="left" />
         </div>
       </div>
     </div>

@@ -9,23 +9,27 @@ Main landing page for admin section showing available tools
   import { getAppContext } from '$lib/contexts/app';
   import MainContent from '../../MainContent.svelte';
 
-  const { t } = getAppContext();
-  const title = 'Hello, Admin!';
+  const { t, getRoute } = getAppContext();
 </script>
 
-<MainContent {title}>
-  <p class="text-center">Use the tools below to manage the voting advice application.</p>
+<MainContent title={$t('adminApp.common.home')}>
+  <p class="text-center">{$t('adminApp.common.description')}</p>
 
   <div class="flex flex-col gap-sm">
-    <Button href="/en/admin/factor-analysis" text="Factor analysis" icon="create" iconPos="left" variant="normal">
+    <Button
+      href={$getRoute('AdminFactorAnalysis')}
+      text={$t('adminApp.factorAnalysis.title')}
+      icon="create"
+      iconPos="left"
+      variant="normal">
       <svelte:fragment slot="badge">
         <span class="text-primary-600 font-mono"></span>
       </svelte:fragment>
     </Button>
 
     <Button
-      href="/en/admin/question-info"
-      text="Question info generation"
+      href={$getRoute('AdminQuestionInfo')}
+      text={$t('adminApp.questionInfo.title')}
       icon="create"
       iconPos="left"
       variant="normal">
@@ -34,7 +38,7 @@ Main landing page for admin section showing available tools
       </svelte:fragment>
     </Button>
 
-    <Button text="Argument condensation" icon="create" iconPos="left" variant="normal" disabled>
+    <Button text={$t('adminApp.argumentCondensation.title')} icon="create" iconPos="left" variant="normal" disabled>
       <svelte:fragment slot="badge">
         <span class="font-mono text-gray-400"></span>
       </svelte:fragment>

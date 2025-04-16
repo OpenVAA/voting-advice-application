@@ -1,14 +1,71 @@
 {
   "common": {
-    "home": "Etusivu"
+    "home": "Etusivu",
+    "description": "Käytä alla olevia työkaluja hallitaksesi vaalikonetta."
   },
   "factorAnalysis": {
     "title": "Faktorianalyysi",
-    "description": "Analysoi ja hallinnoi vaalikysymysten faktoreita."
+    "description": "Analysoi ja hallinnoi vaalikysymysten faktoreita.",
+    "compute": {
+      "title": "Laske faktorit",
+      "description": "Laske latentteja faktoreita ehdokkaiden ja puolueiden vastauksista.",
+      "selectElections": "Valitse vaalit, joille faktorit lasketaan.",
+      "button": "Laske faktorit",
+      "buttonLoading": "Lasketaan faktoreita...",
+      "mayTakeTime": "Tämä saattaa kestää hetken.",
+      "noElections": "Ei vaaleja saatavilla",
+      "candidates": "ehdokasta",
+      "parties": {
+        "some": "ja {count} puoluetta",
+        "none": "eikä yhtään puoluetta"
+      },
+      "haveAnswered": "on vastannut",
+      "error": "Faktoreiden laskeminen epäonnistui"
+    }
+  },
+  "login": {
+    "title": "Ylläpitäjän kirjautuminen",
+    "appTitle": "Vaalikone",
+    "appSubtitle": "Ylläpito",
+    "instructions": "Syötä kirjautumistietosi.",
+    "email": "Sähköposti",
+    "password": "Salasana",
+    "button": "Kirjaudu",
+    "forgotPassword": "Unohditko salasanasi?",
+    "errors": {
+      "invalidCredentials": "Virheellinen sähköposti tai salasana",
+      "genericError": "Kirjautumisessa tapahtui virhe. Yritä uudelleen.",
+      "unauthorized": "Tarvitset ylläpitäjän oikeudet päästäksesi tähän osioon",
+      "sessionExpired": "Istuntosi on vanhentunut, kirjaudu uudelleen",
+      "unknown": "Tuntematon virhe tapahtui"
+    }
+  },
+  "errors": {
+    "unauthorized": "Sinulla ei ole oikeutta tähän alueeseen"
   },
   "questionInfo": {
     "title": "Kysymystietojen luominen",
-    "description": "Luo ja hallinnoi vaalikysymysten tietoja."
+    "description": "Luo ja hallinnoi vaalikysymysten tietoja.",
+    "pageDescription": "Luo tai muokkaa kysymysten taustatietoja.",
+    "generate": {
+      "title": "Luo tiedot",
+      "description": "Luo tiedot, jotka korvaavat aiemmin luodut tiedot.",
+      "questionType": "Valitse kysymykset, joille tiedot luodaan",
+      "allQuestions": "Kaikki kysymykset",
+      "selectedQuestions": "Valitut kysymykset",
+      "selectButton": "Valitse...",
+      "button": "Luo tiedot",
+      "buttonLoading": "Luodaan tietoja...",
+      "mayTakeTime": "Tämä saattaa kestää hetken.",
+      "error": "Tietojen luominen epäonnistui"
+    },
+    "edit": {
+      "title": "Muokkaa tietoja",
+      "description": "Muokkaa olemassa olevia tietoja. Voit joko muokata niitä suoraan JSON-editorilla tai ladata ne CSV-tiedostona ja ladata sitten muokatut tiedot.",
+      "editButton": "Muokkaa tietoja",
+      "downloadButton": "Lataa tiedot CSV-muodossa",
+      "uploadButton": "Lataa muokatut tiedot CSV-muodossa"
+    }
   },
   "argumentCondensation": {
     "title": "Argumenttien tiivistäminen",
