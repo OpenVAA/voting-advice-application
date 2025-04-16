@@ -127,10 +127,6 @@
       </div>
     </form>
 
-    <div class="mt-auto pt-lg text-center text-xs text-base-content/70">
-      <p>
-        Published by <span class="font-semibold">PubLogo</span> • Built with <span class="font-semibold">OpenVAA</span>
-      </p>
-    </div>
+    <Footer class="mt-auto pt-lg" />
   </div>
 </MainContent>
