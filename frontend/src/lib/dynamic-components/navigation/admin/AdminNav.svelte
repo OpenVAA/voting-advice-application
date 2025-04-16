@@ -25,9 +25,11 @@ A template part that outputs the navigation menu for the Admin App for use in `L
   import { NavGroup, Navigation, NavItem } from '$lib/dynamic-components/navigation';
   import { LanguageSelection } from '../languages';
   import { getAppContext } from '$lib/contexts/app';
+  import { getAdminContext } from '$lib/contexts/admin';
 
   const { navigation } = getLayoutContext(onDestroy);
   const { t } = getAppContext();
+  const adminContext = getAdminContext();
 </script>
 
 <Navigation slot="nav" on:navFocusOut {...$$restProps}>
