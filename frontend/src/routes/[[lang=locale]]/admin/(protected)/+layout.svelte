@@ -34,17 +34,13 @@
   let ready: boolean = false;
 
   $: {
-    try {
-      // Update admin context with user data
-      if (data.userData) {
-        adminContext.userData.set(data.userData);
-        ready = true;
-      } else {
-        error = new Error('No user data available');
-      }
-    } catch (e) {
-      error = e instanceof Error ? e : new Error('Unknown error');
-      logDebugError(`[Admin protected layout] Error processing data: ${error.message}`);
+    // Update admin context with user data
+    if (data.userData) {
+      adminContext.userData.set(data.userData);
+      ready = true;
+    } else {
+      error = new Error('No user data available');
+      logDebugError(`[Admin protected layout] Error: No user data available`);
     }
   }
 
