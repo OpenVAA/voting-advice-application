@@ -41,10 +41,14 @@ A template part that outputs the navigation menu for the Admin App for use in `L
     id="drawerCloseButton" />
 
   <NavGroup>
-    <NavItem href={$getRoute('AdminHome')} icon="home" text={$t('common.home')} />
-    <NavItem href={$getRoute('AdminFactorAnalysis')} icon="create" text="Factor analysis" />
-    <NavItem href={$getRoute('AdminQuestionInfo')} icon="create" text="Question info generation" />
-    <NavItem href={$getRoute('AdminArgumentCondensation')} icon="create" text="Argument condensation" disabled />
+    <NavItem href={$getRoute('AdminHome')} icon="home" text={$t('adminApp.common.home')} />
+    <NavItem href={$getRoute('AdminFactorAnalysis')} icon="create" text={$t('adminApp.factorAnalysis.title')} />
+    <NavItem href={$getRoute('AdminQuestionInfo')} icon="create" text={$t('adminApp.questionInfo.title')} />
+    <NavItem
+      href={$getRoute('AdminArgumentCondensation')}
+      icon="create"
+      text={$t('adminApp.argumentCondensation.title')}
+      disabled />
   </NavGroup>
 
   <NavGroup>
