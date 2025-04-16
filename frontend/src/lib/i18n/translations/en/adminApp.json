@@ -1,0 +1,17 @@
+{
+  "common": {
+    "home": "Home"
+  },
+  "factorAnalysis": {
+    "title": "Factor Analysis",
+    "description": "Analyze and manage factors for the election questions."
+  },
+  "questionInfo": {
+    "title": "Question Info Generation",
+    "description": "Generate and manage information for election questions."
+  },
+  "argumentCondensation": {
+    "title": "Argument Condensation",
+    "description": "Condense and manage arguments for election questions."
+  }
+}

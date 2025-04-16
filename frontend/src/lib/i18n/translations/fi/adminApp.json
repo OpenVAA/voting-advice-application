@@ -1,0 +1,17 @@
+{
+  "common": {
+    "home": "Etusivu"
+  },
+  "factorAnalysis": {
+    "title": "Faktorianalyysi",
+    "description": "Analysoi ja hallinnoi vaalikysymysten faktoreita."
+  },
+  "questionInfo": {
+    "title": "Kysymystietojen luominen",
+    "description": "Luo ja hallinnoi vaalikysymysten tietoja."
+  },
+  "argumentCondensation": {
+    "title": "Argumenttien tiivistäminen",
+    "description": "Tiivistä ja hallinnoi vaalikysymysten argumentteja."
+  }
+}

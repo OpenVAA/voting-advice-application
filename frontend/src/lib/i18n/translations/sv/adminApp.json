@@ -1,0 +1,17 @@
+{
+  "common": {
+    "home": "Hemsida"
+  },
+  "factorAnalysis": {
+    "title": "Faktoranalys",
+    "description": "Analysera och hantera faktorer för valfrågorna."
+  },
+  "questionInfo": {
+    "title": "Frågeinfogenerering",
+    "description": "Generera och hantera information för valfrågor."
+  },
+  "argumentCondensation": {
+    "title": "Argumentkondensation",
+    "description": "Kondensera och hantera argument för valfrågor."
+  }
+}
