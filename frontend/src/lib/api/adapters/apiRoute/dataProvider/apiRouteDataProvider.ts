@@ -8,7 +8,8 @@ import type {
   GetEntitiesOptions,
   GetFactorLoadingsOptions,
   GetNominationsOptions,
-  GetQuestionsOptions} from '$lib/api/base/getDataOptions.type';
+  GetQuestionsOptions
+} from '$lib/api/base/getDataOptions.type';
 
 export class ApiRouteDataProvider extends apiRouteAdapterMixin(UniversalDataProvider) {
   protected _getAppSettings(): Promise<DPDataType['appSettings']> {

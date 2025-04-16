@@ -14,10 +14,7 @@ export class QuestionOrderer {
    * @param questions - Array of questions to order
    * @param factorLoadingDataArray - Array of factor loadings from different elections
    */
-  constructor(
-    questions: Array<AnyQuestionVariant>,
-    factorLoadingDataArray: Array<FactorLoading>
-  ) {
+  constructor(questions: Array<AnyQuestionVariant>, factorLoadingDataArray: Array<FactorLoading>) {
     this.questions = questions;
 
     // Create a map of question IDs to their indices
@@ -30,17 +27,15 @@ export class QuestionOrderer {
     // First dimension: elections
     // Second dimension: questions
     // Third dimension: factors
-    this.factorLoadingsPerElection = factorLoadingDataArray.map(
-      (factorLoadingData) => this.convertFactorLoadings(factorLoadingData)
+    this.factorLoadingsPerElection = factorLoadingDataArray.map((factorLoadingData) =>
+      this.convertFactorLoadings(factorLoadingData)
     );
   }
 
   /**
    * Convert backend factor loading format to internal 2D array for a single election
    */
-  private convertFactorLoadings(
-    factorLoadingData: FactorLoading
-  ): Array<Array<number>> {
+  private convertFactorLoadings(factorLoadingData: FactorLoading): Array<Array<number>> {
     const factorCount = factorLoadingData.explainedVariancePerFactor.length;
     const loadings = Array(this.questions.length)
       .fill(0)
@@ -63,14 +58,9 @@ export class QuestionOrderer {
    * @param count - Number of questions to return
    * @returns Array of questions with highest information gain
    */
-  public getNextQuestions(
-    answeredIds: Array<string>,
-    count: number
-  ): Array<AnyQuestionVariant> {
+  public getNextQuestions(answeredIds: Array<string>, count: number): Array<AnyQuestionVariant> {
     // Filter questions that haven't been answered yet
-    const unansweredQuestions = this.questions.filter(
-      (q) => !answeredIds.includes(q.id)
-    );
+    const unansweredQuestions = this.questions.filter((q) => !answeredIds.includes(q.id));
 
     if (unansweredQuestions.length === 0) return [];
 
@@ -93,20 +83,11 @@ export class QuestionOrderer {
    * @param answeredIds - IDs of questions already answered
    * @returns Information gain value (summed across all elections)
    */
-  calculateInformationGain(
-    questionId: string,
-    answeredIds: Array<string>
-  ): number {
+  calculateInformationGain(questionId: string, answeredIds: Array<string>): number {
     // Calculate information gain for each election and sum them
     // You could use Math.max(...gains) instead of reduce((sum, gain) => sum + gain, 0) for maximum instead of sum
     return this.factorLoadingsPerElection
-      .map((_, electionIndex) =>
-        this.calculateInformationGainForElection(
-          questionId,
-          answeredIds,
-          electionIndex
-        )
-      )
+      .map((_, electionIndex) => this.calculateInformationGainForElection(questionId, answeredIds, electionIndex))
       .reduce((sum, gain) => sum + gain, 0);
   }
 
@@ -117,11 +98,7 @@ export class QuestionOrderer {
    * @param electionIndex - Index of the election
    * @returns Information gain value for the specific election
    */
-  calculateInformationGainForElection(
-    questionId: string,
-    answeredIds: Array<string>,
-    electionIndex: number
-  ): number {
+  calculateInformationGainForElection(questionId: string, answeredIds: Array<string>, electionIndex: number): number {
     const questionIdx = this.questionMap.get(questionId);
     if (questionIdx === undefined) {
       console.error(`Question ID ${questionId} not found in map`);
@@ -129,21 +106,13 @@ export class QuestionOrderer {
     }
 
     // If this question doesn't have factor loadings for this election, return 0
-    const factorLoadings =
-      this.factorLoadingsPerElection[electionIndex][questionIdx];
-    if (
-      !factorLoadings ||
-      factorLoadings.every((loading) => Math.abs(loading) < 0.01)
-    ) {
+    const factorLoadings = this.factorLoadingsPerElection[electionIndex][questionIdx];
+    if (!factorLoadings || factorLoadings.every((loading) => Math.abs(loading) < 0.01)) {
       return 0;
     }
 
     // Get direct information from residual entropy
-    const residualEntropy = this.calculateResidualEntropyForElection(
-      questionId,
-      answeredIds,
-      electionIndex
-    );
+    const residualEntropy = this.calculateResidualEntropyForElection(questionId, answeredIds, electionIndex);
     let infoValue = residualEntropy;
 
     // Calculate indirect information gain
@@ -163,17 +132,12 @@ export class QuestionOrderer {
         const otherQuestionIdx = this.questionMap.get(otherQuestionId);
 
         // Skip if: same question, already answered, or index not found
-        if (
-          otherQuestionId === questionId ||
-          answeredIds.includes(otherQuestionId) ||
-          otherQuestionIdx === undefined
-        ) {
+        if (otherQuestionId === questionId || answeredIds.includes(otherQuestionId) || otherQuestionIdx === undefined) {
           continue;
         }
 
         // Get other question's loading on this factor
-        const otherLoadings =
-          this.factorLoadingsPerElection[electionIndex][otherQuestionIdx];
+        const otherLoadings = this.factorLoadingsPerElection[electionIndex][otherQuestionIdx];
         if (!otherLoadings) continue;
 
         const otherWeight = otherLoadings[factorIdx];
@@ -185,11 +149,7 @@ export class QuestionOrderer {
         const contribution =
           factorWeight *
           otherWeight *
-          this.calculateResidualEntropyForElection(
-            otherQuestionId,
-            answeredIds,
-            electionIndex
-          );
+          this.calculateResidualEntropyForElection(otherQuestionId, answeredIds, electionIndex);
         indirectGain += contribution;
       }
     }
@@ -207,11 +167,7 @@ export class QuestionOrderer {
    * @param electionIndex - Index of the election
    * @returns Entropy value
    */
-  calculateResidualEntropyForElection(
-    questionId: string,
-    answeredIds: Array<string>,
-    electionIndex: number
-  ): number {
+  calculateResidualEntropyForElection(questionId: string, answeredIds: Array<string>, electionIndex: number): number {
     // Early return if no questions have been answered
     if (answeredIds.length === 0) {
       return 1.0;
@@ -225,8 +181,7 @@ export class QuestionOrderer {
     }
 
     // Get factor loadings for this question across all factors for this election
-    const factorLoadings =
-      this.factorLoadingsPerElection[electionIndex][questionIdx];
+    const factorLoadings = this.factorLoadingsPerElection[electionIndex][questionIdx];
 
     // If this question doesn't have factor loadings for this election, return 0
     if (!factorLoadings) return 0;
@@ -242,8 +197,7 @@ export class QuestionOrderer {
       for (const answeredId of answeredIds) {
         const answeredIdx = this.questionMap.get(answeredId);
         if (answeredIdx !== undefined) {
-          const answerLoadings =
-            this.factorLoadingsPerElection[electionIndex][answeredIdx];
+          const answerLoadings = this.factorLoadingsPerElection[electionIndex][answeredIdx];
           if (answerLoadings) {
             const absLoading = Math.abs(answerLoadings[factorIdx]);
             if (absLoading > factorDetermination) {
@@ -262,12 +216,10 @@ export class QuestionOrderer {
 
     // Get number of categories for this question
     const question = this.questions.find((q) => q.id === questionId);
-    const numCategories =
-      question && 'choices' in question ? question.choices.length : 5;
+    const numCategories = question && 'choices' in question ? question.choices.length : 5;
 
     // Base entropy from continuous approximation
-    const continuousEntropy =
-      0.5 * Math.log(2 * Math.PI * Math.E * residualVariance);
+    const continuousEntropy = 0.5 * Math.log(2 * Math.PI * Math.E * residualVariance);
 
     // Correction for discretization
     const width = Math.sqrt(residualVariance) / numCategories;
@@ -277,9 +229,6 @@ export class QuestionOrderer {
     const ordinalCorrection = Math.log(numCategories);
 
     // Final entropy calculation
-    return Math.max(
-      0,
-      continuousEntropy - discretizationLoss + ordinalCorrection
-    );
+    return Math.max(0, continuousEntropy - discretizationLoss + ordinalCorrection);
   }
 }

@@ -4,12 +4,8 @@ import { computePolychoricMatrix } from './matrix';
 describe('Polychoric Matrix Computation', () => {
   describe('Input Validation', () => {
     test('rejects empty matrix', () => {
-      expect(() => computePolychoricMatrix([])).toThrow(
-        'Empty response matrix'
-      );
-      expect(() => computePolychoricMatrix([[], []])).toThrow(
-        'Empty response matrix'
-      );
+      expect(() => computePolychoricMatrix([])).toThrow('Empty response matrix');
+      expect(() => computePolychoricMatrix([[], []])).toThrow('Empty response matrix');
     });
 
     test('validates matrix dimensions', () => {
@@ -18,9 +14,7 @@ describe('Polychoric Matrix Computation', () => {
         [1, 2], // Different length
         [1, 2, 3]
       ];
-      expect(() => computePolychoricMatrix(badResponses)).toThrow(
-        'All response rows must have same length'
-      );
+      expect(() => computePolychoricMatrix(badResponses)).toThrow('All response rows must have same length');
     });
 
     test('validates data types', () => {
@@ -29,9 +23,7 @@ describe('Polychoric Matrix Computation', () => {
         [1.5, 2, 3], // Non-integer value
         [1, 2, 3]
       ];
-      expect(() => computePolychoricMatrix(nonIntegerResponses)).toThrow(
-        'All values must be integers'
-      );
+      expect(() => computePolychoricMatrix(nonIntegerResponses)).toThrow('All values must be integers');
 
       /*const nanResponses = [
         [1, 2, 3],

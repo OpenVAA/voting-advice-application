@@ -7,6 +7,13 @@
  */
 
 import { type Faker, faker, fakerFI, fakerSV } from '@faker-js/faker';
+import {
+  type AnswerValue,
+  dynamicSettings,
+  type LocalizedAnswer,
+  type LocalizedString,
+  type QuestionTypeSettings
+} from '@openvaa/app-shared';
 import { LLMResponse, OpenAIProvider } from '@openvaa/llm';
 import crypto from 'crypto';
 import { loadDefaultAppSettings } from './loadDefaultAppSettings';
@@ -25,7 +32,6 @@ import {
 import { API } from '../util/api';
 import { getDynamicTranslations } from '../util/appCustomization';
 import { dropAllCollections } from '../util/drop';
-import { dynamicSettings, type AnswerValue, type LocalizedAnswer, type LocalizedString, type QuestionTypeSettings } from '@openvaa/app-shared';
 import type { Data } from '@strapi/strapi';
 
 /**
@@ -627,16 +633,10 @@ async function createQuestions({ constituencyPctg = 0.1 }: { constituencyPctg?: 
 
   const questionCategories = await strapi.documents('api::question-category.question-category').findMany({});
 
-  const opinionCategories = questionCategories.filter(
-    (cat) => cat.type === 'opinion'
-  );
-  const constituencies = await strapi
-    .documents('api::constituency.constituency')
-    .findMany({});
+  const opinionCategories = questionCategories.filter((cat) => cat.type === 'opinion');
+  const constituencies = await strapi.documents('api::constituency.constituency').findMany({});
 
-  const elections = await strapi
-    .documents('api::election.election')
-    .findMany({});
+  const elections = await strapi.documents('api::election.election').findMany({});
 
   // Create Opinion questions
   mockQuestions.forEach(async (question, index) => {
@@ -645,16 +645,10 @@ async function createQuestions({ constituencyPctg = 0.1 }: { constituencyPctg?: 
     const info = fakeLocalized((faker) => faker.lorem.sentences(3));
     const category = opinionCategories[index % opinionCategories.length];
     // const category = faker.helpers.arrayElement(opinionCategories);
-    const constituency =
-      Math.random() < constituencyPctg
-        ? faker.helpers.arrayElement(constituencies)
-        : null;
+    const constituency = Math.random() < constituencyPctg ? faker.helpers.arrayElement(constituencies) : null;
 
     const questionElections = faker.helpers
-      .arrayElements(
-        elections,
-        faker.number.int({ min: 1, max: elections.length })
-      )
+      .arrayElements(elections, faker.number.int({ min: 1, max: elections.length }))
       .map((e) => e.documentId);
 
     await strapi.documents('api::question.question').create({

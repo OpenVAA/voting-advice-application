@@ -17,12 +17,8 @@ export function standardNormalQuantile(p: number): number {
 
   const q = pClamp - 0.5;
   if (Math.abs(q) <= 0.425) {
-    const a: Array<number> = [
-      2.50662823884, -18.61500062529, 41.39119773534, -25.44106049637
-    ];
-    const b: Array<number> = [
-      -8.4735109309, 23.08336743743, -21.06224101826, 3.13082909833
-    ];
+    const a: Array<number> = [2.50662823884, -18.61500062529, 41.39119773534, -25.44106049637];
+    const b: Array<number> = [-8.4735109309, 23.08336743743, -21.06224101826, 3.13082909833];
 
     let num = a[0];
     let den = 1;
@@ -33,14 +29,9 @@ export function standardNormalQuantile(p: number): number {
     return (q * num) / den;
   }
 
-  const r =
-    pClamp < 0.5
-      ? Math.sqrt(-Math.log(pClamp))
-      : Math.sqrt(-Math.log(1 - pClamp));
+  const r = pClamp < 0.5 ? Math.sqrt(-Math.log(pClamp)) : Math.sqrt(-Math.log(1 - pClamp));
   let num = 0.3374754822726147;
-  for (const coef of [
-    0.9761690190917186, 0.1607979714918209, 0.0276438810333863
-  ] as Array<number>) {
+  for (const coef of [0.9761690190917186, 0.1607979714918209, 0.0276438810333863] as Array<number>) {
     num = num * r + coef;
   }
   return ((pClamp < 0.5 ? -1 : 1) * num) / r;

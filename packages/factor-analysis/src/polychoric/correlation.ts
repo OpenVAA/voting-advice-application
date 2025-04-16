@@ -1,10 +1,6 @@
 import { PolychoricOptions, PolychoricResult } from '../types';
 import { standardNormalQuantile } from '../utils/normalDistribution';
-import {
-  bivariateNormalProbability,
-  detectCategories,
-  normalizeData
-} from '../utils/statisticalUtils';
+import { bivariateNormalProbability, detectCategories, normalizeData } from '../utils/statisticalUtils';
 
 /**
  * Performs polychoric correlation estimation using maximum likelihood
@@ -44,12 +40,7 @@ export function polychoricCorrelation({
   y: Array<number>;
   options?: PolychoricOptions;
 }): PolychoricResult {
-  const {
-    maxIterations = 100,
-    tolerance = 1e-3,
-    smoothing = 0.5,
-    returnDetails = false
-  } = options;
+  const { maxIterations = 100, tolerance = 1e-3, smoothing = 0.5, returnDetails = false } = options;
 
   // Input validation
   if (x.length !== y.length) {
@@ -89,11 +80,7 @@ export function polychoricCorrelation({
   // Create contingency table with improved smoothing
   const table = Array(xInfo.nCategories)
     .fill(0)
-    .map(() =>
-      Array(yInfo.nCategories).fill(
-        smoothing / (xInfo.nCategories * yInfo.nCategories)
-      )
-    );
+    .map(() => Array(yInfo.nCategories).fill(smoothing / (xInfo.nCategories * yInfo.nCategories)));
 
   for (let i = 0; i < x.length; i++) {
     table[xNorm[i]][yNorm[i]] += 1 + smoothing;
@@ -104,13 +91,8 @@ export function polychoricCorrelation({
     const n10 = table[1][0] + smoothing / 4;
     const n01 = table[0][1] + smoothing / 4;
     const n00 = table[0][0] + smoothing / 4;
-    const phi =
-      (n11 * n00 - n10 * n01) /
-      Math.sqrt((n11 + n10) * (n00 + n01) * (n11 + n01) * (n10 + n00));
-    const rho = Math.min(
-      0.9999,
-      Math.max(-0.9999, Math.tanh((Math.PI * phi) / 2))
-    );
+    const phi = (n11 * n00 - n10 * n01) / Math.sqrt((n11 + n10) * (n00 + n01) * (n11 + n01) * (n10 + n00));
+    const rho = Math.min(0.9999, Math.max(-0.9999, Math.tanh((Math.PI * phi) / 2)));
     return {
       correlation: rho,
       standardError: 1 / Math.sqrt(x.length),
@@ -122,9 +104,7 @@ export function polychoricCorrelation({
   // Calculate marginals and thresholds
   const total = x.length + smoothing;
   const xMarginals = table.map((row) => row.reduce((a, b) => a + b, 0));
-  const yMarginals = table[0].map((_, j) =>
-    table.reduce((sum, row) => sum + row[j], 0)
-  );
+  const yMarginals = table[0].map((_, j) => table.reduce((sum, row) => sum + row[j], 0));
 
   const xThresholds = [
     -Infinity,
@@ -132,13 +112,7 @@ export function polychoricCorrelation({
       .slice(0, -1)
       .map((m, i) =>
         standardNormalQuantile(
-          Math.max(
-            0.001,
-            Math.min(
-              0.999,
-              xMarginals.slice(0, i + 1).reduce((a, b) => a + b, 0) / total
-            )
-          )
+          Math.max(0.001, Math.min(0.999, xMarginals.slice(0, i + 1).reduce((a, b) => a + b, 0) / total))
         )
       ),
     Infinity
@@ -150,13 +124,7 @@ export function polychoricCorrelation({
       .slice(0, -1)
       .map((m, i) =>
         standardNormalQuantile(
-          Math.max(
-            0.001,
-            Math.min(
-              0.999,
-              yMarginals.slice(0, i + 1).reduce((a, b) => a + b, 0) / total
-            )
-          )
+          Math.max(0.001, Math.min(0.999, yMarginals.slice(0, i + 1).reduce((a, b) => a + b, 0) / total))
         )
       ),
     Infinity
@@ -214,8 +182,7 @@ export function polychoricCorrelation({
 
         logLik += table[i][j] * Math.log(probability);
         score += (table[i][j] / probability) * derivative;
-        info +=
-          (table[i][j] / (probability * probability)) * derivative * derivative;
+        info += (table[i][j] / (probability * probability)) * derivative * derivative;
       }
     }
 
@@ -274,8 +241,7 @@ export function polychoricCorrelation({
   // Return best found solution even if not converged
   const result = {
     correlation: Math.max(-1, Math.min(1, bestRho)),
-    standardError:
-      converged && finalInfo > 1e-10 ? 1 / Math.sqrt(finalInfo) : undefined,
+    standardError: converged && finalInfo > 1e-10 ? 1 / Math.sqrt(finalInfo) : undefined,
     iterations: iter + 1,
     converged: converged || iter < maxIterations // Consider converged if we didn't hit max iterations
   };

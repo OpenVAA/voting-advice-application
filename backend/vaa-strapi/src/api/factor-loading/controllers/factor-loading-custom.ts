@@ -11,12 +11,9 @@ export default {
         return { data: factorLoading };
       } else {
         // All elections case
-        const elections = await strapi.entityService.findMany(
-          'api::election.election',
-          {
-            fields: ['id']
-          }
-        );
+        const elections = await strapi.entityService.findMany('api::election.election', {
+          fields: ['id']
+        });
 
         const results = [];
         const errors = [];

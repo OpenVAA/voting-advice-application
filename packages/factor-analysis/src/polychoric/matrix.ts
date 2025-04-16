@@ -10,9 +10,7 @@ import { polychoricCorrelation } from './correlation';
  * - Variables have at least 2 categories
  * @note Uses parallel computation for upper triangle only
  */
-export function computePolychoricMatrix(
-  responses: Array<Array<number>>
-): Array<Array<number>> {
+export function computePolychoricMatrix(responses: Array<Array<number>>): Array<Array<number>> {
   if (!responses?.length || !responses[0]?.length) {
     throw new Error('Empty response matrix');
   }
@@ -35,9 +33,7 @@ export function computePolychoricMatrix(
   }
 
   // Initialize correlation matrix with 1's on diagonal
-  const matrix = Array.from({ length: nQuestions }, () =>
-    Array(nQuestions).fill(1)
-  );
+  const matrix = Array.from({ length: nQuestions }, () => Array(nQuestions).fill(1));
 
   // Compute correlations for upper triangle
   for (let i = 0; i < nQuestions; i++) {

@@ -95,9 +95,7 @@ export function prepareDataForAnalysis(
     dimensionsByQuestionId.get(d.questionId)!.push(d);
   });
 
-  const documentIdToQuestionData = new Map<string, QuestionData>(
-    questionData.map((q) => [q.documentId, q])
-  );
+  const documentIdToQuestionData = new Map<string, QuestionData>(questionData.map((q) => [q.documentId, q]));
 
   // Process candidate answers
   candidates.forEach((candidate, candidateIndex) => {
@@ -112,11 +110,7 @@ export function prepareDataForAnalysis(
       if (!dimensions?.length) return;
 
       // Process based on question type
-      if (
-        question.type === 'singleChoiceOrdinal' &&
-        data.value &&
-        !isNaN(Number(data.value))
-      ) {
+      if (question.type === 'singleChoiceOrdinal' && data.value && !isNaN(Number(data.value))) {
         dimensions[0].answers[candidateIndex] = Number(data.value);
       } else if (question.type === 'singleChoiceCategorical' && data.value) {
         if (question.choices.length === 2) {
@@ -125,17 +119,12 @@ export function prepareDataForAnalysis(
           dimensions[0].answers[candidateIndex] = value;
         } else {
           // Multi-choice case
-          const selectedIndex = question.choices.findIndex(
-            (c) => c.id === data.value
-          );
+          const selectedIndex = question.choices.findIndex((c) => c.id === data.value);
           dimensions.forEach((dim, idx) => {
             dim.answers[candidateIndex] = idx === selectedIndex ? 1 : 0;
           });
         }
-      } else if (
-        question.type === 'multipleChoiceCategorical' &&
-        Array.isArray(data.value)
-      ) {
+      } else if (question.type === 'multipleChoiceCategorical' && Array.isArray(data.value)) {
         // Set each dimension based on whether it was selected
         dimensions.forEach((dim) => {
           if (dim.choiceIndex !== undefined) {
@@ -143,9 +132,7 @@ export function prepareDataForAnalysis(
             const choiceId = question.choices[choiceIdx]?.id;
             // Add type check to ensure data.value is an array
             if (Array.isArray(data.value)) {
-              dim.answers[candidateIndex] = data.value.includes(choiceId)
-                ? 1
-                : 0;
+              dim.answers[candidateIndex] = data.value.includes(choiceId) ? 1 : 0;
             }
           }
         });
@@ -159,9 +146,7 @@ export function prepareDataForAnalysis(
   );
 
   if (validDimensions.length === 0) {
-    throw new Error(
-      `No questions had sufficient valid responses (minimum ${MIN_VALID_RESPONSES})`
-    );
+    throw new Error(`No questions had sufficient valid responses (minimum ${MIN_VALID_RESPONSES})`);
   }
 
   // Sort for consistent ordering
@@ -177,9 +162,7 @@ export function prepareDataForAnalysis(
 /**
  * Performs factor analysis on questionnaire responses
  */
-export function analyzeFactors(
-  input: FactorAnalysisInput
-): FactorAnalysisOutput {
+export function analyzeFactors(input: FactorAnalysisInput): FactorAnalysisOutput {
   // Validate input
   if (!input.responses?.length) {
     throw new Error('Empty response matrix');
@@ -189,9 +172,7 @@ export function analyzeFactors(
       throw new Error('Empty response array');
     }
     // Check that we have at least some valid responses
-    const validCount = questionResponses.filter(
-      (r) => typeof r === 'number' && !Number.isNaN(r)
-    ).length;
+    const validCount = questionResponses.filter((r) => typeof r === 'number' && !Number.isNaN(r)).length;
     if (validCount === 0) {
       throw new Error('No valid responses for question');
     }
@@ -201,17 +182,14 @@ export function analyzeFactors(
   const correlationMatrix = computePolychoricMatrix(input.responses);
 
   // Perform factor analysis
-  const { loadings, explained, totalVariance, communalities, converged } =
-    FactorAnalysis.compute({
-      correlationMatrix,
-      numFactors: input.numFactors,
-      options: input.options
-    });
+  const { loadings, explained, totalVariance, communalities, converged } = FactorAnalysis.compute({
+    correlationMatrix,
+    numFactors: input.numFactors,
+    options: input.options
+  });
 
   // Transform the loadings matrix to be [questions × factors]
-  const questionFactorLoadings = loadings[0].map((_, questionIndex) =>
-    loadings.map((factor) => factor[questionIndex])
-  );
+  const questionFactorLoadings = loadings[0].map((_, questionIndex) => loadings.map((factor) => factor[questionIndex]));
 
   return {
     questionFactorLoadings,
@@ -251,9 +229,7 @@ export function processAnalysisResults(
   // Group factor loadings by question document ID
   const loadingsByQuestionId = uniqueQuestionIds.map((documentId) => {
     // Find all dimensions for this question
-    const questionDimensions = dimensions.filter(
-      (d) => d.documentId === documentId
-    );
+    const questionDimensions = dimensions.filter((d) => d.documentId === documentId);
     // Get factor loadings for each dimension
     const dimensionLoadings = questionDimensions.map((dim) => {
       const dimIndex = dimensions.findIndex((d) => d.id === dim.id);

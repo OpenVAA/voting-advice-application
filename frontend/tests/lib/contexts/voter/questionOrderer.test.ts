@@ -1,9 +1,4 @@
-import {
-  type AnyQuestionVariant,
-  DataRoot,
-  QUESTION_TYPE,
-  SingleChoiceOrdinalQuestion
-} from '@openvaa/data';
+import { type AnyQuestionVariant, DataRoot, QUESTION_TYPE, SingleChoiceOrdinalQuestion } from '@openvaa/data';
 import { QuestionOrderer } from '../../../../src/lib/contexts/voter/questionOrderer';
 import type { FactorLoading } from '$lib/contexts/voter/factorLoadings/factorLoading';
 
@@ -178,8 +173,7 @@ describe('QuestionOrderer with multiple elections', () => {
     }
 
     // Use type assertion to override the method
-    orderer.calculateInformationGain =
-      mockMethod as typeof orderer.calculateInformationGain;
+    orderer.calculateInformationGain = mockMethod as typeof orderer.calculateInformationGain;
 
     const answeredIds: Array<string> = ['q3']; // Already answered q3
     const nextQuestions = orderer.getNextQuestions(answeredIds, 2);
@@ -226,10 +220,7 @@ describe('QuestionOrderer with multiple elections', () => {
       ]
     ) as unknown as FactorLoading;
 
-    const orderer = new QuestionOrderer(mockQuestions, [
-      customFactorLoading1,
-      customFactorLoading2
-    ]);
+    const orderer = new QuestionOrderer(mockQuestions, [customFactorLoading1, customFactorLoading2]);
     const nextQuestions = orderer.getNextQuestions([], 1);
 
     // With these factor loadings, q3 should have the highest information gain

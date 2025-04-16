@@ -4017,6 +4017,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@openvaa/argument-condensation@workspace:packages/argument-condensation":
+  version: 0.0.0-use.local
+  resolution: "@openvaa/argument-condensation@workspace:packages/argument-condensation"
+  dependencies:
+    "@openvaa/llm": "workspace:^"
+    "@openvaa/shared-config": "workspace:^"
+    tsc-esm-fix: "npm:^3.1.2"
+    typescript: "npm:^5.3.3"
+    vitest: "npm:^2.1.8"
+  languageName: unknown
+  linkType: soft
+
 "@openvaa/core@workspace:^, @openvaa/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@openvaa/core@workspace:packages/core"
@@ -23333,6 +23345,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"typescript@npm:^5.3.3":
+  version: 5.8.3
+  resolution: "typescript@npm:5.8.3"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10c0/5f8bb01196e542e64d44db3d16ee0e4063ce4f3e3966df6005f2588e86d91c03e1fb131c2581baf0fb65ee79669eea6e161cd448178986587e9f6844446dbb48
+  languageName: node
+  linkType: hard
+
 "typescript@npm:^5.7.2":
   version: 5.8.2
   resolution: "typescript@npm:5.8.2"
@@ -23380,6 +23402,16 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 10c0/f3b8082c9d1d1629a215245c9087df56cb784f9fb6f27b5d55577a20e68afe2a889c040aacff6d27e35be165ecf9dca66e694c42eb9a50b3b2c451b36b5675cb
+  languageName: node
+  linkType: hard
+
+"typescript@patch:typescript@npm%3A^5.3.3#optional!builtin<compat/typescript>":
+  version: 5.8.3
+  resolution: "typescript@patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>::version=5.8.3&hash=5786d5"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10c0/39117e346ff8ebd87ae1510b3a77d5d92dae5a89bde588c747d25da5c146603a99c8ee588c7ef80faaf123d89ed46f6dbd918d534d641083177d5fac38b8a1cb
   languageName: node
   linkType: hard
 

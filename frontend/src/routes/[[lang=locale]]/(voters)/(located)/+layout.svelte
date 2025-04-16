@@ -45,17 +45,14 @@ Provides the data used by the located – i.e. those requiring the elections and
     DPDataType['nominations'] | Error,
     DPDataType['factorLoadings'] | Error
   ]): Error | undefined {
-    if (!isValidResult(questionData, { allowEmpty: true }))
-      return new Error('Error loading question data');
-    if (!isValidResult(nominationData, { allowEmpty: true }))
-      return new Error('Error loading nomination data');
-    if (!isValidResult(factorLoadingData, { allowEmpty: true }))
-      return new Error('Error loading factor loading data');
+    if (!isValidResult(questionData, { allowEmpty: true })) return new Error('Error loading question data');
+    if (!isValidResult(nominationData, { allowEmpty: true })) return new Error('Error loading nomination data');
+    if (!isValidResult(factorLoadingData, { allowEmpty: true })) return new Error('Error loading factor loading data');
 
     $dataRoot.provideQuestionData(questionData);
     $dataRoot.provideEntityData(nominationData.entities);
     $dataRoot.provideNominationData(nominationData.nominations);
-    
+
     setFactorLoadingData(factorLoadingData || []);
 
     ready = true;

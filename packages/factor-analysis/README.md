@@ -16,18 +16,18 @@ The package expects questionnaire data in the following format:
 const responses = [
   [4, 2, 5, 1, 3], // All responses to question 1
   [3, 4, 1, 2, 5], // All responses to question 2
-  [1, 5, 3, 4, 2]  // All responses to question 3
+  [1, 5, 3, 4, 2] // All responses to question 3
 ];
 // responses[questionIndex][responseIndex]
 // Shape: [nQuestions × nResponses]
 ```
 
 Important notes:
+
 - Each row represents all responses to one question
 - Each column represents one respondent's answers
 - All rows must have the same length (same number of responses)
 - Values should be integers representing ordinal categories (e.g., 1-5)
-
 
 ## Usage
 
@@ -36,7 +36,7 @@ import { analyzeFactors } from '@openvaa/factor-analysis';
 
 const analysis = analyzeFactors({
   responses: questionsXresponses, // [questions × responses] matrix
-  numFactors: 2,                 // Optional: auto-determined if not specified
+  numFactors: 2, // Optional: auto-determined if not specified
   options: {
     rotateFactors: true,
     maxIterations: 100,
@@ -44,9 +44,9 @@ const analysis = analyzeFactors({
   }
 });
 
-console.info(analysis.questionFactorLoadings);    // Factor loadings per question
+console.info(analysis.questionFactorLoadings); // Factor loadings per question
 console.info(analysis.explainedVariancePerFactor); // Variance explained by each factor
-console.info(analysis.totalExplainedVariance);     // Total explained variance
+console.info(analysis.totalExplainedVariance); // Total explained variance
 ```
 
 ## Performance Considerations
@@ -60,9 +60,10 @@ console.info(analysis.totalExplainedVariance);     // Total explained variance
 
 ```typescript
 interface FactorAnalysisOptions {
-  maxIterations?: number;   // Maximum iterations (default: 100)
-  tolerance?: number;       // Convergence criterion (default: 1e-4)
-  rotateFactors?: boolean;  // Apply varimax rotation (default: true)
-  minEigenvalue?: number;   // Minimum eigenvalue for factor extraction (default: 1e-10)
-  regularization?: number;  // Matrix regularization parameter (default: 1e-6)
+  maxIterations?: number; // Maximum iterations (default: 100)
+  tolerance?: number; // Convergence criterion (default: 1e-4)
+  rotateFactors?: boolean; // Apply varimax rotation (default: true)
+  minEigenvalue?: number; // Minimum eigenvalue for factor extraction (default: 1e-10)
+  regularization?: number; // Matrix regularization parameter (default: 1e-6)
 }
+```

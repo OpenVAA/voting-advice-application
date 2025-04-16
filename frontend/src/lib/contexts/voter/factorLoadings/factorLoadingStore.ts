@@ -23,32 +23,24 @@ export function createFactorLoadingStore() {
     dataRoot: Readable<DataRoot>;
     selectedElections: Readable<Array<Election>>;
   }): Readable<Array<FactorLoading>> {
-    return derived(
-      [rawFactorLoadings, selectedElections, dataRoot],
-      ([rawLoadings, selectedElections, dataRoot]) => {
-        if (
-          !rawLoadings ||
-          rawLoadings.length === 0 ||
-          !selectedElections ||
-          selectedElections.length === 0
-        ) {
-          return [];
-        }
-
-        // Get the IDs of all selected elections
-        const electionIds = selectedElections.map((election) => election.id);
-
-        // Create a function that gets questions from dataRoot
-        function getQuestion(id: Id): AnyQuestionVariant {
-          return dataRoot.getQuestion(id);
-        }
-
-        // Filter and transform raw data to FactorLoading instances
-        return rawLoadings
-          .filter((fl) => electionIds.includes(fl.electionId))
-          .map((data) => new FactorLoading(data, getQuestion));
+    return derived([rawFactorLoadings, selectedElections, dataRoot], ([rawLoadings, selectedElections, dataRoot]) => {
+      if (!rawLoadings || rawLoadings.length === 0 || !selectedElections || selectedElections.length === 0) {
+        return [];
       }
-    );
+
+      // Get the IDs of all selected elections
+      const electionIds = selectedElections.map((election) => election.id);
+
+      // Create a function that gets questions from dataRoot
+      function getQuestion(id: Id): AnyQuestionVariant {
+        return dataRoot.getQuestion(id);
+      }
+
+      // Filter and transform raw data to FactorLoading instances
+      return rawLoadings
+        .filter((fl) => electionIds.includes(fl.electionId))
+        .map((data) => new FactorLoading(data, getQuestion));
+    });
   }
 
   return {

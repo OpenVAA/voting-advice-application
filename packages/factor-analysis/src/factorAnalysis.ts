@@ -63,9 +63,7 @@ export class FactorAnalysis {
     });
 
     // Rotate factors if requested
-    const finalLoadings = opts.rotateFactors
-      ? this.varimaxRotation(result.loadings)
-      : result.loadings;
+    const finalLoadings = opts.rotateFactors ? this.varimaxRotation(result.loadings) : result.loadings;
 
     // Calculate final statistics
     const communalities = this.calculateCommunalities(finalLoadings);
@@ -130,17 +128,11 @@ export class FactorAnalysis {
     let currentLoadings: Array<Array<number>> = [];
 
     while (iterations < options.maxIterations) {
-      const Rred = R.map((row, i) =>
-        row.map((val, j) =>
-          i === j ? Math.max(0.001, val - uniquenesses[i]) : val
-        )
-      );
+      const Rred = R.map((row, i) => row.map((val, j) => (i === j ? Math.max(0.001, val - uniquenesses[i]) : val)));
 
       const { values, vectors } = this.eigenDecomposition(Rred);
 
-      currentLoadings = vectors
-        .slice(0, k)
-        .map((v, i) => v.map((x) => x * Math.sqrt(Math.abs(values[i]))));
+      currentLoadings = vectors.slice(0, k).map((v, i) => v.map((x) => x * Math.sqrt(Math.abs(values[i]))));
 
       const modelR = currentLoadings.reduce(
         (acc, f) => {
@@ -154,13 +146,7 @@ export class FactorAnalysis {
       const logLik =
         -0.5 *
         R.reduce(
-          (sum, row, i) =>
-            sum +
-            row.reduce(
-              (s, val, j) =>
-                s + (i === j ? 0 : Math.pow(val - modelR[i][j], 2)),
-              0
-            ),
+          (sum, row, i) => sum + row.reduce((s, val, j) => s + (i === j ? 0 : Math.pow(val - modelR[i][j], 2)), 0),
           0
         );
 
@@ -175,9 +161,7 @@ export class FactorAnalysis {
         return Math.max(0.1, Math.min(0.9, 1 - h2));
       });
 
-      const maxDiff = Math.max(
-        ...newUnique.map((u, i) => Math.abs(u - uniquenesses[i]))
-      );
+      const maxDiff = Math.max(...newUnique.map((u, i) => Math.abs(u - uniquenesses[i])));
 
       if (maxDiff < options.tolerance) {
         converged = true;
@@ -231,9 +215,7 @@ export class FactorAnalysis {
 
       // Find maximum loading for sign orientation
       const maxAbs = Math.max(...loadingVector.map(Math.abs));
-      const sign = Math.sign(
-        loadingVector[loadingVector.findIndex((v) => Math.abs(v) === maxAbs)]
-      );
+      const sign = Math.sign(loadingVector[loadingVector.findIndex((v) => Math.abs(v) === maxAbs)]);
 
       loadings.push(loadingVector.map((v) => v * sign));
     }
@@ -252,10 +234,7 @@ export class FactorAnalysis {
     return Array(n)
       .fill(0)
       .map((_, i) => {
-        const communality = loadings.reduce(
-          (sum, factor) => sum + factor[i] * factor[i],
-          0
-        );
+        const communality = loadings.reduce((sum, factor) => sum + factor[i] * factor[i], 0);
         // Adjust bounds to prevent Heywood cases more aggressively
         return Math.max(0.01, Math.min(0.99, 1 - communality));
       });
@@ -282,9 +261,7 @@ export class FactorAnalysis {
    * - Ensures consistent factor orientation
    * - Preserves orthogonality of solution
    */
-  private static varimaxRotation(
-    loadings: Array<Array<number>>
-  ): Array<Array<number>> {
+  private static varimaxRotation(loadings: Array<Array<number>>): Array<Array<number>> {
     const nVars = loadings[0].length;
     const nFactors = loadings.length;
 
@@ -294,16 +271,10 @@ export class FactorAnalysis {
     // Kaiser normalization
     const h = Array(nVars)
       .fill(0)
-      .map((_, i) =>
-        Math.sqrt(
-          rotated.reduce((sum, factor) => sum + factor[i] * factor[i], 0)
-        )
-      );
+      .map((_, i) => Math.sqrt(rotated.reduce((sum, factor) => sum + factor[i] * factor[i], 0)));
 
     // Normalize
-    const normalized = rotated.map((factor) =>
-      factor.map((loading, i) => (h[i] > 1e-10 ? loading / h[i] : 0))
-    );
+    const normalized = rotated.map((factor) => factor.map((loading, i) => (h[i] > 1e-10 ? loading / h[i] : 0)));
 
     const maxIter = 1000;
     const tolerance = 1e-12; // Tighter tolerance
@@ -355,14 +326,10 @@ export class FactorAnalysis {
     rotated = normalized.map((factor) => factor.map((v, i) => v * h[i]));
 
     // Calculate variances for sorting
-    const variances = rotated.map((factor) =>
-      factor.reduce((sum, loading) => sum + loading * loading, 0)
-    );
+    const variances = rotated.map((factor) => factor.reduce((sum, loading) => sum + loading * loading, 0));
 
     // Sort factors by variance and ensure consistent direction
-    const sortedIndices = variances
-      .map((_, i) => i)
-      .sort((a, b) => variances[b] - variances[a]);
+    const sortedIndices = variances.map((_, i) => i).sort((a, b) => variances[b] - variances[a]);
 
     return sortedIndices.map((i) => {
       const factor = rotated[i];
@@ -372,28 +339,18 @@ export class FactorAnalysis {
     });
   }
 
-  private static calculateCommunalities(
-    loadings: Array<Array<number>>
-  ): Array<number> {
-    return loadings[0].map((_, i) =>
-      loadings.reduce((sum, factor) => sum + factor[i] * factor[i], 0)
-    );
+  private static calculateCommunalities(loadings: Array<Array<number>>): Array<number> {
+    return loadings[0].map((_, i) => loadings.reduce((sum, factor) => sum + factor[i] * factor[i], 0));
   }
 
-  private static calculateExplained({
-    loadings,
-    R
-  }: {
-    loadings: Array<Array<number>>;
-    R: Array<Array<number>>;
-  }): { factorVariances: Array<number>; totalVariance: number } {
+  private static calculateExplained({ loadings, R }: { loadings: Array<Array<number>>; R: Array<Array<number>> }): {
+    factorVariances: Array<number>;
+    totalVariance: number;
+  } {
     const totalVariance = R.reduce((sum, row, i) => sum + row[i], 0);
 
     const factorVariances = loadings.map((factor) => {
-      const variance = factor.reduce(
-        (sum, loading) => sum + loading * loading,
-        0
-      );
+      const variance = factor.reduce((sum, loading) => sum + loading * loading, 0);
       return (variance / totalVariance) * 100;
     });
 
@@ -422,14 +379,10 @@ export class FactorAnalysis {
     const minEig = Math.min(...this.eigenDecomposition(matrix).values);
     const adaptiveEpsilon = minEig < 0.1 ? epsilon * 10 : epsilon;
 
-    return matrix.map((row, i) =>
-      row.map((val, j) => (i === j ? val + adaptiveEpsilon : val))
-    );
+    return matrix.map((row, i) => row.map((val, j) => (i === j ? val + adaptiveEpsilon : val)));
   }
 
-  private static isValidCorrelationMatrix(
-    matrix: Array<Array<number>>
-  ): boolean {
+  private static isValidCorrelationMatrix(matrix: Array<Array<number>>): boolean {
     const n = matrix.length;
 
     if (!matrix.every((row) => row.length === n)) return false;
@@ -450,9 +403,7 @@ export class FactorAnalysis {
       const result = eigs(matrix);
 
       // Convert values to number array
-      const values = Array.isArray(result.values)
-        ? result.values.map(Number)
-        : [Number(result.values)];
+      const values = Array.isArray(result.values) ? result.values.map(Number) : [Number(result.values)];
 
       // Convert vectors to number arrays
       const vectors = result.eigenvectors.map((ev) =>
@@ -477,16 +428,9 @@ export class FactorAnalysis {
     }
   }
 
-  private static determineFactorCount({
-    eigenvalues
-  }: {
-    eigenvalues: Array<number>;
-  }): number {
+  private static determineFactorCount({ eigenvalues }: { eigenvalues: Array<number> }): number {
     const significant = eigenvalues.filter((ev) => ev > 1.0).length;
-    return Math.max(
-      1,
-      Math.min(significant, Math.floor(eigenvalues.length / 2))
-    );
+    return Math.max(1, Math.min(significant, Math.floor(eigenvalues.length / 2)));
   }
 
   private static verifyFactorStructure({
