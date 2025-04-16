@@ -60,11 +60,11 @@
   <Loading />
 {:else if !$appSettings.dataAdapter.supportsAdminApp}
   <MaintenancePage
-    title={$t('info.adminApp.notSupported.title')}
-    content={$t('info.adminApp.notSupported.content')}
-    emoji={$t('info.adminApp.notSupported.heroEmoji')} />
+    title={$t('adminApp.notSupported.title')}
+    content={$t('adminApp.notSupported.content')}
+    emoji={$t('adminApp.notSupported.heroEmoji')} />
 {:else if !$appSettings.access.adminApp}
-  <MaintenancePage title={$t('maintenance.title')} content={$t('info.adminApp.notSupported.content')} />
+  <MaintenancePage title={$t('maintenance.title')} content={$t('adminApp.notSupported.content')} />
 {:else}
   <Layout {menuId} bind:isDrawerOpen>
     <AdminNav on:keyboardFocusOut={navigation.close} id={menuId} hidden={!isDrawerOpen} slot="menu" />
