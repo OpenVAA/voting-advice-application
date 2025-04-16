@@ -7,7 +7,12 @@ export * from './translations.type';
  */
 export const keys = [
   'about',
-  'adminApp',
+  'adminApp.argumentCondensation',
+  'adminApp.common',
+  'adminApp.error',
+  'adminApp.factorAnalysis',
+  'adminApp.login',
+  'adminApp.questionInfo',
   'candidateApp.basicInfo',
   'candidateApp.common',
   'candidateApp.error',
