@@ -8,10 +8,9 @@ Page for generating and managing question information
   import { enhance } from '$app/forms';
   import { getAppContext } from '$lib/contexts/app';
   import { Button } from '$lib/components/button';
-  import { QuestionChoices } from '$lib/components/questions';
-  import { SingleChoiceCategoricalQuestion, DataRoot } from '@openvaa/data';
   import { onMount } from 'svelte';
   import MainContent from '../../../MainContent.svelte';
+  import { getUUID } from '$lib/utils/components';
 
   const { t, locale } = getAppContext();
 
@@ -20,27 +19,20 @@ Page for generating and managing question information
   let error: string | null = null;
   let ready = false;
 
-  const dataRoot = new DataRoot({ locale: locale.get() });
+  // Generate a unique ID for the radio group
+  const radioGroupName = getUUID();
 
-  const question = new SingleChoiceCategoricalQuestion({
-    data: {
-      id: 'question-type',
-      name: $t('adminApp.questionInfo.generate.questionType'),
-      type: 'singleChoiceCategorical',
-      categoryId: 'question-info',
-      choices: [
-        {
-          id: 'all',
-          label: $t('adminApp.questionInfo.generate.allQuestions')
-        },
-        {
-          id: 'selected',
-          label: $t('adminApp.questionInfo.generate.selectedQuestions')
-        }
-      ]
+  // Options for the radio group
+  const options = [
+    {
+      id: 'all',
+      label: $t('adminApp.questionInfo.generate.allQuestions')
     },
-    root: dataRoot
-  });
+    {
+      id: 'selected',
+      label: $t('adminApp.questionInfo.generate.selectedQuestions')
+    }
+  ];
 
   onMount(() => {
     // Wait for the next tick to ensure all data is loaded
@@ -77,12 +69,22 @@ Page for generating and managing question information
         <p class="mb-lg max-w-xl">{$t('adminApp.questionInfo.generate.description')}</p>
 
         <div class="flex flex-col items-center gap-md">
-          <QuestionChoices
-            {question}
-            selectedId={selectedOption}
-            onChange={({ value }) => (selectedOption = value ?? 'all')}
-            showLine={false}
-            variant="vertical" />
+          <fieldset class="w-full">
+            <legend class="sr-only">{$t('adminApp.questionInfo.generate.questionType')}</legend>
+            <div class="flex flex-col gap-md">
+              {#each options as option}
+                <label class="label cursor-pointer justify-start gap-sm !p-0">
+                  <input
+                    type="radio"
+                    class="radio-primary radio"
+                    name={radioGroupName}
+                    value={option.id}
+                    bind:group={selectedOption} />
+                  <span class="label-text">{option.label}</span>
+                </label>
+              {/each}
+            </div>
+          </fieldset>
 
           {#if selectedOption === 'selected'}
             <Button text={$t('adminApp.questionInfo.generate.selectButton')} variant="normal" disabled={isGenerating} />
