@@ -28,7 +28,7 @@ A template part that outputs the navigation menu for the Admin App for use in `L
   import { getAdminContext } from '$lib/contexts/admin';
 
   const { navigation } = getLayoutContext(onDestroy);
-  const { t } = getAppContext();
+  const { t, getRoute } = getAppContext();
   const adminContext = getAdminContext();
 </script>
 
@@ -41,15 +41,15 @@ A template part that outputs the navigation menu for the Admin App for use in `L
     id="drawerCloseButton" />
 
   <NavGroup>
-    <NavItem href="/en/admin" icon="home" text={$t('common.home')} />
-    <NavItem href="/en/admin/factor-analysis" icon="create" text="Factor analysis" />
-    <NavItem href="/en/admin/question-info" icon="create" text="Question info generation" />
-    <NavItem href="/en/admin/argument-condensation" icon="create" text="Argument condensation" disabled />
+    <NavItem href={$getRoute('AdminHome')} icon="home" text={$t('common.home')} />
+    <NavItem href={$getRoute('AdminFactorAnalysis')} icon="create" text="Factor analysis" />
+    <NavItem href={$getRoute('AdminQuestionInfo')} icon="create" text="Question info generation" />
+    <NavItem href={$getRoute('AdminArgumentCondensation')} icon="create" text="Argument condensation" disabled />
   </NavGroup>
 
   <NavGroup>
-    <NavItem href="/admin/help" icon="help" text={$t('help.title')} />
-    <NavItem href="/admin/privacy" icon="privacy" text={$t('privacy.title')} />
+    <NavItem href={$getRoute('AdminHelp')} icon="help" text={$t('help.title')} />
+    <NavItem href={$getRoute('AdminPrivacy')} icon="privacy" text={$t('privacy.title')} />
   </NavGroup>
 
   <LanguageSelection />
