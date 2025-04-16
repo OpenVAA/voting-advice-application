@@ -70,7 +70,7 @@ async function fetchProcessableQuestions(documentIds?: Array<string>): Promise<A
       } as ArgumentCondensationQuestion;
     });
 
-  console.log("processableQuestions:", processableQuestions);
+  console.info("processableQuestions:", processableQuestions);
 
   return documentIds?.length ? processableQuestions.filter((q) => documentIds.includes(q.documentId)) : processableQuestions;
 }

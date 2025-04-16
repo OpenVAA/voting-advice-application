@@ -136,8 +136,8 @@ export default {
         console.info('Type:', question.questionType?.settings?.type || 'Unknown type');
         console.info('Name:', question.questionType?.name || 'Unknown name');
 
-        console.log("QUESTION OBJECT")
-        console.log(JSON.stringify(question.questionType.settings, null, 2));
+        console.info("QUESTION OBJECT")
+        console.info(JSON.stringify(question.questionType.settings, null, 2));
 
         try {
           // Get answers for this specific question using documentId
