@@ -1,4 +1,3 @@
-import { LocalizedAnswer } from '@openvaa/app-shared';
 import { CONDENSATION_TYPE, getLanguageConfig, processComments} from '@openvaa/argument-condensation';
 import { OpenAIProvider } from '@openvaa/llm';
 import { OPENAI_API_KEY } from '../../../constants';
@@ -135,9 +134,6 @@ export default {
         console.info('Document ID:', question.documentId);
         console.info('Type:', question.questionType?.settings?.type || 'Unknown type');
         console.info('Name:', question.questionType?.name || 'Unknown name');
-
-        console.info("QUESTION OBJECT")
-        console.info(JSON.stringify(question.questionType.settings, null, 2));
 
         try {
           // Get answers for this specific question using documentId
