@@ -33,6 +33,8 @@ const defaultPermissions: Array<{
   { action: 'api::constituency-group.constituency-group.findOne', roleType: 'authenticated' },
   { action: 'api::election.election.find', roleType: 'authenticated' },
   { action: 'api::election.election.findOne', roleType: 'authenticated' },
+  { action: 'api::factor-loading.factor-loading.find', roleType: 'authenticated' },
+  { action: 'api::factor-loading.factor-loading.findOne', roleType: 'authenticated' },
   { action: 'api::nomination.nomination.find', roleType: 'authenticated' },
   { action: 'api::nomination.nomination.findOne', roleType: 'authenticated' },
   { action: 'api::party.party.find', roleType: 'authenticated' },
