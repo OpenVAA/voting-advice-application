@@ -17,7 +17,7 @@ export class StrapiAdminWriter extends strapiAdapterMixin(UniversalAdminWriter) 
     });
 
     return {
-      type: response.type
+      type: response?.type
     };
   }
 
