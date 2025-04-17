@@ -1,7 +1,5 @@
 import { type Actions, fail } from '@sveltejs/kit';
 import { adminWriter as adminWriterPromise } from '$lib/api/adminWriter';
-import { dataProvider as dataProviderPromise } from '$lib/api/dataProvider';
-import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 
 // export const load: PageServerLoad = async ({ params, locals }) => {
 //   // Stub for loading question information
@@ -14,23 +12,18 @@ import { dataWriter as dataWriterPromise } from '$lib/api/dataWriter';
 
 export const actions = {
   // Create action for handling form submissions
-  default: async ({ request, locals, cookies }) => {
+  default: async ({ request, cookies }) => {
     try {
-      const dw = await dataProviderPromise;
-      const questionData = await dw.getQuestionData();
-
-      const questionIds = questionData.questions.map((question) => question.id)[0];
-
       const formData = await request.formData();
 
       // Log the form data for debugging purposes
-      console.info('Form data received:', Object.fromEntries(formData));
+      const questionIds = formData.getAll('questionIds').map((id) => id.toString());
 
       const authToken = cookies.get('token');
       const adminWriter = await adminWriterPromise;
       adminWriter.init({ fetch });
 
-      const { type } = await adminWriter.generateQuestionInfo({ authToken });
+      const { type } = (await adminWriter.generateQuestionInfo({ authToken, questionIds })) ?? {};
 
       console.info('got type', type);
 
