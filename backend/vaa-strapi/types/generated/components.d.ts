@@ -26,6 +26,10 @@ export interface CustomizationTranslationOverride
       'customization.translation-override-translation',
       true
     >;
+    translations: Schema.Attribute.Component<
+      'customization.translation-override-translation',
+      true
+    >;
   };
 }
 
@@ -270,10 +274,6 @@ export interface SettingsQuestions extends Struct.ComponentSchema {
   attributes: {
     categoryIntros: Schema.Attribute.Component<
       'settings.questions-category-intros',
-      false
-    >;
-    dynamicOrdering: Schema.Attribute.Component<
-      'settings.questions-ordering',
       false
     >;
     questionsIntro: Schema.Attribute.Component<

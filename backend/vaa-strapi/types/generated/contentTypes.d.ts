@@ -29,6 +29,8 @@ export interface AdminApiToken extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
     description: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         minLength: 1;
@@ -683,38 +685,6 @@ export interface ApiElectionElection extends Struct.CollectionTypeSchema {
     >;
     publishedAt: Schema.Attribute.DateTime;
     shortName: Schema.Attribute.JSON;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiFactorLoadingFactorLoading
-  extends Struct.CollectionTypeSchema {
-  collectionName: 'factor_loadings';
-  info: {
-    displayName: 'Factor Loadings';
-    pluralName: 'factor-loadings';
-    singularName: 'factor-loading';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    election: Schema.Attribute.Relation<'oneToOne', 'api::election.election'>;
-    externalId: Schema.Attribute.String & Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::factor-loading.factor-loading'
-    > &
-      Schema.Attribute.Private;
-    metadata: Schema.Attribute.JSON;
-    publishedAt: Schema.Attribute.DateTime;
-    results: Schema.Attribute.JSON & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
