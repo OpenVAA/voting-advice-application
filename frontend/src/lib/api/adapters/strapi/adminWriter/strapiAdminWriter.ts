@@ -9,7 +9,9 @@ export class StrapiAdminWriter extends strapiAdapterMixin(UniversalAdminWriter) 
     const response = await this.apiPost({
       endpoint: 'generateQuestionInfo',
       body: {
-        questionIds: options.questionIds
+        data: {
+          ids: options.questionIds || []
+        }
       },
       authToken: options.authToken
     });
