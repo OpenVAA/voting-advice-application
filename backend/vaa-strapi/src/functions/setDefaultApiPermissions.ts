@@ -1,10 +1,11 @@
 import { PUBLIC_API } from '../util/api';
+import { StrapiRole } from '../../types/customStrapiTypes';
 
-export async function setDefaultApiPermissions(role: { type: 'public' | 'authenticated' | 'admin' }) {
+export async function setDefaultApiPermissions(roleType: StrapiRole['type']) {
   console.info('[setDefaultApiPermissions] Setting default API permissions');
 
   let roleId: number;
-  switch (role.type) {
+  switch (roleType) {
     case 'authenticated': {
       roleId = 1;
       break;
