@@ -8,6 +8,8 @@ Page for computing and managing factor analysis for elections
   import { enhance } from '$app/forms';
   import { getAppContext } from '$lib/contexts/app';
   import { Button } from '$lib/components/button';
+  import { ErrorMessage } from '$lib/components/errorMessage';
+  import { SuccessMessage } from '$lib/components/successMessage';
   import MainContent from '../../../MainContent.svelte';
 
   // Get the data from the server
@@ -30,21 +32,19 @@ Page for computing and managing factor analysis for elections
     });
   }
 
-  let isComputing = false;
-  let error: string | null = null;
+  let status: 'idle' | 'loading' | 'success' | 'error' = 'idle';
 
   const handleSubmit = () => {
     console.log('Form submission started');
-    isComputing = true;
-    error = null;
+    status = 'loading';
 
     return async ({ result, update }: { result: { type: string }; update: () => void }) => {
       console.log('Form submission completed, result:', result);
-      isComputing = false;
 
       if (result.type === 'failure') {
-        error = $t('adminApp.factorAnalysis.compute.error');
+        status = 'error';
       } else {
+        status = 'success';
         console.log('Factors computed successfully');
       }
 
@@ -99,20 +99,23 @@ Page for computing and managing factor analysis for elections
         <p class="text-neutral">{$t('adminApp.factorAnalysis.compute.noElections')}</p>
       {/if}
 
-      {#if error}
-        <p class="text-sm text-error">{error}</p>
+      {#if status === 'error'}
+        <ErrorMessage inline message={$t('adminApp.factorAnalysis.compute.error')} class="mb-md" />
+      {:else if status === 'success'}
+        <SuccessMessage inline message={$t('common.success')} class="mb-md" />
       {/if}
 
       <div class="flex flex-col items-center gap-sm">
         <Button
-          text={isComputing
+          text={status === 'loading'
             ? $t('adminApp.factorAnalysis.compute.buttonLoading')
             : $t('adminApp.factorAnalysis.compute.button')}
           type="submit"
           variant="main"
-          disabled={isComputing || !anyElectionSelected} />
+          loading={status === 'loading'}
+          disabled={status === 'loading' || !anyElectionSelected} />
 
-        {#if isComputing}
+        {#if status === 'loading'}
           <p class="text-sm text-neutral">{$t('adminApp.factorAnalysis.compute.mayTakeTime')}</p>
         {/if}
       </div>
