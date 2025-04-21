@@ -48,7 +48,8 @@ Page for computing and managing factor analysis for elections
         console.log('Factors computed successfully');
       }
 
-      await update();
+      // Always cancel the form action to prevent page reload
+      return { cancel: true };
     };
   };
 </script>
