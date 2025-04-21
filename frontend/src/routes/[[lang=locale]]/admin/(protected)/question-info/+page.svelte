@@ -12,7 +12,7 @@ Page for generating and managing question information
   import MainContent from '../../../MainContent.svelte';
   import { getUUID } from '$lib/utils/components';
 
-  const { t, locale } = getAppContext();
+  const { t } = getAppContext();
 
   let selectedOption = 'all';
   let isGenerating = false;
