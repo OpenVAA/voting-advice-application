@@ -25,7 +25,7 @@ export const actions = {
     });
 
     if (!loginResponse?.authToken) {
-      return fail(400);
+      return fail(400, { type: 'error', message: 'Invalid credentials' });
     }
 
     const { authToken } = loginResponse;
@@ -37,7 +37,7 @@ export const actions = {
     });
 
     if (!userData) {
-      return fail(500);
+      return fail(500, { type: 'error', message: 'Failed to fetch user data' });
     }
 
     // Debug log the entire user data to see its structure
