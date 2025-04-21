@@ -8,7 +8,6 @@ Page for computing and managing factor analysis for elections
   import { enhance } from '$app/forms';
   import { getAppContext } from '$lib/contexts/app';
   import { Button } from '$lib/components/button';
-  import { Checkbox } from '$lib/components/checkbox';
   import MainContent from '../../../MainContent.svelte';
 
   // Get the data from the server

@@ -23,7 +23,7 @@
   ////////////////////////////////////////////////////////////////////
 
   const { t } = getAppContext();
-  const adminContext = getAdminContext();
+  const { userData } = getAdminContext();
   const { topBarSettings } = getLayoutContext(onDestroy);
 
   ////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@
   $: {
     // Update admin context with user data
     if (data.userData) {
-      adminContext.userData.set(data.userData);
+      userData.set(data.userData);
       ready = true;
     } else {
       error = new Error('No user data available');
