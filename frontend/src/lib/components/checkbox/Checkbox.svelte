@@ -1,5 +1,28 @@
-<!--@component
-Checkbox component with label and description slot
+<!--
+@component
+Checkbox component with a label and optional description slot.
+
+### Properties
+
+- `checked`: The checked state of the checkbox. @default false
+- `name`: The name attribute for the checkbox input.
+- `label`: The label text for the checkbox.
+- `disabled`: Whether the checkbox is disabled. @default false
+- Any valid attributes of a `<label>` element.
+
+### Slots
+
+- `description`: An optional slot for adding descriptive text below the label.
+
+### Usage
+
+```tsx
+<Checkbox name="terms" label="I accept the terms and conditions">
+  <span slot="description" class="text-xs text-gray-500">
+    By checking this box, you agree to our Terms of Service and Privacy Policy.
+  </span>
+</Checkbox>
+```
 -->
 <script lang="ts">
   import { concatClass } from '$lib/utils/components';
