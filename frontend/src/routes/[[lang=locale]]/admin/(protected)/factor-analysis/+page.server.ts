@@ -47,7 +47,7 @@ export const actions: Actions = {
     try {
       // Parse the form data to get selected election IDs
       const formData = await request.formData();
-      const selectedElectionIds: Array<string> = [];
+      const selectedElectionIds = new Array<string>();
 
       // Extract the election IDs from form data
       for (const [key, value] of formData.entries()) {
