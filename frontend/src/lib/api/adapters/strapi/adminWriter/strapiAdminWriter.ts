@@ -20,44 +20,32 @@ export class StrapiAdminWriter extends strapiAdapterMixin(UniversalAdminWriter) 
   }
 
   protected async _computeFactorLoadings(options?: ComputeFactorLoadingsOptions): DWReturnType<DataApiActionResult> {
-    try {
-      // If election IDs are provided, compute for each election
-      if (options?.electionIds && options.electionIds.length > 0) {
-        // For multiple elections, call each one separately
-        const results = await Promise.all(
-          options.electionIds.map(async (electionId) => {
-            try {
-              const response = await this.apiPost({
-                endpoint: 'computeFactorLoadingsById',
-                endpointParams: { id: electionId }
-              });
-              return response;
-            } catch (err) {
-              console.error(`Error computing factors for election ${electionId}:`, err);
-              return { type: 'failure' };
-            }
-          })
-        );
+    // If election IDs are provided, compute for each election
+    if (options?.electionIds && options.electionIds.length > 0) {
+      // For multiple elections, call each one separately
+      const results = await Promise.all(
+        options.electionIds.map(async (electionId) => {
+          const response = await this.apiPost({
+            endpoint: 'computeFactorLoadingsById',
+            endpointParams: { id: electionId }
+          });
+          return response;
+        })
+      );
 
-        // If any computation failed, return failure
-        if (results.some((result) => result.type === 'failure')) {
-          return { type: 'failure' };
-        }
-        return { type: 'success' };
-      } else {
-        // Compute for all elections
-        const response = await this.apiPost({
-          endpoint: 'computeFactorLoadings'
-        });
-
-        return {
-          type: response?.type || 'success'
-        };
+      // If any computation failed, return failure
+      if (results.some((result) => result.type === 'failure')) {
+        return { type: 'failure' };
       }
-    } catch (error) {
-      console.error('Error computing factor loadings:', error);
+      return { type: 'success' };
+    } else {
+      // Compute for all elections
+      const response = await this.apiPost({
+        endpoint: 'computeFactorLoadings'
+      });
+
       return {
-        type: 'failure'
+        type: response?.type || 'success'
       };
     }
   }
