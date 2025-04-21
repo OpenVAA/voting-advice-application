@@ -74,7 +74,8 @@ export const actions: Actions = {
       return result;
     } catch (error) {
       console.error('Factor analysis error:', error);
-      return fail(500, { type: 'error', message: 'Internal server error' });
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return fail(500, { type: 'error', message: `Internal server error: ${errorMessage}` });
     }
   }
 };
