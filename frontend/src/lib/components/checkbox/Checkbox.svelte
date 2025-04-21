@@ -30,10 +30,10 @@ Checkbox component with a label and optional description slot.
 
   type $$Props = CheckboxProps;
 
-  export let checked = false;
-  export let name: string;
-  export let label: string;
-  export let disabled = false;
+  export let checked: $$Props['checked'] = false;
+  export let name: $$Props['name'];
+  export let label: $$Props['label'];
+  export let disabled: $$Props['disabled'] = false;
 </script>
 
 <label {...concatClass($$restProps, 'flex items-start')}>
