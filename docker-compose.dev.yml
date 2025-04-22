@@ -72,6 +72,7 @@ services:
       STATIC_MEDIA_CONTENT_PATH: ${STATIC_MEDIA_CONTENT_PATH}
       LOCALSTACK_ENDPOINT: http://awslocal:4566
       PUBLIC_BROWSER_FRONTEND_URL: ${PUBLIC_BROWSER_FRONTEND_URL}
+      SENTRY_DSN: ${SENTRY_DSN}
   postgres:
     extends:
       file: ./backend/vaa-strapi/docker-compose.dev.yml

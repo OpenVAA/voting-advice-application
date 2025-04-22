@@ -83,6 +83,14 @@ export default ({ env }) => {
     'openvaa-admin-tools': {
       enabled: true,
       resolve: './src/plugins/openvaa-admin-tools'
+    },
+    sentry: {
+      enabled: true,
+      config: {
+        dsn: env('SENTRY_DSN'),
+        environment: env('NODE_ENV'),
+        sendMetadata: true
+      }
     }
   };
 };

@@ -38,5 +38,9 @@ module.exports = ({ env }) => [
   },
   'strapi::session',
   'strapi::favicon',
-  'strapi::public'
+  'strapi::public',
+  {
+    name: 'global::error-capture',
+    config: {}
+  }
 ];
