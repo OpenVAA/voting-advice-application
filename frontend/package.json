@@ -67,6 +67,7 @@
     "@openvaa/data": "workspace:^",
     "@openvaa/filters": "workspace:^",
     "@openvaa/matching": "workspace:^",
+    "@sentry/sveltekit": "^9",
     "@sveltekit-i18n/parser-icu": "^1.0.8",
     "intl-messageformat": "^10.7.11",
     "isomorphic-dompurify": "^2.19.0",

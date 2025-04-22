@@ -1,15 +1,23 @@
+import * as Sentry from '@sentry/sveltekit';
+import { sequence } from '@sveltejs/kit/hooks';
 import { API_ROOT } from '$lib/api/adapters/apiRoute/apiRoutes';
 import { defaultLocale, loadTranslations, locales } from '$lib/i18n';
 import { matchLocale, parseAcceptedLanguages } from '$lib/i18n/utils';
+import { constants } from '$lib/utils/constants';
 import { logDebugError } from '$lib/utils/logger';
 import type { Handle, HandleServerError } from '@sveltejs/kit';
+
+Sentry.init({
+  dsn: constants.PUBLIC_FRONTEND_SENTRY_DSN,
+  tracesSampleRate: 1
+});
 
 // Handle and handleError based on sveltekit-i18n examples: https://github.com/sveltekit-i18n/lib/blob/master/examples/locale-router-advanced/src/hooks.server.js
 
 /** Set to `true` to show debug log in console */
 const DEBUG = false;
 
-export const handle: Handle = (async ({ event, resolve }) => {
+export const handle: Handle = sequence(Sentry.sentryHandle(), (async ({ event, resolve }) => {
   const { params, route, url, request, isDataRequest } = event;
   const { pathname, search } = url;
   const requestedLocale = params.lang;
@@ -111,7 +119,7 @@ export const handle: Handle = (async ({ event, resolve }) => {
       transformPageChunk: ({ html }) => html.replace('%lang%', `${servedLocale}`)
     }
   );
-}) satisfies Handle;
+}) satisfies Handle);
 
 export const handleError = (async ({ error, event }) => {
   const { locals } = event;
