@@ -121,7 +121,7 @@ export const handle: Handle = sequence(Sentry.sentryHandle(), (async ({ event, r
   );
 }) satisfies Handle);
 
-export const handleError = (async ({ error, event }) => {
+export const handleError = Sentry.handleErrorWithSentry((async ({ error, event }) => {
   const { locals } = event;
   const currentLocale = locals?.currentLocale;
   logDebugError('handleError', error);
@@ -129,7 +129,7 @@ export const handleError = (async ({ error, event }) => {
   return {
     message: '500'
   };
-}) satisfies HandleServerError;
+}) satisfies HandleServerError);
 
 /** Show debug message if `DEBUG` is `true` */
 function debug(message: unknown, error?: unknown) {
