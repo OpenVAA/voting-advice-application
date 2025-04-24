@@ -24,10 +24,12 @@ Page for generating and managing question information
   const options = [
     {
       id: 'all',
+      value: 'all',
       label: $t('adminApp.questionInfo.generate.allQuestions')
     },
     {
       id: 'selected',
+      value: 'selected',
       label: $t('adminApp.questionInfo.generate.selectedQuestions')
     }
   ];
@@ -64,7 +66,7 @@ Page for generating and managing question information
                   type="radio"
                   class="radio-primary radio"
                   name={radioGroupName}
-                  value={option.id}
+                  value={option.value}
                   bind:group={selectedOption} />
                 <span class="label-text">{option.label}</span>
               </label>
