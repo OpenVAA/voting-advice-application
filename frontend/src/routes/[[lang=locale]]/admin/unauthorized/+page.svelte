@@ -28,7 +28,7 @@
     </div>
 
     <div class="mt-8 flex flex-col gap-4">
-      <Button href={$getRoute('Home')} text={$t('adminApp.common.home')} variant="main" />
+      <Button href={$getRoute('AdminHome')} text={$t('adminApp.common.home')} variant="main" />
       <Button href={$getRoute('AdminLogin')} text={$t('adminApp.login.button')} variant="normal" />
     </div>
   </div>
