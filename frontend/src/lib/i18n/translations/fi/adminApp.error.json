@@ -1,3 +1,5 @@
 {
-  "unauthorized": "Sinulla ei ole oikeutta tähän alueeseen"
+  "unauthorized": "Sinulla ei ole oikeutta tähän alueeseen",
+  "unauthorizedDescription": "Tilisi on todennettu, mutta sinulla ei ole tarvittavia ylläpitäjän oikeuksia.",
+  "unauthorizedContact": "Tämä osio on varattu vain järjestelmänvalvojille. Jos uskot, että sinun pitäisi päästä tähän osioon, ota yhteyttä järjestelmänvalvojaan."
 }

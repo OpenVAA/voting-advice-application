@@ -1,3 +1,5 @@
 {
-  "unauthorized": "You are not authorized to access this area"
+  "unauthorized": "You are not authorized to access this area",
+  "unauthorizedDescription": "Your account has been authenticated, but you don't have the required admin privileges.",
+  "unauthorizedContact": "This section is reserved for system administrators only. If you believe you should have access, please contact the system administrator."
 }
