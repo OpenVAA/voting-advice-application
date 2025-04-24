@@ -8,7 +8,6 @@ Page for generating and managing question information
   import { enhance } from '$app/forms';
   import { getAppContext } from '$lib/contexts/app';
   import { Button } from '$lib/components/button';
-  import { onMount } from 'svelte';
   import MainContent from '../../../MainContent.svelte';
   import { getUUID } from '$lib/utils/components';
 
@@ -17,7 +16,6 @@ Page for generating and managing question information
   let selectedOption = 'all';
   let isGenerating = false;
   let error: string | null = null;
-  let ready = false;
 
   // Generate a unique ID for the radio group
   const radioGroupName = getUUID();
@@ -34,13 +32,6 @@ Page for generating and managing question information
     }
   ];
 
-  onMount(() => {
-    // Wait for the next tick to ensure all data is loaded
-    setTimeout(() => {
-      ready = true;
-    }, 0);
-  });
-
   const handleSubmit = () => {
     isGenerating = true;
     error = null;
@@ -54,78 +45,72 @@ Page for generating and managing question information
   };
 </script>
 
-{#if !ready}
-  <div class="flex h-screen items-center justify-center">
-    <div class="loading loading-spinner loading-lg"></div>
-  </div>
-{:else}
-  <MainContent title={$t('adminApp.questionInfo.title')}>
-    <div class="flex flex-col items-center">
-      <p class="mb-lg max-w-xl text-center">{$t('adminApp.questionInfo.pageDescription')}</p>
+<MainContent title={$t('adminApp.questionInfo.title')}>
+  <div class="flex flex-col items-center">
+    <p class="mb-lg max-w-xl text-center">{$t('adminApp.questionInfo.pageDescription')}</p>
 
-      <form method="POST" class="grid w-full max-w-xl gap-lg" use:enhance={handleSubmit}>
-        <h2 class="font-medium">{$t('adminApp.questionInfo.generate.title')}</h2>
+    <form method="POST" class="grid w-full max-w-xl gap-lg" use:enhance={handleSubmit}>
+      <h2 class="font-medium">{$t('adminApp.questionInfo.generate.title')}</h2>
 
-        <p class="mb-lg max-w-xl">{$t('adminApp.questionInfo.generate.description')}</p>
+      <p class="mb-lg max-w-xl">{$t('adminApp.questionInfo.generate.description')}</p>
 
-        <div class="flex flex-col items-center gap-md">
-          <fieldset class="w-full">
-            <legend class="sr-only">{$t('adminApp.questionInfo.generate.questionType')}</legend>
-            <div class="flex flex-col gap-md">
-              {#each options as option}
-                <label class="label cursor-pointer justify-start gap-sm !p-0">
-                  <input
-                    type="radio"
-                    class="radio-primary radio"
-                    name={radioGroupName}
-                    value={option.id}
-                    bind:group={selectedOption} />
-                  <span class="label-text">{option.label}</span>
-                </label>
-              {/each}
-            </div>
-          </fieldset>
+      <div class="flex flex-col items-center gap-md">
+        <fieldset class="w-full">
+          <legend class="sr-only">{$t('adminApp.questionInfo.generate.questionType')}</legend>
+          <div class="flex flex-col gap-md">
+            {#each options as option}
+              <label class="label cursor-pointer justify-start gap-sm !p-0">
+                <input
+                  type="radio"
+                  class="radio-primary radio"
+                  name={radioGroupName}
+                  value={option.id}
+                  bind:group={selectedOption} />
+                <span class="label-text">{option.label}</span>
+              </label>
+            {/each}
+          </div>
+        </fieldset>
 
-          {#if selectedOption === 'selected'}
-            <Button text={$t('adminApp.questionInfo.generate.selectButton')} variant="normal" disabled={isGenerating} />
-          {/if}
-        </div>
-
-        {#if error}
-          <p class="text-sm text-error">{error}</p>
+        {#if selectedOption === 'selected'}
+          <Button text={$t('adminApp.questionInfo.generate.selectButton')} variant="normal" disabled={isGenerating} />
         {/if}
+      </div>
 
-        <div class="flex flex-col items-center gap-sm">
-          <Button
-            text={isGenerating
-              ? $t('adminApp.questionInfo.generate.buttonLoading')
-              : $t('adminApp.questionInfo.generate.button')}
-            type="submit"
-            variant="main"
-            disabled={isGenerating} />
+      {#if error}
+        <p class="text-sm text-error">{error}</p>
+      {/if}
 
-          {#if isGenerating}
-            <p class="text-sm text-neutral">{$t('adminApp.questionInfo.generate.mayTakeTime')}</p>
-          {/if}
-        </div>
-      </form>
+      <div class="flex flex-col items-center gap-sm">
+        <Button
+          text={isGenerating
+            ? $t('adminApp.questionInfo.generate.buttonLoading')
+            : $t('adminApp.questionInfo.generate.button')}
+          type="submit"
+          variant="main"
+          disabled={isGenerating} />
 
-      <div class="mt-xl w-full max-w-xl">
-        <h2 class="font-medium mb-lg">{$t('adminApp.questionInfo.edit.title')}</h2>
-        <p class="mb-lg">
-          {$t('adminApp.questionInfo.edit.description')}
-        </p>
+        {#if isGenerating}
+          <p class="text-sm text-neutral">{$t('adminApp.questionInfo.generate.mayTakeTime')}</p>
+        {/if}
+      </div>
+    </form>
 
-        <div class="flex flex-col gap-md">
-          <Button text={$t('adminApp.questionInfo.edit.editButton')} variant="normal" icon="create" iconPos="left" />
-          <Button
-            text={$t('adminApp.questionInfo.edit.downloadButton')}
-            variant="normal"
-            icon="download"
-            iconPos="left" />
-          <Button text={$t('adminApp.questionInfo.edit.uploadButton')} variant="normal" icon="text" iconPos="left" />
-        </div>
+    <div class="mt-xl w-full max-w-xl">
+      <h2 class="font-medium mb-lg">{$t('adminApp.questionInfo.edit.title')}</h2>
+      <p class="mb-lg">
+        {$t('adminApp.questionInfo.edit.description')}
+      </p>
+
+      <div class="flex flex-col gap-md">
+        <Button text={$t('adminApp.questionInfo.edit.editButton')} variant="normal" icon="create" iconPos="left" />
+        <Button
+          text={$t('adminApp.questionInfo.edit.downloadButton')}
+          variant="normal"
+          icon="download"
+          iconPos="left" />
+        <Button text={$t('adminApp.questionInfo.edit.uploadButton')} variant="normal" icon="text" iconPos="left" />
       </div>
     </div>
-  </MainContent>
-{/if}
+  </div>
+</MainContent>
