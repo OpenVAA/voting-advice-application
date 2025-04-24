@@ -14,6 +14,8 @@ export type TranslationKey =
   | 'adminApp.common.description'
   | 'adminApp.common.home'
   | 'adminApp.error.unauthorized'
+  | 'adminApp.error.unauthorizedContact'
+  | 'adminApp.error.unauthorizedDescription'
   | 'adminApp.factorAnalysis.compute.button'
   | 'adminApp.factorAnalysis.compute.buttonLoading'
   | 'adminApp.factorAnalysis.compute.candidates'

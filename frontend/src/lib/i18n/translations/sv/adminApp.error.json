@@ -1,3 +1,5 @@
 {
-  "unauthorized": "Du har inte behörighet att komma åt detta område"
+  "unauthorized": "Du har inte behörighet att komma åt detta område",
+  "unauthorizedDescription": "Ditt konto har autentiserats, men du har inte de nödvändiga administratörsbehörigheterna.",
+  "unauthorizedContact": "Detta avsnitt är reserverat endast för systemadministratörer. Om du tror att du borde ha tillgång, vänligen kontakta systemadministratören."
 }

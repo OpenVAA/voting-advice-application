@@ -56,7 +56,8 @@ export const ROUTE = {
   AdminQuestionInfo: `${ADMIN_PROT}/question-info`,
   AdminArgumentCondensation: `${ADMIN_PROT}/argument-condensation`,
   AdminHelp: `${ADMIN}/help`,
-  AdminPrivacy: `${ADMIN}/privacy`
+  AdminPrivacy: `${ADMIN}/privacy`,
+  AdminLogin: `${ADMIN}/login`
 } as const;
 
 /**
