@@ -30,8 +30,8 @@ Page for generating and managing question information
       label: $t('adminApp.questionInfo.generate.allQuestions')
     },
     {
-      id: 'selected',
-      value: 'selected',
+      id: 'selectedQuestions',
+      value: 'selectedQuestions',
       label: $t('adminApp.questionInfo.generate.selectedQuestions')
     }
   ];
@@ -85,7 +85,7 @@ Page for generating and managing question information
           </div>
         </fieldset>
 
-        {#if selectedOption === 'selected'}
+        {#if selectedOption === 'selectedQuestions'}
           <!-- <Button text={$t('adminApp.questionInfo.generate.selectButton')} variant="normal" disabled={isGenerating} /> -->
           {#await questions then questions}
             <div class="flex flex-col space-y-2">
