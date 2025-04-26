@@ -11,6 +11,7 @@ Page for computing and managing factor analysis for elections
   import { ErrorMessage } from '$lib/components/errorMessage';
   import { SuccessMessage } from '$lib/components/successMessage';
   import MainContent from '../../../MainContent.svelte';
+  import type { ActionResult } from '@sveltejs/kit';
 
   // Get the data from the server
   export let data;
@@ -37,7 +38,7 @@ Page for computing and managing factor analysis for elections
   const handleSubmit = () => {
     status = 'loading';
 
-    return async ({ result, update }: { result: { type: string }; update: () => void }) => {
+    return async ({ result }: { result: ActionResult }) => {
       if (result.type === 'failure') {
         status = 'error';
       } else {
