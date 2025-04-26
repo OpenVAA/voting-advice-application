@@ -35,17 +35,13 @@ Page for computing and managing factor analysis for elections
   let status: 'idle' | 'loading' | 'success' | 'error' = 'idle';
 
   const handleSubmit = () => {
-    console.log('Form submission started');
     status = 'loading';
 
     return async ({ result, update }: { result: { type: string }; update: () => void }) => {
-      console.log('Form submission completed, result:', result);
-
       if (result.type === 'failure') {
         status = 'error';
       } else {
         status = 'success';
-        console.log('Factors computed successfully');
       }
 
       // Always cancel the form action to prevent page reload
