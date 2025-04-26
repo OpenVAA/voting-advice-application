@@ -10,6 +10,7 @@ Page for generating and managing question information
   import { Button } from '$lib/components/button';
   import { getAppContext } from '$lib/contexts/app';
   import { getUUID } from '$lib/utils/components';
+  import type { ActionResult } from '@sveltejs/kit';
   import MainContent from '../../../MainContent.svelte';
 
   const { t } = getAppContext();
@@ -48,9 +49,9 @@ Page for generating and managing question information
     isGenerating = true;
     error = null;
 
-    return async ({ result }: { result: { type: string } }) => {
+    return async ({ result }: { result: ActionResult }) => {
       isGenerating = false;
-      if (result.type === 'error') {
+      if (result.type === 'failure') {
         error = $t('adminApp.questionInfo.generate.error');
       }
     };
