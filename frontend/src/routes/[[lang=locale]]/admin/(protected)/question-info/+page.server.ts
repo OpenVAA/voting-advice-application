@@ -33,7 +33,7 @@ export const actions = {
     } catch (err) {
       console.error('Error processing form:', err);
       const errorMessage = err instanceof Error ? err.message : String(err);
-      return fail(500, { type: 'error', message: `Failed to process form: ${errorMessage}` });
+      return fail(500, { type: 'error', error: `Failed to process form: ${errorMessage}` });
     }
   }
 

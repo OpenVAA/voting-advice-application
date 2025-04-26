@@ -58,7 +58,7 @@ export const actions: Actions = {
 
       // Check if any elections are selected
       if (selectedElectionIds.length === 0) {
-        return fail(400, { type: 'error', data: { message: 'Please select at least one election' } });
+        return fail(400, { type: 'error', error: 'Please select at least one election' });
       }
 
       // Get the admin writer and initialize it
@@ -75,7 +75,7 @@ export const actions: Actions = {
     } catch (error) {
       console.error('Factor analysis error:', error);
       const errorMessage = error instanceof Error ? error.message : String(error);
-      return fail(500, { type: 'error', data: { message: `Internal server error: ${errorMessage}` } });
+      return fail(500, { type: 'error', error: `Internal server error: ${errorMessage}` });
     }
   }
 };

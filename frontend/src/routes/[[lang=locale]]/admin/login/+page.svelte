@@ -81,7 +81,7 @@
         status = 'loading';
         return async ({ update, result }) => {
           await update();
-          if (result.type === 'failure') {
+          if (result.type === 'error') {
             status = 'error';
             errorMessage =
               result.status === 400
