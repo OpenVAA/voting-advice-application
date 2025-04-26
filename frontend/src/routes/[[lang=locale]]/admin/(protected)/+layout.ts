@@ -31,8 +31,13 @@ export async function load({ fetch, parent, params: { lang } }) {
     return await handleLogout('session_expired');
   }
 
-  // The primary admin role check happens in the login handler
-  // This is a secondary check that's more forgiving
+  // Verify user has admin role
+  if (userData.role !== 'admin') {
+    logDebugError(
+      `[Admin App protected layout] Non-admin user attempted to access protected route: ${userData.username}`
+    );
+    return await handleLogout('unauthorized');
+  }
 
   return {
     userData,
