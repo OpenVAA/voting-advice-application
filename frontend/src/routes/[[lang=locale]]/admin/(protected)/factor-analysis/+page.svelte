@@ -34,13 +34,16 @@ Page for computing and managing factor analysis for elections
   }
 
   let status: 'idle' | 'loading' | 'success' | 'error' = 'idle';
+  let errorMessage: string | null = null;
 
   const handleSubmit = () => {
     status = 'loading';
+    errorMessage = null;
 
     return async ({ result }: { result: ActionResult }) => {
       if (result.type === 'failure') {
         status = 'error';
+        errorMessage = result.data?.message || null;
       } else {
         status = 'success';
       }
@@ -98,7 +101,10 @@ Page for computing and managing factor analysis for elections
       {/if}
 
       {#if status === 'error'}
-        <ErrorMessage inline message={$t('adminApp.factorAnalysis.compute.error')} class="mb-md" />
+        <ErrorMessage
+          inline
+          message={$t('adminApp.factorAnalysis.compute.error') + (errorMessage ? `: ${errorMessage}` : '')}
+          class="mb-md" />
       {:else if status === 'success'}
         <SuccessMessage inline message={$t('common.success')} class="mb-md" />
       {/if}
