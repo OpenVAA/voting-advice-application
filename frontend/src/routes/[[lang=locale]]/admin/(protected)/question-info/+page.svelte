@@ -12,12 +12,13 @@ Page for generating and managing question information
   import { getUUID } from '$lib/utils/components';
   import type { ActionResult } from '@sveltejs/kit';
   import MainContent from '../../../MainContent.svelte';
+  import { ErrorMessage } from '$lib/components/errorMessage';
+  import { SuccessMessage } from '$lib/components/successMessage';
 
   const { t } = getAppContext();
 
   let selectedOption = 'all';
-  let isGenerating = false;
-  let error: string | null = null;
+  let status: 'idle' | 'loading' | 'success' | 'error' = 'idle';
 
   // Generate a unique ID for the radio group
   const radioGroupName = getUUID();
@@ -46,14 +47,17 @@ Page for generating and managing question information
   }
 
   const handleSubmit = () => {
-    isGenerating = true;
-    error = null;
+    status = 'loading';
 
     return async ({ result }: { result: ActionResult }) => {
-      isGenerating = false;
       if (result.type === 'failure') {
-        error = $t('adminApp.questionInfo.generate.error');
+        status = 'error';
+      } else {
+        status = 'success';
       }
+
+      // Always cancel the form action to prevent page reload
+      return { cancel: true };
     };
   };
 </script>
@@ -86,7 +90,7 @@ Page for generating and managing question information
         </fieldset>
 
         {#if selectedOption === 'selectedQuestions'}
-          <!-- <Button text={$t('adminApp.questionInfo.generate.selectButton')} variant="normal" disabled={isGenerating} /> -->
+          <!-- <Button text={$t('adminApp.questionInfo.generate.selectButton')} variant="normal" disabled={status === 'loading'} /> -->
           {#await questions then questions}
             <div class="flex flex-col space-y-2">
               <label class="flex items-center">
@@ -119,20 +123,23 @@ Page for generating and managing question information
         {/if}
       </div>
 
-      {#if error}
-        <p class="text-sm text-error">{error}</p>
+      {#if status === 'error'}
+        <ErrorMessage inline message={$t('adminApp.questionInfo.generate.error')} class="mb-md" />
+      {:else if status === 'success'}
+        <SuccessMessage inline message={$t('common.success')} class="mb-md" />
       {/if}
 
       <div class="flex flex-col items-center gap-sm">
         <Button
-          text={isGenerating
+          text={status === 'loading'
             ? $t('adminApp.questionInfo.generate.buttonLoading')
             : $t('adminApp.questionInfo.generate.button')}
           type="submit"
           variant="main"
-          disabled={isGenerating} />
+          loading={status === 'loading'}
+          disabled={status === 'loading'} />
 
-        {#if isGenerating}
+        {#if status === 'loading'}
           <p class="text-sm text-neutral">{$t('adminApp.questionInfo.generate.mayTakeTime')}</p>
         {/if}
       </div>
