@@ -58,7 +58,7 @@ Page for computing and managing factor analysis for elections
     </p>
 
     <form method="POST" class="grid w-full max-w-xl gap-lg" use:enhance={handleSubmit}>
-      <h2 class="font-medium">{$t('adminApp.factorAnalysis.compute.title')}</h2>
+      <h2>{$t('adminApp.factorAnalysis.compute.title')}</h2>
 
       <p class="mb-lg max-w-xl">{$t('adminApp.factorAnalysis.compute.selectElections')}</p>
 
@@ -72,7 +72,7 @@ Page for computing and managing factor analysis for elections
                 bind:checked={selectedElections[election.id]}
                 class="checkbox-primary checkbox checkbox-lg" />
               <div class="ml-4">
-                <span class="font-medium">{election.name}</span>
+                <span>{election.name}</span>
                 {#if election.candidateCount !== undefined || election.partyCount !== undefined}
                   <div class="mt-1">
                     <span class="text-sm text-neutral">

@@ -63,7 +63,7 @@ Page for generating and managing question information
     <p class="mb-lg max-w-xl text-center">{$t('adminApp.questionInfo.pageDescription')}</p>
 
     <form method="POST" class="grid w-full max-w-xl gap-lg" use:enhance={handleSubmit}>
-      <h2 class="font-medium">{$t('adminApp.questionInfo.generate.title')}</h2>
+      <h2>{$t('adminApp.questionInfo.generate.title')}</h2>
 
       <p class="mb-lg max-w-xl">{$t('adminApp.questionInfo.generate.description')}</p>
 
@@ -139,7 +139,7 @@ Page for generating and managing question information
     </form>
 
     <div class="mt-xl w-full max-w-xl">
-      <h2 class="font-medium mb-lg">{$t('adminApp.questionInfo.edit.title')}</h2>
+      <h2>{$t('adminApp.questionInfo.edit.title')}</h2>
       <p class="mb-lg">
         {$t('adminApp.questionInfo.edit.description')}
       </p>
