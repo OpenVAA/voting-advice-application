@@ -41,9 +41,9 @@ Page for computing and managing factor analysis for elections
     errorMessage = null;
 
     return async ({ result }: { result: ActionResult }) => {
-      if (result.type === 'failure') {
+      if (result.type === 'error') {
         status = 'error';
-        errorMessage = result.data?.message || null;
+        errorMessage = result.error || null;
       } else {
         status = 'success';
       }

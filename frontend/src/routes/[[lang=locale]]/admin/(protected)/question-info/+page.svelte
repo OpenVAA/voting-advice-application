@@ -50,7 +50,7 @@ Page for generating and managing question information
     status = 'loading';
 
     return async ({ result }: { result: ActionResult }) => {
-      if (result.type === 'failure') {
+      if (result.type === 'error') {
         status = 'error';
       } else {
         status = 'success';

@@ -25,7 +25,7 @@ export const actions = {
     });
 
     if (!loginResponse?.authToken) {
-      return fail(400, { type: 'error', data: { message: 'Invalid credentials' } });
+      return fail(400, { type: 'error', error: 'Invalid credentials' });
     }
 
     const { authToken } = loginResponse;
@@ -37,7 +37,7 @@ export const actions = {
     });
 
     if (!userData) {
-      return fail(500, { type: 'error', data: { message: 'Failed to fetch user data' } });
+      return fail(500, { type: 'error', error: 'Failed to fetch user data' });
     }
 
     // Always set the token in the cookie
