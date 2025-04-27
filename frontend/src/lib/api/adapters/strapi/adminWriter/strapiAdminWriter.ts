@@ -10,7 +10,7 @@ export class StrapiAdminWriter extends strapiAdapterMixin(UniversalAdminWriter) 
       endpoint: 'generateQuestionInfo',
       body: {
         data: {
-          ids: options.questionIds || []
+          ids: options.questionIds ?? []
         }
       },
       authToken: options.authToken
