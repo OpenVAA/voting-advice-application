@@ -249,7 +249,7 @@ export type StrapiFeedbackData = StrapiObject<{
 export type StrapiAuthResponse<TData> = TData;
 
 export type StrapiRoleData = StrapiObject<{
-  name: string;
+  name: 'authenticated' | 'public' | 'admin';
   description: string;
   type: string;
 }>;

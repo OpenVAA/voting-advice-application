@@ -134,7 +134,7 @@ This is a dynamic component, because it accesses the settings via `AppContext` a
       {#if text}
         {text}
       {:else if term && explanation}
-        <Term definition="{title}: {explanation}">
+        <Term definition={title ? `${title}: ${explanation}` : explanation}>
           {term}
         </Term>
       {/if}
