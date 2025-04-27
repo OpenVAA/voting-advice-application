@@ -12,7 +12,8 @@
     "button": "Generera information",
     "buttonLoading": "Genererar information...",
     "mayTakeTime": "Detta kan ta en stund.",
-    "error": "Misslyckades med att generera information"
+    "error": "Misslyckades med att generera information",
+    "noQuestionSelected": "Välj minst en fråga"
   },
   "edit": {
     "title": "Redigera information",

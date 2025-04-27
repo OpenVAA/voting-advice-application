@@ -12,7 +12,8 @@
     "button": "Generate infos",
     "buttonLoading": "Generating infos...",
     "mayTakeTime": "This may take some time.",
-    "error": "Failed to generate info"
+    "error": "Failed to generate info",
+    "noQuestionSelected": "Please select at least one question"
   },
   "edit": {
     "title": "Edit infos",
