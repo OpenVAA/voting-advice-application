@@ -159,9 +159,7 @@ describe('Factor Analysis', () => {
         epsilon: 1e-6
       });
       const after = FactorAnalysis['eigenDecomposition'](regularized);
-      expect(Math.min(...after.values)).toBeGreaterThan(
-        Math.min(...before.values)
-      );
+      expect(Math.min(...after.values)).toBeGreaterThan(Math.min(...before.values));
 
       const resultLow = FactorAnalysis.compute({
         correlationMatrix: nearSingular,
@@ -173,9 +171,7 @@ describe('Factor Analysis', () => {
         numFactors: 1,
         options: { regularization: 1e-3 }
       });
-      expect(resultHigh.uniquenesses[0]).toBeGreaterThanOrEqual(
-        resultLow.uniquenesses[0]
-      );
+      expect(resultHigh.uniquenesses[0]).toBeGreaterThanOrEqual(resultLow.uniquenesses[0]);
     });
   });
 
@@ -193,10 +189,7 @@ describe('Factor Analysis', () => {
             .fill(0)
             .map((_, j) => {
               if (i === j) return 1;
-              return result.loadings.reduce(
-                (sum, factor) => sum + factor[i] * factor[j],
-                0
-              );
+              return result.loadings.reduce((sum, factor) => sum + factor[i] * factor[j], 0);
             })
         );
 

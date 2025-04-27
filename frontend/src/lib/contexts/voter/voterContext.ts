@@ -147,14 +147,11 @@ export function initVoterContext(): VoterContext {
   const selectedQuestionCategoryIds = sessionStorageWritable('voterContext-selectedCategoryIds', new Array<Id>());
 
   const firstQuestionId = sessionStorageWritable('voterContext-firstQuestionId', null as Id | null);
- 
-  const questionOrderer = derived(
-    [factorLoadings, opinionQuestions],
-    ([factorLoadings, opinionQuestions]) => {
-      return new QuestionOrderer(opinionQuestions, factorLoadings);
-    }
-  );
-  
+
+  const questionOrderer = derived([factorLoadings, opinionQuestions], ([factorLoadings, opinionQuestions]) => {
+    return new QuestionOrderer(opinionQuestions, factorLoadings);
+  });
+
   const selectedQuestionBlocks = questionBlockStore({
     firstQuestionId,
     opinionQuestionCategories,

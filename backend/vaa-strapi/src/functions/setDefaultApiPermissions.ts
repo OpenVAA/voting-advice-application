@@ -1,5 +1,5 @@
-import { PUBLIC_API } from '../util/api';
 import { StrapiRole } from '../../types/customStrapiTypes';
+import { PUBLIC_API } from '../util/api';
 
 export async function setDefaultApiPermissions(roleType: StrapiRole['type']) {
   console.info('[setDefaultApiPermissions] Setting default API permissions');

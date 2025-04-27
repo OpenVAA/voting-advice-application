@@ -12,8 +12,8 @@ Page for generating and managing question information
   import { SuccessMessage } from '$lib/components/successMessage';
   import { getAppContext } from '$lib/contexts/app';
   import { getUUID } from '$lib/utils/components';
-  import type { SubmitFunction } from '@sveltejs/kit';
   import MainContent from '../../../MainContent.svelte';
+  import type { ActionResult, SubmitFunction } from '@sveltejs/kit';
 
   const { t } = getAppContext();
 
@@ -46,7 +46,7 @@ Page for generating and managing question information
     return dp.getQuestionData().then((d) => d.questions);
   }
 
-  const handleSubmit: SubmitFunction = ({ cancel }) => {
+  function handleSubmit({ cancel }: Parameters<SubmitFunction>[0]) {
     status = 'loading';
 
     if (selectedOption === 'selectedQuestions' && selectedIds.length === 0) {
@@ -55,7 +55,7 @@ Page for generating and managing question information
       return;
     }
 
-    return async ({ result }) => {
+    return async ({ result }: { result: ActionResult }) => {
       if (result.type === 'error') {
         status = 'error';
       } else {
@@ -65,7 +65,7 @@ Page for generating and managing question information
       // Always cancel the form action to prevent page reload
       return { cancel: true };
     };
-  };
+  }
 </script>
 
 <MainContent title={$t('adminApp.questionInfo.title')}>
