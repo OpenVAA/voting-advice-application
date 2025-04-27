@@ -121,7 +121,8 @@
       </div>
 
       <div class="mt-lg">
-        <Button href="/admin/forgot-password" text={$t('adminApp.login.forgotPassword')} variant="normal" />
+        <!-- TODO: Need to implement forgot-password page and add getRoute routing -->
+        <Button href="/admin/forgot-password" text={$t('adminApp.login.forgotPassword')} variant="normal" disabled />
       </div>
     </form>
 
